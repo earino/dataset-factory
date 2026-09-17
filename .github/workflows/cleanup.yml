@@ -1,0 +1,22 @@
+name: Expired worker cleanup
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: hetzner-expiry-cleanup
+  cancel-in-progress: false
+jobs:
+  cleanup:
+    if: vars.FACTORY_CLEANUP_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Delete only expired project workers and orphaned job IPs
+        env:
+          HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+          FACTORY_PROJECT: ${{ vars.FACTORY_PROJECT }}
+        run: python3 -m factory worker sweep --project "$FACTORY_PROJECT"
