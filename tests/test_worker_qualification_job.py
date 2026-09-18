@@ -92,12 +92,19 @@ class AssembledBundle(unittest.TestCase):
             self.skipTest("no hosted policy on this machine")
         local = json.loads(hosted.read_text())
         ci = json.loads(CI_POLICY.read_text())
-        for key in ("allowed_locations", "server_types", "max_lifetime_minutes",
-                    "cleanup_grace_minutes"):
+        # The hosted policy may allow more types than the test policy; what must not drift is
+        # the location list, the ceilings for the types the test policy does mention, and the
+        # lifetime/grace limits the plan assertions depend on.
+        for key in ("allowed_locations", "max_lifetime_minutes", "cleanup_grace_minutes"):
             with self.subTest(key=key):
                 self.assertEqual(ci[key], local[key],
                                  f"tests/policy.ci.json has drifted from config/local.json "
                                  f"on {key}")
+        for server_type, ceiling in ci["server_types"].items():
+            with self.subTest(server_type=server_type):
+                self.assertIn(server_type, local["server_types"])
+                self.assertEqual(ceiling, local["server_types"][server_type],
+                                 f"ceiling for {server_type} differs from the hosted policy")
 
     def test_plan_is_offline_and_reports_the_reservation(self):
         result = subprocess.run(
