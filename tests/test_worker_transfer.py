@@ -177,6 +177,46 @@ class Fetch(unittest.TestCase):
         self.assertFalse((self.base / "cache" / "extract/public/train.csv").exists())
 
 
+class DownloadRedirects(unittest.TestCase):
+    """The asset endpoint 302s to a signed URL on another host."""
+
+    def test_follows_the_redirect_without_sending_the_token_to_the_new_host(self):
+        from unittest.mock import MagicMock
+        payload = b"payload"
+        first, second = MagicMock(), MagicMock()
+        first.getresponse.return_value.status = 302
+        first.getresponse.return_value.getheader.return_value = \
+            "https://objects.example.invalid/blob?sig=abc"
+        second.getresponse.return_value.status = 200
+        second.getresponse.return_value.read.side_effect = [payload, b""]
+        with patch("workers.upload.http.client.HTTPSConnection",
+                   side_effect=[first, second]) as connections:
+            with tempfile.TemporaryDirectory() as tmp:
+                dest = Path(tmp) / "asset"
+                written = upload.GitHub("secret-token", "owner/private").download(
+                    5, dest, digest(payload), len(payload))
+                self.assertEqual(written, len(payload))
+                self.assertEqual(dest.read_bytes(), payload)
+        self.assertEqual(connections.call_args_list[0].args[0], "api.github.com")
+        self.assertEqual(connections.call_args_list[1].args[0], "objects.example.invalid")
+        self.assertIn("Authorization", first.request.call_args.kwargs["headers"])
+        self.assertNotIn("Authorization", second.request.call_args.kwargs["headers"],
+                         "the token must not follow a redirect to another host")
+
+    def test_a_non_200_after_the_redirect_is_refused(self):
+        from unittest.mock import MagicMock
+        first, second = MagicMock(), MagicMock()
+        first.getresponse.return_value.status = 302
+        first.getresponse.return_value.getheader.return_value = "https://objects.example.invalid/x"
+        second.getresponse.return_value.status = 403
+        with patch("workers.upload.http.client.HTTPSConnection", side_effect=[first, second]):
+            with tempfile.TemporaryDirectory() as tmp:
+                dest = Path(tmp) / "asset"
+                with self.assertRaisesRegex(upload.UploadError, "403"):
+                    upload.GitHub("t", "owner/private").download(5, dest, digest(b"x"), 1)
+                self.assertFalse(dest.exists(), "a refused download must leave nothing behind")
+
+
 class JobValidation(unittest.TestCase):
     """A transfer job runs no container, so the spec is what has to be validated."""
 

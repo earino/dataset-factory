@@ -92,35 +92,55 @@ class GitHub:
         `request()` returns parsed JSON, so binary content needs its own path. The bytes are
         written to a `.part` file and only renamed once the size and SHA-256 match, so a
         partial or corrupted transfer can never be mistaken for the artifact.
+
+        The asset endpoint answers with a **302** to a signed URL on another host, so redirects
+        are followed - up to three, and **without** the Authorization header, which must not be
+        sent to a host that did not ask for it.
         """
         temporary = dest.with_suffix(dest.suffix + ".part")
-        connection = http.client.HTTPSConnection("api.github.com", timeout=600)
+        url = f"/repos/{self.repo}/releases/assets/{asset_id}"
+        host, headers = "api.github.com", {"Authorization": "Bearer " + self.token,
+                                           "User-Agent": "dataset-factory-scout",
+                                           "Accept": "application/octet-stream"}
+        connection = None
         try:
-            connection.request("GET", f"/repos/{self.repo}/releases/assets/{asset_id}",
-                               headers={"Authorization": "Bearer " + self.token,
-                                        "User-Agent": "dataset-factory-scout",
-                                        "Accept": "application/octet-stream"})
-            response = connection.getresponse()
-            if response.status != 200:
-                raise UploadError(f"Asset download returned HTTP {response.status}")
-            written = 0
-            with temporary.open("wb") as stream:
-                while True:
-                    chunk = response.read(1024 * 1024)
-                    if not chunk:
-                        break
-                    written += len(chunk)
-                    stream.write(chunk)
-            if size is not None and written != size:
-                raise UploadError(f"Downloaded {written} bytes, expected {size}")
-            if digest(temporary) != sha256:
-                raise UploadError("Downloaded asset digest differs")
-            temporary.replace(dest)
-            return written
+            for _ in range(4):
+                connection = http.client.HTTPSConnection(host, timeout=600)
+                connection.request("GET", url, headers=headers)
+                response = connection.getresponse()
+                if response.status in (301, 302, 303, 307, 308):
+                    location = response.getheader("Location")
+                    connection.close()
+                    connection = None
+                    if not location:
+                        raise UploadError("Asset download redirected without a location")
+                    parsed = urllib.parse.urlparse(location)
+                    host = parsed.netloc
+                    url = parsed.path + (f"?{parsed.query}" if parsed.query else "")
+                    headers = {"User-Agent": "dataset-factory-scout"}   # signed URL: no token
+                    continue
+                if response.status != 200:
+                    raise UploadError(f"Asset download returned HTTP {response.status}")
+                written = 0
+                with temporary.open("wb") as stream:
+                    while True:
+                        chunk = response.read(1024 * 1024)
+                        if not chunk:
+                            break
+                        written += len(chunk)
+                        stream.write(chunk)
+                if size is not None and written != size:
+                    raise UploadError(f"Downloaded {written} bytes, expected {size}")
+                if digest(temporary) != sha256:
+                    raise UploadError("Downloaded asset digest differs")
+                temporary.replace(dest)
+                return written
+            raise UploadError("Too many redirects downloading the asset")
         except (OSError, http.client.HTTPException) as exc:
             raise UploadError(f"Download failed ({type(exc).__name__})") from None
         finally:
-            connection.close()
+            if connection is not None:
+                connection.close()
             if temporary.exists():
                 temporary.unlink()
 
