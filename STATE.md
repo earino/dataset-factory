@@ -100,10 +100,10 @@ registration is confirmed rather than assumed. `config/local.json` now carries
 /opt/data/.ssh/scout_worker_ed25519`. Launches stay disabled and the allowance
 stays at zero.
 
-Remaining prerequisites for a paid launch: an allowance with allowed server types
-and locations, an observed scheduled cleanup run, and verification that the sweeper
-deletes an expired server. The cleanup secret and variables are configured and the
-manual dispatch executes successfully.
+Remaining prerequisites for a paid launch: notification delivery, an observed
+scheduled cleanup run, and verification that the sweeper deletes an expired server.
+The allowance is configured (see the seventh-session section), the cleanup secret
+and variables are configured, and the manual dispatch executes successfully.
 
 ## Primary expiry cleanup configured 2026-09-18 (fifth session)
 
@@ -205,6 +205,56 @@ interval is **not a strict deletion deadline**.
 previous 15-minute interval during the roughly twenty minutes it was enabled. See
 the fifth-session section above for the earlier observation and the manual dispatch
 that did execute.
+
+## Compute allowance configured 2026-09-18 (seventh session)
+
+`config/local.json` (ignored, so not committed) now carries the operator's initial
+allowance: `monthly_budget_eur` 20, `allowed_locations` `["hel1"]`, `server_types`
+`{"cx23": 0.02, "cpx32": 0.08, "cpx42": 0.15}`, `max_workers` 1,
+`max_lifetime_minutes` 120, `cleanup_grace_minutes` 60. Values are **maximum
+all-in hourly EUR prices including VAT and the primary IPv4**. Working guidance:
+CPX32 by default, CX23 for light jobs, CPX42 when a job needs more memory.
+`enabled` and `cleanup_configured` remain false, so launches are still impossible.
+
+### Ceilings verified against live prices
+
+Checked through the real launch-time code path (`factory.worker.check_price`) against
+the live `/pricing` payload for `hel1`, where the comparison is
+`server_gross_hourly + ipv4_gross_hourly > ceiling -> refuse`:
+
+| Type | Ceiling EUR/h | Live server + IPv4 gross/h | Result | Headroom |
+|---|---|---|---|---|
+| `cx23` | 0.02 | 0.011520 | pass | 0.008480 |
+| `cpx32` | 0.08 | 0.069240 | pass | 0.010760 |
+| `cpx42` | 0.15 | 0.134640 | pass | 0.015360 |
+
+Primary IPv4 is 0.00096 EUR/h gross. Prices are identical in `fsn1` and `hel1`. A
+future price rise larger than the headroom makes `launch` refuse rather than
+overspend, which is the intended fail-closed behaviour.
+
+### Offline smoke-job plan
+
+A copy of `examples/smoke/job.json` with `server_type: cpx32` and `location: hel1`
+was planned under the proposed allowance (temporary files under `.factory/`, which
+is ignored). Result: `reserved_hours` 2, `reservation_eur` **0.16**, `cloud_calls`
+0, `enabled` false. Across the allowed types for that 45-minute job: `cx23` 0.04,
+`cpx32` 0.16, `cpx42` 0.30.
+
+At the maximum 120-minute lifetime the reservation becomes 3 hours: `cx23` 0.06,
+`cpx32` 0.24, `cpx42` 0.45. The EUR 20 allowance therefore admits roughly 333
+max-lifetime `cx23` jobs, 83 `cpx32` jobs or 44 `cpx42` jobs.
+
+This is an admission estimate, not a billing cap. Note that a single continuously
+running `cpx32` bills about 42.59 EUR/month gross, so the allowance only protects
+while jobs stay bounded and are deleted on collection.
+
+### Remaining prerequisites before the live smoke cycle
+
+1. Notification delivery, so a failed or dropped scheduled run is visible.
+2. An observed `schedule`-event cleanup run that executes rather than skips.
+3. Verification that the sweeper actually deletes an expired server - untested, as
+   this project has never held one.
+4. `cleanup_configured: true` and `enabled: true`, set only once 1-3 hold.
 
 ## Research shortlist recorded 2026-09-18
 
