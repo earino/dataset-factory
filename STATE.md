@@ -720,6 +720,47 @@ is not reached for again.
 CI is green for `d1104f4` and `5848c7e` (the check job's `unittest` and `factory doctor` steps
 both succeeded).
 
+### Limited cleanup exception for the smoke test (2026-09-18)
+
+The operator authorized one supervised infrastructure smoke test, and for that test only the
+verified on-host sweep satisfies the cleanup prerequisite; GitHub scheduled execution remains
+**unverified** and is recorded as an open item rather than a satisfied one. The exception and
+its limits are written into `docs/OPERATIONS.md` so a later session cannot read it as a
+standing relaxation. Launches are enabled for the smoke cycle and disabled again immediately
+after it, leaving cleanup active.
+
+### Infrastructure smoke cycle: completed 2026-09-18
+
+The first paid worker cycle ran under the operator's authorization and the documented
+exception. It verifies infrastructure, not task quality.
+
+| step | result |
+|---|---|
+| job / server / IP | `infra-smoke-001` / `166466571` / `150355427` (`46.62.136.146`) |
+| provisioned | 14:55:32Z, CPX32 in `hel1`, `lifetime_minutes` 45, expires 15:40:31Z |
+| Docker executed | yes - `python@sha256:9d2e5553...c00285`, `elapsed_seconds` 7.5, `oom_killed` false, exit 0 |
+| uploaded | release `job-infra-smoke-001` (id 391560852, draft) in `earino/dataset-factory-staging`, 5 assets |
+| collection verified | every asset size and digest matched the worker manifest |
+| destroyed | 14:59:41Z - server and job-owned IP deleted |
+| provider-confirmed | `scripts/provider-inventory.py`: **0 servers, 0 primary IPs in the whole account** |
+| reservation | EUR 0.16 (2 reserved hours at the 0.08 ceiling) |
+| estimated cost | about EUR 0.07 - the machine lived 4.2 minutes, and the provider bills server-hours |
+
+Timeline: launched 14:55:31Z, collected 14:59:07Z, destroyed 14:59:41Z. The account held zero
+servers and zero IPs before the launch, so nothing else could account for either resource, and
+the sweep afterwards returned `deleted_servers: []` with no errors - there was nothing left to
+clean.
+
+Launches are **disabled again** (`enabled: false`) and cleanup stays **active**
+(`cleanup_configured: true`); a further launch is refused with `Worker launch disabled;
+configure policy and independent cleanup first`. The GitHub `schedule` trigger remains
+unverified, and the full Austin build and unattended operation are subsequent steps.
+
+`scripts/provider-inventory.py` is new and tracked: it reads the token from the `_FILE` path
+and queries the provider directly, so a before/after comparison does not rest on this
+project's own bookkeeping claiming success. Expiry cleanup, recovery and job-failure tests
+have **not** run yet.
+
 ## Research shortlist recorded 2026-09-18
 
 Five candidates created with measured evidence in `candidates/<id>/record.json`

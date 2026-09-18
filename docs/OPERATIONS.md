@@ -249,6 +249,32 @@ on any file that changed after qualification. **Nothing may be scored, and no ca
 accepted, without it.** Only compact evidence comes back to Scout: the report, the rendered
 checks and the manifest. The bulk extract stays in private staging.
 
+## Exception: the on-host sweep as the cleanup prerequisite (2026-09-18)
+
+The primary scheduler's `schedule` trigger has never fired for this repository. Between the
+gate opening at 11:04Z and 14:04Z there were **eleven consecutive hourly slots with no
+`schedule`-event run**, and 4.2 hours since the last actual fire - longer than any gap observed
+before enablement. The workflow itself is verified correct and active, and the manual
+`workflow_dispatch` still executes; the gap is in GitHub's scheduled trigger, not in our
+configuration.
+
+**For the supervised infrastructure smoke test only, the verified on-host sweep satisfies the
+cleanup prerequisite.** The exception is narrow and stated as such:
+
+- It applies to **one supervised smoke job**, run with an operator watching it through
+  confirmed cleanup. It is not a general relaxation.
+- The on-host sweep runs the **same command** as the GitHub workflow
+  (`factory worker sweep --project earino-dataset-factory`) and has been observed executing
+  successfully on an hourly cadence. Its weakness is that it dies with this instance, which is
+  why the GitHub workflow remains the intended primary.
+- **GitHub scheduled execution remains unverified.** Nothing below changes step 4's
+  requirement; it is now recorded as an open verification item rather than a satisfied one.
+- Launches are enabled for the duration of the smoke cycle and **disabled again immediately
+  afterwards**, while cleanup stays active.
+
+The next paid job after the smoke cycle needs either an observed `schedule` event or a fresh
+operator decision. Do not treat this exception as standing.
+
 ## Recovery and data flow
 
 Containers receive read-only `/workspace` and writable `/output`. Write a small
