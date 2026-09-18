@@ -1,39 +1,38 @@
 #!/bin/sh
 # Fresh-consumer verification: follow the published instructions against the published release.
 #
-# Runs in a container that has NO dataset-factory access and NO GitHub credential. What it does
-# have is the published repository (mounted at /workspace/repo, byte-checked against
-# MANIFEST.json) and the release assets exactly as a consumer downloads them (fetched to /data by
-# the worker host, which holds the credential - the container never does).
+# Runs in a container with NO dataset-factory access and NO GitHub credential. It has the
+# published repository (mounted at /workspace/repo, byte-checked against MANIFEST.json) and the
+# release assets as a consumer receives them, fetched by the worker host - which holds the
+# credential - and mounted read-only at /data.
 #
-# Steps mirror REPRODUCE.md: verify the package, lay out the downloaded assets, check the
-# checksums, run the qualification gate, and reproduce the baseline.
+# What this exercises is the documented verification, gate and baseline commands. The *network*
+# half of `get_dataset.py` is exercised by the worker's fetch, which is the same download with the
+# same hash checks; a container cannot run it because it deliberately has no credential.
 set -u
 
 OUT=/output
-TASK=/data/task
 REPO=/workspace/repo
+TASK=/tmp/task          # /data is read-only on purpose; work in a writable copy
 mkdir -p "$OUT"
 
 echo "== 1. the cloned package matches MANIFEST.json =="
 python3 /workspace/verify_package.py "$REPO" || exit 1
 
-echo "== 2. lay out the release assets as get_dataset.py would =="
-mkdir -p "$TASK/public" "$TASK/private"
-cp /data/train.csv "$TASK/public/train.csv"
-cp /data/eval.csv "$TASK/public/eval.csv"
-cp /data/holdout.csv "$TASK/private/holdout.csv"
-cp /data/meta.json /data/quality.json "$TASK/"
-ls -l "$TASK" "$TASK/public" "$TASK/private"
+echo "== 2. the release assets, as fetched, already carry the runner layout =="
+find /data -type f | sort
+mkdir -p "$TASK"
+cp -a /data/task/. "$TASK/"
+find "$TASK" -type f | sort
 
-echo "== 3. sha256sum -c SHA256SUMS =="
+echo "== 3. sha256sum -c SHA256SUMS (the published verification command) =="
 cp "$REPO/SHA256SUMS" "$TASK/SHA256SUMS"
 ( cd "$TASK" && sha256sum -c SHA256SUMS ) || exit 1
 
 echo "== 4. the published dataset passes the published gate =="
 python3 "$REPO/code/qualify_dataset.py" "$TASK" > "$OUT/qualification.txt" 2>&1
 gate_status=$?
-tail -3 "$OUT/qualification.txt"
+tail -4 "$OUT/qualification.txt"
 if [ "$gate_status" -ne 0 ]; then
     echo "the gate rejected the published artifact" >&2
     exit 1
@@ -48,11 +47,15 @@ baseline_status=$?
 grep -E "^Eval AUC:|CONTRACT OK|Training time" "$OUT/baseline.log"
 if [ "$baseline_status" -ne 0 ]; then
     echo "the baseline did not reproduce" >&2
+    tail -20 "$OUT/baseline.log" >&2
     exit 1
 fi
 
 echo "== consumer verification passed =="
-{ echo "gate: exit 0"; tail -3 "$OUT/qualification.txt"; grep -E "^Eval AUC:|CONTRACT OK" "$OUT/baseline.log"; } \
-    > "$OUT/consumer.txt"
+{ echo "package: every file matches MANIFEST.json"
+  echo "checksums: sha256sum -c OK"
+  echo "gate: exit 0"
+  tail -4 "$OUT/qualification.txt"
+  grep -E "^Eval AUC:|CONTRACT OK" "$OUT/baseline.log"; } > "$OUT/consumer.txt"
 cat "$OUT/consumer.txt"
 exit 0
