@@ -256,19 +256,23 @@ Two independent schedulers run the same command,
 
 | scheduler | cadence | observed |
 |---|---|---|
-| On-host cron (`47 * * * *`) | hourly, to the minute | every hour, silent on success |
-| GitHub Actions `schedule` | **irregular**, mean 4.24 h, max 6.63 h | 2.96, 2.19, 4.65, 4.77, 6.63 h |
+| On-host Hermes cron (`47 * * * *`) | **scheduled hourly** | fired every hour while this instance was up |
+| GitHub Actions `schedule` | irregular, mean 4.24 h, max 6.63 h | 2.96, 2.19, 4.65, 4.77, 6.63 h |
 
-**The hourly deadline comes from the on-host sweep, not from GitHub.** The GitHub trigger is
-documented as delayed on low-activity repositories and the measurements bear that out: the
-gaps between its fires are 2.2-6.6 hours against a `17 * * * *` cron, so **it cannot be
-described as an hourly backstop**. What it provides is durability - it survives this instance,
-which the cron cannot - on a multi-hour timescale.
+**Neither is a guaranteed deletion deadline.** Both are best-effort sweepers:
 
-That is why the two exist together and why neither is removed: the cron bounds how long an
-expired worker can survive a coordinator outage; GitHub bounds how long one can survive the
-coordinator being gone entirely. Treat "expired by at most an hour" as the cron's claim and
-"eventually, even if this host is destroyed" as GitHub's. Do not write the second as hourly.
+- The on-host sweep is **scheduled hourly**. That is a schedule, not a promise. It only runs
+  while this instance is alive, it can be missed, and it says nothing about how long an expired
+  worker survives if the coordinator is down. Do not write "expired workers are deleted within
+  an hour" anywhere - write "the on-host sweep is scheduled hourly".
+- The GitHub trigger cannot be described even as hourly: measured gaps are 2.2-6.6 hours
+  against a `17 * * * *` cron, and GitHub documents scheduled workflows as delayed on
+  low-activity repositories, so it is a **multi-hour** path.
+
+The two exist together because they fail differently: the cron is frequent but dies with this
+instance; GitHub is slow but survives the instance being gone entirely. Deleting an expired
+worker is therefore bounded by whichever runs first after expiry, and by nothing at all if both
+stop - which is why the ledger, not the sweeper, is the record of what was created.
 
 Observed scheduled execution (2026-09-18T16:31:37Z, run 35368993679, commit `3ba6988`): the
 trigger fired, the cleanup step ran and succeeded, and `sweep` returned

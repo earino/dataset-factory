@@ -788,7 +788,8 @@ diagnostics: `output/partial.txt` (the line written before the failure) and `con
 manifest. **Path: normal `destroy` after collection** - a failed job is still collectable, so
 its evidence survives. Deleted 17:58:28Z; provider then showed 0 servers, 0 IPs.
 
-**Session recovery** - `infra-smoke-recov-01`, server 166481920. The lost-transfer condition
+**Upload recovery** (not "session recovery" - this exercises the artifact transfer, not the
+coordinator's session) - `infra-smoke-recov-01`, server 166481920. The lost-transfer condition
 was reproduced honestly by deleting the staging release (391676527) after a successful run:
 `collect` then failed with `HTTP 404` and exit 1. `worker retry-upload` re-dispatched the upload
 unit and `collect` succeeded against a **new** release (391678046) with `exit_code 0`,
@@ -801,6 +802,47 @@ A first attempt to launch the expiry job was refused by validation
 `timeout_minutes 5` with `lifetime_minutes 16` violates `timeout + 15 <= lifetime`. Nothing was
 provisioned - the refusal happens before any cloud call - and the provider was checked to
 confirm no server had been created. Lifetime raised to 20.
+
+**Expiry cleanup** - `infra-smoke-expiry-01`, server 166482592, launched 18:05:00Z with
+`lifetime_minutes 20` and deliberately **never collected**, so `destroy` refused it
+(`Collect and verify artifacts before normal deletion; expired jobs are cleaned by sweep`) and
+the expiry path was the only thing that could remove it.
+
+| measurement | value |
+|---|---|
+| expired | 18:25:00Z |
+| gone from the provider | 18:47:12Z (watcher poll) |
+| **deletion lag past expiry** | **22.2 minutes** |
+| acting sweeper | **on-host Hermes cron** `e80975eddd4a`, scheduled hourly |
+| its own record | `Scout sweep for earino-dataset-factory: {"deleted_primary_ips": [], "deleted_servers": [166482592], "errors": []}` at 18:47:17Z |
+| GitHub scheduled run in that window | none - newest remains 16:31:37Z |
+| provider after | 0 servers, 0 primary IPs |
+
+The job-owned IP went with the server; the sweep's IP pass had nothing left to remove, and the
+provider confirms zero IPs. The ledger was then closed by `worker status`: `status: deleted`,
+`deleted_at 18:50:29Z`, reservation `EUR 0.16` retained. **Path: on-host scheduled sweep, not
+manual `destroy`.**
+
+### Session recovery: a fresh session reconciled the worker (2026-09-18)
+
+Separate from upload recovery: this tests that a **new coordinator session** can pick up
+persisted state and reconcile a live worker without any of this conversation.
+
+Fresh Hermes CLI session `20260918_183816_f11a63`, started from `/tmp` (outside the repo) with
+no prior context, told to prefer the ledger and `docs/OPERATIONS.md` over `STATE.md`:
+
+- found `jobs/infra-smoke-expiry-01.json` on its own and read the entry;
+- ran exactly `sh scripts/scout-factory worker status infra-smoke-expiry-01` from the repo root,
+  exit 0, and reported the output verbatim;
+- concluded the ledger still read `status: running`, `server_id 166482592`, `ipv4 46.62.136.146`,
+  reservation EUR 0.16, with `deleted_at` absent - verified here by diffing the record before and
+  after, which was content-identical;
+- inferred from `reconcile` that the provider still held exactly one labelled match, and said so
+  as an inference rather than as output it had seen.
+
+33 messages, 19 tool calls, 2m 9s, zero launches or other paid operations. The instruction not to
+launch anything was honoured: no replacement worker was created and both cleanup schedules were
+left untouched. **Path verified: coordinator-session recovery via the persisted ledger.**
 
 ## Research shortlist recorded 2026-09-18
 
