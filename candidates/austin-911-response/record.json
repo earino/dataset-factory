@@ -23,8 +23,24 @@
     "Socrata catalog metadata for e687-fx2y reports license = 'Public Domain' (api.us.socrata.com catalog v1, queried 2026-09-18).",
     "Re-confirmed 2026-09-18 directly from GET https://datahub.austintexas.gov/api/views/e687-fx2y.json: \"license\": {\"name\": \"Public Domain\"}, view name 'APD 911 Calls for Service 2023-2026'."
   ],
-  "construction_script": null,
-  "split_strategy": "Temporal by response_datetime: earlier years train, later months eval, final months holdout. No random split. Verify no incident_number overlap across periods.",
+  "construction_script": "candidates/austin-911-response/source/build.py (stdlib only, runs on a worker; --limit for a bounded coordinator exercise)",
+  "split_strategy": "Temporal by response_datetime: train < 2025-01-01, eval 2025, holdout >= 2026-01-01. No random split. Measured training window is 572,180 rows, exactly the sum of the measured 2023 (286,145) and 2024 (286,035) counts.",
+  "worker_job": {
+    "job_file": "candidates/austin-911-response/source/job.json",
+    "id": "austin-001",
+    "server_type": "cpx32",
+    "location": "hel1",
+    "timeout_minutes": 45,
+    "lifetime_minutes": 90,
+    "max_artifact_mb": 400,
+    "planned_reservation_eur": 0.24,
+    "reserved_hours": 3,
+    "plan_cloud_calls": 0,
+    "plan_enabled": false,
+    "source_bytes": 40960,
+    "source_sha256": "ee37eecca413e2dd944785647cb649b59b2353221539fde4c2bf4f7e38b097bb",
+    "status": "prepared, not launched - paid launches stay disabled until the scheduled GitHub cleanup run is observed"
+  },
   "feature_notes": {
     "available_at_prediction_time": [
       "incident_type",
@@ -127,5 +143,5 @@
   "artifacts": [],
   "rejection_reason": null,
   "review": null,
-  "next_action": "Write the construction script: dispatch-time feature list (including the two initial-problem fields), target = portal response_time > 1200 s, threshold frozen from the training window only, temporal split by response_datetime, extract checksummed on a worker."
+  "next_action": "Launch worker job austin-001 (plan verified offline: reservation EUR 0.24, 0 cloud calls) once the scheduled GitHub cleanup run is observed and paid launches are enabled. Collect the private staging release, verify checksums, delete the worker, then report baseline and headroom."
 }

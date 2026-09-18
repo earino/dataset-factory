@@ -1,7 +1,7 @@
 # Current state
 
-Updated: 2026-09-18 (eighth entry; hosted setup, notification delivery, secondary
-sweep and lead-candidate column documentation).
+Updated: 2026-09-18 (ninth entry; Austin construction script and worker job prepared,
+NOAA validation and split assessment, smoke-order correction).
 
 ## Objective
 
@@ -400,10 +400,11 @@ execution), qualification tools, public exporter and website are not implemented
 
 ## Next actions for Scout
 
-1. Write the lead candidate's construction script: dispatch-time feature list
-   (including `initial_problem_description` / `initial_problem_category`), target
-   `response_time > 1200` seconds, threshold frozen from the training window only,
-   temporal split by `response_datetime`, checksummed extract produced on a worker.
+1. **Launch worker job `austin-001`** as soon as paid launches are enabled (the only
+   remaining gate is an observed scheduled GitHub cleanup run). It is planned and ready:
+   `worker plan candidates/austin-911-response/source/job.json`. Then collect the private
+   staging release, verify checksums, delete the worker immediately, and report the measured
+   base rates, the full-sample baseline AUC and the headroom.
 2. Continue shortlist work that needs no credentials. Maryland's stale-series concern is
    resolved and NOAA's exceedance base rates are measured (1.37% pooled); Melbourne's
    licence is the open item, and both remaining candidates need their target thresholds
@@ -420,6 +421,58 @@ Nothing blocking. Both worker tokens and the worker SSH key are supplied and ver
 the allowance and allowed locations/types are configured, and notification delivery is
 working. First release date, reviewer, public dataset namespace and website hosting can
 wait until the first candidate is approved.
+
+## Construction script written and worker job prepared (2026-09-18, ninth session)
+
+`candidates/austin-911-response/source/build.py`, stdlib only, built for a worker. The
+source directory holds `build.py` and `job.json` and nothing else; the candidate's notes
+and record stay outside it, as required.
+
+**Threshold is frozen from the training window by rule, not by hand.** `build.py`
+binary-searches the Socrata aggregate - COUNT queries only, no rows fetched - until
+`P(response_time > T)` in the training window is just at or above a target rate of 0.40,
+then snaps T to a whole minute and re-measures. Run against the live API it selects
+**T = 1200 s (20 minutes)** with a training rate of **0.4038** over **572,180 rows**. That
+row count is exactly the sum of the measured 2023 (286,145) and 2024 (286,035) counts, so
+the split boundaries and the counts agree.
+
+Ten probes were recorded in the manifest, so the choice is auditable rather than asserted.
+
+**Splits** are temporal by `response_datetime`: train `< 2025-01-01`, eval `2025`,
+holdout `>= 2026-01-01`. Rows are paged in `incident_number` order (unique, so paging
+cannot skip rows that share a timestamp) and each file gets a SHA-256 checksum, byte
+count, row count and positive rate into `manifest.json`. `summary.json` is written for the
+worker's compact-report contract.
+
+**A bounded exercise has been run locally** (`.factory/austin-smoke`, `--limit 400`), so
+the script is known to execute end to end: threshold freeze, three splits with checksums,
+and the baseline. Its per-split rates are not meaningful - the limit takes the first 400
+rows of each split by incident number, which is roughly January only - but the pipeline is
+proven. The single-feature baseline scored **AUC 0.5999** on that sample; the real figure
+must come from the full extract.
+
+**Worker job `austin-001` is prepared and planned, not launched.** `worker plan` reports
+`reservation_eur 0.24`, `reserved_hours 3`, `source_bytes 40960`, `source_sha256
+ee37eec...`, `cloud_calls 0`, `enabled false`. It targets `cpx32` in `hel1`, a 45-minute
+timeout inside a 90-minute lifetime, `max_artifact_mb 400` (the three CSVs are expected
+near 136 MB in total at roughly 130 bytes per row). Paid launches remain disabled, so it
+waits.
+
+**Tests**: `tests/test_austin_build.py` adds 20 offline tests, including the structural
+guarantees that matter here - no feature may overlap the post-hoc exclusions,
+`response_time` / `priority_level` / `mental_health_flag` may not be features, the split
+windows must be disjoint, and the job directory must satisfy the worker's own
+`source_bundle` rules (no symlinks, no hidden files, only allowed suffixes, under 2 MiB).
+Test count is now **59**, all passing.
+
+## Operations correction: smoke order (2026-09-18)
+
+`docs/OPERATIONS.md` and this file now state that the **first smoke cycle proves the normal
+path - provision, Docker, upload, verified collection, then immediate deletion of the
+server and its job-owned IP**. Expiry cleanup is a separate later test with its own job.
+The earlier wording allowed the sequence to read as if an expired-server deletion had to be
+observed before any worker could launch, which is unreachable: the only way to create an
+expired worker is to launch one.
 
 ## Research shortlist recorded 2026-09-18
 
@@ -485,9 +538,30 @@ from this host.
 Measured result at `datum=STND`: **60 minor-flood days across 4,380 station-days, 1.37%
 pooled**, per-station rates from 0.00% (Portland ME, Key West, San Francisco, Seattle) to
 4.66% (Sewells Point VA). Four stations have an annual maximum within 0.2 ft below
-threshold, so their zeros are offset-sensitive. The consequence for the task is that
-`nos_minor` makes the class rare - accuracy is meaningless at that base rate, and a
-per-station training-window quantile would give a better-balanced target.
+threshold, so their zeros are offset-sensitive.
+
+**Cross-checked against NOAA's own product (ninth session): VALIDATED.** NOAA's
+`htf/annual.json` reports, per station-year, the authoritative flood-day counts. For 2025 my
+`STND` reconstruction matches NOAA's `minCount` at **12 of 12 stations, 60 days against
+NOAA's 60**; the rejected MLLW reconstruction gives 0. Sewells Point also had 3
+moderate-or-worse days, the only station in the set with any.
+
+**Hourly sampling undercounts, measured (ninth session).** Comparing daily maxima from
+6-minute and hourly data for the busiest station-months: 1 flood day missed out of 17 caught
+(Honolulu, 2025-10-07). The pooled hourly rate is therefore a **lower bound**; labels should
+come from 6-minute data where the budget allows.
+
+**The physical threshold is kept, by decision.** `nos_minor` is externally defined, has
+physical meaning and is now externally validated. It is not replaced with a per-station
+quantile merely to balance the classes; the imbalance is documented and handled with
+precision/recall-style metrics and an explicit base-rate baseline.
+
+**Split capacity is measured and sufficient.** train 2006-2021: 1,279 positives (1.83%);
+eval 2022-2023: 234 (2.67%); holdout 2024-2025: 256 (2.92%). Positives cluster at about two
+stations per flood day, so the effective independent counts are **118** and **126** distinct
+flood days - ample for scoring, but confidence intervals must use that clustered count. The
+rate is not stationary across the series (it rises with sea level), so a temporal split
+carries systematic base-rate shift.
 
 ### Melbourne licence still unconfirmed (eighth session)
 

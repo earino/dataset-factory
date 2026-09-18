@@ -1,18 +1,29 @@
 #!/usr/bin/env python3
 """Cross-check the computed 2025 base rates against NOAA's own historical product.
 
-`htf_daily.json` is NOAA's High Tide Flooding daily record: for each station it reports
-DailyFloodCount, the number of days that exceeded the minor threshold, with NOAA doing
-its own datum handling. If my STND reconstruction is right, my 2025 per-station counts
-should match NOAA's, and my MLLW reconstruction should match nothing.
+NOAA's High Tide Flooding daily/annual products give the authoritative number of days
+each station exceeded the minor threshold, with NOAA doing its own datum handling:
+
+  * `htf/daily.json` reports `count` = the number of DAYS RETURNED, not flood days. Its
+    `DailyFloodCount` list is the per-day detail. Reading `count` as a flood count makes
+    every station look like it flooded 365 times, which is why the annual product is used
+    for the comparison here.
+  * `htf/annual.json` reports, per year, `minCount` / `modCount` / `majCount` - the
+    authoritative flood-day counts at each threshold.
+
+If the STND reconstruction is right, my per-station 2025 counts must equal NOAA's
+`minCount`, and the rejected MLLW reconstruction must match nothing.
 """
 import json
+import sys
 import urllib.error
 import urllib.parse
 import urllib.request
+from pathlib import Path
 
 UA = {"User-Agent": "scout-dataset-factory/0.1 (bounded research probe)"}
 BASE = "https://api.tidesandcurrents.noaa.gov/dpapi/prod/webapi"
+YEAR = 2025
 
 STATIONS = [
     ("8418150", "Portland, ME"),
@@ -29,13 +40,13 @@ STATIONS = [
     ("1612340", "Honolulu, HI"),
 ]
 
-# What my own datum=STND reconstruction produced for 2025 (see noaa_rates_stnd.txt).
+# My own reconstruction for 2025 (candidates/noaa-tide-flooding/notes.md).
 MINE_STND = {
     "8418150": 0, "8443970": 2, "8518750": 7, "8531680": 7, "8534720": 4,
     "8638610": 17, "8665530": 7, "8724580": 0, "8771450": 4, "9414290": 0,
     "9447130": 0, "1612340": 12,
 }
-# And what the rejected MLLW comparison produced for the same station-year.
+# The rejected MLLW comparison produced zero at every station.
 MINE_MLLW = {sid: 0 for sid, _ in STATIONS}
 
 
@@ -52,46 +63,68 @@ def get(url, attempts=3):
     raise RuntimeError(last)
 
 
-print("NOAA htf_daily, 2025-01-01..2025-12-31, versus my reconstruction")
-print()
-print(f"{'station':<24} {'id':<9} {'NOAA':>5} {'mine STND':>10} {'match':>6} {'mine MLLW':>10}")
-print("-" * 72)
+def main():
+    rows = []
+    print(f"NOAA htf/annual vs my reconstruction, station-year {YEAR}")
+    print()
+    print(f"{'station':<24} {'id':<9} {'NOAA min':>8} {'mine STND':>10} {'match':>6} "
+          f"{'mine MLLW':>10} {'NOAA mod':>8} {'NOAA maj':>8}")
+    print("-" * 92)
 
-noaa_total = stnd_total = mllw_total = 0
-rows = []
-for sid, name in STATIONS:
-    url = (f"{BASE}/htf/htf_daily.json?" +
-           urllib.parse.urlencode({"station": sid, "start_date": "20250101", "end_date": "20251231"}))
-    data = get(url)
-    noaa = int(data.get("count") or 0)
-    detail = data.get("DailyFloodCount")
-    mine_s = MINE_STND[sid]
-    mine_m = MINE_MLLW[sid]
-    noaa_total += noaa
-    stnd_total += mine_s
-    mllw_total += mine_m
-    print(f"{name:<24} {sid:<9} {noaa:>5} {mine_s:>10} {str(noaa == mine_s):>6} {mine_m:>10}")
-    rows.append({"station": name, "id": sid, "noaa_2025_flood_days": noaa,
-                 "mine_stnd_flood_days": mine_s, "mine_mllw_flood_days": mine_m,
-                 "stnd_matches_noaa": noaa == mine_s, "units": data.get("units")})
-
-print("-" * 72)
-print(f"{'TOTAL':<24} {'':<9} {noaa_total:>5} {stnd_total:>10} "
-      f"{str(noaa_total == stnd_total):>6} {mllw_total:>10}")
-print()
-print("NOAA units field:", rows[0]["units"] if rows else "?")
-print()
-print("Annual counts (htf_annual.json) for the same stations:")
-for sid, name in STATIONS:
-    try:
+    noaa_total = stnd_total = mllw_total = mismatches = 0
+    for sid, name in STATIONS:
         ann = get(f"{BASE}/htf/htf_annual.json?station={sid}")
-    except RuntimeError as e:
-        print(f"  {name:<24} {e}")
-        continue
-    entries = ann.get("AnnualFloodCount") or []
-    y2025 = [e for e in entries if str(e.get("year")) == "2025"]
-    print(f"  {name:<24} years={len(entries)} 2025={json.dumps(y2025[0]) if y2025 else 'n/a'}")
+        entries = ann.get("AnnualFloodCount") or []
+        year_rows = [e for e in entries if str(e.get("year")) == str(YEAR)]
+        if not year_rows:
+            print(f"{name:<24} {sid:<9} no {YEAR} entry")
+            continue
+        e = year_rows[0]
+        noaa, mod, maj = int(e.get("minCount") or 0), int(e.get("modCount") or 0), int(e.get("majCount") or 0)
+        mine_s, mine_m = MINE_STND[sid], MINE_MLLW[sid]
+        noaa_total += noaa
+        stnd_total += mine_s
+        mllw_total += mine_m
+        ok = noaa == mine_s
+        mismatches += 0 if ok else 1
+        print(f"{name:<24} {sid:<9} {noaa:>8} {mine_s:>10} {str(ok):>6} "
+              f"{mine_m:>10} {mod:>8} {maj:>8}")
+        rows.append({
+            "station": name, "id": sid, "year": YEAR,
+            "noaa_minor_flood_days": noaa, "noaa_moderate_flood_days": mod,
+            "noaa_major_flood_days": maj,
+            "mine_stnd_minor_flood_days": mine_s,
+            "mine_mllw_minor_flood_days": mine_m,
+            "stnd_matches_noaa": ok,
+            "noaa_percent_completeness": e.get("percent_completeness"),
+        })
 
-print()
-print("JSON:")
-print(json.dumps(rows, indent=1))
+    print("-" * 92)
+    print(f"{'TOTAL':<24} {'':<9} {noaa_total:>8} {stnd_total:>10} "
+          f"{str(noaa_total == stnd_total):>6} {mllw_total:>10}")
+    print()
+    print(f"stations compared      : {len(rows)}")
+    print(f"station-row mismatches : {mismatches}")
+    print(f"STND reconstruction    : {'VALIDATED' if mismatches == 0 else 'DISAGREES'}")
+    print(f"MLLW reconstruction    : produced {mllw_total} flood days vs NOAA's {noaa_total}")
+
+    out = Path(__file__).with_name("htf_crosscheck_result.json")
+    out.write_text(json.dumps({
+        "year": YEAR,
+        "source": f"{BASE}/htf/annual.json (minCount/modCount/majCount)",
+        "endpoint_note": "htf/daily.json 'count' is the number of days returned, not a flood count",
+        "stations_compared": len(rows),
+        "noaa_minor_flood_days_total": noaa_total,
+        "mine_stnd_minor_flood_days_total": stnd_total,
+        "mine_mllw_minor_flood_days_total": mllw_total,
+        "station_row_mismatches": mismatches,
+        "stnd_reconstruction_validated": mismatches == 0,
+        "per_station": rows,
+        "measured_on": "2026-09-18",
+    }, indent=1) + "\n")
+    print(f"\nwrote {out}")
+    return 0 if mismatches == 0 else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

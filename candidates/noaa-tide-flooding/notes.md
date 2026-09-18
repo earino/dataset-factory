@@ -96,16 +96,122 @@ Including them turns the task into "reproduce NOAA's model" and inflates scores.
 Observation-only features are the defensible version. Note that the 2025 daily maxima
 above are *observed* values, which is what a label should be built from.
 
+## Cross-check against NOAA's own product - VALIDATED (2026-09-18)
+
+The reconstruction above is not self-reported. NOAA publishes its own flood determination in
+the High Tide Flooding products, and for station-year 2025 **my `datum=STND` reconstruction
+matches NOAA's authoritative `minCount` at 12 of 12 stations: 60 flood days against NOAA's
+60.** The rejected `datum=MLLW` reconstruction produced 0.
+
+```
+station                  id        NOAA min  mine STND  match
+Portland, ME             8418150          0          0   True
+Boston, MA               8443970          2          2   True
+The Battery, NY          8518750          7          7   True
+Sandy Hook, NJ           8531680          7          7   True
+Atlantic City, NJ        8534720          4          4   True
+Sewells Point, VA        8638610         17         17   True
+Charleston, SC           8665530          7          7   True
+Key West, FL             8724580          0          0   True
+Galveston Pier 21, TX    8771450          4          4   True
+San Francisco, CA        9414290          0          0   True
+Seattle, WA              9447130          0          0   True
+Honolulu, HI             1612340         12         12   True
+TOTAL                                    60         60   True
+```
+
+Endpoint: `dpapi/prod/webapi/htf/htf_annual.json?station=<id>` returns, per year,
+`minCount` / `modCount` / `majCount`. `dpapi/prod/webapi/htf/htf_daily.json?station=<id>&
+start_date=YYYYMMDD&end_date=YYYYMMDD` returns per-day rows.
+
+**Two traps in that API, both recorded:** `htf/daily.json`'s `count` field is the number of
+**days returned** (365), not a flood count - reading it as one makes every station look like
+it flooded every day of the year. And the per-day field is `day` in `MM/DD/YYYY` form with a
+`minFlag`, not a `date`/`minorFlood` pair. Only `htf/annual.json` gives counts.
+
+Sewells Point had 3 moderate-or-worse days in 2025; every other station-year in the set had
+none at a higher threshold.
+
+## Does hourly sampling miss brief exceedances? Yes, occasionally
+
+The base rates came from the hourly product because it allows long ranges. The 6-minute
+product resolves the tide cycle far better but is capped at one month per request. Comparing
+daily maxima from both, at the stations and months with the most flood days:
+
+| Station | Month | Flood days | Caught | Missed by hourly | Largest daily-max gap |
+|---|---|---|---|---|---|
+| Sewells Point, VA | 2025-10 | 9 | 9 | 0 | 0.157 ft |
+| Honolulu, HI | 2025-10 | 5 | 4 | **1** (`2025-10-07`) | 0.063 ft |
+| The Battery, NY | 2025-08 | 3 | 3 | 0 | 0.285 ft |
+
+**1 day missed out of 17 caught**, so the hourly-derived rate undercounts by roughly 6% of
+positive days in the periods examined. The pooled hourly figure **1.37% is therefore a lower
+bound**, and label construction should use 6-minute data where the budget allows - which is
+worker work, given the one-month-per-request limit.
+
+## Target threshold - kept physical, by decision
+
+**Keep `nos_minor`.** It is a real, externally defined threshold with physical meaning, and
+it is now validated against NOAA's own product. Replacing it with a per-station quantile
+would invent the event and would not correspond to flooding. The class imbalance is a
+property of the phenomenon: document it, report precision/recall-style metrics alongside
+AUC, and use the base rate as an explicit baseline. Do not engineer the imbalance away.
+
+## Do the splits have enough positives? Yes on counts, with clustering
+
+Using NOAA's authoritative annual counts (up to 107 years per station):
+
+| Split | Years | Station-days | Positives | Rate | Moderate or worse |
+|---|---|---|---|---|---|
+| train | 2006-2021 | 70,080 | 1,279 | 0.0183 | 80 |
+| eval | 2022-2023 | 8,760 | 234 | 0.0267 | 13 |
+| holdout | 2024-2025 | 8,760 | 256 | 0.0292 | 16 |
+
+234 and 256 positives are comfortably enough for a scored claim. **But they are not
+independent**: flood days cluster at about two stations each, so
+
+- eval: 234 positive station-days over **118 distinct flood days**
+- holdout: 256 positive station-days over **126 distinct flood days**
+
+Confidence intervals on any AUC must be computed over the clustered count, not the row
+count. Two further properties to carry into the protocol:
+
+1. **The base rate is not stationary.** Total flood days across the 12 stations rose from 54
+   in 2005 to 196 in 2024, and the split rates rise with it (1.83% train -> 2.92% holdout).
+   A temporal split therefore has systematic base-rate shift, which is a real feature of the
+   phenomenon rather than a construction fault.
+2. **Year-to-year variation is large.** 2025 had 60 days against 2024's 196, so any single
+   year is a noisy estimate and the holdout should not be a single year.
+
+## Boston event preserved as a regression test
+
+- `datum_regression.json` - the recorded peaks for both datums, the threshold, the expected
+  verdicts, and NOAA's own 2025 count as external validation.
+- `datum_check.py` - the rule as code (`REQUIRED_DATUM = "STND"`), plus a live re-check that
+  re-fetches both datums for both windows. Verified 2026-09-18: **all four recorded peaks
+  reproduced with delta 0.000.**
+- `tests/test_noaa_datum.py` - 9 offline tests. If a future change ever makes the MLLW
+  comparison exceed the threshold, the trap has changed shape and the notes need revisiting.
+
+## Analysis scripts
+
+- `crosscheck_htf.py` -> `htf_crosscheck_result.json`
+- `sampling_check.py` -> `sampling_check_result.json`
+- `split_capacity.py` -> `split_capacity_result.json`
+- `clustering_check.py` -> `clustering_result.json`
+
+
 ## Why it is not the lead
 
-Scientific interest is high and the licence is clean (U.S. federal public domain), but
-the base rate is very low at the natural threshold, so most of the modelling work is
-fighting an imbalance rather than predicting a phenomenon. It is a good second or third
-task.
+Scientific interest is high and the licence is clean (U.S. federal public domain), and the
+measurement programme above is now complete - but the base rate at the physical threshold is
+1.37% pooled, so most of the modelling work is fighting an imbalance rather than predicting a
+phenomenon. That is a legitimate reason for a task to be third rather than first, and it is a
+measured reason rather than a guess. It is a good second or third task.
 
 ## Next action
 
-Choose the target threshold deliberately: either the NOS minor threshold (measured, rare,
-1.37% pooled) or a per-station training-window quantile (better balanced). Then fix a
-station list, decide the feature set from observations only, and write the construction
-script. Multi-year 6-minute backfill, if wanted, belongs on a worker.
+Fix the station list, restrict the feature set to observations only, and write the
+construction script. Prefer 6-minute labels where the budget allows, since hourly sampling
+undercounts positive days by roughly 6% in the periods tested; the multi-year 6-minute
+backfill belongs on a worker.

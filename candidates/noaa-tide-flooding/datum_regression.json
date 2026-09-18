@@ -1,0 +1,48 @@
+{
+  "purpose": "Regression fixture for NOAA CO-OPS datum handling. Recorded so a future change cannot silently reintroduce the MLLW-vs-threshold bug, which produced zero positives at every station.",
+  "recorded_on": "2026-09-18",
+  "rule": "Compare observed water levels to the published NOS flood thresholds using datum=STND. The MDAPI floodlevels response carries no datum field, and datum=MLLW makes the comparison silently fail.",
+  "station": {
+    "id": "8443970",
+    "name": "Boston, MA",
+    "product": "hourly_height",
+    "units": "english",
+    "time_zone": "gmt"
+  },
+  "thresholds_ft": {
+    "nos_minor": 15.85,
+    "nos_moderate": 16.73,
+    "nos_major": 18.04,
+    "nws_minor": 16.03
+  },
+  "cases": [
+    {
+      "name": "bomb-cyclone record tide",
+      "window": "2018-01-03..2018-01-05",
+      "why": "Boston's documented record tide. Any datum handling that denies flooding here is wrong.",
+      "expected_exceeds_nos_minor": true,
+      "datums": {
+        "MLLW": {"peak_ft": 15.022, "peak_time": "2018-01-04 18:00", "rows": 72},
+        "STND": {"peak_ft": 18.547, "peak_time": "2018-01-04 18:00", "rows": 72}
+      }
+    },
+    {
+      "name": "2025 annual maximum",
+      "window": "2025-01-01..2025-12-31",
+      "why": "The highest tide of the station-year used for the base-rate measurement.",
+      "expected_exceeds_nos_minor": true,
+      "datums": {
+        "MLLW": {"peak_ft": 12.374, "peak_time": "2025-11-08 18:00", "rows": 8760},
+        "STND": {"peak_ft": 15.899, "peak_time": "2025-11-08 18:00", "rows": 8760}
+      }
+    }
+  ],
+  "external_validation": {
+    "source": "https://api.tidesandcurrents.noaa.gov/dpapi/prod/webapi/htf/htf_annual.json?station=8443970",
+    "claim": "NOAA's authoritative annual product reports minCount 2 for 2025, matching the STND reconstruction (2 exceeding days) and contradicting the MLLW one (0).",
+    "checked_on": "2026-09-18",
+    "station_year": 2025,
+    "noaa_minCount": 2
+  },
+  "peak_tolerance_ft": 0.05
+}

@@ -5,7 +5,7 @@
   "domain": "coastal water levels / flood-threshold exceedance",
   "prediction_question": "For a chosen NOAA water-level station, will the daily maximum observed water level exceed its published minor flood threshold tomorrow?",
   "prediction_time": "End of the local day before the target day. Features are observed water levels only. NOAA tide predictions and model guidance are model output and must be excluded so the task stays an observation-only forecast.",
-  "target_definition": "Binary: the daily maximum observed hourly water level for the target day exceeds the station's NOS minor flood threshold from the CO-OPS metadata API. Lead threshold is nos_minor; a per-station training-window quantile is the alternative because nos_minor makes the class rare.",
+  "target_definition": "Binary: the daily maximum observed water level for the target day exceeds the station's NOS minor flood threshold from the CO-OPS metadata API, compared at datum=STND. The physical nos_minor threshold is retained by decision; it is not replaced with a per-station quantile merely to balance the classes (see measurements.target_threshold_decision).",
   "datum_requirement": "MUST use datum=STND. The published nos_minor threshold is in the station datum and the metadata API does not declare a datum. Comparing MLLW-referenced heights to nos_minor silently yields zero positives at every station; see measurements.datum_trap_measured.",
   "sources": [
     {
@@ -27,7 +27,7 @@
     "U.S. federal government work; NOAA CO-OPS data are public domain. Portal attribution page not read in this session."
   ],
   "construction_script": null,
-  "split_strategy": "Temporal by day: multi-year train and eval with a recent holdout. Thresholds differ per station, so the station set is part of the task definition.",
+  "split_strategy": "Temporal: train 2006-2021, eval 2022-2023, holdout 2024-2025, with thresholds taken from metadata (not estimated) so nothing leaks. Measured positives: train 1,279, eval 234, holdout 256. Effective independent events are about half those counts because flood days cluster at ~2 stations each. See measurements.split_capacity_measured.",
   "measurements": {
     "water_level_stations_measured": 302,
     "stations_with_flood_thresholds_measured": 302,
@@ -61,11 +61,88 @@
       },
       "caveat": "Four stations have an annual maximum within 0.2 ft below threshold (Portland, Key West, San Francisco, Seattle), so their zero rates are sensitive to a small residual offset. The pooled 1.37% estimate is the defensible figure."
     },
-    "note": "The class is rare at nos_minor (0-4.7% per station-day, 1.37% pooled). Accuracy is meaningless at this base rate; use precision/recall-style metrics, an explicit base-rate baseline, or a per-station training-window quantile threshold instead."
+    "external_validation_measured": {
+      "source": "https://api.tidesandcurrents.noaa.gov/dpapi/prod/webapi/htf/htf_annual.json (minCount/modCount/majCount)",
+      "result": "VALIDATED. For station-year 2025 the STND reconstruction matches NOAA's authoritative minCount at 12 of 12 stations: 60 flood days total against NOAA's 60. The rejected MLLW reconstruction produced 0.",
+      "per_station_noaa_2025_minCount": {
+        "Portland, ME": 0, "Boston, MA": 2, "The Battery, NY": 7, "Sandy Hook, NJ": 7,
+        "Atlantic City, NJ": 4, "Sewells Point, VA": 17, "Charleston, SC": 7,
+        "Key West, FL": 0, "Galveston Pier 21, TX": 4, "San Francisco, CA": 0,
+        "Seattle, WA": 0, "Honolulu, HI": 12
+      },
+      "moderate_or_worse_2025": {"Sewells Point, VA": 3},
+      "endpoint_note": "htf/daily.json reports count = the number of DAYS RETURNED (365), not a flood count; its per-day rows are {day: 'MM/DD/YYYY', maxWL, maxTime, minFlag, modFlag, majFlag, percent_completeness}. htf/annual.json is the authoritative source for counts.",
+      "script": "candidates/noaa-tide-flooding/crosscheck_htf.py, writes htf_crosscheck_result.json",
+      "checked_on": "2026-09-18"
+    },
+    "sampling_resolution_measured": {
+      "question": "Does hourly sampling miss brief exceedances?",
+      "answer": "Yes, occasionally. Hourly daily maxima are a slight undercount of the true flood-day rate.",
+      "method": "daily maximum from 6-minute water_level versus daily maximum from hourly_height, same station-month, datum=STND",
+      "results": [
+        {"station": "Sewells Point, VA", "month": "2025-10", "flood_days_in_month": 9,
+         "caught": 9, "missed_by_hourly": 0, "largest_daily_max_gap_ft": 0.157},
+        {"station": "Honolulu, HI", "month": "2025-10", "flood_days_in_month": 5,
+         "caught": 4, "missed_by_hourly": 1, "missed_days": ["2025-10-07"],
+         "largest_daily_max_gap_ft": 0.063},
+        {"station": "The Battery, NY", "month": "2025-08", "flood_days_in_month": 3,
+         "caught": 3, "missed_by_hourly": 0, "largest_daily_max_gap_ft": 0.285}
+      ],
+      "aggregate": "1 day missed out of 17 caught across the three station-months examined, so the hourly-derived rate undercounts by roughly 6% of positive days in the periods tested.",
+      "consequence": "Label construction should use 6-minute data where the budget allows; the hourly rate 1.37% is a lower bound. 6-minute data is limited to one month per request, which is worker work.",
+      "script": "candidates/noaa-tide-flooding/sampling_check.py, writes sampling_check_result.json",
+      "measured_on": "2026-09-18"
+    },
+    "target_threshold_decision": {
+      "decision": "KEEP the physical NOS minor flood threshold. Do not replace it with a per-station quantile merely to balance the classes.",
+      "reasoning": "nos_minor is a real, externally defined threshold with physical meaning, and it is now validated against NOAA's own product. A quantile threshold would invent the event and would not correspond to flooding. The class imbalance is a property of the phenomenon to be documented and handled with appropriate metrics, not engineered away.",
+      "handling": "Report base rates, use precision/recall-style metrics alongside AUC, and treat the base rate as an explicit baseline."
+    },
+    "split_capacity_measured": {
+      "question": "Do the evaluation splits contain enough positive events for reliable scoring?",
+      "source": "NOAA htf/annual minCount, up to 107 years per station",
+      "answer": "Yes on counts, but the positives are temporally clustered, so effective independent events are about half the row count.",
+      "total_minor_flood_days_per_year_all_12_stations": {
+        "2005": 54, "2010": 91, "2015": 58, "2016": 106, "2017": 130, "2018": 126,
+        "2019": 101, "2020": 152, "2021": 82, "2022": 109, "2023": 125, "2024": 196,
+        "2025": 60, "2026_to_date": 42
+      },
+      "proposed_splits": [
+        {"split": "train", "years": "2006-2021", "station_days": 70080,
+         "positives": 1279, "rate": 0.0183, "moderate_or_worse": 80},
+        {"split": "eval", "years": "2022-2023", "station_days": 8760,
+         "positives": 234, "rate": 0.0267, "moderate_or_worse": 13},
+        {"split": "holdout", "years": "2024-2025", "station_days": 8760,
+         "positives": 256, "rate": 0.0292, "moderate_or_worse": 16}
+      ],
+      "clustering_measured": {
+        "2022": {"positive_station_days": 109, "distinct_flood_days": 52, "mean_stations_per_flood_day": 2.10},
+        "2023": {"positive_station_days": 125, "distinct_flood_days": 66, "mean_stations_per_flood_day": 1.89},
+        "2024": {"positive_station_days": 196, "distinct_flood_days": 89, "mean_stations_per_flood_day": 2.20},
+        "2025": {"positive_station_days": 60, "distinct_flood_days": 37, "mean_stations_per_flood_day": 1.62},
+        "eval_total": {"positives": 234, "distinct_flood_days": 118},
+        "holdout_total": {"positives": 256, "distinct_flood_days": 126}
+      },
+      "caveats": [
+        "The positive rate is not stationary: it rises with sea level across the series (1.83% in train against 2.92% in holdout), so a temporal split carries systematic base-rate shift.",
+        "2025 (60 days across the 12 stations) is far below 2024 (196), so year-to-year variation is large and any single year is a noisy estimate.",
+        "Positive days cluster at about 2 stations per flood day, so 256 holdout positives are roughly 126 independent events."
+      ],
+      "scripts": "candidates/noaa-tide-flooding/split_capacity.py and clustering_check.py",
+      "measured_on": "2026-09-18"
+    },
+    "regression_test": {
+      "fixture": "candidates/noaa-tide-flooding/datum_regression.json",
+      "module": "candidates/noaa-tide-flooding/datum_check.py (REQUIRED_DATUM = STND)",
+      "offline_test": "tests/test_noaa_datum.py",
+      "live_check": "python3 candidates/noaa-tide-flooding/datum_check.py re-fetches both datums for both recorded windows; verified 2026-09-18, all four peaks reproduced with delta 0.000",
+      "purpose": "The Boston bomb-cyclone event is the guard: any datum handling that denies flooding during Boston's record tide is wrong."
+    },
+    "note": "The class is rare at nos_minor (0-4.7% per station-day, 1.37% pooled from hourly data, a lower bound). Accuracy is meaningless at this base rate; use precision/recall-style metrics alongside AUC and an explicit base-rate baseline. The physical threshold is retained by decision."
   },
   "jobs": [],
   "artifacts": [],
   "rejection_reason": null,
   "review": null,
-  "next_action": "Choose the target threshold deliberately - nos_minor (measured and rare) or a per-station training-window quantile (better balanced) - then fix the station list, restrict features to observations, and write the construction script. Multi-year backfill belongs on a worker."
+  "next_action": "Cross-check and split work is done. Remaining: fix the station list, restrict features to observations only, and write the construction script (6-minute labels where budget allows, since hourly undercounts by ~6% of positive days). Multi-year 6-minute backfill belongs on a worker."
 }
