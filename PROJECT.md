@@ -1,6 +1,6 @@
 # Dataset Factory — project specification
 
-**Status:** working draft, 2026-09-17. The project direction comes from the operator's
+**Status:** working draft, updated 2026-09-18. The project direction comes from the operator's
 conversation; the starting defaults and deployment choices below remain proposals.
 
 ## Purpose
@@ -196,11 +196,25 @@ welcome when their measured properties support useful evaluation.
 The benchmark lives locally at `../harness_benchmark`. Treat that checkout as
 read-only. Reuse its runner through an adapter; do not build a replacement runner.
 
-Both prepared reference tasks, `airline` and `fraud`, are available there. Use them
-to verify integration and baseline behavior before trusting new measurements.
+The builder's original local checkout had prepared `airline` and `fraud` data.
+Scout's fresh clone has preparation scripts and saved baseline JSON, but no
+`data/prepared/` datasets. A Git clone does not supply those data artifacts. Prepare
+both reference tasks in the worker execution checkout and use them to verify
+integration and baseline behavior before trusting new measurements. A `credit`
+preparation script also exists; it is an additional source path, not a verified
+replacement for the two reference fixtures.
 Keep factory data, configurations, caches, and run outputs outside that checkout;
 an execution copy or container arrangement may be needed because some runner paths
 are currently fixed relative to its source tree.
+
+The planned adapter belongs in `factory/bench.py` for coordinator-side job
+specification and result handling, with worker execution in `workers/benchmark.py`.
+These are planned paths, not implemented modules. Dependency setup, preparation,
+baselines and runs belong on the worker. The worker entrypoint must invoke the
+existing runner and provide its Docker isolation; the generic data-job container
+does not expose a Docker socket and cannot run nested benchmark containers as-is.
+Implement this integration after the worker smoke cycle, with credentials and
+holdouts excluded from evaluated agents' containers.
 
 The runner currently scores binary classification. Its saved fraud baseline is
 about 0.863 AUC; the roughly 0.997 result described in the earlier spec came from a
@@ -233,14 +247,14 @@ the first complete attempts teach us.
 
 ## Deployment choices still to make
 
-- GitHub owner or organization and naming conventions for the private factory
-  repository and public dataset repositories.
-- Hermes workspace access and schedule on the 1.9 GiB NousCloud instance.
+- Public dataset repository naming and website hosting. The private factory is
+  `earino/dataset-factory`; private staging is `earino/dataset-factory-staging`.
+- Research schedule and inference allowance. Scout's persistent working directory
+  is `/opt/data/dataset-factory`; authenticated Git access is verified.
 - Hetzner project access, allowed server types/locations, concurrency, maximum
   lifetime, and compute budget; model inference has a separate spending allowance.
 - Configuration for harness experiments, including model, harness, and resource budget.
-- Private artifact staging and website hosting. Published dataset downloads use
-  GitHub Releases.
+- Private staging credentials. Published dataset downloads use GitHub Releases.
 - First release date and the person responsible for its final review.
 
 These choices should not block preparing the repository and the first assignment.

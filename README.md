@@ -32,6 +32,12 @@ python3 -m factory candidate list
 python3 -m unittest discover -s tests -v
 ```
 
+On hosted Scout, use `sh scripts/scout-factory doctor` to supply the documented
+private token-file paths in terminal and cron shells. Add
+`--require-worker-credentials` for an offline credential presence assertion.
+See the [2026-09-18 builder reply](deployment/BUILDER-REPLY.md) for the current
+setup decisions and next actions.
+
 The first assignment is [discover and construct one usable task](docs/FIRST_ASSIGNMENT.md).
 Missing compute credentials do not block source research.
 

@@ -23,7 +23,7 @@ No additional packages are needed on Scout.
 > configured. Record evidence, blockers and the next action in the repo, and commit
 > and push your work. Prepare finished datasets and write-ups for our review.
 
-Git clone/write access is the first deployment dependency. Workers additionally
+Scout has verified Git clone/write access as of 2026-09-18. Workers additionally
 need a dedicated Hetzner token, SSH key, private staging repo token, allowance and
 verified independent cleanup. Report missing access without revealing secrets.
 Workers do not need permission to create repositories or publish public datasets.
@@ -35,4 +35,12 @@ Subagents share Scout's limited memory; avoid a large local worker pool.
 
 Choose a connected notification destination when available. Until then scheduled
 reports stay local and the operator must check them. Cleanup uses a separate
-schedule, including the GitHub Actions backup described in operations.
+schedule, with GitHub Actions as primary and on-host no-agent cron as backup.
+
+## Resume after the hosted setup report (2026-09-18)
+
+GitHub clone/push access and the workspace are already verified. Pull the updated
+main branch with `git pull --ff-only`; retain any local work if the tree has changed.
+Run `sh scripts/scout-factory doctor`, read `deployment/BUILDER-REPLY.md`, and begin
+the first source investigations. Record candidates and update `STATE.md`; missing
+worker credentials do not block this research.

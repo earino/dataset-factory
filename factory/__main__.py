@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 import shutil
 import sys
@@ -10,6 +11,8 @@ import subprocess
 
 from . import candidates, worker
 from .common import FactoryError, read_json
+from .diagnostics import benchmark_status, memory_status
+from .http import credential_status
 
 
 def doctor(root):
@@ -19,13 +22,17 @@ def doctor(root):
         "project_root": str(root),
         "disk_free_gib": round(usage.free / 2**30, 2),
         "coordinator_constraints": {"ram_gib": 1.9, "disk_gb": 6, "bulk_data_allowed": False},
+        "memory": memory_status(),
+        "worker_credentials": {name: credential_status(name) for name in ("HCLOUD_TOKEN", "FACTORY_GITHUB_TOKEN")},
+        "github_cli_environment": {name: bool(os.environ.get(name, "").strip()) for name in ("GH_TOKEN", "GITHUB_TOKEN")},
+        "credential_note": "Presence/readability only; no API authentication checked. gh may use its stored login.",
         "cli_available": {name: shutil.which(name) is not None for name in ("git", "gh", "ssh", "hcloud")},
         "native_capabilities": "Inspect Scout's tools/connectors; absent CLIs do not prove unavailable capabilities",
         "capability_inventory_present": (root / "deployment" / "capabilities.md").exists(),
         "worker_policy_present": (root / "config" / "local.json").exists(),
         "worker_integration": "stdlib API + SSH; live smoke test required before unattended use",
-        "benchmark_available_locally": (root.parent / "harness_benchmark" / "bench").is_dir(),
-        "next_action": "Read docs/HANDOFF.md and docs/CAPABILITIES.md; start source research",
+        "benchmark": benchmark_status(root),
+        "next_action": "Read STATE.md and docs/HANDOFF.md; start source research",
     }
 
 
@@ -33,7 +40,9 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1])
     commands = parser.add_subparsers(dest="command", required=True)
-    commands.add_parser("doctor", help="Offline environment summary; never prints credentials")
+    check = commands.add_parser("doctor", help="Offline environment summary; never prints credentials")
+    check.add_argument("--require-worker-credentials", action="store_true",
+                       help="Exit nonzero if either worker credential is missing or unreadable; no API calls")
     candidate = commands.add_parser("candidate", help="Track source investigations")
     actions = candidate.add_subparsers(dest="action", required=True)
     create = actions.add_parser("create")
@@ -57,6 +66,9 @@ def main(argv=None):
             raise FactoryError("Project root must exist")
         if args.command == "doctor":
             result = doctor(root)
+            if args.require_worker_credentials:
+                result["errors"] = [f"{name}: missing or unusable" for name, state in result["worker_credentials"].items()
+                                    if not state["ready"]]
         elif args.command == "candidate":
             result = candidates.create(root, args.id) if args.action == "create" else candidates.listing(root)
         elif args.action == "sweep":

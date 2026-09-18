@@ -36,6 +36,11 @@ stacks, build/pull Docker images, or collect bulk worker artifacts on this host.
 Use temporary Hetzner workers for that work. Workers upload artifacts directly to
 private staging releases; reviewed datasets have their own public repositories.
 
+Use the current `doctor.memory` available-memory observation when choosing local
+research concurrency. Total capacity does not describe the RAM currently free.
+On hosted Scout, `sh scripts/scout-factory ...` supplies credential-file paths
+without depending on Hermes's dashboard environment reaching terminal shells.
+
 Inspect a compact summary first. Retrieve bounded samples or log excerpts only
 when they answer a concrete question. Keep individual reports under 256 KiB and
 the coordinator's collected reports under 20 MiB; the collection tool enforces
