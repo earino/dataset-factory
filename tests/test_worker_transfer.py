@@ -272,7 +272,7 @@ class JobValidation(unittest.TestCase):
             self.validate(job)
 
     def test_a_transfer_without_its_own_credential_is_refused_before_provisioning(self):
-        """The staging token is scoped to staging, so a transfer needs the publish credential.
+        """The staging token is scoped to staging, so reaching another repository needs more.
 
         Checked here rather than on a paid worker: a 404 on the target repository used to surface
         as a dead worker with no report at all.
@@ -285,6 +285,21 @@ class JobValidation(unittest.TestCase):
                                                    "size": 1, "sha256": "a" * 64}]})
         with self.assertRaisesRegex(FactoryError, "FACTORY_PUBLISH_TOKEN"):
             self.validate(job)
+
+    def test_a_fetch_from_another_repository_needs_it_too(self):
+        os.environ["FACTORY_PUBLISH_TOKEN_FILE"] = str(self.root / "absent.token")
+        self.addCleanup(os.environ.pop, "FACTORY_PUBLISH_TOKEN_FILE", None)
+        job = dict(self.job, fetch={"repo": "owner/dataset",
+                                    "assets": [{"asset_id": 1, "dest": "a", "sha256": "a" * 64}]})
+        with self.assertRaisesRegex(FactoryError, "FACTORY_PUBLISH_TOKEN"):
+            self.validate(job)
+
+    def test_a_fetch_from_staging_itself_does_not_need_it(self):
+        os.environ["FACTORY_PUBLISH_TOKEN_FILE"] = str(self.root / "absent.token")
+        self.addCleanup(os.environ.pop, "FACTORY_PUBLISH_TOKEN_FILE", None)
+        job = dict(self.job, fetch={"repo": self.config["staging_repo"],
+                                    "assets": [{"asset_id": 1, "dest": "a", "sha256": "a" * 64}]})
+        self.validate(job)
 
     def test_a_container_job_does_not_need_the_publish_credential(self):
         os.environ["FACTORY_PUBLISH_TOKEN_FILE"] = str(self.root / "absent.token")

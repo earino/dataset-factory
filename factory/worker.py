@@ -20,6 +20,9 @@ from .http import API, credential_status, secret
 
 REPORT_LIMIT = 262144
 BUNDLE_LIMIT = 2 * 1024 * 1024
+# Standard checksum-file names carry no suffix. Kept to an explicit list rather than allowing
+# arbitrary extension-less files, so the bundle rule stays meaningful.
+BARE_ALLOWED_NAMES = {"SHA256SUMS", "SHA256SUMS.txt"}
 
 
 def number(value, name, positive=True):
@@ -74,14 +77,16 @@ def validate(job, config):
             absent = [name for name in keys if name not in item]
             if absent:
                 raise FactoryError(f"{key} asset entry is missing {absent}")
-    if job.get("transfer"):
-        # The staging token is scoped to the staging repository alone, so writing into another
+    needs_publish = ((job.get("transfer") and job["transfer"]["target_repo"] != config["staging_repo"])
+                     or (job.get("fetch") and job["fetch"]["repo"] != config["staging_repo"]))
+    if needs_publish:
+        # The staging token is scoped to the staging repository alone, so reaching another
         # repository needs its own credential. Refused here, before provisioning, rather than on
-        # a paid worker.
+        # a paid worker - that mistake once cost a worker that died without a report.
         if not credential_status("FACTORY_PUBLISH_TOKEN")["ready"]:
             raise FactoryError(
-                "A transfer job needs FACTORY_PUBLISH_TOKEN (or FACTORY_PUBLISH_TOKEN_FILE): the "
-                "staging token cannot write to the target repository")
+                "Reaching a repository other than staging needs FACTORY_PUBLISH_TOKEN (or "
+                "FACTORY_PUBLISH_TOKEN_FILE): the staging token cannot see it")
     if config["max_workers"] != 1:
         raise FactoryError("This first version supports one worker at a time")
     if not 1 <= config["max_report_bytes"] <= REPORT_LIMIT:
@@ -114,7 +119,8 @@ def source_bundle(job_path, job):
             relative = path.relative_to(job_path.parent)
             if any(part.startswith(".") or part == "__pycache__" for part in relative.parts):
                 raise FactoryError("Job directory must contain only explicit source files, no hidden files/caches")
-            if path.suffix not in (".py", ".sh", ".json", ".txt", ".toml", ".yaml", ".yml", ".md"):
+            if path.suffix not in (".py", ".sh", ".json", ".txt", ".toml", ".yaml", ".yml", ".md") \
+                    and path.name not in BARE_ALLOWED_NAMES:
                 raise FactoryError(f"Unexpected source file: {relative}; keep data off Scout")
             total += path.stat().st_size
             if total > BUNDLE_LIMIT:
@@ -301,9 +307,9 @@ def resume(root, job_id, config, cloud=None, bundle=None):
     else:
         remote(config, record, "umask 077; mkdir -p /opt/scout/source /opt/scout/output && cat > /opt/scout/source.tar && tar -xf /opt/scout/source.tar -C /opt/scout", bundle)
         credentials = {"token": secret("FACTORY_GITHUB_TOKEN"), "repo": record["staging_repo"]}
-        if record["job"].get("transfer"):
-            # Kept deliberately separate: the source read uses the staging token, and only the
-            # target write uses this one, which is the narrower of the two available.
+        if record["job"].get("transfer") or record["job"].get("fetch"):
+            # Kept deliberately separate: staging reads use the staging token, and only a reach
+            # into another repository uses this one, which is the narrower of the two available.
             credentials["publish_token"] = secret("FACTORY_PUBLISH_TOKEN")
         remote(config, record, "umask 077; cat > /opt/scout/credentials.json",
                json.dumps(credentials).encode())

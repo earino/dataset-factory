@@ -249,7 +249,9 @@ def fetch(base, job, report, client=None):
     """
     spec = job["fetch"]
     credentials = json.loads((base / "credentials.json").read_text())
-    client = client or GitHub(credentials["token"], spec["repo"])
+    # A fetch from another repository needs the publish credential; staging is read with the
+    # staging token. Either way the container never sees a token - the mount is read-only.
+    client = client or GitHub(credentials.get("publish_token") or credentials["token"], spec["repo"])
     cache = base / "cache"
     cache.mkdir(exist_ok=True)
     fetched, failures = [], []

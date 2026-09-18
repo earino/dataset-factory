@@ -41,6 +41,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 ALLOWED_SUFFIXES = (".py", ".sh", ".json", ".txt", ".toml", ".yaml", ".yml", ".md")
+# Standard checksum files have no suffix; mirrors factory.worker.BARE_ALLOWED_NAMES.
+BARE_ALLOWED_NAMES = {"SHA256SUMS", "SHA256SUMS.txt"}
 BUNDLE_LIMIT = 2 * 1024 * 1024
 BENCHMARK = Path(os.environ.get("FACTORY_BENCHMARK_ROOT", "/opt/data/harness_benchmark"))
 RUNNER_TEMPLATE = "task_template"
@@ -141,7 +143,7 @@ def check_bundle(directory: Path) -> int:
         relative = path.relative_to(directory)
         if any(part.startswith(".") or part == "__pycache__" for part in relative.parts):
             raise SystemExit(f"assembled bundle contains a hidden file or cache: {relative}")
-        if path.suffix not in ALLOWED_SUFFIXES:
+        if path.suffix not in ALLOWED_SUFFIXES and path.name not in BARE_ALLOWED_NAMES:
             raise SystemExit(f"assembled bundle has an unexpected suffix: {relative}")
         total += path.stat().st_size
     if total > BUNDLE_LIMIT:
