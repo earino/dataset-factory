@@ -177,9 +177,9 @@ def transfer(base, job, report, client=None):
     """
     spec = job["transfer"]
     credentials = json.loads((base / "credentials.json").read_text())
-    token = credentials["token"]
-    source = GitHub(token, spec["source_repo"])
-    target = GitHub(token, spec["target_repo"])
+    # The source is read with the staging token; only the target write uses the publish token.
+    source = GitHub(credentials["token"], spec["source_repo"])
+    target = GitHub(credentials.get("publish_token") or credentials["token"], spec["target_repo"])
     target_info = target.request("GET", f"/repos/{target.repo}")
     if not target_info:
         raise UploadError("Target repository does not exist")

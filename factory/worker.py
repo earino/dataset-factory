@@ -16,7 +16,7 @@ import time
 
 from .cloud import Cloud
 from .common import FactoryError, identifier, locked, read_json, utcnow, write_json
-from .http import API, secret
+from .http import API, credential_status, secret
 
 REPORT_LIMIT = 262144
 BUNDLE_LIMIT = 2 * 1024 * 1024
@@ -74,6 +74,14 @@ def validate(job, config):
             absent = [name for name in keys if name not in item]
             if absent:
                 raise FactoryError(f"{key} asset entry is missing {absent}")
+    if job.get("transfer"):
+        # The staging token is scoped to the staging repository alone, so writing into another
+        # repository needs its own credential. Refused here, before provisioning, rather than on
+        # a paid worker.
+        if not credential_status("FACTORY_PUBLISH_TOKEN")["ready"]:
+            raise FactoryError(
+                "A transfer job needs FACTORY_PUBLISH_TOKEN (or FACTORY_PUBLISH_TOKEN_FILE): the "
+                "staging token cannot write to the target repository")
     if config["max_workers"] != 1:
         raise FactoryError("This first version supports one worker at a time")
     if not 1 <= config["max_report_bytes"] <= REPORT_LIMIT:
@@ -292,8 +300,13 @@ def resume(root, job_id, config, cloud=None, bundle=None):
         record["status"] = "running"
     else:
         remote(config, record, "umask 077; mkdir -p /opt/scout/source /opt/scout/output && cat > /opt/scout/source.tar && tar -xf /opt/scout/source.tar -C /opt/scout", bundle)
-        credentials = json.dumps({"token": secret("FACTORY_GITHUB_TOKEN"), "repo": record["staging_repo"]}).encode()
-        remote(config, record, "umask 077; cat > /opt/scout/credentials.json", credentials)
+        credentials = {"token": secret("FACTORY_GITHUB_TOKEN"), "repo": record["staging_repo"]}
+        if record["job"].get("transfer"):
+            # Kept deliberately separate: the source read uses the staging token, and only the
+            # target write uses this one, which is the narrower of the two available.
+            credentials["publish_token"] = secret("FACTORY_PUBLISH_TOKEN")
+        remote(config, record, "umask 077; cat > /opt/scout/credentials.json",
+               json.dumps(credentials).encode())
         # Root-only token is outside all container mounts and never put in cloud-init.
         remote(config, record, "systemctl is-active --quiet scout-job || systemd-run --collect --unit=scout-job --property=Restart=no /usr/bin/python3 /opt/scout/executor.py")
         record["status"] = "running"

@@ -5,6 +5,7 @@ paths without a network or a paid worker.
 """
 import hashlib
 import json
+import os
 from pathlib import Path
 import tempfile
 import unittest
@@ -188,6 +189,13 @@ class JobValidation(unittest.TestCase):
                            enabled=True, cleanup_configured=True, monthly_budget_eur=10)
         self.job = read_json(ROOT / "examples/smoke/job.json")
         self.job.update(server_type="test-type", location="test-place")
+        # A transfer needs its own credential; point it at a fixture so the tests do not depend on
+        # this host's secrets.
+        publish = self.root / "publish.token"
+        publish.write_text("fixture-not-a-token\n")
+        publish.chmod(0o600)      # the credential reader refuses a world-readable token file
+        os.environ["FACTORY_PUBLISH_TOKEN_FILE"] = str(publish)
+        self.addCleanup(os.environ.pop, "FACTORY_PUBLISH_TOKEN_FILE", None)
 
     def validate(self, job):
         worker.validate(job, self.config)
@@ -222,6 +230,26 @@ class JobValidation(unittest.TestCase):
         job = dict(self.job, fetch={"repo": "owner/d", "assets": [{"asset_id": 1, "sha256": "a"}]})
         with self.assertRaisesRegex(FactoryError, "missing"):
             self.validate(job)
+
+    def test_a_transfer_without_its_own_credential_is_refused_before_provisioning(self):
+        """The staging token is scoped to staging, so a transfer needs the publish credential.
+
+        Checked here rather than on a paid worker: a 404 on the target repository used to surface
+        as a dead worker with no report at all.
+        """
+        os.environ["FACTORY_PUBLISH_TOKEN_FILE"] = str(self.root / "absent.token")
+        self.addCleanup(os.environ.pop, "FACTORY_PUBLISH_TOKEN_FILE", None)
+        job = dict(self.job, transfer={"source_repo": "owner/staging", "target_repo": "owner/d",
+                                       "target_release": 7,
+                                       "assets": [{"source_asset_id": 1, "target_name": "n",
+                                                   "size": 1, "sha256": "a" * 64}]})
+        with self.assertRaisesRegex(FactoryError, "FACTORY_PUBLISH_TOKEN"):
+            self.validate(job)
+
+    def test_a_container_job_does_not_need_the_publish_credential(self):
+        os.environ["FACTORY_PUBLISH_TOKEN_FILE"] = str(self.root / "absent.token")
+        self.addCleanup(os.environ.pop, "FACTORY_PUBLISH_TOKEN_FILE", None)
+        self.validate(self.job)          # no transfer, so the staging token is enough
 
 
 if __name__ == "__main__":

@@ -284,6 +284,41 @@ trigger fired, the cleanup step ran and succeeded, and `sweep` returned
 destroyed at 14:59. So the scheduled path is proven to **execute**; it had nothing to delete,
 and deleting through it has not yet been observed.
 
+## Transfer and fetch jobs: moving an artifact between repositories
+
+Two optional job fields exist for moving already-built artifacts rather than building them:
+
+```json
+"fetch":    {"repo": "owner/name", "release": 123, "assets": [
+                {"asset_id": 4, "dest": "task/public/train.csv", "size": 71546966, "sha256": "..."}]}
+"transfer": {"source_repo": "owner/staging", "source_release": 123,
+             "target_repo": "owner/dataset", "target_release": 456,
+             "assets": [{"source_asset_id": 4, "target_name": "train.csv",
+                         "size": 71546966, "sha256": "..."}]}
+```
+
+- Both run **host-side on the worker**; a transfer job starts no container, so it needs no
+  `command` and no `image`.
+- `fetch` downloads into `/opt/scout/cache`, which is mounted read-only at `/data` for the
+  container. That is how a job measures the *released* bytes without the container ever holding a
+  credential.
+- `transfer` verifies each asset twice - on arrival against the recorded SHA-256, and after
+  upload against the server's own digest - and deletes it locally, so peak disk is one asset, not
+  the dataset.
+- A **public** target repository is refused unless the job sets `allow_public: true`. Publishing
+  is reviewed, so this is the last guard before something irreversible.
+
+### The two credentials are separate on purpose
+
+`FACTORY_GITHUB_TOKEN` (staging) is scoped to the staging repository and returns 404 on any other.
+A transfer therefore needs `FACTORY_PUBLISH_TOKEN`, which is used **only** for the target write;
+source reads still use the staging token. `plan` refuses a transfer job when that credential is
+missing, so the failure happens before provisioning instead of on a paid worker.
+
+Widening a worker's reach for the duration of a transfer is a real cost. A fine-grained token
+limited to the target repository would be narrower than the account-wide one currently in use and
+is the recommended replacement.
+
 ## Exception: the on-host sweep as the cleanup prerequisite (2026-09-18)
 
 At the time this exception was granted, the `schedule` trigger had not fired for this

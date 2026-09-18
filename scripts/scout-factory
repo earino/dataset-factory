@@ -5,5 +5,7 @@ set -eu
 project_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 export HCLOUD_TOKEN_FILE="${HCLOUD_TOKEN_FILE:-/opt/data/.secrets/hetzner.token}"
 export FACTORY_GITHUB_TOKEN_FILE="${FACTORY_GITHUB_TOKEN_FILE:-/opt/data/.secrets/github-staging.token}"
+# Only transfer jobs need this one: the staging token cannot write to another repository.
+export FACTORY_PUBLISH_TOKEN_FILE="${FACTORY_PUBLISH_TOKEN_FILE:-/opt/data/.secrets/github-publish.token}"
 cd "$project_root"
 exec python3 -m factory --root "$project_root" "$@"

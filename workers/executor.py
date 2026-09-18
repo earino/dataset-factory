@@ -99,7 +99,9 @@ def execute(base, job):
                 report["failure"] = "disk-limit"
                 break
             time.sleep(3)
-    except (OSError, ValueError, subprocess.SubprocessError) as exc:
+    except (OSError, ValueError, subprocess.SubprocessError, UploadError) as exc:
+        # UploadError included on purpose: a credential or repository problem inside a transfer or
+        # a fetch must still produce a report, or the job dies without any evidence on the worker.
         report["failure"] = type(exc).__name__  # No raw credential-bearing command output.
     finally:
         stop_and_capture(base, name)

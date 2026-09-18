@@ -952,6 +952,46 @@ For context, not comparison: the extract's own single-feature baseline is 0.6270
 eval split, so the runner's model adds ~0.14 AUC over `initial_problem_category` alone. **No
 agent or harness result exists**, and 0.7691 is a floor for one rather than a finding about one.
 
+### Publication package assembled in its own private repository (2026-09-18)
+
+`earino/austin-911-response` now exists as a **private** repository with the finished package, and
+`v2026.09` carries the dataset as release assets. Nothing is public.
+
+The package carries the construction script, the qualification gate, the materialize and
+clock-offset tools, the benchmark's own runner files copied verbatim with provenance, a download
+tool that restores the runner layout from flat asset names, `measurements.json` holding every
+quoted number with the command that produced it, and the dataset card, data dictionary, licence
+notes and reproduction instructions. `MANIFEST.json` records hashes for **every published file**,
+so a consumer can check what they cloned, not just what they downloaded.
+
+**The transport is new infrastructure.** A worker job with a `transfer` spec moves artifacts
+between releases: each asset is downloaded, verified against its recorded SHA-256, re-uploaded,
+verified again from the server's own digest, then deleted, so peak disk on the worker is one
+asset rather than the dataset. A `fetch` spec downloads published assets into a read-only mount
+at `/data`, which is how a container can measure the *released* bytes without ever holding a
+credential. Both run host-side; the container is never given a token.
+
+**A scope decision, recorded rather than buried.** The staging token is scoped to
+`earino/dataset-factory-staging` alone - it returns 404 on every other repository - so a transfer
+into the dataset repository needs its own credential, now at
+`/opt/data/.secrets/github-publish.token` (0600, from the account's `repo`-scoped token). Source
+reads still use the staging token and **only the target write uses the broader one**. This widens
+what a worker can reach for the duration of a transfer job, so it is stated here and in
+`docs/OPERATIONS.md`; a fine-grained token limited to `earino/austin-911-response` would be
+narrower and is the recommended replacement.
+
+**Two defects found and fixed on the way**, both by running the real thing rather than reasoning
+about it:
+
+1. Writing to a repository the staging token cannot see surfaced as `UploadError`, which
+   `execute()` did not catch - so the worker died with `started` touched and no `execution.json`,
+   and the job looked like it was still running. The credential requirement is now checked at
+   *plan* time, before provisioning, and `UploadError` is caught so a failure still produces a
+   report.
+2. That stuck worker also exercised the interrupted-job guard for real: `retry-upload` produced
+   `failure: "executor-interrupted; job was not rerun"` and the transfer was **not** silently
+   re-run.
+
 ## Research shortlist recorded 2026-09-18
 
 Five candidates created with measured evidence in `candidates/<id>/record.json`
