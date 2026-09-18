@@ -457,6 +457,9 @@ def main(argv=None) -> int:
     parser.add_argument("--target-rate", type=float, default=0.40,
                         help="training-window positive rate the threshold T is frozen at")
     parser.add_argument("--page-size", type=int, default=20000)
+    parser.add_argument("--built-at", default=None,
+                        help="pin built_at_utc (ISO 8601) so a rebuild of an existing artifact "
+                             "is byte-identical; needed to reproduce a published version")
     parser.add_argument("--limit", type=int, default=None,
                         help="cap rows PER SPLIT; for a bounded coordinator exercise only")
     parser.add_argument("--skip-baseline", action="store_true")
@@ -486,7 +489,7 @@ def main(argv=None) -> int:
         "candidate": "austin-911-response",
         "dataset": DATASET,
         "endpoint": f"{BASE}/resource/{DATASET}.json",
-        "built_at_utc": datetime.now(timezone.utc).isoformat(),
+        "built_at_utc": args.built_at or datetime.now(timezone.utc).isoformat(),
         "prediction_question": prediction_question,
         "prediction_time": "At dispatch: the moment the 911 call-taker's ECT screen opens "
                            "(response_datetime). Only fields known then are shipped.",

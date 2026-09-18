@@ -5,7 +5,7 @@
  "domain": "public-safety operations / emergency response",
  "prediction_question": "For a dispatched Austin police 911 call, will a patrol unit reach the caller more than a fixed minutes threshold after the call is dispatched?",
  "prediction_time": "At dispatch: the moment the 911 call-taker's ECT screen opens (response_datetime). Only fields known then may be features. Arrival, closing, priority, mental-health, final-classification and injury fields are excluded.",
- "target_definition": "Binary: portal column response_time (integer seconds) exceeds threshold T. T is chosen once from the measured training-window distribution and frozen in the construction script before any scoring. Leading choice T = 1200 s (20 min): measured positive rate 0.4008 in the training window (response_datetime < 2025-07-01) and 0.3938 over the full series. Not yet frozen in a construction script.",
+ "target_definition": "Binary: portal column response_time (integer seconds) exceeds threshold T. T is frozen before any row is scored: 1200 s (20 minutes), chosen by binary search on the training window only so the training positive rate sits just at or above 0.40 - measured 0.403763 on the built training split against 0.3938 over the full series. Implemented as `late = 1 if response_time > 1200 else 0` in the construction script and recorded in quality.json as threshold_seconds.",
  "sources": [
   {
    "name": "Austin Open Data - APD 911 Calls for Service 2023-2026",

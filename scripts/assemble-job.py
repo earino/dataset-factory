@@ -10,17 +10,21 @@ creates two versions that can drift - and a stale gate is worse than no gate.
 
 This script is the single assembly point. It reads the candidate's own `source/job.json` for
 the job's size and identity, overrides only what a full worker run needs (the container command
-and the sizing that fits the gate), copies the canonical files into an ignored staging
-directory, verifies the result against the worker's own bundle rules, and prints the directory
-to launch:
+and the sizing that fits the job), copies the canonical files into an ignored staging directory,
+verifies the result against the worker's own bundle rules, and prints the directory to launch:
 
     python3 scripts/assemble-job.py austin-911-response
-    sh scripts/scout-factory worker plan .factory/jobs/austin-002/job.json
-    sh scripts/scout-factory worker launch .factory/jobs/austin-002/job.json
+    sh scripts/scout-factory worker plan .factory/jobs/austin-003/job.json
+    sh scripts/scout-factory worker launch .factory/jobs/austin-003/job.json
 
 The job **id comes from the candidate's `source/job.json`**, not from this file. OPERATIONS
 says each attempt gets a new job id, and the first version of this script hardcoded the id in
 two places, which made a second attempt impossible to express.
+
+The `austin-baseline` bundle additionally copies the harness benchmark's own `train.py`,
+`validate.py` and `validate.sh` **verbatim** out of the read-only benchmark clone, and records
+their hashes so the report can prove the runner was not modified. If the clone is absent the
+assembler fails rather than substituting a stand-in.
 
 Nothing here touches the network or the cloud, and the staging directory is regenerated from
 scratch on every run.
@@ -28,7 +32,9 @@ scratch on every run.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import os
 import shutil
 import sys
 from pathlib import Path
@@ -36,9 +42,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 ALLOWED_SUFFIXES = (".py", ".sh", ".json", ".txt", ".toml", ".yaml", ".yml", ".md")
 BUNDLE_LIMIT = 2 * 1024 * 1024
+BENCHMARK = Path(os.environ.get("FACTORY_BENCHMARK_ROOT", "/opt/data/harness_benchmark"))
+RUNNER_TEMPLATE = "task_template"
 
-# Assembled from the candidate's own source/job.json, so the job id lives in exactly one place.
-CANDIDATES = {
+# Bundles keyed by the name you pass on the command line. Each reads its job id and sizing from
+# its own source/job.json, so identity lives in exactly one place.
+BUNDLES = {
+    # Build the extract, then qualify the exact artifact on the worker.
     "austin-911-response": {
         "job_file": "candidates/austin-911-response/source/job.json",
         "files": [
@@ -46,8 +56,6 @@ CANDIDATES = {
             ("run.sh", "candidates/austin-911-response/source/run.sh"),
             ("qualify_dataset.py", "skills/dataset-qualification/scripts/qualify_dataset.py"),
         ],
-        # A full worker run builds the whole extract and then qualifies it, so it needs the
-        # entrypoint that does both and sizing that fits; the small local sample job does not.
         "overrides": {
             "command": ["sh", "/workspace/run.sh"],
             "timeout_minutes": 60,
@@ -56,7 +64,38 @@ CANDIDATES = {
             "max_artifact_mb": 600,
         },
     },
+    # Rebuild the accepted artifact, prove it is the accepted artifact, then run the benchmark's
+    # own training and validation contract against it. The contract only - no agent harness.
+    "austin-baseline": {
+        "job_file": "candidates/austin-911-response/baseline/source/job.json",
+        "files": [
+            ("build.py", "candidates/austin-911-response/source/build.py"),
+            ("run.sh", "candidates/austin-911-response/baseline/source/run.sh"),
+            ("materialize.py", "candidates/austin-911-response/baseline/source/materialize.py"),
+            ("verify_artifact.py", "candidates/austin-911-response/baseline/source/verify_artifact.py"),
+            ("report.py", "candidates/austin-911-response/baseline/source/report.py"),
+            ("expected_artifact.json",
+             "candidates/austin-911-response/baseline/expected_artifact.json"),
+        ],
+        # Copied verbatim from the read-only harness benchmark clone.
+        "runner_files": ["train.py", "validate.py", "validate.sh"],
+        "overrides": {
+            "command": ["sh", "/workspace/run.sh"],
+            "timeout_minutes": 60,
+            "lifetime_minutes": 120,
+            "max_disk_mb": 3072,
+            "max_artifact_mb": 50,
+        },
+    },
 }
+
+
+def sha256_of(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1 << 20), b""):
+            digest.update(block)
+    return digest.hexdigest()
 
 
 def load_job(spec: dict) -> dict:
@@ -66,8 +105,8 @@ def load_job(spec: dict) -> dict:
         raise SystemExit(f"candidate job file is missing: {spec['job_file']}")
     job = json.loads(path.read_text())
     job.update(spec["overrides"])
-    if job.get("candidate") not in CANDIDATES:
-        raise SystemExit(f"job candidate {job.get('candidate')!r} is not assembled here")
+    if not (ROOT / "candidates" / str(job.get("candidate"))).is_dir():
+        raise SystemExit(f"job candidate {job.get('candidate')!r} has no candidate directory")
     return job
 
 
@@ -92,12 +131,12 @@ def check_bundle(directory: Path) -> int:
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description="Assemble a worker job directory")
-    parser.add_argument("candidate", nargs="?", default="austin-911-response",
-                        choices=sorted(CANDIDATES),
-                        help="whose source/job.json supplies the job id and sizing")
+    parser.add_argument("bundle", nargs="?", default="austin-911-response",
+                        choices=sorted(BUNDLES),
+                        help="which bundle to assemble; the job id comes from its source/job.json")
     args = parser.parse_args(argv)
 
-    spec = CANDIDATES[args.candidate]
+    spec = BUNDLES[args.bundle]
     job = load_job(spec)
     target = ROOT / ".factory" / "jobs" / job["id"]
     if target.exists():
@@ -111,10 +150,32 @@ def main(argv=None) -> int:
             raise SystemExit(f"canonical source is missing: {relative}")
         shutil.copyfile(source, target / name)
         recorded.append({"bundled_as": name, "source": relative,
-                         "bytes": source.stat().st_size})
+                         "bytes": source.stat().st_size, "sha256": sha256_of(source)})
+
+    runner = {}
+    if spec.get("runner_files"):
+        # Taken from the benchmark clone itself. Never vendored, never re-implemented: if the
+        # clone is missing the bundle cannot be assembled, because a substitute would not be the
+        # runner whose contract this job claims to exercise.
+        if not BENCHMARK.is_dir():
+            raise SystemExit(f"the harness benchmark clone is missing at {BENCHMARK}; "
+                             f"set FACTORY_BENCHMARK_ROOT or skip this bundle")
+        for name in spec["runner_files"]:
+            source = BENCHMARK / RUNNER_TEMPLATE / name
+            if not source.is_file():
+                raise SystemExit(f"runner file is missing from the benchmark clone: {source}")
+            shutil.copyfile(source, target / name)
+            digest = sha256_of(source)
+            record = {"bundled_as": name, "source": str(source),
+                      "bytes": source.stat().st_size, "sha256": digest}
+            recorded.append(record)
+            runner[name] = digest
+        (target / "runner_files.json").write_text(json.dumps(runner, indent=1) + "\n")
 
     job["source_files"] = recorded
     (target / "job.json").write_text(json.dumps(job, indent=1) + "\n")
+    # One source of truth for the id, readable inside the container, so no script has to pin it.
+    (target / "job_id.txt").write_text(job["id"] + "\n")
 
     total = check_bundle(target)
     print(json.dumps({
@@ -122,6 +183,7 @@ def main(argv=None) -> int:
         "job_id": job["id"],
         "bundle_bytes": total,
         "files": recorded,
+        "runner_files": runner,
         "next": [
             f"sh scripts/scout-factory worker plan {target.relative_to(ROOT)}/job.json",
             f"sh scripts/scout-factory worker launch {target.relative_to(ROOT)}/job.json",

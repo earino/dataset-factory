@@ -63,7 +63,8 @@ def fixture_label(index: int) -> str:
     return "0" if index % 4 == 0 else "1"
 
 
-def build_austin_fixture(out_dir: str, *, spread_days: bool = True) -> tuple[Path, dict]:
+def build_austin_fixture(out_dir: str, *, spread_days: bool = True,
+                         built_at: str | None = None) -> tuple[Path, dict]:
     """Run the real construction script against a fake API.
 
     Forty rows per split, one per calendar day when `spread_days`, with the label
@@ -98,7 +99,8 @@ def build_austin_fixture(out_dir: str, *, spread_days: bool = True) -> tuple[Pat
                                     "training_rate_at_threshold": 0.75, "target_rate": 0.4}), \
          patch.object(austin_build, "stream_rows", side_effect=batches), \
          contextlib.redirect_stdout(io.StringIO()):
-        assert austin_build.main(["--out", out_dir]) == 0
+        argv = ["--out", out_dir] + (["--built-at", built_at] if built_at else [])
+        assert austin_build.main(argv) == 0
     manifest = json.loads((Path(out_dir) / "manifest.json").read_text())
     return Path(out_dir), manifest
 
@@ -331,6 +333,22 @@ class GateOnGeneratedOutput(unittest.TestCase):
         self.assertTrue(status["splits.no_cross_split_entities"])
         # But it exceeds the count the build declared, so it is refused.
         self.assertFalse(status["splits.duplicate_entities_within_splits"])
+
+    def test_pinning_built_at_makes_a_rebuild_reproducible(self):
+        """meta.json embeds a build timestamp, so reproducing an artifact needs it pinned.
+
+        The first baseline attempt rebuilt every split file byte-identically and still failed
+        verification, because meta.json differed only in `built_at_utc`. `--built-at` makes the
+        rebuild identical; without it the timestamp is fresh, which is why the pin is meaningful.
+        """
+        pinned = "2026-01-02T03:04:05.678901+00:00"
+        with tempfile.TemporaryDirectory() as first, tempfile.TemporaryDirectory() as second:
+            out_first, _ = build_austin_fixture(first)
+            out_second, _ = build_austin_fixture(second, built_at=pinned)
+            fresh = json.loads((out_first / "meta.json").read_text())["built_at_utc"]
+            fixed = json.loads((out_second / "meta.json").read_text())["built_at_utc"]
+        self.assertNotEqual(fresh, pinned, "the default must be a fresh timestamp")
+        self.assertEqual(fixed, pinned, "--built-at must be honoured in meta.json")
 
     def test_inflating_the_clustered_event_count_is_rejected(self):
         """The clustered count is a declaration too, so it is recomputed from the rows."""

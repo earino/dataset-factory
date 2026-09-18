@@ -888,6 +888,39 @@ gate-and-declaration only.
 Not done, and not implied by any of the above: no model comparison, no headroom figure, and
 **nothing published** - a public release still requires human review.
 
+### Publication package prepared for review (2026-09-18)
+
+`release/austin-911-response/` holds the dataset card, data dictionary, licence and attribution
+notes, reproduction instructions, the release manifest and checksums, and the release-notes
+draft - written to the checklist in `templates/dataset/README.md`. **Nothing has been
+published**; no public repository or release exists.
+
+Generated from recorded evidence rather than retyped: `scripts/release-manifest.py` builds
+`MANIFEST.json` and `SHA256SUMS` from the accepted artifact's hashes and the candidate record, so
+the manifest cannot drift from what was measured.
+
+**Three decisions a reviewer needs to make:**
+
+1. **The construction code licence.** The source data is Public Domain, which says nothing about
+   the code that derives it. `LICENSE.md` flags this as an open choice (MIT / Apache-2.0 / CC0 /
+   reproduction instructions only) rather than defaulting silently, because it is a legal
+   decision.
+2. **Shipping the labelled holdout publicly.** The project template permits it; it must simply
+   stay outside an evaluated agent's workspace. Alternative: ship the holdout only on request.
+3. **The repository name.** The plan assumes `earino/austin-911-response`.
+
+**Publication is not automated past the plan.** `scripts/publish-dataset.py` prints exactly what
+would happen and does nothing else; `--stream-test` verifies that all five artifact files resolve
+to concrete staged assets (through the worker's own `manifest.json`, not assumed ordering). The
+**upload step is deliberately not implemented**: moving ~131 MB from a private release to a
+public one needs either a machine that can hold those bytes or a worker-side publish path, and
+shipping an unverified pipe that claims to publish would be worse than shipping none. The five
+steps are written out in the module docs for when the decision is made.
+
+Two facts learned the hard way and recorded in the tooling: `gh release download` cannot fetch
+**draft** release assets, and `releases/tags/<tag>` returns 404 for a draft even though the
+release exists - so the staging release is referenced by its **id**.
+
 ## Research shortlist recorded 2026-09-18
 
 Five candidates created with measured evidence in `candidates/<id>/record.json`
