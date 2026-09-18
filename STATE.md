@@ -100,9 +100,75 @@ registration is confirmed rather than assumed. `config/local.json` now carries
 /opt/data/.ssh/scout_worker_ed25519`. Launches stay disabled and the allowance
 stays at zero.
 
-Remaining prerequisites for a paid launch: the Actions cleanup secret/variable and
-enablement flag, an allowance with allowed server types and locations, and cleanup
-verification.
+Remaining prerequisites for a paid launch: an allowance with allowed server types
+and locations, an observed scheduled cleanup run, and verification that the sweeper
+deletes an expired server. The cleanup secret and variables are configured and the
+manual dispatch executes successfully.
+
+## Primary expiry cleanup configured 2026-09-18 (fifth session)
+
+Actions secret `HCLOUD_TOKEN` set from `/opt/data/.secrets/hetzner.token` using file
+input, so the value never appeared on a command line or in output. Repository
+variables set: `FACTORY_PROJECT` = `earino-dataset-factory` (the exact `project`
+value in `config/local.json`) and `FACTORY_CLEANUP_ENABLED` = `true`. The local
+policy was left untouched: `enabled` false, `cleanup_configured` false,
+`monthly_budget_eur` 0, empty `server_types`.
+
+### Manual dispatch - verified executing, not skipped
+
+| Field | Value |
+|---|---|
+| URL | https://github.com/earino/dataset-factory/actions/runs/35337787612 |
+| Event | `workflow_dispatch` |
+| Status | completed / success |
+| Created (UTC) | 2026-09-18T11:04:09Z |
+| Updated (UTC) | 2026-09-18T11:04:19Z |
+| Job | `cleanup` - success, started 11:04:13Z |
+| Step | "Delete only expired project workers and orphaned job IPs" - success |
+
+The job's own output:
+
+```json
+{"deleted_servers": [], "deleted_primary_ips": [], "errors": []}
+```
+
+**What that proves, and what it does not.** Proven: the secret and variable wiring,
+the workflow's enablement gate (`vars.FACTORY_CLEANUP_ENABLED == 'true'` now
+passes), execution on a GitHub runner, and a successful authenticated Hetzner query
+issued from GitHub's infrastructure. An empty `errors` list is meaningful here: a
+bad or missing token would have surfaced there.
+
+**Not proven: deletion of an actually expired server.** This project has never
+contained a server, so the deletion path - non-empty `deleted_servers`, the
+ownership re-check before delete, and labeled primary-IP cleanup - is entirely
+untested. Verifying it is a smoke-cycle step, not a cleanup-scheduler step.
+
+### Scheduled run - pending at time of writing
+
+No `schedule`-event run appeared between enablement (2026-09-18T11:04Z) and
+2026-09-18T11:15Z, despite cron minutes 7, 22, 37 and 52. GitHub documents that the
+`schedule` event "can be delayed during periods of high loads of GitHub Actions
+workflow runs", that high load includes the start of every hour, and that queued
+jobs "may be dropped" under sufficient load
+(<https://docs.github.com/en/actions/reference/events-that-trigger-workflows#schedule>).
+Scheduled workflows run in UTC on the default branch, and here the workflow file is
+already on `main`.
+
+Observed cadence is also much looser than configured. Before enablement the
+workflow produced `schedule` runs at 2026-09-17T19:19Z, 22:16Z, 2026-09-18T00:28Z,
+05:07Z and 09:53Z - roughly every two to four hours, not every fifteen minutes.
+Those runs were correctly `skipped` by the gate.
+
+Scheduler fire time, and therefore the first genuinely scheduled execution, remains
+**unverified**. The manual dispatch above stands on its own as execution evidence.
+
+### Open item for the operator
+
+With the gate open, each run executes and bills a minimum of one Actions minute. At
+the configured 96 runs/day that is roughly 2,880 minutes per month, against GitHub
+Free's 2,000 minutes per month for private repositories. Widening the interval to 30
+or 60 minutes, or confirming a paid allowance, should be decided before this is
+relied on.
 
 ## Research shortlist recorded 2026-09-18
 
