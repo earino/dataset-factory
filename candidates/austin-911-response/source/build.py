@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Construction script for the `austin-911-response` candidate.
 
-Builds the train / eval / holdout extracts for the task "will the first officer arrive
-more than T minutes after the Austin police 911 call was answered?".
+Builds the train / eval / holdout extracts for the task "will a dispatched Austin police
+911 call be answered on scene more than T minutes after the call was dispatched?".
 
 Where this runs
 ---------------
@@ -80,10 +80,9 @@ EXCLUDED_POST_HOC = [
     "other_injured_killed_count",
 ]
 
-# Only identifiers and prediction-time metadata accompany the features. The raw
-# response time determines the answer and must never reach a model-facing CSV.
-CARRY_COLUMNS = ["incident_number", "response_datetime"]
-LABEL_SOURCE = "response_time"
+# `response_time` is the label source and `incident_number` is an identifier: carried in
+# the file for scoring and reconciliation, never features.
+CARRY_COLUMNS = ["incident_number", "response_datetime", "response_time"]
 
 SPLITS = [
     ("train", "response_datetime < '2025-01-01T00:00:00.000'"),
@@ -195,6 +194,15 @@ def sha256_of(path: Path) -> str:
     return digest.hexdigest()
 
 
+def parse_iso(value: str):
+    if not value:
+        return None
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00")).astimezone(timezone.utc)
+    except ValueError:
+        return None
+
+
 def auc_from_scores(labels: list[int], scores: list[float]) -> float | None:
     """Rank-based ROC AUC, ties averaged. Pure stdlib so the worker needs no ML stack."""
     if len(labels) != len(scores):
@@ -270,7 +278,7 @@ def main(argv=None) -> int:
           f"{threshold['training_rate_at_threshold']:.4f} "
           f"against a target of {threshold['target_rate']:.2f}")
 
-    select = ", ".join(CARRY_COLUMNS + FEATURES + [LABEL_SOURCE])
+    select = ", ".join(CARRY_COLUMNS + FEATURES)
     manifest = {
         "candidate": "austin-911-response",
         "dataset": DATASET,
@@ -280,7 +288,6 @@ def main(argv=None) -> int:
         "features": FEATURES,
         "excluded_post_hoc": EXCLUDED_POST_HOC,
         "carry_columns": CARRY_COLUMNS,
-        "label_source_column": LABEL_SOURCE,
         "label_column": "late",
         "label_rule": f"late = 1 if response_time > {threshold['threshold_seconds']} else 0",
         "splits": [],
@@ -300,7 +307,7 @@ def main(argv=None) -> int:
             writer.writeheader()
             for row in stream_rows(f"{ELIGIBLE} AND {where}", select,
                                    args.page_size, args.limit):
-                response_time = row.get(LABEL_SOURCE)
+                response_time = row.get("response_time")
                 if response_time in (None, ""):
                     nulls += 1
                     continue

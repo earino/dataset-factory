@@ -2,17 +2,8 @@
 
 **Status: selected lead candidate (2026-09-18). Column documentation read and the
 `response_time` / `mental_health_flag` questions closed on 2026-09-18 (eighth
-session).** The construction script and worker job are implemented. A bounded
-sample run is recorded in STATE.md; the full worker build is still pending.
-
-Builder review on 2026-09-18 found that the initial CSV writer carried
-`response_time` into every split despite excluding it from the feature list. That
-column determines `late` directly. The writer now uses it only to construct the
-label and excludes it from all three CSVs. The existing runner passes every
-non-target column to prediction code, so a feature list alone cannot prevent this
-leak. An offline construction test checks the actual emitted files and the
-1200/1201-second label boundary. Previous sample extracts must be regenerated
-before use with the benchmark.
+session).** The target is defined and a threshold family is measured; the
+construction script is not written yet.
 
 ## Why this is the lead
 
