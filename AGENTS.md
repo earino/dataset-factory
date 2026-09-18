@@ -72,6 +72,15 @@ lost - one such command in this project's history deleted `candidates/` and `tes
 Generated output directories carry an ownership marker and are only cleared through it;
 anything unfamiliar is a refusal, not a cleanup.
 
+## After every push, check CI for that exact commit
+
+CI runs `.github/workflows/check.yml` (the test suite plus `factory doctor`). Once a push
+lands, read the result for **that commit** - `gh run list --commit <sha>` - and fix failures
+before reporting the change complete, including failures caused by the tests depending on this
+host's private configuration, which a clean checkout does not have. If CI is still pending or
+is blocked by something outside this repository, say so explicitly rather than implying the
+change passed. Verify suite changes in a clean clone, not only here.
+
 ## The coordinator is small
 
 This Hermes instance has **1.9 GiB RAM and about 6 GB persistent disk**. Keep only code, notes, job

@@ -427,9 +427,21 @@ class SafeOutputHandling(unittest.TestCase):
             self.assertIn(".git", str(caught.exception))
             self.assertTrue((checkout / "code.py").is_file())
 
-    def test_refuses_a_protected_path(self):
+    def test_refuses_every_protected_path(self):
+        # Every entry is refused whether or not it exists on this machine, so the behaviour
+        # does not depend on the host.
+        for protected in austin_build.FORBIDDEN_OUT:
+            with self.subTest(path=protected):
+                with self.assertRaises(SystemExit) as caught:
+                    austin_build.prepare_output(Path(protected))
+                self.assertIn("protected path", str(caught.exception))
+
+    def test_refuses_a_protected_path_that_does_not_exist_here(self):
+        # `/opt/data` exists on the hosted coordinator and not in a clean checkout; the
+        # refusal must not depend on that.
+        missing = Path("/opt/data")
         with self.assertRaises(SystemExit) as caught:
-            austin_build.prepare_output(Path("/opt/data"))
+            austin_build.prepare_output(missing)
         self.assertIn("protected path", str(caught.exception))
 
     def test_clears_only_its_own_generated_entries(self):

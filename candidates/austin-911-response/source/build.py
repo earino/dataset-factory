@@ -147,13 +147,18 @@ FORBIDDEN_OUT = ("/", "/etc", "/usr", "/var", "/opt/data", "/root", "/home")
 def prepare_output(out: Path) -> None:
     """Clear a previously generated extract, or refuse.
 
-    Refuses to touch a directory this script did not create, a directory containing a
-    `.git`, or a system path. A destructive default is how uncommitted work gets lost.
+    Refuses a protected path, a directory containing a `.git`, anything that is not a
+    directory, and a non-empty directory this script did not create. A destructive default is
+    how uncommitted work gets lost.
+
+    The protected-path check runs *before* the existence check on purpose: a protected path
+    must be refused whether or not it happens to exist on this machine, so the behaviour does
+    not depend on which host is running.
     """
     resolved = out.expanduser()
+    if resolved.resolve() in {Path(p).resolve() for p in FORBIDDEN_OUT}:
+        raise SystemExit(f"refusing --out {resolved}: that is a protected path")
     if resolved.exists():
-        if resolved.resolve() in {Path(p).resolve() for p in FORBIDDEN_OUT}:
-            raise SystemExit(f"refusing --out {resolved}: that is a protected path")
         if (resolved / ".git").exists():
             raise SystemExit(f"refusing --out {resolved}: it contains a .git directory")
         if not resolved.is_dir():

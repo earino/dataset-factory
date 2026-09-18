@@ -20,6 +20,10 @@ sys.path.insert(0, str(ROOT))
 
 from factory import worker  # noqa: E402
 
+# A committed policy for tests. `config/local.json` is gitignored and private, so CI has no
+# policy at all; without this the plan assertions would depend on the coordinator's machine.
+CI_POLICY = ROOT / "tests" / "policy.ci.json"
+
 
 def load_assemble_module():
     path = ROOT / "scripts" / "assemble-job.py"
@@ -73,19 +77,33 @@ class AssembledBundle(unittest.TestCase):
         self.assertIn("exit \"$qual_status\"", script)
         self.assertIn("cp \"$OUT/summary.json\" /output/summary.json", script)
 
-    def test_the_job_fits_the_configured_allowance(self):
-        policy_path = ROOT / "config" / "local.json"
-        if not policy_path.is_file():
-            self.skipTest("no local policy on this machine")
-        policy = json.loads(policy_path.read_text())
+    def test_the_job_fits_the_committed_test_policy(self):
+        # `config/local.json` is private and gitignored, so a clean checkout has no policy at
+        # all. The committed test policy keeps this assertion meaningful on CI.
+        policy = json.loads(CI_POLICY.read_text())
         self.assertIn(self.job["server_type"], policy["server_types"])
         self.assertIn(self.job["location"], policy["allowed_locations"])
         self.assertLessEqual(self.job["lifetime_minutes"], policy["max_lifetime_minutes"])
+        self.assertLessEqual(self.job["timeout_minutes"], policy["max_job_minutes"])
+
+    def test_the_committed_policy_stays_compatible_with_the_hosted_one(self):
+        hosted = ROOT / "config" / "local.json"
+        if not hosted.is_file():
+            self.skipTest("no hosted policy on this machine")
+        local = json.loads(hosted.read_text())
+        ci = json.loads(CI_POLICY.read_text())
+        for key in ("allowed_locations", "server_types", "max_lifetime_minutes",
+                    "cleanup_grace_minutes"):
+            with self.subTest(key=key):
+                self.assertEqual(ci[key], local[key],
+                                 f"tests/policy.ci.json has drifted from config/local.json "
+                                 f"on {key}")
 
     def test_plan_is_offline_and_reports_the_reservation(self):
         result = subprocess.run(
-            ["sh", "scripts/scout-factory", "worker", "plan",
-             f"{self.report['job_directory']}/job.json"],
+            ["sh", "scripts/scout-factory", "worker",
+             "--config", str(CI_POLICY.relative_to(ROOT)),
+             "plan", f"{self.report['job_directory']}/job.json"],
             cwd=ROOT, capture_output=True, text=True, timeout=120)
         self.assertEqual(result.returncode, 0, result.stderr)
         plan = json.loads(result.stdout)
@@ -93,6 +111,7 @@ class AssembledBundle(unittest.TestCase):
         self.assertFalse(plan["enabled"], "launches stay disabled until cleanup is verified")
         self.assertEqual(plan["reserved_hours"], 3)
         self.assertEqual(plan["reservation_eur"], "0.24")
+        self.assertGreater(plan["source_bytes"], 0)
 
 
 if __name__ == "__main__":
