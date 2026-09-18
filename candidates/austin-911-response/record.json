@@ -24,6 +24,19 @@
     "Re-confirmed 2026-09-18 directly from GET https://datahub.austintexas.gov/api/views/e687-fx2y.json: \"license\": {\"name\": \"Public Domain\"}, view name 'APD 911 Calls for Service 2023-2026'."
   ],
   "construction_script": "candidates/austin-911-response/source/build.py (stdlib only, runs on a worker; --limit for a bounded coordinator exercise)",
+  "construction_output": "The runner's layout: public/train.csv, public/eval.csv, private/holdout.csv and meta.json, each split with a SHA-256 in manifest.json. The raw response_time is fetched to derive the label and is excluded from every CSV (see leakage_fix).",
+  "leakage_fix": {
+    "defect": "The first version of the script carried response_time into all three CSVs via CARRY_COLUMNS. It was absent from FEATURES, so every declared list looked correct, but the runner treats every non-target column as model input (train.py excludes only id_columns and the target; validate.py drops only the target).",
+    "reproduced_by": "reading the emitted header of a bounded build, not the declared lists",
+    "fix": "response_time is now LABEL_SOURCE, removed from CARRY_COLUMNS, listed in EXCLUDED_POST_HOC, and recorded in the manifest as label_source_column while being excluded from shipped_columns.",
+    "guarded_by": "tests/test_austin_build.py (ConstructedFiles, RunnerContract) and tests/test_qualification_gate.py, which replays the bug and asserts the gate rejects it",
+    "verified_on": "2026-09-18"
+  },
+  "qualification": {
+    "gate": "skills/dataset-qualification/scripts/qualify_dataset.py",
+    "result": "the generated extract passes every check the gate is responsible for; only the split-capacity minimums are unmet, because the local fixture is 40 rows per split",
+    "note": "The full worker extract has not been built, so its base rates and positive-event counts are still unmeasured. The gate must be re-run on the real extract before any score from it is reported."
+  },
   "split_strategy": "Temporal by response_datetime: train < 2025-01-01, eval 2025, holdout >= 2026-01-01. No random split. Measured training window is 572,180 rows, exactly the sum of the measured 2023 (286,145) and 2024 (286,035) counts.",
   "worker_job": {
     "job_file": "candidates/austin-911-response/source/job.json",

@@ -1,0 +1,62 @@
+{
+ "name": "qualification-fixture",
+ "task": {
+  "question": "Will the first officer arrive more than 20 minutes after the call was answered?",
+  "prediction_time": "When the call-taker's screen opens (response_datetime)."
+ },
+ "target": "late",
+ "positive_label": 1,
+ "threshold_seconds": 1200,
+ "features": [
+  "initial_problem_category",
+  "sector",
+  "priority_level"
+ ],
+ "features_documented_at": "prediction_time",
+ "carry_columns": [
+  "response_datetime"
+ ],
+ "id_columns": [
+  "incident_number"
+ ],
+ "high_cardinality_columns": [],
+ "label_source_columns": [
+  "response_time"
+ ],
+ "post_hoc_columns": [
+  "priority_level",
+  "response_time"
+ ],
+ "measurements": [
+  {
+   "column": "response_time",
+   "unit": "seconds",
+   "frame": "portal column, begins when the 911 call was answered"
+  }
+ ],
+ "external_threshold": {
+  "value": 1200,
+  "unit": "seconds",
+  "source": "20 minutes, frozen from the training window"
+ },
+ "positive_events": {
+  "eval": {
+   "positives": 7,
+   "distinct_events": 30
+  },
+  "holdout": {
+   "positives": 45,
+   "distinct_events": 30
+  }
+ },
+ "split_boundaries": {
+  "train": "response_datetime < 2025-01-01",
+  "eval": "response_datetime >= 2026-01-01",
+  "holdout": "response_datetime >= 2026-01-01"
+ },
+ "splits": {
+  "train": "public/train.csv",
+  "eval": "public/eval.csv",
+  "holdout": "public/holdout.csv"
+ }
+}

@@ -20,7 +20,9 @@ if spec is None or spec.loader is None:
     raise RuntimeError(f"cannot load datum_check.py from {CANDIDATE}")
 datum_check = importlib.util.module_from_spec(spec)
 sys.modules["noaa_datum_check"] = datum_check
-spec.loader.exec_module(datum_check)
+# Compile from bytes so a test run leaves no bytecode cache in the candidate directory.
+exec(compile((CANDIDATE / "datum_check.py").read_bytes(),
+             str(CANDIDATE / "datum_check.py"), "exec"), datum_check.__dict__)
 
 
 class DatumRule(unittest.TestCase):

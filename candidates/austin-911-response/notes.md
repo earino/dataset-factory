@@ -2,8 +2,34 @@
 
 **Status: selected lead candidate (2026-09-18). Column documentation read and the
 `response_time` / `mental_health_flag` questions closed on 2026-09-18 (eighth
-session).** The target is defined and a threshold family is measured; the
-construction script is not written yet.
+session). The construction script and worker job are implemented (ninth session); the
+label-source leak found in review is fixed and guarded (tenth session). The full worker
+build is still pending, so no base rate or headroom figure from the real extract exists
+yet.**
+
+## The label-source leak, and why the declared lists missed it
+
+The first version of the construction script fetched `response_time` to derive `late` and
+then wrote it into all three CSVs, because it was listed in `CARRY_COLUMNS`. It was absent
+from `FEATURES`, so every declared list in the script and the manifest looked correct while
+the shipped file contained the answer.
+
+**A feature list cannot prevent this.** The runner treats every column other than the
+target as model input:
+
+- `task_template/train.py`: `feature_cols = [c for c in train.columns if c not in ID_COLS + [TARGET]]`
+- `task_template/validate.py`: hands `predict_proba` the full frame with only the target dropped
+
+So the only control that works is not shipping the column. `response_time` is now
+`LABEL_SOURCE`: fetched from the API, used to compute `late`, and excluded from every CSV.
+It stays visible in `manifest.json` as `label_source_column` and in `excluded_post_hoc` for
+provenance, and `shipped_columns` is asserted not to contain it.
+
+Three guards now exist, and each was checked against a deliberately re-shipped leak:
+`ConstructedFiles` and `RunnerContract` in `tests/test_austin_build.py` inspect the files
+the writer actually produced, and `tests/test_qualification_gate.py` runs the project's
+`dataset-qualification` gate against them - the same gate that rejects a fixture shipping
+`response_time` while accepting the corrected one.
 
 ## Why this is the lead
 

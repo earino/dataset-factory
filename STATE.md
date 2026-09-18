@@ -1,7 +1,7 @@
 # Current state
 
-Updated: 2026-09-18 (ninth entry; Austin construction script and worker job prepared,
-NOAA validation and split assessment, smoke-order correction).
+Updated: 2026-09-18 (tenth entry; builder review fixes re-implemented and validated, and
+the dataset-qualification gate created, demonstrated and installed).
 
 ## Objective
 
@@ -473,6 +473,96 @@ server and its job-owned IP**. Expiry cleanup is a separate later test with its 
 The earlier wording allowed the sequence to read as if an expired-server deletion had to be
 observed before any worker could launch, which is unreachable: the only way to create an
 expired worker is to launch one.
+
+## Builder review fixes re-implemented, and the qualification gate added (tenth session)
+
+`main` was pulled through `0c8eb7a`. The builder's fix (`37f36c2`) had been reverted by
+`0c8eb7a`, so the defects it described are re-diagnosed, fixed and validated here. All three
+were reproduced before anything was changed.
+
+### 1. Austin's CSVs contained `response_time`, which determines `late`
+
+Reproduced by reading the emitted file rather than the declared lists: the header of
+`.factory/austin-smoke/train.csv` was
+`incident_number,response_datetime,response_time,...`. The column was absent from `FEATURES`
+and present in `CARRY_COLUMNS`, and every declared list still looked correct.
+
+`response_time` is now `LABEL_SOURCE`, is **not** in `CARRY_COLUMNS`, is listed in
+`EXCLUDED_POST_HOC`, and is recorded in the manifest as `label_source_column` for
+provenance while being excluded from `shipped_columns`. It is still selected from the API -
+without it the label cannot be derived - and never written.
+
+### 2. A host-timezone-dependent helper
+
+`parse_iso` was dead code, used only by its own test, and did
+`datetime.fromisoformat(value).astimezone(timezone.utc)` on a timezone-free string, which
+interprets it in the **host** timezone. Reproduced: the test passes under `TZ=UTC` and
+`TZ=America/Los_Angeles` and fails under `TZ=Asia/Tokyo`, where
+`2025-01-01T00:00:38.000` becomes `2024-12-31T15:00:38Z` and the year assertion fails.
+
+Removed, with a test asserting it stays removed and that the construction contains no
+`fromisoformat`, `astimezone` or `datetime.now()`. The construction itself is timezone-free:
+splits are Socrata predicates on literal timestamps and the source strings are written
+through unchanged.
+
+### 3. Test imports created caches inside the worker source directory
+
+Reproduced by running the suite with bytecode writing enabled (this host sets
+`PYTHONDONTWRITEBYTECODE=1`, which hid it): the test loader's `exec_module` created
+`candidates/austin-911-response/source/__pycache__`, which then made
+`test_job_directory_contains_only_bundleable_source` fail and made the worker refuse the
+job outright - `factory: Job directory must contain only explicit source files, no hidden
+files/caches`. Both test modules now load their subject with `exec(compile(...))`, and
+`tests/test_repo_hygiene.py` guards every candidate job directory against caches, symlinks,
+disallowed suffixes and the 2 MiB bundle cap.
+
+### Test coverage added
+
+- `tests/test_austin_build.py` rewritten: the writer is executed and the **actual generated
+  files** are inspected - runner layout, exact column set, the label source absent from every
+  header, labels at 1200 s and 1201 s, checksums that match, and a rebuild that clears stale
+  output.
+- A runner-contract class encodes how `../harness_benchmark` really reads the extract
+  (`feature_cols = every column except id_columns and the target`; `validate.py` drops only
+  the target) and asserts that the runner's own feature selection exposes no answer source
+  and that no shipped column reconstructs the label.
+- `tests/test_qualification_gate.py` runs the gate against those generated files, and
+  replays the original bug by re-shipping `response_time` to prove the gate rejects it.
+- **89 tests pass** with bytecode writing **enabled** and under `TZ=Asia/Tokyo`, `TZ=UTC`
+  and `TZ=America/Los_Angeles`.
+
+### The dataset-qualification gate
+
+`skills/dataset-qualification/` is versioned in this repository and symlinked into Hermes at
+`~/.hermes/skills/research/dataset-qualification`, so it also loads from the skill list. It
+gates five things across 25 named checks: leakage, prediction timing, units and reference
+frames, temporal split capacity, and runner compatibility. Run it with
+
+```bash
+python3 skills/dataset-qualification/scripts/qualify_dataset.py <dataset-dir>
+python3 skills/dataset-qualification/scripts/qualify_dataset.py --selftest
+```
+
+**Demonstrated:** the broken fixture is rejected with 9 named failures - including
+`leakage.answer_source_absent`, `leakage.no_single_column_determines_the_target`,
+`timing.no_post_hoc_feature`, `units.known_event_fixture_recorded`,
+`splits.windows_distinct` and `runner.layout` - and the corrected fixture passes all 24
+checks. `--selftest` asserts both verdicts, so the demonstration is reproducible rather
+than a pasted transcript. Austin is used as the leakage and runner worked example; NOAA as
+the units/datums worked example, including the requirement for a known-event fixture.
+
+`AGENTS.md` gained a short section telling a session when to invoke the gate.
+`open-data-source-vetting` (the Hermes-side skill) gained a handoff paragraph pointing at
+it when construction completes.
+
+### One self-inflicted incident, recorded
+
+While clearing bytecode caches, an over-broad `rm -rf candidates tests ...` deleted the
+`candidates/` and `tests/` directories. Everything tracked was restored with
+`git checkout -- candidates tests`; two uncommitted files (`source/build.py` and
+`tests/test_austin_build.py`) were re-written. No measured evidence was lost, because every
+result of the prior session was already committed. The lesson is recorded in the report:
+scope deletion commands to exact paths.
 
 ## Research shortlist recorded 2026-09-18
 

@@ -28,6 +28,25 @@ resuming. `PROJECT.md` supersedes conflicting requirements in the original
 - Distinguish measured results from estimates. Infrastructure failures do not
   prove that a dataset is unsuitable. Never invent measurements or references.
 
+## Qualify a dataset before quoting a number
+
+When a construction script has produced files that will be scored, benchmarked or
+published - and **before** any AUC, base rate or headroom figure taken from them is
+reported - run the `dataset-qualification` skill. It gates the five things that make a
+constructed dataset unusable in a way that looks like a result: leakage (a shipped column
+that determines the label), prediction timing (post-hoc fields presented as features),
+units and reference frames, temporal splits that cannot carry a score, and compatibility
+with the runner's input contract.
+
+```bash
+python3 skills/dataset-qualification/scripts/qualify_dataset.py <dataset-dir>
+python3 skills/dataset-qualification/scripts/qualify_dataset.py --selftest
+```
+
+A failing check names the column, split or declaration responsible. The skill is versioned
+here at `skills/dataset-qualification/` and is also installed into Hermes as a normal skill,
+so it loads from the skill list without this repository being consulted.
+
 ## The coordinator is small
 
 This Hermes instance has **1.9 GiB RAM and about 6 GB persistent disk**. Keep only code, notes, job

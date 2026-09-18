@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Construction script for the `austin-911-response` candidate.
 
-Builds the train / eval / holdout extracts for the task "will a dispatched Austin police
-911 call be answered on scene more than T minutes after the call was dispatched?".
+Builds the train / eval / holdout extracts for the task "will the first officer arrive
+more than T minutes after the Austin police 911 call was answered?".
 
 Where this runs
 ---------------
@@ -12,15 +12,25 @@ exercise that proves the script works without pulling the whole series.
 
 The script is stdlib-only, mirroring the rest of the factory code.
 
-Method
-------
-1. Freeze the threshold T from the **training window alone**, by binary-searching the
-   Socrata aggregate so the training positive rate is as close as possible to
-   `--target-rate` (default 0.40). Only COUNT queries are used, so no rows are fetched.
-2. Page the series in `incident_number` order (unique, so paging is stable) and write each
-   row to the split its `response_datetime` belongs to.
-3. Record per-file SHA-256 checksums, row counts, the positive rate per split, and a
-   simple category-rate baseline with its AUC.
+Output layout - the existing runner's contract
+----------------------------------------------
+The extracts are written in the layout `../harness_benchmark` consumes, so a constructed
+dataset can be handed to the runner without a conversion step:
+
+    <out>/public/train.csv      labeled training data   (copied into the agent's workdir)
+    <out>/public/eval.csv       labeled evaluation data (the agent's keep/discard signal)
+    <out>/private/holdout.csv   labeled holdout         (never copied into a workdir)
+    <out>/meta.json             target, positive label, id columns, rows, positive rates
+
+`manifest.json` and `summary.json` are also written for the worker's report contract.
+
+**Why the raw response time is NOT in any CSV.** The runner treats every column other
+than the target as model input: `train.py` excludes only `id_columns` and the target when
+choosing features, and `validate.py` hands `predict_proba` the full frame with only the
+target dropped. So a declared feature list does not protect anything - a column that ships
+is a column a solver can use. `response_time` determines the label directly, so it is
+fetched to derive `late` and then excluded from every file. The manifest records it as
+`label_source_column` for provenance.
 
 Leakage discipline, from the candidate notes
 --------------------------------------------
@@ -30,6 +40,9 @@ are post-hoc and are excluded, together with every arrival, closing, disposition
 injury and final-classification field. The target uses the portal's own `response_time`
 column, which begins when the call was *answered* - earlier than `response_datetime` - so it
 can never be recomputed from the timestamps in the row.
+
+The output directory is also checked by `skills/dataset-qualification/`, which is the
+project's gate before a candidate goes to the benchmark.
 """
 from __future__ import annotations
 
@@ -37,6 +50,7 @@ import argparse
 import csv
 import hashlib
 import json
+import shutil
 import sys
 import time
 import urllib.error
@@ -63,6 +77,15 @@ FEATURES = [
     "initial_problem_category",
 ]
 
+# Carried alongside the features: an identifier for reconciliation, and the timestamp the
+# prediction is made at. Neither determines the label.
+CARRY_COLUMNS = ["incident_number", "response_datetime"]
+
+# Fetched only to derive `late`. Never written to a CSV.
+LABEL_SOURCE = "response_time"
+
+LABEL_COLUMN = "late"
+
 # Columns deliberately excluded, recorded so the exclusion is auditable rather than implied.
 EXCLUDED_POST_HOC = [
     "priority_level",
@@ -78,11 +101,8 @@ EXCLUDED_POST_HOC = [
     "officer_injured_killed_count",
     "subject_injured_killed_count",
     "other_injured_killed_count",
+    LABEL_SOURCE,
 ]
-
-# `response_time` is the label source and `incident_number` is an identifier: carried in
-# the file for scoring and reconciliation, never features.
-CARRY_COLUMNS = ["incident_number", "response_datetime", "response_time"]
 
 SPLITS = [
     ("train", "response_datetime < '2025-01-01T00:00:00.000'"),
@@ -91,8 +111,15 @@ SPLITS = [
     ("holdout", "response_datetime >= '2026-01-01T00:00:00.000'"),
 ]
 
+# Runner layout: holdout is private, the other two are copied into the agent's workdir.
+LAYOUT = {"train": Path("public") / "train.csv",
+          "eval": Path("public") / "eval.csv",
+          "holdout": Path("private") / "holdout.csv"}
+
 TRAIN_WHERE = SPLITS[0][1]
-ELIGIBLE = "response_time IS NOT NULL"
+ELIGIBLE = f"{LABEL_SOURCE} IS NOT NULL"
+
+POSITIVE_LABEL = 1
 
 
 def get_json(url: str, attempts: int = 4, timeout: int = 180):
@@ -133,7 +160,7 @@ def freeze_threshold(target_rate: float, lo: int = 0, hi: int = 21600) -> dict:
     probes = []
 
     def rate_at(threshold: int) -> float:
-        n = count(f"{ELIGIBLE} AND {TRAIN_WHERE} AND response_time > {threshold}")
+        n = count(f"{ELIGIBLE} AND {TRAIN_WHERE} AND {LABEL_SOURCE} > {threshold}")
         probes.append({"threshold_seconds": threshold, "n_above": n, "rate": n / base})
         return n / base
 
@@ -148,7 +175,7 @@ def freeze_threshold(target_rate: float, lo: int = 0, hi: int = 21600) -> dict:
             high = mid
 
     chosen = low
-    # Snap to the nearest whole minute and re-measure both sides for the record.
+    # Snap to the nearest whole minute and re-measure for the record.
     chosen = int(round(chosen / 60.0)) * 60
     chosen_rate = rate_at(chosen)
     return {
@@ -194,13 +221,9 @@ def sha256_of(path: Path) -> str:
     return digest.hexdigest()
 
 
-def parse_iso(value: str):
-    if not value:
-        return None
-    try:
-        return datetime.fromisoformat(value.replace("Z", "+00:00")).astimezone(timezone.utc)
-    except ValueError:
-        return None
+def label_for(response_time, threshold_seconds: int) -> int:
+    """Strict comparison, matching the aggregate used to freeze the threshold."""
+    return int(float(response_time) > threshold_seconds)
 
 
 def auc_from_scores(labels: list[int], scores: list[float]) -> float | None:
@@ -234,11 +257,11 @@ def category_rate_baseline(train_rows: list[dict], scored_rows: list[dict],
     for row in train_rows:
         key = row.get(column) or "(missing)"
         totals[key] = totals.get(key, 0) + 1
-        positives[key] = positives.get(key, 0) + int(row["_label"])
+        positives[key] = positives.get(key, 0) + int(row[LABEL_COLUMN])
     base_rate = (sum(positives.values()) / len(train_rows)) if train_rows else 0.0
     rates = {key: positives.get(key, 0) / totals[key] for key in totals}
 
-    labels = [int(row["_label"]) for row in scored_rows]
+    labels = [int(row[LABEL_COLUMN]) for row in scored_rows]
     scores = [rates.get(row.get(column) or "(missing)", base_rate) for row in scored_rows]
     auc = auc_from_scores(labels, scores)
     positive = sum(labels)
@@ -255,6 +278,36 @@ def category_rate_baseline(train_rows: list[dict], scored_rows: list[dict],
     }
 
 
+def write_meta(out: Path, manifest: dict, fieldnames: list[str]) -> None:
+    """meta.json in the runner's shape, plus the provenance the qualification gate reads."""
+    splits = {entry["name"]: entry for entry in manifest["splits"]}
+    meta = {
+        "name": "austin-911-response",
+        "description": manifest["prediction_question"],
+        "source": manifest["endpoint"],
+        "license": "Public Domain (Socrata catalog metadata for e687-fx2y)",
+        "target": LABEL_COLUMN,
+        "positive_label": POSITIVE_LABEL,
+        "id_columns": ["incident_number"],
+        "columns": fieldnames,
+        "rows": {name: splits[name]["rows"] for name in LAYOUT},
+        "positive_rate": {name: splits[name]["positive_rate"] for name in LAYOUT},
+        "split": {
+            "strategy": "temporal by response_datetime",
+            "boundaries": {name: where for name, where in SPLITS},
+        },
+        "threshold_seconds": manifest["threshold"]["threshold_seconds"],
+        "label_rule": manifest["label_rule"],
+        "label_source_column": LABEL_SOURCE,
+        "prediction_time": manifest["prediction_time"],
+        "features": manifest["features"],
+        "excluded_post_hoc": manifest["excluded_post_hoc"],
+        "carry_columns": manifest["carry_columns"],
+        "built_at_utc": manifest["built_at_utc"],
+    }
+    (out / "meta.json").write_text(json.dumps(meta, indent=1) + "\n")
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description="Build the austin-911-response extracts")
     parser.add_argument("--out", default="/output",
@@ -265,9 +318,14 @@ def main(argv=None) -> int:
     parser.add_argument("--limit", type=int, default=None,
                         help="cap rows PER SPLIT; for a bounded coordinator exercise only")
     parser.add_argument("--skip-baseline", action="store_true")
+    parser.add_argument("--keep-flat", action="store_true",
+                        help="also write flat <name>.csv copies beside the runner layout")
     args = parser.parse_args(argv)
 
     out = Path(args.out)
+    if out.exists():
+        # A stale split must never survive into a new extract.
+        shutil.rmtree(out, ignore_errors=True)
     out.mkdir(parents=True, exist_ok=True)
 
     print(f"dataset {DATASET}: total rows {count('1=1')}")
@@ -278,75 +336,88 @@ def main(argv=None) -> int:
           f"{threshold['training_rate_at_threshold']:.4f} "
           f"against a target of {threshold['target_rate']:.2f}")
 
-    select = ", ".join(CARRY_COLUMNS + FEATURES)
+    # The label source is fetched so `late` can be derived; it is never written out.
+    select = ", ".join(CARRY_COLUMNS + FEATURES + [LABEL_SOURCE])
+    fieldnames = CARRY_COLUMNS + FEATURES + [LABEL_COLUMN]
+    prediction_question = ("Will the first officer arrive more than "
+                           f"{threshold['threshold_minutes']} minutes after the Austin "
+                           "police 911 call was answered?")
+
     manifest = {
         "candidate": "austin-911-response",
         "dataset": DATASET,
         "endpoint": f"{BASE}/resource/{DATASET}.json",
         "built_at_utc": datetime.now(timezone.utc).isoformat(),
+        "prediction_question": prediction_question,
+        "prediction_time": "At dispatch: the moment the 911 call-taker's ECT screen opens "
+                           "(response_datetime). Only fields known then are shipped.",
         "threshold": threshold,
         "features": FEATURES,
-        "excluded_post_hoc": EXCLUDED_POST_HOC,
         "carry_columns": CARRY_COLUMNS,
-        "label_column": "late",
-        "label_rule": f"late = 1 if response_time > {threshold['threshold_seconds']} else 0",
+        "excluded_post_hoc": EXCLUDED_POST_HOC,
+        "label_column": LABEL_COLUMN,
+        "label_source_column": LABEL_SOURCE,
+        "label_rule": f"late = 1 if {LABEL_SOURCE} > {threshold['threshold_seconds']} else 0",
+        "shipped_columns": fieldnames,
+        "layout": {name: str(path) for name, path in LAYOUT.items()},
         "splits": [],
         "limit_per_split": args.limit,
     }
 
-    fieldnames = CARRY_COLUMNS + FEATURES + ["late"]
     retained: list[dict] = []
 
     for name, where in SPLITS:
-        path = out / f"{name}.csv"
+        path = out / LAYOUT[name]
+        path.parent.mkdir(parents=True, exist_ok=True)
         rows_written = 0
         positives = 0
         nulls = 0
         with path.open("w", newline="", encoding="utf-8") as handle:
-            writer = csv.DictWriter(handle, fieldnames=fieldnames)
+            writer = csv.DictWriter(handle, fieldnames=fieldnames,
+                                    extrasaction="ignore")
             writer.writeheader()
             for row in stream_rows(f"{ELIGIBLE} AND {where}", select,
                                    args.page_size, args.limit):
-                response_time = row.get("response_time")
+                response_time = row.get(LABEL_SOURCE)
                 if response_time in (None, ""):
                     nulls += 1
                     continue
-                label = 1 if float(response_time) > threshold["threshold_seconds"] else 0
                 record = {column: row.get(column, "") for column in CARRY_COLUMNS + FEATURES}
-                record["late"] = label
+                record[LABEL_COLUMN] = label_for(response_time,
+                                                 threshold["threshold_seconds"])
                 writer.writerow(record)
                 rows_written += 1
-                positives += label
+                positives += record[LABEL_COLUMN]
                 if name == "train" and not args.skip_baseline:
-                    kept = dict(record)
-                    kept["_label"] = label
-                    retained.append(kept)
+                    retained.append(dict(record))
         entry = {
             "name": name,
             "where": where,
-            "file": path.name,
+            "file": str(LAYOUT[name]),
             "rows": rows_written,
             "positives": positives,
             "positive_rate": round(positives / rows_written, 6) if rows_written else None,
-            "skipped_null_response_time": nulls,
+            "skipped_null_label_source": nulls,
             "sha256": sha256_of(path),
             "bytes": path.stat().st_size,
+            "columns": fieldnames,
         }
         manifest["splits"].append(entry)
         print(f"  {name:<8} rows={rows_written:>8} positives={positives:>7} "
               f"rate={entry['positive_rate']} sha256={entry['sha256'][:16]}...")
 
-        # Baseline is computed after the train and eval files are written.
         if name == "eval" and not args.skip_baseline and retained:
-            with (out / "eval.csv").open(encoding="utf-8") as handle:
-                eval_rows = []
-                for row in csv.DictReader(handle):
-                    row["_label"] = int(row["late"])
-                    eval_rows.append(row)
+            with (out / LAYOUT["eval"]).open(encoding="utf-8") as handle:
+                eval_rows = list(csv.DictReader(handle))
             manifest["baseline"] = category_rate_baseline(retained, eval_rows)
             print(f"  baseline AUC on eval: {manifest['baseline']['auc']} "
                   f"(majority-class accuracy "
                   f"{manifest['baseline']['majority_class_accuracy']})")
+
+        if args.keep_flat:
+            shutil.copyfile(path, out / f"{name}.csv")
+
+    write_meta(out, manifest, fieldnames)
 
     summary = {
         "candidate": "austin-911-response",
@@ -358,11 +429,14 @@ def main(argv=None) -> int:
                    for entry in manifest["splits"]},
         "baseline_auc_eval": (manifest.get("baseline") or {}).get("auc"),
         "features": FEATURES,
-        "note": "Measured extract. Not a scored result; no model comparison yet.",
+        "label_source_column_excluded_from_csv": LABEL_SOURCE,
+        "note": "Measured extract with checksums, in the runner's public/private layout. "
+                "Not a scored result; no model comparison yet.",
     }
     (out / "manifest.json").write_text(json.dumps(manifest, indent=1) + "\n")
     (out / "summary.json").write_text(json.dumps(summary, indent=1) + "\n")
-    print(f"\nwrote {out}/manifest.json and {out}/summary.json")
+    print(f"\nwrote {out}/public, {out}/private, {out}/meta.json, "
+          f"{out}/manifest.json, {out}/summary.json")
     return 0
 
 
