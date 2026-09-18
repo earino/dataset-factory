@@ -19,12 +19,24 @@ high-traffic threshold set from the training window.
 The 2025 jump to 815,447 records is a sensor-count change, not necessarily a
 footfall change; it must be understood before any cross-year comparison.
 
-## Licence - unconfirmed
+## Licence - unconfirmed, and now checked exhaustively
 
-Neither the dataset information page nor the v2.1 metadata endpoint exposed a
-licence field. The City of Melbourne portal commonly publishes under CC BY 4.0, but
-that is not evidence for this dataset. Verify on the dataset page's licence section
-before any release claim.
+Re-checked on 2026-09-18 through every channel that should carry a licence. **None
+declares one.**
+
+| Channel | Result |
+|---|---|
+| `GET /api/explore/v2.1/catalog/datasets/pedestrian-counting-system-monthly-counts-per-hour` | no `license` / `licence` / `terms` key, and none inside `metas` either |
+| Dataset information page HTML | no licence text node, no `creativecommons.org` link; the only `license` occurrences are OpenDataSoft feature flags |
+| DataVic CKAN harvest (search "pedestrian counting system monthly counts per hour", 3 matches) | `licence_id: "other-open"`, `license_title: "other-open"`, `license_url: null` for all three Pedestrian Counting System datasets |
+| `https://data.melbourne.vic.gov.au/pages/terms-of-use/` and `/pages/terms/` | HTTP 404 |
+| `https://www.melbourne.vic.gov.au/open-data` | HTTP 403 from this host |
+
+The City of Melbourne commonly publishes under CC BY 4.0, but that is an assumption
+and is recorded here as one. `other-open` names no terms and is not a publishable
+licence. **Do not make a release claim for this candidate until a licence is actually
+read.** The next step is a decision from the operator or the Council's open-data policy
+page reached through a channel that is not blocked from this host.
 
 ## Split trap
 

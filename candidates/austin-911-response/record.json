@@ -4,8 +4,8 @@
   "created_at": "2026-09-18T09:31:08.770599+00:00",
   "domain": "public-safety operations / emergency response",
   "prediction_question": "For a dispatched Austin police 911 call, will a patrol unit reach the caller more than a fixed minutes threshold after the call is dispatched?",
-  "prediction_time": "At dispatch: the moment the call is assigned a priority and a patrol sector. Only fields known then may be features. Arrival, closing, final-classification and injury fields are excluded.",
-  "target_definition": "Binary: portal column response_time (integer seconds) exceeds threshold T. T is chosen once from the measured training-window distribution and frozen in the construction script before any scoring. T is NOT yet chosen; measuring the distribution is the first construction step.",
+  "prediction_time": "At dispatch: the moment the 911 call-taker's ECT screen opens (response_datetime). Only fields known then may be features. Arrival, closing, priority, mental-health, final-classification and injury fields are excluded.",
+  "target_definition": "Binary: portal column response_time (integer seconds) exceeds threshold T. T is chosen once from the measured training-window distribution and frozen in the construction script before any scoring. Leading choice T = 1200 s (20 min): measured positive rate 0.4008 in the training window (response_datetime < 2025-07-01) and 0.3938 over the full series. Not yet frozen in a construction script.",
   "sources": [
     {
       "name": "Austin Open Data - APD 911 Calls for Service 2023-2026",
@@ -20,10 +20,45 @@
     }
   ],
   "license_evidence": [
-    "Socrata catalog metadata for e687-fx2y reports license = 'Public Domain' (api.us.socrata.com catalog v1, queried 2026-09-18)."
+    "Socrata catalog metadata for e687-fx2y reports license = 'Public Domain' (api.us.socrata.com catalog v1, queried 2026-09-18).",
+    "Re-confirmed 2026-09-18 directly from GET https://datahub.austintexas.gov/api/views/e687-fx2y.json: \"license\": {\"name\": \"Public Domain\"}, view name 'APD 911 Calls for Service 2023-2026'."
   ],
   "construction_script": null,
   "split_strategy": "Temporal by response_datetime: earlier years train, later months eval, final months holdout. No random split. Verify no incident_number overlap across periods.",
+  "feature_notes": {
+    "available_at_prediction_time": [
+      "incident_type",
+      "sector",
+      "council_district",
+      "geoid",
+      "blkgpnm",
+      "response_day_of_week",
+      "response_hour",
+      "initial_problem_description",
+      "initial_problem_category"
+    ],
+    "excluded_post_hoc": [
+      "first_unit_arrived_datetime",
+      "call_closed_datetime",
+      "response_time",
+      "priority_level",
+      "mental_health_flag",
+      "final_problem_description",
+      "final_problem_category",
+      "call_disposition_description",
+      "number_of_units_arrived",
+      "unit_time_on_scene",
+      "report_written_flag",
+      "officer_injured_killed_count",
+      "subject_injured_killed_count",
+      "other_injured_killed_count"
+    ],
+    "column_count_verified": 25,
+    "column_count_note": "GET /api/views/e687-fx2y.json lists 25 fields and a resource row returns the same 25 keys with no difference either way. The earlier '42 columns' figure was wrong.",
+    "priority_level_reclassified": "Documented as 'the priority level assigned to the incident at the time of the first officer's arrival' - post-prediction, so excluded. It had been listed as a dispatch-time feature.",
+    "mental_health_flag_reclassified": "Documented as settable from the final problem description, the call disposition and a responding officer's assessment - post-hoc, so excluded.",
+    "initial_problem_fields_added": "initial_problem_description and initial_problem_category are derived from information given to the call taker and were missing from the earlier feature list."
+  },
   "measurements": {
     "rows_total_measured": 1049636,
     "rows_by_year_measured": {
@@ -39,12 +74,58 @@
       "Priority 3": 204403
     },
     "response_time_nulls_measured": 0,
-    "units_note": "sample values 165 and 848 are consistent with seconds; confirm against timestamps",
-    "measured_on": "2026-09-18 via Socrata aggregate queries; not a scored baseline"
+    "incident_type_distinct_measured": ["Dispatched Incident"],
+    "incident_type_note": "All 1,049,636 rows carry the single value 'Dispatched Incident', so the documented exclusion of officer-initiated incidents needs no filter in practice.",
+    "response_time_stats_measured": {
+      "min_seconds": 0,
+      "max_seconds": 182878,
+      "mean_seconds": 2414.036,
+      "source": "whole-dataset Socrata aggregates"
+    },
+    "response_time_percentiles_sample_measured": {
+      "sample": "2000 rows ordered from response_datetime >= 2025-01-01T00:00:00Z",
+      "p25_seconds": 436,
+      "p50_seconds": 933,
+      "p75_seconds": 3018,
+      "p90_seconds": 8832,
+      "p99_seconds": 29503
+    },
+    "response_time_start_offset_measured": {
+      "definition": "delta = (first_unit_arrived_datetime - response_datetime) - response_time, in seconds",
+      "sample_rows": 2000,
+      "min": -561.0,
+      "p50": -58.0,
+      "max": 6287.0,
+      "mean": -56.014,
+      "abs_le_1s_count": 48,
+      "conclusion": "response_time begins when the 911 call was answered, which is earlier than response_datetime. No column records the call-answered time, so the label start cannot be reconstructed. The target must be the portal column itself, not a recomputed difference.",
+      "measured_on": "2026-09-18"
+    },
+    "positive_rate_by_threshold_measured": {
+      "window": "full series 1049636 rows",
+      "5": 0.8716,
+      "10": 0.6368,
+      "15": 0.4838,
+      "20": 0.3938,
+      "30": 0.2934,
+      "60": 0.1659,
+      "units": "threshold in minutes, value is P(response_time > threshold)"
+    },
+    "positive_rate_by_threshold_training_window_measured": {
+      "window": "response_datetime < 2025-07-01, 714314 rows",
+      "5": 0.8784,
+      "10": 0.6460,
+      "15": 0.4919,
+      "20": 0.4008,
+      "30": 0.2988,
+      "60": 0.1696,
+      "largest_full_vs_train_gap": 0.0074
+    },
+    "measured_on": "2026-09-18 via Socrata aggregate and bounded-sample queries; not a scored baseline"
   },
   "jobs": [],
   "artifacts": [],
   "rejection_reason": null,
   "review": null,
-  "next_action": "Confirm the response_time definition and mental_health_flag timing in the column docs, then write the construction script (dispatch-time feature list plus frozen threshold) for a worker job."
+  "next_action": "Write the construction script: dispatch-time feature list (including the two initial-problem fields), target = portal response_time > 1200 s, threshold frozen from the training window only, temporal split by response_datetime, extract checksummed on a worker."
 }

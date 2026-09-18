@@ -1,6 +1,7 @@
 # Current state
 
-Updated: 2026-09-18 (second entry; hosted research session).
+Updated: 2026-09-18 (eighth entry; hosted setup, notification delivery, secondary
+sweep and lead-candidate column documentation).
 
 ## Objective
 
@@ -100,10 +101,15 @@ registration is confirmed rather than assumed. `config/local.json` now carries
 /opt/data/.ssh/scout_worker_ed25519`. Launches stay disabled and the allowance
 stays at zero.
 
-Remaining prerequisites for a paid launch: notification delivery, an observed
-scheduled cleanup run, and verification that the sweeper deletes an expired server.
-The allowance is configured (see the seventh-session section), the cleanup secret
-and variables are configured, and the manual dispatch executes successfully.
+Remaining prerequisite for a paid launch: one observed successful **scheduled** cleanup
+run. Notification delivery and the secondary on-host sweep are now configured and
+verified (eighth session). The allowance is configured (seventh session), the cleanup
+secret and variables are configured, and the manual dispatch executes successfully.
+
+**Deletion of an expired server is verified during the smoke sequence, not before it.**
+The project has never held a server, so there is nothing for the deleter to act on
+until a worker exists. See the eighth-session note under "Remaining prerequisites
+before the live smoke cycle".
 
 ## Primary expiry cleanup configured 2026-09-18 (fifth session)
 
@@ -250,11 +256,130 @@ while jobs stay bounded and are deleted on collection.
 
 ### Remaining prerequisites before the live smoke cycle
 
-1. Notification delivery, so a failed or dropped scheduled run is visible.
+1. ~~Notification delivery, so a failed or dropped scheduled run is visible.~~
+   **Done** - see the eighth-session section. This Telegram chat is the destination.
 2. An observed `schedule`-event cleanup run that executes rather than skips.
-3. Verification that the sweeper actually deletes an expired server - untested, as
-   this project has never held one.
-4. `cleanup_configured: true` and `enabled: true`, set only once 1-3 hold.
+3. `cleanup_configured: true` and `enabled: true`, set once 1-2 hold.
+
+**Deletion of an actually expired server is a smoke-sequence step, not a
+precondition.** This project has never held a server, so the deletion path has
+nothing to act on yet. It is exercised by the smoke cycle itself: the worker is
+allowed to reach expiry, the sweep is observed reclaiming it, and the ledger is
+reconciled with `status`. Requiring that evidence before any worker can be launched
+would make it unreachable, because the only way to produce an expired server is to
+launch one.
+
+## Notification delivery and secondary sweep configured 2026-09-18 (eighth session)
+
+Two of the three remaining prerequisites were closed. Launches stay disabled: the
+`schedule`-event cleanup run is still pending, so the smoke cycle did not run.
+
+### Notification delivery - configured and verified delivered
+
+Destination: **this Telegram chat** (platform `telegram`, chat `7600588577`, "Eddie").
+A one-off scheduled job was created, fired and its delivery read back from the gateway
+log rather than assumed from a success response.
+
+| Field | Value |
+|---|---|
+| Cron job ID | `1a66d6af21cc` (`scout-telegram-delivery-test`) |
+| Schedule | once, `run_at` 2026-09-18T11:48:19Z |
+| Fired (UTC) | 2026-09-18T11:48:23.060190Z |
+| Job status | `ok` |
+| Delivery (UTC) | 2026-09-18T11:48:22.840Z |
+| Delivery log line | `Job '1a66d6af21cc': delivered to telegram:7600588577 via live adapter thread=- message_id=9` |
+| Delivery error | none (`last_delivery_error`, `last_delivery_unverified`, `last_fire_error` all null) |
+
+The job completed and was retired (`state: completed`, `repeat.completed: 1`), so it
+does not recur. Both jobs created in this session captured `origin` from this chat, so
+future scheduled reports address it without an explicit target. A failed or dropped
+scheduled run is therefore visible here, which was prerequisite 1.
+
+### Secondary no-agent cleanup sweep - was missing, now configured and verified
+
+`docs/OPERATIONS.md` asks for a second, on-host sweep as redundancy for the GitHub
+schedule. No such cron job existed before this session.
+
+| Field | Value |
+|---|---|
+| Cron job ID | `e80975eddd4a` (`scout-secondary-cleanup-sweep`) |
+| Schedule | `47 * * * *` (hourly at minute 47, offset from the primary's minute 17) |
+| Mode | `no_agent` - no LLM; the scheduler runs the script and delivers stdout verbatim |
+| Script | `scout_cleanup_sweep.py` in `~/.hermes/scripts/` (Hermes requires cron scripts there) |
+| Real implementation | `scripts/cleanup-sweep-cron.py` in this repo, tracked and versioned |
+| Command run | `sh scripts/scout-factory worker sweep --project earino-dataset-factory` |
+| Deliver | this chat (`origin`) |
+| First run (UTC) | 2026-09-18T11:49:09Z, status `ok`, silent empty output |
+| Next fire | 2026-09-18T12:47Z |
+
+The repository copy is the real implementation; the file in `~/.hermes/scripts/` is a
+short shim that exists only because Hermes resolves cron scripts relative to
+`~/.hermes/scripts/`. Behaviour, both branches exercised directly rather than assumed:
+
+- **Normal path** - an empty sweep prints nothing, so no message is sent. This is the
+  watchdog pattern and matters because `deleted_servers` is normally empty while
+  delete-on-collect is working. Verified: exit 0, zero output lines.
+- **Failure path** - verified by forcing an invalid project value:
+  `Scout sweep FAILED (exit 1) for bad project!: factory: IDs must be 1-48 lowercase
+  letters, digits, or hyphens`, exit 1. A bad token or unreachable API therefore
+  produces one alert line rather than silence.
+
+The script's exit status is the sweep's own, so a failure also shows in cron history.
+
+### GitHub scheduled cleanup run - still pending, launches stay disabled
+
+As of 2026-09-18T11:58Z no `schedule`-event run has appeared since the gate was opened
+at 11:04Z. The most recent scheduled run remains 09:53:53Z, which was correctly
+`skipped`. The hourly `17 * * * *` slot at 11:17Z did not fire and was ~40 minutes
+overdue at the time of writing; a polling watcher was left running and will report the
+run if it appears. This matches the fifth-session observation that this repository's
+scheduled runs are sparse (roughly every two to four hours, against a configured
+fifteen-minute interval at the time).
+
+Consequence, per instruction: **`enabled` and `cleanup_configured` stay false and no
+paid launch was made.** No CPX32/hel1 smoke cycle, therefore no artifact links, no
+reservation, no cost and no deletion to report. The manual `workflow_dispatch` from
+the fifth session remains the only evidence that the cleanup step executes.
+
+## Still unverified or unimplemented
+
+Local tests use fake providers. **No live Hetzner/GitHub worker cycle has been run.**
+Boot, SSH, Docker, uploads, recovery, costs and scheduled deletion remain unverified.
+
+The worker policy is **configured but disabled**: an allowance of EUR 20,
+`allowed_locations ["hel1"]`, the three priced server types and the SSH key are set in
+`config/local.json`, while `enabled` and `cleanup_configured` remain false, which is
+what keeps paid launches impossible. No cloud resource exists.
+
+The primary cleanup workflow is no longer skipped - `FACTORY_CLEANUP_ENABLED`,
+`FACTORY_PROJECT` and the `HCLOUD_TOKEN` Actions secret are set and a manual dispatch
+executed successfully (fifth session). What is still missing is an observed
+`schedule`-event run.
+
+The benchmark adapter (`factory/bench.py` coordination, `workers/benchmark.py`
+execution), qualification tools, public exporter and website are not implemented.
+`../harness_benchmark` is unmodified.
+
+## Next actions for Scout
+
+1. Write the lead candidate's construction script: dispatch-time feature list
+   (including `initial_problem_description` / `initial_problem_category`), target
+   `response_time > 1200` seconds, threshold frozen from the training window only,
+   temporal split by `response_datetime`, checksummed extract produced on a worker.
+2. Continue shortlist work that needs no credentials. Maryland's stale-series concern
+   is resolved; Melbourne's licence is still the open item.
+3. Operator: none - allowance, locations, server types, SSH key and both worker tokens
+   are in place. The only outstanding gate is GitHub's scheduler.
+4. Once a `schedule`-event run is observed executing: set `cleanup_configured: true`
+   and `enabled: true`, run the live smoke cycle, verify deletion by letting the worker
+   expire, then disable paid launches again and move on to recovery and expiry tests.
+
+## Inputs still needed from the operator
+
+Nothing blocking. Both worker tokens and the worker SSH key are supplied and verified,
+the allowance and allowed locations/types are configured, and notification delivery is
+working. First release date, reviewer, public dataset namespace and website hosting can
+wait until the first candidate is approved.
 
 ## Research shortlist recorded 2026-09-18
 
@@ -267,53 +392,57 @@ anonymous public APIs; none is a scored result.
 | `austin-911-response` | public-safety operations | 1,049,636 calls, 2023-2026 | Public Domain | **lead** |
 | `chicago-doah-adjudication` | administrative adjudication | 823,637 rows, 2008-2027 | See Terms of Use | runner-up, licence review needed |
 | `noaa-tide-flooding` | coastal water levels | 302 stations, all with flood thresholds | public domain (US Gov) | shortlisted |
-| `melbourne-pedestrian-counts` | urban activity sensing | 1,621,901 hourly records | unconfirmed | shortlisted |
-| `md-sewer-overflow` | wastewater infrastructure | 27,479 events, 2005-2023 | Public Domain | lower priority; series may be stale |
+| `melbourne-pedestrian-counts` | urban activity sensing | 1,621,901 hourly records | **still unconfirmed** | shortlisted |
+| `md-sewer-overflow` | wastewater infrastructure | 27,479 events 2005-2023 **plus a current series** | Public Domain | promoted from "lower priority" |
 
 Lead choice: `austin-911-response`, because its licence is explicitly Public Domain
 while Chicago's is "See Terms of Use", and the project must publish publicly.
-Remaining work on the lead is technical, not legal: confirm the `response_time`
-derivation, exclude the post-hoc columns listed in its notes, measure the
-`response_time` distribution, freeze threshold T from the training window, and split
-temporally by `response_datetime`.
+
+### Lead candidate advanced (eighth session)
+
+The column documentation was read and both open questions closed against the earlier
+plan, in `candidates/austin-911-response/notes.md`:
+
+- `mental_health_flag` is post-hoc (final problem description, call disposition, a
+  responding officer's assessment) - excluded.
+- `priority_level` is documented as assigned *at the time of the first officer's
+  arrival* - also post-hoc, and it had been listed as a dispatch-time feature.
+- `response_time` starts when the 911 call was **answered**, earlier than
+  `response_datetime`; no column records that instant. Measured offset on 2,000 rows:
+  median -58 s, range -561 s to +6,287 s, only 48/2000 within one second. The target
+  must be the portal column, never a recomputed difference.
+- `initial_problem_description` and `initial_problem_category` are genuine
+  dispatch-time fields and were missing from the feature list.
+- The table has **25 columns, not 42** (view metadata and a resource row agree exactly).
+- Threshold T = 20 min is measured rather than guessed: positive rate 0.4008 in the
+  training window (`response_datetime < 2025-07-01`, 714,314 rows) against 0.3938 over
+  the full series.
+
+### Maryland stale-series concern resolved (eighth session)
+
+`stgj-u72u` ("Reported Sewer Overflows (New for 2023)") now returns **HTTP 200** where
+an earlier session recorded HTTP 403. It is Public Domain, reports 3,434 rows, and its
+`rowsUpdatedAt` timestamp is current (2026-09-18), so a live series exists alongside the
+27,479-row historical one (`3rgd-zjxx`, last updated 2023-02). The candidate is no
+longer "historical only"; the remaining work is the facility-day event rate and the
+rainfall join, not currency.
+
+### Melbourne licence still unconfirmed (eighth session)
+
+Re-checked through every channel that should carry it and **none declares a licence**:
+
+- `GET /api/explore/v2.1/catalog/datasets/<id>` - no `license`/`licence`/`terms` key.
+- The dataset information page HTML - no licence text node and no
+  `creativecommons.org` link.
+- DataVic's CKAN harvest of the same three Pedestrian Counting System datasets reports
+  only the generic `licence_id: "other-open"` with `license_url: null`, which names no
+  terms and is not a publishable licence.
+- The portal's terms pages return 404 and `melbourne.vic.gov.au/open-data` returns 403
+  from this host.
+
+The City of Melbourne commonly publishes under CC BY 4.0, but that remains an
+assumption and is recorded as such. **Do not make a release claim for this candidate
+until a licence is actually read.**
 
 No baseline, AUC, headroom figure or acceptance verdict has been measured. Nothing
 here should be read as a result.
-
-## Still unverified or unimplemented
-
-Local tests use fake providers. **No live Hetzner/GitHub worker cycle has been run.**
-Boot, SSH, Docker, uploads, recovery, costs and scheduled deletion remain unverified.
-Worker policy stays disabled at zero allowance.
-
-The benchmark adapter (`factory/bench.py` coordination, `workers/benchmark.py`
-execution), qualification tools, public exporter and website are not implemented.
-`../harness_benchmark` is unmodified.
-
-The cleanup workflow is still skipped: `FACTORY_CLEANUP_ENABLED`, `FACTORY_PROJECT`
-and the `HCLOUD_TOKEN` Actions secret are unset, so no manual or scheduled run has
-been observed. Notification delivery is unconfigured.
-
-## Next actions for Scout
-
-1. Finish the lead candidate's construction script: confirm the `response_time`
-   derivation and `mental_health_flag` timing from the dataset's column docs, then
-   encode the dispatch-time-only feature list and the threshold protocol.
-2. Continue shortlist work that needs no credentials: confirm the Melbourne licence,
-   verify the 2023+ Maryland overflow dataset, and measure NOAA per-station
-   exceedance base rates from bounded samples.
-3. Operator: register the worker public key with Hetzner and set the allowed
-   server types and locations with an allowance. Worker credentials are already in
-   place and `doctor --require-worker-credentials` passes.
-4. After that: verify the primary GitHub Actions cleanup with a manual and a
-   scheduled successful run, add the secondary on-host cron sweep, run the live
-   smoke cycle, and only then enable paid launches.
-
-## Inputs still needed from the operator
-
-Compute/inference allowance with allowed server types and locations, cleanup
-secret/variable setup and a notification destination. Both worker tokens and the
-worker SSH key are supplied and verified.
-Both worker tokens are supplied and verified. First release date, reviewer, public
-dataset namespace and website hosting can wait until the first candidate is
-approved.

@@ -16,7 +16,8 @@
     {
       "name": "Maryland Open Data - Reported Sewer Overflows (new for 2023)",
       "url": "https://opendata.maryland.gov/d/stgj-u72u",
-      "access": "HTTP 403 from this host on 2026-09-18; catalog entry exists, contents unverified"
+      "api": "https://opendata.maryland.gov/resource/stgj-u72u.json",
+      "access": "VERIFIED LIVE 2026-09-18: HTTP 200 for both the view metadata and resource queries, where an earlier session recorded HTTP 403. Behind Cloudflare, so a first attempt can still return 403 and queries retry."
     },
     {
       "name": "Rainfall feature source",
@@ -25,7 +26,9 @@
     }
   ],
   "license_evidence": [
-    "Socrata catalog metadata for 3rgd-zjxx reports license = 'Public Domain' (api.us.socrata.com catalog v1, queried 2026-09-18)."
+    "Socrata catalog metadata for 3rgd-zjxx reports license = 'Public Domain' (api.us.socrata.com catalog v1, queried 2026-09-18).",
+    "Confirmed directly 2026-09-18: GET https://opendata.maryland.gov/api/views/3rgd-zjxx.json returns license {\"name\": \"Public Domain\"}.",
+    "Confirmed directly 2026-09-18: GET https://opendata.maryland.gov/api/views/stgj-u72u.json returns name 'Reported Sewer Overflows (New for 2023)' and license {\"name\": \"Public Domain\"}. Both series in the candidate carry the same Public Domain licence."
   ],
   "construction_script": null,
   "split_strategy": "Temporal by date and grouped by facility so one facility cannot appear on both sides of the split. Class balance is likely very imbalanced and must be measured before the protocol is fixed.",
@@ -49,12 +52,58 @@
       "latitude",
       "longitude"
     ],
+    "current_series_measured": {
+      "dataset": "stgj-u72u",
+      "name": "Reported Sewer Overflows (New for 2023)",
+      "rows": 3434,
+      "rows_updated_at_epoch": 1789723444,
+      "rows_updated_at_interpretation": "2026-09-18, i.e. the series is current, not historical",
+      "rows_per_year": {
+        "2023": 708,
+        "2024": 999,
+        "2025": 1026,
+        "2026_to_update": 700,
+        "undated": 1
+      },
+      "date_column": "start_date",
+      "date_column_note": "The 2023+ dataset names its date column start_date, not date_discovered. Querying date_discovered against it returns a soql.no-such-column error - an easy way to misread the series as empty.",
+      "columns": [
+        "overflow_type",
+        "facility_collection_system",
+        "npdes_no",
+        "start_date",
+        "start_time",
+        "duration_day",
+        "duration_hour",
+        "duration_minute",
+        "overflow_address",
+        "zip",
+        "owner_name",
+        "discharge_volume",
+        "overflow_cause",
+        "receiving_water",
+        "county",
+        "penalty_id",
+        "overflow_latitude",
+        "overflow_longitude",
+        "id"
+      ],
+      "top_collection_systems_measured": {
+        "Patapsco WWTP Collection System - Baltimore City": 580,
+        "Back River WWTP Collection System - Baltimore City": 377,
+        "John J. DiFonzo (Cumberland) WRF & Collection System": 181,
+        "Frostburg Collection System": 178,
+        "Private System": 163
+      },
+      "distinct_counties_in_top_10_measured": 10,
+      "measured_on": "2026-09-18 via Socrata aggregates with retry (Cloudflare intermittently returns 403)"
+    },
     "measured_on": "2026-09-18 via Socrata aggregate queries",
-    "gap": "series appears to stop 2023-02; the newer dataset must be verified before treating it as current"
+    "gap": "RESOLVED. The earlier series stops at 2023-02-10, but stgj-u72u carries 2023-2026 and was updated 2026-09-18, so the candidate is not historical-only. The two series overlap or abut in 2023 and must be reconciled before use."
   },
   "jobs": [],
   "artifacts": [],
   "rejection_reason": null,
   "review": null,
-  "next_action": "Verify the 2023+ dataset and whether it extends the series, test the NOAA rainfall join, and measure the facility-day event rate. Lower priority than the two leads."
+  "next_action": "Reconcile the 2023 overlap between 3rgd-zjxx and stgj-u72u, test the NOAA rainfall join from this host, and measure the facility-day event rate. Currency is no longer a concern."
 }
