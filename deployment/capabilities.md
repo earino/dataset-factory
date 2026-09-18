@@ -22,7 +22,7 @@ sudo, writable root `/opt/data`. Terminal backend is `local`, persistent shell.
 | `terminal`, `process_manage` | Working local shell; no local Docker daemon |
 | `cronjob_manage` | Working Chronos scheduling, including script/no-agent mode; no connected message destination |
 | GitHub | Authenticated as `earino`; clone, push, remote branch deletion, repo/release/run listing verified; `gh` v2.101.0 installed |
-| Hetzner | API reachable but unauthenticated; no token, `hcloud` or native integration |
+| Hetzner | Authenticated 2026-09-18 via the token file; project lists 0 servers; no `hcloud` CLI installed |
 | SSH | Client available; worker ed25519 keypair generated 2026-09-18, not yet registered with Hetzner |
 | Python | 3.13.5; stdlib works; `uv` available; our helper needs no third-party packages |
 | Skills | 58 installed; GitHub skill's `gh` prerequisite now present; specific skill workflows not all exercised |
@@ -54,7 +54,8 @@ Local Playwright usability is uncertain; use the working remote browser.
   0.11.6 and OpenSSH 10.0p2 are present; `.ssh` and local worker policy are absent.
 - Dashboard `.env` entries do not appear in terminal subprocesses. Use the explicit
   `_FILE` launcher documented in `docs/OPERATIONS.md`; don't rely on shell startup.
-- Worker credentials, SSH registration, budget and cleanup configuration remain
+- Worker credentials are in place and verified (see the third-pass section below).
+  SSH registration, budget, allowed server types and cleanup configuration remain
   missing. Cleanup workflow runs are skipped because its enablement variable is
   unset. Notification delivery remains unconfigured.
 
@@ -105,4 +106,23 @@ Corrections and additions to the rows above, from the same hosted instance.
 - Unchanged: no Hetzner token, no staging token, no SSH registration, no Actions
   cleanup secret/variable, no observed cleanup run, no notification delivery, and
   no live worker cycle.
+
+## Worker credentials verified - 2026-09-18, third hosted pass
+
+- `HCLOUD_TOKEN` at `/opt/data/.secrets/hetzner.token` (0600, dir 0700). Verified
+  through the file alone with the env var removed: `GET /v1/servers` returned 200
+  and the dedicated project contains 0 servers. Read-only; nothing created.
+- `FACTORY_GITHUB_TOKEN` at `/opt/data/.secrets/github-staging.token` (0600).
+  Verified through the file alone: the staging repo is reachable and private, a
+  draft release plus a 125-byte asset uploaded with matching size and SHA-256
+  digest, and the asset and release were then deleted with 404 confirmations and no
+  leftover tag.
+- The staging token is genuinely repo-scoped: it sees exactly one private
+  repository (`earino/dataset-factory-staging`) and receives 404 for
+  `earino/dataset-factory`. The coordinator's gh login was not modified.
+- `doctor --require-worker-credentials` exits 0 with both credentials ready.
+  Supersedes the "no Hetzner token, no staging token" line above.
+- Still outstanding: SSH key registration, allowance with allowed types and
+  locations, Actions cleanup secret/variable, observed cleanup run, notification
+  delivery, and the live worker cycle.
 

@@ -48,6 +48,43 @@ public repository and versioned GitHub Release assets.
   preparation scripts and saved baselines are present. Preparation must happen on a
   worker.
 
+## Worker credentials verified 2026-09-18 (third session)
+
+Both worker credentials now exist and have been tested against their real APIs.
+
+**Hetzner.** `HCLOUD_TOKEN` stored at `/opt/data/.secrets/hetzner.token` (0600, in
+a 0700 directory). Tested with the token file only — the environment variable was
+removed from the test subprocess, which asserted its absence first. A single
+read-only `GET /v1/servers` returned **HTTP 200**, so authentication succeeds and
+the dedicated project currently contains **0 servers**. No create, modify or
+delete call was made.
+
+**GitHub staging.** `FACTORY_GITHUB_TOKEN` stored at
+`/opt/data/.secrets/github-staging.token` (0600, same 0700 directory), 93
+characters, a fine-grained token. Tested with the file explicitly and
+`FACTORY_GITHUB_TOKEN` removed from the environment:
+
+- `earino/dataset-factory-staging` is reachable and **private** (default branch
+  `main`).
+- Scope is genuinely restricted: the token sees exactly **one** private repository
+  across the account — `earino/dataset-factory-staging` — while a probe of
+  `earino/dataset-factory` returns **HTTP 404**. It is not the broad classic PAT
+  used for coordinator git access, and the coordinator login was left untouched.
+- A uniquely named **draft** release was created (`verify-staging-1789728610`),
+  a 125-byte test file uploaded, and the server-reported size (125) and digest
+  (`sha256:d50a3893513699526aea43828dfc2a633411b310a80f97259e36f2abbf0e07a5`)
+  matched the locally computed values. The release stayed unpublished throughout.
+- Cleanup succeeded: asset delete 204, release delete 204, subsequent reads of both
+  returned 404, zero releases remain, no leftover tag. The draft-releases path
+  workers depend on is therefore verified end to end.
+
+`sh scripts/scout-factory doctor --require-worker-credentials` now exits **0** with
+both credentials reported ready and an empty error list.
+
+Remaining prerequisites for a paid launch: worker SSH key registration in the
+Hetzner project, the Actions cleanup secret/variable and enablement flag, an
+allowance with allowed server types and locations, and cleanup verification.
+
 ## Research shortlist recorded 2026-09-18
 
 Five candidates created with measured evidence in `candidates/<id>/record.json`
@@ -94,17 +131,17 @@ been observed. Notification delivery is unconfigured.
 2. Continue shortlist work that needs no credentials: confirm the Melbourne licence,
    verify the 2023+ Maryland overflow dataset, and measure NOAA per-station
    exceedance base rates from bounded samples.
-3. Operator: supply `/opt/data/.secrets/hetzner.token` and
-   `/opt/data/.secrets/github-staging.token`, register the worker public key with
-   Hetzner, configure the cleanup secret/variable, and set an allowance. Then
-   re-run `doctor --require-worker-credentials`.
+3. Operator: register the worker public key with Hetzner and set the allowed
+   server types and locations with an allowance. Worker credentials are already in
+   place and `doctor --require-worker-credentials` passes.
 4. After that: verify the primary GitHub Actions cleanup with a manual and a
    scheduled successful run, add the secondary on-host cron sweep, run the live
    smoke cycle, and only then enable paid launches.
 
 ## Inputs still needed from the operator
 
-Restricted staging token, dedicated Hetzner project token, worker SSH key
-registration, compute/inference allowance, cleanup secret/variable setup and a
-notification destination. First release date, reviewer, public dataset namespace
-and website hosting can wait until the first candidate is approved.
+Worker SSH key registration, compute/inference allowance with allowed server
+types and locations, cleanup secret/variable setup and a notification destination.
+Both worker tokens are supplied and verified. First release date, reviewer, public
+dataset namespace and website hosting can wait until the first candidate is
+approved.
