@@ -81,9 +81,28 @@ characters, a fine-grained token. Tested with the file explicitly and
 `sh scripts/scout-factory doctor --require-worker-credentials` now exits **0** with
 both credentials reported ready and an empty error list.
 
-Remaining prerequisites for a paid launch: worker SSH key registration in the
-Hetzner project, the Actions cleanup secret/variable and enablement flag, an
-allowance with allowed server types and locations, and cleanup verification.
+**Worker SSH key registered 2026-09-18 (fourth session).** The existing dedicated
+ed25519 pair at `/opt/data/.ssh/scout_worker_ed25519` (0600, directory 0700, no
+passphrase) was reused rather than regenerated; its public key derives cleanly from
+the private key, so it is suitable for unattended use. Hetzner held no SSH keys
+before this, so the public key was registered as **`scout-worker`**:
+
+| Field | Value |
+|---|---|
+| Name | `scout-worker` |
+| ID | `130171155` |
+| Fingerprint (MD5) | `9d:80:95:90:cc:4c:c8:65:83:59:9f:8c:2b:d6:ae:30` |
+| Verification | read back via `GET /v1/ssh_keys/{id}`; public key matches the local pair |
+
+The read-back fingerprint equals the locally computed MD5 fingerprint, so the
+registration is confirmed rather than assumed. `config/local.json` now carries
+`ssh_key_name: scout-worker` and `ssh_private_key:
+/opt/data/.ssh/scout_worker_ed25519`. Launches stay disabled and the allowance
+stays at zero.
+
+Remaining prerequisites for a paid launch: the Actions cleanup secret/variable and
+enablement flag, an allowance with allowed server types and locations, and cleanup
+verification.
 
 ## Research shortlist recorded 2026-09-18
 
@@ -140,8 +159,9 @@ been observed. Notification delivery is unconfigured.
 
 ## Inputs still needed from the operator
 
-Worker SSH key registration, compute/inference allowance with allowed server
-types and locations, cleanup secret/variable setup and a notification destination.
+Compute/inference allowance with allowed server types and locations, cleanup
+secret/variable setup and a notification destination. Both worker tokens and the
+worker SSH key are supplied and verified.
 Both worker tokens are supplied and verified. First release date, reviewer, public
 dataset namespace and website hosting can wait until the first candidate is
 approved.

@@ -14,9 +14,18 @@ Public key text, to register in the dedicated Hetzner Cloud project:
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPUjUlWiQKP7rne3yQhQs+g97MNUUgT1AL3Qaakn/iCJ scout-dataset-factory-worker
 ```
 
-Register it with the name **`scout-dataset-factory-worker`** so the policy value
-`ssh_key_name` in `config/local.json` matches. The policy also points
-`ssh_private_key` at the private key path above.
+**Registered 2026-09-18** in the dedicated Hetzner project as:
+
+| Field | Value |
+|---|---|
+| Name | `scout-worker` |
+| ID | `130171155` |
+| Fingerprint | `9d:80:95:90:cc:4c:c8:65:83:59:9f:8c:2b:d6:ae:30` |
+| Result | public key read back from the API matches this local pair |
+
+The project had no SSH keys before this registration. `config/local.json` carries
+the matching policy values: `ssh_key_name` = `scout-worker`, `ssh_private_key` =
+`/opt/data/.ssh/scout_worker_ed25519`. Worker launches remain disabled.
 
 A public key is not a secret and may be shared; the private key must never leave
-Scout or be committed. Registration is required before any paid launch.
+Scout or be committed.
