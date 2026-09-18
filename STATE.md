@@ -108,8 +108,9 @@ secret and variables are configured, and the manual dispatch executes successful
 
 **Deletion of an expired server is verified during the smoke sequence, not before it.**
 The project has never held a server, so there is nothing for the deleter to act on
-until a worker exists. See the eighth-session note under "Remaining prerequisites
-before the live smoke cycle".
+until a worker exists. The first smoke job proves collect-then-delete-immediately;
+expiry cleanup is a separate later test. See the eighth-session note under "Remaining
+prerequisites before the live smoke cycle" and `docs/OPERATIONS.md`.
 
 ## Primary expiry cleanup configured 2026-09-18 (fifth session)
 
@@ -206,11 +207,38 @@ interval is **not a strict deletion deadline**.
   `cleanup_configured` false, `monthly_budget_eur` 0, empty `server_types`. No cloud
   resource was created or modified.
 
-**First scheduled run under the new cron is pending.** It is written here at
-2026-09-18T11:26Z rather than claimed, because no `schedule` run appeared under the
-previous 15-minute interval during the roughly twenty minutes it was enabled. See
-the fifth-session section above for the earlier observation and the manual dispatch
-that did execute.
+**No scheduled run has executed yet, and the scheduler is heavily throttled.**
+
+A watcher covered the period from enablement (2026-09-18T11:04Z) to
+2026-09-18T12:27Z without observing a single `schedule`-event run - that spans the
+configured 11:07/11:22/11:37/11:52/12:07/12:17 fires under both the old 15-minute
+and the new hourly cron.
+
+Measured gaps between the scheduled runs that did occur before enablement:
+
+| From | To | Gap |
+|---|---|---|
+| 2026-09-17T19:19Z | 2026-09-17T22:16Z | 3.0 h |
+| 2026-09-17T22:16Z | 2026-09-18T00:28Z | 2.2 h |
+| 2026-09-18T00:28Z | 2026-09-18T05:07Z | 4.7 h |
+| 2026-09-18T05:07Z | 2026-09-18T09:53Z | 4.8 h |
+
+So this workflow's `schedule` trigger fires every **2 to 5 hours**, not every 15
+minutes, and the wait since 09:53Z is still inside that observed range. The
+configuration is otherwise verified: the workflow state is `active` on the default
+branch, the committed cron reads `17 * * * *`, and `FACTORY_CLEANUP_ENABLED` is
+`true`. Nothing here indicates a misconfiguration; it indicates that GitHub's
+scheduled runs on this repository are irregular.
+
+**Consequence for the grace estimate.** The 60-minute `cleanup_grace_minutes`
+covers one hour of post-expiry billing in the reservation, but the worst observed
+gap suggests a leftover worker could survive several hours before a sweep catches
+it. Deletion on collection remains the normal path, so this is a cost exposure for
+abnormal endings only - but the grace is an estimate, not a bound on the leftover
+time, and the on-host secondary sweep gains importance for that reason.
+
+A longer watcher now covers the next scheduled fire; the first genuinely scheduled
+execution remains unverified and is reported as pending rather than assumed.
 
 ## Compute allowance configured 2026-09-18 (seventh session)
 
@@ -263,11 +291,13 @@ while jobs stay bounded and are deleted on collection.
 
 **Deletion of an actually expired server is a smoke-sequence step, not a
 precondition.** This project has never held a server, so the deletion path has
-nothing to act on yet. It is exercised by the smoke cycle itself: the worker is
-allowed to reach expiry, the sweep is observed reclaiming it, and the ledger is
-reconciled with `status`. Requiring that evidence before any worker can be launched
-would make it unreachable, because the only way to produce an expired server is to
-launch one.
+nothing to act on yet. It is exercised later in the sequence: the first smoke job
+proves the normal path - provision, Docker, upload, verified collection, then
+**immediate deletion** of the server and its job-owned IP - and expiry cleanup gets
+its own separate test afterward, when a worker is deliberately allowed to expire and
+the sweeper is observed reclaiming it. Requiring expiry evidence before any worker can
+be launched would make it unreachable, because the only way to produce an expired
+server is to launch one.
 
 ## Notification delivery and secondary sweep configured 2026-09-18 (eighth session)
 

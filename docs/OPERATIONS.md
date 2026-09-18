@@ -184,14 +184,34 @@ asset membership, sizes and GitHub SHA-256 digests without downloading artifacts
 and remaining job IPs. Failed data jobs can also be collected and cleaned up after
 their failure artifacts upload.
 
-Before unattended research, exercise these paths and record evidence in `STATE.md`:
+**Order matters: the first smoke cycle proves the normal path, which is
+collect-then-delete-immediately.** Expiry cleanup is a *later, separate* test. Do not
+gate the first launch on evidence that only an expired worker can produce - the only way
+to create an expired worker is to launch one, so requiring that first would make the
+cycle unreachable.
 
-- Lose the coordinator session after launch, then reconcile with `status`. Resume
-  incomplete bootstrap with `worker resume ID --job-file PATH`, using identical
-  source. Never bypass an unresolved creation by launching a new ID.
-- Run a command that exits unsuccessfully; collect logs and verify cleanup.
-- Allow a tiny worker to expire while Scout is idle; confirm independent cleanup,
-  then reconcile with `status`. Record actual costs as well as functionality.
+The first smoke job therefore exercises, in order: provisioning, Docker readiness, the
+data job, a direct upload to the private staging release, **verified collection**, then
+**immediate deletion of the server and its job-owned primary IP**. Nothing is left
+running and nothing is left to expire. Record the artifact links, the reservation, the
+estimated cost and the confirmed deletion.
+
+Before unattended research, exercise these paths in this order and record evidence in
+`STATE.md`:
+
+1. **The normal path** - the smoke cycle above: collection followed by immediate
+   deletion, with deletion confirmed by reading the server and IP back.
+2. **Expiry cleanup, separately** - allow a tiny worker to expire while Scout is idle;
+   confirm the independent sweeper deletes it, then reconcile with `status`. This is a
+   distinct test with its own job, run only after the normal path has been proven.
+3. **Interrupted session recovery** - lose the coordinator session after launch, then
+   reconcile with `status`. Resume incomplete bootstrap with `worker resume ID
+   --job-file PATH`, using identical source. Never bypass an unresolved creation by
+   launching a new ID.
+4. **A failing job** - run a command that exits unsuccessfully; collect logs and verify
+   cleanup.
+
+Record actual costs as well as functionality.
 
 ## Recovery and data flow
 
