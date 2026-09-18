@@ -1,97 +1,69 @@
 # Reproduce this version
 
-Everything here runs from public sources. The private factory repository is where the pipeline
-lives, but **it is not needed to rebuild or to evaluate this dataset**.
-
-## 1. Rebuild the dataset from source
+Five things can be checked here, in increasing cost. **Nothing in this repository needs access
+to any other repository.** The pinned revision of this package is the tag **`v2026.09`**;
+`git rev-parse v2026.09` gives the exact commit if you need it.
 
 ```bash
-# build.py is stdlib-only Python 3.13; no packages to install.
-# Fetch it from the pinned revision that produced this artifact:
-#   repository: earino/dataset-factory   (private)
-#   commit:     06d7002bc01933e4c094bbe84e4d9899572a893f   (2026-09-18T19:34:24Z)
-#   file:       candidates/austin-911-response/source/build.py
-#   sha256:     e3a82b4739d1481dc44fd2e8211d7cba605250896de94c4d0748677368d23ea4
-
-python3 build.py --out /tmp/extract --built-at 2026-09-18T19:36:55.770697+00:00
+git clone https://github.com/earino/austin-911-response.git
+cd austin-911-response
 ```
 
-**Pass `--built-at`.** `meta.json` embeds the build timestamp, so without it a rebuild differs
-from this artifact in that one field and its `artifact_version` will not match. The pin is the
-timestamp recorded in this release's `MANIFEST.json` (`built_at_utc`). This is not a
-technicality: the first attempt at reproducing this version rebuilt all three split files
-byte-for-byte and still failed verification for exactly this reason.
+## 0. Dependencies
 
-The script fetches the City of Austin catalogue anonymously over the Socrata API (about 53
-paginated requests of 20,000 rows, ordered by `incident_number,:id`), derives the label, writes
-the three splits in the runner's layout, and writes `meta.json`, `quality.json`, `manifest.json`
-and `summary.json`.
+The construction script and the qualification gate are **stdlib-only** (Python 3.13, no packages).
+Only the baseline needs the benchmark's dependency ranges:
 
-**Measured cost:** 353.7 s wall clock on a 2-vCPU / 2 GB machine, ~136 MB of output.
+```
+pandas>=2.2,<3     numpy>=1.26     xgboost>=3.0     scikit-learn>=1.5
+```
 
-**Do not expect byte-identical output on a later date.** The source is a live catalogue the City
-updates, so a rebuild after 2026-09-18 will include later rows and any revisions. This version's
-identity is its hashes, not its source URL.
+The versions actually resolved in the recorded baseline run: Python 3.13.15, pandas 2.3.3,
+numpy 2.5.3, xgboost 3.4.1, scikit-learn 1.9.1.
+
+## 1. Download the dataset (required for everything below)
+
+```bash
+python3 get_dataset.py --dest ./task
+```
+
+The release assets are flat because GitHub does not allow `/` in asset names; the script restores
+the runner's layout (`public/`, `private/`, `meta.json`, `quality.json`) and verifies every file
+against `SHA256SUMS`. Needs a credential: `gh` already authenticated, or `GITHUB_TOKEN`. The
+by-hand `gh release download` equivalent is in `README.md`.
 
 ## 2. Verify what you downloaded
 
 ```bash
-sha256sum -c SHA256SUMS
+cd task && cp ../SHA256SUMS . && sha256sum -c SHA256SUMS && cd ..
 ```
 
-`SHA256SUMS` covers the five artifact files. Their combined artifact version is
-`e4598317e406984fa590aacc5e7aff675867578c51ae1a84ebf6279bc42c3328`.
+Covered files and their SHA-256 values are also in `MANIFEST.json`. The combined artifact version
+is `e4598317e406984fa590aacc5e7aff675867578c51ae1a84ebf6279bc42c3328`.
 
-## 3. Check the dataset against its own declarations
-
-The qualification gate is versioned with the dataset and is stdlib-only:
+## 3. Re-run the qualification gate
 
 ```bash
-python3 qualify_dataset.py <extract-dir>          # prints every check and exits non-zero on any failure
-python3 qualify_dataset.py --selftest             # proves the gate still rejects its broken fixtures
+python3 code/qualify_dataset.py ./task
+python3 code/qualify_dataset.py --selftest      # the gate must still reject its broken fixtures
 ```
 
-The reported run was **gate 1.3.0, 33 checks, 0 failures**, executed on the worker over the full
-artifact. Two earlier builds failed and both failures were gate defects, documented in the
-factory's record; neither was a data defect.
+The released version passed **33 checks, 0 failures** (gate version 1.3.0) over the full
+artifact, executed on a worker. Two earlier builds failed and both failures were gate defects,
+not data defects; the history is in the factory's record and summarised in `RELEASE_NOTES.md`.
 
 ## 4. Reproduce the baseline
 
-The baseline is the harness benchmark's own `train.py`, run **unmodified** against this dataset
-in the runner's contract: `task.json` plus `data/train.csv` and `data/eval.csv`, with the
-holdout excluded.
-
-Task materialization follows the benchmark's `bench/workdir.py`: `task.json` carries
-`name`, `description`, `target`, `positive_label`, `id_columns`, `split`, `columns`, `rows`;
-`data/train.csv` and `data/eval.csv` are the public split; **the holdout is never copied into a
-workdir.**
-
-**Runner files used, by hash** — unmodified from the benchmark revision:
-
-| file | sha256 |
-|---|---|
-| `train.py` | `a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8` |
-| `validate.py` | `b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b` |
-| `validate.sh` | `3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d` |
-
-**Dependency ranges** (from the benchmark's `pyproject.toml`):
-`pandas>=2.2,<3`, `numpy>=1.26`, `xgboost>=3.0`, `scikit-learn>=1.5`. The versions actually
-resolved in the recorded run are in `MANIFEST.json` under `baseline.dependencies`.
-
-**Commands:**
-
 ```bash
-python3 -m pip install "pandas>=2.2,<3" "numpy>=1.26" "xgboost>=3.0" "scikit-learn>=1.5"
-cd <task-dir>            # task.json + data/train.csv + data/eval.csv + the three runner files
-python3 train.py         # trains, prints "Eval AUC: <x>"
-sh validate.sh           # runs validate.py: checks the contract and re-scores via predict_proba
+sh baseline/reproduce_baseline.sh ./task
 ```
 
-`train.py` prints `Eval AUC:` on the eval split; `validate.py` re-runs it, confirms
-`predict_proba(df)` exists and returns finite probabilities in [0, 1], and prints
-`[validate] CONTRACT OK`.
+That script copies the benchmark's own `train.py`, `validate.py` and `validate.sh` from
+`baseline/` (verbatim, hashes in `baseline/README.md` and `MANIFEST.json`), materializes
+`task.json` and `data/{train,eval}.csv` exactly as the benchmark's `bench/workdir.py` does, then
+runs both contract entry points. It never copies the private holdout into a workdir.
 
-**Measured result of the recorded run:**
+**Recorded result:**
 
 | | |
 |---|---|
@@ -100,14 +72,53 @@ sh validate.sh           # runs validate.py: checks the contract and re-scores v
 | `train.py` exit / `validate.sh` exit | 0 / 0 |
 | `[validate] CONTRACT OK` | yes |
 | train / score time | 2.6 s / 0.3 s |
-| resolved dependencies | Python 3.13.15, pandas 2.3.3, numpy 2.5.3, xgboost 3.4.1, scikit-learn 1.9.1 |
 
-Both AUC figures agreeing matters: `train.py` scores its own in-memory model, while
+Both figures agreeing is the point: `train.py` scores its own in-memory model, while
 `validate.py` re-runs the file and scores through `predict_proba(df)` with the target column
-removed — so the contract is satisfied, not just the training script.
+removed — so the contract is satisfied, not merely the training script.
 
-## 5. What is *not* reproduced here
+## 5. Rebuild the dataset from the source API
 
-**No agent or harness comparison.** This release contains one baseline through the runner's
-contract. Comparing coding agents or harnesses on this dataset is a separate milestone and no
-result of that kind exists yet.
+```bash
+python3 code/build.py --out /tmp/extract \
+    --built-at 2026-09-18T19:36:55.770697+00:00
+```
+
+**`--built-at` is required for a byte-identical rebuild**, because `meta.json` embeds the build
+timestamp. The pin above is this release's recorded `built_at_utc` (`MANIFEST.json`). Without it
+the three split files still match and `meta.json` does not — which is exactly how the first
+attempt at reproducing this version failed verification while every data file was identical.
+
+Then compare:
+
+```bash
+cd /tmp/extract && sha256sum -c /path/to/repo/SHA256SUMS
+```
+
+**Measured cost:** **69 HTTP requests** — 15 aggregate queries (1 row count, 10 threshold probes,
+1 re-measure, 3 per-split counts) plus 54 page requests at 20,000 rows per page (29 train, 15
+eval, 10 holdout) — and 353.7 s wall clock on a 2-vCPU / 2 GB machine, producing ~136 MB.
+
+**Do not expect a byte-identical rebuild on a later date.** The source is a live catalogue the
+City updates, so a rebuild after 2026-09-18 will include later rows and any revisions. This
+version's identity is its hashes, not its source URL.
+
+## Measuring the clock offset instead of assuming it
+
+```bash
+python3 code/measure_clock_offset.py 2000 --json
+```
+
+Reports the distribution of
+`(first_unit_arrived_datetime - response_datetime) - response_time` over the first 2,000 rows in
+`:id` order. Measured: median **−57 s**, mean −53.5 s, p05 −206 s, p95 0 s, range −468 s …
++6,041 s; 1,890 of 2,000 rows negative (the label's clock starts *earlier* than the prediction
+instant), 55 exactly zero, 55 positive.
+
+## What is deliberately not here
+
+- **No agent or harness comparison.** This package contains one baseline through the runner's
+  contract. Comparing coding agents or harnesses is a separate milestone and no result of that
+  kind exists.
+- **No synthetic stand-in for the benchmark.** The three runner files are the benchmark's own,
+  copied verbatim and hash-checked; nothing here reimplements or approximates them.

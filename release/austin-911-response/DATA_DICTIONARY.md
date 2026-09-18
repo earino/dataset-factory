@@ -62,7 +62,14 @@ Temporal, by `response_datetime`, with no random component:
   "Other"/Frank call at 16:38 with a 6,164-second response. The dataset does not claim
   `incident_number` identifies a unique entity; the count is declared in `quality.json` as
   `expected_duplicate_ids`.
-- **Null labels dropped.** Rows whose `response_time` is null cannot be labelled and are not
-  shipped. Per-split counts are recorded in the build manifest.
+- **Unlabelled rows are excluded by the query.** The extraction filters on
+  `response_time IS NOT NULL`, because a null label cannot be trained on. Measured: **0 rows** in
+  the three shipped windows were dropped after retrieval, so the exclusion is upstream of the
+  counts above.
 - **No imputation.** Missing values in feature columns are left as they are; the benchmark's
   `train.py` handles unseen categorical levels by mapping them to NaN.
+- **The label's clock starts before the prediction instant.** `response_time` begins when the call
+  was answered, which is earlier than `response_datetime`. Measured over 2,000 rows: median offset
+  **−57 s** (p05 −206 s, p95 0 s, range −468 s … +6,041 s). Reproduce with
+  `code/measure_clock_offset.py`. The window between the prediction instant and the start of the
+  measured clock is small, but it is not zero, and every model on this dataset inherits it.

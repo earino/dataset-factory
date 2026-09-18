@@ -45,10 +45,35 @@ def validate(job, config):
         raise FactoryError("Job runtime exceeds policy")
     if not job["timeout_minutes"] + 15 <= job["lifetime_minutes"] <= config["max_lifetime_minutes"]:
         raise FactoryError("Lifetime must include at least 15 minutes for boot/upload and fit policy")
-    if not isinstance(job["command"], list) or not job["command"] or not all(isinstance(x, str) and x and "\0" not in x for x in job["command"]):
+    # A transfer job moves already-built artifacts between releases and runs no container, so it
+    # needs no argv and no image; everything else is validated the same way.
+    runs_container = not job.get("transfer")
+    command = job.get("command")
+    if runs_container and (not isinstance(command, list) or not command
+                           or not all(isinstance(x, str) and x and "\0" not in x
+                                      for x in command)):
         raise FactoryError("command must be a nonempty argv array")
-    if not isinstance(job["image"], str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._/:@-]*", job["image"]):
+    image = job.get("image")
+    if runs_container and (not isinstance(image, str)
+                           or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._/:@-]*", image)):
         raise FactoryError("Invalid Docker image reference")
+    for key in ("transfer", "fetch"):
+        if key not in job:
+            continue
+        spec = job[key]
+        required = (("source_repo", "target_repo", "target_release", "assets")
+                    if key == "transfer" else ("repo", "assets"))
+        missing = [name for name in required if name not in spec]
+        if missing:
+            raise FactoryError(f"{key} spec is missing {missing}")
+        if not isinstance(spec["assets"], list) or not spec["assets"]:
+            raise FactoryError(f"{key} spec needs a non-empty assets list")
+        for item in spec["assets"]:
+            keys = (("source_asset_id", "target_name", "size", "sha256")
+                    if key == "transfer" else ("asset_id", "dest", "sha256"))
+            absent = [name for name in keys if name not in item]
+            if absent:
+                raise FactoryError(f"{key} asset entry is missing {absent}")
     if config["max_workers"] != 1:
         raise FactoryError("This first version supports one worker at a time")
     if not 1 <= config["max_report_bytes"] <= REPORT_LIMIT:

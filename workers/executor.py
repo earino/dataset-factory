@@ -10,9 +10,9 @@ import subprocess
 import time
 
 try:
-    from .upload import publish, UploadError
+    from .upload import publish, fetch, transfer, UploadError
 except ImportError:  # Standalone /opt/scout installation.
-    from upload import publish, UploadError
+    from upload import publish, fetch, transfer, UploadError
 
 BASE = Path("/opt/scout")
 REPORT_LIMIT = 262144
@@ -55,6 +55,17 @@ def execute(base, job):
     log = base / "container.log"
     log.touch()
     try:
+        if job.get("transfer"):
+            # No container: this job moves already-built artifacts between releases. The bytes
+            # are verified twice (on arrival and by the server's own digest after upload), so a
+            # repeat run is idempotent and an interrupted one is safe to redispatch.
+            transfer(base, job, report)
+            report["status"] = "succeeded"
+            return report
+        if job.get("fetch"):
+            # Download the released artifact before starting the container, so a job can measure
+            # the published bytes rather than rebuilding them.
+            fetch(base, job, report)
         subprocess.run(["docker", "pull", job["image"]], stdout=subprocess.DEVNULL,
                        stderr=subprocess.DEVNULL, check=True, timeout=300)
         identity = json.loads(subprocess.check_output(["docker", "image", "inspect", job["image"]], timeout=30))[0]
@@ -65,8 +76,12 @@ def execute(base, job):
                 "--memory", f"{job['memory_mb']}m", "--memory-swap", f"{job['memory_mb']}m",
                 "--log-driver=local", "--log-opt=max-size=1m", "--log-opt=max-file=2",
                 "--mount", f"type=bind,src={base / 'source'},dst=/workspace,readonly",
-                "--mount", f"type=bind,src={base / 'output'},dst=/output", "--workdir", "/workspace",
-                "--env", "PYTHONDONTWRITEBYTECODE=1", job["image"], *job["command"]]
+                "--mount", f"type=bind,src={base / 'output'},dst=/output"]
+        if job.get("fetch"):
+            # The fetched artifact, read-only, without the container ever holding a credential.
+            args += ["--mount", f"type=bind,src={base / 'cache'},dst=/data,readonly"]
+        args += ["--workdir", "/workspace",
+                 "--env", "PYTHONDONTWRITEBYTECODE=1", job["image"], *job["command"]]
         subprocess.run(args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True, timeout=60)
         deadline = time.monotonic() + job["timeout_minutes"] * 60
         while True:

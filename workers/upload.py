@@ -86,6 +86,44 @@ class GitHub:
                 return result
         raise UploadError("Too many assets")
 
+    def download(self, asset_id, dest: Path, sha256: str, size: int | None = None):
+        """Stream one release asset to a file, verifying what arrived.
+
+        `request()` returns parsed JSON, so binary content needs its own path. The bytes are
+        written to a `.part` file and only renamed once the size and SHA-256 match, so a
+        partial or corrupted transfer can never be mistaken for the artifact.
+        """
+        temporary = dest.with_suffix(dest.suffix + ".part")
+        connection = http.client.HTTPSConnection("api.github.com", timeout=600)
+        try:
+            connection.request("GET", f"/repos/{self.repo}/releases/assets/{asset_id}",
+                               headers={"Authorization": "Bearer " + self.token,
+                                        "User-Agent": "dataset-factory-scout",
+                                        "Accept": "application/octet-stream"})
+            response = connection.getresponse()
+            if response.status != 200:
+                raise UploadError(f"Asset download returned HTTP {response.status}")
+            written = 0
+            with temporary.open("wb") as stream:
+                while True:
+                    chunk = response.read(1024 * 1024)
+                    if not chunk:
+                        break
+                    written += len(chunk)
+                    stream.write(chunk)
+            if size is not None and written != size:
+                raise UploadError(f"Downloaded {written} bytes, expected {size}")
+            if digest(temporary) != sha256:
+                raise UploadError("Downloaded asset digest differs")
+            temporary.replace(dest)
+            return written
+        except (OSError, http.client.HTTPException) as exc:
+            raise UploadError(f"Download failed ({type(exc).__name__})") from None
+        finally:
+            connection.close()
+            if temporary.exists():
+                temporary.unlink()
+
     def ensure_asset(self, release_id, path, name, offset, size, sha256):
         for attempt in range(3):
             existing = next((a for a in self.assets(release_id) if a["name"] == name), None)
@@ -123,6 +161,93 @@ def parts(files, part_bytes=PART_BYTES):
             result.append({"path": path, "file": logical, "name": f"file-{index:04d}-part-{part:04d}",
                            "offset": offset, "size": length, "sha256": digest(path, offset, length)})
     return result
+
+
+def transfer(base, job, report, client=None):
+    """Copy named assets from a source release to a target release, on this worker host.
+
+    The point is to move a dataset between repositories without the bytes ever passing through
+    the coordinator, which is small and is not supposed to hold bulk data. Each asset is
+    downloaded, verified against its recorded SHA-256, re-uploaded, verified again from the
+    server's own digest, and then deleted locally, so peak disk is one asset and never the whole
+    dataset.
+
+    A target repository that is public is refused unless the job says `allow_public: true`,
+    because publishing is a reviewed step and this is the last guard before irreversible.
+    """
+    spec = job["transfer"]
+    credentials = json.loads((base / "credentials.json").read_text())
+    token = credentials["token"]
+    source = GitHub(token, spec["source_repo"])
+    target = GitHub(token, spec["target_repo"])
+    target_info = target.request("GET", f"/repos/{target.repo}")
+    if not target_info:
+        raise UploadError("Target repository does not exist")
+    if target_info.get("private") is not True and spec.get("allow_public") is not True:
+        raise UploadError("Target repository is public; publishing needs explicit authorisation")
+
+    release = target.request("GET", f"/repos/{target.repo}/releases/{spec['target_release']}")
+    release_id = (release or {}).get("id")
+    if not release_id:
+        raise UploadError("Target release does not exist")
+
+    cache = base / "cache"
+    cache.mkdir(exist_ok=True)
+    transferred, failures = [], []
+    for index, item in enumerate(spec["assets"]):
+        local = cache / f"transfer-{index:04d}"
+        try:
+            source.download(item["source_asset_id"], local, item["sha256"], item.get("size"))
+            asset = target.ensure_asset(release_id, local, item["target_name"], 0,
+                                        item["size"], item["sha256"])
+            transferred.append({"target_name": item["target_name"], "asset_id": asset["id"],
+                                "bytes": item["size"], "sha256": item["sha256"],
+                                "url": asset.get("browser_download_url")})
+        except UploadError as exc:
+            failures.append({"target_name": item["target_name"], "error": str(exc)})
+        finally:
+            if local.exists():
+                local.unlink()
+    report["transfer"] = {"source_repo": spec["source_repo"],
+                          "source_release": spec["source_release"],
+                          "target_repo": spec["target_repo"],
+                          "target_release": release_id,
+                          "transferred": transferred, "failures": failures,
+                          "bytes": sum(item["bytes"] for item in transferred)}
+    if failures:
+        raise UploadError(f"{len(failures)} of {len(spec['assets'])} assets did not transfer")
+    return report["transfer"]
+
+
+def fetch(base, job, report, client=None):
+    """Download named assets from a release into `base/cache`, verifying each one.
+
+    This is what lets a job consume an already-published artifact - for a qualification or
+    baseline run against the released bytes - instead of rebuilding it. The container mounts the
+    cache read-only, so the downloaded artifact reaches the container without the container ever
+    holding a credential.
+    """
+    spec = job["fetch"]
+    credentials = json.loads((base / "credentials.json").read_text())
+    client = client or GitHub(credentials["token"], spec["repo"])
+    cache = base / "cache"
+    cache.mkdir(exist_ok=True)
+    fetched, failures = [], []
+    for item in spec["assets"]:
+        destination = cache / item["dest"]
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            written = client.download(item["asset_id"], destination, item["sha256"],
+                                      item.get("size"))
+            fetched.append({"dest": item["dest"], "bytes": written, "sha256": item["sha256"]})
+        except UploadError as exc:
+            failures.append({"dest": item["dest"], "error": str(exc)})
+    report["fetch"] = {"repo": spec["repo"], "release": spec.get("release"),
+                       "fetched": fetched, "failures": failures,
+                       "bytes": sum(item["bytes"] for item in fetched)}
+    if failures:
+        raise UploadError(f"{len(failures)} of {len(spec['assets'])} assets did not download")
+    return report["fetch"]
 
 
 def publish(base, job, report, client=None):

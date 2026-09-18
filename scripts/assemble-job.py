@@ -87,6 +87,26 @@ BUNDLES = {
             "max_artifact_mb": 50,
         },
     },
+    # Fresh-consumer check: the published repository tree plus the run script, against the release
+    # assets fetched by the worker host. No dataset-factory access, and no credential in the
+    # container.
+    "austin-consumer": {
+        "job_file": "candidates/austin-911-response/consumer/source/job.json",
+        "files": [
+            ("run.sh", "candidates/austin-911-response/consumer/source/run.sh"),
+            ("verify_package.py", "candidates/austin-911-response/consumer/source/verify_package.py"),
+        ],
+        # The whole published package, laid out under repo/ so the container sees the repository
+        # exactly as a consumer would after cloning it.
+        "trees": [("repo", "release/austin-911-response")],
+        "overrides": {
+            "command": ["sh", "/workspace/run.sh"],
+            "timeout_minutes": 60,
+            "lifetime_minutes": 120,
+            "max_disk_mb": 3072,
+            "max_artifact_mb": 50,
+        },
+    },
 }
 
 
@@ -151,6 +171,23 @@ def main(argv=None) -> int:
         shutil.copyfile(source, target / name)
         recorded.append({"bundled_as": name, "source": relative,
                          "bytes": source.stat().st_size, "sha256": sha256_of(source)})
+
+    for destination, source_dir in spec.get("trees", []):
+        # A whole directory, laid out under a subdirectory of the bundle - used to give a job the
+        # published package exactly as a consumer would see it after cloning.
+        tree_root = ROOT / source_dir
+        if not tree_root.is_dir():
+            raise SystemExit(f"canonical tree is missing: {source_dir}")
+        for path in sorted(tree_root.rglob("*")):
+            if not path.is_file() or ".git" in path.parts:
+                continue
+            inside = path.relative_to(tree_root)
+            out = target / destination / inside
+            out.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(path, out)
+            recorded.append({"bundled_as": f"{destination}/{inside.as_posix()}",
+                             "source": f"{source_dir}/{inside.as_posix()}",
+                             "bytes": path.stat().st_size, "sha256": sha256_of(path)})
 
     runner = {}
     if spec.get("runner_files"):
