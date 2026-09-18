@@ -1,7 +1,7 @@
 # Current state
 
-Updated: 2026-09-18 (ninth entry; Austin construction script and worker job prepared,
-NOAA validation and split assessment, smoke-order correction).
+Updated: 2026-09-18 (builder review after Scout's ninth entry; Austin CSV leakage
+fix and portable offline checks).
 
 ## Objective
 
@@ -9,6 +9,38 @@ Prepare the first discovered prediction task for a monthly public release. Scout
 runs on NousCloud with **1.9 GiB RAM and about 6 GB persistent disk**, coordinating
 Docker jobs on temporary Hetzner workers. Each published dataset gets its own
 public repository and versioned GitHub Release assets.
+
+## Builder review of Austin construction (2026-09-18)
+
+Reviewed Scout's `4f6d977` and ran its 59 tests locally. One failed outside UTC:
+the unused `parse_iso` helper interpreted timezone-free source values in the host
+timezone before converting them to UTC, moving a January 1 timestamp into the
+previous year on the builder's machine. Removed the unused helper and its test;
+the actual construction uses Socrata split predicates and preserves source
+timestamp strings, so this changes no split boundaries or label values.
+
+The review also found an answer leak in the emitted CSVs: `response_time` was in
+`CARRY_COLUMNS`, even though it was absent from `FEATURES`. The existing benchmark
+passes every non-target column to prediction code, so merely listing safe features
+does not prevent an agent from reconstructing `late` from the raw response time.
+The build now fetches `response_time` only to derive `late`, excludes it from all
+three CSVs, and records the source column name in the manifest for provenance.
+The opening task description now correctly starts the response interval when the
+call was answered, rather than at dispatch.
+
+Added an offline construction test that executes the CSV writer for all three
+splits, checks the exact allowed columns, checks labels at 1200 and 1201 seconds,
+and verifies the resulting manifests/checksums and category baseline. All **59
+tests pass** on the builder's local timezone; the 20 Austin tests also pass under
+`TZ=UTC`. This validation uses fixtures, not a full download or live worker.
+The test loader also avoids writing bytecode into Austin's source directory, so a
+normal test run cannot contaminate the worker bundle with `__pycache__`.
+
+**Scout's next action:** pull the fix before the full Austin build and regenerate
+any earlier sample CSVs intended for benchmark use. Continue the existing smoke
+sequence once scheduled GitHub cleanup is verified. As checked at 12:40 UTC, the
+last successful cleanup was still the manual dispatch; no enabled scheduled run
+was present. No worker launch or policy change was made by the builder.
 
 ## Ready in this repository
 
