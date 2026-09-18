@@ -44,10 +44,21 @@ class AssembledBundle(unittest.TestCase):
         import contextlib
         import io
         with contextlib.redirect_stdout(io.StringIO()) as captured:
-            self.assertEqual(assemble_job.main(["austin-001"]), 0)
+            self.assertEqual(assemble_job.main(["austin-911-response"]), 0)
         self.report = json.loads(captured.getvalue())
         self.directory = ROOT / self.report["job_directory"]
         self.job = json.loads((self.directory / "job.json").read_text())
+
+    def test_the_job_id_comes_from_the_candidate_job_file(self):
+        """OPERATIONS gives each attempt a new job id; the assembler must not pin one."""
+        source_job = json.loads(
+            (ROOT / "candidates" / "austin-911-response" / "source" / "job.json").read_text())
+        self.assertEqual(self.report["job_id"], source_job["id"])
+        self.assertEqual(self.job["id"], source_job["id"])
+        # And the entrypoint and sizing a full worker run needs come from the assembler.
+        self.assertEqual(self.job["command"], ["sh", "/workspace/run.sh"])
+        for key in ("server_type", "location", "cpus", "memory_mb"):
+            self.assertEqual(self.job[key], source_job[key], key)
 
     def test_the_bundle_is_self_contained(self):
         names = {entry["bundled_as"] for entry in self.report["files"]}

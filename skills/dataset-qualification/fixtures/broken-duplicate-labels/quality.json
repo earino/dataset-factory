@@ -11,8 +11,7 @@
  "event_key_column": "response_datetime",
  "features": [
   "initial_problem_category",
-  "sector",
-  "priority_level"
+  "sector"
  ],
  "features_documented_at": "prediction_time",
  "carry_columns": [
@@ -21,7 +20,9 @@
  "id_columns": [
   "incident_number"
  ],
- "high_cardinality_columns": [],
+ "high_cardinality_columns": [
+  "response_datetime"
+ ],
  "label_source_columns": [
   "response_time"
  ],
@@ -41,6 +42,11 @@
   "unit": "seconds",
   "source": "20 minutes, frozen from the training window"
  },
+ "known_event": {
+  "name": "record event the method must flag",
+  "expected_verdict": "exceeds",
+  "source": "recorded fixture"
+ },
  "split_windows": {
   "train": {
    "start": null,
@@ -55,10 +61,10 @@
    "end": null
   }
  },
- "expected_duplicate_ids": 0,
+ "expected_duplicate_ids": 1,
  "positive_events": {
   "eval": {
-   "positives": 7,
+   "positives": 30,
    "distinct_events": 30
   },
   "holdout": {
@@ -69,6 +75,6 @@
  "splits": {
   "train": "public/train.csv",
   "eval": "public/eval.csv",
-  "holdout": "public/holdout.csv"
+  "holdout": "private/holdout.csv"
  }
 }

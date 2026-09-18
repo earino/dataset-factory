@@ -51,7 +51,7 @@ import json
 import sys
 from pathlib import Path
 
-GATE_VERSION = "1.1.0"
+GATE_VERSION = "1.2.0"
 
 MIN_GROUP_FOR_CATEGORICAL = 5
 MIN_EVAL_POSITIVES = 30
@@ -468,18 +468,65 @@ def check_splits(quality: dict, report: Report, columns_by_split: dict) -> None:
     id_columns = quality.get("id_columns", [])
     if id_columns:
         id_column = id_columns[0]
+        target = quality.get("target")
         seen: dict[str, str] = {}
-        shared = []
+        first_label: dict[tuple, object] = {}    # (split, id) -> the label first seen for it
+        shared = []                    # an identifier spanning two splits: leakage
+        duplicate_rows: dict[str, int] = {}      # repeats inside one split: the source's grain
+        duplicate_labels: dict[tuple, set] = {}
         for key in keys:
-            for value in columns_by_split[key][1].get(id_column, []):
-                if value in seen:
-                    shared.append(f"{value} in {seen[value]} and {key}")
-                else:
+            values = columns_by_split[key][1].get(id_column, [])
+            labels = columns_by_split[key][1].get(target, []) if target else []
+            for index, value in enumerate(values):
+                label = labels[index] if index < len(labels) else None
+                first = seen.get(value)
+                if first is None:
                     seen[value] = key
-        report.add("splits.no_shared_entities", not shared,
-                   f"no {id_column} appears in two splits" if not shared
-                   else f"{len(shared)} shared identifiers, e.g. {shared[:3]}",
+                    first_label[(key, value)] = label
+                elif first != key:
+                    shared.append(f"{value} in {first} and {key}")
+                else:
+                    duplicate_rows[key] = duplicate_rows.get(key, 0) + 1
+                    # Both occurrences matter: comparing only against the repeat would call a
+                    # contradictory pair consistent.
+                    duplicate_labels.setdefault((key, value), set()).add(
+                        first_label.get((key, value)))
+                    duplicate_labels[(key, value)].add(label)
+        # Two different properties, deliberately checked separately. A repeated identifier
+        # *inside* one split is not split leakage - it is the source having more than one row
+        # per identifier - and conflating them fails a usable dataset with a message that reads
+        # "... in train and train". Only a cross-split identifier is a leak.
+        report.add("splits.no_cross_split_entities", not shared,
+                   f"no {id_column} appears in more than one split" if not shared
+                   else f"{len(shared)} identifiers span two splits: {shared[:3]}",
                    {"shared_sample": shared[:10], "shared_count": len(shared)})
+
+        repeated = sum(duplicate_rows.values())
+        tolerance = quality.get("expected_duplicate_ids")
+        if tolerance is None:
+            report.add("splits.duplicate_entities_within_splits", not repeated,
+                       "no identifier repeats inside a split" if not repeated
+                       else f"{repeated} rows repeat an identifier within a split "
+                            f"{duplicate_rows}; declare expected_duplicate_ids in "
+                            f"quality.json to pin a known count",
+                       {"duplicate_rows": duplicate_rows})
+        else:
+            report.add("splits.duplicate_entities_within_splits", repeated <= tolerance,
+                       f"{repeated} repeated-identifier rows within splits, at most the "
+                       f"declared {tolerance}" if repeated <= tolerance
+                       else f"{repeated} repeated-identifier rows exceeds the declared "
+                            f"expected_duplicate_ids={tolerance}",
+                       {"duplicate_rows": duplicate_rows, "declared": tolerance})
+
+        if duplicate_labels:
+            contradictory = sorted(f"{value} in {key}"
+                                   for (key, value), labels in duplicate_labels.items()
+                                   if len(labels) > 1)
+            report.add("splits.duplicate_entities_single_label", not contradictory,
+                       "each repeated identifier carries one label" if not contradictory
+                       else f"{len(contradictory)} repeated identifiers carry more than one "
+                            f"label: {contradictory[:3]}",
+                       {"sample": contradictory[:10], "count": len(contradictory)})
 
 
 def check_runner(dataset: Path, quality: dict, report: Report,
@@ -652,6 +699,21 @@ SELFTEST_EXPECTATIONS = {
         "expected_ok": False,
         "must_fail": {
             "splits.eval_and_holdout_have_both_classes",
+        },
+    },
+    "broken-duplicates": {
+        "expected_ok": False,
+        "must_fail": {
+            # The count is not declared, so a repeat is refused rather than tolerated.
+            "splits.duplicate_entities_within_splits",
+        },
+    },
+    "broken-duplicate-labels": {
+        "expected_ok": False,
+        "must_fail": {
+            # The repeat itself is declared and accepted; the defect is that one incident
+            # carries both labels, which no tolerance should hide.
+            "splits.duplicate_entities_single_label",
         },
     },
     "corrected": {"expected_ok": True, "must_fail": set()},

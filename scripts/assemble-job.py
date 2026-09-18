@@ -8,13 +8,19 @@ repository, so `build.py` and the qualification gate both have to be copied into
 Copying them by hand, or vendoring a second copy of the gate into the candidate directory,
 creates two versions that can drift - and a stale gate is worse than no gate.
 
-This script is the single assembly point. It copies the canonical files into an ignored
-staging directory, generates `job.json`, verifies the result against the worker's own bundle
-rules, and prints the directory to launch:
+This script is the single assembly point. It reads the candidate's own `source/job.json` for
+the job's size and identity, overrides only what a full worker run needs (the container command
+and the sizing that fits the gate), copies the canonical files into an ignored staging
+directory, verifies the result against the worker's own bundle rules, and prints the directory
+to launch:
 
-    python3 scripts/assemble-job.py austin-001
-    sh scripts/scout-factory worker plan .factory/jobs/austin-001/job.json
-    sh scripts/scout-factory worker launch .factory/jobs/austin-001/job.json
+    python3 scripts/assemble-job.py austin-911-response
+    sh scripts/scout-factory worker plan .factory/jobs/austin-002/job.json
+    sh scripts/scout-factory worker launch .factory/jobs/austin-002/job.json
+
+The job **id comes from the candidate's `source/job.json`**, not from this file. OPERATIONS
+says each attempt gets a new job id, and the first version of this script hardcoded the id in
+two places, which made a second attempt impossible to express.
 
 Nothing here touches the network or the cloud, and the staging directory is regenerated from
 scratch on every run.
@@ -31,24 +37,19 @@ ROOT = Path(__file__).resolve().parents[1]
 ALLOWED_SUFFIXES = (".py", ".sh", ".json", ".txt", ".toml", ".yaml", ".yml", ".md")
 BUNDLE_LIMIT = 2 * 1024 * 1024
 
-# (destination name, source path relative to the repository root)
-JOBS = {
-    "austin-001": {
-        "candidate": "austin-911-response",
+# Assembled from the candidate's own source/job.json, so the job id lives in exactly one place.
+CANDIDATES = {
+    "austin-911-response": {
+        "job_file": "candidates/austin-911-response/source/job.json",
         "files": [
             ("build.py", "candidates/austin-911-response/source/build.py"),
             ("run.sh", "candidates/austin-911-response/source/run.sh"),
             ("qualify_dataset.py", "skills/dataset-qualification/scripts/qualify_dataset.py"),
         ],
-        "job": {
-            "id": "austin-001",
-            "candidate": "austin-911-response",
-            "image": "python:3.13-slim",
+        # A full worker run builds the whole extract and then qualifies it, so it needs the
+        # entrypoint that does both and sizing that fits; the small local sample job does not.
+        "overrides": {
             "command": ["sh", "/workspace/run.sh"],
-            "server_type": "cpx32",
-            "location": "hel1",
-            "cpus": 2,
-            "memory_mb": 2048,
             "timeout_minutes": 60,
             "lifetime_minutes": 120,
             "max_disk_mb": 3072,
@@ -56,6 +57,18 @@ JOBS = {
         },
     },
 }
+
+
+def load_job(spec: dict) -> dict:
+    """The candidate's own job.json is the source of truth for identity and sizing."""
+    path = ROOT / spec["job_file"]
+    if not path.is_file():
+        raise SystemExit(f"candidate job file is missing: {spec['job_file']}")
+    job = json.loads(path.read_text())
+    job.update(spec["overrides"])
+    if job.get("candidate") not in CANDIDATES:
+        raise SystemExit(f"job candidate {job.get('candidate')!r} is not assembled here")
+    return job
 
 
 def check_bundle(directory: Path) -> int:
@@ -79,11 +92,14 @@ def check_bundle(directory: Path) -> int:
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description="Assemble a worker job directory")
-    parser.add_argument("job_id", nargs="?", default="austin-001", choices=sorted(JOBS))
+    parser.add_argument("candidate", nargs="?", default="austin-911-response",
+                        choices=sorted(CANDIDATES),
+                        help="whose source/job.json supplies the job id and sizing")
     args = parser.parse_args(argv)
 
-    spec = JOBS[args.job_id]
-    target = ROOT / ".factory" / "jobs" / args.job_id
+    spec = CANDIDATES[args.candidate]
+    job = load_job(spec)
+    target = ROOT / ".factory" / "jobs" / job["id"]
     if target.exists():
         shutil.rmtree(target)
     target.mkdir(parents=True)
@@ -97,7 +113,6 @@ def main(argv=None) -> int:
         recorded.append({"bundled_as": name, "source": relative,
                          "bytes": source.stat().st_size})
 
-    job = dict(spec["job"])
     job["source_files"] = recorded
     (target / "job.json").write_text(json.dumps(job, indent=1) + "\n")
 

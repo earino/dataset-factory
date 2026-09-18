@@ -192,9 +192,39 @@ scored result.
 
 ## Open blockers
 
-- Worker credentials and the allowance are provisioned, but paid launches stay
-  disabled until the GitHub scheduled cleanup run is observed, so the full extraction
-  cannot run yet. Nothing above depends on that: the API, the schema and the target
-  are verified.
 - No licence text has been read beyond the catalog's Public Domain field; the catalog
   field is the recorded basis. A link to the source's own terms has not been captured.
+
+## Measured 2026-09-18: `incident_number` is not unique, and paging depended on it
+
+The first full extraction (job `austin-001`) built all three splits and then **failed
+qualification** on one check. Investigating the rows rather than the declarations produced two
+findings.
+
+**1. The source is not unique on `incident_number`.** Aggregate queries against
+`e687-fx2y` report 1,049,636 rows and **1,049,612 distinct** `incident_number` values: 24
+incident numbers carry two rows each. The extract reproduced exactly those 24, all inside
+train, none spanning two splits - so this is the source's grain, not leakage. It is now
+declared in `quality.json` as `expected_duplicate_ids`, measured from the rows during the
+build, which pins the known-good count: if paging ever starts repeating rows, the gate sees a
+count above the declaration and fails.
+
+**2. The paging key was not total.** `stream_rows` ordered by `incident_number` alone while
+paging with `$offset`. On a non-unique sort key the backend's order among ties is not
+guaranteed to be the same between requests, so offset paging can repeat or skip rows. The
+first extract did not appear to lose or duplicate rows (its 24 duplicates match the source's
+24), but the guarantee was accidental. `:id` is unique per row - verified 1,049,636 rows,
+1,049,636 distinct - and `$order=incident_number,:id` is accepted and returns identical
+results across repeated calls, so the order is now total and the paging deterministic.
+
+**The gate was also wrong.** It reported a repeat inside one split as if it spanned two,
+producing `"... in train and train"` for a dataset with no cross-split overlap, and refused a
+usable extract for the wrong reason. Cross-split overlap and within-split repetition are now
+separate checks, and a third check refuses a repeated identifier that carries both labels.
+Gate version 1.2.0; two new fixtures (`broken-duplicates`, `broken-duplicate-labels`) and
+121 tests cover all three.
+
+Job `austin-001` itself completed correctly: the extract was built, the failure was detected
+by the gate on the worker, the diagnostics and the extract were preserved in staging, and the
+worker was destroyed. That is the intended behaviour for a failing qualification. The
+extraction was re-run as `austin-002` with the fixes above.

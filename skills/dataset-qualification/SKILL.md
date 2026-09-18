@@ -1,7 +1,7 @@
 ---
 name: dataset-qualification
 description: "Use when a constructed dataset is about to be scored or published. Gate for leakage, prediction timing, units/frames, temporal splits and runner compatibility."
-version: 1.1.0
+version: 1.2.0
 license: MIT
 platforms: [linux, macos]
 metadata:
@@ -153,7 +153,18 @@ meaningful:
   means a single-year holdout is a bad idea.
 
 The gate enforces minimums (`MIN_EVAL_POSITIVES`, `MIN_DISTINCT_EVENTS`), verifies the
-declared counts against the rows, and checks that no identifier appears in two splits. The
+declared counts against the rows, and checks that no identifier appears in **two different**
+splits.
+
+Two separate properties, checked separately, because conflating them fails a usable dataset:
+
+* `splits.no_cross_split_entities` - an identifier in two splits is leakage. Hard fail.
+* `splits.duplicate_entities_within_splits` - the same identifier twice *inside* one split is
+  the source's grain, not leakage. It is refused unless the descriptor pins the known count
+  with `expected_duplicate_ids`, so a build states its expectation instead of the gate
+  guessing one.
+* `splits.duplicate_entities_single_label` - a repeated identifier carrying both labels is
+  contradictory training data. Tolerating a repeat is not the same as tolerating that. The
 clustered event count is a claim like the others: the gate recomputes it as the number of
 distinct dates of the declared `event_key_column` among the positive rows, so inflating it is
 refused rather than believed.

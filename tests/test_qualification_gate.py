@@ -160,6 +160,31 @@ class GateFixtures(unittest.TestCase):
                       if r["check"] == "splits.eval_and_holdout_have_both_classes")
         self.assertIn("eval has 40 positives and 0 negatives", detail)
 
+    def test_regression_repeated_identifier_inside_a_split(self):
+        """A repeat inside one split is the source's grain, not split leakage.
+
+        The earlier version of this check reported both with the same message, which read
+        "... in train and train" and failed a usable dataset for the wrong reason.
+        """
+        report = qualify_dataset.qualify(FIXTURES / "broken-duplicates")
+        self.assertFalse(report.ok)
+        failed = {name for name, ok in findings(report).items() if not ok}
+        self.assertIn("splits.duplicate_entities_within_splits", failed)
+        self.assertTrue(findings(report).get("splits.no_cross_split_entities"),
+                        "a repeat inside one split must not be reported as leakage")
+        detail = next(r["detail"] for r in report.results
+                      if r["check"] == "splits.duplicate_entities_within_splits")
+        self.assertIn("expected_duplicate_ids", detail)
+
+    def test_regression_contradictory_labels_on_a_tolerated_repeat(self):
+        """Accepting a repeat must not mean accepting contradictory labels for it."""
+        report = qualify_dataset.qualify(FIXTURES / "broken-duplicate-labels")
+        self.assertFalse(report.ok)
+        failed = {name for name, ok in findings(report).items() if not ok}
+        self.assertIn("splits.duplicate_entities_single_label", failed)
+        self.assertTrue(findings(report).get("splits.duplicate_entities_within_splits"),
+                        "the repeat itself was declared and is within tolerance")
+
 
 class GateOnGeneratedOutput(unittest.TestCase):
     """The gate against the files Austin's construction script actually writes."""
@@ -200,7 +225,8 @@ class GateOnGeneratedOutput(unittest.TestCase):
                       "splits.actual_ranges_disjoint",
                       "splits.rows_within_declared_windows",
                       "splits.eval_and_holdout_have_both_classes",
-                      "splits.no_shared_entities",
+                      "splits.no_cross_split_entities",
+                      "splits.duplicate_entities_within_splits",
                       "runner.layout",
                       "runner.meta_json_keys",
                       "runner.meta_matches_files",
@@ -249,6 +275,48 @@ class GateOnGeneratedOutput(unittest.TestCase):
             writer.writerows(rows)
         report = qualify_dataset.qualify(self.out)
         self.assertFalse(findings(report)["splits.eval_and_holdout_have_both_classes"])
+
+    def test_moving_an_incident_across_splits_is_rejected_as_leakage(self):
+        """A real cross-split identifier, on generated output.
+
+        The same incident appearing in train and eval is leakage; a repeat *inside* one split
+        is not, and the two must not be reported by the same check.
+        """
+        train = self.out / austin_build.LAYOUT["train"]
+        with train.open(newline="", encoding="utf-8") as handle:
+            train_ids = [row["incident_number"] for row in csv.DictReader(handle)]
+        path = self.out / austin_build.LAYOUT["eval"]
+        with path.open(newline="", encoding="utf-8") as handle:
+            rows = list(csv.DictReader(handle))
+            fieldnames = list(rows[0])
+        rows[0]["incident_number"] = train_ids[0]
+        with path.open("w", newline="", encoding="utf-8") as handle:
+            writer = csv.DictWriter(handle, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(rows)
+        report = qualify_dataset.qualify(self.out)
+        status = findings(report)
+        self.assertFalse(status["splits.no_cross_split_entities"])
+        detail = next(r["detail"] for r in report.results
+                      if r["check"] == "splits.no_cross_split_entities")
+        self.assertIn("in train and eval", detail)
+
+    def test_repeating_an_identifier_inside_train_is_not_reported_as_leakage(self):
+        train = self.out / austin_build.LAYOUT["train"]
+        with train.open(newline="", encoding="utf-8") as handle:
+            rows = list(csv.DictReader(handle))
+            fieldnames = list(rows[0])
+        rows.append(dict(rows[0]))                      # the same incident, reported twice
+        with train.open("w", newline="", encoding="utf-8") as handle:
+            writer = csv.DictWriter(handle, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(rows)
+        report = qualify_dataset.qualify(self.out)
+        status = findings(report)
+        # Not leakage - nothing spans two splits.
+        self.assertTrue(status["splits.no_cross_split_entities"])
+        # But it exceeds the count the build declared, so it is refused.
+        self.assertFalse(status["splits.duplicate_entities_within_splits"])
 
     def test_inflating_the_clustered_event_count_is_rejected(self):
         """The clustered count is a declaration too, so it is recomputed from the rows."""

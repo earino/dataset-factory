@@ -222,12 +222,16 @@ point - it copies the candidate's `build.py` and `run.sh` plus the repository's
 result against the bundle rules:
 
 ```bash
-python3 scripts/assemble-job.py austin-001
-sh scripts/scout-factory worker plan .factory/jobs/austin-001/job.json
-sh scripts/scout-factory worker launch .factory/jobs/austin-001/job.json
-sh scripts/scout-factory worker collect austin-001
-sh scripts/scout-factory worker destroy austin-001
+python3 scripts/assemble-job.py austin-911-response   # job id comes from source/job.json
+sh scripts/scout-factory worker plan .factory/jobs/austin-002/job.json
+sh scripts/scout-factory worker launch .factory/jobs/austin-002/job.json
+sh scripts/scout-factory worker collect austin-002
+sh scripts/scout-factory worker destroy austin-002
 ```
+
+Each attempt gets a new job id in the candidate's `source/job.json` before assembling; the
+assembler reads it from there rather than pinning one, so a re-run is a new ledger entry
+instead of a reused one.
 
 The entrypoint builds the extract, then qualifies it, and exits non-zero when the gate fails.
 **A failed qualification still preserves diagnostics**: the gate report, its rendered output

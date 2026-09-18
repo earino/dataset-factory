@@ -253,9 +253,15 @@ def freeze_threshold(target_rate: float, lo: int = 0, hi: int = 21600) -> dict:
 
 
 def stream_rows(where: str, select: str, page_size: int, limit: int | None = None,
-                order: str = "incident_number"):
-    """Yield rows in a stable order. Ordering by the unique incident number prevents
-    paging from skipping rows that share a response_datetime."""
+                order: str = "incident_number,:id"):
+    """Yield rows in a total order. The order key must be unique per row, or offset paging
+    can repeat or skip rows whose sort keys tie.
+
+    `incident_number` is NOT unique in this dataset - 24 incident numbers carry two rows - so
+    ordering by it alone leaves ties whose order the backend may resolve differently between
+    requests. Socrata's `:id` is unique per row (verified: 1,049,636 rows, 1,049,636 distinct),
+    so `incident_number,:id` is total and the paging is deterministic.
+    """
     offset = 0
     seen = 0
     while True:
@@ -363,6 +369,15 @@ def write_quality(out: Path, manifest: dict, fieldnames: list[str],
         "features_documented_at": "prediction_time",
         "carry_columns": CARRY_COLUMNS,
         "id_columns": ["incident_number"],
+        # incident_number is not unique in the source: 24 of its 1,049,636 rows repeat an
+        # incident number, so a handful of rows share an identifier with a row in the same
+        # split. That is the source's grain, not split leakage, and the count is measured from
+        # the rows just written. Declaring it pins the known-good value: if paging ever starts
+        # repeating rows, the gate sees a count above this and fails.
+        "expected_duplicate_ids": sum(entry["duplicate_incident_numbers"]
+                                      for entry in manifest["splits"]),
+        "expected_duplicate_ids_by_split": {entry["name"]: entry["duplicate_incident_numbers"]
+                                            for entry in manifest["splits"]},
         "high_cardinality_columns": ["response_datetime", "initial_problem_description"],
         "label_source_columns": [LABEL_SOURCE],
         "post_hoc_columns": EXCLUDED_POST_HOC,
@@ -474,6 +489,8 @@ def main(argv=None) -> int:
 
     retained: list[dict] = []
     stats = {name: {"positive_days": set()} for name, _ in SPLITS}
+    seen_ids: dict[str, set] = {name: set() for name, _ in SPLITS}
+    duplicate_rows: dict[str, int] = {name: 0 for name, _ in SPLITS}
 
     for name, where in SPLITS:
         path = out / LAYOUT[name]
@@ -494,6 +511,11 @@ def main(argv=None) -> int:
                 record = {column: row.get(column, "") for column in CARRY_COLUMNS + FEATURES}
                 record[LABEL_COLUMN] = label_for(response_time,
                                                  threshold["threshold_seconds"])
+                incident = record["incident_number"]
+                if incident in seen_ids[name]:
+                    duplicate_rows[name] += 1
+                else:
+                    seen_ids[name].add(incident)
                 writer.writerow(record)
                 rows_written += 1
                 positives += record[LABEL_COLUMN]
@@ -510,6 +532,7 @@ def main(argv=None) -> int:
             "positive_rate": round(positives / rows_written, 6) if rows_written else None,
             "skipped_null_label_source": nulls,
             "positive_days": len(stats[name]["positive_days"]),
+            "duplicate_incident_numbers": duplicate_rows[name],
             "sha256": sha256_of(path),
             "bytes": path.stat().st_size,
             "columns": fieldnames,

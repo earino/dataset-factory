@@ -125,6 +125,9 @@ def shared_quality() -> dict:
             "source": "recorded fixture",
         },
         "split_windows": WINDOWS,
+        # The clean fixture has no repeated identifiers, and saying so explicitly exercises the
+        # declared path rather than the "no declaration" path.
+        "expected_duplicate_ids": 0,
         "positive_events": {
             "eval": {"positives": 30, "distinct_events": 30},
             "holdout": {"positives": 30, "distinct_events": 30},
@@ -197,12 +200,44 @@ def build_broken_single_class(root: Path) -> None:
     write_dataset(root, CLEAN_SPLITS, rows, CLEAN_COLUMNS, quality)
 
 
+def build_broken_duplicates(root: Path) -> None:
+    """One incident reported twice inside train, with a correct-looking descriptor.
+
+    The two rows carry the *same* label, so the only defect is the repeat. Nothing in the
+    declarations exposes it; only reading the identifiers does.
+    """
+    rows = {name: rows_for(name) for name in CLEAN_SPLITS}
+    repeat = dict(rows["train"][0])
+    repeat["response_datetime"] = "2024-01-01T12:00:00.000"   # same split window
+    rows["train"] = rows["train"] + [repeat]
+    write_dataset(root, CLEAN_SPLITS, rows, CLEAN_COLUMNS, shared_quality())
+
+
+def build_broken_duplicate_labels(root: Path) -> None:
+    """The repeat is declared and tolerated, but one incident carries both labels.
+
+    A tolerance for repeated identifiers must not become a tolerance for contradictory
+    training examples.
+    """
+    rows = {name: rows_for(name) for name in CLEAN_SPLITS}
+    repeat = dict(rows["train"][0])          # label 0
+    repeat[TARGET] = 1                       # the same incident, the opposite label
+    repeat["response_datetime"] = "2024-01-01T12:00:00.000"
+    rows["train"] = rows["train"] + [repeat]
+    quality = shared_quality()
+    quality["expected_duplicate_ids"] = 1
+    write_dataset(root, CLEAN_SPLITS, rows, CLEAN_COLUMNS, quality)
+
+
 def main() -> int:
     build_corrected(HERE / "corrected")
     build_broken(HERE / "broken")
     build_broken_overlap(HERE / "broken-overlap")
     build_broken_single_class(HERE / "broken-single-class")
-    print("wrote corrected, broken, broken-overlap and broken-single-class fixtures")
+    build_broken_duplicates(HERE / "broken-duplicates")
+    build_broken_duplicate_labels(HERE / "broken-duplicate-labels")
+    print("wrote corrected, broken, broken-overlap, broken-single-class, broken-duplicates "
+          "and broken-duplicate-labels fixtures")
     return 0
 
 
