@@ -992,6 +992,54 @@ about it:
    `failure: "executor-interrupted; job was not rerun"` and the transfer was **not** silently
    re-run.
 
+### Publication package finished, transferred and verified (2026-09-18)
+
+`earino/austin-911-response` (private) carries the finished package; tag **`v2026.09`** and
+`main` both point at `acf683ebf7ff14230bf7b7242cad2050980761f4`, and `v2026.09` holds the dataset
+as five release assets. Nothing is public.
+
+**What the package contains now:** the construction script, the qualification gate, the
+materialize and clock-offset tools, the benchmark's own runner files copied verbatim with
+provenance, `get_dataset.py` (restores the runner layout from flat asset names, since GitHub
+rejects `/` in asset names), a 19-file document set, `measurements.json` holding every quoted
+number with the command that produced it, and `VERIFICATION.md`. `MANIFEST.json` records the
+SHA-256 of **every published file**, so a clone can be checked file by file.
+
+**Transport:** `austin-publish-003` moved all five assets from private staging into the dataset
+release - 131,429,379 bytes, `failures: []` - verifying each on arrival and again from the
+server's own digest after upload, deleting it locally in between. The bytes never touched this
+host.
+
+**Fresh-consumer verification: `austin-consumer-002`, 56.9 s, exit 0.** In a container with no
+factory access and no GitHub credential:
+
+| step | result |
+|---|---|
+| cloned package vs `MANIFEST.json` | 18 files, every hash matched |
+| assets fetched (host-side, credential never in the container) | 5 files, 131,429,379 bytes, all verified |
+| `sha256sum -c SHA256SUMS` | all five OK |
+| `python3 code/qualify_dataset.py ./task` | QUALIFICATION PASSED, artifact `e4598317e406984f` |
+| `sh baseline/reproduce_baseline.sh ./task` | **Eval AUC 0.7691**, CONTRACT OK |
+
+The baseline reproduces exactly, on the *published* bytes rather than a rebuild.
+
+**What that run does not cover, stated rather than implied:** the container cannot run the network
+half of `get_dataset.py` (no credential by design), so the download is done by the worker host
+and mounted read-only; and step 5 of `REPRODUCE.md` - a rebuild from the source API - needs ~136 MB
+of scratch and was verified during construction, not in the consumer check.
+
+**Decisions still open for review:** a licence for the published code and for the three benchmark
+runner files (the benchmark project itself carries no licence file, so including them is the
+maintainer's call to confirm), and public visibility. Two earlier decisions are settled: the
+labelled holdout ships publicly, and the repository stays private until authorised.
+
+**Three defects the transfer work exposed and fixed**, all found by running it rather than
+reasoning about it: a credential that could not see the target repository surfaced as an
+unhandled `UploadError` and killed a worker with no report; the asset API answers **302** to a
+signed URL on another host, which the downloader did not follow (and must not follow with the
+token attached); and the bundle rules rejected the extension-less `SHA256SUMS` by which the
+published verification command is named.
+
 ## Research shortlist recorded 2026-09-18
 
 Five candidates created with measured evidence in `candidates/<id>/record.json`

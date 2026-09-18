@@ -44,8 +44,12 @@ OWNER = "earino"
 STAGING_REPO = "earino/dataset-factory-staging"
 TOKEN_FILE = Path(os.environ.get("FACTORY_GITHUB_TOKEN_FILE",
                                  "/opt/data/.secrets/github-staging.token"))
+# Everything the published repository carries; `code/` and `baseline/` are trees of these files.
 DOCS = ("README.md", "DATA_DICTIONARY.md", "LICENSE.md", "REPRODUCE.md", "MANIFEST.json",
-        "SHA256SUMS", "RELEASE_NOTES.md")
+        "SHA256SUMS", "RELEASE_NOTES.md", "VERIFICATION.md", "measurements.json",
+        "get_dataset.py", "code/build.py", "code/qualify_dataset.py", "code/materialize.py",
+        "code/measure_clock_offset.py", "baseline/README.md", "baseline/train.py",
+        "baseline/validate.py", "baseline/validate.sh", "baseline/reproduce_baseline.sh")
 # Artifact path inside the extract -> asset name inside the public release.
 ASSET_NAMES = {
     "public/train.csv": "task/public/train.csv",
