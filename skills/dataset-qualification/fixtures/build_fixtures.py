@@ -214,14 +214,32 @@ def build_broken_duplicates(root: Path) -> None:
 
 
 def build_broken_duplicate_labels(root: Path) -> None:
-    """The repeat is declared and tolerated, but one incident carries both labels.
+    """The descriptor claims the id column identifies a unique entity, and the rows disagree.
 
-    A tolerance for repeated identifiers must not become a tolerance for contradictory
-    training examples.
+    Declaring `id_columns_are_entity_keys` is a claim about the source. Once made, a repeated
+    identifier carrying both labels is label noise and must fail.
     """
     rows = {name: rows_for(name) for name in CLEAN_SPLITS}
     repeat = dict(rows["train"][0])          # label 0
     repeat[TARGET] = 1                       # the same incident, the opposite label
+    repeat["response_datetime"] = "2024-01-01T12:00:00.000"
+    rows["train"] = rows["train"] + [repeat]
+    quality = shared_quality()
+    quality["expected_duplicate_ids"] = 1
+    quality["id_columns_are_entity_keys"] = True
+    write_dataset(root, CLEAN_SPLITS, rows, CLEAN_COLUMNS, quality)
+
+
+def build_documented_repeats(root: Path) -> None:
+    """The same rows, with no entity-key claim: the repeat is measured, not refused.
+
+    This mirrors the real Austin extract: the identifier is reused by two different events, so
+    one label per identifier is not a property the source has. The gate must record the count
+    and accept the dataset rather than fail it for a claim the descriptor never made.
+    """
+    rows = {name: rows_for(name) for name in CLEAN_SPLITS}
+    repeat = dict(rows["train"][0])
+    repeat[TARGET] = 1
     repeat["response_datetime"] = "2024-01-01T12:00:00.000"
     rows["train"] = rows["train"] + [repeat]
     quality = shared_quality()
@@ -236,8 +254,9 @@ def main() -> int:
     build_broken_single_class(HERE / "broken-single-class")
     build_broken_duplicates(HERE / "broken-duplicates")
     build_broken_duplicate_labels(HERE / "broken-duplicate-labels")
-    print("wrote corrected, broken, broken-overlap, broken-single-class, broken-duplicates "
-          "and broken-duplicate-labels fixtures")
+    build_documented_repeats(HERE / "documented-repeats")
+    print("wrote corrected, broken, broken-overlap, broken-single-class, broken-duplicates, "
+          "broken-duplicate-labels and documented-repeats fixtures")
     return 0
 
 

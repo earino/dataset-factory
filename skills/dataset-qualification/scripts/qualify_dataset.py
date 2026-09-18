@@ -51,7 +51,7 @@ import json
 import sys
 from pathlib import Path
 
-GATE_VERSION = "1.2.0"
+GATE_VERSION = "1.3.0"
 
 MIN_GROUP_FOR_CATEGORICAL = 5
 MIN_EVAL_POSITIVES = 30
@@ -522,11 +522,31 @@ def check_splits(quality: dict, report: Report, columns_by_split: dict) -> None:
             contradictory = sorted(f"{value} in {key}"
                                    for (key, value), labels in duplicate_labels.items()
                                    if len(labels) > 1)
-            report.add("splits.duplicate_entities_single_label", not contradictory,
-                       "each repeated identifier carries one label" if not contradictory
-                       else f"{len(contradictory)} repeated identifiers carry more than one "
-                            f"label: {contradictory[:3]}",
-                       {"sample": contradictory[:10], "count": len(contradictory)})
+            # This check is only meaningful against a claim. If the descriptor says the id
+            # column identifies a unique entity, one label per identifier follows and a
+            # contradiction is label noise. If it makes no such claim, the identifier is just
+            # reused - Austin's `incident_number` carries two *different* events hours apart,
+            # with different sectors and different labels - and the right thing is to measure
+            # the count and put it in the report rather than to refuse the dataset for a
+            # property the source does not claim to have.
+            claims_entity_key = quality.get("id_columns_are_entity_keys") is True
+            if claims_entity_key:
+                report.add("splits.repeated_identifiers_carry_one_label", not contradictory,
+                           "each repeated identifier carries one label, as declared"
+                           if not contradictory else
+                           f"{len(contradictory)} repeated identifiers carry more than one "
+                           f"label while id_columns_are_entity_keys is declared true: "
+                           f"{contradictory[:3]}",
+                           {"sample": contradictory[:10], "count": len(contradictory)})
+            else:
+                report.add("splits.repeated_identifiers_carry_one_label", True,
+                           f"{len(contradictory)} of {len(duplicate_labels)} repeated "
+                           f"identifiers carry more than one label; the descriptor does not "
+                           f"claim id_columns_are_entity_keys, so this is recorded as a source "
+                           f"property: {contradictory[:3]}",
+                           {"sample": contradictory[:10], "count": len(contradictory),
+                            "repeated_identifiers": len(duplicate_labels),
+                            "claimed_entity_key": False})
 
 
 def check_runner(dataset: Path, quality: dict, report: Report,
@@ -711,11 +731,12 @@ SELFTEST_EXPECTATIONS = {
     "broken-duplicate-labels": {
         "expected_ok": False,
         "must_fail": {
-            # The repeat itself is declared and accepted; the defect is that one incident
-            # carries both labels, which no tolerance should hide.
-            "splits.duplicate_entities_single_label",
+            # The descriptor claims a unique entity key, so contradictory labels are noise.
+            "splits.repeated_identifiers_carry_one_label",
         },
     },
+    # The same rows without that claim, which is the real Austin case: measured and accepted.
+    "documented-repeats": {"expected_ok": True, "must_fail": set()},
     "corrected": {"expected_ok": True, "must_fail": set()},
 }
 

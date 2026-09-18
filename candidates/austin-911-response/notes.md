@@ -209,7 +209,7 @@ declared in `quality.json` as `expected_duplicate_ids`, measured from the rows d
 build, which pins the known-good count: if paging ever starts repeating rows, the gate sees a
 count above the declaration and fails.
 
-**2. The paging key was not total.** `stream_rows` ordered by `incident_number` alone while
+**3. The paging key was not total.** `stream_rows` ordered by `incident_number` alone while
 paging with `$offset`. On a non-unique sort key the backend's order among ties is not
 guaranteed to be the same between requests, so offset paging can repeat or skip rows. The
 first extract did not appear to lose or duplicate rows (its 24 duplicates match the source's
@@ -217,12 +217,32 @@ first extract did not appear to lose or duplicate rows (its 24 duplicates match 
 1,049,636 distinct - and `$order=incident_number,:id` is accepted and returns identical
 results across repeated calls, so the order is now total and the paging deterministic.
 
+**4. Four of the 24 repeated numbers carry different labels - because they are different
+events.** `austin-002` re-ran with 1-3 fixed and failed one check: `230990471`, `241321558`,
+`250081425` and `251971574` each have two rows whose `late` differs. Reading the source rows
+settles it - `230990471` is an "Alarms"/Baker call at 07:33 with a 618-second response *and*
+an "Other"/Frank call at 16:38 with a 6,164-second response. Same number, seven hours apart,
+different category, different sector, different priority. So **`incident_number` identifies a
+call, not a row**, and one label per incident number is not a property this source has.
+
+That made the gate's new check wrong for this dataset: it asserted one label per repeated
+identifier, an assumption nothing in the data supports. The check now applies only when the
+descriptor claims `id_columns_are_entity_keys` - a statement about the source - and otherwise
+records the measured disagreement in the report instead of refusing a usable extract. The
+descriptor deliberately makes no such claim, with the reasoning recorded in `quality.json`.
+This is the same trap as the first three defects: a check that fails a good dataset for a
+property it never claimed. The `documented-repeats` fixture pins the Austin shape so it cannot
+regress.
+
+Note this also means the split partition is conservative: two distinct events sharing a number
+are forced into the same split. None of the 24 pairs straddles a boundary (the splits are by
+year and most pairs are the same day), so no row was moved from eval or holdout to achieve it.
+
 **The gate was also wrong.** It reported a repeat inside one split as if it spanned two,
 producing `"... in train and train"` for a dataset with no cross-split overlap, and refused a
 usable extract for the wrong reason. Cross-split overlap and within-split repetition are now
-separate checks, and a third check refuses a repeated identifier that carries both labels.
-Gate version 1.2.0; two new fixtures (`broken-duplicates`, `broken-duplicate-labels`) and
-121 tests cover all three.
+separate checks. Gate version 1.3.0; three new fixtures (`broken-duplicates`,
+`broken-duplicate-labels`, `documented-repeats`) and 123 tests cover all of it.
 
 Job `austin-001` itself completed correctly: the extract was built, the failure was detected
 by the gate on the worker, the diagnostics and the extract were preserved in staging, and the

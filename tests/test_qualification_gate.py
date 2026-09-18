@@ -176,14 +176,28 @@ class GateFixtures(unittest.TestCase):
                       if r["check"] == "splits.duplicate_entities_within_splits")
         self.assertIn("expected_duplicate_ids", detail)
 
-    def test_regression_contradictory_labels_on_a_tolerated_repeat(self):
-        """Accepting a repeat must not mean accepting contradictory labels for it."""
+    def test_regression_contradictory_labels_on_a_declared_entity_key(self):
+        """Claiming a unique entity key makes contradictory labels a failure.
+
+        The claim is what makes the check meaningful: without it, a reused identifier carrying
+        two labels is a measured source property, not a defect (see the next test).
+        """
         report = qualify_dataset.qualify(FIXTURES / "broken-duplicate-labels")
         self.assertFalse(report.ok)
         failed = {name for name, ok in findings(report).items() if not ok}
-        self.assertIn("splits.duplicate_entities_single_label", failed)
+        self.assertIn("splits.repeated_identifiers_carry_one_label", failed)
         self.assertTrue(findings(report).get("splits.duplicate_entities_within_splits"),
                         "the repeat itself was declared and is within tolerance")
+
+    def test_regression_documented_repeats_are_accepted_with_the_count_recorded(self):
+        """The real Austin shape: a reused identifier, no entity-key claim, accepted."""
+        report = qualify_dataset.qualify(FIXTURES / "documented-repeats")
+        self.assertTrue(report.ok, report.render())
+        result = next(r for r in report.results
+                      if r["check"] == "splits.repeated_identifiers_carry_one_label")
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["evidence"]["count"], 1)
+        self.assertIn("recorded as a source property", result["detail"])
 
 
 class GateOnGeneratedOutput(unittest.TestCase):

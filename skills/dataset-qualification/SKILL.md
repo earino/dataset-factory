@@ -1,7 +1,7 @@
 ---
 name: dataset-qualification
 description: "Use when a constructed dataset is about to be scored or published. Gate for leakage, prediction timing, units/frames, temporal splits and runner compatibility."
-version: 1.2.0
+version: 1.3.0
 license: MIT
 platforms: [linux, macos]
 metadata:
@@ -163,8 +163,12 @@ Two separate properties, checked separately, because conflating them fails a usa
   the source's grain, not leakage. It is refused unless the descriptor pins the known count
   with `expected_duplicate_ids`, so a build states its expectation instead of the gate
   guessing one.
-* `splits.duplicate_entities_single_label` - a repeated identifier carrying both labels is
-  contradictory training data. Tolerating a repeat is not the same as tolerating that. The
+* `splits.repeated_identifiers_carry_one_label` - only meaningful against a claim. A
+  descriptor that asserts `id_columns_are_entity_keys` is saying the identifier names one
+  entity with one true label, and a contradiction then fails. A descriptor that makes no such
+  claim has its measured disagreement **recorded in the report** instead: a reused identifier
+  is a property of the source, not a defect, and refusing the dataset for a claim it never made
+  is how a usable extract gets rejected for the wrong reason. The
 clustered event count is a claim like the others: the gate recomputes it as the number of
 distinct dates of the declared `event_key_column` among the positive rows, so inflating it is
 refused rather than believed.

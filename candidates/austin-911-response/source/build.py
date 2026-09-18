@@ -378,6 +378,22 @@ def write_quality(out: Path, manifest: dict, fieldnames: list[str],
                                       for entry in manifest["splits"]),
         "expected_duplicate_ids_by_split": {entry["name"]: entry["duplicate_incident_numbers"]
                                             for entry in manifest["splits"]},
+        # Deliberately NOT claiming `id_columns_are_entity_keys`. The repeated incident numbers
+        # are two different events that happen to share a number - hours apart, different
+        # categories, different sectors - so one label per incident number is not a property
+        # this source has. The gate records the measured disagreement instead of refusing the
+        # dataset for a claim the source does not make.
+        "id_columns_note": "incident_number identifies a call, not a row, and is not unique: "
+                           "24 of 1,049,636 source rows share a number with another row, and 4 "
+                           "of those pairs carry different labels because they are separate "
+                           "events. The unique per-row key is the catalogue's :id, used only "
+                           "for deterministic paging.",
+        "repeated_identifier_labels_measured": {
+            "repeated_identifiers": sum(entry["duplicate_incident_numbers"]
+                                        for entry in manifest["splits"]),
+            "differing_labels": sum(entry["duplicate_incident_numbers_differing_labels"]
+                                    for entry in manifest["splits"]),
+        },
         "high_cardinality_columns": ["response_datetime", "initial_problem_description"],
         "label_source_columns": [LABEL_SOURCE],
         "post_hoc_columns": EXCLUDED_POST_HOC,
@@ -491,6 +507,8 @@ def main(argv=None) -> int:
     stats = {name: {"positive_days": set()} for name, _ in SPLITS}
     seen_ids: dict[str, set] = {name: set() for name, _ in SPLITS}
     duplicate_rows: dict[str, int] = {name: 0 for name, _ in SPLITS}
+    first_labels: dict[str, dict[str, int]] = {name: {} for name, _ in SPLITS}
+    contradictory_rows: dict[str, int] = {name: 0 for name, _ in SPLITS}
 
     for name, where in SPLITS:
         path = out / LAYOUT[name]
@@ -514,8 +532,11 @@ def main(argv=None) -> int:
                 incident = record["incident_number"]
                 if incident in seen_ids[name]:
                     duplicate_rows[name] += 1
+                    if first_labels[name].get(incident) != record[LABEL_COLUMN]:
+                        contradictory_rows[name] += 1
                 else:
                     seen_ids[name].add(incident)
+                    first_labels[name][incident] = record[LABEL_COLUMN]
                 writer.writerow(record)
                 rows_written += 1
                 positives += record[LABEL_COLUMN]
@@ -533,6 +554,7 @@ def main(argv=None) -> int:
             "skipped_null_label_source": nulls,
             "positive_days": len(stats[name]["positive_days"]),
             "duplicate_incident_numbers": duplicate_rows[name],
+            "duplicate_incident_numbers_differing_labels": contradictory_rows[name],
             "sha256": sha256_of(path),
             "bytes": path.stat().st_size,
             "columns": fieldnames,
