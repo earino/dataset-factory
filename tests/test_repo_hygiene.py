@@ -85,33 +85,38 @@ class JobBundles(unittest.TestCase):
 class SkillExposure(unittest.TestCase):
     """The qualification gate must be versioned here AND loadable by Hermes.
 
-    The Hermes-visible path is a symlink to this repository's copy, so there is exactly one
-    source of truth and no drift. Hermes resolves the link and loads the skill (verified by
-    a fresh session), but logs a cosmetic security warning because the resolved file sits
-    outside `~/.hermes/skills`. A duplicate real directory would silence the warning at the
-    cost of two copies that can diverge, so the link is deliberate.
+    Hermes exposes it through `skills.external_dirs`, which is the supported way to register a
+    skills directory outside the profile. Hermes then treats it as a trusted directory, so
+    loading the skill raises no security warning - unlike the symlink into `~/.hermes/skills`
+    that this replaced.
     """
 
-    HERMES_SKILL_LINK = Path("/opt/data/skills/research/dataset-qualification")
+    HERMES_HOME = Path("/opt/data")
+    EXPECTED_ENTRY = "dataset-factory/skills"
+    RETIRED_SYMLINK = Path("/opt/data/skills/research/dataset-qualification")
 
     def test_the_gate_is_versioned_in_this_repository(self):
         self.assertTrue((SKILLS / "dataset-qualification" / "SKILL.md").is_file())
         self.assertTrue((SKILLS / "dataset-qualification" / "scripts"
                          / "qualify_dataset.py").is_file())
+        self.assertTrue((SKILLS / "dataset-qualification" / "fixtures"
+                         / "build_fixtures.py").is_file())
 
-    def test_the_hermes_visible_path_resolves_to_the_repository_copy(self):
-        link = self.HERMES_SKILL_LINK
-        if not link.exists():
-            self.skipTest("Hermes skill directory is not present on this machine")
-        self.assertTrue(link.is_symlink(), f"{link} should be a symlink, not a copy")
-        self.assertEqual(link.resolve(),
-                         (SKILLS / "dataset-qualification").resolve())
+    def test_hermes_registers_the_repository_skills_directory(self):
+        config = self.HERMES_HOME / "config.yaml"
+        if not config.is_file():
+            self.skipTest("no Hermes config on this machine")
+        text = config.read_text()
+        self.assertIn("external_dirs", text, "skills.external_dirs is not configured")
+        block = text.split("external_dirs", 1)[1].splitlines()[0]
+        self.assertIn(self.EXPECTED_ENTRY, block,
+                      f"skills.external_dirs does not contain {self.EXPECTED_ENTRY}")
 
-    def test_the_two_skill_copies_cannot_diverge_because_there_is_only_one(self):
-        link = self.HERMES_SKILL_LINK
-        if not link.exists():
-            self.skipTest("Hermes skill directory is not present on this machine")
-        self.assertEqual(link.resolve(), (SKILLS / "dataset-qualification").resolve())
+    def test_the_retired_symlink_is_gone(self):
+        if not self.RETIRED_SYMLINK.parent.exists():
+            self.skipTest("Hermes skills directory is not present on this machine")
+        self.assertFalse(self.RETIRED_SYMLINK.is_symlink(),
+                         "the symlinked exposure was replaced by skills.external_dirs")
 
 
 if __name__ == "__main__":

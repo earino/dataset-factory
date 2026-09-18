@@ -7,6 +7,8 @@
  "target": "late",
  "positive_label": 1,
  "threshold_seconds": 1200,
+ "time_column": "response_datetime",
+ "event_key_column": "response_datetime",
  "features": [
   "initial_problem_category",
   "sector",
@@ -39,20 +41,29 @@
   "unit": "seconds",
   "source": "20 minutes, frozen from the training window"
  },
+ "split_windows": {
+  "train": {
+   "start": null,
+   "end": "2025-01-01T00:00:00.000"
+  },
+  "eval": {
+   "start": "2025-01-01T00:00:00.000",
+   "end": "2026-01-01T00:00:00.000"
+  },
+  "holdout": {
+   "start": "2026-01-01T00:00:00.000",
+   "end": null
+  }
+ },
  "positive_events": {
   "eval": {
    "positives": 7,
    "distinct_events": 30
   },
   "holdout": {
-   "positives": 45,
+   "positives": 30,
    "distinct_events": 30
   }
- },
- "split_boundaries": {
-  "train": "response_datetime < 2025-01-01",
-  "eval": "response_datetime >= 2026-01-01",
-  "holdout": "response_datetime >= 2026-01-01"
  },
  "splits": {
   "train": "public/train.csv",

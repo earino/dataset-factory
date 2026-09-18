@@ -213,6 +213,42 @@ Before unattended research, exercise these paths in this order and record eviden
 
 Record actual costs as well as functionality.
 
+## Qualify the extract on the worker
+
+Qualification reads the rows, so it runs **where the rows are**: on the worker, against the
+full artifact, before anything is scored. `scripts/assemble-job.py` is the single assembly
+point - it copies the candidate's `build.py` and `run.sh` plus the repository's
+`qualify_dataset.py` into an ignored staging directory, generates `job.json`, and checks the
+result against the bundle rules:
+
+```bash
+python3 scripts/assemble-job.py austin-001
+sh scripts/scout-factory worker plan .factory/jobs/austin-001/job.json
+sh scripts/scout-factory worker launch .factory/jobs/austin-001/job.json
+sh scripts/scout-factory worker collect austin-001
+sh scripts/scout-factory worker destroy austin-001
+```
+
+The entrypoint builds the extract, then qualifies it, and exits non-zero when the gate fails.
+**A failed qualification still preserves diagnostics**: the gate report, its rendered output
+and the extract itself are written under `/output`, which the worker uploads even on a
+non-zero exit. Collect that evidence and then delete the worker as usual - a failed job is
+still a job that must not stay billable.
+
+**Require a passing report for the exact artifact version before scoring or acceptance.** The
+gate writes `/output/qualification.json`, which records the SHA-256 of every shipped file and
+a single `artifact_version` digest over them. Verify it against the collected extract:
+
+```bash
+python3 skills/dataset-qualification/scripts/qualify_dataset.py \
+    --accept /path/to/qualification.json /path/to/extract
+```
+
+This fails on a report that did not pass, on a report written by a different gate version, and
+on any file that changed after qualification. **Nothing may be scored, and no candidate may be
+accepted, without it.** Only compact evidence comes back to Scout: the report, the rendered
+checks and the manifest. The bulk extract stays in private staging.
+
 ## Recovery and data flow
 
 Containers receive read-only `/workspace` and writable `/output`. Write a small

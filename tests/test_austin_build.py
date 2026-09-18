@@ -403,6 +403,62 @@ class RunnerContract(unittest.TestCase):
         self.assertFalse(honest["determines_label"])
 
 
+class SafeOutputHandling(unittest.TestCase):
+    """`--out` must never be recursively deleted just because it was passed in."""
+
+    def test_refuses_an_unowned_non_empty_directory(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            precious = Path(tmp) / "work"
+            precious.mkdir()
+            (precious / "uncommitted-notes.md").write_text("do not delete me\n")
+            with self.assertRaises(SystemExit) as caught:
+                austin_build.prepare_output(precious)
+            self.assertIn("refusing to clear", str(caught.exception))
+            self.assertTrue((precious / "uncommitted-notes.md").is_file(),
+                            "uncommitted work must survive")
+
+    def test_refuses_a_directory_containing_a_repository(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            checkout = Path(tmp) / "checkout"
+            (checkout / ".git").mkdir(parents=True)
+            (checkout / "code.py").write_text("x = 1\n")
+            with self.assertRaises(SystemExit) as caught:
+                austin_build.prepare_output(checkout)
+            self.assertIn(".git", str(caught.exception))
+            self.assertTrue((checkout / "code.py").is_file())
+
+    def test_refuses_a_protected_path(self):
+        with self.assertRaises(SystemExit) as caught:
+            austin_build.prepare_output(Path("/opt/data"))
+        self.assertIn("protected path", str(caught.exception))
+
+    def test_clears_only_its_own_generated_entries(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "extract"
+            out.mkdir()
+            (out / austin_build.OWNED_MARKER).write_text("owned\n")
+            (out / "public").mkdir()
+            (out / "public" / "train.csv").write_text("late\n0\n")
+            (out / "meta.json").write_text("{}\n")
+            # An unrelated file in an owned directory is left alone: only named entries go.
+            (out / "operator-notes.txt").write_text("keep me\n")
+
+            austin_build.prepare_output(out)
+
+            self.assertFalse((out / "public").exists(), "generated split directory should be gone")
+            self.assertFalse((out / "meta.json").exists())
+            self.assertTrue((out / "operator-notes.txt").is_file(),
+                            "only the named generated entries are removed")
+            self.assertTrue((out / austin_build.OWNED_MARKER).is_file())
+
+    def test_an_empty_directory_is_adopted(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "fresh"
+            out.mkdir()
+            austin_build.prepare_output(out)
+            self.assertTrue((out / austin_build.OWNED_MARKER).is_file())
+
+
 class WorkerSourceHygiene(unittest.TestCase):
     """A test run must not contaminate the job's source directory."""
 

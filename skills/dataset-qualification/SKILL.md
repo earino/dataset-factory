@@ -1,7 +1,7 @@
 ---
 name: dataset-qualification
 description: "Use when a constructed dataset is about to be scored or published. Gate for leakage, prediction timing, units/frames, temporal splits and runner compatibility."
-version: 1.0.0
+version: 1.1.0
 license: MIT
 platforms: [linux, macos]
 metadata:
@@ -30,15 +30,26 @@ runs *after* construction and *before* any number is reported.
 
 ```bash
 python3 skills/dataset-qualification/scripts/qualify_dataset.py <dataset-dir>
-python3 skills/dataset-qualification/scripts/qualify_dataset.py <dataset-dir> --json
+python3 skills/dataset-qualification/scripts/qualify_dataset.py <dataset-dir> --json --report out.json
+python3 skills/dataset-qualification/scripts/qualify_dataset.py --accept <report.json> <dataset-dir>
 python3 skills/dataset-qualification/scripts/qualify_dataset.py --selftest
 ```
 
 `<dataset-dir>` holds the runner layout (`public/train.csv`, `public/eval.csv`,
 `private/holdout.csv`, `meta.json`) plus a `quality.json` descriptor. Exit status is 0 only
 when every check passes; every failure names the column, split or declaration responsible.
-`--selftest` runs the shipped broken and corrected fixtures and asserts the expected
+`--selftest` runs the shipped broken fixtures and the corrected one and asserts the expected
 verdicts for each, so the gate can be re-verified after any change to it.
+
+**`--accept` is the downstream gate.** It re-verifies that a written report passed *and* that
+the files still hash to the artifact version the report recorded. Nothing may be scored, and
+no candidate accepted, without it - a report that is stale, failed, or written by an older
+gate version all fail.
+
+**Run it on the full artifact, where the rows are.** The gate reads rows, so a bounded local
+sample cannot stand in for it: run it on the worker as part of the build job. This project's
+`scripts/assemble-job.py` bundles the candidate's build with the gate and exits non-zero when
+the gate fails, while still writing the report and its diagnostics to the collected output.
 
 **A passing checker is necessary, not sufficient.** It proves the files do not contain the
 specific defects it can see. It cannot prove the source is what you think it is; the
@@ -115,20 +126,42 @@ all-negative is what a unit or frame error looks like, and the checker refuses i
 
 ### 4. Temporal splits - disjoint, ordered, and able to carry a score
 
-Splits must be declared as distinct boundaries, non-empty, and with positives in every
-split. Beyond that, two measurements decide whether a score is meaningful:
+**Declarations are not evidence.** `quality.json` records the split windows, the positive
+counts and the clustered event counts, and the gate then recomputes all of them from the rows
+and refuses when the two disagree. Two false passes motivate this, both of which look perfect
+in every declaration:
+
+- **Evaluation rows inside the training period.** The declared windows are clean and disjoint;
+  the eval file simply contains rows from the training years. Nothing but the rows reveals it.
+  Caught by `splits.actual_ranges_disjoint` (the real min/max of each split must not overlap)
+  and `splits.rows_within_declared_windows` (every row must fall inside the window it claims).
+- **An evaluation split with no negative examples.** A split that is all-positive scores a
+  meaningless AUC however carefully its counts are declared. Caught by
+  `splits.eval_and_holdout_have_both_classes`, which reads the label column and counts both
+  classes. Splits that are uniformly all-positive or all-negative are refused separately.
+
+Beyond the declarations-vs-rows comparisons, two measured properties decide whether a score is
+meaningful:
 
 - **Enough positives**, and enough *independent* positives. NOAA's eval split carries 234
   positive station-days and its holdout 256, but flood days cluster at about two stations
-  each, so the effective counts are **118 and 126 distinct flood days**. Report the
-  clustered number and put confidence intervals on it.
-- **Whether the base rate is stationary.** NOAA's rate rises with sea level across the
-  series (1.83% train, 2.67% eval, 2.92% holdout), so a temporal split carries systematic
-  base-rate shift. That is a property of the phenomenon to document, not a construction
-  fault - and it means a single-year holdout is a bad idea.
+  each, so the effective counts are **118 and 126 distinct flood days**. Report the clustered
+  number and put confidence intervals on it.
+- **Whether the base rate is stationary.** NOAA's rate rises with sea level across the series
+  (1.83% train, 2.67% eval, 2.92% holdout), so a temporal split carries systematic base-rate
+  shift. That is a property of the phenomenon to document, not a construction fault - and it
+  means a single-year holdout is a bad idea.
 
-The checker enforces minimums (`MIN_EVAL_POSITIVES`, `MIN_DISTINCT_EVENTS`) and verifies
-the declared counts against the files, so a declared number cannot drift from the data.
+The gate enforces minimums (`MIN_EVAL_POSITIVES`, `MIN_DISTINCT_EVENTS`), verifies the
+declared counts against the rows, and checks that no identifier appears in two splits. The
+clustered event count is a claim like the others: the gate recomputes it as the number of
+distinct dates of the declared `event_key_column` among the positive rows, so inflating it is
+refused rather than believed.
+
+`quality.json` must therefore declare `time_column`, `event_key_column` and machine-readable
+`split_windows` (per-split `start`/`end`). Without them the overlap and event checks have
+nothing to compare against, and the gate fails rather than passing silently - "not declared" is
+never "fine".
 
 ### 5. Runner compatibility - match the contract the runner actually reads
 
@@ -160,11 +193,23 @@ The full loop this skill is meant to drive, from the lead candidate's record:
 ## Pitfalls
 
 - **Trusting the declared lists.** They are not the artefact. Read the file that was written.
+- **Trusting declarations at all.** Split windows, positive counts and event counts are claims
+  until they are recomputed from the rows. Both of the false passes above are declaration-clean.
+- **A destructive default.** `shutil.rmtree(<user-supplied path>)` on rebuild is how whole
+  directories and uncommitted work disappear - one such command in this project's history
+  deleted `candidates/` and `tests/` outright. Generated output directories should carry an
+  ownership marker, be cleared only through it, and refuse anything unfamiliar; and every
+  destructive command should name exact, owned paths rather than a variable.
+- **Quadratic scans.** Building per-level statistics inside the per-row loop costs
+  `rows x group-size` - catastrophic at a million rows, and invisible on a sample. Build the
+  level table once, score the rows in a second pass, and read splits column-wise rather than
+  as a list of dictionaries (a dict per row is roughly 1 KiB each, which is hundreds of
+  megabytes on a full extract).
 - **A passing gate treated as a score.** Qualification says the files are sound; it says
   nothing about whether a model can beat the baseline.
 - **Skipping the known-event check because the code runs.** A uniform result is the failure
   signature, and the code never errors.
-- **Letting the fixture rot.** The broken fixture must stay broken in the ways the gate
+- **Letting the fixture rot.** The broken fixtures must stay broken in the ways the gate
   claims to detect, or the selftest becomes decorative. Regenerate with
   `fixtures/build_fixtures.py` and re-run `--selftest` after any change to the checker.
 - **A test that contaminates the artefact under test.** Austin's test loader imported the
@@ -182,7 +227,9 @@ The full loop this skill is meant to drive, from the lead candidate's record:
 - `references/runner-contract.md` - the exact input contract of `../harness_benchmark`,
   quoted from the read-only checkout, with the column-selection code that makes leakage
   possible.
-- `scripts/qualify_dataset.py` - the gate. `--selftest` proves it rejects the broken
-  fixture and accepts the corrected one.
-- `fixtures/` - the broken and corrected fixture pairs, regenerated by
-  `fixtures/build_fixtures.py`.
+- `scripts/qualify_dataset.py` - the gate. `--selftest` proves it rejects every broken
+  fixture and accepts the corrected one; `--accept` gates an artifact against its report.
+- `fixtures/` - the broken fixtures and the corrected one, regenerated by
+  `fixtures/build_fixtures.py`. `broken/` covers the general defect set, `broken-overlap/`
+  the eval-rows-in-training-period false pass, and `broken-single-class/` the
+  eval-split-with-no-negatives false pass.

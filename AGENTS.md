@@ -44,8 +44,33 @@ python3 skills/dataset-qualification/scripts/qualify_dataset.py --selftest
 ```
 
 A failing check names the column, split or declaration responsible. The skill is versioned
-here at `skills/dataset-qualification/` and is also installed into Hermes as a normal skill,
-so it loads from the skill list without this repository being consulted.
+here at `skills/dataset-qualification/` and is also registered with Hermes through
+`skills.external_dirs`, so it loads from the skill list without this repository being
+consulted.
+
+**Qualification runs on the worker, over the full artifact.** The gate checks the rows, so a
+bounded local sample cannot stand in for it. `scripts/assemble-job.py` builds the job bundle
+that does both, and the job exits non-zero when the gate fails while still leaving the report
+and its diagnostics for collection.
+
+**Before scoring or accepting anything, require the passing report for that exact artifact:**
+
+```bash
+python3 skills/dataset-qualification/scripts/qualify_dataset.py \
+    --accept <qualification.json> <extract-dir>
+```
+
+It re-verifies the report passed *and* that the files still hash to the artifact version the
+report was written for. A report from an older gate version, a failed report, or a file that
+changed after qualification all fail.
+
+## Deleting things
+
+Scope every destructive operation to an exact, owned path. `rm -rf <variable>` and
+`shutil.rmtree(<user-supplied path>)` are how uncommitted work and whole directories get
+lost - one such command in this project's history deleted `candidates/` and `tests/`.
+Generated output directories carry an ownership marker and are only cleared through it;
+anything unfamiliar is a refusal, not a cleanup.
 
 ## The coordinator is small
 

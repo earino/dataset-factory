@@ -1,7 +1,7 @@
 # Current state
 
-Updated: 2026-09-18 (tenth entry; builder review fixes re-implemented and validated, and
-the dataset-qualification gate created, demonstrated and installed).
+Updated: 2026-09-18 (eleventh entry; Hermes skill registration, worker-side qualification and
+acceptance gate, split false-pass regressions, linear scan, safe cleanup).
 
 ## Objective
 
@@ -575,6 +575,103 @@ While clearing bytecode caches, an over-broad `rm -rf candidates tests ...` dele
 `tests/test_austin_build.py`) were re-written. No measured evidence was lost, because every
 result of the prior session was already committed. The lesson is recorded in the report:
 scope deletion commands to exact paths.
+
+## Worker qualification, gate hardening and safe cleanup (eleventh session)
+
+Five follow-ups from the builder review, all implemented and verified here.
+
+### 1. The skills directory is registered with Hermes properly
+
+The symlink into `~/.hermes/skills` is **gone**. Hermes's supported mechanism,
+`skills.external_dirs`, is now configured:
+
+```bash
+hermes config set skills.external_dirs dataset-factory/skills
+```
+
+Entries are resolved relative to `HERMES_HOME`, and Hermes treats the result as a trusted
+directory, so the `skill file is outside the trusted skills directory` warning no longer
+appears. Verified in `agent.log`: the last such warning is timestamped 13:11, from the symlink
+era; the skill loads cleanly afterwards.
+
+**Fresh-session verification.** A CLI session started from `/tmp` - outside the repository, so
+project-local trust could not be responsible - discovered and loaded the skill unprompted:
+`tool skill_view completed`, session `20260918_132856_3a3f34`, and it reported the correct
+name, version 1.1.0, the self-test command and the `--accept` command. A scheduled cron
+session (`scout-skill-discovery-check-2`, `492d8a95e56e`) was also fired as the
+scheduled-surface check.
+
+### 2. Qualification runs on workers, and gates scoring
+
+`candidates/austin-911-response/source/run.sh` builds the extract and then qualifies the exact
+artifact it just wrote, exiting non-zero when the gate fails. `scripts/assemble-job.py` is the
+single assembly point: it copies `build.py`, `run.sh` and the repository's `qualify_dataset.py`
+into an ignored staging directory, generates `job.json`, and validates the result against the
+worker's own bundle rules. The assembled bundle is 58,372 bytes and plans offline at
+`reservation_eur 0.24`, `cloud_calls 0`, `enabled false`.
+
+**A failed qualification still preserves diagnostics.** The gate report, its rendered output
+and the extract are written under `/output`, which the worker uploads even on a non-zero exit;
+only the compact report, the rendered checks and the manifest come back to Scout.
+
+**Scoring and acceptance now require a passing report for the exact artifact version.** The
+gate records the SHA-256 of every shipped file plus an `artifact_version` digest over them, and
+`--accept` re-verifies both. Verified end to end:
+
+```
+accept /tmp/q.json fixtures/corrected   -> ACCEPTED ... matches the qualified artifact 7a7a91a508b0a298
+append one byte to public/eval.csv      -> ACCEPT FAILED: public/eval.csv has changed
+                                           since qualification (e09eb53aeca7 != ffded9dac29e)
+```
+
+It also refuses a failed report and a report written by a different gate version. `docs/OPERATIONS.md`
+documents the sequence; the run itself is still gated on the scheduled GitHub cleanup run.
+
+### 3. Regression cases for the two false passes
+
+Both are now fixtures with named expectations, and both are replayed against real generated
+output rather than only against the fixtures:
+
+- `fixtures/broken-overlap/` - **evaluation rows inside the training period**, with every
+  declaration clean and disjoint. Caught by `splits.actual_ranges_disjoint` and
+  `splits.rows_within_declared_windows`, both computed from the row timestamps.
+- `fixtures/broken-single-class/` - **an evaluation split with no negatives**. Caught by
+  `splits.eval_and_holdout_have_both_classes`.
+
+The gate now recomputes split windows, boundaries, positive counts and clustered event counts
+from the rows and refuses when they disagree with `quality.json`: `time_column` and
+machine-readable `split_windows` are required, so an undeclared split fails rather than passing
+silently. Identity overlap between splits is checked too.
+
+### 4. The categorical scan is linear
+
+`group_rates()` builds the per-level table once and scores the rows in a second pass; the old
+shape re-summed each row's entire level (`rows x group-size`). Splits are also read
+**column-wise** rather than as a list of dictionaries - a dict per row is roughly 1 KiB, which
+is hundreds of megabytes on a 1,050,000-row extract. `tests/test_qualification_gate.py`
+asserts the level table is built exactly once per column and runs a 200,000-row column to
+prove the old quadratic path is gone.
+
+### 5. Destructive cleanup, addressed in procedure and in code
+
+`build.py` no longer calls `shutil.rmtree` on `--out`. `prepare_output()` refuses a path that
+is protected, contains a `.git`, is a file, or is a non-empty directory without the
+`.dataset-factory-extract` ownership marker the script writes; an owned directory is cleared
+entry by entry through an explicit list, leaving anything else in place. Tests cover each
+refusal, including that an unrelated file inside an owned directory survives. `AGENTS.md`
+gained a short "Deleting things" rule, and the skill documents the destructive default as a
+pitfall.
+
+### Checks
+
+**115 tests pass** with bytecode writing enabled and under `TZ=Asia/Tokyo` and `TZ=UTC`. The
+gate's self-test rejects all three broken fixtures with their expected named checks and accepts
+the corrected one. `tests/test_worker_qualification_job.py` assembles the job bundle, verifies
+it against `factory.worker.source_bundle`, and runs `worker plan`.
+
+**Still blocked:** no `schedule`-event GitHub cleanup run (newest remains 09:53:53Z), so the
+worker job is assembled, planned and tested but not launched. The secondary on-host sweep is
+running normally (12:47:01Z, status ok).
 
 ## Research shortlist recorded 2026-09-18
 
