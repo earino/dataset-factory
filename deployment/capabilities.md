@@ -23,7 +23,7 @@ sudo, writable root `/opt/data`. Terminal backend is `local`, persistent shell.
 | `cronjob_manage` | Working Chronos scheduling, including script/no-agent mode; no connected message destination |
 | GitHub | Authenticated as `earino`; clone, push, remote branch deletion, repo/release/run listing verified; `gh` v2.101.0 installed |
 | Hetzner | API reachable but unauthenticated; no token, `hcloud` or native integration |
-| SSH | Client available; no keys or remote host configuration yet |
+| SSH | Client available; worker ed25519 keypair generated 2026-09-18, not yet registered with Hetzner |
 | Python | 3.13.5; stdlib works; `uv` available; our helper needs no third-party packages |
 | Skills | 58 installed; GitHub skill's `gh` prerequisite now present; specific skill workflows not all exercised |
 | Managed connectors | `manage_connections` returns 404; none configured |
@@ -49,6 +49,7 @@ Local Playwright usability is uncertain; use the working remote browser.
 - `/opt/data/harness_benchmark` is a read-only, unmodified clone (108 MB). It has
   preparation scripts for airline/fraud/credit and saved baselines, but no prepared
   datasets. Build those only on workers. This differs from the builder's local data.
+  `data/prepared/` is absent; all three preparation scripts and saved baselines are present.
 - Scout ran all 22 original unit tests successfully under Python 3.13.5. `uv`
   0.11.6 and OpenSSH 10.0p2 are present; `.ssh` and local worker policy are absent.
 - Dashboard `.env` entries do not appear in terminal subprocesses. Use the explicit
@@ -78,3 +79,30 @@ Corrections to the initial suggestions: powering down a VM does not stop Hetzner
 billing; GitHub has no separate release-upload-only token permission. Use
 repository-scoped Contents write access for a dedicated private staging repo.
 The coordinator's factory Git access should be separate from the worker token.
+
+## Second hosted pass — 2026-09-18, after pulling `01a84a1`
+
+Corrections and additions to the rows above, from the same hosted instance.
+
+- `sh scripts/scout-factory doctor` runs; the `_FILE` launcher supplies credential
+  paths without shell startup files. `doctor --require-worker-credentials` exits 1
+  with both worker credentials reported missing or unusable, which is the expected
+  pre-provisioning state.
+- All **30** tests pass locally (Python 3.13.5), matching the builder's CI result.
+  Earlier rows count the 22 tests present at `a9da074`.
+- `doctor.memory` reports about **906 MiB available** of 1,967.9 MiB total with
+  1,024 MiB swap; cgroup v2 limit files were not exposed, so the estimate falls back
+  to `MemAvailable`. Use that figure for research concurrency.
+- SSH: `/opt/data/.ssh/scout_worker_ed25519` generated (fingerprint
+  `SHA256:k4Uk+aJCEV28M7xvwsIzE3v0agPBXNrPXN/GGRFusms`). Public key recorded in
+  `deployment/ssh-worker-public-key.md`. Not registered; supersedes the "no keys"
+  row and the "`.ssh` absent" bullet.
+- `/opt/data/.secrets` created 0700; both token files absent. `config/local.json`
+  drafted (ignored by Git) with the policy disabled and a zero allowance, so the
+  "local worker policy absent" bullet is superseded.
+- Research is no longer unstarted: five candidates with measured evidence now exist
+  under `candidates/`. See `STATE.md` for the shortlist and the selected lead.
+- Unchanged: no Hetzner token, no staging token, no SSH registration, no Actions
+  cleanup secret/variable, no observed cleanup run, no notification delivery, and
+  no live worker cycle.
+

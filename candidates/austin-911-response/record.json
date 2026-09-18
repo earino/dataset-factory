@@ -1,0 +1,50 @@
+{
+  "id": "austin-911-response",
+  "status": "investigating",
+  "created_at": "2026-09-18T09:31:08.770599+00:00",
+  "domain": "public-safety operations / emergency response",
+  "prediction_question": "For a dispatched Austin police 911 call, will a patrol unit reach the caller more than a fixed minutes threshold after the call is dispatched?",
+  "prediction_time": "At dispatch: the moment the call is assigned a priority and a patrol sector. Only fields known then may be features. Arrival, closing, final-classification and injury fields are excluded.",
+  "target_definition": "Binary: portal column response_time (integer seconds) exceeds threshold T. T is chosen once from the measured training-window distribution and frozen in the construction script before any scoring. T is NOT yet chosen; measuring the distribution is the first construction step.",
+  "sources": [
+    {
+      "name": "Austin Open Data - APD 911 Calls for Service 2023-2026",
+      "url": "https://datahub.austintexas.gov/d/e687-fx2y",
+      "api": "https://datahub.austintexas.gov/resource/e687-fx2y.json",
+      "access": "anonymous Socrata API, no key, paginated; verified live 2026-09-18"
+    },
+    {
+      "name": "Column documentation for the same dataset",
+      "url": "https://datahub.austintexas.gov/d/e687-fx2y (Columns tab)",
+      "access": "needed to confirm how response_time is derived and that it is seconds"
+    }
+  ],
+  "license_evidence": [
+    "Socrata catalog metadata for e687-fx2y reports license = 'Public Domain' (api.us.socrata.com catalog v1, queried 2026-09-18)."
+  ],
+  "construction_script": null,
+  "split_strategy": "Temporal by response_datetime: earlier years train, later months eval, final months holdout. No random split. Verify no incident_number overlap across periods.",
+  "measurements": {
+    "rows_total_measured": 1049636,
+    "rows_by_year_measured": {
+      "2023": 286145,
+      "2024": 286035,
+      "2025": 285665,
+      "2026_partial_to_2026_09_18": 191791
+    },
+    "priority_level_counts_measured": {
+      "Priority 0": 141710,
+      "Priority 1": 186787,
+      "Priority 2": 516736,
+      "Priority 3": 204403
+    },
+    "response_time_nulls_measured": 0,
+    "units_note": "sample values 165 and 848 are consistent with seconds; confirm against timestamps",
+    "measured_on": "2026-09-18 via Socrata aggregate queries; not a scored baseline"
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": null,
+  "next_action": "Confirm the response_time definition and mental_health_flag timing in the column docs, then write the construction script (dispatch-time feature list plus frozen threshold) for a worker job."
+}

@@ -1,0 +1,78 @@
+{
+  "id": "chicago-doah-adjudication",
+  "status": "investigating",
+  "created_at": "2026-09-18T09:31:08.695355+00:00",
+  "domain": "municipal administrative adjudication / building-code enforcement",
+  "prediction_question": "For a building-code violation case docketed with the Chicago Department of Administrative Hearings, will the hearing officer ultimately find the respondent liable?",
+  "prediction_time": "At docketing, before the hearing date. Permitted features are the violation, the property and the docket metadata. case_disposition, imposed_fine, admin_costs and last_modified_date are outcomes and excluded.",
+  "target_definition": "Binary: case_disposition == 'Liable' versus 'Not Liable'. Cases disposed as Non-Suit, Default, Continuance, Adjudication Performance / Other, Dismissed Without Prejudice and Judgment Vacated are excluded from the binary task and reported separately as a multi-class follow-up.",
+  "sources": [
+    {
+      "name": "City of Chicago - Ordinance Violations (official dataset)",
+      "url": "https://data.cityofchicago.org/d/6br9-quuz",
+      "api": "https://data.cityofchicago.org/resource/6br9-quuz.json",
+      "access": "anonymous Socrata API; verified live 2026-09-18"
+    },
+    {
+      "name": "Community view VIOLATIONS (dmac-8gtz)",
+      "url": "https://data.cityofchicago.org/Administration-Finance/VIOLATIONS/dmac-8gtz",
+      "access": "same 22 columns; official dataset above is preferred"
+    }
+  ],
+  "license_evidence": [
+    "Both the official dataset and the community view report license 'See Terms of Use' with source link cityofchicago.org (read 2026-09-18). This is not an explicit open-content licence; operator review is required before publishing derived data. Construction scripts and checksums can be published independently of the raw records."
+  ],
+  "construction_script": null,
+  "split_strategy": "Temporal by hearing_date. Rows are violations, not cases: one docket_number covers many rows, so a row split leaks a case across periods. Split by docket_number. Cases whose hearing_date is after the extract date have no disposition yet and form a natural future holdout, but the dataset mutates as cases complete, so a frozen extract with recorded checksums is required.",
+  "measurements": {
+    "rows_total_measured": 823637,
+    "hearing_date_range_measured": {
+      "min": "2008-01-10",
+      "max": "2027-02-18"
+    },
+    "disposition_counts_measured": {
+      "Liable": 290724,
+      "Non-Suit": 254431,
+      "Default": 115978,
+      "Not Liable": 106477,
+      "Continuance": 31055,
+      "blank": 19719,
+      "Adjudication Performance / Other": 4196,
+      "Dismissed Without Prejudice": 664,
+      "Judgment Vacated": 393
+    },
+    "binary_balance_measured": {
+      "Liable": 290724,
+      "Not Liable": 106477,
+      "liable_share": 0.732
+    },
+    "rows_with_null_disposition_measured": 19719,
+    "future_dated_hearings_measured": {
+      "count": 6485,
+      "as_of": "2026-09-18",
+      "note": "scheduled, unruled; dataset updates daily"
+    },
+    "issuing_department_measured": {
+      "Buildings": 823637
+    },
+    "recent_hearings_per_month_measured": {
+      "2026-06": 1523,
+      "2026-07": 1771,
+      "2026-08": 1480,
+      "2026-09": 4119,
+      "2026-10": 2466
+    },
+    "top_violation_codes_measured": {
+      "190019": 46585,
+      "061014": 29618,
+      "070024": 29485,
+      "196029": 25065
+    },
+    "measured_on": "2026-09-18 via Socrata aggregate queries; not a scored baseline"
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": null,
+  "next_action": "Operator licence review of Chicago's Terms of Use for public redistribution. If cleared, write the construction script that splits by docket_number over a frozen extract."
+}

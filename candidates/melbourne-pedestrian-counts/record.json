@@ -1,0 +1,52 @@
+{
+  "id": "melbourne-pedestrian-counts",
+  "status": "investigating",
+  "created_at": "2026-09-18T09:31:08.922482+00:00",
+  "domain": "urban activity sensing / pedestrian footfall",
+  "prediction_question": "For a City of Melbourne pedestrian sensor, will the count in a given hour exceed a high-traffic threshold relative to that sensor's own distribution?",
+  "prediction_time": "Shortly before the hour being predicted, using only prior hours, calendar position and sensor identity. The same hour's direction splits are the label source and must not be features.",
+  "target_definition": "Binary: pedestriancount for the hour exceeds a per-sensor quantile threshold frozen from the training window. The threshold is not yet chosen; the per-sensor distribution must be measured first.",
+  "sources": [
+    {
+      "name": "City of Melbourne - Pedestrian Counting System (counts per hour)",
+      "url": "https://data.melbourne.vic.gov.au/explore/dataset/pedestrian-counting-system-monthly-counts-per-hour/",
+      "api": "https://data.melbourne.vic.gov.au/api/explore/v2.1/catalog/datasets/pedestrian-counting-system-monthly-counts-per-hour/records",
+      "access": "anonymous OpenDataSoft v2.1 API; verified live 2026-09-18, total_count 1621901"
+    },
+    {
+      "name": "Sensor locations dataset",
+      "url": "https://data.melbourne.vic.gov.au/explore/dataset/pedestrian-counting-system-sensor-locations/",
+      "access": "sensor_id join key and location metadata"
+    }
+  ],
+  "license_evidence": [
+    "LICENCE NOT CONFIRMED. Neither the dataset information page nor the v2.1 metadata endpoint surfaced a licence field in this session (records and metas returned no licence). The portal commonly uses CC BY 4.0, but that must be verified on the licence section of the dataset page before any release claim."
+  ],
+  "construction_script": null,
+  "split_strategy": "Temporal: earlier years train, later periods eval and holdout, with per-sensor thresholds fixed from the training window so the threshold cannot leak holdout information.",
+  "measurements": {
+    "records_total_measured": 1621901,
+    "records_per_year_measured": {
+      "2024": 223972,
+      "2025": 815447,
+      "2026": 582482
+    },
+    "sample_fields_measured": [
+      "id",
+      "location_id",
+      "sensing_date",
+      "hourday",
+      "direction_1",
+      "direction_2",
+      "pedestriancount",
+      "sensor_name",
+      "location"
+    ],
+    "measured_on": "2026-09-18 via the portal API and information page"
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": null,
+  "next_action": "Confirm the licence on the dataset page; then measure per-sensor hourly distributions and pick a threshold. Volume is small enough for a modest worker job."
+}

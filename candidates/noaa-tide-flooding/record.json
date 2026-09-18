@@ -1,0 +1,42 @@
+{
+  "id": "noaa-tide-flooding",
+  "status": "investigating",
+  "created_at": "2026-09-18T09:31:08.846085+00:00",
+  "domain": "coastal water levels / flood-threshold exceedance",
+  "prediction_question": "For a chosen NOAA water-level station, will the daily maximum observed water level exceed its published minor flood threshold tomorrow?",
+  "prediction_time": "End of the local day before the target day. Features are observed water levels only. NOAA tide predictions and model guidance are model output and must be excluded so the task stays an observation-only forecast.",
+  "target_definition": "Binary: the verified daily maximum 6-minute water level for the target local day exceeds the station's NWS minor flood threshold, taken from the CO-OPS metadata API.",
+  "sources": [
+    {
+      "name": "NOAA CO-OPS data retrieval API",
+      "url": "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter",
+      "access": "anonymous, no key; products include 6-minute water_level and verified Daily Maximum; verified live 2026-09-18 for Boston 8443970: 240 rows on 2026-09-01"
+    },
+    {
+      "name": "NOAA CO-OPS metadata API flood levels",
+      "url": "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/<id>/floodlevels.json",
+      "access": "verified live 2026-09-18; Boston nos_minor 15.85, nws_minor 16.03 feet on station datum"
+    },
+    {
+      "name": "CO-OPS URL builder (retrieval limits: 6-minute 1 month, hourly up to 200 years)",
+      "url": "https://tidesandcurrents.noaa.gov/api-helper/url-generator.html"
+    }
+  ],
+  "license_evidence": [
+    "U.S. federal government work; NOAA CO-OPS data are public domain. Portal attribution page not read in this session."
+  ],
+  "construction_script": null,
+  "split_strategy": "Temporal by day: multi-year train and eval with a recent holdout. Thresholds differ per station, so the station set is part of the task definition.",
+  "measurements": {
+    "water_level_stations_measured": 302,
+    "stations_with_flood_thresholds_measured": 302,
+    "six_minute_rows_per_station_day_measured": 240,
+    "measured_on": "2026-09-18 via CO-OPS metadata and data APIs",
+    "note": "exceedance base rates not yet measured; that is a worker construction step"
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": null,
+  "next_action": "Measure per-station exceedance base rates and pick a station set with usable headroom; then write the construction script. Multi-year backfill belongs on a worker."
+}

@@ -1,0 +1,60 @@
+{
+  "id": "md-sewer-overflow",
+  "status": "investigating",
+  "created_at": "2026-09-18T09:31:09.007685+00:00",
+  "domain": "wastewater infrastructure / regulatory spill reporting",
+  "prediction_question": "For a Maryland collection system on a given day, will a sanitary sewer overflow be reported?",
+  "prediction_time": "Start of the target day, using rainfall observations up to that moment, facility identity and season.",
+  "target_definition": "Binary: at least one reported overflow for a facility on the target date. Event records collapse to facility-day units. Overflow type, cause and volume are outcomes and excluded.",
+  "sources": [
+    {
+      "name": "Maryland Open Data - Reported Sewer Overflows",
+      "url": "https://opendata.maryland.gov/d/3rgd-zjxx",
+      "api": "https://opendata.maryland.gov/resource/3rgd-zjxx.json",
+      "access": "anonymous Socrata API; verified live 2026-09-18"
+    },
+    {
+      "name": "Maryland Open Data - Reported Sewer Overflows (new for 2023)",
+      "url": "https://opendata.maryland.gov/d/stgj-u72u",
+      "access": "HTTP 403 from this host on 2026-09-18; catalog entry exists, contents unverified"
+    },
+    {
+      "name": "Rainfall feature source",
+      "url": "https://www.ncei.noaa.gov/cdo-web/",
+      "access": "not yet tested; required for the feature join"
+    }
+  ],
+  "license_evidence": [
+    "Socrata catalog metadata for 3rgd-zjxx reports license = 'Public Domain' (api.us.socrata.com catalog v1, queried 2026-09-18)."
+  ],
+  "construction_script": null,
+  "split_strategy": "Temporal by date and grouped by facility so one facility cannot appear on both sides of the split. Class balance is likely very imbalanced and must be measured before the protocol is fixed.",
+  "measurements": {
+    "rows_measured": 27479,
+    "date_range_measured": {
+      "min": "2005-01-01",
+      "max": "2023-02-10"
+    },
+    "fields_measured": [
+      "overflow_type",
+      "municipality_facility",
+      "npdes",
+      "date_discovered",
+      "time_discovered",
+      "quantity_in_gallons_estimated",
+      "cause",
+      "watershed",
+      "receiving_waters",
+      "county",
+      "latitude",
+      "longitude"
+    ],
+    "measured_on": "2026-09-18 via Socrata aggregate queries",
+    "gap": "series appears to stop 2023-02; the newer dataset must be verified before treating it as current"
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": null,
+  "next_action": "Verify the 2023+ dataset and whether it extends the series, test the NOAA rainfall join, and measure the facility-day event rate. Lower priority than the two leads."
+}
