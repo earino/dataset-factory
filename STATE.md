@@ -669,9 +669,24 @@ gate's self-test rejects all three broken fixtures with their expected named che
 the corrected one. `tests/test_worker_qualification_job.py` assembles the job bundle, verifies
 it against `factory.worker.source_bundle`, and runs `worker plan`.
 
-**Still blocked:** no `schedule`-event GitHub cleanup run (newest remains 09:53:53Z), so the
-worker job is assembled, planned and tested but not launched. The secondary on-host sweep is
-running normally (12:47:01Z, status ok).
+**Still blocked, and the evidence is now much stronger.** No `schedule`-event GitHub cleanup
+run has fired at all. A watcher polled `gh run list --event schedule` every 20 seconds from
+12:20Z to 14:04Z and found nothing; combined with the earlier watcher, that covers
+**11:04Z to 14:04Z with no fire** - eleven consecutive hourly slots under the `17 * * * *`
+cron applied at 11:26Z, and 4.2 hours since the last actual fire at 09:53Z. That already
+exceeds every gap observed before the gate was opened (3.0, 2.2, 4.7, 4.8 hours), so this is
+no longer explained by the documented 2-5 hour irregularity alone.
+
+Configuration is verified correct and unchanged: the workflow is `active` on the default
+branch, the committed cron reads `17 * * * *`, `FACTORY_CLEANUP_ENABLED` is `true`, and the
+manual dispatch still executes. The gap is in GitHub's scheduled trigger for this repository,
+not in the workflow.
+
+Consequence: the worker job is assembled, planned and tested but **not launched**, and no
+Austin extract exists. The on-host secondary sweep is unaffected and healthy - it ran at
+12:47:01Z with status `ok` and fires hourly - which is exactly the redundancy this gap calls
+for. If the scheduled trigger cannot be made to fire, the operator should decide whether the
+on-host sweep is sufficient to enable launches, since it performs the same sweep command.
 
 ## Research shortlist recorded 2026-09-18
 
