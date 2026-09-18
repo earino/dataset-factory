@@ -688,6 +688,38 @@ Austin extract exists. The on-host secondary sweep is unaffected and healthy - i
 for. If the scheduled trigger cannot be made to fire, the operator should decide whether the
 on-host sweep is sufficient to enable launches, since it performs the same sweep command.
 
+### CI failures on `a182ff2`, diagnosed and fixed (twelfth session)
+
+Both failures shared one cause: tests depending on the hosted instance's private
+configuration, which a clean checkout does not have.
+
+1. `test_refuses_a_protected_path` asserted `/opt/data` was refused. That path exists here and
+   not on CI, and `prepare_output` only consulted the protected list when the path existed, so
+   nothing was raised. **The protected-path check now runs before the existence check** - a
+   protected path is refused whether or not it exists, which is the correct behaviour on its
+   own terms and no longer host-dependent. The test covers every entry in `FORBIDDEN_OUT`.
+2. `test_plan_is_offline_and_reports_the_reservation` ran `worker plan` against
+   `config/local.json`, which is gitignored, so a clean checkout has no policy at all. Adds
+   `tests/policy.ci.json` - a committed policy of the same shape and values - and runs the plan
+   against it. A companion test compares the committed policy with the hosted one whenever the
+   hosted one is present, so the two cannot drift unnoticed on the coordinator.
+
+**Verified in a clean copy** with `config/local.json` removed: 117 tests pass with bytecode
+writing enabled under `TZ=UTC` and `TZ=Asia/Tokyo`, with the 2 host-only checks skipped, and
+`python3 -m factory doctor` exits 0 - both of CI's steps.
+
+**Completion procedure added to `AGENTS.md`**, deliberately short rather than a new skill:
+after pushing, check CI for that exact commit and fix failures before reporting the change
+complete; say so explicitly when CI is pending or blocked; verify suite changes in a clean
+clone. The first draft of that instruction told the next session to use
+`gh run list --commit <sha>`, which silently returns an empty list even when a run exists - it
+reported nothing for a green commit. Corrected to the API form
+(`gh api "repos/<owner>/<repo>/actions/runs?head_sha=..."`), with the broken flag named so it
+is not reached for again.
+
+CI is green for `d1104f4` and `5848c7e` (the check job's `unittest` and `factory doctor` steps
+both succeeded).
+
 ## Research shortlist recorded 2026-09-18
 
 Five candidates created with measured evidence in `candidates/<id>/record.json`
