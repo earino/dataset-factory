@@ -388,3 +388,62 @@ reviewed step; see `templates/dataset/README.md` for the content checklist.
 
 Checked 2026-09-18. Local fake-provider tests do not verify live credentials,
 VM boot, hosted schedules or upload throughput.
+
+## Research routine and the model-spend budget
+
+The worker allowance (see above) covers *compute*. This section covers the **model spend** of
+Scout's own research sessions. They are separate budgets and neither draws on the other.
+
+### What is measured, and what is not
+
+`scripts/research-budget.py` accounts from Hermes's own records, three sources:
+
+- `state.db: session_model_usage` - tokens and estimated cost per session, with a `task` column
+  that separates **auxiliary** work (approval classification, title generation, compression)
+  from main turns, and a join to `sessions.source` that separates **interactive** chat from
+  **scheduled** work. Delegated subagent work is billed to the session that spawned it.
+- `cron/usage_audit.jsonl` - per-fire tokens for a scheduled job.
+- `cron/executions.db` - which runs happened, their status, and whether one is in flight.
+
+Every cost figure carries `cost_status = "estimated"` and `actual_cost_usd = 0`: Hermes
+estimates, and **no provider-reported actual exists**. This is therefore a budget guard on
+planned work. It **cannot** reconcile against the portal's subscription quota, its usage page
+or its reset period - none of which is visible to this instance.
+
+There are no paid research tools in the loop: the spend is model inference (main, auxiliary and
+delegated) plus the separate worker allowance.
+
+### Enforced versus advisory
+
+Enforced mechanically, by the pre-check script attached to each research job:
+
+| Limit | Mechanism |
+| --- | --- |
+| Period allowance, stop at `stop_fraction` (95%) | Gate refuses to wake the model |
+| Weekly session cap (3) | Counted from the run ledger; further ticks skip |
+| Over-long session (over `session_token_cap`) | Counts **double** against the weekly cap |
+| Overlapping sessions | Refused while a run is in flight, or the lock is fresh |
+| Catch-up bursts | `cron.catch_up_missed: false`, plus a late-tick window; a missed slot is skipped |
+| Unconfigured allowance | **Fail closed** - no allowance means no model work |
+
+Advisory (instruction only, not machine-checked): the per-session wall-clock target. The gate
+can refuse a session but cannot interrupt one already running. Cron bounds a run by its
+inactivity budget, not by this script's timeout (scripts default to 3600 s).
+
+### The gate
+
+`scripts/research-budget.py --gate` is attached as a job's pre-check `script=`. It prints a
+compact **resume block** - allowance, spend, remaining, session count, limits - which the
+session receives as context, so a session starts from saved state instead of re-deriving it.
+Holding the tick means printing `{"wakeAgent": false}` as the final line, which skips the agent
+run entirely: holding costs no tokens, which is the point.
+
+Allowance and limits live in `config/research-budget.json`. With `allowance_usd: null` the gate
+refuses to wake the model. That is deliberate: an unconfigured budget is not an unlimited one.
+
+### Monitoring is independent of the quota
+
+`scout-weekly-research-digest` (`scripts/scout_weekly_digest.py`) is a `no_agent` job: its
+stdout is delivered directly, so the digest costs no model calls and still arrives when the
+allowance is spent or unconfigured. The on-host cleanup sweep is likewise `no_agent`. Neither
+is gated by, nor charged against, the research allowance.

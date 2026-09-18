@@ -64,6 +64,25 @@ It re-verifies the report passed *and* that the files still hash to the artifact
 report was written for. A report from an older gate version, a failed report, or a file that
 changed after qualification all fail.
 
+## Discovery, qualification, release: three skills and two mechanical checks
+
+Three versioned skills live in `skills/` and load through `skills.external_dirs`:
+
+- `dataset-discovery` - choosing and vetting a source *before* construction is spent. Ends with
+  a verdict (`ready`, `parked`, `dropped`), not with an interesting link.
+- `dataset-qualification` - the gate between construction and any quoted number.
+- `dataset-release` - packaging, private staging, transfer, consumer verification, publication.
+
+CI runs the checks the first and third skills rely on, so a claim without its evidence fails:
+
+```bash
+python3 scripts/check-candidate.py --all            # every record's claims are backed
+python3 scripts/check-package.py release/<dataset>  # package complete and hashes consistent
+```
+
+Session spend is bounded separately from the worker allowance; read
+`docs/OPERATIONS.md` (research routine) before changing anything about scheduled sessions.
+
 ## Deleting things
 
 Scope every destructive operation to an exact, owned path. `rm -rf <variable>` and

@@ -1148,3 +1148,56 @@ until a licence is actually read.**
 
 No baseline, AUC, headroom figure or acceptance verdict has been measured. Nothing
 here should be read as a result.
+
+## Lessons consolidated and the research routine prepared (2026-09-18, thirteenth session)
+
+**Where the time and quota went, measured.** 11 recorded sessions, 11.36M input / 0.70M output
+tokens, ≈$4.07 estimated, of which 88% was the single long interactive Telegram session
+($3.578, 962 messages). Scheduled work was cheap by comparison: three cron sessions cost
+$0.034 in total. Useful research was not the expensive part - **waiting and rework were**:
+infrastructure smoke tests, three failed worker jobs (`austin-001`, `austin-002`,
+`austin-publish-002`), and one failed consumer job, each caught by running the thing rather than
+reading it. The avoidable rework clustered in exactly two places: a claim trusted without
+recomputation, and a runtime path never exercised before dispatch.
+
+**One consolidation pass, three skills.** `dataset-qualification` rewritten at v2.0.0 around
+the shape a skill is actually used with - when to use, commands, required evidence, the checks
+as rules, failure modes, completion criteria - with the incident narrative removed (it lives
+here) and the stale figure corrected to the measured one (clock offset median −57 s, range
+−468…+6,041 s; T = 1200 s at a training rate 0.4038). Two new skills: **`dataset-discovery`**
+(vetting before construction: the four contracts, cheapest-first order of work, per-candidate
+required evidence, the verdict requirement) and **`dataset-release`** (package layout, staging
+transfer, verification, publication gates). All three load through `skills.external_dirs`.
+
+**Verified by a fresh session:** session `20260918_225732_aab19a`, given only the skill system
+and told not to read this repository, listed all three skills with their descriptions, quoted
+the first command from each, and restated the qualification completion criteria. Registration
+is real, not assumed.
+
+**Two mechanical checks, both in CI.** `scripts/check-candidate.py` is stage-aware: a record
+claiming `ready`/`constructed`/`qualified`/`packaged` must carry the evidence that claim
+implies, a terminal status must carry a reason, and a licence *name* is refused as evidence.
+`scripts/check-package.py` requires the documents a reviewer needs, that `MANIFEST.json` covers
+every file, that recorded hashes match the bytes, that `SHA256SUMS` agrees with the manifest,
+and that an unpublished package says so. 180 tests pass under `TZ=Asia/Tokyo` and `TZ=UTC`.
+
+**Research spend is now gated, and it fails closed.** `scripts/research-budget.py` measures
+usage from `state.db:session_model_usage` (split into research / interactive / auxiliary /
+scheduled-other by joining `sessions.source` and the `task` column), per-fire tokens from
+`cron/usage_audit.jsonl`, and run history from `cron/executions.db`. Attached as a job's
+pre-check script it prints a resume block and, when a limit binds, emits `{"wakeAgent": false}`
+so the tick is skipped **without spending a token**. `config/research-budget.json` ships with
+`allowance_usd: null`, which holds every session: an unconfigured budget is not an unlimited
+one. `cron.catch_up_missed` is now `false`, and a tick beyond the late window is skipped rather
+than caught up.
+
+**Every cost figure is an estimate.** `cost_status` is `estimated` and `actual_cost_usd` is 0
+across the board: Hermes estimates from its own records and no provider-reported actual exists.
+The gate therefore bounds planned work and **cannot** reconcile against the portal's
+subscription quota, usage reporting or reset period, none of which this instance can see. That
+number and its allocation have been asked for before any recurring model work is enabled.
+
+**Independent of the quota:** the weekly digest (`scout-weekly-research-digest`, job
+`10d4f73308c8`, Mondays 08:00 UTC) and the hourly cleanup sweep are both `no_agent` scripts, so
+monitoring and cleanup keep working when the allowance is spent or unset. The digest fired once
+to verify delivery; next scheduled run 2026-09-21T08:00:00Z.
