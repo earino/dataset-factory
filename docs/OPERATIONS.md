@@ -115,6 +115,30 @@ because it runs independently of Scout. On-host no-agent cron is secondary:
 6. Set `cleanup_configured=true` and `enabled=true` only after the primary schedule
    is verified and the operator has set an allowance. Then run the smoke cycle.
 
+### Sweep cadence and cleanup grace
+
+The workflow runs **hourly at minute 17** (`17 * * * *`), with `workflow_dispatch`
+retained for manual runs. Minute 17 is deliberately off the hour: GitHub documents
+that the `schedule` event can be delayed during high load, and that the start of
+every hour is a high-load period.
+
+The daily deletion path is not this workflow. **Scout deletes each worker as part of
+finishing the job, immediately after collecting its results.** The sweep exists to
+catch leftovers: an interrupted session, a failed collection, a coordinator that
+never came back. That distinction matters when reading a sweep's output, because
+`deleted_servers` is normally empty when the normal path is working.
+
+Because GitHub can delay scheduled runs - and may drop queued jobs entirely under
+load - the hourly interval is **not a strict deletion deadline**. An expired worker
+can therefore remain billable for longer than an hour.
+
+`cleanup_grace_minutes: 60` makes the cost reservation account for that: a job is
+reserved as `ceil((lifetime + grace) / 60)` hours, so a worker is charged up to an
+extra hour of post-expiry billing in the admission check. The policy also uses
+expiry plus grace as the window before an ambiguous ledger entry can be closed. This
+remains a **conservative estimate, not a provider billing cap** - transfer overages
+and charges outside the reservation are not covered.
+
 Also use Scout's `cronjob_manage` script/no-agent mode to schedule:
 
 ```bash
@@ -123,8 +147,9 @@ sh /opt/data/dataset-factory/scripts/scout-factory worker sweep --project earino
 
 Run from the repo directory with the token available. Use the actual policy project
 value. Native cron is useful redundancy, but a script running on Scout does not
-cover loss of Scout's whole instance. GitHub schedules can also be delayed; monitor
-them. Neither cleanup invocation needs an LLM.
+cover loss of Scout's whole instance. GitHub schedules can also be delayed and
+queued jobs can be dropped, so treat either sweep as a backstop rather than a
+deadline. Neither cleanup invocation needs an LLM.
 
 GitHub runs use the Actions secret directly; `_FILE` paths on Scout do not configure
 GitHub. Research can proceed manually before notification delivery is connected.

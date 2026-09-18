@@ -161,6 +161,8 @@ Those runs were correctly `skipped` by the gate.
 
 Scheduler fire time, and therefore the first genuinely scheduled execution, remains
 **unverified**. The manual dispatch above stands on its own as execution evidence.
+The interval was changed to hourly at minute 17 later the same session; see the
+sixth-session section.
 
 ### Open item for the operator
 
@@ -169,6 +171,40 @@ the configured 96 runs/day that is roughly 2,880 minutes per month, against GitH
 Free's 2,000 minutes per month for private repositories. Widening the interval to 30
 or 60 minutes, or confirming a paid allowance, should be decided before this is
 relied on.
+
+## Cleanup cadence changed to hourly 2026-09-18 (sixth session)
+
+Deletion on collection stays the normal path; the scheduled sweep is the backstop.
+Because GitHub can delay scheduled runs - and can drop queued jobs under load - the
+interval is **not a strict deletion deadline**.
+
+- `.github/workflows/cleanup.yml` now runs `17 * * * *` (hourly at minute 17), with
+  `workflow_dispatch` retained for manual runs. Minute 17 is deliberately off the
+  hour, which GitHub documents as a high-load period for scheduled workflows.
+- `cleanup_grace_minutes` raised from 30 to 60 in `config/worker.example.json`
+  (tracked) and `config/local.json` (ignored, so not committed).
+- The policy accepts the value: the check is `15 <= cleanup_grace_minutes <= 60`, so
+  60 is the maximum permitted. Verified offline that 60 passes and that 90 is
+  rejected with "Cleanup grace must be 15-60 minutes"; an offline `worker plan`
+  under a stand-in policy completes with `cloud_calls: 0`.
+- Measured effect on reservations, which are `ceil((lifetime + grace) / 60)` hours:
+  unchanged for 45, 60 and 120-minute lifetimes; the reserved hours rise for
+  short jobs (15 and 30-minute lifetimes go 1 -> 2) and for a 90-minute job (2 -> 3).
+  The extra hour is therefore charged only where it crosses an hour boundary. It is
+  a conservative reservation, not a provider billing cap.
+- `docs/OPERATIONS.md` gained a "Sweep cadence and cleanup grace" subsection. It
+  records that an empty `deleted_servers` list is the expected sweep result while
+  the normal delete-on-collect path is working, and that Scout deletes a worker as
+  part of finishing its job rather than waiting for the sweep.
+- Launches remain disabled and the allowance unchanged: `enabled` false,
+  `cleanup_configured` false, `monthly_budget_eur` 0, empty `server_types`. No cloud
+  resource was created or modified.
+
+**First scheduled run under the new cron is pending.** It is written here at
+2026-09-18T11:26Z rather than claimed, because no `schedule` run appeared under the
+previous 15-minute interval during the roughly twenty minutes it was enabled. See
+the fifth-session section above for the earlier observation and the manual dispatch
+that did execute.
 
 ## Research shortlist recorded 2026-09-18
 
