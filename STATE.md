@@ -758,8 +758,49 @@ unverified, and the full Austin build and unattended operation are subsequent st
 
 `scripts/provider-inventory.py` is new and tracked: it reads the token from the `_FILE` path
 and queries the provider directly, so a before/after comparison does not rest on this
-project's own bookkeeping claiming success. Expiry cleanup, recovery and job-failure tests
-have **not** run yet.
+project's own bookkeeping claiming success. The recovery and failed-job paths were then
+exercised on 2026-09-18; expiry cleanup is covered below.
+
+### GitHub scheduled cleanup: observed executing (2026-09-18)
+
+Run 35368993679, event `schedule`, created 16:31:37Z, commit `3ba6988`, conclusion `success`.
+The step `Delete only expired project workers and orphaned job IPs` ran
+`python3 -m factory worker sweep --project "$FACTORY_PROJECT"` at 16:31:46Z and printed
+`deleted_servers: []`, `deleted_primary_ips: []` - correct, because the smoke worker had been
+destroyed at 14:59. So the scheduled trigger **executes**; it has not yet been observed
+deleting, because there was nothing expired at the time.
+
+Cadence measured across six fires: gaps of 2.96, 2.19, 4.65, 4.77 and 6.63 hours (mean 4.24 h,
+max 6.63 h) against a `17 * * * *` cron. **The GitHub trigger is not an hourly deadline.** The
+hourly bound is the on-host sweep's; GitHub's contribution is durability across this instance
+being gone. Both are recorded in `docs/OPERATIONS.md` in those terms, and both schedules stay
+active.
+
+### Cleanup path tests: expiry, recovery, failed job (2026-09-18)
+
+Each ran one worker at a time, with deletion confirmed against the provider rather than our
+ledger, and the acting cleanup path recorded.
+
+**Failed job** - `infra-smoke-fail-01`, server 166481719. The container exited 7 on purpose.
+The executor recorded `status: failed`, `exit_code: 7`, `uploaded: true` and preserved the
+diagnostics: `output/partial.txt` (the line written before the failure) and `container.log`
+(both stdout and stderr) were recovered from draft release 391674310 with digests matching the
+manifest. **Path: normal `destroy` after collection** - a failed job is still collectable, so
+its evidence survives. Deleted 17:58:28Z; provider then showed 0 servers, 0 IPs.
+
+**Session recovery** - `infra-smoke-recov-01`, server 166481920. The lost-transfer condition
+was reproduced honestly by deleting the staging release (391676527) after a successful run:
+`collect` then failed with `HTTP 404` and exit 1. `worker retry-upload` re-dispatched the upload
+unit and `collect` succeeded against a **new** release (391678046) with `exit_code 0`,
+`elapsed_seconds 7.2` and `image_id` identical to the first run - the data job was reused, not
+rerun, which is the documented guarantee. **Path: normal `destroy` after collection.** Deleted
+18:03:28Z; provider then showed 0 servers, 0 IPs.
+
+A first attempt to launch the expiry job was refused by validation
+(`Lifetime must include at least 15 minutes for boot/upload and fit policy`) because
+`timeout_minutes 5` with `lifetime_minutes 16` violates `timeout + 15 <= lifetime`. Nothing was
+provisioned - the refusal happens before any cloud call - and the provider was checked to
+confirm no server had been created. Lifetime raised to 20.
 
 ## Research shortlist recorded 2026-09-18
 

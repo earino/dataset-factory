@@ -249,14 +249,43 @@ on any file that changed after qualification. **Nothing may be scored, and no ca
 accepted, without it.** Only compact evidence comes back to Scout: the report, the rendered
 checks and the manifest. The bulk extract stays in private staging.
 
+## Cleanup cadence: what the two schedules actually guarantee
+
+Two independent schedulers run the same command,
+`python3 -m factory worker sweep --project "$FACTORY_PROJECT"`:
+
+| scheduler | cadence | observed |
+|---|---|---|
+| On-host cron (`47 * * * *`) | hourly, to the minute | every hour, silent on success |
+| GitHub Actions `schedule` | **irregular**, mean 4.24 h, max 6.63 h | 2.96, 2.19, 4.65, 4.77, 6.63 h |
+
+**The hourly deadline comes from the on-host sweep, not from GitHub.** The GitHub trigger is
+documented as delayed on low-activity repositories and the measurements bear that out: the
+gaps between its fires are 2.2-6.6 hours against a `17 * * * *` cron, so **it cannot be
+described as an hourly backstop**. What it provides is durability - it survives this instance,
+which the cron cannot - on a multi-hour timescale.
+
+That is why the two exist together and why neither is removed: the cron bounds how long an
+expired worker can survive a coordinator outage; GitHub bounds how long one can survive the
+coordinator being gone entirely. Treat "expired by at most an hour" as the cron's claim and
+"eventually, even if this host is destroyed" as GitHub's. Do not write the second as hourly.
+
+Observed scheduled execution (2026-09-18T16:31:37Z, run 35368993679, commit `3ba6988`): the
+trigger fired, the cleanup step ran and succeeded, and `sweep` returned
+`deleted_servers: []`, `deleted_primary_ips: []` - correct, as the smoke worker had already been
+destroyed at 14:59. So the scheduled path is proven to **execute**; it had nothing to delete,
+and deleting through it has not yet been observed.
+
 ## Exception: the on-host sweep as the cleanup prerequisite (2026-09-18)
 
-The primary scheduler's `schedule` trigger has never fired for this repository. Between the
-gate opening at 11:04Z and 14:04Z there were **eleven consecutive hourly slots with no
-`schedule`-event run**, and 4.2 hours since the last actual fire - longer than any gap observed
-before enablement. The workflow itself is verified correct and active, and the manual
-`workflow_dispatch` still executes; the gap is in GitHub's scheduled trigger, not in our
-configuration.
+At the time this exception was granted, the `schedule` trigger had not fired for this
+repository since enablement. Between the gate opening at 11:04Z and 14:04Z there were
+**eleven consecutive hourly slots with no `schedule`-event run**, and 4.2 hours since the last
+actual fire - longer than any gap observed before enablement. The workflow itself was verified
+correct and active, and the manual `workflow_dispatch` still executed, so the gap was in
+GitHub's scheduled trigger, not in our configuration. It subsequently fired at 16:31:37Z (see
+the cadence section above); the exception below was written before that and its limits still
+stand for the cycle it covered.
 
 **For the supervised infrastructure smoke test only, the verified on-host sweep satisfies the
 cleanup prerequisite.** The exception is narrow and stated as such:
