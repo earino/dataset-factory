@@ -5,7 +5,8 @@
   "domain": "coastal water levels / flood-threshold exceedance",
   "prediction_question": "For a chosen NOAA water-level station, will the daily maximum observed water level exceed its published minor flood threshold tomorrow?",
   "prediction_time": "End of the local day before the target day. Features are observed water levels only. NOAA tide predictions and model guidance are model output and must be excluded so the task stays an observation-only forecast.",
-  "target_definition": "Binary: the verified daily maximum 6-minute water level for the target local day exceeds the station's NWS minor flood threshold, taken from the CO-OPS metadata API.",
+  "target_definition": "Binary: the daily maximum observed hourly water level for the target day exceeds the station's NOS minor flood threshold from the CO-OPS metadata API. Lead threshold is nos_minor; a per-station training-window quantile is the alternative because nos_minor makes the class rare.",
+  "datum_requirement": "MUST use datum=STND. The published nos_minor threshold is in the station datum and the metadata API does not declare a datum. Comparing MLLW-referenced heights to nos_minor silently yields zero positives at every station; see measurements.datum_trap_measured.",
   "sources": [
     {
       "name": "NOAA CO-OPS data retrieval API",
@@ -32,11 +33,39 @@
     "stations_with_flood_thresholds_measured": 302,
     "six_minute_rows_per_station_day_measured": 240,
     "measured_on": "2026-09-18 via CO-OPS metadata and data APIs",
-    "note": "exceedance base rates not yet measured; that is a worker construction step"
+    "datum_trap_measured": {
+      "observation": "Comparing hourly_height at datum=MLLW against nos_minor yields 0 exceeding days at all 12 sampled stations across 4,380 station-days - a false 'no positive class' result caused entirely by a datum mismatch.",
+      "decisive_check": "Boston 8443970 over 2018-01-03..2018-01-05, the bomb-cyclone record tide: MLLW peak 15.022 ft at 2018-01-04 18:00 (below nos_minor 15.85, so 'no flood'); STND peak 18.547 ft at the same timestamp (above threshold, correct).",
+      "conclusion": "nos_minor is expressed in the station datum. Use datum=STND.",
+      "also_tried": "CO-OPS dpapi/prod/webapi/htb.json (High Tide Flooding daily product) returned count 0 with an empty floodLikelihood list for every station, date and range tried, including Boston 2018 and ranges 7/31/365/366. Not usable from this host."
+    },
+    "exceedance_base_rates_measured": {
+      "year": 2025,
+      "method": "one hourly_height request per station-year at datum=STND, units=english; daily max from hourly rows compared to nos_minor; hourly rows streamed and discarded",
+      "pooled_exceedance_rate": 0.0137,
+      "pooled_minor_flood_days": 60,
+      "pooled_station_days": 4380,
+      "per_station": {
+        "Portland, ME (8418150)": {"nos_minor_ft": 20.5, "days": 365, "flood_days": 0, "rate": 0.0, "annual_max_ft": 20.489},
+        "Boston, MA (8443970)": {"nos_minor_ft": 15.85, "days": 365, "flood_days": 2, "rate": 0.0055, "annual_max_ft": 15.899},
+        "The Battery, NY (8518750)": {"nos_minor_ft": 10.19, "days": 365, "flood_days": 7, "rate": 0.0192, "annual_max_ft": 10.942},
+        "Sandy Hook, NJ (8531680)": {"nos_minor_ft": 9.59, "days": 365, "flood_days": 7, "rate": 0.0192, "annual_max_ft": 10.144},
+        "Atlantic City, NJ (8534720)": {"nos_minor_ft": 11.38, "days": 365, "flood_days": 4, "rate": 0.011, "annual_max_ft": 11.755},
+        "Sewells Point, VA (8638610)": {"nos_minor_ft": 8.89, "days": 365, "flood_days": 17, "rate": 0.0466, "annual_max_ft": 10.522},
+        "Charleston, SC (8665530)": {"nos_minor_ft": 10.4, "days": 365, "flood_days": 7, "rate": 0.0192, "annual_max_ft": 11.083},
+        "Key West, FL (8724580)": {"nos_minor_ft": 8.08, "days": 365, "flood_days": 0, "rate": 0.0, "annual_max_ft": 8.035},
+        "Galveston Pier 21, TX (8771450)": {"nos_minor_ft": 7.49, "days": 365, "flood_days": 4, "rate": 0.011, "annual_max_ft": 7.956},
+        "San Francisco, CA (9414290)": {"nos_minor_ft": 13.69, "days": 365, "flood_days": 0, "rate": 0.0, "annual_max_ft": 13.497},
+        "Seattle, WA (9447130)": {"nos_minor_ft": 21.39, "days": 365, "flood_days": 0, "rate": 0.0, "annual_max_ft": 21.375},
+        "Honolulu, HI (1612340)": {"nos_minor_ft": 6.71, "days": 365, "flood_days": 12, "rate": 0.0329, "annual_max_ft": 6.965}
+      },
+      "caveat": "Four stations have an annual maximum within 0.2 ft below threshold (Portland, Key West, San Francisco, Seattle), so their zero rates are sensitive to a small residual offset. The pooled 1.37% estimate is the defensible figure."
+    },
+    "note": "The class is rare at nos_minor (0-4.7% per station-day, 1.37% pooled). Accuracy is meaningless at this base rate; use precision/recall-style metrics, an explicit base-rate baseline, or a per-station training-window quantile threshold instead."
   },
   "jobs": [],
   "artifacts": [],
   "rejection_reason": null,
   "review": null,
-  "next_action": "Measure per-station exceedance base rates and pick a station set with usable headroom; then write the construction script. Multi-year backfill belongs on a worker."
+  "next_action": "Choose the target threshold deliberately - nos_minor (measured and rare) or a per-station training-window quantile (better balanced) - then fix the station list, restrict features to observations, and write the construction script. Multi-year backfill belongs on a worker."
 }

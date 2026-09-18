@@ -328,13 +328,21 @@ The script's exit status is the sweep's own, so a failure also shows in cron his
 
 ### GitHub scheduled cleanup run - still pending, launches stay disabled
 
-As of 2026-09-18T11:58Z no `schedule`-event run has appeared since the gate was opened
+As of 2026-09-18T12:18Z no `schedule`-event run has appeared since the gate was opened
 at 11:04Z. The most recent scheduled run remains 09:53:53Z, which was correctly
-`skipped`. The hourly `17 * * * *` slot at 11:17Z did not fire and was ~40 minutes
-overdue at the time of writing; a polling watcher was left running and will report the
-run if it appears. This matches the fifth-session observation that this repository's
+`skipped`. **Two consecutive hourly slots have now been missed** - 11:17Z and 12:17Z -
+under a `17 * * * *` cron that was already on `main` before either was due. A polling
+watcher checked `gh run list --event schedule` every 20 seconds from 11:49Z to 12:19Z
+and found nothing. This matches the fifth-session observation that this repository's
 scheduled runs are sparse (roughly every two to four hours, against a configured
 fifteen-minute interval at the time).
+
+That is now the single outstanding blocker, and it is worth being precise about what it
+means: the workflow is correct and its manual dispatch executes, but **the scheduler is
+not delivering on its configured cadence for this repository**, so the primary sweeper
+cannot yet be relied on as the backstop it is meant to be. The secondary on-host sweep
+added this session is hourly and independent of GitHub, which is exactly the redundancy
+that gap calls for.
 
 Consequence, per instruction: **`enabled` and `cleanup_configured` stay false and no
 paid launch was made.** No CPX32/hel1 smoke cycle, therefore no artifact links, no
@@ -366,8 +374,10 @@ execution), qualification tools, public exporter and website are not implemented
    (including `initial_problem_description` / `initial_problem_category`), target
    `response_time > 1200` seconds, threshold frozen from the training window only,
    temporal split by `response_datetime`, checksummed extract produced on a worker.
-2. Continue shortlist work that needs no credentials. Maryland's stale-series concern
-   is resolved; Melbourne's licence is still the open item.
+2. Continue shortlist work that needs no credentials. Maryland's stale-series concern is
+   resolved and NOAA's exceedance base rates are measured (1.37% pooled); Melbourne's
+   licence is the open item, and both remaining candidates need their target thresholds
+   chosen before a construction script can be written.
 3. Operator: none - allowance, locations, server types, SSH key and both worker tokens
    are in place. The only outstanding gate is GitHub's scheduler.
 4. Once a `schedule`-event run is observed executing: set `cleanup_configured: true`
@@ -391,7 +401,7 @@ anonymous public APIs; none is a scored result.
 |---|---|---|---|---|
 | `austin-911-response` | public-safety operations | 1,049,636 calls, 2023-2026 | Public Domain | **lead** |
 | `chicago-doah-adjudication` | administrative adjudication | 823,637 rows, 2008-2027 | See Terms of Use | runner-up, licence review needed |
-| `noaa-tide-flooding` | coastal water levels | 302 stations, all with flood thresholds | public domain (US Gov) | shortlisted |
+| `noaa-tide-flooding` | coastal water levels | 302 stations; 1.37% pooled station-day exceedance measured | public domain (US Gov) | shortlisted, base rates now measured |
 | `melbourne-pedestrian-counts` | urban activity sensing | 1,621,901 hourly records | **still unconfirmed** | shortlisted |
 | `md-sewer-overflow` | wastewater infrastructure | 27,479 events 2005-2023 **plus a current series** | Public Domain | promoted from "lower priority" |
 
@@ -426,6 +436,28 @@ an earlier session recorded HTTP 403. It is Public Domain, reports 3,434 rows, a
 27,479-row historical one (`3rgd-zjxx`, last updated 2023-02). The candidate is no
 longer "historical only"; the remaining work is the facility-day event rate and the
 rainfall join, not currency.
+
+### NOAA per-station exceedance base rates measured (eighth session)
+
+The shortlist's open measurement is done, and it produced a trap worth recording. Twelve
+stations spread across four coasts were measured for station-year 2025 from hourly
+observed water levels, daily maxima compared to each station's `nos_minor` threshold.
+
+**The published `nos_minor` threshold is expressed in the station datum (STND), and the
+metadata API does not say so.** Comparing `datum=MLLW` heights against it gives **zero
+exceedance at all 12 stations across 4,380 station-days** - a convincing-looking "this
+task has no positive class" that is purely a datum error. The decisive check is the
+2018-01-04 Boston bomb-cyclone tide: MLLW peak 15.022 ft (below the 15.85 threshold,
+"no flood") versus STND peak 18.547 ft at the same timestamp (correctly above). NOAA's
+own `htb.json` flood-status product was tried as a shortcut and returns nothing usable
+from this host.
+
+Measured result at `datum=STND`: **60 minor-flood days across 4,380 station-days, 1.37%
+pooled**, per-station rates from 0.00% (Portland ME, Key West, San Francisco, Seattle) to
+4.66% (Sewells Point VA). Four stations have an annual maximum within 0.2 ft below
+threshold, so their zeros are offset-sensitive. The consequence for the task is that
+`nos_minor` makes the class rare - accuracy is meaningless at that base rate, and a
+per-station training-window quantile would give a better-balanced target.
 
 ### Melbourne licence still unconfirmed (eighth session)
 
