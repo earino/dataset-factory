@@ -555,6 +555,18 @@ the units/datums worked example, including the requirement for a known-event fix
 `open-data-source-vetting` (the Hermes-side skill) gained a handoff paragraph pointing at
 it when construction completes.
 
+**Fresh-session verification.** A brand-new CLI session (`20260918_130358_725a40`, zero
+prior history, no access to this conversation) was asked what to check before reporting an
+AUC from a directory of `public/train.csv`, `public/eval.csv`, `private/holdout.csv` and
+`meta.json`. It discovered the skill from the skill list, loaded it with `skill_view`,
+named it, gave the exact command, ran `--selftest` itself, and volunteered the
+necessary-but-not-sufficient caveat. Evidence: `agent.log` records the `skill_view` call
+against that session id. A cosmetic `Skill security warning: skill file is outside the
+trusted skills directory` is logged on load, because the Hermes-visible path is a symlink
+whose target resolves outside `~/.hermes/skills`; the link is deliberate, since a second
+real copy would be able to diverge. `tests/test_repo_hygiene.py` asserts the link resolves
+to this repository's copy.
+
 ### One self-inflicted incident, recorded
 
 While clearing bytecode caches, an over-broad `rm -rf candidates tests ...` deleted the
