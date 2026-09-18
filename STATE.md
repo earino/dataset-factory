@@ -844,6 +844,50 @@ no prior context, told to prefer the ledger and `docs/OPERATIONS.md` over `STATE
 launch anything was honoured: no replacement worker was created and both cleanup schedules were
 left untouched. **Path verified: coordinator-session recovery via the persisted ledger.**
 
+### Austin: full-data extract built and qualified (2026-09-18)
+
+`austin-003` ran the complete construction and qualification on a worker and **passed**.
+
+| | |
+|---|---|
+| job / server | `austin-003` / `166489302` (CPX32, `hel1`) |
+| reservation | EUR 0.24 (3 reserved hours); machine lived 5.9 minutes |
+| elapsed | 353.7 s build + qualify, exit 0 |
+| qualification | **PASSED - 33 checks, 0 failed**, gate 1.3.0, over the full artifact |
+| artifact version | `e4598317e406984fa590aacc5e7aff675867578c51ae1a84ebf6279bc42c3328` |
+| staging | draft release `job-austin-003` (id 391742263) in `earino/dataset-factory-staging` |
+| acceptance | `scripts/verify-staged-report.py 391742263` - the report's digests equal the uploaded bytes for all five components |
+| destroyed | 19:46:23Z; provider then 0 servers, 0 IPs; sweep clean |
+
+**Real split counts, measured on the full data** (threshold T = 1200 s, frozen from the training
+window):
+
+| split | rows | positives | positive rate |
+|---|---|---|---|
+| train (< 2025-01-01) | 572,180 | 231,025 | 0.403763 |
+| eval (2025) | 285,665 | 109,860 | 0.384576 |
+| holdout (>= 2026-01-01) | 191,791 | 72,450 | 0.377755 |
+| **total** | **1,049,636** | | |
+
+The row counts equal the source's per-year counts exactly, so paging lost and duplicated
+nothing. The gate's own evidence on the full rows: no `incident_number` appears in more than
+one split; 24 repeated-identifier rows within splits, at the declared 24; 4 of 24 repeated
+identifiers carry more than one label, recorded as a source property because the descriptor
+makes no entity-key claim.
+
+**Baseline: AUC 0.627031** on the eval split from `initial_problem_category` alone, shipped
+with the extract. This is a measured floor, not a headline result - no model comparison has
+been run, and the gate's passing report is what licenses quoting it at all.
+
+Three runs were needed. `austin-001` failed a conflated entity check; `austin-002` failed an
+entity-key claim the source does not make; each failure was diagnosed from the rows and fixed
+in the gate or the declaration, and neither was a data defect. The extract bytes for
+`austin-002` and `austin-003` are identical, which confirms the last round of changes was
+gate-and-declaration only.
+
+Not done, and not implied by any of the above: no model comparison, no headroom figure, and
+**nothing published** - a public release still requires human review.
+
 ## Research shortlist recorded 2026-09-18
 
 Five candidates created with measured evidence in `candidates/<id>/record.json`
