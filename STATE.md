@@ -921,6 +921,37 @@ Two facts learned the hard way and recorded in the tooling: `gh release download
 **draft** release assets, and `releases/tags/<tag>` returns 404 for a draft even though the
 release exists - so the staging release is referenced by its **id**.
 
+### Baseline through the runner's contract: eval AUC 0.7691 (2026-09-18)
+
+`austin-baseline-002` ran the harness benchmark's own training and validation contract against
+the **verified accepted artifact**. Contract only - no coding agent, no harness comparison.
+
+| | |
+|---|---|
+| job / server | `austin-baseline-002` / `166494335` (CPX32, `hel1`) |
+| reservation | EUR 0.24; elapsed 386.0 s; exit 0 |
+| eval AUC, `train.py` | **0.7691** |
+| eval AUC, `validate.py` via `predict_proba` | **0.7691** (agrees) |
+| `[validate] CONTRACT OK` | yes |
+| train / score time | 2.6 s / 0.3 s |
+| runner files | `train.py`, `validate.py`, `validate.sh` bundled verbatim from the read-only clone; hashes in the report match the expected ones - `unmodified: true` |
+| dependencies | Python 3.13.15, pandas 2.3.3, numpy 2.5.3, xgboost 3.4.1, scikit-learn 1.9.1 |
+| destroyed | 21:19:26Z; provider 0 servers / 0 IPs; sweep clean |
+
+The job **rebuilds** the artifact rather than downloading it (the worker has no credential for
+the private staging release, and bulk data is not meant to travel), then refuses to measure
+anything unless all five files match the accepted hashes - so the number is attached to the
+qualified artifact and not to a near-copy.
+
+`austin-baseline-001` failed that verification and was right to: all three split files matched
+byte-for-byte, but `meta.json` differed because it embeds `built_at_utc`. Fixed by making the
+timestamp an input (`build.py --built-at`), which also makes published artifacts reproducible -
+a claim `REPRODUCE.md` makes and now supports. Regression test added.
+
+For context, not comparison: the extract's own single-feature baseline is 0.627031 on the same
+eval split, so the runner's model adds ~0.14 AUC over `initial_problem_category` alone. **No
+agent or harness result exists**, and 0.7691 is a floor for one rather than a finding about one.
+
 ## Research shortlist recorded 2026-09-18
 
 Five candidates created with measured evidence in `candidates/<id>/record.json`

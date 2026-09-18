@@ -186,15 +186,22 @@ hidden:
   `incident_number` alone and the order among tied rows is not guaranteed stable across
   requests, which can repeat or skip rows under offset pagination.
 
-**Measured baselines.** Two, and they are floors rather than headline results:
+**Measured baselines.** Three, and they are floors rather than headline results:
 
 | baseline | eval AUC | what it is |
 |---|---|---|
 | single-feature (`initial_problem_category`) | **0.627031** | shipped in the extract's `manifest.json` |
-| the benchmark's own `train.py`, unmodified | see `REPRODUCE.md` | one run through the runner's training/validation contract |
+| the benchmark's own `train.py`, unmodified | **0.7691** | one run through the runner's training/validation contract |
+| same, scored via `validate.py`'s `predict_proba` path | **0.7691** | the contract's own independent re-score; agrees |
+
+The runner's baseline is XGBoost (30 trees, depth 6, `hist`, categorical support) with the
+benchmark's own feature handling — string columns over 1000 levels dropped, unseen levels mapped
+to NaN — trained on `train` and scored on `eval`. It took **2.6 s to train and 0.3 s to score**,
+so this dataset is not compute-bound.
 
 **No agent or harness comparison has been run on this dataset.** That is outside this
 publication milestone, so no statement here compares harnesses, and none should be inferred.
+The 0.7691 figure is a floor for what an agent might do, not a result about any agent.
 
 ## Findings and limitations
 

@@ -91,8 +91,20 @@ sh validate.sh           # runs validate.py: checks the contract and re-scores v
 `predict_proba(df)` exists and returns finite probabilities in [0, 1], and prints
 `[validate] CONTRACT OK`.
 
-**Measured result of the recorded run** is in `MANIFEST.json` under `baseline`, including both
-AUC figures (from `train.py` and from `validate.py`) and the exit codes.
+**Measured result of the recorded run:**
+
+| | |
+|---|---|
+| `train.py` eval AUC | **0.7691** |
+| `validate.py` eval AUC (via `predict_proba`) | **0.7691** |
+| `train.py` exit / `validate.sh` exit | 0 / 0 |
+| `[validate] CONTRACT OK` | yes |
+| train / score time | 2.6 s / 0.3 s |
+| resolved dependencies | Python 3.13.15, pandas 2.3.3, numpy 2.5.3, xgboost 3.4.1, scikit-learn 1.9.1 |
+
+Both AUC figures agreeing matters: `train.py` scores its own in-memory model, while
+`validate.py` re-runs the file and scores through `predict_proba(df)` with the target column
+removed — so the contract is satisfied, not just the training script.
 
 ## 5. What is *not* reproduced here
 

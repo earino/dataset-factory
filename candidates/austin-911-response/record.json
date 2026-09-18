@@ -184,12 +184,23 @@
   "duplicate_incident_numbers_measured": 24,
   "duplicate_incident_numbers_differing_labels_measured": 4,
   "duplicate_note": "incident_number is not unique in the source (1,049,636 rows, 1,049,612 distinct). The 4 differing-label pairs are different events sharing a number, not label noise: rows hours apart, different category, sector and priority. None spans two splits.",
-  "threshold_training_rate_measured": 0.403763
+  "threshold_training_rate_measured": 0.403763,
+  "baseline_auc_eval_runner_measured": 0.7691,
+  "baseline_auc_eval_runner_note": "The harness benchmark's own train.py, run unmodified through its training and validation contract on a worker (job austin-baseline-002) against the verified accepted artifact. validate.py's predict_proba path independently re-scored it and agreed to four decimals. Train 2.6 s, score 0.3 s. A floor for what an agent might do, not a result about any agent: no agent or harness comparison has been run.",
+  "baseline_runner_dependencies": {
+   "python": "3.13.15",
+   "pandas": "2.3.3",
+   "numpy": "2.5.3",
+   "xgboost": "3.4.1",
+   "scikit-learn": "1.9.1"
+  }
  },
  "jobs": [
   "austin-001 (failed qualification, defect found)",
   "austin-002 (failed qualification, defect found)",
-  "austin-003 (passed, artifacts preserved)"
+  "austin-003 (passed, artifacts preserved)",
+  "austin-baseline-001 (failed verification: meta.json built_at_utc differed; defect fixed)",
+  "austin-baseline-002 (baseline through the runner's contract, eval AUC 0.7691)"
  ],
  "artifacts": [
   {
@@ -226,5 +237,5 @@
  ],
  "rejection_reason": null,
  "review": "Public release requires human review; nothing has been published.",
- "next_action": "Run the runner's train/validate on the eval split to get a competent model's AUC against the 0.627 floor, on a worker, using the staged extract; then prepare the public-release draft for review."
+ "next_action": "Review the prepared publication package in release/austin-911-response/ - starting with the construction code licence, which LICENSE.md leaves as an open decision. On approval, follow the five publication steps in scripts/publish-dataset.py. Agent/harness comparison is a later milestone."
 }

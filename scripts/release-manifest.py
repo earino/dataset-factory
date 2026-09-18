@@ -30,13 +30,8 @@ def main() -> int:
     record = load(ROOT / "candidates" / candidate / "record.json")
     expected = load(ROOT / "candidates" / candidate / "baseline" / "expected_artifact.json")
     qualification = load(release / "qualification.json")
-    baseline = load(ROOT / ".factory" / candidate / "baseline.json")
-    if baseline is None:
-        # The worker writes it into /output; once collected it is under the job's report dir.
-        for job in ("austin-baseline-001",):
-            baseline = load(ROOT / ".factory" / job / "baseline.json")
-            if baseline:
-                break
+    # The baseline evidence is tracked next to the candidate, not read out of ignored scratch.
+    baseline = load(ROOT / "candidates" / candidate / "baseline" / "baseline_result.json")
     if expected is None:
         raise SystemExit(f"no expected_artifact.json for {candidate}; nothing to manifest")
 

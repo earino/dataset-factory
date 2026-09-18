@@ -36,7 +36,9 @@ Verify with `sha256sum -c SHA256SUMS`. The artifact version is
 | | |
 |---|---|
 | Baseline, single feature (`initial_problem_category`) | eval AUC **0.627031** |
-| Baseline, the benchmark's own `train.py` unmodified | see `REPRODUCE.md` / `MANIFEST.json` |
+| Baseline, the benchmark's own `train.py` unmodified | eval AUC **0.7691** |
+| Same, re-scored through `validate.py`'s `predict_proba` path | eval AUC **0.7691** |
+| Baseline train / score time | 2.6 s / 0.3 s |
 | Build + qualification cost | 353.7 s on 2 vCPU / 2 GB, ~136 MB output |
 
 Baselines are floors, not results. **No agent or harness comparison has been run on this
