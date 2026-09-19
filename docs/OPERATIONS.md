@@ -493,3 +493,12 @@ rule-key entries had no effect (verified by adding the two script-execution keys
 both commands be refused anyway). Setting `approvals.single_query_mode: approve` would lift the
 refusal, and was **not** done: it would let a scheduled session run dangerous commands. The
 session prompt therefore tells the session to compute via script files instead.
+
+### Where the routine's code lives
+
+The wrapper is versioned at `scripts/scout_research_session.py` and the checkpoint's instruction
+at `docs/budget-checkpoint-prompt.md`. Cron requires a job's `script` to sit under the
+scheduler's scripts directory, so `/opt/data/scripts/scout_research_session.py` is a **shim that
+forwards to the repository copy** and the two shell shims exec the repository path. The routine's
+behaviour therefore travels with the repository instead of existing only on this host - a session
+that finds a bug fixes it in Git, not in an untracked file.
