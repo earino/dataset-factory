@@ -72,6 +72,19 @@ class FooterTests(unittest.TestCase):
 
 
 class HeldTickTests(unittest.TestCase):
+    def setUp(self):
+        # The wrapper appends to the routine's runtime log. A test must never write there: the
+        # log is evidence about real sessions, and test entries in it are indistinguishable from
+        # held ticks that actually happened.
+        self._tmp = tempfile.TemporaryDirectory()
+        self._saved = (wrapper.LOG, wrapper.FACTORY_DIR)
+        wrapper.FACTORY_DIR = Path(self._tmp.name)
+        wrapper.LOG = Path(self._tmp.name) / "research-sessions.jsonl"
+
+    def tearDown(self):
+        wrapper.LOG, wrapper.FACTORY_DIR = self._saved
+        self._tmp.cleanup()
+
     def _run(self, argv, held_reason):
         buffer = io.StringIO()
         with patch.object(wrapper, "run_gate", return_value=(False, "block", held_reason)), \
