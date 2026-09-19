@@ -224,9 +224,9 @@ def reconcile(plan, folder, gh, hub, fetch=public_json):
         for kind in ("dataset", "catalog"):
             target = plan["targets"][kind]
             repo, commit = target["repository"], steps[kind + "_commit"]["commit"]
-            gh.setup_pages(repo)
+            https = gh.setup_pages(repo)
             gh.homepage(repo, target["url"])
-            done(kind + "_pages", {"configured": True})
+            done(kind + "_pages", {"configured": True, "https": https})
             deployment = gh.deployment(repo, commit)
             if deployment["status"] == "not_deployed":
                 # GitHub's workflow registration/dispatch is asynchronous. A later pass reads it back.
@@ -242,6 +242,11 @@ def reconcile(plan, folder, gh, hub, fetch=public_json):
                     gh.dispatch(repo, commit)
                 deployment = {"status": "pending", "commit": commit}
             done(kind + "_deployment", deployment)
+            if deployment["status"] == "deployed" and not steps[kind + "_pages"]["https"].get("enforced"):
+                # Only a successful deployment provisions the certificate, so this is the first
+                # moment HTTPS can actually be enforced on this site.
+                steps[kind + "_pages"]["https"] = gh.enforce_https(repo)
+                done(kind + "_pages", steps[kind + "_pages"])
             url = (record["urls"]["version"] + "release.json" if kind == "dataset" else target["url"] + "catalog.json")
             live = fetch(url)
             records = ([live] if kind == "dataset" else (live or {}).get("releases", []))
@@ -283,7 +288,13 @@ def verify(plan, gh, hub, fetch=public_json):
             "Live website/catalogue records do not match the approved release")
     require(page_has_links(fetch(r["urls"]["version"]), [r["urls"][k] for k in ("github_release", "huggingface_version", "catalog")]) and
             page_has_links(fetch(r["urls"]["catalog"]), [r["urls"]["version"]]), "Live HTML is missing required cross-links")
-    return {"status": "verified", "plan_sha256": plan["plan_sha256"], "artifact_version": r["artifact_version"]}
+    https = {}
+    for repo in (r["github_repository"], plan["targets"]["catalog"]["repository"]):
+        pages = gh.request("GET", f"repos/{repo}/pages")
+        https[repo] = bool(pages.get("https_enforced"))
+    require(all(https.values()), "Pages does not report HTTPS enforced on every site")
+    return {"status": "verified", "plan_sha256": plan["plan_sha256"],
+            "artifact_version": r["artifact_version"], "https_enforced": https}
 
 
 def main(argv=None):

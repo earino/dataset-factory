@@ -132,11 +132,31 @@ class GitHub:
         if env is None:
             self.request("PUT", f"repos/{repo}/environments/github-pages", {})
         # Existing protection rules are left intact. A run may legitimately wait for review.
-        self.request("PUT", f"repos/{repo}/pages", {"https_enforced": True})
+        return self.enforce_https(repo)
+
+    def enforce_https(self, repo):
+        """Enforce HTTPS, tolerating the answer GitHub gives before the certificate exists.
+
+        GitHub refuses `https_enforced` with HTTP 404 "The certificate does not exist yet" until
+        the first Pages deployment has provisioned the certificate, so enforcement cannot precede
+        that deployment. The condition is recorded as deferred and retried once one succeeds; any
+        other failure still propagates.
+        """
+        try:
+            self.request("PUT", f"repos/{repo}/pages", {"https_enforced": True})
+            return {"enforced": True}
+        except FactoryError as exc:
+            if "HTTP 404" not in str(exc) and "HTTP 422" not in str(exc):
+                raise
+            return {"enforced": False, "deferred":
+                    "certificate not provisioned until the first successful deployment"}
 
     def homepage(self, repo, url):
         info = self.repo(repo)
-        require(info.get("homepage") in (None, "", url), "An existing repository homepage differs; review before replacing it")
+        existing = info.get("homepage")
+        require(existing in (None, "", url),
+                f"An existing repository homepage differs ({existing}); review before replacing it "
+                f"with {url}")
         update = {}
         if info.get("homepage") != url:
             update["homepage"] = url

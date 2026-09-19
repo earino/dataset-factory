@@ -1536,3 +1536,56 @@ with the novelty gate, plus this check's new approval test, with those 4 tests r
 **After operator approval:** finish the public dataset release, then
 `publish --approved-plan 87b1fd5a... --wait-seconds 600` and `verify`. A pending run is not
 completion.
+
+## 2026-09-19 - Austin is public, and its website is live
+
+Operator approved public visibility for the dataset and its infrastructure. Publication ran on the
+same reviewed plan (`87b1fd5a...`), unmodified; the approved digest was never applied to changed
+inputs.
+
+**Both destinations are public and anonymously readable.** GitHub `earino/austin-911-response`
+(release `391804787`, tag `v2026.09`) and Hugging Face `earino/austin-911-response`
+(`542382ae6d3e`, not gated). With no credential at all: the repository page answers 200, all five
+GitHub release assets answer ranged GET 206, the Hub dataset API reports `private: false`, and the
+Hub data files answer ranged GET 206. Data files, tag and artifact version are unchanged by
+publication - `e4598317e406984fa590aacc5e7aff675867578c51ae1a84ebf6279bc42c3328`.
+
+**Live sites**, both deployed and verified, cross-links verified, receipt `complete`:
+
+- Dataset: https://earino.github.io/austin-911-response/ (deployment run `35453081771`)
+- Catalogue: https://earino.github.io/dataset-factory-site/ (deployment run `35453120375`)
+- Live records read back and matched: `.../versions/v2026.09/release.json` and `.../catalog.json`
+- `verify` exit 0, `status: verified`, HTTPS enforced on both sites.
+
+The catalogue repository was created by this run and carries its ownership marker; both repositories
+keep their previous releases.
+
+**Two real defects found on first live contact, both fixed here.**
+
+1. **HTTPS was enforced before the certificate existed.** `setup_pages` called
+   `PUT /pages {"https_enforced": true}` before dispatching any deployment, and GitHub answers
+   **HTTP 404 "The certificate does not exist yet"** until the *first successful deployment* has
+   provisioned it. The first live publication aborted at exactly this step - the area the builder's
+   own notes flagged as never observed against GitHub. The certificate only appears after a
+   deployment, so enforcement now tolerates that answer, records it as deferred, and is retried
+   automatically once a deployment reports `deployed`. `verify` reads back the enforced state on
+   both sites rather than assuming it. New test models GitHub's refusal.
+2. **The homepage guard was undiagnosable.** The dataset repository's homepage pointed at the
+   upstream source portal (`datahub.austintexas.gov/d/e687-fx2y`), so the pipeline refused to
+   replace it - correct, but the message did not say what the existing value was. The message now
+   names both values.
+
+**One reviewed judgement call.** After checking, the rendered dataset site links the City of Austin
+portal prominently and carries the attribution, Public Domain designation and suggested citation, so
+replacing the repository homepage with the site URL loses nothing. The homepage was cleared once, as
+a reviewed transition, so the pipeline itself set it - the approved plan was not modified to achieve
+this.
+
+**Noted, deliberately left alone:** `MANIFEST.json` (public) records the private staging repository's
+*name* (`staging_repo`), and `VERIFICATION.md` names the job that performed the transfer. No
+credentials, URLs or download paths are exposed, and the manifest is a frozen, hashed artifact of an
+accepted release - editing it would change the release identity and invalidate the reviewed plan, so
+removing those names, if wanted, is a new version rather than an edit.
+
+**Site publication deferred nothing else:** the Hub card and the GitHub README carry the cross-links,
+and the labelled holdout is downloadable on both platforms.

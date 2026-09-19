@@ -28,6 +28,10 @@ class FakeGitHub:
         self.dispatches = []
         self.deployed = set()
         self.commits = 0
+        # GitHub issues a Pages certificate only after the first successful deployment, and refuses
+        # https_enforced until it exists.
+        self.certificate_ready = False
+        self.https = {}
         self.add_dataset(record)
 
     def add_dataset(self, record):
@@ -51,6 +55,9 @@ class FakeGitHub:
     def request(self, method, path, *args, **kwargs):
         if path.endswith("actions/permissions"):
             return {"enabled": True}
+        if path.endswith("/pages"):
+            repo = path[len("repos/"):-len("/pages")]
+            return {"https_enforced": self.https.get(repo, False), "build_type": "workflow"}
         raise AssertionError((method, path))
 
     def check_ownership(self, repo, kind, missing_ok=False):
@@ -83,7 +90,15 @@ class FakeGitHub:
         return self.heads[repo]
 
     def setup_pages(self, repo):
-        pass
+        return self.enforce_https(repo)
+
+    def enforce_https(self, repo):
+        """Model GitHub: refusing https_enforced until a deployment has issued the certificate."""
+        if not self.certificate_ready:
+            return {"enforced": False,
+                    "deferred": "certificate not provisioned until the first successful deployment"}
+        self.https[repo] = True
+        return {"enforced": True}
 
     def homepage(self, repo, url):
         self.repos[repo]["homepage"] = url
@@ -96,6 +111,8 @@ class FakeGitHub:
 
     def settle(self):
         self.deployed.update(self.dispatches)
+        # The certificate appears once a deployment has completed.
+        self.certificate_ready = bool(self.deployed)
 
     def fetch(self, url):
         for repo in self.files:
@@ -205,6 +222,21 @@ class WebsiteTests(unittest.TestCase):
         self.assertEqual(0, gh.commits)
         self.assertFalse(gh.dispatches)
         self.assertFalse((self.out / "receipt.json").exists())
+
+    def test_https_enforcement_waits_for_the_deployment_that_issues_the_certificate(self):
+        """A real publication aborted here: GitHub answers 404 until the certificate exists."""
+        gh, hub = FakeGitHub(self.record), FakeHub()
+        first = reconcile(self.plan, self.out, gh, hub, gh.fetch)
+
+        https = first["steps"]["dataset_pages"]["https"]
+        self.assertFalse(https["enforced"])
+        self.assertIn("certificate", https["deferred"])
+        self.assertNotEqual("failed", first["status"])
+
+        result = self.complete(self.plan, self.out, gh, hub)
+        self.assertEqual("complete", result["status"])
+        self.assertTrue(gh.https[self.record["github_repository"]])
+        self.assertTrue(result["steps"]["dataset_pages"]["https"]["enforced"])
 
     def test_deploy_dataset_before_catalog_and_rerun_does_nothing(self):
         gh, hub = FakeGitHub(self.record), FakeHub()
