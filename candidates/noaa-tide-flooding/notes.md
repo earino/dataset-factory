@@ -308,3 +308,26 @@ A second API trap, recorded because it silently produced zero rows: `htf/daily.j
 array is `DailyFloodCount`, not a guessed key, and `minFlag` arrives as the string `"1"`. Reading
 the wrong key yields "no flood days" with no error - the same shape as the datum trap.
 
+
+## The 6-minute fetch was the wrong route (2026-09-19)
+
+The record claimed `product=daily_max` did not exist (HTTP 400). It exists as **`daily_max_min`**: with
+`time_zone=GMT`, `interval=6` and `datum=STND` it returns a **whole station-year of 6-minute daily
+maxima in one request**. Live probe, Boston 8443970 for 2024: HTTP 200, 72,877 bytes, 366 days, every
+day `pcComplete6Min=100`, values 12.074-17.930 ft STND.
+
+Why that matters:
+
+| route | requests | data | quality |
+| --- | --- | --- | --- |
+| raw `water_level` 6-minute (1-month cap per request) | 29,160 | 15.2 GiB | preliminary rows, reduced by us |
+| `daily_max_min` (one request per station-year) | 2,440 | ~178 MB | **verified** maxima with completeness and quality flags |
+
+The daily maximum is exactly what the label needs, so the primary task now takes the second route:
+**12x fewer requests and ~85x less data, from the publisher rather than from us.** The raw series is
+only needed for sub-daily tasks (onset timing, lead time) and that becomes a deliberate decision
+rather than the default - which also removes the "does a 4 GB table belong on Hugging Face" question
+from this dataset entirely.
+
+Lesson, again the same one: a negative finding from a wrong probe is not a finding. The API's own
+error message lists the valid product names, and reading it would have caught this immediately.
