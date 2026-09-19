@@ -458,7 +458,16 @@ def digest(config, moment=None, root=None):
     else:
         lines.append("Research allowance: NOT ESTABLISHED - recurring model work is held "
                      "(fail-closed). Decision needed from the operator.")
-    lines.append(f"Sessions this period: {len(runs)} (cap {decision['session_cap_per_week']}/week)")
+    # Sessions and ticks are different units and were previously both shown as "sessions": a
+    # held tick is an execution row that started no session at all. Report them separately, and
+    # count the same way the cap counts.
+    lines.append(
+        f"Sessions this week: {decision['runs_last_7_days']}"
+        f"/{decision['session_cap_per_week']}"
+        f" (weighted {decision['runs_weighted_last_7_days']})"
+    )
+    lines.append(f"Scheduler ticks this period: {len(runs)} (includes held ticks that ran no "
+                 "session)")
     if decision.get("sessions_over_token_cap"):
         lines.append(
             f"Token cap: {decision['sessions_over_token_cap']} session(s) overshot the "

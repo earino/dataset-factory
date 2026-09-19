@@ -308,6 +308,15 @@ class RenderTests(BudgetTestCase):
         self.assertIn("Decision needed from the operator", text)
         self.assertIn("Estimates only", text)
 
+    def test_the_digest_counts_sessions_the_way_the_cap_does_and_ticks_separately(self):
+        make_state_db(self.state_db, [
+            ("20260919_080000_bbbb", "", 20, 20000, 1000, 0.05, "estimated", "scout-research")])
+        make_exec_db(self.exec_db, [(JOB, "completed", 5, None), (JOB, "completed", 10, None)])
+        text = budget.digest(self.config(allowance_usd=5.0, research_job_ids=[JOB]))
+        self.assertIn("Sessions this week: 1/3", text)
+        # two execution rows, one of which ran the session above: ticks are not sessions
+        self.assertIn("Scheduler ticks this period: 2", text)
+
     def test_the_digest_reports_usage_against_a_configured_allowance(self):
         make_state_db(self.state_db, [
             (f"cron_{JOB}_20260918", "", 2, 900, 100, 0.50, "estimated", "cron")])
