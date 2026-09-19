@@ -62,13 +62,16 @@ Checks the split names, row counts, schema and the label values against what the
 artifact declares, so "it uploaded" is not mistaken for "it loads".
 """
 import json
+import os
 import sys
 
 from datasets import load_dataset
 
 repo_id, revision, expected_path = sys.argv[1:4]
 expected = json.load(open(expected_path))
-ds = load_dataset(repo_id, revision=revision)
+# The write credential is passed explicitly: this private dataset cannot be read without it,
+# and `datasets` would otherwise look for HF_TOKEN, which this child deliberately does not have.
+ds = load_dataset(repo_id, revision=revision, token=os.environ["HF_WRITE_TOKEN"])
 report = {"splits": list(ds.keys()), "checked": {}}
 problems = []
 for split, want in sorted(expected["splits"].items()):
@@ -82,13 +85,24 @@ for split, want in sorted(expected["splits"].items()):
         problems.append(f"{split}: {len(data)} rows, manifest says {want['rows']}")
     if expected["columns"] and columns != sorted(expected["columns"]):
         problems.append(f"{split}: columns {columns} != manifest {sorted(expected['columns'])}")
-    label = data.features.get(expected["label"]) if hasattr(data, "features") else None
-    if label is not None and expected.get("label_values"):
-        if sorted(str(v) for v in getattr(label, "names", []) or []) != sorted(
-                str(v) for v in expected["label_values"]):
-            problems.append(f"{split}: label values differ from the manifest")
+    # Read the label's values out of the data, not out of the feature's type: a CSV gives an
+    # integer column with no `names`, so a ClassLabel-style comparison reports a mismatch on a
+    # perfect dataset. The positive count then proves the values mean what the manifest says.
+    label = expected["label"]
+    if label in data.column_names:
+        observed = sorted(str(value) for value in data.unique(label))
+        wanted = sorted(str(value) for value in (expected.get("label_values") or []))
+        if wanted and observed != wanted:
+            problems.append(f"{split}: label values {observed} != manifest {wanted}")
         else:
-            report["checked"][split]["label_values"] = list(expected["label_values"])
+            report["checked"][split]["label_values"] = wanted
+        if want.get("positives") is not None:
+            positives = int(sum(1 for value in data[label] if value in (1, True, "1")))
+            report["checked"][split]["positives"] = positives
+            if positives != want["positives"]:
+                problems.append(f"{split}: {positives} positives, manifest says {want['positives']}")
+    else:
+        problems.append(f"{split}: label column {label!r} is absent")
 report["problems"] = problems
 report["ok"] = not problems
 print(json.dumps(report, indent=2))
@@ -330,7 +344,7 @@ def hf_publish(base, job, report, client=None, retrieve=None):
             report["hf_loading"] = json.loads(result.stdout)
         except json.JSONDecodeError:
             report["hf_loading"] = {"ok": False,
-                                    "error": (result.stderr or result.stdout).strip()[:400]}
+                                    "error": (result.stderr or result.stdout).strip()[:4000]}
         if result.returncode != 0 or not report["hf_loading"].get("ok"):
             failures.append({"target": "loading-path", "error": "the documented loading path did "
                                                                 "not reproduce the artifact"})
