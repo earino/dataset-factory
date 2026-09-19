@@ -417,10 +417,26 @@ execution), qualification tools, public exporter and website are not implemented
 
 ## Inputs still needed from the operator
 
-Nothing blocking. Both worker tokens and the worker SSH key are supplied and verified,
-the allowance and allowed locations/types are configured, and notification delivery is
+Nothing blocking on the worker side. Both worker tokens and the worker SSH key are supplied and
+verified, the allowance and allowed locations/types are configured, and notification delivery is
 working. First release date, reviewer, public dataset namespace and website hosting can
 wait until the first candidate is approved.
+
+**Blocking the research routine: the model-spend allowance.** Asked 2026-09-18 and unanswered.
+Until it arrives, `config/research-budget.json` keeps `allowance_usd: null` and the gate wakes
+no research session - fail-closed, by design. Four questions, answerable in one line:
+
+1. **Monthly allowance**, measured as Hermes-estimated USD (a bounded session measures
+   0.07-0.37 USD, so 3/week is roughly 1-4 USD/month). Suggested: 5 USD/month.
+2. **Reset period**: 1st of the month 00:00 UTC, a different day, weekly, or a rolling window.
+3. **Portal reconciliation**: the NousCloud quota and reset period are not visible from this
+   instance. Estimates-only reporting, or will the operator relay the portal figure?
+4. **Enable the schedule**: Mon/Wed/Fri 08:00 UTC, 3 sessions/week, <= 45 min and <= 600k tokens
+   each, stopping at 95% of the allowance.
+
+Also open, from the publication milestone: the **licence choice** for the published code and for
+the three benchmark runner files shipped in `austin-911-response` (that upstream project carries
+no licence), and **public visibility**, withheld as instructed.
 
 ## Construction script written and worker job prepared (2026-09-18, ninth session)
 
