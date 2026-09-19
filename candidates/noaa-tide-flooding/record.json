@@ -563,5 +563,64 @@
     "ours": "A leak-free next-day prediction task over a frozen 122-station panel: label = daily maximum water level at datum=STND exceeding the station's published NOS minor flood threshold, with observations-only features, temporal splits, and the label validated against NOAA's own annual counts (12/12 stations, 2025).",
     "verdict": "differentiated",
     "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  },
+  "task_design": {
+    "decided_on": "2026-09-19",
+    "target": "does a station's daily maximum observed water level exceed its published NOS minor flood threshold on the next local day",
+    "prediction_time": "the end of the previous local day; every feature is knowable then",
+    "label_source": {
+      "product": "daily_max_min",
+      "interval": 6,
+      "datum": "STND",
+      "time_zone": "GMT",
+      "quality": "verified maxima with pcComplete6Min and quality flags",
+      "requests_per_station_year": 1
+    },
+    "features": "observations only, station-normalised: margin against the station's own published threshold, trailing mean/spread of its own maxima, days since its last exceedance, trailing-window exceedance counts, day-of-year. NOAA tide predictions and model guidance are excluded - they are not observations, and including them defeats the task. Station statistics use trailing windows only, so the future cannot leak into the features.",
+    "splits": {
+      "temporal": {
+        "stations": 122,
+        "train": "2006-2021",
+        "eval": "2022-2023",
+        "holdout": "2024-2025",
+        "positives_station_days": {
+          "train": 11886,
+          "eval": 1828,
+          "holdout": 2850
+        },
+        "independent_events": {
+          "eval": 332,
+          "holdout": 427
+        }
+      },
+      "station_disjoint": {
+        "rule": "sort the 122 frozen stations by NOS station id; every third station is group0, the station holdout; train on group1+group2",
+        "held_out_stations": 41,
+        "positives_station_days": {
+          "eval": 792,
+          "holdout": 1090
+        },
+        "independent_events": {
+          "eval": 298,
+          "holdout": 337
+        },
+        "mean_stations_per_flood_day": {
+          "eval": 2.66,
+          "holdout": 3.23
+        }
+      }
+    },
+    "why_this_is_the_contribution": "NOAA publishes the observations, the verified maxima and the annual counts, so access is cheap and is not the contribution. A station-disjoint, leak-free, scored transfer task on a frozen panel is not published anywhere the novelty search found.",
+    "capacity_evidence": [
+      "spatial_split_result.json",
+      "station_list_result.json"
+    ],
+    "extraction_cost": {
+      "requests": 2440,
+      "bytes_approx": 178000000,
+      "route": "daily_max_min, one request per station-year",
+      "note": "not the 29,160-request / 15.2 GiB raw-series route"
+    },
+    "splits_cross_check": "the three groups' positives sum to the temporal totals exactly (4307 + 3328 + 4251 = 11886), and the station group's station-days from the daily product equal the annual product's counts"
   }
 }

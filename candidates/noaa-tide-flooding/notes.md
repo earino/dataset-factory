@@ -331,3 +331,61 @@ from this dataset entirely.
 
 Lesson, again the same one: a negative finding from a wrong probe is not a finding. The API's own
 error message lists the valid product names, and reading it would have caught this immediately.
+
+## The task design, decided on measured capacity (2026-09-19)
+
+The plumbing was settled earlier; what was open was what the dataset *is*. Decided here, with the
+capacity measured rather than assumed. Scripts: `spatial_split_capacity.py` ->
+`spatial_split_result.json` (one request to NOAA's annual product returned every station-year).
+
+**Target.** Does station S's daily maximum observed water level exceed S's published NOS **minor**
+flood threshold on the next local day?
+
+**Label.** NOAA verified 6-minute daily maxima (`product=daily_max_min`, `interval=6`,
+`datum=STND`, `time_zone=GMT`), one request per station-year. Verified rather than preliminary
+rows, with `pcComplete6Min` completeness and quality flags, and it is exactly the reduction the
+label needs - so the 29,160-request raw-series route is not used. Build cost: **2,440 requests,
+~178 MB**.
+
+**Prediction time.** The end of the previous local day. Every feature is knowable then.
+
+**Features: observations only, station-normalised.** NOAA tide predictions and model guidance are
+excluded *because they are not observations* - and because including them is the obvious way an
+agent defeats the task. Station-relative quantities (margin against that station's published
+threshold, trailing mean/spread of its own maxima, days since its last exceedance, exceedance count
+over trailing windows) with day-of-year for the seasonal cycle. Station statistics are computed from
+**trailing** windows only: a whole-series normalisation would feed the future into the features,
+which is the leakage the qualification gate exists to catch.
+
+**Two evaluation levels, both scored:**
+
+| level | split | positives (station-days) | independent events |
+| --- | --- | --- | --- |
+| `temporal` | train 2006-2021 / eval 2022-2023 / holdout 2024-2025, all 122 stations | 11,886 / 1,828 / 2,850 | 332 (eval), 427 (holdout) |
+| `station_disjoint` | train on group1+group2, evaluate on group0 - never seen in training | holdout 1,090; eval 792 | **337 (holdout), 298 (eval)** |
+
+The partition is deterministic and published, not hand-picked: sort the 122 frozen stations by NOS
+station id and take every third into group0 (~41 stations). The three groups' positives sum to the
+temporal totals exactly (4,307 + 3,328 + 4,251 = 11,886), which is a cross-check between the
+partition and the counts already recorded.
+
+**Why the split is worth a monthly slot.** A station-disjoint evaluation asks whether an agent
+learned something transferable rather than memorising one station's local tide behaviour. NOAA
+publishes the observations, the verified maxima and the annual counts - so access is cheap and the
+access is *not* the contribution. Nothing published scores this transfer question on a frozen panel
+with a leak-free contract, and that is the whole basis of the novelty verdict.
+
+**Per-station rates differ by more than 10x** (median 1.47%, p75 2.38%, max 16.4%, one station with
+no positives in 20 years), so held-out stations are not interchangeable with training stations: the
+partition bites, rather than being a technicality.
+
+**Independent events on held-out stations, measured** (`spatial_clustering.py`, HTF daily
+product, the same rule used for the temporal splits): the eval window holds 792 positive
+station-days over **298 distinct flood days** (2.66 stations/day), the holdout window 1,090 over
+**337 distinct flood days** (3.23 stations/day). Both station-day totals reproduce the annual
+product's counts for the same group exactly, so two NOAA products agree on this partition. A score
+on held-out stations is quoted against 298 and 337 independent events.
+
+**Known limits.** A ~1.4-3% positive rate is rare; the transfer level has fewer independent events
+than the temporal one, so its uncertainty is wider and has to be quoted against distinct flood days
+rather than station-days. Both are recorded rather than smoothed over.
