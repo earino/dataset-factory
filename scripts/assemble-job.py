@@ -60,8 +60,8 @@ BUNDLES = {
         ],
         "overrides": {
             "command": ["sh", "/workspace/run.sh"],
-            "timeout_minutes": 60,
-            "lifetime_minutes": 120,
+            "timeout_minutes": 120,
+            "lifetime_minutes": 150,
             "max_disk_mb": 3072,
             "max_artifact_mb": 600,
         },
@@ -123,8 +123,8 @@ BUNDLES = {
         ],
         "overrides": {
             "command": ["sh", "/workspace/run.sh"],
-            "timeout_minutes": 60,
-            "lifetime_minutes": 120,
+            "timeout_minutes": 120,
+            "lifetime_minutes": 150,
             "max_disk_mb": 3072,
             "max_artifact_mb": 600,
         },

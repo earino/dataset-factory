@@ -10,6 +10,8 @@ without launching anything or touching the network.
 """
 import importlib.util
 import json
+import math
+from decimal import Decimal
 import subprocess
 import sys
 import unittest
@@ -88,6 +90,31 @@ class AssembledBundle(unittest.TestCase):
         self.assertIn("exit \"$qual_status\"", script)
         self.assertIn("cp \"$OUT/summary.json\" /output/summary.json", script)
 
+
+    def test_the_job_runtime_cap_is_enforced_at_the_policy_ceiling(self):
+        """A job at the ceiling is allowed; one minute over is refused.
+
+        The cap exists so a run cannot outlive its reservation. Raising it is a policy decision,
+        so both sides of the boundary are pinned here rather than assumed.
+        """
+        from factory.common import FactoryError
+        from factory.worker import validate
+
+        policy = json.loads(CI_POLICY.read_text())
+        ceiling = policy["max_job_minutes"]
+
+        at_ceiling = dict(self.job, timeout_minutes=ceiling,
+                          lifetime_minutes=ceiling + 15)
+        validate(at_ceiling, policy)          # must not raise
+
+        over = dict(at_ceiling, timeout_minutes=ceiling + 1, lifetime_minutes=ceiling + 16)
+        with self.assertRaisesRegex(FactoryError, "runtime exceeds policy"):
+            validate(over, policy)
+
+        # Boot and upload need their own room, so a lifetime without slack is refused too.
+        with self.assertRaisesRegex(FactoryError, "at least 15 minutes"):
+            validate(dict(self.job, timeout_minutes=ceiling, lifetime_minutes=ceiling + 5), policy)
+
     def test_the_job_fits_the_committed_test_policy(self):
         # `config/local.json` is private and gitignored, so a clean checkout has no policy at
         # all. The committed test policy keeps this assertion meaningful on CI.
@@ -127,8 +154,15 @@ class AssembledBundle(unittest.TestCase):
         plan = json.loads(result.stdout)
         self.assertEqual(plan["cloud_calls"], 0)
         self.assertFalse(plan["enabled"], "launches stay disabled until cleanup is verified")
-        self.assertEqual(plan["reserved_hours"], 3)
-        self.assertEqual(plan["reservation_eur"], "0.24")
+        # Derived from the documented formula rather than pinned to one sizing:
+        # reservation = ceil((lifetime + cleanup grace) / 60) hours x the type's hourly ceiling.
+        policy = json.loads(CI_POLICY.read_text())
+        expected_hours = math.ceil(
+            (self.job["lifetime_minutes"] + policy["cleanup_grace_minutes"]) / 60)
+        self.assertEqual(plan["reserved_hours"], expected_hours)
+        ceiling = Decimal(str(policy["server_types"][self.job["server_type"]]))
+        self.assertEqual(plan["reservation_eur"],
+                         str((ceiling * expected_hours).quantize(Decimal("0.01"))))
         self.assertGreater(plan["source_bytes"], 0)
 
 
