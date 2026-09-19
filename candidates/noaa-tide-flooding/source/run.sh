@@ -14,7 +14,7 @@ OUT=/output/extract
 mkdir -p /output
 
 echo "== build =="
-python3 /workspace/build.py --out "$OUT" --concurrency 6
+python3 /workspace/build.py --out "$OUT" --concurrency 4
 build_status=$?
 
 if [ -f "$OUT/build_summary.json" ]; then

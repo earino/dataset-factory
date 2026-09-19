@@ -61,17 +61,27 @@ COLUMNS = list(dict.fromkeys(
 ID_COLUMNS = ["row_id", "station_id", "date"]
 
 
-def fetch_json(url, attempts=3, timeout=120):
+def fetch_json(url, attempts=6, timeout=120):
+    """Retry with backoff, and report the *cause* rather than the URL.
+
+    The first worker run recorded `GET <url> failed after 3 attempts: <url>...` because the message
+    embedded the URL and the caller truncated it, so 594 failures could not be diagnosed at all.
+    A throttled or timed-out request is also worth waiting out rather than losing a station-year.
+    """
     last = None
     for attempt in range(attempts):
         try:
             request = urllib.request.Request(url, headers=UA)
             with urllib.request.urlopen(request, timeout=timeout) as response:
                 return json.loads(response.read().decode())
-        except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
-            last = exc
-            time.sleep(1.5 * (attempt + 1))
-    raise RuntimeError(f"GET {url} failed after {attempts} attempts: {last}")
+        except urllib.error.HTTPError as exc:
+            last = f"HTTPError {exc.code}"
+            # 429/5xx are transient; 4xx other than 429 will not improve by waiting as long.
+            time.sleep((2 ** attempt) * (5 if exc.code in (429, 500, 502, 503, 504) else 1))
+        except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
+            last = f"{type(exc).__name__}: {str(exc)[:120]}"
+            time.sleep((2 ** attempt))
+    raise RuntimeError(f"failed after {attempts} attempts ({last})")
 
 
 def daily_maxima(station_id, year):
@@ -216,7 +226,7 @@ def features_for(series, threshold, latitude, threshold_rank):
     return rows
 
 
-def build(out_dir, limit=None, years=None, concurrency=4):
+def build(out_dir, limit=None, years=None, concurrency=4, max_errors=0):
     stations = frozen_stations()
     order = sorted(stations)
     meta = station_metadata(stations)
@@ -307,7 +317,17 @@ def build(out_dir, limit=None, years=None, concurrency=4):
 
     out_dir.mkdir(parents=True, exist_ok=True)
     emitted = emit_levels(out_dir, levels, meta, order, station_days)
+    expected_station_years = len(targets) * len(years or YEARS)
+    coverage = {
+        "stations_expected": len(targets),
+        "stations_built": len(rows_by_station),
+        "station_years_expected": expected_station_years,
+        "station_years_fetched": expected_station_years - len(errors),
+        "missing_station_years": len(errors),
+        "note": "an incomplete panel must not be scored as if it were the frozen panel",
+    }
     summary = {"stations": len(rows_by_station), "requests": requests, "errors": errors,
+               "coverage": coverage,
                "emitted_levels": emitted,
                "label_source": "NOAA HTF daily product, minFlag (the publisher's own minor-flood "
                                "days), one request per station-year; features come from "
@@ -334,7 +354,15 @@ def build(out_dir, limit=None, years=None, concurrency=4):
             }
     (out_dir / "build_summary.json").write_text(json.dumps(summary, indent=2) + "\n")
     print(json.dumps(summary["levels"], indent=2))
-    return summary
+    print(json.dumps({"coverage": coverage}, indent=2))
+
+    # A run that lost station-years is incomplete, and an incomplete artifact must not pass silently
+    # as if it were the frozen panel: the gate checks leaks, timing, splits and units, not coverage.
+    if len(errors) > max_errors:
+        print(f"INCOMPLETE: {len(errors)} station-years failed, {len(rows_by_station)} of "
+              f"{len(targets)} stations built (limit {max_errors})", file=sys.stderr)
+        return 1
+    return 0
 
 
 
@@ -495,6 +523,8 @@ def main():
     parser.add_argument("--probe", help="one station id: fetch one year and print parsed rows")
     parser.add_argument("--year", type=int, default=2024, help="year for --probe")
     parser.add_argument("--years", help="comma-separated years, e.g. 2024,2025")
+    parser.add_argument("--max-errors", type=int, default=0,
+                        help="station-years allowed to fail before the build reports INCOMPLETE")
     parser.add_argument("--concurrency", type=int, default=4,
                         help="station-years in flight at once (default 4; modest on purpose)")
     args = parser.parse_args()
@@ -503,8 +533,8 @@ def main():
     if not args.out:
         raise SystemExit("--out is required for a build (or use --probe)")
     years = [int(y) for y in args.years.split(",")] if args.years else None
-    build(args.out, limit=args.limit, years=years, concurrency=args.concurrency)
-    return 0
+    return build(args.out, limit=args.limit, years=years, concurrency=args.concurrency,
+                 max_errors=args.max_errors)
 
 
 if __name__ == "__main__":
