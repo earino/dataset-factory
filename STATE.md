@@ -1474,45 +1474,65 @@ staged tree, with no private configuration, passed 240 tests (4 environment-spec
 skips) and factory doctor. The prepared Austin plan SHA is
 `87b1fd5a9bcf920c0396b0e6c08c52f89de1ba991df70e57245e59abb7a88db6`.
 
-## 2026-09-19 - Scout's independent acceptance of the website pipeline
+## 2026-09-19 - Hosted handoff check (bounded, no public deployment)
 
-Scout pulled the builder's implementation and ran the documented offline steps from the hosted
-environment, as the handoff's next action asked. No defect blocking publication was found.
+Ran the exact steps the operator specified, from the hosted environment, against the builder's
+implementation at `83c1d683a6519f7386b0504666a8f75b31f82999`. No blocking defect and no missing
+permission was found. Both data destinations stay private and Pages stays disabled.
 
-**prepare** - reproduced plan SHA `87b1fd5a9bcf920c0396b0e6c08c52f89de1ba991df70e57245e59abb7a88db6`,
-identical to the value the builder recorded. Zero network calls; two runs into separate output
-directories produced byte-identical `bundle.json`, `REVIEW.md` and both previews, so the
-determinism claim holds. Duplicate dry-run directories were removed; the reviewed bundle is
-`.factory/sites/austin-v2026.09-1`.
+**Plan SHA: `87b1fd5a9bcf920c0396b0e6c08c52f89de1ba991df70e57245e59abb7a88db6`** - identical to the
+expected value, so **no implementation input changed**. `prepare` made zero network calls and did not
+modify the release package. An earlier bundle prepared into a different output directory produced
+the same digest, confirming the plan SHA covers the inputs rather than the output path. Repeated
+preparation is byte-identical across `bundle.json`, `REVIEW.md` and both previews. The reviewed
+bundle is `.factory/sites/austin-website-1`.
 
-**inspect** (read-only) - GitHub release `391804787` and its asset digests verified; Hub revision
-`542382ae6d3e48175b6938f5df4f91e087cfd2ee` verified and equal to the Hub main commit;
-`ready_for_publication: false`, correct because both destinations are still private. Catalogue
-repository `earino/dataset-factory-site` does not exist yet (the plan creates it); the dataset
-repository has Actions enabled, no Pages site, `pages: null`; Hub navigation links not yet present.
-**status** reported `prepared` (exit 0); **verify** refused with exit 1 and
-`GitHub dataset is private; complete the approved dataset release first` - the right failure code,
-and the right refusal.
+**Preflight (`inspect`, exit 0, empty stderr), using the default HF environment** - the default
+resolved without `--hf-python`:
 
-**Content agreement** - the dataset preview carries the version tag, the full artifact hash
-`e4598317e406984fa590aacc5e7aff675867578c51ae`, all three split row counts (572,180 / 285,665 /
-191,791), MIT, CC0-1.0, the source's Public Domain designation and both destination links; nothing
-from the holdout is inlined. The catalogue preview carries the tag and both links, which is its job.
+- GitHub release `391804787` verified against its pinned manifest and asset digests; `private: true`.
+- Hub revision `542382ae6d3e48175b6938f5df4f91e087cfd2ee` verified, equal to the Hub main commit;
+  `private: true`; navigation links not yet present, as expected before publication.
+- `ready_for_publication: false` - correct, because both destinations remain private.
+- Dataset repository `earino/austin-911-response` accessible, Actions enabled (`all`, no SHA
+  pinning), no Pages site (`pages: null`).
+- Catalogue `earino/dataset-factory-site` not accessible - it does not exist yet and the plan creates
+  it at publication. Expected state, not a missing permission.
 
-**Public-projection leak check** - no credentials, staging URLs, job or worker records, host paths,
-provider identifiers or internal release/asset ids appear anywhere in the 19 projected files. Two
-initial flags were Scout's own over-broad patterns matching the public catalogue name
-`earino/dataset-factory-site` and the intentional `artifact_version` field; both were read in
-context and dismissed.
+**Content agreement** - the dataset preview matches `MANIFEST.json` fact by fact: the version tag,
+the full artifact hash `e4598317e406984fa590aacc5e7aff675867578c51ae1a84ebf6279bc42c3328`, all three
+split row counts (572,180 / 285,665 / 191,791), MIT, CC0-1.0, the source's Public Domain
+designation and both destination links. Nothing from the holdout is inlined. The catalogue preview
+carries the tag and both links, which is its role.
 
-**Documentation ambiguity (not a defect):** exit code 2 is documented as "publication pending", but
-a private-destination refusal surfaces as exit 1 with `status: failed`. Defensible - it is a
-refusal, not a pending deployment - but worth one line in the sequence doc.
+**Public-projection leak check** - across all 19 projected files: no credentials, staging URLs, job
+or worker records, host paths, provider identifiers or internal release/asset ids. Two initial hits
+were my own over-broad patterns matching the public catalogue name `earino/dataset-factory-site` and
+the intentional `artifact_version` field; both were read in context and dismissed.
 
-**Suite in the hosted environment:** 245 tests, 0 skips (the builder's 240 plus the 5 added with the
-novelty gate). An earlier 230-test reading was Scout's tree before the rebase carried the builder's
-15 site tests; no discrepancy exists.
+**Two safety properties tested rather than assumed.**
 
-**Blocked on the operator:** public dataset release. Pages stays disabled and both data
-repositories stay private until that approval. After approval, finish the dataset release, run
-`publish`/`verify` with the reviewed digest, then exercise an editorial revision independently.
+1. A wrong `--approved-plan` digest is refused with exit 1 and
+   `Approval does not match this prepared plan` - observed live and now locked by a new test that
+   also asserts nothing is written: no commits, no deployment dispatch, no receipt.
+2. The Hub adapter genuinely does not depend on the inference credential: with a deliberately
+   poisoned `HF_TOKEN`, `inspect` still verified the Hub revision. Confirmed in `scripts/site-hf.py`,
+   which resolves `HF_TOKEN_WRITE` (or its credential file) and calls `env.pop("HF_TOKEN", None)` on
+   the child environment, exactly as the handoff states.
+
+**One ordering observation, not a defect.** `GitHub()` and `Hub()` are constructed just before the
+approval digest is compared, so a stale digest still builds the client objects. No write, dispatch
+or receipt follows the refusal, and the live run showed no network latency, so the refusal still
+precedes every mutation.
+
+**Builder's CI claims independently verified:** Local checks run `35436461305` and Website pipeline
+preview run `35436461283` both exist at the full SHA `83c1d683a651` and both succeeded.
+
+**Test count reconciled:** the builder measured 240 tests with 4 environment-specific skips in a
+clean checkout; this environment reports **246 with no skips** - the builder's 240, plus the 5 added
+with the novelty gate, plus this check's new approval test, with those 4 tests running here because
+`gh` and the Hub environment are present.
+
+**After operator approval:** finish the public dataset release, then
+`publish --approved-plan 87b1fd5a... --wait-seconds 600` and `verify`. A pending run is not
+completion.

@@ -1,5 +1,7 @@
 """Website lifecycle acceptance: another dataset, interrupted publication and immutable versions."""
+import contextlib
 import copy
+import io
 import json
 from pathlib import Path
 import runpy
@@ -10,7 +12,7 @@ from unittest.mock import patch
 
 from factory.common import FactoryError
 from factory.site_model import project, read, dump, digest, linked_readme, links
-from factory.site_pipeline import prepare, load_bundle, reconcile, verify, Hub
+from factory.site_pipeline import prepare, load_bundle, reconcile, verify, Hub, main
 from factory.site_github import GitHub
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -184,6 +186,25 @@ class WebsiteTests(unittest.TestCase):
         self.assertEqual(gh.commits, 0)
         self.assertFalse(gh.dispatches)
         self.assertEqual(read(self.out / "receipt.json")["status"], "failed")
+
+    def test_a_wrong_approval_digest_is_refused_without_mutating_anything(self):
+        """The operator's rule: never force an old approval onto a different plan.
+
+        The refusal precedes every write - no commits, no deployment dispatch, no receipt - so a
+        stale digest cannot advance a plan that was never reviewed in this form.
+        """
+        gh, hub = FakeGitHub(self.record), FakeHub()
+        captured = io.StringIO()
+        with patch("factory.site_pipeline.GitHub", lambda *_a, **_k: gh), \
+                patch("factory.site_pipeline.Hub", lambda *_a, **_k: hub):
+            with contextlib.redirect_stdout(captured):
+                code = main(["publish", str(self.out), "--approved-plan", "0" * 64])
+
+        self.assertEqual(1, code)
+        self.assertIn("Approval does not match this prepared plan", captured.getvalue())
+        self.assertEqual(0, gh.commits)
+        self.assertFalse(gh.dispatches)
+        self.assertFalse((self.out / "receipt.json").exists())
 
     def test_deploy_dataset_before_catalog_and_rerun_does_nothing(self):
         gh, hub = FakeGitHub(self.record), FakeHub()
