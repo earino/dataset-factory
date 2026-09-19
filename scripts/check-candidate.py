@@ -26,6 +26,9 @@ STAGES = (
 )
 # Stages that assert construction happened, and therefore imply construction evidence.
 CONSTRUCTED = ("constructed", "qualified", "packaged", "published")
+# The novelty check is required before a candidate may be called `ready` - the verdict is part of
+# deciding to build, not part of the release.
+NOVELTY_REQUIRED = ("ready",) + CONSTRUCTED
 # Stages that assert the data was gated.
 QUALIFIED = ("qualified", "packaged", "published")
 # Stages that assert a release artifact exists.
@@ -111,6 +114,28 @@ def check_record(record, notes_present=True):
         jobs = record.get("jobs") or []
         if not jobs:
             warnings.append("no worker job recorded for a constructed candidate")
+
+    if status in NOVELTY_REQUIRED:
+        # Publishing a dataset that already exists in ML-ready form is a mirror, not a
+        # contribution. The search is mechanical; the verdict has to be stated.
+        novelty = record.get("novelty_check") or {}
+        if not novelty:
+            missing.append(
+                f"novelty_check: absent - status '{status}' implies the task was checked against "
+                "public catalogs (scripts/check-novelty.py) and found not to be a mirror")
+        else:
+            if novelty.get("verdict") not in ("no_precedent", "differentiated", "mirror"):
+                missing.append("novelty_check.verdict: must be no_precedent, differentiated or "
+                               "mirror")
+            if not _nonempty(novelty.get("ours")):
+                missing.append("novelty_check.ours: state what this dataset contributes that "
+                               "does not already exist")
+            if novelty.get("verdict") == "mirror":
+                missing.append("novelty_check.verdict is 'mirror' - a mirror of an existing "
+                               "dataset must not be published")
+            if not _nonempty(novelty.get("theirs")):
+                warnings.append("novelty_check.theirs: recording what already exists makes the "
+                                "verdict reviewable")
 
     if status in QUALIFIED:
         if not _nonempty(record.get("qualification")):

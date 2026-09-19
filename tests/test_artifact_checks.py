@@ -99,6 +99,37 @@ class CandidateCheckTests(unittest.TestCase):
             good_record(status="dropped", rejection_reason="No licence for redistribution"))
         self.assertFalse(any("terminal" in problem for problem in missing))
 
+    def test_a_ready_candidate_without_a_novelty_check_is_refused(self):
+        missing, _ = candidate_check.check_record(good_record(
+            status="ready", construction_script="build.py", split_strategy={"train": "2024"},
+            measurements={"rows": 10}))
+        self.assertTrue(any("novelty_check: absent" in problem for problem in missing))
+
+    def test_a_mirror_verdict_is_refused(self):
+        missing, _ = candidate_check.check_record(good_record(
+            status="ready", construction_script="build.py", split_strategy={"train": "2024"},
+            measurements={"rows": 10},
+            novelty_check={"verdict": "mirror", "ours": "a copy of an existing dataset"}))
+        self.assertTrue(any("must not be published" in problem for problem in missing))
+
+    def test_a_verdict_without_what_is_ours_is_refused(self):
+        missing, _ = candidate_check.check_record(good_record(
+            status="ready", construction_script="build.py", split_strategy={"train": "2024"},
+            measurements={"rows": 10}, novelty_check={"verdict": "differentiated"}))
+        self.assertTrue(any("novelty_check.ours" in problem for problem in missing))
+
+    def test_a_differentiated_verdict_passes(self):
+        missing, _ = candidate_check.check_record(good_record(
+            status="ready", construction_script="build.py", split_strategy={"train": "2024"},
+            measurements={"rows": 10},
+            novelty_check={"verdict": "differentiated", "ours": "a leak-free task",
+                           "theirs": "the publisher ships raw data only"}))
+        self.assertFalse(any("novelty" in problem for problem in missing))
+
+    def test_an_investigating_candidate_does_not_need_a_novelty_check_yet(self):
+        missing, _ = candidate_check.check_record(good_record())
+        self.assertFalse(any("novelty" in problem for problem in missing))
+
     def test_a_release_without_an_openable_url_is_refused(self):
         missing, _ = candidate_check.check_record(good_record(
             status="packaged", construction_script="build.py", split_strategy={"train": "2024"},

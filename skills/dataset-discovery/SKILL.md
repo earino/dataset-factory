@@ -40,6 +40,10 @@ looks. Each is cheap to test and expensive to discover late:
    source column must be excludable from what ships.
 4. **Split capacity.** Enough *independent* positives, spread over time, to fill disjoint
    train/eval/holdout windows with both classes present.
+5. **Not a mirror.** The *task* must not already exist in ML-ready form. The publisher having the
+   raw data is fine and expected; the publisher or anyone else already shipping this prediction
+   task with splits and a scored contract is not. **A mirror is not published** - better to
+   publish nothing than to republish what a consumer can already download.
 
 ## Commands
 
@@ -50,6 +54,15 @@ python3 -m factory candidate show <candidate-id>
 
 # mechanical completeness check over a candidate record
 python3 scripts/check-candidate.py <candidate-id>
+
+# the novelty check: mechanical search, explicit verdict, recorded in the record
+python3 scripts/check-novelty.py <candidate-id> \
+    --query "coastal flood" --query "tide gauge" \
+    --verdict differentiated \
+    --ours "what this contributes that does not already exist" \
+    --theirs "what the publisher and prior art already provide" \
+    --prior-art "FloodCastBench, Sci Data 12:431 (2025)"
+python3 scripts/check-novelty.py <candidate-id> --check      # is a valid verdict recorded?
 
 # probe pattern: read-only aggregate queries first, on the worker if the source is large
 python3 candidates/<id>/probe_*.py --limit 200
@@ -99,6 +112,9 @@ command behind it is a guess.
 | Feature list looks right, dataset scores perfectly | A carried source column shipped the answer | Hand to `dataset-qualification`; it tests shipped columns, not lists |
 | Cost estimate wrong by an order of magnitude | Paging arithmetic guessed instead of measured | Wrap the fetch, count requests, record the machine class |
 | Candidate sits "interesting" for weeks | No verdict recorded | Force build/park/drop with the reason; parking is a valid outcome |
+| The "dataset" is really a mirror | Only the source was checked, not the existing task | Search public catalogs *and* the literature for the exact task; `check-novelty.py` refuses an absent verdict and marks `mirror` as unpublishable |
+| The publisher nearly hands us the task | Feasibility mistaken for contribution | The easier the fetch, the *less* the access is worth: state what is ours (formulation, splits, gating, validation) or don't publish |
+| A negative finding from a wrong probe | Query typo read as "does not exist" | The API's own error text lists valid parameters; read it, and re-probe before recording a negative |
 
 ## Completion criteria
 
@@ -106,7 +122,8 @@ A candidate is **ready** - the buffer state, before construction - when:
 
 - [ ] All four contracts are satisfied, each with recorded evidence.
 - [ ] The licence question is either settled or explicitly escalated as a decision.
-- [ ] `check-candidate.py` reports no missing required field.
+- [ ] `check-candidate.py` reports no missing required field, including a **novelty check** with
+      a verdict of `no_precedent` or `differentiated` - never `mirror`.
 - [ ] Split windows and their computed counts are recorded, with clustered counts where they differ.
 - [ ] Extraction cost is measured, not estimated.
 - [ ] `record.json` carries a verdict: `ready`, `parked` (with the blocker) or `dropped` (with the reason).
