@@ -102,7 +102,11 @@ python3 scripts/check-package.py release/<dataset>
 Rules that are not negotiable:
 
 - **Private until the operator approves publication**, on both platforms, and the labelled holdout
-  ships to both when that happens.
+  ships to both when that happens. Publication is a separate approved act: flip both destinations,
+  prove it from an **anonymous** client, record the change in `DESTINATIONS.json` **before**
+  regenerating the manifest (it derives `visibility`/`published` from that file), and refresh the
+  card, `LOADING.md`, README and release notes, which were written while the release was private.
+  See `skills/dataset-release/SKILL.md`, "Publication".
 - The **write** credential is not the **inference** credential. Publishing uses the write one, via
   the environment or a mode-0600 file; it never enters a bundle, a mount, a container, a log, a
   manifest or an asset. Never change inference authentication to publish.

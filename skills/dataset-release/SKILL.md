@@ -136,6 +136,43 @@ Rules that are not negotiable:
 - Terms are recorded in the manifest, **generated from the declaration** rather than edited in
   afterwards - a hand-edited block is lost the next time the manifest is regenerated.
 
+## Publication: the one step that needs the operator
+
+Everything above produces a **private** release. Publication is a separate, approved act, and it is
+the operator's decision - never inferred from a plan digest you happen to hold. When it is approved:
+
+1. **Flip both destinations, then prove it anonymously.** GitHub: `gh api -X PATCH repos/<owner>/<repo>
+   -F private=false`. Hugging Face: `HfApi.update_repo_settings(repo_id=..., repo_type="dataset",
+   private=False)` with the **write** credential (the `/settings` REST path is not the endpoint;
+   asking for it returns 404). Then verify from a client with no credential at all: the repository
+   page answers 200, every release asset answers a ranged GET, the Hub API reports `private: false`,
+   and the data files answer ranged GETs at the **tag** revision. A successful PATCH is not
+   verification.
+2. **Record it before regenerating.** Set `private: false`, the note and the timestamp in
+   `DESTINATIONS.json` first. The manifest derives its `visibility`, `published` and
+   `publication_note` from that file, so regenerating before recording re-asserts "private".
+3. **Regenerate, then re-verify.** `python3 scripts/release-manifest.py <candidate>`, then
+   `check-package.py`, then the website pipeline `publish`/`verify`. Re-run `prepare` and confirm the
+   plan digest is unchanged: publication is not supposed to alter the plan, and a changed digest
+   means an input moved.
+4. **Refresh what ships with the status.** The card, `LOADING.md`, the repository README and the
+   release notes are generated or written while the release is private and will keep claiming
+   "private, prepared for review" and instruct readers to pass a token. Re-upload the small files
+   (`hf-publish.py --upload-small` changes no visibility) and update the public copies.
+
+**State is derived from recorded evidence, never asserted in a generator.** Three defects of this
+exact shape shipped at once: a card whose status was a string literal, a manifest whose
+`published`/`visibility` fields were literals (so the documented post-publication regeneration
+re-asserted "private" forever), and a loading example that demanded a token. When you write a
+status, version, digest or path into a generated document, ask what it is derived from; if the
+answer is "nothing", it will go stale silently and nothing will fail to tell you.
+
+**Anything a human reads or runs must be executed once before it ships.** The card carried the
+repository id as a doubled-brace placeholder inside an f-string, which renders to a single brace -
+so the replacement never matched and the published card printed `load_dataset("{repo_id}", ...)`.
+The command could not run, for either platform, and every check passed. Open the generated artefact
+and run its commands.
+
 ## Common failure modes
 
 | Symptom | Cause | Action |
@@ -157,6 +194,11 @@ Rules that are not negotiable:
 | Third-party files redistributed without permission or credit | Provenance tracked but permission assumed | Record the permission and preserve existing contributor credits, or leave the files out |
 | Re-run re-uploaded 131 MB | No digest check before sending | Skip any file already at the manifest digest on the destination |
 | Inference token used to publish | Same variable name assumed for both roles | Separate variables (`FACTORY_HF_WRITE_TOKEN` vs the inference credential), refused at plan time |
+
+| A generated document still claims "private" after publication | The status was a literal in the generator, not derived from recorded state | Derive it from `DESTINATIONS.json`/the manifest; assert nothing about a state you can read |
+| A printed command contains a placeholder | A doubled-brace placeholder inside an f-string renders to a single brace, so the replacement no-ops | Use an unambiguous token; execute the artifact you generate before shipping it |
+| `PUT .../pages` answered 404 "The certificate does not exist yet" | HTTPS enforcement precedes the first deployment, and only a deployment issues the certificate | Tolerate it before a deployment, retry after one succeeds, and read the enforced state back in `verify` |
+| Website publication refuses with "dataset is private" | Correct refusal, not a defect: a public page must not link to a private destination | Complete the approved public data release first |
 
 ## Completion criteria
 
@@ -194,6 +236,9 @@ A package is **ready for review** when:
 - [ ] `VERIFICATION.md` states what was **not** covered and why.
 - [ ] Private by default. Public visibility, and any licence choice, are decisions for the
       reviewer, never a step in the procedure.
+- [ ] If publication was approved: both destinations verified from an **anonymous** client, the
+      recorded state updated before the manifest was regenerated, and no shipped document still
+      claims the release is private.
 - [ ] Worker, IP and staging resources confirmed deleted, with provider-side evidence.
 
 ## References

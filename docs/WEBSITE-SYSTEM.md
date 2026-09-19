@@ -109,8 +109,14 @@ The pipeline:
    manifest gets hashes of the updated README and managed website files. Dataset tags
    and data files remain unchanged.
 5. Creates Pages with workflow publishing, ensures the `github-pages` environment
-   exists, enables HTTPS and sets the repository's homepage link. A different existing
-   homepage or unmanaged Pages site is a conflict to review. Environment protections remain.
+   exists, sets the repository's homepage link, and enforces HTTPS **where it can be**.
+   GitHub answers `404 The certificate does not exist yet` until a deployment has
+   provisioned the certificate, so the first attempt is recorded as `https: deferred`
+   rather than failing the release, and it is retried automatically once a deployment
+   reports `deployed`. `verify` reads the enforced state back on every site instead of
+   assuming it. A different existing homepage or unmanaged Pages site is a conflict to
+   review; adopting an existing homepage is a reviewed transition, not an automatic
+   overwrite. Environment protections remain.
 6. Dispatches a deployment for the exact committed SHA, verifies its deployment job
    actually succeeded, and reads back the dataset's public JSON and HTML links.
 7. Deploys the catalogue after the dataset site verifies. Reads back the catalogue's
@@ -131,6 +137,12 @@ python3 scripts/site-publish.py verify .factory/sites/austin-v2026.09-1
 Exit codes: `0` completed/read-only operation succeeded; `2` publication pending;
 `1` failure. A pending deployment is not a completed release. `receipt.json` records
 the observed steps, commits, run URLs when available, error and next action.
+
+A **refusal** is a failure, not a pending publication: a private data destination, a
+differing existing homepage, an unmanaged Pages site or a plan digest that does not
+match the approval all exit `1` with `status: failed`. `2` is reserved for work that
+is genuinely still in flight. Read the receipt's `error` and `next_action` rather than
+the code alone, and never report a pending or refused run as a completed release.
 
 Re-run the same publish command to resume. Successful commits and card edits are
 no-ops on retry. A recent uncertain dispatch waits before attempting another; a
