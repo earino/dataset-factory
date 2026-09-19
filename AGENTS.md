@@ -83,6 +83,34 @@ python3 scripts/check-package.py release/<dataset>  # package complete and hashe
 Session spend is bounded separately from the worker allowance; read
 `docs/OPERATIONS.md` (research routine) before changing anything about scheduled sessions.
 
+## Publishing goes to both destinations, from one manifest
+
+A dataset release is not complete at one platform. GitHub carries the docs, code and release
+assets; Hugging Face carries the same accepted files plus a generated dataset card and a
+version tag. Both are produced from `MANIFEST.json`, so neither can describe a different dataset.
+
+```bash
+python3 scripts/hf-publish.py --plan                      # what would be published, no credentials
+python3 scripts/hf-publish.py --create --upload-small     # private repo, docs, card
+sh scripts/scout-factory worker plan  <job.json>          # the hf_publish job moves the bulk
+sh scripts/scout-factory worker launch <job.json>
+python3 scripts/hf-publish.py --verify                    # files vs the manifest
+python3 scripts/hf-publish.py --tag                       # LAST: tag the commit that has the data
+python3 scripts/check-package.py release/<dataset>
+```
+
+Rules that are not negotiable:
+
+- **Private until the operator approves publication**, on both platforms, and the labelled holdout
+  ships to both when that happens.
+- The **write** credential is not the **inference** credential. Publishing uses the write one, via
+  the environment or a mode-0600 file; it never enters a bundle, a mount, a container, a log, a
+  manifest or an asset. Never change inference authentication to publish.
+- **Bulk data moves on a worker** (`hf_publish` job), never through this host.
+- **Tag last**, and check the tag and `main` resolve to the same commit.
+- Re-running is safe by design: per-file uploads skip anything already at the manifest digest.
+  Synchronisation is release work with bounded retries, not a recurring model-driven poll.
+
 ## Deleting things
 
 Scope every destructive operation to an exact, owned path. `rm -rf <variable>` and

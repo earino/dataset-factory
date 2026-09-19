@@ -11,8 +11,10 @@ import time
 
 try:
     from .upload import publish, fetch, transfer, UploadError
+    from .hf_publish import hf_publish
 except ImportError:  # Standalone /opt/scout installation.
     from upload import publish, fetch, transfer, UploadError
+    from hf_publish import hf_publish
 
 BASE = Path("/opt/scout")
 REPORT_LIMIT = 262144
@@ -61,6 +63,13 @@ def execute(base, job):
             # repeat run is idempotent and an interrupted one is safe to redispatch.
             transfer(base, job, report)
             report["status"] = "succeeded"
+            return report
+        if job.get("hf_publish"):
+            # No container either: this job pushes already-built assets to Hugging Face from the
+            # worker host. The credential stays in a venv beside the job, so no dataset-job input
+            # mount can reach it, and the bytes never pass through the coordinator.
+            hf_publish(base, job, report)
+            report["status"] = "succeeded" if not report["hf_publish"]["failures"] else "failed"
             return report
         if job.get("fetch"):
             # Download the released artifact before starting the container, so a job can measure

@@ -522,3 +522,44 @@ research sessions the weekly cap held it and it sent nothing. It now runs with
 work, queue) followed by the hold reason, produced by `research-budget.py` rather than a model.
 Verified held by the cap with three sessions in the ledger, and separately by the late-tick
 window.
+
+## Publishing to Hugging Face
+
+A second destination for the same accepted artifact, from the same release manifest.
+
+### Credentials, and what is deliberately not touched
+
+`HF_TOKEN_WRITE` is the managed write token, visible to terminal subprocesses here, and
+`/opt/data/.secrets/huggingface-write.token` (mode 0600) is the file form used by the worker path -
+`scripts/scout-factory` exports `FACTORY_HF_WRITE_TOKEN_FILE`, the same pattern as the Hetzner and
+GitHub tokens. The **inference** credential is a different token, is never read, and its
+configuration is never changed: publishing failure must not be "fixed" by switching auth.
+
+The write token reaches the worker as a root-only `/opt/scout/credentials.json` entry, read by the
+worker **host**, and is passed to the Hugging Face client through the child process environment -
+never as an argument, never inside a container, never in the job bundle, a mount, a log, a
+manifest or a release asset. An `hf_publish` job with no HF credential is refused at **plan** time.
+
+### The cycle
+
+```bash
+python3 scripts/hf-publish.py --plan                    # builds the card/docs package, prints the plan
+python3 scripts/hf-publish.py --create --upload-small   # private repo, docs, generated card
+sh scripts/scout-factory worker plan  candidates/<id>/hf/job.json
+sh scripts/scout-factory worker launch candidates/<id>/hf/job.json
+python3 scripts/hf-publish.py --verify                  # uploaded files vs MANIFEST.json
+python3 scripts/hf-publish.py --tag                     # LAST, and idempotent
+python3 scripts/check-package.py release/<dataset>
+```
+
+The worker job downloads each asset from the GitHub release, verifies its digest, uploads it,
+verifies the digest the Hub reports, and deletes the local copy - so 131 MB never touches this
+host. Follow the usual worker lifecycle: `status`, `collect`, then `destroy`, and confirm the
+provider shows no leftover server or IP.
+
+### Idempotence and completion
+
+Per-file uploads skip any file already at the manifest digest, so a resumed or repeated release is
+cheap rather than a re-send. Completion is recorded **per destination** in
+`release/<dataset>/DESTINATIONS.json`; the package check refuses a manifest claiming `published`
+while a destination is unverified. Corrections are published as a new version.

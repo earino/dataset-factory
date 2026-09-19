@@ -26,6 +26,10 @@ REQUIRED_FILES = (
     "VERIFICATION.md", "MANIFEST.json", "SHA256SUMS", "get_dataset.py",
 )
 REQUIRED_DIRS = ("code", "baseline")
+# Per-destination completion record. Written by the release procedure after each platform is
+# verified, and deliberately NOT listed in MANIFEST.json's package_files: a manifest cannot hash
+# the record of its own publication without becoming circular.
+DESTINATIONS = "DESTINATIONS.json"
 # The manifest cannot hash itself, and SHA256SUMS describes release assets rather than files.
 SELF_EXEMPT = ("MANIFEST.json", "SHA256SUMS")
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
@@ -116,6 +120,41 @@ def check_package(package_dir):
             )
     for name in sorted(on_disk - set(recorded) - set(SELF_EXEMPT)):
         notes.append(f"{name}: present in the package but not covered by the manifest")
+
+    # Completion is tracked per destination: GitHub can be done while Hugging Face is pending,
+    # and a release is only complete when both verify. A destination that has not been verified,
+    # or one verified at a different revision than the manifest's tag, is not complete.
+    destinations_path = package_dir / DESTINATIONS
+    if destinations_path.is_file():
+        try:
+            recorded = json.loads(destinations_path.read_text())
+        except json.JSONDecodeError as exc:
+            problems.append(f"{DESTINATIONS}: not valid JSON ({exc})")
+            recorded = None
+        if isinstance(recorded, dict):
+            tag = manifest.get("release_tag")
+            for name, entry in sorted((recorded.get("destinations") or {}).items()):
+                if not isinstance(entry, dict):
+                    problems.append(f"{DESTINATIONS}: {name} entry is not an object")
+                    continue
+                if entry.get("verified") is not True:
+                    notes.append(f"{DESTINATIONS}: {name} is not verified yet")
+                    continue
+                if not entry.get("verified_at"):
+                    problems.append(f"{DESTINATIONS}: {name} claims verified with no timestamp")
+                revision = entry.get("revision") or entry.get("release_tag")
+                if tag and revision and revision != tag:
+                    problems.append(
+                        f"{DESTINATIONS}: {name} was verified at {revision}, manifest tag is {tag}")
+            if manifest.get("published") is True:
+                unverified = [name for name, entry in (recorded.get("destinations") or {}).items()
+                              if not isinstance(entry, dict) or entry.get("verified") is not True]
+                if unverified:
+                    problems.append(
+                        f"{DESTINATIONS}: 'published' is true while {sorted(unverified)} "
+                        "unverified - public visibility requires every destination verified")
+    elif manifest.get("published") is True:
+        problems.append(f"{DESTINATIONS}: missing, but the manifest claims the release is published")
 
     # SHA256SUMS must agree with the manifest's asset records. Entries are named by the
     # *logical* path the consumer sees after `get_dataset.py` lays the tree out

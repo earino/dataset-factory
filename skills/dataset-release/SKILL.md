@@ -70,6 +70,44 @@ sh scripts/scout-factory worker run  <job.json>
   the *published* bytes.
 - Cleanup confirmed: no worker, IP or staging release left behind.
 
+## Two destinations, one manifest
+
+A dataset release goes to **GitHub and Hugging Face from one release manifest**. Every fact on the
+Hugging Face card - version, checksums, splits, labels, provenance, licence status, measurements -
+is generated from `MANIFEST.json`; the two platforms must never be described from separate notes,
+or they drift into claiming different datasets.
+
+Completion is tracked **per destination** in `DESTINATIONS.json`, written after each platform is
+verified. GitHub can be done while Hugging Face is pending; a release is reported complete only
+when both verify, and the package check refuses a manifest that claims `published` while any
+destination is unverified. Corrections are published as a **new version**; prior versions are
+preserved, never edited in place.
+
+Order matters in two places:
+
+- **Tag last.** A version tag created before the data lands pins a commit without the files, and
+  the version-pinned load then fetches nothing. Verify the content, then tag, then confirm the tag
+  and `main` resolve to the same commit.
+- **Bulk moves on a worker, never through the coordinator.** The Hugging Face upload is a
+  `hf_publish` worker job: it downloads each asset from the GitHub release, verifies the digest,
+  pushes it, verifies the digest the Hub reports, and deletes the local copy. The bytes never pass
+  through the coordinator and the coordinator holds no bulk data.
+
+### Credentials
+
+The **write** credential and the **inference** credential are different, and only the write one
+may publish. It is read from the environment or a mode-0600 credential file, used in-process, and
+never appears in a bundle, a dataset-job input mount, a container, a log, a manifest, a release
+asset or a command-line argument. A job is refused at **plan** time when the publishing credential
+is missing - not on a paid worker.
+
+### Deterministic, not model-driven
+
+Synchronisation is release work, not a research loop: it runs as part of the release, with bounded
+retries (three attempts, exponential backoff) and idempotent per-file uploads that skip anything
+already at the manifest digest. Re-running a part-finished release is safe and cheap; the two
+copies are never edited independently by a model on a schedule.
+
 ## Common failure modes
 
 | Symptom | Cause | Action |
@@ -82,6 +120,12 @@ sh scripts/scout-factory worker run  <job.json>
 | A worker dies with no report | An exception escapes the handler | Validate before dispatch so it fails at plan time, not mid-run |
 | Package reviewed against the wrong bytes | Manifest built before the last edit | Rebuild the manifest last, then re-tag |
 | Reviewer cannot reproduce | Instructions depend on the private repo | Ship the code, pin to the package's own tag, verify from a clean clone |
+| Version-pinned load returns nothing | Tag created before the data landed | Tag last, and confirm the tag and `main` point at the same commit |
+| `load_dataset` works but the splits are wrong | Card `data_files` disagree with the manifest's split names | Generate the `configs` block from the manifest; verify split names, rows, schema and label values against it |
+| A release reported complete, one platform empty | Completion tracked per release instead of per destination | `DESTINATIONS.json` per destination; the package check refuses `published` with an unverified destination |
+| Publishing credential reached a container/mount | Token passed as a path into the job source or a mount | Use the credential-file mechanism read by the worker host, outside every mount |
+| Re-run re-uploaded 131 MB | No digest check before sending | Skip any file already at the manifest digest on the destination |
+| Inference token used to publish | Same variable name assumed for both roles | Separate variables (`FACTORY_HF_WRITE_TOKEN` vs the inference credential), refused at plan time |
 
 ## Completion criteria
 

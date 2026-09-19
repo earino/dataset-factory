@@ -48,9 +48,9 @@ def validate(job, config):
         raise FactoryError("Job runtime exceeds policy")
     if not job["timeout_minutes"] + 15 <= job["lifetime_minutes"] <= config["max_lifetime_minutes"]:
         raise FactoryError("Lifetime must include at least 15 minutes for boot/upload and fit policy")
-    # A transfer job moves already-built artifacts between releases and runs no container, so it
-    # needs no argv and no image; everything else is validated the same way.
-    runs_container = not job.get("transfer")
+    # A transfer job moves already-built artifacts between releases, and an hf_publish job pushes
+    # them to Hugging Face: neither runs a container, so neither needs argv or an image.
+    runs_container = not (job.get("transfer") or job.get("hf_publish"))
     command = job.get("command")
     if runs_container and (not isinstance(command, list) or not command
                            or not all(isinstance(x, str) and x and "\0" not in x
@@ -60,25 +60,28 @@ def validate(job, config):
     if runs_container and (not isinstance(image, str)
                            or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._/:@-]*", image)):
         raise FactoryError("Invalid Docker image reference")
-    for key in ("transfer", "fetch"):
+    recognised = {"transfer": ("source_repo", "target_repo", "target_release", "assets"),
+                  "fetch": ("repo", "assets"),
+                  "hf_publish": ("repo", "revision", "source_repo", "assets")}
+    asset_keys = {"transfer": ("source_asset_id", "target_name", "size", "sha256"),
+                  "fetch": ("asset_id", "dest", "sha256"),
+                  "hf_publish": ("asset_id", "dest", "target", "size", "sha256")}
+    for key, required in recognised.items():
         if key not in job:
             continue
         spec = job[key]
-        required = (("source_repo", "target_repo", "target_release", "assets")
-                    if key == "transfer" else ("repo", "assets"))
         missing = [name for name in required if name not in spec]
         if missing:
             raise FactoryError(f"{key} spec is missing {missing}")
         if not isinstance(spec["assets"], list) or not spec["assets"]:
             raise FactoryError(f"{key} spec needs a non-empty assets list")
         for item in spec["assets"]:
-            keys = (("source_asset_id", "target_name", "size", "sha256")
-                    if key == "transfer" else ("asset_id", "dest", "sha256"))
-            absent = [name for name in keys if name not in item]
+            absent = [name for name in asset_keys[key] if name not in item]
             if absent:
                 raise FactoryError(f"{key} asset entry is missing {absent}")
     needs_publish = ((job.get("transfer") and job["transfer"]["target_repo"] != config["staging_repo"])
-                     or (job.get("fetch") and job["fetch"]["repo"] != config["staging_repo"]))
+                     or (job.get("fetch") and job["fetch"]["repo"] != config["staging_repo"])
+                     or bool(job.get("hf_publish")))
     if needs_publish:
         # The staging token is scoped to the staging repository alone, so reaching another
         # repository needs its own credential. Refused here, before provisioning, rather than on
@@ -87,6 +90,13 @@ def validate(job, config):
             raise FactoryError(
                 "Reaching a repository other than staging needs FACTORY_PUBLISH_TOKEN (or "
                 "FACTORY_PUBLISH_TOKEN_FILE): the staging token cannot see it")
+    if job.get("hf_publish"):
+        # Same lesson as the publish token: refuse before provisioning rather than on a paid
+        # worker. The inference credential is a different one and is never used to publish.
+        if not credential_status("FACTORY_HF_WRITE_TOKEN")["ready"]:
+            raise FactoryError(
+                "An hf_publish job needs FACTORY_HF_WRITE_TOKEN (or FACTORY_HF_WRITE_TOKEN_FILE); "
+                "the inference credential does not grant repository access")
     if config["max_workers"] != 1:
         raise FactoryError("This first version supports one worker at a time")
     if not 1 <= config["max_report_bytes"] <= REPORT_LIMIT:
@@ -127,7 +137,7 @@ def source_bundle(job_path, job):
                 raise FactoryError("Job source exceeds 2 MiB; source bundle is not a data transport")
             add("source/" + relative.as_posix(), path.read_bytes())
         add("job.json", json.dumps(job, sort_keys=True).encode())
-        for name in ("executor.py", "upload.py"):
+        for name in ("executor.py", "upload.py", "hf_publish.py"):
             add(name, (Path(__file__).resolve().parents[1] / "workers" / name).read_bytes())
     if len(buffer.getvalue()) > BUNDLE_LIMIT + 256 * 1024:
         raise FactoryError("Job bundle too large")
@@ -307,10 +317,15 @@ def resume(root, job_id, config, cloud=None, bundle=None):
     else:
         remote(config, record, "umask 077; mkdir -p /opt/scout/source /opt/scout/output && cat > /opt/scout/source.tar && tar -xf /opt/scout/source.tar -C /opt/scout", bundle)
         credentials = {"token": secret("FACTORY_GITHUB_TOKEN"), "repo": record["staging_repo"]}
-        if record["job"].get("transfer") or record["job"].get("fetch"):
+        if (record["job"].get("transfer") or record["job"].get("fetch")
+                or record["job"].get("hf_publish")):
             # Kept deliberately separate: staging reads use the staging token, and only a reach
             # into another repository uses this one, which is the narrower of the two available.
             credentials["publish_token"] = secret("FACTORY_PUBLISH_TOKEN")
+        if record["job"].get("hf_publish"):
+            # The publishing credential, delivered the same way as the others: a root-only file on
+            # the worker, never in the bundle, the job source, a mount, a log or an argument.
+            credentials["hf_write_token"] = secret("FACTORY_HF_WRITE_TOKEN")
         remote(config, record, "umask 077; cat > /opt/scout/credentials.json",
                json.dumps(credentials).encode())
         # Root-only token is outside all container mounts and never put in cloud-init.
