@@ -160,6 +160,30 @@ Rules that are not negotiable:
 
 ## Completion criteria
 
+### Website publication
+
+Use the existing release package as input to the deterministic website pipeline;
+read `docs/WEBSITE-SYSTEM.md` for setup, access and recovery. A new dataset needs an
+editorial JSON file under `sites/`, not a new renderer or hand-configured Pages site.
+
+```bash
+python3 scripts/site-publish.py prepare release/<id> --editorial sites/<id>.json --out .factory/sites/<release-id>
+python3 scripts/site-publish.py inspect .factory/sites/<release-id>
+# Only after the operator approves this plan and the data destinations are public:
+python3 scripts/site-publish.py publish .factory/sites/<release-id> --approved-plan <reviewed-sha> --wait-seconds 600
+python3 scripts/site-publish.py verify .factory/sites/<release-id>
+```
+
+Exit 2 means pending; read the receipt and resume the same command. Completion needs
+successful deployment and matching live JSON and HTML links, not merely an uploaded
+preview artifact. Update STATE.md with the final receipt summary. A failed step is
+Scout's normal diagnostic work; builder review is not required on each release.
+
+For editorial corrections, increment `site_revision`, prepare and review the new
+plan. Existing data identity is immutable. Website navigation updates default-branch
+documentation and never force-moves dataset tags. The labelled holdout is downloadable
+on both data platforms and stays outside evaluated agents' workspaces.
+
 A package is **ready for review** when:
 
 - [ ] `check-package.py` reports no missing document and no manifest/hash mismatch.

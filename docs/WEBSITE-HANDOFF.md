@@ -124,9 +124,10 @@ of this inventory.
 3. **Bulk data never goes in a site repository.** It lives on GitHub Releases and Hugging Face; the
    site links to it. Don't mirror CSVs into Git, and don't fetch them at build time to render
    counts — read the counts from `MANIFEST.json`.
-4. **The labelled holdout must not be served.** Publishing the holdout is approved for the dataset
-   destinations; serving its rows from a public website would defeat the evaluation it exists for.
-   Link to it; never embed it.
+4. **Public holdouts are permitted.** Keep holdout labels outside the evaluated agent's
+   workspace during a run. The website links to versioned holdout downloads. It embeds
+   no dataset rows, following the same bulk-data rule as train/eval; public availability
+   itself does not defeat the evaluation protocol.
 5. **Version agreement is the thing to test.** The site, the catalogue, the GitHub tag and the Hub
    revision must all state the same `release_tag` and `artifact_version`. A stale site claiming an
    older version is the failure mode.

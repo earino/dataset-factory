@@ -111,6 +111,21 @@ Rules that are not negotiable:
 - Re-running is safe by design: per-file uploads skip anything already at the manifest digest.
   Synchronisation is release work with bounded retries, not a recurring model-driven poll.
 
+## Websites are a repeatable release step
+
+Use `scripts/site-publish.py prepare|inspect|publish|verify|status` and read
+`docs/WEBSITE-SYSTEM.md`. The inputs are the existing verified release package and
+`sites/<dataset>.json`; adding a dataset requires no new website implementation.
+Preparation is offline. Public deployment requires the operator-reviewed plan and
+public, verified GitHub/Hugging Face data destinations. A pending Actions run is not
+completion: resume the same bundle and verify the live record and HTML links.
+
+The renderer, release archive, Pages settings, deployment workflow and cross-links
+are maintained through this procedure. Scout owns ordinary operation and repairs;
+the builder is not a routine release gate. Increment `site_revision` for editorial
+corrections. Website edits never move dataset tags or modify data artifacts. Default
+branches may advance for website navigation after the data release was tagged.
+
 ## Licensing is part of the release, not a step before it
 
 Terms live in `candidates/<id>/license.json` (the decision) and `config/licensing-policy.json`

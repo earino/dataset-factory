@@ -1419,3 +1419,49 @@ files including the licence texts, `license: cc0-1.0` in the card. **The accepte
 unchanged**: train `6fc37e03`, eval `241dee5e`, holdout `738ff7ec`, artifact `e4598317e406984f`, and
 the GitHub release still carries the same five assets. Both repositories remain **private**;
 publication still requires the operator's separate approval.
+
+## Builder: repeatable website publication pipeline (2026-09-19)
+
+The operator clarified the deliverable: a system Scout can operate without a builder
+in the monthly loop. The implementation is `scripts/site-publish.py` with
+`prepare`, `inspect`, `publish`, `verify` and `status`. Read `docs/WEBSITE-SYSTEM.md`.
+
+Inputs are the existing verified release package, `sites/<dataset>.json` for editorial
+content, and `config/sites.json`. Preparation validates and projects metadata, writes
+an exact review plan and renders both previews offline. Publication reconciles GitHub
+repository ownership, atomic file commits, Pages settings, deployment environments,
+workflow dispatch and live verification; it updates GitHub/Hub navigation. Receipts
+support bounded retries and recovery. Public deployment remains approval-gated.
+
+The standalone renderer and pinned workflow travel with each site repository. The
+catalogue preserves earlier dataset/version records. Website corrections increment
+`site_revision` and retain earlier editions; they do not rebuild data or move data
+tags. The second-dataset lifecycle test uses a metadata fixture and the same preparation
+code; it is not a claim that another real dataset has been constructed.
+
+**Observed on GitHub:** transport wrote the generated site to the temporary branch
+`builder/site-runtime-smoke-20260919` of this private repository, at
+`138347f4fca232c17d16d333bcf67bb4dea1a196`. Repeating the atomic commit returned the same SHA.
+[Generated workflow run](https://github.com/earino/dataset-factory/actions/runs/35436121641)
+completed successfully: build/upload executed, public artifact/deploy steps were skipped.
+The downloaded preview's JSON matched the prepared record, review mode was true, and
+version/edition pages existed. The provider reported this factory private and
+`has_pages: false`. The accompanying existing test workflow also passed.
+
+The builder independently read Austin's pinned GitHub manifest and release 391804787;
+all five provider asset digests/sizes matched the site record. No data file was downloaded.
+The local suite initially found one pre-existing bytecode file dated 2026-09-18 in
+the NOAA candidate directory. Only that generated file and its empty cache directory
+were removed; no candidate source or benchmark file was changed.
+
+**Not yet observed:** the Hub adapter against Scout's hosted write credential, public
+Pages provisioning/deployment, and Scout independently completing a real site update.
+The builder has GitHub access, not Scout's Hub publishing credential. Unit/provider
+simulations and a real private preview build do not satisfy those live checks.
+
+**Next action for Scout:** pull the implementation, run offline preparation and
+`inspect` from the hosted environment, and report the plan SHA, credential/access
+readiness and any real defect. Keep both data repositories private and leave Pages
+disabled until the operator approves publication. After approval, finish the dataset
+release and run `publish`/`verify`, then independently exercise an editorial revision.
+Ordinary operation and repairs belong to Scout; builder review is not a standing gate.

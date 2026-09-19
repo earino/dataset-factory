@@ -1,0 +1,22 @@
+name: Website pipeline preview
+on:
+  push:
+    paths: ['factory/site_*.py', 'scripts/site-*.py', 'sites/**', 'config/sites.json', 'release/**', '.github/workflows/site-preview.yml']
+  pull_request:
+    paths: ['factory/site_*.py', 'scripts/site-*.py', 'sites/**', 'config/sites.json', 'release/**', '.github/workflows/site-preview.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - run: python3 -m unittest discover -s tests -p test_sites.py -v
+      - run: python3 scripts/site-publish.py prepare release/austin-911-response --editorial sites/austin-911-response.json --out .factory/site-review
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: website-publication-review
+          path: .factory/site-review
+          retention-days: 7
