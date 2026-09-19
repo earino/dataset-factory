@@ -1283,3 +1283,50 @@ removed.
 The five verification sessions are listed by id in `excluded_sessions` (with the reason) so they
 count against neither the weekly cap nor the allowance: they measured the mechanism rather than
 doing research. Cost of the whole enforcement verification: **0.0150 USD estimated**.
+
+## A ready candidate in the buffer: NOAA tide flooding, measured to the bar (2026-09-19, fifteenth session)
+
+**What advanced.** `noaa-tide-flooding` moved `investigating` -> **`ready`**, closing the three
+items the previous session listed as open. The buffer the `dataset-discovery` skill asks for - one
+ready candidate behind whatever is being built - now holds one, and `austin-911-response` (packaged,
+awaiting two operator decisions) is no longer the only thing in the pipeline.
+
+**A wrong claim in the record, caught by one request.** The record said all 302 water-level
+stations carry flood thresholds. `mdapi/.../stations.json?type=waterlevels&expand=floodlevels`
+returns either a bare number or an object whose `nos_minor` is `null`: **132 of 302 publish a
+numeric threshold**, 170 do not. "The expand is present" was mistaken for "a threshold exists".
+
+**The station list is now computed from the source, not hand-picked:** numeric `nos_minor` **and**
+at least 18 of the 20 target years present in NOAA's own HTF annual product (1 request per station,
+132 fetched, 0 errors, 18.6 s) -> **122 stations**, listed with per-station positives in
+`candidates/noaa-tide-flooding/station_list_result.json`.
+
+**Split capacity, recomputed over the frozen list** (`htf/annual` `minCount`): train 2006-2021
+708,830 station-days / 11,886 positives (1.68%); eval 2022-2023 89,060 / 1,828 (2.05%); holdout
+2024-2025 89,060 / 2,850 (3.20%). The daily product reproduced both evaluation counts exactly, so
+the two NOAA products cross-check each other. Independent events, from distinct calendar days:
+**332 (eval)** and **427 (holdout)** - mean 5.5 and 6.7 stations per flood day, busiest day 52 and
+54 stations. Train clustering is recorded as unmeasured, not guessed.
+
+**Extraction cost is measured, which was the last `ready` blocker.** Per request, on this host:
+6-minute water level for one month 560,602 bytes in 1.61 s; hourly height for one year 545,427
+bytes in 2.219 s; the inventory 777,394 bytes in 1.338 s. Over 122 stations x 20 years: **6-minute
+labels 29,160 requests / 15.2 GiB / ~782 min single-threaded** (a worker backfill), hourly 2,430
+requests / 1.2 GiB / ~90 min with a measured ~6% undercount of positive days. `product=daily_max`
+**does not exist** (HTTP 400), so daily maxima must be derived from observations. Concurrency is
+not measured and is labelled as such.
+
+**Two API traps, both silent.** `htf/daily.json`'s array is `DailyFloodCount` with `minFlag` as
+the string `"1"` - the wrong key returns "no flood days" with no error, which is how the first
+clustering run produced a confident zero. And the datum trap from the ninth session still binds:
+`nos_minor` is in the station datum, so `datum=STND` is required. Silent-zero shapes are the
+failure mode of this source; anything reading 0 here is a claim to verify, not a result.
+
+**The scheduled routine's own fire no longer holds itself.** The overlap fix landed while this
+session was reading (commits `017c293`, `e0ece51` in the shared repository, written by the
+operator's concurrent session - this session did not author them). Evidence observed here rather
+than assumed: the ledger holds the pre-fix skip
+`research job 69a5bc676d10 is already running` at 06:39:37Z, and the wrapper then started **this**
+session at 06:42:04Z with a pid-bearing lock and a gate that held only for `lock held for 97s by
+scout-research` - i.e. its own lock, which is the correct overlap signal.
+

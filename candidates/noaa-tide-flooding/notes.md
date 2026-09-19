@@ -246,3 +246,65 @@ at publication.
 2. Restrict features to observations only.
 3. **Measure** the extraction cost - requests, bytes, wall clock. Unmeasured as of this note, so
    the candidate does not yet meet the `ready` bar in `dataset-discovery`.
+
+## Station list frozen and extraction cost measured: this candidate is now `ready` (2026-09-19)
+
+Scripts (in this directory, re-runnable): `frozen_station_list.py` -> `station_list_result.json`,
+`cost_probe.py` -> `cost_probe_result.json`, `clustering_frozen.py` -> the same result file.
+
+**The threshold claim in this record was wrong, and one request showed it.** The record said all
+302 water-level stations carry flood thresholds. Measured with a single request
+(`mdapi/.../stations.json?type=waterlevels&expand=floodlevels`): **132 of 302 publish a numeric
+`nos_minor`**; 170 publish none. The endpoint returns either a bare number or an object whose
+`nos_minor` is `null`, so "the expand is present" is not "a threshold exists".
+
+**The frozen list is computed from the source, not hand-picked.** A station qualifies if its
+`nos_minor` is numeric **and** NOAA's own HTF annual product reports counts for at least 18 of the
+20 target years 2006-2025 (1 request per station; 132 fetched, 0 errors, 18.6 s). Result:
+**122 stations**. The full ordered list, with per-station positives, is in
+`station_list_result.json`.
+
+**Split capacity over the frozen list** (NOAA `htf/annual` `minCount`, the authoritative product):
+
+| split | years | station-days | positives | rate | moderate+ |
+|---|---|---|---|---|---|
+| train | 2006-2021 | 708,830 | 11,886 | 1.68% | - |
+| eval | 2022-2023 | 89,060 | 1,828 | 2.05% | - |
+| holdout | 2024-2025 | 89,060 | 2,850 | 3.20% | - |
+
+The daily product reproduced both evaluation counts exactly (1,828 / 2,850), which is a
+cross-check between two NOAA products rather than a single source believed twice.
+
+**Independent events, measured over the frozen list** from `htf/daily.json` (distinct calendar
+days with at least one flood):
+
+| split | positive station-days | distinct flood days | mean stations/day | busiest day |
+|---|---|---|---|---|
+| eval 2022-2023 | 1,828 | 332 | 5.51 | 52 |
+| holdout 2024-2025 | 2,850 | 427 | 6.67 | 54 |
+
+Train clustering is **not measured** - recorded as unmeasured rather than guessed. So the numbers
+a score is quoted against are 332 and 427 independent events, not 1,828 and 2,850.
+
+**Extraction cost, measured on this host** (per request, then multiplied by the counted set):
+
+| product | rows | bytes | seconds |
+|---|---|---|---|
+| 6-minute water level, 1 month | 7,440 | 560,602 | 1.61 |
+| hourly height, 1 year | 8,760 | 545,427 | 2.219 |
+| inventory with `expand=floodlevels` | - | 777,394 | 1.338 |
+
+`product=daily_max` **does not exist** - the API answers HTTP 400 - so verified daily maxima have
+to be derived from observations. Over 122 stations x 20 years (2,430 station-years):
+
+- **6-minute labels: 29,160 requests, 15.2 GiB, ~782 min single-threaded.** A worker backfill,
+  not a coordinator job.
+- **hourly labels: 2,430 requests, 1.2 GiB, ~90 min single-threaded** - 12x cheaper, but measured
+  to undercount about 6% of positive days.
+
+Wall clock *with concurrency* is not measured; the figures are sums of measured per-request times.
+
+A second API trap, recorded because it silently produced zero rows: `htf/daily.json`'s per-day
+array is `DailyFloodCount`, not a guessed key, and `minFlag` arrives as the string `"1"`. Reading
+the wrong key yields "no flood days" with no error - the same shape as the datum trap.
+
