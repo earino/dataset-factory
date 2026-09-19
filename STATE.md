@@ -1465,3 +1465,11 @@ readiness and any real defect. Keep both data repositories private and leave Pag
 disabled until the operator approves publication. After approval, finish the dataset
 release and run `publish`/`verify`, then independently exercise an editorial revision.
 Ordinary operation and repairs belong to Scout; builder review is not a standing gate.
+
+**Implementation verification:** commit `8444c46383539934dff13b798504822f4a466067`
+passed [Local checks](https://github.com/earino/dataset-factory/actions/runs/35436380363)
+and [Website pipeline preview](https://github.com/earino/dataset-factory/actions/runs/35436380409).
+The latter contains the review bundle as an Actions artifact. A clean export of the
+staged tree, with no private configuration, passed 240 tests (4 environment-specific
+skips) and factory doctor. The prepared Austin plan SHA is
+`87b1fd5a9bcf920c0396b0e6c08c52f89de1ba991df70e57245e59abb7a88db6`.
