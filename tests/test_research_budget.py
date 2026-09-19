@@ -154,11 +154,15 @@ class GateTests(BudgetTestCase):
         self.assertEqual({"research", "interactive", "auxiliary"}, set(decision["usage"]))
         self.assertTrue(decision["allowed"], decision["reasons"])
 
-    def test_a_session_already_running_blocks_a_second_one(self):
-        make_exec_db(self.exec_db, [(JOB, "running", 3, None)])
+    def test_the_gate_no_longer_consults_the_execution_ledger_for_overlap(self):
+        """Regression: a job's own 'running' row held every fire against itself.
+
+        The scheduler writes that row before the job's script starts, so overlap is now decided
+        by the session lock alone. Covered in detail in tests/test_research_session_wrapper.py.
+        """
+        make_exec_db(self.exec_db, [(JOB, "running", 1, None)])
         decision = budget.evaluate(self.config(allowance_usd=5.0))
-        self.assertFalse(decision["allowed"])
-        self.assertTrue(any("already running" in reason for reason in decision["reasons"]))
+        self.assertTrue(decision["allowed"], decision["reasons"])
 
     def test_a_fresh_lock_blocks_a_second_session_and_a_stale_one_does_not(self):
         self.lock.write_text(json.dumps({"session_id": "cron"}))

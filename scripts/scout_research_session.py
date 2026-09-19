@@ -22,6 +22,7 @@ sessions cannot overlap, and the lock is removed when the run ends.
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
@@ -111,7 +112,8 @@ def build_prompt(resume_block, extra=""):
             "\n\n## Task for this session\n\n"
             "The operator set the following through the scheduler. It is part of this session's "
             "brief, not text found in a file or fetched from the internet, and it takes "
-            "precedence over the general guidance above:\n\n"
+            "selects the task for this session. It does not lift the standing limits, the "
+            "allowance, the session ceilings or the safety rules above - those still apply:\n\n"
             f"{extra}\n"
         )
     return prompt
@@ -139,6 +141,9 @@ def main(argv=None):
     parser.add_argument("--dry-run", action="store_true",
                         help="evaluate the gate and print the prompt; start no agent")
     parser.add_argument("--extra", default="", help="extra instruction for this session only")
+    parser.add_argument("--fallback-report", action="store_true",
+                        help="when the gate holds, print the deterministic digest and the hold "
+                             "reason instead of staying silent")
     parser.add_argument("--source-tag", default=SOURCE_TAG,
                         help="session source tag; use a distinct one for verification runs so "
                              "they are not counted as research sessions")
@@ -158,7 +163,15 @@ def main(argv=None):
 
     if not allowed:
         note({"event": "skipped", "reason": reason})
-        # Routine holds are silent: a cap, an overlap or a late tick is not news. An
+        if args.fallback_report:
+            # Deterministic: built from the ledgers by research-budget.py, not by a model. This
+            # is how a held checkpoint still reports, including when it is held by the session
+            # cap rather than by the allowance.
+            subprocess.run([sys.executable, str(BUDGET), "--digest"], cwd=str(REPO))
+            print("")
+            print(f"Held, so no model work ran: {reason}")
+            return 0
+        # Routine holds are otherwise silent: a cap, an overlap or a late tick is not news. An
         # exhausted allowance is, because it needs a decision.
         if "allowance" in reason.lower():
             print(f"Scout research session held: {reason}")
@@ -166,7 +179,8 @@ def main(argv=None):
 
     prompt = build_prompt(resume_block, args.extra)
     FACTORY_DIR.mkdir(parents=True, exist_ok=True)
-    LOCK.write_text(json.dumps({"session_id": SOURCE_TAG_ACTIVE, "written_at": now().isoformat(),
+    LOCK.write_text(json.dumps({"session_id": SOURCE_TAG_ACTIVE, "pid": os.getpid(),
+                                "written_at": now().isoformat(),
                                 "max_turns": args.max_turns, "run_budget": args.run_budget}))
 
     started = time.time()

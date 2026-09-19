@@ -208,33 +208,23 @@ def cron_runs(config, since, limit=200):
     return out
 
 
-def running_session(config):
-    """A research run currently in flight, from the ledger - the overlap guard."""
-    research_ids = [str(j) for j in (config.get("research_job_ids") or [])]
-    if not research_ids or not EXECUTIONS_DB.is_file():
+def _process_alive(pid):
+    if not pid:
         return None
     try:
-        con = sqlite3.connect(f"file:{EXECUTIONS_DB}?mode=ro", uri=True)
-    except sqlite3.Error:
-        return None
-    try:
-        rows = con.execute(
-            "select job_id, status, claimed_at, started_at from executions "
-            "where status in ('running','claimed','handoff') order by rowid desc limit 10"
-        ).fetchall()
-    except sqlite3.Error:
-        return None
-    finally:
-        con.close()
-    for job_id, status, claimed_at, started_at in rows:
-        if str(job_id) in research_ids:
-            return {"job_id": job_id, "status": status, "claimed_at": claimed_at,
-                    "started_at": started_at}
-    return None
+        os.kill(int(pid), 0)
+    except (OSError, ValueError, TypeError):
+        return False
+    return True
 
 
 def lock_state(config):
-    """Liveness/age of the research session lock; stale locks are reported, not honoured."""
+    """Liveness/age of the research session lock; stale locks are reported, not honoured.
+
+    The lock is the overlap signal: the wrapper writes it once it is allowed to run and removes
+    it when the session ends. A lock whose owning process is gone is stale immediately, so a
+    crashed session does not block the next tick for the whole timeout.
+    """
     if not LOCK_PATH.is_file():
         return None
     age_seconds = time.time() - LOCK_PATH.stat().st_mtime
@@ -245,7 +235,9 @@ def lock_state(config):
         payload = {}
     payload = dict(payload)
     payload["age_seconds"] = round(age_seconds, 1)
-    payload["stale"] = age_seconds > stale_after
+    owner_alive = _process_alive(payload.get("pid"))
+    payload["owner_alive"] = owner_alive
+    payload["stale"] = age_seconds > stale_after or owner_alive is False
     return payload
 
 
@@ -329,9 +321,9 @@ def evaluate(config, moment=None, late_minutes=None):
                 "enough left for the next session"
             )
 
-    running = running_session(config)
-    if running:
-        reasons.append(f"research job {running['job_id']} is already {running['status']}")
+    # Overlap is decided by the session lock, never by the scheduler's execution ledger: the
+    # ledger carries a 'running' row for this very job from the moment the scheduler fires it,
+    # so consulting it held every fire of the job against itself.
     lock = lock_state(config)
     if lock and not lock.get("stale"):
         reasons.append(

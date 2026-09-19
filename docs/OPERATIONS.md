@@ -502,3 +502,23 @@ scheduler's scripts directory, so `/opt/data/scripts/scout_research_session.py` 
 forwards to the repository copy** and the two shell shims exec the repository path. The routine's
 behaviour therefore travels with the repository instead of existing only on this host - a session
 that finds a bug fixes it in Git, not in an untracked file.
+
+### Two scheduling defects, reproduced on the real job and fixed
+
+**A job's own fire looked like an overlap.** The scheduler writes a `running` row for a job
+*before* its script starts, and the gate was treating any `running` research-job row as an
+overlapping session - so `scout-research-session` was held by itself on every fire. Reproduced on
+the configured job (`69a5bc676d10`): the wrapper logged
+`skipped: research job 69a5bc676d10 is already running` and exited in 0.17 s. Overlap is now
+decided by the **session lock alone**, which the wrapper writes after the gate allows and removes
+when the session ends - the signal that actually means "a session is in flight". A lock whose
+`pid` is no longer alive is stale immediately, so a crashed session does not block the next tick
+for the whole timeout. A differently-named probe did **not** catch this: the probe job was not in
+`research_job_ids`, so it never had a research-job row of its own.
+
+**A held checkpoint was silent.** The two-week checkpoint is a research job, so after three
+research sessions the weekly cap held it and it sent nothing. It now runs with
+`--fallback-report`: when the gate holds, it delivers the deterministic digest (usage, completed
+work, queue) followed by the hold reason, produced by `research-budget.py` rather than a model.
+Verified held by the cap with three sessions in the ledger, and separately by the late-tick
+window.
