@@ -48,3 +48,7 @@ only and freeze them.
 
 Confirm the licence, explain the 2025 record jump, then measure per-sensor hourly
 distributions.
+
+## Parking verdict (2026-09-19)
+
+Status set to `parked`. Every channel re-checked on 2026-09-18 declares no licence; a name commonly assumed is not evidence. The four contracts are met except redistribution, so the blocker is a decision rather than work.

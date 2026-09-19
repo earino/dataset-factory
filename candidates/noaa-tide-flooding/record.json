@@ -24,7 +24,7 @@
     }
   ],
   "license_evidence": [
-    "U.S. federal government work; NOAA CO-OPS data are public domain. Portal attribution page not read in this session."
+    "READ 2026-09-19 from the CO-OPS portal itself (the same host the data comes from), https://tidesandcurrents.noaa.gov/disclaimers.html, 'Use of Data and Products': \"The information on government servers are in the public domain, unless specifically annotated otherwise, and may be used freely by the public.\" Same page: \"NOS requests that attribution be given whenever NOS material is reproduced and re-disseminated. Pursuant to 17 U.S.C. 403 ... stating that such material is not subject to copyright protection.\" CONSTRAINT READ ON THE SAME PAGE, honoured in the release: \"This information shall not be modified in content and then presented as official government material\" - any derived dataset must be labelled as derived and must not be presented as official NOS data. Corroborating: nauticalcharts.noaa.gov/data/data-licensing.html records NOAA data released under a CC0-1.0 public-domain dedication (CC BY 4.0 for some products), and the NCEI ISO metadata for CO-OPS stations carries the same CC0 waiver. Attributes: attribution requested as a courtesy, not required."
   ],
   "construction_script": null,
   "split_strategy": "Temporal: train 2006-2021, eval 2022-2023, holdout 2024-2025, with thresholds taken from metadata (not estimated) so nothing leaks. Measured positives: train 1,279, eval 234, holdout 256. Effective independent events are about half those counts because flood days cluster at ~2 stations each. See measurements.split_capacity_measured.",
@@ -46,18 +46,90 @@
       "pooled_minor_flood_days": 60,
       "pooled_station_days": 4380,
       "per_station": {
-        "Portland, ME (8418150)": {"nos_minor_ft": 20.5, "days": 365, "flood_days": 0, "rate": 0.0, "annual_max_ft": 20.489},
-        "Boston, MA (8443970)": {"nos_minor_ft": 15.85, "days": 365, "flood_days": 2, "rate": 0.0055, "annual_max_ft": 15.899},
-        "The Battery, NY (8518750)": {"nos_minor_ft": 10.19, "days": 365, "flood_days": 7, "rate": 0.0192, "annual_max_ft": 10.942},
-        "Sandy Hook, NJ (8531680)": {"nos_minor_ft": 9.59, "days": 365, "flood_days": 7, "rate": 0.0192, "annual_max_ft": 10.144},
-        "Atlantic City, NJ (8534720)": {"nos_minor_ft": 11.38, "days": 365, "flood_days": 4, "rate": 0.011, "annual_max_ft": 11.755},
-        "Sewells Point, VA (8638610)": {"nos_minor_ft": 8.89, "days": 365, "flood_days": 17, "rate": 0.0466, "annual_max_ft": 10.522},
-        "Charleston, SC (8665530)": {"nos_minor_ft": 10.4, "days": 365, "flood_days": 7, "rate": 0.0192, "annual_max_ft": 11.083},
-        "Key West, FL (8724580)": {"nos_minor_ft": 8.08, "days": 365, "flood_days": 0, "rate": 0.0, "annual_max_ft": 8.035},
-        "Galveston Pier 21, TX (8771450)": {"nos_minor_ft": 7.49, "days": 365, "flood_days": 4, "rate": 0.011, "annual_max_ft": 7.956},
-        "San Francisco, CA (9414290)": {"nos_minor_ft": 13.69, "days": 365, "flood_days": 0, "rate": 0.0, "annual_max_ft": 13.497},
-        "Seattle, WA (9447130)": {"nos_minor_ft": 21.39, "days": 365, "flood_days": 0, "rate": 0.0, "annual_max_ft": 21.375},
-        "Honolulu, HI (1612340)": {"nos_minor_ft": 6.71, "days": 365, "flood_days": 12, "rate": 0.0329, "annual_max_ft": 6.965}
+        "Portland, ME (8418150)": {
+          "nos_minor_ft": 20.5,
+          "days": 365,
+          "flood_days": 0,
+          "rate": 0.0,
+          "annual_max_ft": 20.489
+        },
+        "Boston, MA (8443970)": {
+          "nos_minor_ft": 15.85,
+          "days": 365,
+          "flood_days": 2,
+          "rate": 0.0055,
+          "annual_max_ft": 15.899
+        },
+        "The Battery, NY (8518750)": {
+          "nos_minor_ft": 10.19,
+          "days": 365,
+          "flood_days": 7,
+          "rate": 0.0192,
+          "annual_max_ft": 10.942
+        },
+        "Sandy Hook, NJ (8531680)": {
+          "nos_minor_ft": 9.59,
+          "days": 365,
+          "flood_days": 7,
+          "rate": 0.0192,
+          "annual_max_ft": 10.144
+        },
+        "Atlantic City, NJ (8534720)": {
+          "nos_minor_ft": 11.38,
+          "days": 365,
+          "flood_days": 4,
+          "rate": 0.011,
+          "annual_max_ft": 11.755
+        },
+        "Sewells Point, VA (8638610)": {
+          "nos_minor_ft": 8.89,
+          "days": 365,
+          "flood_days": 17,
+          "rate": 0.0466,
+          "annual_max_ft": 10.522
+        },
+        "Charleston, SC (8665530)": {
+          "nos_minor_ft": 10.4,
+          "days": 365,
+          "flood_days": 7,
+          "rate": 0.0192,
+          "annual_max_ft": 11.083
+        },
+        "Key West, FL (8724580)": {
+          "nos_minor_ft": 8.08,
+          "days": 365,
+          "flood_days": 0,
+          "rate": 0.0,
+          "annual_max_ft": 8.035
+        },
+        "Galveston Pier 21, TX (8771450)": {
+          "nos_minor_ft": 7.49,
+          "days": 365,
+          "flood_days": 4,
+          "rate": 0.011,
+          "annual_max_ft": 7.956
+        },
+        "San Francisco, CA (9414290)": {
+          "nos_minor_ft": 13.69,
+          "days": 365,
+          "flood_days": 0,
+          "rate": 0.0,
+          "annual_max_ft": 13.497
+        },
+        "Seattle, WA (9447130)": {
+          "nos_minor_ft": 21.39,
+          "days": 365,
+          "flood_days": 0,
+          "rate": 0.0,
+          "annual_max_ft": 21.375
+        },
+        "Honolulu, HI (1612340)": {
+          "nos_minor_ft": 6.71,
+          "days": 365,
+          "flood_days": 12,
+          "rate": 0.0329,
+          "annual_max_ft": 6.965
+        }
       },
       "caveat": "Four stations have an annual maximum within 0.2 ft below threshold (Portland, Key West, San Francisco, Seattle), so their zero rates are sensitive to a small residual offset. The pooled 1.37% estimate is the defensible figure."
     },
@@ -65,12 +137,22 @@
       "source": "https://api.tidesandcurrents.noaa.gov/dpapi/prod/webapi/htf/htf_annual.json (minCount/modCount/majCount)",
       "result": "VALIDATED. For station-year 2025 the STND reconstruction matches NOAA's authoritative minCount at 12 of 12 stations: 60 flood days total against NOAA's 60. The rejected MLLW reconstruction produced 0.",
       "per_station_noaa_2025_minCount": {
-        "Portland, ME": 0, "Boston, MA": 2, "The Battery, NY": 7, "Sandy Hook, NJ": 7,
-        "Atlantic City, NJ": 4, "Sewells Point, VA": 17, "Charleston, SC": 7,
-        "Key West, FL": 0, "Galveston Pier 21, TX": 4, "San Francisco, CA": 0,
-        "Seattle, WA": 0, "Honolulu, HI": 12
+        "Portland, ME": 0,
+        "Boston, MA": 2,
+        "The Battery, NY": 7,
+        "Sandy Hook, NJ": 7,
+        "Atlantic City, NJ": 4,
+        "Sewells Point, VA": 17,
+        "Charleston, SC": 7,
+        "Key West, FL": 0,
+        "Galveston Pier 21, TX": 4,
+        "San Francisco, CA": 0,
+        "Seattle, WA": 0,
+        "Honolulu, HI": 12
       },
-      "moderate_or_worse_2025": {"Sewells Point, VA": 3},
+      "moderate_or_worse_2025": {
+        "Sewells Point, VA": 3
+      },
       "endpoint_note": "htf/daily.json reports count = the number of DAYS RETURNED (365), not a flood count; its per-day rows are {day: 'MM/DD/YYYY', maxWL, maxTime, minFlag, modFlag, majFlag, percent_completeness}. htf/annual.json is the authoritative source for counts.",
       "script": "candidates/noaa-tide-flooding/crosscheck_htf.py, writes htf_crosscheck_result.json",
       "checked_on": "2026-09-18"
@@ -80,13 +162,33 @@
       "answer": "Yes, occasionally. Hourly daily maxima are a slight undercount of the true flood-day rate.",
       "method": "daily maximum from 6-minute water_level versus daily maximum from hourly_height, same station-month, datum=STND",
       "results": [
-        {"station": "Sewells Point, VA", "month": "2025-10", "flood_days_in_month": 9,
-         "caught": 9, "missed_by_hourly": 0, "largest_daily_max_gap_ft": 0.157},
-        {"station": "Honolulu, HI", "month": "2025-10", "flood_days_in_month": 5,
-         "caught": 4, "missed_by_hourly": 1, "missed_days": ["2025-10-07"],
-         "largest_daily_max_gap_ft": 0.063},
-        {"station": "The Battery, NY", "month": "2025-08", "flood_days_in_month": 3,
-         "caught": 3, "missed_by_hourly": 0, "largest_daily_max_gap_ft": 0.285}
+        {
+          "station": "Sewells Point, VA",
+          "month": "2025-10",
+          "flood_days_in_month": 9,
+          "caught": 9,
+          "missed_by_hourly": 0,
+          "largest_daily_max_gap_ft": 0.157
+        },
+        {
+          "station": "Honolulu, HI",
+          "month": "2025-10",
+          "flood_days_in_month": 5,
+          "caught": 4,
+          "missed_by_hourly": 1,
+          "missed_days": [
+            "2025-10-07"
+          ],
+          "largest_daily_max_gap_ft": 0.063
+        },
+        {
+          "station": "The Battery, NY",
+          "month": "2025-08",
+          "flood_days_in_month": 3,
+          "caught": 3,
+          "missed_by_hourly": 0,
+          "largest_daily_max_gap_ft": 0.285
+        }
       ],
       "aggregate": "1 day missed out of 17 caught across the three station-months examined, so the hourly-derived rate undercounts by roughly 6% of positive days in the periods tested.",
       "consequence": "Label construction should use 6-minute data where the budget allows; the hourly rate 1.37% is a lower bound. 6-minute data is limited to one month per request, which is worker work.",
@@ -103,25 +205,76 @@
       "source": "NOAA htf/annual minCount, up to 107 years per station",
       "answer": "Yes on counts, but the positives are temporally clustered, so effective independent events are about half the row count.",
       "total_minor_flood_days_per_year_all_12_stations": {
-        "2005": 54, "2010": 91, "2015": 58, "2016": 106, "2017": 130, "2018": 126,
-        "2019": 101, "2020": 152, "2021": 82, "2022": 109, "2023": 125, "2024": 196,
-        "2025": 60, "2026_to_date": 42
+        "2005": 54,
+        "2010": 91,
+        "2015": 58,
+        "2016": 106,
+        "2017": 130,
+        "2018": 126,
+        "2019": 101,
+        "2020": 152,
+        "2021": 82,
+        "2022": 109,
+        "2023": 125,
+        "2024": 196,
+        "2025": 60,
+        "2026_to_date": 42
       },
       "proposed_splits": [
-        {"split": "train", "years": "2006-2021", "station_days": 70080,
-         "positives": 1279, "rate": 0.0183, "moderate_or_worse": 80},
-        {"split": "eval", "years": "2022-2023", "station_days": 8760,
-         "positives": 234, "rate": 0.0267, "moderate_or_worse": 13},
-        {"split": "holdout", "years": "2024-2025", "station_days": 8760,
-         "positives": 256, "rate": 0.0292, "moderate_or_worse": 16}
+        {
+          "split": "train",
+          "years": "2006-2021",
+          "station_days": 70080,
+          "positives": 1279,
+          "rate": 0.0183,
+          "moderate_or_worse": 80
+        },
+        {
+          "split": "eval",
+          "years": "2022-2023",
+          "station_days": 8760,
+          "positives": 234,
+          "rate": 0.0267,
+          "moderate_or_worse": 13
+        },
+        {
+          "split": "holdout",
+          "years": "2024-2025",
+          "station_days": 8760,
+          "positives": 256,
+          "rate": 0.0292,
+          "moderate_or_worse": 16
+        }
       ],
       "clustering_measured": {
-        "2022": {"positive_station_days": 109, "distinct_flood_days": 52, "mean_stations_per_flood_day": 2.10},
-        "2023": {"positive_station_days": 125, "distinct_flood_days": 66, "mean_stations_per_flood_day": 1.89},
-        "2024": {"positive_station_days": 196, "distinct_flood_days": 89, "mean_stations_per_flood_day": 2.20},
-        "2025": {"positive_station_days": 60, "distinct_flood_days": 37, "mean_stations_per_flood_day": 1.62},
-        "eval_total": {"positives": 234, "distinct_flood_days": 118},
-        "holdout_total": {"positives": 256, "distinct_flood_days": 126}
+        "2022": {
+          "positive_station_days": 109,
+          "distinct_flood_days": 52,
+          "mean_stations_per_flood_day": 2.1
+        },
+        "2023": {
+          "positive_station_days": 125,
+          "distinct_flood_days": 66,
+          "mean_stations_per_flood_day": 1.89
+        },
+        "2024": {
+          "positive_station_days": 196,
+          "distinct_flood_days": 89,
+          "mean_stations_per_flood_day": 2.2
+        },
+        "2025": {
+          "positive_station_days": 60,
+          "distinct_flood_days": 37,
+          "mean_stations_per_flood_day": 1.62
+        },
+        "eval_total": {
+          "positives": 234,
+          "distinct_flood_days": 118
+        },
+        "holdout_total": {
+          "positives": 256,
+          "distinct_flood_days": 126
+        }
       },
       "caveats": [
         "The positive rate is not stationary: it rises with sea level across the series (1.83% in train against 2.92% in holdout), so a temporal split carries systematic base-rate shift.",
@@ -143,6 +296,6 @@
   "jobs": [],
   "artifacts": [],
   "rejection_reason": null,
-  "review": null,
-  "next_action": "Cross-check and split work is done. Remaining: fix the station list, restrict features to observations only, and write the construction script (6-minute labels where budget allows, since hourly undercounts by ~6% of positive days). Multi-year 6-minute backfill belongs on a worker."
+  "review": "Licence contract closed 2026-09-19 with the terms read from the publishing portal's own disclaimer page, not assumed from 'federal data is public domain'. The page also forbids presenting modified content as official government material, which is a release constraint for a derived dataset.",
+  "next_action": "Two items before construction: freeze the station list (stations whose published flood thresholds are usable in the station datum) and restrict features to observations only. Then measure the extraction cost (HTTP requests, bytes, wall clock) - still unmeasured, so this candidate does not yet meet the `ready` bar in dataset-discovery - and write the construction script with 6-minute labels where the budget allows, since hourly undercounts about 6% of positives."
 }

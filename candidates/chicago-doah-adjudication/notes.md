@@ -49,3 +49,7 @@ is a fallback that does not redistribute the records.
 
 Operator licence review, then write the construction script splitting by
 `docket_number` over a frozen extract.
+
+## Parking verdict (2026-09-19)
+
+Status set to `parked`. The remaining work was an operator licence review, not research: leaving it `investigating` implied someone was still working on it.

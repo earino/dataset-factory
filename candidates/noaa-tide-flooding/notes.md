@@ -215,3 +215,34 @@ Fix the station list, restrict the feature set to observations only, and write t
 construction script. Prefer 6-minute labels where the budget allows, since hourly sampling
 undercounts positive days by roughly 6% in the periods tested; the multi-year 6-minute
 backfill belongs on a worker.
+
+## Licence read from the source, not assumed (2026-09-19)
+
+The record previously said "U.S. federal government work; NOAA CO-OPS data are public domain.
+Portal attribution page not read in this session." That is an assumption with a citation-shaped
+hole in it, and `dataset-discovery` treats an unread licence as unmet contract 1. Read now, from
+the portal the data actually comes from:
+
+- `https://tidesandcurrents.noaa.gov/disclaimers.html`, *Use of Data and Products*: "The
+  information on government servers are in the public domain, unless specifically annotated
+  otherwise, and may be used freely by the public." Attribution is *requested* ("NOS requests
+  that attribution be given whenever NOS material is reproduced and re-disseminated"), not
+  required; 17 U.S.C. 403 is cited.
+- Corroboration: `nauticalcharts.noaa.gov/data/data-licensing.html` records NOAA data under a
+  CC0-1.0 public-domain dedication; the NCEI ISO metadata for CO-OPS stations carries the same
+  CC0 waiver.
+
+**A constraint that binds the release:** the same page says "This information shall not be
+modified in content and then presented as official government material." A derived dataset with
+computed features and a `late`-style label *is* modified content, so the release must be labelled
+as derived from NOAA/NOS data and must never be presented as official NOS data or as an official
+flood determination. Recorded here so it reaches the dataset card rather than being rediscovered
+at publication.
+
+## Still open before construction
+
+1. Freeze the station list: only stations whose published flood thresholds are usable in the
+   station datum (`datum=STND`).
+2. Restrict features to observations only.
+3. **Measure** the extraction cost - requests, bytes, wall clock. Unmeasured as of this note, so
+   the candidate does not yet meet the `ready` bar in `dataset-discovery`.
