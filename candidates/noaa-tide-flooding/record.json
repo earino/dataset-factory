@@ -569,11 +569,9 @@
     "target": "does a station's daily maximum observed water level exceed its published NOS minor flood threshold on the next local day",
     "prediction_time": "the end of the previous local day; every feature is knowable then",
     "label_source": {
-      "product": "daily_max_min",
-      "interval": 6,
-      "datum": "STND",
-      "time_zone": "GMT",
-      "quality": "verified maxima with pcComplete6Min and quality flags",
+      "product": "htf/htf_daily.json, field minFlag (NOAA's own minor-flood days)",
+      "why": "our reduction of 6-minute daily maxima overcounted flood days by ~20% against NOAA's own counts on a year with real signal (113-114 vs 94 over four stations, 2024); NOAA's flags matched exactly, station by station. Time zone was not the cause (GMT and LST differ by one day). A label that disagrees with the publisher's own product has to be justified, and there is no reason to ship one.",
+      "evidence": "label_route_result.json (label_route_check.py)",
       "requests_per_station_year": 1
     },
     "features": "observations only, station-normalised: margin against the station's own published threshold, trailing mean/spread of its own maxima, days since its last exceedance, trailing-window exceedance counts, day-of-year. NOAA tide predictions and model guidance are excluded - they are not observations, and including them defeats the task. Station statistics use trailing windows only, so the future cannot leak into the features.",
@@ -616,11 +614,19 @@
       "station_list_result.json"
     ],
     "extraction_cost": {
-      "requests": 2440,
-      "bytes_approx": 178000000,
-      "route": "daily_max_min, one request per station-year",
+      "requests": 4880,
+      "bytes_approx": 184000000,
+      "breakdown": "2,440 for daily_max_min features (~178 MB) + 2,440 for the HTF daily flags (small), one request per station-year each",
       "note": "not the 29,160-request / 15.2 GiB raw-series route"
     },
-    "splits_cross_check": "the three groups' positives sum to the temporal totals exactly (4307 + 3328 + 4251 = 11886), and the station group's station-days from the daily product equal the annual product's counts"
+    "splits_cross_check": "the three groups' positives sum to the temporal totals exactly (4307 + 3328 + 4251 = 11886), and the station group's station-days from the daily product equal the annual product's counts",
+    "feature_source": {
+      "product": "daily_max_min",
+      "interval": 6,
+      "datum": "STND",
+      "time_zone": "GMT",
+      "quality": "verified maxima with pcComplete6Min and quality flags",
+      "requests_per_station_year": 1
+    }
   }
 }

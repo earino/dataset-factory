@@ -341,8 +341,10 @@ capacity measured rather than assumed. Scripts: `spatial_split_capacity.py` ->
 **Target.** Does station S's daily maximum observed water level exceed S's published NOS **minor**
 flood threshold on the next local day?
 
-**Label.** NOAA verified 6-minute daily maxima (`product=daily_max_min`, `interval=6`,
-`datum=STND`, `time_zone=GMT`), one request per station-year. Verified rather than preliminary
+**Label: the publisher's own flood days.** NOAA's HTF daily product (`htf/htf_daily.json`,
+`minFlag`), one request per station-year. The reconstruction route was rejected on measurement -
+see below. The verified 6-minute daily maxima (`product=daily_max_min`, `interval=6`,
+`datum=STND`, `time_zone=GMT`) are the **feature** source instead. Verified rather than preliminary
 rows, with `pcComplete6Min` completeness and quality flags, and it is exactly the reduction the
 label needs - so the 29,160-request raw-series route is not used. Build cost: **2,440 requests,
 ~178 MB**.
@@ -385,6 +387,33 @@ station-days over **298 distinct flood days** (2.66 stations/day), the holdout w
 **337 distinct flood days** (3.23 stations/day). Both station-day totals reproduce the annual
 product's counts for the same group exactly, so two NOAA products agree on this partition. A score
 on held-out stations is quoted against 298 and 337 independent events.
+
+## The label route was wrong, and a year with real signal showed it (2026-09-19)
+
+The 2025 cross-check that validated the STND reconstruction matched 12/12 stations (60 days vs 60) -
+but 2025 had almost no flooding (Boston: 2 days), so it was a weak test. Re-running the comparison
+on **2024**, where the sampled stations have 94 positive station-days, exposed a 20% disagreement:
+
+| route | four-station total, 2024 | vs NOAA's 94 |
+| --- | --- | --- |
+| 6-minute daily maxima, `time_zone=GMT` | 114 | +20 |
+| 6-minute daily maxima, `time_zone=LST` | 113 | +19 |
+| hourly reconstruction at STND | 98 | +4 |
+| **NOAA's own `htf_daily` flags** | **94** | **exact, station by station (25/26/23/20)** |
+
+Time zone is not the cause (GMT and LST differ by one day in total). Our own reduction of 6-minute
+maxima counts brief pokes above the threshold that NOAA's determination does not, so a dataset
+labelled by our reconstruction would ship a definition that disagrees with the publisher's own
+product - and would have to explain why. `label_route_check.py` -> `label_route_result.json`.
+
+The label is therefore **NOAA's own minor-flood day flags**, which is better provenance than our
+reconstruction and costs the same (one small request per station-year). The observations remain the
+feature source. Cost is now **2 requests per station-year** (maxima + flags): 4,880 requests,
+~180 MB.
+
+Dry run over three stations and two years: labels match NOAA's counts except at window boundaries
+(123 vs 126, 55 vs 59, 59 vs 59), where a flood day on the first date of the window has no previous
+row to be labelled from. With the full contiguous window that loss is confined to a single day.
 
 **Known limits.** A ~1.4-3% positive rate is rare; the transfer level has fewer independent events
 than the temporal one, so its uncertainty is wider and has to be quoted against distinct flood days
