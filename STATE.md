@@ -1378,3 +1378,44 @@ untouched by publishing.
 **Still the operator's decision:** public visibility on either platform, and the licence for the
 derived compilation (`LICENSE.md` records the options). Private until then, with the labelled
 holdout included on both when approved.
+
+## Licensing resolved and applied to both destinations (2026-09-19, sixteenth session)
+
+The open licence decision is closed, and the terms are now part of the package rather than a
+question recorded in it.
+
+- **MIT** (`LICENSE-MIT.txt`) for the construction, qualification and measurement code, the docs,
+  and the three baseline runner files copied verbatim from `earino/harness_benchmark`, file set
+  `task_template/`. That project is the copyright holder's own work, developed with Claude and
+  Szilard; permission to release the copies under MIT is confirmed and contributor credits are
+  preserved (Copyright (c) 2026 E. Arino de la Rubia (earino), with contributors Claude and
+  Szilard). Upstream credits are preserved too - `szilard/xgboost-autoresearch`, itself in the
+  tradition of `karpathy/autoresearch`. `../harness_benchmark` was **not** edited: the permission
+  covers the distributed copies.
+- **CC0-1.0** (`LICENSE-CC0-1.0.txt`) for **our rights in the derived compilation**, scoped to our
+  contribution - row selection, the derived binary label, the temporal partition and the
+  packaging. It does not cover or relicense the City of Austin's data, which keeps its **Public
+  Domain** designation, attribution and suggested citation, and the dataset is labelled as derived
+  and not an official City product.
+- The statements that the baseline copies lacked permission, and the all-rights-reserved default,
+  are removed from `LICENSE.md`, `README.md`, `RELEASE_NOTES.md`, `baseline/README.md` and the Hugging
+  Face card.
+
+**Mechanically enforced, not remembered.** `config/licensing-policy.json` holds the standing
+policy; `candidates/<id>/license.json` holds the per-dataset decision; `release-manifest.py` writes
+both into the manifest's `licenses` block; `check-package.py` refuses a release with no declared
+terms, one naming a licence file it does not ship, or a publication claim with undeclared terms.
+The policy carries the rule that matters for the next dataset: **CC0 is not a blanket override of
+upstream terms** - terms are chosen per dataset to be compatible with each source, attribution and
+share-alike requirements carry through, and a source whose licence cannot be read is not published.
+
+Regenerating the manifest exposed a real defect: `DESTINATIONS.json` was being swept into
+`package_files`, so every re-verification invalidated the manifest it helped complete. It is a
+post-verification record and is now excluded, which is what `check-package.py` had documented.
+
+**Verified at both destinations, from the pinned revision:** GitHub `v2026.09` clone - 20 package
+files hash-checked, none failing, three licence files present; Hugging Face `v2026.09` - private, 16
+files including the licence texts, `license: cc0-1.0` in the card. **The accepted dataset bytes are
+unchanged**: train `6fc37e03`, eval `241dee5e`, holdout `738ff7ec`, artifact `e4598317e406984f`, and
+the GitHub release still carries the same five assets. Both repositories remain **private**;
+publication still requires the operator's separate approval.
