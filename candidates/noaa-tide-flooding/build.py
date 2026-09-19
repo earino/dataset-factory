@@ -32,6 +32,7 @@ import concurrent.futures
 import csv
 import json
 import sys
+import threading
 import time
 import urllib.error
 import urllib.request
@@ -61,26 +62,62 @@ COLUMNS = list(dict.fromkeys(
 ID_COLUMNS = ["row_id", "station_id", "date"]
 
 
-def fetch_json(url, attempts=6, timeout=120):
-    """Retry with backoff, and report the *cause* rather than the URL.
+# The API rate-limits, and the worker's log shows 429s at 6 concurrent requests. Two runs taught
+# the pacing: 3 attempts with a short linear backoff lost 594 station-years, and 6 attempts with an
+# uncapped exponential backoff (up to 160 s per attempt, so minutes per request) turned the same
+# losses into a run that could not finish inside its 120-minute job timeout.
+PACE_LOCK = threading.Lock()
+LAST_REQUEST = [0.0]
+MIN_INTERVAL = 0.25          # seconds between request starts, across all threads
+MAX_WAIT = 30.0              # a single wait never exceeds this
+RATE_LIMIT_COOLDOWN = 20.0   # after a 429, hold every thread back this long
 
-    The first worker run recorded `GET <url> failed after 3 attempts: <url>...` because the message
-    embedded the URL and the caller truncated it, so 594 failures could not be diagnosed at all.
-    A throttled or timed-out request is also worth waiting out rather than losing a station-year.
+
+def _throttled_sleep(seconds):
+    """Serialise the inter-request delay so concurrency cannot outrun the pace."""
+    with PACE_LOCK:
+        now = time.monotonic()
+        wait = max(0.0, LAST_REQUEST[0] + MIN_INTERVAL - now)
+        LAST_REQUEST[0] = now + wait
+    if wait:
+        time.sleep(wait)
+
+
+def _cooldown(seconds):
+    with PACE_LOCK:
+        LAST_REQUEST[0] = max(LAST_REQUEST[0], time.monotonic() + seconds)
+
+
+def fetch_json(url, attempts=5, timeout=120):
+    """Paced fetch: report the *cause* rather than the URL, and never wait for minutes.
+
+    A `429` holds every thread back briefly and then retries, which recovers the station-year
+    without spending the job's whole budget on one request.
     """
     last = None
     for attempt in range(attempts):
+        _throttled_sleep(0)
         try:
             request = urllib.request.Request(url, headers=UA)
             with urllib.request.urlopen(request, timeout=timeout) as response:
                 return json.loads(response.read().decode())
         except urllib.error.HTTPError as exc:
             last = f"HTTPError {exc.code}"
-            # 429/5xx are transient; 4xx other than 429 will not improve by waiting as long.
-            time.sleep((2 ** attempt) * (5 if exc.code in (429, 500, 502, 503, 504) else 1))
+            if exc.code in (429, 403):
+                # NOAA answers 403 as well as 429 when a client exceeds its limit: the second run
+                # lost 60 station-years to 403s that my retry treated as permanent and retried
+                # immediately.
+                _cooldown(RATE_LIMIT_COOLDOWN)
+                delay = min(MAX_WAIT, 5.0 * (attempt + 1))
+            elif exc.code in (500, 502, 503, 504):
+                delay = min(MAX_WAIT, 2.0 * (attempt + 1))
+            else:
+                delay = 0.0          # any other 4xx will not improve by waiting
+            if delay:
+                time.sleep(delay)
         except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
             last = f"{type(exc).__name__}: {str(exc)[:120]}"
-            time.sleep((2 ** attempt))
+            time.sleep(min(MAX_WAIT, 2.0 * (attempt + 1)))
     raise RuntimeError(f"failed after {attempts} attempts ({last})")
 
 

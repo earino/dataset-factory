@@ -14,7 +14,11 @@ OUT=/output/extract
 mkdir -p /output
 
 echo "== build =="
-python3 /workspace/build.py --out "$OUT" --concurrency 4
+# A bounded, *recorded* tolerance. Coverage is checked and reported either way; a handful of
+# station-years lost to rate limiting must not silently become part of the panel, but it also must
+# not throw away an otherwise complete build. The missing list travels in build_summary.json and is
+# carried into the release notes.
+python3 /workspace/build.py --out "$OUT" --concurrency 3 --max-errors 30
 build_status=$?
 
 if [ -f "$OUT/build_summary.json" ]; then
