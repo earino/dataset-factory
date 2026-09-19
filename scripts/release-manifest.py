@@ -63,9 +63,35 @@ def licenses_block(candidate: str) -> dict:
     }
 
 
+def publication_state(release: Path) -> tuple[bool, str, str]:
+    """Derive publication state from recorded evidence, never from an assertion.
+
+    `DESTINATIONS.json` records each destination's visibility and verification and is written
+    after those checks, so it is the record the manifest has to agree with. Hardcoding "private"
+    here meant the documented post-publication regeneration re-asserted a status that had stopped
+    being true.
+    """
+    path = release / "DESTINATIONS.json"
+    private_claim = "private (publication requires explicit authorisation)"
+    private_note = "Prepared for human review. Nothing here has been published."
+    if not path.is_file():
+        return False, private_claim, private_note
+    destinations = load(path).get("destinations", {})
+    entries = [entry for entry in destinations.values() if isinstance(entry, dict)]
+    if not entries or any(entry.get("private") is not False or entry.get("verified") is not True
+                          for entry in entries):
+        return False, private_claim, private_note
+    verified = sorted(str(entry.get("verified_at")) for entry in entries if entry.get("verified_at"))
+    when = f", both destinations verified {verified[-1]}" if verified else ""
+    return True, "public", (
+        f"Published after explicit operator authorisation{when}. Data files, tag and artifact "
+        "version are unchanged by publication.")
+
+
 def main() -> int:
     candidate = sys.argv[1] if len(sys.argv) > 1 else "austin-911-response"
     release = ROOT / "release" / candidate
+    published, visibility, publication_note = publication_state(release)
     release.mkdir(parents=True, exist_ok=True)
     record = load(ROOT / "candidates" / candidate / "record.json")
     expected = load(ROOT / "candidates" / candidate / "baseline" / "expected_artifact.json")
@@ -80,7 +106,7 @@ def main() -> int:
         "release_version": "2026.09",
         "release_tag": "v2026.09",
         "repository": "https://github.com/earino/austin-911-response",
-        "visibility": "private (publication requires explicit authorisation)",
+        "visibility": visibility,
         "artifact_version": expected["artifact_version"],
         "artifact_job": expected["job"],
         # The staging release id, because a *draft* release has no tag namespace: looking it up
@@ -116,8 +142,8 @@ def main() -> int:
         "baseline": baseline,
         "scope": "One baseline through the runner's training and validation contract. No agent or "
                  "harness comparison was run and none is implied.",
-        "published": False,
-        "publication_note": "Prepared for human review. Nothing here has been published.",
+        "published": published,
+        "publication_note": publication_note,
     }
     # Flat release-asset names: GitHub rejects `/` in asset names, so the download script restores
     # the runner layout. The mapping is recorded here rather than in prose.

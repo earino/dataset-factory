@@ -1589,3 +1589,46 @@ removing those names, if wanted, is a new version rather than an edit.
 
 **Site publication deferred nothing else:** the Hub card and the GitHub README carry the cross-links,
 and the labelled holdout is downloadable on both platforms.
+
+## 2026-09-19 - The published card and docs still said "private": three defects fixed
+
+The operator noticed the Hugging Face card still read "Status: private. Public visibility requires
+explicit human approval" after the approved publication. It was right, and fixing it exposed two
+more defects of the same shape - a claim asserted in a generator instead of derived from the state.
+
+1. **The card's status was a literal.** `scripts/hf-publish.py` hard-coded the private wording, and
+   the loading instructions told readers to pass a token "for a private repository". The card's
+   status line and its loading note now follow `published` in the manifest. The card also demanded
+   `token=True` in the version-pinned example, which would fail for an anonymous reader of a public
+   dataset; it is emitted only while the release is private.
+2. **The manifest asserted its own publication state.** `scripts/release-manifest.py` held
+   `visibility`, `published` and `publication_note` as literals, so the *documented*
+   post-publication regeneration step - "regenerate MANIFEST.json and SHA256SUMS from recorded
+   evidence" - would have re-asserted "private" forever. All three are now derived from
+   `DESTINATIONS.json`, which records what was checked per destination. The manifest now reads
+   `visibility: "public"`, `published: true`.
+3. **The card shipped a literal placeholder.** The template wrote the repository id as a
+   doubled-brace placeholder inside an f-string, which renders to a single-brace string, so the
+   replacement never matched. The published card carried `load_dataset("{repo_id}", ...)` and
+   `hf download {repo_id}` - commands that cannot run. An unambiguous token (`__REPO_ID__`) is used
+   now, and the built card was checked to contain the real id four times and the placeholder zero
+   times.
+
+**What was corrected and where.** `DESTINATIONS.json` records both destinations as public with the
+anonymous-read evidence and the authorisation; the package README, RELEASE_NOTES and the public
+repository copies state "public since 2026-09-19"; the Hugging Face card, `LOADING.md` and manifest
+were re-uploaded. The public repository received one atomic commit (`fa852cdd0274`) that carries the
+README digest its manifest pins, so the website pipeline's own invariant still holds. The dataset
+tag, the five assets and `artifact_version` are untouched, and the approved site plan digest is
+unchanged - verified by re-running `prepare`, which reproduced `87b1fd5a...` exactly.
+
+**Verified after the repair:** the website pipeline re-ran and reports `complete`, `verify` returns
+`status: verified` with HTTPS enforced on both sites, the Hub revision is still `542382ae6d3e`, the
+card reads "Status: public", and an anonymous client - implicit token use disabled - fetches all
+three revision-pinned data files (HTTP 206) and the Hub API reports `private: false`. The library
+level `load_dataset` call needs the `datasets` package, which lives in the worker image rather than
+the Hub venv here, so the version-pinned path is verified at the HTTP level here and its library
+form was exercised by the worker job before publication.
+
+**Suite:** 255 tests, including new guards for the placeholder and for the derived publication
+state.

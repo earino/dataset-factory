@@ -36,6 +36,9 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 VENV_PYTHON = Path("/opt/data/.venvs/hf/bin/python")
 PACKAGE = REPO_ROOT / "release" / "austin-911-response"
 BUILD = REPO_ROOT / ".factory" / "hf-package"
+# Rendered into the card. A doubled-brace placeholder was used here before, but an f-string renders
+# that to a single brace, so the replacement silently did nothing and shipped the literal.
+REPO_PLACEHOLDER = "__REPO_ID__"
 
 # Files that travel to Hugging Face unchanged, and where they land.
 SMALL_FILES = {
@@ -115,6 +118,17 @@ def card(manifest_data):
     code_license = (licenses.get("code") or {}).get("spdx") or "not declared"
     data_license = (licenses.get("data_compilation") or {}).get("spdx") or "not declared"
     source_license = (licenses.get("source_data") or {})
+    # Publication state comes from the manifest, which derives it from the recorded destination
+    # state. The card asserted "private" unconditionally, so it stayed wrong after publication.
+    published = bool(manifest_data.get("published"))
+    status_line = ("public. Released after explicit operator authorisation; publication changed no "
+                   "data file, tag or checksum.") if published else (
+                   "private. Public visibility requires explicit human approval. Nothing here has "
+                   "been published.")
+    loading_note = ("The repository is public, so loading needs no credential and no token has to "
+                    "be passed:") if published else (
+                   "For a private repository, pass a token that has access to it (the inference "
+                   "credential does not):")
     source_spdx = source_license.get("status") or source_license.get("spdx") or "not declared"
     attribution = source_license.get("attribution") or ""
     citation = source_license.get("citation") or ""
@@ -154,8 +168,7 @@ configs:
 
 # Austin 911 Response Time ({manifest_data['release_version']})
 
-**Status: private. Public visibility requires explicit human approval.** Nothing here has been
-published.
+**Status: {status_line}**
 
 Predict whether an Austin 911 call for service will have a **late first-unit arrival**: at least
 `{threshold.get('chosen_seconds', 'T')} seconds` between the call being answered and the first unit
@@ -174,7 +187,7 @@ Version-pinned. `revision` is the tag, not a branch, so the bytes cannot change 
 ```python
 from datasets import load_dataset
 
-ds = load_dataset("{{repo_id}}", revision="{manifest_data['release_tag']}")
+ds = load_dataset("__REPO_ID__", revision="{manifest_data['release_tag']}")
 print(ds)
 # DatasetDict({{
 #     train: Dataset({{features: [...], num_rows: {rows('train')}}}),
@@ -186,16 +199,16 @@ print(ds)
 print(ds["train"].features["late"])
 ```
 
-For a private repository, pass a token that has access to it (the inference credential does not):
+{loading_note}
 
 ```python
-ds = load_dataset("{{repo_id}}", revision="{manifest_data['release_tag']}", token=True)
+ds = load_dataset("__REPO_ID__", revision="{manifest_data['release_tag']}"{', token=True' if not published else ''})
 ```
 
 The files are also plain CSVs, so they can be used without `datasets`:
 
 ```bash
-hf download {{repo_id}} --repo-type dataset --revision {manifest_data['release_tag']} \\
+hf download __REPO_ID__ --repo-type dataset --revision {manifest_data['release_tag']} \\
     --include "data/*.csv" --local-dir ./austin
 ```
 
@@ -293,15 +306,17 @@ def build_package(manifest_data, repo_id):
         if source.is_file():
             (BUILD / target_name).write_bytes(source.read_bytes())
             written.append(target_name)
-    card_text = card(manifest_data).replace("{{repo_id}}", repo_id)
+    card_text = card(manifest_data).replace(REPO_PLACEHOLDER, repo_id)
     (BUILD / "README.md").write_text(card_text)
     written.append("README.md")
     # Loading instructions for the two entry points, kept beside the card.
+    token_note = ("The repository is public, so no token is needed." if manifest_data.get("published")
+                  else "Private repository: pass a token that has access to it.")
     (BUILD / "LOADING.md").write_text(
         f"# Getting the data\n\n## Hugging Face (this repository), version-pinned\n\n"
         "```python\nfrom datasets import load_dataset\n"
         f'ds = load_dataset("{repo_id}", revision="{manifest_data["release_tag"]}")\n```\n\n'
-        "Private repository: pass a token that has access to it.\n\n"
+        f"{token_note}\n\n"
         "## GitHub counterpart\n\n"
         f"`{manifest_data.get('get_dataset_command')}` in "
         f"{manifest_data.get('repository')}.\n\n"
@@ -316,7 +331,7 @@ def plan(manifest_data, repo_id):
     assets = manifest_data["assets"]
     return {
         "repository": repo_id,
-        "private": True,
+        "private": not manifest_data.get("published", False),
         "release_tag": manifest_data["release_tag"],
         "artifact_version": manifest_data["artifact_version"],
         "small_uploads": sorted(build_package(manifest_data, repo_id)),
