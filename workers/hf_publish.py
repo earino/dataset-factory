@@ -20,6 +20,8 @@ import shutil
 import subprocess
 import sys
 import time
+import urllib.error
+import urllib.request
 
 try:
     from .upload import GitHub, UploadError, digest
@@ -93,23 +95,63 @@ print(json.dumps(report, indent=2))
 '''
 
 
+def _pip_works(python):
+    result = subprocess.run([str(python), "-m", "pip", "--version"], capture_output=True,
+                            timeout=120)
+    return result.returncode == 0
+
+
+def ensure_pip(python, report, timeout=900):
+    """Make `python -m pip` usable in the job venv.
+
+    A stock worker image can create a venv and still have no pip inside it: `ensurepip` is a
+    separate package (`python3-venv`) on Debian derivatives, and `uv` is not installed here. The
+    first version of this job assumed one of the two existed and failed in 0.2 s on a paid worker.
+    So: use pip if present, else install the package that provides it, else bootstrap.
+    """
+    if _pip_works(python):
+        return True
+    routes = []
+    if shutil.which("apt-get"):
+        routes.append((["apt-get", "update", "-qq"], None))
+        routes.append((["apt-get", "install", "-y", "-qq", "python3-venv", "python3-pip"], None))
+    for command, _ in routes:
+        try:
+            subprocess.run(command, capture_output=True, timeout=timeout)
+        except (OSError, subprocess.SubprocessError):
+            continue
+    if _pip_works(python):
+        return True
+    try:
+        with urllib.request.urlopen("https://bootstrap.pypa.io/get-pip.py", timeout=120) as handle:
+            bootstrap = handle.read()
+        script = python.parent.parent / "get-pip.py"
+        script.write_bytes(bootstrap)
+        subprocess.run([str(python), str(script), "--quiet"], capture_output=True, timeout=timeout)
+    except (OSError, urllib.error.URLError, subprocess.SubprocessError):
+        pass
+    report["pip_bootstrapped"] = _pip_works(python)
+    return report["pip_bootstrapped"]
+
+
 def ensure_client(base, report, timeout=900):
     """Create the venv the upload/verify helpers run in. Nothing is installed inside a container."""
     venv = base / VENV
     python = venv / "bin" / "python"
-    if python.exists():
-        return python
     report["venv"] = str(venv)
-    installers = (["uv", "venv", "--python", "3.12", str(venv)],
-                  [sys.executable, "-m", "venv", str(venv)])
-    for command in installers:
-        try:
-            subprocess.run(command, check=True, capture_output=True, timeout=300)
-            break
-        except (OSError, subprocess.SubprocessError):
-            continue
+    if not python.exists():
+        installers = (["uv", "venv", "--python", "3.12", str(venv)],
+                      [sys.executable, "-m", "venv", str(venv)])
+        for command in installers:
+            try:
+                subprocess.run(command, check=True, capture_output=True, timeout=300)
+                break
+            except (OSError, subprocess.SubprocessError):
+                continue
     if not python.exists():
         raise UploadError("could not create a virtual environment for the Hugging Face client")
+    if not ensure_pip(python, report, timeout):
+        raise UploadError("no pip is available in the job venv and it could not be bootstrapped")
     install = (["uv", "pip", "install", "--python", str(python), "huggingface_hub"]
                if shutil.which("uv") else
                [str(python), "-m", "pip", "install", "--quiet", "huggingface_hub"])
@@ -135,28 +177,79 @@ def hub_env(hf_token):
     return env
 
 
-def already_published(client, repo_id, target, sha256, hf_token, python):
-    """True when the Hub already holds this path at this digest. Makes a resume cheap."""
-    script = base_lookup = (
-        "import os,sys,json\n"
+def hub_state(base, index, repo, revision, target, python, hf_token):
+    """What the Hub reports for one path: size, and the digest when it stores the file as LFS.
+
+    A file pushed to the Hub is stored either as an LFS object (large files) or as a plain git
+    blob (small ones). The API exposes a sha256 only for LFS objects; for a regular blob it
+    exposes a git blob id, which is a SHA-1 over different bytes and never equals the manifest's
+    sha256. Treating "no sha256 reported" as "digest mismatch" failed two perfectly good 2-5 KiB
+    uploads on a paid worker.
+    """
+    script = (
+        "import json,os,sys\n"
         "from huggingface_hub import HfApi\n"
-        "api=HfApi(token=os.environ['HF_WRITE_TOKEN'])\n"
+        "out={'found': False}\n"
         "try:\n"
-        "    info=api.repo_info(sys.argv[1], repo_type='dataset', revision=sys.argv[2],"
-        " files_metadata=True)\n"
+        "    info=HfApi(token=os.environ['HF_WRITE_TOKEN']).repo_info(\n"
+        "        sys.argv[1], repo_type='dataset', revision=sys.argv[2], files_metadata=True)\n"
         "except Exception as exc:\n"
-        "    print(''); raise SystemExit(0)\n"
+        "    out['error']=type(exc).__name__\n"
+        "    print(json.dumps(out)); raise SystemExit(0)\n"
         "for s in info.siblings or []:\n"
         "    if s.rfilename==sys.argv[3]:\n"
         "        lfs=getattr(s,'lfs',None) or {}\n"
-        "        print(lfs.get('sha256') or getattr(s,'blob_id','') or ''); break\n"
-        "else:\n"
-        "    print('')\n")
-    path = write_helper(client["base"], f".hf-lookup-{client['index']}.py", script)
-    result = subprocess.run([str(python), str(path), repo_id, client["revision"], target],
+        "        out={'found': True, 'size': s.size, 'lfs_sha256': lfs.get('sha256')}\n"
+        "        break\n"
+        "print(json.dumps(out))\n")
+    path = write_helper(base, f".hf-lookup-{index}.py", script)
+    result = subprocess.run([str(python), str(path), repo, revision, target],
                             capture_output=True, text=True, env=hub_env(hf_token), timeout=300)
-    reported = (result.stdout or "").strip().splitlines()
-    return bool(reported) and reported[-1] == sha256
+    try:
+        return json.loads((result.stdout or "{}").strip().splitlines()[-1])
+    except (json.JSONDecodeError, IndexError):
+        return {"found": False, "error": "unreadable lookup output"}
+
+
+def hub_digest_by_download(base, index, repo, revision, target, python, hf_token):
+    """Hash a small file the Hub stores as a plain blob. Bounded to small files on purpose."""
+    script = (
+        "import hashlib,json,os,sys\n"
+        "from huggingface_hub import hf_hub_download\n"
+        "path=hf_hub_download(repo_id=sys.argv[1], filename=sys.argv[3], repo_type='dataset',\n"
+        "                    revision=sys.argv[2], token=os.environ['HF_WRITE_TOKEN'],\n"
+        "                    cache_dir=sys.argv[4])\n"
+        "h=hashlib.sha256()\n"
+        "with open(path,'rb') as handle:\n"
+        "    for chunk in iter(lambda: handle.read(1 << 20), b''):\n"
+        "        h.update(chunk)\n"
+        "print(h.hexdigest())\n")
+    path = write_helper(base, f".hf-hash-{index}.py", script)
+    cache = base / "hf-cache"
+    result = subprocess.run([str(python), str(path), repo, revision, target, str(cache)],
+                            capture_output=True, text=True, env=hub_env(hf_token), timeout=600)
+    lines = [line for line in (result.stdout or "").strip().splitlines() if line]
+    return lines[-1] if lines else ""
+
+
+SMALL_BLOB_BYTES = 8 * 1024 * 1024
+
+
+def already_published(base, index, repo, revision, target, sha256, size, python, hf_token):
+    """True when the Hub already holds this path at this digest. Makes a resume cheap.
+
+    Also the post-upload check, so "the client returned success" is never the evidence.
+    """
+    state = hub_state(base, index, repo, revision, target, python, hf_token)
+    if not state.get("found"):
+        return False
+    if state.get("lfs_sha256"):
+        return state["lfs_sha256"] == sha256
+    if size and state.get("size") != size:
+        return False
+    if size and size <= SMALL_BLOB_BYTES:
+        return hub_digest_by_download(base, index, repo, revision, target, python, hf_token) == sha256
+    return False
 
 
 def hf_publish(base, job, report, client=None, retrieve=None):
@@ -171,13 +264,18 @@ def hf_publish(base, job, report, client=None, retrieve=None):
     python = ensure_client(base, report)
 
     uploads, skipped, failures = [], [], []
+    deadline = time.monotonic() + int(job.get("timeout_minutes", 60)) * 60
     for index, item in enumerate(spec["assets"], start=1):
+        if time.monotonic() > deadline:
+            failures.append({"target": item["target"],
+                             "error": "runtime limit reached; nothing else attempted"})
+            continue
         target = item["target"]
         local = base / "cache" / item["dest"]
         local.parent.mkdir(parents=True, exist_ok=True)
-        state = {"base": base, "index": index, "revision": spec["revision"]}
         try:
-            if already_published(state, spec["repo"], target, item["sha256"], hf_token, python):
+            if already_published(base, index, spec["repo"], spec["revision"], target,
+                                 item["sha256"], item.get("size"), python, hf_token):
                 skipped.append({"target": target, "reason": "already at the manifest digest"})
                 continue
             client_downloaded = None
@@ -201,7 +299,8 @@ def hf_publish(base, job, report, client=None, retrieve=None):
             if result.returncode != 0:
                 raise UploadError(f"{target}: upload failed: "
                                   f"{(result.stderr or result.stdout).strip()[:300]}")
-            if not already_published(state, spec["repo"], target, item["sha256"], hf_token, python):
+            if not already_published(base, index, spec["repo"], spec["revision"], target,
+                                     item["sha256"], item.get("size"), python, hf_token):
                 raise UploadError(f"{target}: uploaded, but the Hub does not report the manifest "
                                   "digest")
             uploads.append({"target": target, "bytes": client_downloaded,

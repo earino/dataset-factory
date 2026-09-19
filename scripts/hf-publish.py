@@ -381,21 +381,37 @@ def main(argv=None):
         except HfHubHTTPError as exc:
             print(json.dumps({**result, "ok": False, "error": f"repo_info failed: {exc}"}, indent=2))
             return 1
-        on_hub = {s.rfilename: (s.size, getattr(s, "blob_id", None) or getattr(s, "lfs", None))
-                  for s in (info.siblings or [])}
+        # Size alone is not verification: the Hub exposes a sha256 only for LFS objects, so a
+        # match on that digest is checked where present, and size is a weaker fallback for files
+        # stored as plain git blobs (which hf-publish.py re-hashes by download).
+        on_hub = {}
+        for sibling in (info.siblings or []):
+            lfs = getattr(sibling, "lfs", None) or {}
+            on_hub[sibling.rfilename] = (sibling.size, lfs.get("sha256"))
         result["repo_private"] = info.private
         expected = {}
         for logical, entry in (manifest_data.get("assets") or {}).items():
             expected[asset_target(manifest_data, logical)] = (entry["bytes"], entry["sha256"])
-        present, missing, mismatched = [], [], []
-        for path, (size, _) in sorted(expected.items()):
+        present, missing, mismatched, digest_checked = [], [], [], []
+        for path, (size, sha256) in sorted(expected.items()):
             if path not in on_hub:
                 missing.append(path)
-            elif on_hub[path][0] is not None and on_hub[path][0] != size:
-                mismatched.append({"path": path, "expected_bytes": size,
-                                   "hub_bytes": on_hub[path][0]})
-            else:
-                present.append(path)
+                continue
+            hub_size, hub_digest = on_hub[path]
+            if hub_size is not None and hub_size != size:
+                mismatched.append({"path": path, "expected_bytes": size, "hub_bytes": hub_size})
+                continue
+            if hub_digest:
+                if hub_digest != sha256:
+                    mismatched.append({"path": path, "expected_sha256": sha256,
+                                       "hub_sha256": hub_digest})
+                    continue
+                digest_checked.append(path)
+            present.append(path)
+        result["digest_verified"] = sorted(digest_checked)
+        result["digest_note"] = ("paths not listed under digest_verified are stored as plain git "
+                                 "blobs, where the Hub reports no sha256; the worker re-hashes "
+                                 "those by download instead")
         result["files"] = {"present": present, "missing": missing, "size_mismatch": mismatched}
         result["small_files"] = sorted(name for name in SMALL_FILES.values() if name in on_hub)
         try:
