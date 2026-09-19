@@ -1473,3 +1473,46 @@ The latter contains the review bundle as an Actions artifact. A clean export of 
 staged tree, with no private configuration, passed 240 tests (4 environment-specific
 skips) and factory doctor. The prepared Austin plan SHA is
 `87b1fd5a9bcf920c0396b0e6c08c52f89de1ba991df70e57245e59abb7a88db6`.
+
+## 2026-09-19 - Scout's independent acceptance of the website pipeline
+
+Scout pulled the builder's implementation and ran the documented offline steps from the hosted
+environment, as the handoff's next action asked. No defect blocking publication was found.
+
+**prepare** - reproduced plan SHA `87b1fd5a9bcf920c0396b0e6c08c52f89de1ba991df70e57245e59abb7a88db6`,
+identical to the value the builder recorded. Zero network calls; two runs into separate output
+directories produced byte-identical `bundle.json`, `REVIEW.md` and both previews, so the
+determinism claim holds. Duplicate dry-run directories were removed; the reviewed bundle is
+`.factory/sites/austin-v2026.09-1`.
+
+**inspect** (read-only) - GitHub release `391804787` and its asset digests verified; Hub revision
+`542382ae6d3e48175b6938f5df4f91e087cfd2ee` verified and equal to the Hub main commit;
+`ready_for_publication: false`, correct because both destinations are still private. Catalogue
+repository `earino/dataset-factory-site` does not exist yet (the plan creates it); the dataset
+repository has Actions enabled, no Pages site, `pages: null`; Hub navigation links not yet present.
+**status** reported `prepared` (exit 0); **verify** refused with exit 1 and
+`GitHub dataset is private; complete the approved dataset release first` - the right failure code,
+and the right refusal.
+
+**Content agreement** - the dataset preview carries the version tag, the full artifact hash
+`e4598317e406984fa590aacc5e7aff675867578c51ae`, all three split row counts (572,180 / 285,665 /
+191,791), MIT, CC0-1.0, the source's Public Domain designation and both destination links; nothing
+from the holdout is inlined. The catalogue preview carries the tag and both links, which is its job.
+
+**Public-projection leak check** - no credentials, staging URLs, job or worker records, host paths,
+provider identifiers or internal release/asset ids appear anywhere in the 19 projected files. Two
+initial flags were Scout's own over-broad patterns matching the public catalogue name
+`earino/dataset-factory-site` and the intentional `artifact_version` field; both were read in
+context and dismissed.
+
+**Documentation ambiguity (not a defect):** exit code 2 is documented as "publication pending", but
+a private-destination refusal surfaces as exit 1 with `status: failed`. Defensible - it is a
+refusal, not a pending deployment - but worth one line in the sequence doc.
+
+**Suite in the hosted environment:** 245 tests, 0 skips (the builder's 240 plus the 5 added with the
+novelty gate). An earlier 230-test reading was Scout's tree before the rebase carried the builder's
+15 site tests; no discrepancy exists.
+
+**Blocked on the operator:** public dataset release. Pages stays disabled and both data
+repositories stay private until that approval. After approval, finish the dataset release, run
+`publish`/`verify` with the reviewed digest, then exercise an editorial revision independently.
