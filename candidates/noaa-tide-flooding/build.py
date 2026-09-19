@@ -28,6 +28,7 @@ observations, and including them is the way an agent defeats the task.
 """
 
 import argparse
+import concurrent.futures
 import csv
 import json
 import sys
@@ -49,7 +50,15 @@ FLOOD_WINDOW = 7        # trailing window for recent exceedance count
 
 FEATURES = ["margin_ft", "margin_ratio", "trailing7_mean", "trailing30_mean", "trailing30_std",
             "exceed_last7", "days_since_exceedance", "day_of_year", "latitude", "threshold_rank"]
-COLUMNS = ["station_id", "station_name", "date", "latitude", "longitude", "threshold_ft"] + FEATURES + ["observed_max_ft", "late"]
+# `latitude` is both a base column and a declared feature, so the shipped header is de-duplicated:
+# a repeated column name makes a column-wise reader see twice as many values as labels, which
+# surfaced as an unrelated crash inside the qualification gate rather than as a named finding.
+COLUMNS = list(dict.fromkeys(
+    ["row_id", "station_id", "station_name", "date", "latitude", "longitude", "threshold_ft"]
+    + FEATURES + ["observed_max_ft", "late"]))
+# The entity that must not cross a split is the station-day, not the station: a temporal split of a
+# station panel deliberately reuses stations, so the station alone is not an entity key.
+ID_COLUMNS = ["row_id", "station_id", "date"]
 
 
 def fetch_json(url, attempts=3, timeout=120):
@@ -120,6 +129,15 @@ def flood_days(station_id, year):
     return out
 
 
+def _safe_year(one_year, year, station_id, errors):
+    """Fetch one station-year, recording a failure instead of losing the whole station."""
+    try:
+        return one_year(year)
+    except RuntimeError as exc:
+        errors.append({"station": station_id, "year": year, "error": str(exc)[:160]})
+        return year, None, set()
+
+
 def station_metadata(station_ids):
     """Published thresholds and coordinates. nos_minor is the label's threshold - kept physical."""
     url = ("https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations.json"
@@ -176,6 +194,7 @@ def features_for(series, threshold, latitude, threshold_rank):
             days_since = LOOKBACK                        # censored: "at least LOOKBACK days"
         day = date.fromisoformat(point["date"])
         rows.append({
+            "row_id": f"{point['station_id']}:{point['date']}",
             "station_id": point["station_id"],
             "station_name": point["station_name"],
             "date": point["date"],
@@ -197,7 +216,7 @@ def features_for(series, threshold, latitude, threshold_rank):
     return rows
 
 
-def build(out_dir, limit=None, years=None):
+def build(out_dir, limit=None, years=None, concurrency=4):
     stations = frozen_stations()
     order = sorted(stations)
     meta = station_metadata(stations)
@@ -215,14 +234,19 @@ def build(out_dir, limit=None, years=None):
             continue
         series = []
         flood = set()
-        for year in (years or YEARS):
-            try:
-                maxima = daily_maxima(station_id, year)
-                flags = flood_days(station_id, year)
-                requests += 2
-            except RuntimeError as exc:
-                errors.append({"station": station_id, "year": year, "error": str(exc)[:160]})
+        # A few station-years in flight at once: 4,880 requests serial is over an hour and a half,
+        # and this stays a modest, polite rate against a public API.
+        def one_year(year):
+            return year, daily_maxima(station_id, year), flood_days(station_id, year)
+
+        station_years = list(years or YEARS)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=concurrency) as pool:
+            fetched = list(pool.map(lambda year: _safe_year(one_year, year, station_id, errors),
+                                    station_years))
+        for year, maxima, flags in fetched:
+            if maxima is None:
                 continue
+            requests += 2
             flood |= flags
             for day, value in sorted(maxima.items()):
                 # Incomplete days are kept and counted. Dropping them would quietly delete positive
@@ -282,7 +306,9 @@ def build(out_dir, limit=None, years=None):
     levels["station_disjoint"] = station_disjoint
 
     out_dir.mkdir(parents=True, exist_ok=True)
+    emitted = emit_levels(out_dir, levels, meta, order, station_days)
     summary = {"stations": len(rows_by_station), "requests": requests, "errors": errors,
+               "emitted_levels": emitted,
                "label_source": "NOAA HTF daily product, minFlag (the publisher's own minor-flood "
                                "days), one request per station-year; features come from "
                                "daily_max_min observations",
@@ -296,25 +322,150 @@ def build(out_dir, limit=None, years=None):
                    "flagged_days": sum(v["flagged_days"] for v in quality.values()),
                    "rule": "incomplete days are kept; the label uses the reported maximum. The "
                            "counts are reported so the choice is visible rather than silent."}}
+    summary["levels"] = {}
     for level, splits in levels.items():
         summary["levels"][level] = {}
         for split, rows in splits.items():
-            rows.sort(key=lambda row: (row["station_id"], row["date"]))
-            path = out_dir / f"{level}.{split}.csv"
-            with path.open("w", newline="") as handle:
-                writer = csv.DictWriter(handle, fieldnames=COLUMNS)
-                writer.writeheader()
-                writer.writerows(rows)
             positives = sum(row["late"] for row in rows)
             summary["levels"][level][split] = {
                 "rows": len(rows), "positives": positives,
                 "rate": round(positives / len(rows), 5) if rows else None,
                 "stations": len({row["station_id"] for row in rows}),
-                "path": path.name,
             }
     (out_dir / "build_summary.json").write_text(json.dumps(summary, indent=2) + "\n")
     print(json.dumps(summary["levels"], indent=2))
     return summary
+
+
+
+LEVEL_NOTES = {
+    "temporal": "All 122 frozen stations; disjoint windows in time.",
+    "station_disjoint": "Evaluation on stations that training never sees (group0 by station-id "
+                        "order), so this level measures transfer rather than recall of a station's "
+                        "own behaviour.",
+}
+PREDICTION_TIME = ("At the end of the previous local day. Every feature is a trailing summary of "
+                   "that station's own observed daily maxima up to and including the previous day; "
+                   "no feature uses the label day or later, and NOAA tide predictions and model "
+                   "guidance are excluded because they are not observations.")
+# The gate requires a known-event fixture when the label rests on an external threshold. This is
+# Boston's documented record: the 2018-01-04 bomb-cyclone tide, which is also the datum regression
+# test - under MLLW it would deny flooding during the record storm.
+KNOWN_EVENT = {"name": "Boston 2018-01-04 bomb-cyclone tide (the documented record tide)",
+               "expected_verdict": "exceeds",
+               "source": "NOAA CO-OPS observations, datum=STND; the same event is the candidate's "
+                         "datum regression test (candidates/noaa-tide-flooding/datum_regression.json)",
+               "station": "8443970", "station_name": "Boston, MA", "date": "2018-01-04",
+               "threshold_ft_stnd": 15.85, "observed_max_ft_stnd": 18.547}
+
+
+def emit_levels(out_dir, levels, meta_by_station, order, counts_by_station):
+    """Write each level in the runner's layout, with the descriptors qualification checks."""
+    import json as _json
+
+    written = {}
+    for level, splits in levels.items():
+        level_dir = out_dir / level
+        (level_dir / "public").mkdir(parents=True, exist_ok=True)
+        (level_dir / "private").mkdir(parents=True, exist_ok=True)
+        paths = {"train": "public/train.csv", "eval": "public/eval.csv",
+                 "holdout": "private/holdout.csv"}
+        # The gate requires per-split start/end objects and recomputes them against the rows.
+        # Half-open: the gate requires every row to fall strictly before the declared end.
+        windows = {
+            "train": {"start": f"{TRAIN_YEARS[0]}-01-01", "end": f"{TRAIN_YEARS[1] + 1}-01-01"},
+            "eval": {"start": f"{EVAL_YEARS[0]}-01-01", "end": f"{EVAL_YEARS[1] + 1}-01-01"},
+            "holdout": {"start": f"{HOLDOUT_YEARS[0]}-01-01",
+                        "end": f"{HOLDOUT_YEARS[1] + 1}-01-01"},
+        }
+        rows_total = 0
+        positives_total = 0
+        stations = set()
+        for split, rows in splits.items():
+            rows.sort(key=lambda row: (row["station_id"], row["date"]))
+            path = level_dir / paths[split]
+            with path.open("w", newline="") as handle:
+                writer = csv.DictWriter(handle, fieldnames=COLUMNS)
+                writer.writeheader()
+                writer.writerows(rows)
+            rows_total += len(rows)
+            positives_total += sum(row["late"] for row in rows)
+            stations |= {row["station_id"] for row in rows}
+        # meta.json is the runner's task descriptor: `rows` and `positive_rate` are per split, and
+        # `columns` must match the header order exactly, because the gate compares them.
+        meta = {"target": "late", "positive_label": 1, "id_columns": ID_COLUMNS,
+                "columns": COLUMNS,
+                "rows": {split: len(rows) for split, rows in splits.items()},
+                "positive_rate": {split: (round(sum(row["late"] for row in rows) / len(rows), 6)
+                                           if rows else None)
+                                  for split, rows in splits.items()},
+                "level": level, "note": LEVEL_NOTES[level]}
+        (level_dir / "meta.json").write_text(_json.dumps(meta, indent=2) + "\n")
+
+        # Clustered event counts: rows sharing a flood day are one event, so the count is what a
+        # score's uncertainty is quoted against.
+        # The gate recounts both of these from the rows, so they are computed the same way it does:
+        # positives are positive rows; distinct events are the distinct event-key dates among them.
+        events = {}
+        for split, rows in splits.items():
+            positive_rows = [row for row in rows if row["late"]]
+            events[split] = {"positives": len(positive_rows),
+                             "distinct_events": len({row["date"] for row in positive_rows})}
+        quality = {
+            "target": "late",
+            "positive_label": 1,
+            "features": FEATURES,
+            "carry_columns": ["station_id", "station_name", "latitude", "longitude",
+                              "threshold_ft", "observed_max_ft"],
+            "id_columns": ID_COLUMNS,
+            "high_cardinality_columns": [],
+            "label_source_columns": [],
+            "post_hoc_columns": [],
+            "splits": paths,
+            "split_windows": windows,
+            "time_column": "date",
+            "event_key_column": "date",
+            "positive_events": events,
+            "id_columns_are_entity_keys": False,
+            "expected_duplicate_ids": None,
+            "external_threshold": True,
+            "known_event": KNOWN_EVENT,
+            "task": {"prediction_time": PREDICTION_TIME,
+                     "target": "will this station's daily maximum observed water level exceed its "
+                               "published NOS minor flood threshold tomorrow",
+                     "label_source": "NOAA HTF daily product, minFlag (the publisher's own "
+                                     "minor-flood days)"},
+            "features_documented_at": "prediction_time",
+            # Every measured column declares its unit and reference frame. The frame is the
+            # station datum, which is the trap that cost this candidate a whole measurement pass:
+            # the published threshold is in STND, and an MLLW series denies flooding during
+            # Boston's record tide.
+            "measurements": [
+                {"column": "observed_max_ft", "unit": "feet",
+                 "frame": "STND (the station's own datum, as requested from CO-OPS)"},
+                {"column": "threshold_ft", "unit": "feet",
+                 "frame": "STND, NOAA's published nos_minor threshold for that station"},
+                {"column": "margin_ft", "unit": "feet",
+                 "frame": "STND, previous day's maximum minus that station's threshold"},
+                {"column": "trailing7_mean", "unit": "feet", "frame": "STND, trailing 7 days"},
+                {"column": "trailing30_mean", "unit": "feet", "frame": "STND, trailing 30 days"},
+                {"column": "trailing30_std", "unit": "feet", "frame": "STND, trailing 30 days"},
+            ],
+            "evidence": [
+                {"what": "label route compared against NOAA's own annual counts, 2024",
+                 "result": "NOAA htf_daily flags match exactly (25/26/23/20 = 94 over four "
+                           "stations); a 6-minute reconstruction gave 113-114 and hourly 98",
+                 "path": "candidates/noaa-tide-flooding/label_route_result.json"},
+                {"what": "station-disjoint capacity",
+                 "result": "group0 (held-out stations) carries 1,090 positive station-days over "
+                           "337 distinct flood days in the holdout window",
+                 "path": "candidates/noaa-tide-flooding/spatial_split_result.json"},
+            ],
+        }
+        (level_dir / "quality.json").write_text(_json.dumps(quality, indent=2) + "\n")
+        written[level] = {"rows": rows_total, "positives": positives_total,
+                          "stations": len(stations), "dir": str(level_dir)}
+    return written
 
 
 def probe(station_id, year):
@@ -344,13 +495,15 @@ def main():
     parser.add_argument("--probe", help="one station id: fetch one year and print parsed rows")
     parser.add_argument("--year", type=int, default=2024, help="year for --probe")
     parser.add_argument("--years", help="comma-separated years, e.g. 2024,2025")
+    parser.add_argument("--concurrency", type=int, default=4,
+                        help="station-years in flight at once (default 4; modest on purpose)")
     args = parser.parse_args()
     if args.probe:
         return probe(args.probe, args.year)
     if not args.out:
         raise SystemExit("--out is required for a build (or use --probe)")
     years = [int(y) for y in args.years.split(",")] if args.years else None
-    build(args.out, limit=args.limit, years=years)
+    build(args.out, limit=args.limit, years=years, concurrency=args.concurrency)
     return 0
 
 

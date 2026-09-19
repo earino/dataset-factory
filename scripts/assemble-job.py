@@ -109,6 +109,26 @@ BUNDLES = {
             "max_artifact_mb": 50,
         },
     },
+    # Build both levels of the NOAA tide-flooding task, then gate each exact artifact on the worker.
+    "noaa-tide-flooding": {
+        "job_file": "candidates/noaa-tide-flooding/source/job.json",
+        "files": [
+            ("build.py", "candidates/noaa-tide-flooding/build.py"),
+            ("run.sh", "candidates/noaa-tide-flooding/source/run.sh"),
+            # The frozen station list is a build input, not a constant: the panel was computed from
+            # the source, so the same list has to travel with the builder.
+            ("station_list_result.json",
+             "candidates/noaa-tide-flooding/station_list_result.json"),
+            ("qualify_dataset.py", "skills/dataset-qualification/scripts/qualify_dataset.py"),
+        ],
+        "overrides": {
+            "command": ["sh", "/workspace/run.sh"],
+            "timeout_minutes": 60,
+            "lifetime_minutes": 120,
+            "max_disk_mb": 3072,
+            "max_artifact_mb": 600,
+        },
+    },
 }
 
 
