@@ -30,6 +30,39 @@ def sha256_of(path: Path) -> str:
     return digest.hexdigest()
 
 
+def licenses_block(candidate: str) -> dict:
+    """Terms for this dataset, from the declared decision plus the standing policy.
+
+    Built here rather than edited into the manifest afterwards: a hand-edited block is silently
+    lost the next time the manifest is regenerated, which is exactly when it needs to be right.
+    """
+    policy = load(ROOT / "config" / "licensing-policy.json") or {}
+    declared = load(ROOT / "candidates" / candidate / "license.json")
+    if not declared:
+        return {"policy_version": policy.get("policy_version"),
+                "status": "UNDECLARED - candidates/<id>/license.json is missing",
+                "rules": policy.get("rules", [])}
+    code = declared.get("code") or {}
+    compilation = declared.get("compilation") or {}
+    source = declared.get("source") or {}
+    return {
+        "policy_version": policy.get("policy_version"),
+        "decided": declared.get("decided"),
+        "code": {"spdx": code.get("spdx"), "file": (policy.get("code_default") or {}).get("file"),
+                 "copyright": code.get("copyright"),
+                 "third_party": code.get("third_party") or []},
+        "data_compilation": {"spdx": compilation.get("spdx"),
+                             "file": (policy.get("compilation_default") or {}).get("file"),
+                             "scope": compilation.get("scope")},
+        "source_data": {"spdx": source.get("spdx"), "status": source.get("status"),
+                        "evidence": source.get("evidence") or [],
+                        "attribution": source.get("attribution"),
+                        "citation": source.get("citation"),
+                        "derived_labelling": source.get("derived_labelling")},
+        "rules": policy.get("rules", []),
+    }
+
+
 def main() -> int:
     candidate = sys.argv[1] if len(sys.argv) > 1 else "austin-911-response"
     release = ROOT / "release" / candidate
@@ -98,11 +131,20 @@ def main() -> int:
     }
     # Hashes of everything published in the repository, so the shipped code and docs can be
     # checked too - MANIFEST.json itself excluded, since a file cannot hash itself.
+    # DESTINATIONS.json records per-destination publication state and is written *after* a
+    # destination is verified, so it cannot be hashed by the manifest it helps complete - that is
+    # circular, and it made the package check fail on every re-verification. It is excluded here
+    # and named in check-package.py as the per-destination record it is.
+    POST_VERIFICATION = {"DESTINATIONS.json"}
     package_files = {}
     for path in sorted(release.rglob("*")):
         if path.is_file() and path.name != "MANIFEST.json":
-            package_files[path.relative_to(release).as_posix()] = sha256_of(path)
+            relative = path.relative_to(release).as_posix()
+            if relative in POST_VERIFICATION:
+                continue
+            package_files[relative] = sha256_of(path)
     manifest["package_files"] = package_files
+    manifest["licenses"] = licenses_block(candidate)
 
     (release / "MANIFEST.json").write_text(json.dumps(manifest, indent=2) + "\n")
 

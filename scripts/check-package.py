@@ -93,6 +93,33 @@ def check_package(package_dir):
             "state that publication awaits review rather than leaving it unstated"
         )
 
+    # Terms are not optional: a release must declare what it is licensed under, and ship the
+    # licence it names. A missing declaration is refused rather than assumed permissive.
+    licenses = manifest.get("licenses")
+    if not isinstance(licenses, dict):
+        problems.append("MANIFEST.json: no 'licenses' block - the release terms are not declared")
+    else:
+        status = str(licenses.get("status") or "")
+        if status.startswith("UNDECLARED"):
+            problems.append(f"MANIFEST.json: licenses {status}")
+        for label, key in (("code", "code"), ("data compilation", "data_compilation")):
+            entry = licenses.get(key) or {}
+            if not entry.get("spdx"):
+                problems.append(f"MANIFEST.json: licenses.{key}.spdx is empty ({label})")
+            named = entry.get("file")
+            if not named:
+                problems.append(f"MANIFEST.json: licenses.{key}.file is empty, so the licence "
+                                f"text is not identified ({label})")
+            elif not (package_dir / named).is_file():
+                problems.append(f"MANIFEST.json: licenses.{key}.file names {named}, which is not "
+                                "in the package")
+        source = licenses.get("source_data") or {}
+        if not source.get("status"):
+            problems.append("MANIFEST.json: licenses.source_data.status is empty - the source's "
+                            "own terms must be recorded, not overwritten")
+        if manifest.get("published") is True and not licenses:
+            problems.append("MANIFEST.json: 'published' is true with no declared terms")
+
     # Every file in the package must be covered by the manifest, and every recorded hash
     # must match the bytes on disk.
     recorded = manifest.get("package_files") or {}

@@ -127,6 +127,8 @@ class PackageCheckTests(unittest.TestCase):
         if extra_file:
             (root / extra_file).write_text("extra\n")
 
+        (root / "LICENSE-MIT.txt").write_text("MIT text\n")
+        (root / "LICENSE-CC0-1.0.txt").write_text("CC0 text\n")
         files = {
             str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
             for p in sorted(root.rglob("*")) if p.is_file()
@@ -136,6 +138,12 @@ class PackageCheckTests(unittest.TestCase):
             "dataset": "example", "release_tag": "v1", "artifact_version": "b" * 64,
             "qualification": {"result": "PASSED"}, "published": published,
             "package_files": files, "assets": assets,
+            "licenses": {
+                "code": {"spdx": "MIT", "file": "LICENSE-MIT.txt"},
+                "data_compilation": {"spdx": "CC0-1.0", "file": "LICENSE-CC0-1.0.txt"},
+                "source_data": {"spdx": "LicenseRef-Public-Domain",
+                                "status": "Public Domain, preserved"},
+            },
         }
         if note:
             manifest["publication_note"] = "Awaiting review."
@@ -185,6 +193,31 @@ class PackageCheckTests(unittest.TestCase):
             problems, notes = package_check.check_package(root)
             self.assertFalse(any("stray.txt" in problem for problem in problems))
             self.assertTrue(any("stray.txt" in note for note in notes))
+
+    def test_a_release_without_declared_terms_is_refused(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._build(Path(tmp))
+            manifest = json.loads((root / "MANIFEST.json").read_text())
+            del manifest["licenses"]
+            (root / "MANIFEST.json").write_text(json.dumps(manifest))
+            problems, _ = package_check.check_package(root)
+            self.assertTrue(any("no 'licenses' block" in problem for problem in problems))
+
+    def test_a_named_licence_file_must_be_in_the_package(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._build(Path(tmp))
+            (root / "LICENSE-CC0-1.0.txt").unlink()
+            problems, _ = package_check.check_package(root)
+            self.assertTrue(any("LICENSE-CC0-1.0.txt" in problem for problem in problems))
+
+    def test_publishing_with_undeclared_terms_is_refused(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._build(Path(tmp), published=True)
+            manifest = json.loads((root / "MANIFEST.json").read_text())
+            manifest["licenses"] = {"status": "UNDECLARED - missing declaration"}
+            (root / "MANIFEST.json").write_text(json.dumps(manifest))
+            problems, _ = package_check.check_package(root)
+            self.assertTrue(any("UNDECLARED" in problem for problem in problems))
 
     def test_the_committed_package_passes(self):
         problems, _ = package_check.check_package(REAL_PACKAGE)

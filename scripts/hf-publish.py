@@ -42,6 +42,8 @@ SMALL_FILES = {
     "MANIFEST.json": "MANIFEST.json",
     "SHA256SUMS": "SHA256SUMS",
     "LICENSE.md": "LICENSE.md",
+    "LICENSE-MIT.txt": "LICENSE-MIT.txt",
+    "LICENSE-CC0-1.0.txt": "LICENSE-CC0-1.0.txt",
     "DATA_DICTIONARY.md": "DATA_DICTIONARY.md",
     "VERIFICATION.md": "VERIFICATION.md",
     "measurements.json": "measurements.json",
@@ -109,6 +111,13 @@ def card(manifest_data):
     threshold = measurements.get("threshold_search") or {}
     extraction = measurements.get("extraction_cost") or {}
     source = manifest_data.get("source") or {}
+    licenses = manifest_data.get("licenses") or {}
+    code_license = (licenses.get("code") or {}).get("spdx") or "not declared"
+    data_license = (licenses.get("data_compilation") or {}).get("spdx") or "not declared"
+    source_license = (licenses.get("source_data") or {})
+    source_spdx = source_license.get("status") or source_license.get("spdx") or "not declared"
+    attribution = source_license.get("attribution") or ""
+    citation = source_license.get("citation") or ""
     qualification = manifest_data.get("qualification") or {}
     baseline = manifest_data.get("baseline") or {}
 
@@ -119,8 +128,7 @@ def card(manifest_data):
         return splits[name]["positive_rate"]
 
     return f"""---
-license: other
-license_name: source-data-public-domain-compilation-licence-pending-review
+license: cc0-1.0
 language:
   - en
 pretty_name: Austin 911 Response Time ({manifest_data['release_version']})
@@ -240,10 +248,28 @@ Reproduce it with `{clock.get('command', 'the recorded command')}`.
   {extraction.get('wall_clock_seconds', 'n/a')}s on {extraction.get('machine', 'a worker')}.
 - Rebuild: `MANIFEST.json` pins the build timestamp, so a rebuild is byte-identical.
 
-**Licence status:** the source data is public domain. The licence of this *derived compilation* is
-**not yet chosen** - it is a decision for the human reviewer, and `LICENSE.md` records the options.
-Until then, treat it as all rights reserved. The dataset is derived from the City of Austin's open
-data and must be labelled as derived; it is not an official City of Austin product.
+## Licence and attribution
+
+| | |
+| --- | --- |
+| Source data (City of Austin) | **{source_spdx}** - designation preserved, attribution and citation given below |
+| Our rights in this derived compilation | **{data_license}** (`LICENSE-CC0-1.0.txt`) |
+| Code and documentation in the GitHub counterpart | **{code_license}** (`LICENSE-MIT.txt`) |
+
+**Scope, stated plainly:** the CC0 dedication covers **our contribution** - the row selection, the
+derived binary label, the temporal partition and the packaging. It does **not** cover or relicense
+the City of Austin's data, which keeps its own Public Domain designation. This dataset is derived
+from the City of Austin's open data and is labelled as derived; it is **not an official City of
+Austin product**.
+
+**Attribution.** {attribution}
+
+**Suggested citation.**
+
+> {citation}
+
+**Future datasets** in this series choose terms compatible with each source; CC0 here is not a
+standing permission to override another source's terms.
 
 ## Qualification and baseline
 

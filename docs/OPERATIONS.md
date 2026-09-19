@@ -563,3 +563,27 @@ Per-file uploads skip any file already at the manifest digest, so a resumed or r
 cheap rather than a re-send. Completion is recorded **per destination** in
 `release/<dataset>/DESTINATIONS.json`; the package check refuses a manifest claiming `published`
 while a destination is unverified. Corrections are published as a new version.
+
+## Licensing policy for releases
+
+`config/licensing-policy.json` holds the standing policy, `candidates/<id>/license.json` the
+per-dataset decision, and `scripts/release-manifest.py` writes both into the release manifest as a
+`licenses` block (code, derived compilation, source terms). `check-package.py` refuses a package
+with no declared terms, or one naming a licence file it does not ship.
+
+Defaults: **MIT** for our code and documentation, **CC0-1.0** for our rights in a derived
+compilation, and the **source's terms preserved** - never relicensed, always with its designation,
+attribution and suggested citation. Terms are chosen per dataset to be compatible with each source;
+CC0 is not a blanket override of upstream terms, and a source whose licence cannot be read is not
+published.
+
+Attribution and citation come from the source's own documentation and are reproduced verbatim in
+`LICENSE.md`, the GitHub README and the Hugging Face card, generated so the three cannot disagree.
+
+### A licensing change is a package change
+
+Licence documents are package files, so editing one changes its hash. Regenerate the manifest
+(`scripts/release-manifest.py <candidate>`), re-run `check-package.py`, re-upload the small files
+to Hugging Face (`scripts/hf-publish.py --upload-small --verify`) and re-point the version tag
+(`--tag`, idempotent, last). The **dataset assets themselves are untouched**: their digests are
+unchanged, which is what "preserving the accepted bytes" means in practice.

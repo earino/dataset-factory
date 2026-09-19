@@ -111,6 +111,23 @@ Rules that are not negotiable:
 - Re-running is safe by design: per-file uploads skip anything already at the manifest digest.
   Synchronisation is release work with bounded retries, not a recurring model-driven poll.
 
+## Licensing is part of the release, not a step before it
+
+Terms live in `candidates/<id>/license.json` (the decision) and `config/licensing-policy.json`
+(the standing policy); `release-manifest.py` writes them into the manifest and `check-package.py`
+refuses a release with none. Defaults: MIT for our code and documentation, CC0-1.0 for our rights
+in the derived compilation, and the **source's terms preserved** - never relicensed.
+
+- **CC0 is not a blanket override of upstream terms.** Choose terms compatible with each source;
+  attribution, share-alike and non-commercial requirements carry through unchanged, and a source
+  whose licence cannot be read is not published.
+- State the **scope**: we dedicate our contribution, not the source's data.
+- Preserve the source's designation, attribution and suggested citation verbatim, and label the
+  dataset as derived - never as the source agency's official product.
+- Preserve **contributor credits** on redistributed third-party files and record the permission.
+- `../harness_benchmark` stays read-only. Permission to distribute copies of its files covers the
+  distributed copies only and required no edit to that checkout.
+
 ## Deleting things
 
 Scope every destructive operation to an exact, owned path. `rm -rf <variable>` and

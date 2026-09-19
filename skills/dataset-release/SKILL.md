@@ -108,6 +108,34 @@ retries (three attempts, exponential backoff) and idempotent per-file uploads th
 already at the manifest digest. Re-running a part-finished release is safe and cheap; the two
 copies are never edited independently by a model on a schedule.
 
+## Licensing: two grants, two scopes
+
+Every release declares its terms. The standing policy is `config/licensing-policy.json`; the
+per-dataset decision is `candidates/<id>/license.json`, and the release manifest carries both, so
+the manifest cannot drift from the decision.
+
+| What | Default | Why |
+| --- | --- | --- |
+| Our code and documentation | **MIT** | Ours to license; permits reuse and redistribution |
+| Our rights in the derived compilation | **CC0-1.0** | Dedicates our contribution: row selection, the derived label, the partition, the packaging |
+| The source's own terms | **preserved** | We never relicense someone else's data |
+
+Rules that are not negotiable:
+
+- **CC0 is not a blanket override of upstream terms.** A source requiring attribution, share-alike
+  or non-commercial use keeps those terms, carried through unchanged. A source whose licence cannot
+  be read is not published at all. Terms are chosen per dataset to be compatible with each source.
+- **State the scope.** The dedication covers our contribution and not the source, which keeps its
+  own designation, attribution and suggested citation.
+- **Label derived data as derived**, and never present it as the source agency's official product.
+- **Preserve contributor credits** on redistributed third-party files, and record the permission
+  for them. A file copied from a project we own still carries that project's credits.
+- **A release with no declared terms is refused** by `check-package.py`, as is one naming a licence
+  file it does not ship. Licensing is not an afterthought before publication; it is part of the
+  package.
+- Terms are recorded in the manifest, **generated from the declaration** rather than edited in
+  afterwards - a hand-edited block is lost the next time the manifest is regenerated.
+
 ## Common failure modes
 
 | Symptom | Cause | Action |
@@ -124,6 +152,9 @@ copies are never edited independently by a model on a schedule.
 | `load_dataset` works but the splits are wrong | Card `data_files` disagree with the manifest's split names | Generate the `configs` block from the manifest; verify split names, rows, schema and label values against it |
 | A release reported complete, one platform empty | Completion tracked per release instead of per destination | `DESTINATIONS.json` per destination; the package check refuses `published` with an unverified destination |
 | Publishing credential reached a container/mount | Token passed as a path into the job source or a mount | Use the credential-file mechanism read by the worker host, outside every mount |
+| Licence block disappears from the manifest | It was hand-edited into `MANIFEST.json` and then regenerated | Declare terms in `candidates/<id>/license.json`; the generator writes them |
+| A release ships with no declared terms | Licensing treated as a separate, later step | `check-package.py` refuses it; declare terms before verification |
+| Third-party files redistributed without permission or credit | Provenance tracked but permission assumed | Record the permission and preserve existing contributor credits, or leave the files out |
 | Re-run re-uploaded 131 MB | No digest check before sending | Skip any file already at the manifest digest on the destination |
 | Inference token used to publish | Same variable name assumed for both roles | Separate variables (`FACTORY_HF_WRITE_TOKEN` vs the inference credential), refused at plan time |
 
