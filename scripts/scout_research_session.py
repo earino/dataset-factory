@@ -31,7 +31,22 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-REPO = Path("/opt/data/dataset-factory")
+def _resolve_repo():
+    """The repository this wrapper belongs to.
+
+    Derived from the module's own location first, so the code works from any checkout (a fresh
+    clone, CI, or another host) rather than only from the deployed path; the deployed absolute
+    path is only a fallback for the shim case. Hardcoding it made the module untestable
+    anywhere but this host - the same defect class as the host-only paths fixed earlier.
+    """
+    here = Path(__file__).resolve()
+    for candidate in (here.parent.parent, Path("/opt/data/dataset-factory")):
+        if (candidate / "scripts" / "research-budget.py").is_file():
+            return candidate
+    return here.parent.parent
+
+
+REPO = _resolve_repo()
 BUDGET = REPO / "scripts" / "research-budget.py"
 PROMPT_TEMPLATE = REPO / "docs" / "research-session-prompt.md"
 HERMES_PYTHON = "/opt/hermes/.venv/bin/python3"
