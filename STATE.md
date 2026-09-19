@@ -1330,3 +1330,51 @@ than assumed: the ledger holds the pre-fix skip
 session at 06:42:04Z with a pid-bearing lock and a gate that held only for `lock held for 97s by
 scout-research` - i.e. its own lock, which is the correct overlap signal.
 
+
+## Hugging Face publishing integrated and verified (2026-09-19, fifteenth session)
+
+**Both destinations now carry the same accepted artifact, from one release manifest.**
+
+- GitHub: `github.com/earino/austin-911-response`, release `391804787`, tag `v2026.09` - private.
+- Hugging Face: `huggingface.co/datasets/earino/austin-911-response`, revision `v2026.09` - private.
+  Version-pinned load, exercised by job `austin-hf-006`:
+
+  ```python
+  from datasets import load_dataset
+  ds = load_dataset("earino/austin-911-response", revision="v2026.09", token=True)
+  ```
+
+  Split counts, positive counts, label values and the 12-column schema all match the accepted
+  artifact: train 572,180 / 231,025 positives, eval 285,665 / 109,860, holdout 191,791 / 72,450,
+  labels `[0, 1]`. The same call **without** a credential raises `DatasetNotFoundError`, which is
+  how privacy is demonstrated rather than asserted. CSV digests are verified against
+  `MANIFEST.json` at both destinations.
+
+**Credentials.** `HF_TOKEN_WRITE` (write role, account `earino`) publishes;
+`/opt/data/.secrets/huggingface-write.token` (0600) is the file form the worker path uses, exported
+by `scripts/scout-factory` as `FACTORY_HF_WRITE_TOKEN_FILE`. It reaches the worker as a root-only
+`/opt/scout/credentials.json` entry and is passed to the client through the child environment -
+never an argument, never a container, mount, log, manifest or asset. The **inference** credential
+is a different token, was never read, and its configuration is unchanged. A job with no publishing
+credential is refused at plan time.
+
+**The path, reusable.** `scripts/hf-publish.py --plan|--create|--upload-small|--verify|--tag`, plus
+an `hf_publish` worker job that moves the bulk (131 MB never touches this host). Tag last and
+idempotently: a tag created before the data landed pins a commit without the files. Re-running is
+safe - job `austin-hf-006` skipped all five files as already at the manifest digest and re-sent 0
+bytes. Per-destination completion lives in `release/<dataset>/DESTINATIONS.json`; `check-package.py`
+refuses a manifest claiming published while a destination is unverified.
+
+**Four defects were found by running it, not reading it** (all fixed, three of them mine):
+no `uv` and no pip in the worker venv; the small files' digest check compared a git `blob_id` to a
+sha256; the loading check never passed a credential; and the label check assumed a ClassLabel
+feature where a CSV yields an integer column. Two of these cost a job each to discover, which is
+why `tests/test_hf_helpers.py` now statically checks every helper body's imports.
+
+**Cost:** six `cpx42` jobs, EUR 2.70 reserved against the EUR 20/month worker allowance; every
+worker destroyed with the provider confirming 0 servers and 0 IPs. The research allowance is
+untouched by publishing.
+
+**Still the operator's decision:** public visibility on either platform, and the licence for the
+derived compilation (`LICENSE.md` records the options). Private until then, with the labelled
+holdout included on both when approved.
