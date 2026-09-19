@@ -447,3 +447,49 @@ refuses to wake the model. That is deliberate: an unconfigured budget is not an 
 stdout is delivered directly, so the digest costs no model calls and still arrives when the
 allowance is spent or unconfigured. The on-host cleanup sweep is likewise `no_agent`. Neither
 is gated by, nor charged against, the research allowance.
+
+### Per-session enforcement, and what was actually verified
+
+A bounded session needs a finite limit that is **enforced by the runtime**, not by accounting
+afterwards. Two supported controls do this, both **per invocation** on `hermes chat`:
+
+| Limit | Control | Status |
+| --- | --- | --- |
+| Tool-calling iterations | `hermes chat --max-turns N` | **Enforced.** Verified: at N the runtime injects "You've reached the maximum number of tool-calling iterations allowed. Please provide a final response..." and takes the final answer. |
+| Wall clock | `hermes chat --run-budget S` | **Enforced.** Verified: the wrap-up notice arrived at 80% ("run time budget nearly exhausted... stop new discovery/verification work now") and the session ended with planned work unfinished. |
+| Estimated tokens | none | **Advisory.** The runtime exposes no token control, so `session_token_cap` is an instruction; the only mechanical consequence is that an overshooting session counts double against the weekly cap. |
+
+Both are per-invocation flags rather than global config, so they bound a scheduled session
+**without** changing the ceiling on interactive work. `agent.max_turns` and
+`agent.run_budget_seconds` would apply to every conversation including the operator's chat; that
+trade was deliberately not taken.
+
+`scripts/scout_research_session.py` wraps this: gate first, then one `hermes chat` run with the
+flags, `-Q` (final response only), `--source scout-research` (so usage accounting can tell a
+research session from the operator's chat) and the three dataset skills preloaded. A held tick
+starts no agent process at all.
+
+### The allowance reserve
+
+`reserve_usd` (0.40, the upper end of a measured session) is held back: a session is allowed only
+while `spend + reserve <= allowance`, so starting one cannot consume the next one's budget.
+
+### The approval gate in a scheduled session (measured)
+
+A scheduled session has nobody to answer an approval prompt, so flagged commands are **refused**
+rather than approved. Measured in this environment:
+
+- `python3 -c ...`/`-e ...` and interpreter heredocs are refused ("blocked... single-query mode
+  (-q) runs without a user present to approve it").
+- The `execute_code` tool is refused in `-q` sessions.
+- Ordinary commands (`git`, `python3 -m unittest`, `python3 scripts/<file>.py`, `gh`) run normally,
+  and writing a small script file and running it **as a file** is the intended path for
+  computation. Every dangerous-command guard stays intact.
+
+The documented escape hatch — permanent approvals by *rule key* in `command_allowlist` — does
+**not** work on this build: `_command_matches_permanent_allowlist` matches only exact command
+text or a shell glob and explicitly refuses any command containing a shell operator, so
+rule-key entries had no effect (verified by adding the two script-execution keys and watching
+both commands be refused anyway). Setting `approvals.single_query_mode: approve` would lift the
+refusal, and was **not** done: it would let a scheduled session run dangerous commands. The
+session prompt therefore tells the session to compute via script files instead.

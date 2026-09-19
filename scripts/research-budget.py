@@ -24,6 +24,7 @@ import argparse
 import json
 import os
 import sqlite3
+import subprocess
 import sys
 import time
 from datetime import datetime, timedelta, timezone
@@ -51,11 +52,14 @@ DEFAULTS = {
     "period": {"kind": "monthly", "reset_day": 1},
     "stop_fraction": 0.95,
     "warn_fraction": 0.80,
+    "reserve_usd": 0.40,
     "sessions_per_week": 3,
-    "session_max_minutes": 45,
+    "session_max_minutes": 40,
+    "session_max_turns": 60,
     "session_token_cap": 600000,
     "catch_up_window_minutes": 120,
     "research_job_ids": [],
+    "research_sources": ["scout-research"],
     "notes": "",
 }
 
@@ -123,14 +127,27 @@ def usage_by_kind(config, start, end):
     )
     buckets = {}
     research_ids = [str(j) for j in (config.get("research_job_ids") or [])]
+    research_sources = [str(s) for s in (config.get("research_sources") or [])]
+    excluded = excluded_set(config)
     for session_id, task, calls, in_tok, out_tok, cost, cost_status, source in rows:
+        if session_id in excluded:
+            continue
         task = (task or "").strip()
         session_id = session_id or ""
         source = (source or "").strip()
-        if task.lower() in AUXILIARY_TASKS:
-            kind = "auxiliary"
-        elif any(session_id.startswith(f"cron_{job_id}_") for job_id in research_ids):
+        # Session membership decides first: auxiliary calls made *inside* a research session
+        # (approval classification, compression, titles) are part of that session's spend and
+        # are charged to it. Only outside a research session do they stand alone.
+        in_research = (
+            any(session_id.startswith(f"cron_{job_id}_") for job_id in research_ids)
+            # A session started by the research wrapper via `hermes chat --source`, i.e. a
+            # scheduled research run rather than the operator's own chat.
+            or source in research_sources
+        )
+        if in_research:
             kind = "research"
+        elif task.lower() in AUXILIARY_TASKS:
+            kind = "auxiliary"
         elif session_id.startswith("cron_"):
             kind = "scheduled-other"
         elif source in INTERACTIVE_SOURCES:
@@ -232,43 +249,53 @@ def lock_state(config):
     return payload
 
 
-def session_costs(config, since):
-    """Per-fire token usage for the research jobs since `since`, from the cron usage audit.
+def excluded_set(config):
+    """Session ids explicitly excluded from research accounting.
 
-    Returns a list of {job_id, tokens, over_cap}. The token cap cannot interrupt a session
-    that is already running, so it is given a mechanical consequence instead: a session that
-    overshoots counts as two against the weekly cap.
+    Used for sessions that were verification of the routine itself rather than research inside
+    it. Recorded by id in config so the exclusion is auditable and cannot silently grow.
     """
-    if not USAGE_AUDIT.is_file():
+    return {str(s) for s in (config.get("excluded_sessions") or [])}
+
+
+def research_sessions(config, since):
+    """Research sessions started since `since`, measured from the session ledger.
+
+    One wrapper run produces exactly one session tagged with a research source, so this is the
+    real unit of the weekly cap - counting scheduler fires alone would miss a session started by
+    hand and would count a held tick as if it had run.
+    """
+    research_sources = [str(s) for s in (config.get("research_sources") or [])]
+    if not research_sources:
         return []
-    research_ids = [str(j) for j in (config.get("research_job_ids") or [])]
-    if not research_ids:
-        return []
+    excluded = excluded_set(config)
+    placeholders = ",".join("?" for _ in research_sources)
+    rows = _rows(
+        f"select s.id, s.started_at, coalesce(u.tokens, 0), coalesce(u.cost, 0.0) from sessions s "
+        f"left join (select session_id, sum(input_tokens + output_tokens) as tokens, "
+        f"sum(estimated_cost_usd) as cost from session_model_usage group by session_id) u "
+        f"on u.session_id = s.id "
+        f"where s.source in ({placeholders}) and s.started_at >= ?",
+        tuple(research_sources) + (since.timestamp(),),
+    )
     cap = int(config.get("session_token_cap", 600000))
     out = []
-    try:
-        lines = USAGE_AUDIT.read_text().splitlines()
-    except OSError:
-        return []
-    for line in lines:
-        line = line.strip()
-        if not line:
+    for session_id, started_at, tokens, cost in rows:
+        if session_id in excluded:
             continue
+        # started_at is stored as an epoch in the ledger; tolerate an ISO string too.
         try:
-            entry = json.loads(line)
-        except json.JSONDecodeError:
-            continue
-        if str(entry.get("job_id")) not in research_ids:
-            continue
-        try:
-            when = datetime.fromisoformat(str(entry.get("ts")).replace("Z", "+00:00"))
+            started = datetime.fromtimestamp(float(started_at), tz=timezone.utc)
         except (TypeError, ValueError):
-            continue
-        if when < since:
-            continue
-        tokens = int(entry.get("total_tokens") or 0)
-        out.append({"job_id": entry.get("job_id"), "tokens": tokens,
-                    "over_cap": tokens > cap, "fire_id": entry.get("fire_id")})
+            try:
+                started = datetime.fromisoformat(str(started_at))
+            except ValueError:
+                started = since
+            if started.tzinfo is None:
+                started = started.replace(tzinfo=timezone.utc)
+        out.append({"session_id": session_id, "started_at": started.isoformat(),
+                    "tokens": int(tokens or 0), "cost_usd": round(cost or 0.0, 6),
+                    "over_cap": int(tokens or 0) > cap})
     return out
 
 
@@ -279,6 +306,8 @@ def evaluate(config, moment=None, late_minutes=None):
     usage = usage_by_kind(config, start, moment)
     research_cost = usage.get("research", {}).get("cost_usd", 0.0)
     allowance = config.get("allowance_usd")
+    reserve = float(config.get("reserve_usd") or 0)
+    stop_fraction = float(config.get("stop_fraction", 0.95))
     reasons = []
 
     if not allowance:
@@ -286,11 +315,18 @@ def evaluate(config, moment=None, late_minutes=None):
                        "the model until the operator sets one")
     else:
         used_fraction = research_cost / float(allowance)
-        if used_fraction >= float(config.get("stop_fraction", 0.95)):
+        if used_fraction >= stop_fraction:
             reasons.append(
                 f"research spend {research_cost:.4f} USD is {used_fraction:.1%} of the "
-                f"{allowance} USD period allowance (stop at "
-                f"{float(config.get('stop_fraction', 0.95)):.0%})"
+                f"{allowance} USD period allowance (stop at {stop_fraction:.0%})"
+            )
+        elif research_cost + reserve > float(allowance):
+            # The reserve is what keeps the *next* session affordable. Starting one that eats
+            # into it would leave a session that cannot be paid for, so it is held instead.
+            reasons.append(
+                f"holding {reserve:.2f} USD in reserve would need "
+                f"{research_cost + reserve:.4f} USD of the {allowance} USD allowance - not "
+                "enough left for the next session"
             )
 
     running = running_session(config)
@@ -306,11 +342,12 @@ def evaluate(config, moment=None, late_minutes=None):
     weeks_runs = cron_runs(config, week_start)
     completed = [run for run in weeks_runs if str(run["status"]) in ("completed", "failed")]
     cap = int(config.get("sessions_per_week", 3))
-    costs = session_costs(config, week_start)
-    over_cap = [entry for entry in costs if entry["over_cap"]]
-    weighted = len(completed) + len(over_cap)
+    sessions = research_sessions(config, week_start)
+    over_cap = [entry for entry in sessions if entry["over_cap"]]
+    used = len(sessions)
+    weighted = used + len(over_cap)
     if weighted >= cap:
-        detail = f"{len(completed)} research session(s) already ran in the last 7 days"
+        detail = f"{used} research session(s) already ran in the last 7 days"
         if over_cap:
             detail += (f", {len(over_cap)} of which overshot the "
                        f"{config.get('session_token_cap'):,}-token cap and count double")
@@ -329,7 +366,7 @@ def evaluate(config, moment=None, late_minutes=None):
         "allowance_usd": allowance,
         "research_cost_usd": round(research_cost, 6),
         "usage": usage,
-        "runs_last_7_days": len(completed),
+        "runs_last_7_days": used,
         "runs_weighted_last_7_days": weighted,
         "sessions_over_token_cap": len(over_cap),
         "session_cap_per_week": cap,
@@ -352,7 +389,9 @@ def resume_block(config, decision):
     )
     if allowance:
         remaining = float(allowance) - decision["research_cost_usd"]
-        lines.append(f"remaining: {remaining:.4f} USD")
+        reserve = float(config.get("reserve_usd") or 0)
+        lines.append(f"remaining: {remaining:.4f} USD (reserve for the next session: "
+                     f"{reserve:.2f} USD)")
     for kind, bucket in sorted(decision["usage"].items()):
         lines.append(
             f"usage[{kind}]: {bucket['cost_usd']:.4f} USD, {bucket['calls']} calls, "
@@ -361,13 +400,53 @@ def resume_block(config, decision):
     lines.append(f"sessions in the last 7 days: {decision['runs_last_7_days']}"
                  f"/{decision['session_cap_per_week']}")
     lines.append(
-        f"session limits: <= {config.get('session_max_minutes')} min, "
-        f"<= {config.get('session_token_cap'):,} tokens; stop cleanly at either"
+        f"session limits: <= {config.get('session_max_turns')} tool-calling iterations and "
+        f"<= {config.get('session_max_minutes')} min wall clock, ENFORCED by the runtime for "
+        "this session (hermes chat --max-turns/--run-budget)"
+    )
+    lines.append(
+        f"session token budget: <= {config.get('session_token_cap'):,} estimated tokens is "
+        "ADVISORY - the runtime has no token control; stop well inside it"
     )
     return "\n".join(lines)
 
 
-def digest(config, moment=None):
+def completed_work(root, since, limit=8):
+    """Completed work since `since`: repository commits, and the candidate queue's state.
+
+    Deterministic and cheap - read from git and the candidate records rather than described by
+    a model, so the digest reports what actually landed.
+    """
+    commits = []
+    try:
+        result = run_git(["log", f"--since={since.isoformat()}", "--pretty=%h %s"],
+                         root, timeout=60)
+        commits = [line.strip() for line in result.splitlines() if line.strip()]
+    except (OSError, subprocess.SubprocessError):
+        pass
+    queue = []
+    candidates = Path(root) / "candidates"
+    if candidates.is_dir():
+        for path in sorted(candidates.glob("*/record.json")):
+            try:
+                record = json.loads(path.read_text())
+            except (OSError, json.JSONDecodeError):
+                continue
+            queue.append({
+                "id": record.get("id") or path.parent.name,
+                "status": record.get("status") or "unknown",
+                "next_action": record.get("next_action") or "",
+            })
+    return commits[:limit], len(commits), queue
+
+
+def run_git(args, root, timeout=60):
+    result = subprocess.run(["git", "-C", str(root), *args], capture_output=True, text=True,
+                            timeout=timeout)
+    return result.stdout if result.returncode == 0 else ""
+
+
+def digest(config, moment=None, root=None):
     moment = moment or now_utc()
     decision = evaluate(config, moment)
     start = period_start(config, moment)
@@ -381,6 +460,9 @@ def digest(config, moment=None):
             f"({used / float(allowance):.1%}), {float(allowance) - used:.4f} USD remaining "
             f"(period from {start.date().isoformat()})"
         )
+        reserve = float(config.get("reserve_usd") or 0)
+        if reserve:
+            lines.append(f"  Reserve held for the next session: {reserve:.2f} USD")
     else:
         lines.append("Research allowance: NOT ESTABLISHED - recurring model work is held "
                      "(fail-closed). Decision needed from the operator.")
@@ -396,6 +478,23 @@ def digest(config, moment=None):
                      f"({failed[0]['error'] or 'no error text'})")
     for kind, bucket in sorted(decision["usage"].items()):
         lines.append(f"  {kind}: {bucket['cost_usd']:.4f} USD, {bucket['calls']} calls")
+
+    if root:
+        commits, total_commits, queue = completed_work(root, moment - timedelta(days=7))
+        lines.append("")
+        lines.append(f"Completed work in the last 7 days: {total_commits} commit(s)")
+        for commit in commits:
+            lines.append(f"  {commit[:110]}")
+        if queue:
+            counts = {}
+            for item in queue:
+                counts[item["status"]] = counts.get(item["status"], 0) + 1
+            summary = ", ".join(f"{count} {status}" for status, count in sorted(counts.items()))
+            lines.append(f"Candidate queue: {len(queue)} - {summary}")
+            for item in queue:
+                if item["status"] in ("investigating",) and not item["next_action"]:
+                    lines.append(f"  {item['id']}: no next action recorded - needs a verdict")
+
     lines.append("")
     lines.append("Estimates only: Hermes records these as estimated; it cannot see the "
                  "portal's subscription quota or reset period.")
@@ -426,21 +525,23 @@ def main(argv=None):
         return 0
 
     if args.digest:
-        print(digest(config))
+        print(digest(config, root=Path(args.config).resolve().parents[1]))
         return 0
 
     if args.gate:
         print(resume_block(config, decision))
+        # Always emit the decision, so a caller (the research wrapper) can read it either way.
+        print(json.dumps({"researchBudget": {
+            "allowed": decision["allowed"],
+            "allowance_usd": decision["allowance_usd"],
+            "research_cost_usd": decision["research_cost_usd"],
+            "reasons": decision["reasons"],
+        }}))
         if decision["allowed"]:
             if args.write_lock:
                 LOCK_PATH.parent.mkdir(parents=True, exist_ok=True)
                 LOCK_PATH.write_text(json.dumps(
                     {"session_id": "cron", "written_at": now_utc().isoformat()}))
-            print(json.dumps({"researchBudget": {
-                "allowed": True,
-                "allowance_usd": decision["allowance_usd"],
-                "research_cost_usd": decision["research_cost_usd"],
-            }}))
             return 0
         print("SKIPPING THIS TICK - " + "; ".join(decision["reasons"]))
         print(json.dumps({"wakeAgent": False, "reason": "; ".join(decision["reasons"])}))

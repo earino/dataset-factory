@@ -1217,3 +1217,69 @@ number and its allocation have been asked for before any recurring model work is
 `10d4f73308c8`, Mondays 08:00 UTC) and the hourly cleanup sweep are both `no_agent` scripts, so
 monitoring and cleanup keep working when the allowance is spent or unset. The digest fired once
 to verify delivery; next scheduled run 2026-09-21T08:00:00Z.
+
+## Research allowance set, per-session limits enforced and verified (2026-09-19, fourteenth session)
+
+**Allowance: 5 USD/month of Hermes-estimated spend, resetting on the 1st at 00:00 UTC.**
+`config/research-budget.json`. Every figure is an estimate - `cost_status='estimated'`,
+`actual_cost_usd=0` throughout - so this bounds planned work and is **not** enforcement of the
+NousCloud subscription quota, which this instance cannot read. Separate from the 20 EUR/month
+worker allowance. A **0.40 USD reserve** is held back, so a session starts only while
+`spend + reserve <= allowance` and cannot consume the next one's budget.
+
+### The per-session limit is enforced, not just accounted
+
+Counting an oversized session double after the fact was accounting. Two supported runtime
+controls are now applied **per run** on `hermes chat`, so they bound a scheduled session without
+changing the ceiling on interactive work:
+
+- `--max-turns 60` - **verified stopped**: the runtime injected "You've reached the maximum
+  number of tool-calling iterations allowed. Please provide a final response..." and took the
+  final answer (session `20260919_060228_2003f8`, 51.6 s).
+- `--run-budget 2400` (40 min) - **verified stopped**: at 80% the wrap-up notice arrived ("run
+  time budget nearly exhausted... stop new discovery/verification work now") and the session
+  ended with its third planned step unfinished (session `20260919_061511_1a35c2`, 108.9 s at a
+  test budget of 120 s).
+
+The **600k-token limit is advisory** - the runtime exposes no token control - and its only
+mechanical consequence is that an overshoot counts double against the weekly cap.
+
+### What a scheduled session may run (measured)
+
+Flagged commands are **refused** rather than approved, because nobody is present: `python3 -c`,
+interpreter heredocs and the `execute_code` tool are all refused, while ordinary commands and
+**script files** (`python3 .factory/<name>.py`) work normally. The prompt now tells the session
+to compute via script files.
+
+The documented escape hatch does **not** work on this build. `command_allowlist` is documented as
+honouring dangerous-pattern *rule keys* on unattended surfaces; `_command_matches_permanent_allowlist`
+matches only exact command text or a glob and refuses any command containing a shell operator, so
+adding the two script-execution rule keys changed nothing - both commands were refused anyway.
+`approvals.single_query_mode: approve` would lift it and was **not** taken: it would let a
+scheduled session run dangerous commands. The global `agent.max_turns`/`agent.run_budget_seconds`
+were likewise not used, since they would bound the operator's own chat too.
+
+### The scheduled path was observed end to end
+
+`scout-schedule-probe` (job `05411377338b`, one-shot, fired **by the scheduler** at
+2026-09-19T06:20:04Z and started 06:20:05Z): status `completed`, delivery `delivered`, wrapper
+elapsed 51.6 s, and session `20260919_062008_7b6775` tagged `scout-research` with a usage record
+($0.00530, 8 tool calls). The probe also re-ran the gate mid-session and was refused with "lock
+held for 32s by scout-research", which is the overlap guard working. The probe job was then
+removed.
+
+### What is live now
+
+- `scout-research-session` (`69a5bc676d10`) - `0 8 * * 1,3,5`, `no_agent`, gate then one bounded
+  session. **Next run 2026-09-21T08:00:00Z**; its own first scheduled fire is therefore still to
+  be observed.
+- `scout-weekly-research-digest` (`10d4f73308c8`) - Mondays 08:00 UTC, `no_agent`. Now reports
+  usage *and* completed work (commits in the last 7 days plus the candidate queue).
+- `scout-budget-checkpoint-2weeks` (`22ce870ec66f`) - one-shot 2026-10-03T08:00:00Z, recommends
+  whether Mon/Wed/Fri inside 5 USD/month fits, and explicitly does **not** adjust anything.
+- `scout-secondary-cleanup-sweep` (`e80975eddd4a`) - hourly, unchanged and independent of the
+  research quota.
+
+The five verification sessions are listed by id in `excluded_sessions` (with the reason) so they
+count against neither the weekly cap nor the allowance: they measured the mechanism rather than
+doing research. Cost of the whole enforcement verification: **0.0150 USD estimated**.
