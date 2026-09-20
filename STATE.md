@@ -1782,3 +1782,10 @@ Hugging Face half of this release can be attempted.
 
 **Cost:** EUR 0.16 reserved for this job at the EUR 0.08/h cpx32 rate; it ran for minutes, so the
 charge is a fraction of that. No new research spend.
+
+**Operational note, cost this session one failed push.** `git push` from a shell that has exported
+`GH_TOKEN` uses *that* token, because `gh`'s credential helper prefers the environment: exporting
+the restricted staging token for a read-only API call made the next push fail with
+`Write access to repository not granted`. `unset GH_TOKEN GITHUB_TOKEN` in the same shell restores
+the working helper. Scope such exports to the command (`GH_TOKEN=$(cat ...) git ...` or a
+subshell) rather than leaving them in the session environment.
