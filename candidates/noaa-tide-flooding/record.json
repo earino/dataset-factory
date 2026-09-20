@@ -105,6 +105,13 @@
       "requests": 4880,
       "errors": 0,
       "gates": "both levels 32/32, no failures"
+    },
+    {
+      "id": "noaa-baseline-001",
+      "status": "succeeded",
+      "staging_release": 392328598,
+      "elapsed_minutes": 27.5,
+      "evidence": "baseline.json, train/validate logs"
     }
   ],
   "artifacts": [
@@ -406,5 +413,36 @@
       }
     },
     "acceptance": "the report's recorded sha256 for all ten files across both levels equal the uploaded bytes, so the report describes exactly the artifact in staging; the report was not re-run locally because bulk data does not come to the coordinator"
+  },
+  "baseline": {
+    "job": "noaa-baseline-001",
+    "staging_release": 392328598,
+    "elapsed_minutes": 27.5,
+    "runner": "the benchmark's own train.py and validate.py, copied verbatim; their sha256s are in the report, and validate.py re-ran training and reported CONTRACT OK on both levels",
+    "levels": {
+      "temporal": {
+        "eval_auc": 0.8638,
+        "train_rows": 697373,
+        "eval_rows": 89038,
+        "positive_rate": {
+          "train": 0.016883,
+          "eval": 0.020385,
+          "holdout": 0.03208
+        }
+      },
+      "station_disjoint": {
+        "eval_auc": 0.8688,
+        "train_rows": 461580,
+        "eval_rows": 29930,
+        "positive_rate": {
+          "train": 0.016277,
+          "eval": 0.026328,
+          "holdout": 0.036418
+        }
+      }
+    },
+    "what_it_shows": "the task is learnable, and the station-disjoint level scores the same as the temporal one (0.8688 against 0.8638) on stations the model never saw - so the signal is not station-specific memorisation",
+    "caveat": "not yet calibrated against a persistence-only baseline. Yesterday's maximum against the station's own threshold is a strong feature, and consecutive flood days are common, so part of this AUC may be autocorrelation rather than prediction. A single-feature persistence baseline is the next measurement, before any headroom claim is made.",
+    "evidence": ".factory/noaa-baseline-001/reports/baseline.json and the four logs"
   }
 }

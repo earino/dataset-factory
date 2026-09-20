@@ -42,8 +42,10 @@ def main():
             text = log.read_text() if log.is_file() else ""
             found = AUC.search(text)
             entry[f"{kind}_auc"] = float(found.group(1)) if found else None
-            entry[f"{kind}_contract_ok"] = "CONTRACT OK" in text
-            entry[f"{kind}_exited_zero"] = None if not log.is_file() else None
+            # "CONTRACT OK" is validate.py's line, not train.py's: reading it from the training log
+            # reported the contract as unmet on runs that passed it.
+            entry[f"{kind}_contract_ok"] = "CONTRACT OK" in text if kind == "validate" else None
+            entry[f"{kind}_log_present"] = log.is_file()
             entry[f"{kind}_tail"] = text.strip().splitlines()[-3:] if text else []
         report["levels"][level] = entry
 

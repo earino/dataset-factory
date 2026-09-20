@@ -1679,3 +1679,32 @@ monthly allowance.
 
 **Next:** a baseline through the runner's contract on both levels - the question of whether
 observations-only, station-normalised features carry signal on held-out stations - then packaging.
+
+## 2026-09-20 - NOAA baseline: the task is learnable, and it transfers
+
+`noaa-baseline-001` succeeded in 27.5 minutes (exit 0). The benchmark's own `train.py` and
+`validate.py` ran unmodified against both levels, with their sha256s recorded in the report and
+`validate.py` re-running training and printing `CONTRACT OK` on both.
+
+| level | eval AUC | train rows | eval positive rate |
+| --- | --- | --- | --- |
+| temporal | **0.8638** | 697,373 | 2.04% |
+| station_disjoint | **0.8688** | 461,580 | 2.63% |
+
+The station-disjoint level scores the same as the temporal one on **stations the model never saw**,
+so the signal is not station-specific memorisation - which is the whole basis of the novelty verdict
+and the reason that level exists.
+
+**Not yet calibrated, and this matters.** The strongest feature is yesterday's maximum against the
+station's own threshold, and consecutive flood days are common, so part of that AUC may be
+autocorrelation rather than prediction. A single-feature persistence baseline is the next
+measurement, before any headroom claim is made or published.
+
+**Why the operator heard nothing about it.** The job finished at 05:56 and was collected, but not
+reported. The watcher dropped the job from its output the moment the job record went terminal, so
+the agent woke to an empty diff and had nothing to say: a watchdog that reports "nothing" the
+instant there is something is worse than no watchdog. It now keeps a finished job visible until it
+has been handled, marked by a `handled` file beside the result, and the report is not considered
+delivered until that marker exists.
+
+**Cost:** EUR 0.32 for this job; about EUR 2.20 of the EUR 20 monthly allowance across all runs.

@@ -116,5 +116,35 @@ class JobWatchTests(unittest.TestCase):
 
 
 
+    def test_a_finished_job_stays_visible_until_it_is_handled(self):
+        """Dropping a job the moment its record goes terminal made the agent wake to an empty diff.
+
+        The result of a successful 27-minute job reached nobody that way, so a finished job now stays
+        in the watcher's output until a `handled` marker exists beside its result.
+        """
+        import json
+        import tempfile
+        from pathlib import Path as _Path
+
+        with tempfile.TemporaryDirectory() as folder:
+            root = _Path(folder)
+            (root / "jobs").mkdir()
+            (root / ".factory" / "noaa-011").mkdir(parents=True)
+            (root / "jobs" / "noaa-011.json").write_text(json.dumps(
+                {"status": "collected", "job": {"id": "noaa-011"}}))
+            (root / ".factory" / "noaa-011" / "result.json").write_text("{}")
+            original = watch.ROOT
+            watch.ROOT = root
+            try:
+                before = watch.watchlist()
+                (root / ".factory" / "noaa-011" / "handled").write_text("reported\n")
+                after = watch.watchlist()
+            finally:
+                watch.ROOT = original
+        self.assertEqual(["noaa-011"], before, "a finished job must stay visible until handled")
+        self.assertEqual([], after, "once handled, the watcher goes quiet")
+
+
+
 if __name__ == "__main__":
     unittest.main()

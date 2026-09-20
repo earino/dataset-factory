@@ -43,6 +43,14 @@ def watchlist():
             record = json.loads(record_path.read_text())
         except json.JSONDecodeError:
             continue
+        # A job that has finished but has not been handled yet must stay visible. Dropping it the
+        # moment its record goes terminal made the watcher's output go from a state line to nothing,
+        # so the agent woke to an empty diff and had nothing to report - which is exactly how a
+        # finished job's result failed to reach the operator.
+        handled = ROOT / ".factory" / record_path.stem / "handled"
+        if (ROOT / ".factory" / record_path.stem / "result.json").is_file() and not handled.exists():
+            entries.append(record_path.stem)
+            continue
         # `job` is the job's specification, not its id: `job.id` is the id, and the filename is the
         # fallback. Getting this wrong is silent - a watchdog that matches nothing watches nothing.
         if record.get("status") == "running":
