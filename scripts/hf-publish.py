@@ -28,13 +28,21 @@ as a command-line argument. The inference credential is never read or changed.
 import argparse
 import hashlib
 import json
+import re
 import os
 import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 VENV_PYTHON = Path("/opt/data/.venvs/hf/bin/python")
+# Resolved per run: several dataset packages now exist, so the package under work is named rather
+# than assumed, and the repository id comes from the dataset's own descriptor.
 PACKAGE = REPO_ROOT / "release" / "austin-911-response"
+# The Hugging Face path for each artifact file, from the dataset's descriptor when it declares one.
+# Austin's published card uses flat `data/` names, so its descriptor declares nothing and the
+# original rule below still produces exactly what is already published.
+HF_PATHS = {}
+CANDIDATE = "austin-911-response"
 BUILD = REPO_ROOT / ".factory" / "hf-package"
 # Rendered into the card. A doubled-brace placeholder was used here before, but an f-string renders
 # that to a single brace, so the replacement silently did nothing and shipped the literal.
@@ -88,7 +96,30 @@ def manifest():
     return json.loads((PACKAGE / "MANIFEST.json").read_text())
 
 
+def resolve_candidate(name: str | None) -> str:
+    """Which dataset package this run is about.
+
+    With one package present the answer is unambiguous; with several, guessing would publish the
+    wrong dataset's bytes under the right dataset's name, so the caller must say.
+    """
+    packages = sorted(folder.name for folder in (REPO_ROOT / "release").iterdir()
+                      if (folder / "MANIFEST.json").is_file())
+    if name:
+        if name not in packages:
+            raise SystemExit(f"no release package for {name}; present: {packages}")
+        return name
+    if len(packages) == 1:
+        return packages[0]
+    raise SystemExit("several release packages exist; pass --candidate: " + ", ".join(packages))
+
+
+def descriptor(candidate: str) -> dict:
+    return json.loads((REPO_ROOT / "candidates" / candidate / "release.json").read_text())
+
+
 def asset_target(manifest_data, logical):
+    if logical in HF_PATHS:
+        return HF_PATHS[logical]
     """Where an asset lands in the Hugging Face repository.
 
     The CSVs live under `data/` (the card's `data_files` points there); `meta.json` and
@@ -106,6 +137,48 @@ def sha256_of(path):
     return digest.hexdigest()
 
 
+def render_card_template(text: str, manifest_data: dict) -> str:
+    """Fill a dataset-supplied card with values the manifest owns.
+
+    The card is a narrative, and a narrative cannot be generated from a manifest: which task, which
+    splits, why the dataset exists. What *can* be generated is every fact a reader might check -
+    version, tag, status, row counts, loading instructions, licence - so the dataset writes the
+    prose and the generator fills the facts, rather than the prose being frozen into the generator.
+    """
+    splits = manifest_data.get("splits") or {}
+    published = bool(manifest_data.get("published"))
+    total = sum(entry.get("rows", 0) for entry in splits.values()) if isinstance(splits, dict) else 0
+    licences = manifest_data.get("licenses") or {}
+    values = {
+        "REPO_ID": CANDIDATE,  # replaced by the real id at build time
+        "ARTIFACT_VERSION": str(manifest_data.get("artifact_version")),
+        "RELEASE_TAG": str(manifest_data.get("release_tag")),
+        "GITHUB_REPOSITORY": str(manifest_data.get("repository")),
+        "STATUS_LINE": ("public. Released after explicit operator authorisation; publication changed "
+                        "no data file, tag or checksum.") if published else (
+                        "private. Public visibility requires explicit human approval. Nothing here "
+                        "has been published."),
+        "LOADING_NOTE": ("The repository is public, so loading needs no credential:") if published else (
+                        "For a private repository, pass a token that has access to it:"),
+        "ROWS_TOTAL": f"{total:,}",
+        "DATA_LICENSE": str((licences.get("data_compilation") or {}).get("spdx")),
+        "CODE_LICENSE": str((licences.get("code") or {}).get("spdx")),
+        "SOURCE_LICENSE": str((licences.get("source_data") or {}).get("spdx")),
+        "SOURCE_ATTRIBUTION": str((licences.get("source_data") or {}).get("attribution")),
+        "TOKEN_ARG": "" if published else ", token=True",
+    }
+    out = text
+    for key, value in values.items():
+        out = out.replace("{" + key + "}", value)
+    # Only UPPER_CASE tokens are placeholders: a card legitimately contains braces in example
+    # output, and treating those as unfilled placeholders made the check fail on correct prose.
+    unresolved = sorted({name for name in re.findall(r"\{([A-Z][A-Z0-9_]*)\}", out)
+                         if name not in values})
+    if unresolved:
+        raise SystemExit(f"card template has unresolved placeholders: {unresolved}")
+    return out
+
+
 def card(manifest_data):
     """The dataset card, generated from the manifest so both platforms describe one dataset."""
     splits = manifest_data["splits"]
@@ -120,6 +193,11 @@ def card(manifest_data):
     source_license = (licenses.get("source_data") or {})
     # Publication state comes from the manifest, which derives it from the recorded destination
     # state. The card asserted "private" unconditionally, so it stayed wrong after publication.
+    template = REPO_ROOT / "candidates" / CANDIDATE / "card.md"
+    if template.is_file():
+        # A dataset that supplies its own card gets the dataset-driven path; Austin's published card
+        # predates this and is left byte-identical by the branch below.
+        return render_card_template(template.read_text(), manifest_data)
     published = bool(manifest_data.get("published"))
     status_line = ("public. Released after explicit operator authorisation; publication changed no "
                    "data file, tag or checksum.") if published else (
@@ -347,6 +425,8 @@ def plan(manifest_data, repo_id):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--candidate", default=None,
+                        help="which dataset package to publish (required once several exist)")
     parser.add_argument("--repo", default=None, help="owner/name; default from the manifest source")
     parser.add_argument("--token-var", default="HF_TOKEN_WRITE")
     parser.add_argument("--token-file", default=None,
@@ -359,8 +439,16 @@ def main(argv=None):
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
 
+    # The package must be chosen before anything is read from it: reading the manifest first meant
+    # this ran against whichever dataset was hardcoded, whatever --candidate said.
+    candidate = resolve_candidate(args.candidate)
+    global PACKAGE, HF_PATHS, CANDIDATE
+    CANDIDATE = candidate
+    PACKAGE = REPO_ROOT / "release" / candidate
+    declared = descriptor(candidate)
+    HF_PATHS = declared.get("hf_paths") or {}
     manifest_data = manifest()
-    repo_id = args.repo or "earino/austin-911-response"
+    repo_id = args.repo or declared["repository"].removeprefix("https://github.com/")
     result = {"repository": repo_id}
 
     if args.plan or not any((args.create, args.upload_small, args.tag, args.verify)):

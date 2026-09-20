@@ -109,6 +109,24 @@ BUNDLES = {
             "max_artifact_mb": 50,
         },
     },
+    # Fresh-consumer check for the two-level NOAA dataset: the published repository tree plus the
+    # run script, against the release assets the worker host fetches. No dataset-factory access and
+    # no credential inside the container.
+    "noaa-consumer": {
+        "job_file": "candidates/noaa-tide-flooding/consumer/source/job.json",
+        "files": [
+            ("run.sh", "candidates/noaa-tide-flooding/consumer/source/run.sh"),
+            ("verify_package.py", "candidates/noaa-tide-flooding/consumer/source/verify_package.py"),
+        ],
+        "trees": [("repo", "release/noaa-tide-flooding")],
+        "overrides": {
+            "command": ["sh", "/workspace/run.sh"],
+            "timeout_minutes": 60,
+            "lifetime_minutes": 120,
+            "max_disk_mb": 3072,
+            "max_artifact_mb": 50,
+        },
+    },
     # Build both levels of the NOAA tide-flooding task, then gate each exact artifact on the worker.
     "noaa-tide-flooding": {
         "job_file": "candidates/noaa-tide-flooding/source/job.json",
