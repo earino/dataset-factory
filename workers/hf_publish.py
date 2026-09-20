@@ -71,8 +71,34 @@ repo_id, revision, expected_path = sys.argv[1:4]
 expected = json.load(open(expected_path))
 # The write credential is passed explicitly: this private dataset cannot be read without it,
 # and `datasets` would otherwise look for HF_TOKEN, which this child deliberately does not have.
-ds = load_dataset(repo_id, revision=revision, token=os.environ["HF_WRITE_TOKEN"])
-report = {"splits": list(ds.keys()), "checked": {}}
+configs = expected.get("configs")
+if configs:
+    # Several configs: each is a task instance of its own, so each is loaded and checked by name
+    # rather than one standing in for the others.
+    report = {"configs": {}, "checked": {}, "ok": None}
+    problems = []
+    for name, want in sorted(configs.items()):
+        loaded = load_dataset(repo_id, name, revision=revision, token=os.environ["HF_WRITE_TOKEN"])
+        report["configs"][name] = {"splits": list(loaded.keys())}
+        for split, expected_split in sorted(want["splits"].items()):
+            if split not in loaded:
+                problems.append(f"{name}/{split} missing from load_dataset output")
+                continue
+            frame = loaded[split]
+            if frame.num_rows != expected_split["rows"]:
+                problems.append(f"{name}/{split}: {frame.num_rows} rows != {expected_split['rows']}")
+            positives = int(sum(frame[want["label"]]))
+            if positives != expected_split["positives"]:
+                problems.append(f"{name}/{split}: {positives} positives != {expected_split['positives']}")
+            columns = sorted(frame.column_names)
+            if want["columns"] and columns != sorted(want["columns"]):
+                problems.append(f"{name}/{split}: columns differ from the manifest")
+            report["checked"][f"{name}/{split}"] = {"rows": frame.num_rows, "positives": positives}
+    report["problems"] = problems
+    report["ok"] = not problems
+else:
+    ds = load_dataset(repo_id, revision=revision, token=os.environ["HF_WRITE_TOKEN"])
+    report = {"splits": list(ds.keys()), "checked": {}}
 problems = []
 for split, want in sorted(expected["splits"].items()):
     if split not in ds:

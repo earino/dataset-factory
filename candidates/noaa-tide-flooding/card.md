@@ -121,10 +121,13 @@ roughly 96% of the time. Score **AUC**, not accuracy.
 Baseline through the benchmark's own `train.py`/`validate.py`, copied verbatim into the GitHub
 counterpart:
 
-| level | eval AUC |
-| --- | --- |
-| `temporal` | **0.8638** |
-| `station_disjoint` | **0.8688** |
+| level | recorded | independent reproduction |
+| --- | --- | --- |
+| `temporal` | **0.8638** | 0.8651 |
+| `station_disjoint` | **0.8688** | 0.8687 |
+
+The runner's training is not bit-reproducible (xgboost, default threading, identical bytes), so the
+last decimal moves between runs. Treat both columns as the same result; the digests do not move.
 
 The station-disjoint level scores the same on **stations the model never saw**, so the signal is not
 station-specific memorisation.

@@ -197,7 +197,28 @@
         }
       },
       "runner_files_unmodified": true,
-      "note": "The benchmark's own train.py and validate.py, copied verbatim and shipped here."
+      "note": "The benchmark's own train.py and validate.py, copied verbatim and shipped here.",
+      "independent_reproduction": {
+        "job": "noaa-consumer-002",
+        "how": "a clean-room container with no access to the building repository and no credential: clone the published repo, verify every file against MANIFEST.json, sha256sum -c the release assets, run the published gate, then reproduce the baseline",
+        "package": "every file matched MANIFEST.json",
+        "checksums": "sha256sum -c OK on all ten assets",
+        "gate": "exit 0 on both levels",
+        "eval_auc": {
+          "temporal": 0.8651,
+          "station_disjoint": 0.8687
+        },
+        "recorded_baseline": {
+          "temporal": 0.8638,
+          "station_disjoint": 0.8688
+        },
+        "difference": {
+          "temporal": 0.0013,
+          "station_disjoint": 0.0001
+        },
+        "why_it_differs": "the runner's training is not bit-reproducible: it is xgboost with default threading on the same bytes, so the split search varies in the last decimal. Nothing else moved - the artifact digests are identical, the gate reports the same artifact versions, and the dependencies resolve to the same versions (pandas 2.3.3, numpy 2.5.3, xgboost 3.4.1, scikit-learn 1.9.1).",
+        "consequence": "the recorded baseline is one measurement, not a constant. A reproduction within about 0.002 is the same result; a reproduction outside 0.02 would be a real difference and the consumer check now says so instead of only checking exit codes."
+      }
     },
     "persistence_calibration": {
       "command": "python3 code/persistence_baseline.py --fetch (eval split only; no training)",
@@ -276,11 +297,11 @@
     "LICENSE-CC0-1.0.txt": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
     "LICENSE-MIT.txt": "56b932ff064e5da113ae10175c8546325f64f26e1ece71683ffcbf8b2304fe1c",
     "LICENSE.md": "5ae442da5699d5eb0260775402bec6d9d0ae021a4a02372cf3565d9d5b8c6582",
-    "README.md": "72d0bd282531cdcc2de90e32ea7c3fd339e98757b376db92a7c8530299b9438f",
-    "RELEASE_NOTES.md": "6a9867b4d7dd3ff7c5ded4ea84396891f7a6b8899873a59b895d0be2d686b263",
-    "REPRODUCE.md": "ef844bb2a78deec7900d7f2b69e39a6dce5c8782242729efb3507c4f739c50a9",
+    "README.md": "15f8e3efcdc2b280efa23e1238ebcd9405317c2ae991c09a373202772e705b30",
+    "RELEASE_NOTES.md": "11ea45694464708619b640d13185aa4fa56ebc2f8ce3ca5333d4f10f0fa780b8",
+    "REPRODUCE.md": "8cdad3f90cf57c3540d980042ee0bc41cce7eec8c89f530986f79558b3314c54",
     "SHA256SUMS": "63f73fdda89e36405bdadaf85b9d6c091c348d16c2f43ada628e0ba8c275b848",
-    "VERIFICATION.md": "7a1862c3839653063b32bad76e36800ea732d74424a55e3dfda42d320aea036a",
+    "VERIFICATION.md": "516428737aba28c1d689dbe23763d0171aaffbeab101e3c74bca9f26104c4187",
     "baseline/README.md": "cd860bce0a8e925884e46580d271d084d2a3d14522c7d781a61d0446395fa751",
     "baseline/reproduce_baseline.sh": "25b7ec1ccf62fa8ebfd5378ee06636f180678bca0f0445a7eeaac524e6ad2394",
     "baseline/train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
@@ -299,7 +320,7 @@
     "code/spatial_clustering.py": "a4fbdc4bceda29e596460579e423a811072308cf1f6c320738a7f62877bc0c66",
     "code/spatial_split_capacity.py": "69b0679aad2548329bbbc0d13d3ac615271d6cd00ae77e45746acc6ddeba3466",
     "get_dataset.py": "dc679e143c87f5a32778216734ab5d4e8789eef297907e1ff8cea47d295600c2",
-    "measurements.json": "c90c13402c294d998dc5ea6e82adc6b2a37755bc54c9d367b5183f1a04c59048"
+    "measurements.json": "e92bc7b1834ecb2646b6d74760133d93030d6646758f4ab1692b0ab2b4438052"
   },
   "baseline_command": "sh baseline/reproduce_baseline.sh ./task both",
   "get_dataset_command": "python3 get_dataset.py --dest ./task",

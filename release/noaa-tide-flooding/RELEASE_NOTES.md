@@ -22,6 +22,10 @@ Verified before packaging:
   +0.0234 (station-disjoint). The task is real and transfers across unseen stations, but a
   one-feature rule gets most of the way. Recorded in `measurements.persistence_calibration`.
 - **Class imbalance.** ~2% positive rate; a constant answer agrees 96% of the time. Score AUC.
+- **The recorded baseline is one measurement, not a constant.** An independent consumer
+  reproduction on the published bytes gave 0.8651 (temporal) and 0.8687 (station-disjoint) against
+  the recorded 0.8638 and 0.8688. xgboost with default threading is not bit-reproducible. Recorded
+  in `measurements.baseline.independent_reproduction`.
 - **The baseline job did not record its dependency versions.** The runner's own output is recorded,
   and the version gap is stated in `VERIFICATION.md`. Fixed in the report generator afterwards, so
   later baselines will carry them.

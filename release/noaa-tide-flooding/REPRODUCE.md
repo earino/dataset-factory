@@ -53,8 +53,11 @@ runner's input contract. A number quoted from an artifact the gate has not passe
 sh baseline/reproduce_baseline.sh ./task both
 ```
 
-Expect **temporal 0.8638** and **station_disjoint 0.8688** eval AUC,
-from the runner's own output. The runner files are the benchmark's, copied verbatim; their digests are
+Expect **temporal ~0.864** and **station_disjoint ~0.869** eval AUC from the runner's own output.
+The recorded values are 0.8638 and 0.8688; an independent clean-room reproduction on the published
+bytes gave 0.8651 and 0.8687. The runner's training is not bit-reproducible (xgboost with default
+threading on identical bytes), so the last decimal moves between runs. The artifact digests do not
+move, and `measurements.baseline.independent_reproduction` records both pairs. The runner files are the benchmark's, copied verbatim; their digests are
 in `baseline/README.md` and `MANIFEST.json`, and they match what the benchmark holds.
 
 ## 5. Reproduce the persistence floor

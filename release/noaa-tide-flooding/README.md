@@ -75,7 +75,10 @@ nine more, flat because GitHub rejects `/` in asset names. `get_dataset.py` rest
 
 ```bash
 python3 get_dataset.py --dest ./task
-sh baseline/reproduce_baseline.sh ./task both     # expect 0.8638 and 0.8688
+sh baseline/reproduce_baseline.sh ./task both
+# recorded: 0.8638 (temporal) and 0.8688 (station-disjoint); an independent
+# reproduction on the published bytes gave 0.8651 and 0.8687 - the runner's
+# training is not bit-reproducible, so read these as the same result, not a constant
 ```
 
 The repository is private, so a credential is needed: the `gh` CLI, or `GITHUB_TOKEN`.

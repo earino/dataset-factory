@@ -183,7 +183,28 @@
       }
     },
     "runner_files_unmodified": true,
-    "note": "The benchmark's own train.py and validate.py, copied verbatim and shipped here."
+    "note": "The benchmark's own train.py and validate.py, copied verbatim and shipped here.",
+    "independent_reproduction": {
+      "job": "noaa-consumer-002",
+      "how": "a clean-room container with no access to the building repository and no credential: clone the published repo, verify every file against MANIFEST.json, sha256sum -c the release assets, run the published gate, then reproduce the baseline",
+      "package": "every file matched MANIFEST.json",
+      "checksums": "sha256sum -c OK on all ten assets",
+      "gate": "exit 0 on both levels",
+      "eval_auc": {
+        "temporal": 0.8651,
+        "station_disjoint": 0.8687
+      },
+      "recorded_baseline": {
+        "temporal": 0.8638,
+        "station_disjoint": 0.8688
+      },
+      "difference": {
+        "temporal": 0.0013,
+        "station_disjoint": 0.0001
+      },
+      "why_it_differs": "the runner's training is not bit-reproducible: it is xgboost with default threading on the same bytes, so the split search varies in the last decimal. Nothing else moved - the artifact digests are identical, the gate reports the same artifact versions, and the dependencies resolve to the same versions (pandas 2.3.3, numpy 2.5.3, xgboost 3.4.1, scikit-learn 1.9.1).",
+      "consequence": "the recorded baseline is one measurement, not a constant. A reproduction within about 0.002 is the same result; a reproduction outside 0.02 would be a real difference and the consumer check now says so instead of only checking exit codes."
+    }
   },
   "persistence_calibration": {
     "command": "python3 code/persistence_baseline.py --fetch (eval split only; no training)",
