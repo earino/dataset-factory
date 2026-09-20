@@ -1708,3 +1708,26 @@ has been handled, marked by a `handled` file beside the result, and the report i
 delivered until that marker exists.
 
 **Cost:** EUR 0.32 for this job; about EUR 2.20 of the EUR 20 monthly allowance across all runs.
+
+### Persistence calibration - the honest floor (same day)
+
+`.factory` evidence before any headroom claim. No training, no worker, no dependency: rank-based AUC
+of each single feature on the eval split.
+
+| level | best single feature | that alone | full model | model's actual headroom |
+| --- | --- | --- | --- | --- |
+| temporal | `margin_ft` (yesterday's max vs threshold) | 0.8265 | 0.8638 | **+0.0373** |
+| station_disjoint | `margin_ft` | 0.8454 | 0.8688 | **+0.0234** |
+
+**Persistence is most of the signal.** The trained model adds 0.023-0.037 over a stock feature it did
+not have to learn anything to use. The task transfers across stations and is genuinely real, but its
+headroom is narrow: a one-feature rule gets ~96% of the way.
+
+The plain rule "yesterday exceeded" agrees with the label **96% of the time** while carrying almost no
+ranking signal (AUC 0.63), because only ~2% of days are positive. That is why the contract scores AUC
+and why accuracy is not reported as a headline anywhere.
+
+**Consequence:** the release card must carry the single-feature reference beside the model baseline,
+as Austin does (0.627 single feature, 0.769 full model). Widening the headroom would mean a harder
+variant - onset after a dry spell, or a longer horizon - not a threshold change. The physical
+threshold stays. Operator decision pending; research is not blocked by it.

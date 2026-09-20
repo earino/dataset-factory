@@ -444,5 +444,30 @@
     "what_it_shows": "the task is learnable, and the station-disjoint level scores the same as the temporal one (0.8688 against 0.8638) on stations the model never saw - so the signal is not station-specific memorisation",
     "caveat": "not yet calibrated against a persistence-only baseline. Yesterday's maximum against the station's own threshold is a strong feature, and consecutive flood days are common, so part of this AUC may be autocorrelation rather than prediction. A single-feature persistence baseline is the next measurement, before any headroom claim is made.",
     "evidence": ".factory/noaa-baseline-001/reports/baseline.json and the four logs"
+  },
+  "persistence_calibration": {
+    "script": "candidates/noaa-tide-flooding/persistence_baseline.py",
+    "result": "candidates/noaa-tide-flooding/persistence_baseline_result.json",
+    "method": "no training: rank-based AUC of each single stock feature, and of the plain rule 'yesterday's maximum exceeded the station threshold', on the eval split",
+    "temporal": {
+      "best_single_feature_auc": 0.8265,
+      "best_single_feature": "margin_ft",
+      "full_model_auc": 0.8638,
+      "headroom": 0.0373,
+      "yesterday_exceeded_rule_auc": 0.6269,
+      "yesterday_exceeded_rule_agreement": 0.9655
+    },
+    "station_disjoint": {
+      "best_single_feature_auc": 0.8454,
+      "best_single_feature": "margin_ft",
+      "full_model_auc": 0.8688,
+      "headroom": 0.0234,
+      "yesterday_exceeded_rule_auc": 0.6525,
+      "yesterday_exceeded_rule_agreement": 0.9581
+    },
+    "verdict": "the task is dominated by persistence: yesterday's maximum against the station's own threshold alone reaches 0.83-0.85 of the 0.86-0.87 the trained model achieves, so the model adds only 0.023-0.037. The task is real and it transfers across stations, but its headroom is narrow and a one-feature rule gets most of the way.",
+    "why_accuracy_is_not_used": "the plain 'yesterday exceeded' rule agrees with the label about 96% of the time while carrying almost no ranking signal (AUC 0.63), because only ~2% of days are positive. Accuracy would flatter a useless rule; the runner contract scores AUC for this reason.",
+    "consequence_for_release": "must be stated in the dataset card: the single-feature reference baseline belongs beside the model baseline, exactly as Austin records 0.627 for its single feature against 0.769 full model. A harder variant - onset after a dry spell, or a longer horizon, where persistence is weaker by construction - is the way to widen headroom if a low-headroom task is not wanted.",
+    "operator_decision": "pending: whether to ship this task as-is with the floor documented, or also build a harder variant. The threshold itself is not being tuned."
   }
 }
