@@ -88,8 +88,35 @@ def publication_state(release: Path) -> tuple[bool, str, str]:
         "version are unchanged by publication.")
 
 
+def descriptor(candidate: str) -> dict:
+    """The per-dataset facts the generator must not guess.
+
+    Repository, source attribution, release version, layout and commands differ per dataset; they
+    live in release/<id>/release.json so adding a dataset needs a descriptor, not a new generator.
+    """
+    data = load(ROOT / "candidates" / candidate / "release.json")
+    if not data:
+        raise SystemExit(f"candidates/{candidate}/release.json is missing: the generator is "
+                         "data-driven and will not guess a repository, source or layout")
+    for key in ("release_version", "release_tag", "repository", "source", "commands"):
+        if key not in data:
+            raise SystemExit(f"candidates/{candidate}/release.json must declare {key}")
+    return data
+
+
+def combined_artifact_version(levels: dict) -> str:
+    """A single label for a multi-level artifact whose levels were gated separately.
+
+    Documented as derived: the two per-level versions are the gate's own, and this only names them
+    together. Nothing here is presented as a gate output.
+    """
+    joined = "\n".join(f"{name}:{data['artifact_version']}" for name, data in sorted(levels.items()))
+    return hashlib.sha256(joined.encode()).hexdigest()
+
+
 def main() -> int:
     candidate = sys.argv[1] if len(sys.argv) > 1 else "austin-911-response"
+    desc = descriptor(candidate)
     release = ROOT / "release" / candidate
     published, visibility, publication_note = publication_state(release)
     release.mkdir(parents=True, exist_ok=True)
@@ -101,13 +128,15 @@ def main() -> int:
     if expected is None:
         raise SystemExit(f"no expected_artifact.json for {candidate}; nothing to manifest")
 
+    levels = expected.get("levels") or {}
     manifest = {
         "dataset": candidate,
-        "release_version": "2026.09",
-        "release_tag": "v2026.09",
-        "repository": "https://github.com/earino/austin-911-response",
+        "release_version": desc["release_version"],
+        "release_tag": desc["release_tag"],
+        "repository": desc["repository"],
         "visibility": visibility,
-        "artifact_version": expected["artifact_version"],
+        "artifact_version": expected.get("artifact_version") or (levels and
+                                                                combined_artifact_version(levels)),
         "artifact_job": expected["job"],
         # The staging release id, because a *draft* release has no tag namespace: looking it up
         # with releases/tags/<tag> returns 404 even though the release exists.
@@ -116,26 +145,18 @@ def main() -> int:
         "staging_repo": "earino/dataset-factory-staging",
         "construction_commit": COMMIT,
         "gate_version": expected.get("gate_version"),
-        "gate_command": f"python3 code/qualify_dataset.py <dataset-dir>",
+        "gate_command": desc["commands"]["gate"],
         "measurements": load(release / "measurements.json"),
         "assets": {},
         "package_files": {},
-        "baseline_command": "sh baseline/reproduce_baseline.sh ./task",
-        "get_dataset_command": "python3 get_dataset.py --dest ./task",
-        "source": {
-            "name": "Austin Open Data - APD 911 Calls for Service 2023-2026",
-            "dataset_id": "e687-fx2y",
-            "landing_page": "https://datahub.austintexas.gov/d/e687-fx2y",
-            "api": "https://datahub.austintexas.gov/resource/e687-fx2y.json",
-            "accessed": "2026-09-18",
-            "licence": "Public Domain",
-            "licence_evidence": (record or {}).get("license_evidence"),
-        },
-        "layout": {"task/meta.json": "meta.json",
-                   "task/public/train.csv": "public/train.csv",
-                   "task/public/eval.csv": "public/eval.csv",
-                   "task/private/holdout.csv": "private/holdout.csv",
-                   "task/quality.json": "quality.json"},
+        "baseline_command": desc["commands"]["baseline"],
+        "get_dataset_command": desc["commands"]["get_dataset"],
+        "source": dict(desc["source"],
+                       licence_evidence=(record or {}).get("license_evidence")),
+        # The layout the download helper restores. A dataset may declare one; otherwise it is the
+        # package's own file list under task/, which is what a runner contract expects.
+        "layout": desc.get("layout") or {f"task/{relative}": relative
+                                        for relative in sorted(expected["files"])},
         "files": expected["files"],
         "splits": (record or {}).get("construction_output", {}).get("splits"),
         "qualification": (record or {}).get("qualification"),
@@ -145,11 +166,22 @@ def main() -> int:
         "published": published,
         "publication_note": publication_note,
     }
+    if levels:
+        manifest["levels"] = {name: {"artifact_version": data["artifact_version"],
+                                     "gate_version": data.get("gate_version"),
+                                     "checks": data.get("checks"),
+                                     "files": data.get("files")}
+                              for name, data in sorted(levels.items())}
+        manifest["artifact_version_note"] = (
+            "artifact_version is derived here: it names the per-level gate-produced versions "
+            "together, because each level is gated and scored as its own task instance. The gate's "
+            "own values are in `levels`.")
     # Flat release-asset names: GitHub rejects `/` in asset names, so the download script restores
     # the runner layout. The mapping is recorded here rather than in prose.
-    asset_for = {"public/train.csv": "train.csv", "public/eval.csv": "eval.csv",
-                 "private/holdout.csv": "holdout.csv", "meta.json": "meta.json",
-                 "quality.json": "quality.json"}
+    # Flat asset names: GitHub rejects `/` in asset names. A dataset may pin them (published URLs
+    # must not move); otherwise the file path with separators replaced is unambiguous and stable.
+    asset_for = desc.get("assets") or {relative: relative.replace("/", "-")
+                                       for relative in expected["files"]}
     manifest["assets"] = {
         relative: {"asset_name": asset_for[relative], "bytes": info["bytes"],
                    "sha256": info["sha256"]}
@@ -181,7 +213,11 @@ def main() -> int:
     (release / "SHA256SUMS").write_text("\n".join(lines) + "\n")
 
     print(f"wrote {release}/MANIFEST.json and SHA256SUMS")
-    print(f"  artifact_version {expected['artifact_version'][:16]}...")
+    # A multi-level artifact has no single gate-produced version; name the per-level ones instead.
+    label = manifest["artifact_version"] or "(see levels)"
+    print(f"  artifact_version {label[:16]}...")
+    for name, data in sorted(manifest.get("levels", {}).items()):
+        print(f"    {name}: {data['artifact_version'][:16]}... ({data['checks']} checks)")
     print(f"  files: {len(expected['files'])}")
     print(f"  baseline: {'present' if baseline else 'NOT YET COLLECTED'}")
     return 0

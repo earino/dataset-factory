@@ -1,0 +1,93 @@
+{
+  "job": "noaa-baseline-001",
+  "purpose": "one baseline through the runner's existing training and validation contract, on both levels",
+  "artifact": {
+    "target": "flood_tomorrow",
+    "positive_label": 1,
+    "definition": "does the station's daily maximum observed water level exceed its published NOS minor flood threshold on the following local day",
+    "levels": {
+      "temporal": {
+        "rows": {
+          "train": 697373,
+          "eval": 89038,
+          "holdout": 88841
+        },
+        "positive_rate": {
+          "train": 0.016883,
+          "eval": 0.020385,
+          "holdout": 0.03208
+        },
+        "eval_auc": 0.8638,
+        "contract_ok": true
+      },
+      "station_disjoint": {
+        "rows": {
+          "train": 461580,
+          "eval": 29930,
+          "holdout": 29930
+        },
+        "positive_rate": {
+          "train": 0.016277,
+          "eval": 0.026328,
+          "holdout": 0.036418
+        },
+        "eval_auc": 0.8688,
+        "contract_ok": true
+      }
+    }
+  },
+  "runner_files": {
+    "bundled_sha256": {
+      "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+      "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+      "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+    },
+    "unmodified": true,
+    "note": "the benchmark's own train.py, validate.py and validate.sh, copied verbatim; validate.py re-ran training and reported CONTRACT OK on both levels"
+  },
+  "dependencies": "not recorded by this job's report - see VERIFICATION.md, which states this gap",
+  "scope": "one baseline only. No coding agent and no harness comparison was run, and none is implied.",
+  "calibration": {
+    "question": "how much of the baseline's AUC is persistence rather than prediction",
+    "method": "single stock features and a plain 'yesterday exceeded' rule, no training; rank-based AUC; the eval split only",
+    "source": "staging release 392230750 (job-noaa-003), public/eval.csv per level",
+    "levels": {
+      "temporal": {
+        "rows": 89038,
+        "positives": 1815,
+        "positive_rate": 0.020385,
+        "auc_by_single_feature": {
+          "margin_ft": 0.8265,
+          "margin_ratio": 0.8038,
+          "trailing7_mean": 0.5403,
+          "trailing30_mean": 0.5401,
+          "days_since_exceedance": 0.2912,
+          "exceed_last7": 0.6284
+        },
+        "auc_of_yesterdays_exceedance_alone": 0.6269,
+        "agreement_of_yesterdays_exceedance": 0.9655,
+        "full_model_eval_auc": 0.8638,
+        "best_single_feature_auc": 0.8265,
+        "headroom_over_best_single_feature": 0.0373
+      },
+      "station_disjoint": {
+        "rows": 29930,
+        "positives": 788,
+        "positive_rate": 0.026328,
+        "auc_by_single_feature": {
+          "margin_ft": 0.8454,
+          "margin_ratio": 0.8269,
+          "trailing7_mean": 0.552,
+          "trailing30_mean": 0.5551,
+          "days_since_exceedance": 0.2602,
+          "exceed_last7": 0.6471
+        },
+        "auc_of_yesterdays_exceedance_alone": 0.6525,
+        "agreement_of_yesterdays_exceedance": 0.9581,
+        "full_model_eval_auc": 0.8688,
+        "best_single_feature_auc": 0.8454,
+        "headroom_over_best_single_feature": 0.0234
+      }
+    }
+  }
+}

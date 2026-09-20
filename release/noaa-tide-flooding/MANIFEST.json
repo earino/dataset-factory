@@ -1,0 +1,618 @@
+{
+  "dataset": "noaa-tide-flooding",
+  "release_version": "2026.09",
+  "release_tag": "v2026.09",
+  "repository": "https://github.com/earino/noaa-tide-flooding",
+  "visibility": "private (publication requires explicit authorisation)",
+  "artifact_version": "a5a5ac5b41db197810fbd3e6fc8828ce74f2796b02c6ac3088a9350df6ae3450",
+  "artifact_job": "noaa-003",
+  "staging_release": 392230750,
+  "staging_release_tag": "job-noaa-003",
+  "staging_repo": "earino/dataset-factory-staging",
+  "construction_commit": "06d7002bc01933e4c094bbe84e4d9899572a893f",
+  "gate_version": "1.3.0",
+  "gate_command": "python3 code/qualify_dataset.py <dataset-dir>",
+  "measurements": {
+    "coverage": {
+      "command": "code/build.py (worker job noaa-003); evidence output/build_summary.json",
+      "stations_expected": 122,
+      "stations_built": 122,
+      "station_years_expected": 2440,
+      "station_years_fetched": 2440,
+      "missing_station_years": 0,
+      "note": "Coverage is a hard condition, not an observation: the builder exits non-zero on a single lost station-year, so an incomplete panel cannot be scored as the frozen one.",
+      "requests": 4880,
+      "errors": 0
+    },
+    "extraction_cost": {
+      "requests": 4880,
+      "requests_per_station_year": 2,
+      "route": "daily_max_min features + HTF daily flags, one request each per station-year",
+      "bytes_approx": 184000000,
+      "wall_clock_seconds": 1626.6,
+      "machine": "2 vCPU / 2 GB worker (cpx32, Helsinki)",
+      "credential_required": false,
+      "note": "The route matters: the raw 6-minute series would have been 29,160 requests and about 15.2 GiB. One request per station-year per product is 4,880 requests and about 184 MB, and it is the publisher's own verified product."
+    },
+    "day_quality": "879,034 days; 622 incomplete (kept and counted); 5,239 flagged",
+    "levels": {
+      "temporal": {
+        "train": {
+          "rows": 697373,
+          "positives": 11774,
+          "stations": 122,
+          "positive_rate": 0.01688
+        },
+        "eval": {
+          "rows": 89038,
+          "positives": 1815,
+          "stations": 122,
+          "positive_rate": 0.02038
+        },
+        "holdout": {
+          "rows": 88841,
+          "positives": 2850,
+          "stations": 122,
+          "positive_rate": 0.03208
+        }
+      },
+      "station_disjoint": {
+        "train": {
+          "rows": 461580,
+          "positives": 7513,
+          "stations": 81,
+          "positive_rate": 0.01628
+        },
+        "eval": {
+          "rows": 29930,
+          "positives": 788,
+          "stations": 41,
+          "positive_rate": 0.02633
+        },
+        "holdout": {
+          "rows": 29930,
+          "positives": 1090,
+          "stations": 41,
+          "positive_rate": 0.03642
+        }
+      }
+    },
+    "capacity_measured_before_build": {
+      "temporal_positives": {
+        "train": 11886,
+        "eval": 1828,
+        "holdout": 2850
+      },
+      "station_disjoint_positives": {
+        "eval": 792,
+        "holdout": 1090
+      },
+      "independent_events": {
+        "temporal_eval": 332,
+        "temporal_holdout": 427,
+        "station_disjoint_eval": 298,
+        "station_disjoint_holdout": 337
+      },
+      "evidence": "spatial_split_result.json, station_list_result.json"
+    },
+    "label_route": {
+      "source": "NOAA HTF daily product, field minFlag (the publisher's own minor-flood days)",
+      "correction": "our reduction of 6-minute maxima overcounted flood days by ~20% against NOAA's own counts on 2024 (113-114 vs 94 over four stations); NOAA's own flags matched exactly, station by station",
+      "evidence": "code/label_route_check.py, label_route_result.json",
+      "note": "A label that disagrees with the publisher's own product has to be justified, and there is no reason to ship one. Our own reduction overcounted by about 20%."
+    },
+    "datum": {
+      "requirement": "MUST use datum=STND. The published nos_minor threshold is in the station datum and the metadata API does not declare a datum. Comparing MLLW-referenced heights to nos_minor silently yields zero positives at every station; see measurements.datum_trap_measured.",
+      "measured": {
+        "purpose": "Regression fixture for NOAA CO-OPS datum handling. Recorded so a future change cannot silently reintroduce the MLLW-vs-threshold bug, which produced zero positives at every station.",
+        "recorded_on": "2026-09-18",
+        "rule": "Compare observed water levels to the published NOS flood thresholds using datum=STND. The MDAPI floodlevels response carries no datum field, and datum=MLLW makes the comparison silently fail.",
+        "station": {
+          "id": "8443970",
+          "name": "Boston, MA",
+          "product": "hourly_height",
+          "units": "english",
+          "time_zone": "gmt"
+        },
+        "thresholds_ft": {
+          "nos_minor": 15.85,
+          "nos_moderate": 16.73,
+          "nos_major": 18.04,
+          "nws_minor": 16.03
+        },
+        "cases": [
+          {
+            "name": "bomb-cyclone record tide",
+            "window": "2018-01-03..2018-01-05",
+            "why": "Boston's documented record tide. Any datum handling that denies flooding here is wrong.",
+            "expected_exceeds_nos_minor": true,
+            "datums": {
+              "MLLW": {
+                "peak_ft": 15.022,
+                "peak_time": "2018-01-04 18:00",
+                "rows": 72
+              },
+              "STND": {
+                "peak_ft": 18.547,
+                "peak_time": "2018-01-04 18:00",
+                "rows": 72
+              }
+            }
+          },
+          {
+            "name": "2025 annual maximum",
+            "window": "2025-01-01..2025-12-31",
+            "why": "The highest tide of the station-year used for the base-rate measurement.",
+            "expected_exceeds_nos_minor": true,
+            "datums": {
+              "MLLW": {
+                "peak_ft": 12.374,
+                "peak_time": "2025-11-08 18:00",
+                "rows": 8760
+              },
+              "STND": {
+                "peak_ft": 15.899,
+                "peak_time": "2025-11-08 18:00",
+                "rows": 8760
+              }
+            }
+          }
+        ],
+        "external_validation": {
+          "source": "https://api.tidesandcurrents.noaa.gov/dpapi/prod/webapi/htf/htf_annual.json?station=8443970",
+          "claim": "NOAA's authoritative annual product reports minCount 2 for 2025, matching the STND reconstruction (2 exceeding days) and contradicting the MLLW one (0).",
+          "checked_on": "2026-09-18",
+          "station_year": 2025,
+          "noaa_minCount": 2
+        },
+        "peak_tolerance_ft": 0.05
+      },
+      "evidence": "code/datum_check.py, datum_regression.json"
+    },
+    "threshold_decision": {
+      "decision": "the published physical nos_minor threshold is retained",
+      "why": "it is the quantity coastal flood statements are actually issued against; it is not replaced with a per-station quantile chosen to balance the classes"
+    },
+    "baseline": {
+      "command": "sh baseline/reproduce_baseline.sh ./task both",
+      "job": "noaa-baseline-001",
+      "levels": {
+        "temporal": {
+          "eval_auc": 0.8638,
+          "contract_ok": true,
+          "rows": {
+            "train": 697373,
+            "eval": 89038,
+            "holdout": 88841
+          }
+        },
+        "station_disjoint": {
+          "eval_auc": 0.8688,
+          "contract_ok": true,
+          "rows": {
+            "train": 461580,
+            "eval": 29930,
+            "holdout": 29930
+          }
+        }
+      },
+      "runner_files_unmodified": true,
+      "note": "The benchmark's own train.py and validate.py, copied verbatim and shipped here."
+    },
+    "persistence_calibration": {
+      "command": "python3 code/persistence_baseline.py --fetch (eval split only; no training)",
+      "why": "the honest floor: what a single stock feature achieves with no learning at all",
+      "levels": {
+        "temporal": {
+          "best_single_feature": "margin_ft",
+          "best_single_feature_auc": 0.8265,
+          "full_model_auc": 0.8638,
+          "headroom": 0.0373
+        },
+        "station_disjoint": {
+          "best_single_feature": "margin_ft",
+          "best_single_feature_auc": 0.8454,
+          "full_model_auc": 0.8688,
+          "headroom": 0.0234
+        }
+      },
+      "accuracy_trap": "the plain rule 'yesterday exceeded the threshold' agrees with the label about 96% of the time while scoring 0.63 AUC, because only ~2% of days are positive. Accuracy would flatter a useless rule, which is why the contract scores AUC."
+    }
+  },
+  "assets": {
+    "station_disjoint/meta.json": {
+      "asset_name": "station_disjoint-meta.json",
+      "bytes": 853,
+      "sha256": "064317d717a55677b04dc23ec7ec80d324293c2d4296f28d4d7932956f846c06"
+    },
+    "station_disjoint/private/holdout.csv": {
+      "asset_name": "station_disjoint-private-holdout.csv",
+      "bytes": 4228351,
+      "sha256": "7996855020aeb6445932ae86ef5f39f92819f34bd5a7daa14c06b8573327b2f7"
+    },
+    "station_disjoint/public/eval.csv": {
+      "asset_name": "station_disjoint-public-eval.csv",
+      "bytes": 4229470,
+      "sha256": "e790547b1943f5c116d20766763402b9d5524fb9a1c93491ed8b847c4b22b47f"
+    },
+    "station_disjoint/public/train.csv": {
+      "asset_name": "station_disjoint-public-train.csv",
+      "bytes": 64636157,
+      "sha256": "c18ca88074ddaff8c3ff48e922d211dc43884f8b485031ec3488695d54bf3943"
+    },
+    "station_disjoint/quality.json": {
+      "asset_name": "station_disjoint-quality.json",
+      "bytes": 3786,
+      "sha256": "b3a72616b76d97caae9aec502457705d278ed1fe2095f7c0aeda2a93880668c5"
+    },
+    "temporal/meta.json": {
+      "asset_name": "temporal-meta.json",
+      "bytes": 736,
+      "sha256": "cb95b3ba9e2ed1da788dc6024d67d73374f36fb34cafd09b1c73605ccc34ad36"
+    },
+    "temporal/private/holdout.csv": {
+      "asset_name": "temporal-private-holdout.csv",
+      "bytes": 12475942,
+      "sha256": "cceb5a93ee5f40b8aa41b24245256abb660012b2f9e339f66fe4abd05c510562"
+    },
+    "temporal/public/eval.csv": {
+      "asset_name": "temporal-public-eval.csv",
+      "bytes": 12507806,
+      "sha256": "cbc3bd54ed018a8c79ca4973070d0c37f07ec772ef523698d6d15d0cb2625f35"
+    },
+    "temporal/public/train.csv": {
+      "asset_name": "temporal-public-train.csv",
+      "bytes": 97931036,
+      "sha256": "939efaf42f0e032b711a499d37a1a6422fb26cb273d2244f9d7d49b274554240"
+    },
+    "temporal/quality.json": {
+      "asset_name": "temporal-quality.json",
+      "bytes": 3788,
+      "sha256": "fffdd54cc62359e3cba1f2518fea353724335813992f0327b3bc10a44633002c"
+    }
+  },
+  "package_files": {
+    "DATA_DICTIONARY.md": "ba3976731d326f0392994103909ce03a7c774967629cf7a5109549f70bc5712b",
+    "LICENSE-CC0-1.0.txt": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+    "LICENSE-MIT.txt": "56b932ff064e5da113ae10175c8546325f64f26e1ece71683ffcbf8b2304fe1c",
+    "LICENSE.md": "5ae442da5699d5eb0260775402bec6d9d0ae021a4a02372cf3565d9d5b8c6582",
+    "README.md": "72d0bd282531cdcc2de90e32ea7c3fd339e98757b376db92a7c8530299b9438f",
+    "RELEASE_NOTES.md": "6a9867b4d7dd3ff7c5ded4ea84396891f7a6b8899873a59b895d0be2d686b263",
+    "REPRODUCE.md": "ef844bb2a78deec7900d7f2b69e39a6dce5c8782242729efb3507c4f739c50a9",
+    "SHA256SUMS": "63f73fdda89e36405bdadaf85b9d6c091c348d16c2f43ada628e0ba8c275b848",
+    "VERIFICATION.md": "7a1862c3839653063b32bad76e36800ea732d74424a55e3dfda42d320aea036a",
+    "baseline/README.md": "cd860bce0a8e925884e46580d271d084d2a3d14522c7d781a61d0446395fa751",
+    "baseline/reproduce_baseline.sh": "25b7ec1ccf62fa8ebfd5378ee06636f180678bca0f0445a7eeaac524e6ad2394",
+    "baseline/train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+    "baseline/validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+    "baseline/validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d",
+    "code/build.py": "5058314226d1e0052aca5efa6d20e7ce418a31bfa2b5f20d4eb26b7b1045bbfd",
+    "code/clustering_check.py": "916a775d8ed9b83bd9d96c3859b2d06ad99a245f337570b3883e2d224fc8bec3",
+    "code/crosscheck_htf.py": "7de6921e037f151afd618929c95b8f21294fa64e8209f988bb1c2b2106a53f89",
+    "code/datum_check.py": "0e3669d854f2da3d3c734331a10cae5d4b633ec901fcda49793bbe323a66e37d",
+    "code/frozen_station_list.py": "8130259a0f498054a9511e42becefd5240a21d98a926d57dfd92755d171a1687",
+    "code/label_route_check.py": "ab3142f5c0e4c14771196fecfbf6d1f4e07d574a75b009d66d5dff3931551067",
+    "code/materialize.py": "d997cce13c220a5a600d0390c10e8bc50c1faaf7b7de6ed53d6c2b1b85094de3",
+    "code/persistence_baseline.py": "d5ff90a15e77bd4ca6c8ab6e191cff956887159d0c2d97aee9163dc00171fefe",
+    "code/qualify_dataset.py": "71a8cac429656e27dbb631be8488b9f4662580994b115290a243fc1f4b9639f1",
+    "code/sampling_check.py": "6448f1c5a06334f4850d9cfab0005db2668284bb64e19738faabbc583758cf2e",
+    "code/spatial_clustering.py": "a4fbdc4bceda29e596460579e423a811072308cf1f6c320738a7f62877bc0c66",
+    "code/spatial_split_capacity.py": "69b0679aad2548329bbbc0d13d3ac615271d6cd00ae77e45746acc6ddeba3466",
+    "get_dataset.py": "dc679e143c87f5a32778216734ab5d4e8789eef297907e1ff8cea47d295600c2",
+    "measurements.json": "c90c13402c294d998dc5ea6e82adc6b2a37755bc54c9d367b5183f1a04c59048"
+  },
+  "baseline_command": "sh baseline/reproduce_baseline.sh ./task both",
+  "get_dataset_command": "python3 get_dataset.py --dest ./task",
+  "source": {
+    "name": "NOAA CO-OPS verified water levels and flood thresholds",
+    "dataset_id": "co-ops-water-level",
+    "landing_page": "https://tidesandcurrents.noaa.gov/",
+    "api": "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter",
+    "accessed": "2026-09-18",
+    "licence": "Public Domain",
+    "licence_evidence": [
+      "READ 2026-09-19 from the CO-OPS portal itself (the same host the data comes from), https://tidesandcurrents.noaa.gov/disclaimers.html, 'Use of Data and Products': \"The information on government servers are in the public domain, unless specifically annotated otherwise, and may be used freely by the public.\" Same page: \"NOS requests that attribution be given whenever NOS material is reproduced and re-disseminated. Pursuant to 17 U.S.C. 403 ... stating that such material is not subject to copyright protection.\" CONSTRAINT READ ON THE SAME PAGE, honoured in the release: \"This information shall not be modified in content and then presented as official government material\" - any derived dataset must be labelled as derived and must not be presented as official NOS data. Corroborating: nauticalcharts.noaa.gov/data/data-licensing.html records NOAA data released under a CC0-1.0 public-domain dedication (CC BY 4.0 for some products), and the NCEI ISO metadata for CO-OPS stations carries the same CC0 waiver. Attributes: attribution requested as a courtesy, not required."
+    ]
+  },
+  "layout": {
+    "task/station_disjoint/meta.json": "station_disjoint/meta.json",
+    "task/station_disjoint/private/holdout.csv": "station_disjoint/private/holdout.csv",
+    "task/station_disjoint/public/eval.csv": "station_disjoint/public/eval.csv",
+    "task/station_disjoint/public/train.csv": "station_disjoint/public/train.csv",
+    "task/station_disjoint/quality.json": "station_disjoint/quality.json",
+    "task/temporal/meta.json": "temporal/meta.json",
+    "task/temporal/private/holdout.csv": "temporal/private/holdout.csv",
+    "task/temporal/public/eval.csv": "temporal/public/eval.csv",
+    "task/temporal/public/train.csv": "temporal/public/train.csv",
+    "task/temporal/quality.json": "temporal/quality.json"
+  },
+  "files": {
+    "station_disjoint/meta.json": {
+      "bytes": 853,
+      "sha256": "064317d717a55677b04dc23ec7ec80d324293c2d4296f28d4d7932956f846c06"
+    },
+    "station_disjoint/private/holdout.csv": {
+      "bytes": 4228351,
+      "sha256": "7996855020aeb6445932ae86ef5f39f92819f34bd5a7daa14c06b8573327b2f7"
+    },
+    "station_disjoint/public/eval.csv": {
+      "bytes": 4229470,
+      "sha256": "e790547b1943f5c116d20766763402b9d5524fb9a1c93491ed8b847c4b22b47f"
+    },
+    "station_disjoint/public/train.csv": {
+      "bytes": 64636157,
+      "sha256": "c18ca88074ddaff8c3ff48e922d211dc43884f8b485031ec3488695d54bf3943"
+    },
+    "station_disjoint/quality.json": {
+      "bytes": 3786,
+      "sha256": "b3a72616b76d97caae9aec502457705d278ed1fe2095f7c0aeda2a93880668c5"
+    },
+    "temporal/meta.json": {
+      "bytes": 736,
+      "sha256": "cb95b3ba9e2ed1da788dc6024d67d73374f36fb34cafd09b1c73605ccc34ad36"
+    },
+    "temporal/private/holdout.csv": {
+      "bytes": 12475942,
+      "sha256": "cceb5a93ee5f40b8aa41b24245256abb660012b2f9e339f66fe4abd05c510562"
+    },
+    "temporal/public/eval.csv": {
+      "bytes": 12507806,
+      "sha256": "cbc3bd54ed018a8c79ca4973070d0c37f07ec772ef523698d6d15d0cb2625f35"
+    },
+    "temporal/public/train.csv": {
+      "bytes": 97931036,
+      "sha256": "939efaf42f0e032b711a499d37a1a6422fb26cb273d2244f9d7d49b274554240"
+    },
+    "temporal/quality.json": {
+      "bytes": 3788,
+      "sha256": "fffdd54cc62359e3cba1f2518fea353724335813992f0327b3bc10a44633002c"
+    }
+  },
+  "splits": {
+    "temporal": {
+      "train": {
+        "rows": 697373,
+        "positive_rate": 0.016883
+      },
+      "eval": {
+        "rows": 89038,
+        "positive_rate": 0.020385
+      },
+      "holdout": {
+        "rows": 88841,
+        "positive_rate": 0.03208
+      }
+    },
+    "station_disjoint": {
+      "train": {
+        "rows": 461580,
+        "positive_rate": 0.016277
+      },
+      "eval": {
+        "rows": 29930,
+        "positive_rate": 0.026328
+      },
+      "holdout": {
+        "rows": 29930,
+        "positive_rate": 0.036418
+      }
+    }
+  },
+  "qualification": {
+    "gate": "skills/dataset-qualification/scripts/qualify_dataset.py",
+    "gate_version": "1.3.0",
+    "result": "PASSED - 32 checks per level, 0 failed, on both full artifacts, on the worker",
+    "levels": {
+      "temporal": {
+        "artifact_version": "8896c4423c53cb14377765a18f94245dfb10e9f8125b21041a7b68458a17ace5",
+        "checks": 32,
+        "ok": true
+      },
+      "station_disjoint": {
+        "artifact_version": "e6aff23f394ddfe4b11383c3e8c8a1def0beaddbd2e0cf066ccd08ea7adaedda",
+        "checks": 32,
+        "ok": true
+      }
+    },
+    "note": "Two earlier runs failed on coverage, not on the data: noaa-001 lost 13 stations and noaa-002 lost 60 station-years to fetch errors the retry treated as permanent. Both were fixed in the builder, which now records coverage and refuses an incomplete panel."
+  },
+  "baseline": {
+    "job": "noaa-baseline-001",
+    "purpose": "one baseline through the runner's existing training and validation contract, on both levels",
+    "artifact": {
+      "target": "flood_tomorrow",
+      "positive_label": 1,
+      "definition": "does the station's daily maximum observed water level exceed its published NOS minor flood threshold on the following local day",
+      "levels": {
+        "temporal": {
+          "rows": {
+            "train": 697373,
+            "eval": 89038,
+            "holdout": 88841
+          },
+          "positive_rate": {
+            "train": 0.016883,
+            "eval": 0.020385,
+            "holdout": 0.03208
+          },
+          "eval_auc": 0.8638,
+          "contract_ok": true
+        },
+        "station_disjoint": {
+          "rows": {
+            "train": 461580,
+            "eval": 29930,
+            "holdout": 29930
+          },
+          "positive_rate": {
+            "train": 0.016277,
+            "eval": 0.026328,
+            "holdout": 0.036418
+          },
+          "eval_auc": 0.8688,
+          "contract_ok": true
+        }
+      }
+    },
+    "runner_files": {
+      "bundled_sha256": {
+        "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+        "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+        "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      },
+      "unmodified": true,
+      "note": "the benchmark's own train.py, validate.py and validate.sh, copied verbatim; validate.py re-ran training and reported CONTRACT OK on both levels"
+    },
+    "dependencies": "not recorded by this job's report - see VERIFICATION.md, which states this gap",
+    "scope": "one baseline only. No coding agent and no harness comparison was run, and none is implied.",
+    "calibration": {
+      "question": "how much of the baseline's AUC is persistence rather than prediction",
+      "method": "single stock features and a plain 'yesterday exceeded' rule, no training; rank-based AUC; the eval split only",
+      "source": "staging release 392230750 (job-noaa-003), public/eval.csv per level",
+      "levels": {
+        "temporal": {
+          "rows": 89038,
+          "positives": 1815,
+          "positive_rate": 0.020385,
+          "auc_by_single_feature": {
+            "margin_ft": 0.8265,
+            "margin_ratio": 0.8038,
+            "trailing7_mean": 0.5403,
+            "trailing30_mean": 0.5401,
+            "days_since_exceedance": 0.2912,
+            "exceed_last7": 0.6284
+          },
+          "auc_of_yesterdays_exceedance_alone": 0.6269,
+          "agreement_of_yesterdays_exceedance": 0.9655,
+          "full_model_eval_auc": 0.8638,
+          "best_single_feature_auc": 0.8265,
+          "headroom_over_best_single_feature": 0.0373
+        },
+        "station_disjoint": {
+          "rows": 29930,
+          "positives": 788,
+          "positive_rate": 0.026328,
+          "auc_by_single_feature": {
+            "margin_ft": 0.8454,
+            "margin_ratio": 0.8269,
+            "trailing7_mean": 0.552,
+            "trailing30_mean": 0.5551,
+            "days_since_exceedance": 0.2602,
+            "exceed_last7": 0.6471
+          },
+          "auc_of_yesterdays_exceedance_alone": 0.6525,
+          "agreement_of_yesterdays_exceedance": 0.9581,
+          "full_model_eval_auc": 0.8688,
+          "best_single_feature_auc": 0.8454,
+          "headroom_over_best_single_feature": 0.0234
+        }
+      }
+    }
+  },
+  "scope": "One baseline through the runner's training and validation contract. No agent or harness comparison was run and none is implied.",
+  "published": false,
+  "publication_note": "Prepared for human review. Nothing here has been published.",
+  "levels": {
+    "station_disjoint": {
+      "artifact_version": "e6aff23f394ddfe4b11383c3e8c8a1def0beaddbd2e0cf066ccd08ea7adaedda",
+      "gate_version": "1.3.0",
+      "checks": 32,
+      "files": {
+        "public/eval.csv": {
+          "bytes": 4229470,
+          "sha256": "e790547b1943f5c116d20766763402b9d5524fb9a1c93491ed8b847c4b22b47f"
+        },
+        "private/holdout.csv": {
+          "bytes": 4228351,
+          "sha256": "7996855020aeb6445932ae86ef5f39f92819f34bd5a7daa14c06b8573327b2f7"
+        },
+        "meta.json": {
+          "bytes": 853,
+          "sha256": "064317d717a55677b04dc23ec7ec80d324293c2d4296f28d4d7932956f846c06"
+        },
+        "quality.json": {
+          "bytes": 3786,
+          "sha256": "b3a72616b76d97caae9aec502457705d278ed1fe2095f7c0aeda2a93880668c5"
+        },
+        "public/train.csv": {
+          "bytes": 64636157,
+          "sha256": "c18ca88074ddaff8c3ff48e922d211dc43884f8b485031ec3488695d54bf3943"
+        }
+      }
+    },
+    "temporal": {
+      "artifact_version": "8896c4423c53cb14377765a18f94245dfb10e9f8125b21041a7b68458a17ace5",
+      "gate_version": "1.3.0",
+      "checks": 32,
+      "files": {
+        "public/eval.csv": {
+          "bytes": 12507806,
+          "sha256": "cbc3bd54ed018a8c79ca4973070d0c37f07ec772ef523698d6d15d0cb2625f35"
+        },
+        "private/holdout.csv": {
+          "bytes": 12475942,
+          "sha256": "cceb5a93ee5f40b8aa41b24245256abb660012b2f9e339f66fe4abd05c510562"
+        },
+        "meta.json": {
+          "bytes": 736,
+          "sha256": "cb95b3ba9e2ed1da788dc6024d67d73374f36fb34cafd09b1c73605ccc34ad36"
+        },
+        "quality.json": {
+          "bytes": 3788,
+          "sha256": "fffdd54cc62359e3cba1f2518fea353724335813992f0327b3bc10a44633002c"
+        },
+        "public/train.csv": {
+          "bytes": 97931036,
+          "sha256": "939efaf42f0e032b711a499d37a1a6422fb26cb273d2244f9d7d49b274554240"
+        }
+      }
+    }
+  },
+  "artifact_version_note": "artifact_version is derived here: it names the per-level gate-produced versions together, because each level is gated and scored as its own task instance. The gate's own values are in `levels`.",
+  "licenses": {
+    "policy_version": "2026-09-19",
+    "decided": "2026-09-20",
+    "code": {
+      "spdx": "MIT",
+      "file": "LICENSE-MIT.txt",
+      "copyright": "Copyright (c) 2026 E. Arino de la Rubia (earino), with contributors Claude and Szilard",
+      "third_party": [
+        {
+          "files": [
+            "baseline/train.py",
+            "baseline/validate.py",
+            "baseline/validate.sh"
+          ],
+          "source": "earino/harness_benchmark, file set task_template/",
+          "terms": "MIT",
+          "permission": "confirmed by the copyright holder 2026-09-19",
+          "credits_preserved": "Copyright (c) 2026 E. Arino de la Rubia (earino), with contributors Claude and Szilard",
+          "bytes_unchanged": true
+        }
+      ]
+    },
+    "data_compilation": {
+      "spdx": "CC0-1.0",
+      "file": "LICENSE-CC0-1.0.txt",
+      "scope": "Our contribution: the frozen station list, the row selection, the derived binary label, the temporal and station-disjoint partitions, the feature construction and the packaging. Does not cover or relicense NOAA's data."
+    },
+    "source_data": {
+      "spdx": "LicenseRef-Public-Domain",
+      "status": "Public Domain (US Government work), preserved unchanged",
+      "evidence": [
+        "READ 2026-09-19 from the CO-OPS portal itself (the same host the data comes from), https://tidesandcurrents.noaa.gov/disclaimers.html, 'Use of Data and Products': \"The information on government servers are in the public domain, unless specifically annotated otherwise, and may be used freely by the public.\" Same page: \"NOS requests that attribution be given whenever NOS material is reproduced and re-disseminated. Pursuant to 17 U.S.C. 403 ... stating that such material is not subject to copyright protection.\" CONSTRAINT READ ON THE SAME PAGE, honoured in the release: \"This information shall not be modified in content and then presented as official government material\" - any derived dataset must be labelled as derived and must not be presented as official NOS data. Corroborating: nauticalcharts.noaa.gov/data/data-licensing.html records NOAA data released under a CC0-1.0 public-domain dedication (CC BY 4.0 for some products), and the NCEI ISO metadata for CO-OPS stations carries the same CC0 waiver. Attributes: attribution requested as a courtesy, not required."
+      ],
+      "attribution": "NOAA National Ocean Service, Center for Operational Oceanographic Products and Services (CO-OPS), verified water level observations and flood thresholds, https://tidesandcurrents.noaa.gov/, accessed 2026-09-18",
+      "citation": "NOAA CO-OPS. Verified daily maximum water level observations (product daily_max_min) and minor flood thresholds (station metadata API) for 122 NOS stations, 2006-2025. Retrieved 2026-09-18 from https://api.tidesandcurrents.noaa.gov/. Public Domain. Derived dataset: NOAA tide flooding prediction dataset, version 2026.09.",
+      "derived_labelling": "Labelled as derived throughout; not an official NOAA, NOS or NWS product. The source's own constraint - modified content must not be presented as official government material - is honoured."
+    },
+    "rules": [
+      "Code and documentation: MIT by default.",
+      "Our rights in a derived compilation: CC0-1.0 by default.",
+      "The source's own terms are preserved and never relicensed; the compilation dedication covers only our contribution.",
+      "Each dataset must use terms compatible with its sources. CC0 is NOT a blanket override of upstream terms: attribution, share-alike and non-commercial requirements from a source are carried through unchanged.",
+      "A source whose licence terms cannot be read is not published at all.",
+      "The chosen terms are declared per dataset in candidates/<id>/license.json and recorded in the release manifest, so the manifest cannot drift from the decision."
+    ]
+  }
+}

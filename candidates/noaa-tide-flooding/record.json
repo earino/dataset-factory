@@ -321,98 +321,62 @@
   },
   "construction_output": {
     "job": "noaa-003",
-    "built_at": "2026-09-19T22:05:48+00:00",
-    "staging_release": 392230750,
-    "staging_tag": "job-noaa-003",
-    "requests": 4880,
-    "coverage": {
-      "stations_expected": 122,
-      "stations_built": 122,
-      "station_years_expected": 2440,
-      "station_years_fetched": 2440,
-      "missing_station_years": 0,
-      "note": "an incomplete panel must not be scored as if it were the frozen panel"
-    },
-    "day_quality": {
-      "days": 879034,
-      "incomplete_days": 622,
-      "incomplete_days_above_threshold": 27,
-      "flagged_days": 5239,
-      "rule": "incomplete days are kept; the label uses the reported maximum. The counts are reported so the choice is visible rather than silent."
-    },
+    "built_at_utc": "2026-09-19",
+    "extract": "output/extract in draft release job-noaa-003",
+    "levels": [
+      "station_disjoint",
+      "temporal"
+    ],
     "splits": {
       "temporal": {
         "train": {
           "rows": 697373,
-          "positives": 11774,
-          "positive_rate": 0.01688,
-          "stations": 122
+          "positive_rate": 0.016883
         },
         "eval": {
           "rows": 89038,
-          "positives": 1815,
-          "positive_rate": 0.02038,
-          "stations": 122
+          "positive_rate": 0.020385
         },
         "holdout": {
           "rows": 88841,
-          "positives": 2850,
-          "positive_rate": 0.03208,
-          "stations": 122
+          "positive_rate": 0.03208
         }
       },
       "station_disjoint": {
         "train": {
           "rows": 461580,
-          "positives": 7513,
-          "positive_rate": 0.01628,
-          "stations": 81
+          "positive_rate": 0.016277
         },
         "eval": {
           "rows": 29930,
-          "positives": 788,
-          "positive_rate": 0.02633,
-          "stations": 41
+          "positive_rate": 0.026328
         },
         "holdout": {
           "rows": 29930,
-          "positives": 1090,
-          "positive_rate": 0.03642,
-          "stations": 41
-        }
-      }
-    }
-  },
-  "qualification": {
-    "gate_version": "1.3.0",
-    "run_on": "the worker, over the full artifact, per level",
-    "levels": {
-      "temporal": {
-        "ok": true,
-        "checks": 32,
-        "failed_checks": [],
-        "artifact": {
-          "train": "939efaf42f0e032b711a499d37a1a6422fb26cb273d2244f9d7d49b274554240",
-          "eval": "cbc3bd54ed018a8c79ca4973070d0c37f07ec772ef523698d6d15d0cb2625f35",
-          "holdout": "cceb5a93ee5f40b8aa41b24245256abb660012b2f9e339f66fe4abd05c510562",
-          "meta.json": "cb95b3ba9e2ed1da788dc6024d67d73374f36fb34cafd09b1c73605ccc34ad36",
-          "quality.json": "fffdd54cc62359e3cba1f2518fea353724335813992f0327b3bc10a44633002c"
-        }
-      },
-      "station_disjoint": {
-        "ok": true,
-        "checks": 32,
-        "failed_checks": [],
-        "artifact": {
-          "train": "c18ca88074ddaff8c3ff48e922d211dc43884f8b485031ec3488695d54bf3943",
-          "eval": "e790547b1943f5c116d20766763402b9d5524fb9a1c93491ed8b847c4b22b47f",
-          "holdout": "7996855020aeb6445932ae86ef5f39f92819f34bd5a7daa14c06b8573327b2f7",
-          "meta.json": "064317d717a55677b04dc23ec7ec80d324293c2d4296f28d4d7932956f846c06",
-          "quality.json": "b3a72616b76d97caae9aec502457705d278ed1fe2095f7c0aeda2a93880668c5"
+          "positive_rate": 0.036418
         }
       }
     },
-    "acceptance": "the report's recorded sha256 for all ten files across both levels equal the uploaded bytes, so the report describes exactly the artifact in staging; the report was not re-run locally because bulk data does not come to the coordinator"
+    "total_rows": 1396692,
+    "note": "Complete panel: 122/122 stations and 2,440/2,440 station-years, 4,880 requests, zero fetch errors. The builder exits non-zero on any lost station-year, so coverage is a hard condition rather than a post-hoc observation."
+  },
+  "qualification": {
+    "gate": "skills/dataset-qualification/scripts/qualify_dataset.py",
+    "gate_version": "1.3.0",
+    "result": "PASSED - 32 checks per level, 0 failed, on both full artifacts, on the worker",
+    "levels": {
+      "temporal": {
+        "artifact_version": "8896c4423c53cb14377765a18f94245dfb10e9f8125b21041a7b68458a17ace5",
+        "checks": 32,
+        "ok": true
+      },
+      "station_disjoint": {
+        "artifact_version": "e6aff23f394ddfe4b11383c3e8c8a1def0beaddbd2e0cf066ccd08ea7adaedda",
+        "checks": 32,
+        "ok": true
+      }
+    },
+    "note": "Two earlier runs failed on coverage, not on the data: noaa-001 lost 13 stations and noaa-002 lost 60 station-years to fetch errors the retry treated as permanent. Both were fixed in the builder, which now records coverage and refuses an incomplete panel."
   },
   "baseline": {
     "job": "noaa-baseline-001",

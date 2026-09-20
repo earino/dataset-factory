@@ -57,5 +57,76 @@ class PublicationStateTests(unittest.TestCase):
         self.assertIn("private", visibility)
 
 
+
+class DescriptorTests(unittest.TestCase):
+    """The generator is data-driven: adding a dataset needs a descriptor, not a new generator."""
+
+    def test_a_dataset_without_a_descriptor_is_refused_not_guessed(self):
+        with self.assertRaises(SystemExit) as caught:
+            release_manifest.descriptor("no-such-dataset")
+        self.assertIn("release.json is missing", str(caught.exception))
+
+    def test_a_descriptor_missing_a_required_key_is_refused(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / "candidates" / "thing").mkdir(parents=True)
+            (root / "candidates" / "thing" / "release.json").write_text(
+                json.dumps({"release_version": "2026.09"}))
+            original = release_manifest.ROOT
+            release_manifest.ROOT = root
+            try:
+                with self.assertRaises(SystemExit) as caught:
+                    release_manifest.descriptor("thing")
+            finally:
+                release_manifest.ROOT = original
+        self.assertIn("release_tag", str(caught.exception))
+
+    def test_combined_version_is_order_independent(self):
+        a = {"temporal": {"artifact_version": "aa"}, "station_disjoint": {"artifact_version": "bb"}}
+        b = {"station_disjoint": {"artifact_version": "bb"}, "temporal": {"artifact_version": "aa"}}
+        self.assertEqual(release_manifest.combined_artifact_version(a),
+                         release_manifest.combined_artifact_version(b))
+        self.assertNotEqual(release_manifest.combined_artifact_version(a),
+                            release_manifest.combined_artifact_version(
+                                {"temporal": {"artifact_version": "bb"},
+                                 "station_disjoint": {"artifact_version": "aa"}}))
+
+
+class PublishedPackageInvariants(unittest.TestCase):
+    """Invariants over the real package, because these are the defects a reviewer would hit."""
+
+    def setUp(self):
+        self.release = ROOT / "release" / "noaa-tide-flooding"
+        self.manifest = json.loads((self.release / "MANIFEST.json").read_text())
+
+    def test_no_release_asset_name_contains_a_slash(self):
+        """GitHub rejects `/` in asset names; the download helper restores the layout instead."""
+        for relative, info in self.manifest["assets"].items():
+            self.assertNotIn("/", info["asset_name"], relative)
+
+    def test_every_asset_appears_in_the_layout_the_helper_restores(self):
+        self.assertEqual(set(self.manifest["assets"]), set(self.manifest["layout"].values()))
+
+    def test_each_level_carries_its_own_gate_version(self):
+        levels = self.manifest["levels"]
+        self.assertEqual(["station_disjoint", "temporal"], sorted(levels))
+        for name, data in levels.items():
+            self.assertEqual("1.3.0", data["gate_version"], name)
+            self.assertEqual(32, data["checks"], name)
+            self.assertRegex(data["artifact_version"], r"^[0-9a-f]{64}$")
+
+    def test_the_derived_version_is_labelled_as_derived(self):
+        """A reader must not mistake the combined label for a gate output."""
+        self.assertIn("derived", self.manifest["artifact_version_note"])
+        self.assertEqual(64, len(self.manifest["artifact_version"]))
+
+    def test_the_card_does_not_claim_publication(self):
+        card = (self.release / "README.md").read_text()
+        self.assertIn("Status: private", card)
+        self.assertNotIn("is public", card.lower())
+
+
+
 if __name__ == "__main__":
     unittest.main()
