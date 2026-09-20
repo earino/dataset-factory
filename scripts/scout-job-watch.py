@@ -77,18 +77,7 @@ def state_of(job_id):
                                 timeout=COLLECT_TIMEOUT)
     except subprocess.TimeoutExpired:
         return {"job": job_id, "state": "unknown", "detail": "collect timed out"}
-    payload = None
-    for chunk in (result.stdout, result.stderr):
-        for line in reversed((chunk or "").splitlines()):
-            line = line.strip()
-            if line.startswith("{"):
-                try:
-                    payload = json.loads(line)
-                    break
-                except json.JSONDecodeError:
-                    continue
-        if payload:
-            break
+    payload = _parse_json(result.stdout) or _parse_json(result.stderr)
     if not payload:
         # Only an explicit `{"status": "running"}` means running. Anything else - including the
         # cleanup sweep having destroyed the worker before the result was collected - is a terminal
@@ -103,6 +92,28 @@ def state_of(job_id):
             "assets": len(payload.get("assets") or []),
             "release_id": payload.get("release_id"),
             "uploaded": payload.get("uploaded")}
+
+
+def _parse_json(text):
+    """Parse the collector's output, which is pretty-printed JSON spanning many lines.
+
+    Reading line by line and requiring a line to start with `{` silently failed here: the first
+    line is `{` alone, so every parse attempt failed and a *running* job was reported as gone.
+    """
+    text = (text or "").strip()
+    if not text:
+        return None
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+    start, end = text.find("{"), text.rfind("}")
+    if start != -1 and end > start:
+        try:
+            return json.loads(text[start:end + 1])
+        except json.JSONDecodeError:
+            return None
+    return None
 
 
 def render(state):

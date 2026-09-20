@@ -92,5 +92,29 @@ class JobWatchTests(unittest.TestCase):
 
 
 
+    def test_pretty_printed_collector_output_is_parsed(self):
+        """The collector prints JSON across several lines.
+
+        A line-based reader that required a line to start with `{` never matched, so a job that was
+        running got reported as gone - the third silent parsing bug in this watchdog, which is why
+        the real output shape is pinned here.
+        """
+        parsed = watch._parse_json('{\n  "job": "noaa-baseline-001",\n  "status": "running",\n'
+                                   '  "expires": 1789891102\n}\n')
+        self.assertEqual({"job": "noaa-baseline-001", "status": "running", "expires": 1789891102},
+                         parsed)
+
+    def test_a_worker_gone_message_parses_as_no_json(self):
+        self.assertIsNone(watch._parse_json(
+            "factory: Worker is gone; recover artifacts from the recorded staging release\n"))
+
+    def test_a_finished_job_line_is_rendered_from_the_collected_record(self):
+        line = watch.render({"job": "noaa-baseline-001", "state": "succeeded", "exit_code": 0,
+                             "elapsed_minutes": 44, "assets": 3, "release_id": 1, "uploaded": True})
+        self.assertIn("succeeded", line)
+        self.assertIn("elapsed_min=44", line)
+
+
+
 if __name__ == "__main__":
     unittest.main()
