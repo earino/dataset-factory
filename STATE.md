@@ -1985,3 +1985,28 @@ sessions drive this one ledger - `noaa-004` was launched by one while another wa
 its commit, the verified file list and the loading-check counts), `release/noaa-tide-flooding/DESTINATIONS.json`,
 `jobs/noaa-hf-002.json`, `.factory/noaa-hf-002/` (result, hash-checked report manifest, source bundle). Worker
 166615899 destroyed; the noaa-004 worker was already destroyed and 404s at the provider.
+
+### The GitHub side's tag and main are separate histories - found while checking the release
+
+Finishing the Hugging Face half meant checking the rule on the GitHub side too, and it does not hold
+there. In `earino/noaa-tide-flooding`, `v2026.09` -> `9bcbf2c6` (parents 0) and `main` -> `f384889f`
+(parents 0): two unrelated root commits, and a compare of them answers *404 "No common ancestor"*. Both
+trees carry the same 14 package paths, but six blobs differ (`MANIFEST.json`, `README.md`,
+`RELEASE_NOTES.md`, `REPRODUCE.md`, `VERIFICATION.md`, `measurements.json`) - and each of those six on
+`main` is byte-identical to `release/noaa-tide-flooding/` (`main` MANIFEST.json blob
+`ad66967155fdf860`), so `main` is the verified document set while the tagged commit still carries the
+pre-consumer-check versions. Austin's repository has the intended shape (its tag is an ancestor of
+`main`: `behind_by 0`, `ahead_by 3`), so this is specific to the order in which this repository's first
+docs commit was created after its tag.
+
+**The released data is unaffected**: the ten assets hang off release 392387511 and were re-verified from
+the API against the transferred digests; the tag's tree holds documents, not CSVs. `check-package.py` is
+OK and the consumer check ran against those assets.
+
+**No ref was changed here.** The clean repair is one fast-forward commit with parents
+`[f384889f, 9bcbf2c6]` and `f384889f`'s tree, then moving `main` to it: `main`'s content is unchanged
+byte for byte, `v2026.09` becomes an ancestor of `main`, no force-push and no asset move. It belongs with
+the publication decision, because that act already regenerates `MANIFEST.json` and refreshes the
+documents - this should be settled before it, not during it. Evidence in
+`candidates/noaa-tide-flooding/record.json` (`artifacts[0].github_tag_state`); it also corrects this file
+at line 1755, which assumed the tagged commit carried the current docs.
