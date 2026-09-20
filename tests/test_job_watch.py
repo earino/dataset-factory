@@ -75,5 +75,22 @@ class JobWatchTests(unittest.TestCase):
 
 
 
+    def test_the_scheduled_entrypoint_is_executable_by_the_scheduler(self):
+        """The scheduler runs `.py` as Python and `.sh` via bash.
+
+        The first entrypoint was a shell script named `.py`, so every tick raised SyntaxError and the
+        watchdog never ran at all - while looking, from the outside, exactly like a watchdog with
+        nothing to report. Check the extension against the contents.
+        """
+        entrypoint = Path("/opt/data/scripts/scout_job_watch.sh")
+        if not entrypoint.is_file():
+            self.skipTest("scheduled entrypoint is not on this machine")
+        text = entrypoint.read_text()
+        self.assertTrue(text.startswith("#!"), "a scheduled script needs a shebang")
+        self.assertIn("/bin/sh", text.splitlines()[0],
+                      ".sh entrypoints are run by a shell; anything else must be valid Python")
+
+
+
 if __name__ == "__main__":
     unittest.main()

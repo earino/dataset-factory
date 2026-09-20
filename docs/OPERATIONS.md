@@ -1,3 +1,11 @@
+## Scheduled scripts: the name decides the interpreter
+
+The scheduler runs a `.py` script **as Python** and a `.sh`/`.bash` script through the shell. A
+shell script named `.py` therefore fails on every tick with a SyntaxError, and a job that fails on
+every tick looks from the outside exactly like a job with nothing to report - the watchdog added for
+worker jobs did this for four ticks before anyone noticed. Keep shell entrypoints `.sh`; a
+versioned implementation can live in the repository with a thin `.sh` shim beside it.
+
 # Worker operations
 
 Scout uses SSH and Python 3.11+ standard library. No new coordinator packages are
