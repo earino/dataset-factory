@@ -129,6 +129,27 @@ BUNDLES = {
             "max_artifact_mb": 600,
         },
     },
+    # One baseline through the runner's own training and validation contract, on both levels.
+    "noaa-baseline": {
+        "job_file": "candidates/noaa-tide-flooding/baseline/source/job.json",
+        "files": [
+            ("build.py", "candidates/noaa-tide-flooding/build.py"),
+            ("run.sh", "candidates/noaa-tide-flooding/baseline/source/run.sh"),
+            ("materialize.py", "candidates/noaa-tide-flooding/baseline/source/materialize.py"),
+            ("report.py", "candidates/noaa-tide-flooding/baseline/source/report.py"),
+            ("station_list_result.json",
+             "candidates/noaa-tide-flooding/station_list_result.json"),
+        ],
+        # Copied verbatim from the read-only harness benchmark clone.
+        "runner_files": ["train.py", "validate.py", "validate.sh"],
+        "overrides": {
+            "command": ["sh", "/workspace/run.sh"],
+            "timeout_minutes": 120,
+            "lifetime_minutes": 150,
+            "max_disk_mb": 4096,
+            "max_artifact_mb": 16,
+        },
+    },
 }
 
 
