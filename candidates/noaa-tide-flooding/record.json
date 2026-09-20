@@ -241,6 +241,25 @@
       "why_not_adopted": "the only intended change was the target's name, and adopting it would invalidate a release that is already gate-passed, consumer-verified on the published bytes and uploaded to Hugging Face - for a rename that no committed document asks for. The rename's diff is kept at candidates/noaa-tide-flooding/noaa-004-label-rename.diff; if the operator wants the clearer name, this staging release is the artifact to reuse (its digests are recorded above) and the release, the card and hf/job-002.json all have to move with it",
       "evidence": ".factory/noaa-004/result.json and .factory/noaa-004/reports/{manifest.json,build_summary.json,temporal-meta.json,temporal-quality.json,station_disjoint-meta.json,station_disjoint-quality.json,qualification-temporal.json,qualification-station_disjoint.json,container.log}; every report was hash-checked against the release manifest",
       "worker": "destroyed 2026-09-20T11:53:09Z"
+    },
+    {
+      "id": "noaa-hf-002",
+      "status": "succeeded",
+      "what": "the Hugging Face half of the release: the bulk move already in place, then the documented loading path exercised against each config on the Hub - the check noaa-hf-001 died before performing",
+      "staging_release": 392416227,
+      "staging_tag": "job-noaa-hf-002",
+      "server_id": 166615899,
+      "created_at": "2026-09-20T11:53:15Z",
+      "elapsed_seconds": null,
+      "elapsed_note": "the job record does not carry an elapsed time for this job type; it was collected at 11:59Z after a run dominated by the loading check reading the uploaded bytes",
+      "results": {
+        "uploads": "0 uploaded, 10 skipped - every one of the ten files was already at the manifest digest, which independently confirms that noaa-hf-001's upload had in fact landed before its verifier crashed",
+        "failures": 0,
+        "loading_check": "ok: true, problems: []; both configs loaded by name and every split compared against the manifest: temporal train 697,373/11,774, eval 89,038/1,815, holdout 88,841/2,850; station_disjoint train 461,580/7,513, eval 29,930/788, holdout 29,930/1,090",
+        "hub_verification_on_the_coordinator": "scripts/hf-publish.py --verify: ok true, ten of ten paths present at the manifest sizes, four large CSVs digest-verified by the Hub, eight small files present, no missing and no size mismatch",
+        "tag": "created after verification, last: v2026.09, tag commit ee6ba8477e2be021a4000d88c03bd58d038e9a5f, identical to main (tag_matches_main true)"
+      },
+      "evidence": ".factory/noaa-hf-002/{result.json,reports/manifest.json,reports/source.tar}, release/noaa-tide-flooding/DESTINATIONS.json"
     }
   ],
   "artifacts": [
@@ -288,12 +307,27 @@
         }
       },
       "verified_from_the_service": "every asset re-read from the GitHub API on 2026-09-20 matches the job's transferred digests and sizes exactly, 10 of 10, and the repository is private",
-      "compared": "release/noaa-tide-flooding/MANIFEST.json"
+      "compared": "release/noaa-tide-flooding/MANIFEST.json",
+      "huggingface": {
+        "repository": "https://huggingface.co/datasets/earino/noaa-tide-flooding",
+        "visibility": "private (publication requires explicit authorisation)",
+        "tag": "v2026.09",
+        "tag_commit": "ee6ba8477e2be021a4000d88c03bd58d038e9a5f",
+        "main_commit": "ee6ba8477e2be021a4000d88c03bd58d038e9a5f",
+        "tag_matches_main": true,
+        "files": 10,
+        "small_files": 8,
+        "verified": true,
+        "verified_at": "2026-09-20T12:00:16+00:00",
+        "loading_check": "run by the worker job noaa-hf-002 and passed on both configs and all six splits",
+        "recorded_in": "release/noaa-tide-flooding/DESTINATIONS.json",
+        "file_name_note": "the Hub ships the artifact files as station_disjoint/* and temporal/* (the two levels as two configs); the GitHub release ships the same ten files under the release layout. Both are the same accepted bytes, one manifest"
+      }
     }
   ],
   "rejection_reason": null,
   "review": "Ready for construction on 2026-09-19. Contracts: redistribution read from the publishing portal (public domain, attribution requested, derived-not-official constraint recorded); prediction timing stated with an observations-only feature list; target derivable from the observed water level at datum=STND with the label source excludable; split capacity measured over the frozen 122-station list, eval 1,828 positives over 332 independent flood days and holdout 2,850 over 427. Extraction cost measured rather than estimated. The base rate at the physical threshold is 1.7-3.2%, which is a property of the phenomenon, not a defect: report precision/recall-style metrics beside AUC and use the base rate as the baseline. CORRECTION 2026-09-19: the 'product=daily_max does not exist' finding was wrong - the product is daily_max_min and it returns a station-year of 6-minute daily maxima per request, verified data with completeness flags. The primary task therefore costs 2,440 requests / ~178 MB, not 29,160 / 15.2 GiB.",
-  "next_action": "Hugging Face is the only remaining step of the release, and it is now in flight: noaa-hf-002 (job-002.json, launched 2026-09-20T11:53:15Z, worker 166615899, cpx42, reservation EUR 0.45) moves the ten accepted files from the dataset repository's release to the private Hugging Face repository and then exercises the documented loading path against each config. When the watcher reports it finished: read hf_loading.ok with every per-config row, positive and column count in .factory/noaa-hf-002/reports/, then python3 scripts/hf-publish.py --verify --candidate noaa-tide-flooding, then --tag LAST with the tag and main resolving to the same commit, then python3 scripts/check-package.py release/noaa-tide-flooding. Operator approval is required before either destination leaves private (no DESTINATIONS.json exists, so the manifest still derives visibility private / published false). Two open operator decisions: (1) an uncommitted rename of the target column late -> minor_flood was made by a concurrent session, a gate-passing rebuild of it exists (noaa-004, staging release 392410743, digests in this record) and was NOT adopted - the released schema, its docs and the hf plan all say late; (2) whether to ship this task with the persistence floor documented (0.8265/0.8454 against 0.8638/0.8688) or build a harder variant.",
+  "next_action": "The release exists on both destinations and is verified on both: GitHub release v2026.09 in earino/noaa-tide-flooding (ten assets, consumer-checked from an unauthenticated-style clean room) and the private Hugging Face repository earino/noaa-tide-flooding at tag v2026.09 == main (ee6ba8477e2be021a4000d88c03bd58d038e9a5f), whose loading path was run by worker noaa-hf-002 and re-verified from here by scripts/hf-publish.py --verify. Nothing else is pending mechanically. What remains is the operator's: (1) authorise publication on both destinations (flip visibility, prove anonymous read, record it in DESTINATIONS.json BEFORE regenerating the manifest, refresh card, LOADING.md, README and release notes, then publish the site); (2) decide the target-column rename - a concurrent session renamed late -> minor_flood, noaa-004 rebuilt the panel with it (staging release 392410743, digests in this record) but it was NOT adopted, because the released artifact, its package copy of build.py, DATA_DICTIONARY.md, card.md and the hf plan all name it late; the diff is kept at candidates/noaa-tide-flooding/noaa-004-label-rename.diff; (3) the narrower question of whether to ship the persistence floor as documented (0.8265/0.8454 against 0.8638/0.8688) or also build a harder variant; (4) confirm that two coordinator sessions driving this one job ledger is not going to keep happening - noaa-004 was launched by one while another was mid-step, which is what AGENTS.md forbids.",
   "features_declared": {
     "prediction_instant": "End of the local day before the target day. Features are observed water levels only. NOAA tide predictions and model guidance are model output and must be excluded so the task stays an observation-only forecast.",
     "available_at_prediction_time": [

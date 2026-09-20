@@ -1,8 +1,9 @@
 # Current state
 
-Updated: 2026-09-20 (latest entry: the Hugging Face half of the NOAA release is running on a worker;
-a gate-passing rebuild exists whose target-column rename was NOT adopted, and which measured that this
-source's values are revised, so a re-pull is a new artifact. Both destinations remain private).
+Updated: 2026-09-20 (latest entry: the NOAA release is complete and verified on BOTH destinations -
+GitHub and Hugging Face, tagged v2026.09 - and still private; a concurrent session's target-column rename
+was not adopted, and a rebuild measured that this source's values are revised, so a re-pull is a new
+artifact).
 
 ## Objective
 
@@ -1951,3 +1952,36 @@ and `.factory/noaa-004/` (result plus the hash-checked reports). Next action: co
 `hf_loading.ok` and every per-config count, then `scripts/hf-publish.py --verify --candidate noaa-tide-flooding`,
 then `--tag` last, then `check-package.py`. Both destinations remain private; no `DESTINATIONS.json` exists.
 Still the operator's: whether to take the `minor_flood` rename and re-release at all.
+
+## 2026-09-20 12:00 UTC - noaa-hf-002: the Hugging Face half is done, verified and tagged
+
+**`noaa-hf-002` succeeded** (staging release 392416227, worker 166615899, launched 11:53:15Z, collected
+11:59Z) and the release now exists on **both** destinations, verified on both.
+
+| step | result |
+| --- | --- |
+| bulk move | 0 uploaded, **10 skipped** - every file already at the manifest digest, which independently confirms that `noaa-hf-001`'s upload had landed before its verifier crashed |
+| loading check | `ok: true`, `problems: []`, both configs loaded **by name** and every split compared: temporal 697,373/11,774, 89,038/1,815, 88,841/2,850; station_disjoint 461,580/7,513, 29,930/788, 29,930/1,090 - the counts the manifest declares |
+| `hf-publish.py --verify` (here) | `ok: true`, ten of ten paths at the manifest sizes, four large CSVs digest-verified by the Hub, eight small files present, no missing, no size mismatch |
+| `--tag` (last) | `v2026.09` created **after** verification; tag commit `ee6ba8477e2be021a4000d88c03bd58d038e9a5f` == `main`, `tag_matches_main: true` |
+| `check-package.py` | OK (its `DESTINATIONS.json` note is the same informational one Austin carries) |
+
+`release/noaa-tide-flooding/DESTINATIONS.json` now records the Hugging Face destination: repo
+`earino/noaa-tide-flooding`, revision `v2026.09`, `private: true`, `verified: true` at
+2026-09-20T12:00:16Z, ten files, loading check attributed to the worker report. The manifest still
+derives `visibility: private`, `published: false` - regenerating it belongs to the publication act, not
+to verification. **Nothing is public.**
+
+**Mechanically the release is complete on both destinations.** What is left is the operator's, and it is
+now spelled out in `candidates/noaa-tide-flooding/record.json.next_action`:
+(1) authorise publication on both destinations - flip visibility, prove it from an anonymous client,
+record it in `DESTINATIONS.json` *before* regenerating the manifest, refresh card/LOADING.md/README/release
+notes, then the website step; (2) the `late` -> `minor_flood` rename decision (noaa-004's artifact is kept
+in staging 392410743 and its diff at `candidates/noaa-tide-flooding/noaa-004-label-rename.diff`); (3) the
+persistence-floor question (0.8265/0.8454 against 0.8638/0.8688); (4) the fact that two coordinator
+sessions drive this one ledger - `noaa-004` was launched by one while another was mid-step.
+
+**Recorded**: `record.json` (`jobs` -> `noaa-hf-002`, and an `artifacts[0].huggingface` block with the tag,
+its commit, the verified file list and the loading-check counts), `release/noaa-tide-flooding/DESTINATIONS.json`,
+`jobs/noaa-hf-002.json`, `.factory/noaa-hf-002/` (result, hash-checked report manifest, source bundle). Worker
+166615899 destroyed; the noaa-004 worker was already destroyed and 404s at the provider.
