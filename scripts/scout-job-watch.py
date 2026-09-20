@@ -21,18 +21,35 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-WATCHLIST = ROOT / ".factory/watchlist.json"
 COLLECT_TIMEOUT = 240
 
 
 def watchlist():
-    if not WATCHLIST.is_file():
-        return []
-    try:
-        entries = json.loads(WATCHLIST.read_text())
-    except json.JSONDecodeError:
-        return []
-    return [str(entry) for entry in entries] if isinstance(entries, list) else []
+    """Every job that is still running, plus anything explicitly listed.
+
+    The worker writes a record per job under `jobs/`, so watching does not depend on remembering to
+    add an id: a job that is still running is watched by construction.
+    """
+    entries = []
+    listed_path = ROOT / ".factory" / "watchlist.json"
+    if listed_path.is_file():
+        try:
+            listed = json.loads(listed_path.read_text())
+            entries = [str(item) for item in listed] if isinstance(listed, list) else []
+        except json.JSONDecodeError:
+            entries = []
+    for record_path in sorted((ROOT / "jobs").glob("*.json")):
+        try:
+            record = json.loads(record_path.read_text())
+        except json.JSONDecodeError:
+            continue
+        # `job` is the job's specification, not its id: `job.id` is the id, and the filename is the
+        # fallback. Getting this wrong is silent - a watchdog that matches nothing watches nothing.
+        if record.get("status") == "running":
+            spec = record.get("job")
+            name = spec.get("id") if isinstance(spec, dict) else spec
+            entries.append(str(name or record_path.stem))
+    return sorted(set(entries))
 
 
 def state_of(job_id):

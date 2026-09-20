@@ -33,5 +33,47 @@ class JobWatchTests(unittest.TestCase):
         self.assertNotIn("running", line)
 
 
+    def test_a_running_job_is_watched_without_being_listed_anywhere(self):
+        """The job records are the source, so a launch cannot be forgotten - and a job whose record
+        has been marked terminal must not be watched."""
+        import json
+        import tempfile
+        from pathlib import Path as _Path
+
+        with tempfile.TemporaryDirectory() as folder:
+            root = _Path(folder)
+            (root / "jobs").mkdir()
+            (root / "jobs" / "noaa-009.json").write_text(json.dumps(
+                {"status": "running", "job": {"id": "noaa-009"}}))
+            (root / "jobs" / "noaa-008.json").write_text(json.dumps(
+                {"status": "deleted", "job": {"id": "noaa-008"}}))
+            original = watch.ROOT
+            watch.ROOT = root
+            try:
+                watched = watch.watchlist()
+            finally:
+                watch.ROOT = original
+        self.assertEqual(["noaa-009"], watched)
+
+    def test_an_explicit_watchlist_entry_is_still_honoured(self):
+        import json
+        import tempfile
+        from pathlib import Path as _Path
+
+        with tempfile.TemporaryDirectory() as folder:
+            root = _Path(folder)
+            (root / "jobs").mkdir()
+            (root / ".factory").mkdir()
+            (root / ".factory" / "watchlist.json").write_text(json.dumps(["noaa-010"]))
+            original = watch.ROOT
+            watch.ROOT = root
+            try:
+                watched = watch.watchlist()
+            finally:
+                watch.ROOT = original
+        self.assertEqual(["noaa-010"], watched)
+
+
+
 if __name__ == "__main__":
     unittest.main()
