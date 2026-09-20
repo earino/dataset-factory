@@ -29,401 +29,84 @@
   "license_evidence": [
     "READ 2026-09-19 from the CO-OPS portal itself (the same host the data comes from), https://tidesandcurrents.noaa.gov/disclaimers.html, 'Use of Data and Products': \"The information on government servers are in the public domain, unless specifically annotated otherwise, and may be used freely by the public.\" Same page: \"NOS requests that attribution be given whenever NOS material is reproduced and re-disseminated. Pursuant to 17 U.S.C. 403 ... stating that such material is not subject to copyright protection.\" CONSTRAINT READ ON THE SAME PAGE, honoured in the release: \"This information shall not be modified in content and then presented as official government material\" - any derived dataset must be labelled as derived and must not be presented as official NOS data. Corroborating: nauticalcharts.noaa.gov/data/data-licensing.html records NOAA data released under a CC0-1.0 public-domain dedication (CC BY 4.0 for some products), and the NCEI ISO metadata for CO-OPS stations carries the same CC0 waiver. Attributes: attribution requested as a courtesy, not required."
   ],
-  "construction_script": null,
-  "split_strategy": "Temporal: train 2006-2021, eval 2022-2023, holdout 2024-2025, with thresholds taken from metadata (not estimated) so nothing leaks. Measured positives: train 1,279, eval 234, holdout 256. Effective independent events are about half those counts because flood days cluster at ~2 stations each. See measurements.split_capacity_measured.",
-  "measurements": {
-    "water_level_stations_measured": 302,
-    "stations_with_flood_thresholds_measured": "CORRECTED 2026-09-19: 132 of 302. The earlier 302 came from the inventory's floodlevels expand being present, not from a numeric nos_minor. 170 stations publish no numeric nos_minor (the endpoint returns either a bare number or an object whose nos_minor is null). Measured by one request: stations.json?type=waterlevels&expand=floodlevels.",
-    "six_minute_rows_per_station_day_measured": 240,
-    "measured_on": "2026-09-18 via CO-OPS metadata and data APIs",
-    "datum_trap_measured": {
-      "observation": "Comparing hourly_height at datum=MLLW against nos_minor yields 0 exceeding days at all 12 sampled stations across 4,380 station-days - a false 'no positive class' result caused entirely by a datum mismatch.",
-      "decisive_check": "Boston 8443970 over 2018-01-03..2018-01-05, the bomb-cyclone record tide: MLLW peak 15.022 ft at 2018-01-04 18:00 (below nos_minor 15.85, so 'no flood'); STND peak 18.547 ft at the same timestamp (above threshold, correct).",
-      "conclusion": "nos_minor is expressed in the station datum. Use datum=STND.",
-      "also_tried": "CO-OPS dpapi/prod/webapi/htb.json (High Tide Flooding daily product) returned count 0 with an empty floodLikelihood list for every station, date and range tried, including Boston 2018 and ranges 7/31/365/366. Not usable from this host."
+  "construction_script": "candidates/noaa-tide-flooding/build.py (run on a worker via candidates/noaa-tide-flooding/source/run.sh, job noaa-003)",
+  "split_strategy": {
+    "levels": [
+      "temporal",
+      "station_disjoint"
+    ],
+    "temporal": {
+      "train": "2006-2021",
+      "eval": "2022-2023",
+      "holdout": "2024-2025",
+      "stations": "all 122 frozen"
     },
-    "exceedance_base_rates_measured": {
-      "year": 2025,
-      "method": "one hourly_height request per station-year at datum=STND, units=english; daily max from hourly rows compared to nos_minor; hourly rows streamed and discarded",
-      "pooled_exceedance_rate": 0.0137,
-      "pooled_minor_flood_days": 60,
-      "pooled_station_days": 4380,
-      "per_station": {
-        "Portland, ME (8418150)": {
-          "nos_minor_ft": 20.5,
-          "days": 365,
-          "flood_days": 0,
-          "rate": 0.0,
-          "annual_max_ft": 20.489
-        },
-        "Boston, MA (8443970)": {
-          "nos_minor_ft": 15.85,
-          "days": 365,
-          "flood_days": 2,
-          "rate": 0.0055,
-          "annual_max_ft": 15.899
-        },
-        "The Battery, NY (8518750)": {
-          "nos_minor_ft": 10.19,
-          "days": 365,
-          "flood_days": 7,
-          "rate": 0.0192,
-          "annual_max_ft": 10.942
-        },
-        "Sandy Hook, NJ (8531680)": {
-          "nos_minor_ft": 9.59,
-          "days": 365,
-          "flood_days": 7,
-          "rate": 0.0192,
-          "annual_max_ft": 10.144
-        },
-        "Atlantic City, NJ (8534720)": {
-          "nos_minor_ft": 11.38,
-          "days": 365,
-          "flood_days": 4,
-          "rate": 0.011,
-          "annual_max_ft": 11.755
-        },
-        "Sewells Point, VA (8638610)": {
-          "nos_minor_ft": 8.89,
-          "days": 365,
-          "flood_days": 17,
-          "rate": 0.0466,
-          "annual_max_ft": 10.522
-        },
-        "Charleston, SC (8665530)": {
-          "nos_minor_ft": 10.4,
-          "days": 365,
-          "flood_days": 7,
-          "rate": 0.0192,
-          "annual_max_ft": 11.083
-        },
-        "Key West, FL (8724580)": {
-          "nos_minor_ft": 8.08,
-          "days": 365,
-          "flood_days": 0,
-          "rate": 0.0,
-          "annual_max_ft": 8.035
-        },
-        "Galveston Pier 21, TX (8771450)": {
-          "nos_minor_ft": 7.49,
-          "days": 365,
-          "flood_days": 4,
-          "rate": 0.011,
-          "annual_max_ft": 7.956
-        },
-        "San Francisco, CA (9414290)": {
-          "nos_minor_ft": 13.69,
-          "days": 365,
-          "flood_days": 0,
-          "rate": 0.0,
-          "annual_max_ft": 13.497
-        },
-        "Seattle, WA (9447130)": {
-          "nos_minor_ft": 21.39,
-          "days": 365,
-          "flood_days": 0,
-          "rate": 0.0,
-          "annual_max_ft": 21.375
-        },
-        "Honolulu, HI (1612340)": {
-          "nos_minor_ft": 6.71,
-          "days": 365,
-          "flood_days": 12,
-          "rate": 0.0329,
-          "annual_max_ft": 6.965
-        }
-      },
-      "caveat": "Four stations have an annual maximum within 0.2 ft below threshold (Portland, Key West, San Francisco, Seattle), so their zero rates are sensitive to a small residual offset. The pooled 1.37% estimate is the defensible figure."
+    "station_disjoint": {
+      "rule": "sort the 122 frozen stations by NOS station id; every third is group0, the held-out set; train on group1+group2",
+      "train": "group1+group2, 2006-2021",
+      "eval": "group0, 2022-2023",
+      "holdout": "group0, 2024-2025",
+      "held_out_stations": 41
     },
-    "external_validation_measured": {
-      "source": "https://api.tidesandcurrents.noaa.gov/dpapi/prod/webapi/htf/htf_annual.json (minCount/modCount/majCount)",
-      "result": "VALIDATED. For station-year 2025 the STND reconstruction matches NOAA's authoritative minCount at 12 of 12 stations: 60 flood days total against NOAA's 60. The rejected MLLW reconstruction produced 0.",
-      "per_station_noaa_2025_minCount": {
-        "Portland, ME": 0,
-        "Boston, MA": 2,
-        "The Battery, NY": 7,
-        "Sandy Hook, NJ": 7,
-        "Atlantic City, NJ": 4,
-        "Sewells Point, VA": 17,
-        "Charleston, SC": 7,
-        "Key West, FL": 0,
-        "Galveston Pier 21, TX": 4,
-        "San Francisco, CA": 0,
-        "Seattle, WA": 0,
-        "Honolulu, HI": 12
-      },
-      "moderate_or_worse_2025": {
-        "Sewells Point, VA": 3
-      },
-      "endpoint_note": "htf/daily.json reports count = the number of DAYS RETURNED (365), not a flood count; its per-day rows are {day: 'MM/DD/YYYY', maxWL, maxTime, minFlag, modFlag, majFlag, percent_completeness}. htf/annual.json is the authoritative source for counts.",
-      "script": "candidates/noaa-tide-flooding/crosscheck_htf.py, writes htf_crosscheck_result.json",
-      "checked_on": "2026-09-18"
-    },
-    "sampling_resolution_measured": {
-      "question": "Does hourly sampling miss brief exceedances?",
-      "answer": "Yes, occasionally. Hourly daily maxima are a slight undercount of the true flood-day rate.",
-      "method": "daily maximum from 6-minute water_level versus daily maximum from hourly_height, same station-month, datum=STND",
-      "results": [
-        {
-          "station": "Sewells Point, VA",
-          "month": "2025-10",
-          "flood_days_in_month": 9,
-          "caught": 9,
-          "missed_by_hourly": 0,
-          "largest_daily_max_gap_ft": 0.157
-        },
-        {
-          "station": "Honolulu, HI",
-          "month": "2025-10",
-          "flood_days_in_month": 5,
-          "caught": 4,
-          "missed_by_hourly": 1,
-          "missed_days": [
-            "2025-10-07"
-          ],
-          "largest_daily_max_gap_ft": 0.063
-        },
-        {
-          "station": "The Battery, NY",
-          "month": "2025-08",
-          "flood_days_in_month": 3,
-          "caught": 3,
-          "missed_by_hourly": 0,
-          "largest_daily_max_gap_ft": 0.285
-        }
-      ],
-      "aggregate": "1 day missed out of 17 caught across the three station-months examined, so the hourly-derived rate undercounts by roughly 6% of positive days in the periods tested.",
-      "consequence": "Label construction should use 6-minute data where the budget allows; the hourly rate 1.37% is a lower bound. 6-minute data is limited to one month per request, which is worker work.",
-      "script": "candidates/noaa-tide-flooding/sampling_check.py, writes sampling_check_result.json",
-      "measured_on": "2026-09-18"
-    },
-    "target_threshold_decision": {
-      "decision": "KEEP the physical NOS minor flood threshold. Do not replace it with a per-station quantile merely to balance the classes.",
-      "reasoning": "nos_minor is a real, externally defined threshold with physical meaning, and it is now validated against NOAA's own product. A quantile threshold would invent the event and would not correspond to flooding. The class imbalance is a property of the phenomenon to be documented and handled with appropriate metrics, not engineered away.",
-      "handling": "Report base rates, use precision/recall-style metrics alongside AUC, and treat the base rate as an explicit baseline."
-    },
-    "split_capacity_measured": {
-      "question": "Do the evaluation splits contain enough positive events for reliable scoring?",
-      "source": "NOAA htf/annual minCount, up to 107 years per station",
-      "answer": "Yes on counts, but the positives are temporally clustered, so effective independent events are about half the row count.",
-      "total_minor_flood_days_per_year_all_12_stations": {
-        "2005": 54,
-        "2010": 91,
-        "2015": 58,
-        "2016": 106,
-        "2017": 130,
-        "2018": 126,
-        "2019": 101,
-        "2020": 152,
-        "2021": 82,
-        "2022": 109,
-        "2023": 125,
-        "2024": 196,
-        "2025": 60,
-        "2026_to_date": 42
-      },
-      "proposed_splits": [
-        {
-          "split": "train",
-          "years": "2006-2021",
-          "station_days": 70080,
-          "positives": 1279,
-          "rate": 0.0183,
-          "moderate_or_worse": 80
-        },
-        {
-          "split": "eval",
-          "years": "2022-2023",
-          "station_days": 8760,
-          "positives": 234,
-          "rate": 0.0267,
-          "moderate_or_worse": 13
-        },
-        {
-          "split": "holdout",
-          "years": "2024-2025",
-          "station_days": 8760,
-          "positives": 256,
-          "rate": 0.0292,
-          "moderate_or_worse": 16
-        }
-      ],
-      "clustering_measured": {
-        "2022": {
-          "positive_station_days": 109,
-          "distinct_flood_days": 52,
-          "mean_stations_per_flood_day": 2.1
-        },
-        "2023": {
-          "positive_station_days": 125,
-          "distinct_flood_days": 66,
-          "mean_stations_per_flood_day": 1.89
-        },
-        "2024": {
-          "positive_station_days": 196,
-          "distinct_flood_days": 89,
-          "mean_stations_per_flood_day": 2.2
-        },
-        "2025": {
-          "positive_station_days": 60,
-          "distinct_flood_days": 37,
-          "mean_stations_per_flood_day": 1.62
-        },
-        "eval_total": {
-          "positives": 234,
-          "distinct_flood_days": 118
-        },
-        "holdout_total": {
-          "positives": 256,
-          "distinct_flood_days": 126
-        }
-      },
-      "caveats": [
-        "The positive rate is not stationary: it rises with sea level across the series (1.83% in train against 2.92% in holdout), so a temporal split carries systematic base-rate shift.",
-        "2025 (60 days across the 12 stations) is far below 2024 (196), so year-to-year variation is large and any single year is a noisy estimate.",
-        "Positive days cluster at about 2 stations per flood day, so 256 holdout positives are roughly 126 independent events."
-      ],
-      "scripts": "candidates/noaa-tide-flooding/split_capacity.py and clustering_check.py",
-      "measured_on": "2026-09-18"
-    },
-    "regression_test": {
-      "fixture": "candidates/noaa-tide-flooding/datum_regression.json",
-      "module": "candidates/noaa-tide-flooding/datum_check.py (REQUIRED_DATUM = STND)",
-      "offline_test": "tests/test_noaa_datum.py",
-      "live_check": "python3 candidates/noaa-tide-flooding/datum_check.py re-fetches both datums for both recorded windows; verified 2026-09-18, all four peaks reproduced with delta 0.000",
-      "purpose": "The Boston bomb-cyclone event is the guard: any datum handling that denies flooding during Boston's record tide is wrong."
-    },
-    "note": "The class is rare at nos_minor (0-4.7% per station-day, 1.37% pooled from hourly data, a lower bound). Accuracy is meaningless at this base rate; use precision/recall-style metrics alongside AUC and an explicit base-rate baseline. The physical threshold is retained by decision.",
-    "stations_with_numeric_nos_minor_measured": 132,
-    "station_list_frozen_measured": {
-      "question": "Which stations can carry the task?",
-      "rule": "numeric nos_minor AND >= 18 of the 20 target years present in htf/annual minCount",
-      "stations": 122,
-      "of_stations_with_numeric_threshold": 132,
-      "total_water_level_stations": 302,
-      "evidence": "NOAA's own HTF annual product reports per-year flood-day counts; coverage of the 20 target years is the record-length evidence. 1 request per station.",
-      "source": "candidates/noaa-tide-flooding/station_list_result.json",
-      "measured_on": "2026-09-19",
-      "list_recorded_in": "station_list_result.json (frozen_station_list.stations, ordered by positives)"
-    },
-    "split_capacity_frozen_list_measured": {
-      "question": "Do the splits carry enough positives once the station list is frozen?",
-      "method": "sum of NOAA htf/annual minCount per year over the 122 frozen stations; station-days counted as 365 per station-year that has a count",
-      "splits": [
-        {
-          "split": "train",
-          "years": "2006-2021",
-          "station_days": 708830,
-          "positives": 11886,
-          "rate": 0.016768,
-          "moderate_or_worse": 1450
-        },
-        {
-          "split": "eval",
-          "years": "2022-2023",
-          "station_days": 89060,
-          "positives": 1828,
-          "rate": 0.020525,
-          "moderate_or_worse": 113
-        },
-        {
-          "split": "holdout",
-          "years": "2024-2025",
-          "station_days": 89060,
-          "positives": 2850,
-          "rate": 0.032001,
-          "moderate_or_worse": 179
-        }
-      ],
-      "cross_check": "the daily product reproduced the same positive counts exactly for both evaluation splits (1,828 eval, 2,850 holdout), measured 2026-09-19",
-      "caveat": "the positive rate is not stationary: 1.68% train, 2.05% eval, 3.20% holdout, so a temporal split carries base-rate shift."
-    },
-    "clustering_frozen_list_measured": {
-      "question": "How many independent flood days do the evaluation splits carry?",
-      "method": "distinct calendar days carrying at least one flood across the frozen stations, from htf/daily.json per station-year (minFlag)",
-      "eval_2022_2023": {
-        "positive_station_days": 1828,
-        "distinct_flood_days": 332,
-        "mean_stations_per_flood_day": 5.51,
-        "busiest_day_stations": 52
-      },
-      "holdout_2024_2025": {
-        "positive_station_days": 2850,
-        "distinct_flood_days": 427,
-        "mean_stations_per_flood_day": 6.67,
-        "busiest_day_stations": 54
-      },
-      "train": "NOT MEASURED - recorded as unmeasured rather than guessed",
-      "source": "candidates/noaa-tide-flooding/station_list_result.json",
-      "measured_on": "2026-09-19"
-    },
-    "extraction_cost_measured": {
-      "status": "MEASURED 2026-09-19, closing the last `ready` blocker",
-      "basis": "per-request figures measured on the coordinator (candidates/noaa-tide-flooding/cost_probe.py -> cost_probe_result.json) multiplied by the counted request set - not an estimate",
-      "per_request": {
-        "water_level_6min_one_month_Boston": {
-          "rows": 7440,
-          "bytes": 560602,
-          "seconds": 1.61
-        },
-        "hourly_height_one_year_Boston": {
-          "rows": 8760,
-          "bytes": 545427,
-          "seconds": 2.219
-        },
-        "inventory_expand_floodlevels": {
-          "bytes": 777394,
-          "seconds": 1.338
-        },
-        "daily_max_product": "does not exist - the API answers HTTP 400 for product=daily_max, so verified daily maxima must be derived from 6-minute or hourly observations"
-      },
-      "counted_request_set": {
-        "frozen_stations": 122,
-        "station_years": 2430,
-        "station_months": 29160
-      },
-      "labels_from_6min_monthly": {
-        "requests": 29160,
-        "bytes": 16347010720,
-        "gib": 15.2,
-        "seconds_single_threaded": 46950,
-        "minutes_single_threaded": 782.5
-      },
-      "labels_from_hourly": {
-        "requests": 2430,
-        "bytes": 1325537610,
-        "gib": 1.2,
-        "seconds_single_threaded": 5392,
-        "minutes_single_threaded": 89.9
-      },
-      "not_measured": "wall clock with concurrent requests: the figures above are single-threaded sums of measured per-request times. Parallelism on the worker size chosen for the build is unmeasured.",
-      "conclusion": "6-minute labels for the whole frozen list are a worker-scale backfill (29,160 requests, 15.2 GiB, ~13 h single-threaded), not a coordinator job; hourly is 12x cheaper but was measured to undercount ~6% of positive days.",
-      "superseded_route": "The raw 6-minute plan below is retained for the sub-daily case only; the primary task now uses product=daily_max_min (2,440 requests / ~178 MB, verified maxima). See measurements.daily_max_min_product_measured."
-    },
-    "daily_max_min_product_measured": {
-      "question": "Does NOAA publish the 6-minute daily maximum itself, instead of us reducing raw rows?",
-      "answer": "YES - product=daily_max_min with time_zone=GMT and interval=6 returns a whole station-year of 6-minute daily maxima in one request.",
-      "evidence": "Live probe 2026-09-19: Boston 8443970, 2024-01-01..2024-12-31, datum=STND, units=english, interval=6, time_zone=GMT -> HTTP 200, 72,877 bytes, 366 daily maxima, every day pcComplete6Min=100, range 12.074-17.930 ft STND (max above the 15.85 minor threshold, consistent with the validated annual counts).",
-      "fields_returned": [
-        "date6Min",
-        "time6Min",
-        "value6Min",
-        "pcComplete6Min",
-        "flag6Min"
-      ],
-      "corrected_claim": "The record previously said 'product=daily_max does not exist (HTTP 400)'. That was a wrong claim from probing a wrong product name. The product exists as daily_max_min; the API's own error message lists the valid product names.",
-      "cost_consequence": {
-        "requests": 2440,
-        "basis": "122 frozen stations x 20 years, one request per station-year (no 1-month cap on this product)",
-        "volume_mb": 178,
-        "compared_to_raw_6min_route": "29,160 requests and 15.2 GiB - 12x fewer requests, ~85x less data",
-        "data_quality": "VERIFIED maxima with a per-day completeness percentage and quality flag, versus preliminary raw rows"
-      },
-      "trade_off": "This product gives daily maxima, not the intra-day series. Sub-daily tasks (onset timing, lead time) would still need the raw 6-minute product, which IS capped at one month per request and is where the 29,160-request figure comes from. That fetch becomes a deliberate later decision for a sub-daily task rather than the default route for this one."
-    }
+    "time_column": "date",
+    "event_key_column": "date",
+    "why": "the temporal level is the benchmark-typical panel split; the station-disjoint level asks whether an agent learned something transferable rather than memorising one station's local behaviour, which is the basis of the novelty verdict"
   },
-  "jobs": [],
+  "measurements": {
+    "capacity_measured_before_build": {
+      "temporal_positives": {
+        "train": 11886,
+        "eval": 1828,
+        "holdout": 2850
+      },
+      "station_disjoint_positives": {
+        "eval": 792,
+        "holdout": 1090
+      },
+      "independent_events": {
+        "temporal_eval": 332,
+        "temporal_holdout": 427,
+        "station_disjoint_eval": 298,
+        "station_disjoint_holdout": 337
+      },
+      "evidence": "spatial_split_result.json, station_list_result.json"
+    },
+    "built": {
+      "requests": 4880,
+      "coverage": "122/122 stations, 2440/2440 station-years, 0 errors",
+      "day_quality": "879,034 days; 622 incomplete (kept and counted); 5,239 flagged"
+    },
+    "extraction_cost": {
+      "requests": 4880,
+      "bytes_approx": 184000000,
+      "route": "daily_max_min features + HTF daily flags, one request each per station-year"
+    },
+    "label_route_correction": "our reduction of 6-minute maxima overcounted flood days by ~20% against NOAA's own counts on 2024 (113-114 vs 94 over four stations); NOAA's own flags matched exactly, station by station",
+    "evidence": "label_route_result.json"
+  },
+  "jobs": [
+    {
+      "id": "noaa-001",
+      "status": "failed",
+      "staging_release": 392168243,
+      "why": "incomplete panel: 109/122 stations, 594 station-years lost to rate limiting; passed both gates anyway, which exposed that the gate does not check coverage"
+    },
+    {
+      "id": "noaa-002",
+      "status": "failed",
+      "staging_release": 392201946,
+      "why": "122 stations but 60 station-years lost to HTTP 403, which the retry treated as permanent; the new coverage gate refused it and skipped qualification"
+    },
+    {
+      "id": "noaa-003",
+      "status": "succeeded",
+      "staging_release": 392230750,
+      "staging_tag": "job-noaa-003",
+      "requests": 4880,
+      "errors": 0,
+      "gates": "both levels 32/32, no failures"
+    }
+  ],
   "artifacts": [
     "candidates/noaa-tide-flooding/clustering_result.json",
     "candidates/noaa-tide-flooding/datum_regression.json",
