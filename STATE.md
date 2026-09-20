@@ -1,7 +1,7 @@
 # Current state
 
-Updated: 2026-09-18 (eleventh entry; Hermes skill registration, worker-side qualification and
-acceptance gate, split false-pass regressions, linear scan, safe cleanup).
+Updated: 2026-09-20 (latest entry: the NOAA release package is assembled and its ten accepted files
+now sit in the dataset repository's release; both destinations remain private).
 
 ## Objective
 
@@ -1731,3 +1731,54 @@ and why accuracy is not reported as a headline anywhere.
 as Austin does (0.627 single feature, 0.769 full model). Widening the headroom would mean a harder
 variant - onset after a dry spell, or a longer horizon - not a threshold change. The physical
 threshold stays. Operator decision pending; research is not blocked by it.
+
+## 2026-09-20 - NOAA release package assembled, and the accepted bytes are in the dataset repository
+
+The packaging commit `b93a5cb` turned the manifest generator into a dataset-driven one (its
+repository, source block, layout, asset names and commands moved from literals in the script into
+`candidates/<id>/release.json`; Austin's `MANIFEST.json` regenerates byte-for-byte identical, which
+is what proves the refactor changed nothing already published). `release/noaa-tide-flooding/` now
+carries `MANIFEST.json`, `SHA256SUMS`, `DATA_DICTIONARY.md`, `README.md`, `VERIFICATION.md`,
+`REPRODUCE.md`, the licence texts, the runner baseline and the construction, qualification and
+measurement code: 28 package files listed in the manifest, `check-package.py release/noaa-tide-flooding` OK.
+
+**`noaa-publish-001` succeeded** (exit 0, 0 minutes of container time - it only moves bytes).
+The `transfer` spec copied all ten accepted artifact files, **196,017,925 bytes**, from private
+staging release 392230750 into `earino/noaa-tide-flooding` release `392387511`, tag `v2026.09`,
+on a worker host, so the ~187 MB never passed through the coordinator. `failures: []`.
+
+**Verified from the service, not from the job's own report.** Every one of the ten assets re-read
+from the GitHub API matches the job's transferred size and sha256 exactly, 10 of 10, and the
+repository is `private`. The tag `v2026.09` and `main` resolve to the same commit
+`9bcbf2c69e04e7e3d92191a3cfe86ed066cc422c`, which carries the docs, so GitHub is the complete
+destination: docs, code and release assets in one place. All ten documentation files at that commit
+are byte-identical to the package's own copies - compared by Git blob hash, `MANIFEST.json`,
+`SHA256SUMS` and both licence texts included - so the repository is not describing a different
+dataset from the one `check-package.py` validates.
+
+| level | split | rows | eval file bytes | sha256 (first 8) |
+| --- | --- | --- | --- | --- |
+| temporal | train / eval / holdout | 697,373 / 89,038 / 88,841 | 97,931,036 / 12,507,806 / 12,475,942 | `939efaf4` / `cbc3bd54` / `cceb5a93` |
+| station_disjoint | train / eval / holdout | 461,580 / 29,930 / 29,930 | 64,636,157 / 4,229,470 / 4,228,351 | `c18ca880` / `e790547b` / `79968550` |
+
+Recorded in `candidates/noaa-tide-flooding/record.json`: status `packaged`, the job, the
+destination with the per-level artifact versions and every file digest, and the local research
+artifacts moved to `artifact_evidence`. `scripts/check-candidate.py noaa-tide-flooding` OK.
+
+**The worker was destroyed** (server 166609889, `deleted_at` recorded in `jobs/noaa-publish-001.json`)
+and the job's small reports were fetched into `.factory/noaa-publish-001/reports/`. The staging
+release's own manifest shows `uploaded: false`, which is the job's snapshot written before its
+result upload completed - not a failed transfer: the collected `result.json` carries
+`uploaded: true` with the ten transferred entries and an empty failure list.
+
+**Nothing is public.** Both repositories are private and no `DESTINATIONS.json` exists for this
+dataset, so the manifest still derives `visibility: private`, `published: false`.
+
+**The next step found a real defect.** `scripts/hf-publish.py` is still Austin-shaped: its package
+path is the literal `release/austin-911-response` (only the repo id takes an argument), so running
+it for NOAA would upload Austin's files under NOAA's card and tag. It needs the same treatment the
+manifest generator just got - read the dataset from its argument or the manifest - before the
+Hugging Face half of this release can be attempted.
+
+**Cost:** EUR 0.16 reserved for this job at the EUR 0.08/h cpx32 rate; it ran for minutes, so the
+charge is a fraction of that. No new research spend.

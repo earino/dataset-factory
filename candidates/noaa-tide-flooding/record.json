@@ -1,6 +1,6 @@
 {
   "id": "noaa-tide-flooding",
-  "status": "qualified",
+  "status": "packaged",
   "created_at": "2026-09-18T09:31:08.846085+00:00",
   "domain": "coastal water levels / flood-threshold exceedance",
   "prediction_question": "For a chosen NOAA water-level station, will the daily maximum observed water level exceed its published minor flood threshold tomorrow?",
@@ -112,17 +112,74 @@
       "staging_release": 392328598,
       "elapsed_minutes": 27.5,
       "evidence": "baseline.json, train/validate logs"
+    },
+    {
+      "id": "noaa-publish-001",
+      "status": "succeeded",
+      "what": "GitHub transfer: the ten accepted artifact files copied from private staging release 392230750 into the dataset repository's release, on a worker host, so the ~187 MB never passed through the coordinator",
+      "staging_release": 392388409,
+      "staging_tag": "job-noaa-publish-001",
+      "target_repo": "earino/noaa-tide-flooding",
+      "target_release": 392387511,
+      "target_tag": "v2026.09",
+      "assets": 10,
+      "bytes": 196017925,
+      "failures": 0,
+      "why": "the publish/transfer path is the only step that needs the write credential and the bytes together, so it runs where the bytes are",
+      "evidence": ".factory/noaa-publish-001/reports/staging-manifest.json (job manifest, transferred list and zero failures), .factory/noaa-publish-001/result.json"
     }
   ],
   "artifacts": [
-    "candidates/noaa-tide-flooding/clustering_result.json",
-    "candidates/noaa-tide-flooding/datum_regression.json",
-    "candidates/noaa-tide-flooding/split_capacity_result.json",
-    "candidates/noaa-tide-flooding/station_list_result.json"
+    {
+      "job": "noaa-publish-001",
+      "repository": "https://github.com/earino/noaa-tide-flooding",
+      "visibility": "private (publication requires explicit authorisation)",
+      "tag": "v2026.09",
+      "commit": "9bcbf2c69e04e7e3d92191a3cfe86ed066cc422c",
+      "release": "https://github.com/earino/noaa-tide-flooding/releases/tag/v2026.09",
+      "release_id": 392387511,
+      "artifact_version": "a5a5ac5b41db197810fbd3e6fc8828ce74f2796b02c6ac3088a9350df6ae3450",
+      "artifact_version_note": "derived exactly as the manifest derives it - the two per-level versions (temporal 8896c442..., station_disjoint e6aff23f...) joined and hashed, because each level is scored as its own contract-complete task instance",
+      "asset_bytes": 196017925,
+      "levels": {
+        "temporal": {
+          "artifact_version": "8896c4423c53cb14377765a18f94245dfb10e9f8125b21041a7b68458a17ace5",
+          "public/train.csv": {
+            "bytes": 97931036,
+            "sha256": "939efaf42f0e032b711a499d37a1a6422fb26cb273d2244f9d7d49b274554240"
+          },
+          "public/eval.csv": {
+            "bytes": 12507806,
+            "sha256": "cbc3bd54ed018a8c79ca4973070d0c37f07ec772ef523698d6d15d0cb2625f35"
+          },
+          "private/holdout.csv": {
+            "bytes": 12475942,
+            "sha256": "cceb5a93ee5f40b8aa41b24245256abb660012b2f9e339f66fe4abd05c510562"
+          }
+        },
+        "station_disjoint": {
+          "artifact_version": "e6aff23f394ddfe4b11383c3e8c8a1def0beaddbd2e0cf066ccd08ea7adaedda",
+          "public/train.csv": {
+            "bytes": 64636157,
+            "sha256": "c18ca88074ddaff8c3ff48e922d211dc43884f8b485031ec3488695d54bf3943"
+          },
+          "public/eval.csv": {
+            "bytes": 4229470,
+            "sha256": "e790547b1943f5c116d20766763402b9d5524fb9a1c93491ed8b847c4b22b47f"
+          },
+          "private/holdout.csv": {
+            "bytes": 4228351,
+            "sha256": "7996855020aeb6445932ae86ef5f39f92819f34bd5a7daa14c06b8573327b2f7"
+          }
+        }
+      },
+      "verified_from_the_service": "every asset re-read from the GitHub API on 2026-09-20 matches the job's transferred digests and sizes exactly, 10 of 10, and the repository is private",
+      "compared": "release/noaa-tide-flooding/MANIFEST.json"
+    }
   ],
   "rejection_reason": null,
   "review": "Ready for construction on 2026-09-19. Contracts: redistribution read from the publishing portal (public domain, attribution requested, derived-not-official constraint recorded); prediction timing stated with an observations-only feature list; target derivable from the observed water level at datum=STND with the label source excludable; split capacity measured over the frozen 122-station list, eval 1,828 positives over 332 independent flood days and holdout 2,850 over 427. Extraction cost measured rather than estimated. The base rate at the physical threshold is 1.7-3.2%, which is a property of the phenomenon, not a defect: report precision/recall-style metrics beside AUC and use the base rate as the baseline. CORRECTION 2026-09-19: the 'product=daily_max does not exist' finding was wrong - the product is daily_max_min and it returns a station-year of 6-minute daily maxima per request, verified data with completeness flags. The primary task therefore costs 2,440 requests / ~178 MB, not 29,160 / 15.2 GiB.",
-  "next_action": "Write the construction script against the frozen 122-station list in station_list_result.json, sourcing labels from product=daily_max_min (interval=6, time_zone=GMT, datum=STND) at one request per station-year (2,440 requests, ~178 MB measured) rather than the raw 6-minute route. Carry only observations-only features, keep the target day's own water level out of the shipped columns, and qualify with the gate. Decide separately whether a sub-daily task is worth the 29,160-request raw fetch - it is not needed for this dataset.",
+  "next_action": "Hugging Face is the missing destination: scripts/hf-publish.py still carries Austin's package path as a literal (PACKAGE = release/austin-911-response) and its repo id as a default, so publishing NOAA through it would describe Austin's dataset with NOAA's tag. Make it dataset-driven the way release-manifest.py was (read the release directory from the manifest or an explicit argument), then --plan/--create/--upload-small and the hf_publish worker job for the CSVs, then --verify. Then the pending consumer check against the transferred bytes (VERIFICATION.md names it), then operator approval before either destination leaves private. Separate open operator decision: whether to ship this task with the persistence floor documented (single feature 0.8265/0.8454 against model 0.8638/0.8688) or also build a harder variant.",
   "features_declared": {
     "prediction_instant": "End of the local day before the target day. Features are observed water levels only. NOAA tide predictions and model guidance are model output and must be excluded so the task stays an observation-only forecast.",
     "available_at_prediction_time": [
@@ -433,5 +490,11 @@
     "why_accuracy_is_not_used": "the plain 'yesterday exceeded' rule agrees with the label about 96% of the time while carrying almost no ranking signal (AUC 0.63), because only ~2% of days are positive. Accuracy would flatter a useless rule; the runner contract scores AUC for this reason.",
     "consequence_for_release": "must be stated in the dataset card: the single-feature reference baseline belongs beside the model baseline, exactly as Austin records 0.627 for its single feature against 0.769 full model. A harder variant - onset after a dry spell, or a longer horizon, where persistence is weaker by construction - is the way to widen headroom if a low-headroom task is not wanted.",
     "operator_decision": "pending: whether to ship this task as-is with the floor documented, or also build a harder variant. The threshold itself is not being tuned."
-  }
+  },
+  "artifact_evidence": [
+    "candidates/noaa-tide-flooding/clustering_result.json",
+    "candidates/noaa-tide-flooding/datum_regression.json",
+    "candidates/noaa-tide-flooding/split_capacity_result.json",
+    "candidates/noaa-tide-flooding/station_list_result.json"
+  ]
 }
