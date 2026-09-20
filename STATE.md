@@ -1632,3 +1632,50 @@ form was exercised by the worker job before publication.
 
 **Suite:** 255 tests, including new guards for the placeholder and for the derived publication
 state.
+
+## 2026-09-20 - NOAA build accepted: complete panel, both levels gated
+
+`noaa-003` produced the artifact. **Coverage is complete**: 122 of 122 frozen stations, 2,440 of
+2,440 station-years, 4,880 requests, **zero errors**. Both levels pass the qualification gate on the
+full artifact - 32 checks each, no failures - including the leakage, prediction-timing, split,
+unit-frame and runner-contract claims.
+
+| level | split | rows | positives | stations |
+| --- | --- | --- | --- | --- |
+| temporal | train | 697,373 | 11,774 | 122 |
+| temporal | eval | 89,038 | 1,815 | 122 |
+| temporal | holdout | 88,841 | 2,850 | 122 |
+| station_disjoint | train | 461,580 | 7,513 | 81 |
+| station_disjoint | eval | 29,930 | 788 | 41 |
+| station_disjoint | holdout | 29,930 | 1,090 | 41 |
+
+Positives match the capacity measured before the build to within 1%: holdout is exact on both
+levels (2,850 and 1,090). The residual difference is the year-boundary effect that was predicted -
+the label is next-day, so a flood day on the first date of a window has no previous row to be
+labelled from.
+
+**Acceptance without moving bulk data.** The gate report records the sha256 of every file it gated;
+the staging manifest records the sha256 of every uploaded file. All ten files across both levels
+compare equal, so the report describes exactly the bytes in staging. The local `--accept` path was
+not used because it would mean downloading ~180 MB to the coordinator.
+
+**The three attempts, and what the failures taught.** Run 1 lost 594 station-years and 13 stations
+to rate limiting, and passed both gates anyway - the gates check leakage, timing, splits and units,
+not coverage. Run 2 built all 122 stations but lost 60 station-years to HTTP 403, which the retry
+classified as permanent and retried immediately; the new coverage gate refused it and skipped
+qualification rather than gating an incomplete artifact. Run 3 fixed the 403 handling and added
+paced requests, and lost nothing.
+
+**A worker watchdog now runs every five minutes.** Three jobs ran and the operator had to ask twice
+what was happening: a remote job outlives the turn that launched it, `notify` fires when the launch
+exits rather than when the job does, and `worker status` reports the *server*, which idles until its
+lifetime expires. `scripts/scout-job-watch.py` polls with `worker collect` (the only cheap signal),
+emits one deterministic line per job so a scheduler change detector can gate the agent, and treats
+anything that is not an explicit `running` answer as terminal - including the sweep having taken the
+worker first.
+
+**Cost:** three worker runs at EUR 0.24 / 0.32 / 0.32. Project total about EUR 4.96 of the EUR 20
+monthly allowance.
+
+**Next:** a baseline through the runner's contract on both levels - the question of whether
+observations-only, station-normalised features carry signal on held-out stations - then packaging.

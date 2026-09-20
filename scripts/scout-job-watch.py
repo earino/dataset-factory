@@ -73,8 +73,11 @@ def state_of(job_id):
         if payload:
             break
     if not payload:
-        # No parseable answer yet: treat as still running rather than inventing an outcome.
-        return {"job": job_id, "state": "running"}
+        # Only an explicit `{"status": "running"}` means running. Anything else - including the
+        # cleanup sweep having destroyed the worker before the result was collected - is a terminal
+        # state, because a watchdog that reports a swept job as "running" waits forever.
+        message = ((result.stderr or result.stdout or "").strip().splitlines() or ["no result"])[-1]
+        return {"job": job_id, "state": "gone", "detail": message[:140]}
     if payload.get("status") == "running":
         return {"job": job_id, "state": "running"}
     return {"job": job_id, "state": payload.get("status") or "unknown",
@@ -89,8 +92,8 @@ def render(state):
     """Deterministic one-liner. Nothing time-varying while a job is still running."""
     if state["state"] == "running":
         return f'{state["job"]}: running'
-    if state["state"] == "unknown":
-        return f'{state["job"]}: unknown ({state.get("detail", "no parseable result")})'
+    if state["state"] in ("unknown", "gone"):
+        return f'{state["job"]}: {state["state"]} ({state.get("detail", "no result")})'
     return (f'{state["job"]}: {state["state"]} exit={state.get("exit_code")} '
             f'elapsed_min={state.get("elapsed_minutes")} assets={state.get("assets")} '
             f'release={state.get("release_id")} uploaded={state.get("uploaded")}')
