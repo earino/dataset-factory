@@ -1864,3 +1864,45 @@ then `--tag` last and check the tag and `main` resolve to the same commit. Opera
 required before either destination leaves private, and the open decision on shipping the narrow
 headroom (persistence floor 0.8265/0.8454 against 0.8638/0.8688) or building a harder variant is
 still pending.
+
+## 2026-09-20 11:20 UTC - noaa-hf-001: the upload was fine, the verifier was not
+
+**`noaa-hf-001` failed, and the failure was in our code rather than in the dataset.** The job
+moved all ten accepted files to the private Hugging Face repository (10 uploads, 196,017,925 bytes,
+0 failures, 0 skips, each checked against the digest the Hub reports) and then died in the loading
+check with `KeyError: 'splits'`.
+
+The verify helper has two branches - a job declaring `configs` and a job declaring a single set of
+`splits` - and only the first was inside the `if`. The single-config code ran unconditionally after
+it, reading `expected["splits"]` on a job that has `configs` instead. `load_dataset` had already
+read all six splits of both configs (temporal 697,373/89,038/88,841; station_disjoint
+461,580/29,930/29,930) before the crash, so the report said "the documented loading path did not
+reproduce the artifact" about an artifact that was in fact loading. The coordinator-side read-only
+listing of the private repository agrees with the upload: all ten paths present at the manifest's
+byte sizes.
+
+**Fix.** `workers/hf_publish.py`: the single-config path is inside the `else` branch and the report
+is printed once. The old source reproduces the exact `KeyError: 'splits'` against a stub `datasets`,
+and `tests/test_hf_helpers.py::VerifyHelperBranchTests` now runs the real helper source for both
+job shapes - per-config checking, comparison rather than mere loading, and the original single-config
+path. 283 tests pass.
+
+**The corrected job is prepared and its plan is clean** (`candidates/noaa-tide-flooding/hf/job-002.json`,
+id `noaa-hf-002`, same ten assets, HF credential present, reservation EUR 0.45). **It could not be
+launched: another coordinator started `jobs/noaa-004.json` at 11:04:32** - a cpx32 rebuild of this
+same candidate, untracked in git, 120-minute timeout - and the policy allows one worker at a time.
+Waiting for a NOAA build (noaa-003 ran overnight) is not something a watchdog tick can do, so the
+launch is left to the next session or to the wait loop started here, which retries for fourteen
+minutes and then gives up cleanly.
+
+**Next action.** When the worker slot is free: `sh scripts/scout-factory worker launch
+candidates/noaa-tide-flooding/hf/job-002.json`, then `worker collect noaa-hf-002` and read
+`hf_loading.ok` together with every per-config row count and positive count in
+`.factory/noaa-hf-002/reports/`. Only then `python3 scripts/hf-publish.py --verify --candidate
+noaa-tide-flooding` (its `DESTINATIONS.json` entry claims the loading check was run by the worker,
+so it must not be written before that report exists), then `--tag` last, then
+`python3 scripts/check-package.py release/noaa-tide-flooding`. Nothing is public: both repositories
+remain private, and no `release/noaa-tide-flooding/DESTINATIONS.json` exists yet, so the
+manifest still derives `visibility: private`, `published: false`. Recorded in `candidates/noaa-tide-flooding/record.json` (`jobs` for
+`noaa-hf-001`) and `.factory/noaa-hf-001/`.
+

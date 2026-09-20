@@ -99,38 +99,38 @@ if configs:
 else:
     ds = load_dataset(repo_id, revision=revision, token=os.environ["HF_WRITE_TOKEN"])
     report = {"splits": list(ds.keys()), "checked": {}}
-problems = []
-for split, want in sorted(expected["splits"].items()):
-    if split not in ds:
-        problems.append(f"split {split} missing from load_dataset output")
-        continue
-    data = ds[split]
-    columns = sorted(data.column_names)
-    report["checked"][split] = {"rows": len(data), "columns": columns}
-    if len(data) != want["rows"]:
-        problems.append(f"{split}: {len(data)} rows, manifest says {want['rows']}")
-    if expected["columns"] and columns != sorted(expected["columns"]):
-        problems.append(f"{split}: columns {columns} != manifest {sorted(expected['columns'])}")
-    # Read the label's values out of the data, not out of the feature's type: a CSV gives an
-    # integer column with no `names`, so a ClassLabel-style comparison reports a mismatch on a
-    # perfect dataset. The positive count then proves the values mean what the manifest says.
-    label = expected["label"]
-    if label in data.column_names:
-        observed = sorted(str(value) for value in data.unique(label))
-        wanted = sorted(str(value) for value in (expected.get("label_values") or []))
-        if wanted and observed != wanted:
-            problems.append(f"{split}: label values {observed} != manifest {wanted}")
+    problems = []
+    for split, want in sorted(expected["splits"].items()):
+        if split not in ds:
+            problems.append(f"split {split} missing from load_dataset output")
+            continue
+        data = ds[split]
+        columns = sorted(data.column_names)
+        report["checked"][split] = {"rows": len(data), "columns": columns}
+        if len(data) != want["rows"]:
+            problems.append(f"{split}: {len(data)} rows, manifest says {want['rows']}")
+        if expected["columns"] and columns != sorted(expected["columns"]):
+            problems.append(f"{split}: columns {columns} != manifest {sorted(expected['columns'])}")
+        # Read the label's values out of the data, not out of the feature's type: a CSV gives an
+        # integer column with no `names`, so a ClassLabel-style comparison reports a mismatch on a
+        # perfect dataset. The positive count then proves the values mean what the manifest says.
+        label = expected["label"]
+        if label in data.column_names:
+            observed = sorted(str(value) for value in data.unique(label))
+            wanted = sorted(str(value) for value in (expected.get("label_values") or []))
+            if wanted and observed != wanted:
+                problems.append(f"{split}: label values {observed} != manifest {wanted}")
+            else:
+                report["checked"][split]["label_values"] = wanted
+            if want.get("positives") is not None:
+                positives = int(sum(1 for value in data[label] if value in (1, True, "1")))
+                report["checked"][split]["positives"] = positives
+                if positives != want["positives"]:
+                    problems.append(f"{split}: {positives} positives, manifest says {want['positives']}")
         else:
-            report["checked"][split]["label_values"] = wanted
-        if want.get("positives") is not None:
-            positives = int(sum(1 for value in data[label] if value in (1, True, "1")))
-            report["checked"][split]["positives"] = positives
-            if positives != want["positives"]:
-                problems.append(f"{split}: {positives} positives, manifest says {want['positives']}")
-    else:
-        problems.append(f"{split}: label column {label!r} is absent")
-report["problems"] = problems
-report["ok"] = not problems
+            problems.append(f"{split}: label column {label!r} is absent")
+    report["problems"] = problems
+    report["ok"] = not problems
 print(json.dumps(report, indent=2))
 '''
 

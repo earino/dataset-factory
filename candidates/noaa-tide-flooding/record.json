@@ -156,6 +156,24 @@
       },
       "why": "the consumer check is the only evidence that a reader with no access to the building repository and no credential gets the same dataset and the same result from the published release",
       "evidence": ".factory/noaa-consumer-002/result.json, .factory/noaa-consumer-002/reports/{container.log,output_consumer.txt}, release/noaa-tide-flooding/VERIFICATION.md"
+    },
+    {
+      "id": "noaa-hf-001",
+      "status": "failed",
+      "what": "Hugging Face bulk publish: the ten accepted artifact files moved from the dataset repository's release to the private dataset repository on Hugging Face, then the documented loading path exercised against the uploaded bytes",
+      "staging_release": 392397927,
+      "staging_tag": "job-noaa-hf-001",
+      "target_repo": "earino/noaa-tide-flooding",
+      "assets": 10,
+      "bytes": 196017925,
+      "results": {
+        "uploads": "10/10 uploaded, each verified against the digest the Hub reports; 0 failures, 0 skips",
+        "loading_check": "not performed - the verifier crashed before comparing anything",
+        "independent_check_on_the_coordinator": "read-only listing of the private repository: all ten paths present with the manifest's byte sizes; the manifest lists no other artifact file"
+      },
+      "why": "the multi-config branch of the loading verifier fell through into the single-config code, which reads expected['splits'] - a key a job declaring `configs` does not have. It died with KeyError: 'splits' after load_dataset had already read all six splits of both configs, so 'it uploaded' was reported as 'it does not load'",
+      "fix": "workers/hf_publish.py: the single-config path is now inside the else branch and the report is printed once; the crash is reproduced against the pre-fix source and covered by tests/test_hf_helpers.py::VerifyHelperBranchTests, which runs the real helper source against a stub `datasets` for both shapes of job",
+      "evidence": ".factory/noaa-hf-001/result.json, .factory/noaa-hf-001/reports/{manifest.json,container.log,source.tar}"
     }
   ],
   "artifacts": [
