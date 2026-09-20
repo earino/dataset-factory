@@ -82,7 +82,15 @@
       "route": "daily_max_min features + HTF daily flags, one request each per station-year"
     },
     "label_route_correction": "our reduction of 6-minute maxima overcounted flood days by ~20% against NOAA's own counts on 2024 (113-114 vs 94 over four stations); NOAA's own flags matched exactly, station by station",
-    "evidence": "label_route_result.json"
+    "evidence": "label_route_result.json",
+    "rebuild_not_byte_reproducible": {
+      "measured_at": "2026-09-20T11:45:00+00:00",
+      "how": "noaa-004 rebuilt the same panel from the same bundled build.py one day after noaa-003; the two artifacts were compared through byte-range reads of their staging assets (no bulk download on the coordinator)",
+      "result": "identical row counts, positives, coverage and day-quality; sparse value revisions in the observations and a different byte size in every file",
+      "example": "station 8661070 Springmaid Pier, 2008-10-12/13, temporal/train offset 43912723: observed_max_ft 35.427 -> 35.426, -1.323 -> -1.324, trailing7_mean 34.722 -> 34.7219, trailing30_mean 35.4425 -> 35.4424",
+      "consequence": "the released artifact version is a snapshot pinned by digest, not a value a fresh pull reproduces. Publish the artifact, never a rebuild, and re-gate and re-release if the panel is ever pulled again",
+      "evidence": "the two staging releases 392230750 (noaa-003) and 392410743 (noaa-004)"
+    }
   },
   "jobs": [
     {
@@ -174,6 +182,65 @@
       "why": "the multi-config branch of the loading verifier fell through into the single-config code, which reads expected['splits'] - a key a job declaring `configs` does not have. It died with KeyError: 'splits' after load_dataset had already read all six splits of both configs, so 'it uploaded' was reported as 'it does not load'",
       "fix": "workers/hf_publish.py: the single-config path is now inside the else branch and the report is printed once; the crash is reproduced against the pre-fix source and covered by tests/test_hf_helpers.py::VerifyHelperBranchTests, which runs the real helper source against a stub `datasets` for both shapes of job",
       "evidence": ".factory/noaa-hf-001/result.json, .factory/noaa-hf-001/reports/{manifest.json,container.log,source.tar}"
+    },
+    {
+      "id": "noaa-004",
+      "status": "succeeded",
+      "what": "a second full pull of the 122-station panel, launched at 11:04:32 by a concurrent coordinator session that also renamed the target column late -> minor_flood in build.py and persistence_baseline.py without recording a reason. It was the job that held the worker slot while noaa-hf-002 waited",
+      "staging_release": 392410743,
+      "staging_tag": "job-noaa-004",
+      "server_id": 166613240,
+      "elapsed_seconds": 1672.1,
+      "requests": 4880,
+      "coverage": "122/122 stations, 2440/2440 station-years, 0 missing, 0 errors",
+      "gates": "temporal and station_disjoint both ok, 32/32 checks, failed_checks 0, gate 1.3.0, QUALIFICATION PASSED on the rebuilt bytes",
+      "artifact_version": {
+        "temporal": "bb051dc304a4ee63fd1e61ca12864afab247e9530c714f011a60a2d4598d202c",
+        "station_disjoint": "92297a5b62f86b2901eac9e2a7f076e1495dd8fe2e0eb913d140a3a7df47ba17",
+        "combined": "fb49f932c7b4ea5ab532c20f7dce59a7d733de925d1e172054ff1d38abe1eeed",
+        "combined_note": "derived exactly as release-manifest.py derives it - the two per-level gate versions joined and hashed"
+      },
+      "identical_to_the_shipped_artifact": {
+        "levels": {
+          "temporal": {
+            "train": [
+              697373,
+              11774
+            ],
+            "eval": [
+              89038,
+              1815
+            ],
+            "holdout": [
+              88841,
+              2850
+            ]
+          },
+          "station_disjoint": {
+            "train": [
+              461580,
+              7513
+            ],
+            "eval": [
+              29930,
+              788
+            ],
+            "holdout": [
+              29930,
+              1090
+            ]
+          }
+        },
+        "note": "[rows, positives] per split, identical to noaa-003 in all six; coverage, day-quality (879,034 days / 622 incomplete / 5,239 flagged) and build_summary fields other than 'columns' are identical too"
+      },
+      "differences_from_the_shipped_artifact": {
+        "target_column_name": "the rebuild ships minor_flood where the released artifact ships late (the uncommitted rename). The rename was reverted in this repository, so the released schema and everything that documents it (release package, DATA_DICTIONARY, card, hf plan) is unchanged, and the rebuilt artifact is NOT adopted",
+        "revised_observation_values": "a small number of values differ because NOAA revised them between the 2026-09-19 and 2026-09-20 pulls. Measured on temporal/train at byte offset 43912723: station 8661070 (Springmaid Pier) 2008-10-12 observed_max_ft 35.427 -> 35.426, 2008-10-13 -1.323 -> -1.324 with trailing7_mean 34.722 -> 34.7219 and trailing30_mean 35.4425 -> 35.4424. Every one of the six files differs in byte size by more or less than the 7-byte header change (+12, +11, +9, +7, +5, +9 for the 7-byte header), so at least one revised row is in each; 200-byte needles sampled at 250 KB intervals found no other difference in 135 sampled windows, so the revisions are sparse",
+        "why_it_matters": "the artifact is pinned by digest and reproducible from the released files, but it is not byte-reproducible by re-pulling the live API: CO-OPS values are revised after publication. A future rebuild is a new artifact version and needs its own gate report and its own release, not a silent replacement"
+      },
+      "why_not_adopted": "the only intended change was the target's name, and adopting it would invalidate a release that is already gate-passed, consumer-verified on the published bytes and uploaded to Hugging Face - for a rename that no committed document asks for. The rename's diff is kept at candidates/noaa-tide-flooding/noaa-004-label-rename.diff; if the operator wants the clearer name, this staging release is the artifact to reuse (its digests are recorded above) and the release, the card and hf/job-002.json all have to move with it",
+      "evidence": ".factory/noaa-004/result.json and .factory/noaa-004/reports/{manifest.json,build_summary.json,temporal-meta.json,temporal-quality.json,station_disjoint-meta.json,station_disjoint-quality.json,qualification-temporal.json,qualification-station_disjoint.json,container.log}; every report was hash-checked against the release manifest",
+      "worker": "destroyed 2026-09-20T11:53:09Z"
     }
   ],
   "artifacts": [
@@ -226,7 +293,7 @@
   ],
   "rejection_reason": null,
   "review": "Ready for construction on 2026-09-19. Contracts: redistribution read from the publishing portal (public domain, attribution requested, derived-not-official constraint recorded); prediction timing stated with an observations-only feature list; target derivable from the observed water level at datum=STND with the label source excludable; split capacity measured over the frozen 122-station list, eval 1,828 positives over 332 independent flood days and holdout 2,850 over 427. Extraction cost measured rather than estimated. The base rate at the physical threshold is 1.7-3.2%, which is a property of the phenomenon, not a defect: report precision/recall-style metrics beside AUC and use the base rate as the baseline. CORRECTION 2026-09-19: the 'product=daily_max does not exist' finding was wrong - the product is daily_max_min and it returns a station-year of 6-minute daily maxima per request, verified data with completeness flags. The primary task therefore costs 2,440 requests / ~178 MB, not 29,160 / 15.2 GiB.",
-  "next_action": "Hugging Face is the missing destination: scripts/hf-publish.py still carries Austin's package path as a literal (PACKAGE = release/austin-911-response) and its repo id as a default, so publishing NOAA through it would describe Austin's dataset with NOAA's tag. Make it dataset-driven the way release-manifest.py was (read the release directory from the manifest or an explicit argument), then --plan/--create/--upload-small and the hf_publish worker job for the CSVs, then --verify. Then the pending consumer check against the transferred bytes (VERIFICATION.md names it), then operator approval before either destination leaves private. Separate open operator decision: whether to ship this task with the persistence floor documented (single feature 0.8265/0.8454 against model 0.8638/0.8688) or also build a harder variant.",
+  "next_action": "Hugging Face is the only remaining step of the release, and it is now in flight: noaa-hf-002 (job-002.json, launched 2026-09-20T11:53:15Z, worker 166615899, cpx42, reservation EUR 0.45) moves the ten accepted files from the dataset repository's release to the private Hugging Face repository and then exercises the documented loading path against each config. When the watcher reports it finished: read hf_loading.ok with every per-config row, positive and column count in .factory/noaa-hf-002/reports/, then python3 scripts/hf-publish.py --verify --candidate noaa-tide-flooding, then --tag LAST with the tag and main resolving to the same commit, then python3 scripts/check-package.py release/noaa-tide-flooding. Operator approval is required before either destination leaves private (no DESTINATIONS.json exists, so the manifest still derives visibility private / published false). Two open operator decisions: (1) an uncommitted rename of the target column late -> minor_flood was made by a concurrent session, a gate-passing rebuild of it exists (noaa-004, staging release 392410743, digests in this record) and was NOT adopted - the released schema, its docs and the hf plan all say late; (2) whether to ship this task with the persistence floor documented (0.8265/0.8454 against 0.8638/0.8688) or build a harder variant.",
   "features_declared": {
     "prediction_instant": "End of the local day before the target day. Features are observed water levels only. NOAA tide predictions and model guidance are model output and must be excluded so the task stays an observation-only forecast.",
     "available_at_prediction_time": [

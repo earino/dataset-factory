@@ -1,8 +1,8 @@
 # Current state
 
-Updated: 2026-09-20 (latest entry: the published NOAA release passed an independent clean-room
-consumer check on both levels; the Hugging Face half of the release is in flight. Both destinations
-remain private).
+Updated: 2026-09-20 (latest entry: the Hugging Face half of the NOAA release is running on a worker;
+a gate-passing rebuild exists whose target-column rename was NOT adopted, and which measured that this
+source's values are revised, so a re-pull is a new artifact. Both destinations remain private).
 
 ## Objective
 
@@ -1906,3 +1906,48 @@ remain private, and no `release/noaa-tide-flooding/DESTINATIONS.json` exists yet
 manifest still derives `visibility: private`, `published: false`. Recorded in `candidates/noaa-tide-flooding/record.json` (`jobs` for
 `noaa-hf-001`) and `.factory/noaa-hf-001/`.
 
+## 2026-09-20 11:55 UTC - noaa-004: a gate-passing rebuild that was not adopted, and the HF half relaunched
+
+**`noaa-004` succeeded** (staging release 392410743, 19 assets, 27.9 minutes, exit 0, worker 166613240
+destroyed at 11:53:09Z). It was launched at 11:04:32 by a concurrent coordinator session that also
+renamed the target column `late` -> `minor_flood` in `build.py` and `persistence_baseline.py`, left the
+edit uncommitted, recorded no reason for it, and then ended (its session closed at 11:05, so the intent
+could not be recovered from anywhere). The rebuild is complete and gate-clean:
+
+| check | noaa-004 |
+| --- | --- |
+| coverage | 122/122 stations, 2440/2440 station-years, 0 missing, 0 errors |
+| rows / positives | temporal 697,373/11,774, 89,038/1,815, 88,841/2,850 - station_disjoint 461,580/7,513, 29,930/788, 29,930/1,090 |
+| gates | both levels `ok`, 32/32 checks, `failed_checks: 0`, gate 1.3.0, `QUALIFICATION PASSED` |
+| artifact versions | temporal `bb051dc304a4ee63`, station_disjoint `92297a5b62f86b29`, combined `fb49f932c7b4ea5a` |
+
+**Its artifact is not the released one, and was not adopted.** Two differences from the shipped
+artifact (noaa-003, artifact versions `8896c4423c53cb14` / `e6aff23f394ddfe4`, combined `a5a5ac5b41db1978`):
+
+1. **The target column is renamed.** The released artifact, `release/noaa-tide-flooding/code/build.py`,
+   `DATA_DICTIONARY.md`, `card.md` and `hf/job-002.json` all name it `late`. Adopting the rename means
+   re-doing a release that is already gate-passed, consumer-verified on the published bytes and uploaded
+   to Hugging Face, so the change was **reverted** and its diff kept at
+   `candidates/noaa-tide-flooding/noaa-004-label-rename.diff`. Candidate sources now hash identically to
+   the released package copies (`build.py` `5058314226d1e005`, `persistence_baseline.py`
+   `d5ff90a15e77bd4c`) and to what noaa-003 bundled.
+2. **NOAA revised the observations between the two pulls.** The rebuild is not byte-identical even
+   though the code is: temporal/train offset 43912723, station 8661070 (Springmaid Pier) 2008-10-12
+   `observed_max_ft` 35.427 -> 35.426 and 2008-10-13 -1.323 -> -1.324 with `trailing7_mean` 34.722 ->
+   34.7219 and `trailing30_mean` 35.4425 -> 35.4424. Every file's byte size moved by more or less than
+   the 7-byte header change (+12, +11, +9, +7, +5, +9), so each of the six carries at least one revised
+   row; 200-byte needles at 250 KB intervals found nothing else in 135 sampled windows, so the revisions
+   are sparse. Compared through byte-range reads of the staging assets - no bulk download on the
+   coordinator. Recorded as `measurements.rebuild_not_byte_reproducible`: the release pins an artifact
+   version, and a re-pull is a **new** artifact needing its own gate report and its own release.
+
+**The worker slot is now used.** `noaa-hf-002` was planned (clean, EUR 0.45 reservation) and launched at
+11:53:15Z (worker 166615899, cpx42, hel1) - the Hugging Face bulk move plus the per-config loading check
+that `noaa-hf-001` died before performing. It is running; the watcher will report it.
+
+**Recorded**: `candidates/noaa-tide-flooding/record.json` (`jobs` -> `noaa-004`, the
+`rebuild_not_byte_reproducible` measurement, a rewritten `next_action`), the rename diff, `jobs/noaa-004.json`,
+and `.factory/noaa-004/` (result plus the hash-checked reports). Next action: collect `noaa-hf-002`, read
+`hf_loading.ok` and every per-config count, then `scripts/hf-publish.py --verify --candidate noaa-tide-flooding`,
+then `--tag` last, then `check-package.py`. Both destinations remain private; no `DESTINATIONS.json` exists.
+Still the operator's: whether to take the `minor_flood` rename and re-release at all.

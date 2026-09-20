@@ -1,0 +1,76 @@
+diff --git a/candidates/noaa-tide-flooding/build.py b/candidates/noaa-tide-flooding/build.py
+index a0cc320..98ef844 100644
+--- a/candidates/noaa-tide-flooding/build.py
++++ b/candidates/noaa-tide-flooding/build.py
+@@ -56,7 +56,7 @@ FEATURES = ["margin_ft", "margin_ratio", "trailing7_mean", "trailing30_mean", "t
+ # surfaced as an unrelated crash inside the qualification gate rather than as a named finding.
+ COLUMNS = list(dict.fromkeys(
+     ["row_id", "station_id", "station_name", "date", "latitude", "longitude", "threshold_ft"]
+-    + FEATURES + ["observed_max_ft", "late"]))
++    + FEATURES + ["observed_max_ft", "minor_flood"]))
+ # The entity that must not cross a split is the station-day, not the station: a temporal split of a
+ # station panel deliberately reuses stations, so the station alone is not an entity key.
+ ID_COLUMNS = ["row_id", "station_id", "date"]
+@@ -327,7 +327,7 @@ def build(out_dir, limit=None, years=None, concurrency=4, max_errors=0):
+             if not (row["label_date"][:4].isdigit() and int(row["label_date"][:4]) in YEARS):
+                 continue
+             row = dict(row)
+-            row["late"] = 1 if row["label_date"] in flags else 0
++            row["minor_flood"] = 1 if row["label_date"] in flags else 0
+             row.pop("label_date")
+             labelled.append(row)
+ 
+@@ -383,7 +383,7 @@ def build(out_dir, limit=None, years=None, concurrency=4, max_errors=0):
+     for level, splits in levels.items():
+         summary["levels"][level] = {}
+         for split, rows in splits.items():
+-            positives = sum(row["late"] for row in rows)
++            positives = sum(row["minor_flood"] for row in rows)
+             summary["levels"][level][split] = {
+                 "rows": len(rows), "positives": positives,
+                 "rate": round(positives / len(rows), 5) if rows else None,
+@@ -454,14 +454,14 @@ def emit_levels(out_dir, levels, meta_by_station, order, counts_by_station):
+                 writer.writeheader()
+                 writer.writerows(rows)
+             rows_total += len(rows)
+-            positives_total += sum(row["late"] for row in rows)
++            positives_total += sum(row["minor_flood"] for row in rows)
+             stations |= {row["station_id"] for row in rows}
+         # meta.json is the runner's task descriptor: `rows` and `positive_rate` are per split, and
+         # `columns` must match the header order exactly, because the gate compares them.
+-        meta = {"target": "late", "positive_label": 1, "id_columns": ID_COLUMNS,
++        meta = {"target": "minor_flood", "positive_label": 1, "id_columns": ID_COLUMNS,
+                 "columns": COLUMNS,
+                 "rows": {split: len(rows) for split, rows in splits.items()},
+-                "positive_rate": {split: (round(sum(row["late"] for row in rows) / len(rows), 6)
++                "positive_rate": {split: (round(sum(row["minor_flood"] for row in rows) / len(rows), 6)
+                                            if rows else None)
+                                   for split, rows in splits.items()},
+                 "level": level, "note": LEVEL_NOTES[level]}
+@@ -473,11 +473,11 @@ def emit_levels(out_dir, levels, meta_by_station, order, counts_by_station):
+         # positives are positive rows; distinct events are the distinct event-key dates among them.
+         events = {}
+         for split, rows in splits.items():
+-            positive_rows = [row for row in rows if row["late"]]
++            positive_rows = [row for row in rows if row["minor_flood"]]
+             events[split] = {"positives": len(positive_rows),
+                              "distinct_events": len({row["date"] for row in positive_rows})}
+         quality = {
+-            "target": "late",
++            "target": "minor_flood",
+             "positive_label": 1,
+             "features": FEATURES,
+             "carry_columns": ["station_id", "station_name", "latitude", "longitude",
+diff --git a/candidates/noaa-tide-flooding/persistence_baseline.py b/candidates/noaa-tide-flooding/persistence_baseline.py
+index ec5579e..9c436f3 100644
+--- a/candidates/noaa-tide-flooding/persistence_baseline.py
++++ b/candidates/noaa-tide-flooding/persistence_baseline.py
+@@ -84,7 +84,7 @@ def measure(level, path):
+     with path.open(newline="") as handle:
+         for row in csv.DictReader(handle):
+             rows.append(row)
+-    labels = [int(row["late"]) for row in rows]
++    labels = [int(row["minor_flood"]) for row in rows]
+     base = sum(labels) / len(labels)
+     single = {}
+     for column in ("margin_ft", "margin_ratio", "trailing7_mean", "trailing30_mean",
