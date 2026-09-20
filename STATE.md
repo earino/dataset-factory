@@ -1,7 +1,8 @@
 # Current state
 
-Updated: 2026-09-20 (latest entry: the NOAA release package is assembled and its ten accepted files
-now sit in the dataset repository's release; both destinations remain private).
+Updated: 2026-09-20 (latest entry: the published NOAA release passed an independent clean-room
+consumer check on both levels; the Hugging Face half of the release is in flight. Both destinations
+remain private).
 
 ## Objective
 
@@ -1789,3 +1790,77 @@ the restricted staging token for a read-only API call made the next push fail wi
 `Write access to repository not granted`. `unset GH_TOKEN GITHUB_TOKEN` in the same shell restores
 the working helper. Scope such exports to the command (`GH_TOKEN=$(cat ...) git ...` or a
 subshell) rather than leaving them in the session environment.
+
+
+## 2026-09-20 - The published NOAA release passes an independent consumer check (noaa-consumer-001/002)
+
+The published bytes were checked the way a consumer receives them: a worker container with **no access
+to this repository and no GitHub credential**, cloning `earino/noaa-tide-flooding` at `v2026.09`,
+hashing every file against `MANIFEST.json`, verifying the ten release assets with `sha256sum -c`,
+running the published gate and reproducing the published baseline on **both** levels.
+
+**`noaa-consumer-001` failed** (staging release 392392211, 51.4 s, 5 report assets, worker 166610817
+destroyed). It died in the baseline step and left nothing in the log to diagnose it, because that
+step sent its output to a file under `/output` and the container died before the file was uploaded -
+`container.log` ends at the step header. Everything before it had passed: 28 package files matched
+`MANIFEST.json`, `sha256sum -c` was OK on all ten assets, and both gate runs reported
+`QUALIFICATION PASSED` (temporal `8896c4423c53cb14`, station_disjoint `e6aff23f394ddfe4`), matching
+the artifact versions recorded at build time. Recorded in `jobs/noaa-consumer-001.json` and
+`.factory/noaa-consumer-001/`; the failure was an unlogged step, not evidence about the data.
+
+**The fix was to make the step visible, not to change the check.** `run.sh` now installs the
+benchmark's declared dependency ranges (`pandas>=2.2,<3`, `numpy>=1.26`, `xgboost>=3.0`,
+`scikit-learn>=1.5`) as an explicit step and tees the baseline output into the log, so a failure
+cannot be silent; the corrected script is what `noaa-consumer-002` ran.
+
+**`noaa-consumer-002` succeeded** (staging release 392395671, 72.0 s, worker 166611532 destroyed).
+Result, on the published bytes:
+
+| step | result |
+| --- | --- |
+| package vs `MANIFEST.json` | 28 files checked, every one matched |
+| `sha256sum -c SHA256SUMS` | OK on all ten assets |
+| published gate, temporal | exit 0, `QUALIFICATION PASSED`, artifact `8896c4423c53cb14` |
+| published gate, station_disjoint | exit 0, `QUALIFICATION PASSED`, artifact `e6aff23f394ddfe4` |
+| baseline, temporal | `CONTRACT OK`, eval AUC **0.8651** against the recorded 0.8638 |
+| baseline, station_disjoint | `CONTRACT OK`, eval AUC **0.8687** against the recorded 0.8688 |
+
+**The reproduction is within about 0.002, not exact, and that is now recorded as a property of the
+measurement.** The artifact digests are identical and the dependencies resolved to the same versions
+(pandas 2.3.3, numpy 2.5.3, xgboost 3.4.1, scikit-learn 1.9.1), so the difference is the runner's
+training rather than a version or byte change: xgboost with default threading is not
+bit-reproducible. The recorded baseline is one measurement, not a constant, and the reproduction
+guide and consumer check now say so (the check compares values, not only exit codes). Both gate
+artifact versions match the build-time ones, so the published bytes are the gated bytes. Neither
+check scored the holdout.
+
+Recorded in `candidates/noaa-tide-flooding/record.json` (`jobs` for both runs plus a
+`consumer_verification` block) and in the release's own `VERIFICATION.md`;
+`scripts/check-candidate.py noaa-tide-flooding` OK.
+
+**CI.** `d925039` (the dataset-driven Hugging Face publisher and NOAA's card) and `23d745d` (per-config
+Hugging Face loading verification, the reproduction record and the run-script fix) each have a
+completed, **successful** GitHub Actions run for their own pushed SHA: runs 35505322723 and
+35505729541 / 35505729555.
+
+**Nothing is public.** Both repositories stay private and no `DESTINATIONS.json` exists, so the
+manifest still derives `visibility: private`, `published: false`.
+
+**Cost.** Two cpx32 runs, 51 s and 72 s: well under EUR 0.01 each at the EUR 0.08/h rate, inside the
+EUR 20 monthly allowance.
+
+**Operational observation.** A second coordinator session was already acting on this same job when
+this run started (it collected `noaa-consumer-002`, wrote the `handled` markers, and had begun the
+Hugging Face work). Its committed work is the two CI-green commits above; this entry adds the
+consumer results it had not yet recorded in `record.json` and `STATE.md`. Two coordinators on one job
+ledger is the situation `AGENTS.md` forbids, so the remaining work below is left to whichever session
+is currently driving it - this run launched and destroyed nothing.
+
+**Next action.** The Hugging Face half is in flight: `jobs/noaa-hf-001.json` was launched on worker
+166611959 (10:38) to move the bulk files to the private Hugging Face repository under the generated
+card, with `candidates/noaa-tide-flooding/hf/` holding the plan. Finish it with
+`python3 scripts/hf-publish.py --verify --candidate noaa-tide-flooding`, confirm every config loads,
+then `--tag` last and check the tag and `main` resolve to the same commit. Operator approval is
+required before either destination leaves private, and the open decision on shipping the narrow
+headroom (persistence floor 0.8265/0.8454 against 0.8638/0.8688) or building a harder variant is
+still pending.

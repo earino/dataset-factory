@@ -127,6 +127,35 @@
       "failures": 0,
       "why": "the publish/transfer path is the only step that needs the write credential and the bytes together, so it runs where the bytes are",
       "evidence": ".factory/noaa-publish-001/reports/staging-manifest.json (job manifest, transferred list and zero failures), .factory/noaa-publish-001/result.json"
+    },
+    {
+      "id": "noaa-consumer-001",
+      "status": "failed",
+      "what": "clean-room consumer check of the published bytes (package vs MANIFEST.json, sha256sum -c, published gate, baseline reproduction)",
+      "staging_release": 392392211,
+      "elapsed_seconds": 51.4,
+      "assets_collected": 5,
+      "why": "failed in the dependency/baseline step with nothing in the log: the step sent its output to a file in /output and the container died before uploading it, so the log ends at the step header. Package verification, sha256sums and both gate runs had already passed at that point",
+      "fix": "the run script now installs the benchmark's declared dependency ranges as an explicit step and tees the baseline output into the log; relaunched as noaa-consumer-002",
+      "evidence": ".factory/noaa-consumer-001/result.json, .factory/noaa-consumer-001/reports/{container.log,manifest.json,qualification-temporal.txt,qualification-station_disjoint.txt}"
+    },
+    {
+      "id": "noaa-consumer-002",
+      "status": "succeeded",
+      "what": "the same consumer check rerun with the runtime dependency step made explicit",
+      "staging_release": 392395671,
+      "elapsed_seconds": 72.0,
+      "results": {
+        "package_vs_manifest": "28 files checked, every one matched",
+        "sha256sum_c": "OK on all ten assets",
+        "gate_temporal": "exit 0, QUALIFICATION PASSED, artifact 8896c4423c53cb14",
+        "gate_station_disjoint": "exit 0, QUALIFICATION PASSED, artifact e6aff23f394ddfe4",
+        "baseline_temporal": "CONTRACT OK, eval AUC 0.8651 against the recorded 0.8638",
+        "baseline_station_disjoint": "CONTRACT OK, eval AUC 0.8687 against the recorded 0.8688",
+        "spread": "about 0.002, attributed to xgboost's non-bit-reproducible training: identical artifact digests, identical dependency versions (pandas 2.3.3, numpy 2.5.3, xgboost 3.4.1, scikit-learn 1.9.1), so the recorded baseline is one measurement and not a constant"
+      },
+      "why": "the consumer check is the only evidence that a reader with no access to the building repository and no credential gets the same dataset and the same result from the published release",
+      "evidence": ".factory/noaa-consumer-002/result.json, .factory/noaa-consumer-002/reports/{container.log,output_consumer.txt}, release/noaa-tide-flooding/VERIFICATION.md"
     }
   ],
   "artifacts": [
@@ -496,5 +525,13 @@
     "candidates/noaa-tide-flooding/datum_regression.json",
     "candidates/noaa-tide-flooding/split_capacity_result.json",
     "candidates/noaa-tide-flooding/station_list_result.json"
-  ]
+  ],
+  "consumer_verification": {
+    "job": "noaa-consumer-002",
+    "levels_checked": "both levels, each treated as its own contract-complete task instance",
+    "clean_room": "worker container with no access to this repository and no GitHub credential; the published repository cloned and hash-checked, the release assets fetched by the worker host and mounted read-only",
+    "result": "PASSED",
+    "reproduction_spread": "0.8651 vs 0.8638 (temporal) and 0.8687 vs 0.8688 (station_disjoint), within about 0.002",
+    "note": "noaa-consumer-001 failed on an unlogged dependency step and is superseded rather than averaged in; neither run scored the holdout"
+  }
 }
