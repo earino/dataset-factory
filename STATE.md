@@ -1,9 +1,52 @@
 # Current state
 
-Updated: 2026-09-20 (latest entry: the NOAA release is complete and verified on BOTH destinations -
-GitHub and Hugging Face, tagged v2026.09 - and still private; a concurrent session's target-column rename
-was not adopted, and a rebuild measured that this source's values are revised, so a re-pull is a new
-artifact).
+Updated: 2026-09-21 (latest entry: a discovery session on `md-sewer-overflow` closed its
+currency question - the two Maryland series abut in 2023, the series is live - proved the
+tokenless NOAA rainfall join, and parked it on the one contract it fails: the negative class
+has no obtainable denominator. No construction was spent.)
+
+## 2026-09-21 08:45 UTC - md-sewer-overflow discovery: currency closed, target contract blocked
+
+The only lead with **no verdict** was `md-sewer-overflow` (`investigating`), so this session
+spent itself on the cheapest-first discovery path and ended with a verdict rather than a link.
+
+**Measured** (`python3 .factory/probe_md_series.py`, Socrata `date_trunc_ym` group-by with
+Cloudflare retries):
+
+| series | total rows | boundary |
+| --- | --- | --- |
+| `3rgd-zjxx` | 27,479 | 2022-12: 122, 2023-01: 30, 2023-02: **7** - ends 2023-02-10 |
+| `stgj-u72u` | 3,439 | 2023-01: **1**, 2023-02: 46, 2023-03: 64 ... 2026-09: 39 |
+
+The series **abut** rather than duplicate: the historical one runs out in February 2023 and the
+current one starts in January 2023 with a single row. The current series grew 3,434 -> 3,439
+since 2026-09-18, a second independent confirmation that it is live. Row-level confirmation is
+still unmeasured - both `$where ... between` range queries failed four times each while the
+group-by in the same run succeeded, and the error body was lost to the session's command
+timeout.
+
+**The rainfall join is proven feasible without a token** (`probe_md_rainfall2/3.py`):
+`ncei.noaa.gov/data/global-historical-climatology-network-daily/access/<ID>.csv` answers 200
+with PRCP populated on 877/1055, 1291/1296 and 1242/1266 days since 2023-01-01 for three
+stations tested; CDO API v2 without a token is HTTP 400. `ghcnd-inventory.txt` supplies the
+per-element first/last year that `ghcnd-stations.txt` lacks. **Not measured:** the Maryland
+active-station count - my station filter read the wrong column, so the 6,873 in
+`probe_md_rainfall_result3.json` is US-wide and must not be quoted as a Maryland figure.
+
+**Parked, with the blocker named.** Contracts 1 (Public Domain, read directly), 2 (prediction
+instant = start of the target day) and 4 (positives across 2005-2026) look satisfiable.
+Contract 3 does not: only facilities that *reported* ever appear, so a facility-day grid built
+from these tables alone has a survivorship-biased negative class, and no Maryland
+collection-system registry has been identified or tested. The novelty check is also unrun.
+Spending construction on a denominator that may not exist is exactly what the discovery skill
+exists to prevent, so the verdict is `parked` rather than `ready`.
+
+**Recorded**: `candidates/md-sewer-overflow/record.json` (`status`/`verdict` = parked,
+`parked_reason`, `open_questions`, `next_action`, and the measurements above),
+`candidates/md-sewer-overflow/notes.md`, and the four probes plus their JSON results in
+`.factory/`. Nothing was built, no worker was launched, no credential was touched.
+
+
 
 ## Objective
 

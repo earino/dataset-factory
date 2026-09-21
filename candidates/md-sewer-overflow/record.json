@@ -1,6 +1,8 @@
 {
   "id": "md-sewer-overflow",
-  "status": "investigating",
+  "status": "parked",
+  "verdict": "parked",
+  "rejection_reason": "Parked (not dropped): the source itself is fine - Public Domain licence read directly from both view endpoints, and the two series abut in 2023 with the current one updating (3,434 -> 3,439 rows since 2026-09-18). It is parked on the target contract: only facilities that reported an overflow ever appear in either series, so a facility-day grid built from these tables alone has a survivorship-biased negative class, and no Maryland collection-system registry (MDE / EPA ICIS-NPDES) has been identified or tested. The 2023 row-level reconciliation and the novelty check are also still open. Blocked on whether a facility registry is obtainable.",
   "created_at": "2026-09-18T09:31:09.007685+00:00",
   "domain": "wastewater infrastructure / regulatory spill reporting",
   "prediction_question": "For a Maryland collection system on a given day, will a sanitary sewer overflow be reported?",
@@ -99,11 +101,34 @@
       "measured_on": "2026-09-18 via Socrata aggregates with retry (Cloudflare intermittently returns 403)"
     },
     "measured_on": "2026-09-18 via Socrata aggregate queries",
-    "gap": "RESOLVED. The earlier series stops at 2023-02-10, but stgj-u72u carries 2023-2026 and was updated 2026-09-18, so the candidate is not historical-only. The two series overlap or abut in 2023 and must be reconciled before use."
+    "gap": "RESOLVED. The earlier series stops at 2023-02-10, but stgj-u72u carries 2023-2026 and was updated 2026-09-18, so the candidate is not historical-only. The two series overlap or abut in 2023 and must be reconciled before use.",
+    "series_boundary_measured_2026_09_21": {
+      "command": "python3 .factory/probe_md_series.py (Socrata $select=date_trunc_ym(...) $group=ym, retried on Cloudflare 403)",
+      "hist_3rgd_zjxx_total_rows": 27479,
+      "hist_last_months": {"2022-12": 122, "2023-01": 30, "2023-02": 7},
+      "hist_last_date": "2023-02-10 (from the earlier session's aggregate)",
+      "curr_stgj_u72u_total_rows": 3439,
+      "curr_first_months": {"2023-01": 1, "2023-02": 46, "2023-03": 64},
+      "curr_last_month": {"2026-09": 39},
+      "curr_rows_growth_since_2026_09_18": 5,
+      "interpretation": "The two series abut rather than duplicate: the historical series runs out in February 2023 and the current one picks up in January 2023 with a single row. There is no month the two series both cover densely, so the reconciliation is a boundary trim, not a de-duplication. Row-level confirmation of that is still UNMEASURED - see open_questions.",
+      "rainfall_source_measured_2026_09_21": {
+        "tokenless_path": "https://www.ncei.noaa.gov/data/global-historical-climatology-network-daily/access/<STATION_ID>.csv",
+        "result": "reachable, HTTP 200, text/csv; three station files fetched (2.4-4.5 MB each) with PRCP populated for 877/1055, 1291/1296 and 1242/1266 days since 2023-01-01",
+        "station_metadata": "ghcnd-stations.txt 11395258 bytes / 132503 lines and ghcnd-inventory.txt are both fetchable without a token; the inventory gives per-element first/last year, which is the filter the station list lacks",
+        "cdo_api_v2": "https://www.ncei.noaa.gov/cdo-web/api/v2/stations without a token returns HTTP 400 - the tokenless GHCN-Daily access-CSV path is the one to use",
+        "not_measured": "the Maryland active-station count: the station-id filter read the wrong column of ghcnd-stations.txt on the first attempt, so the 6873 figure in .factory/probe_md_rainfall_result3.json is a US-wide count, not Maryland's. The join feasibility itself is established; the MD station set is not."
+      }
+    }
   },
   "jobs": [],
   "artifacts": [],
-  "rejection_reason": null,
   "review": null,
-  "next_action": "Reconcile the 2023 overlap between 3rgd-zjxx and stgj-u72u, test the NOAA rainfall join from this host, and measure the facility-day event rate. Currency is no longer a concern."
+  "open_questions": [
+    "The negative class has no obtainable denominator: neither series contains a facility that never reported, so a facility-day grid built from the tables alone is survivorship-biased. A Maryland collection-system registry (MDE / EPA ICIS-NPDES) has not been identified or tested.",
+    "Row-level 2023 reconciliation is unmeasured. The two $where ... between range queries failed four times each against both datasets on 2026-09-21 (the monthly date_trunc_ym group-by works, so use that form); the error body was not retained because the run was cut short.",
+    "The facility-day event rate is unmeasured - it needs the grid above before it means anything.",
+    "No novelty check has been run: scripts/check-novelty.py has no verdict recorded for this candidate."
+  ],
+  "next_action": "Test whether a Maryland collection-system registry is obtainable (MDE open data catalog or EPA ICIS-NPDES/ECHO facility file) - that is the target contract's blocker and the only thing standing between this candidate and `ready`. In the same session, redo the 2023 boundary reconciliation with the working date_trunc_ym form and run check-novelty.py against 'sanitary sewer overflow' / 'combined sewer overflow prediction'. If no registry can be obtained, drop the candidate rather than constructing a survivorship-biased denominator."
 }
