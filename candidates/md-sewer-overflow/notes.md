@@ -78,9 +78,11 @@ boundary trim rather than a de-duplication. The current series has grown by 5 ro
 2026-09-18 (3,434 -> 3,439), which is the second independent confirmation that it is live.
 
 Row-level confirmation is **not** done: the two `$where <datecol> between '...' and '...'`
-range queries failed four times each against both datasets (the monthly group-by in the same
-run succeeded). The error body was lost when the run hit the session's command timeout, so
-the next session should retry with the working `date_trunc_ym` form first.
+range queries failed against **both** datasets with HTTP 403 on every attempt (five on the
+first run - whose traceback arrived after the session had already written up; four on the
+second). The same runs' `$select`/`$group` queries all succeeded, so the refusal tracks the
+quoted-literal `$where` URL shape rather than the host being down. Retry with an unquoted
+range form, or page with `$limit`/`$order`, before concluding anything about the series.
 
 ### The rainfall join is feasible without a token
 

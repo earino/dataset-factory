@@ -112,6 +112,7 @@
       "curr_last_month": {"2026-09": 39},
       "curr_rows_growth_since_2026_09_18": 5,
       "interpretation": "The two series abut rather than duplicate: the historical series runs out in February 2023 and the current one picks up in January 2023 with a single row. There is no month the two series both cover densely, so the reconciliation is a boundary trim, not a de-duplication. Row-level confirmation of that is still UNMEASURED - see open_questions.",
+      "row_level_queries_failed": "The two $where range queries failed against BOTH datasets: HTTP 403 every time, five attempts on the first run and four on the second (captured when the first run's traceback arrived after that session reported). The host does serve an intermittent 403 from behind Cloudflare - the candidate already records it - but the fact that the same run's $select/$group queries all succeeded and only the quoted-literal $where ranges were refused points at the URL shape, so the next attempt should filter with an unquoted range form or page with $limit/$order instead of 'between' before concluding anything about the host.",
       "rainfall_source_measured_2026_09_21": {
         "tokenless_path": "https://www.ncei.noaa.gov/data/global-historical-climatology-network-daily/access/<STATION_ID>.csv",
         "result": "reachable, HTTP 200, text/csv; three station files fetched (2.4-4.5 MB each) with PRCP populated for 877/1055, 1291/1296 and 1242/1266 days since 2023-01-01",

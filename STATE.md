@@ -21,9 +21,10 @@ Cloudflare retries):
 The series **abut** rather than duplicate: the historical one runs out in February 2023 and the
 current one starts in January 2023 with a single row. The current series grew 3,434 -> 3,439
 since 2026-09-18, a second independent confirmation that it is live. Row-level confirmation is
-still unmeasured - both `$where ... between` range queries failed four times each while the
-group-by in the same run succeeded, and the error body was lost to the session's command
-timeout.
+still unmeasured - both `$where ... between` range queries answered **HTTP 403** on every
+attempt (five on the first run, four on the second; the first run's traceback arrived after
+this session had already written up) while the `$select`/`$group` queries in the same runs all
+succeeded, so the refusal tracks the quoted-literal `$where` URL shape, not the host.
 
 **The rainfall join is proven feasible without a token** (`probe_md_rainfall2/3.py`):
 `ncei.noaa.gov/data/global-historical-climatology-network-daily/access/<ID>.csv` answers 200
