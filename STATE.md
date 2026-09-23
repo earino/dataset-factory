@@ -1,9 +1,10 @@
 # Current state
 
-Updated: 2026-09-21 (latest entry: a discovery session on `md-sewer-overflow` closed its
-currency question - the two Maryland series abut in 2023, the series is live - proved the
-tokenless NOAA rainfall join, and parked it on the one contract it fails: the negative class
-has no obtainable denominator. No construction was spent.)
+Updated: 2026-09-23 (latest entry: a discovery session on `md-sewer-overflow` answered its registry
+blocker - an independent facility roster exists (EPA ICIS-NPDES, 336 MB, anonymous; MDE's own
+rosters measured as partial, covering 40 and 129 of the 322 reporting NPDES IDs) - recorded the
+novelty check as `differentiated`, and left the candidate parked on roster coverage alone. No
+construction was spent.)
 
 ## 2026-09-21 08:45 UTC - md-sewer-overflow discovery: currency closed, target contract blocked
 
@@ -2054,3 +2055,47 @@ the publication decision, because that act already regenerates `MANIFEST.json` a
 documents - this should be settled before it, not during it. Evidence in
 `candidates/noaa-tide-flooding/record.json` (`artifacts[0].github_tag_state`); it also corrects this file
 at line 1755, which assumed the tagged commit carried the current docs.
+
+
+## 2026-09-23 08:10 UTC - md-sewer-overflow: the registry blocker is answered, the rosters are partial
+
+The only candidate whose blocker was Scout's own work rather than the operator's was
+`md-sewer-overflow`, so this session spent itself on its recorded next action: does a facility
+registry exist that is independent of the overflow reports? **Yes - measured three ways, none of
+them exhaustive.**
+
+| source | measured | covers the reports' keys |
+| --- | --- | --- |
+| EPA `npdes_downloads.zip` -> `ICIS_FACILITIES.csv` | 352,268,538 bytes, anonymous, `Range` -> **206**, 15 members, member 193,927,778 bytes uncompressed | filterable to `STATE_CODE=MD`; coverage unmeasured (336 MB pull = worker work) |
+| MDE "Significant Wastewater Treatment Plants" (`2h5v-duyx`, `ct9h-nxwr`) | 76 rows, 76 distinct `npdes_id`, all Major POTWs | **40 of 322**; 36 roster facilities never report |
+| MDE "Point Source Discharges" (`wdtu-5pbn`, `rwxr-95kt`) | 863 rows, 829 distinct `npdesid`, incl. 184 Waste Water Treatment Plant, 63 POTW, 2 CSO | **129 of 322** |
+
+Also measured: the two series carry **126** and **247** distinct NPDES keys (**322** union); the
+76-facility roster accounts for **1,024** reports (907 + 117) via `$where npdes in('MD...')`. That
+`in(...)` form works, which **explains the 2026-09-21 HTTP 403s**: they tracked the quoted-literal
+`between` form, not the host - so the outstanding 2023 reconciliation is a retry, not a blocked
+route. Column names differ per dataset (`npdes`, `npdes_no`, `npdes_id`, `npdesid`) and a wrong one
+returns `query.soql.no-such-column`, which reads like an empty dataset - the trap that compounded
+those 403s. The EPA zip was inspected by **byte-range reads only** (EOCD + central directory); no
+bulk data touched the coordinator, no worker was launched, no credential was used.
+
+**The novelty check is now recorded**: `python3 scripts/check-novelty.py md-sewer-overflow ... 
+--verdict differentiated` -> `ok: true` at 2026-09-23T08:08:06Z. Prior art models citywide CSO from
+internal telemetry (DeepCSO), classifies pipe defects (Sewer-ML), or ships loose code
+(tbep-tech/sso-dash, HamedGhodsi90/CSO_Real-Time_Prediction, AlexLipp/cso_scaling); Hugging Face
+returns 0 datasets for both overflow queries.
+
+**Still `parked`, with the blocker narrowed rather than cleared.** The roster exists, but its
+coverage of the 322 reporting IDs is unmeasured, and split windows and base rates are unmeasured.
+Dropping was wrong (a route exists) and `ready` would be a claim without coverage evidence.
+
+**Recorded**: `candidates/md-sewer-overflow/record.json` (rewritten `rejection_reason`,
+`next_action`, `open_questions`, three added sources, `measurements.registry_probe_2026_09_23`, the
+novelty check), `notes.md`, and the six probes with their JSON results in `.factory/`.
+
+**Next action.** Run the roster pull as a worker job - download `npdes_downloads.zip`, extract
+`ICIS_FACILITIES.csv`, keep `STATE_CODE=MD`, stage the filtered roster - and measure how many of the
+322 reporting NPDES IDs it covers. If it covers them, write the facility-day construction with the
+GHCN-Daily rainfall features; if not, drop the candidate rather than construct a biased denominator.
+Then redo the 2023 reconciliation with `$where npdes in(...)` and compute the split windows and base
+rates. Nothing public, nothing released, no worker spend of any kind this session.

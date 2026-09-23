@@ -2,7 +2,7 @@
   "id": "md-sewer-overflow",
   "status": "parked",
   "verdict": "parked",
-  "rejection_reason": "Parked (not dropped): the source itself is fine - Public Domain licence read directly from both view endpoints, and the two series abut in 2023 with the current one updating (3,434 -> 3,439 rows since 2026-09-18). It is parked on the target contract: only facilities that reported an overflow ever appear in either series, so a facility-day grid built from these tables alone has a survivorship-biased negative class, and no Maryland collection-system registry (MDE / EPA ICIS-NPDES) has been identified or tested. The 2023 row-level reconciliation and the novelty check are also still open. Blocked on whether a facility registry is obtainable.",
+  "rejection_reason": "Parked (not dropped). The registry blocker is now ANSWERED, and what remains is one bounded worker pull plus the split/base-rate measurements. Measured 2026-09-23: a facility roster that is independent of the overflow reports does exist - EPA's ICIS-NPDES 'ICIS_FACILITIES.csv' ships in https://echo.epa.gov/files/echodownloads/npdes_downloads.zip (352,268,538 bytes, anonymous, supports byte ranges, member ICIS_FACILITIES.csv 193,927,778 bytes uncompressed / 71,317,447 compressed; documented fields NPDES_ID, FACILITY_UIN, FACILITY_TYPE_CODE, CITY, COUNTY_CODE, STATE_CODE, lat/long on EPA's ICIS-NPDES download summary page). Maryland's own portal also carries rosters, but each is a SUBSET and was measured as such: 'Significant Wastewater Treatment Plants' (2h5v-duyx and its duplicate ct9h-nxwr) is 76 distinct NPDES IDs, all Major POTWs - 40 of them appear in the reports, 36 never report in either series; 'Point Source Discharges' (wdtu-5pbn / rwxr-95kt, 863 rows, 829 distinct NPDES IDs, permit categories including 184 Waste Water Treatment Plant, 63 Publically Owned Treatment Waste Water, 2 Combined Sewer Overflow, 39 Stormwater Discharge) covers only 129 of the reports' 322 distinct NPDES IDs. Neither Maryland roster is therefore exhaustive. Remaining blocker: pull ICIS_FACILITIES.csv, filter STATE_CODE=MD, and measure how many of the reports' 322 distinct NPDES IDs it covers and whether it distinguishes collection systems from industrial outfalls; until that is measured a facility-day grid cannot be asserted to be complete. Also still open: the 2023 row-level reconciliation and the split/base-rate counts (the only amount measured so far is 322 distinct reporting NPDES IDs, 126 in the old series and 247 in the new, and 1,024 reports attributable to the 76-facility major-POTW roster).",
   "created_at": "2026-09-18T09:31:09.007685+00:00",
   "domain": "wastewater infrastructure / regulatory spill reporting",
   "prediction_question": "For a Maryland collection system on a given day, will a sanitary sewer overflow be reported?",
@@ -25,6 +25,27 @@
       "name": "Rainfall feature source",
       "url": "https://www.ncei.noaa.gov/cdo-web/",
       "access": "not yet tested; required for the feature join"
+    },
+    {
+      "name": "EPA ECHO - ICIS-NPDES bulk download (facility registry)",
+      "url": "https://echo.epa.gov/files/echodownloads/npdes_downloads.zip",
+      "api": "https://echo.epa.gov/tools/data-downloads/icis-npdes-download-summary",
+      "access": "anonymous HTTPS, no key, byte ranges supported (206 on Range); verified 2026-09-23. 352,268,538 bytes; the zip's central directory lists 15 members and ICIS_FACILITIES.csv (193,927,778 bytes uncompressed) carries NPDES_ID, FACILITY_TYPE_CODE, STATE_CODE and lat/long.",
+      "license": "public domain (US Government work)"
+    },
+    {
+      "name": "Maryland Open Data - Significant Wastewater Treatment Plants",
+      "url": "https://opendata.maryland.gov/d/2h5v-duyx",
+      "api": "https://opendata.maryland.gov/resource/2h5v-duyx.json",
+      "access": "anonymous Socrata API, verified live 2026-09-23; 76 rows, all Major POTWs; duplicate sibling dataset ct9h-nxwr has identical rows",
+      "license": "not stated on the view metadata (license null); MDE-published open data"
+    },
+    {
+      "name": "Maryland Open Data - Point Source Discharges",
+      "url": "https://opendata.maryland.gov/d/wdtu-5pbn",
+      "api": "https://opendata.maryland.gov/resource/wdtu-5pbn.json",
+      "access": "anonymous Socrata API, verified live 2026-09-23; 863 rows, 829 distinct npdesid; duplicate sibling dataset rwxr-95kt has identical rows",
+      "license": "not stated on the view metadata (license null); MDE-published open data"
     }
   ],
   "license_evidence": [
@@ -105,11 +126,21 @@
     "series_boundary_measured_2026_09_21": {
       "command": "python3 .factory/probe_md_series.py (Socrata $select=date_trunc_ym(...) $group=ym, retried on Cloudflare 403)",
       "hist_3rgd_zjxx_total_rows": 27479,
-      "hist_last_months": {"2022-12": 122, "2023-01": 30, "2023-02": 7},
+      "hist_last_months": {
+        "2022-12": 122,
+        "2023-01": 30,
+        "2023-02": 7
+      },
       "hist_last_date": "2023-02-10 (from the earlier session's aggregate)",
       "curr_stgj_u72u_total_rows": 3439,
-      "curr_first_months": {"2023-01": 1, "2023-02": 46, "2023-03": 64},
-      "curr_last_month": {"2026-09": 39},
+      "curr_first_months": {
+        "2023-01": 1,
+        "2023-02": 46,
+        "2023-03": 64
+      },
+      "curr_last_month": {
+        "2026-09": 39
+      },
       "curr_rows_growth_since_2026_09_18": 5,
       "interpretation": "The two series abut rather than duplicate: the historical series runs out in February 2023 and the current one picks up in January 2023 with a single row. There is no month the two series both cover densely, so the reconciliation is a boundary trim, not a de-duplication. Row-level confirmation of that is still UNMEASURED - see open_questions.",
       "row_level_queries_failed": "The two $where range queries failed against BOTH datasets: HTTP 403 every time, five attempts on the first run and four on the second (captured when the first run's traceback arrived after that session reported). The host does serve an intermittent 403 from behind Cloudflare - the candidate already records it - but the fact that the same run's $select/$group queries all succeeded and only the quoted-literal $where ranges were refused points at the URL shape, so the next attempt should filter with an unquoted range form or page with $limit/$order instead of 'between' before concluding anything about the host.",
@@ -120,16 +151,181 @@
         "cdo_api_v2": "https://www.ncei.noaa.gov/cdo-web/api/v2/stations without a token returns HTTP 400 - the tokenless GHCN-Daily access-CSV path is the one to use",
         "not_measured": "the Maryland active-station count: the station-id filter read the wrong column of ghcnd-stations.txt on the first attempt, so the 6873 figure in .factory/probe_md_rainfall_result3.json is a US-wide count, not Maryland's. The join feasibility itself is established; the MD station set is not."
       }
-    }
+    },
+    "registry_probe_2026_09_23": {
+      "command": "python3 .factory/probe_md_registry.py; .factory/probe_md_registry2.py; .factory/probe_md_registry3.py; .factory/probe_md_registry4.py; .factory/probe_md_registry5.py (results: .factory/probe_md_registry*_result.json)",
+      "maryland_catalog_search": "api.us.socrata.com catalog v1 over opendata.maryland.gov: 'npdes' 11 hits, 'discharge permit' 8, 'wastewater treatment plant' 7, 'sewer overflow facility' 4",
+      "epa_zip": {
+        "url": "https://echo.epa.gov/files/echodownloads/npdes_downloads.zip",
+        "bytes": 352268538,
+        "range_request": "206 bytes 351968538-352268537/352268538",
+        "members": 15,
+        "icis_facilities_csv": {
+          "compressed": 71317447,
+          "uncompressed": 193927778
+        },
+        "method": "ranged read of the last 300,000 bytes + EOCD/central-directory parse; no bulk download on the coordinator"
+      },
+      "echo_rest": "echodata.epa.gov/echo/echo_rest_services.get_facilities returned QueryID 607 once and an Error payload on the paged follow-up (QueryID 853, Results={Error}); the REST search was not usable from here and is not relied on",
+      "reporting_keys": {
+        "distinct_npdes_3rgd_zjxx": 126,
+        "distinct_npdes_no_stgj_u72u": 247,
+        "union": 322
+      },
+      "mde_roster_major_potws": {
+        "distinct_npdes_ids": 76,
+        "rows_2h5v_duyx": 76,
+        "rows_ct9h_nxwr": 76,
+        "facility_type_counts": {
+          "POTW": 146,
+          "FEDERAL": 6
+        },
+        "reports_in_roster": 40,
+        "roster_never_reported": 36
+      },
+      "mde_point_source_discharges": {
+        "rows": 863,
+        "distinct_npdesid": 829,
+        "permit_categories": {
+          "Water Treatment Plant": 22,
+          "Cooling Water": 33,
+          "Mineral Mine": 181,
+          "unset": 87,
+          "Swimming Pool": 90,
+          "Waste Water Treatment Plant": 184,
+          "Publically Owned Treatment Waste Water": 63,
+          "Stormwater Discharge": 39,
+          "Combined Sewer Overflow": 2
+        },
+        "reports_covered": 129,
+        "reports_missing": 193
+      },
+      "roster_positives": {
+        "in_3rgd_zjxx": 907,
+        "in_stgj_u72u": 117,
+        "total": 1024,
+        "note": "counts of reports attributable to the 76 major-POTW roster, via $where npdes in(...) - the 'in(...)' form works where the quoted-literal 'between' form answered 403 on 2026-09-21"
+      }
+    },
+    "notation_trap": "$where npdes in('MD...') is accepted; the earlier HTTP 403s tracked the quoted-literal range form ($where <date> between '...' and '...'), not the host. Socrata column names also differ per dataset: npdes (3rgd-zjxx), npdes_no (stgj-u72u), npdes_id (roster), npdesid (point source) - a wrong column name returns query.soql.no-such-column, which reads like an empty dataset."
   },
   "jobs": [],
   "artifacts": [],
   "review": null,
   "open_questions": [
-    "The negative class has no obtainable denominator: neither series contains a facility that never reported, so a facility-day grid built from the tables alone is survivorship-biased. A Maryland collection-system registry (MDE / EPA ICIS-NPDES) has not been identified or tested.",
-    "Row-level 2023 reconciliation is unmeasured. The two $where ... between range queries failed four times each against both datasets on 2026-09-21 (the monthly date_trunc_ym group-by works, so use that form); the error body was not retained because the run was cut short.",
-    "The facility-day event rate is unmeasured - it needs the grid above before it means anything.",
-    "No novelty check has been run: scripts/check-novelty.py has no verdict recorded for this candidate."
+    "Does EPA's ICIS_FACILITIES.csv (STATE_CODE=MD) cover all 322 distinct NPDES IDs that appear in the two overflow series, and does FACILITY_TYPE_CODE distinguish collection systems / POTWs from industrial outfalls? Unmeasured - it needs the 336 MB zip pulled on a worker.",
+    "Split windows and base rates are unmeasured. Measured so far: 322 distinct reporting NPDES IDs (126 old series, 247 current), and 1,024 reports attributable to the 76-facility major-POTW subset.",
+    "Facility-day event rate is unmeasured - it needs the roster grid above.",
+    "Row-level 2023 reconciliation is unmeasured. The $where form that works is 'in(...)'; the quoted-literal 'between' form returned HTTP 403 on 2026-09-21 and was not retried this session.",
+    "Maryland's monthly rainfall station coverage is unmeasured (the 6,873 figure from 2026-09-21 is US-wide and must not be quoted as a Maryland count)."
   ],
-  "next_action": "Test whether a Maryland collection-system registry is obtainable (MDE open data catalog or EPA ICIS-NPDES/ECHO facility file) - that is the target contract's blocker and the only thing standing between this candidate and `ready`. In the same session, redo the 2023 boundary reconciliation with the working date_trunc_ym form and run check-novelty.py against 'sanitary sewer overflow' / 'combined sewer overflow prediction'. If no registry can be obtained, drop the candidate rather than constructing a survivorship-biased denominator."
+  "next_action": "Narrowed 2026-09-23 by the registry probes: a roster exists (EPA npdes_downloads.zip, 336 MB, anonymous and ranged-readable; Maryland's own rosters are partial - 76 major POTWs, 829 point sources, covering 40 and 129 of the 322 reporting IDs). Next, in order: (1) run the roster pull as a worker job (download npdes_downloads.zip, extract ICIS_FACILITIES.csv, keep STATE_CODE=MD rows only, upload the filtered roster to staging) and measure how many of the 322 reporting NPDES IDs it covers - this is the last thing standing between the candidate and `ready`; if it covers them, write the facility-day construction with rainfall features; if it does not, drop the candidate rather than constructing a biased denominator. (2) redo the 2023 boundary reconciliation using $where npdes in(...) - the form that works. (3) measure split windows and base rates from the source. The novelty check is DONE (verdict `differentiated`, recorded 2026-09-23; DeepCSO models citywide CSO from internal telemetry, and the GitHub repos tbep-tech/sso-dash, HamedGhodsi90/CSO_Real-Time_Prediction and AlexLipp/cso_scaling ship code, not a packaged task).",
+  "novelty_check": {
+    "checked_at": "2026-09-23T08:08:06+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "sanitary sewer overflow",
+      "combined sewer overflow prediction",
+      "wastewater overflow rainfall"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "sanitary sewer overflow",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "combined sewer overflow prediction",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "wastewater overflow rainfall",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "sanitary sewer overflow",
+          "hits": 6256,
+          "top": [
+            "tbep-tech/sso-dash: v1.1.0",
+            "HamedGhodsi90/CSO_Real-Time_Prediction:",
+            "AlexLipp/cso_scaling: Submission",
+            "Development of an innovative filtration & adsorption process for the treatment of municipal wastewater discharged by combined sewer overflows: the TREAT CSO pilot plant",
+            "Characteristics of the urban sewer system and rat presence in Seattle"
+          ]
+        },
+        {
+          "query": "combined sewer overflow prediction",
+          "hits": 169962,
+          "top": [
+            "HamedGhodsi90/CSO_Real-Time_Prediction:",
+            "AlexLipp/cso_scaling: Submission",
+            "Performance of a biochar produced from cellulose as admixture in constructed wetlands used to treat wastewater effluent and combined sewer overflows",
+            "Hydrodynamic and water quality modelling of a free water surface constructed wetland for urban runoff mitigation",
+            "CSO Dataset Analysis"
+          ]
+        },
+        {
+          "query": "wastewater overflow rainfall",
+          "hits": 23446,
+          "top": [
+            "Combined sewer overflows attributable to wet weather season contributing to pharmaceutical pollution: a case study in northern Spain",
+            "Rainfall",
+            "Development of an innovative filtration & adsorption process for the treatment of municipal wastewater discharged by combined sewer overflows: the TREAT CSO pilot plant",
+            "Results for 'Decomposition of Wastewater Sources in England'",
+            "Savings in treatment of stormwater in Valladolid city"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "sanitary sewer overflow",
+          "hits": 5,
+          "top": [
+            "Sewer-ML: A Multi-Label Sewer Defect Classification Dataset and Benchmark",
+            "A Resilient Solution for Sewer Overflow Monitoring across Cloud and Edge",
+            "DeepCSO: Forecasting of Combined Sewer Overflow at a Citywide Level using Multi-task Deep Learning",
+            "Automated Energy-Aware Time-Series Model Deployment on Embedded FPGAs for Resilient Combined Sewer Overflow Management",
+            "Stochastic Model Predictive Control and Sewer Networks"
+          ]
+        },
+        {
+          "query": "combined sewer overflow prediction",
+          "hits": 5,
+          "top": [
+            "Sewer-ML: A Multi-Label Sewer Defect Classification Dataset and Benchmark",
+            "DeepCSO: Forecasting of Combined Sewer Overflow at a Citywide Level using Multi-task Deep Learning",
+            "A Resilient Solution for Sewer Overflow Monitoring across Cloud and Edge",
+            "Automated Energy-Aware Time-Series Model Deployment on Embedded FPGAs for Resilient Combined Sewer Overflow Management",
+            "Stochastic Model Predictive Control and Sewer Networks"
+          ]
+        },
+        {
+          "query": "wastewater overflow rainfall",
+          "hits": 5,
+          "top": [
+            "DevOps and General Developers: Insights from Stack Overflow's 2023 Survey",
+            "ARB inactivation, ARGs and antibiotics degradation in hospital wastewater",
+            "Synthesis and Characterization of NiCoMn MOFs for Wastewater Treatment",
+            "Modeling of Wastewater Treatment Processes with HydroSludge",
+            "Evaluating Time Series Models for Urban Wastewater Management: Predictive Performance, Model Complexity and Resilience"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'sanitary sewer overflow': 0 hit(s) - nothing notable\n- huggingface_datasets / 'combined sewer overflow prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'wastewater overflow rainfall': 0 hit(s) - nothing notable\n- zenodo_records / 'sanitary sewer overflow': 6256 hit(s) - tbep-tech/sso-dash: v1.1.0, HamedGhodsi90/CSO_Real-Time_Prediction:, AlexLipp/cso_scaling: Submission, Development of an innovative filtration & adsorption process for the treatment of municipal wastewater discharged by combined sewer overflows: the TREAT CSO pilot plant, Characteristics of the urban sewer system and rat presence in Seattle\n- zenodo_records / 'combined sewer overflow prediction': 169962 hit(s) - HamedGhodsi90/CSO_Real-Time_Prediction:, AlexLipp/cso_scaling: Submission, Performance of a biochar produced from cellulose as admixture in constructed wetlands used to treat wastewater effluent and combined sewer overflows, Hydrodynamic and water quality modelling of a free water surface constructed wetland for urban runoff mitigation, CSO Dataset Analysis\n- zenodo_records / 'wastewater overflow rainfall': 23446 hit(s) - Combined sewer overflows attributable to wet weather season contributing to pharmaceutical pollution: a case study in northern Spain, Rainfall, Development of an innovative filtration & adsorption process for the treatment of municipal wastewater discharged by combined sewer overflows: the TREAT CSO pilot plant, Results for 'Decomposition of Wastewater Sources in England', Savings in treatment of stormwater in Valladolid city\n- arxiv_preprints / 'sanitary sewer overflow': 5 hit(s) - Sewer-ML: A Multi-Label Sewer Defect Classification Dataset and Benchmark, A Resilient Solution for Sewer Overflow Monitoring across Cloud and Edge, DeepCSO: Forecasting of Combined Sewer Overflow at a Citywide Level using Multi-task Deep Learning, Automated Energy-Aware Time-Series Model Deployment on Embedded FPGAs for Resilient Combined Sewer Overflow Management, Stochastic Model Predictive Control and Sewer Networks\n- arxiv_preprints / 'combined sewer overflow prediction': 5 hit(s) - Sewer-ML: A Multi-Label Sewer Defect Classification Dataset and Benchmark, DeepCSO: Forecasting of Combined Sewer Overflow at a Citywide Level using Multi-task Deep Learning, A Resilient Solution for Sewer Overflow Monitoring across Cloud and Edge, Automated Energy-Aware Time-Series Model Deployment on Embedded FPGAs for Resilient Combined Sewer Overflow Management, Stochastic Model Predictive Control and Sewer Networks\n- arxiv_preprints / 'wastewater overflow rainfall': 5 hit(s) - DevOps and General Developers: Insights from Stack Overflow's 2023 Survey, ARB inactivation, ARGs and antibiotics degradation in hospital wastewater, Synthesis and Characterization of NiCoMn MOFs for Wastewater Treatment, Modeling of Wastewater Treatment Processes with HydroSludge, Evaluating Time Series Models for Urban Wastewater Management: Predictive Performance, Model Complexity and Resilience",
+    "prior_art": [
+      "DeepCSO (arXiv, citywide CSO forecasting with multi-task deep learning)",
+      "github.com/tbep-tech/sso-dash; github.com/HamedGhodsi90/CSO_Real-Time_Prediction; github.com/AlexLipp/cso_scaling",
+      "Sewer-ML (multi-label sewer defect classification dataset - a different task: pipe CCTV defects, not overflow events)"
+    ],
+    "theirs": "EPA publishes the raw ICIS-NPDES files and MDE publishes the overflow reports and partial rosters; neither ships the joined facility-day task, its temporal splits or a scored contract. Prior art models citywide CSO from internal utility telemetry (DeepCSO) and open GitHub code (tbep-tech/sso-dash, HamedGhodsi90/CSO_Real-Time_Prediction, AlexLipp/cso_scaling) - no ML-ready dataset with splits.",
+    "ours": "A facility-day prediction task over Maryland collection systems: the roster comes from an independent permit registry (EPA ICIS-NPDES facility file; MDE's own inventories are partial and measured as such), so facilities that never reported are rows in the grid rather than absent; features are rainfall (GHCN-Daily access CSVs, tokenless) and facility identity; positives are the two MDE public-domain reported-overflow series, abutting in 2023.",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
 }

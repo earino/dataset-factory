@@ -126,3 +126,54 @@ If (1) fails, drop the candidate rather than constructing the biased denominator
 Pre-session next action, kept as the record of that state: "Reconcile the 2023 overlap
 between the two series, test the NOAA rainfall join, and measure the facility-day event
 rate." The rainfall join is now tested (above); the other two carry forward.
+
+## Discovery session 2026-09-23: the registry blocker is answered, and the rosters are partial
+
+Probes: `.factory/probe_md_registry.py`, `_2.py`, `_3.py`, `_4.py`, `_5.py`, `_6.py`
+(all read-only; results in `.factory/probe_md_registry*_result.json`). No worker, no credentials,
+no bulk download - the EPA zip was inspected by byte-range reads only.
+
+### A facility roster that is independent of the reports exists
+
+| source | measured 2026-09-23 | covers |
+|---|---|---|
+| EPA `npdes_downloads.zip` (`ICIS_FACILITIES.csv`) | 352,268,538 bytes, anonymous, `Range: bytes=...` -> **206**, 15 zip members; member 193,927,778 bytes uncompressed | all NPDES permit holders, filterable by `STATE_CODE=MD`; fields documented on EPA's ICIS-NPDES download summary (NPDES_ID, FACILITY_TYPE_CODE, lat/long) |
+| MDE `2h5v-duyx` / `ct9h-nxwr` "Significant Wastewater Treatment Plants" | 76 rows, 76 distinct `npdes_id`, all `Major`, type POTW/FEDERAL | **40** of the 322 reporting NPDES IDs; 36 roster facilities never report in either series |
+| MDE `wdtu-5pbn` / `rwxr-95kt` "Point Source Discharges" | 863 rows, 829 distinct `npdesid`, categories incl. 184 Waste Water Treatment Plant, 63 Publically Owned Treatment Waste Water, 2 Combined Sewer Overflow, 39 Stormwater Discharge | **129** of the 322 reporting NPDES IDs |
+
+So the survivorship concern is answered in principle (an external roster exists) but not yet in
+coverage: **no Maryland-side dataset is exhaustive**, and the EPA file's coverage of the 322
+reporting IDs can only be measured by pulling it (336 MB - worker work, not coordinator work).
+
+### Keys and counts measured from the reports
+
+- distinct NPDES keys: `3rgd-zjxx` **126**, `stgj-u72u` **247**, union **322**.
+- reports attributable to the 76-facility major-POTW roster: **907** (old series) + **117** (new) =
+  **1,024**, counted with `$where npdes in('MD...')`.
+- Column names differ per dataset - `npdes`, `npdes_no`, `npdes_id`, `npdesid`. A wrong name returns
+  `query.soql.no-such-column`, which reads like an empty dataset. This is the trap that compounded
+  the earlier 403s.
+- **The earlier 403s are explained**: `$where <col> in('...')` is accepted; the quoted-literal
+  `$where <date> between '...' and '...'` form is what returned HTTP 403. So the 2023 row-level
+  reconciliation is a retry with the working form, not a blocked route.
+
+### The label is "reported", which changes what the denominator has to be
+
+The prediction question is whether an overflow is **reported** on a facility-day. Under-reporting is
+therefore part of the target, not label noise: what the grid needs is an entity roster that is not
+derived from the reports themselves. That is why the roster - not a discharge measurement - is the
+thing this probe was for.
+
+### Novelty check recorded
+
+`python3 scripts/check-novelty.py md-sewer-overflow --query ... --verdict differentiated` ->
+`ok: true`, verdict **differentiated** at 2026-09-23T08:08:06+00:00. Prior art is modelling from
+internal telemetry (DeepCSO), pipe-defect datasets (Sewer-ML) and loose GitHub code
+(tbep-tech/sso-dash, HamedGhodsi90/CSO_Real-Time_Prediction, AlexLipp/cso_scaling); nothing ships
+this facility-day task with splits. Hugging Face datasets: 0 hits for "sanitary sewer overflow" and
+"combined sewer overflow prediction".
+
+### Still parked, with the blocker narrowed
+
+Not `ready`: the roster's coverage of the 322 reporting IDs is unmeasured, and split windows and
+base rates are unmeasured. Not `dropped` either - the roster route is real and now measured.
