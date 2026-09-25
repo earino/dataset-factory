@@ -1,0 +1,325 @@
+{
+  "job": {
+    "id": "noaa-hf-003",
+    "candidate": "noaa-tide-flooding",
+    "server_type": "cpx42",
+    "location": "hel1",
+    "cpus": 4,
+    "memory_mb": 8192,
+    "timeout_minutes": 50,
+    "lifetime_minutes": 70,
+    "max_disk_mb": 8192,
+    "max_artifact_mb": 16,
+    "hf_publish": {
+      "repo": "earino/noaa-tide-flooding",
+      "revision": "main",
+      "source_repo": "earino/noaa-tide-flooding",
+      "assets": [
+        {
+          "asset_id": 588583351,
+          "dest": "station_disjoint-meta.json",
+          "target": "station_disjoint/meta.json",
+          "size": 867,
+          "sha256": "752bf619ffdced446e95250d9787150b93224397b4f09d20db60f41e051fc86a"
+        },
+        {
+          "asset_id": 588583422,
+          "dest": "station_disjoint-private-holdout.csv",
+          "target": "station_disjoint/private/holdout.csv",
+          "size": 4228360,
+          "sha256": "37d772620231806f3aaf7025961d136c91febda3b82b7fe3442180874602c827"
+        },
+        {
+          "asset_id": 588583523,
+          "dest": "station_disjoint-public-eval.csv",
+          "target": "station_disjoint/public/eval.csv",
+          "size": 4229477,
+          "sha256": "be50109320c4af5a925d9f34fedeb6905aed675986ddc9f33c59bd9ac0ba1705"
+        },
+        {
+          "asset_id": 588583624,
+          "dest": "station_disjoint-public-train.csv",
+          "target": "station_disjoint/public/train.csv",
+          "size": 64636168,
+          "sha256": "d7d2bff29c71680962f4421d239121e63beac242b600dd0c23c9b77ac046ce3c"
+        },
+        {
+          "asset_id": 588583760,
+          "dest": "station_disjoint-quality.json",
+          "target": "station_disjoint/quality.json",
+          "size": 3793,
+          "sha256": "6cc116dd9d17576d02b1a5138e863f0f0d28df9a31f4d71fdf2593fe22f067ee"
+        },
+        {
+          "asset_id": 588583822,
+          "dest": "temporal-meta.json",
+          "target": "temporal/meta.json",
+          "size": 750,
+          "sha256": "2f4e3052728c69dd07836d34e3c3cfab80811905d4f974ec0ae018e4a08dacc4"
+        },
+        {
+          "asset_id": 588583868,
+          "dest": "temporal-private-holdout.csv",
+          "target": "temporal/private/holdout.csv",
+          "size": 12475947,
+          "sha256": "89db2e79b60a7185db3e5b937e3b2d29fcbceab016e85c789473c8ac2e104d51"
+        },
+        {
+          "asset_id": 588583940,
+          "dest": "temporal-public-eval.csv",
+          "target": "temporal/public/eval.csv",
+          "size": 12507815,
+          "sha256": "a2d733a8297294a14f9c64b5f9182a274a954b41dcefd411ca6ef00dc74191d3"
+        },
+        {
+          "asset_id": 588584089,
+          "dest": "temporal-public-train.csv",
+          "target": "temporal/public/train.csv",
+          "size": 97931048,
+          "sha256": "60854702933b12cc0909f846bf062016830be189297012021340543c1560e339"
+        },
+        {
+          "asset_id": 588584338,
+          "dest": "temporal-quality.json",
+          "target": "temporal/quality.json",
+          "size": 3795,
+          "sha256": "2448f84c683ff46168d8151d1d074433ae962f6ac8d78c14a813b0cca317405f"
+        }
+      ],
+      "verify_loading": {
+        "configs": {
+          "temporal": {
+            "splits": {
+              "train": {
+                "rows": 697373,
+                "positives": 11774
+              },
+              "eval": {
+                "rows": 89038,
+                "positives": 1815
+              },
+              "holdout": {
+                "rows": 88841,
+                "positives": 2850
+              }
+            },
+            "columns": [
+              "row_id",
+              "station_id",
+              "station_name",
+              "date",
+              "latitude",
+              "longitude",
+              "threshold_ft",
+              "margin_ft",
+              "margin_ratio",
+              "trailing7_mean",
+              "trailing30_mean",
+              "trailing30_std",
+              "exceed_last7",
+              "days_since_exceedance",
+              "day_of_year",
+              "threshold_rank",
+              "observed_max_ft",
+              "minor_flood"
+            ],
+            "label": "minor_flood"
+          },
+          "station_disjoint": {
+            "splits": {
+              "train": {
+                "rows": 461580,
+                "positives": 7513
+              },
+              "eval": {
+                "rows": 29930,
+                "positives": 788
+              },
+              "holdout": {
+                "rows": 29930,
+                "positives": 1090
+              }
+            },
+            "columns": [
+              "row_id",
+              "station_id",
+              "station_name",
+              "date",
+              "latitude",
+              "longitude",
+              "threshold_ft",
+              "margin_ft",
+              "margin_ratio",
+              "trailing7_mean",
+              "trailing30_mean",
+              "trailing30_std",
+              "exceed_last7",
+              "days_since_exceedance",
+              "day_of_year",
+              "threshold_rank",
+              "observed_max_ft",
+              "minor_flood"
+            ],
+            "label": "minor_flood"
+          }
+        }
+      }
+    }
+  },
+  "reservation_eur": "0.45",
+  "rate_ceiling_eur": "0.15",
+  "reserved_hours": 3,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 61440,
+  "source_sha256": "d587af9804b58920f48a8e2806fff258a312d9b56cd3a5ced45b58d7d376c07a",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-09-25T15:20:28.401465+00:00",
+  "expires": 1790353828,
+  "budget_months": [
+    "2026-09"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.1346400000000000",
+  "server_id": 167437889,
+  "known_hosts": "/opt/data/dataset-factory/.factory/noaa-hf-003/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "89.167.95.109",
+  "result": {
+    "job_id": "noaa-hf-003",
+    "status": "succeeded",
+    "uploaded": true,
+    "venv": "/opt/scout/.hf-venv",
+    "pip_bootstrapped": true,
+    "hf_publish": {
+      "repo": "earino/noaa-tide-flooding",
+      "revision": "main",
+      "uploads": [
+        {
+          "target": "station_disjoint/meta.json",
+          "bytes": 867,
+          "sha256": "752bf619ffdced446e95250d9787150b93224397b4f09d20db60f41e051fc86a"
+        },
+        {
+          "target": "station_disjoint/private/holdout.csv",
+          "bytes": 4228360,
+          "sha256": "37d772620231806f3aaf7025961d136c91febda3b82b7fe3442180874602c827"
+        },
+        {
+          "target": "station_disjoint/public/eval.csv",
+          "bytes": 4229477,
+          "sha256": "be50109320c4af5a925d9f34fedeb6905aed675986ddc9f33c59bd9ac0ba1705"
+        },
+        {
+          "target": "station_disjoint/public/train.csv",
+          "bytes": 64636168,
+          "sha256": "d7d2bff29c71680962f4421d239121e63beac242b600dd0c23c9b77ac046ce3c"
+        },
+        {
+          "target": "station_disjoint/quality.json",
+          "bytes": 3793,
+          "sha256": "6cc116dd9d17576d02b1a5138e863f0f0d28df9a31f4d71fdf2593fe22f067ee"
+        },
+        {
+          "target": "temporal/meta.json",
+          "bytes": 750,
+          "sha256": "2f4e3052728c69dd07836d34e3c3cfab80811905d4f974ec0ae018e4a08dacc4"
+        },
+        {
+          "target": "temporal/private/holdout.csv",
+          "bytes": 12475947,
+          "sha256": "89db2e79b60a7185db3e5b937e3b2d29fcbceab016e85c789473c8ac2e104d51"
+        },
+        {
+          "target": "temporal/public/eval.csv",
+          "bytes": 12507815,
+          "sha256": "a2d733a8297294a14f9c64b5f9182a274a954b41dcefd411ca6ef00dc74191d3"
+        },
+        {
+          "target": "temporal/public/train.csv",
+          "bytes": 97931048,
+          "sha256": "60854702933b12cc0909f846bf062016830be189297012021340543c1560e339"
+        },
+        {
+          "target": "temporal/quality.json",
+          "bytes": 3795,
+          "sha256": "2448f84c683ff46168d8151d1d074433ae962f6ac8d78c14a813b0cca317405f"
+        }
+      ],
+      "skipped": [],
+      "failures": [],
+      "bytes": 196018020
+    },
+    "hf_loading": {
+      "configs": {
+        "station_disjoint": {
+          "splits": [
+            "train",
+            "eval",
+            "holdout"
+          ]
+        },
+        "temporal": {
+          "splits": [
+            "train",
+            "eval",
+            "holdout"
+          ]
+        }
+      },
+      "checked": {
+        "station_disjoint/eval": {
+          "rows": 29930,
+          "positives": 788
+        },
+        "station_disjoint/holdout": {
+          "rows": 29930,
+          "positives": 1090
+        },
+        "station_disjoint/train": {
+          "rows": 461580,
+          "positives": 7513
+        },
+        "temporal/eval": {
+          "rows": 89038,
+          "positives": 1815
+        },
+        "temporal/holdout": {
+          "rows": 88841,
+          "positives": 2850
+        },
+        "temporal/train": {
+          "rows": 697373,
+          "positives": 11774
+        }
+      },
+      "ok": true,
+      "problems": []
+    },
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 396718146,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-12d2b26028f468c0d8ff",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-12d2b26028f468c0d8ff/manifest.json",
+    "assets": [
+      {
+        "id": 588634791,
+        "size": 61440,
+        "sha256": "d587af9804b58920f48a8e2806fff258a312d9b56cd3a5ced45b58d7d376c07a"
+      },
+      {
+        "id": 588634824,
+        "size": 65,
+        "sha256": "05dd31c0f3a1dfe6b3ef478729f743d46134655c9a35c1d80b497e3af06f5390"
+      },
+      {
+        "id": 588634851,
+        "size": 9203,
+        "sha256": "84dddfa62f0d11560535acbfb7e4707941aaa54f1771e1755f9e4cca4cbc0f74"
+      }
+    ]
+  },
+  "collected_at": "2026-09-25T15:24:25.590911+00:00",
+  "deleted_at": "2026-09-25T15:27:05.529363+00:00"
+}

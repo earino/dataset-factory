@@ -1,10 +1,69 @@
 # Current state
 
-Updated: 2026-09-25 (latest entry: watcher run on `noaa-publish-002` - the corrected NOAA artifact is in
-the GitHub release and was verified from the service, 10/10 assets, 196,018,020 bytes, and `v2026.09` and
-`main` are now the same commit, so the tag divergence is closed. The Hugging Face revision still carries
-the superseded noaa-003 bytes and the consumer check has not been re-run on the re-issued bytes; both
-destinations remain private.)
+Updated: 2026-09-25 (latest entry: watcher run on `noaa-hf-003` - the Hugging Face revision `main` now
+carries the corrected NOAA artifact and every one of its ten files was verified from the Hub API against
+the accepted digests. The Hub's version tag `v2026.09` still resolves to the noaa-003 commit and its
+`MANIFEST.json`/`SHA256SUMS` still list the noaa-003 digests, because the small-file upload was held
+deliberately: the release package prose still names the shipped label column `late`. The consumer check is
+still to re-run on the re-issued bytes; both destinations remain private.)
+
+## 2026-09-25 15:27 UTC - noaa-hf-003: the Hub carries the corrected NOAA bytes; its tag and docs do not
+
+The worker job that moves the bulk of a dataset release was launched from an interactive session at 15:20
+and finished under the watcher in under a minute of worker time. It published the corrected noaa-004 files
+to `earino/noaa-tide-flooding` revision `main`. This entry records what was verified from the service and
+what the Hub half of the re-issue still owes.
+
+**Measured** (`.factory/noaa-hf-003/result.json`, `reports/manifest.json`, `jobs/noaa-hf-003.json`):
+
+| item | value |
+| --- | --- |
+| staged | private staging release 396718146 (`job-noaa-hf-003`), report assets collected and digests matched |
+| transferred | **10 of 10** target files, **196,018,020 bytes**, `failures: []`, `skipped: []` - a real upload, not a digest-skip |
+| loading check | `ok: true`, `problems: []`, all six splits matched the accepted counts |
+| rows train/eval/holdout | temporal 697,373 / 89,038 / 88,841; station_disjoint 461,580 / 29,930 / 29,930 |
+| positives | temporal 11,774 / 1,815 / 2,850; station_disjoint 7,513 / 788 / 1,090 |
+
+The six loading-check splits are identical to `noaa-baseline-002`'s counts on the accepted artifact, so the
+Hub copy is the same panel and not a neighbouring revision.
+
+**Verified by reading the Hub, not the job's claim.** Revision `main` moved to `3116c306`, and every one of
+the ten file paths was checked against `release/noaa-tide-flooding/MANIFEST.json` and the accepted
+`artifact_version fb49f932...`: six small files were downloaded and re-hashed here (meta.json 867,
+quality.json 3,793/3,795, station_disjoint holdout 4,228,360 and eval 4,229,477, temporal/meta.json 750) and
+four large LFS objects were read from the Hub's own `sha256` (station_disjoint/public/train.csv `d7d2bff2`,
+temporal/private/holdout.csv `89db2e79`, temporal/public/eval.csv `a2d733a8`, temporal/public/train.csv
+`60854702`). **10 of 10 sizes and digests match.** The superseded numbers recorded on 2026-09-25 15:06
+(12,475,942 / 4,228,351, label column `late`) no longer describe `main`.
+
+**What has not moved, measured rather than assumed.** `v2026.09` on the Hub still resolves to `ee6ba847`,
+the noaa-003 commit, while `main` is `3116c306` - so a version-pinned Hub reader still gets the superseded
+bytes, and re-tagging (`scripts/hf-publish.py --tag`, which replaces the existing tag) has not been run. The
+Hub's `MANIFEST.json` and `SHA256SUMS` on `main` also still list the noaa-003 digests, i.e. `--upload-small`
+has not been re-run either. That hold is deliberate and it is the reason this job is a partial re-issue
+rather than a complete one: `release/noaa-tide-flooding/DATA_DICTIONARY.md` still names the shipped label
+column `late` and `VERIFICATION.md` still cites job `noaa-003`, so uploading the small files today would
+publish prose contradicting the `temporal/meta.json` (label `minor_flood`) now on the Hub. Exposure is zero
+- every stale digest is the superseded version's own and both destinations are private - but the Hub package
+does not yet describe the bytes it holds. **The package prose must be re-pointed at noaa-004 before the
+small files and the tag are pushed.**
+
+**Recorded**: `candidates/noaa-tide-flooding/record.json` (a `noaa-hf-003` entry in `jobs`; the
+`artifacts[0].huggingface` block re-measured - `main_commit 3116c306`, `tag_commit ee6ba847`,
+`tag_matches_main false` with a note that the old `true` described the 2026-09-20 upload, and a new
+`reissue` block carrying the per-file verification, the loading check and the `still_lagging` items;
+`next_action` rewritten), `jobs/noaa-hf-003.json` and `candidates/noaa-tide-flooding/hf/job-003.json`
+committed. Worker `167437889` destroyed and confirmed gone from the provider (no factory-labelled servers
+remain; a direct `GET` on the id returns 404). `check-candidate.py --all` and `check-package.py
+release/noaa-tide-flooding` both pass on this state.
+
+**Next action**: (1) re-point the release package prose at noaa-004 - the label row in `DATA_DICTIONARY.md`,
+the job references in `VERIFICATION.md`, the README/RELEASE_NOTES/measurements pass - regenerate
+`MANIFEST.json`/`SHA256SUMS` with `scripts/release-manifest.py`, then run `scripts/hf-publish.py --create
+--upload-small`, `--verify`, and `--tag` **last** so the Hub's `v2026.09` and `main` agree; (2) re-run the
+clean-room consumer check against the re-issued bytes; (3) decide the persistence-floor question; (4) then
+the publication act the operator approves, on both destinations, from one manifest. Both destinations stay
+private until then.
 
 ## 2026-09-25 15:10 UTC - noaa-publish-002: the corrected artifact is in the GitHub release, the Hub half still lags
 

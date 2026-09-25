@@ -316,6 +316,50 @@
       "verified_from_the_service": "each of the ten target assets re-read from the GitHub API on 2026-09-25 matches the job's transferred size and sha256 exactly, 10 of 10, and every one equals release/noaa-tide-flooding/MANIFEST.json's files/assets digests; the repository is private; the release tag v2026.09 and main both resolve to bef3a412",
       "note": "the job's own manifest records uploaded:false because the transfer path uploads per file instead of one bulk archive; the transfer block (ten transferred, zero failures, 196,018,020 bytes) is the report that matters",
       "evidence": ".factory/noaa-publish-002/result.json, .factory/noaa-publish-002/reports/{manifest.json,file-0000-part-0000,file-0001-part-0000}, jobs/noaa-publish-002.json, candidates/noaa-tide-flooding/publish/job-002.json"
+    },
+    {
+      "id": "noaa-hf-003",
+      "status": "succeeded",
+      "what": "the Hub half of the re-issue's transfer: the corrected noaa-004 artifact files published to earino/noaa-tide-flooding revision main, plus the loading check on the Hub copy",
+      "staging_release": 396718146,
+      "staging_tag": "job-noaa-hf-003",
+      "server_id": 167437889,
+      "created_at": "2026-09-25T15:20:28Z",
+      "deleted_at": "2026-09-25T15:27:05Z",
+      "transferred": "10 of 10 target files, 196,018,020 bytes, failures [], skipped [] - a real upload, not a digest-skip, so revision main moved from the noaa-003 bytes",
+      "loading_check": {
+        "ok": true,
+        "problems": [],
+        "checked": {
+          "temporal/train": {
+            "rows": 697373,
+            "positives": 11774
+          },
+          "temporal/eval": {
+            "rows": 89038,
+            "positives": 1815
+          },
+          "temporal/holdout": {
+            "rows": 88841,
+            "positives": 2850
+          },
+          "station_disjoint/train": {
+            "rows": 461580,
+            "positives": 7513
+          },
+          "station_disjoint/eval": {
+            "rows": 29930,
+            "positives": 788
+          },
+          "station_disjoint/holdout": {
+            "rows": 29930,
+            "positives": 1090
+          }
+        },
+        "why_it_matters": "all six splits match noaa-baseline-002's row counts and positive rates on the accepted artifact exactly, so the Hub copy is the same panel and not a neighbouring revision"
+      },
+      "verified_from_the_service": "2026-09-25, read back from the Hub API rather than the job's claim: the six plain-blob files were downloaded and re-hashed and the four LFS objects were read from the Hub's own sha256; 10 of 10 sizes and digests equal release/noaa-tide-flooding/MANIFEST.json's files entry for artifact_version fb49f932...",
+      "left_behind": "the Hub's version tag and its docs/small files still describe noaa-003 - see artifacts[0].huggingface.reissue.still_lagging"
     }
   ],
   "artifacts": [
@@ -369,8 +413,8 @@
         "visibility": "private (publication requires explicit authorisation)",
         "tag": "v2026.09",
         "tag_commit": "ee6ba8477e2be021a4000d88c03bd58d038e9a5f",
-        "main_commit": "ee6ba8477e2be021a4000d88c03bd58d038e9a5f",
-        "tag_matches_main": true,
+        "main_commit": "3116c30647af334c1544f2ffb926c71bc6ec0814",
+        "tag_matches_main": false,
         "files": 10,
         "small_files": 8,
         "verified": true,
@@ -383,7 +427,21 @@
           "finding": "the revision v2026.09 still carries the noaa-003 bytes and label name: temporal/private/holdout.csv 12,475,942 bytes (corrected: 12,475,947), station_disjoint/private/holdout.csv 4,228,351 (corrected: 4,228,360), temporal/meta.json still names the label column `late`, and its MANIFEST.json hashes 55791180c39385def7035305c041cc86d7b2693dad6ef30181bb0672b3b95a67 against the package's 60ffed39e5ce52f7a5e81d3994d1f1aec054d2111c6a6c720f125a3034bad89e",
           "why": "the Hub half of the re-issue has not been run; the recorded `verified: true` above describes the noaa-003 upload of 2026-09-20 and does not carry over to the corrected artifact",
           "next": "hf_publish job for the corrected files from release 396698120 (source asset ids 588583351, 588583422, 588583523, 588583624, 588583760, 588583822, 588583868, 588583940, 588584089, 588584338), then the loading check and scripts/hf-publish.py --verify",
-          "reading": "the tree listing was read with the write credential from a mode-0600 file, in-process; the token is not in this record, the bundle or any log"
+          "reading": "the tree listing was read with the write credential from a mode-0600 file, in-process; the token is not in this record, the bundle or any log",
+          "closed_by": "noaa-hf-003 (2026-09-25) for the ten artifact files on revision main, verified from the API; the version tag and the docs/small files are the remaining items, recorded in reissue"
+        },
+        "tag_note": "re-measured from the Hub refs API on 2026-09-25 after noaa-hf-003: main -> 3116c306 (the corrected bytes), tag v2026.09 -> ee6ba847 (the noaa-003 commit). The recorded tag_matches_main true above described the noaa-003 upload of 2026-09-20 and does not hold for the re-issued copy.",
+        "reissue": {
+          "job": "noaa-hf-003",
+          "checked_at": "2026-09-25T15:26:00+00:00",
+          "staging_release": 396718146,
+          "data_files": "revision main now carries the corrected bytes at all ten paths. Size checked on all ten; digest checked on all ten - six small files downloaded and re-hashed locally (station_disjoint/meta.json 867, station_disjoint/private/holdout.csv 4,228,360, station_disjoint/public/eval.csv 4,229,477, station_disjoint/quality.json 3,793, temporal/meta.json 750, temporal/quality.json 3,795) and four LFS objects read from the Hub's own sha256 (station_disjoint/public/train.csv d7d2bff2..., temporal/private/holdout.csv 89db2e79..., temporal/public/eval.csv a2d733a8..., temporal/public/train.csv 60854702...). Every one equals release/noaa-tide-flooding/MANIFEST.json and the accepted artifact_version fb49f932... The noaa-003 numbers the superseded block measured (12,475,942 / 4,228,351 / label `late`) no longer describe main.",
+          "loading_check": "run by noaa-hf-003 against the Hub copy: ok, problems [], all six splits matched the accepted row and positive counts",
+          "still_lagging": {
+            "version_tag": "v2026.09 still resolves to ee6ba847, the noaa-003 commit, while main is 3116c306, so a version-pinned reader on the Hub still gets the superseded bytes. Re-tagging is the scripts/hf-publish.py --tag step (it replaces the existing tag) and has not been run.",
+            "docs_and_small_files": "the Hub's MANIFEST.json (artifact_version a5a5ac5b...) and SHA256SUMS on main still list the noaa-003 digests, so the small-file upload (--upload-small) has not been re-run either. Zero exposure - every one of those digests is the superseded version's own, and both destinations are private - but the Hub package does not yet describe the bytes it now holds."
+          },
+          "why_the_docs_were_not_pushed_with_the_data": "release/noaa-tide-flooding/DATA_DICTIONARY.md still names the shipped label column `late` and VERIFICATION.md still cites job noaa-003, so --upload-small today would publish prose that contradicts the temporal/meta.json now on the Hub (label minor_flood). The package prose has to be re-pointed at noaa-004 first; that is the first item of next_action."
         }
       },
       "github_tag_state": {
@@ -443,7 +501,7 @@
   ],
   "rejection_reason": null,
   "review": "Ready for construction on 2026-09-19. Contracts: redistribution read from the publishing portal (public domain, attribution requested, derived-not-official constraint recorded); prediction timing stated with an observations-only feature list; target derivable from the observed water level at datum=STND with the label source excludable; split capacity measured over the frozen 122-station list, eval 1,828 positives over 332 independent flood days and holdout 2,850 over 427. Extraction cost measured rather than estimated. The base rate at the physical threshold is 1.7-3.2%, which is a property of the phenomenon, not a defect: report precision/recall-style metrics beside AUC and use the base rate as the baseline. CORRECTION 2026-09-19: the 'product=daily_max does not exist' finding was wrong - the product is daily_max_min and it returns a station-year of 6-minute daily maxima per request, verified data with completeness flags. The primary task therefore costs 2,440 requests / ~178 MB, not 29,160 / 15.2 GiB.",
-  "next_action": "The GitHub half of the re-issue is done and verified; the Hub half and the consumer check are not. In order: (1) the Hugging Face revision v2026.09 still carries the superseded noaa-003 bytes - measured from the API on 2026-09-25 (temporal/private/holdout.csv 12,475,942 vs 12,475,947; temporal/meta.json still names the column `late`; its MANIFEST.json sha256 55791180... vs the package's 60ffed39...). Prepare the hf_publish job for the corrected files from release 396698120 on a worker (source asset ids recorded in artifacts[0].huggingface.superseded.next, ten new digests), run the loading check and scripts/hf-publish.py --verify. (2) Re-run the clean-room consumer check against the re-issued bytes - noaa-consumer-002's PASSED belongs to the superseded bytes and does not carry over. (3) Decide the recorded persistence-floor question: carry the noaa-003 figures with the note already in record.persistence_calibration, or re-measure on the corrected eval split. (4) Only then the publication act the operator approves: flip both destinations, prove the read from an anonymous client, record it in release/noaa-tide-flooding/DESTINATIONS.json BEFORE regenerating the manifest (the manifest derives visibility/published from that file, and sites/noaa-tide-flooding.json's prepare refuses until a destination record exists for these bytes - that refusal is the pipeline working, not a bug), then refresh the card, LOADING.md, README and release notes, which were written while the release was private, and publish the site. The old GitHub plumbing item is closed as measured: v2026.09 and main are the same commit bef3a412 now (artifacts[0].github_tag_state), so the one-commit fast-forward is not owed.",
+  "next_action": "The GitHub half of the re-issue is done; the Hub half is now half-done and measured (noaa-hf-003, artifacts[0].huggingface.reissue). In order: (1) the Hub's ten data files on main are the corrected bytes, but its version tag v2026.09 still resolves to the noaa-003 commit ee6ba847 and its MANIFEST.json/SHA256SUMS still list the noaa-003 digests. Re-point the release package prose at noaa-004 first - DATA_DICTIONARY.md's label row still says `late` where the shipped column is `minor_flood`, VERIFICATION.md still cites job noaa-003, and README/RELEASE_NOTES/measurements.json need the same pass - then regenerate MANIFEST.json/SHA256SUMS with scripts/release-manifest.py and run scripts/hf-publish.py --create --upload-small, then --verify, then --tag LAST (it replaces the existing tag so v2026.09 and main agree). (2) Re-run the clean-room consumer check against the re-issued bytes - noaa-consumer-002's PASSED belongs to the superseded bytes and does not carry over. (3) Decide the recorded persistence-floor question: carry the noaa-003 figures with the note in record.persistence_calibration, or re-measure on the corrected eval split. (4) Only then the publication act the operator approves: flip both destinations, prove the read from an anonymous client, record it in release/noaa-tide-flooding/DESTINATIONS.json BEFORE regenerating the manifest, refresh card/LOADING.md/README/release notes, and publish the site. Both destinations stay private until then. The old GitHub plumbing item is closed as measured: v2026.09 and main are the same commit bef3a412 there.",
   "features_declared": {
     "prediction_instant": "End of the local day before the target day. Features are observed water levels only. NOAA tide predictions and model guidance are model output and must be excluded so the task stays an observation-only forecast.",
     "available_at_prediction_time": [
