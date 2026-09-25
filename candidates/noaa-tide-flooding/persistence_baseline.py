@@ -84,7 +84,7 @@ def measure(level, path):
     with path.open(newline="") as handle:
         for row in csv.DictReader(handle):
             rows.append(row)
-    labels = [int(row["late"]) for row in rows]
+    labels = [int(row["minor_flood"]) for row in rows]
     base = sum(labels) / len(labels)
     single = {}
     for column in ("margin_ft", "margin_ratio", "trailing7_mean", "trailing30_mean",

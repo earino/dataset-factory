@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "site_revision": 1,
+  "title": "NOAA tide flooding",
+  "summary": "Predict whether a tide gauge's daily maximum observed water level will exceed its published minor flood threshold tomorrow - from observations alone.",
+  "task_type": "binary-classification",
+  "domain": "Coastal environment",
+  "release_date": "2026-09-25",
+  "post": {
+    "title": "A prediction task from NOAA's tide gauges",
+    "paragraphs": [
+      "122 NOS stations, 2006-2025, 2,440 station-years of verified water levels: will a station's maximum observed water level exceed its own published minor flood threshold tomorrow? NOAA publishes the observations, the verified maxima and the annual counts, so access is not the contribution - the frozen panel, the observations-only feature contract and the leakage gate are.",
+      "The release carries two levels, each a complete task instance. The temporal level is the ordinary panel split. The station-disjoint level holds 41 stations out of training entirely, and it is the point of the dataset: it asks whether a model learned something transferable rather than one station's local habits. It scores the same on stations it has never seen.",
+      "The numbers are published with their floor. The baseline reaches 0.8633 (temporal) and 0.8690 (station-disjoint); a single unlearned feature - yesterday's maximum against the station's own threshold - already reaches about 0.83 and 0.85. The headroom is narrow, and a reviewer should see that here rather than discover it. Only about 2% of station-days are positive, so a constant answer agrees with the label 96% of the time: score AUC, never accuracy."
+    ]
+  },
+  "limitations": [
+    "A derived research dataset from NOAA CO-OPS public-domain data, labelled as derived - not an official NOAA, NOS or NWS product, and not a flood warning or forecast service.",
+    "Headroom over a single unlearned feature is narrow (+0.037 and +0.023). Recorded in measurements.json rather than left to be discovered.",
+    "About 2% of station-days are positive. Accuracy is misleading on this task by a wide margin.",
+    "The holdout is labelled and downloadable. Keep its labels outside the evaluated agent's workspace during an evaluation."
+  ]
+}

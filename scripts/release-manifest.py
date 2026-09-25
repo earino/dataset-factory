@@ -193,6 +193,14 @@ def main() -> int:
     # destination is verified, so it cannot be hashed by the manifest it helps complete - that is
     # circular, and it made the package check fail on every re-verification. It is excluded here
     # and named in check-package.py as the per-destination record it is.
+    # SHA256SUMS is written *before* the package is hashed. It was written after, so
+    # package_files recorded the digest of the previous file: harmless while the artifact never
+    # changed, and a package-check failure the moment one did - which is exactly when it matters.
+    sums_lines = []
+    for relative, info in sorted(expected["files"].items()):
+        sums_lines.append(f"{info['sha256']}  {relative}")
+    (release / "SHA256SUMS").write_text("\n".join(sums_lines) + "\n")
+
     POST_VERIFICATION = {"DESTINATIONS.json"}
     package_files = {}
     for path in sorted(release.rglob("*")):
@@ -206,11 +214,7 @@ def main() -> int:
 
     (release / "MANIFEST.json").write_text(json.dumps(manifest, indent=2) + "\n")
 
-    # sha256sum -c format, over the artifact files under the names a downloader sees.
-    lines = []
-    for relative, info in sorted(expected["files"].items()):
-        lines.append(f"{info['sha256']}  {relative}")
-    (release / "SHA256SUMS").write_text("\n".join(lines) + "\n")
+    # SHA256SUMS was written above, before the package was hashed.
 
     print(f"wrote {release}/MANIFEST.json and SHA256SUMS")
     # A multi-level artifact has no single gate-produced version; name the per-level ones instead.
