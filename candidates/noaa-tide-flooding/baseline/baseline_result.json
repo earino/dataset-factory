@@ -1,10 +1,13 @@
 {
-  "job": "noaa-baseline-001",
-  "purpose": "one baseline through the runner's existing training and validation contract, on both levels",
+  "job": "noaa-baseline-002",
+  "purpose": "one baseline through the runner's existing training and validation contract, on both levels of the artifact the release will carry",
   "artifact": {
-    "target": "flood_tomorrow",
+    "job": "noaa-004",
+    "staging_release": 392410743,
+    "source": "the ten artifact files fetched from private staging by the job itself and measured in place: these are the bytes being released, not a rebuild",
+    "target": "minor_flood",
     "positive_label": 1,
-    "definition": "does the station's daily maximum observed water level exceed its published NOS minor flood threshold on the following local day",
+    "definition": "does the station's daily maximum observed water level exceed its published NOS minor flood threshold on the target day",
     "levels": {
       "temporal": {
         "rows": {
@@ -17,7 +20,7 @@
           "eval": 0.020385,
           "holdout": 0.03208
         },
-        "eval_auc": 0.8638,
+        "eval_auc": 0.8633,
         "contract_ok": true
       },
       "station_disjoint": {
@@ -31,7 +34,7 @@
           "eval": 0.026328,
           "holdout": 0.036418
         },
-        "eval_auc": 0.8688,
+        "eval_auc": 0.869,
         "contract_ok": true
       }
     }
@@ -45,8 +48,17 @@
     "unmodified": true,
     "note": "the benchmark's own train.py, validate.py and validate.sh, copied verbatim; validate.py re-ran training and reported CONTRACT OK on both levels"
   },
-  "dependencies": "not recorded by this job's report - see VERIFICATION.md, which states this gap",
+  "dependencies": "recorded in this job's container.log: pandas 2.3.3, numpy 2.5.3, xgboost 3.4.1, scikit-learn 1.9.1 (installed from the runner's declared ranges). noaa-baseline-001 did not record its versions; this rerun closes that gap for the recorded figure",
   "scope": "one baseline only. No coding agent and no harness comparison was run, and none is implied.",
+  "previous_measurement": {
+    "job": "noaa-baseline-001",
+    "staging_release": 392328598,
+    "artifact_job": "noaa-003",
+    "temporal": 0.8638,
+    "station_disjoint": 0.8688,
+    "why": "measured on the superseded artifact, whose only schema difference is the label column name (`late`), copied from the Austin task. Rows and positives are identical in all six splits; the third decimal differs because xgboost's training is not bit-reproducible, so the two measurements agree to about 0.0005",
+    "evidence": ".factory/noaa-baseline-001/reports/baseline.json and the four logs"
+  },
   "calibration": {
     "question": "how much of the baseline's AUC is persistence rather than prediction",
     "method": "single stock features and a plain 'yesterday exceeded' rule, no training; rank-based AUC; the eval split only",
@@ -89,5 +101,6 @@
         "headroom_over_best_single_feature": 0.0234
       }
     }
-  }
+  },
+  "calibration_note": "the persistence floor was measured with code/persistence_baseline.py against the noaa-003 eval split (staging release 392230750). The corrected artifact has identical rows and positives in every split, but a few observation values were revised between the two pulls, so those single-feature figures are carried over as measured on those bytes rather than re-measured on the released ones"
 }

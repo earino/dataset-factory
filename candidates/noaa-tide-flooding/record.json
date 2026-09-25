@@ -29,7 +29,7 @@
   "license_evidence": [
     "READ 2026-09-19 from the CO-OPS portal itself (the same host the data comes from), https://tidesandcurrents.noaa.gov/disclaimers.html, 'Use of Data and Products': \"The information on government servers are in the public domain, unless specifically annotated otherwise, and may be used freely by the public.\" Same page: \"NOS requests that attribution be given whenever NOS material is reproduced and re-disseminated. Pursuant to 17 U.S.C. 403 ... stating that such material is not subject to copyright protection.\" CONSTRAINT READ ON THE SAME PAGE, honoured in the release: \"This information shall not be modified in content and then presented as official government material\" - any derived dataset must be labelled as derived and must not be presented as official NOS data. Corroborating: nauticalcharts.noaa.gov/data/data-licensing.html records NOAA data released under a CC0-1.0 public-domain dedication (CC BY 4.0 for some products), and the NCEI ISO metadata for CO-OPS stations carries the same CC0 waiver. Attributes: attribution requested as a courtesy, not required."
   ],
-  "construction_script": "candidates/noaa-tide-flooding/build.py (run on a worker via candidates/noaa-tide-flooding/source/run.sh, job noaa-003)",
+  "construction_script": "candidates/noaa-tide-flooding/build.py (run on a worker via candidates/noaa-tide-flooding/source/run.sh); job noaa-003 built the first artifact, job noaa-004 rebuilt the same panel with the label renamed late -> minor_flood, and that rebuild is the adopted one",
   "split_strategy": {
     "levels": [
       "temporal",
@@ -120,6 +120,34 @@
       "staging_release": 392328598,
       "elapsed_minutes": 27.5,
       "evidence": "baseline.json, train/validate logs"
+    },
+    {
+      "id": "noaa-baseline-002",
+      "status": "succeeded",
+      "what": "the baseline measured on the corrected artifact (noaa-004, staging release 392410743), fetched from staging rather than rebuilt, because these are the bytes the release will carry",
+      "staging_release": 396517628,
+      "staging_tag": "job-noaa-baseline-002",
+      "server_id": 167401677,
+      "created_at": "2026-09-25T10:35:43Z",
+      "elapsed_seconds": 47.1,
+      "fetched": "10/10 assets, 196,018,020 bytes, zero fetch failures, each checked against the digest the builder recorded",
+      "results": {
+        "temporal": {
+          "eval_auc": 0.8633,
+          "validate_auc": 0.8633,
+          "contract_ok": true
+        },
+        "station_disjoint": {
+          "eval_auc": 0.869,
+          "validate_auc": 0.869,
+          "contract_ok": true
+        },
+        "rows_and_rates": "identical to noaa-baseline-001 in all six splits - temporal 697373/89038/88841 at 0.016883/0.020385/0.03208 and station_disjoint 461580/29930/29930 at 0.016277/0.026328/0.036418"
+      },
+      "dependencies": "recorded in the job's container.log: pandas 2.3.3, numpy 2.5.3, xgboost 3.4.1, scikit-learn 1.9.1",
+      "why": "the recorded baseline had been measured on the superseded noaa-003 artifact; once the rename was adopted the number had to come from the bytes that ship",
+      "evidence": ".factory/noaa-baseline-002/result.json and .factory/noaa-baseline-002/reports/{baseline.json,container.log,train-temporal.log,train-station_disjoint.log,validate-temporal.log,validate-station_disjoint.log}",
+      "bundle": "candidates/noaa-tide-flooding/baseline/fetch/{job.json,run.sh,report_baseline.py}; the older rebuild-and-measure variant at baseline/source/ never ran and had squatted on this id since 2026-09-20, so it was renamed noaa-baseline-rebuild-001 in the same commit - CI's job-id uniqueness check (tests/test_repo_hygiene.py) is what surfaced it"
     },
     {
       "id": "noaa-publish-001",
@@ -234,13 +262,20 @@
         "note": "[rows, positives] per split, identical to noaa-003 in all six; coverage, day-quality (879,034 days / 622 incomplete / 5,239 flagged) and build_summary fields other than 'columns' are identical too"
       },
       "differences_from_the_shipped_artifact": {
-        "target_column_name": "the rebuild ships minor_flood where the released artifact ships late (the uncommitted rename). The rename was reverted in this repository, so the released schema and everything that documents it (release package, DATA_DICTIONARY, card, hf plan) is unchanged, and the rebuilt artifact is NOT adopted",
+        "target_column_name": "the rebuild ships minor_flood where the shipped artifact ships late (the rename made by the concurrent session). It was reverted on 2026-09-20 and RE-ADOPTED on 2026-09-25 on the operator's instruction: `late` was copied from the Austin task and is the wrong name for this dataset. This rebuild is now the artifact the release will carry, so what follows is the re-issue - the release package's docs, its code copies and MANIFEST.json still describe noaa-003 and must be regenerated from this artifact, then transferred and consumer-verified again, before publication",
         "revised_observation_values": "a small number of values differ because NOAA revised them between the 2026-09-19 and 2026-09-20 pulls. Measured on temporal/train at byte offset 43912723: station 8661070 (Springmaid Pier) 2008-10-12 observed_max_ft 35.427 -> 35.426, 2008-10-13 -1.323 -> -1.324 with trailing7_mean 34.722 -> 34.7219 and trailing30_mean 35.4425 -> 35.4424. Every one of the six files differs in byte size by more or less than the 7-byte header change (+12, +11, +9, +7, +5, +9 for the 7-byte header), so at least one revised row is in each; 200-byte needles sampled at 250 KB intervals found no other difference in 135 sampled windows, so the revisions are sparse",
         "why_it_matters": "the artifact is pinned by digest and reproducible from the released files, but it is not byte-reproducible by re-pulling the live API: CO-OPS values are revised after publication. A future rebuild is a new artifact version and needs its own gate report and its own release, not a silent replacement"
       },
       "why_not_adopted": "the only intended change was the target's name, and adopting it would invalidate a release that is already gate-passed, consumer-verified on the published bytes and uploaded to Hugging Face - for a rename that no committed document asks for. The rename's diff is kept at candidates/noaa-tide-flooding/noaa-004-label-rename.diff; if the operator wants the clearer name, this staging release is the artifact to reuse (its digests are recorded above) and the release, the card and hf/job-002.json all have to move with it",
       "evidence": ".factory/noaa-004/result.json and .factory/noaa-004/reports/{manifest.json,build_summary.json,temporal-meta.json,temporal-quality.json,station_disjoint-meta.json,station_disjoint-quality.json,qualification-temporal.json,qualification-station_disjoint.json,container.log}; every report was hash-checked against the release manifest",
-      "worker": "destroyed 2026-09-20T11:53:09Z"
+      "worker": "destroyed 2026-09-20T11:53:09Z",
+      "adopted": {
+        "decided": "2026-09-25T10:33Z",
+        "by": "the operator, in session, instructing that publication proceed with the corrected label name",
+        "what_changed": "candidates/noaa-tide-flooding/baseline/expected_artifact.json now names this artifact; card.md and the hf plans name the label minor_flood; noaa-baseline-002 measured the baseline on these bytes; the recorded rename diff is candidates/noaa-tide-flooding/noaa-004-label-rename.diff",
+        "what_did_not": "the private GitHub release v2026.09 and the Hugging Face revision still carry the noaa-003 bytes (label `late`). Both destinations are private, so nothing public changed. The release package was deliberately left matching the bytes it actually holds: release/noaa-tide-flooding/DATA_DICTIONARY.md keeps the shipped label name, and MANIFEST.json, README.md, VERIFICATION.md, measurements.json, RELEASE_NOTES.md, REPRODUCE.md and the code copies were NOT regenerated - a doc renamed ahead of the artifact it sits beside would describe bytes that are not in the package, and the verification rows cannot be rewritten until the new consumer check has actually run",
+        "why": "publishing the artifact whose label name was known to be wrong, then re-issuing a corrected version the next day, is worse than the delay"
+      }
     },
     {
       "id": "noaa-hf-002",
@@ -331,12 +366,18 @@
         "why_it_matters": "the rule is that the tag and main must not have diverged, so that a version-pinned reader and a main-branch reader see one release. Here they are separate histories: a reader at v2026.09 gets the older VERIFICATION.md/MANIFEST.json, and one at main gets the verified set. Austin's repository has the right shape (its tag is an ancestor of main, behind_by 0, ahead_by 3), so this is specific to how this repository's first docs commit was created after its tag",
         "recommended_fix": "one fast-forward commit with parents [f384889f, 9bcbf2c6] and f384889f's tree, then move main to it: main's content is unchanged byte for byte, v2026.09 becomes an ancestor of main, and no force-push and no asset move is needed. Alternatively leave it and let the publication act settle the tag with the final documents - but the publication plan already regenerates MANIFEST.json and refreshes the docs, so this should be decided before that step, not during it",
         "not_done_here": "no ref in that repository was changed: it belongs with the publication decision the operator has pending"
+      },
+      "superseded_by": {
+        "artifact_job": "noaa-004",
+        "artifact_version": "fb49f932c7b4ea5ab532c20f7dce59a7d733de925d1e172054ff1d38abe1eeed",
+        "adopted": "2026-09-25, on the operator's instruction, so that publication carries the corrected label name",
+        "state": "both destinations still hold the noaa-003 bytes (label `late`) and both are private, so nothing public changed. The re-issue - package and MANIFEST regenerated from this artifact, transferred on a worker, consumer-verified again - has not run"
       }
     }
   ],
   "rejection_reason": null,
   "review": "Ready for construction on 2026-09-19. Contracts: redistribution read from the publishing portal (public domain, attribution requested, derived-not-official constraint recorded); prediction timing stated with an observations-only feature list; target derivable from the observed water level at datum=STND with the label source excludable; split capacity measured over the frozen 122-station list, eval 1,828 positives over 332 independent flood days and holdout 2,850 over 427. Extraction cost measured rather than estimated. The base rate at the physical threshold is 1.7-3.2%, which is a property of the phenomenon, not a defect: report precision/recall-style metrics beside AUC and use the base rate as the baseline. CORRECTION 2026-09-19: the 'product=daily_max does not exist' finding was wrong - the product is daily_max_min and it returns a station-year of 6-minute daily maxima per request, verified data with completeness flags. The primary task therefore costs 2,440 requests / ~178 MB, not 29,160 / 15.2 GiB.",
-  "next_action": "The release exists on both destinations and is verified on both: GitHub release v2026.09 in earino/noaa-tide-flooding (ten assets, consumer-checked from an unauthenticated-style clean room) and the private Hugging Face repository earino/noaa-tide-flooding at tag v2026.09 == main (ee6ba8477e2be021a4000d88c03bd58d038e9a5f), whose loading path was run by worker noaa-hf-002 and re-verified from here by scripts/hf-publish.py --verify. Nothing else is pending mechanically, with one open plumbing item on the GitHub side: v2026.09 -> 9bcbf2c6 and main -> f384889f are two unrelated root commits (compare returns 404 'No common ancestor'), so the tag is not an ancestor of main (see artifacts[0].github_tag_state for the evidence and the one-commit fast-forward fix). No ref was changed by this session. What remains is the operator's: (1) authorise publication on both destinations (flip visibility, prove anonymous read, record it in DESTINATIONS.json BEFORE regenerating the manifest, refresh card, LOADING.md, README and release notes, then publish the site); (2) decide the target-column rename - a concurrent session renamed late -> minor_flood, noaa-004 rebuilt the panel with it (staging release 392410743, digests in this record) but it was NOT adopted, because the released artifact, its package copy of build.py, DATA_DICTIONARY.md, card.md and the hf plan all name it late; the diff is kept at candidates/noaa-tide-flooding/noaa-004-label-rename.diff; (3) the narrower question of whether to ship the persistence floor as documented (0.8265/0.8454 against 0.8638/0.8688) or also build a harder variant; (4) confirm that two coordinator sessions driving this one job ledger is not going to keep happening - noaa-004 was launched by one while another was mid-step, which is what AGENTS.md forbids.",
+  "next_action": "The corrected artifact is adopted, but the release has NOT been re-issued: the private GitHub release v2026.09 in earino/noaa-tide-flooding and the Hugging Face revision v2026.09 still carry the noaa-003 bytes whose label is `late`. Both are private, so the exposure is zero - but the publication the operator authorised on 2026-09-25 must ship noaa-004 (minor_flood), not what is there now. The sequence, in order, with the evidence each step leaves: (1) apply the recorded rename diff (candidates/noaa-tide-flooding/noaa-004-label-rename.diff) to candidates/noaa-tide-flooding/build.py and persistence_baseline.py AND to their copies in release/noaa-tide-flooding/code/; (2) re-point the package's prose and numbers at this artifact - README.md line 3 and its baseline table, VERIFICATION.md's job and artifact references, RELEASE_NOTES.md and REPRODUCE.md (0.8633/0.8690), baseline/README.md and baseline/reproduce_baseline.sh, measurements.json's job reference - then regenerate MANIFEST.json and SHA256SUMS with scripts/release-manifest.py noaa-tide-flooding; (3) re-measure or explicitly carry over the persistence floor on the corrected eval split; (4) run check-package.py; (5) transfer the ten files from staging release 392410743 with an hf_publish/transfer job on a worker (never through this host), then a clean-room consumer check again - noaa-consumer-002's PASSED result belongs to the superseded bytes and does not carry over; (6) only after that, flip visibility on both destinations, prove it from an anonymous client, record it in DESTINATIONS.json BEFORE regenerating the manifest, refresh card/LOADING.md/README/release notes, then publish the site. The existing GitHub-side plumbing item is unchanged: the v2026.09 tag and main are unrelated root commits and the tag needs the one-commit fast-forward fix. Not done in this session and deliberately not started: steps (1)-(4) are offline release work and steps (5)-(6) need a worker slot and the write credential, and a live interactive session already holds this job ledger - AGENTS.md allows only one coordinator per ledger.",
   "features_declared": {
     "prediction_instant": "End of the local day before the target day. Features are observed water levels only. NOAA tide predictions and model guidance are model output and must be excluded so the task stays an observation-only forecast.",
     "available_at_prediction_time": [
@@ -580,26 +621,42 @@
     "result": "PASSED - 32 checks per level, 0 failed, on both full artifacts, on the worker",
     "levels": {
       "temporal": {
-        "artifact_version": "8896c4423c53cb14377765a18f94245dfb10e9f8125b21041a7b68458a17ace5",
+        "artifact_version": "bb051dc304a4ee63fd1e61ca12864afab247e9530c714f011a60a2d4598d202c",
         "checks": 32,
-        "ok": true
+        "ok": true,
+        "job": "noaa-004",
+        "staging_release": 392410743
       },
       "station_disjoint": {
-        "artifact_version": "e6aff23f394ddfe4b11383c3e8c8a1def0beaddbd2e0cf066ccd08ea7adaedda",
+        "artifact_version": "92297a5b62f86b2901eac9e2a7f076e1495dd8fe2e0eb913d140a3a7df47ba17",
         "checks": 32,
-        "ok": true
+        "ok": true,
+        "job": "noaa-004",
+        "staging_release": 392410743
       }
+    },
+    "evidence": ".factory/noaa-004/reports/qualification-{temporal,station_disjoint}.json (ok: true, gate 1.3.0, artifact digests matching candidates/noaa-tide-flooding/baseline/expected_artifact.json)",
+    "superseded": {
+      "job": "noaa-003",
+      "staging_release": 392230750,
+      "levels": {
+        "temporal": "8896c4423c53cb14377765a18f94245dfb10e9f8125b21041a7b68458a17ace5",
+        "station_disjoint": "e6aff23f394ddfe4b11383c3e8c8a1def0beaddbd2e0cf066ccd08ea7adaedda"
+      },
+      "why": "built with the copied-from-Austin label name `late`. The gate passed it as well - the rename is a naming correction, not a data defect"
     },
     "note": "Two earlier runs failed on coverage, not on the data: noaa-001 lost 13 stations and noaa-002 lost 60 station-years to fetch errors the retry treated as permanent. Both were fixed in the builder, which now records coverage and refuses an incomplete panel."
   },
   "baseline": {
-    "job": "noaa-baseline-001",
-    "staging_release": 392328598,
-    "elapsed_minutes": 27.5,
+    "job": "noaa-baseline-002",
+    "staging_release": 396517628,
+    "artifact_job": "noaa-004",
+    "artifact_version": "fb49f932c7b4ea5ab532c20f7dce59a7d733de925d1e172054ff1d38abe1eeed",
+    "source": "the ten artifact files fetched from private staging and measured in place - the bytes the release will carry, not a rebuild",
     "runner": "the benchmark's own train.py and validate.py, copied verbatim; their sha256s are in the report, and validate.py re-ran training and reported CONTRACT OK on both levels",
     "levels": {
       "temporal": {
-        "eval_auc": 0.8638,
+        "eval_auc": 0.8633,
         "train_rows": 697373,
         "eval_rows": 89038,
         "positive_rate": {
@@ -609,7 +666,7 @@
         }
       },
       "station_disjoint": {
-        "eval_auc": 0.8688,
+        "eval_auc": 0.869,
         "train_rows": 461580,
         "eval_rows": 29930,
         "positive_rate": {
@@ -619,9 +676,17 @@
         }
       }
     },
-    "what_it_shows": "the task is learnable, and the station-disjoint level scores the same as the temporal one (0.8688 against 0.8638) on stations the model never saw - so the signal is not station-specific memorisation",
+    "what_it_shows": "the task is learnable, and the station-disjoint level scores the same as the temporal one (0.8690 against 0.8633) on stations the model never saw - so the signal is not station-specific memorisation",
+    "previous_measurement": {
+      "job": "noaa-baseline-001",
+      "staging_release": 392328598,
+      "artifact_job": "noaa-003",
+      "temporal": 0.8638,
+      "station_disjoint": 0.8688,
+      "why": "the same measurement on the superseded artifact. Rows and positives are identical in all six splits and the artifacts differ only in the label column's name, so the two pairs agree in the first three decimals; the last digit moves with xgboost's non-bit-reproducible training"
+    },
     "caveat": "not yet calibrated against a persistence-only baseline. Yesterday's maximum against the station's own threshold is a strong feature, and consecutive flood days are common, so part of this AUC may be autocorrelation rather than prediction. A single-feature persistence baseline is the next measurement, before any headroom claim is made.",
-    "evidence": ".factory/noaa-baseline-001/reports/baseline.json and the four logs"
+    "evidence": ".factory/noaa-baseline-002/reports/baseline.json and the four logs"
   },
   "persistence_calibration": {
     "script": "candidates/noaa-tide-flooding/persistence_baseline.py",
@@ -646,7 +711,8 @@
     "verdict": "the task is dominated by persistence: yesterday's maximum against the station's own threshold alone reaches 0.83-0.85 of the 0.86-0.87 the trained model achieves, so the model adds only 0.023-0.037. The task is real and it transfers across stations, but its headroom is narrow and a one-feature rule gets most of the way.",
     "why_accuracy_is_not_used": "the plain 'yesterday exceeded' rule agrees with the label about 96% of the time while carrying almost no ranking signal (AUC 0.63), because only ~2% of days are positive. Accuracy would flatter a useless rule; the runner contract scores AUC for this reason.",
     "consequence_for_release": "must be stated in the dataset card: the single-feature reference baseline belongs beside the model baseline, exactly as Austin records 0.627 for its single feature against 0.769 full model. A harder variant - onset after a dry spell, or a longer horizon, where persistence is weaker by construction - is the way to widen headroom if a low-headroom task is not wanted.",
-    "operator_decision": "pending: whether to ship this task as-is with the floor documented, or also build a harder variant. The threshold itself is not being tuned."
+    "operator_decision": "pending: whether to ship this task as-is with the floor documented, or also build a harder variant. The threshold itself is not being tuned.",
+    "measured_on": "the noaa-003 eval split, staging release 392230750. The corrected artifact carries the same rows and positives in every split but a few revised observation values, so these figures are carried over as measured rather than re-measured on the released bytes. Open: re-measure the floor on the corrected eval split, or keep this note beside the number"
   },
   "artifact_evidence": [
     "candidates/noaa-tide-flooding/clustering_result.json",

@@ -127,6 +127,19 @@ BUNDLES = {
             "max_artifact_mb": 50,
         },
     },
+    # The baseline on the accepted artifact, fetched from staging rather than rebuilt: the artifact
+    # is already gated, and these are the numbers the release will carry.
+    "noaa-rebaseline": {
+        "job_file": "candidates/noaa-tide-flooding/baseline/fetch/job.json",
+        "files": [
+            ("run.sh", "candidates/noaa-tide-flooding/baseline/fetch/run.sh"),
+            ("report_baseline.py", "candidates/noaa-tide-flooding/baseline/fetch/report_baseline.py"),
+            ("materialize.py", "release/noaa-tide-flooding/code/materialize.py"),
+        ],
+        "runner_files": ["train.py", "validate.py", "validate.sh"],
+        "overrides": {"command": ["sh", "/workspace/run.sh"], "timeout_minutes": 60,
+                      "lifetime_minutes": 120, "max_disk_mb": 3072, "max_artifact_mb": 16},
+    },
     # Build both levels of the NOAA tide-flooding task, then gate each exact artifact on the worker.
     "noaa-tide-flooding": {
         "job_file": "candidates/noaa-tide-flooding/source/job.json",

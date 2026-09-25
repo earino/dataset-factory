@@ -1,10 +1,67 @@
 # Current state
 
-Updated: 2026-09-23 (latest entry: a discovery session on `md-sewer-overflow` answered its registry
-blocker - an independent facility roster exists (EPA ICIS-NPDES, 336 MB, anonymous; MDE's own
-rosters measured as partial, covering 40 and 129 of the 322 reporting NPDES IDs) - recorded the
-novelty check as `differentiated`, and left the candidate parked on roster coverage alone. No
-construction was spent.)
+Updated: 2026-09-25 (latest entry: watcher run on `noaa-baseline-002` - the baseline on the corrected
+NOAA artifact came back **temporal 0.8633 / station_disjoint 0.8690, CONTRACT OK on both levels**, on the
+bytes the release will carry. The `late` -> `minor_flood` rename is now adopted; the private release on
+both destinations still holds the superseded noaa-003 bytes, and the re-issue has not run.)
+
+## 2026-09-25 10:45 UTC - noaa-baseline-002: the baseline on the corrected artifact, and what adoption does not yet mean
+
+The corrected artifact was adopted at 10:33 and its baseline was measured by `noaa-baseline-002`, launched
+from an interactive session at 10:35 and collected by the worker watcher. This entry records the result and
+the state it leaves; the release work itself is listed as the next action rather than half-done.
+
+**Measured** (`.factory/noaa-baseline-002/reports/baseline.json`, `container.log`, four runner logs):
+
+| level | eval AUC | validate AUC | contract | rows train/eval/holdout |
+| --- | --- | --- | --- | --- |
+| temporal | **0.8633** | 0.8633 | OK | 697,373 / 89,038 / 88,841 |
+| station_disjoint | **0.8690** | 0.8690 | OK | 461,580 / 29,930 / 29,930 |
+
+Row counts and positive rates are identical to `noaa-baseline-001` in all six splits (0.016883 / 0.020385 /
+0.03208 and 0.016277 / 0.026328 / 0.036418). The job **fetched** the ten files from private staging
+(10/10, 196,018,020 bytes, zero failures, each against the builder's digest) instead of rebuilding, so the
+number belongs to the bytes that will be published. It also records the dependency versions the first
+baseline omitted (pandas 2.3.3, numpy 2.5.3, xgboost 3.4.1, scikit-learn 1.9.1). The earlier measurement
+(0.8638 / 0.8688) was taken on the superseded artifact and is kept beside this one; the two agree to about
+0.0005, the label column's name being the only schema difference.
+
+**Adopted, not re-issued.** `candidates/noaa-tide-flooding/baseline/expected_artifact.json` now names
+noaa-004 (temporal `bb051dc3...`, station_disjoint `92297a5b...`, both gated 32/32 on gate 1.3.0), and the
+record's `qualification` and `baseline` blocks now carry that artifact. What did **not** change: the private
+GitHub release `v2026.09` in `earino/noaa-tide-flooding` and the Hugging Face revision still hold the
+noaa-003 bytes labelled `late`. Both destinations are private, so the exposure is zero, but the publication
+the operator authorised must ship noaa-004.
+
+I left the release package matching the bytes it actually holds rather than renaming it ahead of the
+artifact: `release/noaa-tide-flooding/DATA_DICTIONARY.md` keeps the shipped label name, and `MANIFEST.json`,
+`README.md`, `VERIFICATION.md`, `REPRODUCE.md`, `RELEASE_NOTES.md`, `measurements.json` and the `code/`
+copies still describe noaa-003. A doc renamed before the artifact it sits beside would describe bytes that
+are not in the package, and `VERIFICATION.md`'s consumer-check rows cannot be rewritten until the new
+consumer check has actually run. `check-candidate.py --all` and `check-package.py release/noaa-tide-flooding`
+both pass on this state.
+
+**One hygiene fix, in the same commit.** Tracking the fetch bundle made CI's job-id uniqueness
+check fail: the older rebuild-and-measure baseline bundle under `baseline/source/` had been bumped to
+`noaa-baseline-002` on 2026-09-20 for a rerun that was never launched, so the id collided with the fetch
+variant that actually ran. That stale bundle is renamed `noaa-baseline-rebuild-001` with a note explaining
+why; the fetch variant keeps 002, which is the job the record describes.
+
+**Recorded**: `candidates/noaa-tide-flooding/record.json` (job `noaa-baseline-002`; `baseline` and
+`qualification` re-pointed at noaa-004 with the superseded values kept; `noaa-004.adopted` with the
+decision, what changed and what did not; `artifacts[0].superseded_by`; `next_action` rewritten),
+`candidates/noaa-tide-flooding/baseline/baseline_result.json`, this file. Worker `167401677` destroyed.
+
+**Next action** (in order, from `record.json.next_action`): apply
+`candidates/noaa-tide-flooding/noaa-004-label-rename.diff` to `build.py`/`persistence_baseline.py` and their
+package copies; re-point the package prose and numbers at the corrected artifact and regenerate
+`MANIFEST.json`/`SHA256SUMS` with `scripts/release-manifest.py`; decide whether to re-measure the
+persistence floor on the corrected eval split or carry the superseded figures with the note now recorded;
+transfer the ten files from staging release 392410743 on a worker; re-run the clean-room consumer check
+(noaa-consumer-002's pass belongs to the superseded bytes); then flip both destinations, prove anonymous
+read, record it in `DESTINATIONS.json` before regenerating the manifest, refresh the card/README/release
+notes and publish the site. The GitHub tag item is unchanged: `v2026.09` and `main` are unrelated root
+commits and the tag needs the one-commit fast-forward fix.
 
 ## 2026-09-21 08:45 UTC - md-sewer-overflow discovery: currency closed, target contract blocked
 
@@ -1990,6 +2047,12 @@ artifact (noaa-003, artifact versions `8896c4423c53cb14` / `e6aff23f394ddfe4`, c
 **The worker slot is now used.** `noaa-hf-002` was planned (clean, EUR 0.45 reservation) and launched at
 11:53:15Z (worker 166615899, cpx42, hel1) - the Hugging Face bulk move plus the per-config loading check
 that `noaa-hf-001` died before performing. It is running; the watcher will report it.
+
+**One hygiene fix, in the same commit.** Tracking the fetch bundle made CI's job-id uniqueness
+check fail: the older rebuild-and-measure baseline bundle under `baseline/source/` had been bumped to
+`noaa-baseline-002` on 2026-09-20 for a rerun that was never launched, so the id collided with the fetch
+variant that actually ran. That stale bundle is renamed `noaa-baseline-rebuild-001` with a note explaining
+why; the fetch variant keeps 002, which is the job the record describes.
 
 **Recorded**: `candidates/noaa-tide-flooding/record.json` (`jobs` -> `noaa-004`, the
 `rebuild_not_byte_reproducible` measurement, a rewritten `next_action`), the rename diff, `jobs/noaa-004.json`,

@@ -64,7 +64,7 @@ print(ds)
 #     holdout: Dataset({features: [...], num_rows: ...})
 # })
 
-# the label is `late`: 1 when the target day exceeded the station's threshold
+# the label is `minor_flood`: 1 when the target day exceeded the station's threshold
 print(ds["train"].features["late"])
 ```
 
@@ -98,7 +98,7 @@ all of it are not things NOAA's products package.
 
 ## The label
 
-`late` is the binary target: `1` when the station's daily maximum observed water level exceeded its
+`minor_flood` is the binary target: `1` when the station's daily maximum observed water level exceeded its
 published **`nos_minor`** threshold on the target day, `0` otherwise.
 
 - The label comes from **NOAA's own minor-flood days** (the HTF daily product's `minFlag`). Our own
