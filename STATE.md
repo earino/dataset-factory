@@ -52,7 +52,7 @@ re-pointed at release 396698120 with the corrected per-level digests and the sup
 `previous_issue`; `github_tag_state` re-measured; a `huggingface.superseded` block carrying the file-level
 evidence and the ten source asset ids for the Hub job; `next_action` rewritten), this file. Worker
 `167435107` destroyed after collection. `check-candidate.py --all` and `check-package.py
-release/noaa-tide-flooding` both pass on this state.
+release/noaa-tide-flooding` both pass on this state. **CI for the commit that records this is not verified**: the workflow run for `be83b1d` failed before any step ran, with the check-run annotation "The job was not started because recent account payments have failed or your spending limit needs to be increased" - a GitHub billing condition outside this repository, not a test failure. The suite was run here instead with the same command the workflow uses (`python3 -m unittest discover -s tests`): **283 tests, OK**, and `check-candidate.py --all` / `check-package.py` pass. Re-running CI is pointless until the account's Actions billing is restored; the change itself is docs-and-records only.
 
 **Next action**: (1) prepare and launch the hf_publish job for the corrected files from release 396698120
 (the ten source asset ids and new digests are in `record.json`
