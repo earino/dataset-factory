@@ -52,6 +52,16 @@ rewritten so the consumer item reads closed), `jobs/noaa-consumer-003.json`, `re
 and confirmed gone from the provider (`GET /v1/servers/167442487` -> 404, and no factory-labelled servers
 remain).
 
+**CI for `4b3cdb1` is blocked, not failing.** Both workflow runs for the pushed commit (`Local checks` ->
+job `check`, `Website pipeline preview` -> job `preview`) concluded `failure` with no steps executed, and the
+check-run annotation for each reads "The job was not started because recent account payments have failed or
+your spending limit needs to be increased" - the same GitHub billing condition recorded for `be83b1d`, outside
+this repository. The suite was run here with the workflow's own command (`python3 -m unittest discover -s
+tests`): **283 tests, OK**. `check-candidate.py --all`, `check-package.py release/noaa-tide-flooding`,
+`sh scripts/scout-factory doctor` and the gate's `--selftest` all pass on this state. Re-running CI is
+pointless until the account's Actions billing is restored, and this commit - like this one-line record of it -
+is docs-and-records only.
+
 **Next action**: (1) the package-prose pass, then `scripts/hf-publish.py --create --upload-small`, `--verify`,
 and `--tag` **last** so the Hub's `v2026.09` and `main` agree; (2) the persistence-floor decision - carry the
 noaa-003 figures with the recorded note or re-measure on the corrected eval split; (3) the publication act
