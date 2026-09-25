@@ -360,6 +360,31 @@
       },
       "verified_from_the_service": "2026-09-25, read back from the Hub API rather than the job's claim: the six plain-blob files were downloaded and re-hashed and the four LFS objects were read from the Hub's own sha256; 10 of 10 sizes and digests equal release/noaa-tide-flooding/MANIFEST.json's files entry for artifact_version fb49f932...",
       "left_behind": "the Hub's version tag and its docs/small files still describe noaa-003 - see artifacts[0].huggingface.reissue.still_lagging"
+    },
+    {
+      "id": "noaa-consumer-003",
+      "status": "succeeded",
+      "what": "the clean-room consumer check re-run against the re-issued (corrected) bytes: the published package vs MANIFEST.json, sha256sum -c, the published gate on both levels, and baseline reproduction through the published contract - the check whose previous pass (noaa-consumer-002) described the superseded artifact",
+      "staging_release": 396743413,
+      "staging_tag": "job-noaa-consumer-003",
+      "server_id": 167442487,
+      "created_at": "2026-09-25T15:57:39Z",
+      "deleted_at": "2026-09-25T16:05:52Z",
+      "elapsed_seconds": 74.0,
+      "assets_collected": 6,
+      "fetched": "10/10 files from the dataset release 396698120 (earino/noaa-tide-flooding, tag v2026.09), 196,018,020 bytes, failures [], each verified against the corrected per-level digests now recorded in artifacts[0].levels",
+      "results": {
+        "package_vs_manifest": "every listed file matched its recorded hash",
+        "sha256sum_c": "OK",
+        "gate_temporal": "exit 0, QUALIFICATION PASSED, artifact bb051dc304a4ee63",
+        "gate_station_disjoint": "exit 0, QUALIFICATION PASSED, artifact 92297a5b62f86b29",
+        "baseline_temporal": "CONTRACT OK, eval AUC 0.8633",
+        "baseline_station_disjoint": "CONTRACT OK, eval AUC 0.8690",
+        "agreement": "both per-level artifact versions equal the accepted artifact's (artifacts[0].levels) and both AUCs equal the noaa-baseline-002 measurement on the same bytes, so the consumer reproduction is the recorded figure rather than a spread around it"
+      },
+      "why": "the consumer check is the only evidence that a reader with no access to the building repository and no credential gets the same dataset and the same result from the published release; this is the run that belongs to the bytes the release now holds",
+      "residual": "the bundled harness (consumer/source/run.sh) and the shipped baseline/reproduce_baseline.sh both print a hardcoded expectation line carrying the superseded pair (0.8638 / 0.8688), so the last line of output_consumer.txt disagrees with the package's own MANIFEST.json (0.8633 / 0.8690). No check failed - the printed line is a constant, not a read of the manifest - and it is part of the package-prose pass still owed",
+      "evidence": ".factory/noaa-consumer-003/result.json, .factory/noaa-consumer-003/reports/{container.log,output_consumer.txt,baseline-temporal.log,baseline-station_disjoint.log,qualification-temporal.txt,qualification-station_disjoint.txt}"
     }
   ],
   "artifacts": [
@@ -501,7 +526,7 @@
   ],
   "rejection_reason": null,
   "review": "Ready for construction on 2026-09-19. Contracts: redistribution read from the publishing portal (public domain, attribution requested, derived-not-official constraint recorded); prediction timing stated with an observations-only feature list; target derivable from the observed water level at datum=STND with the label source excludable; split capacity measured over the frozen 122-station list, eval 1,828 positives over 332 independent flood days and holdout 2,850 over 427. Extraction cost measured rather than estimated. The base rate at the physical threshold is 1.7-3.2%, which is a property of the phenomenon, not a defect: report precision/recall-style metrics beside AUC and use the base rate as the baseline. CORRECTION 2026-09-19: the 'product=daily_max does not exist' finding was wrong - the product is daily_max_min and it returns a station-year of 6-minute daily maxima per request, verified data with completeness flags. The primary task therefore costs 2,440 requests / ~178 MB, not 29,160 / 15.2 GiB.",
-  "next_action": "The GitHub half of the re-issue is done; the Hub half is now half-done and measured (noaa-hf-003, artifacts[0].huggingface.reissue). In order: (1) the Hub's ten data files on main are the corrected bytes, but its version tag v2026.09 still resolves to the noaa-003 commit ee6ba847 and its MANIFEST.json/SHA256SUMS still list the noaa-003 digests. Re-point the release package prose at noaa-004 first - DATA_DICTIONARY.md's label row still says `late` where the shipped column is `minor_flood`, VERIFICATION.md still cites job noaa-003, and README/RELEASE_NOTES/measurements.json need the same pass - then regenerate MANIFEST.json/SHA256SUMS with scripts/release-manifest.py and run scripts/hf-publish.py --create --upload-small, then --verify, then --tag LAST (it replaces the existing tag so v2026.09 and main agree). (2) Re-run the clean-room consumer check against the re-issued bytes - noaa-consumer-002's PASSED belongs to the superseded bytes and does not carry over. (3) Decide the recorded persistence-floor question: carry the noaa-003 figures with the note in record.persistence_calibration, or re-measure on the corrected eval split. (4) Only then the publication act the operator approves: flip both destinations, prove the read from an anonymous client, record it in release/noaa-tide-flooding/DESTINATIONS.json BEFORE regenerating the manifest, refresh card/LOADING.md/README/release notes, and publish the site. Both destinations stay private until then. The old GitHub plumbing item is closed as measured: v2026.09 and main are the same commit bef3a412 there.",
+  "next_action": "The clean-room consumer check is now closed on the bytes the release holds: noaa-consumer-003 re-ran it against release 396698120 and passed every stage (package vs MANIFEST.json, sha256sum -c, both gates, baseline 0.8633 / 0.8690 with CONTRACT OK), so noaa-consumer-002's superseded-bytes pass has a replacement and no longer needs one. What the re-issue still owes, in order: (1) re-point the release package prose at noaa-004 - DATA_DICTIONARY.md's label row still says `late` where the shipped column is `minor_flood`, VERIFICATION.md's qualification row still cites job noaa-003 and the baseline row still carries 0.8638 / 0.8688, README/RELEASE_NOTES/REPRODUCE.md/baseline/README.md and code/persistence_baseline.py carry the same superseded figures, and the hardcoded expectation lines in baseline/reproduce_baseline.sh and consumer/source/run.sh need the same pass - then regenerate MANIFEST.json/SHA256SUMS with scripts/release-manifest.py and run scripts/hf-publish.py --create --upload-small, then --verify, then --tag LAST (it replaces the existing tag so the Hub's v2026.09 and main agree). (2) Decide the recorded persistence-floor question: carry the noaa-003 figures with the note in record.persistence_calibration, or re-measure on the corrected eval split. (3) Only then the publication act the operator approves: flip both destinations, prove the read from an anonymous client, record it in release/noaa-tide-flooding/DESTINATIONS.json BEFORE regenerating the manifest, refresh card/LOADING.md/README/release notes, and publish the site. Both destinations stay private until then. The GitHub plumbing item stays closed as measured: v2026.09 and main are the same commit bef3a412 there.",
   "features_declared": {
     "prediction_instant": "End of the local day before the target day. Features are observed water levels only. NOAA tide predictions and model guidance are model output and must be excluded so the task stays an observation-only forecast.",
     "available_at_prediction_time": [
@@ -845,11 +870,19 @@
     "candidates/noaa-tide-flooding/station_list_result.json"
   ],
   "consumer_verification": {
-    "job": "noaa-consumer-002",
+    "job": "noaa-consumer-003",
     "levels_checked": "both levels, each treated as its own contract-complete task instance",
-    "clean_room": "worker container with no access to this repository and no GitHub credential; the published repository cloned and hash-checked, the release assets fetched by the worker host and mounted read-only",
+    "clean_room": "worker container with no access to this repository and no GitHub credential; the published package tree cloned and hash-checked against MANIFEST.json, the release assets fetched by the worker host - which holds the credential - and mounted read-only",
+    "checked_bytes": "release 396698120 of earino/noaa-tide-flooding (tag v2026.09), the corrected noaa-004 files: 10/10 fetched, 196,018,020 bytes, digests equal artifacts[0].levels",
     "result": "PASSED",
-    "reproduction_spread": "0.8651 vs 0.8638 (temporal) and 0.8687 vs 0.8688 (station_disjoint), within about 0.002",
-    "note": "noaa-consumer-001 failed on an unlogged dependency step and is superseded rather than averaged in; neither run scored the holdout"
+    "baseline_reproduction": "temporal 0.8633 and station_disjoint 0.8690, both CONTRACT OK - identical to the accepted-artifact baseline measurement, compared with the 0.8651/0.8687 spread seen on the superseded bytes",
+    "gate_artifact_versions": "temporal bb051dc304a4ee63, station_disjoint 92297a5b62f86b29 - both equal the versions recorded for the accepted artifact",
+    "previous": {
+      "job": "noaa-consumer-002",
+      "result": "PASSED",
+      "reproduction_spread": "0.8651 vs 0.8638 (temporal) and 0.8687 vs 0.8688 (station_disjoint), within about 0.002",
+      "note": "this pass described the superseded noaa-003 bytes and does not carry over to the re-issued artifact; it is kept rather than averaged in"
+    },
+    "note": "noaa-consumer-001 failed on an unlogged dependency step and is superseded rather than averaged in; no run scored the holdout"
   }
 }

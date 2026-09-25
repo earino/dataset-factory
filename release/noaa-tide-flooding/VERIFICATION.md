@@ -11,40 +11,39 @@ names the evidence.
 | Baseline | `sh baseline/reproduce_baseline.sh ./task both`, runner files copied verbatim | temporal **0.8638**, station_disjoint **0.8688**, `CONTRACT OK` both |
 | Persistence floor | `code/persistence_baseline.py --fetch` | **0.8265** and **0.8454**, no training |
 | Package consistency | `python3 scripts/check-package.py release/noaa-tide-flooding` | **OK** |
-| Consumer verification | clean-room container, no build-repo access, no credential | **PASSED** - see below |
+| Consumer verification | clean-room container, no build-repo access, no credential (job `noaa-consumer-003`, on the re-issued bytes) | **PASSED** - see below |
 | CI for the construction commit | GitHub Actions run for the pushed SHA | recorded in `STATE.md` |
 
-## Consumer verification: PASSED
+## Consumer verification: PASSED on the re-issued bytes
 
-Run in a clean-room container on a worker: **no access to the building repository, no credential**.
-It cloned the published repository, hashed every file against `MANIFEST.json`, verified the release
-assets with `sha256sum -c`, ran the published gate on both levels, and reproduced the baseline.
+Run in a clean-room container on a worker (job `noaa-consumer-003`): **no access to the building
+repository, no credential**. It was given the published package tree and the release assets exactly
+as a consumer receives them - fetched by the worker host from the release the dataset is published
+in (`earino/noaa-tide-flooding`, release 396698120, tag `v2026.09`: 10 of 10 files, 196,018,020
+bytes, each against the digest `artifacts[0].levels` records) - then hashed the cloned package
+against `MANIFEST.json`, verified the assets with `sha256sum -c`, ran the published gate on both
+levels, and reproduced the baseline through the published contract.
 
 | step | result |
 | --- | --- |
-| published package vs `MANIFEST.json` | 28 files checked, every one matched |
-| `sha256sum -c SHA256SUMS` | OK on all ten assets |
-| published gate, temporal | exit 0, `QUALIFICATION PASSED`, artifact `8896c4423c53cb14` |
-| published gate, station_disjoint | exit 0, `QUALIFICATION PASSED`, artifact `e6aff23f394ddfe4` |
-| baseline, temporal | `CONTRACT OK`, eval AUC 0.8651 |
-| baseline, station_disjoint | `CONTRACT OK`, eval AUC 0.8687 |
+| published package vs `MANIFEST.json` | every listed file matched its recorded hash |
+| `sha256sum -c SHA256SUMS` | OK |
+| published gate, temporal | exit 0, `QUALIFICATION PASSED`, artifact `bb051dc304a4ee63` |
+| published gate, station_disjoint | exit 0, `QUALIFICATION PASSED`, artifact `92297a5b62f86b29` |
+| baseline, temporal | `CONTRACT OK`, eval AUC **0.8633** |
+| baseline, station_disjoint | `CONTRACT OK`, eval AUC **0.8690** |
 
-Both gate artifact versions match the ones recorded at build time, so the published bytes are the
-gated bytes. The first attempt (`noaa-consumer-001`) failed during its dependency step and left no
-log to diagnose; the step was instrumented and the rerun is the record above.
+Both gate artifact versions equal the versions recorded for the accepted artifact, so the bytes a
+consumer receives are the gated bytes. The reproduction returned **the recorded pair itself** (0.8633
+/ 0.8690): on these bytes the independent run and the recorded measurement agree to the digit, so
+the spread described below does not apply to this pass.
 
-### The baseline is reproducible to about 0.002, not to the digit
-
-The recorded baseline is **0.8638 / 0.8688**; the independent reproduction gave **0.8651 / 0.8687**.
-Nothing else moved: the artifact digests are identical, both gate reports name the same artifact
-versions, and the dependencies resolve to the same versions (pandas 2.3.3, numpy 2.5.3, xgboost
-3.4.1, scikit-learn 1.9.1).
-
-The cause is the runner's training: xgboost with default threading on identical bytes is not
-bit-reproducible. So the recorded figure is **one measurement, not a constant**, and the card and
-reproduction guide say so. A reproduction within about 0.002 is the same result; a reproduction
-outside 0.02 would be a real difference, and the consumer check now compares values instead of only
-checking exit codes.
+The 2026-09-20 pass (`noaa-consumer-002`) returned 0.8651 / 0.8687 against the recorded 0.8638 /
+0.8688 and ran against the **superseded** artifact (`noaa-003`, label `late`); it is kept in the
+candidate record rather than averaged in. Two of its results are properties of the runner rather
+than of the artifact, and carry over: training is not bit-reproducible (a reproduction lands within
+about 0.002 of a figure taken the same way), and the dependencies resolve to pandas 2.3.3, numpy
+2.5.3, xgboost 3.4.1, scikit-learn 1.9.1.
 
 ## What this verification does **not** cover
 

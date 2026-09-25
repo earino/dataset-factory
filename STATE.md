@@ -1,11 +1,61 @@
 # Current state
 
-Updated: 2026-09-25 (latest entry: watcher run on `noaa-hf-003` - the Hugging Face revision `main` now
-carries the corrected NOAA artifact and every one of its ten files was verified from the Hub API against
-the accepted digests. The Hub's version tag `v2026.09` still resolves to the noaa-003 commit and its
-`MANIFEST.json`/`SHA256SUMS` still list the noaa-003 digests, because the small-file upload was held
-deliberately: the release package prose still names the shipped label column `late`. The consumer check is
-still to re-run on the re-issued bytes; both destinations remain private.)
+Updated: 2026-09-25 (latest entry: watcher run on `noaa-consumer-003` - the clean-room consumer check
+re-ran against the re-issued NOAA bytes and passed every stage, so the published-bytes pass now belongs to
+the bytes the release holds rather than to the superseded noaa-003 artifact. The package prose pass and the
+Hub's small files and version tag are still owed before publication; both destinations remain private.)
+
+## 2026-09-25 16:06 UTC - noaa-consumer-003: the consumer check now belongs to the bytes the release holds
+
+The re-run the record has owed since noaa-publish-002 - noaa-consumer-002's PASSED described the superseded
+noaa-003 artifact - was launched from an interactive session at 15:57 and finished under the watcher in 74 s
+of worker time. This entry records the measured result and what it closes.
+
+**Measured** (`.factory/noaa-consumer-003/reports/`, `result.json`, `jobs/noaa-consumer-003.json`):
+
+| step | result |
+| --- | --- |
+| fetched | 10/10 files from the dataset release 396698120 (`earino/noaa-tide-flooding`, tag `v2026.09`), **196,018,020 bytes**, `failures: []`, every digest equal to `artifacts[0].levels` |
+| package vs `MANIFEST.json` | every listed file matched its recorded hash |
+| `sha256sum -c SHA256SUMS` | OK |
+| gate, temporal / station_disjoint | exit 0, `QUALIFICATION PASSED`, artifacts `bb051dc304a4ee63` / `92297a5b62f86b29` - both equal the accepted artifact's versions |
+| baseline, temporal / station_disjoint | `CONTRACT OK`, eval AUC **0.8633** / **0.8690** |
+
+The two baseline AUCs are the recorded pair itself, not a spread around it: noaa-baseline-002 measured
+0.8633/0.8690 on the same corrected bytes and this independent clean-room run reproduces both to the digit,
+where the superseded bytes gave 0.8651/0.8687 against a recorded 0.8638/0.8688. No run scored the holdout.
+
+**One residual, recorded rather than fixed here.** The bundled harness and the shipped
+`baseline/reproduce_baseline.sh` both print a hardcoded expectation line carrying the superseded pair, so the
+last line of `output_consumer.txt` reads "expected: temporal 0.8638, station_disjoint 0.8688" while the
+package's own `MANIFEST.json` carries 0.8633/0.8690. The printed line is a constant, not a read of the
+manifest, and no check failed. It belongs to the package-prose pass (item 1 below), which still owes the
+`late` label row in `DATA_DICTIONARY.md`, the job-`noaa-003` qualification row in `VERIFICATION.md`, and the
+superseded figures in `README.md`/`RELEASE_NOTES.md`/`REPRODUCE.md`/`baseline/README.md`/
+`code/persistence_baseline.py`.
+
+**Changed here, with the outcome.** `release/noaa-tide-flooding/VERIFICATION.md` said the consumer check
+"must be re-run on these bytes"; it now records the pass above with the step table, keeps the superseded pass
+beside it, and names the job in its summary row. `MANIFEST.json` was regenerated with
+`scripts/release-manifest.py`: the only change is `package_files["VERIFICATION.md"]` (399 keys otherwise
+identical). `check-package.py release/noaa-tide-flooding` passes. `release/noaa-tide-flooding/
+DESTINATIONS.json` - untracked until now - was written by `scripts/hf-publish.py --verify` at 15:57 under the
+tool's convention that `revision` carries the package tag label: its `verified: true` means the Hub's
+*default branch* (`main`, `3116c306`) matched every file, **not** that the Hub tag does. `v2026.09` on the
+Hub still resolves to `ee6ba847`, the noaa-003 commit, so the tag item stays open and item (1) is still its
+gate.
+
+**Recorded**: `candidates/noaa-tide-flooding/record.json` (a `noaa-consumer-003` entry in `jobs`;
+`consumer_verification` re-pointed at this run with the superseded pass kept under `previous`; `next_action`
+rewritten so the consumer item reads closed), `jobs/noaa-consumer-003.json`, `release/noaa-tide-flooding/
+{VERIFICATION.md,MANIFEST.json,DESTINATIONS.json}`, this file. Worker `167442487` destroyed after collection
+and confirmed gone from the provider (`GET /v1/servers/167442487` -> 404, and no factory-labelled servers
+remain).
+
+**Next action**: (1) the package-prose pass, then `scripts/hf-publish.py --create --upload-small`, `--verify`,
+and `--tag` **last** so the Hub's `v2026.09` and `main` agree; (2) the persistence-floor decision - carry the
+noaa-003 figures with the recorded note or re-measure on the corrected eval split; (3) the publication act
+the operator approves, on both destinations, from one manifest. Both destinations stay private until then.
 
 ## 2026-09-25 15:27 UTC - noaa-hf-003: the Hub carries the corrected NOAA bytes; its tag and docs do not
 
