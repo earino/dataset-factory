@@ -1,9 +1,67 @@
 # Current state
 
-Updated: 2026-09-25 (latest entry: watcher run on `noaa-baseline-002` - the baseline on the corrected
-NOAA artifact came back **temporal 0.8633 / station_disjoint 0.8690, CONTRACT OK on both levels**, on the
-bytes the release will carry. The `late` -> `minor_flood` rename is now adopted; the private release on
-both destinations still holds the superseded noaa-003 bytes, and the re-issue has not run.)
+Updated: 2026-09-25 (latest entry: watcher run on `noaa-publish-002` - the corrected NOAA artifact is in
+the GitHub release and was verified from the service, 10/10 assets, 196,018,020 bytes, and `v2026.09` and
+`main` are now the same commit, so the tag divergence is closed. The Hugging Face revision still carries
+the superseded noaa-003 bytes and the consumer check has not been re-run on the re-issued bytes; both
+destinations remain private.)
+
+## 2026-09-25 15:10 UTC - noaa-publish-002: the corrected artifact is in the GitHub release, the Hub half still lags
+
+The re-issue of the NOAA release was launched from an interactive session at 14:54 and finished under the
+watcher (succeeded, under a minute of worker time). This entry records what was verified and what the
+authorised sequence still owes.
+
+**Measured** (`.factory/noaa-publish-002/reports/manifest.json`, `result.json`, `jobs/noaa-publish-002.json`):
+
+| item | value |
+| --- | --- |
+| source | private staging release 392410743 (`job-noaa-004`), the ten corrected `minor_flood` files |
+| target | `earino/noaa-tide-flooding` release 396698120, tag `v2026.09` |
+| transferred | 10/10 assets, **196,018,020 bytes**, `failures: []`, artifact version `fb49f932...` |
+| verified | every target asset re-read from the GitHub API: size and sha256 equal the job's transferred values, 10 of 10, and equal `release/noaa-tide-flooding/MANIFEST.json`'s `files`/`assets` digests |
+
+The check was made against the service rather than against the job's own claim. The ten `source_asset_id`s
+in the spec are `file-0002`..`file-0011` of staging release 392410743 and carry exactly the digests that
+were transferred, so the source was the corrected artifact and not a neighbouring release. The superseded
+release is gone: `gh release list` returns one release, `v2026.09` -> 396698120, and 392387511 with the
+noaa-003 bytes is no longer listed - its digests are kept in `record.json`
+(`artifacts[0].previous_issue`) so the old version stays checkable. The job's own manifest records
+`uploaded: false` because the transfer path uploads per file instead of one bulk archive; the `transfer`
+block is the report that matters.
+
+**The tag divergence is closed - measured, and not by the route that was planned.** `v2026.09` and `main`
+now resolve to the same commit `bef3a412` (`compare main...v2026.09` -> `identical`, ahead/behind 0/0).
+That commit is itself a **root commit** (`parents: []`) carrying the re-issue message, and the release was
+created from it with `target_commitish: main`. So the state recorded on 2026-09-20 - tag -> `9bcbf2c6`,
+`main` -> `f384889f`, unrelated roots, compare 404 - was removed by replacing the history rather than by
+the single fast-forward the record had planned. What the release rule asks for (a version-pinned reader
+and a main-branch reader see one commit) now holds; the one-commit fast-forward is therefore not owed. The
+superseded tag commit `9bcbf2c6` still exists as an object with no ref pointing at it.
+
+**What did not move: the Hub half.** Verified from the API today, not assumed: the Hugging Face revision
+`v2026.09` still carries the superseded bytes - `temporal/private/holdout.csv` 12,475,942 against the
+corrected 12,475,947, `station_disjoint/private/holdout.csv` 4,228,351 against 4,228,360,
+`temporal/meta.json` still naming the label column `late`, and its `MANIFEST.json` hashing `55791180...`
+against the package's `60ffed39...`. `artifacts[0].huggingface.verified: true` describes the noaa-003
+upload of 2026-09-20 and does not carry over to these bytes. The clean-room consumer check has likewise
+not been re-run: noaa-consumer-002's PASSED belongs to the superseded bytes.
+
+**Recorded**: `candidates/noaa-tide-flooding/record.json` (job `noaa-publish-002`; `artifacts[0]`
+re-pointed at release 396698120 with the corrected per-level digests and the superseded issue kept under
+`previous_issue`; `github_tag_state` re-measured; a `huggingface.superseded` block carrying the file-level
+evidence and the ten source asset ids for the Hub job; `next_action` rewritten), this file. Worker
+`167435107` destroyed after collection. `check-candidate.py --all` and `check-package.py
+release/noaa-tide-flooding` both pass on this state.
+
+**Next action**: (1) prepare and launch the hf_publish job for the corrected files from release 396698120
+(the ten source asset ids and new digests are in `record.json`
+`artifacts[0].huggingface.superseded.next`), then the loading check and `hf-publish.py --verify`; (2)
+re-run the clean-room consumer check against the re-issued bytes; (3) decide the recorded persistence-floor
+question (carry the noaa-003 figures with the note, or re-measure on the corrected eval split); (4) then the
+publication act - flip both destinations, prove the read from an anonymous client, record it in
+`DESTINATIONS.json` **before** regenerating the manifest, refresh card/LOADING.md/README/release notes, and
+publish the site. Both destinations stay private until then.
 
 ## 2026-09-25 10:45 UTC - noaa-baseline-002: the baseline on the corrected artifact, and what adoption does not yet mean
 
