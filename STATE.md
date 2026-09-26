@@ -36,6 +36,15 @@ the skip reasons, the anonymous re-verification and the residual), `jobs/noaa-hf
 `.factory/noaa-hf-004/`. Worker `167526113` destroyed and confirmed gone from the provider
 (`GET /v1/servers/167526113` -> 404; no factory-labelled servers remain).
 
+**CI for `4f8ac82` is blocked, not failing.** The run for the pushed commit (`Local checks` -> job
+`check`) concluded `failure` with **zero steps executed** (check run 108411150098), and its annotation reads
+"The job was not started because recent account payments have failed or your spending limit needs to be
+increased" - the same GitHub billing condition already recorded for `be83b1d` and `4b3cdb1`, outside this
+repository. Run here with the workflow's own command (`python3 -m unittest discover -s tests`): **286 tests,
+OK**, including the three new `tests/test_site_hub_paths.py` cases `d9cad24` added; and
+`scripts/check-candidate.py --all` and `scripts/check-package.py release/noaa-tide-flooding` both pass on the
+tree this commit records.
+
 **Left alone, deliberately**: the interactive session's own edits in the working tree (`scripts/site-hf.py`
 among them) were read, not staged or committed, by this run. `record.json`'s `artifacts[0].huggingface`
 block still describes the Hub as private with the tag lagging while the committed `DESTINATIONS.json` now
