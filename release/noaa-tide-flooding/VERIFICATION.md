@@ -5,16 +5,16 @@ names the evidence.
 
 | what | how | result |
 | --- | --- | --- |
-| Artifact qualified | `python3 code/qualify_dataset.py ./task/temporal` and `.../station_disjoint`, on the worker (job `noaa-003`) | **PASSED - 32 checks per level, 0 failed** |
+| Artifact qualified | `python3 code/qualify_dataset.py ./task/temporal` and `.../station_disjoint`, on the worker (job `noaa-004`) | **PASSED - 32 checks per level, 0 failed** |
 | Panel completeness | `code/build.py` coverage gate, recorded in `output/build_summary.json` | **122/122 stations, 2,440/2,440 station-years, 0 errors** |
 | Report describes the uploaded bytes | gate report digests vs the staging release manifest, all ten files | **10/10 match** |
-| Baseline | `sh baseline/reproduce_baseline.sh ./task both`, runner files copied verbatim | temporal **0.8638**, station_disjoint **0.8688**, `CONTRACT OK` both |
+| Baseline | `sh baseline/reproduce_baseline.sh ./task both`, runner files copied verbatim | temporal **0.8633**, station_disjoint **0.8690**, `CONTRACT OK` both |
 | Persistence floor | `code/persistence_baseline.py --fetch` | **0.8265** and **0.8454**, no training |
 | Package consistency | `python3 scripts/check-package.py release/noaa-tide-flooding` | **OK** |
-| Consumer verification | clean-room container, no build-repo access, no credential (job `noaa-consumer-003`, on the re-issued bytes) | **PASSED** - see below |
+| Consumer verification | clean-room container, no build-repo access, no credential (job `noaa-consumer-003`, on the published bytes) | **PASSED** - see below |
 | CI for the construction commit | GitHub Actions run for the pushed SHA | recorded in `STATE.md` |
 
-## Consumer verification: PASSED on the re-issued bytes
+## Consumer verification: PASSED on the published bytes
 
 Run in a clean-room container on a worker (job `noaa-consumer-003`): **no access to the building
 repository, no credential**. It was given the published package tree and the release assets exactly
@@ -38,7 +38,7 @@ consumer receives are the gated bytes. The reproduction returned **the recorded 
 / 0.8690): on these bytes the independent run and the recorded measurement agree to the digit, so
 the spread described below does not apply to this pass.
 
-The 2026-09-20 pass (`noaa-consumer-002`) returned 0.8651 / 0.8687 against the recorded 0.8638 /
+The 2026-09-20 pass (`noaa-consumer-002`) returned 0.8651 / 0.8687 against that artifact's recorded 0.8638 /
 0.8688 and ran against the **superseded** artifact (`noaa-003`, label `late`); it is kept in the
 candidate record rather than averaged in. Two of its results are properties of the runner rather
 than of the artifact, and carry over: training is not bit-reproducible (a reproduction lands within
@@ -63,6 +63,12 @@ about 0.002 of a figure taken the same way), and the dependencies resolve to pan
 - **The documentation was revised after the consumer check ran.** The data assets were not touched:
   their digests are unchanged and the gate still names the same artifact versions. What changed is
   this document, the card and the reproduction guide, to record the reproduction and its spread.
+  A second documentation pass, on 2026-09-26, corrected the label column name in
+  `DATA_DICTIONARY.md` (the shipped target is `minor_flood`, not the `late` copied from the Austin
+  task), this document's baseline row and job reference, and the superseded figures that were still
+  carried in `README.md`, `RELEASE_NOTES.md`, `REPRODUCE.md`, `baseline/README.md`,
+  `baseline/reproduce_baseline.sh` and `code/persistence_baseline.py`. Again no asset byte changed
+  and no digest moved.
 - **The datum trap was measured, not assumed.** Comparing MLLW-referenced heights to `nos_minor`
   silently yields zero positives; `code/datum_check.py` records the regression that shows it, which
   is why `datum=STND` is a requirement rather than a note.

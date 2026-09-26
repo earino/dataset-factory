@@ -25,8 +25,7 @@ configs:
 
 # Austin 911 Response Time (2026.09)
 
-**Status: private. Public visibility requires explicit human approval.** Nothing here has been
-published.
+**Status: {STATUS_LINE}**
 
 Predict whether an Austin 911 call for service will have a **late first-unit arrival**: at least
 `1200 seconds` between the call being answered and the first unit
@@ -45,7 +44,7 @@ Version-pinned. `revision` is the tag, not a branch, so the bytes cannot change 
 ```python
 from datasets import load_dataset
 
-ds = load_dataset("{repo_id}", revision="v2026.09")
+ds = load_dataset("{REPO_ID}", revision="v2026.09")
 print(ds)
 # DatasetDict({
 #     train: Dataset({features: [...], num_rows: 572180}),
@@ -57,16 +56,16 @@ print(ds)
 print(ds["train"].features["late"])
 ```
 
-For a private repository, pass a token that has access to it (the inference credential does not):
+{LOADING_NOTE}
 
 ```python
-ds = load_dataset("{repo_id}", revision="v2026.09", token=True)
+ds = load_dataset("{REPO_ID}", revision="v2026.09"{TOKEN_ARG})
 ```
 
 The files are also plain CSVs, so they can be used without `datasets`:
 
 ```bash
-hf download {repo_id} --repo-type dataset --revision v2026.09 \
+hf download {REPO_ID} --repo-type dataset --revision v2026.09 \
     --include "data/*.csv" --local-dir ./austin
 ```
 

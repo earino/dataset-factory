@@ -121,10 +121,23 @@ class PublishedPackageInvariants(unittest.TestCase):
         self.assertIn("derived", self.manifest["artifact_version_note"])
         self.assertEqual(64, len(self.manifest["artifact_version"]))
 
-    def test_the_card_does_not_claim_publication(self):
+    def test_the_card_claims_publication_only_when_the_package_is_published(self):
+        """The README's status line is a claim about the package, so it has to match the record.
+
+        This test asserted the opposite until 2026-09-26 - that the card said "Status: private" -
+        which was true while the package was unpublished. Once it went public that assertion
+        obstructed the truth it was written to protect. It now reads the state from the manifest and
+        checks the claim against it in both directions, so it still fails a card that overstates
+        (claims public while unpublished) and one that understates.
+        """
         card = (self.release / "README.md").read_text()
-        self.assertIn("Status: private", card)
-        self.assertNotIn("is public", card.lower())
+        if self.manifest["published"]:
+            self.assertEqual("public", self.manifest["visibility"])
+            self.assertIn("Status: public", card)
+            self.assertNotIn("Status: private", card)
+        else:
+            self.assertNotEqual("public", self.manifest["visibility"])
+            self.assertIn("Status: private", card)
 
 
 

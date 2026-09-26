@@ -80,6 +80,49 @@ def declared_row_counts(card_text):
     return counts
 
 
+def superseded_values(node):
+    """Every figure and artifact digest the manifest records as superseded.
+
+    A card and a README are prose, and prose is where a retired value survives: the NOAA card kept
+    quoting the superseded artifact's AUC pair, and the package README went on advertising the
+    superseded artifact's own version digest (`8896c442…`) as the artifact the release carried. Each
+    was retired by a `superseded` block or a `previous_measurement` entry in the manifest, so both
+    kinds of value are harvested from the record rather than from a list maintained by hand.
+
+    Digests are harvested as their 16-hex-character prefixes, which is how documents quote them.
+    """
+    numbers, digests = set(), set()
+
+    def harvest(value):
+        if isinstance(value, dict):
+            for item in value.values():
+                harvest(item)
+        elif isinstance(value, list):
+            for item in value:
+                harvest(item)
+        elif isinstance(value, bool):
+            return
+        elif isinstance(value, (int, float)):
+            numbers.add(round(float(value), 4))
+        elif isinstance(value, str) and re.fullmatch(r"[0-9a-f]{32,64}", value):
+            digests.add(value[:16])
+
+    def walk(value):
+        if isinstance(value, dict):
+            for key, item in value.items():
+                if isinstance(item, (dict, list)) and ("superseded" in str(key).lower()
+                                                       or "previous_measurement" in str(key).lower()):
+                    harvest(item)
+                else:
+                    walk(item)
+        elif isinstance(value, list):
+            for item in value:
+                walk(item)
+
+    walk(node)
+    return numbers, digests
+
+
 class CardTests(unittest.TestCase):
     def setUp(self):
         self.source = PUBLISH_SOURCE.read_text()
@@ -168,6 +211,111 @@ class CardTests(unittest.TestCase):
                     self.assertEqual(rows, rows_by_split[split],
                                      f"{candidate}: the loading example promises {rows} rows for "
                                      f"{split}, the manifest has {rows_by_split[split]}")
+
+    def test_the_documented_commands_are_the_ones_that_run(self):
+        """The card and LOADING.md must print a command an anonymous reader can actually run.
+
+        Two published defects lived in the rendered text, not in the template source: the NOAA card
+        named the bare candidate ("noaa-tide-flooding"), which raises DatasetNotFoundError for a
+        reader without a token, and its summary line read "Rows: 0 across two levels" because the
+        row total was summed over a nested split map as if it were flat. The third is the config: a
+        repository with two configs refuses load_dataset unless one is named. So this asserts on the
+        generated output, which is what a reader copies.
+        """
+        module = self._renderer()
+        seen = 0
+        for candidate, manifest, _card_text in self._candidates():
+            # card() reads the candidate from a module global the CLI sets; the test drives it.
+            module.CANDIDATE = candidate
+            repo_id = str(manifest["repository"]).removeprefix("https://github.com/")
+            rendered = module.card(manifest).replace(module.REPO_PLACEHOLDER, repo_id)
+            loading = module.loading_text(manifest, repo_id)
+            expected = expected_configs(manifest)
+            with self.subTest(candidate=candidate):
+                self.assertNotIn("__REPO_ID__", rendered, f"{candidate}: card holds the build token")
+                self.assertNotIn("__REPO_ID__", loading, f"{candidate}: LOADING.md holds the token")
+                self.assertIn("/", repo_id, f"{candidate}: the repository id has no owner")
+                shown = re.findall(r'load_dataset\(\s*"([^"]+)"', rendered + loading)
+                self.assertTrue(shown, f"{candidate}: no loading command is documented")
+                for name in shown:
+                    self.assertEqual(name, repo_id,
+                                     f"{candidate}: the documented command names {name!r}, which is "
+                                     f"not the repository id {repo_id!r}")
+                if len(expected) > 1:
+                    for config in sorted(expected):
+                        self.assertIn(f'"{config}"', loading,
+                                      f"{candidate}: LOADING.md does not name config {config!r}, so "
+                                      f"its command raises 'Config name is missing'")
+                else:
+                    self.assertIn(f'ds = load_dataset("{repo_id}"',
+                                  loading.replace("|", "").replace("\n", " ").replace("  ", " "),
+                                  f"{candidate}: a single-config repository needs no config argument")
+                total = sum(rows for splits in expected.values() for rows in splits.values())
+                if manifest.get("published"):
+                    # Austin's template still carried the private-era sentence while its manifest
+                    # said published: a rebuild would have shipped a card denying its own release.
+                    self.assertIn("**Status: public", rendered,
+                                  f"{candidate}: the manifest says published, the card does not")
+                    self.assertNotIn("Status: private", rendered,
+                                     f"{candidate}: the card claims a private release")
+                match = re.search(r"\*\*Rows:\*\* ([\d,]+)", rendered)
+                if match is None:
+                    self.fail(f"{candidate}: the card states no row total")
+                self.assertEqual(int(match.group(1).replace(",", "")), total,
+                                 f"{candidate}: the card states {match.group(1)} rows; the manifest's "
+                                 f"splits hold {total:,}")
+            seen += 1
+        self.assertEqual(seen, 3, "expected a card for every released candidate")
+
+    RETIREMENT_MARKERS = ("superseded", "supersedes", "earlier", "previous", "retired", "no longer")
+
+    def _documents(self, candidate, manifest, card_text):
+        """Everything a reader is handed: the generated card and the package's own prose.
+
+        The card is what the Hub shows; the package markdown is what the GitHub tree and the website
+        publish. A retired figure that survives in either is the same defect, and the README shipped
+        the superseded artifact digest for longer than the card did.
+        """
+        yield f"candidates/{candidate}/card.md", card_text
+        release = ROOT / "release" / candidate
+        for path in sorted(release.rglob("*.md")):
+            if "eval_cache" in path.parts:
+                continue
+            yield str(path.relative_to(ROOT)), path.read_text()
+
+    def test_no_document_states_a_superseded_figure_or_artifact(self):
+        """A retired value may be named as history, never stated as the current one.
+
+        The distinction matters because both uses look identical to a grep: the NOAA card quoted the
+        superseded artifact's pair in its results table (a reader takes that as the released result)
+        and, after the fix, names the same pair in a sentence saying it was the earlier pass. Only
+        the first is a defect, so a retirement marker has to be near the value.
+        """
+        checked = 0
+        for candidate, manifest, card_text in self._candidates():
+            retired_numbers, retired_digests = superseded_values(manifest)
+            if not retired_numbers and not retired_digests:
+                continue
+            for name, document in self._documents(candidate, manifest, card_text):
+                lines = document.splitlines()
+                unmarked = []
+                for index, line in enumerate(lines):
+                    quoted = {round(float(token), 4) for token in re.findall(r"\b0\.\d{3,4}\b", line)}
+                    quoted &= retired_numbers
+                    quoted.update(digest for digest in retired_digests if digest in line)
+                    if not quoted:
+                        continue
+                    window = " ".join(lines[max(0, index - 1):index + 2]).lower()
+                    if any(marker in window for marker in self.RETIREMENT_MARKERS):
+                        continue
+                    unmarked.extend(sorted(map(str, quoted)))
+                with self.subTest(document=name):
+                    self.assertEqual(
+                        unmarked, [],
+                        f"{name}: states {sorted(set(unmarked))} as current; the manifest records "
+                        f"it as superseded")
+                checked += 1
+        self.assertGreater(checked, 0, "no document was checked, so this test proves nothing")
 
 
 if __name__ == "__main__":

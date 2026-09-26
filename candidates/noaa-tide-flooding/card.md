@@ -123,20 +123,23 @@ counterpart:
 
 | level | recorded | independent reproduction |
 | --- | --- | --- |
-| `temporal` | **0.8638** | 0.8651 |
-| `station_disjoint` | **0.8688** | 0.8687 |
+| `temporal` | **0.8633** | 0.8633 |
+| `station_disjoint` | **0.8690** | 0.8690 |
 
-The runner's training is not bit-reproducible (xgboost, default threading, identical bytes), so the
-last decimal moves between runs. Treat both columns as the same result; the digests do not move.
+The independent clean-room reproduction on the published bytes returned the recorded pair to the
+digit (job `noaa-consumer-003`, release 396698120). The runner's training is not bit-reproducible
+(xgboost, default threading, identical bytes), so the last decimal moves between runs - the earlier
+2026-09-20 pass, against the superseded artifact, gave 0.8651 and 0.8687. The digests do not move.
 
 The station-disjoint level scores the same on **stations the model never saw**, so the signal is not
 station-specific memorisation.
 
 **And the floor, measured without training:** a single stock feature - yesterday's maximum against
 the station's own threshold - already reaches **0.8265** (temporal) and **0.8454** (station-disjoint).
-The trained model's real headroom is **+0.0373** and **+0.0234**. The headroom is narrow, and it is
-stated here rather than discovered by a reviewer. The full measurement is in the GitHub
-counterpart's `measurements.json`.
+The trained model's real headroom is about **+0.0368** and **+0.0236**. The headroom is narrow, and
+it is stated here rather than discovered by a reviewer. The floor was measured on the superseded
+artifact's eval split, which carries the same rows and positives as the released one, so the
+headroom is approximate. The full measurement is in the GitHub counterpart's `measurements.json`.
 
 ## Licence
 

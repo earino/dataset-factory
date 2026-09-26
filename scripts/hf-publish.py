@@ -154,10 +154,29 @@ def render_card_template(text: str, manifest_data: dict) -> str:
     """
     splits = manifest_data.get("splits") or {}
     published = bool(manifest_data.get("published"))
-    total = sum(entry.get("rows", 0) for entry in splits.values()) if isinstance(splits, dict) else 0
+
+    def rows_in(group):
+        """Total rows in a split map, whether the splits are flat or nested under a protocol.
+
+        NOAA's split map nests one group per protocol, and the flat-only sum rendered its card as
+        "Rows: 0 across two levels" - a published card telling every reader the dataset is empty.
+        """
+        if not isinstance(group, dict):
+            return 0
+        if "rows" in group:
+            return int(group.get("rows") or 0)
+        return sum(rows_in(entry) for entry in group.values())
+
+    total = rows_in(splits)
+    configs = list(splits) if splits and all(
+        isinstance(entry, dict) and "rows" not in entry for entry in splits.values()) else []
     licences = manifest_data.get("licenses") or {}
     values = {
-        "REPO_ID": CANDIDATE,  # replaced by the real id at build time
+        # The template's loading example has to name the repository the way the Hub does. Filling
+        # this with the bare candidate name produced a card whose documented command raised
+        # DatasetNotFoundError, while the guard that watched for the literal placeholder passed.
+        "REPO_ID": REPO_PLACEHOLDER,  # replaced by the real owner-qualified id at build time
+        "CONFIGS": ", ".join(configs),
         "ARTIFACT_VERSION": str(manifest_data.get("artifact_version")),
         "RELEASE_TAG": str(manifest_data.get("release_tag")),
         "GITHUB_REPOSITORY": str(manifest_data.get("repository")),
@@ -228,6 +247,42 @@ def navigation_record():
     return project(PACKAGE, editorial, config)
 
 
+def loading_text(manifest_data, repo_id):
+    """The loading instructions, generated so the printed command is the one that works.
+
+    A dataset with more than one config (NOAA: one per level) needs the config named, or the
+    documented command raises "Config name is missing"; the owner-qualified id is needed too, since
+    a bare name raises DatasetNotFoundError for an anonymous reader. Both defects shipped, so both
+    are generated here from the manifest rather than written by hand.
+    """
+    token_note = ("The repository is public, so no token is needed." if manifest_data.get("published")
+                  else "Private repository: pass a token that has access to it.")
+    splits = manifest_data.get("splits") or {}
+    configs = [name for name, entry in splits.items()
+               if isinstance(entry, dict) and "rows" not in entry]
+    tag = manifest_data["release_tag"]
+    if configs:
+        loading = "\n".join(f'ds = load_dataset("{repo_id}", "{name}", revision="{tag}")'
+                            for name in configs)
+        config_note = (f"This dataset has {len(configs)} configs - {', '.join(configs)} - one per "
+                       "level; the config has to be named:\n\n")
+    else:
+        loading = f'ds = load_dataset("{repo_id}", revision="{tag}")'
+        config_note = ""
+    return (
+        f"# Getting the data\n\n## Hugging Face (this repository), version-pinned\n\n"
+        f"{config_note}"
+        "```python\nfrom datasets import load_dataset\n"
+        f"{loading}\n```\n\n"
+        f"{token_note}\n\n"
+        "## GitHub counterpart\n\n"
+        f"`{manifest_data.get('get_dataset_command')}` in "
+        f"{manifest_data.get('repository')}.\n\n"
+        "Both destinations carry the same files and the same digests; "
+        "`MANIFEST.json` and `SHA256SUMS` verify either copy.\n"
+    )
+
+
 def build_package(manifest_data, repo_id):
     BUILD.mkdir(parents=True, exist_ok=True)
     (BUILD / "data").mkdir(exist_ok=True)
@@ -254,20 +309,7 @@ def build_package(manifest_data, repo_id):
         card_text = linked_readme(card_text, record)
     (BUILD / "README.md").write_text(card_text)
     written.append("README.md")
-    # Loading instructions for the two entry points, kept beside the card.
-    token_note = ("The repository is public, so no token is needed." if manifest_data.get("published")
-                  else "Private repository: pass a token that has access to it.")
-    (BUILD / "LOADING.md").write_text(
-        f"# Getting the data\n\n## Hugging Face (this repository), version-pinned\n\n"
-        "```python\nfrom datasets import load_dataset\n"
-        f'ds = load_dataset("{repo_id}", revision="{manifest_data["release_tag"]}")\n```\n\n'
-        f"{token_note}\n\n"
-        "## GitHub counterpart\n\n"
-        f"`{manifest_data.get('get_dataset_command')}` in "
-        f"{manifest_data.get('repository')}.\n\n"
-        "Both destinations carry the same files and the same digests; "
-        "`MANIFEST.json` and `SHA256SUMS` verify either copy.\n"
-    )
+    (BUILD / "LOADING.md").write_text(loading_text(manifest_data, repo_id))
     written.append("LOADING.md")
     return written
 

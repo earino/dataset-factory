@@ -197,9 +197,17 @@
         }
       },
       "runner_files_unmodified": true,
-      "note": "The benchmark's own train.py and validate.py, copied verbatim and shipped here. Measured on the corrected artifact, fetched from staging rather than rebuilt: the artifact is already gated, and these are the numbers the release carries. The superseded artifact's pair (0.8638 / 0.8688) is kept in the candidate record.",
+      "note": "The benchmark's own train.py and validate.py, copied verbatim and shipped here. Measured on the corrected artifact, fetched from staging rather than rebuilt: the artifact is already gated, and these are the numbers the release carries. The superseded artifact's pair (0.8638 / 0.8688) is kept in the candidate record and below.",
       "independent_reproduction": {
-        "note": "the earlier clean-room reproduction ran against the superseded artifact; a new consumer check must run against these bytes before the package claims it",
+        "note": "two clean-room reproductions, one against the superseded artifact and one against the published bytes; both are kept rather than averaged",
+        "published": {
+          "job": "noaa-consumer-003",
+          "release": 396698120,
+          "temporal": 0.8633,
+          "station_disjoint": 0.869,
+          "verdict": "the independent run and the recorded measurement agree to the digit on these bytes",
+          "evidence": ".factory/noaa-consumer-003/result.json and reports/baseline-*.log"
+        },
         "superseded": {
           "recorded": {
             "temporal": 0.8638,
@@ -230,7 +238,13 @@
           "headroom": 0.0234
         }
       },
-      "accuracy_trap": "the plain rule 'yesterday exceeded the threshold' agrees with the label about 96% of the time while scoring 0.63 AUC, because only ~2% of days are positive. Accuracy would flatter a useless rule, which is why the contract scores AUC."
+      "accuracy_trap": "the plain rule 'yesterday exceeded the threshold' agrees with the label about 96% of the time while scoring 0.63 AUC, because only ~2% of days are positive. Accuracy would flatter a useless rule, which is why the contract scores AUC.",
+      "source": "the superseded artifact's eval split (job noaa-003, staging release 392230750); identical rows and positives to the released splits, a few observation values revised, so these single-feature figures are carried over rather than re-measured on the released bytes",
+      "headroom_against_released_pair": {
+        "temporal": 0.0368,
+        "station_disjoint": 0.0236,
+        "how": "released eval AUC (0.8633 / 0.8690) minus the floor above; approximate, because the floor was measured on the superseded split"
+      }
     }
   },
   "assets": {
@@ -286,17 +300,17 @@
     }
   },
   "package_files": {
-    "DATA_DICTIONARY.md": "ba3976731d326f0392994103909ce03a7c774967629cf7a5109549f70bc5712b",
+    "DATA_DICTIONARY.md": "2e6e23c188e4eec1f34aa07d23f85d0a572c3fbf032eaad7cfe858fca11f962c",
     "LICENSE-CC0-1.0.txt": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
     "LICENSE-MIT.txt": "56b932ff064e5da113ae10175c8546325f64f26e1ece71683ffcbf8b2304fe1c",
     "LICENSE.md": "5ae442da5699d5eb0260775402bec6d9d0ae021a4a02372cf3565d9d5b8c6582",
-    "README.md": "15f8e3efcdc2b280efa23e1238ebcd9405317c2ae991c09a373202772e705b30",
-    "RELEASE_NOTES.md": "11ea45694464708619b640d13185aa4fa56ebc2f8ce3ca5333d4f10f0fa780b8",
-    "REPRODUCE.md": "8cdad3f90cf57c3540d980042ee0bc41cce7eec8c89f530986f79558b3314c54",
+    "README.md": "d56d544eabf802ab35f2b22cc18f28d3855ebc95c77ee5deff190a570dff962a",
+    "RELEASE_NOTES.md": "32d9c78bf09beaf88bcb09200cc737c6c50ab784864a160bd29bdb28e2dc7e6d",
+    "REPRODUCE.md": "23242671c3696bda6542e5d0014222484e8b312aa11f443c15a46b989f70e13b",
     "SHA256SUMS": "6e123786810927cddd2ba7ecf6fc46a8c0e33965ac57834bea31f2c3a38cb593",
-    "VERIFICATION.md": "8f0798bbbd7818808bfcd99c94499f29cd0a8e717c7e35f53e156f9570b60ac6",
-    "baseline/README.md": "cd860bce0a8e925884e46580d271d084d2a3d14522c7d781a61d0446395fa751",
-    "baseline/reproduce_baseline.sh": "25b7ec1ccf62fa8ebfd5378ee06636f180678bca0f0445a7eeaac524e6ad2394",
+    "VERIFICATION.md": "bf7047c6542709911d577a6b533aeec9e088637007004ed61de288da67b48bd2",
+    "baseline/README.md": "08dc0f7bccaf0a3e9a470ebc564ee738deb9019adf3e98d1929a128567e2fb8d",
+    "baseline/reproduce_baseline.sh": "2b3bb02a3e533534b3c7315f3dbd290d34959c0aa5ac1be3548c548a3ff467e6",
     "baseline/train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
     "baseline/validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
     "baseline/validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d",
@@ -307,13 +321,13 @@
     "code/frozen_station_list.py": "8130259a0f498054a9511e42becefd5240a21d98a926d57dfd92755d171a1687",
     "code/label_route_check.py": "ab3142f5c0e4c14771196fecfbf6d1f4e07d574a75b009d66d5dff3931551067",
     "code/materialize.py": "d997cce13c220a5a600d0390c10e8bc50c1faaf7b7de6ed53d6c2b1b85094de3",
-    "code/persistence_baseline.py": "61a9060d38a149639a7f9d12c1a9a26b3df162318c061f21804a46b88ed60b08",
+    "code/persistence_baseline.py": "b3fa56b7341f160f0ec7f054d61327c47a149ae3bb288ed4315e0270481dd93e",
     "code/qualify_dataset.py": "71a8cac429656e27dbb631be8488b9f4662580994b115290a243fc1f4b9639f1",
     "code/sampling_check.py": "6448f1c5a06334f4850d9cfab0005db2668284bb64e19738faabbc583758cf2e",
     "code/spatial_clustering.py": "a4fbdc4bceda29e596460579e423a811072308cf1f6c320738a7f62877bc0c66",
     "code/spatial_split_capacity.py": "69b0679aad2548329bbbc0d13d3ac615271d6cd00ae77e45746acc6ddeba3466",
     "get_dataset.py": "dc679e143c87f5a32778216734ab5d4e8789eef297907e1ff8cea47d295600c2",
-    "measurements.json": "d03b555c090344caead14cdda1c50e1b9de2b908d64fffcefaf74f240589382d"
+    "measurements.json": "9180a1bc7e1c45b86691242c4b3e9af17a35d10c483d45c745f93dee349863a0"
   },
   "baseline_command": "sh baseline/reproduce_baseline.sh ./task both",
   "get_dataset_command": "python3 get_dataset.py --dest ./task",
