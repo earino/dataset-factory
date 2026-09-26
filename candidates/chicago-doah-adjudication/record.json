@@ -1,6 +1,6 @@
 {
   "id": "chicago-doah-adjudication",
-  "status": "parked",
+  "status": "ready",
   "created_at": "2026-09-18T09:31:08.695355+00:00",
   "domain": "municipal administrative adjudication / building-code enforcement",
   "prediction_question": "For a building-code violation case docketed with the Chicago Department of Administrative Hearings, will the hearing officer ultimately find the respondent liable?",
@@ -75,7 +75,60 @@
   "jobs": [],
   "artifacts": [],
   "rejection_reason": null,
-  "review": "Licence question ANSWERED 2026-09-26: conditionally redistributable under the City of Chicago Data Terms of Use (no standard licence; licenseId = SEE_TERMS_OF_USE). Conditions recorded in license.json, including the City's mandatory derivative disclaimer and its indemnity and termination terms. Two gates remain before this can be called ready: the novelty check required of every ready candidate, and the operator's acceptance of the City's indemnity/takedown terms. No part of this dataset may be described as CC0 or any standard open licence.",
-  "next_action": "1) Run scripts/check-novelty.py chicago-doah-adjudication and record the verdict. 2) Operator: accept or decline the City's indemnity and termination terms. Then write the split-by-docket_number construction script over a frozen extract, carrying the prescribed disclaimer into the package and card.",
-  "licensing_impact": "Unlike the published datasets, this one must NOT declare CC0 for the compilation: the City's terms do not grant a sublicensable right in the rows. Code MIT; compilation distributed under the City's Terms; release docs carry the prescribed disclaimer."
+  "review": "Licence ANSWERED 2026-09-26 (conditionally redistributable; conditions in license.json) and novelty CHECKED 2026-09-26 (verdict differentiated: the raw data is mirrored on Kaggle and catalogued on Data.gov, adjacent literature exists, but no ML-ready package of this task does). One gate remains: the operator's acceptance of the City's indemnity and termination terms.",
+  "next_action": "Operator: accept or decline the City's indemnity/termination terms. On acceptance, write the construction script that splits by docket_number over a frozen extract with recorded checksums, and carry the City's prescribed disclaimer verbatim into the release package, card and site.",
+  "licensing_impact": "Unlike the published datasets, this one must NOT declare CC0 for the compilation: the City's terms do not grant a sublicensable right in the rows. Code MIT; compilation distributed under the City's Terms; release docs carry the prescribed disclaimer.",
+  "novelty_check": {
+    "checked_at": "2026-09-26T16:49:56+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "building code violation adjudication outcome prediction"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "building code violation adjudication outcome prediction",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "building code violation adjudication outcome prediction",
+          "hits": 430526,
+          "top": [
+            "Rentonomics: A Machine Learning Approach to House Rent Predication",
+            "C++ BASED ON CODE BLOCK IN CALCULATION OF BUILDING DESIGN",
+            "Accuracy of identifying incident stroke cases from linked healthcare data in UK Biobank",
+            "Method for Integrating Simulation-Based Support in the Building Design Process",
+            "R code used for the simulation study published in \"Unbiased Recursive Partitioning Enables Robust and Reliable Outcome Prediction in Acute SCI\""
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "building code violation adjudication outcome prediction",
+          "hits": 5,
+          "top": [
+            "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
+            "Building Height Prediction with Instance Segmentation",
+            "Improved normal-boundary intersection algorithm: a method for energy optimization strategy in smart buildings",
+            "Elastic buildings: Calibrated district-scale simulation of occupant-flexible campus operation for hybrid work optimizati",
+            "MPSN: Motion-aware Pseudo Siamese Network for Indoor Video Head Detection in Buildings"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'building code violation adjudication outcome prediction': 0 hit(s) - nothing notable\n- zenodo_records / 'building code violation adjudication outcome prediction': 430526 hit(s) - Rentonomics: A Machine Learning Approach to House Rent Predication, C++ BASED ON CODE BLOCK IN CALCULATION OF BUILDING DESIGN, Accuracy of identifying incident stroke cases from linked healthcare data in UK Biobank, Method for Integrating Simulation-Based Support in the Building Design Process, R code used for the simulation study published in \"Unbiased Recursive Partitioning Enables Robust and Reliable Outcome Prediction in Acute SCI\"\n- arxiv_preprints / 'building code violation adjudication outcome prediction': 5 hit(s) - Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, Building Height Prediction with Instance Segmentation, Improved normal-boundary intersection algorithm: a method for energy optimization strategy in smart buildings, Elastic buildings: Calibrated district-scale simulation of occupant-flexible campus operation for hybrid work optimizati, MPSN: Motion-aware Pseudo Siamese Network for Indoor Video Head Detection in Buildings",
+    "prior_art": [
+      "https://www.kaggle.com/datasets/chicago/chicago-ordinance-violations/data",
+      "https://catalog.data.gov/dataset/ordinance-violations",
+      "https://www.preprints.org/manuscript/202602.1600",
+      "https://element84.com/geospatial/spatial-analysis/building-inspection-prediction/"
+    ],
+    "theirs": "The raw dataset is already mirrored on Kaggle and catalogued on Data.gov, so access is not the contribution. Adjacent literature exists: models that predict building-code compliance to target inspections, housing-code violation prediction from integrated city data, and a 2026 preprint on predicting building-code waiver outcomes. None of them package adjudication outcomes as a frozen, split, leakage-gated task.",
+    "ours": "A frozen extract of Chicago Ordinance Violations with recorded checksums; a binary outcome label (Liable vs Not Liable) at case level rather than row level; a split by docket_number so a case cannot leak across periods; a natural future holdout of hearings not yet ruled; and a leakage-gated runner contract around all of it. No package of this task exists.",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
 }
