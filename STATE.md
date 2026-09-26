@@ -2515,6 +2515,26 @@ the licence filenames, so the Hub copy of this dataset was missing
 `LICENSE-CITY-OF-CHICAGO-TERMS-OF-USE.md` while the card and `LICENSE.md` both referenced it; every
 `LICENSE*` file in the package now travels.
 
+**The record claimed a check that had failed.** `DESTINATIONS.json` described the Hub publish as "run by
+worker job chicago-hf-001 and re-run against the published revision: every split loads with the manifest's
+rows, columns and label values". The job's own result says otherwise: it uploaded all five files and then
+its loading check returned splits `train`/`test` and reported `eval` and `holdout` missing, because the
+card declared no `configs` block and the Hub names `data/eval.csv` "test" by convention. `ok: false`, in
+the job record, for a day. The card was fixed after the fact - and nothing ever re-ran the load, so the
+claim and the fix were both unverified. Re-run now from an unauthenticated client at `revision="v2026.09"`:
+`train 47414 / eval 3436 / holdout 2913`, 11 columns, label `Liable` / `Not Liable`, identical to the
+manifest. Two lessons: a job's `status: succeeded` is not a passing verification (this one was `failed`
+and read as success in prose), and a hand-written block in a card template - the `configs:` block and the
+row counts in the loading example - drifts from the manifest silently. `tests/test_hf_card.py` now derives
+both from the manifest, and the test was shown to fail on the pre-fix card.
+
+**A commit hash that does not exist.** `record.json` pinned the release to
+`d9e4ac887cd5c5bd4f6a45d00c9a30ceb6cf76e8`, which GitHub answers 422 for; the real commit was
+`d9e4ac887cd598aa...` - the same value with the tail corrupted, the kind of error that only a lookup
+catches. Every field was then checked against the API rather than against its neighbours. It never reached
+the published tree (30 blobs at the tag searched, no occurrence), and the pin now records the commit that
+carries the corrected documents.
+
 Reusable from this release: `candidates/chicago-doah-adjudication/anonymous_proof.py` (the
 unauthenticated proof), `final_pins.py` (point a tag at the final documents commit and read the pinned
 manifest back), `sync_release_repo.py` (push package documents into the release repository),
