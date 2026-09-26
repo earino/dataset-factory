@@ -106,6 +106,13 @@ never appears in a bundle, a dataset-job input mount, a container, a log, a mani
 asset or a command-line argument. A job is refused at **plan** time when the publishing credential
 is missing - not on a paid worker.
 
+Prefer credential **files** over exported variables. Anything exported into the shell is written in
+plaintext by the terminal backend's session snapshot (`$TMPDIR/hermes-snap-<id>.sh`) and survives
+in the scratch directory, so `cat`-ing a credential file into a variable, exporting it, or expanding
+a default (`${TOKEN:-none}` prints the value when the variable *is* set) leaks it into a snapshot and
+into the transcript. Read the file at the point of use, pass the value inside the command, and keep
+the token out of the echoed text.
+
 ### Deterministic, not model-driven
 
 Synchronisation is release work, not a research loop: it runs as part of the release, with bounded
