@@ -207,9 +207,8 @@ def card(manifest_data):
         # A dataset that supplies its own card gets the dataset-driven path; Austin's published card
         # predates this and is left byte-identical by the branch below.
         return render_card_template(template.read_text(), manifest_data)
-    # Refuse rather than fall back to another dataset's prose. The block below is Austin's card,
-    # kept only until a follow-up deletes it; it is unreachable, and reaching it would have shipped
-    # one dataset's description under another's name.
+    # Refuse rather than fall back to another dataset's prose. This used to fall through to one
+    # dataset's card hardcoded here, which would have shipped its description under another's name.
     raise SystemExit(f"candidates/{CANDIDATE}/card.md is missing: every dataset supplies its own card")
 
 def build_package(manifest_data, repo_id):
