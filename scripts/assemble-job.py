@@ -13,9 +13,9 @@ the job's size and identity, overrides only what a full worker run needs (the co
 and the sizing that fits the job), copies the canonical files into an ignored staging directory,
 verifies the result against the worker's own bundle rules, and prints the directory to launch:
 
-    python3 scripts/assemble-job.py austin-911-response
-    sh scripts/scout-factory worker plan .factory/jobs/austin-003/job.json
-    sh scripts/scout-factory worker launch .factory/jobs/austin-003/job.json
+    python3 scripts/assemble-job.py <bundle>
+    sh scripts/scout-factory worker plan .factory/jobs/<job-id>/job.json
+    sh scripts/scout-factory worker launch .factory/jobs/<job-id>/job.json
 
 The job **id comes from the candidate's `source/job.json`**, not from this file. OPERATIONS
 says each attempt gets a new job id, and the first version of this script hardcoded the id in

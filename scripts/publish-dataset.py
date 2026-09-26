@@ -8,7 +8,7 @@ public release are not reversible the way a merge commit is.
 
 The token is read from its `_FILE` path and never printed.
 
-    python3 scripts/publish-dataset.py austin-911-response     # the plan, and nothing else
+    python3 scripts/publish-dataset.py <dataset>     # the plan, and nothing else
 
 **What is verified and what is not.** `--stream-test` resolves the staged artifact to concrete
 asset ids through the worker-written `manifest.json`, so the mapping from artifact files to
@@ -19,9 +19,9 @@ neither exists yet. This script therefore stops at a plan instead of pretending 
 
 ## The publication steps, for when the operator approves
 
-1. `python3 scripts/release-manifest.py austin-911-response` - regenerate MANIFEST.json and
+1. `python3 scripts/release-manifest.py <dataset>` - regenerate MANIFEST.json and
    SHA256SUMS from recorded evidence.
-2. `python3 scripts/publish-dataset.py austin-911-response --stream-test` - confirm the plan and
+2. `python3 scripts/publish-dataset.py <dataset> --stream-test` - confirm the plan and
    that every artifact file maps to exactly one staged asset.
 3. Create the public repository `earino/<dataset>` and commit the documents in
    `release/<dataset>/` as its initial commit.

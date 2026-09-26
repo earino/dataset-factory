@@ -9,8 +9,8 @@ while carrying a private-visibility note.
 
 Read-only. Exit status is 0 when consistent, 1 when not, 2 on a bad invocation.
 
-    python3 scripts/check-package.py release/austin-911-response
-    python3 scripts/check-package.py release/austin-911-response --json
+    python3 scripts/check-package.py release/<dataset>
+    python3 scripts/check-package.py release/<dataset> --json
 """
 
 import argparse

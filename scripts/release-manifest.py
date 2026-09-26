@@ -5,7 +5,7 @@ Everything comes from recorded evidence - the accepted artifact's expected hashe
 record, and (when it exists) the collected baseline report. Nothing is retyped by hand, so the
 manifest cannot drift from what was actually measured.
 
-Usage: python3 scripts/release-manifest.py austin-911-response
+Usage: python3 scripts/release-manifest.py <dataset>
 """
 from __future__ import annotations
 

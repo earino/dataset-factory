@@ -8,9 +8,9 @@ the evidence that claim implies. Parked and dropped candidates must carry a reas
 Exit status is 0 when the record's claims are backed, 1 when something is missing, 2 on a bad
 invocation. Read-only: it never writes to the candidate.
 
-    python3 scripts/check-candidate.py austin-911-response
+    python3 scripts/check-candidate.py <dataset>
     python3 scripts/check-candidate.py --all
-    python3 scripts/check-candidate.py austin-911-response --json
+    python3 scripts/check-candidate.py <dataset> --json
 """
 
 import argparse

@@ -9,7 +9,7 @@ The point of this step is that "a token exists" is not "a token may push to this
 The inference token is a different credential and is not touched here.
 
     python3 scripts/hf-identity.py
-    python3 scripts/hf-identity.py --namespace earino --repo austin-911-response
+    python3 scripts/hf-identity.py --namespace earino --repo <dataset>
 """
 
 import argparse
