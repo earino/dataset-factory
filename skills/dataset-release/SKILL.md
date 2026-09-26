@@ -81,7 +81,12 @@ Completion is tracked **per destination** in `DESTINATIONS.json`, written after 
 verified. GitHub can be done while Hugging Face is pending; a release is reported complete only
 when both verify, and the package check refuses a manifest that claims `published` while any
 destination is unverified. Corrections are published as a **new version**; prior versions are
-preserved, never edited in place.
+preserved, never edited in place. That rule is about the data: a correction that changes any asset
+byte requires a new version, because the pinned tag must keep fetching the bytes it was verified
+with. A correction to *documents only* - a record that overstated a check, a stale commit, a
+licence note - leaves every digest identical, so it is applied to the same version and the tag is
+moved onto that documentation commit as the last action; say in the record what moved and that no
+data changed.
 
 Order matters in two places:
 
@@ -220,6 +225,10 @@ and run its commands.
 | A printed command contains a placeholder | A doubled-brace placeholder inside an f-string renders to a single brace, so the replacement no-ops | Use an unambiguous token; execute the artifact you generate before shipping it |
 | `PUT .../pages` answered 404 "The certificate does not exist yet" | HTTPS enforcement precedes the first deployment, and only a deployment issues the certificate | Tolerate it before a deployment, retry after one succeeds, and read the enforced state back in `verify` |
 | Website publication refuses with "dataset is private" | Correct refusal, not a defect: a public page must not link to a private destination | Complete the approved public data release first |
+| Prose says a check passed while the job record says it failed | The job's overall status was read as the check's outcome; the result carried `ok: false` | Read the specific check's field in the job result - a job can upload every file correctly and still fail the verification written beside it |
+| A card fix that was never exercised | The corrected card was uploaded and the documented path never re-run against the published revision | Re-run the documented load anonymously after any card or split change; a fix is not a verification |
+| A recorded commit hash that does not exist | The hash was transcribed by hand instead of read back | Read the pin from the API and confirm the commit resolves; a 422 is the only thing that catches a corrupted tail |
+| The card's loading example promises row counts the manifest does not have | Counts are typed into the template, so they drift silently when the build changes | Derive the `configs` block and the counts from the manifest in a test (`tests/test_hf_card.py`); show the test fails on the pre-fix card |
 
 ## Completion criteria
 
