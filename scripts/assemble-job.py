@@ -21,7 +21,7 @@ The job **id comes from the candidate's `source/job.json`**, not from this file.
 says each attempt gets a new job id, and the first version of this script hardcoded the id in
 two places, which made a second attempt impossible to express.
 
-The `austin-baseline` bundle additionally copies the harness benchmark's own `train.py`,
+A baseline bundle additionally copies the harness benchmark's own `train.py`,
 `validate.py` and `validate.sh` **verbatim** out of the read-only benchmark clone, and records
 their hashes so the report can prove the runner was not modified. If the clone is absent the
 assembler fails rather than substituting a stand-in.

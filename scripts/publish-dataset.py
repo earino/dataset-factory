@@ -23,8 +23,8 @@ neither exists yet. This script therefore stops at a plan instead of pretending 
    SHA256SUMS from recorded evidence.
 2. `python3 scripts/publish-dataset.py austin-911-response --stream-test` - confirm the plan and
    that every artifact file maps to exactly one staged asset.
-3. Create the public repository `earino/austin-911-response` and commit the documents in
-   `release/austin-911-response/` as its initial commit.
+3. Create the public repository `earino/<dataset>` and commit the documents in
+   `release/<dataset>/` as its initial commit.
 4. Create release `v2026.09` and attach the five artifact files under the names in the plan.
    Verify each uploaded asset's SHA-256 against `SHA256SUMS` after upload, not before.
 5. Add the public repository URL to the release README, and record the publication in the

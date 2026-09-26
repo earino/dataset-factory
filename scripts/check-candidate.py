@@ -182,7 +182,7 @@ def report(root, candidate_id):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("candidate", nargs="?", help="candidate id, e.g. austin-911-response")
+    parser.add_argument("candidate", nargs="?", help="candidate id, e.g. my-dataset")
     parser.add_argument("--all", action="store_true", help="check every candidate record")
     parser.add_argument("--root", default=".", help="project root (default: .)")
     parser.add_argument("--json", action="store_true", help="machine-readable output")
