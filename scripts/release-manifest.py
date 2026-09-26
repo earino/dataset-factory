@@ -115,7 +115,9 @@ def combined_artifact_version(levels: dict) -> str:
 
 
 def main() -> int:
-    candidate = sys.argv[1] if len(sys.argv) > 1 else "austin-911-response"
+    if len(sys.argv) < 2:
+        raise SystemExit("name the dataset package to manifest, e.g. release/<id>")
+    candidate = sys.argv[1]
     desc = descriptor(candidate)
     release = ROOT / "release" / candidate
     published, visibility, publication_note = publication_state(release)

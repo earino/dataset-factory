@@ -2417,3 +2417,27 @@ novelty check), `notes.md`, and the six probes with their JSON results in `.fact
 GHCN-Daily rainfall features; if not, drop the candidate rather than construct a biased denominator.
 Then redo the 2023 reconciliation with `$where npdes in(...)` and compute the split windows and base
 rates. Nothing public, nothing released, no worker spend of any kind this session.
+
+## 2026-09-26 - the release machinery no longer knows any dataset
+
+Four more sites carried one dataset's wiring, found by auditing rather than by a release failing, plus
+two defaults and a card fallback:
+
+| site | was | now |
+| --- | --- | --- |
+| `assemble-job.py` | a table of per-dataset bundle paths | bundles declare themselves in `candidates/<id>/**/bundle.json`, discovered by glob; duplicate names and a missing `job.json` are refused |
+| `publish-dataset.py` | required Austin's `code/measure_clock_offset.py` in every release; flat asset mapping | a common core plus per-dataset `required_docs`; the mapping comes from the manifest's own `layout` |
+| `hf-publish.py` | a default candidate at module scope; Austin's card prose as a fallback | no default and no fallback: an unresolved candidate raises and a dataset without `card.md` is refused |
+| `release-manifest.py` | defaulted to Austin's package | refuses without a dataset name |
+| `scout-snapshot.py` | reported one dataset's destinations | reports every release package |
+
+Regression evidence: the `noaa-baseline` and `austin-consumer` job specs assemble byte-identical to
+before the bundle change, and Austin's package and manifest regenerate with no diff. Austin's card is
+now `candidates/austin-911-response/card.md`, taken from the published Hub copy (5,837 bytes, no
+placeholders), so its plan still resolves.
+
+Left deliberately, and named rather than hidden: docstring examples that mention Austin (helpful, not
+wiring), the now-unreachable Austin card block still inside `hf-publish.py` (dead code to delete), and
+the fixture-driven test that would drive a synthetic dataset through the projection and publish check -
+its manifest does not yet satisfy the projection's document contract, so it was not landed rather than
+committed red.
