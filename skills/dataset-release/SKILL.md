@@ -159,6 +159,23 @@ the operator's decision - never inferred from a plan digest you happen to hold. 
    release notes are generated or written while the release is private and will keep claiming
    "private, prepared for review" and instruct readers to pass a token. Re-upload the small files
    (`hf-publish.py --upload-small` changes no visibility) and update the public copies.
+5. **Point the tag at the refresh commit, last of all.** Publication changes the documents, so the
+   tag cut during staging now pins a tree that still says `private` and carries no split counts - and
+   the website pipeline reads the manifest *at the pin* and refuses. Move the tag onto the commit that
+   holds the refreshed documents on every destination and read back that tag and the default branch
+   resolve to the same commit. Read the pinned file through the **contents API**: a CDN copy of
+   `raw.githubusercontent.com` kept serving the pre-move manifest minutes after the ref had moved,
+   which makes a correct pin look broken.
+
+**Documents generated after publication must re-derive the managed navigation.** The pipeline writes a
+navigation block (links to the dataset's page, the catalog, both destinations) into the repository
+README and the Hub card; the package README does not carry it. So a later "regenerate and push the
+documents" step silently overwrote both with copies that had no link to the dataset's own page, and
+`verify` failed with `Destination navigation is missing` while the site itself was healthy. Apply the
+block wherever a document is generated, gated on `DESTINATIONS.json` recording a verified site so a
+staged package never advertises a page that does not exist: `scripts/apply-navigation.py` for the
+package README (before the manifest is re-hashed), and the card builder for the Hub copy. Both are
+idempotent.
 
 **State is derived from recorded evidence, never asserted in a generator.** Three defects of this
 exact shape shipped at once: a card whose status was a string literal, a manifest whose
@@ -186,6 +203,10 @@ and run its commands.
 | Package reviewed against the wrong bytes | Manifest built before the last edit | Rebuild the manifest last, then re-tag |
 | Reviewer cannot reproduce | Instructions depend on the private repo | Ship the code, pin to the package's own tag, verify from a clean clone |
 | Version-pinned load returns nothing | Tag created before the data landed | Tag last, and confirm the tag and `main` point at the same commit |
+| `verify`: "Destination navigation is missing" | A document refresh overwrote the README and card the pipeline had linked | Derive the navigation block where documents are generated, then re-hash the manifest |
+| Pinned manifest still says `private` and lists no splits | Tag cut before the publication refresh; the pipeline reads the manifest at the pin | Move the tag onto the refresh commit as the last action, and read the pin through the contents API |
+| Hub copy is missing a licence file | The small-file list hardcoded licence names | Ship every `LICENSE*` file the package carries |
+| Re-verifying erased publication history | The verify path replaced the destination record wholesale | Merge into the record; verification must not delete what publishing recorded |
 | `load_dataset` works but the splits are wrong | Card `data_files` disagree with the manifest's split names | Generate the `configs` block from the manifest; verify split names, rows, schema and label values against it |
 | A release reported complete, one platform empty | Completion tracked per release instead of per destination | `DESTINATIONS.json` per destination; the package check refuses `published` with an unverified destination |
 | Publishing credential reached a container/mount | Token passed as a path into the job source or a mount | Use the credential-file mechanism read by the worker host, outside every mount |
