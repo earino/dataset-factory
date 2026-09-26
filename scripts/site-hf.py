@@ -26,11 +26,16 @@ def execute(payload):
     require(not payload.get("public") or info.private is False,
             "Hugging Face dataset is private; complete its approved release first")
 
-    def small_file(path, revision, size):
-        require(isinstance(size, int) and size <= 256 * 1024, "Hub metadata file exceeds 256 KiB")
+    def small_file(path, revision, size, limit=256 * 1024):
+        """Fetch a bounded file and return its bytes.
+
+        Metadata is capped at 256 KiB; an asset with no Hub digest may be larger, but still bounded,
+        so the caller passes its own limit rather than the cap being loosened for everything.
+        """
+        require(isinstance(size, int) and size <= limit, "Hub file exceeds the cap for this check")
         downloaded = hf_hub_download(repo, filename=path, repo_type="dataset", revision=revision, token=token)
         raw = Path(downloaded).read_bytes()
-        require(len(raw) <= 256 * 1024, "Hub metadata exceeded its declared size")
+        require(len(raw) <= limit, "Hub file exceeded its declared size")
         return raw
 
     entries = {s.rfilename: s for s in info.siblings}
@@ -40,18 +45,15 @@ def execute(payload):
         lfs = getattr(item, "lfs", None)
         sha = lfs.get("sha256") if isinstance(lfs, dict) else getattr(lfs, "sha256", None)
         if not sha:
-            # The Hub reports a SHA-256 only for LFS-stored files. A file below Hugging Face's
-            # ~10 MB auto-LFS threshold is kept as a plain blob, where the Hub exposes a git blob id
-            # and nothing comparable to our digest - and .gitattributes does not change that for
-            # API uploads. Requiring a digest there makes the check impossible rather than safer.
-            # The size comparison above still applies, the gap is announced rather than assumed
-            # away, and the bytes' integrity is verified where a digest does exist: the GitHub
-            # adapter checks the release assets, and the clean-room consumer run verified the same
-            # digests. The proper fix is a git-LFS upload path for files under the threshold.
-            # Reported in the JSON the caller reads: printing here broke the adapter's contract,
-            # because its stdout must be the response alone.
-            record.setdefault("hub_digest_absent", []).append(expected["hf_path"])
-            sha = hashlib.sha256(small_file(item.rfilename, info.sha, item.size)).hexdigest()
+            # The Hub reports a SHA-256 only for LFS-stored files. A CSV below Hugging Face's ~10 MB
+            # auto-LFS threshold stays a plain blob, and .gitattributes does not change that for an
+            # API upload. Skipping the comparison would drop the check; demanding a digest the Hub
+            # cannot report would refuse a correct release. So the file is fetched under a bounded
+            # cap and hashed here, and the digest is still compared. Anything larger than the cap
+            # must be LFS-stored, which is what the cap enforces.
+            record.setdefault("hashed_from_hub", []).append(expected["hf_path"])
+            sha = hashlib.sha256(small_file(item.rfilename, info.sha, item.size,
+                                            limit=64 * 1024 * 1024)).hexdigest()
         require(sha == expected["sha256"], f"Hub asset digest differs: {filename}")
     item = entries.get("MANIFEST.json")
     require(item is not None, "Hub release has no manifest")
