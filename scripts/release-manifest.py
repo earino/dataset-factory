@@ -211,6 +211,12 @@ def main() -> int:
             package_files[relative] = sha256_of(path)
     manifest["package_files"] = package_files
     manifest["licenses"] = licenses_block(candidate)
+    # The Hub path for each file, when the dataset declares its own. Emitted only when it differs
+    # from the flat default, so a single-level release's manifest is unchanged.
+    declared_hub = desc.get("hf_paths")
+    if declared_hub:
+        manifest["hub_paths"] = {relative: declared_hub[relative]
+                                 for relative in sorted(expected["files"])}
 
     (release / "MANIFEST.json").write_text(json.dumps(manifest, indent=2) + "\n")
 

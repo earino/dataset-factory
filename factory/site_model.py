@@ -69,6 +69,21 @@ def text_field(value, name, limit=5000):
     return value
 
 
+def flatten_splits(raw):
+    """One flat {name: {rows, positives}} view of a manifest's splits.
+
+    A dataset with levels carries its splits per level. The record and the published manifest must
+    be read through the same rule, or the publish check compares two different shapes and refuses a
+    correct release - which is exactly what happened: `project` flattened by level and
+    `check_manifest` did not.
+    """
+    if raw and all(isinstance(v, dict) and "rows" not in v for v in raw.values()):
+        return {f"{level}-{split}": entry
+                for level, per_level in sorted(raw.items())
+                for split, entry in sorted(per_level.items())}
+    return dict(raw)
+
+
 def project(package, editorial, config):
     """Construct a renderer-independent record. Never export whole manifests or job records."""
     package = Path(package)
@@ -117,13 +132,20 @@ def project(package, editorial, config):
         require(m["files"].get(logical) == {"bytes": item["bytes"], "sha256": item["sha256"]},
                 "Manifest file and asset digests disagree")
         require(logical in dest["github"].get("files_verified", []), "GitHub verification omits an asset")
-        hf_path = f"data/{filename}" if filename.endswith(".csv") else filename
+        # The Hub path comes from the manifest when the dataset declares one. A level-structured
+        # dataset does not follow the flat data/<asset>.csv rule, and assuming it did meant the
+        # website could never be built for such a release. The flat rule remains the default.
+        hf_path = (m.get("hub_paths") or {}).get(logical) or (
+            f"data/{filename}" if filename.endswith(".csv") else filename)
         require(hf_path in dest["huggingface"].get("files_verified", []), "Hub verification omits an asset")
         assets[filename] = {"bytes": item["bytes"], "sha256": item["sha256"], "hf_path": hf_path,
                             "download": f"https://github.com/{gh}/releases/download/{encoded(tag)}/{encoded(filename)}"}
     require(bool(assets), "No release assets")
+    # A dataset with levels carries its splits per level; the page shows every split of every level
+    # rather than silently rendering only the first, and a flat manifest is untouched.
+    raw_splits = flatten_splits(m["splits"])
     splits = {}
-    for key, entry in m["splits"].items():
+    for key, entry in raw_splits.items():
         slug(key)
         require(type(entry["rows"]) is int and entry["rows"] > 0, "Split rows must be positive integers")
         splits[key] = {"rows": entry["rows"]}
@@ -147,7 +169,14 @@ def project(package, editorial, config):
     revision = editorial.get("site_revision", 1)
     require(type(revision) is int and revision >= 1, "site_revision must be a positive integer")
     baseline = m.get("baseline") or {}
+    # A single-level release records one contract; a dataset with levels records one per level. The
+    # page reports whichever shape the manifest actually has instead of assuming the first's.
     contract = baseline.get("contract") or {}
+    level_metrics = {}
+    for level, data in sorted((baseline.get("artifact") or {}).get("levels", {}).items()):
+        if isinstance(data.get("eval_auc"), (int, float)):
+            level_metrics[level] = {"eval_auc": float(data["eval_auc"]),
+                                    "contract_ok": data.get("contract_ok") is True}
     metrics = {}
     if contract.get("contract_ok") is True and "eval_auc_from_validate_py" in contract:
         auc = float(contract["eval_auc_from_validate_py"])
@@ -180,7 +209,7 @@ def check_manifest(record, manifest):
     require(manifest.get("release_tag") == record["release_tag"] and
             manifest.get("artifact_version") == record["artifact_version"], "Pinned manifest identifies another release")
     splits = {k: {field: v[field] for field in ("rows", "positives") if field in v}
-              for k, v in manifest["splits"].items()}
+              for k, v in flatten_splits(manifest["splits"]).items()}
     require(splits == record["splits"], "Pinned manifest split counts differ")
     assets = {v["asset_name"]: {k: v[k] for k in ("bytes", "sha256")} for v in manifest["assets"].values()}
     require(assets == {name: {k: v[k] for k in ("bytes", "sha256")} for name, v in record["assets"].items()},

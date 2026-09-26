@@ -40,7 +40,17 @@ def execute(payload):
         lfs = getattr(item, "lfs", None)
         sha = lfs.get("sha256") if isinstance(lfs, dict) else getattr(lfs, "sha256", None)
         if not sha:
-            require(not filename.endswith(".csv"), "CSV needs a Hub SHA-256; bulk download is forbidden here")
+            # The Hub reports a SHA-256 only for LFS-stored files. A file below Hugging Face's
+            # ~10 MB auto-LFS threshold is kept as a plain blob, where the Hub exposes a git blob id
+            # and nothing comparable to our digest - and .gitattributes does not change that for
+            # API uploads. Requiring a digest there makes the check impossible rather than safer.
+            # The size comparison above still applies, the gap is announced rather than assumed
+            # away, and the bytes' integrity is verified where a digest does exist: the GitHub
+            # adapter checks the release assets, and the clean-room consumer run verified the same
+            # digests. The proper fix is a git-LFS upload path for files under the threshold.
+            # Reported in the JSON the caller reads: printing here broke the adapter's contract,
+            # because its stdout must be the response alone.
+            record.setdefault("hub_digest_absent", []).append(expected["hf_path"])
             sha = hashlib.sha256(small_file(item.rfilename, info.sha, item.size)).hexdigest()
         require(sha == expected["sha256"], f"Hub asset digest differs: {filename}")
     item = entries.get("MANIFEST.json")
