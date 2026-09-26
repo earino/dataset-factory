@@ -1,21 +1,83 @@
 """The dataset card must describe the release that exists.
 
-Two defects shipped in the published card and both are checked here:
+Three defects shipped in a published card and all of them are checked here:
 
 * the card asserted "private. Public visibility requires explicit human approval" as a literal, so
   it stayed wrong after the operator approved publication;
 * the repository id was written as `{{repo_id}}`, which an f-string renders to `{repo_id}`, so the
   replacement never matched and the literal placeholder shipped - the documented loading command
-  was not runnable as printed.
+  was not runnable as printed;
+* the card's `configs:` block and its loading example are hand-written in the template, so nothing
+  tied them to the manifest. The published Chicago card's load returned splits `train`/`test` and
+  reported `eval` and `holdout` missing, because no configs block declared them; the worker's own
+  loading check caught it only after publication, and no test would have. Every declared split must
+  now exist in the manifest, every manifest split must be declared, and any numeric row count in the
+  loading example must equal the manifest's.
 
 The card is built inside a module that needs `huggingface_hub`, so these are source checks rather
 than an import of the builder.
 """
 
+import json
+import re
 import unittest
 from pathlib import Path
 
-PUBLISH_SOURCE = Path(__file__).resolve().parents[1] / "scripts" / "hf-publish.py"
+ROOT = Path(__file__).resolve().parents[1]
+PUBLISH_SOURCE = ROOT / "scripts" / "hf-publish.py"
+
+
+def declared_configs(card_text):
+    """Every (config_name, split, path) triple the card's frontmatter `configs:` block declares.
+
+    Deliberately a small parser rather than a YAML import: the block is three keys deep and the test
+    should fail loudly on a card that is malformed rather than silently see no configs.
+    """
+    frontmatter = card_text.split("---", 2)[1] if card_text.startswith("---") else ""
+    triples, config, in_data_files = [], None, False
+    split = None
+    for line in frontmatter.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("- "):
+            stripped = stripped[2:]          # list items: "- config_name: default"
+        if stripped.startswith("config_name:"):
+            config = stripped.split(":", 1)[1].strip()
+        elif stripped.startswith("data_files:"):
+            in_data_files = True
+            continue
+        elif in_data_files and stripped.startswith("split:"):
+            split = stripped.split(":", 1)[1].strip()
+        elif in_data_files and stripped.startswith("path:"):
+            path = stripped.split(":", 1)[1].strip()
+            if split is not None:
+                triples.append((config, split, path))
+            split = None
+    return triples
+
+
+def expected_configs(manifest):
+    """The card's configs, expressed from the manifest alone.
+
+    A single-split-protocol dataset keeps a flat `splits` map and one card config named `default`;
+    a dataset with more than one protocol (NOAA's temporal and station-disjoint) nests the splits
+    under the protocol name and the card carries one config per protocol. Both shapes are real, so
+    the expectation is derived rather than assumed.
+    """
+    splits = manifest.get("splits") or {}
+    nested = bool(splits) and all(isinstance(v, dict) and "rows" not in v for v in splits.values())
+    if nested:
+        return {protocol: {split: body.get("rows") for split, body in group.items()}
+                for protocol, group in splits.items()}
+    return {"default": {split: body.get("rows") for split, body in splits.items()}}
+
+
+def declared_row_counts(card_text):
+    """Numeric split row counts in the loading example; `...` placeholders are skipped."""
+    counts = {}
+    for match in re.finditer(r"#\s+(\w+): Dataset\(\{features: \[\.\.\.\], num_rows: ([0-9]+)\}\)",
+                             card_text):
+        counts[match.group(1)] = int(match.group(2))
+    return counts
 
 
 class CardTests(unittest.TestCase):
@@ -38,9 +100,8 @@ class CardTests(unittest.TestCase):
         """
         import importlib.util
         import sys
-        sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-        spec = importlib.util.spec_from_file_location(
-            "hf_publish_module", Path(__file__).resolve().parents[1] / "scripts" / "hf-publish.py")
+        sys.path.insert(0, str(ROOT))
+        spec = importlib.util.spec_from_file_location("hf_publish_module", PUBLISH_SOURCE)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         return module
@@ -62,6 +123,51 @@ class CardTests(unittest.TestCase):
         with self.assertRaises(SystemExit):
             module.render_card_template("value: {NOT_A_KNOWN_FIELD}", {"published": False})
 
+    def _candidates(self):
+        for manifest_path in sorted((ROOT / "release").glob("*/MANIFEST.json")):
+            candidate = manifest_path.parent.name
+            card_path = ROOT / "candidates" / candidate / "card.md"
+            if card_path.is_file():
+                yield candidate, json.loads(manifest_path.read_text()), card_path.read_text()
+
+    def test_every_declared_split_exists_in_the_manifest(self):
+        seen = 0
+        for candidate, manifest, card_text in self._candidates():
+            expected = expected_configs(manifest)
+            triples = declared_configs(card_text)
+            self.assertTrue(triples, f"{candidate}: card declares no configs, so load_dataset would "
+                                     f"not produce the manifest's splits")
+            by_config = {}
+            for config, split, path in triples:
+                by_config.setdefault(config, {})[split] = path
+            self.assertEqual(set(by_config), set(expected),
+                             f"{candidate}: card configs {sorted(by_config)} do not match the "
+                             f"manifest's {sorted(expected)}")
+            for config, declared in sorted(by_config.items()):
+                self.assertEqual(set(declared), set(expected[config]),
+                                 f"{candidate}/{config}: card declares {sorted(declared)}, manifest "
+                                 f"has {sorted(expected[config])}")
+                for split, path in sorted(declared.items()):
+                    self.assertEqual(Path(path).name, f"{split}.csv",
+                                     f"{candidate}/{config}: split {split} points at {path}")
+            seen += 1
+        self.assertEqual(seen, 3, "expected a card for every released candidate")
+
+    def test_any_row_count_in_the_loading_example_matches_the_manifest(self):
+        for candidate, manifest, card_text in self._candidates():
+            expected = expected_configs(manifest)
+            # The loading example is one block, so it can only be checked when the card has a single
+            # config; a multi-protocol card shows placeholders instead.
+            if list(expected) != ["default"]:
+                continue
+            rows_by_split = expected["default"]
+            for split, rows in declared_row_counts(card_text).items():
+                with self.subTest(candidate=candidate, split=split):
+                    self.assertIn(split, rows_by_split,
+                                  f"{candidate}: the loading example shows a split the manifest lacks")
+                    self.assertEqual(rows, rows_by_split[split],
+                                     f"{candidate}: the loading example promises {rows} rows for "
+                                     f"{split}, the manifest has {rows_by_split[split]}")
 
 
 if __name__ == "__main__":

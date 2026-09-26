@@ -2471,7 +2471,7 @@ The chain, in order, with what each step actually returned:
 | qualification | worker job `chicago-001`, PASSED, then destroyed; cleanups verified by direct read |
 | baseline | `chicago-baseline-001`, `baseline/reproduce_baseline.sh` exit 0 |
 | staging | private repo + a `v2026.09` release carrying the five assets, digests read back from GitHub |
-| Hub publish | worker job `chicago-hf-001` uploaded and verified, then destroyed; all five files re-hashed at the published revision |
+| Hub publish | worker job `chicago-hf-001` uploaded all five files and they re-hash at the published revision, but its loading check failed (splits `train`/`test`, `eval` and `holdout` missing) because the card declared no configs block; the card was then fixed to declare the manifest's three splits and the documented path was re-verified anonymously at `v2026.09` - 47414 / 3436 / 2913 rows, 11 columns, `Liable` / `Not Liable` |
 | consumer verification | `chicago-consumer-001` in a fresh environment with no factory access: `run.sh` exit 0, digests and `sha256sum -c` OK, qualification PASSED, baseline 0.6915 |
 | publication | both destinations flipped public under explicit operator authorisation, no asset or digest changed |
 | anonymous proof | repository 200, five assets 206, one asset downloaded in full and digest-identical; Hub API `private=false gated=false`, same on a full download at the revision |
