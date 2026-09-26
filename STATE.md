@@ -1,11 +1,11 @@
+
 # Current state
 
-Updated: 2026-09-26 (latest entry: watcher run on `noaa-hf-004` - the Hub re-check of the two
-level-nested station_disjoint files found them already at the manifest digests and confirmed that from
-an anonymous client, so it moved no bytes and changed neither destination. Commit `d9cad24` from the
-interactive session carries the site/Hub-path change this job was the Hub-side check for, including
-`release/noaa-tide-flooding/DESTINATIONS.json` recording both destinations as public; that session is
-still editing the release path as this entry was written.)
+Updated: 2026-09-26 (latest entry: watcher run on the five Chicago jobs - four succeeded and were
+already collected, recorded and destroyed by the interactive session that ran the release, and the
+failed Hub publish job `chicago-hf-001` had its fix - the card `configs` block - verified live and
+anonymous in this run. The release `earino/chicago-doah-adjudication` v2026.09 is public on GitHub,
+Hugging Face and the website; CI green at `ccfb73e`.)
 
 ## 2026-09-26 13:12 UTC - noaa-hf-004: the two renamed Hub files were already at the manifest digest
 
@@ -2541,3 +2541,41 @@ manifest back), `sync_release_repo.py` (push package documents into the release 
 `verify_hf_load.py` (re-download every Hub file and hash it). They take the dataset from their own
 module constants, which is what the next dataset will have to edit - the generalisation of these four
 into `scripts/` with a dataset argument is the obvious follow-up, not something to fake now.
+
+## 2026-09-26 20:36 UTC - watcher: the five Chicago jobs closed out, the Hub failure fix verified live
+
+The watcher diff surfaced five finished jobs. All five were already collected by the interactive session
+that ran the release (collected_at 19:41-20:08 UTC) and their workers already destroyed (20:28-20:31 UTC,
+ledger reconciled to `deleted`); this run fetched the small reports from the staging releases into
+`.factory/<job>/reports/`, re-verified the numbers from the preserved bytes, re-proved the fix for the
+failed job from an anonymous client, and marked all five handled. Nothing was re-launched: every outcome
+was already recorded in `candidates/chicago-doah-adjudication/record.json` and STATE.md by the session,
+and `chicago-002`/`chicago-003` were superseded builds on the record.
+
+**Re-verified from the staged reports** (`.factory/*/reports/`, no bulk CSV downloaded to this host):
+
+| job | result |
+| --- | --- |
+| `chicago-002` | superseded determinism build: same builder as `chicago-001`, `source_rows_sha256` `60b7dbed...` and `case_table_sha256` `833740b1...` byte-identical to the digests 001 produced; exit 0, gate 1.3.0, superseded by the `hearing_date` leakage fix |
+| `chicago-003` | released artifact: 823,955 source rows, 53,763 cases (train 47,414 / eval 3,436 / holdout 2,913; rates 0.63186 / 0.895518 / 0.932029), split windows 2008-01-01..2018..2022..2026-09-01, disjoint actual ranges, 0 cross-split dockets; gate 1.3.0 all 32 checks pass, 0 failed, artifact `b71586bf28fa56eb` |
+| `chicago-baseline-001` | runner contract OK: unmodified `train.py`/`validate.sh` (bundled digests equal expected), eval AUC **0.6915** from both paths; the rebuild re-verified as artifact `b71586bf28fa56eb` before the task directory was materialized |
+| `chicago-consumer-001` | fresh-environment consumer check: package matches `MANIFEST.json`, `sha256sum -c` OK, qualification exit 0 `QUALIFICATION PASSED`, baseline eval AUC 0.6915, contract OK |
+| `chicago-hf-001` | **failed**: all five files uploaded (4,251,624 bytes, digests equal the released digests) but the documented load returned splits `train`/`test` with `eval` and `holdout` missing - the card then declared no `configs` block, so the Hub named `data/eval.csv` as `test` by convention |
+
+**The failure fix, verified live and anonymous in this run** (no token, no cookie jar): the Hugging Face
+API reads `private=false gated=false`; the datasets-server serves the manifest exact shape - config
+`default`, splits `train`/`eval`/`holdout` at **47414 / 3436 / 2913** rows (53,763 total), 11 columns, no
+pending, no failed. The session authenticated re-verification (`.factory/chicago-hf-verify.json`) and the
+anonymous proof (`.factory/chicago-anonymous-proof.json`) agree, and every Hub file re-hashes to its
+`SHA256SUMS` digest. The GitHub release repository is public with tag `v2026.09` resolving to `146fd4fd...`,
+the same commit as `main` and the corrected pin in `record.json`.
+
+**Recorded**: reports fetched for all five jobs; the reconciled ledger records `jobs/chicago-002.json`,
+`jobs/chicago-003.json`, `jobs/chicago-baseline-001.json`, `jobs/chicago-consumer-001.json` (their
+`deleted_at` re-stamps from this run `worker status` reads) committed with this entry.
+`check-candidate.py --all`: `chicago-doah-adjudication: OK (status=published)`;
+`check-package.py release/chicago-doah-adjudication`: OK. Handled markers written for all five jobs, so the
+watcher stops surfacing them.
+
+**CI**: green for `ccfb73e` - `push completed/success`, run 36269800507 (the billing condition that
+blocked earlier NOAA runs has cleared). This entry commits on top of it.
