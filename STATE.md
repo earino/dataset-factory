@@ -2441,3 +2441,16 @@ wiring), the now-unreachable Austin card block still inside `hf-publish.py` (dea
 the fixture-driven test that would drive a synthetic dataset through the projection and publish check -
 its manifest does not yet satisfy the projection's document contract, so it was not landed rather than
 committed red.
+
+### 2026-09-26 - the fixture test that closes the class, landed
+
+`tests/test_dataset_independence.py` drives a *synthetic* dataset through the code paths that each
+failed during the NOAA release: three levels with an extra split (the shape that raised `KeyError`
+and then "pinned manifest split counts differ"), a flat single-level package (the shape that still
+has to work), a dataset that declares its own Hub layout, and bundle discovery including the refusal
+case. Six tests, all passing.
+
+The first attempt failed for a reason worth recording: its manifest did not satisfy the projection's
+document contract - `README.md`, `LICENSE.md` and `RELEASE_NOTES.md` must exist and match the hashes
+recorded in `package_files` - and it was not committed red. Reading that contract and writing each
+document exactly once, hashing after writing, is what made it land.
