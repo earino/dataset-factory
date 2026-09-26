@@ -1,6 +1,6 @@
 {
   "id": "chicago-doah-adjudication",
-  "status": "parked",
+  "status": "licence-cleared",
   "created_at": "2026-09-18T09:31:08.695355+00:00",
   "domain": "municipal administrative adjudication / building-code enforcement",
   "prediction_question": "For a building-code violation case docketed with the Chicago Department of Administrative Hearings, will the hearing officer ultimately find the respondent liable?",
@@ -20,7 +20,7 @@
     }
   ],
   "license_evidence": [
-    "Both the official dataset and the community view report license 'See Terms of Use' with source link cityofchicago.org (read 2026-09-18). This is not an explicit open-content licence; operator review is required before publishing derived data. Construction scripts and checksums can be published independently of the raw records."
+    "Operator-commissioned licence review completed 2026-09-26: conditionally redistributable under the City of Chicago Data Terms of Use. No standard licence; licenseId = SEE_TERMS_OF_USE. Conditions and verbatim quotes in candidates/chicago-doah-adjudication/license.json."
   ],
   "construction_script": null,
   "split_strategy": "Temporal by hearing_date. Rows are violations, not cases: one docket_number covers many rows, so a row split leaks a case across periods. Split by docket_number. Cases whose hearing_date is after the extract date have no disposition yet and form a natural future holdout, but the dataset mutates as cases complete, so a frozen extract with recorded checksums is required.",
@@ -72,7 +72,8 @@
   },
   "jobs": [],
   "artifacts": [],
-  "rejection_reason": "Blocked on contract 1 (redistribution): Chicago's Terms of Use have not been reviewed by the operator for public redistribution of derived rows. The dataset and its measurements are otherwise sound, so this is a decision, not a defect.",
-  "review": "Parked pending the operator's licence review of Chicago's Terms of Use. Measurements on file: row count, hearing-date range, disposition counts and binary balance. If cleared, the next step is the construction script that splits by docket_number over a frozen extract.",
-  "next_action": "Operator: review Chicago's Terms of Use for redistribution. If cleared, write the split-by-docket_number construction script."
+  "rejection_reason": null,
+  "review": "Licence question answered: publishable under the City's Data Terms of Use, provided the prescribed derivative disclaimer ships verbatim, provenance is retained, and nothing claims a standard open licence or an irrevocable redistribution right. Remaining operator decision: acceptance of the Terms' indemnity/defence obligation and the City's right to require termination of use.",
+  "next_action": "Operator: accept or decline the City's indemnity and takedown terms (the only open decision). Then write the split-by-docket_number construction script over a frozen extract, and carry the mandatory disclaimer into the release package and card.",
+  "licensing_impact": "Unlike the published datasets, this one must NOT declare CC0 for the compilation: the City's terms do not grant a sublicensable right in the rows. Code MIT; compilation distributed under the City's Terms; release docs carry the prescribed disclaimer."
 }
