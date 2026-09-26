@@ -1,0 +1,297 @@
+{
+  "dataset": "chicago-doah-adjudication",
+  "release_version": "2026.09",
+  "release_tag": "v2026.09",
+  "repository": "https://github.com/earino/chicago-doah-adjudication",
+  "visibility": "public",
+  "artifact_version": "b71586bf28fa56ebbfaede26c4494d68b166545ac504b2ebd8a52c7f272627ef",
+  "artifact_job": "chicago-003",
+  "staging_release": 397371672,
+  "staging_release_tag": "job-chicago-003",
+  "staging_repo": "earino/dataset-factory-staging",
+  "construction_commit": "06d7002bc01933e4c094bbe84e4d9899572a893f",
+  "gate_version": "1.3.0",
+  "gate_command": "python3 code/qualify_dataset.py <dataset-dir>",
+  "measurements": {
+    "source_freeze": {
+      "dataset_id": "6br9-quuz",
+      "extract_end": "2026-09-01",
+      "fetched_rows": 823955,
+      "reported_rows": 823955,
+      "pages": 17,
+      "page_limit": 50000,
+      "order": ":id",
+      "source_rows_sha256": "9ac0c2ab3abced60d07ea52b97736b4445b92d9be35a2f46c114dda3568d0a59",
+      "case_table_sha256": "e0278fe152bf45766e3802817cb341288e41428d11086ece1abce555de788063",
+      "definition": "source_rows_sha256 hashes every fetched row (all selected fields, in :id order, one JSON object per line). case_table_sha256 hashes the reduced case table in build order. Neither embeds the build timestamp, so a rebuild can be checked against them.",
+      "checked": "The City republishes this dataset daily. At the time of construction the live total still summed to exactly 823,955 rows across the nine published case_disposition values, so no row was lost to paging and the freeze matches the source the checksums were taken from."
+    },
+    "extraction_cost": {
+      "command": "python3 code/build.py --out ./task --built-at 2026-09-26T20:00:00+00:00",
+      "http_requests_total": 18,
+      "breakdown": {
+        "row_count_queries": 1,
+        "page_requests": 17,
+        "page_size": 50000,
+        "detail": "one COUNT(*) probe to read the published row total, then one request per 50,000-row page ordered by :id; the page count is recorded in the extract's build_summary.json"
+      },
+      "wall_clock_seconds_worker": 92.6,
+      "wall_clock_seconds_rebuild": 93.4,
+      "machine_worker": "2 vCPU / 2 GB worker (cpx32, hel1), the gated construction run",
+      "machine_rebuild": "4 vCPU / 1.9 GiB orchestration host, an independent rebuild of the same artifact",
+      "peak_rss_mb_rebuild": 345,
+      "output_bytes": 4245521,
+      "credential_required": false,
+      "method": "the worker figure is the job's own elapsed_seconds for the whole container run (build plus qualification); the rebuild figure is wall clock around build.py alone, measured with resource.getrusage on a second machine"
+    },
+    "label_accounting": {
+      "source_case_disposition_counts": {
+        "Liable": 290939,
+        "Non-Suit": 254631,
+        "Default": 116211,
+        "Not Liable": 106496,
+        "Continuance": 31206,
+        "(blank)": 19212,
+        "Adjudication Performance / Other": 4203,
+        "Dismissed Without Prejudice": 664,
+        "Judgment Vacated": 393
+      },
+      "source_rows": 823955,
+      "binary_pair_rows": 397435,
+      "binary_pair_share_of_rows": 0.482,
+      "note": "Rows, not cases: the published table is one row per violation charge, and one docket_number carries many rows. Only Liable and Not Liable carry the case-level signal; everything else is neither."
+    },
+    "case_reduction": {
+      "dockets_seen": 130318,
+      "dropped_no_decision": 74387,
+      "cases_with_a_decided_charge": 55931,
+      "dropped_incomplete": 53,
+      "dropped_out_of_window": 2115,
+      "shipped_cases": 53763,
+      "mixed_disposition_cases": 76696,
+      "shipped_positive_rate": 0.66497,
+      "definition": "A case ships when at least one of its charges carries a Liable or Not Liable disposition, its lead charge has a violation date and coordinates, and its notice date falls inside a declared split window. A case with some charges decided and some not is still labelled from the decided ones, so a case is a mixed-disposition case whenever any charge is neither Liable nor Not Liable - that is the normal case here, not the exception."
+    },
+    "leakage_check": {
+      "single_column_separation": {
+        "method": "each candidate feature was tested alone against the case-level label, as rank AUC over the built training split",
+        "result": "no shipped column separates the classes on its own: violation_date 0.502, ward 0.505, street_direction 0.508, street_type 0.503, distinct_code_count 0.565, charge_count 0.566",
+        "rejected": "an earlier version of this artifact shipped days_to_hearing, computed from the City's hearing_date. hearing_date is documented as 'the date of the most recent hearing', so for a decided case it is the hearing at which the disposition was recorded - after the prediction instant. days_to_hearing separated the classes on its own at AUC 0.8365. Both the column and everything derived from it were removed before this artifact was built and gated."
+      },
+      "why_it_matters_here": "The benchmark runner hands prediction code every column of a split that is not an identifier or the target, so a column that leaks cannot be left in place and documented away - it has to go."
+    },
+    "duplicate_identifiers": {
+      "source_rows": 823955,
+      "shipped_cases": 53763,
+      "shipped_distinct_docket_numbers": 53763,
+      "repeated_identifiers": 0,
+      "cross_split": 0,
+      "note": "docket_number is the case key and is unique in every shipped split; the split is taken over cases, so no case can appear in two periods."
+    }
+  },
+  "assets": {
+    "meta.json": {
+      "asset_name": "meta.json",
+      "bytes": 2300,
+      "sha256": "696730446f8bb10c9d7e26a6b1eb8dae46843e887d62846c38081469a9743979"
+    },
+    "private/holdout.csv": {
+      "asset_name": "holdout.csv",
+      "bytes": 226237,
+      "sha256": "e9855daa7a7d523ea00ad2184867d73d1bf747d4c0d718a8398da5acf749e8be"
+    },
+    "public/eval.csv": {
+      "asset_name": "eval.csv",
+      "bytes": 267311,
+      "sha256": "bcecdbff8018f74c01697229591b9e9c87b5206c8d61d8f7ef77fa37669c967e"
+    },
+    "public/train.csv": {
+      "asset_name": "train.csv",
+      "bytes": 3751973,
+      "sha256": "67b2a58379b4d1ca8eb11670f9f8a51b1fe15fb4945a173a805a5f474cd154cb"
+    },
+    "quality.json": {
+      "asset_name": "quality.json",
+      "bytes": 3803,
+      "sha256": "7ee12a3db4dbd00bf336f3f96b220b260f6e9b463f0cd7fc41a5a58cb527d882"
+    }
+  },
+  "package_files": {
+    "DATA_DICTIONARY.md": "cf323519bc2450e76aeb3107221df6cce9a78abe5c1ac1ed199d97eef4df1d4d",
+    "LICENSE-CITY-OF-CHICAGO-TERMS-OF-USE.md": "6b58492d388d37b177a1b6b77a44d0a20f6fdacdba0e08fed4aa4e64c2b27f67",
+    "LICENSE-MIT.txt": "56b932ff064e5da113ae10175c8546325f64f26e1ece71683ffcbf8b2304fe1c",
+    "LICENSE.md": "f17afc41b91f89c29eed00df5b7a550781b5fe95361ccbeb0dfe682a1e822919",
+    "README.md": "b14f1a1b0b52541793997c11e2758b30ca4a5f7b1fc28a0089ec24005ff0269b",
+    "RELEASE_NOTES.md": "7cce904fbb68f3d5519a4fa0c56c336e8807f2542054bac6702184ad65e345d8",
+    "REPRODUCE.md": "255cd549a950c2d21dea4e8ecc0d02fb34a2b57b1295b7c8476a9f0ef187cfa1",
+    "SHA256SUMS": "8d55aca76521815be1407fb8c2d45b0dbe8e7609fc57f6b38e174d2fc56f62de",
+    "VERIFICATION.md": "8e7d2f2cee308f5374fbc5337036d17e54cb155d5114c750efaae723624c5228",
+    "baseline/README.md": "7fa733269a492a3c856db8e0fffe16927b0511ae8acac077505865e9c86e5799",
+    "baseline/expected_artifact.json": "e0dd9ff1e1d1705d203dc62112e767e176a6149c0ced81d4b2248535d4bfb459",
+    "baseline/reproduce_baseline.sh": "c9724acd779e0d3ebb2cf3872b6670bb808a1f621652f8b4ece81822398d77ca",
+    "baseline/train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+    "baseline/validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+    "baseline/validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d",
+    "code/build.py": "149495c81fd483be0e5321ba75b0c566d5807506eb988fbf65444e1d2bc426ef",
+    "code/materialize.py": "787878764b4928ac37d94b15f55716fd0c505c4e91073cd39cb2224ca8ac10f9",
+    "code/qualify_dataset.py": "71a8cac429656e27dbb631be8488b9f4662580994b115290a243fc1f4b9639f1",
+    "get_dataset.py": "907f0a997f880ba73d48b067f7630dab0f1680b2bf0806d1ad244d819879ad45",
+    "measurements.json": "afa829f1f535af36d6448ec210763977dc60153ac91acd410c3ca7906a55933d",
+    "qualification.json": "b3bbb8f95504a2896f8823dd45701705394f01caa7e2c5e8c6c98f9f44bb1235"
+  },
+  "baseline_command": "sh baseline/reproduce_baseline.sh ./task",
+  "get_dataset_command": "python3 get_dataset.py --dest ./task",
+  "source": {
+    "name": "City of Chicago - Department of Administrative Hearings (DOAH) Ordinance Violations",
+    "dataset_id": "6br9-quuz",
+    "landing_page": "https://data.cityofchicago.org/d/6br9-quuz",
+    "api": "https://data.cityofchicago.org/resource/6br9-quuz.json",
+    "accessed": "2026-09-26",
+    "licence": "City of Chicago Data Terms of Use - see LICENSE.md",
+    "licence_evidence": [
+      "Operator-commissioned licence review completed 2026-09-26: conditionally redistributable under the City of Chicago Data Terms of Use. No standard licence; licenseId = SEE_TERMS_OF_USE. Conditions and verbatim quotes in candidates/chicago-doah-adjudication/license.json."
+    ]
+  },
+  "layout": {
+    "task/meta.json": "meta.json",
+    "task/public/train.csv": "public/train.csv",
+    "task/public/eval.csv": "public/eval.csv",
+    "task/private/holdout.csv": "private/holdout.csv",
+    "task/quality.json": "quality.json"
+  },
+  "files": {
+    "public/train.csv": {
+      "bytes": 3751973,
+      "sha256": "67b2a58379b4d1ca8eb11670f9f8a51b1fe15fb4945a173a805a5f474cd154cb"
+    },
+    "public/eval.csv": {
+      "bytes": 267311,
+      "sha256": "bcecdbff8018f74c01697229591b9e9c87b5206c8d61d8f7ef77fa37669c967e"
+    },
+    "private/holdout.csv": {
+      "bytes": 226237,
+      "sha256": "e9855daa7a7d523ea00ad2184867d73d1bf747d4c0d718a8398da5acf749e8be"
+    },
+    "meta.json": {
+      "bytes": 2300,
+      "sha256": "696730446f8bb10c9d7e26a6b1eb8dae46843e887d62846c38081469a9743979"
+    },
+    "quality.json": {
+      "bytes": 3803,
+      "sha256": "7ee12a3db4dbd00bf336f3f96b220b260f6e9b463f0cd7fc41a5a58cb527d882"
+    }
+  },
+  "splits": {
+    "train": {
+      "rows": 47414,
+      "positives": 29959,
+      "positive_rate": 0.63186
+    },
+    "eval": {
+      "rows": 3436,
+      "positives": 3077,
+      "positive_rate": 0.895518
+    },
+    "holdout": {
+      "rows": 2913,
+      "positives": 2715,
+      "positive_rate": 0.932029
+    }
+  },
+  "qualification": {
+    "gate": "skills/dataset-qualification/scripts/qualify_dataset.py",
+    "gate_version": "1.3.0",
+    "result": "PASSED - 32 checks, 0 failed, on the full 53,763-case artifact, on the worker",
+    "artifact_version": "b71586bf28fa56ebbfaede26c4494d68b166545ac504b2ebd8a52c7f272627ef",
+    "note": "Two earlier artifacts passed the same gate while shipping hearing_date and a derived days_to_hearing feature as ordinary declared features: the gate's post-hoc rule keys off the artifact's own declarations, so a wrong declaration passes. The leak was found by inspection of the built header, and the fix is recorded in jobs.md. Worth knowing that 'the gate passed' is not by itself evidence that a column is safe to ship."
+  },
+  "baseline": {
+    "job": "chicago-baseline-001",
+    "purpose": "one baseline through the runner's existing training and validation contract",
+    "contract": {
+      "train_py_exit": 0,
+      "validate_sh_exit": 0,
+      "contract_ok": true,
+      "eval_auc_from_train_py": "0.6915",
+      "eval_auc_from_validate_py": "0.6915"
+    },
+    "artifact": {
+      "target": "outcome",
+      "positive_label": "Liable",
+      "id_columns": [
+        "docket_number"
+      ],
+      "rows": {
+        "train": 47414,
+        "eval": 3436,
+        "holdout": 2913
+      },
+      "positive_rate": {
+        "train": 0.63186,
+        "eval": 0.895518,
+        "holdout": 0.932029
+      }
+    },
+    "runner_files": {
+      "bundled_sha256": {
+        "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+        "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+        "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      },
+      "expected_sha256": {
+        "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+        "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+        "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      },
+      "unmodified": true
+    },
+    "dependencies": {
+      "python": "3.13.15",
+      "pandas": "2.3.3",
+      "numpy": "2.5.3",
+      "xgboost": "3.4.1",
+      "scikit-learn": "1.9.1"
+    },
+    "scope": "one baseline only. No agent or harness comparison was run, and none is implied - that is outside this publication milestone."
+  },
+  "scope": "One baseline through the runner's training and validation contract. No agent or harness comparison was run and none is implied.",
+  "published": true,
+  "publication_note": "Published after explicit operator authorisation, both destinations verified 2026-09-26T20:20:33+00:00. Data files, tag and artifact version are unchanged by publication.",
+  "licenses": {
+    "policy_version": "2026-09-19",
+    "decided": "2026-09-26",
+    "code": {
+      "spdx": "MIT",
+      "file": "LICENSE-MIT.txt",
+      "copyright": "Copyright (c) 2026 E. Arino de la Rubia (earino), with contributors Claude and Szilard",
+      "third_party": []
+    },
+    "data_compilation": {
+      "spdx": "LicenseRef-CityOfChicago-DataTermsOfUse",
+      "file": "LICENSE-CITY-OF-CHICAGO-TERMS-OF-USE.md",
+      "scope": "No separate dedication. The City's Data Terms of Use regulate distribution and secondary or derivative use; they do not grant us a right to sublicense the source rows, so our compilation is distributed under those Terms. Our own code and documentation are MIT. Nothing here may be presented as CC0, CC-BY, public domain or any standard open licence - the sources do not support it."
+    },
+    "source_data": {
+      "spdx": "LicenseRef-CityOfChicago-DataTermsOfUse",
+      "status": "No standard licence declared. Socrata metadata for 6br9-quuz carries licenseId: SEE_TERMS_OF_USE, attribution: City of Chicago. Reviewed by the operator 2026-09-26.",
+      "evidence": [
+        "[Socrata metadata 6br9-quuz, read 2026-09-26] licenseId: 'SEE_TERMS_OF_USE'; attribution: 'City of Chicago'; attributionLink: 'http://www.cityofchicago.org'; provenance: 'official'.",
+        "[City of Chicago Data Terms of Use, read 2026-09-26] 'The City may require a user of this data to terminate any and all display, distribution or other use of any or all of the data provided at this website for any reason...'",
+        "[same] 'Any user of this website providing any software application, or other secondary or derivative application using data supplied at this website shall do the following...' - distribution and derivative use are expressly contemplated and regulated, not granted in affirmative licence form.",
+        "[same] 'These Terms of Use do not grant anyone any title or right to any patent, copyright, trademark or other intellectual property rights that the City may have...'",
+        "[Open Data Executive Order] the Portal's data is governed by separately developed Terms of Use; the Order creates no licence."
+      ],
+      "attribution": "City of Chicago, Department of Administrative Hearings, Ordinance Violations, dataset 6br9-quuz, https://data.cityofchicago.org/d/6br9-quuz, accessed 2026-09-26",
+      "citation": "City of Chicago. Ordinance Violations (Department of Administrative Hearings). City of Chicago Data Portal, dataset 6br9-quuz. Data Terms of Use. Derived dataset: Chicago DOAH adjudication outcome prediction dataset.",
+      "derived_labelling": "Labelled as derived and not an official City of Chicago product."
+    },
+    "rules": [
+      "Code and documentation: MIT by default.",
+      "Our rights in a derived compilation: CC0-1.0 by default.",
+      "The source's own terms are preserved and never relicensed; the compilation dedication covers only our contribution.",
+      "Each dataset must use terms compatible with its sources. CC0 is NOT a blanket override of upstream terms: attribution, share-alike and non-commercial requirements from a source are carried through unchanged.",
+      "A source whose licence terms cannot be read is not published at all.",
+      "The chosen terms are declared per dataset in candidates/<id>/license.json and recorded in the release manifest, so the manifest cannot drift from the decision."
+    ]
+  }
+}

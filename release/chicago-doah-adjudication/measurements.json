@@ -1,0 +1,77 @@
+{
+  "source_freeze": {
+    "dataset_id": "6br9-quuz",
+    "extract_end": "2026-09-01",
+    "fetched_rows": 823955,
+    "reported_rows": 823955,
+    "pages": 17,
+    "page_limit": 50000,
+    "order": ":id",
+    "source_rows_sha256": "9ac0c2ab3abced60d07ea52b97736b4445b92d9be35a2f46c114dda3568d0a59",
+    "case_table_sha256": "e0278fe152bf45766e3802817cb341288e41428d11086ece1abce555de788063",
+    "definition": "source_rows_sha256 hashes every fetched row (all selected fields, in :id order, one JSON object per line). case_table_sha256 hashes the reduced case table in build order. Neither embeds the build timestamp, so a rebuild can be checked against them.",
+    "checked": "The City republishes this dataset daily. At the time of construction the live total still summed to exactly 823,955 rows across the nine published case_disposition values, so no row was lost to paging and the freeze matches the source the checksums were taken from."
+  },
+  "extraction_cost": {
+    "command": "python3 code/build.py --out ./task --built-at 2026-09-26T20:00:00+00:00",
+    "http_requests_total": 18,
+    "breakdown": {
+      "row_count_queries": 1,
+      "page_requests": 17,
+      "page_size": 50000,
+      "detail": "one COUNT(*) probe to read the published row total, then one request per 50,000-row page ordered by :id; the page count is recorded in the extract's build_summary.json"
+    },
+    "wall_clock_seconds_worker": 92.6,
+    "wall_clock_seconds_rebuild": 93.4,
+    "machine_worker": "2 vCPU / 2 GB worker (cpx32, hel1), the gated construction run",
+    "machine_rebuild": "4 vCPU / 1.9 GiB orchestration host, an independent rebuild of the same artifact",
+    "peak_rss_mb_rebuild": 345,
+    "output_bytes": 4245521,
+    "credential_required": false,
+    "method": "the worker figure is the job's own elapsed_seconds for the whole container run (build plus qualification); the rebuild figure is wall clock around build.py alone, measured with resource.getrusage on a second machine"
+  },
+  "label_accounting": {
+    "source_case_disposition_counts": {
+      "Liable": 290939,
+      "Non-Suit": 254631,
+      "Default": 116211,
+      "Not Liable": 106496,
+      "Continuance": 31206,
+      "(blank)": 19212,
+      "Adjudication Performance / Other": 4203,
+      "Dismissed Without Prejudice": 664,
+      "Judgment Vacated": 393
+    },
+    "source_rows": 823955,
+    "binary_pair_rows": 397435,
+    "binary_pair_share_of_rows": 0.482,
+    "note": "Rows, not cases: the published table is one row per violation charge, and one docket_number carries many rows. Only Liable and Not Liable carry the case-level signal; everything else is neither."
+  },
+  "case_reduction": {
+    "dockets_seen": 130318,
+    "dropped_no_decision": 74387,
+    "cases_with_a_decided_charge": 55931,
+    "dropped_incomplete": 53,
+    "dropped_out_of_window": 2115,
+    "shipped_cases": 53763,
+    "mixed_disposition_cases": 76696,
+    "shipped_positive_rate": 0.66497,
+    "definition": "A case ships when at least one of its charges carries a Liable or Not Liable disposition, its lead charge has a violation date and coordinates, and its notice date falls inside a declared split window. A case with some charges decided and some not is still labelled from the decided ones, so a case is a mixed-disposition case whenever any charge is neither Liable nor Not Liable - that is the normal case here, not the exception."
+  },
+  "leakage_check": {
+    "single_column_separation": {
+      "method": "each candidate feature was tested alone against the case-level label, as rank AUC over the built training split",
+      "result": "no shipped column separates the classes on its own: violation_date 0.502, ward 0.505, street_direction 0.508, street_type 0.503, distinct_code_count 0.565, charge_count 0.566",
+      "rejected": "an earlier version of this artifact shipped days_to_hearing, computed from the City's hearing_date. hearing_date is documented as 'the date of the most recent hearing', so for a decided case it is the hearing at which the disposition was recorded - after the prediction instant. days_to_hearing separated the classes on its own at AUC 0.8365. Both the column and everything derived from it were removed before this artifact was built and gated."
+    },
+    "why_it_matters_here": "The benchmark runner hands prediction code every column of a split that is not an identifier or the target, so a column that leaks cannot be left in place and documented away - it has to go."
+  },
+  "duplicate_identifiers": {
+    "source_rows": 823955,
+    "shipped_cases": 53763,
+    "shipped_distinct_docket_numbers": 53763,
+    "repeated_identifiers": 0,
+    "cross_split": 0,
+    "note": "docket_number is the case key and is unique in every shipped split; the split is taken over cases, so no case can appear in two periods."
+  }
+}

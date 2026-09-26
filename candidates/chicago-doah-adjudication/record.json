@@ -1,6 +1,6 @@
 {
   "id": "chicago-doah-adjudication",
-  "status": "ready",
+  "status": "published",
   "created_at": "2026-09-18T09:31:08.695355+00:00",
   "domain": "municipal administrative adjudication / building-code enforcement",
   "prediction_question": "For a building-code violation case docketed with the Chicago Department of Administrative Hearings, will the hearing officer ultimately find the respondent liable?",
@@ -24,59 +24,173 @@
   "license_evidence": [
     "Operator-commissioned licence review completed 2026-09-26: conditionally redistributable under the City of Chicago Data Terms of Use. No standard licence; licenseId = SEE_TERMS_OF_USE. Conditions and verbatim quotes in candidates/chicago-doah-adjudication/license.json."
   ],
-  "construction_script": null,
-  "split_strategy": "Temporal by hearing_date. Rows are violations, not cases: one docket_number covers many rows, so a row split leaks a case across periods. Split by docket_number. Cases whose hearing_date is after the extract date have no disposition yet and form a natural future holdout, but the dataset mutates as cases complete, so a frozen extract with recorded checksums is required.",
-  "measurements": {
-    "rows_total_measured": 823637,
-    "hearing_date_range_measured": {
-      "min": "2008-01-10",
-      "max": "2027-02-18"
+  "construction_script": "candidates/chicago-doah-adjudication/build.py (stdlib only, runs on a worker; 18 anonymous Socrata requests - one count(*) probe and 17 pages of 50,000 rows ordered by :id; --built-at pins meta.json's timestamp so a rebuild is byte-comparable)",
+  "construction_output": {
+    "job": "chicago-003",
+    "built_at_utc": "2026-09-26",
+    "extract": "output/extract in draft release job-chicago-003",
+    "splits": {
+      "train": {
+        "rows": 47414,
+        "positives": 29959,
+        "positive_rate": 0.63186
+      },
+      "eval": {
+        "rows": 3436,
+        "positives": 3077,
+        "positive_rate": 0.895518
+      },
+      "holdout": {
+        "rows": 2913,
+        "positives": 2715,
+        "positive_rate": 0.932029
+      }
     },
-    "disposition_counts_measured": {
-      "Liable": 290724,
-      "Non-Suit": 254431,
-      "Default": 115978,
-      "Not Liable": 106477,
-      "Continuance": 31055,
-      "blank": 19719,
-      "Adjudication Performance / Other": 4196,
+    "total_rows": 53763,
+    "note": "Case-level temporal splits over the case's earliest recorded violation date. Row counts and positive rates were measured over the shipped CSVs (the bytes covered by SHA256SUMS) after collection from the worker. The positive rate rises across windows because the City republishes this dataset continuously and older dockets are progressively cleaned up; it is a property of the source, not of the construction."
+  },
+  "split_strategy": "Temporal by the case's earliest recorded violation (notice) date, taken over cases and never over the source's charge rows: train 2008-01-01..2018-01-01, eval 2018-01-01..2022-01-01, holdout 2022-01-01..2026-09-01. No random split; the builder asserts that no docket_number spans two files.",
+  "measurements": {
+    "rows_total": 53763,
+    "rows_by_split": {
+      "train": 47414,
+      "eval": 3436,
+      "holdout": 2913
+    },
+    "positives_by_split": {
+      "train": 29959,
+      "eval": 3077,
+      "holdout": 2715
+    },
+    "positive_rate_by_split": {
+      "train": 0.63186,
+      "eval": 0.895518,
+      "holdout": 0.932029
+    },
+    "positive_rate_total": 0.66497,
+    "digest_events_by_split": {
+      "train": 2752,
+      "eval": 795,
+      "holdout": 934
+    },
+    "source_rows_fetched": 823955,
+    "source_rows_reported": 823955,
+    "source_pages": 17,
+    "source_page_limit": 50000,
+    "source_order": ":id",
+    "source_rows_sha256": "9ac0c2ab3abced60d07ea52b97736b4445b92d9be35a2f46c114dda3568d0a59",
+    "case_table_sha256": "e0278fe152bf45766e3802817cb341288e41428d11086ece1abce555de788063",
+    "exclusions": {
+      "dockets_seen": 130318,
+      "dropped_no_decision": 74387,
+      "dropped_incomplete_lead_charge": 53,
+      "dropped_out_of_window": 2115,
+      "mixed_disposition_cases": 76696
+    },
+    "source_case_disposition_counts": {
+      "Liable": 290939,
+      "Non-Suit": 254631,
+      "Default": 116211,
+      "Not Liable": 106496,
+      "Continuance": 31206,
+      "(blank)": 19212,
+      "Adjudication Performance / Other": 4203,
       "Dismissed Without Prejudice": 664,
       "Judgment Vacated": 393
     },
-    "binary_balance_measured": {
-      "Liable": 290724,
-      "Not Liable": 106477,
-      "liable_share": 0.732
+    "duplicate_docket_numbers_measured": 0,
+    "blank_values_measured": {
+      "ward": 153,
+      "street_type": 613
     },
-    "rows_with_null_disposition_measured": 19719,
-    "future_dated_hearings_measured": {
-      "count": 6485,
-      "as_of": "2026-09-18",
-      "note": "scheduled, unruled; dataset updates daily"
+    "distinct_values_measured": {
+      "docket_number": 53763,
+      "violation_date": 4624,
+      "violation_code": 544,
+      "ward": 52,
+      "street_direction": 4,
+      "street_type": 18,
+      "latitude": 41389,
+      "longitude": 41389,
+      "charge_count": 74,
+      "distinct_code_count": 44
     },
-    "issuing_department_measured": {
-      "Buildings": 823637
+    "charge_count_range_measured": {
+      "min": 1,
+      "max": 144
     },
-    "recent_hearings_per_month_measured": {
-      "2026-06": 1523,
-      "2026-07": 1771,
-      "2026-08": 1480,
-      "2026-09": 4119,
-      "2026-10": 2466
+    "distinct_code_count_range_measured": {
+      "min": 1,
+      "max": 65
     },
-    "top_violation_codes_measured": {
-      "190019": 46585,
-      "061014": 29618,
-      "070024": 29485,
-      "196029": 25065
+    "violation_date_range_measured": {
+      "min": "2008-01-01",
+      "max": "2026-05-15"
     },
-    "measured_on": "2026-09-18 via Socrata aggregate queries; not a scored baseline"
+    "build_cost": {
+      "machine": "4 vCPU / 1.9 GiB orchestration host",
+      "wall_clock_seconds": 93.4,
+      "peak_rss_mb": 345,
+      "http_requests": 18,
+      "output_bytes": 4245521,
+      "same_build_on_worker": "92.6 s on 2 vCPU / 2 GB (cpx32, Helsinki), whole job incl. gate"
+    },
+    "deviation_note": "Single observations, not distributions. Extraction cost is two measurements - one local, one on a worker - that agreed to within a second on wall clock and produced byte-identical artifacts."
   },
-  "jobs": [],
-  "artifacts": [],
+  "jobs": [
+    "chicago-001 (gate passed, artifact superseded: it shipped hearing_date and a derived days_to_hearing feature, which is post-hoc leakage - the City documents hearing_date as the date of the most recent hearing, so on a decided case it is the hearing at which the disposition was recorded. days_to_hearing separates the classes on its own, single-column AUC 0.84 over the case rows. Defect found by inspection, not by the gate.)",
+    "chicago-002 (same builder, re-run: produced identical source_rows_sha256 and case_table_sha256, so the build was shown deterministic on a second worker. Superseded with chicago-001 by the same fix.)",
+    "chicago-003 (released artifact: hearing_date not read at all, split re-keyed to violation_date, window enforced on the case date; gate 1.3.0 passed 32 checks, 0 failed.)",
+    "chicago-baseline-001 (one baseline through the runner's own train.py/validate.sh, unmodified and hash-verified: eval AUC 0.6915 from both, contract OK.)",
+    "chicago-consumer-001 (fresh environment with no factory access: run.sh exit 0, digests and sha256sum -c OK, qualification PASSED, baseline eval AUC 0.6915.)",
+    "chicago-hf-001 (Hugging Face upload + verify at the published revision, then the worker was destroyed.)"
+  ],
+  "artifacts": [
+    {
+      "job": "chicago-003",
+      "repository": "https://github.com/earino/chicago-doah-adjudication",
+      "visibility": "private",
+      "tag": "v2026.09",
+      "commit": "d9e4ac887cd5c5bd4f6a45d00c9a30ceb6cf76e8",
+      "release": "https://github.com/earino/chicago-doah-adjudication/releases/tag/v2026.09",
+      "release_id": 397376542,
+      "asset_names": {
+        "meta.json": "meta.json",
+        "holdout.csv": "private/holdout.csv",
+        "eval.csv": "public/eval.csv",
+        "train.csv": "public/train.csv",
+        "quality.json": "quality.json"
+      },
+      "asset_bytes": 4251624,
+      "artifact_version": "b71586bf28fa56ebbfaede26c4494d68b166545ac504b2ebd8a52c7f272627ef",
+      "files": {
+        "meta.json": {
+          "bytes": 2300,
+          "sha256": "696730446f8bb10c9d7e26a6b1eb8dae46843e887d62846c38081469a9743979"
+        },
+        "private/holdout.csv": {
+          "bytes": 226237,
+          "sha256": "e9855daa7a7d523ea00ad2184867d73d1bf747d4c0d718a8398da5acf749e8be"
+        },
+        "public/eval.csv": {
+          "bytes": 267311,
+          "sha256": "bcecdbff8018f74c01697229591b9e9c87b5206c8d61d8f7ef77fa37669c967e"
+        },
+        "public/train.csv": {
+          "bytes": 3751973,
+          "sha256": "67b2a58379b4d1ca8eb11670f9f8a51b1fe15fb4945a173a805a5f474cd154cb"
+        },
+        "quality.json": {
+          "bytes": 3803,
+          "sha256": "7ee12a3db4dbd00bf336f3f96b220b260f6e9b463f0cd7fc41a5a58cb527d882"
+        }
+      },
+      "note": "staged private with the release documents; published public on 2026-09-26 - see publication.github.visibility"
+    }
+  ],
   "rejection_reason": null,
   "review": "Licence answered and ACCEPTED by the operator 2026-09-26 (indemnity, takedown, mandatory disclaimer); novelty checked the same day (differentiated). Nothing is blocking construction.",
-  "next_action": "Write candidates/chicago-doah-adjudication/build.py: fetch a frozen extract with recorded checksums, split by docket_number before anything else, label Liable vs Not Liable at case level, carry the City's disclaimer, then gate on a worker.",
+  "next_action": "Released. Both destinations are public and verified from an unauthenticated client, the site is live and verified, and tag v2026.09 resolves to the same commit as the default branch on both. Remaining work would be a new release, not this one: a further site_revision or a corrected artifact would be published as a new version.",
   "licensing_impact": "Unlike the published datasets, this one must NOT declare CC0 for the compilation: the City's terms do not grant a sublicensable right in the rows. Code MIT; compilation distributed under the City's Terms; release docs carry the prescribed disclaimer.",
   "novelty_check": {
     "checked_at": "2026-09-26T16:49:56+00:00",
@@ -134,5 +248,45 @@
   "operator_decision": {
     "decision": "accepted the City's indemnity and termination terms",
     "on": "2026-09-26"
+  },
+  "qualification": {
+    "gate": "skills/dataset-qualification/scripts/qualify_dataset.py",
+    "gate_version": "1.3.0",
+    "result": "PASSED - 32 checks, 0 failed, on the full 53,763-case artifact, on the worker",
+    "artifact_version": "b71586bf28fa56ebbfaede26c4494d68b166545ac504b2ebd8a52c7f272627ef",
+    "note": "Two earlier artifacts passed the same gate while shipping hearing_date and a derived days_to_hearing feature as ordinary declared features: the gate's post-hoc rule keys off the artifact's own declarations, so a wrong declaration passes. The leak was found by inspection of the built header, and the fix is recorded in jobs.md. Worth knowing that 'the gate passed' is not by itself evidence that a column is safe to ship."
+  },
+  "publication": {
+    "recorded_at": "2026-09-26T20:21:55+00:00",
+    "public": true,
+    "approval": "operator authorised publishing the Chicago release (standing instruction, 2026-09-26)",
+    "github": {
+      "repository": "earino/chicago-doah-adjudication",
+      "release_id": 397376542,
+      "release_tag": "v2026.09",
+      "visibility": "public",
+      "anonymous_read": "verified - repository metadata 200 with no credential, the five release assets answered ranged GET 206, and one asset downloaded in full hashed to the published digest; the documented clone/download/check commands were run anonymously",
+      "pinned_commit": "d9e4ac887cd5c5bd4f6a45d00c9a30ceb6cf76e8"
+    },
+    "huggingface": {
+      "repository": "earino/chicago-doah-adjudication",
+      "revision": "v2026.09",
+      "revision_commit": "23b2f1538f6439fc405f0df563c9268c40f48088",
+      "gated": false,
+      "visibility": "public",
+      "anonymous_read": "verified - dataset API reports private=false and gated=false with no credential, a full file download at revision v2026.09 hashed to the published digest and a ranged read answered 206"
+    },
+    "website": {
+      "plan_sha256": "94a2fb1a1ffb30be83a8fe7b2def7f382be7d8cf43c767908b3d4f5f42abfdbe",
+      "dataset_url": "https://earino.github.io/chicago-doah-adjudication/",
+      "catalog_url": "https://earino.github.io/dataset-factory-site/",
+      "dataset_deployment": "https://github.com/earino/chicago-doah-adjudication/actions/runs/36269198017",
+      "catalog_deployment": "https://github.com/earino/dataset-factory-site/actions/runs/36268948943",
+      "receipt_status": "complete",
+      "verified": true,
+      "https_enforced": true,
+      "verified_at": "2026-09-26T20:20:30+00:00"
+    },
+    "data_unchanged_by_publication": true
   }
 }

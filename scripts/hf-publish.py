@@ -211,16 +211,47 @@ def card(manifest_data):
     # dataset's card hardcoded here, which would have shipped its description under another's name.
     raise SystemExit(f"candidates/{CANDIDATE}/card.md is missing: every dataset supplies its own card")
 
+def navigation_record():
+    """The record the managed navigation block is built from, once this release has a live site.
+
+    None until DESTINATIONS.json records a verified site, so a staged package never advertises a
+    page that does not exist yet.
+    """
+    destinations = json.loads((PACKAGE / "DESTINATIONS.json").read_text())
+    site = (destinations.get("publication") or {}).get("site") or {}
+    if site.get("status") != "verified":
+        return None
+    sys.path.insert(0, str(REPO_ROOT))
+    from factory.site_model import project
+    editorial = json.loads((REPO_ROOT / "sites" / f"{CANDIDATE}.json").read_text())
+    config = json.loads((REPO_ROOT / "config" / "sites.json").read_text())
+    return project(PACKAGE, editorial, config)
+
+
 def build_package(manifest_data, repo_id):
     BUILD.mkdir(parents=True, exist_ok=True)
     (BUILD / "data").mkdir(exist_ok=True)
     written = []
-    for source_name, target_name in SMALL_FILES.items():
+    # Licence files are dataset-specific: a dataset may ship terms of its own that are not one of
+    # the standard texts hardcoded above (Chicago ships the City's Data Terms of Use), so every
+    # LICENSE* file in the package travels, not only the names in SMALL_FILES.
+    extra_licenses = [p.name for p in sorted(PACKAGE.glob("LICENSE*"))
+                      if p.is_file() and p.name not in SMALL_FILES]
+    for source_name in list(SMALL_FILES) + extra_licenses:
+        target_name = SMALL_FILES.get(source_name, source_name)
         source = PACKAGE / source_name
         if source.is_file():
             (BUILD / target_name).write_bytes(source.read_bytes())
             written.append(target_name)
     card_text = card(manifest_data).replace(REPO_PLACEHOLDER, repo_id)
+    # A live site is linked from the card, and the block is derived here rather than written once by
+    # the publication pipeline: a later card re-upload without it stripped the only link a reader
+    # had to the dataset's own page, and verification then failed with "Destination navigation
+    # is missing".
+    record = navigation_record()
+    if record is not None:
+        from factory.site_model import linked_readme
+        card_text = linked_readme(card_text, record)
     (BUILD / "README.md").write_text(card_text)
     written.append("README.md")
     # Loading instructions for the two entry points, kept beside the card.
@@ -394,7 +425,11 @@ def main(argv=None):
             record = {}
         record.setdefault("release_tag", manifest_data["release_tag"])
         record["destinations"] = record.get("destinations") or {}
-        record["destinations"]["huggingface"] = {
+        # Merge, never clobber: publication facts (note, published_at, licence metadata, the
+        # anonymous proof) are written by the publication step and a later verification re-run must
+        # not erase them.
+        entry = dict(record["destinations"].get("huggingface") or {})
+        entry.update({
             "repo": repo_id,
             "revision": manifest_data["release_tag"],
             "private": info.private,
@@ -406,7 +441,8 @@ def main(argv=None):
             "size_mismatch": mismatched,
             "loading_check": (result.get("loading_check") or "run by the worker job and recorded "
                               "in its report"),
-        }
+        })
+        record["destinations"]["huggingface"] = entry
         record_path.write_text(json.dumps(record, indent=2) + "\n")
         result["recorded"] = str(record_path.relative_to(REPO_ROOT))
 

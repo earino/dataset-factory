@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "site_revision": 1,
+  "title": "Chicago administrative hearing outcomes",
+  "summary": "Predict whether a Department of Administrative Hearings case ends in a liability finding, using only what the docket records before the hearing.",
+  "task_type": "binary-classification",
+  "domain": "Municipal justice",
+  "release_date": "2026-09-26",
+  "post": {
+    "title": "A prediction task from Chicago's administrative hearings",
+    "paragraphs": [
+      "This release turns the City of Chicago's Department of Administrative Hearings ordinance-violation records into a case-level prediction task with temporal training, evaluation and holdout splits. The construction code, qualification checks and a reproducible baseline travel with the dataset.",
+      "The source publishes one row per violation charge. Each case here is reduced to a single row keyed by its docket number, and the label is a case-level rule over the City's per-charge disposition: a case counts as Liable when at least one of its charges carries a liability finding. Cases whose charges are all undecided never ship, so the shipped total sits well below the number of docket numbers seen.",
+      "The City's hearing_date column is deliberately not published, and neither is anything derived from it. On a decided case it records the hearing at which the outcome was set, which is after the prediction instant. An earlier version of this artifact shipped it alongside a derived feature and was withdrawn; the repository records what that version did and why the qualification gate passed it anyway.",
+      "The recorded baseline demonstrates the runner's training and prediction contract on this artifact. It is not an agent or harness comparison."
+    ]
+  },
+  "limitations": [
+    "This is a derived research dataset, not an official City of Chicago product, and nothing in it is a statement about an individual case or hearing officer.",
+    "The positive rate rises across the temporal splits (0.63 train, 0.90 eval, 0.93 holdout) because the City republishes this dataset continuously and older dockets are progressively cleaned up. Absolute scores are not comparable across the three windows for that reason.",
+    "The holdout is downloadable. Keep its labels outside the evaluated agent's workspace during an evaluation."
+  ]
+}

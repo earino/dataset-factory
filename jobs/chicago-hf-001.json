@@ -1,0 +1,212 @@
+{
+  "job": {
+    "id": "chicago-hf-001",
+    "candidate": "chicago-doah-adjudication",
+    "server_type": "cpx32",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 4096,
+    "timeout_minutes": 40,
+    "lifetime_minutes": 55,
+    "max_disk_mb": 4096,
+    "max_artifact_mb": 16,
+    "note": "Publish the five accepted artifact files to the Hugging Face dataset repo, then exercise the documented loading path against the uploaded bytes. 4.3 MB of assets; the cost is the Hugging Face client install, not the transfer.",
+    "hf_publish": {
+      "repo": "earino/chicago-doah-adjudication",
+      "revision": "main",
+      "source_repo": "earino/chicago-doah-adjudication",
+      "verify_note": "positives are omitted from verify_loading on purpose: the worker's loading helper counts positives as 1/True/'1', and this task's label is a string ('Liable'/'Not Liable'). The check still asserts each split's row count, the exact column set and the exact label value set, read back from the Hub.",
+      "assets": [
+        {
+          "asset_id": 591356377,
+          "dest": "meta.json",
+          "target": "meta.json",
+          "size": 2300,
+          "sha256": "696730446f8bb10c9d7e26a6b1eb8dae46843e887d62846c38081469a9743979"
+        },
+        {
+          "asset_id": 591356378,
+          "dest": "train.csv",
+          "target": "data/train.csv",
+          "size": 3751973,
+          "sha256": "67b2a58379b4d1ca8eb11670f9f8a51b1fe15fb4945a173a805a5f474cd154cb"
+        },
+        {
+          "asset_id": 591356372,
+          "dest": "eval.csv",
+          "target": "data/eval.csv",
+          "size": 267311,
+          "sha256": "bcecdbff8018f74c01697229591b9e9c87b5206c8d61d8f7ef77fa37669c967e"
+        },
+        {
+          "asset_id": 591356373,
+          "dest": "holdout.csv",
+          "target": "data/holdout.csv",
+          "size": 226237,
+          "sha256": "e9855daa7a7d523ea00ad2184867d73d1bf747d4c0d718a8398da5acf749e8be"
+        },
+        {
+          "asset_id": 591356374,
+          "dest": "quality.json",
+          "target": "quality.json",
+          "size": 3803,
+          "sha256": "7ee12a3db4dbd00bf336f3f96b220b260f6e9b463f0cd7fc41a5a58cb527d882"
+        }
+      ],
+      "verify_loading": {
+        "splits": {
+          "train": {
+            "rows": 47414
+          },
+          "eval": {
+            "rows": 3436
+          },
+          "holdout": {
+            "rows": 2913
+          }
+        },
+        "columns": [
+          "docket_number",
+          "violation_date",
+          "ward",
+          "street_direction",
+          "street_type",
+          "latitude",
+          "longitude",
+          "charge_count",
+          "distinct_code_count",
+          "violation_code",
+          "outcome"
+        ],
+        "label": "outcome",
+        "label_values": [
+          "Liable",
+          "Not Liable"
+        ]
+      }
+    }
+  },
+  "reservation_eur": "0.16",
+  "rate_ceiling_eur": "0.08",
+  "reserved_hours": 2,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 51200,
+  "source_sha256": "dc9ec39e8c994b7dc521ebb22ece689c3d020a97c104fc506653782c8200fd47",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-09-26T20:02:08.157272+00:00",
+  "expires": 1790456228,
+  "budget_months": [
+    "2026-09"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0692400000000000",
+  "server_id": 167555504,
+  "known_hosts": "/opt/data/dataset-factory/.factory/chicago-hf-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "89.167.95.109",
+  "result": {
+    "job_id": "chicago-hf-001",
+    "status": "failed",
+    "uploaded": true,
+    "venv": "/opt/scout/.hf-venv",
+    "pip_bootstrapped": true,
+    "hf_publish": {
+      "repo": "earino/chicago-doah-adjudication",
+      "revision": "main",
+      "uploads": [
+        {
+          "target": "meta.json",
+          "bytes": 2300,
+          "sha256": "696730446f8bb10c9d7e26a6b1eb8dae46843e887d62846c38081469a9743979"
+        },
+        {
+          "target": "data/train.csv",
+          "bytes": 3751973,
+          "sha256": "67b2a58379b4d1ca8eb11670f9f8a51b1fe15fb4945a173a805a5f474cd154cb"
+        },
+        {
+          "target": "data/eval.csv",
+          "bytes": 267311,
+          "sha256": "bcecdbff8018f74c01697229591b9e9c87b5206c8d61d8f7ef77fa37669c967e"
+        },
+        {
+          "target": "data/holdout.csv",
+          "bytes": 226237,
+          "sha256": "e9855daa7a7d523ea00ad2184867d73d1bf747d4c0d718a8398da5acf749e8be"
+        },
+        {
+          "target": "quality.json",
+          "bytes": 3803,
+          "sha256": "7ee12a3db4dbd00bf336f3f96b220b260f6e9b463f0cd7fc41a5a58cb527d882"
+        }
+      ],
+      "skipped": [],
+      "failures": [
+        {
+          "target": "loading-path",
+          "error": "the documented loading path did not reproduce the artifact"
+        }
+      ],
+      "bytes": 4251624
+    },
+    "hf_loading": {
+      "splits": [
+        "train",
+        "test"
+      ],
+      "checked": {
+        "train": {
+          "rows": 47414,
+          "columns": [
+            "charge_count",
+            "distinct_code_count",
+            "docket_number",
+            "latitude",
+            "longitude",
+            "outcome",
+            "street_direction",
+            "street_type",
+            "violation_code",
+            "violation_date",
+            "ward"
+          ],
+          "label_values": [
+            "Liable",
+            "Not Liable"
+          ]
+        }
+      },
+      "problems": [
+        "split eval missing from load_dataset output",
+        "split holdout missing from load_dataset output"
+      ],
+      "ok": false
+    },
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 397377732,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-804cde3dd952d5a99fae",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-804cde3dd952d5a99fae/manifest.json",
+    "assets": [
+      {
+        "id": 591362642,
+        "size": 51200,
+        "sha256": "dc9ec39e8c994b7dc521ebb22ece689c3d020a97c104fc506653782c8200fd47"
+      },
+      {
+        "id": 591362671,
+        "size": 68,
+        "sha256": "5abbf4c6409095c008d64cd64f853ed3acb300efedac32407dfaae351a74bd54"
+      },
+      {
+        "id": 591362708,
+        "size": 5796,
+        "sha256": "f9cc4352340ae5f535cc5688c81567d762d4a978392e6cb9aee3e338a962c485"
+      }
+    ]
+  },
+  "collected_at": "2026-09-26T20:05:17.202971+00:00",
+  "deleted_at": "2026-09-26T20:06:02.822609+00:00"
+}

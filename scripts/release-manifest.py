@@ -45,14 +45,20 @@ def licenses_block(candidate: str) -> dict:
     code = declared.get("code") or {}
     compilation = declared.get("compilation") or {}
     source = declared.get("source") or {}
+    # The licence *text* a dataset ships is normally the standing default, but a dataset whose
+    # source does not permit a standard open dedication must be able to name its own file - the
+    # policy default is CC0-1.0, and a manifest that names LICENSE-CC0-1.0.txt for a compilation
+    # the candidate record forbids declaring as CC0 is a false licence claim in a published
+    # artifact. The declaration wins; the default is only a fallback.
+    code_file = code.get("file") or (policy.get("code_default") or {}).get("file")
+    compilation_file = compilation.get("file") or (policy.get("compilation_default") or {}).get("file")
     return {
         "policy_version": policy.get("policy_version"),
         "decided": declared.get("decided"),
-        "code": {"spdx": code.get("spdx"), "file": (policy.get("code_default") or {}).get("file"),
+        "code": {"spdx": code.get("spdx"), "file": code_file,
                  "copyright": code.get("copyright"),
                  "third_party": code.get("third_party") or []},
-        "data_compilation": {"spdx": compilation.get("spdx"),
-                             "file": (policy.get("compilation_default") or {}).get("file"),
+        "data_compilation": {"spdx": compilation.get("spdx"), "file": compilation_file,
                              "scope": compilation.get("scope")},
         "source_data": {"spdx": source.get("spdx"), "status": source.get("status"),
                         "evidence": source.get("evidence") or [],

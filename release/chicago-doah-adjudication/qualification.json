@@ -1,0 +1,473 @@
+{
+ "ok": true,
+ "dataset": "/output/extract",
+ "gate_version": "1.3.0",
+ "artifact": {
+  "train": {
+   "file": "public/train.csv",
+   "sha256": "67b2a58379b4d1ca8eb11670f9f8a51b1fe15fb4945a173a805a5f474cd154cb",
+   "bytes": 3751973
+  },
+  "eval": {
+   "file": "public/eval.csv",
+   "sha256": "bcecdbff8018f74c01697229591b9e9c87b5206c8d61d8f7ef77fa37669c967e",
+   "bytes": 267311
+  },
+  "holdout": {
+   "file": "private/holdout.csv",
+   "sha256": "e9855daa7a7d523ea00ad2184867d73d1bf747d4c0d718a8398da5acf749e8be",
+   "bytes": 226237
+  },
+  "meta.json": {
+   "file": "meta.json",
+   "sha256": "696730446f8bb10c9d7e26a6b1eb8dae46843e887d62846c38081469a9743979",
+   "bytes": 2300
+  },
+  "quality.json": {
+   "file": "quality.json",
+   "sha256": "7ee12a3db4dbd00bf336f3f96b220b260f6e9b463f0cd7fc41a5a58cb527d882",
+   "bytes": 3803
+  },
+  "artifact_version": {
+   "digest": "b71586bf28fa56ebbfaede26c4494d68b166545ac504b2ebd8a52c7f272627ef",
+   "components": [
+    "eval",
+    "holdout",
+    "meta.json",
+    "quality.json",
+    "train"
+   ]
+  }
+ },
+ "results": [
+  {
+   "check": "descriptor",
+   "ok": true,
+   "detail": "quality.json loaded for 'chicago-doah-adjudication'",
+   "evidence": {}
+  },
+  {
+   "check": "leakage.declared_columns",
+   "ok": true,
+   "detail": "every shipped column is declared",
+   "evidence": {
+    "undeclared": []
+   }
+  },
+  {
+   "check": "leakage.answer_source_absent",
+   "ok": true,
+   "detail": "no answer source or post-hoc column is shipped",
+   "evidence": {
+    "shipped_forbidden": []
+   }
+  },
+  {
+   "check": "leakage.no_single_column_determines_the_target",
+   "ok": true,
+   "detail": "no shipped column separates the classes on its own",
+   "evidence": {
+    "offenders": [],
+    "high_cardinality": [
+     "docket_number@eval",
+     "docket_number@holdout",
+     "docket_number@train",
+     "violation_date@eval",
+     "violation_date@holdout"
+    ],
+    "missing_splits": []
+   }
+  },
+  {
+   "check": "leakage.high_cardinality_declared",
+   "ok": true,
+   "detail": "high-cardinality columns are declared as identifiers or free fields",
+   "evidence": {
+    "undeclared": [],
+    "declared": [
+     "docket_number",
+     "violation_code",
+     "violation_date"
+    ]
+   }
+  },
+  {
+   "check": "timing.prediction_time_declared",
+   "ok": true,
+   "detail": "prediction instant is declared",
+   "evidence": {}
+  },
+  {
+   "check": "timing.no_post_hoc_feature",
+   "ok": true,
+   "detail": "no feature is documented as post-hoc",
+   "evidence": {
+    "overlap": []
+   }
+  },
+  {
+   "check": "timing.label_source_is_not_a_feature",
+   "ok": true,
+   "detail": "the label source is not a feature",
+   "evidence": {
+    "source_features": []
+   }
+  },
+  {
+   "check": "timing.every_feature_documented",
+   "ok": true,
+   "detail": "features documented as available 'prediction_time'",
+   "evidence": {
+    "features_documented_at": "prediction_time"
+   }
+  },
+  {
+   "check": "units.measured_columns_declare_unit_and_frame",
+   "ok": true,
+   "detail": "4 measured column(s) declare unit and frame",
+   "evidence": {
+    "measurements": [
+     {
+      "column": "latitude",
+      "unit": "decimal degrees",
+      "frame": "WGS84 (EPSG:4326), as published by the City in dataset 6br9-quuz"
+     },
+     {
+      "column": "longitude",
+      "unit": "decimal degrees",
+      "frame": "WGS84 (EPSG:4326), as published by the City in dataset 6br9-quuz"
+     },
+     {
+      "column": "charge_count",
+      "unit": "count of published rows",
+      "frame": "violation charges the City publishes against the case's docket_number, all dispositions included"
+     },
+     {
+      "column": "distinct_code_count",
+      "unit": "count of distinct violation codes",
+      "frame": "distinct violation_code values the City publishes against the case's docket_number"
+     }
+    ]
+   }
+  },
+  {
+   "check": "units.known_event_fixture_recorded",
+   "ok": true,
+   "detail": "no external threshold, so no known-event fixture is required",
+   "evidence": {}
+  },
+  {
+   "check": "splits.time_column_declared",
+   "ok": true,
+   "detail": "split overlap is checked against 'violation_date'",
+   "evidence": {}
+  },
+  {
+   "check": "splits.machine_readable_windows",
+   "ok": true,
+   "detail": "train/eval/holdout windows are declared with start/end",
+   "evidence": {
+    "split_windows": {
+     "train": {
+      "start": "2008-01-01",
+      "end": "2018-01-01"
+     },
+     "eval": {
+      "start": "2018-01-01",
+      "end": "2022-01-01"
+     },
+     "holdout": {
+      "start": "2022-01-01",
+      "end": "2026-09-01"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.files_present",
+   "ok": true,
+   "detail": "all three split files exist",
+   "evidence": {
+    "missing": []
+   }
+  },
+  {
+   "check": "splits.non_empty",
+   "ok": true,
+   "detail": "every split has rows",
+   "evidence": {
+    "train": {
+     "rows": 47414,
+     "positives": 29959,
+     "negatives": 17455,
+     "positive_rate": 0.63186
+    },
+    "eval": {
+     "rows": 3436,
+     "positives": 3077,
+     "negatives": 359,
+     "positive_rate": 0.895518
+    },
+    "holdout": {
+     "rows": 2913,
+     "positives": 2715,
+     "negatives": 198,
+     "positive_rate": 0.932029
+    }
+   }
+  },
+  {
+   "check": "splits.eval_and_holdout_have_both_classes",
+   "ok": true,
+   "detail": "eval and holdout each contain positives and negatives",
+   "evidence": {
+    "train": {
+     "rows": 47414,
+     "positives": 29959,
+     "negatives": 17455,
+     "positive_rate": 0.63186
+    },
+    "eval": {
+     "rows": 3436,
+     "positives": 3077,
+     "negatives": 359,
+     "positive_rate": 0.895518
+    },
+    "holdout": {
+     "rows": 2913,
+     "positives": 2715,
+     "negatives": 198,
+     "positive_rate": 0.932029
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_declared",
+   "ok": true,
+   "detail": "eval and holdout declare positives and distinct events",
+   "evidence": {
+    "declared": {
+     "eval": {
+      "positives": 3077,
+      "distinct_events": 795
+     },
+     "holdout": {
+      "positives": 2715,
+      "distinct_events": 934
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_match_rows",
+   "ok": true,
+   "detail": "declared positive counts match the rows",
+   "evidence": {
+    "mismatched": []
+   }
+  },
+  {
+   "check": "splits.event_key_column_declared",
+   "ok": true,
+   "detail": "clustered events are counted by 'violation_date' (date part)",
+   "evidence": {}
+  },
+  {
+   "check": "splits.distinct_events_match_rows",
+   "ok": true,
+   "detail": "declared clustered event counts match the rows",
+   "evidence": {
+    "recomputed": {
+     "train": 2752,
+     "eval": 795,
+     "holdout": 934
+    },
+    "declared": {
+     "eval": {
+      "positives": 3077,
+      "distinct_events": 795
+     },
+     "holdout": {
+      "positives": 2715,
+      "distinct_events": 934
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.enough_clustered_positives",
+   "ok": true,
+   "detail": "eval and holdout carry enough independent positive events to score",
+   "evidence": {
+    "thin": [],
+    "recomputed_events": {
+     "train": 2752,
+     "eval": 795,
+     "holdout": 934
+    },
+    "minimums": {
+     "positives": 30,
+     "distinct_events": 20
+    }
+   }
+  },
+  {
+   "check": "splits.rates_not_uniform",
+   "ok": true,
+   "detail": "positive rates are between 0 and 1",
+   "evidence": {
+    "rates": [
+     0.63186,
+     0.895518,
+     0.932029
+    ]
+   }
+  },
+  {
+   "check": "splits.actual_ranges_computed",
+   "ok": true,
+   "detail": "row timestamps found for every split",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "2008-01-01",
+      "max": "2017-12-30"
+     },
+     "eval": {
+      "min": "2018-01-02",
+      "max": "2021-12-30"
+     },
+     "holdout": {
+      "min": "2022-01-03",
+      "max": "2026-05-15"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.actual_ranges_disjoint",
+   "ok": true,
+   "detail": "the rows of the three splits occupy disjoint periods",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "2008-01-01",
+      "max": "2017-12-30"
+     },
+     "eval": {
+      "min": "2018-01-02",
+      "max": "2021-12-30"
+     },
+     "holdout": {
+      "min": "2022-01-03",
+      "max": "2026-05-15"
+     }
+    },
+    "overlaps": []
+   }
+  },
+  {
+   "check": "splits.rows_within_declared_windows",
+   "ok": true,
+   "detail": "every row falls inside its split's declared window",
+   "evidence": {
+    "windows": {
+     "train": {
+      "start": "2008-01-01",
+      "end": "2018-01-01"
+     },
+     "eval": {
+      "start": "2018-01-01",
+      "end": "2022-01-01"
+     },
+     "holdout": {
+      "start": "2022-01-01",
+      "end": "2026-09-01"
+     }
+    },
+    "ranges": {
+     "train": {
+      "min": "2008-01-01",
+      "max": "2017-12-30"
+     },
+     "eval": {
+      "min": "2018-01-02",
+      "max": "2021-12-30"
+     },
+     "holdout": {
+      "min": "2022-01-03",
+      "max": "2026-05-15"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.no_cross_split_entities",
+   "ok": true,
+   "detail": "no docket_number appears in more than one split",
+   "evidence": {
+    "shared_sample": [],
+    "shared_count": 0
+   }
+  },
+  {
+   "check": "splits.duplicate_entities_within_splits",
+   "ok": true,
+   "detail": "0 repeated-identifier rows within splits, at most the declared 0",
+   "evidence": {
+    "duplicate_rows": {},
+    "declared": 0
+   }
+  },
+  {
+   "check": "runner.layout",
+   "ok": true,
+   "detail": "holdout is private and train/eval are public",
+   "evidence": {}
+  },
+  {
+   "check": "runner.meta_json_keys",
+   "ok": true,
+   "detail": "meta.json carries the keys the runner reads",
+   "evidence": {
+    "keys": [
+     "built_at_utc",
+     "columns",
+     "derived",
+     "description",
+     "disclaimer",
+     "grain",
+     "id_columns",
+     "name",
+     "positive_label",
+     "positive_rate",
+     "rows",
+     "source",
+     "split",
+     "target"
+    ]
+   }
+  },
+  {
+   "check": "runner.meta_matches_files",
+   "ok": true,
+   "detail": "meta.json agrees with the split files",
+   "evidence": {
+    "problems": []
+   }
+  },
+  {
+   "check": "runner.meta_counts_match_files",
+   "ok": true,
+   "detail": "meta rows and rates match the files",
+   "evidence": {}
+  },
+  {
+   "check": "runner.id_columns_are_not_features",
+   "ok": true,
+   "detail": "declared identifiers are not also listed as features",
+   "evidence": {}
+  }
+ ],
+ "failed_checks": []
+}

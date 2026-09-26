@@ -2454,3 +2454,70 @@ The first attempt failed for a reason worth recording: its manifest did not sati
 document contract - `README.md`, `LICENSE.md` and `RELEASE_NOTES.md` must exist and match the hashes
 recorded in `package_files` - and it was not committed red. Reading that contract and writing each
 document exactly once, hashing after writing, is what made it land.
+
+### 2026-09-26 - Chicago published: the second dataset, end to end
+
+`earino/chicago-doah-adjudication` v2026.09 (artifact `b71586bf28fa56ebbfaede26c4494d68b166545ac504b2ebd8a52c7f272627ef`) is
+public on GitHub, on Hugging Face and on the website, each verified from a client with no credential.
+53,763 Cook County Circuit Court cases across three time-separated splits (train 47,414 / eval 3,436 /
+holdout 2,913), `Liable` as the target. Qualification PASSED, consumer baseline reproduced at eval ROC
+AUC 0.6915 through the runner's own contract.
+
+The chain, in order, with what each step actually returned:
+
+| step | evidence |
+| --- | --- |
+| construction + gate | frozen extract, docket-level split, disclaimer carried on every row; gate produced the accepted artifact |
+| qualification | worker job `chicago-001`, PASSED, then destroyed; cleanups verified by direct read |
+| baseline | `chicago-baseline-001`, `baseline/reproduce_baseline.sh` exit 0 |
+| staging | private repo + a `v2026.09` release carrying the five assets, digests read back from GitHub |
+| Hub publish | worker job `chicago-hf-001` uploaded and verified, then destroyed; all five files re-hashed at the published revision |
+| consumer verification | `chicago-consumer-001` in a fresh environment with no factory access: `run.sh` exit 0, digests and `sha256sum -c` OK, qualification PASSED, baseline 0.6915 |
+| publication | both destinations flipped public under explicit operator authorisation, no asset or digest changed |
+| anonymous proof | repository 200, five assets 206, one asset downloaded in full and digest-identical; Hub API `private=false gated=false`, same on a full download at the revision |
+| website | `site-publish.py` prepare/inspect/publish/verify, receipt `complete`, final verify `status=verified`, HTTPS enforced on both Pages sites |
+| pins | tag `v2026.09` resolves to the same commit as the default branch on both destinations |
+
+Four defects surfaced only after publication, and each one is fixed at its cause rather than at the
+symptom. They are worth recording because every one of them was invisible while the release was private.
+
+**The pinned revision described a private release.** The tag was cut before the publication refresh, so
+the tree at `v2026.09` still carried the staging-era manifest (`"splits": null`, `published: false`) and
+the website pipeline, which reads the manifest *at the pin*, refused with `TypeError` and then "dataset
+is private". A tag that does not carry the release's own final documents is a broken pin: the docs and
+the manifest are part of the release. The pin now moves onto the refresh commit, which is the last thing
+done to a release, and the rule is written down in the release skill.
+
+Reading that pin is also worth a note: `raw.githubusercontent.com` served the pre-move copy for minutes
+after the ref moved, while the contents API returned the real content immediately. Verification reads the
+API, not the CDN.
+
+**A document refresh stripped the managed navigation block.** The publication pipeline writes the block
+into the repository README and the Hub card; the package README does not carry it. So a later
+"regenerate and push the docs" step silently overwrote both copies with versions that had no link to the
+dataset's own page, and `site-publish.py verify` failed with "Destination navigation is missing" - with
+the site itself perfectly healthy. The block is now *derived* wherever a document is generated:
+`scripts/apply-navigation.py` applies it to the package README before the manifest is re-hashed, and
+`hf-publish.py` applies it to the card it uploads. Both are idempotent, and both are inert until
+`DESTINATIONS.json` records a verified site, so a staged package never advertises a page that does not
+exist.
+
+**The published instructions named a flag that does not exist.** `get_dataset.py --staging` was in the
+README and the release notes; the script accepts `--dest/--tag/--sums` and would have exited on
+`unrecognized arguments`. Both documents now carry the command that was actually run, and it was run
+anonymously end to end: clone, `get_dataset.py --dest ./task`, `sha256sum -c ../SHA256SUMS` - five OK.
+That check is section 6 of the published VERIFICATION.md.
+
+**Two smaller ones, same family.** `hf-publish.py --verify` rewrote the whole `destinations.huggingface`
+entry, discarding the publication record fields (note, published_at, licence metadata, the anonymous
+read flag) - it now merges, so re-verifying cannot erase publication history. And `SMALL_FILES` hardcoded
+the licence filenames, so the Hub copy of this dataset was missing
+`LICENSE-CITY-OF-CHICAGO-TERMS-OF-USE.md` while the card and `LICENSE.md` both referenced it; every
+`LICENSE*` file in the package now travels.
+
+Reusable from this release: `candidates/chicago-doah-adjudication/anonymous_proof.py` (the
+unauthenticated proof), `final_pins.py` (point a tag at the final documents commit and read the pinned
+manifest back), `sync_release_repo.py` (push package documents into the release repository),
+`verify_hf_load.py` (re-download every Hub file and hash it). They take the dataset from their own
+module constants, which is what the next dataset will have to edit - the generalisation of these four
+into `scripts/` with a dataset argument is the obvious follow-up, not something to fake now.
