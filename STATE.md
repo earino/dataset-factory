@@ -1,9 +1,78 @@
 # Current state
 
-Updated: 2026-09-25 (latest entry: watcher run on `noaa-consumer-003` - the clean-room consumer check
-re-ran against the re-issued NOAA bytes and passed every stage, so the published-bytes pass now belongs to
-the bytes the release holds rather than to the superseded noaa-003 artifact. The package prose pass and the
-Hub's small files and version tag are still owed before publication; both destinations remain private.)
+Updated: 2026-09-26 (latest entry: watcher run on `noaa-hf-004` - the Hub re-check of the two
+level-nested station_disjoint files found them already at the manifest digests and confirmed that from
+an anonymous client, so it moved no bytes and changed neither destination. Commit `d9cad24` from the
+interactive session carries the site/Hub-path change this job was the Hub-side check for, including
+`release/noaa-tide-flooding/DESTINATIONS.json` recording both destinations as public; that session is
+still editing the release path as this entry was written.)
+
+## 2026-09-26 13:12 UTC - noaa-hf-004: the two renamed Hub files were already at the manifest digest
+
+A Hugging Face publish job for the two `station_disjoint` files whose release-asset names differ from
+their Hub paths. It ran on server `167526113` (cpx32/hel1), was collected after 2 min 20 s of worker time
+and was destroyed at 13:12 UTC.
+
+**Measured** (`.factory/noaa-hf-004/{result.json,reports/}`, `jobs/noaa-hf-004.json`):
+
+| step | result |
+| --- | --- |
+| flow | `earino/noaa-tide-flooding` revision `main`, 2 files, source the dataset release's assets 588583422 / 588583523 |
+| outcome | `status: succeeded`, `failures: []`, **0 bytes uploaded** - both targets `skipped: already at the manifest digest` |
+| independent, anonymous client | Hub tree API HTTP 200 (repository readable without a credential): `station_disjoint/private/holdout.csv` 4,228,360 bytes and `station_disjoint/public/eval.csv` 4,229,477 bytes, both downloaded and re-hashed to `37d77262...` / `be501093...` - exactly the digests the job compared against |
+
+So the Hub carried both files at their declared paths before the job ran, and the job changed no data on
+either destination. Nothing here is a repair; it is a confirmation of the nested layout the website's Hub
+links now depend on, and it agrees with the anonymous read above.
+
+**Residual, recorded rather than worked around.** The staging release's `container.log` asset is 65 bytes
+reading `Error response from daemon: No such container: scout-noaa-hf-004` - the container was already gone
+when its logs were collected, so the run's own container log does not exist. The result summary does, and it
+is the summary that carries the outcome.
+
+**Recorded**: `candidates/noaa-tide-flooding/record.json` (a `noaa-hf-004` entry in `jobs` with the targets,
+the skip reasons, the anonymous re-verification and the residual), `jobs/noaa-hf-004.json`,
+`candidates/noaa-tide-flooding/hf/job-004.json` (both already committed by `d9cad24`),
+`.factory/noaa-hf-004/`. Worker `167526113` destroyed and confirmed gone from the provider
+(`GET /v1/servers/167526113` -> 404; no factory-labelled servers remain).
+
+**Left alone, deliberately**: the interactive session's own edits in the working tree (`scripts/site-hf.py`
+among them) were read, not staged or committed, by this run. `record.json`'s `artifacts[0].huggingface`
+block still describes the Hub as private with the tag lagging while the committed `DESTINATIONS.json` now
+records both destinations as public - that reconciliation belongs to the session that owns the release path.
+
+## 2026-09-26 13:12 UTC - noaa-hf-004: the two renamed Hub files were already at the manifest digest
+
+A Hugging Face publish job for the two `station_disjoint` files whose release-asset names differ from
+their Hub paths. It ran on server `167526113` (cpx32/hel1), collected after 2 min 20 s of worker time and
+was destroyed at 13:12 UTC.
+
+**Measured** (`.factory/noaa-hf-004/{result.json,reports/}`, `jobs/noaa-hf-004.json`):
+
+| step | result |
+| --- | --- |
+| flow | `earino/noaa-tide-flooding` revision `main`, 2 files, source the dataset release's assets 588583422 / 588583523 |
+| outcome | `status: succeeded`, `failures: []`, **0 bytes uploaded** - both targets `skipped: already at the manifest digest` |
+| independent, anonymous client | Hub tree API HTTP 200 (repository readable without a credential): `station_disjoint/private/holdout.csv` 4,228,360 bytes and `station_disjoint/public/eval.csv` 4,229,477 bytes, both downloaded and re-hashed to `37d77262...` / `be501093...` - the digests the job compared against |
+
+So the Hub carried both files at their declared paths before the job ran, and the job changed no data on
+either destination. Nothing here is a repair; it is a confirmation of the nested layout the website's Hub
+links now depend on.
+
+**Residual, recorded rather than worked around.** The staging release's `container.log` asset is 65 bytes
+reading `Error response from daemon: No such container: scout-noaa-hf-004` - the container was already gone
+when its logs were collected, so the run's own container log does not exist. The result summary does, and it
+is the summary that carries the outcome.
+
+**Recorded**: `candidates/noaa-tide-flooding/record.json` (a `noaa-hf-004` entry in `jobs` with the targets,
+the skip reasons and the anonymous re-verification), `jobs/noaa-hf-004.json`,
+`candidates/noaa-tide-flooding/hf/job-004.json`, `.factory/noaa-hf-004/`. Worker `167526113` destroyed and
+confirmed gone from the provider (`GET /v1/servers/167526113` -> 404; no factory-labelled servers remain).
+
+**Not recorded here, deliberately**: the interactive session's uncommitted publication edits listed in the
+header above. They are that session's to finish and commit; this run only read them. Both destinations'
+public state as recorded in those uncommitted files has not been re-verified here beyond the anonymous Hub
+read above.
 
 ## 2026-09-25 16:06 UTC - noaa-consumer-003: the consumer check now belongs to the bytes the release holds
 

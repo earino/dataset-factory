@@ -385,6 +385,53 @@
       "why": "the consumer check is the only evidence that a reader with no access to the building repository and no credential gets the same dataset and the same result from the published release; this is the run that belongs to the bytes the release now holds",
       "residual": "the bundled harness (consumer/source/run.sh) and the shipped baseline/reproduce_baseline.sh both print a hardcoded expectation line carrying the superseded pair (0.8638 / 0.8688), so the last line of output_consumer.txt disagrees with the package's own MANIFEST.json (0.8633 / 0.8690). No check failed - the printed line is a constant, not a read of the manifest - and it is part of the package-prose pass still owed",
       "evidence": ".factory/noaa-consumer-003/result.json, .factory/noaa-consumer-003/reports/{container.log,output_consumer.txt,baseline-temporal.log,baseline-station_disjoint.log,qualification-temporal.txt,qualification-station_disjoint.txt}"
+    },
+    {
+      "id": "noaa-hf-004",
+      "status": "succeeded",
+      "what": "Hugging Face re-check of the two level-nested files whose release-asset names differ from their Hub paths: the holdout and eval split of the station_disjoint level, moved from the dataset repository's release into earino/noaa-tide-flooding at revision main",
+      "staging_release": 397239558,
+      "server_id": 167526113,
+      "created_at": "2026-09-26T13:06:11Z",
+      "collected_at": "2026-09-26T13:08:31Z",
+      "deleted_at": "2026-09-26T13:12:00Z",
+      "targets": [
+        {
+          "source_asset_id": 588583422,
+          "dest": "station_disjoint-private-holdout.csv",
+          "target": "station_disjoint/private/holdout.csv",
+          "size": 4228360,
+          "sha256": "37d772620231806f3aaf7025961d136c91febda3b82b7fe3442180874602c827"
+        },
+        {
+          "source_asset_id": 588583523,
+          "dest": "station_disjoint-public-eval.csv",
+          "target": "station_disjoint/public/eval.csv",
+          "size": 4229477,
+          "sha256": "be50109320c4af5a925d9f34fedeb6905aed675986ddc9f33c59bd9ac0ba1705"
+        }
+      ],
+      "result": {
+        "status": "succeeded",
+        "uploads": [],
+        "skipped": [
+          {
+            "target": "station_disjoint/private/holdout.csv",
+            "reason": "already at the manifest digest"
+          },
+          {
+            "target": "station_disjoint/public/eval.csv",
+            "reason": "already at the manifest digest"
+          }
+        ],
+        "failures": [],
+        "bytes": 0,
+        "reading": "nothing was moved: the Hub already carried both files at the manifest digests, so this job changed no data on either destination"
+      },
+      "verified_independently": "read from an anonymous client on the coordinator, 2026-09-26: huggingface.co/api/datasets/earino/noaa-tide-flooding/tree/main?recursive=true returns HTTP 200 listing station_disjoint/private/holdout.csv at 4,228,360 bytes and station_disjoint/public/eval.csv at 4,229,477 bytes, the job's own sizes; both were then downloaded from /resolve/main/ and re-hashed, giving 37d77262... and be501093..., byte for byte the digests the job compared against. The skip is therefore confirmed rather than trusted",
+      "evidence": ".factory/noaa-hf-004/{result.json,reports/{manifest.json,file-0001-part-0000}}, jobs/noaa-hf-004.json, candidates/noaa-tide-flooding/hf/job-004.json, staging release 397239558",
+      "residual": "the staging release's container.log asset is 65 bytes of `Error response from daemon: No such container: scout-noaa-hf-004`, so the run's own container log was never captured; the job's result summary was, and it is the summary that carries the outcome",
+      "why_launched": "the job spec carries no note and was written by the concurrent interactive session, together with the site/hub-path change in commit d9cad24, as the Hub-side check the website's new hub_paths links depend on"
     }
   ],
   "artifacts": [
