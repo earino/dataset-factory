@@ -37,7 +37,10 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 VENV_PYTHON = Path("/opt/data/.venvs/hf/bin/python")
 # Resolved per run: several dataset packages now exist, so the package under work is named rather
 # than assumed, and the repository id comes from the dataset's own descriptor.
-PACKAGE = REPO_ROOT / "release" / "austin-911-response"
+# Set per run by main() from --candidate. There is deliberately no dataset name here: a default
+# published whichever dataset was named last, which is how --plan for one dataset printed another's
+# files. Reading it before it is set is a programming error, not a fallback.
+PACKAGE = None
 # The Hugging Face path for each artifact file, from the dataset's descriptor when it declares one.
 # Austin's published card uses flat `data/` names, so its descriptor declares nothing and the
 # original rule below still produces exactly what is already published.
@@ -93,6 +96,8 @@ def load_token(args):
 
 
 def manifest():
+    if PACKAGE is None:
+        raise SystemExit("no candidate resolved; main() must set PACKAGE from --candidate first")
     return json.loads((PACKAGE / "MANIFEST.json").read_text())
 
 

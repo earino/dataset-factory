@@ -45,11 +45,14 @@ STAGING_REPO = "earino/dataset-factory-staging"
 TOKEN_FILE = Path(os.environ.get("FACTORY_GITHUB_TOKEN_FILE",
                                  "/opt/data/.secrets/github-staging.token"))
 # Everything the published repository carries; `code/` and `baseline/` are trees of these files.
+# The documents every release carries. A dataset adds whatever only it needs in
+# candidates/<id>/release.json under "required_docs": this list used to name Austin's clock-offset
+# script, so a dataset with no such script was refused for not shipping one.
 DOCS = ("README.md", "DATA_DICTIONARY.md", "LICENSE.md", "REPRODUCE.md", "MANIFEST.json",
         "SHA256SUMS", "RELEASE_NOTES.md", "VERIFICATION.md", "measurements.json",
         "get_dataset.py", "code/build.py", "code/qualify_dataset.py", "code/materialize.py",
-        "code/measure_clock_offset.py", "baseline/README.md", "baseline/train.py",
-        "baseline/validate.py", "baseline/validate.sh", "baseline/reproduce_baseline.sh")
+        "baseline/README.md", "baseline/train.py", "baseline/validate.py", "baseline/validate.sh",
+        "baseline/reproduce_baseline.sh")
 # Artifact path inside the extract -> asset name inside the public release.
 ASSET_NAMES = {
     "public/train.csv": "task/public/train.csv",
@@ -83,9 +86,15 @@ def plan(candidate: str) -> dict:
     if not manifest_path.is_file():
         raise SystemExit(f"no MANIFEST.json for {candidate}; run scripts/release-manifest.py")
     manifest = json.loads(manifest_path.read_text())
-    missing = [name for name in DOCS if not (release_dir / name).is_file()]
+    declared = json.loads((ROOT / "candidates" / candidate / "release.json").read_text())
+    docs = tuple(DOCS) + tuple(declared.get("required_docs", ()))
+    missing = [name for name in docs if not (release_dir / name).is_file()]
     if missing:
         raise SystemExit(f"release documents are missing: {missing}")
+    # The asset mapping is the manifest's own layout, so it follows the dataset instead of the
+    # flat single-level shape this file used to hardcode.
+    global ASSET_NAMES
+    ASSET_NAMES = {relative: key for key, relative in manifest["layout"].items()}
     files = manifest["files"]
     unknown = [path for path in files if path not in ASSET_NAMES]
     if unknown:
@@ -99,7 +108,7 @@ def plan(candidate: str) -> dict:
              "bytes": files[path]["bytes"], "sha256": files[path]["sha256"]}
             for path in ASSET_NAMES
         ],
-        "documents": list(DOCS),
+        "documents": list(docs),
         "total_bytes": sum(files[path]["bytes"] for path in ASSET_NAMES),
         "artifact_version": manifest["artifact_version"],
         "artifact_job": manifest["artifact_job"],

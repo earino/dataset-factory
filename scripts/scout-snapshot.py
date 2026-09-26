@@ -192,17 +192,28 @@ def research_budget():
 
 
 def destinations():
-    path = ROOT / "release" / "austin-911-response" / "DESTINATIONS.json"
-    if not path.is_file():
-        return {}, str(path)
-    data = json.loads(path.read_text())
-    summary = {}
-    for name, entry in (data.get("destinations") or {}).items():
-        summary[name] = {"repo": entry.get("repo"), "revision": entry.get("revision")
-                         or entry.get("release_tag"), "private": entry.get("private"),
-                         "verified": entry.get("verified"), "verified_at": entry.get("verified_at")}
-    summary["licensing"] = data.get("licensing")
-    return summary, "release/austin-911-response/DESTINATIONS.json"
+    """The recorded destination state of every release package.
+
+    This named one dataset's record, so the snapshot reported a single release as though it were the
+    whole publication surface.
+    """
+    summary, sources, found = {}, [], False
+    for path in sorted((ROOT / "release").glob("*/DESTINATIONS.json")):
+        found = True
+        data = json.loads(path.read_text())
+        dataset = path.parent.name
+        for name, entry in (data.get("destinations") or {}).items():
+            summary[f"{dataset}:{name}"] = {
+                "repo": entry.get("repo"),
+                "revision": entry.get("revision") or entry.get("release_tag"),
+                "private": entry.get("private"), "verified": entry.get("verified"),
+                "verified_at": entry.get("verified_at")}
+        if data.get("licensing"):
+            summary[f"{dataset}:licensing"] = data["licensing"]
+        sources.append(path.relative_to(ROOT).as_posix())
+    if not found:
+        return {}, "no release/*/DESTINATIONS.json found"
+    return summary, ", ".join(sources)
 
 
 def queue():

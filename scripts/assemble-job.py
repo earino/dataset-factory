@@ -49,139 +49,32 @@ RUNNER_TEMPLATE = "task_template"
 
 # Bundles keyed by the name you pass on the command line. Each reads its job id and sizing from
 # its own source/job.json, so identity lives in exactly one place.
-BUNDLES = {
-    # Build the extract, then qualify the exact artifact on the worker.
-    "austin-911-response": {
-        "job_file": "candidates/austin-911-response/source/job.json",
-        "files": [
-            ("build.py", "candidates/austin-911-response/source/build.py"),
-            ("run.sh", "candidates/austin-911-response/source/run.sh"),
-            ("qualify_dataset.py", "skills/dataset-qualification/scripts/qualify_dataset.py"),
-        ],
-        "overrides": {
-            "command": ["sh", "/workspace/run.sh"],
-            "timeout_minutes": 120,
-            "lifetime_minutes": 150,
-            "max_disk_mb": 3072,
-            "max_artifact_mb": 600,
-        },
-    },
-    # Rebuild the accepted artifact, prove it is the accepted artifact, then run the benchmark's
-    # own training and validation contract against it. The contract only - no agent harness.
-    "austin-baseline": {
-        "job_file": "candidates/austin-911-response/baseline/source/job.json",
-        "files": [
-            ("build.py", "candidates/austin-911-response/source/build.py"),
-            ("run.sh", "candidates/austin-911-response/baseline/source/run.sh"),
-            ("materialize.py", "candidates/austin-911-response/baseline/source/materialize.py"),
-            ("verify_artifact.py", "candidates/austin-911-response/baseline/source/verify_artifact.py"),
-            ("report.py", "candidates/austin-911-response/baseline/source/report.py"),
-            ("expected_artifact.json",
-             "candidates/austin-911-response/baseline/expected_artifact.json"),
-        ],
-        # Copied verbatim from the read-only harness benchmark clone.
-        "runner_files": ["train.py", "validate.py", "validate.sh"],
-        "overrides": {
-            "command": ["sh", "/workspace/run.sh"],
-            "timeout_minutes": 60,
-            "lifetime_minutes": 120,
-            "max_disk_mb": 3072,
-            "max_artifact_mb": 50,
-        },
-    },
-    # Fresh-consumer check: the published repository tree plus the run script, against the release
-    # assets fetched by the worker host. No dataset-factory access, and no credential in the
-    # container.
-    "austin-consumer": {
-        "job_file": "candidates/austin-911-response/consumer/source/job.json",
-        "files": [
-            ("run.sh", "candidates/austin-911-response/consumer/source/run.sh"),
-            ("verify_package.py", "candidates/austin-911-response/consumer/source/verify_package.py"),
-        ],
-        # The whole published package, laid out under repo/ so the container sees the repository
-        # exactly as a consumer would after cloning it.
-        "trees": [("repo", "release/austin-911-response")],
-        "overrides": {
-            "command": ["sh", "/workspace/run.sh"],
-            "timeout_minutes": 60,
-            "lifetime_minutes": 120,
-            "max_disk_mb": 3072,
-            "max_artifact_mb": 50,
-        },
-    },
-    # Fresh-consumer check for the two-level NOAA dataset: the published repository tree plus the
-    # run script, against the release assets the worker host fetches. No dataset-factory access and
-    # no credential inside the container.
-    "noaa-consumer": {
-        "job_file": "candidates/noaa-tide-flooding/consumer/source/job.json",
-        "files": [
-            ("run.sh", "candidates/noaa-tide-flooding/consumer/source/run.sh"),
-            ("verify_package.py", "candidates/noaa-tide-flooding/consumer/source/verify_package.py"),
-        ],
-        "trees": [("repo", "release/noaa-tide-flooding")],
-        "overrides": {
-            "command": ["sh", "/workspace/run.sh"],
-            "timeout_minutes": 60,
-            "lifetime_minutes": 120,
-            "max_disk_mb": 3072,
-            "max_artifact_mb": 50,
-        },
-    },
-    # The baseline on the accepted artifact, fetched from staging rather than rebuilt: the artifact
-    # is already gated, and these are the numbers the release will carry.
-    "noaa-rebaseline": {
-        "job_file": "candidates/noaa-tide-flooding/baseline/fetch/job.json",
-        "files": [
-            ("run.sh", "candidates/noaa-tide-flooding/baseline/fetch/run.sh"),
-            ("report_baseline.py", "candidates/noaa-tide-flooding/baseline/fetch/report_baseline.py"),
-            ("materialize.py", "release/noaa-tide-flooding/code/materialize.py"),
-        ],
-        "runner_files": ["train.py", "validate.py", "validate.sh"],
-        "overrides": {"command": ["sh", "/workspace/run.sh"], "timeout_minutes": 60,
-                      "lifetime_minutes": 120, "max_disk_mb": 3072, "max_artifact_mb": 16},
-    },
-    # Build both levels of the NOAA tide-flooding task, then gate each exact artifact on the worker.
-    "noaa-tide-flooding": {
-        "job_file": "candidates/noaa-tide-flooding/source/job.json",
-        "files": [
-            ("build.py", "candidates/noaa-tide-flooding/build.py"),
-            ("run.sh", "candidates/noaa-tide-flooding/source/run.sh"),
-            # The frozen station list is a build input, not a constant: the panel was computed from
-            # the source, so the same list has to travel with the builder.
-            ("station_list_result.json",
-             "candidates/noaa-tide-flooding/station_list_result.json"),
-            ("qualify_dataset.py", "skills/dataset-qualification/scripts/qualify_dataset.py"),
-        ],
-        "overrides": {
-            "command": ["sh", "/workspace/run.sh"],
-            "timeout_minutes": 120,
-            "lifetime_minutes": 150,
-            "max_disk_mb": 3072,
-            "max_artifact_mb": 600,
-        },
-    },
-    # One baseline through the runner's own training and validation contract, on both levels.
-    "noaa-baseline": {
-        "job_file": "candidates/noaa-tide-flooding/baseline/source/job.json",
-        "files": [
-            ("build.py", "candidates/noaa-tide-flooding/build.py"),
-            ("run.sh", "candidates/noaa-tide-flooding/baseline/source/run.sh"),
-            ("materialize.py", "candidates/noaa-tide-flooding/baseline/source/materialize.py"),
-            ("report.py", "candidates/noaa-tide-flooding/baseline/source/report.py"),
-            ("station_list_result.json",
-             "candidates/noaa-tide-flooding/station_list_result.json"),
-        ],
-        # Copied verbatim from the read-only harness benchmark clone.
-        "runner_files": ["train.py", "validate.py", "validate.sh"],
-        "overrides": {
-            "command": ["sh", "/workspace/run.sh"],
-            "timeout_minutes": 120,
-            "lifetime_minutes": 150,
-            "max_disk_mb": 4096,
-            "max_artifact_mb": 16,
-        },
-    },
-}
+def discover_bundles(root: Path) -> dict:
+    """Every bundle that declares itself: a `bundle.json` beside the job it describes.
+
+    This was a table of per-dataset paths inside this file, so adding a dataset meant editing the
+    assembler - the same wiring the manifest generator, the Hub publisher and the site model were
+    each made descriptor-driven to remove. A bundle now says what it needs, next to the job it
+    builds, and nothing here knows any dataset's name.
+    """
+    found = {}
+    for declaration in sorted(root.glob("candidates/**/bundle.json")):
+        entry = json.loads(declaration.read_text())
+        name = entry.pop("name", None)
+        if not name:
+            raise SystemExit(f"{declaration.relative_to(root)} declares no bundle name")
+        if name in found:
+            raise SystemExit(f"two bundles are named {name}: {declaration.relative_to(root)}")
+        job_file = declaration.parent / "job.json"
+        if not job_file.is_file():
+            raise SystemExit(f"{declaration.relative_to(root)} has no job.json beside it")
+        found[name] = {**entry, "job_file": job_file.relative_to(root).as_posix()}
+    if not found:
+        raise SystemExit("no bundle declarations found under candidates/")
+    return found
+
+
+BUNDLES = discover_bundles(ROOT)
 
 
 def sha256_of(path: Path) -> str:
@@ -225,11 +118,17 @@ def check_bundle(directory: Path) -> int:
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description="Assemble a worker job directory")
-    parser.add_argument("bundle", nargs="?", default="austin-911-response",
-                        choices=sorted(BUNDLES),
+    parser.add_argument("--list", action="store_true", help="show every declared bundle")
+    parser.add_argument("bundle", nargs="?", default=None, choices=sorted(BUNDLES),
                         help="which bundle to assemble; the job id comes from its source/job.json")
     args = parser.parse_args(argv)
 
+    if args.list:
+        for name in sorted(BUNDLES):
+            print(name)
+        return 0
+    if not args.bundle:
+        raise SystemExit("name a bundle, or pass --list to see every declared one")
     spec = BUNDLES[args.bundle]
     job = load_job(spec)
     target = ROOT / ".factory" / "jobs" / job["id"]
