@@ -1,6 +1,7 @@
 """Website lifecycle acceptance: another dataset, interrupted publication and immutable versions."""
 import contextlib
 import copy
+from html import unescape
 import io
 import json
 from pathlib import Path
@@ -328,6 +329,22 @@ class WebsiteTests(unittest.TestCase):
         record["title"] = "tampered"
         with self.assertRaisesRegex(ValueError, "digest"):
             RUNTIME["render"](config, [record])
+
+    def test_the_documented_loading_command_names_a_config_when_the_dataset_has_one(self):
+        """The page prints a command a reader copies; a config-less call raises for a multi-config
+        dataset, so the config is named - and a flat dataset must not be given one it lacks."""
+        config = json.loads(self.plan["targets"]["dataset"]["files"][".dataset-site/config.json"])
+        flat = unescape(RUNTIME["render"](config, [self.record])["index.html"])
+        self.assertEqual(self.record["configs"], [])
+        self.assertIn("load_dataset('earino/austin-911-response', revision='v2026.09')", flat)
+        noaa = project(ROOT / "release/noaa-tide-flooding",
+                       read(ROOT / "sites/noaa-tide-flooding.json"), self.config)
+        self.assertEqual(noaa["configs"], ["station_disjoint", "temporal"])
+        page = unescape(RUNTIME["render"](config, [noaa])["index.html"])
+        for name in noaa["configs"]:
+            self.assertIn(f"load_dataset('earino/noaa-tide-flooding', '{name}', "
+                          "revision='v2026.09')", page)
+        self.assertNotIn("load_dataset('earino/noaa-tide-flooding', revision=", page)
 
     def test_refuses_non_owned_output_and_symlinks(self):
         out = self.root / "unrelated"

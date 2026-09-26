@@ -236,6 +236,10 @@ and run its commands.
 | A card fix that was never exercised | The corrected card was uploaded and the documented path never re-run against the published revision | Re-run the documented load anonymously after any card or split change; a fix is not a verification |
 | A recorded commit hash that does not exist | The hash was transcribed by hand instead of read back | Read the pin from the API and confirm the commit resolves; a 422 is the only thing that catches a corrupted tail |
 | The card's loading example promises row counts the manifest does not have | Counts are typed into the template, so they drift silently when the build changes | Derive the `configs` block and the counts from the manifest in a test (`tests/test_hf_card.py`); show the test fails on the pre-fix card |
+| The dataset page prints a command that raises "Config name is missing" | The page's "Use this version" snippet was hardcoded into the template instead of generated from the record | Derive it from one rule (`factory.site_model.config_names`) shared with the Hub card, and assert both; a page is a documentation surface too |
+| A documents-only Hub refresh makes a recorded revision or tag claim false | The refresh moves the Hub revision, and re-tagging moves the tag, but the `DESTINATIONS.json` claim was written before it | Re-read the revision and tag after the refresh and correct the claim; the evidence block must name what the destination now serves |
+| Re-syncing the public tree drops the website's file entries from `MANIFEST.json` | The release package's manifest overwrote the public one, which also declares the site scaffolding | Overlay, then restore the entries for the files the website step placed, reading them back from disk so the step is idempotent |
+| A guard that has never been seen to fail | The test was written against the fixed input only | Revert the code or data path (`git stash push -- <file>`, or check out the pre-fix document), watch the guard fail, restore, and record which defect it caught |
 
 ## Completion criteria
 

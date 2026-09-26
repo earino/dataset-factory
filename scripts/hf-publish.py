@@ -49,6 +49,17 @@ HF_PATHS = {}
 # published under another's card.
 CANDIDATE = None
 BUILD = REPO_ROOT / ".factory" / "hf-package"
+
+
+def _config_names(splits):
+    """The config names a split map is grouped by, through the rule the dataset page also uses.
+
+    Defined once in factory.site_model so a card and a page cannot disagree about whether the
+    documented loading command needs a config named.
+    """
+    sys.path.insert(0, str(REPO_ROOT))
+    from factory.site_model import config_names
+    return config_names(splits)
 # Rendered into the card. A doubled-brace placeholder was used here before, but an f-string renders
 # that to a single brace, so the replacement silently did nothing and shipped the literal.
 REPO_PLACEHOLDER = "__REPO_ID__"
@@ -168,8 +179,7 @@ def render_card_template(text: str, manifest_data: dict) -> str:
         return sum(rows_in(entry) for entry in group.values())
 
     total = rows_in(splits)
-    configs = list(splits) if splits and all(
-        isinstance(entry, dict) and "rows" not in entry for entry in splits.values()) else []
+    configs = _config_names(splits)
     licences = manifest_data.get("licenses") or {}
     values = {
         # The template's loading example has to name the repository the way the Hub does. Filling
@@ -258,8 +268,7 @@ def loading_text(manifest_data, repo_id):
     token_note = ("The repository is public, so no token is needed." if manifest_data.get("published")
                   else "Private repository: pass a token that has access to it.")
     splits = manifest_data.get("splits") or {}
-    configs = [name for name, entry in splits.items()
-               if isinstance(entry, dict) and "rows" not in entry]
+    configs = _config_names(splits)
     tag = manifest_data["release_tag"]
     if configs:
         loading = "\n".join(f'ds = load_dataset("{repo_id}", "{name}", revision="{tag}")'

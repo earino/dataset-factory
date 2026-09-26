@@ -84,6 +84,18 @@ def flatten_splits(raw):
     return dict(raw)
 
 
+def config_names(raw):
+    """The config names a manifest's splits are grouped by, in order. Empty for a single-config set.
+
+    A dataset with levels needs its config named in a loading command; a flat one must not be given
+    a config it does not have. Both the Hub card and the dataset page print that command, so both
+    derive the names through this one rule rather than each guessing.
+    """
+    if raw and all(isinstance(v, dict) and "rows" not in v for v in raw.values()):
+        return sorted(raw)
+    return []
+
+
 def project(package, editorial, config):
     """Construct a renderer-independent record. Never export whole manifests or job records."""
     package = Path(package)
@@ -193,6 +205,9 @@ def project(package, editorial, config):
                  "paragraphs": [text_field(p, "post paragraph") for p in post["paragraphs"]]},
         "limitations": [text_field(p, "limitation") for p in editorial["limitations"]],
         "assets": assets, "splits": splits, "licenses": licenses,
+        # Named so the page can print a loading command that runs: a config-less call against a
+        # multi-config dataset raises, and the page is where most readers copy the command from.
+        "configs": config_names(m["splits"]),
         "source": {"name": source["name"], "url": source["landing_page"]},
         "qualification": {"gate_version": qualification["gate_version"], "result": qualification["result"]},
         "baseline": {"metrics": metrics, "scope": baseline.get("scope", m.get("scope", ""))},
@@ -211,6 +226,8 @@ def check_manifest(record, manifest):
     splits = {k: {field: v[field] for field in ("rows", "positives") if field in v}
               for k, v in flatten_splits(manifest["splits"]).items()}
     require(splits == record["splits"], "Pinned manifest split counts differ")
+    require(config_names(manifest["splits"]) == record.get("configs", []),
+            "Pinned manifest config names differ")
     assets = {v["asset_name"]: {k: v[k] for k in ("bytes", "sha256")} for v in manifest["assets"].values()}
     require(assets == {name: {k: v[k] for k in ("bytes", "sha256")} for name, v in record["assets"].items()},
             "Pinned manifest assets differ")
