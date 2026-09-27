@@ -1,0 +1,73 @@
+{
+  "id": "chicago-food-inspections",
+  "status": "investigating",
+  "created_at": "2026-09-27T19:00:41.646988+00:00",
+  "domain": "public health / food-safety inspection (multi-label)",
+  "prediction_question": "Given everything documented about an establishment and its own prior inspections before an inspection begins, which of the 61 violation codes will the inspector record for this visit?",
+  "prediction_time": "The moment the inspection is opened, before any observation: inspection_date is known when a canvass is scheduled or a complaint triggers a visit, and every intended feature is either a static facility attribute, the inspection's own type, or a field of an earlier inspection of the same licence.",
+  "target_definition": "The set of violation codes recorded in the row's `violations` blob, parsed into codes 1-70 (multi-label, 61 observed codes; mean 3.08 per inspection). The label source column `violations` is excluded from every shipped file, together with `results` and the per-violation comment text.",
+  "sources": [
+    {
+      "name": "Food Inspections - City of Chicago (CDPH)",
+      "url": "https://data.cityofchicago.org/Health-Human-Services/Food-Inspections/4ijn-s7e5",
+      "api": "https://data.cityofchicago.org/resource/4ijn-s7e5.json",
+      "license": "City of Chicago Data Terms of Use (Socrata licenseId SEE_TERMS_OF_USE); no SPDX licence",
+      "access": "anonymous Socrata API, no key, paged with a total order; measured live 2026-09-27"
+    },
+    {
+      "name": "Column documentation for the same dataset",
+      "url": "https://data.cityofchicago.org/api/views/4ijn-s7e5.json (Columns tab)",
+      "license": "Same City of Chicago Data Terms of Use",
+      "access": "21 documented columns; needed to establish which fields are post-hoc"
+    }
+  ],
+  "license_evidence": [
+    {
+      "field": "Socrata metadata licence for dataset 4ijn-s7e5",
+      "quote": "license: {\"name\": \"See Terms of Use\"}; licenseId SEE_TERMS_OF_USE; attribution: City of Chicago - no standard SPDX licence",
+      "url": "https://data.cityofchicago.org/api/views/4ijn-s7e5.json",
+      "read_on": "2026-09-27"
+    },
+    {
+      "field": "City of Chicago Data Terms of Use (the portal terms this dataset is governed by)",
+      "quote": "\"The City may require a user of this data to terminate any and all display, distribution or other use of any or all of the data provided at this website for any reason...\" and \"These Terms of Use do not grant anyone any title or right to any patent, copyright, trademark...\"",
+      "url": "https://data.cityofchicago.org/api/views/4ijn-s7e5.json (licenseId) -> City of Chicago Data Terms of Use; clauses reproduced in release/chicago-doah-adjudication/LICENSE-CITY-OF-CHICAGO-TERMS-OF-USE.md",
+      "read_on": "2026-09-26",
+      "terms": "Same portal-terms decision as chicago-doah-adjudication (candidates/chicago-doah-adjudication/license.json, LicenseRef-CityOfChicago-DataTermsOfUse): redistribution under the City's Terms, no CC0 or other standard open dedication may be claimed. Reusing that decision for this source id must be recorded explicitly before construction."
+    }
+  ],
+  "construction_script": null,
+  "split_strategy": "Temporal by inspection_date, no random component; three disjoint windows own the train, eval and holdout periods. 197,126 inspections fall in 2016+ and 101,354 in 2021+.",
+  "measurements": {
+    "rows_total": 316205,
+    "rows_with_violations": 227036,
+    "modelling_pool_pass_fail_pwc_with_violations": 226133,
+    "distinct_inspection_id": 316205,
+    "distinct_license": 49145,
+    "date_range": [
+      "2010-01-04",
+      "2026-09-25"
+    ],
+    "distinct_violation_codes_in_40000_row_scan": 61,
+    "codes_rendered_more_than_one_way": 28,
+    "density_recent_15000_rows": {
+      "mean": 3.08,
+      "median": 2,
+      "max": 19,
+      "codes_ge_1pct": 32,
+      "codes_ge_0.1pct": 43
+    },
+    "mean_codes_by_result": {
+      "Pass": 2.05,
+      "Pass w/ Conditions": 3.7,
+      "Fail": 4.85
+    },
+    "measured_at": "2026-09-27",
+    "measured_by": "anonymous SoQL queries, no credentials"
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": null,
+  "next_action": "Feasibility profile recorded (notes.md, measured 2026-09-27). Before promotion to `ready`: (1) record a licence decision against this source id reusing the DOAH portal-terms decision, (2) run scripts/check-novelty.py with an explicit verdict and `ours` against the CDPH binary forecasting model (Chicago/food-inspections-evaluation) and arXiv 1910.04906, (3) measure extraction cost (requests, bytes, wall-clock on the worker class) for the full 316,205-row pull. Nothing is constructed; this is not a scheduled task."
+}

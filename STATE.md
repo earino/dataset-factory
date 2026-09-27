@@ -1,7 +1,7 @@
 
 # Current state
 
-Updated: 2026-09-27 (latest entries: the NOAA dataset page now generates its loading command from the manifest - published with operator approval as site_revision 2 and verified anonymous - and Chicago's data dictionary names the source text fields it drops.
+Updated: 2026-09-27 (latest entries: a multi-label lead - Chicago food inspections - is recorded as the candidate `chicago-food-inspections` with its measured profile, the austin `incident_type` wording is tabled, the NOAA dataset page now generates its loading command from the manifest - published with operator approval as site_revision 2 and verified anonymous - and Chicago's data dictionary names the source text fields it drops.
 Private HEAD `0c24335`, CI green; both public sites live and verified.)
 
 ## 2026-09-26 13:12 UTC - noaa-hf-004: the two renamed Hub files were already at the manifest digest
@@ -2633,3 +2633,32 @@ The public repository's `Dataset website` workflow has no run for `34f4fd14` **b
 
 **Private HEAD `0c24335`, both workflows `completed/success`.** Outstanding for the operator: rotate the
 `github_pat_...` and `hf_...` credentials exposed in this instance's earlier session.
+
+## 2026-09-27 (later) - Chicago food inspections profiled as a multi-label lead; a one-line austin fix is tabled
+
+Operator asked what multi-label sources exist, then asked specifically about Chicago food inspections and told
+me to table the austin maintenance item. Answering it produced the project's first multi-label lead, so the
+evidence lives in the repository rather than in the conversation.
+
+**Answer to "could the austin 911 source be a multi-label problem" - no.** The source carries five real
+categoricals (`initial_problem_category` and `final_problem_category` 40 values each, `priority_level` 4,
+`call_disposition_description` 20, `mental_health_flag` 2), but the grain is one row per incident (1,049,636
+rows / 1,049,612 distinct `incident_number`) and every one of them is single-valued, so the task is 40-way
+multiclass, not multi-label. Location and time carry almost none of the answer: `H(final_category)` is 4.10 bits
+and `I(final; sector)` = 0.06 bits (1%), `I(final; response_hour)` = 0.06 bits, against 2.56 bits (62%) from
+`initial_problem_category`. Trivially, `final == initial` for 77.7% of calls against a 12.7% majority baseline.
+The four post-hoc natural targets are already excluded from the shipped release, so nothing there changes.
+
+**New candidate `chicago-food-inspections`** (`status=investigating`, no construction). Source: City of Chicago
+Food Inspections, `4ijn-s7e5` - 316,205 rows, one row per inspection, 2010-01-04 to 2026-09-25, 226,133 rows in
+the modelling pool. The label is the set of violation codes parsed from the `violations` blob: 61 codes across a
+40,000-row scan, mean 3.08 codes per inspection, strong co-occurrence (55,38) 2,350, and density that tracks the
+outcome (Pass 2.05 / Pass w/ Conditions 3.70 / Fail 4.85). Prior art found: CDPH's own deployed binary
+"critical violation" model and its hindsight analysis - a different task, so no mirror, but `check-novelty.py`
+must still state the verdict before promotion. Full profile in `candidates/chicago-food-inspections/notes.md`.
+
+**Tabled, not started:** `release/austin-911-response/DATA_DICTIONARY.md` calls `incident_type` "coarse call
+classification known at dispatch" when the column is a single value (`Dispatched Incident`) in all 1,049,636
+rows. One-line correction, documents-only, no asset byte changes; it does move the rendered site page, so it
+needs the site_revision increment and the usual Hub/site refresh. Recorded in the austin record's `next_action`
+to batch with other documentation-only corrections.
