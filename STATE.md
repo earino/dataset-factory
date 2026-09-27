@@ -1,11 +1,8 @@
 
 # Current state
 
-Updated: 2026-09-26 (latest entry: watcher run on the five Chicago jobs - four succeeded and were
-already collected, recorded and destroyed by the interactive session that ran the release, and the
-failed Hub publish job `chicago-hf-001` had its fix - the card `configs` block - verified live and
-anonymous in this run. The release `earino/chicago-doah-adjudication` v2026.09 is public on GitHub,
-Hugging Face and the website; CI green at `ccfb73e`.)
+Updated: 2026-09-27 (latest entries: the NOAA dataset page now generates its loading command from the manifest - published with operator approval as site_revision 2 and verified anonymous - and Chicago's data dictionary names the source text fields it drops.
+Private HEAD `0c24335`, CI green; both public sites live and verified.)
 
 ## 2026-09-26 13:12 UTC - noaa-hf-004: the two renamed Hub files were already at the manifest digest
 
@@ -2579,3 +2576,60 @@ watcher stops surfacing them.
 
 **CI**: green for `ccfb73e` - `push completed/success`, run 36269800507 (the billing condition that
 blocked earlier NOAA runs has cleared). This entry commits on top of it.
+
+## 2026-09-27 - the NOAA page's loading command is generated, and Chicago's dictionary names its dropped text
+
+Two operator-requested fixes, both verified against the live surface rather than the tool's own report.
+
+### 1. NOAA website: the page now prints a command that runs (commit `2880496`, site_revision 2)
+
+The published page printed a hard-coded `load_dataset('earino/noaa-tide-flooding', revision='v2026.09')`.
+That is a config-less call against a two-config repository and raises
+`ValueError: Config name is missing. Please pick one among the available configs: ['temporal', 'station_disjoint']`
+- reproduced anonymously from the published revision, so the page had been publishing a broken example
+since publication. Fixed at the generator: `factory/site_model.config_names()` is the single rule, the
+release record carries `configs`, the pinned-manifest check refuses a name mismatch, and both the page
+template (`sites/runtime.py`) and the Hub card (`scripts/hf-publish.py._config_names`) derive from it.
+
+The guard tests were shown to **fail on the pre-fix input** before they counted: the new site test fails
+against the pre-fix template (only `sites/runtime.py` stashed), and the card figure guard fails against
+the card as committed at `8c239cb` (`['0.8638','0.8651','0.8687','0.8688']`).
+
+Plan `462d50571e2913ade1dffe0bbbbbd844170afceec9e292ab8a6c298c6a81878e` was published with operator
+approval (`site-publish.py publish .factory/sites/noaa-website-3 --approved-plan ... --wait-seconds 240`)
+and `verify` returned `status: verified` with HTTPS enforced on both repositories. Anonymous check of the
+live page: **10709 bytes, both config-named commands present, the config-less form gone**; the versioned
+page carries the same; the catalogue lists `noaa-tide-flooding v2026.09 site_revision 2`. Public repository
+HEAD `1e8ef86e` ("Prepare website for noaa-tide-flooding v2026.09"), its `Dataset website` run
+`completed/success`. 296 tests OK; `check-package.py release/noaa-tide-flooding` OK; CI green for
+`2880496` (`Local checks`, `Website pipeline preview`).
+
+### 2. Chicago: the data dictionary now names the source's text fields (commit `0c24335`)
+
+The dictionary said only that "all other source columns are absent by construction". The source table
+(`data.cityofchicago.org`, resource `6br9-quuz`, 823,637 rows) does carry prose, so the omission read as
+"nothing there". It now names each dropped text field and separates three reasons:
+
+| field | reason recorded |
+| --- | --- |
+| `violation_description` | Redundant, not withheld: the source's own `$group` gives 1,260 distinct `violation_code` values against 1,266 distinct code+description pairs. |
+| `respondents` | Named-party text, withheld as a redistribution decision - explicitly **not** dismissed as uninformative. |
+| `address`/`street_number`/`street_name`, `nov_number`, `location` | Restate shipped columns (`latitude`/`longitude`, `street_direction`/`street_type`) or identify a notice rather than a case. |
+
+The `respondents` measurement is recorded in `candidates/chicago-doah-adjudication/notes.md`: over all
+397,435 decided charges, entity respondents 0.752 liable, records naming counsel 0.742, neither 0.726,
+base 0.732 - a small but real spread, which is why the exclusion is stated as a publication decision.
+Finer signals (repeat litigants, counsel identity, per-party history) remain unmeasured and are not claimed.
+
+Documents-only: `artifact_version` unchanged at `b71586bf28fa56eb`, no asset byte touched, no new version.
+Manifest regenerated (dictionary digest `e0b02bdb267ec36a`) and `check-package` OK; Hub small files
+re-uploaded and `v2026.09` re-pointed to `325cc9823d1e776e7734d344b53bcfa0caf0841d` (tag == main);
+`DESTINATIONS.json` records the move and the refreshed revision claim
+(`/opt/data/cache/scratch/fix_chicago_revision_claim.py`); public repository re-synced by
+`sync_release_repo.py` to `34f4fd14`. Anonymous proof: public raw dictionary and Hub raw file are both
+7,728 bytes at sha256 `e0b02bdb...`, equal to the manifest digest; the site page is 200 and still links it.
+The public repository's `Dataset website` workflow has no run for `34f4fd14` **by design** - it triggers on
+`.dataset-site/**` paths only - and the deployed page bytes are unchanged.
+
+**Private HEAD `0c24335`, both workflows `completed/success`.** Outstanding for the operator: rotate the
+`github_pat_...` and `hf_...` credentials exposed in this instance's earlier session.
