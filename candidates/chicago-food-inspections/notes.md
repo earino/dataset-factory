@@ -64,6 +64,17 @@ Nothing was constructed; this record is the feasibility profile, not a build.
 - Kaggle and Socrata mirrors of this same table; a Tennessee restaurant-inspection-score study (PMC3323064); an EJAI paper correlating violations with customer reviews.
 - No published ML-ready version of the **multi-label** task - predict the *set* of violation codes at inspection time - was found. That is a search result, not a proof: `scripts/check-novelty.py` must be run with an explicit verdict before this candidate can be promoted to `ready`.
 
+## Superseded as the lead (2026-09-27, same day)
+
+While looking for something better, `candidates/msha-enforcement-citations/` was measured and opened
+(`status=ready`). It leads on every axis that matters here - 538,068 inspections and 3.10 M citations
+over 26 years against 316,205 rows over 16, 104 sections at a 1% floor against 61 codes, a documented
+50-column wire format plus companion tables against 21 columns on one table, and no publisher-deployed
+model on the task (CDPH already shipped a binary critical-violation model on this table). The
+comparison is in that candidate's notes. **This source stays a valid fallback, not the priority**:
+nothing here is dropped, and if the MSHA licence decision goes the wrong way this is the next lead,
+with the three open questions below still to clear.
+
 ## Open questions before construction
 
 1. **Licence reuse.** The portal terms are already decided for DOAH, but redistribution of this table needs the decision recorded against *this* source id, not inherited silently.

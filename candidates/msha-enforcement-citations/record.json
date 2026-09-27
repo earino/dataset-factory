@@ -1,0 +1,393 @@
+{
+  "id": "msha-enforcement-citations",
+  "status": "ready",
+  "created_at": "2026-09-27T20:15:33.025601+00:00",
+  "domain": "workplace / mine safety enforcement (multi-label)",
+  "prediction_question": "Given everything documented about a mine and its own prior inspections and citations before an inspection begins, which of the declared set of 30 CFR sections will MSHA cite at this inspection?",
+  "prediction_time": "The instant the inspection begins (INSPECTION_BEGIN_DT). Every feature is either a static mine attribute (Mines table), the inspection's own trigger recorded when it opens (ACTIVITY_CODE/ACTIVITY, PROGRAM_AREA, INSPECT_OFFICE_CD), or a field of an earlier inspection of the same MINE_ID. Everything the inspector observes or records during the visit is post-hoc and excluded.",
+  "target_definition": "The set of 30 CFR sections cited at one inspection (EVENT_NO), i.e. the distinct PART_SECTION values of its violation rows - multi-label, mean 5.79 sections per inspection, median 2. The raw label space is 5,934 sections; construction declares a floor (104 sections at >= 1% of inspections, 183 at >= 0.5%). PART_SECTION itself and every violation-level attribute of the cited rows are excluded from the shipped features.",
+  "sources": [
+    {
+      "name": "Violations Data Set - Mine Safety and Health Administration (US Department of Labor)",
+      "url": "https://arlweb.msha.gov/OpenGovernmentData/DataSets/Violations.zip",
+      "landing_page": "https://www.msha.gov/data-and-reports/data-sources-and-calculators/data-resources/mdsrg/violations-data-set",
+      "catalog": "https://catalog.data.gov/dataset/msha-violations-dataset",
+      "license": "No licence statement published on the source pages; data.gov catalogue entry carries accessLevel=public and rights=\"true\" rather than named terms. Unresolved: escalated as a decision (see license_evidence and license_decision).",
+      "access": "anonymous direct download, no key; 120,736,998 bytes, 4.3 s; member Violations.txt 1,442,221,050 bytes, pipe-delimited with header; updated weekly (Friday).",
+      "measured_live_on": "2026-09-27"
+    },
+    {
+      "name": "Violations definition file (column dictionary published by MSHA)",
+      "url": "https://arlweb.msha.gov/OpenGovernmentData/DataSets/Violations_Definition_File.txt",
+      "license": "Same as the data set: no terms stated; US federal government work.",
+      "access": "50 documented columns, each with the publisher's own description - this is what makes the post-hoc feature split auditable."
+    },
+    {
+      "name": "Companion tables, same directory and definition format (join keys documented)",
+      "url": "https://arlweb.msha.gov/OpenGovernmentData/DataSets/",
+      "license": "Same as the data set: no terms stated; US federal government work.",
+      "access": "Inspections.zip (EVENT_NO - join key to Violations), Mines.zip (MINE_ID - mine attributes, 103(i) classification, employment, coordinates), AssessedViolations.zip, ContestedViolations.zip, CivilPenaltyDocketsDecisions.zip. Only the definition files were read at this stage."
+    }
+  ],
+  "license_evidence": [
+    {
+      "field": "Terms on the MSHA data-set landing page and the Violations definition file",
+      "quote": "The MSHA data-sources pages publish the files, the column definitions and update frequency; they state no licence, no terms of use and no redistribution permission.",
+      "url": "https://www.msha.gov/data-and-reports/data-sources-and-calculators/data-resources/mdsrg/violations-data-set",
+      "read_on": "2026-09-27",
+      "terms": "Silent on redistribution - contract #1 is therefore unresolved."
+    },
+    {
+      "field": "data.gov catalogue entry for the MSHA Violations Dataset",
+      "quote": "accessLevel: public; rights: \"true\"; publisher: Mine Safety and Health Administration; temporal 2000-01-01 to present. The entry names no licence.",
+      "url": "https://catalog.data.gov/dataset/msha-violations-dataset",
+      "read_on": "2026-09-27",
+      "terms": "public-domain status is by statute (US federal government work), not by a quotable licence."
+    },
+    {
+      "field": "Third-party precedent for treating MSHA federal works as redistributable (precedent, not permission)",
+      "quote": "emperor-mew/msha-violations declares license: cc0-1.0 for its derived MSHA data and states the underlying federal works are US public domain (it cites 17 USC 105 and '5 USC 105'); FastDOLz/msha-mine-safety-violations-by-operator publishes a CC-BY-4.0 mirror of the same source and registers it on Zenodo.",
+      "url": "https://huggingface.co/api/datasets/emperor-mew/msha-violations, https://huggingface.co/api/datasets/FastDOLz/msha-mine-safety-violations-by-operator",
+      "read_on": "2026-09-27",
+      "terms": "Two independent third parties already redistribute derived MSHA data under an open dedication. This supports the statutory reading but is not a licence grant from the publisher, so the escalation in license_decision stands."
+    }
+  ],
+  "license_decision": "UNRESOLVED - escalate to the operator before construction. The source states no terms; the only basis for redistribution is that this is a work of the US federal government, which is a statutory argument, not a licence we can quote. Two options to decide between: (a) treat US federal works as public domain, record that reasoning and the data.gov accessLevel=public entry, and proceed; or (b) require an explicit written permission/source before construction. Do not assume (a) silently - contract #1 says a source silent on redistribution is escalated, never assumed.",
+  "construction_script": null,
+  "split_strategy": "Temporal by inspection year, no random component, three disjoint windows: train 2001-2020 (415,088 inspections / 2,459,741 citations), eval 2021-2023 (49,233 / 255,952), holdout 2024-2025 (33,576 / 175,151). Every one of the 104 sections at the >= 1% floor occurs in every window (checked by probe_splits.py). 2000 (19,640 inspections) is the earliest full year and folds into train; 2026 is partial and is not used.",
+  "measurements": {
+    "rows_total": 3103397,
+    "distinct_inspection_event_no": 538068,
+    "distinct_mine_id": 31444,
+    "rows_with_empty_part_section": 33782,
+    "empty_part_section_share": 0.0109,
+    "distinct_part_section_labels": 5934,
+    "labels_ge_1pct_of_inspections": 104,
+    "labels_ge_0_5pct": 183,
+    "labels_ge_0_1pct": 553,
+    "labels_per_inspection": {
+      "mean": 5.79,
+      "median": 2,
+      "max": 694
+    },
+    "citations_by_mine_class": {
+      "coal": 1614873,
+      "metal_nonmetal": 1488524
+    },
+    "year_census_inspections": {
+      "2000": 19640,
+      "2001": 21029,
+      "2010": 24951,
+      "2020": 16508,
+      "2021": 16280,
+      "2022": 16552,
+      "2023": 16401,
+      "2024": 17212,
+      "2025": 16364,
+      "2026_partial": 12446
+    },
+    "windows": {
+      "train_2001_2020": {
+        "inspections": 415088,
+        "citations": 2459741,
+        "floor_labels_present": 104
+      },
+      "eval_2021_2023": {
+        "inspections": 49233,
+        "citations": 255952,
+        "floor_labels_present": 104
+      },
+      "holdout_2024_2025": {
+        "inspections": 33576,
+        "citations": 175151,
+        "floor_labels_present": 104
+      }
+    },
+    "top_sections_cited": {
+      "75.400": 147951,
+      "56.14107(a)": 120576,
+      "56.14100(b)": 71917,
+      "56.12004": 70111,
+      "75.370(a)(1)": 67025,
+      "75.503": 64834,
+      "56.14132(a)": 57367
+    },
+    "top_cooccurring_pairs_inspections": {
+      "75.400+75.503": 18490,
+      "75.370(a)(1)+75.400": 17361,
+      "56.14100(b)+56.14107(a)": 15169,
+      "56.12004+56.14107(a)": 14845,
+      "75.202(a)+75.400": 14100
+    },
+    "file_bytes": 120736998,
+    "member_bytes_uncompressed": 1442221050,
+    "download_seconds": 4.3,
+    "probe_seconds_grain_and_labels": 65,
+    "probe_seconds_splits": 31,
+    "measured_at": "2026-09-27",
+    "measured_by": "anonymous download and streamed probes (probe_violations.py, probe_splits.py); no credentials, nothing extracted to disk"
+  },
+  "probe_scripts": [
+    "candidates/msha-enforcement-citations/probe_violations.py (grain, label space, density, bitmask co-occurrence)",
+    "candidates/msha-enforcement-citations/probe_splits.py (per-year census, window capacity)"
+  ],
+  "feature_plan": {
+    "known_before_the_inspection": [
+      "Mines: COAL_METAL_IND, CURRENT_MINE_TYPE, CURRENT_MINE_STATUS, STATE, FIPS_CNTY_CD, COMPANY_TYPE, PRIMARY_SIC/PRIMARY_CANVASS, CURRENT_103I, NO_EMPLOYEES, DAYS_PER_WEEK, HOURS_PER_SHIFT, PROD_SHIFTS_PER_DAY, PORTABLE_OPERATION, coordinates",
+      "the inspection's own trigger, recorded when it opens: ACTIVITY_CODE/ACTIVITY, PROGRAM_AREA, INSPECT_OFFICE_CD",
+      "the mine's own history: its earlier inspections and the sections cited in them"
+    ],
+    "post_hoc_never_shipped": [
+      "SIG_SUB, NEGLIGENCE, LIKELIHOOD, INJ_ILLNESS, NO_AFFECTED, ENFORCEMENT_AREA, SPECIAL_ASSESS",
+      "SECTION_OF_ACT, SECTION_OF_ACT_1, SECTION_OF_ACT_2, CIT_ORD_SAFE, VIOLATION_NO, PART_SECTION",
+      "every date after the begin date: VIOLATION_ISSUE_DT, ORIG_TERM_DUE_DT, LATEST_TERM_DUE_DT, TERMINATION_DT, VACATE_DT, FINAL_ORDER_ISSUE_DT",
+      "PROPOSED_PENALTY, AMOUNT_DUE, AMOUNT_PAID, docket and contest fields",
+      "end-of-visit inspection counts: TOTAL_ON_SITE_HOURS, TOTAL_INSP_HOURS, SAMPLE_CNT_*, area-with-Y flags"
+    ],
+    "decide_at_construction": "NBR_INSPECTORS and ACTIVE_SECTIONS - whether they are known when the inspection opens or only as it proceeds; default exclude."
+  },
+  "next_action": "LICENCE DECISION NEEDED (one operator decision) - then construction on a worker. (1) Decide contract #1: the source states no terms; choose between treating US federal works as public domain with the data.gov accessLevel=public entry recorded, or requiring explicit permission. (2) On approval, budget a worker construction pass (the 120 MB weekly zip + Mines/Inspections companion tables), run skills/dataset-qualification, and only then quote any number. (3) Decide the label floor (104 at >= 1% or 183 at >= 0.5%), the treatment of mine-wide audit events (tail to 694 citations), and whether coal and metal/non-metal ship as two configs. Nothing is constructed. This candidate supersedes chicago-food-inspections as the multi-label lead.",
+  "novelty_check": {
+    "checked_at": "2026-09-27T20:16:42+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "MSHA violations",
+      "mine safety inspection",
+      "mining citations",
+      "30 CFR",
+      "regulatory citation prediction",
+      "workplace inspection violations"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "MSHA violations",
+          "hits": 2,
+          "top": [
+            "emperor-mew/msha-violations",
+            "FastDOLz/msha-mine-safety-violations-by-operator"
+          ]
+        },
+        {
+          "query": "mine safety inspection",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "mining citations",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "30 CFR",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "regulatory citation prediction",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "workplace inspection violations",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "MSHA violations",
+          "hits": 6894,
+          "top": [
+            "Safety event reporting narratives, safety outcomes, and operational data across four industries",
+            "Taeniopteryx nebulosa",
+            "Agnetina senilis",
+            "Developments in Data Governance at the US Department of Labor",
+            "Stoneflies (Insecta, Plecoptera) Of Kabarda-Balkarian Republic (The Central Caucasus)"
+          ]
+        },
+        {
+          "query": "mine safety inspection",
+          "hits": 115026,
+          "top": [
+            "Study Of Working Conditions And Their Impact On Occupational Safety And Productivity Of Miners: An Analysis Under OSHWC Code, 2020 In The Era Of Smart Mining (2026)",
+            "Assessment of Workers Safety and Health Status in High Rise Building: A Case Project of \"Double Tree by Hilton Commercial Hotel at Naxal, Kathmandu\"",
+            "Safety, Health and Environmental Management Strategies Implemented to Safeguard Unki Platinum Mine's Host Communities in Shurugwi District, Zimbabwe",
+            "Application of next generation sequencing for species identification in meat and poultry products: A DNA metabarcoding approach",
+            "Inspection capabilities for enhanced ship safety"
+          ]
+        },
+        {
+          "query": "mining citations",
+          "hits": 45846,
+          "top": [
+            "Open citations for enabling transparent metrics",
+            "Data showcase papers published in the Mining Software Repositories (MSR) conference",
+            "Data showcase papers published in the Mining Software Repositories (MSR) conference (v2.2)",
+            "Interactive Text Analysis and Information Extraction",
+            "Iron pyriets and calamine"
+          ]
+        },
+        {
+          "query": "30 CFR",
+          "hits": 317959,
+          "top": [
+            "ECFAS Pan-EU Impact Catalogue, D5.4 \u2013 Pan-EU flood maps catalogue - ECFAS project (GA 101004211), www.ecfas.eu",
+            "ECFAS Pan-EU Flood Catalogue, D5.4 \u2013 Pan-EU flood maps catalogue - ECFAS project (GA 101004211), https://www.ecfas.eu/",
+            "ECFAS Impact Tool, D5.3 \u2013 Algorithms for impact assessment - ECFAS project (GA 101004211), www.ecfas.eu",
+            "Database of extreme events, test cases selection and available data, Deliverable 5.1 \u2013 ECFAS Project (GA 101004211), www.ecfas.eu",
+            "Figs 27\u201332 in Coccolithophores in Polar Waters: HOL Revisited Papposphaera sagittifera HET and"
+          ]
+        },
+        {
+          "query": "regulatory citation prediction",
+          "hits": 158314,
+          "top": [
+            "Called peaks for 8 D. melanogaster functional genomics data sets",
+            "Awesome Regulatory Genomics: a curated catalog of tools for transcription-factor binding, motif and gene-regulatory analysis",
+            "A Multi-Paradigm Benchmark of Molecular Docking: From Physics to Co-folding and Hybrid Models",
+            "Reusable, Small Volume Blood Reservoir For In Vitro Dynamic Hemolysis Testing",
+            "Electrophysiological Biomarkers for Non-clinical Safety Evaluation of Neuro-interventional Devices"
+          ]
+        },
+        {
+          "query": "workplace inspection violations",
+          "hits": 30909,
+          "top": [
+            "A scale to measure workplace exploitation (Wex-5)",
+            "Analysis of pharmacy inspection results for retail drugstores in Central region of Vietnam from 2018 to 2022",
+            "Labor Inspection Mechanism for the Implementation of Labor Norms in the Workplace",
+            "Working Conditions of Domestic Workers and Human Rights Protection: A Socio-Legal Study",
+            "Evaluating and Improving Reinforcement Learning Pipelines Using Agentic AI"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "MSHA violations",
+          "hits": 5,
+          "top": [
+            "Quantum Random Number Generator based on Violations of the Free CHSH-3 Inequality",
+            "A Low Complexity Algorithm with $O(\\sqrt{T})$ Regret and $O(1)$ Constraint Violations for Online Convex Optimization wit",
+            "Impact of HTTP Cookie Violations in Web Archives",
+            "Glueball-$Q\\bar{Q}$ mixing and Okuba-Zweig-Iizuka rule violation in the hadronic decays of heavy quarkonia",
+            "Gravitational Lorentz Violations and Adjustment of the Cosmological Constant in Asymmetrically Warped Spacetimes"
+          ]
+        },
+        {
+          "query": "mine safety inspection",
+          "hits": 5,
+          "top": [
+            "Visual-Inertial Teach and Repeat for Aerial Inspection",
+            "Laser pointer prohibition: improving safety or driving misclassification",
+            "Deep inspection: an electrical distribution pole parts study via deep neural networks",
+            "The inspection paradox in stochastic resetting",
+            "Safety in Batches? Understanding and Mitigating Safety Failures in Batch Prompting"
+          ]
+        },
+        {
+          "query": "mining citations",
+          "hits": 5,
+          "top": [
+            "Tuple Value Based Multiplicative Data Perturbation Approach To Preserve Privacy In Data Stream Mining",
+            "Efficient Algorithms to Mine Maximal Span-Trusses From Temporal Graphs",
+            "Generating the Traces You Need: A Conditional Generative Model for Process Mining Data",
+            "Data Mining and Electronic Health Records: Selecting Optimal Clinical Treatments in Practice",
+            "Citation Parsing and Analysis with Language Models"
+          ]
+        },
+        {
+          "query": "30 CFR",
+          "hits": 5,
+          "top": [
+            "Lazy-CFR: fast and near optimal regret minimization for extensive games with imperfect information",
+            "Analysis of Bluffing by DQN and CFR in Leduc Hold'em Poker",
+            "Revisiting CFR+ and Alternating Updates",
+            "Solving Large Imperfect Information Games Using CFR+",
+            "Lightweight CFR-Based Modulation Adaptation in a Real-Time MIMO-OFDM SDR Testbed"
+          ]
+        },
+        {
+          "query": "regulatory citation prediction",
+          "hits": 5,
+          "top": [
+            "A Hybrid Approach to Information Retrieval and Answer Generation for Regulatory Texts",
+            "Where Do Your Citations Come From? Citation-Constellation: A Free, Open-Source, No-Code, and Auditable Tool for Citation",
+            "Wikipedia Citations: Reproducible Citation Extraction from Multilingual Wikipedia",
+            "The Citation Impacts and Citation Environments of Chinese Journals in Mathematics",
+            "Mapping Citation Patterns of Book Chapters in the Book Citation Index"
+          ]
+        },
+        {
+          "query": "workplace inspection violations",
+          "hits": 5,
+          "top": [
+            "Determinants of Workplace Flextime Flexibility: An Empirical Analysis",
+            "Visual-Inertial Teach and Repeat for Aerial Inspection",
+            "The inspection paradox in stochastic resetting",
+            "Deep inspection: an electrical distribution pole parts study via deep neural networks",
+            "A UAV-Mounted Sensor Network for Close-Range Inspection of Wind Turbine Rotor Blades"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'MSHA violations': 2 hit(s) - emperor-mew/msha-violations, FastDOLz/msha-mine-safety-violations-by-operator\n- huggingface_datasets / 'mine safety inspection': 0 hit(s) - nothing notable\n- huggingface_datasets / 'mining citations': 0 hit(s) - nothing notable\n- huggingface_datasets / '30 CFR': 0 hit(s) - nothing notable\n- huggingface_datasets / 'regulatory citation prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'workplace inspection violations': 0 hit(s) - nothing notable\n- zenodo_records / 'MSHA violations': 6894 hit(s) - Safety event reporting narratives, safety outcomes, and operational data across four industries, Taeniopteryx nebulosa, Agnetina senilis, Developments in Data Governance at the US Department of Labor, Stoneflies (Insecta, Plecoptera) Of Kabarda-Balkarian Republic (The Central Caucasus)\n- zenodo_records / 'mine safety inspection': 115026 hit(s) - Study Of Working Conditions And Their Impact On Occupational Safety And Productivity Of Miners: An Analysis Under OSHWC Code, 2020 In The Era Of Smart Mining (2026), Assessment of Workers Safety and Health Status in High Rise Building: A Case Project of \"Double Tree by Hilton Commercial Hotel at Naxal, Kathmandu\", Safety, Health and Environmental Management Strategies Implemented to Safeguard Unki Platinum Mine's Host Communities in Shurugwi District, Zimbabwe, Application of next generation sequencing for species identification in meat and poultry products: A DNA metabarcoding approach, Inspection capabilities for enhanced ship safety\n- zenodo_records / 'mining citations': 45846 hit(s) - Open citations for enabling transparent metrics, Data showcase papers published in the Mining Software Repositories (MSR) conference, Data showcase papers published in the Mining Software Repositories (MSR) conference (v2.2), Interactive Text Analysis and Information Extraction, Iron pyriets and calamine\n- zenodo_records / '30 CFR': 317959 hit(s) - ECFAS Pan-EU Impact Catalogue, D5.4 \u2013 Pan-EU flood maps catalogue - ECFAS project (GA 101004211), www.ecfas.eu, ECFAS Pan-EU Flood Catalogue, D5.4 \u2013 Pan-EU flood maps catalogue - ECFAS project (GA 101004211), https://www.ecfas.eu/, ECFAS Impact Tool, D5.3 \u2013 Algorithms for impact assessment - ECFAS project (GA 101004211), www.ecfas.eu, Database of extreme events, test cases selection and available data, Deliverable 5.1 \u2013 ECFAS Project (GA 101004211), www.ecfas.eu, Figs 27\u201332 in Coccolithophores in Polar Waters: HOL Revisited Papposphaera sagittifera HET and\n- zenodo_records / 'regulatory citation prediction': 158314 hit(s) - Called peaks for 8 D. melanogaster functional genomics data sets, Awesome Regulatory Genomics: a curated catalog of tools for transcription-factor binding, motif and gene-regulatory analysis, A Multi-Paradigm Benchmark of Molecular Docking: From Physics to Co-folding and Hybrid Models, Reusable, Small Volume Blood Reservoir For In Vitro Dynamic Hemolysis Testing, Electrophysiological Biomarkers for Non-clinical Safety Evaluation of Neuro-interventional Devices\n- zenodo_records / 'workplace inspection violations': 30909 hit(s) - A scale to measure workplace exploitation (Wex-5), Analysis of pharmacy inspection results for retail drugstores in Central region of Vietnam from 2018 to 2022, Labor Inspection Mechanism for the Implementation of Labor Norms in the Workplace, Working Conditions of Domestic Workers and Human Rights Protection: A Socio-Legal Study, Evaluating and Improving Reinforcement Learning Pipelines Using Agentic AI\n- arxiv_preprints / 'MSHA violations': 5 hit(s) - Quantum Random Number Generator based on Violations of the Free CHSH-3 Inequality, A Low Complexity Algorithm with $O(\\sqrt{T})$ Regret and $O(1)$ Constraint Violations for Online Convex Optimization wit, Impact of HTTP Cookie Violations in Web Archives, Glueball-$Q\\bar{Q}$ mixing and Okuba-Zweig-Iizuka rule violation in the hadronic decays of heavy quarkonia, Gravitational Lorentz Violations and Adjustment of the Cosmological Constant in Asymmetrically Warped Spacetimes\n- arxiv_preprints / 'mine safety inspection': 5 hit(s) - Visual-Inertial Teach and Repeat for Aerial Inspection, Laser pointer prohibition: improving safety or driving misclassification, Deep inspection: an electrical distribution pole parts study via deep neural networks, The inspection paradox in stochastic resetting, Safety in Batches? Understanding and Mitigating Safety Failures in Batch Prompting\n- arxiv_preprints / 'mining citations': 5 hit(s) - Tuple Value Based Multiplicative Data Perturbation Approach To Preserve Privacy In Data Stream Mining, Efficient Algorithms to Mine Maximal Span-Trusses From Temporal Graphs, Generating the Traces You Need: A Conditional Generative Model for Process Mining Data, Data Mining and Electronic Health Records: Selecting Optimal Clinical Treatments in Practice, Citation Parsing and Analysis with Language Models\n- arxiv_preprints / '30 CFR': 5 hit(s) - Lazy-CFR: fast and near optimal regret minimization for extensive games with imperfect information, Analysis of Bluffing by DQN and CFR in Leduc Hold'em Poker, Revisiting CFR+ and Alternating Updates, Solving Large Imperfect Information Games Using CFR+, Lightweight CFR-Based Modulation Adaptation in a Real-Time MIMO-OFDM SDR Testbed\n- arxiv_preprints / 'regulatory citation prediction': 5 hit(s) - A Hybrid Approach to Information Retrieval and Answer Generation for Regulatory Texts, Where Do Your Citations Come From? Citation-Constellation: A Free, Open-Source, No-Code, and Auditable Tool for Citation, Wikipedia Citations: Reproducible Citation Extraction from Multilingual Wikipedia, The Citation Impacts and Citation Environments of Chinese Journals in Mathematics, Mapping Citation Patterns of Book Chapters in the Book Citation Index\n- arxiv_preprints / 'workplace inspection violations': 5 hit(s) - Determinants of Workplace Flextime Flexibility: An Empirical Analysis, Visual-Inertial Teach and Repeat for Aerial Inspection, The inspection paradox in stochastic resetting, Deep inspection: an electrical distribution pole parts study via deep neural networks, A UAV-Mounted Sensor Network for Close-Range Inspection of Wind Turbine Rotor Blades",
+    "prior_art": [
+      "Marshall, Identifying hazardous patterns in MSHA data using random forests",
+      "Temporal Machine Learning for Predicting Accidents and Violations at Surface Coal Mines (Univ. of Kentucky)",
+      "ASCE-ASME J. Risk Uncertainty Eng. Syst., evaluating mine safety enforcement actions"
+    ],
+    "theirs": "MSHA ships the raw tables, the definition files, MDRS and descriptive calculators (S&S rate, pattern of violations), but no prediction task and no splits. Mine-safety ML prior art predicts accidents/injuries or violation counts, or which mines to inspect (binary targeting): Univ. of Kentucky thesis 'Temporal Machine Learning for Predicting Accidents and Violations at Surface Coal Mines', 'Machine Learning Classification Models for More Effective Mine Safety Inspections', Marshall's random-forest pattern study, and the ASCE-ASME J. Risk enforcement-action study. OSHA-side work is establishment targeting, not a cited-standard set. Two Hugging Face artifacts that mention MSHA were opened and read on 2026-09-27 and neither is this task: emperor-mew/msha-violations is a dataset card with no data files (it points at a live REST API for citation-level records), and FastDOLz/msha-mine-safety-violations-by-operator is operator-level aggregation (40,720 operators, 3,076,282 violations rolled up with penalty totals and cross-agency OSHA/WHD indicators, CC-BY-4.0, Zenodo DOI 10.5281/zenodo.20572372). No package ships the inspection-level multi-label set of cited sections with a prediction instant and splits.",
+    "ours": "The multi-label formulation itself: one row per MSHA inspection, target = the set of 30 CFR sections cited at that inspection (104 sections at a >=1% floor, 183 at >=0.5%), with an explicit prediction instant at INSPECTION_BEGIN_DT, a pre-inspection-only feature set drawn from the Mines table plus the mine's own inspection and citation history, and three disjoint temporal windows (2001-2020 / 2021-2023 / 2024-2025) each holding every floor label. No ML-ready package ships this task.",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution.",
+    "catalog_hits_reviewed": [
+      {
+        "id": "emperor-mew/msha-violations",
+        "created": "2026-05-17",
+        "downloads": 12,
+        "license_tag": "cc0-1.0",
+        "files": [
+          "README.md"
+        ],
+        "why_not": "card only, no data files; serves a live REST API of citation-level records; no task, no splits"
+      },
+      {
+        "id": "FastDOLz/msha-mine-safety-violations-by-operator",
+        "created": "2026-06-06",
+        "downloads": 41,
+        "license_tag": "cc-by-4.0",
+        "files": [
+          "README.md",
+          "msha-mine-safety-violations-by-operator.csv"
+        ],
+        "rows": 40720,
+        "grain": "operator/contractor rollup",
+        "zenodo_doi": "10.5281/zenodo.20572372",
+        "why_not": "operator-level aggregation with penalty totals; a different grain and a descriptive product"
+      }
+    ]
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": null,
+  "runner_up": {
+    "id": "cms-nursing-home-health-deficiencies",
+    "source": "https://data.cms.gov/provider-data/api/1/datastore/query/r5ix-sfxw/0",
+    "measured_on": "2026-09-27",
+    "rows": 419479,
+    "sampled_rows": 12000,
+    "surveys_in_sample": 2783,
+    "distinct_tags_in_sample": 188,
+    "tags_per_survey": {
+      "mean": 4.31,
+      "median": 2,
+      "p90": 10,
+      "max": 46
+    },
+    "tags_ge_1pct_of_surveys": 88,
+    "probe_seconds": 31,
+    "verdict": "viable second lead; MSHA leads on scale (538,068 inspections / 3.10 M citations / 26 years), label floor (104 vs 88) and documented feature surface. Same licence question applies: government file with no stated terms."
+  }
+}

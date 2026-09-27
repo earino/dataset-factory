@@ -2662,3 +2662,35 @@ classification known at dispatch" when the column is a single value (`Dispatched
 rows. One-line correction, documents-only, no asset byte changes; it does move the rendered site page, so it
 needs the site_revision increment and the usual Hub/site refresh. Recorded in the austin record's `next_action`
 to batch with other documentation-only corrections.
+
+## 2026-09-27 (evening) - "find something better" answered with MSHA enforcement citations; the licence is the one decision left
+
+Operator asked for a better multi-label source than Chicago food inspections. Three leads were measured
+live, and the answer is **MSHA's Violations Data Set**, opened as `candidates/msha-enforcement-citations/`
+(`status=ready`, novelty verdict `differentiated`, nothing constructed).
+
+**Measured from the publisher's own download** (`arlweb.msha.gov/.../Violations.zip`, anonymous, 120,736,998
+bytes in 4.3 s, streamed with `probe_violations.py` and `probe_splits.py`; nothing extracted to disk): 3,103,397
+citation rows, **538,068 inspections**, 31,444 mines, 2000-2026; the label is the set of **30 CFR sections**
+cited at one inspection - 5,934 raw sections, **104 at >= 1%** of inspections and 183 at >= 0.5%, mean **5.79**
+sections per inspection (median 2, max 694, the tail being mine-wide audits). Co-occurrence is strong and
+structured ((75.400, 75.503) 18,490 inspections; (56.14100(b), 56.14107(a)) 15,169). Temporal windows hold:
+train 2001-2020 415,088 inspections / 2,459,741 citations, eval 2021-2023 49,233, holdout 2024-2025 33,576, and
+**all 104 floor labels appear in all three windows**. The publisher documents every one of the 50 columns, which
+is what makes the post-hoc split auditable; the whole gravity/penalty/docket block and the end-of-visit counts
+are excluded from features, and the instant is `INSPECTION_BEGIN_DT`.
+
+**Catalogue check, by name**: two HF artifacts mention MSHA and neither is this task - `emperor-mew/msha-violations`
+(2026-05, a card with no data files, pointing at a live REST API) and
+`FastDOLz/msha-mine-safety-violations-by-operator` (2026-06, CC-BY-4.0, Zenodo DOI 10.5281/zenodo.20572372,
+40,720 operators / 3.08 M violations rolled up to the operator). Both are aggregates or API mirrors; no package
+ships the inspection-level multi-label set with a prediction instant and splits.
+
+**Runner-up measured the same day**: CMS nursing-home health deficiencies (`r5ix-sfxw`, 419,479 rows, ~97,000
+surveys, 188 F-tags, mean 4.31 per survey, 88 at >= 1%) - viable, and second on every axis.
+
+**One decision is needed before construction**: MSHA states no terms. The statutory reading (US federal work),
+the data.gov `accessLevel: public` entry, and two third parties already redistributing the same source under CC0
+and CC-BY-4.0 are the evidence; none of it is a grant, so the licence is recorded as UNRESOLVED in the candidate
+and escalated rather than assumed. `chicago-food-inspections` stays open as the fallback lead (`superseded_by`
+recorded in its record).
