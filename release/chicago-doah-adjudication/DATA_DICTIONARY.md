@@ -32,6 +32,23 @@ every split file**. It is the answer, so shipping it would hand the model the la
 These are excluded because they are post-hoc, **not** because they are uninformative — several
 are strongly predictive, which is exactly why they must not be features.
 
+### The source's text fields, and what happens to them
+
+The source table also carries prose and identifier fields. None of them is shipped, and they are
+excluded for three different reasons — worth stating separately, because "not shipped" is not the
+same claim as "carries nothing":
+
+| column | what it holds | why it is not shipped |
+|---|---|---|
+| `violation_description` | The charge's wording, e.g. `Arrange for inspection of premises. (13-12-100)` | It is a fixed rendering of `violation_code`, not additional information: the source's 1,260 distinct codes carry only 1,266 distinct code+description pairs, so six codes have any variant wording at all. The code ships as a feature; the sentence that restates it does not. |
+| `respondents` | Named parties and their representatives, e.g. `PULLMAN STATION LLC C/O BRETT SECHRIST` | Named-person text. It plays no part in the task and is not redistributed: this release publishes case outcomes, not a list of the people and firms charged. Excluding it is a publication decision, not a judgement that it is uninformative. |
+| `address`, `street_number`, `street_name` | The property address as text | The location signal ships as the published `latitude`/`longitude`, and `street_direction`/`street_type` are already features; the address string restates them. |
+| `nov_number` | The City's notice number for the charge | A per-notice publication identifier, like `id`. The case is the unit of this task, so an identifier at charge grain is not a feature; no claim is made about it as a predictor. |
+| `location` | The source's point geometry | The same point the shipped `latitude`/`longitude` carry. |
+
+Verified against the source's live schema (`data.cityofchicago.org`, resource `6br9-quuz`) on
+2026-09-27; the code↔description ratio is the source's own aggregate, not a sample.
+
 **All other source columns are absent by construction**, because the file is not a projection of
 the source table: it is one row per case, aggregated from that case's charge rows. Charges other
 than the lead charge are represented only by `charge_count` and `distinct_code_count`.

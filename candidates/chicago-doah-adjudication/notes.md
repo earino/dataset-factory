@@ -101,3 +101,29 @@ a worker that rebuilt the artifact first and refused to measure it unless the re
 byte-identical. `Eval AUC: 0.6915` from both paths, contract OK. **Read it against eval's own
 0.8955 positive rate, not against 0.5**: a constant-`Liable` predictor already scores 89.6%
 accuracy. No agent or harness comparison was run and none is implied.
+
+## Source text fields: what is dropped, and why (2026-09-27)
+
+The released `DATA_DICTIONARY.md` said only that "all other source columns are absent by
+construction". Since the source table carries prose, that was too quiet, so the dictionary now
+names them and separates the reasons. Measured anonymously against the live schema
+(`data.cityofchicago.org`, resource `6br9-quuz`, 823,637 rows), not from a sample:
+
+| column | disposition |
+|---|---|
+| `violation_description` | Redundant: the source's own `$group` gives 1,260 distinct `violation_code` values against 1,266 distinct code+description pairs, i.e. six codes have any variant wording. The code ships; the sentence does not. |
+| `respondents` | Named-party text (e.g. `PULLMAN STATION LLC C/O BRETT SECHRIST`). Dropped as a redistribution decision, **not** as a claim that it is uninformative. |
+| `address`, `street_number`, `street_name` | Address text; the location signal ships as `latitude`/`longitude` and direction/type are already features. |
+| `nov_number` | Per-notice identifier at charge grain; the task's grain is the case. No predictor claim either way. |
+| `location` | Same point as the shipped lat/long. |
+
+The `respondents` decision is the one worth recording properly, because it *was* a decision. A
+coarse anonymous measurement over all 397,435 decided charges (Liable or Not Liable) shows a small
+but real spread by party text: entity respondents (LLC/INC/CORP/LTD) 0.752 liable, records naming
+counsel (`C/O`) 0.742, no-entity-no-counsel 0.726, base rate 0.732. So the field is not worthless —
+it is excluded because publishing it would redistribute the names of the people and firms charged,
+and the task never needed them. Finer signals (repeat litigants, specific counsel, per-party
+history) remain unmeasured and are not claimed.
+
+Documents-only change: the data files are untouched, `artifact_version` is unchanged at
+`b71586bf28fa56eb`, and no new version is required.

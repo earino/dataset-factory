@@ -42,11 +42,15 @@ if not status.strip():
     print("nothing to commit")
     raise SystemExit(0)
 
-msg = ("Refresh the release documents after publication\n\n"
-       "Publication record (DESTINATIONS.json: both destinations public and anonymously readable),\n"
-       "the consumer verification section in VERIFICATION.md, the public status wording in\n"
-       "RELEASE_NOTES.md, and the download commands as they actually run. No data file, checksum or\n"
-       "release asset changes.")
+msg = ("Name the source's dropped text fields in the data dictionary\n\n"
+       "DATA_DICTIONARY.md said only that 'all other source columns are absent by construction'.\n"
+       "The source table does carry prose (violation_description, respondents, address text,\n"
+       "nov_number, location), so the dictionary now names each one and separates the reasons:\n"
+       "the description is a fixed rendering of violation_code (1,260 codes, 1,266 pairs), the\n"
+       "party text is withheld as a redistribution decision rather than dismissed as\n"
+       "uninformative, and the address/identifier fields restate what the shipped columns carry.\n"
+       "It also records the refreshed Hub revision. No data file, checksum or release asset\n"
+       "changes; artifact_version is unchanged.")
 run(["git", "-c", "user.name=scout-factory", "-c", "user.email=factory@earino.invalid",
      "commit", "--quiet", "-m", msg], cwd=WORK)
 run(["git", "push", "--quiet", "origin", "HEAD:main"], cwd=WORK)
