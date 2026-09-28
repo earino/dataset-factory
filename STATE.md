@@ -1,8 +1,47 @@
 
 # Current state
 
-Updated: 2026-09-27 (latest entries: a multi-label lead - Chicago food inspections - is recorded as the candidate `chicago-food-inspections` with its measured profile, the austin `incident_type` wording is tabled, the NOAA dataset page now generates its loading command from the manifest - published with operator approval as site_revision 2 and verified anonymous - and Chicago's data dictionary names the source text fields it drops.
+Updated: 2026-09-28 (latest: the fallback lead `chicago-food-inspections` is promoted to
+`ready` - licence decision recorded against its source id, novelty verdict `differentiated`,
+extraction cost and split capacity measured - so the buffer holds a second ready candidate
+behind `msha-enforcement-citations`, which still awaits the operator's licence decision.
 Private HEAD `0c24335`, CI green; both public sites live and verified.)
+
+## 2026-09-28 - chicago-food-inspections promoted to ready: licence decided, novelty recorded, cost and splits measured
+
+The queue had one `ready` candidate (`msha-enforcement-citations`) blocked on an operator
+licence decision that must not be assumed, and one fallback lead
+(`chicago-food-inspections`) whose record named three unblocked gates. This session cleared
+all three, so the buffer now holds a second ready candidate and a failed MSHA licence
+decision no longer empties the queue.
+
+- **Licence** (`candidates/chicago-food-inspections/license.json`, decided 2026-09-28): the
+  operator-accepted City-of-Chicago portal-terms posture from the DOAH decision
+  (2026-09-26) recorded explicitly against source id `4ijn-s7e5` - same publisher, same
+  terms instrument, `LicenseRef-CityOfChicago-DataTermsOfUse`, no standard open licence,
+  mandatory derivative disclaimer verbatim. The decision states it follows the DOAH
+  decision if the operator revisits it.
+- **Novelty** (`scripts/check-novelty.py`, recorded 2026-09-28T08:02:56Z): verdict
+  `differentiated`. Hugging Face 0 hits on all five queries; the closest prior art is the
+  publisher's own deployed **binary** critical-violation model (CDPH
+  food-inspections-evaluation) and its hindsight evaluation (arXiv 1910.04906) - a different
+  task. Ours is the multi-label formulation: the set of violation codes per inspection, with
+  an explicit prediction instant, prior-history features and temporal windows.
+- **Extraction cost measured, not estimated** (`probe_cost.py`, coordinator class): 20,000
+  rows in 4 pages, 5 requests, 28,948,432 bytes, 23.2 s; mean 1,447 bytes/row. Full-pull
+  estimate (labelled): ~64 pages, ~458 MB, ~366 s. Order key `inspection_id` is unique per
+  row, so offset paging is stable.
+- **Split capacity measured** (`probe_splits.py`, new): pool 226,133 rows; train 2010-2020
+  156,853 rows / 28,930 licences, eval 2021-2023 35,360 / 12,992, holdout 2024-2026-09
+  33,920 / 12,953; all 37 floor codes (>=1% of a fresh 15,000-row scan) present in all three
+  windows. One measurement artefact caught and fixed en route: Socrata's default 1,000-row
+  cap on grouped queries first reported exactly 1,000 licences in every window; the grouped
+  query is now paged explicitly.
+
+`scripts/check-candidate.py --all`: every record OK (`chicago-food-inspections: OK
+(status=ready)`). Nothing was constructed. Next action, recorded in the record: write
+`source/build.py` in the accepted pattern, decide how the 37-target multi-label task ships
+through the one-target runner contract, then build and qualify on a worker.
 
 ## 2026-09-26 13:12 UTC - noaa-hf-004: the two renamed Hub files were already at the manifest digest
 

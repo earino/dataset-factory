@@ -75,8 +75,90 @@ comparison is in that candidate's notes. **This source stays a valid fallback, n
 nothing here is dropped, and if the MSHA licence decision goes the wrong way this is the next lead,
 with the three open questions below still to clear.
 
-## Open questions before construction
+## 2026-09-28 - the three open gates cleared; promoted to `ready`
 
-1. **Licence reuse.** The portal terms are already decided for DOAH, but redistribution of this table needs the decision recorded against *this* source id, not inherited silently.
-2. **Novelty verdict.** Run `scripts/check-novelty.py` and state `ours` against the CDPH binary model.
-3. **Extraction cost.** Not yet measured: requests, bytes and wall-clock for a full 316,205-row pull on the worker class. The blob column dominates size and no estimate is recorded here.
+The record's three open questions are answered. Every claim below has the command that produced it.
+
+### 1. Licence decision recorded against this source id
+
+`candidates/chicago-food-inspections/license.json` (decided 2026-09-28). The City of Chicago
+Data Terms of Use posture the operator accepted on 2026-09-26 for `chicago-doah-adjudication`
+applies to this source id `4ijn-s7e5`: same publisher, same terms instrument (Socrata
+licenseId `SEE_TERMS_OF_USE`), same no-standard-licence posture. Recorded explicitly against
+this id rather than inherited silently, as the record's open question 1 required:
+`LicenseRef-CityOfChicago-DataTermsOfUse` for the compilation, MIT for our code, the mandatory
+derivative disclaimer verbatim, no irrevocable-redistribution claim. The decision states that
+if the operator widens or narrows the DOAH decision, this one follows it.
+
+### 2. Novelty verdict recorded (differentiated)
+
+```
+python3 scripts/check-novelty.py chicago-food-inspections \
+  --query "chicago food inspections" --query "food inspection violations" \
+  --query "violation code prediction" --query "multi-label food safety" \
+  --query "restaurant inspection forecast" --verdict differentiated ... (recorded_at 2026-09-28T08:02:56+00:00)
+```
+
+Hugging Face: 0 hits on all five queries. arXiv surfaces the closest prior art itself -
+arXiv 1910.04906, "Hindsight Analysis of the Chicago Food Inspection Forecasting Model" -
+which evaluates CDPH's deployed **binary** critical-violation model; "Predicting health
+inspection results from online restaurant reviews" is review-text prediction, a different
+task. Zenodo's keyword search is noise at these queries (its top hits are unrelated records).
+The verdict: `ours` is the multi-label formulation (one row per inspection, target = the *set*
+of 61 violation codes, prediction instant at the inspection's opening, prior-history features
+under `license_`, temporal windows); `theirs` is the raw table, its mirrors, and the publisher's
+own binary model. No ML-ready multi-label package exists. Full evidence in
+`record.json novelty_check`.
+
+### 3. Extraction cost measured (probe_cost.py, run on the coordinator)
+
+```
+python3 candidates/chicago-food-inspections/probe_cost.py --rows 20000 --page-size 5000
+```
+
+- total rows recounted: **316,205** (unchanged from 2026-09-27)
+- **measured**: 20,000 rows in 4 pages, **5 requests**, **28,948,432 bytes**, **23.2 s** wall
+  clock including the count query; mean **1,447 bytes/row** (the blob dominates)
+- **estimate, labelled** (arithmetic in the probe output): full pull ~64 pages + 1 count
+  query, ~458 MB, ~366 s on the coordinator class. The full pull runs on the worker.
+- Order key `inspection_id` is unique per row (316,205 distinct in 316,205 rows), so it is its
+  own tiebreaker - offset paging is stable, per the discovery skill's paging rule.
+
+### 4. Split capacity measured (probe_splits.py, new in this candidate)
+
+```
+python3 candidates/chicago-food-inspections/probe_splits.py --json
+```
+
+Blob format verified on live rows first: entries are separated by `|` followed by whitespace
+and the code (`'30. FOOD...| 32. ...| 33. ...'`), so the regex
+`(?:^|\|)\s*(\d{1,3})\.` matches both a leading code and a mid-blob code.
+
+Modelling pool (results in Pass/Fail/Pass w/ Conditions AND violations IS NOT NULL):
+**226,133 rows**, census by year 2010 12,469 ... 2016 17,192 ... 2021 11,013 ... 2025 12,963,
+2026 partial 7,900.
+
+| window | pool rows | distinct licences | inspections/licence | floor codes present |
+|---|---|---|---|---|
+| train 2010-01-01..2020-12-31 | 156,853 | 28,930 | 5.42 | 37/37 |
+| eval 2021-01-01..2023-12-31 | 35,360 | 12,992 | 2.72 | 37/37 |
+| holdout 2024-01-01..2026-09-30 | 33,920 | 12,953 | 2.62 | 37/37 |
+
+Floor re-derived from a fresh 15,000-row recent pool scan: **59 distinct codes, 37 at >=1%**
+(the earlier 40,000-row full-range scan found 61; the recent-only scan sees 59 - era
+variation, which is why the floor is re-derived at construction time). Per-window presence was
+screened with server-side blob matches; construction parses codes exactly.
+
+Probe cost: 122 requests, 185.1 s. A first version of the licence count trusted Socrata's
+default cap on grouped queries and reported exactly 1,000 licences in every window - a
+measurement artefact, caught and fixed by paging the grouped query explicitly (the corrected
+counts above). Recorded here because it is exactly the failure mode the skill warns about: a
+uniform number across windows read as a finding.
+
+All four discovery contracts now hold with recorded evidence: redistribution (licence decided),
+prediction timing (instant = inspection opening; blob/results/comments excluded), target
+(parsable from the blob, label source excludable), split capacity (three disjoint windows,
+both classes of the multi-label space present in all three, thousands of independent
+licence-entities per window). Novelty verdict `differentiated` recorded. The candidate is
+`ready`; construction is the next step, and its open design question (how a 37-target
+multi-label task ships through a one-target runner contract) is recorded in `next_action`.
