@@ -1,11 +1,60 @@
 
 # Current state
 
-Updated: 2026-09-28 (latest: the fallback lead `chicago-food-inspections` is promoted to
-`ready` - licence decision recorded against its source id, novelty verdict `differentiated`,
-extraction cost and split capacity measured - so the buffer holds a second ready candidate
-behind `msha-enforcement-citations`, which still awaits the operator's licence decision.
-Private HEAD `0c24335`, CI green; both public sites live and verified.)
+Updated: 2026-10-05 (latest: the `chicago-food-inspections` build job `food-001` succeeded on a
+worker - the full 226,417-row pool is extracted into 40 per-code configs, every one passing the
+qualification gate (1.3.0, 31 checks, 0 failures), all digests verified against the staging
+release - so the candidate moves `ready` -> `qualified` and the buffer now holds a gated,
+build-proven candidate. Private HEAD pending this session's commit; CI checked after push.)
+
+## 2026-10-05 - food-001: chicago-food-inspections built and gated - 40/40 configs pass, candidate `qualified`
+
+The construction job for `chicago-food-inspections` (the multi-label Chicago food-inspection
+task promoted to `ready` on 2026-09-28) ran on a Hetzner worker and succeeded. The candidate
+record now carries the measured outcome and moves to `qualified`; nothing is published and
+nothing is scored yet.
+
+**What ran** (`jobs/food-001.json`, worker 168745538, cx23/hel1, exit 0, 8.5 min): the full
+pull of `4ijn-s7e5` (46 pages, 226,417-row modelling pool: results in Pass/Fail/Pass w/
+Conditions AND a non-null violations blob), `build.py` rendering one binary runner config per
+floor violation code with the prior-history features, then the qualification gate over every
+config, on the worker, over the full artifact. Artifacts uploaded to the private staging
+release `403508464` (`job-food-001`, draft): 290 assets, 1,286,358,734 bytes total. Bulk CSVs
+and labels.csv were never downloaded to this host; only the 167 small report assets were
+collected, each sha256-verified against the release manifest.
+
+**Measured outcome** (`.factory/food-001/reports/`):
+
+- **Coverage is complete.** All 40 configs ship the identical full pool: train 156,841 /
+  eval 35,358 / holdout 34,218 = 226,417 rows. Every config has all three split files. No
+  zero-row or zero-positive-rate split. Rows dropped from the 226,459 raw pool rows:
+  14 missing licence, 42 outside windows, 0 unparsable violations blobs.
+- **The gate passed everywhere.** 40/40 per-code qualification reports, gate 1.3.0, 31 checks
+  each, 0 failed, 0 warnings: no leakage column, prediction timing intact, units and frames
+  declared, temporal splits disjoint and within windows, no cross-split entity, both classes
+  in eval and holdout, runner layout and meta keys correct.
+- **The floor rule resolved to 40 codes, not 37.** The pre-build estimate came from a
+  15,000-row recent scan; the full pool supports 40: 48 codes clear the 1% pool-rate floor
+  and 8 are dropped by the per-window minimums (>=30 positives and >=20 distinct days per
+  window): codes 12, 18, 19, 24, 30, 31, 34, 42. The floor rule itself is recorded in the
+  extract manifest.
+- **The digest chain holds.** Every qualification report's component digests (5 files x 40
+  configs = 200 comparisons) match the staging release manifest exactly, so the passing
+  reports describe the uploaded bytes, not an earlier build.
+- **The joint label matrix ships too:** labels.csv at the extract root, 24,319,192 bytes,
+  one row per inspection, one column per floor code, so the multi-label formulation is
+  consumable without re-pulling the source.
+- **Live-source drift is expected and recorded:** pool_rows 226,417 vs 226,133 measured
+  2026-09-28 - the portal gained 284 rows in the week between probe and build.
+
+`scripts/check-candidate.py --all`: every record OK (`chicago-food-inspections: OK
+(status=qualified)`).
+
+**Next action** (recorded in the record): (1) package the release from the staging assets -
+decide how the 40 per-code configs and labels.csv present in MANIFEST.json and the package
+layout, mirroring the per-level pattern noaa-tide-flooding shipped; (2) measure a baseline
+through the runner's contract on a worker, one mid-prevalence config first (code_38 or
+code_55); (3) publication remains a separate operator-approved act.
 
 ## 2026-09-28 - chicago-food-inspections promoted to ready: licence decided, novelty recorded, cost and splits measured
 
