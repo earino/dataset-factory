@@ -2854,6 +2854,15 @@ quoted or packaged. The job is left to finish rather than killed, because a full
 only honest measurement of duration, peak memory and disk for the relaunch - and `worker destroy`
 deliberately refuses to delete an uncollected job.
 
+**The Chicago record was reconciled the same way.** `chicago-food-inspections/record.json` still carried
+`"superseded_by": "msha-enforcement-citations"` from 2026-09-27, when MSHA displaced it as the *priority*
+lead. MSHA never replaced the candidate - Chicago is the built, gated one with staging assets in hand - so
+the marker read as "retired" about the artifact that is actually ready. It is now `null` with the priority
+relationship stated in prose (`lead_priority_note`). `tests/test_repo_hygiene.py` gains `CandidateRecords`:
+a candidate whose status is built/qualified/packaged/published may not carry a `superseded_by`, and any
+recorded lead must resolve to a real candidate directory. The first guard was run against a pre-fix copy of
+the record - **FAILED (1 failure)** - and passes restored.
+
 **Guards demonstrated to fail pre-fix.** `tests/test_msha_build.py` (21 tests, part of the **329-test**
 suite that passes) pins both defects:
 `Structural.test_prev_snapshot_is_the_most_recent_group_not_the_cumulative_set` fails against the

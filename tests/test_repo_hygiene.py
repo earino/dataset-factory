@@ -82,6 +82,46 @@ class JobBundles(unittest.TestCase):
         self.assertEqual(len(ids), len(set(ids)), f"duplicate job ids: {ids}")
 
 
+class CandidateRecords(unittest.TestCase):
+    """A candidate that is built, gated or shipped is not replaced by another lead.
+
+    chicago-food-inspections was marked `superseded_by: msha-enforcement-citations` when MSHA
+    displaced it as the *priority* lead, and the marker survived while Chicago became the one
+    holding a built, gated extract and staging assets. A record that reads as retired while the
+    candidate is the shippable one is a stale claim of the same family as a superseded figure:
+    it tells the next reader not to spend time on the artifact that is actually ready. The
+    priority relationship belongs in prose (`lead_priority_note`), not in a retirement marker.
+
+    Every recorded lead must also resolve to a candidate directory, so a renamed or abandoned
+    lead cannot linger as a dangling reference.
+    """
+
+    STATUSES_THAT_SHIP = ("built", "qualified", "packaged", "published")
+
+    def records(self) -> list:
+        return sorted(CANDIDATES.glob("*/record.json"))
+
+    def test_no_built_candidate_is_marked_superseded(self):
+        self.assertTrue(self.records(), "no candidate records found")
+        for path in self.records():
+            record = json.loads(path.read_text())
+            with self.subTest(candidate=path.parent.name):
+                if record.get("status") in self.STATUSES_THAT_SHIP:
+                    self.assertIsNone(
+                        record.get("superseded_by"),
+                        f"{path.parent.name} is {record['status']} and cannot be marked "
+                        f"superseded_by {record.get('superseded_by')!r}")
+
+    def test_recorded_leads_resolve_to_candidates(self):
+        names = {path.parent.name for path in self.records()}
+        for path in self.records():
+            lead = json.loads(path.read_text()).get("superseded_by")
+            if isinstance(lead, str):
+                with self.subTest(candidate=path.parent.name):
+                    self.assertIn(lead, names,
+                                  f"{path.parent.name} names a lead that is not a candidate")
+
+
 class SkillExposure(unittest.TestCase):
     """The qualification gate must be versioned here AND loadable by Hermes.
 
