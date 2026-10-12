@@ -2854,6 +2854,25 @@ quoted or packaged. The job is left to finish rather than killed, because a full
 only honest measurement of duration, peak memory and disk for the relaunch - and `worker destroy`
 deliberately refuses to delete an uncollected job.
 
+**`msha-001` ran to completion and was superseded by design.** Job `msha-001` (provider server
+`169852644`, created 09:34:50 UTC) finished **succeeded, exit 0, 667 s (11 min)** - far cheaper than the
+60-minute ceiling - with **497,897 pooled events**, a measured floor of **80** 30 CFR sections at or above
+1%, **45 configs** shipped, **326 assets / 3,385,877,790 bytes (3,229 MiB)** on staging release
+**410447826**, and every one of the 45 configs passing the gate on the worker (the job fails if any gate
+fails, and it exited 0). It was collected (report + digest verification recorded in `jobs/msha-001.json`)
+and the server destroyed at 10:01:47 UTC - the destroy was refused until collection, as designed.
+
+Its extract is not packaged and must not be: it was built by the pre-fix `build.py`
+(`b9ef83520a56683729637d1b6dc6de8f54c3c2cb65e8c674adfcf956cbbccc2f`), so its `prev_target_cited` column
+contradicts the `quality.json` frame it ships with. The staging release is left in place only as the run
+record; nothing is copied out of it.
+
+**`msha-002` launched with the fixed script.** The candidate's `source/job.json` now carries the id
+`msha-002`; the assembled bundle hashes `build.py` at
+`1c80c1aea7398109…` (the corrected script, distinct from the pre-fix hash), run.sh unchanged. Plan
+validated at the same **€0.32 reservation / €0.08/h ceiling**; provider server **`169857238`**, created
+**10:02:05 UTC**, confirmed against the provider inventory rather than the launch notice.
+
 **The Chicago record was reconciled the same way.** `chicago-food-inspections/record.json` still carried
 `"superseded_by": "msha-enforcement-citations"` from 2026-09-27, when MSHA displaced it as the *priority*
 lead. MSHA never replaced the candidate - Chicago is the built, gated one with staging assets in hand - so
