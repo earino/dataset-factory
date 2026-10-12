@@ -2820,3 +2820,44 @@ with publication still a separate operator-approved act.
 **Chicago food inspections is unaffected**: it remains `qualified` from job `food-001` (40/40 configs,
 gate 1.3.0, staging release 403508464, 1.20 GB) and is still unpackaged. Both leads are now unblocked;
 MSHA is the larger task and Chicago is the one with artifacts already in hand.
+
+
+## 2026-10-12 - MSHA construction: build job launched, a semantics defect caught before collection
+
+**Launched.** Job `msha-001` (job type build, `cpx32` in `hel1`, 4 vCPU / 8 GB, 150-minute lifetime)
+went up at **09:34:50 UTC** as provider server **`169852644`** (`89.167.109.16`, expiry
+`1791806689`), verified against the provider inventory, not against the launch notice. It streams
+`Mines.zip`, `Inspections.zip` and `Violations.zip` from `arlweb.msha.gov/OpenGovernmentData/DataSets/`,
+pools every event with at least one citation and an `INSPECTION_BEGIN_DT` inside a split window, and
+writes one binary runner config per floor 30 CFR section (capped at 45 by prevalence, most prevalent
+first) plus the joint `labels.csv` at the extract root.
+The bundling step hashed the launched script as
+`b9ef83520a56683729637d1b6dc6de8f54c3c2cb65e8c674adfcf956cbbccc2f` - the pre-fix `build.py`, Sizing: `max_artifact_mb` 4200, `max_disk_mb`
+12000 - a floor section's full split files run about 68 MB, so 45 configs plus the matrix land near
+3.2 GB.
+
+Before launching, the whole contract was exercised locally: a bounded build (`--limit-events 60000
+--max-configs 3`) exited 0, and the real qualification gate run over one produced config returned
+**gate 1.3.0, 32 checks, 0 failed**.
+
+**A defect was caught before collection.** `prev_target_cited` was written from the *cumulative*
+distinct-section set, so it answered "has this mine ever cited this section" while the shipped
+`quality.json` documents "cited on the mine's **most recent** strictly-earlier pooled inspection".
+The persistence baseline was the tell: 0.99+ under the cumulative reading. `enrich_with_priors` now
+keeps two accumulators, deliberately - `distinct` still accumulates for `prior_distinct_sections`,
+and a new `last_sections` snapshot carries the most recent group only. On the test fixture the
+persistence AUCs moved to **0.51** (75.400) and **0.47** (56.14100(B)), which is what an honest
+persistence feature on a re-inspected mine should look like.
+
+**`msha-001`'s artifact is superseded** and will be discarded on collection; nothing from it is
+quoted or packaged. The job is left to finish rather than killed, because a full-scale run is the
+only honest measurement of duration, peak memory and disk for the relaunch - and `worker destroy`
+deliberately refuses to delete an uncollected job.
+
+**Guards demonstrated to fail pre-fix.** `tests/test_msha_build.py` (21 tests, part of the **329-test**
+suite that passes) pins both defects:
+`Structural.test_prev_snapshot_is_the_most_recent_group_not_the_cumulative_set` fails against the
+cumulative implementation, and `Constructed.test_every_event_carries_a_usable_mine_id` fails against
+an implementation that reads the mine only from the violation row (`dropped_no_mine_id` 1 instead of 0
+- MSHA does not require the violations table to repeat the mine). Both were run against a two-reversal
+pre-fix copy of the script and both failed, as recorded above.
