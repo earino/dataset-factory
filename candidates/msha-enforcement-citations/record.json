@@ -1,6 +1,6 @@
 {
   "id": "msha-enforcement-citations",
-  "status": "ready",
+  "status": "qualified",
   "created_at": "2026-09-27T20:15:33.025601+00:00",
   "domain": "workplace / mine safety enforcement (multi-label)",
   "prediction_question": "Given everything documented about a mine and its own prior inspections and citations before an inspection begins, which of the declared set of 30 CFR sections will MSHA cite at this inspection?",
@@ -60,8 +60,8 @@
     }
   ],
   "license_decision": "DECIDED 2026-10-12 (operator, option A): treat US federal government works as public domain for this source, record the reasoning and proceed to construction; explicit written permission is NOT sought. MSHA states no terms (data-set pages and definition file are silent; the data.gov entry carries accessLevel=public and rights=\"true\" and names no licence), so the basis is statutory - 17 USC 105 - and no publisher grant is claimed. Two third parties already redistribute derived MSHA data (CC0; CC-BY-4.0 via Zenodo DOI 10.5281/zenodo.20572372); the operator weighed that as precedent, not as permission. Recorded in candidates/msha-enforcement-citations/license.json, from which release-manifest.py builds the release's licenses block. Reversal point: if MSHA publishes terms, or the operator narrows this decision, the change lands in that file alone.",
-  "construction_script": null,
-  "split_strategy": "Temporal by inspection year, no random component, three disjoint windows: train 2001-2020 (415,088 inspections / 2,459,741 citations), eval 2021-2023 (49,233 / 255,952), holdout 2024-2025 (33,576 / 175,151). Every one of the 104 sections at the >= 1% floor occurs in every window (checked by probe_splits.py). 2000 (19,640 inspections) is the earliest full year and folds into train; 2026 is partial and is not used.",
+  "construction_script": "candidates/msha-enforcement-citations/source/build.py (streaming build; one binary config per floor 30 CFR section) plus source/run.sh (worker entrypoint: entrypoint script streams the three MSHA zips, builds, qualifies every config on the worker). Both bundled into the worker image - the artifact's manifest records their sha256, and msha-002's bundled build.py hash equals the committed file.",
+  "split_strategy": "Temporal by inspection year, no random component, three disjoint windows: train 2001-2020 (415,088 inspections / 2,459,741 citations), eval 2021-2023 (49,233 / 255,952), holdout 2024-2025 (33,576 / 175,151). The probe checked that every one of the 104 sections it measured at >= 1% of the full inspection census occurs in every window; construction recomputes the floor on its constructed pool (497,897 events, 80 sections at >= 1% of the pool) and ships the 45 highest-prevalence of those - see qualification.floor. 2000 (19,640 inspections) is the earliest full year and folds into train; 2026 is partial and is not used.",
   "measurements": {
     "rows_total": 3103397,
     "distinct_inspection_event_no": 538068,
@@ -132,7 +132,28 @@
     "probe_seconds_grain_and_labels": 65,
     "probe_seconds_splits": 31,
     "measured_at": "2026-09-27",
-    "measured_by": "anonymous download and streamed probes (probe_violations.py, probe_splits.py); no credentials, nothing extracted to disk"
+    "measured_by": "anonymous download and streamed probes (probe_violations.py, probe_splits.py); no credentials, nothing extracted to disk",
+    "built_msha_002": {
+      "built_at_utc": "2026-10-12T10:02:57.515538+00:00",
+      "job": "msha-002",
+      "pool_events": 497897,
+      "pool_citation_rate": 0.072407,
+      "split_rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "floor_sections_on_the_pool": 80,
+      "shipped_configs": 45,
+      "held_back_by_the_config_cap": 35,
+      "shipped_columns_per_config": 25,
+      "total_split_bytes": 3290163078,
+      "labels_csv_bytes": 93605740,
+      "labels_csv_sha256": "6e164193b8cda303f18f09d4fb5dbd1029dc9f807e14528c4deac9c11a464f95",
+      "gate": "45/45 configs, gate 1.3.0, 32 checks each, 0 failed, on the worker",
+      "persistence_baseline_eval_auc": "per config in build_summary.json; mean 0.576 across the 45 after the prev_target_cited fix (mean 0.754 before it) - the strongest single feature in the shipped set is mine history, and the baseline shows how much of it the target section's own persistence explains",
+      "measured_by": "worker job msha-002; every number read back from the collected release (earino/dataset-factory-staging release 410471211), not from the run's own console"
+    }
   },
   "probe_scripts": [
     "candidates/msha-enforcement-citations/probe_violations.py (grain, label space, density, bitmask co-occurrence)",
@@ -153,7 +174,7 @@
     ],
     "decide_at_construction": "NBR_INSPECTORS and ACTIVE_SECTIONS - whether they are known when the inspection opens or only as it proceeds; default exclude."
   },
-  "next_action": "LICENCE RESOLVED (2026-10-12, option A). Next: construction on a worker. (1) Write the extraction and rendering pass for the 120 MB weekly Violations zip plus the companion Inspections and Mines tables (streamed, nothing bulk kept on this host), building one binary per-section config over the inspection-level label set at INSPECTION_BEGIN_DT. (2) Decide and record three construction parameters: the label floor (104 sections at >= 1% or 183 at >= 0.5%), the treatment of mine-wide audit events (the tail to 694 citations at one inspection), and whether coal and metal/non-metal ship as separate configs. (3) Run skills/dataset-qualification over the full artifact on the worker - no number is quoted before that passes. (4) Only then package, and publication stays a separate operator-approved act.",
+  "next_action": "BUILT AND GATED (msha-002, 2026-10-12): 45/45 configs pass the on-worker gate, gate 1.3.0, 32 checks each, 0 failed; the artifact is collected in staging release 410471211 and the worker is destroyed. Next: (1) PACKAGE from staging - the release manifest must place the 45 per-section configs plus the extract-root labels.csv (proposed: mirror noaa's per-level pattern), and the release's licenses block comes from license.json; (2) baseline one mid-prevalence config first (sec_56_12004 or sec_75_400) so the released card's numbers are ours, not the publisher's; (3) publication stays a separate operator-approved act, and the operator must choose whether MSHA or the already-built Chicago candidate packages first.",
   "novelty_check": {
     "checked_at": "2026-09-27T20:16:42+00:00",
     "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
@@ -375,8 +396,57 @@
       }
     ]
   },
-  "jobs": [],
+  "jobs": [
+    {
+      "id": "msha-001",
+      "status": "superseded",
+      "superseded_by": "msha-002",
+      "staging_release": 410447826,
+      "staging_repo": "earino/dataset-factory-staging",
+      "server_type": "cpx32/hel1",
+      "provider_server_id": "169852644",
+      "elapsed_seconds": 667.1,
+      "exit_code": 0,
+      "oom_killed": false,
+      "what": "first full extract build plus the on-worker qualification gate, all 45 configs",
+      "gates": "45/45 configs, gate 1.3.0, 32 checks each, 0 failed",
+      "why_superseded": "the offline tests found prev_target_cited was written as the cumulative ever-cited set while quality.json documents the mine's most recent strictly-earlier inspection. The artifact was collected and never published; the run was repeated with the corrected script rather than shipping a mislabelled feature.",
+      "bundled_build_py_sha256": "b9ef83520a566837"
+    },
+    {
+      "id": "msha-002",
+      "status": "succeeded",
+      "staging_release": 410471211,
+      "staging_repo": "earino/dataset-factory-staging",
+      "server_type": "cpx32/hel1",
+      "provider_server_id": "169857238",
+      "elapsed_seconds": 581.0,
+      "exit_code": 0,
+      "oom_killed": false,
+      "what": "full extract build plus the on-worker qualification gate with the corrected prev_target_cited, all 45 configs",
+      "gates": "45/45 configs, gate 1.3.0, 32 checks each, 0 failed",
+      "bundled_build_py_sha256": "1c80c1aea73981093f0f0ea3f640ca28f2a8c5e53de94f82a26bff4df576284f",
+      "bundled_build_py_equals_committed": true,
+      "cost": "reserved EUR 0.32, ceiling EUR 0.08/h, 10 min wall, destroyed 2026-10-12T10:30:15Z; provider inventory back to 0 servers"
+    }
+  ],
   "artifacts": [],
+  "qualification": {
+    "gate": "skills/dataset-qualification/scripts/qualify_dataset.py",
+    "gate_version": "1.3.0",
+    "result": "PASSED - 45/45 per-section configs, 32 checks each, 0 failed, on the full artifact on the worker",
+    "job": "msha-002",
+    "staging_release": 410471211,
+    "staging_tag": "job-msha-002 (untagged draft, earino/dataset-factory-staging)",
+    "configs": 45,
+    "pool": "497,897 inspections - the events carrying at least one violation row with a parseable INSPECTION_BEGIN_DT inside a split window. Every config ships the identical pool: train 415,088 / eval 49,233 / holdout 33,576.",
+    "floor": "80 sections are cited in >= 1% of the 497,897 pooled events and survive the window minimums; the run ships the top 45 by pool prevalence under the --max-configs 45 cap and holds back 35. The 104 in measurements was the standalone probe's estimate on the full 538,068-inspection census; construction recomputes the floor on its own pool and that number (80) is the one shipped.",
+    "bytes": "3,290,163,078 bytes across the 45 per-section splits, 326 assets (325 object parts plus the manifest) totalling 3,385,877,790 bytes; labels.csv 93,605,740 bytes",
+    "labels_csv": "sha256 6e164193b8cda303f18f09d4fb5dbd1029dc9f807e14528c4deac9c11a464f95 - the joint multi-label matrix at the extract root, byte-identical between msha-001 and msha-002 (the corrected run changed one feature column, not the label matrix)",
+    "digest_chain": "50 collected assets fetched back from the release and sha256-verified against the release manifest: all 45 qualification reports, meta.json, quality.json, labels.csv, summary.json, build_summary.json, container.log - every one matched",
+    "corrected_feature_evidence": "sec_75_400 public/eval.csv was fetched from both releases and verified against its published digest in each. Both files are 7,425,517 bytes / 49,233 rows; exactly one column differs (prev_target_cited, 4,933 rows); the label column and every other column are identical. The persistence baseline's eval AUC (build_summary.json, all 45 configs): mean 0.754 pre-fix vs 0.576 fixed - the cumulative reading inflated it on all 45 (sec_75_400 0.9403 -> 0.6733).",
+    "note": "Pool and label matrix unchanged between the two runs (same pool_events, same 45 shipped configs, same total_split_bytes, same labels.csv digest), so the only difference in the released bytes is the corrected feature."
+  },
   "rejection_reason": null,
   "review": null,
   "runner_up": {

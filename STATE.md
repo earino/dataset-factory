@@ -2889,3 +2889,58 @@ cumulative implementation, and `Constructed.test_every_event_carries_a_usable_mi
 an implementation that reads the mine only from the violation row (`dropped_no_mine_id` 1 instead of 0
 - MSHA does not require the violations table to repeat the mine). Both were run against a two-reversal
 pre-fix copy of the script and both failed, as recorded above.
+
+## 2026-10-12 - MSHA construction verified: msha-002 green, the corrected feature proven in the released bytes
+
+**`msha-002` ran and finished green.** Server `169857238` (cpx32/hel1), created **10:02:05 UTC**, exit 0,
+**no OOM**, **581.0 s** wall, **45/45 configs passing the on-worker gate**, **326 assets /
+3,385,877,790 bytes** on staging release **410471211**; collected **10:27:08 UTC**, destroyed
+**10:30:15 UTC**, and the provider inventory read back **0 servers**. Reservation unchanged at **EUR 0.32
+/ EUR 0.08 h ceiling**. The run's own console is not the evidence: every number below was read back out of
+the collected release.
+
+**The gate result was verified per config, not inferred from the job's exit code.** All **45**
+`qualification-*.json` reports were fetched from the release and each one read: gate **1.3.0**, **32
+checks**, **0 failed**, `ok: true`. The set of configs with a report is exactly the set named in
+`build_summary.json` (`shipped_configs`, 45) and exactly the set with a `public/train.csv`
+layout - no config passed silently without a report. **50 fetched assets** (the 45 reports plus
+`meta.json`, `quality.json`, `labels.csv`, `summary.json`, `build_summary.json`, `container.log`) were
+**sha256-verified against the release manifest** - every one matched.
+
+**The corrected feature is now proven in the published bytes, not just in the tests.** `sec_75_400`'s
+`public/eval.csv` was fetched from **both** releases, each file verified against its own published digest.
+Both are **7,425,517 bytes / 49,233 rows**, and exactly **one column differs**: `prev_target_cited`, on
+**4,933 rows**. The label column and every other column are byte-identical; the pool
+(**497,897**), the 45 shipped configs, `total_split_bytes`, and `labels.csv`
+(`6e164193b8cda303…`) are identical between the runs. So the only difference in the released bytes is the
+feature the defect was in.
+
+**The defect was material, and the real-data baseline says so.** `build_summary.json` carries a
+persistence baseline per config (AUC of `prev_target_cited` alone on eval). Under the cumulative reading the
+mean across the 45 configs was **0.754**; with the most-recent-strictly-earlier semantics it is **0.576**,
+and it fell on **all 45** (rose on none) - `sec_75_400` **0.9403 -> 0.6733**. The strongest pre-fix value,
+0.94, was the tell that the feature was encoding lifetime history rather than the previous visit. In the
+eval window the feature is 1 on **14.9%** of rows pre-fix and **4.9%** fixed (positive rate 4.83%), which
+is what a "did the last inspection cite this" flag should look like.
+
+**The worker ran the committed script.** The artifact manifest records the bundled source hashes:
+`build.py` **1c80c1aea7398109…** for `msha-002`, equal to the committed `source/build.py`, against
+**b9ef83520a566837…** for `msha-001` (the pre-fix script); `run.sh` and the bundled
+`qualify_dataset.py` are identical across both runs. The staging release for `msha-001` is retained as
+the run record and nothing is copied out of it.
+
+**Floor recomputed at construction.** The pool is the **497,897** inspections carrying at least one
+violation row with a parseable begin date inside a split window; **80** sections are cited in **>= 1%** of
+those events and survive the window minimums, and the run ships the **45** highest-prevalence under
+`--max-configs 45`, holding **35** back. The **104** in the record's `measurements` is the standalone
+probe's number on the full **538,068**-inspection census, a different denominator; the record now says
+so, and `qualification.floor` names the shipped number.
+
+**Record and state.** `candidates/msha-enforcement-citations/record.json`: status **`ready` ->
+`qualified`**, `construction_script` filled in, `jobs[]` carries `msha-001` (**superseded**, with the
+reason) and `msha-002` (**succeeded**, with times, hashes and cost), and a `qualification` block records
+the gate result, the digest chain, the byte-level feature evidence and the baseline numbers.
+`measurements.built_msha_002` holds the built numbers. `next_action` is now packaging: the 45
+per-section configs plus the extract-root `labels.csv` (proposed: mirror noaa's per-level pattern), a
+baseline on one mid-prevalence config, and the operator's choice of which built candidate packages first.
+`scripts/check-candidate.py` returns **OK (status=qualified)** and the suite is **331 tests, OK**.
