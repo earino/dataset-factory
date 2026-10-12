@@ -95,8 +95,17 @@ proceeds must be decided at construction; the default is to exclude them.
 
 MSHA publishes no licence statement on the data-set pages, and the data.gov catalogue entry carries
 `accessLevel: public` with `rights: "true"` rather than named terms. The statutory basis (a work of
-the US federal government) is not a licence we can quote, so this is contract #1 unresolved:
-**a decision to escalate to the operator before construction**, not an assumption.
+the US federal government) is not a licence we can quote, so this was contract #1, escalated to the operator rather than assumed: **a decision before
+construction**, not an assumption.
+
+**Decided 2026-10-12 (operator, option A): treat US federal government works as public domain for
+this source, record the reasoning, and construct.** No explicit written permission is sought. The
+decision and its evidence live in `candidates/msha-enforcement-citations/license.json` - source
+`LicenseRef-Public-Domain` (status: public domain by statute, 17 USC 105, preserved unchanged),
+compilation CC0-1.0 covering our contribution only, code and documentation MIT. No publisher grant
+is claimed anywhere in the release. Reversal point: if MSHA publishes terms, or the operator
+narrows this decision, the change lands in that one file and `release-manifest.py` carries it into
+the manifest.
 
 There is supporting precedent, and it is only precedent: `emperor-mew/msha-violations` (HF, 2026-05)
 dedicates its derived MSHA data to CC0 and asserts the federal works are public domain, and

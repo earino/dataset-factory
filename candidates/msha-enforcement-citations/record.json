@@ -12,7 +12,7 @@
       "url": "https://arlweb.msha.gov/OpenGovernmentData/DataSets/Violations.zip",
       "landing_page": "https://www.msha.gov/data-and-reports/data-sources-and-calculators/data-resources/mdsrg/violations-data-set",
       "catalog": "https://catalog.data.gov/dataset/msha-violations-dataset",
-      "license": "No licence statement published on the source pages; data.gov catalogue entry carries accessLevel=public and rights=\"true\" rather than named terms. Unresolved: escalated as a decision (see license_evidence and license_decision).",
+      "license": "No licence statement published on the source pages; data.gov catalogue entry carries accessLevel=public and rights=\"true\" rather than named terms. DECIDED 2026-10-12: treated as public domain by statute (17 USC 105, US federal government work) and recorded as such in candidates/msha-enforcement-citations/license.json - see license_evidence and license_decision.",
       "access": "anonymous direct download, no key; 120,736,998 bytes, 4.3 s; member Violations.txt 1,442,221,050 bytes, pipe-delimited with header; updated weekly (Friday).",
       "measured_live_on": "2026-09-27"
     },
@@ -50,9 +50,16 @@
       "url": "https://huggingface.co/api/datasets/emperor-mew/msha-violations, https://huggingface.co/api/datasets/FastDOLz/msha-mine-safety-violations-by-operator",
       "read_on": "2026-09-27",
       "terms": "Two independent third parties already redistribute derived MSHA data under an open dedication. This supports the statutory reading but is not a licence grant from the publisher, so the escalation in license_decision stands."
+    },
+    {
+      "field": "Operator decision resolving contract #1 (2026-10-12)",
+      "quote": "Option A selected: treat US federal works as public domain for this source, record that reasoning and the data.gov accessLevel=public entry, and proceed to construction; no written permission is sought. The decision is recorded with its reasoning in candidates/msha-enforcement-citations/license.json (spdx LicenseRef-Public-Domain for the source, CC0-1.0 for our contribution, MIT for code and documentation).",
+      "url": "candidates/msha-enforcement-citations/license.json",
+      "read_on": "2026-10-12",
+      "terms": "Resolves the escalation raised 2026-09-27. No publisher grant is claimed; the public-domain character rests on the statute, not on a quotable grant."
     }
   ],
-  "license_decision": "UNRESOLVED - escalate to the operator before construction. The source states no terms; the only basis for redistribution is that this is a work of the US federal government, which is a statutory argument, not a licence we can quote. Two options to decide between: (a) treat US federal works as public domain, record that reasoning and the data.gov accessLevel=public entry, and proceed; or (b) require an explicit written permission/source before construction. Do not assume (a) silently - contract #1 says a source silent on redistribution is escalated, never assumed.",
+  "license_decision": "DECIDED 2026-10-12 (operator, option A): treat US federal government works as public domain for this source, record the reasoning and proceed to construction; explicit written permission is NOT sought. MSHA states no terms (data-set pages and definition file are silent; the data.gov entry carries accessLevel=public and rights=\"true\" and names no licence), so the basis is statutory - 17 USC 105 - and no publisher grant is claimed. Two third parties already redistribute derived MSHA data (CC0; CC-BY-4.0 via Zenodo DOI 10.5281/zenodo.20572372); the operator weighed that as precedent, not as permission. Recorded in candidates/msha-enforcement-citations/license.json, from which release-manifest.py builds the release's licenses block. Reversal point: if MSHA publishes terms, or the operator narrows this decision, the change lands in that file alone.",
   "construction_script": null,
   "split_strategy": "Temporal by inspection year, no random component, three disjoint windows: train 2001-2020 (415,088 inspections / 2,459,741 citations), eval 2021-2023 (49,233 / 255,952), holdout 2024-2025 (33,576 / 175,151). Every one of the 104 sections at the >= 1% floor occurs in every window (checked by probe_splits.py). 2000 (19,640 inspections) is the earliest full year and folds into train; 2026 is partial and is not used.",
   "measurements": {
@@ -146,7 +153,7 @@
     ],
     "decide_at_construction": "NBR_INSPECTORS and ACTIVE_SECTIONS - whether they are known when the inspection opens or only as it proceeds; default exclude."
   },
-  "next_action": "LICENCE DECISION NEEDED (one operator decision) - then construction on a worker. (1) Decide contract #1: the source states no terms; choose between treating US federal works as public domain with the data.gov accessLevel=public entry recorded, or requiring explicit permission. (2) On approval, budget a worker construction pass (the 120 MB weekly zip + Mines/Inspections companion tables), run skills/dataset-qualification, and only then quote any number. (3) Decide the label floor (104 at >= 1% or 183 at >= 0.5%), the treatment of mine-wide audit events (tail to 694 citations), and whether coal and metal/non-metal ship as two configs. Nothing is constructed. This candidate supersedes chicago-food-inspections as the multi-label lead.",
+  "next_action": "LICENCE RESOLVED (2026-10-12, option A). Next: construction on a worker. (1) Write the extraction and rendering pass for the 120 MB weekly Violations zip plus the companion Inspections and Mines tables (streamed, nothing bulk kept on this host), building one binary per-section config over the inspection-level label set at INSPECTION_BEGIN_DT. (2) Decide and record three construction parameters: the label floor (104 sections at >= 1% or 183 at >= 0.5%), the treatment of mine-wide audit events (the tail to 694 citations at one inspection), and whether coal and metal/non-metal ship as separate configs. (3) Run skills/dataset-qualification over the full artifact on the worker - no number is quoted before that passes. (4) Only then package, and publication stays a separate operator-approved act.",
   "novelty_check": {
     "checked_at": "2026-09-27T20:16:42+00:00",
     "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",

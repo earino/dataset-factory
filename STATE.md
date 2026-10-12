@@ -2782,3 +2782,41 @@ the data.gov `accessLevel: public` entry, and two third parties already redistri
 and CC-BY-4.0 are the evidence; none of it is a grant, so the licence is recorded as UNRESOLVED in the candidate
 and escalated rather than assumed. `chicago-food-inspections` stays open as the fallback lead (`superseded_by`
 recorded in its record).
+
+## 2026-10-12 - MSHA licence decided (operator, option A): federal public domain, recorded, construction unblocked
+
+The one open decision was answered by the operator: **treat US federal government works as public
+domain for the MSHA source, record the reasoning and construct** - explicit written permission is not
+sought. No publisher grant is claimed; the public-domain character rests on the statute (17 USC 105),
+because MSHA publishes no terms, no licence and no redistribution permission on the data-set pages or
+in its own definition file, and the data.gov entry only carries `accessLevel: public` with
+`rights: "true"`.
+
+**Where the decision lives**: `candidates/msha-enforcement-citations/license.json`, decided
+2026-10-12 - source `LicenseRef-Public-Domain` (status: public domain by statute, preserved
+unchanged), compilation `CC0-1.0` with a scope limited to our contribution, code and documentation
+`MIT`, plus four evidence entries (MSHA pages, data.gov entry, the two third-party redistributors
+recorded as precedent and not as permission, and the operator decision itself). Recorded against
+*this* source id - it was not inherited from `chicago-doah-adjudication` or any earlier acceptance.
+Reversal point: if MSHA publishes terms or the operator narrows the decision, that one file changes
+and `release-manifest.py` carries it into the manifest.
+
+**Verified, not assumed**: `release-manifest.py licenses_block("msha-enforcement-citations")` renders
+the block from the decision file - code MIT / `LICENSE-MIT.txt`, data_compilation CC0-1.0 /
+`LICENSE-CC0-1.0.txt`, source_data `LicenseRef-Public-Domain` with status, four evidence entries,
+attribution and derived labelling, no empty field. `scripts/check-candidate.py --all` exits 0 with all
+eight records OK. The `bundle` state of the record: `msha-enforcement-citations` stays `ready` (nothing
+is constructed yet) with `license_decision` now DECIDED and `next_action` rewritten to construction.
+
+**Construction plan (recorded in the candidate's `next_action`)**: (1) streamed extraction and
+rendering pass over the 120 MB weekly Violations zip plus the companion Inspections and Mines tables,
+one binary per-section config over the inspection-level label set at `INSPECTION_BEGIN_DT`, nothing
+bulk kept on this host; (2) three parameters to fix before the build - the label floor (104 sections
+at >= 1%, or 183 at >= 0.5%), the treatment of mine-wide audit events (tail to 694 citations at one
+inspection), and whether coal and metal/non-metal ship as separate configs; (3) the full-artifact
+qualification gate on the worker, and no number quoted before it passes; (4) packaging afterwards,
+with publication still a separate operator-approved act.
+
+**Chicago food inspections is unaffected**: it remains `qualified` from job `food-001` (40/40 configs,
+gate 1.3.0, staging release 403508464, 1.20 GB) and is still unpackaged. Both leads are now unblocked;
+MSHA is the larger task and Chicago is the one with artifacts already in hand.
