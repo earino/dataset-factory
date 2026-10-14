@@ -1,11 +1,56 @@
 
 # Current state
 
-Updated: 2026-10-05 (latest: the `chicago-food-inspections` build job `food-001` succeeded on a
-worker - the full 226,417-row pool is extracted into 40 per-code configs, every one passing the
-qualification gate (1.3.0, 31 checks, 0 failures), all digests verified against the staging
-release - so the candidate moves `ready` -> `qualified` and the buffer now holds a gated,
-build-proven candidate. Private HEAD pending this session's commit; CI checked after push.)
+Updated: 2026-10-14 (latest: the MSHA baseline job `msha-baseline-001` succeeded on a worker -
+the accepted artifact's `sec_56_12004` config was fetched from staging, not rebuilt, and measured
+through the runner's own contract: eval AUC 0.8036 from both the train path and the independent
+validate path, CONTRACT OK, persistence-only reference 0.5831. The candidate record carries the measured
+baseline; nothing is published and no number is quoted outside the verified reports. Private HEAD
+pending this session's commit; CI checked after push.)
+
+## 2026-10-14 - msha-baseline-001: the MSHA baseline is measured on the released bytes - eval AUC 0.8036, contract OK
+
+The runner-contract baseline job for `msha-enforcement-citations` (candidate `qualified` since the msha-002
+build) ran on a Hetzner worker and succeeded. It fetched - did not rebuild - the accepted artifact's
+`sec_56_12004` config from private staging release 410471211 (the msha-002 bytes), materialized it with
+`release/msha-enforcement-citations/code/materialize.py` and ran the benchmark's own unmodified
+`train.py`/`validate.py`/`validate.sh` on it. The number below was read back out of the collected release,
+not the console.
+
+**What ran** (`jobs/msha-baseline-001.json`, worker 170280758, cpx32/hel1, exit 0, 41.5 s wall, no OOM,
+EUR 0.24 reserved / EUR 0.08/h ceiling, destroyed 08:20:58 UTC, provider inventory back to 0 servers):
+fetch the five `sec_56_12004` files (meta.json, quality.json, public/train.csv 60,630,330 B, public/eval.csv
+7,425,519 B, private/holdout.csv 5,058,885 B) with sha256 verification in transit, pip install the runner's
+stack, materialize the task directory (24 features; `event_no` dropped as the identifier/carry column;
+the private holdout deliberately not copied into the workspace), then `train.py` and `validate.sh`. Both
+bundled runner files match the committed benchmark templates byte-for-byte (sha256 `a3c6bcf1...` train.py,
+`b597e7f8...` validate.py, `3f06ca48...` validate.sh), so the measurement is through the contract an evaluated
+agent is scored under, and `validate.py` re-ran training independently and agreed.
+
+**Measured outcome** (`.factory/msha-baseline-001/reports/`, each asset sha256-verified against the staging
+release manifest, release 412476894):
+
+- **Eval AUC 0.8036** on `sec_56_12004`, identical from both paths: `train.py` itself and the independent
+  `validate.py` re-run (predict_proba with the target column removed). CONTRACT OK.
+- **Rows and base rates** (meta.json): train 415,088 / eval 49,233 / holdout 33,576; positive rate
+  0.0886 / 0.1063 / 0.0996. Train AUC 0.8036, so no overfit gap on the eval window.
+- **Persistence reference** (msha-002 build_summary.json, collected and digest-verified): `prev_target_cited`
+  alone scores 0.5831 eval AUC on this config. The full 24-feature model clears it by 0.2205, so the
+  learned signal is not the target section's own persistence in disguise; `prev_target_cited` is the only
+  single feature measured individually, so no strongest-feature claim is made - the calibration
+  noaa-tide-flooding required before any headroom claim, measured here before packaging.
+
+**Recorded**: `candidates/msha-enforcement-citations/record.json` gains a `baseline` block (mirroring the
+noaa pattern: job, artifact provenance, levels with AUC and base rates, persistence reference, evidence
+path) and a `msha-baseline-001` `jobs[]` entry; `next_action` moves to packaging. `jobs/msha-baseline-001.json`
+and the baseline job assets (`candidates/msha-enforcement-citations/baseline/` including the pinned
+`expected_artifact.json`, `release/msha-enforcement-citations/code/materialize.py`,
+`scripts/build-msha-expected-artifact.py`) are committed with this entry.
+
+**Next action**: package the release from staging release 410471211 (the 45 per-section configs plus the
+extract-root labels.csv, mirroring noaa's per-level pattern; the licenses block comes from license.json).
+Publication remains a separate operator-approved act, and the operator chooses whether MSHA or the
+already-built Chicago candidate packages first.
 
 ## 2026-10-05 - food-001: chicago-food-inspections built and gated - 40/40 configs pass, candidate `qualified`
 
@@ -2944,3 +2989,4 @@ the gate result, the digest chain, the byte-level feature evidence and the basel
 per-section configs plus the extract-root `labels.csv` (proposed: mirror noaa's per-level pattern), a
 baseline on one mid-prevalence config, and the operator's choice of which built candidate packages first.
 `scripts/check-candidate.py` returns **OK (status=qualified)** and the suite is **331 tests, OK**.
+

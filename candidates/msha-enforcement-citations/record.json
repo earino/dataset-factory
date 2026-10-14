@@ -174,7 +174,7 @@
     ],
     "decide_at_construction": "NBR_INSPECTORS and ACTIVE_SECTIONS - whether they are known when the inspection opens or only as it proceeds; default exclude."
   },
-  "next_action": "BUILT AND GATED (msha-002, 2026-10-12): 45/45 configs pass the on-worker gate, gate 1.3.0, 32 checks each, 0 failed; the artifact is collected in staging release 410471211 and the worker is destroyed. Next: (1) PACKAGE from staging - the release manifest must place the 45 per-section configs plus the extract-root labels.csv (proposed: mirror noaa's per-level pattern), and the release's licenses block comes from license.json; (2) baseline one mid-prevalence config first (sec_56_12004 or sec_75_400) so the released card's numbers are ours, not the publisher's; (3) publication stays a separate operator-approved act, and the operator must choose whether MSHA or the already-built Chicago candidate packages first.",
+  "next_action": "BASELINE MEASURED (msha-baseline-001, 2026-10-14): runner contract OK on sec_56_12004 of the accepted msha-002 artifact, eval AUC 0.8036 from both the train path and the independent validate path, persistence-only reference 0.5831, contract OK. Next: (1) PACKAGE from staging release 410471211 - the release manifest must place the 45 per-section configs plus the extract-root labels.csv (proposed: mirror noaa's per-level pattern), and the release's licenses block comes from license.json; (2) publication stays a separate operator-approved act, and the operator must choose whether MSHA or the already-built Chicago candidate packages first.",
   "novelty_check": {
     "checked_at": "2026-09-27T20:16:42+00:00",
     "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
@@ -428,6 +428,23 @@
       "bundled_build_py_sha256": "1c80c1aea73981093f0f0ea3f640ca28f2a8c5e53de94f82a26bff4df576284f",
       "bundled_build_py_equals_committed": true,
       "cost": "reserved EUR 0.32, ceiling EUR 0.08/h, 10 min wall, destroyed 2026-10-12T10:30:15Z; provider inventory back to 0 servers"
+    },
+    {
+      "id": "msha-baseline-001",
+      "status": "succeeded",
+      "staging_release": 412476894,
+      "staging_repo": "earino/dataset-factory-staging",
+      "server_type": "cpx32/hel1",
+      "provider_server_id": "170280758",
+      "elapsed_seconds": 41.5,
+      "exit_code": 0,
+      "oom_killed": false,
+      "what": "runner-contract baseline on the accepted artifact's sec_56_12004 config, fetched from staging (not rebuilt); the bytes measured are the bytes to be released",
+      "runner": "the benchmark's own train.py, validate.py and validate.sh, bundled from /opt/data/harness_benchmark/task_template; the bundled digests equal the committed templates (verified a3c6bcf1... train.py, b597e7f8... validate.py, 3f06ca48... validate.sh)",
+      "fetch": "the five sec_56_12004 files pulled from staging release 410471211 (job msha-002), sha256-verified in transit by the worker; no bulk CSV ever reached the coordinator",
+      "cost": "reserved EUR 0.24, ceiling EUR 0.08/h, 1 min wall, destroyed 2026-10-14T08:20:58Z; provider inventory read back 0 servers after destroy",
+      "eval_auc": 0.8036,
+      "contract_ok": true
     }
   ],
   "artifacts": [],
@@ -466,5 +483,37 @@
     "tags_ge_1pct_of_surveys": 88,
     "probe_seconds": 31,
     "verdict": "viable second lead; MSHA leads on scale (538,068 inspections / 3.10 M citations / 26 years), label floor (104 vs 88) and documented feature surface. Same licence question applies: government file with no stated terms."
+  },
+  "baseline": {
+    "job": "msha-baseline-001",
+    "staging_release": 412476894,
+    "artifact_job": "msha-002",
+    "artifact_release": 410471211,
+    "config": "sec_56_12004",
+    "section": "56.12004",
+    "source": "the accepted artifact's sec_56_12004 files fetched from staging release 410471211 and measured in place - the bytes being released, not a rebuild",
+    "runner": "the benchmark's own train.py/validate.py/validate.sh, bundled unmodified (digests verified equal to the task_template files); validate.py re-ran training and reported CONTRACT OK",
+    "levels": {
+      "sec_56_12004": {
+        "eval_auc": 0.8036,
+        "train_auc": 0.8036,
+        "train_rows": 415088,
+        "eval_rows": 49233,
+        "positive_rate": {
+          "train": 0.088646,
+          "eval": 0.106311,
+          "holdout": 0.099565
+        }
+      }
+    },
+    "contract_ok": true,
+    "persistence_reference": {
+      "source": "msha-002 build_summary.json, collected and digest-verified 2026-10-12",
+      "persistence_prev_target_cited_eval_auc": 0.583102,
+      "full_model_eval_auc": 0.8036,
+      "headroom_over_persistence_feature": 0.2205
+    },
+    "what_it_shows": "the task is learnable on the released bytes and clears the target section's own persistence by a wide margin: the full 24-feature runner model reaches 0.8036 eval AUC on sec_56_12004 against 0.5831 for prev_target_cited alone (the corrected most-recent-strictly-earlier semantics), so the learned signal is not the target section's own persistence in disguise; prev_target_cited is the only single feature measured individually, so no strongest-feature claim is made",
+    "evidence": ".factory/msha-baseline-001/reports/ (baseline.json, train-sec_56_12004.log, validate-sec_56_12004.log, container.log, manifest.json - each sha256-verified against the staging release asset table)"
   }
 }
