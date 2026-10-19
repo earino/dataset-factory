@@ -33,6 +33,11 @@ BACKOFF_SECONDS = 5
 # One commit per file hit the Hub's per-repository commit limit partway through the 226-asset
 # MSHA release: 99 files failed with HTTP 429 after ~127 commits. Batch the files instead.
 BATCH_SIZE = 6
+# The Hub allows 128 commits per repository per hour. A batch that is refused for that reason is
+# retried after a wait rather than counted as a failed asset, because the bytes are fine and the
+# only thing missing is time.
+RATE_LIMIT_BACKOFF_SECONDS = 900
+RATE_LIMIT_WAITS = 4
 # Written beside the job, never inside the job's input mounts.
 VENV = ".hf-venv"
 
@@ -358,7 +363,9 @@ def hf_publish(base, job, report, client=None, retrieve=None):
                                           "target": entry["item"]["target"]}
                                          for entry in prepared]))
         error = None
-        for attempt in range(1, ATTEMPTS + 1):
+        waits = 0
+        attempts_used = 0
+        while True:
             helper = write_helper(base, f".hf-upload-{start}.py", UPLOAD_HELPER)
             result = None
             try:
@@ -373,8 +380,17 @@ def hf_publish(base, job, report, client=None, retrieve=None):
                 break
             if result is not None:
                 error = (result.stderr or result.stdout).strip()[:300]
-            if attempt < ATTEMPTS:
-                time.sleep(BACKOFF_SECONDS * attempt * 6)
+            if error and "429" in error and waits < RATE_LIMIT_WAITS:
+                waits += 1
+                if time.monotonic() + RATE_LIMIT_BACKOFF_SECONDS > deadline:
+                    break
+                time.sleep(RATE_LIMIT_BACKOFF_SECONDS)
+                continue
+            if attempts_used < ATTEMPTS - 1:
+                attempts_used += 1
+                time.sleep(BACKOFF_SECONDS * attempts_used * 6)
+                continue
+            break
         if error:
             for entry in prepared:
                 failures.append({"target": entry["item"]["target"],
