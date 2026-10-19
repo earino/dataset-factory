@@ -417,7 +417,7 @@ Every cost figure carries `cost_status = "estimated"` and `actual_cost_usd = 0`:
 estimates, and **no provider-reported actual exists**. On this provider the estimate is also
 literally zero for every call, so the USD allowance can never reach `stop_fraction` and is not
 what bounds the routine. The binding control is **`weekly_token_budget`** - tokens are measured
-per session, so a 12,000,000-token weekly ceiling holds the gate even when the dollar column
+per session, so a 24,000,000-token weekly ceiling holds the gate even when the dollar column
 reads 0.0000. The USD allowance is kept as the operator's stated intent and still fails closed
 when unset. This is therefore a budget guard on planned work. It **cannot** reconcile against the portal's subscription quota, its usage page
 or its reset period - none of which is visible to this instance.

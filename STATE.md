@@ -3383,3 +3383,8 @@ research sessions in the trailing 7 days, held at the gate. Configured `weekly_t
 (586,447 over 2 sessions), so 17 ticks a week sit at roughly 5M against a 12M ceiling. Guard tests
 in `tests/test_research_budget.py::WeeklyTokenBudgetTests` fail on the pre-fix code (1 failure,
 1 error) and pass after.
+
+**Weekly token budget doubled 2026-10-19** to 24,000,000 at the operator's instruction. Observed
+research use is ~293,000 tokens per session, so the ceiling now admits roughly 80 sessions a week;
+the 18-session cap and the 06:00/18:00 + Mon/Wed/Fri schedules are unchanged and remain the nearer
+limits.
