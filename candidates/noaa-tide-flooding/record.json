@@ -1,970 +1,977 @@
 {
-  "id": "noaa-tide-flooding",
-  "status": "published",
-  "created_at": "2026-09-18T09:31:08.846085+00:00",
-  "domain": "coastal water levels / flood-threshold exceedance",
-  "prediction_question": "For a chosen NOAA water-level station, will the daily maximum observed water level exceed its published minor flood threshold tomorrow?",
-  "prediction_time": "End of the local day before the target day. Features are observed water levels only. NOAA tide predictions and model guidance are model output and must be excluded so the task stays an observation-only forecast.",
-  "target_definition": "Binary: the daily maximum observed water level for the target day exceeds the station's NOS minor flood threshold from the CO-OPS metadata API, compared at datum=STND. The physical nos_minor threshold is retained by decision; it is not replaced with a per-station quantile merely to balance the classes (see measurements.target_threshold_decision).",
-  "datum_requirement": "MUST use datum=STND. The published nos_minor threshold is in the station datum and the metadata API does not declare a datum. Comparing MLLW-referenced heights to nos_minor silently yields zero positives at every station; see measurements.datum_trap_measured.",
-  "sources": [
-    {
-      "name": "NOAA CO-OPS data retrieval API",
-      "url": "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter",
-      "access": "anonymous, no key; products include 6-minute water_level and verified Daily Maximum; verified live 2026-09-18 for Boston 8443970: 240 rows on 2026-09-01",
-      "terms": "Public domain per the CO-OPS portal's own disclaimers page, with a constraint: modified content must not be presented as official NWS/NOS material."
-    },
-    {
-      "name": "NOAA CO-OPS metadata API flood levels",
-      "url": "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/<id>/floodlevels.json",
-      "access": "verified live 2026-09-18; Boston nos_minor 15.85, nws_minor 16.03 feet on station datum",
-      "terms": "Public domain per the CO-OPS portal's own disclaimers page, with a constraint: modified content must not be presented as official NWS/NOS material."
-    },
-    {
-      "name": "CO-OPS URL builder (retrieval limits: 6-minute 1 month, hourly up to 200 years)",
-      "url": "https://tidesandcurrents.noaa.gov/api-helper/url-generator.html",
-      "terms": "Public domain per the CO-OPS portal's own disclaimers page, with a constraint: modified content must not be presented as official NWS/NOS material."
-    }
+ "id": "noaa-tide-flooding",
+ "status": "published",
+ "created_at": "2026-09-18T09:31:08.846085+00:00",
+ "domain": "coastal water levels / flood-threshold exceedance",
+ "prediction_question": "For a chosen NOAA water-level station, will the daily maximum observed water level exceed its published minor flood threshold tomorrow?",
+ "prediction_time": "End of the local day before the target day. Features are observed water levels only. NOAA tide predictions and model guidance are model output and must be excluded so the task stays an observation-only forecast.",
+ "target_definition": "Binary: the daily maximum observed water level for the target day exceeds the station's NOS minor flood threshold from the CO-OPS metadata API, compared at datum=STND. The physical nos_minor threshold is retained by decision; it is not replaced with a per-station quantile merely to balance the classes (see measurements.target_threshold_decision).",
+ "datum_requirement": "MUST use datum=STND. The published nos_minor threshold is in the station datum and the metadata API does not declare a datum. Comparing MLLW-referenced heights to nos_minor silently yields zero positives at every station; see measurements.datum_trap_measured.",
+ "sources": [
+  {
+   "name": "NOAA CO-OPS data retrieval API",
+   "url": "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter",
+   "access": "anonymous, no key; products include 6-minute water_level and verified Daily Maximum; verified live 2026-09-18 for Boston 8443970: 240 rows on 2026-09-01",
+   "terms": "Public domain per the CO-OPS portal's own disclaimers page, with a constraint: modified content must not be presented as official NWS/NOS material."
+  },
+  {
+   "name": "NOAA CO-OPS metadata API flood levels",
+   "url": "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/<id>/floodlevels.json",
+   "access": "verified live 2026-09-18; Boston nos_minor 15.85, nws_minor 16.03 feet on station datum",
+   "terms": "Public domain per the CO-OPS portal's own disclaimers page, with a constraint: modified content must not be presented as official NWS/NOS material."
+  },
+  {
+   "name": "CO-OPS URL builder (retrieval limits: 6-minute 1 month, hourly up to 200 years)",
+   "url": "https://tidesandcurrents.noaa.gov/api-helper/url-generator.html",
+   "terms": "Public domain per the CO-OPS portal's own disclaimers page, with a constraint: modified content must not be presented as official NWS/NOS material."
+  }
+ ],
+ "license_evidence": [
+  "READ 2026-09-19 from the CO-OPS portal itself (the same host the data comes from), https://tidesandcurrents.noaa.gov/disclaimers.html, 'Use of Data and Products': \"The information on government servers are in the public domain, unless specifically annotated otherwise, and may be used freely by the public.\" Same page: \"NOS requests that attribution be given whenever NOS material is reproduced and re-disseminated. Pursuant to 17 U.S.C. 403 ... stating that such material is not subject to copyright protection.\" CONSTRAINT READ ON THE SAME PAGE, honoured in the release: \"This information shall not be modified in content and then presented as official government material\" - any derived dataset must be labelled as derived and must not be presented as official NOS data. Corroborating: nauticalcharts.noaa.gov/data/data-licensing.html records NOAA data released under a CC0-1.0 public-domain dedication (CC BY 4.0 for some products), and the NCEI ISO metadata for CO-OPS stations carries the same CC0 waiver. Attributes: attribution requested as a courtesy, not required."
+ ],
+ "construction_script": "candidates/noaa-tide-flooding/build.py (run on a worker via candidates/noaa-tide-flooding/source/run.sh); job noaa-003 built the first artifact, job noaa-004 rebuilt the same panel with the label renamed late -> minor_flood, and that rebuild is the adopted one",
+ "split_strategy": {
+  "levels": [
+   "temporal",
+   "station_disjoint"
   ],
-  "license_evidence": [
-    "READ 2026-09-19 from the CO-OPS portal itself (the same host the data comes from), https://tidesandcurrents.noaa.gov/disclaimers.html, 'Use of Data and Products': \"The information on government servers are in the public domain, unless specifically annotated otherwise, and may be used freely by the public.\" Same page: \"NOS requests that attribution be given whenever NOS material is reproduced and re-disseminated. Pursuant to 17 U.S.C. 403 ... stating that such material is not subject to copyright protection.\" CONSTRAINT READ ON THE SAME PAGE, honoured in the release: \"This information shall not be modified in content and then presented as official government material\" - any derived dataset must be labelled as derived and must not be presented as official NOS data. Corroborating: nauticalcharts.noaa.gov/data/data-licensing.html records NOAA data released under a CC0-1.0 public-domain dedication (CC BY 4.0 for some products), and the NCEI ISO metadata for CO-OPS stations carries the same CC0 waiver. Attributes: attribution requested as a courtesy, not required."
-  ],
-  "construction_script": "candidates/noaa-tide-flooding/build.py (run on a worker via candidates/noaa-tide-flooding/source/run.sh); job noaa-003 built the first artifact, job noaa-004 rebuilt the same panel with the label renamed late -> minor_flood, and that rebuild is the adopted one",
-  "split_strategy": {
-    "levels": [
-      "temporal",
-      "station_disjoint"
-    ],
+  "temporal": {
+   "train": "2006-2021",
+   "eval": "2022-2023",
+   "holdout": "2024-2025",
+   "stations": "all 122 frozen"
+  },
+  "station_disjoint": {
+   "rule": "sort the 122 frozen stations by NOS station id; every third is group0, the held-out set; train on group1+group2",
+   "train": "group1+group2, 2006-2021",
+   "eval": "group0, 2022-2023",
+   "holdout": "group0, 2024-2025",
+   "held_out_stations": 41
+  },
+  "time_column": "date",
+  "event_key_column": "date",
+  "why": "the temporal level is the benchmark-typical panel split; the station-disjoint level asks whether an agent learned something transferable rather than memorising one station's local behaviour, which is the basis of the novelty verdict"
+ },
+ "measurements": {
+  "capacity_measured_before_build": {
+   "temporal_positives": {
+    "train": 11886,
+    "eval": 1828,
+    "holdout": 2850
+   },
+   "station_disjoint_positives": {
+    "eval": 792,
+    "holdout": 1090
+   },
+   "independent_events": {
+    "temporal_eval": 332,
+    "temporal_holdout": 427,
+    "station_disjoint_eval": 298,
+    "station_disjoint_holdout": 337
+   },
+   "evidence": "spatial_split_result.json, station_list_result.json"
+  },
+  "built": {
+   "requests": 4880,
+   "coverage": "122/122 stations, 2440/2440 station-years, 0 errors",
+   "day_quality": "879,034 days; 622 incomplete (kept and counted); 5,239 flagged"
+  },
+  "extraction_cost": {
+   "requests": 4880,
+   "bytes_approx": 184000000,
+   "route": "daily_max_min features + HTF daily flags, one request each per station-year"
+  },
+  "label_route_correction": "our reduction of 6-minute maxima overcounted flood days by ~20% against NOAA's own counts on 2024 (113-114 vs 94 over four stations); NOAA's own flags matched exactly, station by station",
+  "evidence": "label_route_result.json",
+  "rebuild_not_byte_reproducible": {
+   "measured_at": "2026-09-20T11:45:00+00:00",
+   "how": "noaa-004 rebuilt the same panel from the same bundled build.py one day after noaa-003; the two artifacts were compared through byte-range reads of their staging assets (no bulk download on the coordinator)",
+   "result": "identical row counts, positives, coverage and day-quality; sparse value revisions in the observations and a different byte size in every file",
+   "example": "station 8661070 Springmaid Pier, 2008-10-12/13, temporal/train offset 43912723: observed_max_ft 35.427 -> 35.426, -1.323 -> -1.324, trailing7_mean 34.722 -> 34.7219, trailing30_mean 35.4425 -> 35.4424",
+   "consequence": "the released artifact version is a snapshot pinned by digest, not a value a fresh pull reproduces. Publish the artifact, never a rebuild, and re-gate and re-release if the panel is ever pulled again",
+   "evidence": "the two staging releases 392230750 (noaa-003) and 392410743 (noaa-004)"
+  }
+ },
+ "jobs": [
+  {
+   "id": "noaa-001",
+   "status": "failed",
+   "staging_release": 392168243,
+   "why": "incomplete panel: 109/122 stations, 594 station-years lost to rate limiting; passed both gates anyway, which exposed that the gate does not check coverage"
+  },
+  {
+   "id": "noaa-002",
+   "status": "failed",
+   "staging_release": 392201946,
+   "why": "122 stations but 60 station-years lost to HTTP 403, which the retry treated as permanent; the new coverage gate refused it and skipped qualification"
+  },
+  {
+   "id": "noaa-003",
+   "status": "succeeded",
+   "staging_release": 392230750,
+   "staging_tag": "job-noaa-003",
+   "requests": 4880,
+   "errors": 0,
+   "gates": "both levels 32/32, no failures"
+  },
+  {
+   "id": "noaa-baseline-001",
+   "status": "succeeded",
+   "staging_release": 392328598,
+   "elapsed_minutes": 27.5,
+   "evidence": "baseline.json, train/validate logs"
+  },
+  {
+   "id": "noaa-baseline-002",
+   "status": "succeeded",
+   "what": "the baseline measured on the corrected artifact (noaa-004, staging release 392410743), fetched from staging rather than rebuilt, because these are the bytes the release will carry",
+   "staging_release": 396517628,
+   "staging_tag": "job-noaa-baseline-002",
+   "server_id": 167401677,
+   "created_at": "2026-09-25T10:35:43Z",
+   "elapsed_seconds": 47.1,
+   "fetched": "10/10 assets, 196,018,020 bytes, zero fetch failures, each checked against the digest the builder recorded",
+   "results": {
     "temporal": {
-      "train": "2006-2021",
-      "eval": "2022-2023",
-      "holdout": "2024-2025",
-      "stations": "all 122 frozen"
+     "eval_auc": 0.8633,
+     "validate_auc": 0.8633,
+     "contract_ok": true
     },
     "station_disjoint": {
-      "rule": "sort the 122 frozen stations by NOS station id; every third is group0, the held-out set; train on group1+group2",
-      "train": "group1+group2, 2006-2021",
-      "eval": "group0, 2022-2023",
-      "holdout": "group0, 2024-2025",
-      "held_out_stations": 41
+     "eval_auc": 0.869,
+     "validate_auc": 0.869,
+     "contract_ok": true
     },
-    "time_column": "date",
-    "event_key_column": "date",
-    "why": "the temporal level is the benchmark-typical panel split; the station-disjoint level asks whether an agent learned something transferable rather than memorising one station's local behaviour, which is the basis of the novelty verdict"
+    "rows_and_rates": "identical to noaa-baseline-001 in all six splits - temporal 697373/89038/88841 at 0.016883/0.020385/0.03208 and station_disjoint 461580/29930/29930 at 0.016277/0.026328/0.036418"
+   },
+   "dependencies": "recorded in the job's container.log: pandas 2.3.3, numpy 2.5.3, xgboost 3.4.1, scikit-learn 1.9.1",
+   "why": "the recorded baseline had been measured on the superseded noaa-003 artifact; once the rename was adopted the number had to come from the bytes that ship",
+   "evidence": ".factory/noaa-baseline-002/result.json and .factory/noaa-baseline-002/reports/{baseline.json,container.log,train-temporal.log,train-station_disjoint.log,validate-temporal.log,validate-station_disjoint.log}",
+   "bundle": "candidates/noaa-tide-flooding/baseline/fetch/{job.json,run.sh,report_baseline.py}; the older rebuild-and-measure variant at baseline/source/ never ran and had squatted on this id since 2026-09-20, so it was renamed noaa-baseline-rebuild-001 in the same commit - CI's job-id uniqueness check (tests/test_repo_hygiene.py) is what surfaced it"
   },
-  "measurements": {
-    "capacity_measured_before_build": {
-      "temporal_positives": {
-        "train": 11886,
-        "eval": 1828,
-        "holdout": 2850
-      },
-      "station_disjoint_positives": {
-        "eval": 792,
-        "holdout": 1090
-      },
-      "independent_events": {
-        "temporal_eval": 332,
-        "temporal_holdout": 427,
-        "station_disjoint_eval": 298,
-        "station_disjoint_holdout": 337
-      },
-      "evidence": "spatial_split_result.json, station_list_result.json"
-    },
-    "built": {
-      "requests": 4880,
-      "coverage": "122/122 stations, 2440/2440 station-years, 0 errors",
-      "day_quality": "879,034 days; 622 incomplete (kept and counted); 5,239 flagged"
-    },
-    "extraction_cost": {
-      "requests": 4880,
-      "bytes_approx": 184000000,
-      "route": "daily_max_min features + HTF daily flags, one request each per station-year"
-    },
-    "label_route_correction": "our reduction of 6-minute maxima overcounted flood days by ~20% against NOAA's own counts on 2024 (113-114 vs 94 over four stations); NOAA's own flags matched exactly, station by station",
-    "evidence": "label_route_result.json",
-    "rebuild_not_byte_reproducible": {
-      "measured_at": "2026-09-20T11:45:00+00:00",
-      "how": "noaa-004 rebuilt the same panel from the same bundled build.py one day after noaa-003; the two artifacts were compared through byte-range reads of their staging assets (no bulk download on the coordinator)",
-      "result": "identical row counts, positives, coverage and day-quality; sparse value revisions in the observations and a different byte size in every file",
-      "example": "station 8661070 Springmaid Pier, 2008-10-12/13, temporal/train offset 43912723: observed_max_ft 35.427 -> 35.426, -1.323 -> -1.324, trailing7_mean 34.722 -> 34.7219, trailing30_mean 35.4425 -> 35.4424",
-      "consequence": "the released artifact version is a snapshot pinned by digest, not a value a fresh pull reproduces. Publish the artifact, never a rebuild, and re-gate and re-release if the panel is ever pulled again",
-      "evidence": "the two staging releases 392230750 (noaa-003) and 392410743 (noaa-004)"
-    }
+  {
+   "id": "noaa-publish-001",
+   "status": "succeeded",
+   "what": "GitHub transfer: the ten accepted artifact files copied from private staging release 392230750 into the dataset repository's release, on a worker host, so the ~187 MB never passed through the coordinator",
+   "staging_release": 392388409,
+   "staging_tag": "job-noaa-publish-001",
+   "target_repo": "earino/noaa-tide-flooding",
+   "target_release": 392387511,
+   "target_tag": "v2026.09",
+   "assets": 10,
+   "bytes": 196017925,
+   "failures": 0,
+   "why": "the publish/transfer path is the only step that needs the write credential and the bytes together, so it runs where the bytes are",
+   "evidence": ".factory/noaa-publish-001/reports/staging-manifest.json (job manifest, transferred list and zero failures), .factory/noaa-publish-001/result.json"
   },
-  "jobs": [
-    {
-      "id": "noaa-001",
-      "status": "failed",
-      "staging_release": 392168243,
-      "why": "incomplete panel: 109/122 stations, 594 station-years lost to rate limiting; passed both gates anyway, which exposed that the gate does not check coverage"
-    },
-    {
-      "id": "noaa-002",
-      "status": "failed",
-      "staging_release": 392201946,
-      "why": "122 stations but 60 station-years lost to HTTP 403, which the retry treated as permanent; the new coverage gate refused it and skipped qualification"
-    },
-    {
-      "id": "noaa-003",
-      "status": "succeeded",
-      "staging_release": 392230750,
-      "staging_tag": "job-noaa-003",
-      "requests": 4880,
-      "errors": 0,
-      "gates": "both levels 32/32, no failures"
-    },
-    {
-      "id": "noaa-baseline-001",
-      "status": "succeeded",
-      "staging_release": 392328598,
-      "elapsed_minutes": 27.5,
-      "evidence": "baseline.json, train/validate logs"
-    },
-    {
-      "id": "noaa-baseline-002",
-      "status": "succeeded",
-      "what": "the baseline measured on the corrected artifact (noaa-004, staging release 392410743), fetched from staging rather than rebuilt, because these are the bytes the release will carry",
-      "staging_release": 396517628,
-      "staging_tag": "job-noaa-baseline-002",
-      "server_id": 167401677,
-      "created_at": "2026-09-25T10:35:43Z",
-      "elapsed_seconds": 47.1,
-      "fetched": "10/10 assets, 196,018,020 bytes, zero fetch failures, each checked against the digest the builder recorded",
-      "results": {
-        "temporal": {
-          "eval_auc": 0.8633,
-          "validate_auc": 0.8633,
-          "contract_ok": true
-        },
-        "station_disjoint": {
-          "eval_auc": 0.869,
-          "validate_auc": 0.869,
-          "contract_ok": true
-        },
-        "rows_and_rates": "identical to noaa-baseline-001 in all six splits - temporal 697373/89038/88841 at 0.016883/0.020385/0.03208 and station_disjoint 461580/29930/29930 at 0.016277/0.026328/0.036418"
-      },
-      "dependencies": "recorded in the job's container.log: pandas 2.3.3, numpy 2.5.3, xgboost 3.4.1, scikit-learn 1.9.1",
-      "why": "the recorded baseline had been measured on the superseded noaa-003 artifact; once the rename was adopted the number had to come from the bytes that ship",
-      "evidence": ".factory/noaa-baseline-002/result.json and .factory/noaa-baseline-002/reports/{baseline.json,container.log,train-temporal.log,train-station_disjoint.log,validate-temporal.log,validate-station_disjoint.log}",
-      "bundle": "candidates/noaa-tide-flooding/baseline/fetch/{job.json,run.sh,report_baseline.py}; the older rebuild-and-measure variant at baseline/source/ never ran and had squatted on this id since 2026-09-20, so it was renamed noaa-baseline-rebuild-001 in the same commit - CI's job-id uniqueness check (tests/test_repo_hygiene.py) is what surfaced it"
-    },
-    {
-      "id": "noaa-publish-001",
-      "status": "succeeded",
-      "what": "GitHub transfer: the ten accepted artifact files copied from private staging release 392230750 into the dataset repository's release, on a worker host, so the ~187 MB never passed through the coordinator",
-      "staging_release": 392388409,
-      "staging_tag": "job-noaa-publish-001",
-      "target_repo": "earino/noaa-tide-flooding",
-      "target_release": 392387511,
-      "target_tag": "v2026.09",
-      "assets": 10,
-      "bytes": 196017925,
-      "failures": 0,
-      "why": "the publish/transfer path is the only step that needs the write credential and the bytes together, so it runs where the bytes are",
-      "evidence": ".factory/noaa-publish-001/reports/staging-manifest.json (job manifest, transferred list and zero failures), .factory/noaa-publish-001/result.json"
-    },
-    {
-      "id": "noaa-consumer-001",
-      "status": "failed",
-      "what": "clean-room consumer check of the published bytes (package vs MANIFEST.json, sha256sum -c, published gate, baseline reproduction)",
-      "staging_release": 392392211,
-      "elapsed_seconds": 51.4,
-      "assets_collected": 5,
-      "why": "failed in the dependency/baseline step with nothing in the log: the step sent its output to a file in /output and the container died before uploading it, so the log ends at the step header. Package verification, sha256sums and both gate runs had already passed at that point",
-      "fix": "the run script now installs the benchmark's declared dependency ranges as an explicit step and tees the baseline output into the log; relaunched as noaa-consumer-002",
-      "evidence": ".factory/noaa-consumer-001/result.json, .factory/noaa-consumer-001/reports/{container.log,manifest.json,qualification-temporal.txt,qualification-station_disjoint.txt}"
-    },
-    {
-      "id": "noaa-consumer-002",
-      "status": "succeeded",
-      "what": "the same consumer check rerun with the runtime dependency step made explicit",
-      "staging_release": 392395671,
-      "elapsed_seconds": 72.0,
-      "results": {
-        "package_vs_manifest": "28 files checked, every one matched",
-        "sha256sum_c": "OK on all ten assets",
-        "gate_temporal": "exit 0, QUALIFICATION PASSED, artifact 8896c4423c53cb14",
-        "gate_station_disjoint": "exit 0, QUALIFICATION PASSED, artifact e6aff23f394ddfe4",
-        "baseline_temporal": "CONTRACT OK, eval AUC 0.8651 against the recorded 0.8638",
-        "baseline_station_disjoint": "CONTRACT OK, eval AUC 0.8687 against the recorded 0.8688",
-        "spread": "about 0.002, attributed to xgboost's non-bit-reproducible training: identical artifact digests, identical dependency versions (pandas 2.3.3, numpy 2.5.3, xgboost 3.4.1, scikit-learn 1.9.1), so the recorded baseline is one measurement and not a constant"
-      },
-      "why": "the consumer check is the only evidence that a reader with no access to the building repository and no credential gets the same dataset and the same result from the published release",
-      "evidence": ".factory/noaa-consumer-002/result.json, .factory/noaa-consumer-002/reports/{container.log,output_consumer.txt}, release/noaa-tide-flooding/VERIFICATION.md"
-    },
-    {
-      "id": "noaa-hf-001",
-      "status": "failed",
-      "what": "Hugging Face bulk publish: the ten accepted artifact files moved from the dataset repository's release to the private dataset repository on Hugging Face, then the documented loading path exercised against the uploaded bytes",
-      "staging_release": 392397927,
-      "staging_tag": "job-noaa-hf-001",
-      "target_repo": "earino/noaa-tide-flooding",
-      "assets": 10,
-      "bytes": 196017925,
-      "results": {
-        "uploads": "10/10 uploaded, each verified against the digest the Hub reports; 0 failures, 0 skips",
-        "loading_check": "not performed - the verifier crashed before comparing anything",
-        "independent_check_on_the_coordinator": "read-only listing of the private repository: all ten paths present with the manifest's byte sizes; the manifest lists no other artifact file"
-      },
-      "why": "the multi-config branch of the loading verifier fell through into the single-config code, which reads expected['splits'] - a key a job declaring `configs` does not have. It died with KeyError: 'splits' after load_dataset had already read all six splits of both configs, so 'it uploaded' was reported as 'it does not load'",
-      "fix": "workers/hf_publish.py: the single-config path is now inside the else branch and the report is printed once; the crash is reproduced against the pre-fix source and covered by tests/test_hf_helpers.py::VerifyHelperBranchTests, which runs the real helper source against a stub `datasets` for both shapes of job",
-      "evidence": ".factory/noaa-hf-001/result.json, .factory/noaa-hf-001/reports/{manifest.json,container.log,source.tar}"
-    },
-    {
-      "id": "noaa-004",
-      "status": "succeeded",
-      "what": "a second full pull of the 122-station panel, launched at 11:04:32 by a concurrent coordinator session that also renamed the target column late -> minor_flood in build.py and persistence_baseline.py without recording a reason. It was the job that held the worker slot while noaa-hf-002 waited",
-      "staging_release": 392410743,
-      "staging_tag": "job-noaa-004",
-      "server_id": 166613240,
-      "elapsed_seconds": 1672.1,
-      "requests": 4880,
-      "coverage": "122/122 stations, 2440/2440 station-years, 0 missing, 0 errors",
-      "gates": "temporal and station_disjoint both ok, 32/32 checks, failed_checks 0, gate 1.3.0, QUALIFICATION PASSED on the rebuilt bytes",
-      "artifact_version": {
-        "temporal": "bb051dc304a4ee63fd1e61ca12864afab247e9530c714f011a60a2d4598d202c",
-        "station_disjoint": "92297a5b62f86b2901eac9e2a7f076e1495dd8fe2e0eb913d140a3a7df47ba17",
-        "combined": "fb49f932c7b4ea5ab532c20f7dce59a7d733de925d1e172054ff1d38abe1eeed",
-        "combined_note": "derived exactly as release-manifest.py derives it - the two per-level gate versions joined and hashed"
-      },
-      "identical_to_the_shipped_artifact": {
-        "levels": {
-          "temporal": {
-            "train": [
-              697373,
-              11774
-            ],
-            "eval": [
-              89038,
-              1815
-            ],
-            "holdout": [
-              88841,
-              2850
-            ]
-          },
-          "station_disjoint": {
-            "train": [
-              461580,
-              7513
-            ],
-            "eval": [
-              29930,
-              788
-            ],
-            "holdout": [
-              29930,
-              1090
-            ]
-          }
-        },
-        "note": "[rows, positives] per split, identical to noaa-003 in all six; coverage, day-quality (879,034 days / 622 incomplete / 5,239 flagged) and build_summary fields other than 'columns' are identical too"
-      },
-      "differences_from_the_shipped_artifact": {
-        "target_column_name": "the rebuild ships minor_flood where the shipped artifact ships late (the rename made by the concurrent session). It was reverted on 2026-09-20 and RE-ADOPTED on 2026-09-25 on the operator's instruction: `late` was copied from the Austin task and is the wrong name for this dataset. This rebuild is now the artifact the release will carry, so what follows is the re-issue - the release package's docs, its code copies and MANIFEST.json still describe noaa-003 and must be regenerated from this artifact, then transferred and consumer-verified again, before publication",
-        "revised_observation_values": "a small number of values differ because NOAA revised them between the 2026-09-19 and 2026-09-20 pulls. Measured on temporal/train at byte offset 43912723: station 8661070 (Springmaid Pier) 2008-10-12 observed_max_ft 35.427 -> 35.426, 2008-10-13 -1.323 -> -1.324 with trailing7_mean 34.722 -> 34.7219 and trailing30_mean 35.4425 -> 35.4424. Every one of the six files differs in byte size by more or less than the 7-byte header change (+12, +11, +9, +7, +5, +9 for the 7-byte header), so at least one revised row is in each; 200-byte needles sampled at 250 KB intervals found no other difference in 135 sampled windows, so the revisions are sparse",
-        "why_it_matters": "the artifact is pinned by digest and reproducible from the released files, but it is not byte-reproducible by re-pulling the live API: CO-OPS values are revised after publication. A future rebuild is a new artifact version and needs its own gate report and its own release, not a silent replacement"
-      },
-      "why_not_adopted": "the only intended change was the target's name, and adopting it would invalidate a release that is already gate-passed, consumer-verified on the published bytes and uploaded to Hugging Face - for a rename that no committed document asks for. The rename's diff is kept at candidates/noaa-tide-flooding/noaa-004-label-rename.diff; if the operator wants the clearer name, this staging release is the artifact to reuse (its digests are recorded above) and the release, the card and hf/job-002.json all have to move with it",
-      "evidence": ".factory/noaa-004/result.json and .factory/noaa-004/reports/{manifest.json,build_summary.json,temporal-meta.json,temporal-quality.json,station_disjoint-meta.json,station_disjoint-quality.json,qualification-temporal.json,qualification-station_disjoint.json,container.log}; every report was hash-checked against the release manifest",
-      "worker": "destroyed 2026-09-20T11:53:09Z",
-      "adopted": {
-        "decided": "2026-09-25T10:33Z",
-        "by": "the operator, in session, instructing that publication proceed with the corrected label name",
-        "what_changed": "candidates/noaa-tide-flooding/baseline/expected_artifact.json now names this artifact; card.md and the hf plans name the label minor_flood; noaa-baseline-002 measured the baseline on these bytes; the recorded rename diff is candidates/noaa-tide-flooding/noaa-004-label-rename.diff",
-        "what_did_not": "the private GitHub release v2026.09 and the Hugging Face revision still carry the noaa-003 bytes (label `late`). Both destinations are private, so nothing public changed. The release package was deliberately left matching the bytes it actually holds: release/noaa-tide-flooding/DATA_DICTIONARY.md keeps the shipped label name, and MANIFEST.json, README.md, VERIFICATION.md, measurements.json, RELEASE_NOTES.md, REPRODUCE.md and the code copies were NOT regenerated - a doc renamed ahead of the artifact it sits beside would describe bytes that are not in the package, and the verification rows cannot be rewritten until the new consumer check has actually run",
-        "why": "publishing the artifact whose label name was known to be wrong, then re-issuing a corrected version the next day, is worse than the delay"
-      }
-    },
-    {
-      "id": "noaa-hf-002",
-      "status": "succeeded",
-      "what": "the Hugging Face half of the release: the bulk move already in place, then the documented loading path exercised against each config on the Hub - the check noaa-hf-001 died before performing",
-      "staging_release": 392416227,
-      "staging_tag": "job-noaa-hf-002",
-      "server_id": 166615899,
-      "created_at": "2026-09-20T11:53:15Z",
-      "elapsed_seconds": null,
-      "elapsed_note": "the job record does not carry an elapsed time for this job type; it was collected at 11:59Z after a run dominated by the loading check reading the uploaded bytes",
-      "results": {
-        "uploads": "0 uploaded, 10 skipped - every one of the ten files was already at the manifest digest, which independently confirms that noaa-hf-001's upload had in fact landed before its verifier crashed",
-        "failures": 0,
-        "loading_check": "ok: true, problems: []; both configs loaded by name and every split compared against the manifest: temporal train 697,373/11,774, eval 89,038/1,815, holdout 88,841/2,850; station_disjoint train 461,580/7,513, eval 29,930/788, holdout 29,930/1,090",
-        "hub_verification_on_the_coordinator": "scripts/hf-publish.py --verify: ok true, ten of ten paths present at the manifest sizes, four large CSVs digest-verified by the Hub, eight small files present, no missing and no size mismatch",
-        "tag": "created after verification, last: v2026.09, tag commit ee6ba8477e2be021a4000d88c03bd58d038e9a5f, identical to main (tag_matches_main true)"
-      },
-      "evidence": ".factory/noaa-hf-002/{result.json,reports/manifest.json,reports/source.tar}, release/noaa-tide-flooding/DESTINATIONS.json"
-    },
-    {
-      "id": "noaa-publish-002",
-      "status": "succeeded",
-      "what": "GitHub re-issue: the ten corrected (minor_flood) artifact files copied from private staging release 392410743 into the dataset repository's release on a worker host, replacing the superseded noaa-003 bytes; the ~196 MB never passed through the coordinator",
-      "staging_release": 396699267,
-      "staging_tag": "job-noaa-publish-002",
-      "target_repo": "earino/noaa-tide-flooding",
-      "target_release": 396698120,
-      "target_tag": "v2026.09",
-      "server_id": 167435107,
-      "created_at": "2026-09-25T14:54:54Z",
-      "collected_at": "2026-09-25T14:59:40Z",
-      "assets": 10,
-      "bytes": 196018020,
-      "failures": 0,
-      "artifact_version": "fb49f932c7b4ea5ab532c20f7dce59a7d733de925d1e172054ff1d38abe1eeed",
-      "source_checked": "the ten source_asset_ids in the job spec are file-0002..file-0011 of staging release 392410743 (job-noaa-004) and carry exactly the digests the job transferred, so the source release was the corrected artifact and not a neighbouring one",
-      "verified_from_the_service": "each of the ten target assets re-read from the GitHub API on 2026-09-25 matches the job's transferred size and sha256 exactly, 10 of 10, and every one equals release/noaa-tide-flooding/MANIFEST.json's files/assets digests; the repository is private; the release tag v2026.09 and main both resolve to bef3a412",
-      "note": "the job's own manifest records uploaded:false because the transfer path uploads per file instead of one bulk archive; the transfer block (ten transferred, zero failures, 196,018,020 bytes) is the report that matters",
-      "evidence": ".factory/noaa-publish-002/result.json, .factory/noaa-publish-002/reports/{manifest.json,file-0000-part-0000,file-0001-part-0000}, jobs/noaa-publish-002.json, candidates/noaa-tide-flooding/publish/job-002.json"
-    },
-    {
-      "id": "noaa-hf-003",
-      "status": "succeeded",
-      "what": "the Hub half of the re-issue's transfer: the corrected noaa-004 artifact files published to earino/noaa-tide-flooding revision main, plus the loading check on the Hub copy",
-      "staging_release": 396718146,
-      "staging_tag": "job-noaa-hf-003",
-      "server_id": 167437889,
-      "created_at": "2026-09-25T15:20:28Z",
-      "deleted_at": "2026-09-25T15:27:05Z",
-      "transferred": "10 of 10 target files, 196,018,020 bytes, failures [], skipped [] - a real upload, not a digest-skip, so revision main moved from the noaa-003 bytes",
-      "loading_check": {
-        "ok": true,
-        "problems": [],
-        "checked": {
-          "temporal/train": {
-            "rows": 697373,
-            "positives": 11774
-          },
-          "temporal/eval": {
-            "rows": 89038,
-            "positives": 1815
-          },
-          "temporal/holdout": {
-            "rows": 88841,
-            "positives": 2850
-          },
-          "station_disjoint/train": {
-            "rows": 461580,
-            "positives": 7513
-          },
-          "station_disjoint/eval": {
-            "rows": 29930,
-            "positives": 788
-          },
-          "station_disjoint/holdout": {
-            "rows": 29930,
-            "positives": 1090
-          }
-        },
-        "why_it_matters": "all six splits match noaa-baseline-002's row counts and positive rates on the accepted artifact exactly, so the Hub copy is the same panel and not a neighbouring revision"
-      },
-      "verified_from_the_service": "2026-09-25, read back from the Hub API rather than the job's claim: the six plain-blob files were downloaded and re-hashed and the four LFS objects were read from the Hub's own sha256; 10 of 10 sizes and digests equal release/noaa-tide-flooding/MANIFEST.json's files entry for artifact_version fb49f932...",
-      "left_behind": "the Hub's version tag and its docs/small files still describe noaa-003 - see artifacts[0].huggingface.reissue.still_lagging"
-    },
-    {
-      "id": "noaa-consumer-003",
-      "status": "succeeded",
-      "what": "the clean-room consumer check re-run against the re-issued (corrected) bytes: the published package vs MANIFEST.json, sha256sum -c, the published gate on both levels, and baseline reproduction through the published contract - the check whose previous pass (noaa-consumer-002) described the superseded artifact",
-      "staging_release": 396743413,
-      "staging_tag": "job-noaa-consumer-003",
-      "server_id": 167442487,
-      "created_at": "2026-09-25T15:57:39Z",
-      "deleted_at": "2026-09-25T16:05:52Z",
-      "elapsed_seconds": 74.0,
-      "assets_collected": 6,
-      "fetched": "10/10 files from the dataset release 396698120 (earino/noaa-tide-flooding, tag v2026.09), 196,018,020 bytes, failures [], each verified against the corrected per-level digests now recorded in artifacts[0].levels",
-      "results": {
-        "package_vs_manifest": "every listed file matched its recorded hash",
-        "sha256sum_c": "OK",
-        "gate_temporal": "exit 0, QUALIFICATION PASSED, artifact bb051dc304a4ee63",
-        "gate_station_disjoint": "exit 0, QUALIFICATION PASSED, artifact 92297a5b62f86b29",
-        "baseline_temporal": "CONTRACT OK, eval AUC 0.8633",
-        "baseline_station_disjoint": "CONTRACT OK, eval AUC 0.8690",
-        "agreement": "both per-level artifact versions equal the accepted artifact's (artifacts[0].levels) and both AUCs equal the noaa-baseline-002 measurement on the same bytes, so the consumer reproduction is the recorded figure rather than a spread around it"
-      },
-      "why": "the consumer check is the only evidence that a reader with no access to the building repository and no credential gets the same dataset and the same result from the published release; this is the run that belongs to the bytes the release now holds",
-      "residual": "the bundled harness (consumer/source/run.sh) and the shipped baseline/reproduce_baseline.sh both print a hardcoded expectation line carrying the superseded pair (0.8638 / 0.8688), so the last line of output_consumer.txt disagrees with the package's own MANIFEST.json (0.8633 / 0.8690). No check failed - the printed line is a constant, not a read of the manifest - and it is part of the package-prose pass still owed",
-      "evidence": ".factory/noaa-consumer-003/result.json, .factory/noaa-consumer-003/reports/{container.log,output_consumer.txt,baseline-temporal.log,baseline-station_disjoint.log,qualification-temporal.txt,qualification-station_disjoint.txt}"
-    },
-    {
-      "id": "noaa-hf-004",
-      "status": "succeeded",
-      "what": "Hugging Face re-check of the two level-nested files whose release-asset names differ from their Hub paths: the holdout and eval split of the station_disjoint level, moved from the dataset repository's release into earino/noaa-tide-flooding at revision main",
-      "staging_release": 397239558,
-      "server_id": 167526113,
-      "created_at": "2026-09-26T13:06:11Z",
-      "collected_at": "2026-09-26T13:08:31Z",
-      "deleted_at": "2026-09-26T13:12:00Z",
-      "targets": [
-        {
-          "source_asset_id": 588583422,
-          "dest": "station_disjoint-private-holdout.csv",
-          "target": "station_disjoint/private/holdout.csv",
-          "size": 4228360,
-          "sha256": "37d772620231806f3aaf7025961d136c91febda3b82b7fe3442180874602c827"
-        },
-        {
-          "source_asset_id": 588583523,
-          "dest": "station_disjoint-public-eval.csv",
-          "target": "station_disjoint/public/eval.csv",
-          "size": 4229477,
-          "sha256": "be50109320c4af5a925d9f34fedeb6905aed675986ddc9f33c59bd9ac0ba1705"
-        }
-      ],
-      "result": {
-        "status": "succeeded",
-        "uploads": [],
-        "skipped": [
-          {
-            "target": "station_disjoint/private/holdout.csv",
-            "reason": "already at the manifest digest"
-          },
-          {
-            "target": "station_disjoint/public/eval.csv",
-            "reason": "already at the manifest digest"
-          }
-        ],
-        "failures": [],
-        "bytes": 0,
-        "reading": "nothing was moved: the Hub already carried both files at the manifest digests, so this job changed no data on either destination"
-      },
-      "verified_independently": "read from an anonymous client on the coordinator, 2026-09-26: huggingface.co/api/datasets/earino/noaa-tide-flooding/tree/main?recursive=true returns HTTP 200 listing station_disjoint/private/holdout.csv at 4,228,360 bytes and station_disjoint/public/eval.csv at 4,229,477 bytes, the job's own sizes; both were then downloaded from /resolve/main/ and re-hashed, giving 37d77262... and be501093..., byte for byte the digests the job compared against. The skip is therefore confirmed rather than trusted",
-      "evidence": ".factory/noaa-hf-004/{result.json,reports/{manifest.json,file-0001-part-0000}}, jobs/noaa-hf-004.json, candidates/noaa-tide-flooding/hf/job-004.json, staging release 397239558",
-      "residual": "the staging release's container.log asset is 65 bytes of `Error response from daemon: No such container: scout-noaa-hf-004`, so the run's own container log was never captured; the job's result summary was, and it is the summary that carries the outcome",
-      "why_launched": "the job spec carries no note and was written by the concurrent interactive session, together with the site/hub-path change in commit d9cad24, as the Hub-side check the website's new hub_paths links depend on"
-    }
-  ],
-  "artifacts": [
-    {
-      "job": "noaa-publish-002",
-      "repository": "https://github.com/earino/noaa-tide-flooding",
-      "visibility": "private (publication requires explicit authorisation)",
-      "tag": "v2026.09",
-      "commit": "bef3a4127374ae25699e5a70fd77a09b76807b97",
-      "release": "https://github.com/earino/noaa-tide-flooding/releases/tag/v2026.09",
-      "release_id": 396698120,
-      "artifact_version": "fb49f932c7b4ea5ab532c20f7dce59a7d733de925d1e172054ff1d38abe1eeed",
-      "artifact_version_note": "derived exactly as the manifest derives it - the two per-level versions (temporal bb051dc3..., station_disjoint 92297a5b..., both gate 1.3.0 32/32) joined and hashed, because each level is scored as its own contract-complete task instance",
-      "asset_bytes": 196018020,
-      "levels": {
-        "temporal": {
-          "artifact_version": "bb051dc304a4ee63fd1e61ca12864afab247e9530c714f011a60a2d4598d202c",
-          "public/train.csv": {
-            "bytes": 97931048,
-            "sha256": "60854702933b12cc0909f846bf062016830be189297012021340543c1560e339"
-          },
-          "public/eval.csv": {
-            "bytes": 12507815,
-            "sha256": "a2d733a8297294a14f9c64b5f9182a274a954b41dcefd411ca6ef00dc74191d3"
-          },
-          "private/holdout.csv": {
-            "bytes": 12475947,
-            "sha256": "89db2e79b60a7185db3e5b937e3b2d29fcbceab016e85c789473c8ac2e104d51"
-          }
-        },
-        "station_disjoint": {
-          "artifact_version": "92297a5b62f86b2901eac9e2a7f076e1495dd8fe2e0eb913d140a3a7df47ba17",
-          "public/train.csv": {
-            "bytes": 64636168,
-            "sha256": "d7d2bff29c71680962f4421d239121e63beac242b600dd0c23c9b77ac046ce3c"
-          },
-          "public/eval.csv": {
-            "bytes": 4229477,
-            "sha256": "be50109320c4af5a925d9f34fedeb6905aed675986ddc9f33c59bd9ac0ba1705"
-          },
-          "private/holdout.csv": {
-            "bytes": 4228360,
-            "sha256": "37d772620231806f3aaf7025961d136c91febda3b82b7fe3442180874602c827"
-          }
-        }
-      },
-      "verified_from_the_service": "all ten assets re-read from the GitHub API on 2026-09-25 (release 396698120, tag v2026.09) match noaa-publish-002's transferred sizes and digests exactly, 10 of 10, and they equal release/noaa-tide-flooding/MANIFEST.json's files/assets digests; the repository is private",
-      "compared": "release/noaa-tide-flooding/MANIFEST.json",
-      "huggingface": {
-        "repository": "https://huggingface.co/datasets/earino/noaa-tide-flooding",
-        "visibility": "private (publication requires explicit authorisation)",
-        "tag": "v2026.09",
-        "tag_commit": "ee6ba8477e2be021a4000d88c03bd58d038e9a5f",
-        "main_commit": "3116c30647af334c1544f2ffb926c71bc6ec0814",
-        "tag_matches_main": false,
-        "files": 10,
-        "small_files": 8,
-        "verified": true,
-        "verified_at": "2026-09-20T12:00:16+00:00",
-        "loading_check": "run by the worker job noaa-hf-002 and passed on both configs and all six splits",
-        "recorded_in": "release/noaa-tide-flooding/DESTINATIONS.json",
-        "file_name_note": "the Hub ships the artifact files as station_disjoint/* and temporal/* (the two levels as two configs); the GitHub release ships the same ten files under the release layout. Both are the same accepted bytes, one manifest",
-        "superseded": {
-          "checked_at": "2026-09-25T15:06:00+00:00",
-          "finding": "the revision v2026.09 still carries the noaa-003 bytes and label name: temporal/private/holdout.csv 12,475,942 bytes (corrected: 12,475,947), station_disjoint/private/holdout.csv 4,228,351 (corrected: 4,228,360), temporal/meta.json still names the label column `late`, and its MANIFEST.json hashes 55791180c39385def7035305c041cc86d7b2693dad6ef30181bb0672b3b95a67 against the package's 60ffed39e5ce52f7a5e81d3994d1f1aec054d2111c6a6c720f125a3034bad89e",
-          "why": "the Hub half of the re-issue has not been run; the recorded `verified: true` above describes the noaa-003 upload of 2026-09-20 and does not carry over to the corrected artifact",
-          "next": "hf_publish job for the corrected files from release 396698120 (source asset ids 588583351, 588583422, 588583523, 588583624, 588583760, 588583822, 588583868, 588583940, 588584089, 588584338), then the loading check and scripts/hf-publish.py --verify",
-          "reading": "the tree listing was read with the write credential from a mode-0600 file, in-process; the token is not in this record, the bundle or any log",
-          "closed_by": "noaa-hf-003 (2026-09-25) for the ten artifact files on revision main, verified from the API; the version tag and the docs/small files are the remaining items, recorded in reissue"
-        },
-        "tag_note": "re-measured from the Hub refs API on 2026-09-25 after noaa-hf-003: main -> 3116c306 (the corrected bytes), tag v2026.09 -> ee6ba847 (the noaa-003 commit). The recorded tag_matches_main true above described the noaa-003 upload of 2026-09-20 and does not hold for the re-issued copy.",
-        "reissue": {
-          "job": "noaa-hf-003",
-          "checked_at": "2026-09-25T15:26:00+00:00",
-          "staging_release": 396718146,
-          "data_files": "revision main now carries the corrected bytes at all ten paths. Size checked on all ten; digest checked on all ten - six small files downloaded and re-hashed locally (station_disjoint/meta.json 867, station_disjoint/private/holdout.csv 4,228,360, station_disjoint/public/eval.csv 4,229,477, station_disjoint/quality.json 3,793, temporal/meta.json 750, temporal/quality.json 3,795) and four LFS objects read from the Hub's own sha256 (station_disjoint/public/train.csv d7d2bff2..., temporal/private/holdout.csv 89db2e79..., temporal/public/eval.csv a2d733a8..., temporal/public/train.csv 60854702...). Every one equals release/noaa-tide-flooding/MANIFEST.json and the accepted artifact_version fb49f932... The noaa-003 numbers the superseded block measured (12,475,942 / 4,228,351 / label `late`) no longer describe main.",
-          "loading_check": "run by noaa-hf-003 against the Hub copy: ok, problems [], all six splits matched the accepted row and positive counts",
-          "still_lagging": {
-            "version_tag": "v2026.09 still resolves to ee6ba847, the noaa-003 commit, while main is 3116c306, so a version-pinned reader on the Hub still gets the superseded bytes. Re-tagging is the scripts/hf-publish.py --tag step (it replaces the existing tag) and has not been run.",
-            "docs_and_small_files": "the Hub's MANIFEST.json (artifact_version a5a5ac5b...) and SHA256SUMS on main still list the noaa-003 digests, so the small-file upload (--upload-small) has not been re-run either. Zero exposure - every one of those digests is the superseded version's own, and both destinations are private - but the Hub package does not yet describe the bytes it now holds."
-          },
-          "why_the_docs_were_not_pushed_with_the_data": "release/noaa-tide-flooding/DATA_DICTIONARY.md still names the shipped label column `late` and VERIFICATION.md still cites job noaa-003, so --upload-small today would publish prose that contradicts the temporal/meta.json now on the Hub (label minor_flood). The package prose has to be re-pointed at noaa-004 first; that is the first item of next_action."
-        }
-      },
-      "github_tag_state": {
-        "checked_at": "2026-09-25T15:05:00+00:00",
-        "finding": "resolved as measured: the tag v2026.09 and main now resolve to the same commit bef3a4127374ae25699e5a70fd77a09b76807b97 (compare main...v2026.09 -> status identical, ahead_by 0, behind_by 0). The earlier finding - v2026.09 -> 9bcbf2c6 and main -> f384889f as unrelated root commits, compare returning 404 - no longer describes the repository",
-        "how": "the re-issue rebuilt the branch: bef3a412 is itself a root commit (parents []) carrying the re-issue message and the corrected package documents, and the release was created from it with target_commitish main at 2026-09-25T14:54:46Z. So the divergence was removed by replacing the history rather than by the planned single fast-forward; the superseded tag commit 9bcbf2c6 still exists as an object but no ref points at it",
-        "implication": "a version-pinned reader and a main-branch reader now see the same commit, which is the condition the release rule asks for. The one-commit fast-forward that was recorded as the repair is closed by this outcome and is not owed"
-      },
-      "superseded_by": {
-        "artifact_job": "noaa-004",
-        "artifact_version": "fb49f932c7b4ea5ab532c20f7dce59a7d733de925d1e172054ff1d38abe1eeed",
-        "adopted": "2026-09-25, on the operator's instruction, so that publication carries the corrected label name",
-        "state": "the GitHub destination is re-issued: release 396698120 carries the corrected noaa-004 bytes and was verified from the service on 2026-09-25 (10 of 10). The Hugging Face revision v2026.09 still holds the noaa-003 bytes - verified from the API on 2026-09-25, see the huggingface block - and both destinations remain private, so nothing public changed. The clean-room consumer check has not been re-run on the re-issued bytes"
-      },
-      "previous_issue": {
-        "job": "noaa-publish-001",
-        "release_id": 392387511,
-        "commit": "9bcbf2c69e04e7e3d92191a3cfe86ed066cc422c",
-        "artifact_version": "a5a5ac5b41db197810fbd3e6fc8828ce74f2796b02c6ac3088a9350df6ae3450",
-        "asset_bytes": 196017925,
-        "levels": {
-          "temporal": {
-            "artifact_version": "8896c4423c53cb14377765a18f94245dfb10e9f8125b21041a7b68458a17ace5",
-            "public/train.csv": {
-              "bytes": 97931036,
-              "sha256": "939efaf42f0e032b711a499d37a1a6422fb26cb273d2244f9d7d49b274554240"
-            },
-            "public/eval.csv": {
-              "bytes": 12507806,
-              "sha256": "cbc3bd54ed018a8c79ca4973070d0c37f07ec772ef523698d6d15d0cb2625f35"
-            },
-            "private/holdout.csv": {
-              "bytes": 12475942,
-              "sha256": "cceb5a93ee5f40b8aa41b24245256abb660012b2f9e339f66fe4abd05c510562"
-            }
-          },
-          "station_disjoint": {
-            "artifact_version": "e6aff23f394ddfe4b11383c3e8c8a1def0beaddbd2e0cf066ccd08ea7adaedda",
-            "public/train.csv": {
-              "bytes": 64636157,
-              "sha256": "c18ca88074ddaff8c3ff48e922d211dc43884f8b485031ec3488695d54bf3943"
-            },
-            "public/eval.csv": {
-              "bytes": 4229470,
-              "sha256": "e790547b1943f5c116d20766763402b9d5524fb9a1c93491ed8b847c4b22b47f"
-            },
-            "private/holdout.csv": {
-              "bytes": 4228351,
-              "sha256": "7996855020aeb6445932ae86ef5f39f92819f34bd5a7daa14c06b8573327b2f7"
-            }
-          }
-        },
-        "verified_from_the_service": "every asset re-read from the GitHub API on 2026-09-20 matches the job's transferred digests and sizes exactly, 10 of 10, and the repository is private",
-        "state": "superseded on 2026-09-25 by the re-issue under noaa-publish-002; the release is no longer listed on the repository (gh release list returns one release, v2026.09 -> 396698120), and the tag commit 9bcbf2c6 still exists as a git object with no ref pointing at it. The digests are kept here so the superseded version stays reproducible and checkable."
-      }
-    }
-  ],
-  "rejection_reason": null,
-  "review": "Published since 2026-09-25, when the operator authorised public visibility. Release v2026.09 of earino/noaa-tide-flooding carries ten assets across both levels (temporal and station_disjoint), the Hugging Face mirror is public and ungated, and the site page is live; the GitHub repository, a ranged GET of a release asset, the Hub files and the site were all read from an anonymous client and verified. Baselines on the shipped bytes: 0.8633 temporal / 0.8690 station_disjoint (noaa-consumer-003 against release 396698120). Contracts settled at construction: redistribution read from the CO-OPS portal itself (public domain, attribution requested, derived-not-official), observations-only feature list, datum=STND, frozen 122-station panel with eval 1,828 positives over 332 flood days and holdout 2,850 over 427. The persistence floor is stated in the Hub card (single-feature 0.8265 temporal / 0.8454 station_disjoint). CORRECTED 2026-09-26: the previous text was the 2026-09-19 pre-construction review and no longer described state.",
-  "next_action": "The release is public and verified; what remains is documentation-only and touches no asset byte. In order: (1) DATA_DICTIONARY.md's label row still names the column `late` where the shipped target column is `minor_flood` (read from temporal-meta.json: target = minor_flood), so a reader following the dictionary looks for a column that does not exist - this is the first item; (2) VERIFICATION.md still cites job noaa-003 and the superseded figures 0.8638 / 0.8688, and README.md, RELEASE_NOTES.md, baseline/README.md, code/persistence_baseline.py, baseline/reproduce_baseline.sh and consumer/source/run.sh carry the same superseded figures, where the shipped bytes measure 0.8633 / 0.8690 (noaa-consumer-003 against release 396698120, CONTRACT OK); (3) DESTINATIONS.json is absent from the public repository although the same sync carried it for austin-911-response and chicago-doah-adjudication - confirm whether it is meant to be public at this destination and sync it if so. None of these is a new version: they are prose and figure corrections plus one missing record file, and the rule is that document-only corrections never require a new version while any asset-byte change does. Whether to also build a harder variant against the documented persistence floor remains an operator choice, not release work. CORRECTED 2026-09-26: the previous text still said both destinations stay private.",
-  "features_declared": {
-    "prediction_instant": "End of the local day before the target day. Features are observed water levels only. NOAA tide predictions and model guidance are model output and must be excluded so the task stays an observation-only forecast.",
-    "available_at_prediction_time": [
-      "observed water levels from the CO-OPS data API (water_level / hourly_height), up to the end of the local day before the target day",
-      "station identity and its published nos_minor threshold (metadata, frozen before scoring)",
-      "calendar position of the target day"
-    ],
-    "excluded_as_post_hoc_or_model_output": [
-      "tide predictions (product=predictions) - model output, not an observation",
-      "OFS / model guidance products",
-      "the HTF products used for measurement (htf/annual, htf/daily) - they are derived from the same observations and would hand the answer over",
-      "the target day's own observations"
-    ],
-    "label_source_column": "the target day's maximum observed water level, derived from the same water-level product as the features, so it MUST be absent from the shipped CSVs - not merely unlisted. The qualification gate tests this over the shipped columns."
+  {
+   "id": "noaa-consumer-001",
+   "status": "failed",
+   "what": "clean-room consumer check of the published bytes (package vs MANIFEST.json, sha256sum -c, published gate, baseline reproduction)",
+   "staging_release": 392392211,
+   "elapsed_seconds": 51.4,
+   "assets_collected": 5,
+   "why": "failed in the dependency/baseline step with nothing in the log: the step sent its output to a file in /output and the container died before uploading it, so the log ends at the step header. Package verification, sha256sums and both gate runs had already passed at that point",
+   "fix": "the run script now installs the benchmark's declared dependency ranges as an explicit step and tees the baseline output into the log; relaunched as noaa-consumer-002",
+   "evidence": ".factory/noaa-consumer-001/result.json, .factory/noaa-consumer-001/reports/{container.log,manifest.json,qualification-temporal.txt,qualification-station_disjoint.txt}"
   },
-  "verdict": "ready",
-  "novelty_check": {
-    "checked_at": "2026-09-19T12:20:47+00:00",
-    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
-    "queries": [
-      "coastal flood",
-      "tide gauge",
-      "water level exceedance"
-    ],
-    "evidence": {
-      "huggingface_datasets": [
-        {
-          "query": "coastal flood",
-          "hits": 1,
-          "top": [
-            "electricsheepafrica/africa-synth-flooding-sea-level-rise-coastal-health-all"
-          ]
-        },
-        {
-          "query": "tide gauge",
-          "hits": 6,
-          "top": [
-            "SOTAagi2030/Tide-Gauge-Retention",
-            "SOTAagi2030/TideGauge-Observations",
-            "SOTAagi2030/TideGauge-Estuary",
-            "SOTAagi2030/TideGauge-Shelf",
-            "SOTAagi2030/Harbor-TideGauge-Observations"
-          ]
-        },
-        {
-          "query": "water level exceedance",
-          "hits": 0,
-          "top": []
-        }
-      ],
-      "zenodo_records": [
-        {
-          "query": "coastal flood",
-          "hits": 61944,
-          "top": [
-            "Estimating household preferences for coastal flood risk mitigation policies under ambiguity",
-            "Estimating household preferences for coastal flood risk mitigation policies under ambiguity",
-            "ECFAS Pan-EU Flood Catalogue, D5.4 \u2013 Pan-EU flood maps catalogue - ECFAS project (GA 101004211), https://www.ecfas.eu/",
-            "COASTPROS-EU",
-            "Systemic Societal Vulnerability: An Assessment of Place-Based Intersection of Coastal Flood in Eti-Osa ,Lagos, Nigeria"
-          ]
-        },
-        {
-          "query": "tide gauge",
-          "hits": 19770,
-          "top": [
-            "Tide Gauge",
-            "Data supplement to 'Vertical land motion reconstruction unveils non-linear effects on relative sea level changes from 1900-2150'",
-            "Tohoku Tsunami, March 11 2011: GoogleEarth-Screenshot of Saip tide gauge station at 10:08 hours CET",
-            "Tohoku Tsunami, March 11 2011: GoogleEarth-Screenshot of Hansaki tide gauge station at 09:56 hours CET",
-            "A wavelet-based method for the assessment of hydrodynamic model behaviour against observed sea level variability"
-          ]
-        },
-        {
-          "query": "water level exceedance",
-          "hits": 442420,
-          "top": [
-            "Rediscovering global hotspots of monthly freshwater boundary exceedances by integrating water storage capacity",
-            "Data and Software supporting \"Human-caused sea level rise drives 21st-century worldwide water level extremes\"",
-            "Data from: Modes of berm and beachface recovery following storm reset: observations using a continuously scanning lidar",
-            "Fuzzy random forests: A new approach to groundwater contaminant modelling in Uganda",
-            "2015 Global Water Withdrawal and Freshwater Boundary (RFB) Exceedance Inventories Aligned with the EMERGING MRIO Model"
-          ]
-        }
-      ],
-      "arxiv_preprints": [
-        {
-          "query": "coastal flood",
-          "hits": 5,
-          "top": [
-            "Robust blue-green urban flood risk management optimised with a genetic algorithm for multiple rainstorm return periods",
-            "A Comprehensive Review of Coastal Compound Flooding Literature",
-            "Physics-informed GANs for Coastal Flood Visualization",
-            "Climate Adaptation-Aware Flood Prediction for Coastal Cities Using Deep Learning",
-            "Coastal Flood Risk in the Mortgage Market: Storm Surge Models' Predictions vs. Flood Insurance Maps"
-          ]
-        },
-        {
-          "query": "tide gauge",
-          "hits": 5,
-          "top": [
-            "TIDE: Token-Informed Depth Execution for Per-Token Early Exit in LLM Inference",
-            "Tide: A Customisable Dataset Generator for Anti-Money Laundering Research",
-            "TIDE: A Physically Diverse 3D Turbulence Benchmark Dataset for Advancing Scientific Machine Learning",
-            "Turning the TIDE: Cross-Architecture Distillation for Diffusion Large Language Models",
-            "Reply to Hunter and Brown Discussion of Is there any support in the long term tide gauge data to the claims that parts o"
-          ]
-        },
-        {
-          "query": "water level exceedance",
-          "hits": 5,
-          "top": [
-            "Water Bridging Dynamics of Polymerase Chain Reaction in the Gauge Theory Paradigm of Quantum Fields",
-            "Graph Neural Networks for Pressure Estimation in Water Distribution Systems",
-            "Copper passivation procedure for water-filled copper cells for applications in metrology",
-            "Flexible Bond and Angle, FBA/epsilon model of water",
-            "Surface microlenses for much more efficient photodegradation in water treatment"
-          ]
-        }
-      ]
-    },
-    "evidence_summary": "- huggingface_datasets / 'coastal flood': 1 hit(s) - electricsheepafrica/africa-synth-flooding-sea-level-rise-coastal-health-all\n- huggingface_datasets / 'tide gauge': 6 hit(s) - SOTAagi2030/Tide-Gauge-Retention, SOTAagi2030/TideGauge-Observations, SOTAagi2030/TideGauge-Estuary, SOTAagi2030/TideGauge-Shelf, SOTAagi2030/Harbor-TideGauge-Observations\n- huggingface_datasets / 'water level exceedance': 0 hit(s) - nothing notable\n- zenodo_records / 'coastal flood': 61944 hit(s) - Estimating household preferences for coastal flood risk mitigation policies under ambiguity, Estimating household preferences for coastal flood risk mitigation policies under ambiguity, ECFAS Pan-EU Flood Catalogue, D5.4 \u2013 Pan-EU flood maps catalogue - ECFAS project (GA 101004211), https://www.ecfas.eu/, COASTPROS-EU, Systemic Societal Vulnerability: An Assessment of Place-Based Intersection of Coastal Flood in Eti-Osa ,Lagos, Nigeria\n- zenodo_records / 'tide gauge': 19770 hit(s) - Tide Gauge, Data supplement to 'Vertical land motion reconstruction unveils non-linear effects on relative sea level changes from 1900-2150', Tohoku Tsunami, March 11 2011: GoogleEarth-Screenshot of Saip tide gauge station at 10:08 hours CET, Tohoku Tsunami, March 11 2011: GoogleEarth-Screenshot of Hansaki tide gauge station at 09:56 hours CET, A wavelet-based method for the assessment of hydrodynamic model behaviour against observed sea level variability\n- zenodo_records / 'water level exceedance': 442420 hit(s) - Rediscovering global hotspots of monthly freshwater boundary exceedances by integrating water storage capacity, Data and Software supporting \"Human-caused sea level rise drives 21st-century worldwide water level extremes\", Data from: Modes of berm and beachface recovery following storm reset: observations using a continuously scanning lidar, Fuzzy random forests: A new approach to groundwater contaminant modelling in Uganda, 2015 Global Water Withdrawal and Freshwater Boundary (RFB) Exceedance Inventories Aligned with the EMERGING MRIO Model\n- arxiv_preprints / 'coastal flood': 5 hit(s) - Robust blue-green urban flood risk management optimised with a genetic algorithm for multiple rainstorm return periods, A Comprehensive Review of Coastal Compound Flooding Literature, Physics-informed GANs for Coastal Flood Visualization, Climate Adaptation-Aware Flood Prediction for Coastal Cities Using Deep Learning, Coastal Flood Risk in the Mortgage Market: Storm Surge Models' Predictions vs. Flood Insurance Maps\n- arxiv_preprints / 'tide gauge': 5 hit(s) - TIDE: Token-Informed Depth Execution for Per-Token Early Exit in LLM Inference, Tide: A Customisable Dataset Generator for Anti-Money Laundering Research, TIDE: A Physically Diverse 3D Turbulence Benchmark Dataset for Advancing Scientific Machine Learning, Turning the TIDE: Cross-Architecture Distillation for Diffusion Large Language Models, Reply to Hunter and Brown Discussion of Is there any support in the long term tide gauge data to the claims that parts o\n- arxiv_preprints / 'water level exceedance': 5 hit(s) - Water Bridging Dynamics of Polymerase Chain Reaction in the Gauge Theory Paradigm of Quantum Fields, Graph Neural Networks for Pressure Estimation in Water Distribution Systems, Copper passivation procedure for water-filled copper cells for applications in metrology, Flexible Bond and Angle, FBA/epsilon model of water, Surface microlenses for much more efficient photodegradation in water treatment",
-    "prior_art": [
-      "FloodCastBench, Sci Data 12:431 (2025) - inundation extent/depth, 30 m / 300 s, four events; not this task",
-      "NOAA ETSS/OFS operational guidance - forecasts, but publishes no scored ML task"
-    ],
-    "theirs": "NOAA publishes the observations, verified 6-minute daily maxima (daily_max_min, one request per station-year), the flood thresholds in station metadata, and annual flood-day counts (htf/annual). Operational forecasting exists (ETSS/OFS). FloodCastBench (Sci Data 12:431, 2025) covers hydrodynamic inundation dynamics for four events, not station-level exceedance classification.",
-    "ours": "A leak-free next-day prediction task over a frozen 122-station panel: label = daily maximum water level at datum=STND exceeding the station's published NOS minor flood threshold, with observations-only features, temporal splits, and the label validated against NOAA's own annual counts (12/12 stations, 2025).",
-    "verdict": "differentiated",
-    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  {
+   "id": "noaa-consumer-002",
+   "status": "succeeded",
+   "what": "the same consumer check rerun with the runtime dependency step made explicit",
+   "staging_release": 392395671,
+   "elapsed_seconds": 72.0,
+   "results": {
+    "package_vs_manifest": "28 files checked, every one matched",
+    "sha256sum_c": "OK on all ten assets",
+    "gate_temporal": "exit 0, QUALIFICATION PASSED, artifact 8896c4423c53cb14",
+    "gate_station_disjoint": "exit 0, QUALIFICATION PASSED, artifact e6aff23f394ddfe4",
+    "baseline_temporal": "CONTRACT OK, eval AUC 0.8651 against the recorded 0.8638",
+    "baseline_station_disjoint": "CONTRACT OK, eval AUC 0.8687 against the recorded 0.8688",
+    "spread": "about 0.002, attributed to xgboost's non-bit-reproducible training: identical artifact digests, identical dependency versions (pandas 2.3.3, numpy 2.5.3, xgboost 3.4.1, scikit-learn 1.9.1), so the recorded baseline is one measurement and not a constant"
+   },
+   "why": "the consumer check is the only evidence that a reader with no access to the building repository and no credential gets the same dataset and the same result from the published release",
+   "evidence": ".factory/noaa-consumer-002/result.json, .factory/noaa-consumer-002/reports/{container.log,output_consumer.txt}, release/noaa-tide-flooding/VERIFICATION.md"
   },
-  "task_design": {
-    "decided_on": "2026-09-19",
-    "target": "does a station's daily maximum observed water level exceed its published NOS minor flood threshold on the next local day",
-    "prediction_time": "the end of the previous local day; every feature is knowable then",
-    "label_source": {
-      "product": "htf/htf_daily.json, field minFlag (NOAA's own minor-flood days)",
-      "why": "our reduction of 6-minute daily maxima overcounted flood days by ~20% against NOAA's own counts on a year with real signal (113-114 vs 94 over four stations, 2024); NOAA's flags matched exactly, station by station. Time zone was not the cause (GMT and LST differ by one day). A label that disagrees with the publisher's own product has to be justified, and there is no reason to ship one.",
-      "evidence": "label_route_result.json (label_route_check.py)",
-      "requests_per_station_year": 1
-    },
-    "features": "observations only, station-normalised: margin against the station's own published threshold, trailing mean/spread of its own maxima, days since its last exceedance, trailing-window exceedance counts, day-of-year. NOAA tide predictions and model guidance are excluded - they are not observations, and including them defeats the task. Station statistics use trailing windows only, so the future cannot leak into the features.",
-    "splits": {
-      "temporal": {
-        "stations": 122,
-        "train": "2006-2021",
-        "eval": "2022-2023",
-        "holdout": "2024-2025",
-        "positives_station_days": {
-          "train": 11886,
-          "eval": 1828,
-          "holdout": 2850
-        },
-        "independent_events": {
-          "eval": 332,
-          "holdout": 427
-        }
-      },
-      "station_disjoint": {
-        "rule": "sort the 122 frozen stations by NOS station id; every third station is group0, the station holdout; train on group1+group2",
-        "held_out_stations": 41,
-        "positives_station_days": {
-          "eval": 792,
-          "holdout": 1090
-        },
-        "independent_events": {
-          "eval": 298,
-          "holdout": 337
-        },
-        "mean_stations_per_flood_day": {
-          "eval": 2.66,
-          "holdout": 3.23
-        }
-      }
-    },
-    "why_this_is_the_contribution": "NOAA publishes the observations, the verified maxima and the annual counts, so access is cheap and is not the contribution. A station-disjoint, leak-free, scored transfer task on a frozen panel is not published anywhere the novelty search found.",
-    "capacity_evidence": [
-      "spatial_split_result.json",
-      "station_list_result.json"
-    ],
-    "extraction_cost": {
-      "requests": 4880,
-      "bytes_approx": 184000000,
-      "breakdown": "2,440 for daily_max_min features (~178 MB) + 2,440 for the HTF daily flags (small), one request per station-year each",
-      "note": "not the 29,160-request / 15.2 GiB raw-series route"
-    },
-    "splits_cross_check": "the three groups' positives sum to the temporal totals exactly (4307 + 3328 + 4251 = 11886), and the station group's station-days from the daily product equal the annual product's counts",
-    "feature_source": {
-      "product": "daily_max_min",
-      "interval": 6,
-      "datum": "STND",
-      "time_zone": "GMT",
-      "quality": "verified maxima with pcComplete6Min and quality flags",
-      "requests_per_station_year": 1
-    }
+  {
+   "id": "noaa-hf-001",
+   "status": "failed",
+   "what": "Hugging Face bulk publish: the ten accepted artifact files moved from the dataset repository's release to the private dataset repository on Hugging Face, then the documented loading path exercised against the uploaded bytes",
+   "staging_release": 392397927,
+   "staging_tag": "job-noaa-hf-001",
+   "target_repo": "earino/noaa-tide-flooding",
+   "assets": 10,
+   "bytes": 196017925,
+   "results": {
+    "uploads": "10/10 uploaded, each verified against the digest the Hub reports; 0 failures, 0 skips",
+    "loading_check": "not performed - the verifier crashed before comparing anything",
+    "independent_check_on_the_coordinator": "read-only listing of the private repository: all ten paths present with the manifest's byte sizes; the manifest lists no other artifact file"
+   },
+   "why": "the multi-config branch of the loading verifier fell through into the single-config code, which reads expected['splits'] - a key a job declaring `configs` does not have. It died with KeyError: 'splits' after load_dataset had already read all six splits of both configs, so 'it uploaded' was reported as 'it does not load'",
+   "fix": "workers/hf_publish.py: the single-config path is now inside the else branch and the report is printed once; the crash is reproduced against the pre-fix source and covered by tests/test_hf_helpers.py::VerifyHelperBranchTests, which runs the real helper source against a stub `datasets` for both shapes of job",
+   "evidence": ".factory/noaa-hf-001/result.json, .factory/noaa-hf-001/reports/{manifest.json,container.log,source.tar}"
   },
-  "construction_output": {
-    "job": "noaa-003",
-    "built_at_utc": "2026-09-19",
-    "extract": "output/extract in draft release job-noaa-003",
-    "levels": [
-      "station_disjoint",
-      "temporal"
-    ],
-    "splits": {
-      "temporal": {
-        "train": {
-          "rows": 697373,
-          "positive_rate": 0.016883
-        },
-        "eval": {
-          "rows": 89038,
-          "positive_rate": 0.020385
-        },
-        "holdout": {
-          "rows": 88841,
-          "positive_rate": 0.03208
-        }
-      },
-      "station_disjoint": {
-        "train": {
-          "rows": 461580,
-          "positive_rate": 0.016277
-        },
-        "eval": {
-          "rows": 29930,
-          "positive_rate": 0.026328
-        },
-        "holdout": {
-          "rows": 29930,
-          "positive_rate": 0.036418
-        }
-      }
-    },
-    "total_rows": 1396692,
-    "note": "Complete panel: 122/122 stations and 2,440/2,440 station-years, 4,880 requests, zero fetch errors. The builder exits non-zero on any lost station-year, so coverage is a hard condition rather than a post-hoc observation."
-  },
-  "qualification": {
-    "gate": "skills/dataset-qualification/scripts/qualify_dataset.py",
-    "gate_version": "1.3.0",
-    "result": "PASSED - 32 checks per level, 0 failed, on both full artifacts, on the worker",
+  {
+   "id": "noaa-004",
+   "status": "succeeded",
+   "what": "a second full pull of the 122-station panel, launched at 11:04:32 by a concurrent coordinator session that also renamed the target column late -> minor_flood in build.py and persistence_baseline.py without recording a reason. It was the job that held the worker slot while noaa-hf-002 waited",
+   "staging_release": 392410743,
+   "staging_tag": "job-noaa-004",
+   "server_id": 166613240,
+   "elapsed_seconds": 1672.1,
+   "requests": 4880,
+   "coverage": "122/122 stations, 2440/2440 station-years, 0 missing, 0 errors",
+   "gates": "temporal and station_disjoint both ok, 32/32 checks, failed_checks 0, gate 1.3.0, QUALIFICATION PASSED on the rebuilt bytes",
+   "artifact_version": {
+    "temporal": "bb051dc304a4ee63fd1e61ca12864afab247e9530c714f011a60a2d4598d202c",
+    "station_disjoint": "92297a5b62f86b2901eac9e2a7f076e1495dd8fe2e0eb913d140a3a7df47ba17",
+    "combined": "fb49f932c7b4ea5ab532c20f7dce59a7d733de925d1e172054ff1d38abe1eeed",
+    "combined_note": "derived exactly as release-manifest.py derives it - the two per-level gate versions joined and hashed"
+   },
+   "identical_to_the_shipped_artifact": {
     "levels": {
-      "temporal": {
-        "artifact_version": "bb051dc304a4ee63fd1e61ca12864afab247e9530c714f011a60a2d4598d202c",
-        "checks": 32,
-        "ok": true,
-        "job": "noaa-004",
-        "staging_release": 392410743
-      },
-      "station_disjoint": {
-        "artifact_version": "92297a5b62f86b2901eac9e2a7f076e1495dd8fe2e0eb913d140a3a7df47ba17",
-        "checks": 32,
-        "ok": true,
-        "job": "noaa-004",
-        "staging_release": 392410743
-      }
+     "temporal": {
+      "train": [
+       697373,
+       11774
+      ],
+      "eval": [
+       89038,
+       1815
+      ],
+      "holdout": [
+       88841,
+       2850
+      ]
+     },
+     "station_disjoint": {
+      "train": [
+       461580,
+       7513
+      ],
+      "eval": [
+       29930,
+       788
+      ],
+      "holdout": [
+       29930,
+       1090
+      ]
+     }
     },
-    "evidence": ".factory/noaa-004/reports/qualification-{temporal,station_disjoint}.json (ok: true, gate 1.3.0, artifact digests matching candidates/noaa-tide-flooding/baseline/expected_artifact.json)",
-    "superseded": {
-      "job": "noaa-003",
-      "staging_release": 392230750,
-      "levels": {
-        "temporal": "8896c4423c53cb14377765a18f94245dfb10e9f8125b21041a7b68458a17ace5",
-        "station_disjoint": "e6aff23f394ddfe4b11383c3e8c8a1def0beaddbd2e0cf066ccd08ea7adaedda"
-      },
-      "why": "built with the copied-from-Austin label name `late`. The gate passed it as well - the rename is a naming correction, not a data defect"
-    },
-    "note": "Two earlier runs failed on coverage, not on the data: noaa-001 lost 13 stations and noaa-002 lost 60 station-years to fetch errors the retry treated as permanent. Both were fixed in the builder, which now records coverage and refuses an incomplete panel.",
-    "artifact_version": "fb49f932c7b4ea5ab532c20f7dce59a7d733de925d1e172054ff1d38abe1eeed"
+    "note": "[rows, positives] per split, identical to noaa-003 in all six; coverage, day-quality (879,034 days / 622 incomplete / 5,239 flagged) and build_summary fields other than 'columns' are identical too"
+   },
+   "differences_from_the_shipped_artifact": {
+    "target_column_name": "the rebuild ships minor_flood where the shipped artifact ships late (the rename made by the concurrent session). It was reverted on 2026-09-20 and RE-ADOPTED on 2026-09-25 on the operator's instruction: `late` was copied from the Austin task and is the wrong name for this dataset. This rebuild is now the artifact the release will carry, so what follows is the re-issue - the release package's docs, its code copies and MANIFEST.json still describe noaa-003 and must be regenerated from this artifact, then transferred and consumer-verified again, before publication",
+    "revised_observation_values": "a small number of values differ because NOAA revised them between the 2026-09-19 and 2026-09-20 pulls. Measured on temporal/train at byte offset 43912723: station 8661070 (Springmaid Pier) 2008-10-12 observed_max_ft 35.427 -> 35.426, 2008-10-13 -1.323 -> -1.324 with trailing7_mean 34.722 -> 34.7219 and trailing30_mean 35.4425 -> 35.4424. Every one of the six files differs in byte size by more or less than the 7-byte header change (+12, +11, +9, +7, +5, +9 for the 7-byte header), so at least one revised row is in each; 200-byte needles sampled at 250 KB intervals found no other difference in 135 sampled windows, so the revisions are sparse",
+    "why_it_matters": "the artifact is pinned by digest and reproducible from the released files, but it is not byte-reproducible by re-pulling the live API: CO-OPS values are revised after publication. A future rebuild is a new artifact version and needs its own gate report and its own release, not a silent replacement"
+   },
+   "why_not_adopted": "the only intended change was the target's name, and adopting it would invalidate a release that is already gate-passed, consumer-verified on the published bytes and uploaded to Hugging Face - for a rename that no committed document asks for. The rename's diff is kept at candidates/noaa-tide-flooding/noaa-004-label-rename.diff; if the operator wants the clearer name, this staging release is the artifact to reuse (its digests are recorded above) and the release, the card and hf/job-002.json all have to move with it",
+   "evidence": ".factory/noaa-004/result.json and .factory/noaa-004/reports/{manifest.json,build_summary.json,temporal-meta.json,temporal-quality.json,station_disjoint-meta.json,station_disjoint-quality.json,qualification-temporal.json,qualification-station_disjoint.json,container.log}; every report was hash-checked against the release manifest",
+   "worker": "destroyed 2026-09-20T11:53:09Z",
+   "adopted": {
+    "decided": "2026-09-25T10:33Z",
+    "by": "the operator, in session, instructing that publication proceed with the corrected label name",
+    "what_changed": "candidates/noaa-tide-flooding/baseline/expected_artifact.json now names this artifact; card.md and the hf plans name the label minor_flood; noaa-baseline-002 measured the baseline on these bytes; the recorded rename diff is candidates/noaa-tide-flooding/noaa-004-label-rename.diff",
+    "what_did_not": "the private GitHub release v2026.09 and the Hugging Face revision still carry the noaa-003 bytes (label `late`). Both destinations are private, so nothing public changed. The release package was deliberately left matching the bytes it actually holds: release/noaa-tide-flooding/DATA_DICTIONARY.md keeps the shipped label name, and MANIFEST.json, README.md, VERIFICATION.md, measurements.json, RELEASE_NOTES.md, REPRODUCE.md and the code copies were NOT regenerated - a doc renamed ahead of the artifact it sits beside would describe bytes that are not in the package, and the verification rows cannot be rewritten until the new consumer check has actually run",
+    "why": "publishing the artifact whose label name was known to be wrong, then re-issuing a corrected version the next day, is worse than the delay"
+   }
   },
-  "baseline": {
-    "job": "noaa-baseline-002",
-    "staging_release": 396517628,
+  {
+   "id": "noaa-hf-002",
+   "status": "succeeded",
+   "what": "the Hugging Face half of the release: the bulk move already in place, then the documented loading path exercised against each config on the Hub - the check noaa-hf-001 died before performing",
+   "staging_release": 392416227,
+   "staging_tag": "job-noaa-hf-002",
+   "server_id": 166615899,
+   "created_at": "2026-09-20T11:53:15Z",
+   "elapsed_seconds": null,
+   "elapsed_note": "the job record does not carry an elapsed time for this job type; it was collected at 11:59Z after a run dominated by the loading check reading the uploaded bytes",
+   "results": {
+    "uploads": "0 uploaded, 10 skipped - every one of the ten files was already at the manifest digest, which independently confirms that noaa-hf-001's upload had in fact landed before its verifier crashed",
+    "failures": 0,
+    "loading_check": "ok: true, problems: []; both configs loaded by name and every split compared against the manifest: temporal train 697,373/11,774, eval 89,038/1,815, holdout 88,841/2,850; station_disjoint train 461,580/7,513, eval 29,930/788, holdout 29,930/1,090",
+    "hub_verification_on_the_coordinator": "scripts/hf-publish.py --verify: ok true, ten of ten paths present at the manifest sizes, four large CSVs digest-verified by the Hub, eight small files present, no missing and no size mismatch",
+    "tag": "created after verification, last: v2026.09, tag commit ee6ba8477e2be021a4000d88c03bd58d038e9a5f, identical to main (tag_matches_main true)"
+   },
+   "evidence": ".factory/noaa-hf-002/{result.json,reports/manifest.json,reports/source.tar}, release/noaa-tide-flooding/DESTINATIONS.json"
+  },
+  {
+   "id": "noaa-publish-002",
+   "status": "succeeded",
+   "what": "GitHub re-issue: the ten corrected (minor_flood) artifact files copied from private staging release 392410743 into the dataset repository's release on a worker host, replacing the superseded noaa-003 bytes; the ~196 MB never passed through the coordinator",
+   "staging_release": 396699267,
+   "staging_tag": "job-noaa-publish-002",
+   "target_repo": "earino/noaa-tide-flooding",
+   "target_release": 396698120,
+   "target_tag": "v2026.09",
+   "server_id": 167435107,
+   "created_at": "2026-09-25T14:54:54Z",
+   "collected_at": "2026-09-25T14:59:40Z",
+   "assets": 10,
+   "bytes": 196018020,
+   "failures": 0,
+   "artifact_version": "fb49f932c7b4ea5ab532c20f7dce59a7d733de925d1e172054ff1d38abe1eeed",
+   "source_checked": "the ten source_asset_ids in the job spec are file-0002..file-0011 of staging release 392410743 (job-noaa-004) and carry exactly the digests the job transferred, so the source release was the corrected artifact and not a neighbouring one",
+   "verified_from_the_service": "each of the ten target assets re-read from the GitHub API on 2026-09-25 matches the job's transferred size and sha256 exactly, 10 of 10, and every one equals release/noaa-tide-flooding/MANIFEST.json's files/assets digests; the repository is private; the release tag v2026.09 and main both resolve to bef3a412",
+   "note": "the job's own manifest records uploaded:false because the transfer path uploads per file instead of one bulk archive; the transfer block (ten transferred, zero failures, 196,018,020 bytes) is the report that matters",
+   "evidence": ".factory/noaa-publish-002/result.json, .factory/noaa-publish-002/reports/{manifest.json,file-0000-part-0000,file-0001-part-0000}, jobs/noaa-publish-002.json, candidates/noaa-tide-flooding/publish/job-002.json"
+  },
+  {
+   "id": "noaa-hf-003",
+   "status": "succeeded",
+   "what": "the Hub half of the re-issue's transfer: the corrected noaa-004 artifact files published to earino/noaa-tide-flooding revision main, plus the loading check on the Hub copy",
+   "staging_release": 396718146,
+   "staging_tag": "job-noaa-hf-003",
+   "server_id": 167437889,
+   "created_at": "2026-09-25T15:20:28Z",
+   "deleted_at": "2026-09-25T15:27:05Z",
+   "transferred": "10 of 10 target files, 196,018,020 bytes, failures [], skipped [] - a real upload, not a digest-skip, so revision main moved from the noaa-003 bytes",
+   "loading_check": {
+    "ok": true,
+    "problems": [],
+    "checked": {
+     "temporal/train": {
+      "rows": 697373,
+      "positives": 11774
+     },
+     "temporal/eval": {
+      "rows": 89038,
+      "positives": 1815
+     },
+     "temporal/holdout": {
+      "rows": 88841,
+      "positives": 2850
+     },
+     "station_disjoint/train": {
+      "rows": 461580,
+      "positives": 7513
+     },
+     "station_disjoint/eval": {
+      "rows": 29930,
+      "positives": 788
+     },
+     "station_disjoint/holdout": {
+      "rows": 29930,
+      "positives": 1090
+     }
+    },
+    "why_it_matters": "all six splits match noaa-baseline-002's row counts and positive rates on the accepted artifact exactly, so the Hub copy is the same panel and not a neighbouring revision"
+   },
+   "verified_from_the_service": "2026-09-25, read back from the Hub API rather than the job's claim: the six plain-blob files were downloaded and re-hashed and the four LFS objects were read from the Hub's own sha256; 10 of 10 sizes and digests equal release/noaa-tide-flooding/MANIFEST.json's files entry for artifact_version fb49f932...",
+   "left_behind": "the Hub's version tag and its docs/small files still describe noaa-003 - see artifacts[0].huggingface.reissue.still_lagging"
+  },
+  {
+   "id": "noaa-consumer-003",
+   "status": "succeeded",
+   "what": "the clean-room consumer check re-run against the re-issued (corrected) bytes: the published package vs MANIFEST.json, sha256sum -c, the published gate on both levels, and baseline reproduction through the published contract - the check whose previous pass (noaa-consumer-002) described the superseded artifact",
+   "staging_release": 396743413,
+   "staging_tag": "job-noaa-consumer-003",
+   "server_id": 167442487,
+   "created_at": "2026-09-25T15:57:39Z",
+   "deleted_at": "2026-09-25T16:05:52Z",
+   "elapsed_seconds": 74.0,
+   "assets_collected": 6,
+   "fetched": "10/10 files from the dataset release 396698120 (earino/noaa-tide-flooding, tag v2026.09), 196,018,020 bytes, failures [], each verified against the corrected per-level digests now recorded in artifacts[0].levels",
+   "results": {
+    "package_vs_manifest": "every listed file matched its recorded hash",
+    "sha256sum_c": "OK",
+    "gate_temporal": "exit 0, QUALIFICATION PASSED, artifact bb051dc304a4ee63",
+    "gate_station_disjoint": "exit 0, QUALIFICATION PASSED, artifact 92297a5b62f86b29",
+    "baseline_temporal": "CONTRACT OK, eval AUC 0.8633",
+    "baseline_station_disjoint": "CONTRACT OK, eval AUC 0.8690",
+    "agreement": "both per-level artifact versions equal the accepted artifact's (artifacts[0].levels) and both AUCs equal the noaa-baseline-002 measurement on the same bytes, so the consumer reproduction is the recorded figure rather than a spread around it"
+   },
+   "why": "the consumer check is the only evidence that a reader with no access to the building repository and no credential gets the same dataset and the same result from the published release; this is the run that belongs to the bytes the release now holds",
+   "residual": "the bundled harness (consumer/source/run.sh) and the shipped baseline/reproduce_baseline.sh both print a hardcoded expectation line carrying the superseded pair (0.8638 / 0.8688), so the last line of output_consumer.txt disagrees with the package's own MANIFEST.json (0.8633 / 0.8690). No check failed - the printed line is a constant, not a read of the manifest - and it is part of the package-prose pass still owed",
+   "evidence": ".factory/noaa-consumer-003/result.json, .factory/noaa-consumer-003/reports/{container.log,output_consumer.txt,baseline-temporal.log,baseline-station_disjoint.log,qualification-temporal.txt,qualification-station_disjoint.txt}"
+  },
+  {
+   "id": "noaa-hf-004",
+   "status": "succeeded",
+   "what": "Hugging Face re-check of the two level-nested files whose release-asset names differ from their Hub paths: the holdout and eval split of the station_disjoint level, moved from the dataset repository's release into earino/noaa-tide-flooding at revision main",
+   "staging_release": 397239558,
+   "server_id": 167526113,
+   "created_at": "2026-09-26T13:06:11Z",
+   "collected_at": "2026-09-26T13:08:31Z",
+   "deleted_at": "2026-09-26T13:12:00Z",
+   "targets": [
+    {
+     "source_asset_id": 588583422,
+     "dest": "station_disjoint-private-holdout.csv",
+     "target": "station_disjoint/private/holdout.csv",
+     "size": 4228360,
+     "sha256": "37d772620231806f3aaf7025961d136c91febda3b82b7fe3442180874602c827"
+    },
+    {
+     "source_asset_id": 588583523,
+     "dest": "station_disjoint-public-eval.csv",
+     "target": "station_disjoint/public/eval.csv",
+     "size": 4229477,
+     "sha256": "be50109320c4af5a925d9f34fedeb6905aed675986ddc9f33c59bd9ac0ba1705"
+    }
+   ],
+   "result": {
+    "status": "succeeded",
+    "uploads": [],
+    "skipped": [
+     {
+      "target": "station_disjoint/private/holdout.csv",
+      "reason": "already at the manifest digest"
+     },
+     {
+      "target": "station_disjoint/public/eval.csv",
+      "reason": "already at the manifest digest"
+     }
+    ],
+    "failures": [],
+    "bytes": 0,
+    "reading": "nothing was moved: the Hub already carried both files at the manifest digests, so this job changed no data on either destination"
+   },
+   "verified_independently": "read from an anonymous client on the coordinator, 2026-09-26: huggingface.co/api/datasets/earino/noaa-tide-flooding/tree/main?recursive=true returns HTTP 200 listing station_disjoint/private/holdout.csv at 4,228,360 bytes and station_disjoint/public/eval.csv at 4,229,477 bytes, the job's own sizes; both were then downloaded from /resolve/main/ and re-hashed, giving 37d77262... and be501093..., byte for byte the digests the job compared against. The skip is therefore confirmed rather than trusted",
+   "evidence": ".factory/noaa-hf-004/{result.json,reports/{manifest.json,file-0001-part-0000}}, jobs/noaa-hf-004.json, candidates/noaa-tide-flooding/hf/job-004.json, staging release 397239558",
+   "residual": "the staging release's container.log asset is 65 bytes of `Error response from daemon: No such container: scout-noaa-hf-004`, so the run's own container log was never captured; the job's result summary was, and it is the summary that carries the outcome",
+   "why_launched": "the job spec carries no note and was written by the concurrent interactive session, together with the site/hub-path change in commit d9cad24, as the Hub-side check the website's new hub_paths links depend on"
+  }
+ ],
+ "artifacts": [
+  {
+   "job": "noaa-publish-002",
+   "repository": "https://github.com/earino/noaa-tide-flooding",
+   "visibility": "private (publication requires explicit authorisation)",
+   "tag": "v2026.09",
+   "commit": "bef3a4127374ae25699e5a70fd77a09b76807b97",
+   "release": "https://github.com/earino/noaa-tide-flooding/releases/tag/v2026.09",
+   "release_id": 396698120,
+   "artifact_version": "fb49f932c7b4ea5ab532c20f7dce59a7d733de925d1e172054ff1d38abe1eeed",
+   "artifact_version_note": "derived exactly as the manifest derives it - the two per-level versions (temporal bb051dc3..., station_disjoint 92297a5b..., both gate 1.3.0 32/32) joined and hashed, because each level is scored as its own contract-complete task instance",
+   "asset_bytes": 196018020,
+   "levels": {
+    "temporal": {
+     "artifact_version": "bb051dc304a4ee63fd1e61ca12864afab247e9530c714f011a60a2d4598d202c",
+     "public/train.csv": {
+      "bytes": 97931048,
+      "sha256": "60854702933b12cc0909f846bf062016830be189297012021340543c1560e339"
+     },
+     "public/eval.csv": {
+      "bytes": 12507815,
+      "sha256": "a2d733a8297294a14f9c64b5f9182a274a954b41dcefd411ca6ef00dc74191d3"
+     },
+     "private/holdout.csv": {
+      "bytes": 12475947,
+      "sha256": "89db2e79b60a7185db3e5b937e3b2d29fcbceab016e85c789473c8ac2e104d51"
+     }
+    },
+    "station_disjoint": {
+     "artifact_version": "92297a5b62f86b2901eac9e2a7f076e1495dd8fe2e0eb913d140a3a7df47ba17",
+     "public/train.csv": {
+      "bytes": 64636168,
+      "sha256": "d7d2bff29c71680962f4421d239121e63beac242b600dd0c23c9b77ac046ce3c"
+     },
+     "public/eval.csv": {
+      "bytes": 4229477,
+      "sha256": "be50109320c4af5a925d9f34fedeb6905aed675986ddc9f33c59bd9ac0ba1705"
+     },
+     "private/holdout.csv": {
+      "bytes": 4228360,
+      "sha256": "37d772620231806f3aaf7025961d136c91febda3b82b7fe3442180874602c827"
+     }
+    }
+   },
+   "verified_from_the_service": "all ten assets re-read from the GitHub API on 2026-09-25 (release 396698120, tag v2026.09) match noaa-publish-002's transferred sizes and digests exactly, 10 of 10, and they equal release/noaa-tide-flooding/MANIFEST.json's files/assets digests; the repository is private",
+   "compared": "release/noaa-tide-flooding/MANIFEST.json",
+   "huggingface": {
+    "repository": "https://huggingface.co/datasets/earino/noaa-tide-flooding",
+    "visibility": "private (publication requires explicit authorisation)",
+    "tag": "v2026.09",
+    "tag_commit": "ee6ba8477e2be021a4000d88c03bd58d038e9a5f",
+    "main_commit": "3116c30647af334c1544f2ffb926c71bc6ec0814",
+    "tag_matches_main": false,
+    "files": 10,
+    "small_files": 8,
+    "verified": true,
+    "verified_at": "2026-09-20T12:00:16+00:00",
+    "loading_check": "run by the worker job noaa-hf-002 and passed on both configs and all six splits",
+    "recorded_in": "release/noaa-tide-flooding/DESTINATIONS.json",
+    "file_name_note": "the Hub ships the artifact files as station_disjoint/* and temporal/* (the two levels as two configs); the GitHub release ships the same ten files under the release layout. Both are the same accepted bytes, one manifest",
+    "superseded": {
+     "checked_at": "2026-09-25T15:06:00+00:00",
+     "finding": "the revision v2026.09 still carries the noaa-003 bytes and label name: temporal/private/holdout.csv 12,475,942 bytes (corrected: 12,475,947), station_disjoint/private/holdout.csv 4,228,351 (corrected: 4,228,360), temporal/meta.json still names the label column `late`, and its MANIFEST.json hashes 55791180c39385def7035305c041cc86d7b2693dad6ef30181bb0672b3b95a67 against the package's 60ffed39e5ce52f7a5e81d3994d1f1aec054d2111c6a6c720f125a3034bad89e",
+     "why": "the Hub half of the re-issue has not been run; the recorded `verified: true` above describes the noaa-003 upload of 2026-09-20 and does not carry over to the corrected artifact",
+     "next": "hf_publish job for the corrected files from release 396698120 (source asset ids 588583351, 588583422, 588583523, 588583624, 588583760, 588583822, 588583868, 588583940, 588584089, 588584338), then the loading check and scripts/hf-publish.py --verify",
+     "reading": "the tree listing was read with the write credential from a mode-0600 file, in-process; the token is not in this record, the bundle or any log",
+     "closed_by": "noaa-hf-003 (2026-09-25) for the ten artifact files on revision main, verified from the API; the version tag and the docs/small files are the remaining items, recorded in reissue"
+    },
+    "tag_note": "re-measured from the Hub refs API on 2026-09-25 after noaa-hf-003: main -> 3116c306 (the corrected bytes), tag v2026.09 -> ee6ba847 (the noaa-003 commit). The recorded tag_matches_main true above described the noaa-003 upload of 2026-09-20 and does not hold for the re-issued copy.",
+    "reissue": {
+     "job": "noaa-hf-003",
+     "checked_at": "2026-09-25T15:26:00+00:00",
+     "staging_release": 396718146,
+     "data_files": "revision main now carries the corrected bytes at all ten paths. Size checked on all ten; digest checked on all ten - six small files downloaded and re-hashed locally (station_disjoint/meta.json 867, station_disjoint/private/holdout.csv 4,228,360, station_disjoint/public/eval.csv 4,229,477, station_disjoint/quality.json 3,793, temporal/meta.json 750, temporal/quality.json 3,795) and four LFS objects read from the Hub's own sha256 (station_disjoint/public/train.csv d7d2bff2..., temporal/private/holdout.csv 89db2e79..., temporal/public/eval.csv a2d733a8..., temporal/public/train.csv 60854702...). Every one equals release/noaa-tide-flooding/MANIFEST.json and the accepted artifact_version fb49f932... The noaa-003 numbers the superseded block measured (12,475,942 / 4,228,351 / label `late`) no longer describe main.",
+     "loading_check": "run by noaa-hf-003 against the Hub copy: ok, problems [], all six splits matched the accepted row and positive counts",
+     "still_lagging": {
+      "version_tag": "v2026.09 still resolves to ee6ba847, the noaa-003 commit, while main is 3116c306, so a version-pinned reader on the Hub still gets the superseded bytes. Re-tagging is the scripts/hf-publish.py --tag step (it replaces the existing tag) and has not been run.",
+      "docs_and_small_files": "the Hub's MANIFEST.json (artifact_version a5a5ac5b...) and SHA256SUMS on main still list the noaa-003 digests, so the small-file upload (--upload-small) has not been re-run either. Zero exposure - every one of those digests is the superseded version's own, and both destinations are private - but the Hub package does not yet describe the bytes it now holds."
+     },
+     "why_the_docs_were_not_pushed_with_the_data": "release/noaa-tide-flooding/DATA_DICTIONARY.md still names the shipped label column `late` and VERIFICATION.md still cites job noaa-003, so --upload-small today would publish prose that contradicts the temporal/meta.json now on the Hub (label minor_flood). The package prose has to be re-pointed at noaa-004 first; that is the first item of next_action."
+    }
+   },
+   "github_tag_state": {
+    "checked_at": "2026-09-25T15:05:00+00:00",
+    "finding": "resolved as measured: the tag v2026.09 and main now resolve to the same commit bef3a4127374ae25699e5a70fd77a09b76807b97 (compare main...v2026.09 -> status identical, ahead_by 0, behind_by 0). The earlier finding - v2026.09 -> 9bcbf2c6 and main -> f384889f as unrelated root commits, compare returning 404 - no longer describes the repository",
+    "how": "the re-issue rebuilt the branch: bef3a412 is itself a root commit (parents []) carrying the re-issue message and the corrected package documents, and the release was created from it with target_commitish main at 2026-09-25T14:54:46Z. So the divergence was removed by replacing the history rather than by the planned single fast-forward; the superseded tag commit 9bcbf2c6 still exists as an object but no ref points at it",
+    "implication": "a version-pinned reader and a main-branch reader now see the same commit, which is the condition the release rule asks for. The one-commit fast-forward that was recorded as the repair is closed by this outcome and is not owed"
+   },
+   "superseded_by": {
     "artifact_job": "noaa-004",
     "artifact_version": "fb49f932c7b4ea5ab532c20f7dce59a7d733de925d1e172054ff1d38abe1eeed",
-    "source": "the ten artifact files fetched from private staging and measured in place - the bytes the release will carry, not a rebuild",
-    "runner": "the benchmark's own train.py and validate.py, copied verbatim; their sha256s are in the report, and validate.py re-ran training and reported CONTRACT OK on both levels",
+    "adopted": "2026-09-25, on the operator's instruction, so that publication carries the corrected label name",
+    "state": "the GitHub destination is re-issued: release 396698120 carries the corrected noaa-004 bytes and was verified from the service on 2026-09-25 (10 of 10). The Hugging Face revision v2026.09 still holds the noaa-003 bytes - verified from the API on 2026-09-25, see the huggingface block - and both destinations remain private, so nothing public changed. The clean-room consumer check has not been re-run on the re-issued bytes"
+   },
+   "previous_issue": {
+    "job": "noaa-publish-001",
+    "release_id": 392387511,
+    "commit": "9bcbf2c69e04e7e3d92191a3cfe86ed066cc422c",
+    "artifact_version": "a5a5ac5b41db197810fbd3e6fc8828ce74f2796b02c6ac3088a9350df6ae3450",
+    "asset_bytes": 196017925,
     "levels": {
-      "temporal": {
-        "eval_auc": 0.8633,
-        "train_rows": 697373,
-        "eval_rows": 89038,
-        "positive_rate": {
-          "train": 0.016883,
-          "eval": 0.020385,
-          "holdout": 0.03208
-        }
+     "temporal": {
+      "artifact_version": "8896c4423c53cb14377765a18f94245dfb10e9f8125b21041a7b68458a17ace5",
+      "public/train.csv": {
+       "bytes": 97931036,
+       "sha256": "939efaf42f0e032b711a499d37a1a6422fb26cb273d2244f9d7d49b274554240"
       },
-      "station_disjoint": {
-        "eval_auc": 0.869,
-        "train_rows": 461580,
-        "eval_rows": 29930,
-        "positive_rate": {
-          "train": 0.016277,
-          "eval": 0.026328,
-          "holdout": 0.036418
-        }
+      "public/eval.csv": {
+       "bytes": 12507806,
+       "sha256": "cbc3bd54ed018a8c79ca4973070d0c37f07ec772ef523698d6d15d0cb2625f35"
+      },
+      "private/holdout.csv": {
+       "bytes": 12475942,
+       "sha256": "cceb5a93ee5f40b8aa41b24245256abb660012b2f9e339f66fe4abd05c510562"
       }
+     },
+     "station_disjoint": {
+      "artifact_version": "e6aff23f394ddfe4b11383c3e8c8a1def0beaddbd2e0cf066ccd08ea7adaedda",
+      "public/train.csv": {
+       "bytes": 64636157,
+       "sha256": "c18ca88074ddaff8c3ff48e922d211dc43884f8b485031ec3488695d54bf3943"
+      },
+      "public/eval.csv": {
+       "bytes": 4229470,
+       "sha256": "e790547b1943f5c116d20766763402b9d5524fb9a1c93491ed8b847c4b22b47f"
+      },
+      "private/holdout.csv": {
+       "bytes": 4228351,
+       "sha256": "7996855020aeb6445932ae86ef5f39f92819f34bd5a7daa14c06b8573327b2f7"
+      }
+     }
     },
-    "what_it_shows": "the task is learnable, and the station-disjoint level scores the same as the temporal one (0.8690 against 0.8633) on stations the model never saw - so the signal is not station-specific memorisation",
-    "previous_measurement": {
-      "job": "noaa-baseline-001",
-      "staging_release": 392328598,
-      "artifact_job": "noaa-003",
-      "temporal": 0.8638,
-      "station_disjoint": 0.8688,
-      "why": "the same measurement on the superseded artifact. Rows and positives are identical in all six splits and the artifacts differ only in the label column's name, so the two pairs agree in the first three decimals; the last digit moves with xgboost's non-bit-reproducible training"
-    },
-    "caveat": "not yet calibrated against a persistence-only baseline. Yesterday's maximum against the station's own threshold is a strong feature, and consecutive flood days are common, so part of this AUC may be autocorrelation rather than prediction. A single-feature persistence baseline is the next measurement, before any headroom claim is made.",
-    "evidence": ".factory/noaa-baseline-002/reports/baseline.json and the four logs"
-  },
-  "persistence_calibration": {
-    "script": "candidates/noaa-tide-flooding/persistence_baseline.py",
-    "result": "candidates/noaa-tide-flooding/persistence_baseline_result.json",
-    "method": "no training: rank-based AUC of each single stock feature, and of the plain rule 'yesterday's maximum exceeded the station threshold', on the eval split",
-    "temporal": {
-      "best_single_feature_auc": 0.8265,
-      "best_single_feature": "margin_ft",
-      "full_model_auc": 0.8638,
-      "headroom": 0.0373,
-      "yesterday_exceeded_rule_auc": 0.6269,
-      "yesterday_exceeded_rule_agreement": 0.9655
-    },
-    "station_disjoint": {
-      "best_single_feature_auc": 0.8454,
-      "best_single_feature": "margin_ft",
-      "full_model_auc": 0.8688,
-      "headroom": 0.0234,
-      "yesterday_exceeded_rule_auc": 0.6525,
-      "yesterday_exceeded_rule_agreement": 0.9581
-    },
-    "verdict": "the task is dominated by persistence: yesterday's maximum against the station's own threshold alone reaches 0.83-0.85 of the 0.86-0.87 the trained model achieves, so the model adds only 0.023-0.037. The task is real and it transfers across stations, but its headroom is narrow and a one-feature rule gets most of the way.",
-    "why_accuracy_is_not_used": "the plain 'yesterday exceeded' rule agrees with the label about 96% of the time while carrying almost no ranking signal (AUC 0.63), because only ~2% of days are positive. Accuracy would flatter a useless rule; the runner contract scores AUC for this reason.",
-    "consequence_for_release": "must be stated in the dataset card: the single-feature reference baseline belongs beside the model baseline, exactly as Austin records 0.627 for its single feature against 0.769 full model. A harder variant - onset after a dry spell, or a longer horizon, where persistence is weaker by construction - is the way to widen headroom if a low-headroom task is not wanted.",
-    "operator_decision": "pending: whether to ship this task as-is with the floor documented, or also build a harder variant. The threshold itself is not being tuned.",
-    "measured_on": "the noaa-003 eval split, staging release 392230750. The corrected artifact carries the same rows and positives in every split but a few revised observation values, so these figures are carried over as measured rather than re-measured on the released bytes. Open: re-measure the floor on the corrected eval split, or keep this note beside the number"
-  },
-  "artifact_evidence": [
-    "candidates/noaa-tide-flooding/clustering_result.json",
-    "candidates/noaa-tide-flooding/datum_regression.json",
-    "candidates/noaa-tide-flooding/split_capacity_result.json",
-    "candidates/noaa-tide-flooding/station_list_result.json"
-  ],
-  "consumer_verification": {
-    "job": "noaa-consumer-003",
-    "levels_checked": "both levels, each treated as its own contract-complete task instance",
-    "clean_room": "worker container with no access to this repository and no GitHub credential; the published package tree cloned and hash-checked against MANIFEST.json, the release assets fetched by the worker host - which holds the credential - and mounted read-only",
-    "checked_bytes": "release 396698120 of earino/noaa-tide-flooding (tag v2026.09), the corrected noaa-004 files: 10/10 fetched, 196,018,020 bytes, digests equal artifacts[0].levels",
-    "result": "PASSED",
-    "baseline_reproduction": "temporal 0.8633 and station_disjoint 0.8690, both CONTRACT OK - identical to the accepted-artifact baseline measurement, compared with the 0.8651/0.8687 spread seen on the superseded bytes",
-    "gate_artifact_versions": "temporal bb051dc304a4ee63, station_disjoint 92297a5b62f86b29 - both equal the versions recorded for the accepted artifact",
-    "previous": {
-      "job": "noaa-consumer-002",
-      "result": "PASSED",
-      "reproduction_spread": "0.8651 vs 0.8638 (temporal) and 0.8687 vs 0.8688 (station_disjoint), within about 0.002",
-      "note": "this pass described the superseded noaa-003 bytes and does not carry over to the re-issued artifact; it is kept rather than averaged in"
-    },
-    "note": "noaa-consumer-001 failed on an unlogged dependency step and is superseded rather than averaged in; no run scored the holdout"
-  },
-  "publication": {
-    "recorded_at": "2026-09-25T17:09:22+00:00",
-    "public": true,
-    "approval": "operator authorisation for public visibility, mirrored from release/noaa-tide-flooding/DESTINATIONS.json, which carries 'Public since 2026-09-25 after explicit operator authorisation.' and was written before the manifest was regenerated.",
-    "github": {
-      "repository": "earino/noaa-tide-flooding",
-      "release_id": 396698120,
-      "release_tag": "v2026.09",
-      "visibility": "public",
-      "anonymous_read": "verified - repository page 200, release page 200, release asset ranged GET 206; digests re-read from the API match the manifest"
-    },
-    "huggingface": {
-      "repository": "earino/noaa-tide-flooding",
-      "revision_commit": "6940e97645759c330acc485b6444504b0cef5ace",
-      "gated": false,
-      "visibility": "public",
-      "anonymous_read": "verified - Hub dataset API reports private=false and gated=false; tag v2026.09 and main both resolve to 6940e976; hf-publish --verify ok"
-    },
-    "website": {
-      "dataset_url": "https://earino.github.io/noaa-tide-flooding/",
-      "versioned_url": "https://earino.github.io/noaa-tide-flooding/versions/v2026.09/",
-      "catalog_url": "https://earino.github.io/dataset-factory-site/",
-      "site_revision": 1,
-      "artifact_version": "fb49f932c7b4ea5ab532c20f7dce59a7d733de925d1e172054ff1d38abe1eeed",
-      "record_sha256": "69cebde0cce101cbcf5c9fe2c043e9ce6993319312525bfd448a604740beec70",
-      "dataset_deployment": "https://github.com/earino/noaa-tide-flooding/actions/runs/36244467965",
-      "verified": true,
-      "verified_at": "2026-09-26T23:20:00+00:00",
-      "verified_by": "anonymous client: dataset page 200 (10,584 B) and versioned page 200, identical to the immutable edition versions/v2026.09/editions/1/ at site_revision 1; catalogue carries the releases/ entry for v2026.09",
-      "https_enforced": true,
-      "note": "the site plan hash for this release is not carried here - it lives in the site-publish receipts, not in the candidate record"
-    },
-    "data_unchanged_by_publication": true
+    "verified_from_the_service": "every asset re-read from the GitHub API on 2026-09-20 matches the job's transferred digests and sizes exactly, 10 of 10, and the repository is private",
+    "state": "superseded on 2026-09-25 by the re-issue under noaa-publish-002; the release is no longer listed on the repository (gh release list returns one release, v2026.09 -> 396698120), and the tag commit 9bcbf2c6 still exists as a git object with no ref pointing at it. The digests are kept here so the superseded version stays reproducible and checkable."
+   }
   }
+ ],
+ "rejection_reason": null,
+ "review": "Published since 2026-09-25, when the operator authorised public visibility. Release v2026.09 of earino/noaa-tide-flooding carries ten assets across both levels (temporal and station_disjoint), the Hugging Face mirror is public and ungated, and the site page is live; the GitHub repository, a ranged GET of a release asset, the Hub files and the site were all read from an anonymous client and verified. Baselines on the shipped bytes: 0.8633 temporal / 0.8690 station_disjoint (noaa-consumer-003 against release 396698120). Contracts settled at construction: redistribution read from the CO-OPS portal itself (public domain, attribution requested, derived-not-official), observations-only feature list, datum=STND, frozen 122-station panel with eval 1,828 positives over 332 flood days and holdout 2,850 over 427. The persistence floor is stated in the Hub card (single-feature 0.8265 temporal / 0.8454 station_disjoint). CORRECTED 2026-09-26: the previous text was the 2026-09-19 pre-construction review and no longer described state.",
+ "next_action": "The release is public and verified; what remains is documentation-only and touches no asset byte. In order: (1) DATA_DICTIONARY.md's label row still names the column `late` where the shipped target column is `minor_flood` (read from temporal-meta.json: target = minor_flood), so a reader following the dictionary looks for a column that does not exist - this is the first item; (2) VERIFICATION.md still cites job noaa-003 and the superseded figures 0.8638 / 0.8688, and README.md, RELEASE_NOTES.md, baseline/README.md, code/persistence_baseline.py, baseline/reproduce_baseline.sh and consumer/source/run.sh carry the same superseded figures, where the shipped bytes measure 0.8633 / 0.8690 (noaa-consumer-003 against release 396698120, CONTRACT OK); (3) DESTINATIONS.json is absent from the public repository although the same sync carried it for austin-911-response and chicago-doah-adjudication - confirm whether it is meant to be public at this destination and sync it if so. None of these is a new version: they are prose and figure corrections plus one missing record file, and the rule is that document-only corrections never require a new version while any asset-byte change does. Whether to also build a harder variant against the documented persistence floor remains an operator choice, not release work. CORRECTED 2026-09-26: the previous text still said both destinations stay private.",
+ "features_declared": {
+  "prediction_instant": "End of the local day before the target day. Features are observed water levels only. NOAA tide predictions and model guidance are model output and must be excluded so the task stays an observation-only forecast.",
+  "available_at_prediction_time": [
+   "observed water levels from the CO-OPS data API (water_level / hourly_height), up to the end of the local day before the target day",
+   "station identity and its published nos_minor threshold (metadata, frozen before scoring)",
+   "calendar position of the target day"
+  ],
+  "excluded_as_post_hoc_or_model_output": [
+   "tide predictions (product=predictions) - model output, not an observation",
+   "OFS / model guidance products",
+   "the HTF products used for measurement (htf/annual, htf/daily) - they are derived from the same observations and would hand the answer over",
+   "the target day's own observations"
+  ],
+  "label_source_column": "the target day's maximum observed water level, derived from the same water-level product as the features, so it MUST be absent from the shipped CSVs - not merely unlisted. The qualification gate tests this over the shipped columns."
+ },
+ "verdict": "ready",
+ "novelty_check": {
+  "checked_at": "2026-09-19T12:20:47+00:00",
+  "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+  "queries": [
+   "coastal flood",
+   "tide gauge",
+   "water level exceedance"
+  ],
+  "evidence": {
+   "huggingface_datasets": [
+    {
+     "query": "coastal flood",
+     "hits": 1,
+     "top": [
+      "electricsheepafrica/africa-synth-flooding-sea-level-rise-coastal-health-all"
+     ]
+    },
+    {
+     "query": "tide gauge",
+     "hits": 6,
+     "top": [
+      "SOTAagi2030/Tide-Gauge-Retention",
+      "SOTAagi2030/TideGauge-Observations",
+      "SOTAagi2030/TideGauge-Estuary",
+      "SOTAagi2030/TideGauge-Shelf",
+      "SOTAagi2030/Harbor-TideGauge-Observations"
+     ]
+    },
+    {
+     "query": "water level exceedance",
+     "hits": 0,
+     "top": []
+    }
+   ],
+   "zenodo_records": [
+    {
+     "query": "coastal flood",
+     "hits": 61944,
+     "top": [
+      "Estimating household preferences for coastal flood risk mitigation policies under ambiguity",
+      "Estimating household preferences for coastal flood risk mitigation policies under ambiguity",
+      "ECFAS Pan-EU Flood Catalogue, D5.4 \u2013 Pan-EU flood maps catalogue - ECFAS project (GA 101004211), https://www.ecfas.eu/",
+      "COASTPROS-EU",
+      "Systemic Societal Vulnerability: An Assessment of Place-Based Intersection of Coastal Flood in Eti-Osa ,Lagos, Nigeria"
+     ]
+    },
+    {
+     "query": "tide gauge",
+     "hits": 19770,
+     "top": [
+      "Tide Gauge",
+      "Data supplement to 'Vertical land motion reconstruction unveils non-linear effects on relative sea level changes from 1900-2150'",
+      "Tohoku Tsunami, March 11 2011: GoogleEarth-Screenshot of Saip tide gauge station at 10:08 hours CET",
+      "Tohoku Tsunami, March 11 2011: GoogleEarth-Screenshot of Hansaki tide gauge station at 09:56 hours CET",
+      "A wavelet-based method for the assessment of hydrodynamic model behaviour against observed sea level variability"
+     ]
+    },
+    {
+     "query": "water level exceedance",
+     "hits": 442420,
+     "top": [
+      "Rediscovering global hotspots of monthly freshwater boundary exceedances by integrating water storage capacity",
+      "Data and Software supporting \"Human-caused sea level rise drives 21st-century worldwide water level extremes\"",
+      "Data from: Modes of berm and beachface recovery following storm reset: observations using a continuously scanning lidar",
+      "Fuzzy random forests: A new approach to groundwater contaminant modelling in Uganda",
+      "2015 Global Water Withdrawal and Freshwater Boundary (RFB) Exceedance Inventories Aligned with the EMERGING MRIO Model"
+     ]
+    }
+   ],
+   "arxiv_preprints": [
+    {
+     "query": "coastal flood",
+     "hits": 5,
+     "top": [
+      "Robust blue-green urban flood risk management optimised with a genetic algorithm for multiple rainstorm return periods",
+      "A Comprehensive Review of Coastal Compound Flooding Literature",
+      "Physics-informed GANs for Coastal Flood Visualization",
+      "Climate Adaptation-Aware Flood Prediction for Coastal Cities Using Deep Learning",
+      "Coastal Flood Risk in the Mortgage Market: Storm Surge Models' Predictions vs. Flood Insurance Maps"
+     ]
+    },
+    {
+     "query": "tide gauge",
+     "hits": 5,
+     "top": [
+      "TIDE: Token-Informed Depth Execution for Per-Token Early Exit in LLM Inference",
+      "Tide: A Customisable Dataset Generator for Anti-Money Laundering Research",
+      "TIDE: A Physically Diverse 3D Turbulence Benchmark Dataset for Advancing Scientific Machine Learning",
+      "Turning the TIDE: Cross-Architecture Distillation for Diffusion Large Language Models",
+      "Reply to Hunter and Brown Discussion of Is there any support in the long term tide gauge data to the claims that parts o"
+     ]
+    },
+    {
+     "query": "water level exceedance",
+     "hits": 5,
+     "top": [
+      "Water Bridging Dynamics of Polymerase Chain Reaction in the Gauge Theory Paradigm of Quantum Fields",
+      "Graph Neural Networks for Pressure Estimation in Water Distribution Systems",
+      "Copper passivation procedure for water-filled copper cells for applications in metrology",
+      "Flexible Bond and Angle, FBA/epsilon model of water",
+      "Surface microlenses for much more efficient photodegradation in water treatment"
+     ]
+    }
+   ]
+  },
+  "evidence_summary": "- huggingface_datasets / 'coastal flood': 1 hit(s) - electricsheepafrica/africa-synth-flooding-sea-level-rise-coastal-health-all\n- huggingface_datasets / 'tide gauge': 6 hit(s) - SOTAagi2030/Tide-Gauge-Retention, SOTAagi2030/TideGauge-Observations, SOTAagi2030/TideGauge-Estuary, SOTAagi2030/TideGauge-Shelf, SOTAagi2030/Harbor-TideGauge-Observations\n- huggingface_datasets / 'water level exceedance': 0 hit(s) - nothing notable\n- zenodo_records / 'coastal flood': 61944 hit(s) - Estimating household preferences for coastal flood risk mitigation policies under ambiguity, Estimating household preferences for coastal flood risk mitigation policies under ambiguity, ECFAS Pan-EU Flood Catalogue, D5.4 \u2013 Pan-EU flood maps catalogue - ECFAS project (GA 101004211), https://www.ecfas.eu/, COASTPROS-EU, Systemic Societal Vulnerability: An Assessment of Place-Based Intersection of Coastal Flood in Eti-Osa ,Lagos, Nigeria\n- zenodo_records / 'tide gauge': 19770 hit(s) - Tide Gauge, Data supplement to 'Vertical land motion reconstruction unveils non-linear effects on relative sea level changes from 1900-2150', Tohoku Tsunami, March 11 2011: GoogleEarth-Screenshot of Saip tide gauge station at 10:08 hours CET, Tohoku Tsunami, March 11 2011: GoogleEarth-Screenshot of Hansaki tide gauge station at 09:56 hours CET, A wavelet-based method for the assessment of hydrodynamic model behaviour against observed sea level variability\n- zenodo_records / 'water level exceedance': 442420 hit(s) - Rediscovering global hotspots of monthly freshwater boundary exceedances by integrating water storage capacity, Data and Software supporting \"Human-caused sea level rise drives 21st-century worldwide water level extremes\", Data from: Modes of berm and beachface recovery following storm reset: observations using a continuously scanning lidar, Fuzzy random forests: A new approach to groundwater contaminant modelling in Uganda, 2015 Global Water Withdrawal and Freshwater Boundary (RFB) Exceedance Inventories Aligned with the EMERGING MRIO Model\n- arxiv_preprints / 'coastal flood': 5 hit(s) - Robust blue-green urban flood risk management optimised with a genetic algorithm for multiple rainstorm return periods, A Comprehensive Review of Coastal Compound Flooding Literature, Physics-informed GANs for Coastal Flood Visualization, Climate Adaptation-Aware Flood Prediction for Coastal Cities Using Deep Learning, Coastal Flood Risk in the Mortgage Market: Storm Surge Models' Predictions vs. Flood Insurance Maps\n- arxiv_preprints / 'tide gauge': 5 hit(s) - TIDE: Token-Informed Depth Execution for Per-Token Early Exit in LLM Inference, Tide: A Customisable Dataset Generator for Anti-Money Laundering Research, TIDE: A Physically Diverse 3D Turbulence Benchmark Dataset for Advancing Scientific Machine Learning, Turning the TIDE: Cross-Architecture Distillation for Diffusion Large Language Models, Reply to Hunter and Brown Discussion of Is there any support in the long term tide gauge data to the claims that parts o\n- arxiv_preprints / 'water level exceedance': 5 hit(s) - Water Bridging Dynamics of Polymerase Chain Reaction in the Gauge Theory Paradigm of Quantum Fields, Graph Neural Networks for Pressure Estimation in Water Distribution Systems, Copper passivation procedure for water-filled copper cells for applications in metrology, Flexible Bond and Angle, FBA/epsilon model of water, Surface microlenses for much more efficient photodegradation in water treatment",
+  "prior_art": [
+   "FloodCastBench, Sci Data 12:431 (2025) - inundation extent/depth, 30 m / 300 s, four events; not this task",
+   "NOAA ETSS/OFS operational guidance - forecasts, but publishes no scored ML task"
+  ],
+  "theirs": "NOAA publishes the observations, verified 6-minute daily maxima (daily_max_min, one request per station-year), the flood thresholds in station metadata, and annual flood-day counts (htf/annual). Operational forecasting exists (ETSS/OFS). FloodCastBench (Sci Data 12:431, 2025) covers hydrodynamic inundation dynamics for four events, not station-level exceedance classification.",
+  "ours": "A leak-free next-day prediction task over a frozen 122-station panel: label = daily maximum water level at datum=STND exceeding the station's published NOS minor flood threshold, with observations-only features, temporal splits, and the label validated against NOAA's own annual counts (12/12 stations, 2025).",
+  "verdict": "differentiated",
+  "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+ },
+ "task_design": {
+  "decided_on": "2026-09-19",
+  "target": "does a station's daily maximum observed water level exceed its published NOS minor flood threshold on the next local day",
+  "prediction_time": "the end of the previous local day; every feature is knowable then",
+  "label_source": {
+   "product": "htf/htf_daily.json, field minFlag (NOAA's own minor-flood days)",
+   "why": "our reduction of 6-minute daily maxima overcounted flood days by ~20% against NOAA's own counts on a year with real signal (113-114 vs 94 over four stations, 2024); NOAA's flags matched exactly, station by station. Time zone was not the cause (GMT and LST differ by one day). A label that disagrees with the publisher's own product has to be justified, and there is no reason to ship one.",
+   "evidence": "label_route_result.json (label_route_check.py)",
+   "requests_per_station_year": 1
+  },
+  "features": "observations only, station-normalised: margin against the station's own published threshold, trailing mean/spread of its own maxima, days since its last exceedance, trailing-window exceedance counts, day-of-year. NOAA tide predictions and model guidance are excluded - they are not observations, and including them defeats the task. Station statistics use trailing windows only, so the future cannot leak into the features.",
+  "splits": {
+   "temporal": {
+    "stations": 122,
+    "train": "2006-2021",
+    "eval": "2022-2023",
+    "holdout": "2024-2025",
+    "positives_station_days": {
+     "train": 11886,
+     "eval": 1828,
+     "holdout": 2850
+    },
+    "independent_events": {
+     "eval": 332,
+     "holdout": 427
+    }
+   },
+   "station_disjoint": {
+    "rule": "sort the 122 frozen stations by NOS station id; every third station is group0, the station holdout; train on group1+group2",
+    "held_out_stations": 41,
+    "positives_station_days": {
+     "eval": 792,
+     "holdout": 1090
+    },
+    "independent_events": {
+     "eval": 298,
+     "holdout": 337
+    },
+    "mean_stations_per_flood_day": {
+     "eval": 2.66,
+     "holdout": 3.23
+    }
+   }
+  },
+  "why_this_is_the_contribution": "NOAA publishes the observations, the verified maxima and the annual counts, so access is cheap and is not the contribution. A station-disjoint, leak-free, scored transfer task on a frozen panel is not published anywhere the novelty search found.",
+  "capacity_evidence": [
+   "spatial_split_result.json",
+   "station_list_result.json"
+  ],
+  "extraction_cost": {
+   "requests": 4880,
+   "bytes_approx": 184000000,
+   "breakdown": "2,440 for daily_max_min features (~178 MB) + 2,440 for the HTF daily flags (small), one request per station-year each",
+   "note": "not the 29,160-request / 15.2 GiB raw-series route"
+  },
+  "splits_cross_check": "the three groups' positives sum to the temporal totals exactly (4307 + 3328 + 4251 = 11886), and the station group's station-days from the daily product equal the annual product's counts",
+  "feature_source": {
+   "product": "daily_max_min",
+   "interval": 6,
+   "datum": "STND",
+   "time_zone": "GMT",
+   "quality": "verified maxima with pcComplete6Min and quality flags",
+   "requests_per_station_year": 1
+  }
+ },
+ "construction_output": {
+  "job": "noaa-003",
+  "built_at_utc": "2026-09-19",
+  "extract": "output/extract in draft release job-noaa-003",
+  "levels": [
+   "station_disjoint",
+   "temporal"
+  ],
+  "splits": {
+   "temporal": {
+    "train": {
+     "rows": 697373,
+     "positive_rate": 0.016883
+    },
+    "eval": {
+     "rows": 89038,
+     "positive_rate": 0.020385
+    },
+    "holdout": {
+     "rows": 88841,
+     "positive_rate": 0.03208
+    }
+   },
+   "station_disjoint": {
+    "train": {
+     "rows": 461580,
+     "positive_rate": 0.016277
+    },
+    "eval": {
+     "rows": 29930,
+     "positive_rate": 0.026328
+    },
+    "holdout": {
+     "rows": 29930,
+     "positive_rate": 0.036418
+    }
+   }
+  },
+  "total_rows": 1396692,
+  "note": "Complete panel: 122/122 stations and 2,440/2,440 station-years, 4,880 requests, zero fetch errors. The builder exits non-zero on any lost station-year, so coverage is a hard condition rather than a post-hoc observation."
+ },
+ "qualification": {
+  "gate": "skills/dataset-qualification/scripts/qualify_dataset.py",
+  "gate_version": "1.3.0",
+  "result": "PASSED - 32 checks per level, 0 failed, on both full artifacts, on the worker",
+  "levels": {
+   "temporal": {
+    "artifact_version": "bb051dc304a4ee63fd1e61ca12864afab247e9530c714f011a60a2d4598d202c",
+    "checks": 32,
+    "ok": true,
+    "job": "noaa-004",
+    "staging_release": 392410743
+   },
+   "station_disjoint": {
+    "artifact_version": "92297a5b62f86b2901eac9e2a7f076e1495dd8fe2e0eb913d140a3a7df47ba17",
+    "checks": 32,
+    "ok": true,
+    "job": "noaa-004",
+    "staging_release": 392410743
+   }
+  },
+  "evidence": ".factory/noaa-004/reports/qualification-{temporal,station_disjoint}.json (ok: true, gate 1.3.0, artifact digests matching candidates/noaa-tide-flooding/baseline/expected_artifact.json)",
+  "superseded": {
+   "job": "noaa-003",
+   "staging_release": 392230750,
+   "levels": {
+    "temporal": "8896c4423c53cb14377765a18f94245dfb10e9f8125b21041a7b68458a17ace5",
+    "station_disjoint": "e6aff23f394ddfe4b11383c3e8c8a1def0beaddbd2e0cf066ccd08ea7adaedda"
+   },
+   "why": "built with the copied-from-Austin label name `late`. The gate passed it as well - the rename is a naming correction, not a data defect"
+  },
+  "note": "Two earlier runs failed on coverage, not on the data: noaa-001 lost 13 stations and noaa-002 lost 60 station-years to fetch errors the retry treated as permanent. Both were fixed in the builder, which now records coverage and refuses an incomplete panel.",
+  "artifact_version": "fb49f932c7b4ea5ab532c20f7dce59a7d733de925d1e172054ff1d38abe1eeed"
+ },
+ "baseline": {
+  "job": "noaa-baseline-002",
+  "staging_release": 396517628,
+  "artifact_job": "noaa-004",
+  "artifact_version": "fb49f932c7b4ea5ab532c20f7dce59a7d733de925d1e172054ff1d38abe1eeed",
+  "source": "the ten artifact files fetched from private staging and measured in place - the bytes the release will carry, not a rebuild",
+  "runner": "the benchmark's own train.py and validate.py, copied verbatim; their sha256s are in the report, and validate.py re-ran training and reported CONTRACT OK on both levels",
+  "levels": {
+   "temporal": {
+    "eval_auc": 0.8633,
+    "train_rows": 697373,
+    "eval_rows": 89038,
+    "positive_rate": {
+     "train": 0.016883,
+     "eval": 0.020385,
+     "holdout": 0.03208
+    }
+   },
+   "station_disjoint": {
+    "eval_auc": 0.869,
+    "train_rows": 461580,
+    "eval_rows": 29930,
+    "positive_rate": {
+     "train": 0.016277,
+     "eval": 0.026328,
+     "holdout": 0.036418
+    }
+   }
+  },
+  "what_it_shows": "the task is learnable, and the station-disjoint level scores the same as the temporal one (0.8690 against 0.8633) on stations the model never saw - so the signal is not station-specific memorisation",
+  "previous_measurement": {
+   "job": "noaa-baseline-001",
+   "staging_release": 392328598,
+   "artifact_job": "noaa-003",
+   "temporal": 0.8638,
+   "station_disjoint": 0.8688,
+   "why": "the same measurement on the superseded artifact. Rows and positives are identical in all six splits and the artifacts differ only in the label column's name, so the two pairs agree in the first three decimals; the last digit moves with xgboost's non-bit-reproducible training"
+  },
+  "caveat": "not yet calibrated against a persistence-only baseline. Yesterday's maximum against the station's own threshold is a strong feature, and consecutive flood days are common, so part of this AUC may be autocorrelation rather than prediction. A single-feature persistence baseline is the next measurement, before any headroom claim is made.",
+  "evidence": ".factory/noaa-baseline-002/reports/baseline.json and the four logs"
+ },
+ "persistence_calibration": {
+  "script": "candidates/noaa-tide-flooding/persistence_baseline.py",
+  "result": "candidates/noaa-tide-flooding/persistence_baseline_result.json",
+  "method": "no training: rank-based AUC of each single stock feature, and of the plain rule 'yesterday's maximum exceeded the station threshold', on the eval split",
+  "temporal": {
+   "best_single_feature_auc": 0.8265,
+   "best_single_feature": "margin_ft",
+   "full_model_auc": 0.8638,
+   "headroom": 0.0373,
+   "yesterday_exceeded_rule_auc": 0.6269,
+   "yesterday_exceeded_rule_agreement": 0.9655
+  },
+  "station_disjoint": {
+   "best_single_feature_auc": 0.8454,
+   "best_single_feature": "margin_ft",
+   "full_model_auc": 0.8688,
+   "headroom": 0.0234,
+   "yesterday_exceeded_rule_auc": 0.6525,
+   "yesterday_exceeded_rule_agreement": 0.9581
+  },
+  "verdict": "the task is dominated by persistence: yesterday's maximum against the station's own threshold alone reaches 0.83-0.85 of the 0.86-0.87 the trained model achieves, so the model adds only 0.023-0.037. The task is real and it transfers across stations, but its headroom is narrow and a one-feature rule gets most of the way.",
+  "why_accuracy_is_not_used": "the plain 'yesterday exceeded' rule agrees with the label about 96% of the time while carrying almost no ranking signal (AUC 0.63), because only ~2% of days are positive. Accuracy would flatter a useless rule; the runner contract scores AUC for this reason.",
+  "consequence_for_release": "must be stated in the dataset card: the single-feature reference baseline belongs beside the model baseline, exactly as Austin records 0.627 for its single feature against 0.769 full model. A harder variant - onset after a dry spell, or a longer horizon, where persistence is weaker by construction - is the way to widen headroom if a low-headroom task is not wanted.",
+  "operator_decision": "pending: whether to ship this task as-is with the floor documented, or also build a harder variant. The threshold itself is not being tuned.",
+  "measured_on": "the noaa-003 eval split, staging release 392230750. The corrected artifact carries the same rows and positives in every split but a few revised observation values, so these figures are carried over as measured rather than re-measured on the released bytes. Open: re-measure the floor on the corrected eval split, or keep this note beside the number"
+ },
+ "artifact_evidence": [
+  "candidates/noaa-tide-flooding/clustering_result.json",
+  "candidates/noaa-tide-flooding/datum_regression.json",
+  "candidates/noaa-tide-flooding/split_capacity_result.json",
+  "candidates/noaa-tide-flooding/station_list_result.json"
+ ],
+ "consumer_verification": {
+  "job": "noaa-consumer-003",
+  "levels_checked": "both levels, each treated as its own contract-complete task instance",
+  "clean_room": "worker container with no access to this repository and no GitHub credential; the published package tree cloned and hash-checked against MANIFEST.json, the release assets fetched by the worker host - which holds the credential - and mounted read-only",
+  "checked_bytes": "release 396698120 of earino/noaa-tide-flooding (tag v2026.09), the corrected noaa-004 files: 10/10 fetched, 196,018,020 bytes, digests equal artifacts[0].levels",
+  "result": "PASSED",
+  "baseline_reproduction": "temporal 0.8633 and station_disjoint 0.8690, both CONTRACT OK - identical to the accepted-artifact baseline measurement, compared with the 0.8651/0.8687 spread seen on the superseded bytes",
+  "gate_artifact_versions": "temporal bb051dc304a4ee63, station_disjoint 92297a5b62f86b29 - both equal the versions recorded for the accepted artifact",
+  "previous": {
+   "job": "noaa-consumer-002",
+   "result": "PASSED",
+   "reproduction_spread": "0.8651 vs 0.8638 (temporal) and 0.8687 vs 0.8688 (station_disjoint), within about 0.002",
+   "note": "this pass described the superseded noaa-003 bytes and does not carry over to the re-issued artifact; it is kept rather than averaged in"
+  },
+  "note": "noaa-consumer-001 failed on an unlogged dependency step and is superseded rather than averaged in; no run scored the holdout"
+ },
+ "publication": {
+  "recorded_at": "2026-09-25T17:09:22+00:00",
+  "public": true,
+  "approval": "operator authorisation for public visibility, mirrored from release/noaa-tide-flooding/DESTINATIONS.json, which carries 'Public since 2026-09-25 after explicit operator authorisation.' and was written before the manifest was regenerated.",
+  "github": {
+   "repository": "earino/noaa-tide-flooding",
+   "release_id": 396698120,
+   "release_tag": "v2026.09",
+   "visibility": "public",
+   "anonymous_read": "verified - repository page 200, release page 200, release asset ranged GET 206; digests re-read from the API match the manifest"
+  },
+  "huggingface": {
+   "repository": "earino/noaa-tide-flooding",
+   "revision_commit": "6940e97645759c330acc485b6444504b0cef5ace",
+   "gated": false,
+   "visibility": "public",
+   "anonymous_read": "verified - Hub dataset API reports private=false and gated=false; tag v2026.09 and main both resolve to 6940e976; hf-publish --verify ok"
+  },
+  "website": {
+   "dataset_url": "https://earino.github.io/noaa-tide-flooding/",
+   "versioned_url": "https://earino.github.io/noaa-tide-flooding/versions/v2026.09/",
+   "catalog_url": "https://earino.github.io/dataset-factory-site/",
+   "site_revision": 1,
+   "artifact_version": "fb49f932c7b4ea5ab532c20f7dce59a7d733de925d1e172054ff1d38abe1eeed",
+   "record_sha256": "69cebde0cce101cbcf5c9fe2c043e9ce6993319312525bfd448a604740beec70",
+   "dataset_deployment": "https://github.com/earino/noaa-tide-flooding/actions/runs/36244467965",
+   "verified": true,
+   "verified_at": "2026-09-26T23:20:00+00:00",
+   "verified_by": "anonymous client: dataset page 200 (10,584 B) and versioned page 200, identical to the immutable edition versions/v2026.09/editions/1/ at site_revision 1; catalogue carries the releases/ entry for v2026.09",
+   "https_enforced": true,
+   "note": "the site plan hash for this release is not carried here - it lives in the site-publish receipts, not in the candidate record"
+  },
+  "data_unchanged_by_publication": true
+ },
+ "jurisdiction": {
+  "country": "US",
+  "region": "North America",
+  "publisher": "US National Oceanic and Atmospheric Administration",
+  "recorded_at": "2026-10-19",
+  "note": "Backfilled when the discovery brief began requiring a jurisdiction. Country is the publisher's, i.e. whose data this is."
+ }
 }

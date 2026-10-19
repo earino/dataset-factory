@@ -1,165 +1,172 @@
 {
-  "id": "nws-tornado-warning-verification",
-  "status": "investigating",
-  "verdict": "go",
-  "created_at": "2026-10-19T11:50:06.798723+00:00",
-  "domain": "severe weather forecasting / NWS warning verification",
-  "prediction_question": "For an NWS tornado warning at the moment it is issued, will it be verified - will at least one tornado report fall inside its storm-based polygon during its valid time?",
-  "prediction_time": "The warning's issue timestamp. Everything the warning product itself carries at issuance is a feature: issuing WFO, forecaster of record, issue/expiry times (hence time-of-day and day-of-season), the warned county list, the storm-based polygon geometry (area, perimeter, polygon-vs-county size reduction), the tornado-possible flag on parent SVR warnings, the hail/wind tags, and - via the per-warning product-text URL - the full issued text (tornado tag, damage-threat tag, storm motion). The label is determined afterwards by which tornado reports occur in the polygon while the warning is live; the cow fields that encode it (verify, stormreports, stormreports_all, lead0, areaverify, statuses, status) are label-source/post-hoc and never ship as features.",
-  "target_definition": "Binary: the per-warning `verify` boolean returned by IEM cow for phenomena=TO, significance=W - whether >=1 tornado local storm report (buffered by cow's default 15 km) falls inside the polygon during the valid window. The method is documented on the cow page ('NWS Storm Based Warning Verification') and matches the official storm-based verification concept in NWS Instruction 10-1601 ('FAR is the number of false alarms (unverified warnings) divided by the total number of warnings'; storm report points verify warning areas).",
-  "sources": [
-    {
-      "name": "IEM Cow API - NWS storm-based warning verification",
-      "url": "https://mesonet.agron.iastate.edu/api/1/cow.json",
-      "api": "https://mesonet.agron.iastate.edu/api/1/cow.json?begints=YYYY-01-01T00:00Z&endts=YYYY-12-31T23:59Z&phenomena=TO&significance=W",
-      "access": "anonymous HTTP GET, no key; begints/endts are required (the cow HTML page's 'none of the parameters are required' is stale - the deployed API returns 422 'Field required: begints/endts', observed 2026-10-19). Returns GeoJSON: per-warning features carry the verify boolean, issuance metadata and polygon; plus the matched storm reports and aggregate stats. Verified live 2026-10-19."
-    },
-    {
-      "name": "IEM Cow documentation and verification methodology",
-      "url": "https://mesonet.agron.iastate.edu/cow/",
-      "access": "read 2026-10-19; documents the buffered-LSR-in-polygon verification method and the parameters"
-    },
-    {
-      "name": "NWS severe weather warning verification procedure (the official concept cow reimplements)",
-      "url": "https://www.weather.gov/media/directives/010_pdfs_archived/pd01016001b.pdf",
-      "access": "NWS Instruction 10-1601, cited for the official definitions of POD/FAR over warnings and reports"
-    }
-  ],
-  "license_evidence": [
-    "NWS products: 'The information on National Weather Service (NWS) Web pages are in the public domain, unless specifically noted otherwise' - https://www.weather.gov/disclaimer, read 2026-10-19.",
-    "IEM: 'The materials found on this website are in the public domain and may be used freely by anyone for any lawful purpose. Attributing the Iowa Environmental Mesonet of Iowa State University would be appreciated.' - https://mesonet.agron.iastate.edu/disclaimer.php, read 2026-10-19.",
-    "Caveat to carry on any release: 'Data presented here is unofficial and should be used for educational purposes only.' - https://mesonet.agron.iastate.edu/cow/, read 2026-10-19. The verification label is IEM's computation over official NWS warnings and reports, not an NWS official verification product; any release must be labelled derived and must attribute IEM."
-  ],
-  "construction_script": null,
-  "split_strategy": "Temporal by issue year, all three windows contiguous and disjoint. Proposed: train 2008-2018 (storm-based polygons began Oct 2007), eval 2019-2021, holdout 2022-2024. Anchor measurements support capacity but window totals are computed at construction: measured 2013 = 1,832 warnings / 441 verified (24.1%) spread over 100 distinct days with >=1 verified warning; measured 2023 = 2,531 / 656 (25.9%) over 115 distinct days. Positives cluster by outbreak day, so the clustered count (100-115 independent positive days per measured year) is the figure that matters for window capacity, not the row count. Base-rate drift is a documented property of the source (warning POD peaked 2011, declined 2012-14, then recovered - WAF-D-23-0153), so multi-year windows and a drift note are required, not a single-year holdout.",
-  "measurements": {
-    "cow_api_2026_10_19": [
-      {
-        "query": "begints=2013-01-01T00:00Z&endts=2013-12-31T23:59Z&phenomena=TO&significance=W (national, one request)",
-        "result": "HTTP 200, 19,593,733 bytes in 38.4 s; 1,832 warning events, 441 verified (rate 0.241), 94 distinct WFOs, 411 distinct forecasters, 170 active days, 100 days with >=1 verified warning; stats events_total=1832 events_verified=441 FAR[1]=0.759"
-      },
-      {
-        "query": "same for 2023",
-        "result": "HTTP 200, 28,389,049 bytes in 59.5 s; 2,531 warning events, 656 verified (rate 0.259), 96 WFOs, 514 forecasters, 201 active days, 115 days with >=1 verified warning; stats events_total=2531 events_verified=656 FAR[1]=0.741"
-      },
-      {
-        "query": "wfo=DMX year 2023 (structure probe)",
-        "result": "HTTP 200, 222,257 bytes in 1.4 s; 2 warning features; per-event fields: year, wfo, eventid, issue, expire, statuses, fcster, svr_tornado_possible, hailtag, windtag, carea, ar_ugc, ar_ugcname, lat0, lon0, perimeter, parea, sharedborder, product_id, status, stormreports, stormreports_all, verify, tor_in_svrtorpossible, lead0, areaverify, product_text (URL to the full issued warning text), link, geometry (MultiPolygon)"
-      }
-    ],
-    "extraction_cost_measured_per_year": "One national TOR-year pull (the whole construction unit) measured at 20-28 MB and 38-60 s from this host (coordinator class). A 17-year construction (2008-2024) is 17 such requests: ~500 MB total, 12-17 min of pulling, measured per-year and summed - the only estimate inside it is whether the coordinator class is slower or faster than the worker class; measure once on the worker at construction.",
-    "cross_check_against_published_summary_products": "cow FAR[1] = 0.759 (2013) and 0.741 (2023) against the published tornado-warning FAR of 0.69 for 2014-2023 (arXiv 2510.25011, Keylon 2025) and the DOC OIG finding that NWS met its GPRA false-alarm-ratio goal in 9 of 12 recent fiscal years - same ballpark, no contradiction.",
-    "known_event_fixture": "The 2022-04-16 northern-Arkansas storm documented by Keylon 2025 (arXiv 2510.25011) as the source of all 3 tornado-emergency false alarms 2014-2023 (a nontornadic thunderstorm that drew repeated TOR warnings): those warnings must read verify=false, while the 89 tornado emergencies 2014-2023 must read verify=true at 0.03 FAR (86/89). Pin exact per-warning expected verdicts at construction."
+ "id": "nws-tornado-warning-verification",
+ "status": "investigating",
+ "verdict": "go",
+ "created_at": "2026-10-19T11:50:06.798723+00:00",
+ "domain": "severe weather forecasting / NWS warning verification",
+ "prediction_question": "For an NWS tornado warning at the moment it is issued, will it be verified - will at least one tornado report fall inside its storm-based polygon during its valid time?",
+ "prediction_time": "The warning's issue timestamp. Everything the warning product itself carries at issuance is a feature: issuing WFO, forecaster of record, issue/expiry times (hence time-of-day and day-of-season), the warned county list, the storm-based polygon geometry (area, perimeter, polygon-vs-county size reduction), the tornado-possible flag on parent SVR warnings, the hail/wind tags, and - via the per-warning product-text URL - the full issued text (tornado tag, damage-threat tag, storm motion). The label is determined afterwards by which tornado reports occur in the polygon while the warning is live; the cow fields that encode it (verify, stormreports, stormreports_all, lead0, areaverify, statuses, status) are label-source/post-hoc and never ship as features.",
+ "target_definition": "Binary: the per-warning `verify` boolean returned by IEM cow for phenomena=TO, significance=W - whether >=1 tornado local storm report (buffered by cow's default 15 km) falls inside the polygon during the valid window. The method is documented on the cow page ('NWS Storm Based Warning Verification') and matches the official storm-based verification concept in NWS Instruction 10-1601 ('FAR is the number of false alarms (unverified warnings) divided by the total number of warnings'; storm report points verify warning areas).",
+ "sources": [
+  {
+   "name": "IEM Cow API - NWS storm-based warning verification",
+   "url": "https://mesonet.agron.iastate.edu/api/1/cow.json",
+   "api": "https://mesonet.agron.iastate.edu/api/1/cow.json?begints=YYYY-01-01T00:00Z&endts=YYYY-12-31T23:59Z&phenomena=TO&significance=W",
+   "access": "anonymous HTTP GET, no key; begints/endts are required (the cow HTML page's 'none of the parameters are required' is stale - the deployed API returns 422 'Field required: begints/endts', observed 2026-10-19). Returns GeoJSON: per-warning features carry the verify boolean, issuance metadata and polygon; plus the matched storm reports and aggregate stats. Verified live 2026-10-19."
   },
-  "jobs": [],
-  "artifacts": [],
-  "rejection_reason": null,
-  "review": null,
-  "next_action": "GO to construction (advancement session owns it). Construction step: per-year cow.json pull 2008-2024 with phenomena=TO&significance=W (17 requests, measured 20-28 MB / 40-60 s each on this host class; run on a worker), key warnings by (year, wfo, eventid) with product_id as tiebreaker for a total order, exclude label-source and post-hoc columns (verify, stormreports, stormreports_all, lead0, areaverify, statuses, status) from shipped features, derive polygon features (area, perimeter, county count, size-vs-county) and calendar features from issue, optionally fetch per-warning product_text for the IBW tags (ESTIMATE: one 2-5 KB request per warning, ~40,000 warnings 2008-2024 - measure on a 500-warning sample before committing to it), freeze train 2008-2018 / eval 2019-2021 / holdout 2022-2024 with per-window events and verified counts computed from the pulled rows plus the clustered days-with-verified count, pin the 2022-04-16 Arkansas fixture, then run the qualification gate.",
-  "novelty_check": {
-    "checked_at": "2026-10-19T11:51:27+00:00",
-    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
-    "queries": [
-      "tornado warning verification",
-      "NWS storm based warning",
-      "tornado prediction dataset"
-    ],
-    "evidence": {
-      "huggingface_datasets": [
-        {
-          "query": "tornado warning verification",
-          "hits": 0,
-          "top": []
-        },
-        {
-          "query": "NWS storm based warning",
-          "hits": 0,
-          "top": []
-        },
-        {
-          "query": "tornado prediction dataset",
-          "hits": 0,
-          "top": []
-        }
-      ],
-      "zenodo_records": [
-        {
-          "query": "tornado warning verification",
-          "hits": 70323,
-          "top": [
-            "United States tornado reports in landfalling tropical cyclones used in Paredes et al. (2021)",
-            "The First Operational Tornado Forecast Twenty Million to One",
-            "Pulsnitz L\u00f6wen-Apotheke (ca. 1924 / 1947)",
-            "Verification of Large Eddy simulation for tornado wind loading on anticlastic surface",
-            "CFD Modeling Results and Related Data and Codes for Plotting of \"A Mesoscale-to-LES Modeling of Tornado-like Vortex and Associated Local Strong Winds in Urban Area\""
-          ]
-        },
-        {
-          "query": "NWS storm based warning",
-          "hits": 705439,
-          "top": [
-            "phoenix-storm-impacts: flood and storm impacts of nine storms in Phoenix, Arizona (2014-2022), from NWS Local Storm Reports",
-            "Stochastic Nature of Large-Scale Contact Printed ZnO Nanowires Based Transistors",
-            "Hurricane Storm Surge Forecasting",
-            "Influence of anisotropic elasticity on the mechanical properties of fivefold twinned nanowires",
-            "Early Attempts at Storm-Warning"
-          ]
-        },
-        {
-          "query": "tornado prediction dataset",
-          "hits": 369089,
-          "top": [
-            "Data associated with \"Lightning and radar characteristics of tornadic cells in landfalling tropical cyclones\"",
-            "H. Du, Z. Che, M. Shen, L. Zhu and J. Hu, \"Breaking the Anonymity of Ethereum Mixing Services Using Graph Feature Learning,\" in IEEE Transactions on Information Forensics and Security, vol. 19, pp. 616-631, 2024, doi: 10.1109/TIFS.2023.3326984",
-            "Soil moisture observations from shortwave infrared channels reveal tornado tracks: A case in December 10-11, 2021 tornado outbreak",
-            "United States tornado reports in landfalling tropical cyclones used in Paredes et al. (2021)",
-            "Tornado Detection From Full-Resolution Polarimetric Weather Radar Data (SAMPLE)"
-          ]
-        }
-      ],
-      "arxiv_preprints": [
-        {
-          "query": "tornado warning verification",
-          "hits": 5,
-          "top": [
-            "A solar tornado triggered by flares?",
-            "Deductive Verification of Unmodified Linux Kernel Library Functions",
-            "Reflecting on a Decade of Formalized Tornado Emergencies",
-            "A Database Engineered System for Big Data Analytics on Tornado Climatology",
-            "Tornado lift"
-          ]
-        },
-        {
-          "query": "NWS storm based warning",
-          "hits": 5,
-          "top": [
-            "STORM: Spatio-Temporal Reconstruction Model for Large-Scale Outdoor Scenes",
-            "Infinitesimal rigidity of a compact hyperbolic 4-orbifold with totally geodesic boundary",
-            "Machine learning as a flaring storm warning machine: Was a warning machine for the September 2017 solar flaring storm po",
-            "Editorial: Impacts of the Extreme Gannon Geomagnetic Storm of May 2024 throughout the Magnetosphere-Ionosphere-Thermosph",
-            "Anomalous dynamics of the extremely compressed magnetosphere during 21 January 2005 magnetic storm"
-          ]
-        },
-        {
-          "query": "tornado prediction dataset",
-          "hits": 5,
-          "top": [
-            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
-            "A solar tornado triggered by flares?",
-            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
-            "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset",
-            "A Benchmark Dataset for Tornado Detection and Prediction using Full-Resolution Polarimetric Weather Radar Data"
-          ]
-        }
-      ]
-    },
-    "evidence_summary": "- huggingface_datasets / 'tornado warning verification': 0 hit(s) - nothing notable\n- huggingface_datasets / 'NWS storm based warning': 0 hit(s) - nothing notable\n- huggingface_datasets / 'tornado prediction dataset': 0 hit(s) - nothing notable\n- zenodo_records / 'tornado warning verification': 70323 hit(s) - United States tornado reports in landfalling tropical cyclones used in Paredes et al. (2021), The First Operational Tornado Forecast Twenty Million to One, Pulsnitz L\u00f6wen-Apotheke (ca. 1924 / 1947), Verification of Large Eddy simulation for tornado wind loading on anticlastic surface, CFD Modeling Results and Related Data and Codes for Plotting of \"A Mesoscale-to-LES Modeling of Tornado-like Vortex and Associated Local Strong Winds in Urban Area\"\n- zenodo_records / 'NWS storm based warning': 705439 hit(s) - phoenix-storm-impacts: flood and storm impacts of nine storms in Phoenix, Arizona (2014-2022), from NWS Local Storm Reports, Stochastic Nature of Large-Scale Contact Printed ZnO Nanowires Based Transistors, Hurricane Storm Surge Forecasting, Influence of anisotropic elasticity on the mechanical properties of fivefold twinned nanowires, Early Attempts at Storm-Warning\n- zenodo_records / 'tornado prediction dataset': 369089 hit(s) - Data associated with \"Lightning and radar characteristics of tornadic cells in landfalling tropical cyclones\", H. Du, Z. Che, M. Shen, L. Zhu and J. Hu, \"Breaking the Anonymity of Ethereum Mixing Services Using Graph Feature Learning,\" in IEEE Transactions on Information Forensics and Security, vol. 19, pp. 616-631, 2024, doi: 10.1109/TIFS.2023.3326984, Soil moisture observations from shortwave infrared channels reveal tornado tracks: A case in December 10-11, 2021 tornado outbreak, United States tornado reports in landfalling tropical cyclones used in Paredes et al. (2021), Tornado Detection From Full-Resolution Polarimetric Weather Radar Data (SAMPLE)\n- arxiv_preprints / 'tornado warning verification': 5 hit(s) - A solar tornado triggered by flares?, Deductive Verification of Unmodified Linux Kernel Library Functions, Reflecting on a Decade of Formalized Tornado Emergencies, A Database Engineered System for Big Data Analytics on Tornado Climatology, Tornado lift\n- arxiv_preprints / 'NWS storm based warning': 5 hit(s) - STORM: Spatio-Temporal Reconstruction Model for Large-Scale Outdoor Scenes, Infinitesimal rigidity of a compact hyperbolic 4-orbifold with totally geodesic boundary, Machine learning as a flaring storm warning machine: Was a warning machine for the September 2017 solar flaring storm po, Editorial: Impacts of the Extreme Gannon Geomagnetic Storm of May 2024 throughout the Magnetosphere-Ionosphere-Thermosph, Anomalous dynamics of the extremely compressed magnetosphere during 21 January 2005 magnetic storm\n- arxiv_preprints / 'tornado prediction dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, A solar tornado triggered by flares?, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, A Benchmark Dataset for Tornado Detection and Prediction using Full-Resolution Polarimetric Weather Radar Data",
-    "prior_art": [
-      "IEM Cow (mesonet.agron.iastate.edu/cow); NWSI 10-1601; Sandmael/Homeyer random-forest nowcast (MWR 2021); NOAA WAFS target-choice study (2025); 2016-18 tornado warnings analysis (NOAA repository 52602); Keylon 2025 tornado emergencies (arXiv 2510.25011)"
-    ],
-    "theirs": "NWS publishes aggregate POD/FAR verification statistics and NWSI 10-1601 defines the official method; IEM cow computes per-warning verification but ships statistics, not a task; ML papers use warnings as targets at storm-minute granularity with radar/satellite/lightning features or diagnose 2016-18 warning performance from radar velocity and STP; none release a per-warning metadata-only prediction task with splits",
-    "ours": "Per-warning, issuance-metadata-only prediction of whether an NWS tornado warning will verify (>=1 tornado report in its polygon during valid time), full 2008-2024 history, frozen temporal splits, shipped as a scored runner contract for coding-agent evals; label is the publisher-computed per-warning verify flag with documented methodology",
-    "verdict": "differentiated",
-    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  {
+   "name": "IEM Cow documentation and verification methodology",
+   "url": "https://mesonet.agron.iastate.edu/cow/",
+   "access": "read 2026-10-19; documents the buffered-LSR-in-polygon verification method and the parameters"
+  },
+  {
+   "name": "NWS severe weather warning verification procedure (the official concept cow reimplements)",
+   "url": "https://www.weather.gov/media/directives/010_pdfs_archived/pd01016001b.pdf",
+   "access": "NWS Instruction 10-1601, cited for the official definitions of POD/FAR over warnings and reports"
   }
+ ],
+ "license_evidence": [
+  "NWS products: 'The information on National Weather Service (NWS) Web pages are in the public domain, unless specifically noted otherwise' - https://www.weather.gov/disclaimer, read 2026-10-19.",
+  "IEM: 'The materials found on this website are in the public domain and may be used freely by anyone for any lawful purpose. Attributing the Iowa Environmental Mesonet of Iowa State University would be appreciated.' - https://mesonet.agron.iastate.edu/disclaimer.php, read 2026-10-19.",
+  "Caveat to carry on any release: 'Data presented here is unofficial and should be used for educational purposes only.' - https://mesonet.agron.iastate.edu/cow/, read 2026-10-19. The verification label is IEM's computation over official NWS warnings and reports, not an NWS official verification product; any release must be labelled derived and must attribute IEM."
+ ],
+ "construction_script": null,
+ "split_strategy": "Temporal by issue year, all three windows contiguous and disjoint. Proposed: train 2008-2018 (storm-based polygons began Oct 2007), eval 2019-2021, holdout 2022-2024. Anchor measurements support capacity but window totals are computed at construction: measured 2013 = 1,832 warnings / 441 verified (24.1%) spread over 100 distinct days with >=1 verified warning; measured 2023 = 2,531 / 656 (25.9%) over 115 distinct days. Positives cluster by outbreak day, so the clustered count (100-115 independent positive days per measured year) is the figure that matters for window capacity, not the row count. Base-rate drift is a documented property of the source (warning POD peaked 2011, declined 2012-14, then recovered - WAF-D-23-0153), so multi-year windows and a drift note are required, not a single-year holdout.",
+ "measurements": {
+  "cow_api_2026_10_19": [
+   {
+    "query": "begints=2013-01-01T00:00Z&endts=2013-12-31T23:59Z&phenomena=TO&significance=W (national, one request)",
+    "result": "HTTP 200, 19,593,733 bytes in 38.4 s; 1,832 warning events, 441 verified (rate 0.241), 94 distinct WFOs, 411 distinct forecasters, 170 active days, 100 days with >=1 verified warning; stats events_total=1832 events_verified=441 FAR[1]=0.759"
+   },
+   {
+    "query": "same for 2023",
+    "result": "HTTP 200, 28,389,049 bytes in 59.5 s; 2,531 warning events, 656 verified (rate 0.259), 96 WFOs, 514 forecasters, 201 active days, 115 days with >=1 verified warning; stats events_total=2531 events_verified=656 FAR[1]=0.741"
+   },
+   {
+    "query": "wfo=DMX year 2023 (structure probe)",
+    "result": "HTTP 200, 222,257 bytes in 1.4 s; 2 warning features; per-event fields: year, wfo, eventid, issue, expire, statuses, fcster, svr_tornado_possible, hailtag, windtag, carea, ar_ugc, ar_ugcname, lat0, lon0, perimeter, parea, sharedborder, product_id, status, stormreports, stormreports_all, verify, tor_in_svrtorpossible, lead0, areaverify, product_text (URL to the full issued warning text), link, geometry (MultiPolygon)"
+   }
+  ],
+  "extraction_cost_measured_per_year": "One national TOR-year pull (the whole construction unit) measured at 20-28 MB and 38-60 s from this host (coordinator class). A 17-year construction (2008-2024) is 17 such requests: ~500 MB total, 12-17 min of pulling, measured per-year and summed - the only estimate inside it is whether the coordinator class is slower or faster than the worker class; measure once on the worker at construction.",
+  "cross_check_against_published_summary_products": "cow FAR[1] = 0.759 (2013) and 0.741 (2023) against the published tornado-warning FAR of 0.69 for 2014-2023 (arXiv 2510.25011, Keylon 2025) and the DOC OIG finding that NWS met its GPRA false-alarm-ratio goal in 9 of 12 recent fiscal years - same ballpark, no contradiction.",
+  "known_event_fixture": "The 2022-04-16 northern-Arkansas storm documented by Keylon 2025 (arXiv 2510.25011) as the source of all 3 tornado-emergency false alarms 2014-2023 (a nontornadic thunderstorm that drew repeated TOR warnings): those warnings must read verify=false, while the 89 tornado emergencies 2014-2023 must read verify=true at 0.03 FAR (86/89). Pin exact per-warning expected verdicts at construction."
+ },
+ "jobs": [],
+ "artifacts": [],
+ "rejection_reason": null,
+ "review": null,
+ "next_action": "GO to construction (advancement session owns it). Construction step: per-year cow.json pull 2008-2024 with phenomena=TO&significance=W (17 requests, measured 20-28 MB / 40-60 s each on this host class; run on a worker), key warnings by (year, wfo, eventid) with product_id as tiebreaker for a total order, exclude label-source and post-hoc columns (verify, stormreports, stormreports_all, lead0, areaverify, statuses, status) from shipped features, derive polygon features (area, perimeter, county count, size-vs-county) and calendar features from issue, optionally fetch per-warning product_text for the IBW tags (ESTIMATE: one 2-5 KB request per warning, ~40,000 warnings 2008-2024 - measure on a 500-warning sample before committing to it), freeze train 2008-2018 / eval 2019-2021 / holdout 2022-2024 with per-window events and verified counts computed from the pulled rows plus the clustered days-with-verified count, pin the 2022-04-16 Arkansas fixture, then run the qualification gate.",
+ "novelty_check": {
+  "checked_at": "2026-10-19T11:51:27+00:00",
+  "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+  "queries": [
+   "tornado warning verification",
+   "NWS storm based warning",
+   "tornado prediction dataset"
+  ],
+  "evidence": {
+   "huggingface_datasets": [
+    {
+     "query": "tornado warning verification",
+     "hits": 0,
+     "top": []
+    },
+    {
+     "query": "NWS storm based warning",
+     "hits": 0,
+     "top": []
+    },
+    {
+     "query": "tornado prediction dataset",
+     "hits": 0,
+     "top": []
+    }
+   ],
+   "zenodo_records": [
+    {
+     "query": "tornado warning verification",
+     "hits": 70323,
+     "top": [
+      "United States tornado reports in landfalling tropical cyclones used in Paredes et al. (2021)",
+      "The First Operational Tornado Forecast Twenty Million to One",
+      "Pulsnitz L\u00f6wen-Apotheke (ca. 1924 / 1947)",
+      "Verification of Large Eddy simulation for tornado wind loading on anticlastic surface",
+      "CFD Modeling Results and Related Data and Codes for Plotting of \"A Mesoscale-to-LES Modeling of Tornado-like Vortex and Associated Local Strong Winds in Urban Area\""
+     ]
+    },
+    {
+     "query": "NWS storm based warning",
+     "hits": 705439,
+     "top": [
+      "phoenix-storm-impacts: flood and storm impacts of nine storms in Phoenix, Arizona (2014-2022), from NWS Local Storm Reports",
+      "Stochastic Nature of Large-Scale Contact Printed ZnO Nanowires Based Transistors",
+      "Hurricane Storm Surge Forecasting",
+      "Influence of anisotropic elasticity on the mechanical properties of fivefold twinned nanowires",
+      "Early Attempts at Storm-Warning"
+     ]
+    },
+    {
+     "query": "tornado prediction dataset",
+     "hits": 369089,
+     "top": [
+      "Data associated with \"Lightning and radar characteristics of tornadic cells in landfalling tropical cyclones\"",
+      "H. Du, Z. Che, M. Shen, L. Zhu and J. Hu, \"Breaking the Anonymity of Ethereum Mixing Services Using Graph Feature Learning,\" in IEEE Transactions on Information Forensics and Security, vol. 19, pp. 616-631, 2024, doi: 10.1109/TIFS.2023.3326984",
+      "Soil moisture observations from shortwave infrared channels reveal tornado tracks: A case in December 10-11, 2021 tornado outbreak",
+      "United States tornado reports in landfalling tropical cyclones used in Paredes et al. (2021)",
+      "Tornado Detection From Full-Resolution Polarimetric Weather Radar Data (SAMPLE)"
+     ]
+    }
+   ],
+   "arxiv_preprints": [
+    {
+     "query": "tornado warning verification",
+     "hits": 5,
+     "top": [
+      "A solar tornado triggered by flares?",
+      "Deductive Verification of Unmodified Linux Kernel Library Functions",
+      "Reflecting on a Decade of Formalized Tornado Emergencies",
+      "A Database Engineered System for Big Data Analytics on Tornado Climatology",
+      "Tornado lift"
+     ]
+    },
+    {
+     "query": "NWS storm based warning",
+     "hits": 5,
+     "top": [
+      "STORM: Spatio-Temporal Reconstruction Model for Large-Scale Outdoor Scenes",
+      "Infinitesimal rigidity of a compact hyperbolic 4-orbifold with totally geodesic boundary",
+      "Machine learning as a flaring storm warning machine: Was a warning machine for the September 2017 solar flaring storm po",
+      "Editorial: Impacts of the Extreme Gannon Geomagnetic Storm of May 2024 throughout the Magnetosphere-Ionosphere-Thermosph",
+      "Anomalous dynamics of the extremely compressed magnetosphere during 21 January 2005 magnetic storm"
+     ]
+    },
+    {
+     "query": "tornado prediction dataset",
+     "hits": 5,
+     "top": [
+      "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+      "A solar tornado triggered by flares?",
+      "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+      "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset",
+      "A Benchmark Dataset for Tornado Detection and Prediction using Full-Resolution Polarimetric Weather Radar Data"
+     ]
+    }
+   ]
+  },
+  "evidence_summary": "- huggingface_datasets / 'tornado warning verification': 0 hit(s) - nothing notable\n- huggingface_datasets / 'NWS storm based warning': 0 hit(s) - nothing notable\n- huggingface_datasets / 'tornado prediction dataset': 0 hit(s) - nothing notable\n- zenodo_records / 'tornado warning verification': 70323 hit(s) - United States tornado reports in landfalling tropical cyclones used in Paredes et al. (2021), The First Operational Tornado Forecast Twenty Million to One, Pulsnitz L\u00f6wen-Apotheke (ca. 1924 / 1947), Verification of Large Eddy simulation for tornado wind loading on anticlastic surface, CFD Modeling Results and Related Data and Codes for Plotting of \"A Mesoscale-to-LES Modeling of Tornado-like Vortex and Associated Local Strong Winds in Urban Area\"\n- zenodo_records / 'NWS storm based warning': 705439 hit(s) - phoenix-storm-impacts: flood and storm impacts of nine storms in Phoenix, Arizona (2014-2022), from NWS Local Storm Reports, Stochastic Nature of Large-Scale Contact Printed ZnO Nanowires Based Transistors, Hurricane Storm Surge Forecasting, Influence of anisotropic elasticity on the mechanical properties of fivefold twinned nanowires, Early Attempts at Storm-Warning\n- zenodo_records / 'tornado prediction dataset': 369089 hit(s) - Data associated with \"Lightning and radar characteristics of tornadic cells in landfalling tropical cyclones\", H. Du, Z. Che, M. Shen, L. Zhu and J. Hu, \"Breaking the Anonymity of Ethereum Mixing Services Using Graph Feature Learning,\" in IEEE Transactions on Information Forensics and Security, vol. 19, pp. 616-631, 2024, doi: 10.1109/TIFS.2023.3326984, Soil moisture observations from shortwave infrared channels reveal tornado tracks: A case in December 10-11, 2021 tornado outbreak, United States tornado reports in landfalling tropical cyclones used in Paredes et al. (2021), Tornado Detection From Full-Resolution Polarimetric Weather Radar Data (SAMPLE)\n- arxiv_preprints / 'tornado warning verification': 5 hit(s) - A solar tornado triggered by flares?, Deductive Verification of Unmodified Linux Kernel Library Functions, Reflecting on a Decade of Formalized Tornado Emergencies, A Database Engineered System for Big Data Analytics on Tornado Climatology, Tornado lift\n- arxiv_preprints / 'NWS storm based warning': 5 hit(s) - STORM: Spatio-Temporal Reconstruction Model for Large-Scale Outdoor Scenes, Infinitesimal rigidity of a compact hyperbolic 4-orbifold with totally geodesic boundary, Machine learning as a flaring storm warning machine: Was a warning machine for the September 2017 solar flaring storm po, Editorial: Impacts of the Extreme Gannon Geomagnetic Storm of May 2024 throughout the Magnetosphere-Ionosphere-Thermosph, Anomalous dynamics of the extremely compressed magnetosphere during 21 January 2005 magnetic storm\n- arxiv_preprints / 'tornado prediction dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, A solar tornado triggered by flares?, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, A Benchmark Dataset for Tornado Detection and Prediction using Full-Resolution Polarimetric Weather Radar Data",
+  "prior_art": [
+   "IEM Cow (mesonet.agron.iastate.edu/cow); NWSI 10-1601; Sandmael/Homeyer random-forest nowcast (MWR 2021); NOAA WAFS target-choice study (2025); 2016-18 tornado warnings analysis (NOAA repository 52602); Keylon 2025 tornado emergencies (arXiv 2510.25011)"
+  ],
+  "theirs": "NWS publishes aggregate POD/FAR verification statistics and NWSI 10-1601 defines the official method; IEM cow computes per-warning verification but ships statistics, not a task; ML papers use warnings as targets at storm-minute granularity with radar/satellite/lightning features or diagnose 2016-18 warning performance from radar velocity and STP; none release a per-warning metadata-only prediction task with splits",
+  "ours": "Per-warning, issuance-metadata-only prediction of whether an NWS tornado warning will verify (>=1 tornado report in its polygon during valid time), full 2008-2024 history, frozen temporal splits, shipped as a scored runner contract for coding-agent evals; label is the publisher-computed per-warning verify flag with documented methodology",
+  "verdict": "differentiated",
+  "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+ },
+ "jurisdiction": {
+  "country": "US",
+  "region": "North America",
+  "publisher": "US National Weather Service / Iowa Environmental Mesonet",
+  "recorded_at": "2026-10-19",
+  "note": "Backfilled when the discovery brief began requiring a jurisdiction. Country is the publisher's, i.e. whose data this is."
+ }
 }

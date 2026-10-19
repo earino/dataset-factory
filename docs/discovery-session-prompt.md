@@ -22,10 +22,29 @@ empties. This session exists to prevent that, so:
 
 ### The quota
 
-Take **at least three new sources** to a recorded verdict this session.
+Take **at least three new sources** to a recorded verdict this session, of which **at least two
+must be published outside the United States.**
+
+### Geography is part of the brief, not a nice-to-have
+
+The bench is 10 US sources to 1 Australian one, and **0 of 6 live candidates are non-US**: federal
+US data is simply the easiest to probe, so every session drifts there unless it is pushed. Measure
+the current state with `python3 scripts/discovery-coverage.py` before choosing what to probe.
+
+- "International" means the **publisher's jurisdiction** is outside the US, not that the data
+  describes another country.
+- Record it explicitly in `record.json`:
+  `"jurisdiction": {"country": "FR", "region": "Europe", "publisher": "..."}`. A candidate with no
+  jurisdiction is reported as `unknown` by the coverage script - do not guess it from a URL.
+- Prefer sources with an open licence and an anonymous, documented API. National statistical
+  offices, sector regulators, and the EU/UN/OECD/World Bank family usually have both; a PDF-only
+  publisher is a `park`, not a `go`.
+- If the tick's assigned region genuinely yields nothing after real probing, record that outcome
+  with the probes you ran. **Do not substitute US sources to fill the quota** - the honest empty
+  result is the measurement the routine needs.
 
 For each: a candidate directory under `candidates/<id>/` with a `record.json` carrying the source,
-the licence decision or the exact blocker, the measured size/shape you actually observed (not the
+its jurisdiction, the licence decision or the exact blocker, the measured size/shape you actually observed (not the
 publisher's claim), the task it would support, and a verdict — `go`, `park`, or `reject` with the
 reason. Rejecting is a success: a well-documented rejection removes a lead from the bench for good.
 

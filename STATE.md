@@ -3392,3 +3392,16 @@ limits.
 **Weekly session cap raised 2026-10-19** from 18 to 80 at the operator's instruction, so the token
 budget (24,000,000/week) is now the binding limit rather than the session count. The schedules are
 unchanged: 14 discovery ticks and 3 advancement ticks a week, i.e. 17 of the 80 allowed.
+
+**Discovery widened to every 4 hours and made international 2026-10-19 (operator: "a much better
+pipeline of datasets... make sure we are looking truly internationally").** Measured first: the
+bench was 10 US sources to 1 Australian, and **0 of 6 live candidates non-US** - a reflection of how
+much easier US federal APIs are to probe, not of where the good tasks are. Changes: the discovery
+brief now requires at least two of three verdicts per session from outside the US and a recorded
+`jurisdiction` block; `check-candidate.py` refuses a record without one (guard test fails on the
+pre-fix checker); `scripts/discovery-coverage.py` reports the measured geography and exits non-zero
+on an unstated jurisdiction; the deployed shim assigns a deterministic rotating regional focus
+(EU/EEA, UK, Canada, Latin America, Africa, South/South-East Asia, East Asia, Oceania, international
+organisations); cadence raised from 2 to 6 discovery ticks a day (`0 */4 * * *`). Weekly maximum is
+now 42 discovery + 3 advancement = 45 sessions, ~13M tokens against the 24M budget and 45 of the 80
+session cap.

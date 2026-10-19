@@ -44,6 +44,7 @@ def good_record(**overrides):
         "target_definition": "Late arrival beyond T",
         "sources": [{"name": "Example open data", "url": "https://example.org/data",
                      "license": "CC0"}],
+        "jurisdiction": {"country": "NZ", "region": "Oceania", "publisher": "Example"},
         "license_evidence": [{"quote": "Released under CC0", "url": "https://example.org/terms"}],
         "construction_script": None, "split_strategy": None, "measurements": {},
         "jobs": [], "artifacts": [], "rejection_reason": None, "review": None,
@@ -57,6 +58,18 @@ class CandidateCheckTests(unittest.TestCase):
     def test_a_minimal_investigating_record_passes(self):
         missing, _ = candidate_check.check_record(good_record())
         self.assertEqual([], missing)
+
+    def test_a_record_without_a_jurisdiction_is_refused(self):
+        """Geography is a required field, not decoration.
+
+        The bench was 10 US sources to 1 Australian and 0 of 6 live candidates non-US; a field
+        that is optional is a field that stays empty. This fails on the pre-fix checker, which
+        had no jurisdiction in IDENTITY_FIELDS and returned no missing fields.
+        """
+        record = good_record()
+        del record["jurisdiction"]
+        missing, _ = candidate_check.check_record(record)
+        self.assertTrue(any("jurisdiction" in item for item in missing), missing)
 
     def test_a_status_outside_the_vocabulary_is_a_note_not_a_failure(self):
         missing, notes = candidate_check.check_record(good_record(status="thinking-about-it"))

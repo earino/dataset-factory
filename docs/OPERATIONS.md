@@ -477,6 +477,20 @@ Both are per-invocation flags rather than global config, so they bound a schedul
 `agent.run_budget_seconds` would apply to every conversation including the operator's chat; that
 trade was deliberately not taken.
 
+### Cadence and geography
+
+Two jobs share the routine and both are gated by `scripts/research-budget.py`:
+
+- `scout-discovery-session` (86fe52e55ef9) - **every 4 hours**, discovery only. Its brief
+  (`docs/discovery-session-prompt.md`) forbids advancing an existing candidate and requires three
+  new sources to a verdict, at least two of them published outside the US.
+- `scout-research-session` (69a5bc676d10) - Mon/Wed/Fri 08:00, advancement and packaging.
+
+The discovery tick gets a rotating regional focus from the deployed shim, derived from the clock so
+a report is reproducible from its timestamp. `python3 scripts/discovery-coverage.py` prints the
+measured geography; it exits non-zero when a candidate states no jurisdiction, which is how an
+empty field gets noticed instead of assumed.
+
 `scripts/scout_research_session.py` wraps this: gate first, then one `hermes chat` run with the
 flags, `-Q` (final response only), `--source scout-research` (so usage accounting can tell a
 research session from the operator's chat) and the three dataset skills preloaded. A held tick

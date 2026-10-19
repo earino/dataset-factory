@@ -1,441 +1,448 @@
 {
-  "id": "chicago-food-inspections",
-  "status": "qualified",
-  "created_at": "2026-09-27T19:00:41.646988+00:00",
-  "domain": "public health / food-safety inspection (multi-label)",
-  "prediction_question": "Given everything documented about an establishment and its own prior inspections before an inspection begins, which of the 61 violation codes will the inspector record for this visit?",
-  "prediction_time": "The moment the inspection is opened, before any observation: inspection_date is known when a canvass is scheduled or a complaint triggers a visit, and every intended feature is either a static facility attribute, the inspection's own type, or a field of an earlier inspection of the same licence.",
-  "target_definition": "The set of violation codes recorded in the row's `violations` blob, parsed into codes 1-70 (multi-label, 61 observed codes; mean 3.08 per inspection). The label source column `violations` is excluded from every shipped file, together with `results` and the per-violation comment text.",
-  "sources": [
-    {
-      "name": "Food Inspections - City of Chicago (CDPH)",
-      "url": "https://data.cityofchicago.org/Health-Human-Services/Food-Inspections/4ijn-s7e5",
-      "api": "https://data.cityofchicago.org/resource/4ijn-s7e5.json",
-      "license": "City of Chicago Data Terms of Use (Socrata licenseId SEE_TERMS_OF_USE); no SPDX licence",
-      "access": "anonymous Socrata API, no key, paged with a total order; measured live 2026-09-27"
-    },
-    {
-      "name": "Column documentation for the same dataset",
-      "url": "https://data.cityofchicago.org/api/views/4ijn-s7e5.json (Columns tab)",
-      "license": "Same City of Chicago Data Terms of Use",
-      "access": "21 documented columns; needed to establish which fields are post-hoc"
-    }
-  ],
-  "license_evidence": [
-    {
-      "field": "Socrata metadata licence for dataset 4ijn-s7e5",
-      "quote": "license: {\"name\": \"See Terms of Use\"}; licenseId SEE_TERMS_OF_USE; attribution: City of Chicago - no standard SPDX licence",
-      "url": "https://data.cityofchicago.org/api/views/4ijn-s7e5.json",
-      "read_on": "2026-09-27"
-    },
-    {
-      "field": "City of Chicago Data Terms of Use (the portal terms this dataset is governed by)",
-      "quote": "\"The City may require a user of this data to terminate any and all display, distribution or other use of any or all of the data provided at this website for any reason...\" and \"These Terms of Use do not grant anyone any title or right to any patent, copyright, trademark...\"",
-      "url": "https://data.cityofchicago.org/api/views/4ijn-s7e5.json (licenseId) -> City of Chicago Data Terms of Use; clauses reproduced in release/chicago-doah-adjudication/LICENSE-CITY-OF-CHICAGO-TERMS-OF-USE.md",
-      "read_on": "2026-09-26",
-      "terms": "Same portal-terms decision as chicago-doah-adjudication (candidates/chicago-doah-adjudication/license.json, LicenseRef-CityOfChicago-DataTermsOfUse): redistribution under the City's Terms, no CC0 or other standard open dedication may be claimed. Reusing that decision for this source id must be recorded explicitly before construction."
-    }
-  ],
-  "construction_script": "candidates/chicago-food-inspections/source/build.py",
-  "runner_contract_decision": {
-    "decided_at": "2026-10-02",
-    "decision": "Ship one binary runner config per floor violation code: code_<NN>/ directories, each a complete runner layout (public/train.csv, public/eval.csv, private/holdout.csv, meta.json, quality.json) with target column code_<NN> = 1 iff code NN is in the inspection's violation set. The joint multi-label matrix ships as labels.csv at the extract root, one row per inspection, one column per floor code, so the set formulation is consumable without re-pulling the source.",
-    "why": "The runner reads ONE target from task.json and scores holdout AUC, so a 37-target multi-label task cannot ship as a single wide file: the other codes' label columns parse from the same post-visit violations blob as the target, so shipping them inside a config would be post-hoc cross-label leakage (the gate's leakage check scores every shipped column regardless of the declared feature list, and a sibling code's column would score AUC 1.0 against its own target definition context). The per-level pattern is the one noaa-tide-flooding shipped as its temporal and station_disjoint levels.",
-    "measured_cost": {
-      "row_bytes_mean": 138.2,
-      "sample_rows": 2500,
-      "per_config_mb_estimate": 31.3,
-      "configs_37_total_mb_estimate": 1156,
-      "note": "ESTIMATE, labelled as such: live 2,500-row sample rendered as the shipped row shape (probe recorded in .factory/probe_food_width.py output); labels.csv, manifest and per-config gate reports add on top. The 37-way duplication is inherent to the one-target-per-task runner contract, not a packaging defect."
-    },
-    "job_sizing": {
-      "max_artifact_mb": 1800,
-      "max_disk_mb": 3072,
-      "timeout_minutes": 90,
-      "note": "max_artifact_mb raised from 400 (which would have refused the upload of a successful build: measured estimate is ~1.16 GB of split CSVs alone). 1800 keeps a runaway guard while leaving headroom for labels.csv and 37 gate reports; single assets stay far under GitHub's 2 GiB release limit."
-    }
+ "id": "chicago-food-inspections",
+ "status": "qualified",
+ "created_at": "2026-09-27T19:00:41.646988+00:00",
+ "domain": "public health / food-safety inspection (multi-label)",
+ "prediction_question": "Given everything documented about an establishment and its own prior inspections before an inspection begins, which of the 61 violation codes will the inspector record for this visit?",
+ "prediction_time": "The moment the inspection is opened, before any observation: inspection_date is known when a canvass is scheduled or a complaint triggers a visit, and every intended feature is either a static facility attribute, the inspection's own type, or a field of an earlier inspection of the same licence.",
+ "target_definition": "The set of violation codes recorded in the row's `violations` blob, parsed into codes 1-70 (multi-label, 61 observed codes; mean 3.08 per inspection). The label source column `violations` is excluded from every shipped file, together with `results` and the per-violation comment text.",
+ "sources": [
+  {
+   "name": "Food Inspections - City of Chicago (CDPH)",
+   "url": "https://data.cityofchicago.org/Health-Human-Services/Food-Inspections/4ijn-s7e5",
+   "api": "https://data.cityofchicago.org/resource/4ijn-s7e5.json",
+   "license": "City of Chicago Data Terms of Use (Socrata licenseId SEE_TERMS_OF_USE); no SPDX licence",
+   "access": "anonymous Socrata API, no key, paged with a total order; measured live 2026-09-27"
   },
-  "split_strategy": "Temporal by inspection_date, no random component; three disjoint windows own the train, eval and holdout periods. Measured on the modelling pool (results in Pass/Fail/Pass w/ Conditions AND violations IS NOT NULL): train 2010-01-01..2020-12-31 156,853 rows / 28,930 licences; eval 2021-01-01..2023-12-31 35,360 rows / 12,992 licences; holdout 2024-01-01..2026-09-30 33,920 rows / 12,953 licences. All 37 floor codes (>=1% of a fresh 15,000-row recent scan) are present in every window (probe_splits.py, 2026-09-28). Licence overlap across windows is expected and is the point of the prior-history features; splits are disjoint in time.",
-  "measurements": {
-    "rows_total": 316205,
-    "rows_with_violations": 227036,
-    "modelling_pool_pass_fail_pwc_with_violations": 226133,
-    "distinct_inspection_id": 316205,
-    "distinct_license": 49145,
-    "date_range": [
-      "2010-01-04",
-      "2026-09-25"
-    ],
-    "distinct_violation_codes_in_40000_row_scan": 61,
-    "codes_rendered_more_than_one_way": 28,
-    "density_recent_15000_rows": {
-      "mean": 3.08,
-      "median": 2,
-      "max": 19,
-      "codes_ge_1pct": 32,
-      "codes_ge_0.1pct": 43
-    },
-    "mean_codes_by_result": {
-      "Pass": 2.05,
-      "Pass w/ Conditions": 3.7,
-      "Fail": 4.85
-    },
-    "measured_at": "2026-09-27",
-    "measured_by": "anonymous SoQL queries, no credentials",
-    "built_food_001": {
-      "measured_at": "2026-10-05",
-      "measured_by": "worker job food-001 (candidates/chicago-food-inspections/source/build.py), full pull from https://data.cityofchicago.org/resource/4ijn-s7e5.json",
-      "pool_rows": 226417,
-      "pages": 46,
-      "splits": {
-        "train": 156841,
-        "eval": 35358,
-        "holdout": 34218
-      },
-      "rows_dropped": {
-        "unparsable_blob": 0,
-        "missing_license": 14,
-        "missing_date": 0,
-        "outside_windows": 42
-      },
-      "floor_rule": {
-        "min_pool_rate": 0.01,
-        "min_positives_per_window": 30,
-        "min_distinct_days_per_window": 20
-      },
-      "floor_codes_shipped": 40,
-      "floor_candidates_above_rate": 48,
-      "floor_dropped_by_window_minimums": [
-        12,
-        18,
-        19,
-        24,
-        30,
-        31,
-        34,
-        42
-      ],
-      "positive_rate_range": {
-        "min_holdout": 0.00146,
-        "max_holdout": 0.567
-      },
-      "shipped_bytes_total": 1286358734,
-      "note": "shipped_bytes_total counts every uploaded asset including labels.csv and source.tar; bulk files stay in private staging and never touched this host"
-    }
-  },
-  "jobs": [
-    {
-      "id": "food-001",
-      "status": "succeeded",
-      "staging_release": 403508464,
-      "staging_tag": "job-food-001",
-      "server_type": "cx23/hel1",
-      "elapsed_minutes": 8.5,
-      "exit_code": 0,
-      "what": "full extract build + qualification gate, both on the worker",
-      "gates": "40/40 per-code configs, gate 1.3.0, 31 checks each, 0 failed, 0 warnings"
-    }
-  ],
-  "artifacts": [],
-  "rejection_reason": null,
-  "review": null,
-  "next_action": "The extract is built and gated. (1) Package the release (scripts/release-manifest.py + the dataset-release skill) from the staging assets of job food-001 - decide how the 40 per-code configs and labels.csv present in MANIFEST.json and the package layout, mirroring the per-level pattern noaa-tide-flooding shipped. (2) Measure the baseline through the runner's contract on a worker (a food-baseline-001 job) - one config first (a mid-prevalence code such as code_38 or code_55) to sanity-check the scoring path, then all 40 if the first is sound. (3) Human review precedes any publication; nothing ships publicly without the operator's approval.",
-  "superseded_by": null,
-  "lead_priority_note": "Cleared 2026-10-12: msha-enforcement-citations is the priority lead on size and leakage risk (decided 2026-09-27), but it does not replace this candidate. chicago-food-inspections is the built and gated one - job food-001, gate 1.3.0, 40/40 configs, staging release 403508464 - and stays open until the operator chooses which candidate to package.",
-  "novelty_check": {
-    "checked_at": "2026-09-28T08:02:56+00:00",
-    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
-    "queries": [
-      "chicago food inspections",
-      "food inspection violations",
-      "violation code prediction",
-      "multi-label food safety",
-      "restaurant inspection forecast"
-    ],
-    "evidence": {
-      "huggingface_datasets": [
-        {
-          "query": "chicago food inspections",
-          "hits": 0,
-          "top": []
-        },
-        {
-          "query": "food inspection violations",
-          "hits": 0,
-          "top": []
-        },
-        {
-          "query": "violation code prediction",
-          "hits": 0,
-          "top": []
-        },
-        {
-          "query": "multi-label food safety",
-          "hits": 0,
-          "top": []
-        },
-        {
-          "query": "restaurant inspection forecast",
-          "hits": 0,
-          "top": []
-        }
-      ],
-      "zenodo_records": [
-        {
-          "query": "chicago food inspections",
-          "hits": 155338,
-          "top": [
-            "Early detection of properties at risk of blight using spatiotemporal data",
-            "Food Safety Training Programmes and Hygiene Practices Among Commercial Food Service Workers in Nairobi, Kenya: A Mixed Methods Study",
-            "REGULATORY GOVERNANCE AND FOOD SAFETY COMPLIANCE: EVALUATING THE DETERRENT IMPACT OF FOOD ADULTERATION LAWS",
-            "REGULATORY GOVERNANCE AND FOOD SAFETY COMPLIANCE: EVALUATING THE DETERRENT IMPACT OF FOOD ADULTERATION LAWS",
-            "REGULATORY GOVERNANCE AND FOOD SAFETY COMPLIANCE: EVALUATING THE DETERRENT IMPACT OF FOOD ADULTERATION LAWS"
-          ]
-        },
-        {
-          "query": "food inspection violations",
-          "hits": 149208,
-          "top": [
-            "Repository of Established Plants Pictures from: \"Investigating key drivers influencing AI-based detection and identification of plants\"",
-            "Veterinarian's Duties After Postmortem Meat Inspection With Current Technology",
-            "Pathway risk analysis of weed seeds in imported grain: A Canadian perspective",
-            "Food Inspection.",
-            "viral-ampliseq-assembly v1.0.0"
-          ]
-        },
-        {
-          "query": "violation code prediction",
-          "hits": 291842,
-          "top": [
-            "Deep convolutional neural network model for bad code smells detection based on oversampling method",
-            "AI Safety and Reliability Auditing: DistilBART Zero-Shot Pipeline for Human\u2013Robot Interaction",
-            "Replication Package for the Paper: Warnings: Violation Symptoms Indicating Architecture Erosion",
-            "(Delete)",
-            "Relation Prediction as an Auxiliary Training Objective for Improving Multi-Relational Graph Representations"
-          ]
-        },
-        {
-          "query": "multi-label food safety",
-          "hits": 282744,
-          "top": [
-            "Monitoring and surveillance data for EFSA chemical risk assessment needs: data source inventory",
-            "Report on a request for initial assessment for marketing of the marine microalgae 258.97 on novel foods and novel food ingredients.",
-            "FOODSAFETY4EU: paving the way for the food safety system of the future",
-            "Advances in Smart Polymer and Nanomaterial-Based Packaging Systems: From Functional Films to Intelligent Food and Pharmaceutical Applications",
-            "scikit-multilearn: A scikit-based Python environment for performing multi-label classification"
-          ]
-        },
-        {
-          "query": "restaurant inspection forecast",
-          "hits": 30044,
-          "top": [
-            "Global Drone Wind Turbine Blade Inspection Market 2025 To 2034",
-            "Europe Fast Food & Quick Service Restaurant (QSR) Market 2025 To 2034",
-            "Recovery Strategy of Selected Filipino Restaurants in Tagaytay City",
-            "Global Testing Inspection and Certification TIC Market 2025 To 2034",
-            "Innovative Method of Bottled Water Preparation for Hospitality Industry Establishments"
-          ]
-        }
-      ],
-      "arxiv_preprints": [
-        {
-          "query": "chicago food inspections",
-          "hits": 5,
-          "top": [
-            "The Rise of Blockchain Technology in Agriculture and Food Supply Chains",
-            "Hindsight Analysis of the Chicago Food Inspection Forecasting Model",
-            "Spontaneous gelation of wheat gluten proteins in a food grade solvent",
-            "Application of Blockchain and Internet of Things to Ensure Tamper-Proof Data Availability for Food Safety",
-            "Shock propagation from the Russia-Ukraine conflict on international multilayer food production network determines global"
-          ]
-        },
-        {
-          "query": "food inspection violations",
-          "hits": 5,
-          "top": [
-            "The Rise of Blockchain Technology in Agriculture and Food Supply Chains",
-            "Spontaneous gelation of wheat gluten proteins in a food grade solvent",
-            "Application of Blockchain and Internet of Things to Ensure Tamper-Proof Data Availability for Food Safety",
-            "Shock propagation from the Russia-Ukraine conflict on international multilayer food production network determines global",
-            "Visual-Inertial Teach and Repeat for Aerial Inspection"
-          ]
-        },
-        {
-          "query": "violation code prediction",
-          "hits": 5,
-          "top": [
-            "Use of Source Code Similarity Metrics in Software Defect Prediction",
-            "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
-            "A Combined Deep Learning-Gradient Boosting Machine Framework for Fluid Intelligence Prediction",
-            "A New Prediction for Direct CP Violation \u03b5'/\u03b5and \u0394I = 1/2 Rule",
-            "CP Violation in SUSY"
-          ]
-        },
-        {
-          "query": "multi-label food safety",
-          "hits": 5,
-          "top": [
-            "The Rise of Blockchain Technology in Agriculture and Food Supply Chains",
-            "Spontaneous gelation of wheat gluten proteins in a food grade solvent",
-            "Application of Blockchain and Internet of Things to Ensure Tamper-Proof Data Availability for Food Safety",
-            "Food safety trends across Europe: insights from the 392-million-entry CompreHensive European Food Safety (CHEFS) databas",
-            "Shock propagation from the Russia-Ukraine conflict on international multilayer food production network determines global"
-          ]
-        },
-        {
-          "query": "restaurant inspection forecast",
-          "hits": 5,
-          "top": [
-            "Visual-Inertial Teach and Repeat for Aerial Inspection",
-            "Predicting health inspection results from online restaurant reviews",
-            "The inspection paradox in stochastic resetting",
-            "Deep inspection: an electrical distribution pole parts study via deep neural networks",
-            "A UAV-Mounted Sensor Network for Close-Range Inspection of Wind Turbine Rotor Blades"
-          ]
-        }
-      ]
-    },
-    "evidence_summary": "- huggingface_datasets / 'chicago food inspections': 0 hit(s) - nothing notable\n- huggingface_datasets / 'food inspection violations': 0 hit(s) - nothing notable\n- huggingface_datasets / 'violation code prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'multi-label food safety': 0 hit(s) - nothing notable\n- huggingface_datasets / 'restaurant inspection forecast': 0 hit(s) - nothing notable\n- zenodo_records / 'chicago food inspections': 155338 hit(s) - Early detection of properties at risk of blight using spatiotemporal data, Food Safety Training Programmes and Hygiene Practices Among Commercial Food Service Workers in Nairobi, Kenya: A Mixed Methods Study, REGULATORY GOVERNANCE AND FOOD SAFETY COMPLIANCE: EVALUATING THE DETERRENT IMPACT OF FOOD ADULTERATION LAWS, REGULATORY GOVERNANCE AND FOOD SAFETY COMPLIANCE: EVALUATING THE DETERRENT IMPACT OF FOOD ADULTERATION LAWS, REGULATORY GOVERNANCE AND FOOD SAFETY COMPLIANCE: EVALUATING THE DETERRENT IMPACT OF FOOD ADULTERATION LAWS\n- zenodo_records / 'food inspection violations': 149208 hit(s) - Repository of Established Plants Pictures from: \"Investigating key drivers influencing AI-based detection and identification of plants\", Veterinarian's Duties After Postmortem Meat Inspection With Current Technology, Pathway risk analysis of weed seeds in imported grain: A Canadian perspective, Food Inspection., viral-ampliseq-assembly v1.0.0\n- zenodo_records / 'violation code prediction': 291842 hit(s) - Deep convolutional neural network model for bad code smells detection based on oversampling method, AI Safety and Reliability Auditing: DistilBART Zero-Shot Pipeline for Human\u2013Robot Interaction, Replication Package for the Paper: Warnings: Violation Symptoms Indicating Architecture Erosion, (Delete), Relation Prediction as an Auxiliary Training Objective for Improving Multi-Relational Graph Representations\n- zenodo_records / 'multi-label food safety': 282744 hit(s) - Monitoring and surveillance data for EFSA chemical risk assessment needs: data source inventory, Report on a request for initial assessment for marketing of the marine microalgae 258.97 on novel foods and novel food ingredients., FOODSAFETY4EU: paving the way for the food safety system of the future, Advances in Smart Polymer and Nanomaterial-Based Packaging Systems: From Functional Films to Intelligent Food and Pharmaceutical Applications, scikit-multilearn: A scikit-based Python environment for performing multi-label classification\n- zenodo_records / 'restaurant inspection forecast': 30044 hit(s) - Global Drone Wind Turbine Blade Inspection Market 2025 To 2034, Europe Fast Food & Quick Service Restaurant (QSR) Market 2025 To 2034, Recovery Strategy of Selected Filipino Restaurants in Tagaytay City, Global Testing Inspection and Certification TIC Market 2025 To 2034, Innovative Method of Bottled Water Preparation for Hospitality Industry Establishments\n- arxiv_preprints / 'chicago food inspections': 5 hit(s) - The Rise of Blockchain Technology in Agriculture and Food Supply Chains, Hindsight Analysis of the Chicago Food Inspection Forecasting Model, Spontaneous gelation of wheat gluten proteins in a food grade solvent, Application of Blockchain and Internet of Things to Ensure Tamper-Proof Data Availability for Food Safety, Shock propagation from the Russia-Ukraine conflict on international multilayer food production network determines global\n- arxiv_preprints / 'food inspection violations': 5 hit(s) - The Rise of Blockchain Technology in Agriculture and Food Supply Chains, Spontaneous gelation of wheat gluten proteins in a food grade solvent, Application of Blockchain and Internet of Things to Ensure Tamper-Proof Data Availability for Food Safety, Shock propagation from the Russia-Ukraine conflict on international multilayer food production network determines global, Visual-Inertial Teach and Repeat for Aerial Inspection\n- arxiv_preprints / 'violation code prediction': 5 hit(s) - Use of Source Code Similarity Metrics in Software Defect Prediction, Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, A Combined Deep Learning-Gradient Boosting Machine Framework for Fluid Intelligence Prediction, A New Prediction for Direct CP Violation \u03b5'/\u03b5and \u0394I = 1/2 Rule, CP Violation in SUSY\n- arxiv_preprints / 'multi-label food safety': 5 hit(s) - The Rise of Blockchain Technology in Agriculture and Food Supply Chains, Spontaneous gelation of wheat gluten proteins in a food grade solvent, Application of Blockchain and Internet of Things to Ensure Tamper-Proof Data Availability for Food Safety, Food safety trends across Europe: insights from the 392-million-entry CompreHensive European Food Safety (CHEFS) databas, Shock propagation from the Russia-Ukraine conflict on international multilayer food production network determines global\n- arxiv_preprints / 'restaurant inspection forecast': 5 hit(s) - Visual-Inertial Teach and Repeat for Aerial Inspection, Predicting health inspection results from online restaurant reviews, The inspection paradox in stochastic resetting, Deep inspection: an electrical distribution pole parts study via deep neural networks, A UAV-Mounted Sensor Network for Close-Range Inspection of Wind Turbine Rotor Blades",
-    "prior_art": [
-      "City of Chicago food-inspections-evaluation (CDPH deployed model, 2015)",
-      "arXiv 1910.04906, Hindsight Analysis of the Chicago Food Inspection Forecasting Model (2019)",
-      "Kaggle/Socrata mirrors of 4ijn-s7e5"
-    ],
-    "theirs": "CDPH ships the raw inspections table plus its own deployed BINARY critical-violation forecasting model (Chicago/food-inspections-evaluation, 2015, R) to prioritise canvass scheduling, evaluated in arXiv 1910.04906 (2019). Kaggle and Socrata host mirrors of this same table. No published formulation predicts the set of violation codes.",
-    "ours": "The multi-label formulation itself: one row per inspection, target = the set of violation codes (61 observed, parsed from the violations blob by code number, never by description string), with an explicit prediction instant at the inspection's opening, a pre-inspection-only feature set (facility attributes, inspection type, calendar position, and the establishment's own prior-inspection history under its license_), and three disjoint temporal windows. No ML-ready package ships this task.",
-    "verdict": "differentiated",
-    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
-  },
-  "extraction_cost": {
-    "measured_at": "2026-09-28",
-    "measured_by": "candidates/chicago-food-inspections/probe_cost.py on the coordinator (1.9 GiB class), anonymous, no credentials, nothing stored",
-    "sample_rows": 20000,
-    "sample_bytes": 28948432,
-    "sample_requests": 5,
-    "sample_wall_seconds": 23.2,
-    "mean_bytes_per_row": 1447,
-    "total_rows_recounted": 316205,
-    "estimated_full_pull": {
-      "pages_at_5000": 64,
-      "requests": 65,
-      "bytes": 457681947,
-      "wall_seconds": 366,
-      "note": "ESTIMATE, labelled as such: measured sample rate scaled by the recounted total (arithmetic in probe_cost.py output). The full pull runs on the worker."
-    },
-    "order_key": "inspection_id (unique per row, 316,205 distinct in 316,205 rows - own tiebreaker)"
-  },
-  "split_capacity": {
-    "measured_at": "2026-09-28",
-    "measured_by": "candidates/chicago-food-inspections/probe_splits.py --json (aggregate SoQL queries; anonymous)",
-    "modelling_pool_rows": 226133,
-    "pool_census_by_year": {
-      "2010": 12469,
-      "2011": 13476,
-      "2012": 13308,
-      "2013": 14729,
-      "2014": 16283,
-      "2015": 15623,
-      "2016": 17192,
-      "2017": 15783,
-      "2018": 13010,
-      "2019": 14229,
-      "2020": 10751,
-      "2021": 11013,
-      "2022": 11740,
-      "2023": 12607,
-      "2024": 13057,
-      "2025": 12963,
-      "2026_partial": 7900
-    },
-    "windows": {
-      "train_2010_2020": {
-        "rows": 156853,
-        "distinct_licences": 28930,
-        "inspections_per_licence": 5.42
-      },
-      "eval_2021_2023": {
-        "rows": 35360,
-        "distinct_licences": 12992,
-        "inspections_per_licence": 2.72
-      },
-      "holdout_2024_2026_09": {
-        "rows": 33920,
-        "distinct_licences": 12953,
-        "inspections_per_licence": 2.62
-      }
-    },
-    "floor": {
-      "scan_rows": 15000,
-      "distinct_codes": 59,
-      "codes_ge_1pct": 37,
-      "floor_codes": [
-        "55",
-        "47",
-        "49",
-        "51",
-        "38",
-        "56",
-        "10",
-        "58",
-        "39",
-        "53",
-        "57",
-        "37",
-        "2",
-        "16",
-        "22",
-        "48",
-        "36",
-        "54",
-        "40",
-        "33",
-        "43",
-        "41",
-        "1",
-        "60",
-        "45",
-        "44",
-        "3",
-        "5",
-        "52",
-        "59",
-        "25",
-        "23",
-        "21",
-        "35",
-        "61",
-        "50",
-        "6"
-      ],
-      "floor_codes_missing_per_window": {
-        "train": [],
-        "eval": [],
-        "holdout": []
-      },
-      "note": "Floor re-derived from a fresh 15,000-row recent pool scan; the earlier 40,000-row scan found 61 codes over the full date range (recent-only scan sees 59 - codes 62+ era variation). Presence checked per window by server-side blob match; construction parses codes exactly."
-    },
-    "probe_seconds": 185.1,
-    "requests": 122
-  },
-  "license_decision": "RESOLVED 2026-09-28 by recording the operator-accepted portal-terms posture (chicago-doah-adjudication, operator acceptance 2026-09-26) against this source id 4ijn-s7e5: publishable under the City of Chicago Data Terms of Use (LicenseRef-CityOfChicago-DataTermsOfUse), no CC0 or standard open licence may be claimed, mandatory derivative disclaimer ships verbatim. Full decision with evidence and conditions in candidates/chicago-food-inspections/license.json.",
-  "probe_scripts": [
-    "candidates/chicago-food-inspections/probe_splits.py (pool census, per-window rows and distinct licences, floor codes and per-window presence)",
-    "candidates/chicago-food-inspections/probe_cost.py (measured extraction cost: requests, bytes, wall-clock for the paged pull pattern construction will use)"
-  ],
-  "qualification": {
-    "gate": "skills/dataset-qualification/scripts/qualify_dataset.py",
-    "gate_version": "1.3.0",
-    "result": "PASSED - 40/40 per-code configs, 31 checks each, 0 failed, 0 warnings, on the full artifact on the worker",
-    "job": "food-001",
-    "staging_release": 403508464,
-    "staging_tag": "job-food-001",
-    "configs": 40,
-    "coverage": "all 40 configs ship the identical full pool: train 156,841 / eval 35,358 / holdout 34,218 = 226,417 rows; every config has all three split files; no zero-row or zero-positive-rate split",
-    "artifact_versions": "40 distinct per-config artifact_version digests, all recorded in .factory/food-001/reports/qualification-code_*.json",
-    "digest_chain": "every report's component digests (5 files x 40 configs = 200 checks) match the staging release manifest exactly - verified from .factory/food-001/reports after collection",
-    "evidence": ".factory/food-001/reports/ (167 small assets fetched and sha256-verified against the release manifest; bulk CSVs and labels.csv stay in staging)",
-    "labels_csv": "labels.csv at the extract root, 24,319,192 bytes, sha256 c891fd333a1691912a37aad1c4f9bfd3df1671aeecd3966ef052f08b511982d1 - the joint multi-label matrix, in staging",
-    "note": "The pre-build estimate of 37 floor codes came from a 15,000-row recent scan; the full 226,417-row pool supports 40: 48 codes clear the 1% pool-rate floor, 8 are dropped by the per-window minimums (>=30 positives, >=20 distinct days per window), 0 dropped by rate. Codes 12, 18, 19, 24, 30, 31, 34, 42.",
-    "pool_note": "pool_rows 226,417 vs 226,133 measured 2026-09-28 - the live source grew 284 rows in the week between probe and build, which is expected from a live portal and not a defect"
+  {
+   "name": "Column documentation for the same dataset",
+   "url": "https://data.cityofchicago.org/api/views/4ijn-s7e5.json (Columns tab)",
+   "license": "Same City of Chicago Data Terms of Use",
+   "access": "21 documented columns; needed to establish which fields are post-hoc"
   }
+ ],
+ "license_evidence": [
+  {
+   "field": "Socrata metadata licence for dataset 4ijn-s7e5",
+   "quote": "license: {\"name\": \"See Terms of Use\"}; licenseId SEE_TERMS_OF_USE; attribution: City of Chicago - no standard SPDX licence",
+   "url": "https://data.cityofchicago.org/api/views/4ijn-s7e5.json",
+   "read_on": "2026-09-27"
+  },
+  {
+   "field": "City of Chicago Data Terms of Use (the portal terms this dataset is governed by)",
+   "quote": "\"The City may require a user of this data to terminate any and all display, distribution or other use of any or all of the data provided at this website for any reason...\" and \"These Terms of Use do not grant anyone any title or right to any patent, copyright, trademark...\"",
+   "url": "https://data.cityofchicago.org/api/views/4ijn-s7e5.json (licenseId) -> City of Chicago Data Terms of Use; clauses reproduced in release/chicago-doah-adjudication/LICENSE-CITY-OF-CHICAGO-TERMS-OF-USE.md",
+   "read_on": "2026-09-26",
+   "terms": "Same portal-terms decision as chicago-doah-adjudication (candidates/chicago-doah-adjudication/license.json, LicenseRef-CityOfChicago-DataTermsOfUse): redistribution under the City's Terms, no CC0 or other standard open dedication may be claimed. Reusing that decision for this source id must be recorded explicitly before construction."
+  }
+ ],
+ "construction_script": "candidates/chicago-food-inspections/source/build.py",
+ "runner_contract_decision": {
+  "decided_at": "2026-10-02",
+  "decision": "Ship one binary runner config per floor violation code: code_<NN>/ directories, each a complete runner layout (public/train.csv, public/eval.csv, private/holdout.csv, meta.json, quality.json) with target column code_<NN> = 1 iff code NN is in the inspection's violation set. The joint multi-label matrix ships as labels.csv at the extract root, one row per inspection, one column per floor code, so the set formulation is consumable without re-pulling the source.",
+  "why": "The runner reads ONE target from task.json and scores holdout AUC, so a 37-target multi-label task cannot ship as a single wide file: the other codes' label columns parse from the same post-visit violations blob as the target, so shipping them inside a config would be post-hoc cross-label leakage (the gate's leakage check scores every shipped column regardless of the declared feature list, and a sibling code's column would score AUC 1.0 against its own target definition context). The per-level pattern is the one noaa-tide-flooding shipped as its temporal and station_disjoint levels.",
+  "measured_cost": {
+   "row_bytes_mean": 138.2,
+   "sample_rows": 2500,
+   "per_config_mb_estimate": 31.3,
+   "configs_37_total_mb_estimate": 1156,
+   "note": "ESTIMATE, labelled as such: live 2,500-row sample rendered as the shipped row shape (probe recorded in .factory/probe_food_width.py output); labels.csv, manifest and per-config gate reports add on top. The 37-way duplication is inherent to the one-target-per-task runner contract, not a packaging defect."
+  },
+  "job_sizing": {
+   "max_artifact_mb": 1800,
+   "max_disk_mb": 3072,
+   "timeout_minutes": 90,
+   "note": "max_artifact_mb raised from 400 (which would have refused the upload of a successful build: measured estimate is ~1.16 GB of split CSVs alone). 1800 keeps a runaway guard while leaving headroom for labels.csv and 37 gate reports; single assets stay far under GitHub's 2 GiB release limit."
+  }
+ },
+ "split_strategy": "Temporal by inspection_date, no random component; three disjoint windows own the train, eval and holdout periods. Measured on the modelling pool (results in Pass/Fail/Pass w/ Conditions AND violations IS NOT NULL): train 2010-01-01..2020-12-31 156,853 rows / 28,930 licences; eval 2021-01-01..2023-12-31 35,360 rows / 12,992 licences; holdout 2024-01-01..2026-09-30 33,920 rows / 12,953 licences. All 37 floor codes (>=1% of a fresh 15,000-row recent scan) are present in every window (probe_splits.py, 2026-09-28). Licence overlap across windows is expected and is the point of the prior-history features; splits are disjoint in time.",
+ "measurements": {
+  "rows_total": 316205,
+  "rows_with_violations": 227036,
+  "modelling_pool_pass_fail_pwc_with_violations": 226133,
+  "distinct_inspection_id": 316205,
+  "distinct_license": 49145,
+  "date_range": [
+   "2010-01-04",
+   "2026-09-25"
+  ],
+  "distinct_violation_codes_in_40000_row_scan": 61,
+  "codes_rendered_more_than_one_way": 28,
+  "density_recent_15000_rows": {
+   "mean": 3.08,
+   "median": 2,
+   "max": 19,
+   "codes_ge_1pct": 32,
+   "codes_ge_0.1pct": 43
+  },
+  "mean_codes_by_result": {
+   "Pass": 2.05,
+   "Pass w/ Conditions": 3.7,
+   "Fail": 4.85
+  },
+  "measured_at": "2026-09-27",
+  "measured_by": "anonymous SoQL queries, no credentials",
+  "built_food_001": {
+   "measured_at": "2026-10-05",
+   "measured_by": "worker job food-001 (candidates/chicago-food-inspections/source/build.py), full pull from https://data.cityofchicago.org/resource/4ijn-s7e5.json",
+   "pool_rows": 226417,
+   "pages": 46,
+   "splits": {
+    "train": 156841,
+    "eval": 35358,
+    "holdout": 34218
+   },
+   "rows_dropped": {
+    "unparsable_blob": 0,
+    "missing_license": 14,
+    "missing_date": 0,
+    "outside_windows": 42
+   },
+   "floor_rule": {
+    "min_pool_rate": 0.01,
+    "min_positives_per_window": 30,
+    "min_distinct_days_per_window": 20
+   },
+   "floor_codes_shipped": 40,
+   "floor_candidates_above_rate": 48,
+   "floor_dropped_by_window_minimums": [
+    12,
+    18,
+    19,
+    24,
+    30,
+    31,
+    34,
+    42
+   ],
+   "positive_rate_range": {
+    "min_holdout": 0.00146,
+    "max_holdout": 0.567
+   },
+   "shipped_bytes_total": 1286358734,
+   "note": "shipped_bytes_total counts every uploaded asset including labels.csv and source.tar; bulk files stay in private staging and never touched this host"
+  }
+ },
+ "jobs": [
+  {
+   "id": "food-001",
+   "status": "succeeded",
+   "staging_release": 403508464,
+   "staging_tag": "job-food-001",
+   "server_type": "cx23/hel1",
+   "elapsed_minutes": 8.5,
+   "exit_code": 0,
+   "what": "full extract build + qualification gate, both on the worker",
+   "gates": "40/40 per-code configs, gate 1.3.0, 31 checks each, 0 failed, 0 warnings"
+  }
+ ],
+ "artifacts": [],
+ "rejection_reason": null,
+ "review": null,
+ "next_action": "The extract is built and gated. (1) Package the release (scripts/release-manifest.py + the dataset-release skill) from the staging assets of job food-001 - decide how the 40 per-code configs and labels.csv present in MANIFEST.json and the package layout, mirroring the per-level pattern noaa-tide-flooding shipped. (2) Measure the baseline through the runner's contract on a worker (a food-baseline-001 job) - one config first (a mid-prevalence code such as code_38 or code_55) to sanity-check the scoring path, then all 40 if the first is sound. (3) Human review precedes any publication; nothing ships publicly without the operator's approval.",
+ "superseded_by": null,
+ "lead_priority_note": "Cleared 2026-10-12: msha-enforcement-citations is the priority lead on size and leakage risk (decided 2026-09-27), but it does not replace this candidate. chicago-food-inspections is the built and gated one - job food-001, gate 1.3.0, 40/40 configs, staging release 403508464 - and stays open until the operator chooses which candidate to package.",
+ "novelty_check": {
+  "checked_at": "2026-09-28T08:02:56+00:00",
+  "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+  "queries": [
+   "chicago food inspections",
+   "food inspection violations",
+   "violation code prediction",
+   "multi-label food safety",
+   "restaurant inspection forecast"
+  ],
+  "evidence": {
+   "huggingface_datasets": [
+    {
+     "query": "chicago food inspections",
+     "hits": 0,
+     "top": []
+    },
+    {
+     "query": "food inspection violations",
+     "hits": 0,
+     "top": []
+    },
+    {
+     "query": "violation code prediction",
+     "hits": 0,
+     "top": []
+    },
+    {
+     "query": "multi-label food safety",
+     "hits": 0,
+     "top": []
+    },
+    {
+     "query": "restaurant inspection forecast",
+     "hits": 0,
+     "top": []
+    }
+   ],
+   "zenodo_records": [
+    {
+     "query": "chicago food inspections",
+     "hits": 155338,
+     "top": [
+      "Early detection of properties at risk of blight using spatiotemporal data",
+      "Food Safety Training Programmes and Hygiene Practices Among Commercial Food Service Workers in Nairobi, Kenya: A Mixed Methods Study",
+      "REGULATORY GOVERNANCE AND FOOD SAFETY COMPLIANCE: EVALUATING THE DETERRENT IMPACT OF FOOD ADULTERATION LAWS",
+      "REGULATORY GOVERNANCE AND FOOD SAFETY COMPLIANCE: EVALUATING THE DETERRENT IMPACT OF FOOD ADULTERATION LAWS",
+      "REGULATORY GOVERNANCE AND FOOD SAFETY COMPLIANCE: EVALUATING THE DETERRENT IMPACT OF FOOD ADULTERATION LAWS"
+     ]
+    },
+    {
+     "query": "food inspection violations",
+     "hits": 149208,
+     "top": [
+      "Repository of Established Plants Pictures from: \"Investigating key drivers influencing AI-based detection and identification of plants\"",
+      "Veterinarian's Duties After Postmortem Meat Inspection With Current Technology",
+      "Pathway risk analysis of weed seeds in imported grain: A Canadian perspective",
+      "Food Inspection.",
+      "viral-ampliseq-assembly v1.0.0"
+     ]
+    },
+    {
+     "query": "violation code prediction",
+     "hits": 291842,
+     "top": [
+      "Deep convolutional neural network model for bad code smells detection based on oversampling method",
+      "AI Safety and Reliability Auditing: DistilBART Zero-Shot Pipeline for Human\u2013Robot Interaction",
+      "Replication Package for the Paper: Warnings: Violation Symptoms Indicating Architecture Erosion",
+      "(Delete)",
+      "Relation Prediction as an Auxiliary Training Objective for Improving Multi-Relational Graph Representations"
+     ]
+    },
+    {
+     "query": "multi-label food safety",
+     "hits": 282744,
+     "top": [
+      "Monitoring and surveillance data for EFSA chemical risk assessment needs: data source inventory",
+      "Report on a request for initial assessment for marketing of the marine microalgae 258.97 on novel foods and novel food ingredients.",
+      "FOODSAFETY4EU: paving the way for the food safety system of the future",
+      "Advances in Smart Polymer and Nanomaterial-Based Packaging Systems: From Functional Films to Intelligent Food and Pharmaceutical Applications",
+      "scikit-multilearn: A scikit-based Python environment for performing multi-label classification"
+     ]
+    },
+    {
+     "query": "restaurant inspection forecast",
+     "hits": 30044,
+     "top": [
+      "Global Drone Wind Turbine Blade Inspection Market 2025 To 2034",
+      "Europe Fast Food & Quick Service Restaurant (QSR) Market 2025 To 2034",
+      "Recovery Strategy of Selected Filipino Restaurants in Tagaytay City",
+      "Global Testing Inspection and Certification TIC Market 2025 To 2034",
+      "Innovative Method of Bottled Water Preparation for Hospitality Industry Establishments"
+     ]
+    }
+   ],
+   "arxiv_preprints": [
+    {
+     "query": "chicago food inspections",
+     "hits": 5,
+     "top": [
+      "The Rise of Blockchain Technology in Agriculture and Food Supply Chains",
+      "Hindsight Analysis of the Chicago Food Inspection Forecasting Model",
+      "Spontaneous gelation of wheat gluten proteins in a food grade solvent",
+      "Application of Blockchain and Internet of Things to Ensure Tamper-Proof Data Availability for Food Safety",
+      "Shock propagation from the Russia-Ukraine conflict on international multilayer food production network determines global"
+     ]
+    },
+    {
+     "query": "food inspection violations",
+     "hits": 5,
+     "top": [
+      "The Rise of Blockchain Technology in Agriculture and Food Supply Chains",
+      "Spontaneous gelation of wheat gluten proteins in a food grade solvent",
+      "Application of Blockchain and Internet of Things to Ensure Tamper-Proof Data Availability for Food Safety",
+      "Shock propagation from the Russia-Ukraine conflict on international multilayer food production network determines global",
+      "Visual-Inertial Teach and Repeat for Aerial Inspection"
+     ]
+    },
+    {
+     "query": "violation code prediction",
+     "hits": 5,
+     "top": [
+      "Use of Source Code Similarity Metrics in Software Defect Prediction",
+      "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
+      "A Combined Deep Learning-Gradient Boosting Machine Framework for Fluid Intelligence Prediction",
+      "A New Prediction for Direct CP Violation \u03b5'/\u03b5and \u0394I = 1/2 Rule",
+      "CP Violation in SUSY"
+     ]
+    },
+    {
+     "query": "multi-label food safety",
+     "hits": 5,
+     "top": [
+      "The Rise of Blockchain Technology in Agriculture and Food Supply Chains",
+      "Spontaneous gelation of wheat gluten proteins in a food grade solvent",
+      "Application of Blockchain and Internet of Things to Ensure Tamper-Proof Data Availability for Food Safety",
+      "Food safety trends across Europe: insights from the 392-million-entry CompreHensive European Food Safety (CHEFS) databas",
+      "Shock propagation from the Russia-Ukraine conflict on international multilayer food production network determines global"
+     ]
+    },
+    {
+     "query": "restaurant inspection forecast",
+     "hits": 5,
+     "top": [
+      "Visual-Inertial Teach and Repeat for Aerial Inspection",
+      "Predicting health inspection results from online restaurant reviews",
+      "The inspection paradox in stochastic resetting",
+      "Deep inspection: an electrical distribution pole parts study via deep neural networks",
+      "A UAV-Mounted Sensor Network for Close-Range Inspection of Wind Turbine Rotor Blades"
+     ]
+    }
+   ]
+  },
+  "evidence_summary": "- huggingface_datasets / 'chicago food inspections': 0 hit(s) - nothing notable\n- huggingface_datasets / 'food inspection violations': 0 hit(s) - nothing notable\n- huggingface_datasets / 'violation code prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'multi-label food safety': 0 hit(s) - nothing notable\n- huggingface_datasets / 'restaurant inspection forecast': 0 hit(s) - nothing notable\n- zenodo_records / 'chicago food inspections': 155338 hit(s) - Early detection of properties at risk of blight using spatiotemporal data, Food Safety Training Programmes and Hygiene Practices Among Commercial Food Service Workers in Nairobi, Kenya: A Mixed Methods Study, REGULATORY GOVERNANCE AND FOOD SAFETY COMPLIANCE: EVALUATING THE DETERRENT IMPACT OF FOOD ADULTERATION LAWS, REGULATORY GOVERNANCE AND FOOD SAFETY COMPLIANCE: EVALUATING THE DETERRENT IMPACT OF FOOD ADULTERATION LAWS, REGULATORY GOVERNANCE AND FOOD SAFETY COMPLIANCE: EVALUATING THE DETERRENT IMPACT OF FOOD ADULTERATION LAWS\n- zenodo_records / 'food inspection violations': 149208 hit(s) - Repository of Established Plants Pictures from: \"Investigating key drivers influencing AI-based detection and identification of plants\", Veterinarian's Duties After Postmortem Meat Inspection With Current Technology, Pathway risk analysis of weed seeds in imported grain: A Canadian perspective, Food Inspection., viral-ampliseq-assembly v1.0.0\n- zenodo_records / 'violation code prediction': 291842 hit(s) - Deep convolutional neural network model for bad code smells detection based on oversampling method, AI Safety and Reliability Auditing: DistilBART Zero-Shot Pipeline for Human\u2013Robot Interaction, Replication Package for the Paper: Warnings: Violation Symptoms Indicating Architecture Erosion, (Delete), Relation Prediction as an Auxiliary Training Objective for Improving Multi-Relational Graph Representations\n- zenodo_records / 'multi-label food safety': 282744 hit(s) - Monitoring and surveillance data for EFSA chemical risk assessment needs: data source inventory, Report on a request for initial assessment for marketing of the marine microalgae 258.97 on novel foods and novel food ingredients., FOODSAFETY4EU: paving the way for the food safety system of the future, Advances in Smart Polymer and Nanomaterial-Based Packaging Systems: From Functional Films to Intelligent Food and Pharmaceutical Applications, scikit-multilearn: A scikit-based Python environment for performing multi-label classification\n- zenodo_records / 'restaurant inspection forecast': 30044 hit(s) - Global Drone Wind Turbine Blade Inspection Market 2025 To 2034, Europe Fast Food & Quick Service Restaurant (QSR) Market 2025 To 2034, Recovery Strategy of Selected Filipino Restaurants in Tagaytay City, Global Testing Inspection and Certification TIC Market 2025 To 2034, Innovative Method of Bottled Water Preparation for Hospitality Industry Establishments\n- arxiv_preprints / 'chicago food inspections': 5 hit(s) - The Rise of Blockchain Technology in Agriculture and Food Supply Chains, Hindsight Analysis of the Chicago Food Inspection Forecasting Model, Spontaneous gelation of wheat gluten proteins in a food grade solvent, Application of Blockchain and Internet of Things to Ensure Tamper-Proof Data Availability for Food Safety, Shock propagation from the Russia-Ukraine conflict on international multilayer food production network determines global\n- arxiv_preprints / 'food inspection violations': 5 hit(s) - The Rise of Blockchain Technology in Agriculture and Food Supply Chains, Spontaneous gelation of wheat gluten proteins in a food grade solvent, Application of Blockchain and Internet of Things to Ensure Tamper-Proof Data Availability for Food Safety, Shock propagation from the Russia-Ukraine conflict on international multilayer food production network determines global, Visual-Inertial Teach and Repeat for Aerial Inspection\n- arxiv_preprints / 'violation code prediction': 5 hit(s) - Use of Source Code Similarity Metrics in Software Defect Prediction, Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, A Combined Deep Learning-Gradient Boosting Machine Framework for Fluid Intelligence Prediction, A New Prediction for Direct CP Violation \u03b5'/\u03b5and \u0394I = 1/2 Rule, CP Violation in SUSY\n- arxiv_preprints / 'multi-label food safety': 5 hit(s) - The Rise of Blockchain Technology in Agriculture and Food Supply Chains, Spontaneous gelation of wheat gluten proteins in a food grade solvent, Application of Blockchain and Internet of Things to Ensure Tamper-Proof Data Availability for Food Safety, Food safety trends across Europe: insights from the 392-million-entry CompreHensive European Food Safety (CHEFS) databas, Shock propagation from the Russia-Ukraine conflict on international multilayer food production network determines global\n- arxiv_preprints / 'restaurant inspection forecast': 5 hit(s) - Visual-Inertial Teach and Repeat for Aerial Inspection, Predicting health inspection results from online restaurant reviews, The inspection paradox in stochastic resetting, Deep inspection: an electrical distribution pole parts study via deep neural networks, A UAV-Mounted Sensor Network for Close-Range Inspection of Wind Turbine Rotor Blades",
+  "prior_art": [
+   "City of Chicago food-inspections-evaluation (CDPH deployed model, 2015)",
+   "arXiv 1910.04906, Hindsight Analysis of the Chicago Food Inspection Forecasting Model (2019)",
+   "Kaggle/Socrata mirrors of 4ijn-s7e5"
+  ],
+  "theirs": "CDPH ships the raw inspections table plus its own deployed BINARY critical-violation forecasting model (Chicago/food-inspections-evaluation, 2015, R) to prioritise canvass scheduling, evaluated in arXiv 1910.04906 (2019). Kaggle and Socrata host mirrors of this same table. No published formulation predicts the set of violation codes.",
+  "ours": "The multi-label formulation itself: one row per inspection, target = the set of violation codes (61 observed, parsed from the violations blob by code number, never by description string), with an explicit prediction instant at the inspection's opening, a pre-inspection-only feature set (facility attributes, inspection type, calendar position, and the establishment's own prior-inspection history under its license_), and three disjoint temporal windows. No ML-ready package ships this task.",
+  "verdict": "differentiated",
+  "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+ },
+ "extraction_cost": {
+  "measured_at": "2026-09-28",
+  "measured_by": "candidates/chicago-food-inspections/probe_cost.py on the coordinator (1.9 GiB class), anonymous, no credentials, nothing stored",
+  "sample_rows": 20000,
+  "sample_bytes": 28948432,
+  "sample_requests": 5,
+  "sample_wall_seconds": 23.2,
+  "mean_bytes_per_row": 1447,
+  "total_rows_recounted": 316205,
+  "estimated_full_pull": {
+   "pages_at_5000": 64,
+   "requests": 65,
+   "bytes": 457681947,
+   "wall_seconds": 366,
+   "note": "ESTIMATE, labelled as such: measured sample rate scaled by the recounted total (arithmetic in probe_cost.py output). The full pull runs on the worker."
+  },
+  "order_key": "inspection_id (unique per row, 316,205 distinct in 316,205 rows - own tiebreaker)"
+ },
+ "split_capacity": {
+  "measured_at": "2026-09-28",
+  "measured_by": "candidates/chicago-food-inspections/probe_splits.py --json (aggregate SoQL queries; anonymous)",
+  "modelling_pool_rows": 226133,
+  "pool_census_by_year": {
+   "2010": 12469,
+   "2011": 13476,
+   "2012": 13308,
+   "2013": 14729,
+   "2014": 16283,
+   "2015": 15623,
+   "2016": 17192,
+   "2017": 15783,
+   "2018": 13010,
+   "2019": 14229,
+   "2020": 10751,
+   "2021": 11013,
+   "2022": 11740,
+   "2023": 12607,
+   "2024": 13057,
+   "2025": 12963,
+   "2026_partial": 7900
+  },
+  "windows": {
+   "train_2010_2020": {
+    "rows": 156853,
+    "distinct_licences": 28930,
+    "inspections_per_licence": 5.42
+   },
+   "eval_2021_2023": {
+    "rows": 35360,
+    "distinct_licences": 12992,
+    "inspections_per_licence": 2.72
+   },
+   "holdout_2024_2026_09": {
+    "rows": 33920,
+    "distinct_licences": 12953,
+    "inspections_per_licence": 2.62
+   }
+  },
+  "floor": {
+   "scan_rows": 15000,
+   "distinct_codes": 59,
+   "codes_ge_1pct": 37,
+   "floor_codes": [
+    "55",
+    "47",
+    "49",
+    "51",
+    "38",
+    "56",
+    "10",
+    "58",
+    "39",
+    "53",
+    "57",
+    "37",
+    "2",
+    "16",
+    "22",
+    "48",
+    "36",
+    "54",
+    "40",
+    "33",
+    "43",
+    "41",
+    "1",
+    "60",
+    "45",
+    "44",
+    "3",
+    "5",
+    "52",
+    "59",
+    "25",
+    "23",
+    "21",
+    "35",
+    "61",
+    "50",
+    "6"
+   ],
+   "floor_codes_missing_per_window": {
+    "train": [],
+    "eval": [],
+    "holdout": []
+   },
+   "note": "Floor re-derived from a fresh 15,000-row recent pool scan; the earlier 40,000-row scan found 61 codes over the full date range (recent-only scan sees 59 - codes 62+ era variation). Presence checked per window by server-side blob match; construction parses codes exactly."
+  },
+  "probe_seconds": 185.1,
+  "requests": 122
+ },
+ "license_decision": "RESOLVED 2026-09-28 by recording the operator-accepted portal-terms posture (chicago-doah-adjudication, operator acceptance 2026-09-26) against this source id 4ijn-s7e5: publishable under the City of Chicago Data Terms of Use (LicenseRef-CityOfChicago-DataTermsOfUse), no CC0 or standard open licence may be claimed, mandatory derivative disclaimer ships verbatim. Full decision with evidence and conditions in candidates/chicago-food-inspections/license.json.",
+ "probe_scripts": [
+  "candidates/chicago-food-inspections/probe_splits.py (pool census, per-window rows and distinct licences, floor codes and per-window presence)",
+  "candidates/chicago-food-inspections/probe_cost.py (measured extraction cost: requests, bytes, wall-clock for the paged pull pattern construction will use)"
+ ],
+ "qualification": {
+  "gate": "skills/dataset-qualification/scripts/qualify_dataset.py",
+  "gate_version": "1.3.0",
+  "result": "PASSED - 40/40 per-code configs, 31 checks each, 0 failed, 0 warnings, on the full artifact on the worker",
+  "job": "food-001",
+  "staging_release": 403508464,
+  "staging_tag": "job-food-001",
+  "configs": 40,
+  "coverage": "all 40 configs ship the identical full pool: train 156,841 / eval 35,358 / holdout 34,218 = 226,417 rows; every config has all three split files; no zero-row or zero-positive-rate split",
+  "artifact_versions": "40 distinct per-config artifact_version digests, all recorded in .factory/food-001/reports/qualification-code_*.json",
+  "digest_chain": "every report's component digests (5 files x 40 configs = 200 checks) match the staging release manifest exactly - verified from .factory/food-001/reports after collection",
+  "evidence": ".factory/food-001/reports/ (167 small assets fetched and sha256-verified against the release manifest; bulk CSVs and labels.csv stay in staging)",
+  "labels_csv": "labels.csv at the extract root, 24,319,192 bytes, sha256 c891fd333a1691912a37aad1c4f9bfd3df1671aeecd3966ef052f08b511982d1 - the joint multi-label matrix, in staging",
+  "note": "The pre-build estimate of 37 floor codes came from a 15,000-row recent scan; the full 226,417-row pool supports 40: 48 codes clear the 1% pool-rate floor, 8 are dropped by the per-window minimums (>=30 positives, >=20 distinct days per window), 0 dropped by rate. Codes 12, 18, 19, 24, 30, 31, 34, 42.",
+  "pool_note": "pool_rows 226,417 vs 226,133 measured 2026-09-28 - the live source grew 284 rows in the week between probe and build, which is expected from a live portal and not a defect"
+ },
+ "jurisdiction": {
+  "country": "US",
+  "region": "North America",
+  "publisher": "City of Chicago, Illinois",
+  "recorded_at": "2026-10-19",
+  "note": "Backfilled when the discovery brief began requiring a jurisdiction. Country is the publisher's, i.e. whose data this is."
+ }
 }

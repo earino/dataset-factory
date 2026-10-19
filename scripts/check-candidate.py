@@ -38,7 +38,7 @@ TERMINAL = ("parked", "dropped")
 
 IDENTITY_FIELDS = (
     "id", "status", "domain", "prediction_question", "prediction_time", "target_definition",
-    "sources", "license_evidence", "next_action",
+    "sources", "license_evidence", "next_action", "jurisdiction",
 )
 
 
