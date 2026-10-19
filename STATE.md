@@ -3405,3 +3405,49 @@ on an unstated jurisdiction; the deployed shim assigns a deterministic rotating 
 organisations); cadence raised from 2 to 6 discovery ticks a day (`0 */4 * * *`). Weekly maximum is
 now 42 discovery + 3 advancement = 45 sessions, ~13M tokens against the 24M budget and 45 of the 80
 session cap.
+
+## 2026-10-19 - UK-focused discovery session: three new sources opened, two GOs, one measured park
+
+Regional focus tick (United Kingdom). Three new candidates opened, **all UK publishers** (quota
+satisfied without touching a US source); the standing novelty test ran before any source work; every
+probe was anonymous and ranged (zip central-directory reads and partial member decompression -
+nothing bulk downloaded to the coordinator). `scripts/check-candidate.py --all` exit 0 and the suite
+(354 tests) passes; `scripts/discovery-coverage.py` now reports 14 candidates, 8 live, **live non-US
+2/8 (was 0/6)**.
+
+- **`dvsa-mot-next-test-outcome` - GO (Department for Transport / DVSA).** Predict whether a
+  vehicle's NEXT MOT test ends in initial failure (test_result F or PRS - the DfT-documented
+  initial-failure definition), using only what is known through the previous test. Licence measured:
+  UK Open Government Licence v3.0 via CKAN package_show on both dataset records. Measured
+  (2026-10-19, ranged reads): 2024 results zip 1,531,265,132 bytes / 12 monthly CSVs / 7,667,648,876
+  bytes uncompressed; per-year files exist 2005-2024. Row grain measured on a 4 MB prefix of
+  test_result_202408.csv (34,924 rows): P 77.3% / F 17.7% / PRS 4.3% -> initial-fail 22.1%,
+  cross-checked against the publisher's DVSA/MOT/01 (FY2025-26 classes 3&4 initial 27.51% / final
+  22.30%) - consistent. **test_id is measured non-unique** (6,336 repeated test_id values in one
+  month prefix; the file's first two rows are byte-identical), so construction must sort by
+  (vehicle_id, test_date, completed_date) and dedup; vehicle_id is never the runner id column.
+  Novelty verdict `differentiated` (prior art: adin786/mot-data GitHub EDA with a 2-feature SGD
+  experiment; the commercial Lisense predictor; no ML-ready task with splits anywhere).
+- **`ea-bathing-water-classification` - GO (Environment Agency).** Predict whether a bathing water's
+  season-Y annual rBWD classification is below Good, from prior-season history only (label not
+  computable from features by construction). Licence measured: OGL v3 stated on the live bwq site.
+  API contract learned from the API's own error text (regime `compliance-rBWD`, year slices are
+  item pages, assessments at result.primaryTopic.observation). Measured per-season counts via 11
+  season-slice requests (~2.5 MB total): 2015-2025, 415-451 waters per season, below-Good rate
+  7.2% (2016) to 14.9% (2024), 2020 slice absent (suspended monitoring year); sample grain confirmed
+  (point 05300: 794 samples back to 1988). Novelty `differentiated` (Exeter per-sample exceedance
+  EWS and the EA's operational Pollution Risk Forecasting are nowcasts, not this task). Caveat
+  recorded honestly: small panel (~450 entities x 11 seasons); a persistence baseline will be
+  strong, and measured headroom at construction decides publish-or-demote.
+- **`companies-house-company-exit` - PARK (Companies House).** Measured blocker, not a guess: the
+  Free Company Data Product is the **live register only** - 0 of 8,109 prefix rows carry a
+  DissolutionDate, the page says "live companies on the register", and the one-file 2026-10-01 zip
+  (493,990,184 bytes; 2,810,066,457-byte CSV, 55 columns) matches the ~5.45M live-register row count
+  rather than the cumulative register. Exit labels therefore require either forward monthly snapshot
+  collection (~470 MB/month, first usable 12-month cohort after ~12 months) or the rate-limited API -
+  no bulk historical dissolution data is published. Unpark = one operator decision on a scheduled
+  monthly snapshot pull, which should also settle the licence grant (no licence text on the download
+  page itself - measured; OGL v3 only asserted on the gov.uk guidance footer).
+
+Next actions are specific in each record; both GOs hand to advancement sessions. Probe scripts
+(`.factory/probe_uk*.py`) deleted after use; nothing large touched the coordinator.

@@ -1,0 +1,56 @@
+{
+ "id": "companies-house-company-exit",
+ "status": "parked",
+ "verdict": "park",
+ "created_at": "2026-10-19T17:00:41.563675+00:00",
+ "domain": "business registry / company exit (dissolution) prediction",
+ "prediction_question": "For a company on the live Companies House register at monthly snapshot M, will it exit the live register (be dissolved) within the following 12 months?",
+ "prediction_time": "Snapshot month M (the snapshot is compiled to the end of the previous month and published within 5 working days of month end). Features would be the register row at M: company category, SIC code(s), incorporation age, registered-address region, accounts/confirmation-statement filing state, mortgage counts, previous names - all present in the measured 55-column schema.",
+ "target_definition": "Binary exit: the company is absent from the live register (or carries a dissolution status) at snapshot M+12. The label source is a LATER snapshot than the feature snapshot - which is exactly the blocker recorded in rejection_reason: Companies House publishes no bulk historical snapshots and no dissolved-companies bulk product, so the label cannot be observed from anything published today.",
+ "sources": [
+  {
+   "name": "Companies House Free Company Data Product (monthly snapshot, one file and 7-part split)",
+   "url": "https://download.companieshouse.gov.uk/en_output.html",
+   "api": "https://download.companieshouse.gov.uk/BasicCompanyDataAsOneFile-2026-10-01.zip (anonymous, Range supported, measured 2026-10-19)",
+   "license": "No licence statement on the download page itself (measured: zero licence text in en_output.html). OGL v3.0 is asserted on the gov.uk data-products guidance page footer and across CH's data.gov.uk presence, but the register data's own licence grant was not located - to be confirmed with Companies House terms before construction (part of the park question).",
+   "access": "anonymous bulk download, no key; page text: 'a downloadable data snapshot containing basic company data of live companies on the register... provided free of charge and will not be supported'"
+  },
+  {
+   "name": "gov.uk - Companies House data products (guidance describing the product and its fields)",
+   "url": "https://www.gov.uk/guidance/companies-house-data-products",
+   "license": "Open Government Licence v3.0 (page footer, measured 2026-10-19)",
+   "access": "read 2026-10-19; describes contents: company type, registered office address, SIC, company status such as 'live' or 'dissolved', last accounts/confirmation statement dates, previous names"
+  },
+  {
+   "name": "Kaggle mirror of one historical snapshot (prior art / cross-check, not a task)",
+   "url": "https://www.kaggle.com/datasets/christianhauzar/companies-house-data-11-2023",
+   "license": "License listed as Unknown on Kaggle (read 2026-10-19) - a mirror of one source snapshot, not a licence for anything",
+   "access": "read 2026-10-19; single BasicCompanyDataAsOneFile-2023-11-01.csv, 2.66 GB, 5,448,423 / 5,452,546 unique CompanyName/CompanyNumber values"
+  }
+ ],
+ "license_evidence": [
+  "Measured 2026-10-19: en_output.html carries no licence or OGL text at all; the gov.uk data-products guidance page footer asserts 'Open Government Licence v3.0'; the CH dataset entry on data.gov.uk (CKAN id 7833cd0c-b322-4d23-baca-31eda0d66577) has license 'License not specified'. The licence grant for the register data itself is an open question to settle with Companies House terms before any construction or release - recorded, not assumed.",
+  "The licence question was not escalated as permission: the park reason is the missing label source; the licence confirmation is folded into the same unparking step."
+ ],
+ "construction_script": null,
+ "split_strategy": null,
+ "measurements": {
+  "snapshot_shape_2026_10_19": {
+   "method": "ranged HTTP reads only (zip central directory + partial member decompression; ~5 ranged requests, ~7 MB transferred)",
+   "result": "BasicCompanyDataAsOneFile-2026-10-01.zip = 493,990,184 bytes (Last-Modified 2026-10-07), one CSV member 2,810,066,457 bytes uncompressed, 55 columns (header verbatim in notes.md)."
+  },
+  "live_only_evidence_2026_10_19": "Prefix (first 4 MB, 8,109 rows, proper CSV parse): CompanyStatus Active 7,099; Liquidation 575; 'Active - Proposal to Strike off' 403; In Administration 17; other live-ish statuses 21 - and rows with DissolutionDate set: 0 of 8,109. Combined with the page text ('basic company data of live companies on the register') and the mirror row count (~5.45M unique company numbers in the 2023-11 snapshot, matching the live-register size, not the ~10M+ cumulative ever-incorporated), the bulk product is measured to be the live register only: no historical dissolution labels exist in any file publishable today.",
+  "row_sample_2026_10_19": "First data row: company 08209948 '! LTD', Private Limited Company, Active, incorporated 11/09/2012, SIC 99999 - Dormant Company, Accounts.AccountCategory DORMANT. Prefix rows span incorporations back to 1869; the file is name-sorted."
+ },
+ "jobs": [],
+ "artifacts": [],
+ "rejection_reason": "PARK (status parked), reason: the label source is unobtainable from the published bulk product. Measured 2026-10-19: the Free Company Data Product contains live-register companies only (0/8,109 prefix rows carry a DissolutionDate; the page states 'live companies on the register'; ~5.45M rows matches the live register, not the cumulative register), and Companies House publishes no bulk historical snapshots and no dissolved-companies bulk product. Three exit-label paths exist, none available today: (a) collect the monthly snapshot forward - CH publishes a fresh snapshot within 5 working days of each month end, so a scheduled monthly pull (~470 MB/month, staging-side) accumulates exit labels month by month, with a first usable 12-month exit cohort after ~12 months; (b) the Companies House API returns per-company dissolution dates but needs a free API key and is rate-limited (~600 requests/5 min), infeasible for a multi-million-company backfill; (c) third-party delta products (e.g. the commercial 'DataLedger monthly delta files' cited in ExitRadar's 2026 dissolution write-up) are not open. Additionally the register data's own licence grant was not located on the download page (see license_evidence) and must be confirmed before construction. Prior art (checked, no mirror risk): the source is mirrored raw on Kaggle (single snapshot, license Unknown, no task), ONS publishes aggregate business-demography survival rates, ExitRadar runs proprietary models on its own database, and the Productivity Insight WP61 (2025) builds a research census from register snapshots - none publishes an ML-ready exit-prediction task, so this remains a candidate once labels exist, not a rejection.",
+ "review": null,
+ "next_action": "Parked - do not re-probe the download page next session; the shape is measured and will not change. To unpark, one operator decision: approve a scheduled monthly Free-Company-Data-Product snapshot pull (the 7-part files, ~470 MB/month, worker/staging-side, never through the coordinator) with a 12-month horizon, so exit labels start accumulating; the same decision should settle the licence question with Companies House terms (is the register data OGL v3.0?). First full-horizon construction becomes possible around 2027-10; an interim task with 3-6-month exit horizons could start earlier if the operator prefers (exit volumes are an ESTIMATE from ONS/CH aggregates here, not measured).",
+ "jurisdiction": {
+  "country": "GB",
+  "region": "Europe",
+  "publisher": "Companies House (United Kingdom)",
+  "recorded_at": "2026-10-19"
+ }
+}
