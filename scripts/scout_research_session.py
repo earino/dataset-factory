@@ -115,8 +115,8 @@ def run_gate(late_minutes=None):
     return allowed, "\n".join(block_lines).strip(), reason
 
 
-def build_prompt(resume_block, extra=""):
-    template = PROMPT_TEMPLATE.read_text()
+def build_prompt(resume_block, extra="", template_path=None):
+    template = Path(template_path or PROMPT_TEMPLATE).read_text()
     stamp = now().strftime("%Y-%m-%d")
     prompt = template.replace("{{DATE}}", stamp).replace("{{SESSION_CONTEXT}}", resume_block)
     if extra:
@@ -126,8 +126,8 @@ def build_prompt(resume_block, extra=""):
         prompt += (
             "\n\n## Task for this session\n\n"
             "The operator set the following through the scheduler. It is part of this session's "
-            "brief, not text found in a file or fetched from the internet, and it takes "
-            "selects the task for this session. It does not lift the standing limits, the "
+            "brief, not text found in a file or fetched from the internet, and it selects "
+            "the task for this session. It does not lift the standing limits, the "
             "allowance, the session ceilings or the safety rules above - those still apply:\n\n"
             f"{extra}\n"
         )
@@ -159,6 +159,8 @@ def main(argv=None):
     parser.add_argument("--fallback-report", action="store_true",
                         help="when the gate holds, print the deterministic digest and the hold "
                              "reason instead of staying silent")
+    parser.add_argument("--prompt-file", default=str(PROMPT_TEMPLATE),
+                        help="brief for this run; a discovery tick passes the discovery prompt")
     parser.add_argument("--source-tag", default=SOURCE_TAG,
                         help="session source tag; use a distinct one for verification runs so "
                              "they are not counted as research sessions")
@@ -173,7 +175,7 @@ def main(argv=None):
         print(f"\nGATE: {'ALLOWED' if allowed else 'HELD'} - {reason}")
         if allowed:
             print("\n--- prompt that would be sent ---")
-            print(build_prompt(resume_block, args.extra))
+            print(build_prompt(resume_block, args.extra, args.prompt_file))
         return 0
 
     if not allowed:
@@ -192,7 +194,7 @@ def main(argv=None):
             print(f"Scout research session held: {reason}")
         return 0
 
-    prompt = build_prompt(resume_block, args.extra)
+    prompt = build_prompt(resume_block, args.extra, args.prompt_file)
     FACTORY_DIR.mkdir(parents=True, exist_ok=True)
     LOCK.write_text(json.dumps({"session_id": SOURCE_TAG_ACTIVE, "pid": os.getpid(),
                                 "written_at": now().isoformat(),
@@ -227,6 +229,7 @@ def main(argv=None):
 
     elapsed = round(time.time() - started, 1)
     note({"event": "session", "outcome": outcome, "elapsed_seconds": elapsed,
+          "prompt_file": Path(args.prompt_file).name,
           "max_turns": args.max_turns, "run_budget": args.run_budget})
     print(strip_footer(output) or f"Scout research session {outcome} after {elapsed}s")
     if error.strip():

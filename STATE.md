@@ -3316,3 +3316,15 @@ servers, 0 floating IPs, 0 primary IPs, 0 volumes**. Every job ledger entry is t
 exist, msha-hf-004 (171201702), was destroyed 10:49:07Z, and msha-hf-002 (171185621) was destroyed
 10:08:01Z - its `record.json` entry simply carried `destroyed_at: null`, which read as a live machine and was
 not one. Nothing is billing; the earlier "stuck running" note is withdrawn.
+
+**Discovery cadence raised 2026-10-19 (operator: "we need more discovery happening by a Lot").** The
+scheduled research slot had been spending every tick on construction and packaging, so no source had
+been opened since late September. Three changes: a discovery-only brief
+(`docs/discovery-session-prompt.md`) that forbids advancing existing candidates and requires at least
+three new sources taken to a recorded verdict per session; a `--prompt-file` argument on
+`scripts/scout_research_session.py` so the brief is selectable per tick; and a second cron job
+`scout-discovery-session` (86fe52e55ef9) at 06:00 and 18:00 UTC daily. The advancement job
+`scout-research-session` (69a5bc676d10) keeps Mon/Wed/Fri 08:00. `sessions_per_week` raised 3 -> 18
+to admit 14 discovery ticks plus 3 advancement ticks per week; the $5/month allowance and the
+`stop_fraction` brake are unchanged, so the gate still holds the moment estimated spend approaches
+the cap.
