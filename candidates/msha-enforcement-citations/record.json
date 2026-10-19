@@ -195,7 +195,7 @@
     ],
     "decide_at_construction": "NBR_INSPECTORS and ACTIVE_SECTIONS - whether they are known when the inspection opens or only as it proceeds; default exclude."
   },
-  "next_action": "GITHUB DESTINATION DONE (2026-10-19): the private repo earino/msha-enforcement-citations carries the 23 package files as its initial commit (main bb7ca7e9b2a3d4aa6443fed9c365badb82d8a18a), and all 226 accepted assets are on release v2026.10 (release 417059413) - transferred by job msha-publish-001 on a worker (failures: 0), then verified from the GitHub API: every asset size+sha256 matches the package MANIFEST (226/226), the repo is private, v2026.10 and main resolve to the same commit, and the docs at that commit are blob-identical to the package. CONSUMER RUN DONE (2026-10-19): job msha-consumer-001 fetched all 226 assets from release 417059413 exactly as a consumer receives them, passed sha256sum -c, re-ran the published gate on all 45 configs (exit 0 on every one, each artifact version equal to the MANIFEST entry for its level) and reproduced the sec_56_12004 baseline at 0.8036 eval AUC with CONTRACT OK, in a clean room with no repository access and no credential; recorded in release/msha-enforcement-citations/VERIFICATION.md with the manifest regenerated (package_files VERIFICATION.md is the only change). NEXT, in order: (1) the Hugging Face destination per AGENTS.md - RETRY IN FLIGHT: msha-hf-001 failed at 127/226 files (1.92 GB, all digest-verified on the Hub) when one-commit-per-file hit the Hub's per-repository commit limit (99 files, HTTP 429); workers/hf_publish.py now batches 6 files per create_commit (commit a2faeba, recorded in jobs[] here) and retry job msha-hf-002 (launched 2026-10-19T09:33:35Z, ledger jobs/msha-hf-002.json; bundle sha256 d110cd6bab2d96cb4292... verified equal to a rebuild from the fixed source) is uploading, skipping the 127 files already at the manifest digest. When it lands: hf-publish.py --verify, then --tag LAST so the Hub revision and main agree; whoever completes the step must also write artifact_version into release/msha-enforcement-citations/DESTINATIONS.json (no script currently does; hf-publish.py --verify merges only the huggingface entry, whose note still names msha-hf-001) or the site pipeline stays red, and advance the dataset repository main with the revised VERIFICATION.md and MANIFEST.json as a docs-only commit (v2026.10 keeps naming the verified data bytes). (2) publication remains a separate operator-approved act on both platforms: both destinations are private, so the manifest still derives visibility private / published false.",
+  "next_action": "GITHUB DESTINATION DONE (2026-10-19): the private repo earino/msha-enforcement-citations carries the 23 package files as its initial commit (main bb7ca7e9b2a3d4aa6443fed9c365badb82d8a18a), and all 226 accepted assets are on release v2026.10 (release 417059413) - transferred by job msha-publish-001 on a worker (failures: 0), then verified from the GitHub API: every asset size+sha256 matches the package MANIFEST (226/226), the repo is private, v2026.10 and main resolve to the same commit, and the docs at that commit are blob-identical to the package. CONSUMER RUN DONE (2026-10-19): job msha-consumer-001 fetched all 226 assets from release 417059413 exactly as a consumer receives them, passed sha256sum -c, re-ran the published gate on all 45 configs (exit 0 on every one, each artifact version equal to the MANIFEST entry for its level) and reproduced the sec_56_12004 baseline at 0.8036 eval AUC with CONTRACT OK, in a clean room with no repository access and no credential; recorded in release/msha-enforcement-citations/VERIFICATION.md with the manifest regenerated (package_files VERIFICATION.md is the only change). NEXT, in order: (1) the Hugging Face destination - BULK UPLOAD COMPLETE (2026-10-19): msha-hf-001 landed 127 files and msha-hf-002 6 before the Hub's 128-commits-per-hour limit stopped both; msha-hf-003 resumed with the batched-plus-backoff uploader and finished the transfer (93 more files, 1,389,391,904 bytes; 133 skipped at the manifest digest; 226/226 accounted), and scripts/hf-publish.py --verify (2026-10-19T10:19:26Z) found every file on the Hub at the manifest sha256, missing: [], size_mismatch: []. WHAT REMAINS IS THE LOADING PATH, which msha-hf-003's built-in check failed: load_dataset on sec_56_12004 raised ArrowInvalid casting 'F015FC6' to int64 - event_no is mostly digits but occasionally alphanumeric and the Hub's CSV loader guesses types from a sample. The fix is in flight in the interactive session: scripts/hf-dataset-infos.py generates a Hub dataset_infos.json pinning per-config column types (identifiers including zero-padded mine_id as string). After it lands: upload dataset_infos.json, re-run the loading check until load_dataset reproduces the artifact, then hf-publish.py --tag LAST so the Hub revision and main agree; whoever completes the step must also write artifact_version into release/msha-enforcement-citations/DESTINATIONS.json (no script currently does; hf-publish.py --verify merges only the huggingface entry) or the site pipeline stays red, and advance the dataset repository main with the revised VERIFICATION.md and MANIFEST.json as a docs-only commit (v2026.10 keeps naming the verified data bytes). (2) publication remains a separate operator-approved act on both platforms: both destinations are private, so the manifest still derives visibility private / published false.",
   "novelty_check": {
     "checked_at": "2026-09-27T20:16:42+00:00",
     "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
@@ -534,6 +534,48 @@
       "retry": "msha-hf-002, launched 2026-10-19T09:33:35Z (server 171185621, ledger jobs/msha-hf-002.json) with the identical 226-asset plan; its bundle sha256 d110cd6bab2d96cb4292... was verified on the coordinator to equal a fresh worker plan rebuild from the fixed committed source, and the bundled hf_publish.py of the failed run hashes to c2c84d9a0a75247f... = the pre-fix a2faeba^ source. Per-file digest skipping means the retry resumes: the 127 files already at the manifest digest are skipped rather than re-uploaded",
       "cost": "reserved EUR 0.60 at the EUR 0.15/h cpx42 ceiling, 4 reserved hours; destroyed 2026-10-19T09:40:24Z after collection, ledger status deleted",
       "evidence": ".factory/msha-hf-001/result.json and .factory/msha-hf-001/reports/ (the staging release manifest.json, source.tar and the failed container.log capture), each sha256-verified against staging release 417102218"
+    },
+    {
+      "id": "msha-hf-002",
+      "status": "failed",
+      "what": "First retry of the Hugging Face bulk publish after msha-hf-001: the identical 226-asset plan with the batched uploader (6 files per create_commit), launched before this record existed",
+      "target_repo": "earino/msha-enforcement-citations",
+      "target_revision": "main",
+      "server_id": 171185621,
+      "created_at": "2026-10-19T09:33:35Z",
+      "deleted_at": "2026-10-19T10:08:01Z",
+      "results": {
+        "uploads": "6 files (one batch-commit) - derived from msha-hf-003's resume evidence: 133 files were already at the manifest digest when msha-hf-003 started, 127 of them landed by msha-hf-001",
+        "failures": "no collected result: the job never produced one, so its failure detail is not re-derivable from a collected report"
+      },
+      "why": "launched 17 minutes after msha-hf-001's 127 upload commits, still inside the Hub's per-repository 128-commits-per-hour window: its first batch-commit landed as the 128th and the Hub then refused the next with HTTP 429 - observed by the launching session from the live container output, which also died with the server, since no result was collected. The pre-backoff uploader failed a refused batch's six assets, so the job ended there",
+      "fix": "workers/hf_publish.py now waits RATE_LIMIT_BACKOFF_SECONDS and retries a refused batch instead of failing its six assets (commit acb6510), and the retry was launched only after the rate window aged out",
+      "retry": "msha-hf-003, launched 2026-10-19T10:08:03Z on server 171194439 with the identical plan",
+      "cost": "cpx42/hel1 at EUR 0.13464/h; server destroyed 2026-10-19T10:08:01Z, ledger jobs/msha-hf-002.json records status deleted",
+      "evidence": "jobs/msha-hf-002.json (ledger, status deleted); the skip count in .factory/msha-hf-003/result.json; commit acb6510's message"
+    },
+    {
+      "id": "msha-hf-003",
+      "status": "failed",
+      "what": "Second retry of the Hugging Face bulk publish: the identical 226-asset plan with the batched uploader plus the rate-limit backoff, launched after the Hub's commit-rate window had aged out",
+      "staging_release": 417156564,
+      "staging_tag": "job-msha-hf-003",
+      "target_repo": "earino/msha-enforcement-citations",
+      "target_revision": "main",
+      "server_id": 171194439,
+      "created_at": "2026-10-19T10:08:03Z",
+      "collected_at": "2026-10-19T10:23:39Z",
+      "deleted_at": "2026-10-19T10:28:38Z",
+      "assets": 226,
+      "results": {
+        "uploads": "93 files, 1,389,391,904 bytes this run, each digest-verified as it landed; 133 skipped as already at the manifest digest (127 from msha-hf-001 + 6 from msha-hf-002); 226/226 targets accounted",
+        "failures": "1: the loading-path check",
+        "hub_verification": "scripts/hf-publish.py --verify run by the interactive session at 2026-10-19T10:19:26Z found all 226 files on the Hub at the manifest sha256, missing: [], size_mismatch: [] (written to release/msha-enforcement-citations/DESTINATIONS.json, still uncommitted at the time of this entry)"
+      },
+      "why": "the bulk transfer is complete and byte-verified, but the job's built-in loading check failed: load_dataset('earino/msha-enforcement-citations', 'sec_56_12004', revision='main') generated train and eval and then raised pyarrow ArrowInvalid \"Failed to parse string: 'F015FC6' as a scalar of type int64\" generating the holdout split. event_no is an identifier that is mostly digits but occasionally alphanumeric (the failing row is a 2025-08-13 inspection), and the Hub's CSV loader infers column types from a sample, so it typed event_no int64 and could not cast the alphanumeric values",
+      "fix": "in flight in the interactive session at the time of this entry: scripts/hf-dataset-infos.py (untracked) generates a Hub dataset_infos.json declaring per-config column types - identifiers including event_no and zero-padded mine_id as string, prior_mean_citations float64 - so load_dataset parses every column as the type the artifact actually uses instead of guessing; the dataset_infos upload and a loading re-verification are that session's next steps",
+      "cost": "cpx42/hel1 at EUR 0.13464/h; server destroyed 2026-10-19T10:28:38Z after collection, ledger status deleted",
+      "evidence": ".factory/msha-hf-003/result.json (uploads list, skip list and the full ArrowInvalid traceback in hf_loading.error) and .factory/msha-hf-003/reports/ (staging release manifest.json, source.tar, container.log), each sha256-verified against staging release 417156564"
     }
   ],
   "artifacts": [

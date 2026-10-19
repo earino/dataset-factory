@@ -1,13 +1,61 @@
 
 # Current state
 
-Updated: 2026-10-19 (latest: msha-hf-001 failed - the Hub bulk upload landed 127/226 files, 1.92 GB
-digest-verified, then one-commit-per-file hit the Hub's per-repository commit limit: the remaining 99 files
-returned HTTP 429. The uploader now batches 6 files per commit (a2faeba) and retry msha-hf-002 is uploading
-with the fixed bundle, skipping the 127 already at the manifest digest. Nothing is public; the Hugging Face
-destination remains the open step.)
+Updated: 2026-10-19 (latest: msha-hf-003 finished the Hub bulk upload - 226/226 files on the Hub, all
+at the manifest sha256 per hf-publish.py --verify, 93 uploaded this run + 133 resumed at digest - but
+failed the job's own loading check: load_dataset raises ArrowInvalid casting 'F015FC6' to int64 on the
+holdout split, because the Hub's CSV loader infers column types from a sample and event_no is mostly
+digits but occasionally alphanumeric. A declared dataset_infos.json schema is the fix in flight in the
+interactive session; --tag stays LAST. Nothing is public.)
 
 
+## 2026-10-19 - msha-hf-003: Hub transfer complete 226/226 and --verify passed, but the job failed its loading check - a declared schema is the open fix
+
+**`msha-hf-003` failed on the loading check, not the transfer - and the transfer it completed closes the
+bulk upload `msha-hf-001` began.** Launched 10:08:03 UTC on server 171194439 (cpx42/hel1, EUR 0.13464/h,
+destroyed 10:28:38 after collection) with the identical 226-asset plan, it uploaded **93 files,
+1,389,391,904 bytes**, digest-verified as each landed, and **skipped 133 already at the manifest digest**
+(127 from msha-hf-001 + 6 from msha-hf-002) - **226/226 targets accounted**. The interactive session's
+`scripts/hf-publish.py --verify` (10:19:26 UTC) independently found every file on the Hub at the manifest
+sha256: **missing: [], size_mismatch: []**. The job then failed its one remaining check: `load_dataset(
+'earino/msha-enforcement-citations', 'sec_56_12004', revision='main')` generated train and eval and raised
+**pyarrow ArrowInvalid: Failed to parse string: 'F015FC6' as a scalar of type int64** generating the holdout
+split. `event_no` is an identifier that is mostly digits but occasionally alphanumeric (the failing row is a
+2025-08-13 inspection), and the Hub's CSV loader infers column types from a sample, so it typed `event_no`
+int64 and could not cast the alphanumeric values. The failure is real and re-derivable from the collected
+result: the full traceback is `hf_loading.error` in `.factory/msha-hf-003/result.json`.
+
+**msha-hf-002, closed out here too.** The first retry (launched 09:33:35 UTC, server 171185621) ran inside
+the hour window msha-hf-001's 127 commits had filled: one batch-commit of 6 files landed and the Hub refused
+the next with HTTP 429 - observed by the launching session from the live container output; no result was
+ever collected, so its detail is not re-derivable from a collected report, and the 6-file contribution is
+derived from msha-hf-003's skip list (133 - 127). The backoff fix (acb6510: a refused batch waits
+RATE_LIMIT_BACKOFF_SECONDS and retries instead of failing its six assets) is what msha-hf-003 ran; its
+server was destroyed 10:08:01 UTC and the ledger records status `deleted`.
+
+**Evidence and cleanup.** The three small report assets were fetched into `.factory/msha-hf-003/reports/`,
+each sha256-verified against staging release 417156564: the release manifest.json (103,231 bytes), source.tar
+(102,400 bytes, digest equal to the ledger's `source_sha256`), and the container.log capture (65 bytes -
+"No such container: scout-msha-hf-003"; the container was already gone at collection, same as msha-hf-001,
+so the diagnosis lives in the collected result instead). No bulk CSV touched the coordinator. The job was
+collected at 10:23:39 UTC by the watcher's own poll and the worker destroyed at 10:28:38 UTC (ledger
+`deleted`).
+
+**What is and is not broken.** The accepted artifact, the GitHub destination, the consumer verification and
+the gate are untouched; all 226 accepted bytes are on the Hub. What failed is the *documented loading path*:
+the Hub's type inference cannot read the artifact back through `load_dataset`. The fix in flight
+(interactive session, mid-turn at recording time) is `scripts/hf-dataset-infos.py` - a Hub
+`dataset_infos.json` declaring per-config column types (identifiers including zero-padded `mine_id` as
+string, `prior_mean_citations` float64) so `load_dataset` parses instead of guesses - followed by the
+upload and a loading re-verification. This watcher session did not edit scripts or launch a follow-up job:
+the interactive session owns that work on this ledger. The `verified: true` it wrote into
+`DESTINATIONS.json` at 10:19:26 UTC (still uncommitted) predates the loading failure, so that file still
+needs its revision - the note and `artifact_version` - when the fix lands. `--tag` remains LAST.
+
+**Recorded.** `candidates/msha-enforcement-citations/record.json` gains `msha-hf-002` and `msha-hf-003`
+jobs[] entries and its next_action now states the bulk upload complete and the loading path as the open
+item; the ledger records jobs/msha-hf-002.json (deleted) and jobs/msha-hf-003.json (collected, deleted) are
+committed with this entry. `check-candidate.py msha-enforcement-citations`: OK.
 ## 2026-10-19 - msha-hf-001 failed on the Hub's per-repository commit limit at 127/226; uploader fixed, retry msha-hf-002 in flight
 
 **The Hub bulk-upload job `msha-hf-001` failed, and the failure is in the transfer path, not the dataset.**
