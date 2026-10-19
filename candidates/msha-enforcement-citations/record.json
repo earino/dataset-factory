@@ -1,6 +1,6 @@
 {
   "id": "msha-enforcement-citations",
-  "status": "qualified",
+  "status": "packaged",
   "created_at": "2026-09-27T20:15:33.025601+00:00",
   "domain": "workplace / mine safety enforcement (multi-label)",
   "prediction_question": "Given everything documented about a mine and its own prior inspections and citations before an inspection begins, which of the declared set of 30 CFR sections will MSHA cite at this inspection?",
@@ -158,9 +158,21 @@
   "construction_output": {
     "job": "msha-002",
     "splits": {
-      "train": {"start": "2001-01-01", "end": "2021-01-01", "rows": 415088},
-      "eval": {"start": "2021-01-01", "end": "2024-01-01", "rows": 49233},
-      "holdout": {"start": "2024-01-01", "end": "2026-01-01", "rows": 33576}
+      "train": {
+        "start": "2001-01-01",
+        "end": "2021-01-01",
+        "rows": 415088
+      },
+      "eval": {
+        "start": "2021-01-01",
+        "end": "2024-01-01",
+        "rows": 49233
+      },
+      "holdout": {
+        "start": "2024-01-01",
+        "end": "2026-01-01",
+        "rows": 33576
+      }
     },
     "note": "The windows exactly as shipped in every config's meta.json (split.windows, end-exclusive); rows identical across all 45 configs - the pooled inspection set. Read from the collected sec_56_12004 meta.json, which the gate verified rows against."
   },
@@ -183,7 +195,7 @@
     ],
     "decide_at_construction": "NBR_INSPECTORS and ACTIVE_SECTIONS - whether they are known when the inspection opens or only as it proceeds; default exclude."
   },
-  "next_action": "PACKAGE ASSEMBLED (2026-10-19): release/msha-enforcement-citations is complete and check-package.py OK - 226 assets (45 configs x 5 files + labels.csv) manifested from the gate's own collected reports, with docs, code, the runner baseline and both licence texts; MANIFEST.json derives visibility private / published false from the absence of DESTINATIONS.json; artifact_version eff3c196ff7bda84... names the 45 per-config gate versions together (32 checks each, read from the reports' own results lists). The operator's open ordering question is decided and recorded: MSHA packages before Chicago-food because MSHA's baseline is measured (msha-baseline-001) and its licence decided, while Chicago still needs its food-baseline-001 runner-contract job before its own packaging; the operator reorders simply by packaging Chicago next - nothing here blocks that. NEXT, in order: (1) create the private repo earino/msha-enforcement-citations and commit release/msha-enforcement-citations as its initial commit; (2) transfer job msha-publish-001 on a worker: copy the 226 accepted assets from staging release 410471211 into the repo's private release tagged v2026.10 (bulk never via the coordinator; per-asset source ids read from the staging release manifest, mirroring jobs/noaa-publish-001.json); (3) verify from the GitHub API, not the job's report: every asset size+sha256, the repo private, tag and main at the same commit, and the docs blob-identical to the package; (4) move this record to status packaged with the job and destination. THEN the Hugging Face destination per AGENTS.md (python3 scripts/hf-publish.py --plan first; bulk moves via the hf_publish worker job), and the consumer run - get_dataset.py over all 226 assets plus a gate re-run on fetched bytes - recorded in VERIFICATION.md. Publication stays a separate operator-approved act.",
+  "next_action": "GITHUB DESTINATION DONE (2026-10-19): the private repo earino/msha-enforcement-citations carries the 23 package files as its initial commit (main bb7ca7e9b2a3d4aa6443fed9c365badb82d8a18a), and all 226 accepted assets are on release v2026.10 (release 417059413) - transferred by job msha-publish-001 on a worker (failures: 0), then verified from the GitHub API: every asset size+sha256 matches the package MANIFEST (226/226), the repo is private, v2026.10 and main resolve to the same commit, and the docs at that commit are blob-identical to the package. The release was published (draft->published) only after that verification, so the tag names the verified bytes. NEXT, in order: (1) the Hugging Face destination per AGENTS.md - python3 scripts/hf-publish.py --plan first, then --create --upload-small, then the hf_publish worker job for the bulk; (2) the consumer run - already in flight: job msha-consumer-001 launched 2026-10-19T08:45:40Z on worker 171177546 fetches all 226 assets from the destination release 417059413 with per-asset sha256 pinned, restores the runner layout and re-runs the gate on the fetched bytes, mirroring noaa-consumer-003; its outcome lands in VERIFICATION.md when collected. Note: the Hub-card work started by the launching session (scripts/hf-publish.py, factory/site_model.py - generating the card's configs block from the manifest for MSHA's 45-config shape) is deliberately left uncommitted and unverified; the next session owns it. Publication stays a separate operator-approved act: no DESTINATIONS.json exists, so the manifest still derives visibility private / published false.",
   "novelty_check": {
     "checked_at": "2026-09-27T20:16:42+00:00",
     "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
@@ -454,9 +466,46 @@
       "cost": "reserved EUR 0.24, ceiling EUR 0.08/h, 1 min wall, destroyed 2026-10-14T08:20:58Z; provider inventory read back 0 servers after destroy",
       "eval_auc": 0.8036,
       "contract_ok": true
+    },
+    {
+      "id": "msha-publish-001",
+      "status": "succeeded",
+      "what": "GitHub transfer: the 226 accepted artifact files, 3,384,299,154 bytes, copied from private staging release 410471211 into earino/msha-enforcement-citations release 417059413 (v2026.10) on a worker host, so the ~3.4 GB never passed through the coordinator",
+      "staging_release": 417072041,
+      "staging_tag": "job-msha-publish-001",
+      "target_repo": "earino/msha-enforcement-citations",
+      "target_release": 417059413,
+      "target_tag": "v2026.10",
+      "server_id": 171169567,
+      "created_at": "2026-10-19T08:27:12Z",
+      "collected_at": "2026-10-19T08:43:43Z",
+      "assets": 226,
+      "bytes": 3384299154,
+      "failures": 0,
+      "why": "the publish/transfer path is the only step that needs the write credential and the bytes together, so it runs where the bytes are",
+      "cost": "reserved EUR 0.32, ceiling EUR 0.08/h, destroyed 2026-10-19T08:44:09Z (ledger jobs/msha-publish-001.json status deleted)",
+      "verification": "API-side, not the job's report: all 226 assets re-read from the GitHub API match the package MANIFEST.json bytes+sha256 exactly (226/226, no extras); the repository is private; v2026.10 and main resolve to the same commit bb7ca7e9b2a3d4aa6443fed9c365badb82d8a18a; the 23 documentation files at that commit are blob-identical to release/msha-enforcement-citations (compared by Git blob hash). The release was a draft during transfer and was published only after this verification, so the tag names the verified bytes.",
+      "evidence": ".factory/msha-publish-001/reports/ (job manifest.json, container.log, source.tar; each sha256-verified against the staging release), .factory/msha-publish-001/result.json"
     }
   ],
-  "artifacts": [],
+  "artifacts": [
+    {
+      "job": "msha-publish-001",
+      "repository": "https://github.com/earino/msha-enforcement-citations",
+      "visibility": "private (publication requires explicit authorisation)",
+      "tag": "v2026.10",
+      "commit": "bb7ca7e9b2a3d4aa6443fed9c365badb82d8a18a",
+      "release": "https://github.com/earino/msha-enforcement-citations/releases/tag/v2026.10",
+      "release_id": 417059413,
+      "artifact_version": "eff3c196ff7bda848991a4bb8bbf8c4e061d6f956217cfcfa54935ad8c96bda3",
+      "artifact_version_note": "derived exactly as the manifest derives it - the 45 per-config gate versions (gate 1.3.0, 32 checks each, 0 failed) joined and hashed, because each config is gated and scored as its own task instance",
+      "asset_bytes": 3384299154,
+      "assets": "226 files: 45 configs x 5 (meta.json, quality.json, public/train.csv, public/eval.csv, private/holdout.csv) plus the extract-root labels.csv. The per-file bytes+sha256 authority is release/msha-enforcement-citations/MANIFEST.json (its files/assets blocks and its 45-entry levels block carrying the per-config gate versions), which is itself committed at the tagged commit",
+      "verified_from_the_service": "all 226 assets re-read from the GitHub API on 2026-10-19 (release 417059413) match the package MANIFEST.json bytes+sha256 exactly, 226/226 with no extras; the repository is private; v2026.10 and main resolve to the same commit bb7ca7e9b2a3d4aa6443fed9c365badb82d8a18a; the 23 package files at that commit are blob-identical to release/msha-enforcement-citations (Git blob hash). The release was transferred as a draft and published - creating the tag - only after this verification, so the tag names the verified bytes",
+      "compared": "release/msha-enforcement-citations/MANIFEST.json",
+      "evidence": ".factory/msha-publish-001/result.json, .factory/msha-publish-001/reports/ (job manifest, container.log, source bundle), jobs/msha-publish-001.json (ledger: server 171169567, created 08:27:12Z, collected 08:43:43Z, deleted 08:44:09Z)"
+    }
+  ],
   "qualification": {
     "gate": "skills/dataset-qualification/scripts/qualify_dataset.py",
     "gate_version": "1.3.0",

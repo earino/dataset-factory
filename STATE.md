@@ -1,16 +1,63 @@
 
 # Current state
 
-Updated: 2026-10-19 (latest: the MSHA release package is assembled - release/msha-enforcement-citations
-carries the docs, code, runner baseline and a MANIFEST.json over all 226 assets built from the gate's
-own collected reports; check-package.py OK on the full package. The manifest generator's construction
-commit moved into the per-dataset descriptor with noaa's MANIFEST proven byte-identical on every
-field except a publication_note timestamp that was already stale in the committed copy. The record's
-split_strategy line was corrected: 2000 does not fold into train - the shipped windows start
-2001-01-01 and the gate verified rows against them. MSHA-not-Chicago-first is decided and recorded.
-Nothing is published; the GitHub destination transfer is the next action. Private HEAD pending this
-session's commit; CI checked after push.)
+Updated: 2026-10-19 (latest: msha-publish-001 succeeded - all 226 accepted assets, 3,384,299,154 bytes,
+are on earino/msha-enforcement-citations release v2026.10 (417059413), transferred on a worker and then
+verified from the GitHub API: 226/226 asset digests match the package MANIFEST, repo private, tag and
+main at bb7ca7e9, docs blob-identical; the release was published (draft->published) only after that
+verification. The MSHA record is status packaged. Nothing is public; the Hugging Face destination and the
+consumer run are the remaining steps. CI checked after push.)
 
+
+## 2026-10-19 - msha-publish-001: all 226 assets are in the dataset repository, API-verified - record `packaged`
+
+**`msha-publish-001` succeeded** (its container.log is one line recording that no container ran - this job
+only moves bytes). The `transfer` spec copied all **226** accepted artifact files, **3,384,299,154 bytes**,
+from private staging release **410471211** into `earino/msha-enforcement-citations` release **417059413**, on
+worker **171169567** (cpx32/hel1): created **08:27:12 UTC**, collected **08:43:43**, destroyed **08:44:09**
+(`jobs/msha-publish-001.json` records status `deleted` with `deleted_at`). `failures: []`. The staging
+release's own manifest shows `uploaded: false` only because that snapshot was written before the result
+upload completed - the collected `result.json` carries `uploaded: true` with all 226 transferred entries,
+the same pattern noaa-publish-001 showed.
+
+**Verified from the service, not the job's report.** All **226** assets re-read from the GitHub API match
+the package `MANIFEST.json` bytes+sha256 exactly - **226/226**, no extras, none missing - and the repository
+is **private**. The release was a draft during the transfer, so the tag did not exist yet; it was published
+only **after** this digest verification, which created `v2026.10` at `main` - tag and main resolve to the
+same commit **`bb7ca7e9`** (the initial docs commit), and the assets were re-read after publishing:
+unchanged. All **23** package files at that commit are byte-identical to `release/msha-enforcement-citations`
+(compared by Git blob hash, `MANIFEST.json` and `SHA256SUMS` included), so the repository is not describing a
+different dataset from the one `check-package.py` validates.
+
+**Recorded.** `candidates/msha-enforcement-citations/record.json` is status **`packaged`**, with the
+`msha-publish-001` `jobs[]` entry (staging release 417072041 / target release 417059413, server, times,
+226 assets / 3,384,299,154 bytes / 0 failures, the API verification and its evidence paths), and
+`next_action` names the remaining order: (1) the Hugging Face destination per AGENTS.md
+(`hf-publish.py --plan`, `--create --upload-small`, then the `hf_publish` worker job for the bulk),
+(2) the consumer run - `get_dataset.py` over all 226 assets plus a gate re-run on fetched bytes, recorded
+in `VERIFICATION.md`. `scripts/check-candidate.py msha-enforcement-citations` OK on the updated record.
+
+**The job's small reports were fetched** into `.factory/msha-publish-001/reports/` and sha256-verified
+against staging release **417072041** (tag `job-msha-publish-001`) before writing: `manifest.json`
+(the job's own artifact manifest), `container.log` (70 bytes), and the 92 KB `source.tar` job bundle.
+
+**Nothing is public.** The repository is private, no `DESTINATIONS.json` exists for this dataset, and the
+manifest still derives `visibility: private`, `published: false`. Publication remains a separate
+operator-approved act, on both platforms.
+
+**Cost:** EUR 0.32 reserved for this job at the EUR 0.08/h cpx32 ceiling (ledger); ~17 minutes of server
+lifetime end to end, so the charge is a fraction of that. No new research spend.
+
+**Also in flight from the same session.** `msha-consumer-001`, the clean-room consumer run, was launched at
+**08:45:40 UTC** on worker **171177546** (cpx32/hel1, EUR 0.32 reserved, expires 1792410340): it fetches all
+226 assets **from the destination release 417059413** with each asset's sha256 pinned, restores the runner
+layout and re-runs the gate on the fetched bytes, mirroring `noaa-consumer-003`. Its ledger
+(`jobs/msha-consumer-001.json`) and job source (`candidates/msha-enforcement-citations/consumer/`) are
+committed with this entry; the job was still running when this session recorded the transfer, and the
+watcher picks it up by construction. Left **uncommitted** from that session, deliberately: the in-progress
+Hub-card work (`scripts/hf-publish.py`, `factory/site_model.py` - making the card's `configs:` block generate
+from the manifest so MSHA's 45-config shape declares all 45 configs instead of one arbitrary CSV pair). That
+code is unverified and is the first item of the Hugging Face step; the next session owns it.
 ## 2026-10-19 - MSHA package assembled: 226 assets manifested from the gate's own evidence
 
 `release/msha-enforcement-citations/` now holds a complete, checkable package, and
