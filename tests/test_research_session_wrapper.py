@@ -60,6 +60,33 @@ class PromptTests(unittest.TestCase):
         self.assertNotIn("{{SESSION_CONTEXT}}", prompt)
 
 
+class PromptFileTests(unittest.TestCase):
+    """A relative brief resolves against the repository, not the caller's cwd.
+
+    The first live discovery tick died with `FileNotFoundError: docs/discovery-session-prompt.md`
+    because the scheduler runs the script from elsewhere. Reproduced here by chdir-ing to a
+    directory that has no `docs/`, which fails on the pre-fix code and passes after it.
+    """
+
+    def test_a_relative_brief_resolves_against_the_repository(self):
+        with tempfile.TemporaryDirectory() as elsewhere:
+            cwd = Path.cwd()
+            try:
+                import os
+                os.chdir(elsewhere)
+                prompt = wrapper.build_prompt("CONTEXT", "",
+                                              "docs/discovery-session-prompt.md")
+            finally:
+                os.chdir(cwd)
+        self.assertIn("discovery only", prompt)
+        self.assertIn("at least three new sources", prompt)
+        self.assertIn("Do not build, qualify, package, publish", prompt)
+
+    def test_a_missing_brief_still_raises(self):
+        with self.assertRaises(FileNotFoundError):
+            wrapper.build_prompt("CONTEXT", "", "docs/no-such-brief.md")
+
+
 class FooterTests(unittest.TestCase):
     def test_the_cli_footer_is_not_part_of_the_report(self):
         output = ("Session report text.\n"

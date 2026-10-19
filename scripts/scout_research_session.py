@@ -116,7 +116,12 @@ def run_gate(late_minutes=None):
 
 
 def build_prompt(resume_block, extra="", template_path=None):
-    template = Path(template_path or PROMPT_TEMPLATE).read_text()
+    # Relative paths resolve against the repository, not the caller's cwd: the scheduler runs this
+    # from elsewhere, and a cwd-relative brief silently failed the first discovery tick.
+    path = Path(template_path or PROMPT_TEMPLATE)
+    if not path.is_absolute():
+        path = REPO / path
+    template = path.read_text()
     stamp = now().strftime("%Y-%m-%d")
     prompt = template.replace("{{DATE}}", stamp).replace("{{SESSION_CONTEXT}}", resume_block)
     if extra:
