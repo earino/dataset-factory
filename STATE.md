@@ -1,13 +1,62 @@
 
 # Current state
 
-Updated: 2026-10-19 (latest: msha-consumer-001 succeeded - the clean-room consumer verification of the
-published release passed in full: package vs MANIFEST OK, sha256sum -c OK over all 226 assets, the published
-gate exit 0 on all 45 configs with every artifact version equal to the MANIFEST entry, and the sec_56_12004
-baseline reproduced at 0.8036 with CONTRACT OK. VERIFICATION.md carries the pass and the manifest was
-regenerated with only its VERIFICATION.md entry changing. The MSHA record is status packaged. Nothing is
-public; the Hugging Face destination is the remaining step - job msha-hf-001 is uploading the 226 bulk
-assets from the interactive session that owns the Hub-card work.)
+Updated: 2026-10-19 (latest: msha-hf-001 failed - the Hub bulk upload landed 127/226 files, 1.92 GB
+digest-verified, then one-commit-per-file hit the Hub's per-repository commit limit: the remaining 99 files
+returned HTTP 429. The uploader now batches 6 files per commit (a2faeba) and retry msha-hf-002 is uploading
+with the fixed bundle, skipping the 127 already at the manifest digest. Nothing is public; the Hugging Face
+destination remains the open step.)
+
+
+## 2026-10-19 - msha-hf-001 failed on the Hub's per-repository commit limit at 127/226; uploader fixed, retry msha-hf-002 in flight
+
+**The Hub bulk-upload job `msha-hf-001` failed, and the failure is in the transfer path, not the dataset.**
+Created 09:02:54 UTC on server 171180553 (cpx42/hel1, reserved EUR 0.60 at the EUR 0.15/h ceiling), it
+uploaded **127 of the 226 files - 1,921,773,312 bytes**, each digest-verified on the Hub as it landed
+(the result's uploads list only carries files whose digest the Hub reported back), and then the remaining
+**99 files all failed**. The pre-fix uploader pushed **one Hub commit per file**; after about 127 upload
+commits the Hub's per-repository commit rate limit was exceeded and every remaining upload returned
+**HTTP 429**. The worker recorded `status: failed` in its result (this job type carries no exit code in the
+ledger); the result reached staging release 417102218 at 09:16 UTC, about **13 minutes** after launch -
+derived from the ledger and release timestamps, not a recorded elapsed.
+
+**Evidence, and where it stops.** `.factory/msha-hf-001/result.json` (sha256-verified against the staging
+release manifest) lists the 127 landed targets and 99 `{target, error}` failures - but every failure string
+is truncated at exactly 300 characters by the uploader's own error formatting, cutting off before the HTTP
+status appears, and the container.log capture is a 65-byte `Error response from daemon: No such container:
+scout-msha-hf-001` because the container was already gone when the job was collected at 09:32:58 UTC. So the
+429/commit-limit diagnosis is the launching session's, read from the live container output and recorded in
+commit **a2faeba**; it is consistent with every collected fact (127 commits landed, everything after failed,
+no other error class appears) but is not re-derivable from the collected report alone. The run's bundled
+`workers/hf_publish.py` hashes to `c2c84d9a0a75247f...`, equal to the pre-fix `a2faeba^` source - the failed
+run provably used the per-file-commit code.
+
+**Fix and retry.** Commit a2faeba batches 6 files into a single `create_commit` (CommitOperationAdd) instead
+of one `upload_file` per asset, and still digest-verifies every file after the batch lands;
+`tests/test_hf_helpers.py` runs the real helper source against a stub `huggingface_hub` and fails on the
+pre-fix helper (demonstrated: AssertionError from upload_file). The retry **`msha-hf-002`** was launched at
+09:33:35 UTC (server 171185621, ledger `jobs/msha-hf-002.json`) with the **identical 226-asset plan**
+(verified: the two ledger job specs differ only by id), and its bundle sha256 `d110cd6bab2d96cb4292...` was
+verified on the coordinator to equal a fresh `worker plan` rebuild from the fixed committed source - the
+retry provably runs the fixed uploader. Per-file digest skipping means it resumes rather than re-uploads:
+the 127 files already at the manifest digest are skipped. It was running at 09:43 UTC; the watcher will
+report it.
+
+**Worker, ledger, records.** Server 171180553 was collected at 09:32:58 UTC and destroyed at 09:40:24 UTC
+(ledger status `deleted`; the destroy ran before this watcher session, so there was nothing to clean up).
+The three small report assets (release manifest.json, source.tar, the failed container.log capture) were
+fetched into `.factory/msha-hf-001/reports/`, each sha256-verified against the release manifest; no bulk
+CSV touched the coordinator. `candidates/msha-enforcement-citations/record.json` gains the failed
+`msha-hf-001` jobs[] entry (with the fix, the retry and the evidence chain) and its `next_action` now names
+the retry in flight; the untracked ledger records `jobs/msha-hf-001.json` and `jobs/msha-hf-002.json` are
+committed with this entry. Commit a2faeba itself was still local-only and is pushed with this change.
+
+**The accepted artifact is untouched.** The gate, the consumer verification and the GitHub destination are
+unaffected; the record stays status `packaged`. DESTINATIONS.json's `huggingface` entry is still
+`verified: false` and its note still names msha-hf-001 - stale until the `hf-publish.py --verify` step
+rewrites it when the retry lands. Reminder from the consumer entry: **no script currently writes
+`artifact_version` into DESTINATIONS.json** (`hf-publish.py --verify` merges only the `huggingface` entry),
+so whoever completes the HF step must add it or the site pipeline stays red after `--verify`.
 
 
 ## 2026-10-19 - msha-consumer-001: clean-room consumer check PASSED on the published bytes - 45/45 gates, baseline 0.8036 reproduced
