@@ -30,27 +30,37 @@ except ImportError:  # the worker loads this file directly
 
 ATTEMPTS = 3
 BACKOFF_SECONDS = 5
+# One commit per file hit the Hub's per-repository commit limit partway through the 226-asset
+# MSHA release: 99 files failed with HTTP 429 after ~127 commits. Batch the files instead.
+BATCH_SIZE = 6
 # Written beside the job, never inside the job's input mounts.
 VENV = ".hf-venv"
 
 UPLOAD_HELPER = '''\
-"""Push one file to a Hugging Face dataset repo, called by the worker with its venv python.
+"""Push a batch of files to a Hugging Face dataset repo in ONE commit.
 
-Arguments: repo id, local path, path in repo, revision. The token arrives in the environment and
-is never an argument, never logged and never written to disk.
+Arguments: repo id, plan path, revision. The plan is a JSON list of {"path", "target"}.
+The token arrives in the environment and is never an argument, never logged and never written
+to disk.
+
+Batching is not cosmetic: one commit per asset exceeded the Hub's per-repository commit rate
+limit partway through a 226-asset release, and every remaining file failed with HTTP 429.
 """
+import json
 import os
 import sys
 
-from huggingface_hub import HfApi
+from huggingface_hub import CommitOperationAdd, HfApi
 
-repo_id, local_path, target, revision = sys.argv[1:5]
+repo_id, plan_path, revision = sys.argv[1:4]
+plan = json.loads(open(plan_path, encoding="utf-8").read())
 token = os.environ["HF_WRITE_TOKEN"]
 api = HfApi(token=token)
-info = api.upload_file(
-    path_or_fileobj=local_path, path_in_repo=target, repo_id=repo_id, repo_type="dataset",
-    revision=revision,
-    commit_message=f"Publish {target} from the accepted artifact manifest",
+operations = [CommitOperationAdd(path_or_fileobj=entry["path"], path_in_repo=entry["target"])
+              for entry in plan]
+info = api.create_commit(
+    repo_id=repo_id, repo_type="dataset", revision=revision, operations=operations,
+    commit_message=f"Publish {len(operations)} artifacts from the accepted manifest",
 )
 print(info.oid or "", flush=True)
 '''
@@ -305,51 +315,88 @@ def hf_publish(base, job, report, client=None, retrieve=None):
 
     uploads, skipped, failures = [], [], []
     deadline = time.monotonic() + int(job.get("timeout_minutes", 60)) * 60
-    for index, item in enumerate(spec["assets"], start=1):
-        if time.monotonic() > deadline:
-            failures.append({"target": item["target"],
-                             "error": "runtime limit reached; nothing else attempted"})
-            continue
-        target = item["target"]
-        local = base / "cache" / item["dest"]
-        local.parent.mkdir(parents=True, exist_ok=True)
-        try:
-            if already_published(base, index, spec["repo"], spec["revision"], target,
-                                 item["sha256"], item.get("size"), python, hf_token):
-                skipped.append({"target": target, "reason": "already at the manifest digest"})
+    items = spec["assets"]
+    for start in range(0, len(items), BATCH_SIZE):
+        prepared = []
+        for item in items[start:start + BATCH_SIZE]:
+            target = item["target"]
+            local = base / "cache" / item["dest"]
+            local.parent.mkdir(parents=True, exist_ok=True)
+            if time.monotonic() > deadline:
+                failures.append({"target": target,
+                                 "error": "runtime limit reached; nothing else attempted"})
                 continue
-            client_downloaded = None
-            for attempt in range(1, ATTEMPTS + 1):
-                try:
-                    written = source.download(item["asset_id"], local, item["sha256"],
-                                              item.get("size"))
-                    if digest(local) != item["sha256"]:
-                        raise UploadError(f"{target}: downloaded bytes do not match the manifest")
-                    client_downloaded = written
-                    break
-                except UploadError:
-                    if attempt == ATTEMPTS:
-                        raise
-                    time.sleep(BACKOFF_SECONDS * attempt)
-            helper = write_helper(base, f".hf-upload-{index}.py", UPLOAD_HELPER)
-            result = subprocess.run([str(python), str(helper), spec["repo"], str(local), target,
-                                     spec["revision"]],
-                                    capture_output=True, text=True, env=hub_env(hf_token),
-                                    timeout=3600)
-            if result.returncode != 0:
-                raise UploadError(f"{target}: upload failed: "
-                                  f"{(result.stderr or result.stdout).strip()[:300]}")
-            if not already_published(base, index, spec["repo"], spec["revision"], target,
+            try:
+                if already_published(base, start, spec["repo"], spec["revision"], target,
                                      item["sha256"], item.get("size"), python, hf_token):
-                raise UploadError(f"{target}: uploaded, but the Hub does not report the manifest "
-                                  "digest")
-            uploads.append({"target": target, "bytes": client_downloaded,
-                            "sha256": item["sha256"]})
-        except (UploadError, OSError, subprocess.SubprocessError) as exc:
-            failures.append({"target": target, "error": str(exc)[:300]})
-        finally:
-            if local.exists():
-                local.unlink()
+                    skipped.append({"target": target, "reason": "already at the manifest digest"})
+                    continue
+                client_downloaded = None
+                for attempt in range(1, ATTEMPTS + 1):
+                    try:
+                        written = source.download(item["asset_id"], local, item["sha256"],
+                                                  item.get("size"))
+                        if digest(local) != item["sha256"]:
+                            raise UploadError(f"{target}: downloaded bytes do not match the "
+                                              "manifest")
+                        client_downloaded = written
+                        break
+                    except UploadError:
+                        if attempt == ATTEMPTS:
+                            raise
+                        time.sleep(BACKOFF_SECONDS * attempt)
+                prepared.append({"item": item, "local": local, "bytes": client_downloaded})
+            except (UploadError, OSError) as exc:
+                failures.append({"target": target, "error": str(exc)[:300]})
+                if local.exists():
+                    local.unlink()
+
+        if not prepared:
+            continue
+        plan_path = base / "cache" / f".hf-plan-{start}.json"
+        plan_path.write_text(json.dumps([{"path": str(entry["local"]),
+                                          "target": entry["item"]["target"]}
+                                         for entry in prepared]))
+        error = None
+        for attempt in range(1, ATTEMPTS + 1):
+            helper = write_helper(base, f".hf-upload-{start}.py", UPLOAD_HELPER)
+            result = None
+            try:
+                result = subprocess.run([str(python), str(helper), spec["repo"], str(plan_path),
+                                         spec["revision"]],
+                                        capture_output=True, text=True, env=hub_env(hf_token),
+                                        timeout=7200)
+            except subprocess.SubprocessError as exc:
+                error = str(exc)
+            if result is not None and result.returncode == 0:
+                error = None
+                break
+            if result is not None:
+                error = (result.stderr or result.stdout).strip()[:300]
+            if attempt < ATTEMPTS:
+                time.sleep(BACKOFF_SECONDS * attempt * 6)
+        if error:
+            for entry in prepared:
+                failures.append({"target": entry["item"]["target"],
+                                 "error": f"batch upload failed: {error}"})
+        else:
+            for index, entry in enumerate(prepared, start=start):
+                item = entry["item"]
+                target = item["target"]
+                try:
+                    if not already_published(base, index, spec["repo"], spec["revision"], target,
+                                             item["sha256"], item.get("size"), python, hf_token):
+                        raise UploadError(f"{target}: uploaded, but the Hub does not report the "
+                                          "manifest digest")
+                    uploads.append({"target": target, "bytes": entry["bytes"],
+                                    "sha256": item["sha256"]})
+                except (UploadError, OSError, subprocess.SubprocessError) as exc:
+                    failures.append({"target": target, "error": str(exc)[:300]})
+        for entry in prepared:
+            if entry["local"].exists():
+                entry["local"].unlink()
+        if plan_path.exists():
+            plan_path.unlink()
 
     report["hf_publish"] = {"repo": spec["repo"], "revision": spec["revision"],
                             "uploads": uploads, "skipped": skipped, "failures": failures,

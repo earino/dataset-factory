@@ -151,5 +151,81 @@ class VerifyHelperBranchTests(unittest.TestCase):
         self.assertEqual(10, report["checked"]["train"]["rows"])
 
 
+STUB_HUGGINGFACE = '''\
+"""Stand-in for huggingface_hub: records the commits the upload helper asks for."""
+import json
+import os
+
+
+class CommitOperationAdd:
+    def __init__(self, path_or_fileobj, path_in_repo):
+        self.path_or_fileobj = path_or_fileobj
+        self.path_in_repo = path_in_repo
+
+
+class HfApi:
+    def __init__(self, token=None):
+        self.token = token
+
+    def create_commit(self, repo_id=None, repo_type=None, revision=None, operations=None,
+                      commit_message=None):
+        with open(os.environ["STUB_LOG"], "a", encoding="utf-8") as handle:
+            handle.write(json.dumps({"repo_id": repo_id, "operations": len(operations),
+                                     "targets": [op.path_in_repo for op in operations]}) + "\\n")
+        return type("CommitInfo", (), {"oid": "stub-oid"})()
+
+    def upload_file(self, **kwargs):
+        raise AssertionError("the uploader must batch files into one commit, not one per file")
+'''
+
+
+class UploadBatchingTests(unittest.TestCase):
+    """One commit per file hits the Hub's per-repository commit limit.
+
+    It did: 99 of 226 MSHA assets failed with HTTP 429 after ~127 single-file commits, and the
+    job had to be re-run. These tests run the real helper source against a stub client.
+    """
+
+    def test_the_helper_commits_the_whole_plan_in_one_commit(self):
+        import json as jsonlib
+        import os
+        import subprocess
+        import sys
+        import tempfile
+
+        body = dict(helpers())["UPLOAD_HELPER"]
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "huggingface_hub.py").write_text(STUB_HUGGINGFACE)
+            (root / "helper.py").write_text(body)
+            files = []
+            for index in range(3):
+                path = root / f"asset-{index}.bin"
+                path.write_bytes(b"payload")
+                files.append({"path": str(path), "target": f"data/asset-{index}.csv"})
+            (root / "plan.json").write_text(jsonlib.dumps(files))
+            log = root / "calls.log"
+            env = dict(os.environ, PYTHONPATH=tmp, HF_WRITE_TOKEN="stub-token",
+                       STUB_LOG=str(log))
+            finished = subprocess.run([sys.executable, str(root / "helper.py"), "owner/repo",
+                                       str(root / "plan.json"), "main"],
+                                      capture_output=True, text=True, cwd=tmp, env=env,
+                                      timeout=120)
+            self.assertEqual(finished.returncode, 0, finished.stderr)
+            calls = [jsonlib.loads(line) for line in log.read_text().splitlines() if line]
+        self.assertEqual(1, len(calls), calls)
+        self.assertEqual(3, calls[0]["operations"], calls)
+        self.assertEqual(["data/asset-0.csv", "data/asset-1.csv", "data/asset-2.csv"],
+                         calls[0]["targets"])
+
+    def test_the_batch_size_stays_inside_a_sane_commit(self):
+        text = HELPER_SOURCE.read_text()
+        match = re.search(r"^BATCH_SIZE = (\d+)$", text, re.M)
+        self.assertIsNotNone(match, "no batch size is defined")
+        size = int(match.group(1))
+        self.assertGreater(size, 1, "one commit per file exceeds the Hub commit limit")
+        self.assertLessEqual(size, 16)
+
+
 if __name__ == "__main__":
     unittest.main()
