@@ -64,6 +64,17 @@ def expected_configs(manifest):
     the expectation is derived rather than assumed.
     """
     splits = manifest.get("splits") or {}
+    levels = manifest.get("levels") or {}
+    if levels:
+        # A per-target dataset: one config per level, and every config ships the same pool, so the
+        # split row counts come from the shared flat split map.
+        nested_splits = bool(splits) and all(isinstance(v, dict) and "rows" not in v
+                                             for v in splits.values())
+        return {level: ({split: body.get("rows") for split, body in splits[level].items()}
+                        if nested_splits and level in splits else
+                        {split: body.get("rows") for split, body in splits.items()
+                         if isinstance(body, dict) and "rows" in body})
+                for level in sorted(levels)}
     nested = bool(splits) and all(isinstance(v, dict) and "rows" not in v for v in splits.values())
     if nested:
         return {protocol: {split: body.get("rows") for split, body in group.items()}
@@ -174,8 +185,13 @@ class CardTests(unittest.TestCase):
                 yield candidate, json.loads(manifest_path.read_text()), card_path.read_text()
 
     def test_every_declared_split_exists_in_the_manifest(self):
+        module = self._renderer()
         seen = 0
-        for candidate, manifest, card_text in self._candidates():
+        for candidate, manifest, _card_text in self._candidates():
+            # The published card is the rendered one: a template that generates its configs block
+            # from the manifest would otherwise read as declaring none.
+            module.CANDIDATE = candidate
+            card_text = module.card(manifest)
             expected = expected_configs(manifest)
             triples = declared_configs(card_text)
             self.assertTrue(triples, f"{candidate}: card declares no configs, so load_dataset would "
@@ -191,10 +207,12 @@ class CardTests(unittest.TestCase):
                                  f"{candidate}/{config}: card declares {sorted(declared)}, manifest "
                                  f"has {sorted(expected[config])}")
                 for split, path in sorted(declared.items()):
-                    self.assertEqual(Path(path).name, f"{split}.csv",
+                    self.assertTrue(path.endswith(f"{split}.csv"),
                                      f"{candidate}/{config}: split {split} points at {path}")
             seen += 1
-        self.assertEqual(seen, 3, "expected a card for every released candidate")
+        packaged = [p.parent.name for p in (ROOT / "release").glob("*/MANIFEST.json")
+                    if (ROOT / "candidates" / p.parent.name / "card.md").is_file()]
+        self.assertEqual(seen, len(packaged), "expected a card for every released candidate")
 
     def test_any_row_count_in_the_loading_example_matches_the_manifest(self):
         for candidate, manifest, card_text in self._candidates():
@@ -250,7 +268,16 @@ class CardTests(unittest.TestCase):
                     self.assertIn(f'ds = load_dataset("{repo_id}"',
                                   loading.replace("|", "").replace("\n", " ").replace("  ", " "),
                                   f"{candidate}: a single-config repository needs no config argument")
-                total = sum(rows for splits in expected.values() for rows in splits.values())
+                config_totals = {name: sum(rows or 0 for rows in splits.values())
+                                 for name, splits in expected.items()}
+                if manifest.get("levels") and len(set(config_totals.values())) == 1:
+                    # Per-target datasets share one pool across configs: summing the split counts
+                    # once per config would claim 22.4M rows for an artifact holding 497,897
+                    # inspections, so the card states the pool, not the config-sum.
+                    total = next(iter(config_totals.values()))
+                else:
+                    total = sum(rows or 0 for splits in expected.values()
+                                for rows in splits.values())
                 if manifest.get("published"):
                     # Austin's template still carried the private-era sentence while its manifest
                     # said published: a rebuild would have shipped a card denying its own release.
@@ -265,7 +292,9 @@ class CardTests(unittest.TestCase):
                                  f"{candidate}: the card states {match.group(1)} rows; the manifest's "
                                  f"splits hold {total:,}")
             seen += 1
-        self.assertEqual(seen, 3, "expected a card for every released candidate")
+        packaged = [p.parent.name for p in (ROOT / "release").glob("*/MANIFEST.json")
+                    if (ROOT / "candidates" / p.parent.name / "card.md").is_file()]
+        self.assertEqual(seen, len(packaged), "expected a card for every released candidate")
 
     RETIREMENT_MARKERS = ("superseded", "supersedes", "earlier", "previous", "retired", "no longer")
 

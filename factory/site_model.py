@@ -96,6 +96,35 @@ def config_names(raw):
     return []
 
 
+def dataset_config_names(manifest_data):
+    """The config names a *manifest* declares, not just its split map.
+
+    Two shapes exist: a protocol dataset nests its splits under the config name, while a per-target
+    dataset (45 MSHA sections, one binary task each) keeps one flat pool-level `splits` map and lists
+    its configs under `levels`. Reading only `splits` reported "no configs" for the second shape, so
+    a Hub card and a dataset page would both print a command that loads the wrong thing.
+    """
+    if manifest_data.get("levels"):
+        return sorted(manifest_data["levels"])
+    return config_names(manifest_data.get("splits") or {})
+
+
+def dataset_config_splits(manifest_data):
+    """{config: [split names]} for every config the manifest declares."""
+    levels = manifest_data.get("levels") or {}
+    if levels:
+        split_map = manifest_data.get("splits") or {}
+        nested = bool(split_map) and all(isinstance(v, dict) and "rows" not in v
+                                         for v in split_map.values())
+        if nested:
+            return {name: sorted(split_map.get(name) or {}) for name in sorted(levels)}
+        return {name: sorted(split_map) for name in sorted(levels)}
+    nested = (manifest_data.get("splits") or {})
+    if nested and all(isinstance(v, dict) and "rows" not in v for v in nested.values()):
+        return {name: sorted(group) for name, group in sorted(nested.items())}
+    return {"default": sorted(nested)}
+
+
 def project(package, editorial, config):
     """Construct a renderer-independent record. Never export whole manifests or job records."""
     package = Path(package)

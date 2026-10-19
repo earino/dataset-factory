@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "site_revision": 1,
+  "title": "MSHA enforcement citations",
+  "summary": "Predict whether a US mine safety inspection will cite a given 30 CFR section - one binary task instance per section, over 26 years of federal enforcement records.",
+  "task_type": "binary-classification",
+  "domain": "Workplace safety and regulation",
+  "release_date": "2026-10-19",
+  "post": {
+    "title": "A citation-prediction task from MSHA's enforcement record",
+    "paragraphs": [
+      "MSHA publishes its violations, inspections and mine records; anyone can download them. The contribution here is not access. It is the frozen panel of 497,897 inspections, the declaration that the prediction instant is the moment the visit begins, the prior-history features computed only from that mine's strictly-earlier inspections, the time-ordered partitions, and a leakage gate that held 45 per-section tasks to one contract.",
+      "The task is binary and per-section: will this inspection cite 30 CFR 56.12004? The label is the set of sections the inspector actually wrote, taken from the violation rows, so this is an enforcement outcome - what the inspector found - and not a hazard measurement. Each of the 45 shipped sections is a complete task instance over the identical pool: train 2001-2020, eval 2021-2023, holdout 2024-2025.",
+      "The numbers are published with their floor. On the reference section sec_56_12004 the baseline reaches 0.8036 eval AUC, identical from the training path and an independent validation re-run. The persistence reference - the same model using only whether that section was cited at the mine's previous inspection - reaches 0.5831, so the full feature set clears it by 0.2205. Section prevalence ranges around 9-11% on the reference task; score AUC, not accuracy."
+    ]
+  },
+  "limitations": [
+    "A derived research dataset from MSHA public-domain data, labelled as derived - not an official MSHA or Department of Labor product.",
+    "The label is an enforcement outcome: what an inspector cited, not a measured hazard. Mines that are inspected more often generate more citations.",
+    "Only sections cited in at least 1% of pooled inspections ship as configs, so this is not a census of 30 CFR.",
+    "A mine is the same entity across splits by design - prior history is the point of the task. The temporal split is what prevents leakage, and the holdout is labelled and downloadable: keep its labels outside an evaluated agent's workspace."
+  ]
+}

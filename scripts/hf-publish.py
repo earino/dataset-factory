@@ -60,6 +60,45 @@ def _config_names(splits):
     sys.path.insert(0, str(REPO_ROOT))
     from factory.site_model import config_names
     return config_names(splits)
+
+
+def _manifest_configs(manifest_data):
+    """{config: [split names]} for every config the manifest declares.
+
+    The split-map-only rule returned nothing for MSHA, whose 45 per-section configs live under
+    `levels` while `splits` describes the shared pool - so the card would have declared one config
+    over one arbitrary CSV pair and the load would have produced the wrong splits.
+    """
+    sys.path.insert(0, str(REPO_ROOT))
+    from factory.site_model import dataset_config_splits
+    return dataset_config_splits(manifest_data)
+
+
+def hub_path(manifest_data, config, split):
+    """Where a config's split CSV lives on the Hub, from the manifest alone."""
+    prefix = "" if config in ("default", "") else config + "/"
+    for logical, artifact in (manifest_data.get("layout") or {}).items():
+        if artifact.startswith(prefix) and artifact.rsplit("/", 1)[-1] == f"{split}.csv":
+            declared = (manifest_data.get("hub_paths") or {})
+            for key in (artifact, logical):
+                if declared.get(key):
+                    return declared[key]
+            info = (manifest_data.get("assets") or {}).get(artifact) or {}
+            if info.get("asset_name"):
+                return f"data/{info['asset_name']}"
+    raise SystemExit(f"no Hub path for config {config!r} split {split!r}")
+
+
+def configs_block(manifest_data):
+    """The card's `configs:` frontmatter, generated from the manifest rather than typed."""
+    lines = []
+    for config, splits in sorted(_manifest_configs(manifest_data).items()):
+        lines.append(f"  - config_name: {config}")
+        lines.append("    data_files:")
+        for split in splits:
+            lines.append(f"      - split: {split}")
+            lines.append(f"        path: {hub_path(manifest_data, config, split)}")
+    return "\n".join(lines)
 # Rendered into the card. A doubled-brace placeholder was used here before, but an f-string renders
 # that to a single brace, so the replacement silently did nothing and shipped the literal.
 REPO_PLACEHOLDER = "__REPO_ID__"
@@ -180,6 +219,9 @@ def render_card_template(text: str, manifest_data: dict) -> str:
 
     total = rows_in(splits)
     configs = _config_names(splits)
+    config_map = _manifest_configs(manifest_data)
+    if len(config_map) > 1:
+        configs = sorted(config_map)
     licences = manifest_data.get("licenses") or {}
     values = {
         # The template's loading example has to name the repository the way the Hub does. Filling
@@ -187,6 +229,8 @@ def render_card_template(text: str, manifest_data: dict) -> str:
         # DatasetNotFoundError, while the guard that watched for the literal placeholder passed.
         "REPO_ID": REPO_PLACEHOLDER,  # replaced by the real owner-qualified id at build time
         "CONFIGS": ", ".join(configs),
+        "CONFIGS_BLOCK": configs_block(manifest_data),
+        "N_CONFIGS": f"{len(configs):,}",
         "ARTIFACT_VERSION": str(manifest_data.get("artifact_version")),
         "RELEASE_TAG": str(manifest_data.get("release_tag")),
         "GITHUB_REPOSITORY": str(manifest_data.get("repository")),
@@ -267,14 +311,16 @@ def loading_text(manifest_data, repo_id):
     """
     token_note = ("The repository is public, so no token is needed." if manifest_data.get("published")
                   else "Private repository: pass a token that has access to it.")
-    splits = manifest_data.get("splits") or {}
-    configs = _config_names(splits)
+    config_map = _manifest_configs(manifest_data)
+    configs = sorted(config_map) if len(config_map) > 1 else _config_names(
+        manifest_data.get("splits") or {})
     tag = manifest_data["release_tag"]
     if configs:
         loading = "\n".join(f'ds = load_dataset("{repo_id}", "{name}", revision="{tag}")'
                             for name in configs)
         config_note = (f"This dataset has {len(configs)} configs - {', '.join(configs)} - one per "
-                       "level; the config has to be named:\n\n")
+                       "target; the config has to be named, and each is a complete binary task "
+                       "instance with its own train/eval/holdout files:\n\n")
     else:
         loading = f'ds = load_dataset("{repo_id}", revision="{tag}")'
         config_note = ""
