@@ -57,7 +57,11 @@ def main() -> int:
         levels[name] = {
             "artifact_version": version,
             "gate_version": report["gate_version"],
-            "checks": report.get("checks"),
+            # The MSHA gate reports carry the per-check list and the failure list, not a
+            # precounted "checks" field: the count is len(results), asserted ok with no failures.
+            "checks": len(report["results"]),
+            "failed_checks": report["failed_checks"],
+            "ok": report["ok"],
             "files": entry_files,
         }
         files.update(entry_files)
@@ -69,6 +73,10 @@ def main() -> int:
         raise SystemExit(f"configs without a gate report: {missing}")
     if len(files) != 45 * 5 + 1:
         raise SystemExit(f"expected 226 files, collected {len(files)}")
+    bad = [name for name, level in levels.items()
+           if not level["ok"] or level["failed_checks"] or level["checks"] != 32]
+    if bad:
+        raise SystemExit(f"gate reports not clean (ok, 0 failed, 32 checks): {bad}")
 
     payload = {
         "job": "msha-002",

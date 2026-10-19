@@ -15,7 +15,6 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-COMMIT = "06d7002bc01933e4c094bbe84e4d9899572a893f"
 
 
 def load(path: Path):
@@ -104,7 +103,8 @@ def descriptor(candidate: str) -> dict:
     if not data:
         raise SystemExit(f"candidates/{candidate}/release.json is missing: the generator is "
                          "data-driven and will not guess a repository, source or layout")
-    for key in ("release_version", "release_tag", "repository", "source", "commands"):
+    for key in ("release_version", "release_tag", "repository", "construction_commit",
+                "source", "commands"):
         if key not in data:
             raise SystemExit(f"candidates/{candidate}/release.json must declare {key}")
     return data
@@ -151,7 +151,9 @@ def main() -> int:
         "staging_release": expected.get("staging_release"),
         "staging_release_tag": f"job-{expected['job']}",
         "staging_repo": "earino/dataset-factory-staging",
-        "construction_commit": COMMIT,
+        # The commit that carries the construction script the artifact was built from - per
+        # dataset, because a literal here described one release and would be wrong for the next.
+        "construction_commit": desc["construction_commit"],
         "gate_version": expected.get("gate_version"),
         "gate_command": desc["commands"]["gate"],
         "measurements": load(release / "measurements.json"),

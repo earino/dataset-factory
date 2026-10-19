@@ -1,0 +1,68 @@
+{
+  "job": "msha-baseline-001",
+  "purpose": "one baseline through the runner's existing training and validation contract, on one mid-prevalence config of the artifact the release will carry",
+  "artifact": {
+    "job": "msha-002",
+    "staging_release": 410471211,
+    "source": "the accepted artifact's sec_56_12004 files fetched from private staging by the job itself and measured in place: these are the bytes being released, not a rebuild",
+    "config": "sec_56_12004",
+    "section": "56.12004",
+    "target": "sec_56_12004",
+    "positive_label": 1,
+    "definition": "will this MSHA inspection cite 30 CFR 56.12004 (the housekeeping/traction standard)",
+    "levels": {
+      "sec_56_12004": {
+        "rows": {
+          "train": 415088,
+          "eval": 49233,
+          "holdout": 33576
+        },
+        "positive_rate": {
+          "train": 0.088646,
+          "eval": 0.106311,
+          "holdout": 0.099565
+        },
+        "train_auc": 0.8036,
+        "eval_auc": 0.8036,
+        "validate_auc": 0.8036,
+        "contract_ok": true,
+        "train_tail": [
+          "Training time: 2.0s",
+          "Eval time: 0.1s",
+          "Eval AUC: 0.8036"
+        ],
+        "validate_tail": [
+            "[validate] train.py ran in 3.4s",
+            "[validate] eval AUC via predict_proba (target column removed): 0.8036",
+            "[validate] CONTRACT OK"
+        ]
+      }
+    }
+  },
+  "runner_files": {
+    "bundled_sha256": {
+      "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+      "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+      "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+    },
+    "unmodified": true,
+    "note": "the benchmark's own train.py, validate.py and validate.sh, copied verbatim from earino/harness_benchmark task_template; validate.py re-ran training independently and reported CONTRACT OK"
+  },
+  "persistence_reference": {
+    "source": "msha-002 build_summary.json, collected and digest-verified 2026-10-12",
+    "persistence_prev_target_cited_eval_auc": 0.583102,
+    "full_model_eval_auc": 0.8036,
+    "headroom_over_persistence_feature": 0.2205,
+    "note": "prev_target_cited alone, the corrected most-recent-strictly-earlier semantics; the full 24-feature model clears it by 0.2205, so the learned signal is not the target section's own persistence in disguise. prev_target_cited is the only single feature measured individually, so no strongest-feature claim is made."
+  },
+  "dependency_versions": {
+    "source": ".factory/msha-baseline-001/reports/dependency-versions.txt (collected with the job report)",
+    "pandas": "2.3.3",
+    "numpy": "2.5.4",
+    "xgboost": "3.4.1",
+    "scikit-learn": "1.9.1",
+    "scipy": "1.18.1"
+  },
+  "evidence": ".factory/msha-baseline-001/reports/ (baseline.json, train-sec_56_12004.log, validate-sec_56_12004.log, dependency-versions.txt, container.log, manifest.json - each sha256-verified against the staging release 412476894 asset table). Held in the factory repository; not shipped in the package.",
+  "note": "one config of 45: this baseline demonstrates the scoring path end-to-end on a mid-prevalence section (56.12004, 4th by pool prevalence). The per-config persistence references for all 45 configs are recorded in the release manifest's measurements.levels."
+}

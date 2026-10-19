@@ -1,0 +1,1281 @@
+{
+  "pool": {
+    "command": "source/build.py on worker job msha-002; evidence build_summary.json, collected from staging release 410471211 and digest-verified",
+    "pooled_events": 497897,
+    "definition": "inspections carrying at least one violation row with a parseable INSPECTION_BEGIN_DT inside a split window; every config ships this identical pool",
+    "split_rows": {
+      "train": 415088,
+      "eval": 49233,
+      "holdout": 33576
+    },
+    "split_windows": {
+      "train": "2001-2020",
+      "eval": "2021-2023",
+      "holdout": "2024-2025"
+    }
+  },
+  "source_census": {
+    "command": "candidates/msha-enforcement-citations/probe_violations.py - anonymous streamed probe of the raw Violations table, 2026-09-27 (not the built pool)",
+    "violation_rows": 3103397,
+    "distinct_inspection_events": 538068,
+    "distinct_mines": 31444,
+    "distinct_part_section_values": 5934,
+    "labels_per_inspection": {
+      "mean": 5.79,
+      "median": 2,
+      "max": 694
+    },
+    "rows_with_empty_part_section": 33782,
+    "note": "the census is the discovery-time measurement of the whole source; the pool and the floor below are what construction actually shipped"
+  },
+  "floor": {
+    "command": "build.py floor pass on the constructed pool (job msha-002)",
+    "sections_at_1pct_of_pool": 80,
+    "shipped_configs": 45,
+    "held_back_by_config_cap": 35,
+    "note": "the standalone probe counted 104 sections at >=1% on the full 538,068-inspection census; construction recomputes the floor on its own 497,897-event pool, and 80 is the number the artifact ships"
+  },
+  "extraction_cost": {
+    "command": "worker job msha-002 (cpx32, Helsinki, 4 vCPU / 8 GB)",
+    "wall_clock_seconds": 581.0,
+    "route": "one anonymous download each of Violations.zip (120,736,998 bytes; member Violations.txt 1,442,221,050 bytes), Inspections.zip and Mines.zip from arlweb.msha.gov/OpenGovernmentData/DataSets/, streamed; no API, no credential",
+    "output_bytes": {
+      "split_files": 3290163078,
+      "labels_csv": 93605740
+    },
+    "staging_release_assets": "326 assets totalling 3,385,877,790 bytes on private staging release 410471211 (325 objects plus the manifest)"
+  },
+  "corrected_feature": {
+    "what": "prev_target_cited is documented as 'cited on the mine's most recent strictly-earlier pooled inspection'; job msha-001 wrote the cumulative ever-cited set instead, and its artifact was superseded before collection",
+    "evidence": "sec_75_400 public/eval.csv fetched from both releases, each verified against its published digest: identical size and rows, exactly one column differs (prev_target_cited, 4,933 rows). The persistence baseline fell on all 45 configs (mean 0.754 pre-fix -> 0.576 fixed; sec_75_400 0.9403 -> 0.6733)",
+    "superseded_job": "msha-001"
+  },
+  "levels": {
+    "sec_56_14107_A": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 58901,
+        "eval": 5618,
+        "holdout": 3880
+      },
+      "positive_rate": {
+        "train": 0.1419,
+        "eval": 0.11411,
+        "holdout": 0.115559
+      },
+      "positive_days": {
+        "train": 4815,
+        "eval": 761,
+        "holdout": 511
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.565625,
+        "eval_base_rate": 0.11411,
+        "eval_positives": 5618
+      }
+    },
+    "sec_56_14100_B": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 39727,
+        "eval": 4648,
+        "holdout": 3397
+      },
+      "positive_rate": {
+        "train": 0.095707,
+        "eval": 0.094408,
+        "holdout": 0.101173
+      },
+      "positive_days": {
+        "train": 4676,
+        "eval": 760,
+        "holdout": 507
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.554939,
+        "eval_base_rate": 0.094408,
+        "eval_positives": 4648
+      }
+    },
+    "sec_56_12004": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 36796,
+        "eval": 5234,
+        "holdout": 3343
+      },
+      "positive_rate": {
+        "train": 0.088646,
+        "eval": 0.106311,
+        "holdout": 0.099565
+      },
+      "positive_days": {
+        "train": 4493,
+        "eval": 745,
+        "holdout": 499
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.583102,
+        "eval_base_rate": 0.106311,
+        "eval_positives": 5234
+      }
+    },
+    "sec_56_14132_A": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 37039,
+        "eval": 3939,
+        "holdout": 2449
+      },
+      "positive_rate": {
+        "train": 0.089232,
+        "eval": 0.080007,
+        "holdout": 0.072939
+      },
+      "positive_days": {
+        "train": 4464,
+        "eval": 705,
+        "holdout": 456
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.532431,
+        "eval_base_rate": 0.080007,
+        "eval_positives": 3939
+      }
+    },
+    "sec_75_400": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 31999,
+        "eval": 2377,
+        "holdout": 1675
+      },
+      "positive_rate": {
+        "train": 0.07709,
+        "eval": 0.048281,
+        "holdout": 0.049887
+      },
+      "positive_days": {
+        "train": 4792,
+        "eval": 584,
+        "holdout": 405
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.67331,
+        "eval_base_rate": 0.048281,
+        "eval_positives": 2377
+      }
+    },
+    "sec_50_30_A": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 22399,
+        "eval": 4944,
+        "holdout": 3554
+      },
+      "positive_rate": {
+        "train": 0.053962,
+        "eval": 0.10042,
+        "holdout": 0.105849
+      },
+      "positive_days": {
+        "train": 4304,
+        "eval": 719,
+        "holdout": 476
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.554543,
+        "eval_base_rate": 0.10042,
+        "eval_positives": 4944
+      }
+    },
+    "sec_75_370_A_1": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 26697,
+        "eval": 2168,
+        "holdout": 1652
+      },
+      "positive_rate": {
+        "train": 0.064316,
+        "eval": 0.044036,
+        "holdout": 0.049202
+      },
+      "positive_days": {
+        "train": 4742,
+        "eval": 593,
+        "holdout": 428
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.67196,
+        "eval_base_rate": 0.044036,
+        "eval_positives": 2168
+      }
+    },
+    "sec_56_20003_A": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 21979,
+        "eval": 3856,
+        "holdout": 2571
+      },
+      "positive_rate": {
+        "train": 0.05295,
+        "eval": 0.078321,
+        "holdout": 0.076573
+      },
+      "positive_days": {
+        "train": 4346,
+        "eval": 730,
+        "holdout": 485
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.617968,
+        "eval_base_rate": 0.078321,
+        "eval_positives": 3856
+      }
+    },
+    "sec_56_12032": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 22560,
+        "eval": 2869,
+        "holdout": 2149
+      },
+      "positive_rate": {
+        "train": 0.05435,
+        "eval": 0.058274,
+        "holdout": 0.064004
+      },
+      "positive_days": {
+        "train": 4222,
+        "eval": 670,
+        "holdout": 447
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.568128,
+        "eval_base_rate": 0.058274,
+        "eval_positives": 2869
+      }
+    },
+    "sec_56_11001": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 22059,
+        "eval": 2984,
+        "holdout": 1986
+      },
+      "positive_rate": {
+        "train": 0.053143,
+        "eval": 0.06061,
+        "holdout": 0.059149
+      },
+      "positive_days": {
+        "train": 4332,
+        "eval": 708,
+        "holdout": 471
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.551739,
+        "eval_base_rate": 0.06061,
+        "eval_positives": 2984
+      }
+    },
+    "sec_56_14112_B": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 21675,
+        "eval": 2969,
+        "holdout": 1748
+      },
+      "positive_rate": {
+        "train": 0.052218,
+        "eval": 0.060305,
+        "holdout": 0.052061
+      },
+      "positive_days": {
+        "train": 4191,
+        "eval": 696,
+        "holdout": 447
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.572727,
+        "eval_base_rate": 0.060305,
+        "eval_positives": 2969
+      }
+    },
+    "sec_56_12028": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 19465,
+        "eval": 2769,
+        "holdout": 1786
+      },
+      "positive_rate": {
+        "train": 0.046894,
+        "eval": 0.056243,
+        "holdout": 0.053193
+      },
+      "positive_days": {
+        "train": 4119,
+        "eval": 663,
+        "holdout": 456
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.541643,
+        "eval_base_rate": 0.056243,
+        "eval_positives": 2769
+      }
+    },
+    "sec_75_503": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 21339,
+        "eval": 1430,
+        "holdout": 1045
+      },
+      "positive_rate": {
+        "train": 0.051408,
+        "eval": 0.029046,
+        "holdout": 0.031123
+      },
+      "positive_days": {
+        "train": 3431,
+        "eval": 315,
+        "holdout": 241
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.648724,
+        "eval_base_rate": 0.029046,
+        "eval_positives": 1430
+      }
+    },
+    "sec_56_14101_A_2": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 20454,
+        "eval": 1999,
+        "holdout": 1169
+      },
+      "positive_rate": {
+        "train": 0.049276,
+        "eval": 0.040603,
+        "holdout": 0.034817
+      },
+      "positive_days": {
+        "train": 4101,
+        "eval": 601,
+        "holdout": 388
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.534933,
+        "eval_base_rate": 0.040603,
+        "eval_positives": 1999
+      }
+    },
+    "sec_75_202_A": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 19241,
+        "eval": 1586,
+        "holdout": 1170
+      },
+      "positive_rate": {
+        "train": 0.046354,
+        "eval": 0.032214,
+        "holdout": 0.034846
+      },
+      "positive_days": {
+        "train": 4261,
+        "eval": 518,
+        "holdout": 357
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.643832,
+        "eval_base_rate": 0.032214,
+        "eval_positives": 1586
+      }
+    },
+    "sec_75_220_A_1": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 18757,
+        "eval": 1448,
+        "holdout": 1172
+      },
+      "positive_rate": {
+        "train": 0.045188,
+        "eval": 0.029411,
+        "holdout": 0.034906
+      },
+      "positive_days": {
+        "train": 4148,
+        "eval": 447,
+        "holdout": 340
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.641848,
+        "eval_base_rate": 0.029411,
+        "eval_positives": 1448
+      }
+    },
+    "sec_56_9300_A": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 18357,
+        "eval": 1653,
+        "holdout": 1159
+      },
+      "positive_rate": {
+        "train": 0.044224,
+        "eval": 0.033575,
+        "holdout": 0.034519
+      },
+      "positive_days": {
+        "train": 4065,
+        "eval": 570,
+        "holdout": 395
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.505893,
+        "eval_base_rate": 0.033575,
+        "eval_positives": 1653
+      }
+    },
+    "sec_56_12008": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 17129,
+        "eval": 1787,
+        "holdout": 1438
+      },
+      "positive_rate": {
+        "train": 0.041266,
+        "eval": 0.036297,
+        "holdout": 0.042828
+      },
+      "positive_days": {
+        "train": 3977,
+        "eval": 598,
+        "holdout": 446
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.546166,
+        "eval_base_rate": 0.036297,
+        "eval_positives": 1787
+      }
+    },
+    "sec_56_4201_A_2": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 14174,
+        "eval": 2375,
+        "holdout": 1545
+      },
+      "positive_rate": {
+        "train": 0.034147,
+        "eval": 0.04824,
+        "holdout": 0.046015
+      },
+      "positive_days": {
+        "train": 3833,
+        "eval": 649,
+        "holdout": 409
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.52069,
+        "eval_base_rate": 0.04824,
+        "eval_positives": 2375
+      }
+    },
+    "sec_77_404_A": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 15201,
+        "eval": 859,
+        "holdout": 509
+      },
+      "positive_rate": {
+        "train": 0.036621,
+        "eval": 0.017448,
+        "holdout": 0.01516
+      },
+      "positive_days": {
+        "train": 4094,
+        "eval": 419,
+        "holdout": 261
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.641988,
+        "eval_base_rate": 0.017448,
+        "eval_positives": 859
+      }
+    },
+    "sec_56_4101": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 13394,
+        "eval": 1620,
+        "holdout": 1176
+      },
+      "positive_rate": {
+        "train": 0.032268,
+        "eval": 0.032905,
+        "holdout": 0.035025
+      },
+      "positive_days": {
+        "train": 3835,
+        "eval": 577,
+        "holdout": 382
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.514828,
+        "eval_base_rate": 0.032905,
+        "eval_positives": 1620
+      }
+    },
+    "sec_77_1104": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 14574,
+        "eval": 870,
+        "holdout": 536
+      },
+      "positive_rate": {
+        "train": 0.035111,
+        "eval": 0.017671,
+        "holdout": 0.015964
+      },
+      "positive_days": {
+        "train": 4012,
+        "eval": 391,
+        "holdout": 248
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.624039,
+        "eval_base_rate": 0.017671,
+        "eval_positives": 870
+      }
+    },
+    "sec_56_12018": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 12488,
+        "eval": 1997,
+        "holdout": 1322
+      },
+      "positive_rate": {
+        "train": 0.030085,
+        "eval": 0.040562,
+        "holdout": 0.039373
+      },
+      "positive_days": {
+        "train": 3719,
+        "eval": 617,
+        "holdout": 412
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.539437,
+        "eval_base_rate": 0.040562,
+        "eval_positives": 1997
+      }
+    },
+    "sec_75_512": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 13333,
+        "eval": 1314,
+        "holdout": 917
+      },
+      "positive_rate": {
+        "train": 0.032121,
+        "eval": 0.026689,
+        "holdout": 0.027311
+      },
+      "positive_days": {
+        "train": 2907,
+        "eval": 302,
+        "holdout": 208
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.624262,
+        "eval_base_rate": 0.026689,
+        "eval_positives": 1314
+      }
+    },
+    "sec_56_11002": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 12018,
+        "eval": 1338,
+        "holdout": 838
+      },
+      "positive_rate": {
+        "train": 0.028953,
+        "eval": 0.027177,
+        "holdout": 0.024958
+      },
+      "positive_days": {
+        "train": 3745,
+        "eval": 540,
+        "holdout": 347
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.530402,
+        "eval_base_rate": 0.027177,
+        "eval_positives": 1338
+      }
+    },
+    "sec_75_517": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 12473,
+        "eval": 997,
+        "holdout": 667
+      },
+      "positive_rate": {
+        "train": 0.030049,
+        "eval": 0.020251,
+        "holdout": 0.019865
+      },
+      "positive_days": {
+        "train": 2666,
+        "eval": 255,
+        "holdout": 155
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.60802,
+        "eval_base_rate": 0.020251,
+        "eval_positives": 997
+      }
+    },
+    "sec_47_41_A": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 10940,
+        "eval": 1727,
+        "holdout": 1315
+      },
+      "positive_rate": {
+        "train": 0.026356,
+        "eval": 0.035078,
+        "holdout": 0.039165
+      },
+      "positive_days": {
+        "train": 3447,
+        "eval": 585,
+        "holdout": 387
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.528204,
+        "eval_base_rate": 0.035078,
+        "eval_positives": 1727
+      }
+    },
+    "sec_56_14100_C": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 10150,
+        "eval": 2089,
+        "holdout": 1360
+      },
+      "positive_rate": {
+        "train": 0.024453,
+        "eval": 0.042431,
+        "holdout": 0.040505
+      },
+      "positive_days": {
+        "train": 3288,
+        "eval": 616,
+        "holdout": 394
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.554899,
+        "eval_base_rate": 0.042431,
+        "eval_positives": 2089
+      }
+    },
+    "sec_56_14112_A_1": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 10102,
+        "eval": 1545,
+        "holdout": 1058
+      },
+      "positive_rate": {
+        "train": 0.024337,
+        "eval": 0.031381,
+        "holdout": 0.031511
+      },
+      "positive_days": {
+        "train": 3551,
+        "eval": 548,
+        "holdout": 368
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.547827,
+        "eval_base_rate": 0.031381,
+        "eval_positives": 1545
+      }
+    },
+    "sec_75_1725_A": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 11151,
+        "eval": 860,
+        "holdout": 674
+      },
+      "positive_rate": {
+        "train": 0.026864,
+        "eval": 0.017468,
+        "holdout": 0.020074
+      },
+      "positive_days": {
+        "train": 2749,
+        "eval": 240,
+        "holdout": 178
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.590817,
+        "eval_base_rate": 0.017468,
+        "eval_positives": 860
+      }
+    },
+    "sec_75_1403": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 10674,
+        "eval": 1059,
+        "holdout": 657
+      },
+      "positive_rate": {
+        "train": 0.025715,
+        "eval": 0.02151,
+        "holdout": 0.019568
+      },
+      "positive_days": {
+        "train": 2931,
+        "eval": 364,
+        "holdout": 213
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.616305,
+        "eval_base_rate": 0.02151,
+        "eval_positives": 1059
+      }
+    },
+    "sec_56_12030": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 10307,
+        "eval": 1248,
+        "holdout": 785
+      },
+      "positive_rate": {
+        "train": 0.024831,
+        "eval": 0.025349,
+        "holdout": 0.02338
+      },
+      "positive_days": {
+        "train": 3504,
+        "eval": 540,
+        "holdout": 356
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.541022,
+        "eval_base_rate": 0.025349,
+        "eval_positives": 1248
+      }
+    },
+    "sec_56_14207": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 8938,
+        "eval": 1989,
+        "holdout": 1238
+      },
+      "positive_rate": {
+        "train": 0.021533,
+        "eval": 0.0404,
+        "holdout": 0.036872
+      },
+      "positive_days": {
+        "train": 3157,
+        "eval": 603,
+        "holdout": 408
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.53448,
+        "eval_base_rate": 0.0404,
+        "eval_positives": 1989
+      }
+    },
+    "sec_75_342_A_4": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 9599,
+        "eval": 1345,
+        "holdout": 993
+      },
+      "positive_rate": {
+        "train": 0.023125,
+        "eval": 0.027319,
+        "holdout": 0.029575
+      },
+      "positive_days": {
+        "train": 3038,
+        "eval": 481,
+        "holdout": 343
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.654819,
+        "eval_base_rate": 0.027319,
+        "eval_positives": 1345
+      }
+    },
+    "sec_75_403": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 10689,
+        "eval": 779,
+        "holdout": 462
+      },
+      "positive_rate": {
+        "train": 0.025751,
+        "eval": 0.015823,
+        "holdout": 0.01376
+      },
+      "positive_days": {
+        "train": 2315,
+        "eval": 153,
+        "holdout": 88
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.588873,
+        "eval_base_rate": 0.015823,
+        "eval_positives": 779
+      }
+    },
+    "sec_77_1606_C": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 9583,
+        "eval": 1309,
+        "holdout": 858
+      },
+      "positive_rate": {
+        "train": 0.023087,
+        "eval": 0.026588,
+        "holdout": 0.025554
+      },
+      "positive_days": {
+        "train": 3618,
+        "eval": 518,
+        "holdout": 335
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.679646,
+        "eval_base_rate": 0.026588,
+        "eval_positives": 1309
+      }
+    },
+    "sec_56_11012": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 9787,
+        "eval": 1167,
+        "holdout": 729
+      },
+      "positive_rate": {
+        "train": 0.023578,
+        "eval": 0.023704,
+        "holdout": 0.021712
+      },
+      "positive_days": {
+        "train": 3498,
+        "eval": 490,
+        "holdout": 324
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.531386,
+        "eval_base_rate": 0.023704,
+        "eval_positives": 1167
+      }
+    },
+    "sec_77_1605_D": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 10079,
+        "eval": 727,
+        "holdout": 448
+      },
+      "positive_rate": {
+        "train": 0.024282,
+        "eval": 0.014767,
+        "holdout": 0.013343
+      },
+      "positive_days": {
+        "train": 3558,
+        "eval": 372,
+        "holdout": 219
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.586713,
+        "eval_base_rate": 0.014767,
+        "eval_positives": 727
+      }
+    },
+    "sec_56_16005": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 9009,
+        "eval": 1274,
+        "holdout": 806
+      },
+      "positive_rate": {
+        "train": 0.021704,
+        "eval": 0.025877,
+        "holdout": 0.024005
+      },
+      "positive_days": {
+        "train": 3455,
+        "eval": 544,
+        "holdout": 341
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.53947,
+        "eval_base_rate": 0.025877,
+        "eval_positives": 1274
+      }
+    },
+    "sec_56_9300_B": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 8418,
+        "eval": 1131,
+        "holdout": 790
+      },
+      "positive_rate": {
+        "train": 0.02028,
+        "eval": 0.022972,
+        "holdout": 0.023529
+      },
+      "positive_days": {
+        "train": 3350,
+        "eval": 505,
+        "holdout": 332
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.508589,
+        "eval_base_rate": 0.022972,
+        "eval_positives": 1131
+      }
+    },
+    "sec_77_1110": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 8898,
+        "eval": 829,
+        "holdout": 529
+      },
+      "positive_rate": {
+        "train": 0.021436,
+        "eval": 0.016838,
+        "holdout": 0.015755
+      },
+      "positive_days": {
+        "train": 3394,
+        "eval": 379,
+        "holdout": 252
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.589105,
+        "eval_base_rate": 0.016838,
+        "eval_positives": 829
+      }
+    },
+    "sec_75_1100_3": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 8784,
+        "eval": 787,
+        "holdout": 484
+      },
+      "positive_rate": {
+        "train": 0.021162,
+        "eval": 0.015985,
+        "holdout": 0.014415
+      },
+      "positive_days": {
+        "train": 2121,
+        "eval": 209,
+        "holdout": 116
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.584832,
+        "eval_base_rate": 0.015985,
+        "eval_positives": 787
+      }
+    },
+    "sec_56_1000": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 8416,
+        "eval": 948,
+        "holdout": 674
+      },
+      "positive_rate": {
+        "train": 0.020275,
+        "eval": 0.019255,
+        "holdout": 0.020074
+      },
+      "positive_days": {
+        "train": 3300,
+        "eval": 444,
+        "holdout": 319
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.428089,
+        "eval_base_rate": 0.019255,
+        "eval_positives": 948
+      }
+    },
+    "sec_75_604_B": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 8297,
+        "eval": 806,
+        "holdout": 615
+      },
+      "positive_rate": {
+        "train": 0.019989,
+        "eval": 0.016371,
+        "holdout": 0.018317
+      },
+      "positive_days": {
+        "train": 2181,
+        "eval": 225,
+        "holdout": 163
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.607975,
+        "eval_base_rate": 0.016371,
+        "eval_positives": 806
+      }
+    },
+    "sec_77_502": {
+      "rows": {
+        "train": 415088,
+        "eval": 49233,
+        "holdout": 33576
+      },
+      "positives": {
+        "train": 8416,
+        "eval": 674,
+        "holdout": 461
+      },
+      "positive_rate": {
+        "train": 0.020275,
+        "eval": 0.01369,
+        "holdout": 0.01373
+      },
+      "positive_days": {
+        "train": 3206,
+        "eval": 329,
+        "holdout": 222
+      },
+      "persistence_baseline": {
+        "persistence_prev_target_cited_eval_auc": 0.595429,
+        "eval_base_rate": 0.01369,
+        "eval_positives": 674
+      }
+    }
+  },
+  "labels_csv": {
+    "bytes": 93605740,
+    "sha256": "6e164193b8cda303f18f09d4fb5dbd1029dc9f807e14528c4deac9c11a464f95",
+    "what": "the joint multi-label matrix at the dataset root: one row per pooled inspection, one column per floor section, byte-identical between the superseded and accepted builds"
+  },
+  "baseline_reference": {
+    "command": "sh baseline/reproduce_baseline.sh ./task sec_56_12004 (recorded by job msha-baseline-001 through the runner's own contract)",
+    "config": "sec_56_12004",
+    "eval_auc": 0.8036,
+    "contract_ok": true
+  }
+}

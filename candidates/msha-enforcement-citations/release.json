@@ -1,0 +1,20 @@
+{
+  "release_version": "2026.10",
+  "release_tag": "v2026.10",
+  "repository": "https://github.com/earino/msha-enforcement-citations",
+  "construction_commit": "ed211f2de6c70b6f911dfa7392559db283c65d20",
+  "source": {
+    "name": "MSHA Open Government Data Sets: Violations, Inspections and Mines (Mine Safety and Health Administration, US Department of Labor)",
+    "landing_page": "https://www.msha.gov/data-and-reports/data-sources-and-calculators/data-resources/mdsrg/violations-data-set",
+    "api": "https://arlweb.msha.gov/OpenGovernmentData/DataSets/Violations.zip (plus companion Inspections.zip and Mines.zip in the same directory)",
+    "catalog": "https://catalog.data.gov/dataset/msha-violations-dataset",
+    "accessed": "2026-10-12",
+    "licence": "LicenseRef-Public-Domain - US federal government work (17 USC 105); the publisher states no terms; operator decision 2026-10-12, option A"
+  },
+  "commands": {
+    "gate": "python3 code/qualify_dataset.py <dataset-dir>/<config>",
+    "baseline": "sh baseline/reproduce_baseline.sh ./task sec_56_12004",
+    "get_dataset": "python3 get_dataset.py --dest ./task"
+  },
+  "note": "45 per-section configs ship as 45 separate task instances (sec_56_12004, sec_75_400, ...), mirroring the per-level pattern of the noaa-tide-flooding release; the joint multi-label matrix is labels.csv at the dataset root and is documented rather than gated. The config list and every digest are recorded in candidates/msha-enforcement-citations/baseline/expected_artifact.json, which is the authority the manifest is generated from."
+}
