@@ -345,6 +345,15 @@ class WebsiteTests(unittest.TestCase):
             self.assertIn(f"load_dataset('earino/noaa-tide-flooding', '{name}', "
                           "revision='v2026.09')", page)
         self.assertNotIn("load_dataset('earino/noaa-tide-flooding', revision=", page)
+        # A per-target dataset keeps one pool-level `splits` map and lists its configs under
+        # `levels`; reading only `splits` reported no configs and printed a config-less command.
+        msha = project(ROOT / "release/msha-enforcement-citations",
+                       read(ROOT / "sites/msha-enforcement-citations.json"), self.config)
+        self.assertEqual(len(msha["configs"]), 45)
+        mpage = unescape(RUNTIME["render"](config, [msha])["index.html"])
+        self.assertIn("load_dataset('earino/msha-enforcement-citations', 'sec_47_41_A', "
+                      "revision='v2026.10')", mpage)
+        self.assertNotIn("load_dataset('earino/msha-enforcement-citations', revision=", mpage)
 
     def test_refuses_non_owned_output_and_symlinks(self):
         out = self.root / "unrelated"

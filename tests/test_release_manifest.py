@@ -141,5 +141,17 @@ class PublishedPackageInvariants(unittest.TestCase):
 
 
 
+class PerLevelQualificationTests(unittest.TestCase):
+    """A per-level release must still name the artifact its qualification describes."""
+
+    def test_the_qualification_names_the_derived_artifact_version(self):
+        manifest = json.loads((ROOT / "release" / "msha-enforcement-citations" /
+                               "MANIFEST.json").read_text())
+        self.assertTrue(manifest["levels"], "this guard is about per-level releases")
+        self.assertRegex(manifest["qualification"]["artifact_version"], r"^[0-9a-f]{64}$")
+        self.assertEqual(manifest["artifact_version"],
+                         manifest["qualification"]["artifact_version"])
+
+
 if __name__ == "__main__":
     unittest.main()

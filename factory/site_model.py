@@ -236,7 +236,7 @@ def project(package, editorial, config):
         "assets": assets, "splits": splits, "licenses": licenses,
         # Named so the page can print a loading command that runs: a config-less call against a
         # multi-config dataset raises, and the page is where most readers copy the command from.
-        "configs": config_names(m["splits"]),
+        "configs": dataset_config_names(m),
         "source": {"name": source["name"], "url": source["landing_page"]},
         "qualification": {"gate_version": qualification["gate_version"], "result": qualification["result"]},
         "baseline": {"metrics": metrics, "scope": baseline.get("scope", m.get("scope", ""))},
@@ -255,7 +255,7 @@ def check_manifest(record, manifest):
     splits = {k: {field: v[field] for field in ("rows", "positives") if field in v}
               for k, v in flatten_splits(manifest["splits"]).items()}
     require(splits == record["splits"], "Pinned manifest split counts differ")
-    require(config_names(manifest["splits"]) == record.get("configs", []),
+    require(dataset_config_names(manifest) == record.get("configs", []),
             "Pinned manifest config names differ")
     assets = {v["asset_name"]: {k: v[k] for k in ("bytes", "sha256")} for v in manifest["assets"].values()}
     require(assets == {name: {k: v[k] for k in ("bytes", "sha256")} for name, v in record["assets"].items()},

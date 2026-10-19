@@ -20,6 +20,20 @@ no shipped column determines the label and that every feature is available at th
 | `mine_id` | Mines `MINE_ID` | the mine the inspection belongs to | feature, declared high-cardinality: the panel entity, spans split windows by design because prior history is the point of the task |
 | `inspection_date` | Inspections `INSPECTION_BEGIN_DT` | the date the inspection began - the prediction instant | time column (`time_column`), feature, declared high-cardinality |
 
+## Loading and column types
+
+`dataset_infos.json` at the repository root declares every config's column types, so
+`load_dataset` reads the CSVs with the artifact's own schema instead of inferring one from a
+sample. That matters for two columns: `event_no` is mostly digits but occasionally alphanumeric
+(`F015FC6` in 19,502 rows), and `fips_cnty_cd` is zero-padded in the CSV (`045`). Identifiers are
+declared `string`, so `event_no` and `mine_id` arrive as text, unchanged.
+
+One formatting detail is worth knowing before joining: the loader returns `fips_cnty_cd` without
+the CSV's leading zero (`045` arrives as `45`), because the CSV reader parses a numeric column as
+an integer before the declared string type is applied. Treat it as a county identifier - the value
+is stable within the release - and read the CSV directly with `dtype=str` if the printed three-digit
+code is needed.
+
 ## Structural mine attributes (Mines table - static at prediction time)
 
 | column | source field | meaning |

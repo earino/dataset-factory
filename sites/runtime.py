@@ -72,9 +72,16 @@ def dataset_body(r):
     # missing". The names come from the record, which derives them from the same rule as the Hub card.
     configs = r.get("configs") or []
     snippet = "from datasets import load_dataset"
-    if configs:
+    if 0 < len(configs) <= 5:
         snippet += "".join("\nds = load_dataset(%r, %r, revision=%r)"
                            % (r["hf_repository"], name, r["release_tag"]) for name in configs)
+    elif configs:
+        # A per-target dataset has dozens of configs; one command per config made `bundle.json`
+        # exceed the 256 KiB metadata cap. Name one, say how many there are, and where the rest are.
+        snippet += ("\nds = load_dataset(%r, %r, revision=%r)"
+                    % (r["hf_repository"], configs[0], r["release_tag"]))
+        snippet += ("\n# %d configs, one per target: substitute any other name from README.md"
+                    % len(configs))
     else:
         snippet += "\nds = load_dataset(%r, revision=%r)" % (r["hf_repository"], r["release_tag"])
     return f'''<div class="eyebrow">{esc(r['domain'])} · {esc(r['task_type'])} · {esc(r['release_tag'])}</div>

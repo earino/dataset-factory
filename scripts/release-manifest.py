@@ -186,6 +186,11 @@ def main() -> int:
             "artifact_version is derived here: it names the per-level gate-produced versions "
             "together, because each level is gated and scored as its own task instance. The gate's "
             "own values are in `levels`.")
+    # The site pipeline requires a passing qualification for *this* artifact version. A per-level
+    # manifest derives that version here from the gate-produced level versions, so the qualification
+    # block has to carry the same derived value or the page can never be built for such a release.
+    if manifest.get("qualification") and manifest.get("artifact_version"):
+        manifest["qualification"].setdefault("artifact_version", manifest["artifact_version"])
     # Flat release-asset names: GitHub rejects `/` in asset names, so the download script restores
     # the runner layout. The mapping is recorded here rather than in prose.
     # Flat asset names: GitHub rejects `/` in asset names. A dataset may pin them (published URLs

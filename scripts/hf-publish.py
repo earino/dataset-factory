@@ -106,6 +106,10 @@ REPO_PLACEHOLDER = "__REPO_ID__"
 # Files that travel to Hugging Face unchanged, and where they land.
 SMALL_FILES = {
     "MANIFEST.json": "MANIFEST.json",
+    # Declares every config's column types. Without it the loader infers types from a sample of
+    # each CSV, and `event_no` (mostly digits, occasionally `F015FC6`) was inferred as int64 and
+    # then failed to cast, so the documented `load_dataset` call raised on the holdout split.
+    "dataset_infos.json": "dataset_infos.json",
     "SHA256SUMS": "SHA256SUMS",
     "LICENSE.md": "LICENSE.md",
     "LICENSE-MIT.txt": "LICENSE-MIT.txt",
