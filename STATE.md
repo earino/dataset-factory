@@ -1,13 +1,62 @@
 
 # Current state
 
-Updated: 2026-10-19 (latest: msha-publish-001 succeeded - all 226 accepted assets, 3,384,299,154 bytes,
-are on earino/msha-enforcement-citations release v2026.10 (417059413), transferred on a worker and then
-verified from the GitHub API: 226/226 asset digests match the package MANIFEST, repo private, tag and
-main at bb7ca7e9, docs blob-identical; the release was published (draft->published) only after that
-verification. The MSHA record is status packaged. Nothing is public; the Hugging Face destination and the
-consumer run are the remaining steps. CI checked after push.)
+Updated: 2026-10-19 (latest: msha-consumer-001 succeeded - the clean-room consumer verification of the
+published release passed in full: package vs MANIFEST OK, sha256sum -c OK over all 226 assets, the published
+gate exit 0 on all 45 configs with every artifact version equal to the MANIFEST entry, and the sec_56_12004
+baseline reproduced at 0.8036 with CONTRACT OK. VERIFICATION.md carries the pass and the manifest was
+regenerated with only its VERIFICATION.md entry changing. The MSHA record is status packaged. Nothing is
+public; the Hugging Face destination is the remaining step - job msha-hf-001 is uploading the 226 bulk
+assets from the interactive session that owns the Hub-card work.)
 
+
+## 2026-10-19 - msha-consumer-001: clean-room consumer check PASSED on the published bytes - 45/45 gates, baseline 0.8036 reproduced
+
+**`msha-consumer-001` succeeded** (exit 0, 710.9 s of container time; not OOM-killed): the clean-room
+consumer verification of the published release, mirroring `noaa-consumer-003`. A container with **no
+dataset-factory access and no GitHub credential** received the published package tree (bundled with per-file
+sha256 and hash-checked against `MANIFEST.json`: PACKAGE OK over the 22 listed files) and the release
+assets exactly as a consumer receives them - the worker host fetched **226/226 assets, 3,384,299,154 bytes,
+`failures: []`**, each against the sha256 pinned in the job's fetch spec, from
+`earino/msha-enforcement-citations` release 417059413 (tag `v2026.10`). The results below were read
+from `container.log`, `consumer.txt`, `baseline.log` and the 45 collected gate reports, each
+sha256-verified against staging release 417086598 and the collected result before anything was written:
+
+- `sha256sum -c SHA256SUMS` (the published verification command): **OK, all 226 lines**.
+- the published gate (`code/qualify_dataset.py`, 1.3.0) on **every one of the 45 configs**: exit 0,
+  `QUALIFICATION PASSED`, 32 checks each - **45/45**.
+- **every gate artifact version equals the `MANIFEST.json` `artifact_version` for its level** -
+  checked here over all 45, not sampled - so the bytes a consumer receives are the gated bytes.
+- dependencies resolved inside the benchmark's declared ranges: pandas 2.3.3, numpy 2.5.4, xgboost 3.4.1,
+  scikit-learn 1.9.1.
+- the published baseline reproduced on `sec_56_12004` through both contract paths: **Eval AUC 0.8036**,
+  `CONTRACT OK` - the recorded `msha-baseline-001` value itself, to the digit, not a spread around
+  it (persistence reference on the same config: 0.5831). No run scored the holdout.
+
+**Recorded.** `release/msha-enforcement-citations/VERIFICATION.md` now carries the consumer row and a
+"Consumer verification: PASSED on the published bytes" section; its first "does not cover" bullet (the full
+226-asset download never exercised end to end) is closed and replaced by the documentation-revision note,
+mirroring noaa. `MANIFEST.json` was regenerated with `release-manifest.py` and the diff is exactly
+one line, `package_files["VERIFICATION.md"]`; `SHA256SUMS` and every data digest are unchanged.
+`check-package.py release/msha-enforcement-citations` **OK**; `check-candidate.py
+msha-enforcement-citations` **OK** (status `packaged`).
+`candidates/msha-enforcement-citations/record.json` gains the `msha-consumer-001` `jobs[]`
+entry and a `consumer_verification` block, and its `next_action` reads the consumer item closed.
+The dataset repo's `main` (bb7ca7e9) still carries the pre-revision docs; advancing it with the revised
+VERIFICATION.md/MANIFEST.json is the docs-only step named in `next_action@ (`v2026.10` keeps naming
+the verified data bytes).
+
+**Worker, ledger and reports.** Server 171177546 (cpx32/hel1, EUR 0.32 reserved at the EUR 0.08/h ceiling;
+about 17 minutes of lifetime end to end) was collected at 09:02:01 UTC and destroyed at 09:02:54 UTC - half a
+second before `msha-hf-001` (the Hub bulk-upload job) was created - by the concurrent interactive
+session that is running the Hugging Face step; that session's commit 7e22e82 already folded this job's result
+into `DESTINATIONS.json`'s GitHub checks, and `msha-hf-001` is in flight and not touched here. This
+session re-confirmed the server's absence from the provider via `worker status` reconcile.
+`jobs/msha-consumer-001.json` records status `deleted` with the full result and is committed here.
+The job's small reports were fetched into `.factory/msha-consumer-001/reports/` (48 files); the 500 KB
+`source.tar` was hash-checked in scratch instead of collected: `run.sh` and `verify_package.py`
+are byte-identical to the committed job source, the `bundle.json` sizing override explains the 200 -> 180
+minute lifetime normalization, and all 25 bundled source files match the repository today.
 
 ## 2026-10-19 - msha-publish-001: all 226 assets are in the dataset repository, API-verified - record `packaged`
 

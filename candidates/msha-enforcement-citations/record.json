@@ -195,7 +195,7 @@
     ],
     "decide_at_construction": "NBR_INSPECTORS and ACTIVE_SECTIONS - whether they are known when the inspection opens or only as it proceeds; default exclude."
   },
-  "next_action": "GITHUB DESTINATION DONE (2026-10-19): the private repo earino/msha-enforcement-citations carries the 23 package files as its initial commit (main bb7ca7e9b2a3d4aa6443fed9c365badb82d8a18a), and all 226 accepted assets are on release v2026.10 (release 417059413) - transferred by job msha-publish-001 on a worker (failures: 0), then verified from the GitHub API: every asset size+sha256 matches the package MANIFEST (226/226), the repo is private, v2026.10 and main resolve to the same commit, and the docs at that commit are blob-identical to the package. The release was published (draft->published) only after that verification, so the tag names the verified bytes. NEXT, in order: (1) the Hugging Face destination per AGENTS.md - python3 scripts/hf-publish.py --plan first, then --create --upload-small, then the hf_publish worker job for the bulk; (2) the consumer run - already in flight: job msha-consumer-001 launched 2026-10-19T08:45:40Z on worker 171177546 fetches all 226 assets from the destination release 417059413 with per-asset sha256 pinned, restores the runner layout and re-runs the gate on the fetched bytes, mirroring noaa-consumer-003; its outcome lands in VERIFICATION.md when collected. Note: the Hub-card work started by the launching session (scripts/hf-publish.py, factory/site_model.py - generating the card's configs block from the manifest for MSHA's 45-config shape) is deliberately left uncommitted and unverified; the next session owns it. Publication stays a separate operator-approved act: no DESTINATIONS.json exists, so the manifest still derives visibility private / published false.",
+  "next_action": "GITHUB DESTINATION DONE (2026-10-19): the private repo earino/msha-enforcement-citations carries the 23 package files as its initial commit (main bb7ca7e9b2a3d4aa6443fed9c365badb82d8a18a), and all 226 accepted assets are on release v2026.10 (release 417059413) - transferred by job msha-publish-001 on a worker (failures: 0), then verified from the GitHub API: every asset size+sha256 matches the package MANIFEST (226/226), the repo is private, v2026.10 and main resolve to the same commit, and the docs at that commit are blob-identical to the package. CONSUMER RUN DONE (2026-10-19): job msha-consumer-001 fetched all 226 assets from release 417059413 exactly as a consumer receives them, passed sha256sum -c, re-ran the published gate on all 45 configs (exit 0 on every one, each artifact version equal to the MANIFEST entry for its level) and reproduced the sec_56_12004 baseline at 0.8036 eval AUC with CONTRACT OK, in a clean room with no repository access and no credential; recorded in release/msha-enforcement-citations/VERIFICATION.md with the manifest regenerated (package_files VERIFICATION.md is the only change). NEXT, in order: (1) the Hugging Face destination per AGENTS.md - job msha-hf-001 (launched 2026-10-19T09:02:54Z, ledger jobs/msha-hf-001.json) is uploading the 226 bulk assets to the Hub repo from the session that owns the Hub-card work (committed 7e22e82); when it lands: hf-publish.py --verify, then --tag LAST so the Hub revision and main agree; also advance the dataset repository main with the revised VERIFICATION.md and MANIFEST.json as a docs-only commit (v2026.10 keeps naming the verified data bytes). (2) publication remains a separate operator-approved act on both platforms: both destinations are private, so the manifest still derives visibility private / published false.",
   "novelty_check": {
     "checked_at": "2026-09-27T20:16:42+00:00",
     "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
@@ -486,6 +486,30 @@
       "cost": "reserved EUR 0.32, ceiling EUR 0.08/h, destroyed 2026-10-19T08:44:09Z (ledger jobs/msha-publish-001.json status deleted)",
       "verification": "API-side, not the job's report: all 226 assets re-read from the GitHub API match the package MANIFEST.json bytes+sha256 exactly (226/226, no extras); the repository is private; v2026.10 and main resolve to the same commit bb7ca7e9b2a3d4aa6443fed9c365badb82d8a18a; the 23 documentation files at that commit are blob-identical to release/msha-enforcement-citations (compared by Git blob hash). The release was a draft during transfer and was published only after this verification, so the tag names the verified bytes.",
       "evidence": ".factory/msha-publish-001/reports/ (job manifest.json, container.log, source.tar; each sha256-verified against the staging release), .factory/msha-publish-001/result.json"
+    },
+    {
+      "id": "msha-consumer-001",
+      "status": "succeeded",
+      "what": "the clean-room consumer check on the published release: the cloned package hashed against MANIFEST.json, all 226 assets fetched from the destination release with per-asset sha256 pinned, sha256sum -c, the published gate re-run on every one of the 45 configs, and baseline reproduction through the published contract - the verification item the packaged release still owed",
+      "staging_release": 417086598,
+      "staging_tag": "job-msha-consumer-001",
+      "server_id": 171177546,
+      "created_at": "2026-10-19T08:45:40Z",
+      "collected_at": "2026-10-19T09:02:01Z",
+      "deleted_at": "2026-10-19T09:02:54Z",
+      "elapsed_seconds": 710.9,
+      "assets_collected": 50,
+      "fetched": "226/226 assets from the destination release 417059413 (earino/msha-enforcement-citations, tag v2026.10), 3,384,299,154 bytes, failures [], each verified against the sha256 pinned in the job's fetch spec - the same digests the publish step API-verified against the package MANIFEST",
+      "results": {
+        "package_vs_manifest": "every listed file matched its recorded hash",
+        "sha256sum_c": "OK over all 226 assets",
+        "gate_all_45_configs": "exit 0 on every config, QUALIFICATION PASSED, 32 checks each; all 45 artifact versions equal the MANIFEST.json artifact_version for their level",
+        "baseline_sec_56_12004": "CONTRACT OK, eval AUC 0.8036 from both contract paths - the recorded value itself",
+        "dependencies": "pandas 2.3.3, numpy 2.5.4, xgboost 3.4.1, scikit-learn 1.9.1 (the benchmark's declared ranges)"
+      },
+      "why": "the consumer check is the only evidence that a reader with no access to the building repository and no credential gets the same dataset and the same result from the published release; it was also the first full 226-asset exercise of the package's own get_dataset.py layout",
+      "cost": "reserved EUR 0.32 at the EUR 0.08/h cpx32 ceiling; about 17 minutes of server lifetime end to end, destroyed after collection and its absence re-confirmed from the provider",
+      "evidence": ".factory/msha-consumer-001/result.json and .factory/msha-consumer-001/reports/ (container.log, consumer.txt, baseline.log and the 45 qualification gate reports, each sha256-verified against staging release 417086598 and the collected result)"
     }
   ],
   "artifacts": [
@@ -573,5 +597,15 @@
     },
     "what_it_shows": "the task is learnable on the released bytes and clears the target section's own persistence by a wide margin: the full 24-feature runner model reaches 0.8036 eval AUC on sec_56_12004 against 0.5831 for prev_target_cited alone (the corrected most-recent-strictly-earlier semantics), so the learned signal is not the target section's own persistence in disguise; prev_target_cited is the only single feature measured individually, so no strongest-feature claim is made",
     "evidence": ".factory/msha-baseline-001/reports/ (baseline.json, train-sec_56_12004.log, validate-sec_56_12004.log, container.log, manifest.json - each sha256-verified against the staging release asset table)"
+  },
+  "consumer_verification": {
+    "job": "msha-consumer-001",
+    "levels_checked": "all 45 per-section configs, each treated as its own contract-complete task instance",
+    "clean_room": "worker container with no access to this repository and no GitHub credential; the published package tree bundled with per-file sha256 and hash-checked against MANIFEST.json, the release assets fetched by the worker host - which holds the credential - and mounted read-only",
+    "checked_bytes": "release 417059413 of earino/msha-enforcement-citations (tag v2026.10): 226/226 fetched, 3,384,299,154 bytes, digests equal the package MANIFEST",
+    "result": "PASSED",
+    "baseline_reproduction": "sec_56_12004 eval AUC 0.8036 from both contract paths, CONTRACT OK - identical to the recorded msha-baseline-001 measurement, not a spread around it",
+    "gate_artifact_versions": "all 45 equal the artifact_version MANIFEST.json records for their level",
+    "note": "no run scored the holdout"
   }
 }

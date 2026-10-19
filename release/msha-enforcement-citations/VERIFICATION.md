@@ -16,6 +16,7 @@ names the evidence.
 | The worker ran the committed script | bundled `build.py` sha256 vs the committed `candidates/.../source/build.py` | **1c80c1ae... = committed (job msha-002); the superseded msha-001 ran b9ef8352...** |
 | Worker cleaned up | server destroyed after collection; provider inventory read back | **0 servers** (destroyed 2026-10-12T10:30:15Z) |
 | Package consistency | `python3 scripts/check-package.py release/msha-enforcement-citations` | **OK** |
+| Consumer verification | clean-room container, no build-repo access, no credential (job `msha-consumer-001`, on the published bytes) | **PASSED on all 45 configs** - see below |
 | CI for the construction commit | GitHub Actions run for the pushed SHA | recorded in the factory repository's `STATE.md` |
 
 ## The baseline, in numbers (job `msha-baseline-001`)
@@ -33,14 +34,40 @@ AUC (from the accepted build's own summary, collected and digest-verified). The 
 model clears it by 0.2205. `prev_target_cited` is the only single feature measured individually,
 so no strongest-feature claim is made.
 
+## Consumer verification: PASSED on the published bytes
+
+Run in a clean-room container on a worker (job `msha-consumer-001`): **no access to the building
+repository, no credential**. It was given the published package tree and the release assets exactly
+as a consumer receives them - fetched by the worker host from the release the dataset is published
+in (`earino/msha-enforcement-citations`, release 417059413, tag `v2026.10`: all 226 assets,
+3,384,299,154 bytes, each against the sha256 pinned in the job's fetch spec, `failures: []`) - then
+hashed the cloned package against `MANIFEST.json`, verified the fetched assets with `sha256sum -c`,
+ran the published gate on **every one of the 45 configs**, and reproduced the baseline through the
+published contract.
+
+| step | result |
+| --- | --- |
+| published package vs `MANIFEST.json` | every listed file matched its recorded hash |
+| assets fetched as a consumer receives them | 226/226, 3,384,299,154 bytes, `failures: []`, digests equal the `MANIFEST.json` entry for their level |
+| `sha256sum -c SHA256SUMS` | OK - all 226 lines |
+| published gate, all 45 configs | exit 0 on every config, `QUALIFICATION PASSED`, 32 checks each |
+| gate artifact versions vs `MANIFEST.json` | all 45 equal the recorded `artifact_version` for their level |
+| dependencies (the benchmark's declared ranges) | pandas 2.3.3, numpy 2.5.4, xgboost 3.4.1, scikit-learn 1.9.1 |
+| baseline, `sec_56_12004` | `CONTRACT OK`, eval AUC **0.8036** from both contract paths - the recorded value itself |
+
+Every gate artifact version equals the version `MANIFEST.json` records for the same level, so the
+bytes a consumer receives are the gated bytes. The baseline reproduction returned the recorded value
+to the digit - 0.8036 on both the `train.py` path and the independent `validate.py` re-run, against
+a persistence reference of 0.5831 on the same config.
+
+
 ## What this verification does **not** cover
 
-- **The full 226-asset download has been exercised only five files at a time.** The baseline job
-  fetched one config's five files from staging and verified them in transit; the package's own
-  `get_dataset.py` path - all 226 assets, `SHA256SUMS` verification, a gate re-run on fetched
-  bytes - has not been run against this package's release, because the release it would read from
-  is created by the packaging step itself. It is the first thing a consumer run must exercise
-  (and the recording of that run belongs in this file when it happens).
+- **The documentation was revised after the consumer check ran.** The data assets were not touched:
+  their digests are unchanged, the gate names the same artifact versions, and the release tag still
+  carries the verified bytes. What changed is this document - the consumer row and section above -
+  to record the `msha-consumer-001` pass; the revision reaches the dataset repository's `main`
+  with the next documentation advance.
 - **The holdout was never scored.** No model selection, threshold choice or tuning used it. It
   ships labelled, as a reported result, not as a hidden test set.
 - **Only one config of 45 has an end-to-end baseline.** `sec_56_12004` demonstrates the scoring
