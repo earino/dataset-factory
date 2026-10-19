@@ -3310,3 +3310,9 @@ per-section configs plus the extract-root `labels.csv` (proposed: mirror noaa's 
 baseline on one mid-prevalence config, and the operator's choice of which built candidate packages first.
 `scripts/check-candidate.py` returns **OK (status=qualified)** and the suite is **331 tests, OK**.
 
+
+**Server inventory reconciled 2026-10-19T10:59Z.** The Hetzner project `earino-dataset-factory` reports **0
+servers, 0 floating IPs, 0 primary IPs, 0 volumes**. Every job ledger entry is terminal: the last worker to
+exist, msha-hf-004 (171201702), was destroyed 10:49:07Z, and msha-hf-002 (171185621) was destroyed
+10:08:01Z - its `record.json` entry simply carried `destroyed_at: null`, which read as a live machine and was
+not one. Nothing is billing; the earlier "stuck running" note is withdrawn.
