@@ -433,7 +433,7 @@ Enforced mechanically, by the pre-check script attached to each research job:
 | --- | --- |
 | Weekly token budget (`weekly_token_budget`, measured) | Gate refuses to wake the model |
 | Period allowance, stop at `stop_fraction` (95%) | Gate refuses to wake the model |
-| Weekly session cap (18) | Counted from the run ledger; further ticks skip |
+| Weekly session cap (80) | Counted from the run ledger; further ticks skip |
 | Over-long session (over `session_token_cap`) | Counts **double** against the weekly cap |
 | Overlapping sessions | Refused while a run is in flight, or the lock is fresh |
 | Catch-up bursts | `cron.catch_up_missed: false`, plus a late-tick window; a missed slot is skipped |

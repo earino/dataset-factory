@@ -3388,3 +3388,7 @@ in `tests/test_research_budget.py::WeeklyTokenBudgetTests` fail on the pre-fix c
 research use is ~293,000 tokens per session, so the ceiling now admits roughly 80 sessions a week;
 the 18-session cap and the 06:00/18:00 + Mon/Wed/Fri schedules are unchanged and remain the nearer
 limits.
+
+**Weekly session cap raised 2026-10-19** from 18 to 80 at the operator's instruction, so the token
+budget (24,000,000/week) is now the binding limit rather than the session count. The schedules are
+unchanged: 14 discovery ticks and 3 advancement ticks a week, i.e. 17 of the 80 allowed.
