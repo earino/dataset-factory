@@ -43,7 +43,7 @@ msha-enforcement-citations` **OK** (status `packaged`).
 `candidates/msha-enforcement-citations/record.json` gains the `msha-consumer-001` `jobs[]`
 entry and a `consumer_verification` block, and its `next_action` reads the consumer item closed.
 The dataset repo's `main` (bb7ca7e9) still carries the pre-revision docs; advancing it with the revised
-VERIFICATION.md/MANIFEST.json is the docs-only step named in `next_action@ (`v2026.10` keeps naming
+VERIFICATION.md/MANIFEST.json is the docs-only step named in `next_action` (`v2026.10` keeps naming
 the verified data bytes).
 
 **Worker, ledger and reports.** Server 171177546 (cpx32/hel1, EUR 0.32 reserved at the EUR 0.08/h ceiling;
@@ -51,12 +51,28 @@ about 17 minutes of lifetime end to end) was collected at 09:02:01 UTC and destr
 second before `msha-hf-001` (the Hub bulk-upload job) was created - by the concurrent interactive
 session that is running the Hugging Face step; that session's commit 7e22e82 already folded this job's result
 into `DESTINATIONS.json`'s GitHub checks, and `msha-hf-001` is in flight and not touched here. This
-session re-confirmed the server's absence from the provider via `worker status` reconcile.
+session re-confirmed the server's absence from the provider via `worker status` reconcile
+(each reconcile re-stamps `deleted_at`, so the committed ledger shows the last observation,
+09:08:27 UTC, while the destroy itself ran at 09:02:54 UTC - the time `record.json` carries).
 `jobs/msha-consumer-001.json` records status `deleted` with the full result and is committed here.
 The job's small reports were fetched into `.factory/msha-consumer-001/reports/` (48 files); the 500 KB
 `source.tar` was hash-checked in scratch instead of collected: `run.sh` and `verify_package.py`
 are byte-identical to the committed job source, the `bundle.json` sizing override explains the 200 -> 180
 minute lifetime normalization, and all 25 bundled source files match the repository today.
+
+**CI for 3102788.** `Local checks` (the test suite plus `factory doctor`): **success** on the
+clean checkout. `Website pipeline preview`: **failure** - inherited, not introduced: the identical error
+appears for the parent 7e22e82, which added `sites/msha-enforcement-citations.json` while the Hugging
+Face destination is mid-flight. `site_model.project()` requires a complete `DESTINATIONS.json`
+(`release_tag` **and** `artifact_version`, both destinations `verified: true`); msha's has no
+`artifact_version` and its `huggingface` entry is `verified: false` pending `msha-hf-001`,
+so `site-publish.py prepare` fails with "Destination evidence describes a different release or
+artifact". Nothing in this commit touches those files (the manifest regeneration changed only its
+`VERIFICATION.md` entry; `artifact_version` is unchanged), and the gate is the designed one - the
+website step requires public, verified destinations. Note for the HF step, though: **no script currently
+writes `artifact_version` into `DESTINATIONS.json`** (`hf-publish.py --verify` merges only the
+`huggingface` entry; noaa's file carries it from its publication flow), so whoever completes the HF step
+must add it or the site pipeline stays red after `--verify`.
 
 ## 2026-10-19 - msha-publish-001: all 226 assets are in the dataset repository, API-verified - record `packaged`
 
