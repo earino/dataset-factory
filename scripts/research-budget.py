@@ -301,6 +301,7 @@ def evaluate(config, moment=None, late_minutes=None):
     reserve = float(config.get("reserve_usd") or 0)
     stop_fraction = float(config.get("stop_fraction", 0.95))
     reasons = []
+    week_start = moment - timedelta(days=7)
 
     if not allowance:
         reasons.append("no allowance configured (allowance_usd is null) - refusing to wake "
@@ -321,6 +322,18 @@ def evaluate(config, moment=None, late_minutes=None):
                 "enough left for the next session"
             )
 
+    # The dollar figure is an estimate and reads 0.0000 with this provider, so it cannot bind.
+    # Tokens are measured and are the real brake: a weekly token ceiling stops the routine when
+    # the cadence outruns what the operator is willing to spend, whatever the cost column says.
+    weekly_tokens = int(config.get("weekly_token_budget") or 0)
+    week_usage = usage_by_kind(config, week_start, moment).get("research", {})
+    week_tokens = int(week_usage.get("input_tokens", 0)) + int(week_usage.get("output_tokens", 0))
+    if weekly_tokens and week_tokens >= weekly_tokens:
+        reasons.append(
+            f"research used {week_tokens:,} tokens in the last 7 days, at or over the "
+            f"{weekly_tokens:,}-token weekly budget"
+        )
+
     # Overlap is decided by the session lock, never by the scheduler's execution ledger: the
     # ledger carries a 'running' row for this very job from the moment the scheduler fires it,
     # so consulting it held every fire of the job against itself.
@@ -330,7 +343,6 @@ def evaluate(config, moment=None, late_minutes=None):
             f"lock held for {lock['age_seconds']:.0f}s by {lock.get('session_id', 'unknown')}"
         )
 
-    week_start = moment - timedelta(days=7)
     weeks_runs = cron_runs(config, week_start)
     completed = [run for run in weeks_runs if str(run["status"]) in ("completed", "failed")]
     cap = int(config.get("sessions_per_week", 3))
@@ -360,6 +372,8 @@ def evaluate(config, moment=None, late_minutes=None):
         "usage": usage,
         "runs_last_7_days": used,
         "runs_weighted_last_7_days": weighted,
+        "research_tokens_last_7_days": week_tokens,
+        "weekly_token_budget": weekly_tokens,
         "sessions_over_token_cap": len(over_cap),
         "session_cap_per_week": cap,
         "allowed": not reasons,
@@ -391,6 +405,11 @@ def resume_block(config, decision):
         )
     lines.append(f"sessions in the last 7 days: {decision['runs_last_7_days']}"
                  f"/{decision['session_cap_per_week']}")
+    if decision.get("weekly_token_budget"):
+        lines.append(
+            f"tokens in the last 7 days: {decision['research_tokens_last_7_days']:,}"
+            f"/{decision['weekly_token_budget']:,} (measured; this is the binding budget)"
+        )
     lines.append(
         f"session limits: <= {config.get('session_max_turns')} tool-calling iterations and "
         f"<= {config.get('session_max_minutes')} min wall clock, ENFORCED by the runtime for "

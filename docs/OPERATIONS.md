@@ -414,8 +414,12 @@ Scout's own research sessions. They are separate budgets and neither draws on th
 - `cron/executions.db` - which runs happened, their status, and whether one is in flight.
 
 Every cost figure carries `cost_status = "estimated"` and `actual_cost_usd = 0`: Hermes
-estimates, and **no provider-reported actual exists**. This is therefore a budget guard on
-planned work. It **cannot** reconcile against the portal's subscription quota, its usage page
+estimates, and **no provider-reported actual exists**. On this provider the estimate is also
+literally zero for every call, so the USD allowance can never reach `stop_fraction` and is not
+what bounds the routine. The binding control is **`weekly_token_budget`** - tokens are measured
+per session, so a 12,000,000-token weekly ceiling holds the gate even when the dollar column
+reads 0.0000. The USD allowance is kept as the operator's stated intent and still fails closed
+when unset. This is therefore a budget guard on planned work. It **cannot** reconcile against the portal's subscription quota, its usage page
 or its reset period - none of which is visible to this instance.
 
 There are no paid research tools in the loop: the spend is model inference (main, auxiliary and
@@ -427,8 +431,9 @@ Enforced mechanically, by the pre-check script attached to each research job:
 
 | Limit | Mechanism |
 | --- | --- |
+| Weekly token budget (`weekly_token_budget`, measured) | Gate refuses to wake the model |
 | Period allowance, stop at `stop_fraction` (95%) | Gate refuses to wake the model |
-| Weekly session cap (3) | Counted from the run ledger; further ticks skip |
+| Weekly session cap (18) | Counted from the run ledger; further ticks skip |
 | Over-long session (over `session_token_cap`) | Counts **double** against the weekly cap |
 | Overlapping sessions | Refused while a run is in flight, or the lock is fresh |
 | Catch-up bursts | `cron.catch_up_missed: false`, plus a late-tick window; a missed slot is skipped |

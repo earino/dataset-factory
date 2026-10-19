@@ -123,6 +123,46 @@ class PeriodTests(BudgetTestCase):
         self.assertEqual(datetime(2026, 9, 14, tzinfo=timezone.utc), start)
 
 
+class WeeklyTokenBudgetTests(BudgetTestCase):
+    """Tokens, not dollars, are the binding research budget.
+
+    The provider reports `estimated_cost_usd = 0` for every call, so an allowance in USD can
+    never reach `stop_fraction`: the routine would run unbounded. These cases pin the measured
+    token ceiling that actually holds it. Both fail on the pre-fix code, which had no token
+    check at all (the gate returned allowed=True with 5M tokens used).
+    """
+
+    def test_a_week_over_the_token_budget_holds_the_tick(self):
+        make_state_db(self.state_db, [
+            ("cron_" + JOB + "_x", "chat", 10, 3_000_000, 2_500_000, 0.0, "estimated",
+             "scout-research"),
+        ], session_age_minutes=60)
+        decision = budget.evaluate(self.config(allowance_usd=30.0, sessions_per_week=18,
+                                               weekly_token_budget=5_000_000))
+        self.assertFalse(decision["allowed"])
+        self.assertTrue(any("weekly budget" in reason for reason in decision["reasons"]),
+                        decision["reasons"])
+        self.assertEqual(5_500_000, decision["research_tokens_last_7_days"])
+
+    def test_a_week_inside_the_token_budget_allows_a_session(self):
+        make_state_db(self.state_db, [
+            ("cron_" + JOB + "_x", "chat", 10, 300_000, 100_000, 0.0, "estimated",
+             "scout-research"),
+        ], session_age_minutes=60)
+        decision = budget.evaluate(self.config(allowance_usd=30.0, sessions_per_week=18,
+                                               weekly_token_budget=5_000_000))
+        self.assertTrue(decision["allowed"], decision["reasons"])
+        self.assertEqual(400_000, decision["research_tokens_last_7_days"])
+
+    def test_an_unset_token_budget_is_not_enforced(self):
+        make_state_db(self.state_db, [
+            ("cron_" + JOB + "_x", "chat", 10, 9_000_000, 9_000_000, 0.0, "estimated",
+             "scout-research"),
+        ], session_age_minutes=60)
+        decision = budget.evaluate(self.config(allowance_usd=30.0, sessions_per_week=18))
+        self.assertTrue(decision["allowed"], decision["reasons"])
+
+
 class GateTests(BudgetTestCase):
     def test_an_unconfigured_allowance_refuses_to_wake_the_model(self):
         decision = budget.evaluate(self.config())

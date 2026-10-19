@@ -3372,3 +3372,14 @@ exists in usable form, so per the standing test they are rejections, not candida
 Bench after this session: msha-enforcement-citations and chicago-food-inspections qualified and
 awaiting packaging (advancement sessions own that), and one new go candidate
 (nws-tornado-warning-verification) ready for a construction job.
+
+**Research budget made real 2026-10-19 (operator: "How do we increase the discovery budget. I want a
+daily discovery run.").** Discovery already runs twice daily (06:00 and 18:00 UTC), so the cadence
+asked for is in place; the thing that could not work was the budget. Every Hermes usage row reports
+`estimated_cost_usd = 0`, so a USD allowance can never reach `stop_fraction` and bounded nothing.
+Added `weekly_token_budget` to `scripts/research-budget.py` - measured input+output tokens for
+research sessions in the trailing 7 days, held at the gate. Configured `weekly_token_budget:
+12000000` and `allowance_usd: 30.0`; observed research usage is ~293,000 tokens per session
+(586,447 over 2 sessions), so 17 ticks a week sit at roughly 5M against a 12M ceiling. Guard tests
+in `tests/test_research_budget.py::WeeklyTokenBudgetTests` fail on the pre-fix code (1 failure,
+1 error) and pass after.
