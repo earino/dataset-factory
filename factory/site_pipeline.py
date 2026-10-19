@@ -15,7 +15,7 @@ import time
 import urllib.request
 
 from .common import FactoryError
-from .site_model import digest, dump, project, read, require, links, pages_url
+from .site_model import MAX_BUNDLE, digest, dump, project, read, require, links, pages_url
 from .site_github import GitHub
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -54,7 +54,7 @@ def prepare(package, editorial, config, out):
         require(out.is_dir() and (not any(out.iterdir()) or (out / "bundle.json").is_file()),
                 "Refusing to overwrite an unrelated directory")
         if (out / "bundle.json").exists():
-            previous = read(out / "bundle.json")
+            previous = read(out / "bundle.json", limit=MAX_BUNDLE)
             require(previous.get("plan_sha256") == plan["plan_sha256"],
                     "Prepared bundle differs; use a new output directory so review and recovery state survive")
     require(not any(p.is_symlink() for p in out.parents), "Bundle path cannot pass through a symlink")
@@ -73,7 +73,7 @@ def prepare(package, editorial, config, out):
 
 
 def load_bundle(folder):
-    plan = read(Path(folder) / "bundle.json")
+    plan = read(Path(folder) / "bundle.json", limit=MAX_BUNDLE)
     saved = plan.pop("plan_sha256", None)
     require(saved == digest(dump(plan)), "Prepared bundle changed after review")
     plan["plan_sha256"] = saved

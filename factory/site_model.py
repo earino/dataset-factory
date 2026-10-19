@@ -14,6 +14,10 @@ SCHEMA = 1
 SLUG = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,99}$")
 SHA = re.compile(r"^[0-9a-f]{64}$")
 MAX_INPUT = 256 * 1024
+# A prepared bundle is our own rendered output, not an input we were handed. Its size grows with
+# the release: every asset gets a checksum row, so a 226-asset package renders ~460 KB of HTML.
+# Keep the tight cap for metadata read from candidates and releases, and give the bundle its own.
+MAX_BUNDLE = 8 * 1024 * 1024
 
 
 def require(condition, message):
@@ -33,10 +37,10 @@ def digest(value):
     return hashlib.sha256(value.encode() if isinstance(value, str) else value).hexdigest()
 
 
-def read(path):
+def read(path, limit=MAX_INPUT):
     path = Path(path)
     require(not path.is_symlink() and path.is_file(), f"Expected regular input file: {path}")
-    require(path.stat().st_size <= MAX_INPUT, f"Metadata exceeds 256 KiB: {path}")
+    require(path.stat().st_size <= limit, f"Metadata exceeds {limit // 1024} KiB: {path}")
     return json.loads(path.read_text())
 
 

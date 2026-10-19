@@ -12,7 +12,7 @@ import unittest
 from unittest.mock import patch
 
 from factory.common import FactoryError
-from factory.site_model import project, read, dump, digest, linked_readme, links
+from factory.site_model import MAX_BUNDLE, project, read, dump, digest, linked_readme, links
 from factory.site_pipeline import prepare, load_bundle, reconcile, verify, Hub, main
 from factory.site_github import GitHub
 
@@ -399,6 +399,26 @@ class WebsiteTests(unittest.TestCase):
                 return {"tree": [{"path": "README.md", "mode": "100644", "sha": "newer"}]}
         with self.assertRaisesRegex(FactoryError, "Concurrent edit"):
             RaceGitHub().commit("owner/repo", {"README.md": "proposed"}, "update", expected={"README.md": "old"})
+
+
+class BundleSizeTests(unittest.TestCase):
+    """A release with many assets renders a bundle far larger than the metadata cap.
+
+    The reviewed bundle is our own output, so it is read with MAX_BUNDLE. Candidate and release
+    metadata keeps the 256 KiB cap: an oversized input must still be refused.
+    """
+
+    def test_a_rendered_bundle_over_the_metadata_cap_still_loads(self):
+        plan = {"schema_version": 1, "plan_sha256": None, "files": {"page.html": "x" * (300 * 1024)}}
+        plan["plan_sha256"] = digest(dump({k: v for k, v in plan.items() if k != "plan_sha256"}))
+        with tempfile.TemporaryDirectory() as folder:
+            (Path(folder) / "bundle.json").write_text(dump(plan))
+            self.assertGreater(len(dump(plan)), 256 * 1024)
+            self.assertEqual(load_bundle(folder)["plan_sha256"], plan["plan_sha256"])
+            self.assertGreater(MAX_BUNDLE, 256 * 1024)
+            with self.assertRaises(FactoryError) as caught:
+                read(Path(folder) / "bundle.json")
+            self.assertIn("Metadata exceeds 256 KiB", str(caught.exception))
 
 
 if __name__ == "__main__":

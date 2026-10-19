@@ -1,13 +1,61 @@
 
 # Current state
 
-Updated: 2026-10-19 (latest: msha-hf-003 finished the Hub bulk upload - 226/226 files on the Hub, all
-at the manifest sha256 per hf-publish.py --verify, 93 uploaded this run + 133 resumed at digest - but
-failed the job's own loading check: load_dataset raises ArrowInvalid casting 'F015FC6' to int64 on the
-holdout split, because the Hub's CSV loader infers column types from a sample and event_no is mostly
-digits but occasionally alphanumeric. A declared dataset_infos.json schema is the fix in flight in the
-interactive session; --tag stays LAST. Nothing is public.)
+Updated: 2026-10-19 (latest: msha-hf-004 re-verified the Hub loading path after the dataset_infos.json
+schema fix landed - the identical 226-asset plan found all 226 targets already at the manifest digest (0
+uploads, 0 failures) and the loading check that sank msha-hf-003 now passes exactly as pinned. While it
+ran, the interactive session executed the publication act: both destinations were observed public from
+anonymous clients at ~10:47 UTC and its publication edits were still uncommitted in the working tree -
+the watcher did not touch visibility, the Hub tag, DESTINATIONS.json or record.json.)
 
+
+## 2026-10-19 - msha-hf-004: the Hub loading path now verifies end-to-end; the publication act was running while it finished
+
+**`msha-hf-004` succeeded, and it closes the loading-path item that failed `msha-hf-003`.** Launched
+10:31:55 UTC on server 171201702 (cpx42/hel1, EUR 0.13464/h) with the identical 226-asset plan (verified:
+the job specs of -003 and -004 differ only by id), it re-ran the publish step after commit afe34c4's
+`dataset_infos.json` declared all 45 configs' column types on the Hub. Result, read from the collected
+`.factory/msha-hf-004/result.json`: **0 uploads, 0 failures, 226/226 targets "already at the manifest
+digest"** (bytes: 0) - the transfer state msha-hf-003 left is intact - and the built-in loading check that
+raised ArrowInvalid on 10:23 UTC now passes **exactly as pinned in the job spec**: `sec_56_12004` train
+**415,088 rows / 36,796 positives**, eval **49,233 / 5,234**, holdout **33,576 / 3,343**, `ok: true`,
+`problems: []`. The fix changed the documented loading path, not one data byte.
+
+**Evidence chain.** The three small report assets were fetched into `.factory/msha-hf-004/reports/`, each
+sha256-verified against the staging release 417170379 listing: `manifest.json` (93,888 bytes, 4be2496a...),
+`source.tar` (102,400 bytes, 4ccba9e3... - equal to the ledger's `source_sha256`), and the 65-byte
+container.log capture ("No such container: scout-msha-hf-004" - the container was already gone at
+collection, same as -001 and -003, so the diagnosis lives in the collected result). The result embedded in
+the release manifest is identical to the collected result except the worker's own release-attachment
+fields (`uploaded` false-to-true, release_id/assets) - pre- and post-upload snapshots of one run. The
+bundled worker source matches committed HEAD (afe34c4) file-for-file (executor.py, hf_publish.py,
+upload.py) - the run provably used the fixed worker code. No bulk CSV touched the coordinator.
+
+**The publication act was observed running, and this watcher did not touch it.** While the job finished,
+the interactive session moved from the loading fix into publication: the Hub's small files were re-uploaded
+at **10:44:51 UTC** (head 1ff49a68, "Publish v2026.10 documentation and small files"), the GitHub dataset
+repo main advanced at **10:45:26 UTC** with docs-only commit ab429bc (dataset_infos.json +5,987 lines,
+regenerated MANIFEST.json, DATA_DICTIONARY.md +14; VERIFICATION.md untouched), and at **~10:47 UTC both
+destinations read public from anonymous clients** - Hub API `private: false` with an anonymous 200, GitHub
+API `private: false, visibility: public` - after DESTINATIONS.json had recorded GitHub private at 10:33:57
+and the Hub private at 10:19:26. That matches the austin/chicago/noaa precedent (publication under
+recorded operator approval), but at collection time the repository still carried **no publication record**
+(manifest `published: false`, no `publication` block in DESTINATIONS.json, the Hub card still said
+private, no Hub tag - refs showed only main), and the session's publication edits (DESTINATIONS.json,
+MANIFEST.json, README.md, RELEASE_NOTES.md, REPRODUCE.md, record.json) were **uncommitted in the working
+tree**. To avoid a two-coordinator race, this watcher ran no `--verify`, no `--tag`, no small-file upload
+and no visibility change; it did not edit record.json either - the interactive session had already written
+the `msha-hf-004` jobs[] entry there itself, and that entry was checked against the collected result line
+by line before this note was written. If the observed public state was not an approved publication act,
+both destinations need an immediate revert - this is the one thing this entry cannot prove from inside the
+repository.
+
+**Cleanup and records.** Server 171201702 was destroyed at **10:49:07 UTC** (ledger `deleted_at`; ~17.2
+minutes runtime, about EUR 0.04 at the hourly rate - derived, not an invoice figure). The ledger record
+`jobs/msha-hf-004.json` is committed with this entry. What remains is the publication sequence the
+interactive session owns: the DESTINATIONS flip record, the manifest regeneration (published true), the
+card/LOADING/README/release-notes refresh and re-upload, the anonymous proof, and `hf-publish.py --tag`
+LAST (still unrun on the Hub), then the site step.
 
 ## 2026-10-19 - msha-hf-003: Hub transfer complete 226/226 and --verify passed, but the job failed its loading check - a declared schema is the open fix
 

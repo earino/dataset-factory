@@ -5,18 +5,20 @@
    "repo": "earino/msha-enforcement-citations",
    "release_id": 417059413,
    "release_tag": "v2026.10",
-   "private": true,
+   "private": false,
    "verified": true,
-   "verified_at": "2026-10-19T10:33:57+00:00",
+   "verified_at": "2026-10-19T10:48:00+00:00",
    "checks": [
     "226/226 asset names, sizes and sha256 digests match the package MANIFEST.json, read from the GitHub API after transfer (job msha-publish-001, failures 0)",
-    "the 23 package documents are blob-identical at main bb7ca7e9b2a3d4aa6443fed9c365badb82d8a18a; v2026.10 resolves to that commit",
+    "the 23 package documents are blob-identical at main ab429bc744ace0b3059972f2a64bab06930be33b; v2026.10 resolves to that commit",
     "release v2026.10 was published only after the digest comparison, so the tag names the verified bytes",
     "consumer job msha-consumer-001 (worker 171177546, no factory access, no GitHub credential) fetched all 226 assets by asset id, passed sha256sum -c over 226 assets, exited 0 on the gate for all 45 configs, and reproduced the sec_56_12004 baseline at 0.8036 eval AUC with CONTRACT OK (710.9 s, result release 417086598)",
-    "2026-10-19T10:33:57+00:00: every asset digest was re-read from the GitHub release assets API and compared with MANIFEST.json - 226/226 match on size and sha256, problems: 0"
+    "2026-10-19T10:33:57+00:00: every asset digest was re-read from the GitHub release assets API and compared with MANIFEST.json - 226/226 match on size and sha256, problems: 0",
+    "2026-10-19: the package documents at the tag include dataset_infos.json and the loading note; tag v2026.10 was re-pointed from bb7ca7e to ab429bc so the rendered docs describe the shipped schema (the release assets are unchanged).",
+    "2026-10-19T10:48:00+00:00: anonymous check - the repository is public, the assets API listed all 226 assets and every name/size/sha256 matched MANIFEST.json (0 problems); no token was sent."
    ],
-   "anonymous_access": false,
-   "note": "The repository is private, so anonymous access 404s by design. Public visibility is a separate operator-approved act.",
+   "anonymous_access": true,
+   "note": "The repository is public; every check below was repeated without a credential.",
    "files_verified": [
     "labels.csv",
     "sec_47_41_A/meta.json",
@@ -249,10 +251,10 @@
   "huggingface": {
    "repo": "earino/msha-enforcement-citations",
    "revision": "v2026.10",
-   "private": true,
+   "private": false,
    "verified": true,
-   "note": "Small files and the generated card are uploaded; the 226 bulk assets are being uploaded by job msha-hf-001.",
-   "verified_at": "2026-10-19T10:19:26+00:00",
+   "note": "All 226 assets and the 11 small files are on the Hub. The loading check ran in job msha-hf-004 against the schema-declared repository and passed: sec_56_12004 train 415,088 / eval 49,233 / holdout 33,576 rows, positives 36,796 / 5,234 / 3,343, no problems. Anonymous check: the repository is public and datasets.load_dataset loaded all three sec_56_12004 splits without a token (rows 415088/49233/33576, positives 36796/5234/3343).",
+   "verified_at": "2026-10-19T10:48:00+00:00",
    "files_verified": [
     "data/labels.csv",
     "data/sec_47_41_A-private-holdout.csv",
@@ -483,7 +485,8 @@
    ],
    "missing": [],
    "size_mismatch": [],
-   "loading_check": "run by the worker job and recorded in its report"
+   "loading_check": "msha-hf-004 (server 171201702): datasets.load_dataset with a named config loaded all three splits with the declared types; rows 415088/49233/33576, positives 36796/5234/3343",
+   "anonymous_access": true
   }
  },
  "artifact_version": "eff3c196ff7bda848991a4bb8bbf8c4e061d6f956217cfcfa54935ad8c96bda3"

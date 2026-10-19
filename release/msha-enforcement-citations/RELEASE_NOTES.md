@@ -64,6 +64,9 @@ not an official MSHA or US Department of Labor product. See `LICENSE.md`.
 
 ## Status
 
-Private, prepared for review. Publication is a separate, operator-approved act and has not
-happened: no destination has been flipped, `DESTINATIONS.json` does not exist yet, and the
-manifest derives `visibility: private`, `published: false` from that absence.
+Public. Published 2026-10-19 after explicit operator authorisation, with both destinations public
+and re-verified without a credential: GitHub release `v2026.10` (226 assets, digests read back from
+the assets API) and the Hugging Face repository (same 226 assets, `load_dataset` loading every
+config). `DESTINATIONS.json` records the per-destination evidence and the manifest now derives
+`visibility: public`, `published: true` from it. The data files, the tag and the artifact version
+are unchanged by publication.

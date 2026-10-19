@@ -11,8 +11,8 @@ python3 get_dataset.py --dest ./task                  # all 226 assets, ~3.3 GB
 python3 get_dataset.py --dest ./task --config sec_56_12004     # one config (5 files, ~73 MB)
 ```
 
-The repository is private until publication, so authenticate first: `gh auth login`, or export
-`GITHUB_TOKEN`.
+The repository is public, and `get_dataset.py` downloads anonymously: no token or `gh auth login`
+is needed.
 
 `get_dataset.py` verifies each file against the release's own recorded `size` and against
 `SHA256SUMS`, and refuses the download on any mismatch. It restores the layout the runner

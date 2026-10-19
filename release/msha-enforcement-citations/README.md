@@ -18,7 +18,9 @@ moment the inspection begins - whether that section will be cited.
 - **Gate:** every config passed the qualification gate (version 1.3.0, 32 checks, 0 failed) on
   the full artifact on the worker that built it.
 
-This release is **private**, prepared for human review. Nothing here has been published.
+**Published 2026-10-19.** Both destinations are public and were verified without a credential:
+`v2026.10` on GitHub and on Hugging Face carry the same 226 assets, matched on size and SHA-256
+against `MANIFEST.json`, and `load_dataset` loads every config with the declared column types.
 
 ## Why this task
 
