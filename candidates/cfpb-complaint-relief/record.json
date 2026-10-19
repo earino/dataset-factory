@@ -1,0 +1,33 @@
+{
+  "id": "cfpb-complaint-relief",
+  "status": "dropped",
+  "verdict": "reject",
+  "created_at": "2026-10-19T11:50:06.328982+00:00",
+  "domain": "consumer finance / complaint resolution outcomes",
+  "prediction_question": "For a complaint submitted to the CFPB Consumer Complaint Database, will the company close it with monetary or non-monetary relief rather than explanation alone?",
+  "prediction_time": "At complaint intake: the consumer-submitted narrative plus product, issue, sub-issue, company, state, ZIP, submitted-via channel and date are known; the company response (the label) is filed later by the company in its CFPB portal response.",
+  "target_definition": "Binary from the documented company_response_to_consumer field: positive if the response is 'Closed with monetary relief' or 'Closed with non-monetary relief', negative for 'Closed with explanation' and administrative closures. timely_response is a separate documented outcome, not used.",
+  "sources": [
+    {
+      "name": "CFPB Consumer Complaint Database (Socrata view s4z5-9hvp; legacy x94y-yhhf)",
+      "url": "https://data.consumerfinance.gov/",
+      "api": "https://data.consumerfinance.gov/resource/s4z5-9hvp.json",
+      "access": "observed 2026-10-19 from the coordinator: view and resource endpoints answered an HTML error page (4,419 bytes, non-JSON) and x94y-yhhf returned 404; TLS to this host fails without an AIA-chasing client (curl and urllib both report 'unable to get local issuer certificate'). The current access path is the data-research API at api.consumerfinance.gov, which was not probed further because the candidate was rejected on novelty before any fetch."
+    }
+  ],
+  "license_evidence": [
+    "Not re-verified this session - the record is rejected on novelty and the endpoints above did not serve the view metadata from this host. The database is CFPB (US Government) published data; if ever reopened, read the licence from the live view metadata before any construction."
+  ],
+  "construction_script": null,
+  "split_strategy": null,
+  "measurements": {
+    "observed_2026_10_19": {
+      "note": "No data probe was run: the novelty rejection was decided first (per the session order of work, novelty before any work on a source). Only endpoint reachability was observed, as recorded in sources[0].access."
+    }
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "Equivalent already exists in usable form, so per the standing novelty test this is a rejection, not a candidate. The exact intake-time-to-outcome task is published and de-risked by third parties: (1) arXiv 2606.22664 'Sub-Issue Vs. % Of Replies' builds binary monetary-relief classification on CFPB complaint data with narrative text, LDA topics, engineered text features and structured fields (company, state), XGBoost, a temporal train/test split, AUC-ROC 0.78 vs a 0.69 TF-IDF baseline - i.e. the task, the leakage discipline (intake-time features only) and the temporal-split protocol are all already public; (2) 'Customer complaint analytics in digital financial services' (Future Business Journal, 2026) predicts subsequent untimely company responses from intake-time information with a chronological holdout, ROC AUC 0.7653; (3) github.com/RishiRatnakarData/consumer-complaint-intelligence ships an end-to-end intake-time-only, leakage-aware classifier (relief rate 40.6%, chronological 75/25 split, company-level relief rates measured); (4) Yale SOM / Jiwoong Shin et al. analyse 1.1M+ complaints for relief outcomes vs LLM-written narratives. What exists: the source, the task, intake-time feature discipline and temporal splits, all public. What would be ours: only re-partitioning and packaging - a mirror, not a contribution.",
+  "review": null,
+  "next_action": "None - dropped on novelty (2026-10-19). Do not reopen for outcome prediction from intake-time fields. Reopening would only make sense for a materially different task (e.g. cross-firm panel analysis rather than per-complaint outcome), which would be a new candidate with its own novelty search."
+}

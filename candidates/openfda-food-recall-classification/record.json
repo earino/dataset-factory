@@ -1,0 +1,35 @@
+{
+  "id": "openfda-food-recall-classification",
+  "status": "dropped",
+  "verdict": "reject",
+  "created_at": "2026-10-19T11:50:05.876612+00:00",
+  "domain": "consumer safety / food recall regulatory classification",
+  "prediction_question": "For a recall report opened in FDA's food enforcement system, will FDA classify it Class I (versus Class II/III)?",
+  "prediction_time": "At recall initiation / report creation: product description, recalling firm, reason for recall, distribution scope and quantity are known; the classification is assigned by FDA during the classification process afterwards (and 'status' ongoing/terminated is post-hoc).",
+  "target_definition": "Recall classification (Class I / II / III per 21 CFR, FDA's documented classification process), binarized as Class I vs rest for a runner-compatible task.",
+  "sources": [
+    {
+      "name": "openFDA Food Enforcement API",
+      "url": "https://api.fda.gov/food/enforcement.json",
+      "api": "https://api.fda.gov/food/enforcement.json?limit=1",
+      "access": "anonymous, no key, JSON; verified live 2026-10-19"
+    }
+  ],
+  "license_evidence": [
+    "Measured 2026-10-19: GET https://api.fda.gov/food/enforcement.json?limit=1 answers anonymously and its meta block carries terms=https://open.fda.gov/terms/ and license=https://open.fda.gov/license/ plus the disclaimer 'Do not rely on openFDA to make decisions regarding medical care... results are unvalidated.' openFDA data is US Government public domain per its license page; the disclaimer must be carried on any derived release."
+  ],
+  "construction_script": null,
+  "split_strategy": null,
+  "measurements": {
+    "observed_2026_10_19": {
+      "command": "curl -sS 'https://api.fda.gov/food/enforcement.json?limit=1'",
+      "meta_results_total": 29485,
+      "sample_row_fields_observed": "state, classification ('Class II' in the first row), plus the documented report fields (recall initiation date, product description, reason for recall, recalling firm, classification, status)"
+    }
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "Equivalent already exists in usable form, so per the standing novelty test this is a rejection, not a candidate. The exact task on the exact source is a published 2025 paper: 'Hazard-portfolio patterns in US food recall severity' (PMC13526789) uses 28,448 openFDA food enforcement records (2012-2025), target = the three-level severity classification (Class I 44.1% / Class II 50.1% / Class III 5.8%), ML triage models with a firm-history baseline capturing 92% of the best model's performance, and explicit ML-assisted-triage conclusions. Supporting prior art: RecallRisk-BERT (arXiv 2606.27174) does the same severity-triage task on openFDA *device* recalls (54,165 records, 2002-2025); a Kaggle dataset ships an analysis-ready unified snapshot of FDA food/drug/device recalls with harmonised fields and parsed dates; SafeBite (OpenReview) fine-tunes classifiers to assign health-hazard evaluations from recall texts. What exists: the source, the task, the label distribution, models and baselines. What would be ours: only re-partitioning - a mirror, not a contribution.",
+  "review": null,
+  "next_action": "None - dropped on novelty (2026-10-19). Do not reopen for classification triage from initiation-time fields. If a need ever arises in this family, it must be a different task (e.g. predicting *termination lag* rather than class) - a new candidate with its own novelty search."
+}

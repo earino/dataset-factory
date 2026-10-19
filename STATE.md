@@ -3328,3 +3328,47 @@ three new sources taken to a recorded verdict per session; a `--prompt-file` arg
 to admit 14 discovery ticks plus 3 advancement ticks per week; the $5/month allowance and the
 `stop_fraction` brake are unchanged, so the gate still holds the moment estimated spend approaches
 the cap.
+
+## 2026-10-19 - Discovery session: four new sources opened, three novelty rejections, one go
+
+Novelty search ran **before** any work on each source, and it killed three of the four: each already
+exists in usable form, so per the standing test they are rejections, not candidates. All four carry a
+`record.json` + `notes.md` verdict; `scripts/check-candidate.py --all` exit 0 and the suite
+(346 tests) passes.
+
+- **`nws-tornado-warning-verification` - GO (status investigating, novelty `differentiated`).**
+  For an NWS tornado warning at issuance, will it be verified (>=1 tornado report inside its
+  storm-based polygon during valid time)? Source: IEM cow API
+  `https://mesonet.agron.iastate.edu/api/1/cow.json` (anonymous; `begints`/`endts` required - the
+  HTML docs' "no parameters required" is stale, learned from the API's own 422). Label =
+  publisher-computed per-warning `verify` boolean (documented methodology; NWS public domain + IEM
+  "public domain... attribution appreciated", both quoted in the record; cow's "unofficial" caveat to
+  carry on any release). Measured 2026-10-19: national 2013 = 1,832 warnings / 441 verified (0.241),
+  100 distinct days with a verified warning (19,593,733 bytes, 38.4 s); national 2023 = 2,531 / 656
+  (0.259), 115 days (28,389,049 bytes, 59.5 s); per-year pull is the whole construction unit
+  (~500 MB / 12-17 min for 2008-2024, sum of measured per-year costs). Cross-check: cow FAR 0.74-0.76
+  vs published TOR-warning FAR 0.69 (Keylon 2025, arXiv 2510.25011) - consistent. Known-event
+  fixture named: the 2022-04-16 northern-Arkansas storm behind all 3 documented tornado-emergency
+  false alarms must read `verify=false`. Next action is a specific construction step in the record
+  (17 per-year pulls, key `(year,wfo,eventid)`, exclude label-source fields `verify`/`stormreports*`/
+  `lead0`/`areaverify`/`statuses`/`status`, frozen train 2008-2018 / eval 2019-2021 / holdout
+  2022-2024).
+- **`faa-wildlife-strike-damage` - REJECT.** Damage-from-pre-strike-features is public and even
+  leakage-audited: github.com/oldguy773/FAA-Wildlife-Strike-Analysis (174,104 records, post-strike
+  leakage columns identified and dropped), Misra et al. 2022 (RF 78.81% acc, same top variables),
+  arXiv 2608.12390 (open aggregates of the same database, 347,575 reports). No fetch of the source was
+  needed or made.
+- **`openfda-food-recall-classification` - REJECT.** The exact task on the exact source is PMC13526789
+  (2025): 28,448 openFDA food enforcement records, Class I/II/III target, ML triage + firm-history
+  baseline; plus RecallRisk-BERT for devices and an analysis-ready Kaggle snapshot. Measured reachability
+  before deciding: `GET api.fda.gov/food/enforcement.json?limit=1` answers anonymously with
+  `meta.results.total = 29,485` and terms/license links.
+- **`cfpb-complaint-relief` - REJECT.** Intake-time-to-relief is published end to end: arXiv 2606.22664
+  (monetary relief, temporal split, AUC 0.78), Future Business Journal 2026 (untimely response,
+  holdout AUC 0.7653), a public leakage-aware pipeline repo, and the Yale SOM relief analysis. Also
+  recorded: the old Socrata endpoints at data.consumerfinance.gov now serve HTML errors/404 from this
+  host and TLS needs an AIA-chasing client; the live path is the data-research API.
+
+Bench after this session: msha-enforcement-citations and chicago-food-inspections qualified and
+awaiting packaging (advancement sessions own that), and one new go candidate
+(nws-tornado-warning-verification) ready for a construction job.

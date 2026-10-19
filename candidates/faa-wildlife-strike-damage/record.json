@@ -1,0 +1,41 @@
+{
+  "id": "faa-wildlife-strike-damage",
+  "status": "dropped",
+  "verdict": "reject",
+  "created_at": "2026-10-19T11:50:05.430745+00:00",
+  "domain": "aviation safety / wildlife strike damage",
+  "prediction_question": "For a reported wildlife strike to a civil aircraft, will the strike result in damage to the aircraft?",
+  "prediction_time": "The circumstances of the strike as recorded on the FAA strike report (form 5200-7): airport, state, FAA region, aircraft make/mass, phase of flight, height, speed, visibility, precipitation, species. Damage fields and per-part damage flags are the outcome and are excluded from features.",
+  "target_definition": "Binary: aircraft damage (damage level in {M, M?, S, D} on the published scale, or any damage flag) recorded in the strike report.",
+  "sources": [
+    {
+      "name": "FAA National Wildlife Strike Database",
+      "url": "https://wildlife.faa.gov/",
+      "api": "search portal plus full-database CSV/Access download; no API probed this session",
+      "access": "not fetched this session: the candidate was rejected on novelty before any probe, per the session order of work"
+    }
+  ],
+  "license_evidence": [
+    "U.S. Government work, public domain. Not read from the portal's own terms page this session (no fetch happened); the public-domain character is third-party attested: an arXiv preprint distributing derived aggregates states the export is 'distributed as an Access database at https://wildlife.faa.gov/ (U.S. government public domain work)' (arXiv 2608.12390, read 2026-10-19). If ever reopened, read the portal's terms directly."
+  ],
+  "construction_script": null,
+  "split_strategy": null,
+  "measurements": {
+    "third_party_published_figures_2026_10_19": [
+      {
+        "source": "arXiv 2608.12390 (open versioned aggregates of the NWSD)",
+        "observed": "frozen seed of 347,575 strike reports spanning incident years 1990-2026 (4,010 in partial 2026); damaging defined as DAMAGE_LEVEL in {M, M?, S, D}; commercial subset AC_MASS in {3,4,5}"
+      },
+      {
+        "source": "github.com/oldguy773/FAA-Wildlife-Strike-Analysis",
+        "observed": "174,104 records, 65 original columns, target 'Aircraft Damage' with class balance 91.4% no-damage / 8.6% damage; post-strike leakage columns identified and dropped; tuned random forest reaches 62% damage recall from pre-strike features only"
+      }
+    ],
+    "note": "None of these figures were measured by this session; they are third-party published measurements of the same source, labelled as such. No probe was run because the novelty rejection came first."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "Equivalent already exists in usable form, so per the standing novelty test this is a rejection, not a candidate. The exact task - predict aircraft damage from pre-strike information only - is public, de-risked and even leakage-audited by third parties: (1) github.com/oldguy773/FAA-Wildlife-Strike-analysis ships a full pipeline on the public database.csv with the post-strike damage-flag leakage identified, fixed and documented, plus feature importances (aircraft mass, species, phase of flight, visibility, height, speed); (2) Misra et al. 2022 (Int J Sustainable Aviation 10.1504/IJSA.2022.122328) trains RF/ANN/logreg/SVM/XGBoost/KNN on the same database with random forest at 78.81% accuracy and the same top variables (bird size, impact height, airspeed, aircraft mass); (3) a 2025 helicopter-specific study (2013-2022, 2,816 strikes, 14.38% damaging) does the same task for a segment; (4) arXiv 2608.12390 publishes open versioned aggregates of the same database by family/airframe/airport for 1990-2026. What exists: the source, the task, the pre-strike feature discipline, the leakage findings and the headline accuracies. What would be ours: only splits and packaging - a mirror, not a contribution. The one thing none of them ship is a scored runner contract, which does not clear the operator's bar ('a source whose equivalent already exists in a usable form is a rejection').",
+  "review": null,
+  "next_action": "None - dropped on novelty (2026-10-19). Do not reopen for damage prediction from pre-strike strike-report fields. A re-open would need a materially different task on this source (e.g. something about construction quality rather than the prediction itself), which would be a new candidate with its own novelty search."
+}
