@@ -1,0 +1,38 @@
+{
+  "id": "npri-facility-spill-year",
+  "status": "dropped",
+  "verdict": "reject",
+  "created_at": "2026-10-19T20:11:40.063864+00:00",
+  "domain": "industrial incident prediction / environmental reporting compliance",
+  "prediction_question": "Alternative NPRI formulation measured while vetting the primary task: for a facility that reported to the NPRI in year Y, will it report any spill-category release (Air Emissions - Spills or Water Releases - Spills columns) in year Y+1, given its reporting history through year Y?",
+  "prediction_time": "Would have been June 1 of year Y+1 (the year-Y reporting deadline), same instant as the primary npri-facility-reporting-exit task.",
+  "target_definition": "Binary from the year-Y+1 single-year file: any non-zero value in the spill-category release columns for that NPRI_ID.",
+  "sources": [
+    {
+      "name": "Single year data tables by facility - releases, transfers and disposals (ECCC NPRI)",
+      "url": "https://open.canada.ca/data/en/dataset/348504f1-43a6-4e0c-aee5-fc470b1dc888",
+      "api": "https://data-donnees.az.ec.gc.ca/api/file?path=%2Fsubstances%2Fplansreports%2Freporting-facilities-pollutant-release-and-transfer-data%2Fsingle-year-data-tables-by-facility-releases-transfers-and-disposals%2FNPRI-INRP_DataDonn%C3%A9es_2023.csv",
+      "license": "Open Government Licence - Canada (license_title via CKAN package_show 2026-10-19)",
+      "access": "same source as npri-facility-reporting-exit - see that record for full measurements"
+    }
+  ],
+  "license_evidence": [
+    "Measured 2026-10-19: CKAN package_show 348504f1-43a6-4e0c-aee5-fc470b1dc888 returns license_title 'Open Government Licence - Canada' (Environment and Climate Change Canada). Licence was never the blocker for this formulation."
+  ],
+  "construction_script": null,
+  "split_strategy": null,
+  "measurements": {
+    "spill_base_rates_2026_10_19": "Full single-year file parses (same runs as the primary task's exit measurement): facility-years carrying any spill-category quantity - 2021: 110 of 7,322 (1.50%); 2022: 114 of 7,521 (1.51%); 2023: 149 of 7,986 (1.87%). Row level: 378/56,115 (2021), 447/60,202 (2022), 491/62,125 (2023) rows carry spill values, i.e. spill events concentrate in a handful of facility-substance records."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "Dropped on measured split capacity, with a novelty concern recorded beside it: the positive class is ~1.5-1.9% of facility-years (110-149 positives per recent year) and heavily clustered - a 4-year holdout window would carry a few hundred positives dominated by repeat facilities, which is exactly the 'thousands of positives, tiny effective sample' failure mode the discovery skill flags, and well below the independent-positive capacity the qualification gate needs for a defensible score. Additionally the formulation is adjacent to published US facility-incident/compliance prediction literature, so its differentiated novelty would be weaker than the exit task. The stronger formulation on the same source (predicting reporting exit, 10.8-12.3% base rate, ~800-900 positives/year) is recorded as candidates/npri-facility-reporting-exit and is the NPRI verdict for this session.",
+  "review": null,
+  "next_action": "None - dropped on measured capacity. Revisit only if the exit task's construction reveals the spill signal is needed as a feature, in which case it is a column of the exit task, not a task of its own.",
+  "jurisdiction": {
+    "country": "CA",
+    "region": "North America",
+    "publisher": "Environment and Climate Change Canada - National Pollutant Release Inventory",
+    "recorded_at": "2026-10-19"
+  }
+}

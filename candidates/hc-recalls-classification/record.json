@@ -1,0 +1,40 @@
+{
+  "id": "hc-recalls-classification",
+  "status": "dropped",
+  "verdict": "reject",
+  "created_at": "2026-10-19T20:11:40.491384+00:00",
+  "domain": "consumer/food/health-product recall triage",
+  "prediction_question": "Hypothetical task this source supports (not taken forward): for a recall notice published on the Government of Canada Recalls and Safety Alerts system, predict its hazard classification (food Class 1-3, medical device Type I-III) from features available before classification.",
+  "prediction_time": "Would have to be the moment the recall notice is published; the notice row carries the class in the same record, and 'Last updated' is a revision date not a first-publication date (measured: some rows carry an empty value), so timing a pre-classification instant from this product alone is not cleanly possible.",
+  "target_definition": "'Recall class' column of the open-data CSV (measured values: Class 1/2/3 for CFIA food recalls, Type I/II/III for medical devices, empty for Transport Canada vehicle recalls). The label is assigned by the recalling organization under a documented risk-classification process - so the label itself is fine; the task is not.",
+  "sources": [
+    {
+      "name": "Recalls and Safety Alerts open data (Health Canada, multi-agency: CFIA, TC, HC)",
+      "url": "https://open.canada.ca/data/en/dataset/d38de914-c94c-429b-8ab1-8776c31643e3",
+      "api": "https://recalls-rappels.canada.ca/sites/default/files/opendata-donneesouvertes/HCRSAMOpenData.csv (anonymous full-file GET, 10,668,115 bytes, Last-Modified 2026-10-19, updated daily; JSON variant alongside)",
+      "license": "Open Government Licence - Canada (license_title via CKAN package_show 2026-10-19)",
+      "access": "anonymous, no key, single-file bulk download - access is not the blocker"
+    }
+  ],
+  "license_evidence": [
+    "Measured 2026-10-19: CKAN package_show d38de914-c94c-429b-8ab1-8776c31643e3 returns license_title 'Open Government Licence - Canada', publisher organization 'Health Canada | Santé Canada' (hc-sc). OGL-Canada-2.0 attribution terms would carry through unchanged; licence is not the blocker either."
+  ],
+  "construction_script": null,
+  "split_strategy": null,
+  "measurements": {
+    "shape_2026_10_19": "Full CSV read (downloaded to coordinator scratch, deleted afterwards): 34,263 rows, 34,263 distinct NIDs, 11 columns (NID, Title, URL, Organization, Product, Issue, What you should do, Category, Recall class, Last updated, Archived). Last-Modified header 2026-10-19 02:25 UTC - the file is refreshed daily.",
+    "composition_2026_10_19": "Organization counts: TC 9,952; Medical devices 8,686; CFIA 5,331; Consumer product safety 5,217; Drugs and health products 1,941; other HC branches ~3,100. 'Recall class' populated: Class 1 1,964 / Class 2 1,877 / Class 3 1,504 (food) and Type II 6,859 / Type III 2,838 / Type I 950 (devices); 18,232 rows (53%) carry no class at all (mostly TC vehicles). Archived: 14,446 of 34,263.",
+    "timing_weakness_measured": "'Last updated' is a revision timestamp, not a publication timestamp: measured minimum over the file is an empty string (rows with no date), and notices get edited, so a publication-instant panel cannot be reconstructed from this product alone."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "Rejected on the standing novelty test, not on access: the task this source supports - classifying/predicting a recall's hazard class from pre-classification features - already exists in usable, leakage-audited form. Prior art, recorded: (1) PMC13526789 (2025): 28,448 openFDA food enforcement records, Class I/II/III target, ML triage + firm-history baseline - the exact task shape on the US analogue of this dataset; (2) RecallRisk-BERT for medical-device recall classification; (3) an analysis-ready Kaggle snapshot of openFDA food recalls; (4) our own candidates/openfda-food-recall-classification record (rejected 2026-10-19) with the same comparison. A Canadian re-issue would change the jurisdiction and the publisher, not the task; per the standing test ('a source whose equivalent already exists in a usable form is a rejection, not a candidate') and the mirror rule, this is a rejection. The source is otherwise well-behaved (measured: anonymous daily-refreshed 10.7 MB CSV under OGL-Canada), and its mechanical publication-date weakness was measured too.",
+  "review": null,
+  "next_action": "None - dropped. Do not reopen for any recall-classification formulation; if someone proposes a genuinely different task on this source (not hazard-class prediction), open a new candidate with a novelty check first.",
+  "jurisdiction": {
+    "country": "CA",
+    "region": "North America",
+    "publisher": "Health Canada - Recalls and Safety Alerts (with CFIA and Transport Canada as contributing agencies)",
+    "recorded_at": "2026-10-19"
+  }
+}

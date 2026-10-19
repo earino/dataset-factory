@@ -3451,3 +3451,62 @@ nothing bulk downloaded to the coordinator). `scripts/check-candidate.py --all` 
 
 Next actions are specific in each record; both GOs hand to advancement sessions. Probe scripts
 (`.factory/probe_uk*.py`) deleted after use; nothing large touched the coordinator.
+
+## 2026-10-19 - Canada-focused discovery session: four verdicts from four Canadian sources, two GOs, two measured drops
+
+Regional focus tick (Canada). Four new candidates opened, **all Canadian publishers**
+(CRA via open.canada.ca, ECCC, Health Canada) - the tick's quota satisfied without
+touching a US source; the standing novelty test ran before any construction work; every
+probe was anonymous; the CSVs downloaded for measurement (~190 MB) lived in coordinator
+scratch and were deleted after use. `scripts/check-candidate.py --all` exit 0 and the
+suite passes; `scripts/discovery-coverage.py` now reports 18 candidates, 10 live,
+**live non-US 4/10 (was 2/8)**.
+
+- **`cra-charity-filing-exit` - GO (Canada Revenue Agency, OGL-Canada 2.0).** Predict
+  whether a registered charity that filed a T3010 for a fiscal period ending in year Y
+  files no return for any fiscal period ending in Y+1, from its year-Y-and-earlier
+  returns (Section D + Schedule 6 line codes 4020-5910, program mix, compensation,
+  designation/category/province). Prediction instant: the six-month T3010 filing
+  deadline. Label is mechanical - BN present in the year-Y Identification file, absent
+  from year-Y+1 (the dictionary states the lists contain only filers; the live charity
+  status/revocation product is NOT on open.canada.ca - measured, CKAN searches empty - so
+  filing-exit is the reachable label). Measured full-file: 85,113/84,729/84,855/84,519/
+  83,761 distinct BNs for 2012/2013/2014/2023/2024; exit rates 2.708% (2012->2013,
+  2,305), 1.768% (2013->2014, 1,498), 2.811% (2023->2024, 2,376); late-filing artifact
+  4.73% (109 of 2,305 absent-in-2013 reappear in 2014). Data dictionary PDF read
+  in-session; 2012 file is cp1252 not UTF-8; one 21 MB financial CSV measured at 4.3 s
+  download on the coordinator, full construction window ~1.5 GB (estimate from measured
+  per-file sizes). Novelty `differentiated`: US Form 990 nonprofit-failure literature
+  exists (Polytechnic UPR, ODU, Rutgers 990-e-file RF studies) but nothing on T3010 and
+  no ML-ready task anywhere.
+- **`npri-facility-reporting-exit` - GO (Environment and Climate Change Canada,
+  OGL-Canada 2.0).** Predict whether a facility that reported to the NPRI in year Y
+  reports nothing at all in Y+1, from its reporting history. Prediction instant: June 1
+  of Y+1 (statutory year-Y reporting deadline). Measured full-file: 7,322/7,521/7,986
+  facilities in 2021/2022/2023; exit rates 12.32% (902, 2021->2022) and 10.84% (815,
+  2022->2023). CKAN's recorded download URLs serve an HTML SPA - the real files are at
+  `data-donnees.az.ec.gc.ca/api/file` (measured: bulk releases 393,281,064 bytes,
+  1993-present; single-year 36-40 MB, ranged 206s). Units-frame trap measured: one file
+  mixes tonnes/kg/grams/gTEQ per row - normalization is a construction requirement.
+  Novelty `differentiated`: ECCC's own scoping review (225 articles) shows NPRI used as
+  model input, never as the prediction target; US TRI work is adjacent but no
+  reporting-outcome task with splits exists.
+- **`hc-recalls-classification` - REJECT (Health Canada, OGL-Canada 2.0).** Measured:
+  anonymous daily-refreshed CSV (10,668,115 bytes, Last-Modified 2026-10-19), 34,263
+  rows, "Recall class" populated for CFIA food (Class 1-3, 5,345 rows) and medical
+  devices (Type I-III, 10,647 rows), empty for 18,232 TC vehicle rows; "Last updated" is
+  a revision date with empty values on some rows. Rejected on the standing novelty test:
+  recall-hazard-class prediction already exists in usable, leakage-audited form on the
+  US analogue (PMC13526789 on openFDA Class I/II/III; RecallRisk-BERT for devices; a
+  Kaggle snapshot; our own `openfda-food-recall-classification` rejection). Access,
+  licence and freshness were all fine - the task is the blocker.
+- **`npri-facility-spill-year` - DROPPED (ECCC, measured).** The spill-year alternative
+  failed split capacity, not access: spill-carrying facility-years are 1.50%/1.51%/1.87%
+  (110/114/149 in 2021/2022/2023) - too thin and clustered to carry a scored holdout;
+  recorded so it is not re-measured.
+
+Next actions are specific in each record; both GOs hand to advancement sessions. Probe
+scripts (`.factory/probe_ca*.py`) deleted after use; the blocked `rm -rf` of the unused
+spill-year stub was converted into recording that stub as its own dropped candidate
+rather than hunting a gate workaround.
+

@@ -1,0 +1,165 @@
+{
+  "id": "npri-facility-reporting-exit",
+  "status": "investigating",
+  "verdict": "go",
+  "created_at": "2026-10-19T20:16:07.092017+00:00",
+  "domain": "industrial facility survival / environmental reporting compliance",
+  "prediction_question": "For a facility that reported pollutant releases to Canada's National Pollutant Release Inventory for reporting year Y, will it report nothing at all to the NPRI for year Y+1 (exit the reporting population), given only its reporting history through year Y?",
+  "prediction_time": "June 1 of year Y+1: the statutory deadline for year-Y NPRI reports (NPRI reports for a calendar year are due by June 1 of the following year, per the publisher's Canada Gazette NPRI notices and reporting guides). At that instant the facility's full history through year Y is knowable, and its year-Y+1 outcome is not - the Y+1 report would not even be due until June 1 of Y+2, and the publisher publishes each reporting year's data later still (the 2024 single-year file is the latest published as of 2026-10-19). Features are strictly year-Y and earlier; every year-Y+1 field is the label source and never ships.",
+  "target_definition": "Binary and mechanical, from the publisher's own per-year products: positive iff NPRI_ID is present in the year-Y single-year data file and absent from the year-Y+1 file. NPRI_ID is the publisher's permanent facility identifier (measured: facility NPRI ID 1 carries the same ID across 2021-2024 files). Absence means the facility reported no releases/disposals/transfers for that reporting year - the documented outcome of closure, falling below reporting thresholds, or ceasing to meet criteria; the task does not need to distinguish those causes because the label is the publisher's own reporting record, not a judgement.",
+  "sources": [
+    {
+      "name": "Single year data tables by facility - releases, transfers and disposals (ECCC NPRI)",
+      "url": "https://open.canada.ca/data/en/dataset/348504f1-43a6-4e0c-aee5-fc470b1dc888",
+      "api": "https://data-donnees.az.ec.gc.ca/api/file?path=%2Fsubstances%2Fplansreports%2Freporting-facilities-pollutant-release-and-transfer-data%2Fsingle-year-data-tables-by-facility-releases-transfers-and-disposals%2FNPRI-INRP_DataDonn%C3%A9es_2023.csv (anonymous ranged GET, 206 answers, measured 2026-10-19)",
+      "license": "Open Government Licence - Canada (license_title via CKAN package_show 2026-10-19)",
+      "access": "anonymous bulk CSV/XLSX per reporting year (2020-2024 measured listed; wide schema with geolocation, NAICS 4/6, substance, per-medium release columns)"
+    },
+    {
+      "name": "Bulk data files for all years - releases, disposals, transfers and facility locations (ECCC NPRI)",
+      "url": "https://open.canada.ca/data/en/dataset/40e01423-7728-429c-ac9d-2954385ccdfb",
+      "api": "https://data-donnees.az.ec.gc.ca/api/file?path=%2Fsubstances%2Fplansreports%2Freporting-facilities-pollutant-release-and-transfer-data%2Fbulk-data-files-for-all-years-releases-disposals-transfers-and-facility-locations%2FNPRI-INRP_ReleasesRejets_1993-present.csv (anonymous ranged GET; content-range total 393,281,064 bytes measured 2026-10-19)",
+      "license": "Open Government Licence - Canada",
+      "access": "one CSV per data type covering 1993 to the latest reporting year, list format: Reporting_Year, NPRI_ID, Company_Name, Facility_Name, NAICS, NAICS Title, PROVINCE, CAS_Number, Substance Name, Group (Releases to Air/Water/Land), Category (Stack/Fugitive/Spills/...), Quantity, Units, Estimation_Method. NOTE: the ec.gc.ca download URLs carried in CKAN metadata serve an HTML SPA - the real files are at the az.ec.gc.ca api/file path (measured)."
+    },
+    {
+      "name": "NPRI reporting deadline and reporting requirements (ECCC guidance / Canada Gazette notices)",
+      "url": "https://www.canada.ca/en/environment-climate-change/services/national-pollutant-release-inventory/tools-resources-data/exploredata.html",
+      "api": "publisher pages read 2026-10-19 via search excerpts; 'Explore NPRI data' page states reviewed 2015-2024 data with preliminary 2025 available",
+      "license": "Government of Canada web content",
+      "access": "documents the annual reporting cycle (calendar-year reports due June 1 of the following year) and that the 2024 reporting year is the latest reviewed publication"
+    }
+  ],
+  "license_evidence": [
+    "Measured 2026-10-19: CKAN package_show for both NPRI packages ('Single year data tables by facility' 348504f1-..., 'Bulk data files for all years' 40e01423-...) return license_title 'Open Government Licence - Canada', publisher organization 'Environment and Climate Change Canada' (ec).",
+    "OGL-Canada 2.0 attribution requirement carries through unchanged on any release (title of the information, name of the source, link to the licence); no share-alike or non-commercial restriction; source terms preserved verbatim per the standing policy.",
+    "Publisher caveat to carry: NPRI data are facility-reported estimates with per-row Estimation_Method codes (E1-E5/M1-M5 etc., documented in the NPRI guides) and known reporting-threshold effects; the ECCC scoping review itself flags 'reporting compliance and uncertainty in estimation methods' as a data-quality limitation."
+  ],
+  "construction_script": null,
+  "split_strategy": "Temporal by the outcome year Y+1 (label year): train Y+1 in 2005-2015, eval 2016-2019, holdout 2020-2023. 2024 exists (38,762,396 bytes, 7,986+ facilities) but 2025 is not yet published, so 2024 exits are not observable; 2024 rows serve as feature history only. Measured base rates (full NPRI_ID set comparisons over complete single-year files): 2021->2022 exit 902/7,322 = 12.32%; 2022->2023 815/7,521 = 10.84% - both classes amply present every year; ~800-900 positives per recent year means train (~11 label years) ~5-9k positives, eval ~3-4k, holdout ~3-4k (pre-2010 years have fewer facilities; counts to be recomputed from the bulk file at construction). Positives cluster by facility (a facility can exit at most once, but its history spans many year-rows), so the facility is the clustered unit: runner id = unique (NPRI_ID, Y) row key, NPRI_ID ships only as a declared high-cardinality column, never the id column.",
+  "measurements": {
+    "file_location_2026_10_19": "The download URLs recorded in CKAN for the bulk files (data-donnees.ec.gc.ca/data/...) serve a 2,200-byte HTML SPA, not the data. Measured working path: https://data-donnees.az.ec.gc.ca/api/file?path=<url-encoded path> answers ranged GETs with 206 and the real bytes (single-year 2023 CSV: 40,400,423 B total; bulk Releases 1993-present CSV: 393,281,064 B total).",
+    "per_year_shape_2026_10_19": "Single-year CSVs measured in full (downloaded to coordinator scratch, deleted afterwards): 2021 36,460,887 B / 56,115 rows / 7,322 distinct NPRI_IDs; 2022 39,154,265 B / 60,202 rows / 7,521; 2023 40,400,423 B / 62,125 rows / 7,986. 2024 measured via ranged HEAD-equivalent: 38,762,396 B (rows not counted). Wide schema, 77 columns: Year, NPRI ID, Company, Facility, City, CSD, CMA, Economic Region, Province, Postal Code, ecozone, watershed, Latitude, Longitude, NAICS 4/6 codes + titles, CAS Number, Substance Name (EN/FR), Units, then per-media release columns (Air: Stack/Storage/Fugitive/Spills/Other/Total; Water: Direct Discharge/Spills/Leaks/...; Land columns further right).",
+    "exit_rates_2026_10_19": "Full NPRI_ID set comparisons: 2021->2022 present 7,322, absent next year 902 (12.32%), new entrants 1,101; 2022->2023 present 7,521, absent 815 (10.84%), entrants 1,280.",
+    "units_frame_warning_measured": "Quantities arrive in MIXED units per row: 2023 file measured units = tonnes 57,570 rows, kg 4,221, grams 167, 'g TEQ' 167 (dioxin toxicity equivalents). Any threshold or aggregation across rows MUST normalize by the Units column first - the same silent wrong-answer failure mode the NOAA datum fix addressed; construction must pin a known-event/aggregate cross-check (e.g. total facility releases vs the publisher's published provincial/sector summary tables).",
+    "spill_alternative_measured": "The alternative 'will the facility report any spill-category release next year' formulation was measured and rejected for this source's primary task: spill-carrying facility-years are only 110/7,322 (1.50%) in 2021, 114/7,521 (1.51%) 2022, 149/7,986 (1.87%) 2023 - too thin and heavily clustered to carry a scored holdout; recorded as candidates/npri-facility-spill-year (dropped).",
+    "extraction_cost_2026_10_19": "Measured on the coordinator: three single-year CSVs (36.5-40.4 MB each, 116 MB total) downloaded and fully parsed in 183 s wall clock (single process, csv module) - roughly 0.6 MB/s effective including parse. Construction from the bulk files is ~400 MB for releases plus disposals/transfers/geolocations files (ESTIMATE from measured releases size; other bulk files not sized) or ~40 MB per single-year file; a 1993-2023 build is a modest worker job (~7,000-8,000 facilities/year, ~56-62k rows/year in the single-year files, bulk list-format rows several times that)."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": null,
+  "next_action": "GO to construction (advancement session owns it). Construction step: on a worker, download the bulk releases CSV (az.ec.gc.ca api/file path, ~393 MB) plus geolocations, or the per-year single-year CSVs for the chosen window; decode as cp1252 (measured: accents garble under UTF-8); build the (NPRI_ID, Y) facility-year panel from year-Y and earlier reports (substance mix, per-media quantities NORMALIZED BY UNITS - tonnes/kg/grams/gTEQ measured mixed in one file, NAICS 4/6, province, facility age, prior exit-adjacent signals like shrinking substance counts), label = NPRI_ID absent from the Y+1 file, exclude every Y+1 field from shipped columns and assert absence, freeze train labels 2005-2015 / eval 2016-2019 / holdout 2020-2023, runner id = unique (NPRI_ID, Y) key with NPRI_ID declared high-cardinality, pin the measured recent exit rates (10.8-12.3%) as the cross-check fixture, then run the qualification gate on the worker over the full artifact.",
+  "jurisdiction": {
+    "country": "CA",
+    "region": "North America",
+    "publisher": "Environment and Climate Change Canada - National Pollutant Release Inventory",
+    "recorded_at": "2026-10-19"
+  },
+  "novelty_check": {
+    "checked_at": "2026-10-19T20:19:51+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "pollutant release inventory prediction",
+      "facility closure prediction emissions",
+      "toxics release inventory machine learning"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "pollutant release inventory prediction",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "facility closure prediction emissions",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "toxics release inventory machine learning",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "pollutant release inventory prediction",
+          "hits": 239350,
+          "top": [
+            "NPRI data for open IO Canada",
+            "DL_3-DTransport: DL_3-DTransport",
+            "INTAC: a high-resolution INTegrated emission inventory of Air pollutants for China in 2017",
+            "PANTHEON_D1.1_Global greenhouse gas and short-lived air pollutant emission inventory",
+            "Air Pollutant Measurement in Street from Roadside Tree Leaves through Regression Learning for Online Air Quality Index"
+          ]
+        },
+        {
+          "query": "facility closure prediction emissions",
+          "hits": 161466,
+          "top": [
+            "Evolution of India's PM2.5 Pollution Between 1998 and 2020 Using Global Reanalysis Fields",
+            "Deliverable 3.1a Outreach programmes and briefings with European institutions and Member States",
+            "Emissions and Source Apportionment of PM2.5 and PM10 Pollution in Hyderabad, India",
+            "Deliverable 2.5b  Active support and recommendations to the European Commission CCUS Forum",
+            "Carbon Emission and Engine Cleaning Forecast"
+          ]
+        },
+        {
+          "query": "toxics release inventory machine learning",
+          "hits": 470850,
+          "top": [
+            "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
+            "Data and code for: What a national release inventory misses about PFAS from textile mills: US Toxics Release Inventory records, 2020\u20132024",
+            "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI",
+            "RGB and RGNIR Plastic Waste Database",
+            "mushrooms"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "pollutant release inventory prediction",
+          "hits": 5,
+          "top": [
+            "The Flight Physics Concept Inventory: Development of a research-based assessment instrument to enhance learning and teac",
+            "Inventory Management with Partially Observed Nonstationary Demand",
+            "Regress-Later Monte Carlo for Optimal Inventory Control with applications in energy",
+            "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
+            "A sustainable inventory model considering a discontinuous transportation cost function and different sources of pollutio"
+          ]
+        },
+        {
+          "query": "facility closure prediction emissions",
+          "hits": 5,
+          "top": [
+            "PALANTIR: an updated prediction tool for exoplanetary radio emissions",
+            "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
+            "Ethereum Emissions: A Bottom-up Estimate",
+            "Continuous closure, axes closure, and natural closure",
+            "Beyond SIFT using Binary features for Loop Closure Detection"
+          ]
+        },
+        {
+          "query": "toxics release inventory machine learning",
+          "hits": 5,
+          "top": [
+            "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+            "DOME: Recommendations for supervised machine learning validation in biology",
+            "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
+            "Active learning for data streams: a survey",
+            "Physics-Inspired Interpretability Of Machine Learning Models"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'pollutant release inventory prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'facility closure prediction emissions': 0 hit(s) - nothing notable\n- huggingface_datasets / 'toxics release inventory machine learning': 0 hit(s) - nothing notable\n- zenodo_records / 'pollutant release inventory prediction': 239350 hit(s) - NPRI data for open IO Canada, DL_3-DTransport: DL_3-DTransport, INTAC: a high-resolution INTegrated emission inventory of Air pollutants for China in 2017, PANTHEON_D1.1_Global greenhouse gas and short-lived air pollutant emission inventory, Air Pollutant Measurement in Street from Roadside Tree Leaves through Regression Learning for Online Air Quality Index\n- zenodo_records / 'facility closure prediction emissions': 161466 hit(s) - Evolution of India's PM2.5 Pollution Between 1998 and 2020 Using Global Reanalysis Fields, Deliverable 3.1a Outreach programmes and briefings with European institutions and Member States, Emissions and Source Apportionment of PM2.5 and PM10 Pollution in Hyderabad, India, Deliverable 2.5b  Active support and recommendations to the European Commission CCUS Forum, Carbon Emission and Engine Cleaning Forecast\n- zenodo_records / 'toxics release inventory machine learning': 470850 hit(s) - plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, Data and code for: What a national release inventory misses about PFAS from textile mills: US Toxics Release Inventory records, 2020\u20132024, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database, mushrooms\n- arxiv_preprints / 'pollutant release inventory prediction': 5 hit(s) - The Flight Physics Concept Inventory: Development of a research-based assessment instrument to enhance learning and teac, Inventory Management with Partially Observed Nonstationary Demand, Regress-Later Monte Carlo for Optimal Inventory Control with applications in energy, Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, A sustainable inventory model considering a discontinuous transportation cost function and different sources of pollutio\n- arxiv_preprints / 'facility closure prediction emissions': 5 hit(s) - PALANTIR: an updated prediction tool for exoplanetary radio emissions, Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, Ethereum Emissions: A Bottom-up Estimate, Continuous closure, axes closure, and natural closure, Beyond SIFT using Binary features for Loop Closure Detection\n- arxiv_preprints / 'toxics release inventory machine learning': 5 hit(s) - Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Active learning for data streams: a survey, Physics-Inspired Interpretability Of Machine Learning Models",
+    "prior_art": [
+      "ECCC scoping review of NPRI use in environmental research (canada.ca fact sheet); US EPA TRI toolbox and PEMS literature; no NPRI or TRI reporting-exit task found in ML-ready form"
+    ],
+    "theirs": "ECCC publishes the raw NPRI (1993-present); its own scoping review shows 225 research articles use NPRI as input to exposure and air-quality models, not as a prediction target; US TRI work is data-standardization and real-time stack-emissions (PEMS), not annual reporting-outcome prediction with splits",
+    "ours": "Facility-year task on Canada's NPRI: predict whether a facility that reported in year Y reports nothing at all in Y+1, from its full substance/media/quantity history (units-normalized), temporal splits, leak-free by construction",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
+}
