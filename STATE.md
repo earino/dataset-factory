@@ -1,13 +1,24 @@
 # Current state
 
-Updated: 2026-10-20, latest (food-hf-002 SUCCEEDED - destination staging is COMPLETE on both platforms and
-chicago-food-inspections is awaiting_operator: true, waiting only on the private-to-public flip.
+Updated: 2026-10-22:05Z (advancement session). chicago-food-inspections is FULLY SHIPPED - the
+operator's flip went through at 21:55Z, both data destinations are public and anonymously
+verified, and the SITE PAGE IS LIVE AND VERIFIED TOO: the 21:55Z session had published it
+(dataset site repo commit 48dc0853 'Prepare website for chicago-food-inspections v2026.10',
+21:57:44Z) but was killed before recording that, so the committed record still said 'remaining:
+site page'. This session found the site live, re-verified anonymously (page + /versions/v2026.10/
+both 200 at 60,065 bytes, catalog.json 182,556 bytes lists the release, page prints
+load_dataset('earino/chicago-food-inspections', 'code_01', revision='v2026.10'), site-publish.py
+verify on fresh bundle .factory/sites/food-website-1 = status=verified, HTTPS enforced on both
+Pages sites), and recorded the site destination in DESTINATIONS.json (github/huggingface entries
+preserved). Nothing remains for this dataset. Release work is done; the tick continues on
+construction (who-flunet-activity-exceedance, the ready buffer candidate).
+Earlier: food-hf-002 SUCCEEDED - destination staging was COMPLETE on both platforms and
 The retry verified all 201 Hub targets at their manifest digests and passed the built-in code_38
 loading check against the corrected declared schema: train/eval/holdout 156841/35358/34218 rows,
 58228/7335/7418 positives. Post-collection: hf-publish --verify ok (201/201, 0 missing, 0
 size-mismatched, recorded in DESTINATIONS.json), Hub tag v2026.10 = main = 9e17ba8a, check-package OK.
-Next: the operator's single approval - 'flip chicago-food-inspections' - then anonymous proofs,
-DESTINATIONS.json before manifest regeneration, card/LOADING/README/release-notes refresh, website step.
+Earlier: the operator's flip approval came at 21:55Z (see the record's PUBLISHED entry); anonymous
+proofs, DESTINATIONS.json, card/LOADING/README/release-notes refresh and the website step all ran.
 Earlier: food-hf-001 FAILED its Hub loading check on a schema bug - inspection_type typed int64; fixed.
 Earlier still: food-consumer-002 PASSED all five steps of the fresh-environment
 consumer verification on the published bytes - package 22/22, 201 assets failures [], sha256sum -c
