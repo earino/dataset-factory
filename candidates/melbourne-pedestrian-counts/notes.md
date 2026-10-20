@@ -52,3 +52,29 @@ distributions.
 ## Parking verdict (2026-09-19)
 
 Status set to `parked`. Every channel re-checked on 2026-09-18 declares no licence; a name commonly assumed is not evidence. The four contracts are met except redistribution, so the blocker is a decision rather than work.
+
+## Licence enquiry (drafted 2026-10-20, ready to send)
+
+To: open-data@melbourne.vic.gov.au
+Subject: Licence terms for the Pedestrian Counting System datasets
+
+Hello,
+
+I am building an open, reproducible benchmark dataset and would like to use the
+Pedestrian Counting System (counts per hour) and Sensor Locations datasets
+published on data.melbourne.vic.gov.au.
+
+I have not been able to find the licence that applies to them. The dataset pages
+and metadata carry no licence field (DataVic harvests them as "other-open" with no
+terms), the /pages/terms and /pages/terms-of-use URLs return 404, and the
+open-data and copyright pages do not state one.
+
+Could you confirm, in writing:
+
+1. which licence applies to these two datasets;
+2. whether redistribution of the data, and of derived features computed from it,
+   is permitted in a public dataset release (GitHub, Hugging Face) under that
+   licence; and
+3. the attribution wording you would like used.
+
+Thank you,

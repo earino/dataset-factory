@@ -19,6 +19,7 @@ from .common import FactoryError, identifier, locked, read_json, utcnow, write_j
 from .http import API, credential_status, secret
 
 REPORT_LIMIT = 262144
+MAX_WORKERS = 3
 BUNDLE_LIMIT = 2 * 1024 * 1024
 # Standard checksum-file names carry no suffix. Kept to an explicit list rather than allowing
 # arbitrary extension-less files, so the bundle rule stays meaningful.
@@ -97,8 +98,10 @@ def validate(job, config):
             raise FactoryError(
                 "An hf_publish job needs FACTORY_HF_WRITE_TOKEN (or FACTORY_HF_WRITE_TOKEN_FILE); "
                 "the inference credential does not grant repository access")
-    if config["max_workers"] != 1:
-        raise FactoryError("This first version supports one worker at a time")
+    # Concurrency is bounded by the same allowance, so a ceiling on the count keeps the
+    # reservation arithmetic honest: three in-flight jobs can each reserve most of the month.
+    if not 1 <= int(config["max_workers"]) <= MAX_WORKERS:
+        raise FactoryError(f"max_workers must be between 1 and {MAX_WORKERS}")
     if not 1 <= config["max_report_bytes"] <= REPORT_LIMIT:
         raise FactoryError("Report limit must be at most 256 KiB")
     if not 1 <= config["max_coordinator_reports_bytes"] <= 20 * 1024 * 1024:
@@ -220,8 +223,16 @@ def launch(root, job_path, config, cloud=None):
         if record_path.exists():
             raise FactoryError("Job ID already recorded; use status/reconcile, never relaunch it")
         records = [read_json(p) for p in (Path(root) / "jobs").glob("*.json")]
-        if any(r["status"] != "deleted" for r in records) or cloud.list_resources("servers", config["project"]):
-            raise FactoryError("An active or interrupted job exists; reconcile it before launching another")
+        active = [r for r in records if r["status"] != "deleted"]
+        # The provider list is the authority on what exists; the ledger can lag a destroy. Both
+        # are counted against the same limit so a lost record cannot exceed the configured
+        # concurrency (and with it the reservation ceiling checked just below).
+        limit = int(config["max_workers"])
+        running = len(cloud.list_resources("servers", config["project"]))
+        if len(active) >= limit or running >= limit:
+            raise FactoryError(
+                f"An active or interrupted job exists: {limit} worker(s) already active; "
+                "reconcile or destroy before launching another")
         budget = number(config["monthly_budget_eur"], "monthly budget")
         month = now.strftime("%Y-%m")
         # Reserve against both months if a job could straddle a month boundary.

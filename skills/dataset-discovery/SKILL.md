@@ -45,6 +45,28 @@ looks. Each is cheap to test and expensive to discover late:
    task with splits and a scored contract is not. **A mirror is not published** - better to
    publish nothing than to republish what a consumer can already download.
 
+## Geographic coverage is a measured property
+
+US federal sources are usually the cheapest to probe anonymously, so an unchallenged pipeline
+drifts toward them: the bench looks healthy while its geography is one country. Measure it.
+
+- **`jurisdiction` is a required field on every candidate record** — `{"country": "FR", "region":
+  "Europe", "publisher": "..."}`. Put it in the completeness checker's required list: an optional
+  field stays empty, and a field added after the fact cannot be trusted to have been measured.
+- **"International" means the publisher's jurisdiction**, not the subject matter. A US agency
+  publishing global data is a US source; a national statistics office is not.
+- Keep a coverage report that prints counts by country and region, the **non-US share of live
+  candidates**, and lists unstated jurisdictions as `unknown` — never inferred from a URL — and
+  exits non-zero while any are unstated, so a regression fails a check instead of aging quietly.
+- Give a recurring discovery routine a **rotating regional focus**, derived deterministically from
+  the clock so a report can be reproduced from its timestamp, and require most of a session's
+  verdicts from that region. Rotation list and starting points: `references/geographic-coverage.md`.
+- **Never backfill the quota with a US source when a region comes up empty.** Record the empty
+  result with the probes that produced it; a padded quota hides exactly the gap the routine exists
+  to find.
+- Count parked candidates in the geography but not in "live". A licence-blocked non-US source does
+  not make the published pipeline international.
+
 ## Commands
 
 ```bash
@@ -121,6 +143,8 @@ command behind it is a guess.
 A candidate is **ready** - the buffer state, before construction - when:
 
 - [ ] All four contracts are satisfied, each with recorded evidence.
+- [ ] `jurisdiction` recorded as country, region and publisher — measured from the publisher, not
+      inferred from the URL.
 - [ ] The licence question is either settled or explicitly escalated as a decision.
 - [ ] `check-candidate.py` reports no missing required field, including a **novelty check** with
       a verdict of `no_precedent` or `differentiated` - never `mirror`.
@@ -133,6 +157,8 @@ failed construction never leaves the queue empty.
 
 ## References
 
+- `references/geographic-coverage.md` - a region rotation for international sourcing, with the
+  portals, licence habits and gotchas of each.
 - `scripts/check-candidate.py` - mechanical completeness check over a candidate record.
 - `skills/dataset-qualification/` - the gate that runs after construction.
 - `skills/dataset-release/` - packaging and publication once a dataset is qualified.

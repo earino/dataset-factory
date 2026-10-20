@@ -550,6 +550,22 @@ work, queue) followed by the hold reason, produced by `research-budget.py` rathe
 Verified held by the cap with three sessions in the ledger, and separately by the late-tick
 window.
 
+### Who authorises a publication
+
+Standing authority was granted by the operator on 2026-10-20: **a release that passes every gate may
+be published without a per-release yes, and is reported afterwards.** The gates are unchanged and are
+not negotiable by this authority:
+
+- the qualification covers this exact artifact, and the package check passes;
+- every destination is verified anonymously (no credential) before the manifest may say `published`;
+- a licence that cannot be read is recorded in `candidates/<id>/license.json` *before* construction,
+  and a candidate with no recorded licence decision is never published.
+
+Publication is still a logged act: record the version, the three destinations and the verification
+result in `STATE.md`. The authority covers ordinary releases of an accepted candidate; it does not
+cover making a private repository public, which was the specific ambiguity on 2026-10-19 and is now
+settled in MSHA's favour.
+
 ## Publishing to Hugging Face
 
 A second destination for the same accepted artifact, from the same release manifest.

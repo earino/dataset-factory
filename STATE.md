@@ -3519,3 +3519,19 @@ is meant to be the brake now, and the gate holds a tick rather than overspending
 and 40-minute per-session ceilings, the discovery quota of three verdicts per session, the
 international requirement, and the rule that an empty region is reported rather than backfilled with
 US sources.
+
+**Operator decisions 2026-10-20 (three, recorded once so they are not re-asked).**
+1. **Standing publication authority: granted.** "Fine" to publishing anything that passes the gates and
+   reporting afterwards. The gate list is unchanged and is written into `docs/OPERATIONS.md`; the
+   authority also settles the 2026-10-19 ambiguity in MSHA's favour - it stays public.
+2. **Companies House: parked permanently.** The operator chose not to buy a year of monthly snapshots
+   (~5.6 GB) for a label that only exists in those snapshots.
+3. **Melbourne: one dated attempt, then reject.** All four licence channels are consistent - open in
+   intent, unstated in terms - so a written enquiry is drafted in the candidate's `notes.md`, and the
+   candidate is rejected on 2026-11-03 if no written licence arrives.
+4. **Worker concurrency: raised to 3, budget unchanged at EUR 20/month.** `factory/worker.py` refused
+   any `max_workers != 1`; that guard is replaced by a bounded check (`MAX_WORKERS = 3`) and the
+   launch guard now counts both active ledger records and live provider servers against the limit, so
+   a lost ledger row cannot buy an extra paid server. Guard tests fail on the pre-fix launcher
+   (`FAILED (failures=1, errors=1)` before, 357 tests OK after). `config/local.json` is gitignored and
+   was edited in place.

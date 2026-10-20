@@ -97,6 +97,38 @@ class WorkerTests(unittest.TestCase):
         self.github.assert_not_called()
         self.assertEqual(self.cloud.created, 0)
 
+    def launch_second(self, job_id):
+        """Launch an independent job while the first is still running."""
+        other = read_json(self.path)
+        other["id"] = job_id
+        path = self.path.parent / (job_id + ".json")
+        write_json(path, other)
+        with patch("factory.worker.resume", return_value={"status": "running"}):
+            worker.launch(self.root, path, self.config, self.cloud)
+        return worker.load_record(self.root, job_id)
+
+    def test_a_second_worker_launches_when_the_limit_allows_it(self):
+        self.config["max_workers"] = 2
+        self.launch()
+        self.launch_second("smoke-second")
+        self.assertEqual(2, self.cloud.created)
+        self.assertEqual(2, len(list((self.root / "jobs").glob("*.json"))))
+
+    def test_the_limit_is_counted_from_the_provider_not_just_the_ledger(self):
+        """A record lost from the ledger must not buy another paid server."""
+        # Default limit is one: the provider still lists a server whose ledger row was lost.
+        self.launch()
+        (self.root / "jobs" / (self.job["id"] + ".json")).unlink()
+        with self.assertRaisesRegex(FactoryError, "worker\(s\) already active"):
+            self.launch_second("smoke-third")
+        self.assertEqual(1, self.cloud.created)
+
+    def test_a_worker_limit_above_the_ceiling_is_refused_before_any_call(self):
+        self.config["max_workers"] = worker.MAX_WORKERS + 1
+        with self.assertRaisesRegex(FactoryError, "max_workers"):
+            self.launch()
+        self.assertEqual(0, self.cloud.created)
+
     def test_allowance_blocks_before_creation(self):
         self.config["monthly_budget_eur"] = "0.01"
         with self.assertRaisesRegex(FactoryError, "allowance"):
