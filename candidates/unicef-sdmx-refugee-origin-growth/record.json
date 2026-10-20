@@ -1,0 +1,44 @@
+{
+  "id": "unicef-sdmx-refugee-origin-growth",
+  "status": "parked",
+  "verdict": "park",
+  "created_at": "2026-10-20T20:21:09+00:00",
+  "domain": "forced displacement - annual country-of-origin refugee population (international organisation publisher; UNICEF's SDMX republishing of UNHCR statistics)",
+  "prediction_question": "Hypothetical task this source would support (parked on split capacity, not formulated further): for a country of origin with at least 1,000 refugees and other people in need of international protection abroad at end of year D, will that population grow by more than 25% in year D+1?",
+  "prediction_time": "Would be the publication of the year-D value in UNICEF's MG series (annual data for year D appears during D+1; the SDMX rows carry no vintage field, so as-of reproducibility under UNHCR revisions is an open construction question).",
+  "target_definition": "Would be binary from the year-D+1 row's OBS_VALUE of the same origin: (OBS_VALUE[D+1] > 1.25 x OBS_VALUE[D]) with OBS_VALUE[D] >= 1000. Label source column: the TIME_PERIOD=D+1 OBS_VALUE, excluded from shipped features. Unit: persons. Frame: UNICEF MG_RFGS_CNTRY_ORIGIN, AGE=_T, country ISO3 REF_AREA only (155 aggregate REF_AREAs excluded).",
+  "sources": [
+    {
+      "name": "UNICEF Data and Analytics - Migration and Displacement dataflow MG, indicator MG_RFGS_CNTRY_ORIGIN (Refugees, by country of origin), listed on OCHA's HDX catalog as unicef-mg-rfgs-cntry-origin",
+      "url": "https://data.humdata.org/dataset/unicef-mg-rfgs-cntry-origin",
+      "api": "https://sdmx.data.unicef.org/ws/public/sdmxapi/rest/data/UNICEF,MG,1.0/.MG_RFGS_CNTRY_ORIGIN.?format=csv - anonymous SDMX REST API, no key, returns the full indicator as CSV in one request",
+      "license": "CC BY 3.0 IGO, per the HDX dataset record's licence field (maintained by UNICEF's own HDX organisation account); attribution to UNICEF Data and Analytics and, per the DATA_SOURCE field, to the underlying UNHCR Global Trends report",
+      "access": "measured 2026-10-20: GET the data URL -> HTTP 200, 4,967 KiB, 12,452 rows, 0.5 s, text/csv; SDMX-standard columns (REF_AREA, INDICATOR, AGE, STAT_POP, UNIT_MEASURE, TIME_PERIOD, OBS_VALUE, OBS_STATUS, DATA_SOURCE, footnotes); HDX CKAN package_show API -> HTTP 200"
+    }
+  ],
+  "license_evidence": [
+    {
+      "note": "HDX dataset record for unicef-mg-rfgs-cntry-origin (read 2026-10-20 via the CKAN package_show API): license_title = 'CC BY 3.0 IGO'. UNICEF publishes its data under Creative Commons Attribution 3.0 IGO; attribution-only, no NC/ND restriction, redistribution of derived rows permitted with citation. The underlying statistics are UNHCR's (the DATA_SOURCE field on every row cites 'United Nations High Commissioner for Refugeers, Global Trends: Forced Displacement in 2025. UNHCR, 2026.'), so any release must attribute both UNICEF (publisher of this view) and UNHCR (source of the statistics).",
+      "url": "https://data.humdata.org/dataset/unicef-mg-rfgs-cntry-origin"
+    }
+  ],
+  "construction_script": null,
+  "split_strategy": null,
+  "measurements": {
+    "full_download_2026_10_20": "GET https://sdmx.data.unicef.org/ws/public/sdmxapi/rest/data/UNICEF,MG,1.0/.MG_RFGS_CNTRY_ORIGIN.?format=csv -> HTTP 200, 4,967 KiB, 12,452 rows, 0.5 s, single request from the coordinator.",
+    "table_shape_2026_10_20": "12,452 rows = 364 REF_AREAs x years 2001-2025 x AGE split. AGE=_T: 8,475 rows (OBS_STATUS empty); AGE=Y0T17 (children 0-17): 3,977 rows, ALL with OBS_STATUS='MD' (missing/magnitude-unknown in this pull - the child-age disaggregation is not usable). 155 REF_AREAs are aggregates (UNICEF_WCA, WPP_GLOBAL, AU_AFRICA, FAO_LIFDC...) and were excluded, leaving 209 country origins. SOURCE_LINK on every row points back at https://www.unhcr.org/refugee-statistics/download/ - this series is UNICEF's republishing of the UNHCR RDF data.",
+    "split_window_counts_2026_10_20": "Country-only, AGE=_T, base population >= 1000, growth>25% into D+1 - computed from the downloaded table: train 2001-2015: 1,356 origin-years, 155 positives (11.4%) across 72 distinct surging origins; eval 2016-2019: 378 origin-years, 34 positives (9.0%) across 22 distinct surging origins; holdout 2020-2024: 485 origin-years, 72 positives (14.8%) across 44 distinct surging origins. Both classes present in every window, but the clustered effective sample (surging origins) is thin: 22 in the eval window."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "PARK (status parked), reason: split capacity, not access or licence - both of those are good and are recorded so they are not re-probed. (1) The clustered effective sample is too thin for a scored binary eval: positives are surge situations, and the eval window carries only 34 positive origin-years across 22 distinct surging origins (holdout: 72 across 44). A 378-row eval split with 34 positives cannot carry a stable AUC, and the confidence interval on 22 clustered events is the honest sample size. (2) The series is UNHCR-derived (DATA_SOURCE cites UNHCR Global Trends; SOURCE_LINK points at the RDF), so building here would publish a thinner derivative of the source whose richer parent record (unhcr-refugee-data-finder) is access-parked - the bench would gain no genuinely new data. Prior-art comparison recorded in notes (no ML-ready equivalent exists, but that does not rescue the sample size).",
+  "review": null,
+  "next_action": "Unpark condition (exact): a machine-fetchable richer grain of the same phenomenon - UNHCR RDF's monthly asylum applications or host-country x origin population series - at which point the task should be built on the UNHCR record (see unhcr-refugee-data-finder's unpark question), not on this annual derivative. This record stays the measured evidence that the UNICEF path itself works (anonymous SDMX, CC BY 3.0 IGO) but is annually thin; only reopen it if the operator explicitly wants the thin annual task despite the clustered-sample limitation.",
+  "jurisdiction": {
+    "country": "US",
+    "region": "International organisations",
+    "publisher": "United Nations Children's Fund (UNICEF) - Data and Analytics, headquartered in New York, United States",
+    "convention": "The publisher's HQ country is recorded because 'international' is not a country; UNICEF is a UN fund headquartered in New York. The organisation is in this session's assigned region (international organisations), but its publishing jurisdiction is US - recorded so the non-US coverage count is not flattered.",
+    "recorded_at": "2026-10-20"
+  }
+}
