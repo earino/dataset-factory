@@ -7,6 +7,75 @@ code_53-meta.json, to a transient HTTP 500 on its source download. The interacti
 worker and launched the one-asset retry food-publish-002, running now. After it: verify all 201 target
 assets against MANIFEST.json, then the fresh-environment consumer job, then Hugging Face.)
 
+Updated: 2026-10-20, later (latest: destination-staging step 2 is COMPLETE - the one-asset retry food-publish-002
+landed code_53-meta.json and the watcher verified all 201 target assets on private release v2026.10 against
+MANIFEST.json (name, size, server-side sha256; 1,285,155,006 bytes). Step 3's first attempt food-consumer-001
+FAILED at its step 5 and caught a real package defect: the published code/materialize.py was MSHA's 3-arg
+variant, not this dataset's 2-arg one; fixed in release/, MANIFEST.json and the private repo (commit 0c765e3),
+with steps 1-4 of the verification already green (package OK, 201/201 checksums OK, gate --accept OK on all 40
+configs). The corrected retry food-consumer-002 is running on server 171431887. After it: VERIFICATION.md
+sections 5/6 + manifest regeneration, then Hugging Face, then the operator's flip.)
+
+## 2026-10-20 - food-publish-002 closed the transfer at 201/201; food-consumer-001 caught the package shipping MSHA's materialize.py - fixed, retried as food-consumer-002 (running)
+
+**`food-publish-002` succeeded and completed destination-staging step 2.** The one-asset retry of
+food-publish-001 transferred code_53-meta.json (2,788 bytes) from staging release 403508464 into the private
+release v2026.10 (418734355) of earino/chicago-food-inspections as target asset 660208719 at its recorded
+sha256; container-less transfer job (exit=None expected), server 171426472, collected 19:07:10Z and destroyed
+19:09:36Z by the interactive session. The watcher then read the target release back through the API with the
+publish credential: **exactly 201 assets, every one matching release/chicago-food-inspections/MANIFEST.json by
+name, size and GitHub's server-side sha256 digest; 1,285,155,006 bytes total, equal to the manifest total;
+repository private: true.** Nothing was scored and no number is quoted from this job - it moves
+already-qualified bytes.
+
+**`food-consumer-001` failed at exit 1 after 168.7 s, and its failure is a caught defect, not noise.** The
+fresh-environment consumer job (server 171429777, launched 19:09:04Z, collected 19:14:48Z, destroyed by this
+watcher 19:25:09Z) fetched all 201 assets (1,285,155,006 bytes, zero fetch failures) and its first four steps
+were green, read back from the fetched reports of its staging release 418770807: package 22 files match
+MANIFEST.json; 201 files in the layout get_dataset.py restores; sha256sum -c SHA256SUMS 201/201 OK; the
+qualification gate's --accept exit 0 on all 40 per-code configs, each printing 'ACCEPTED: ... matches the
+qualified artifact'. Step 5 died before train.py ran: baseline.log is a single 56-byte line,
+'usage: materialize.py <dataset-dir> <work-dir> <config>'.
+
+**Root cause: the package shipped MSHA's code/materialize.py.** The file at
+release/chicago-food-inspections/code/materialize.py (sha256 680b1c07...) is MSHA's 3-arg variant - its
+docstring names 'the 45 per-section directories (sec_56_12004, sec_75_400, ...)' and 'MSHA's configs declare
+none' - while this dataset's materializer is the 2-arg bench/workdir.py-mirroring file
+(candidates/chicago-food-inspections/baseline/materialize.py, sha256 95cd40d9...), which is exactly what
+baseline/reproduce_baseline.sh invokes ('$DATASET/$CONFIG' '$WORK'). Every other file in the package's code/
+directory hashes identical to the food candidate's sources; one file was copied from the wrong candidate.
+Nothing earlier caught it because every earlier check compares bytes to *recorded* hashes - the wrong file had
+been consistently hashed into MANIFEST.json's package_files - and food-baseline-002/003 bundled the correct
+materialize.py from the candidate directory, never the package's copy. The published file was executed for
+the first time by this consumer run: that is the job's purpose. **Not a data defect** - the 201 data assets
+are unchanged, all 40 configs re-accept, and nothing was scored, so no AUC from this run is quoted anywhere.
+
+**The fix, each step proven.** (1) Replaced release/chicago-food-inspections/code/materialize.py with the
+candidate's 95cd40d9 file - the exact bytes bundled in food-baseline-002/003, which measured eval AUC 0.6326
+through the runner's contract. (2) Regenerated the manifest (scripts/release-manifest.py): the only change is
+package_files[code/materialize.py] 680b1c07... -> 95cd40d9...; SHA256SUMS is byte-identical (201 entries, data
+assets untouched). (3) scripts/check-package.py release/chicago-food-inspections: OK. (4) Pushed the two
+changed files to the private destination repo - commit 0c765e3c650af796658533d9deac349ad60d2d44 on main -
+and read them back through the API: code/materialize.py digest 95cd40d9..., MANIFEST.json digest
+867d9f0e... (equal to the local file), repository private: true. (5) Re-assembled the consumer bundle
+(scripts/assemble-job.py food-consumer) and verified the assembled job records the 95cd40d9 digest for
+repo/code/materialize.py before launching. **`food-consumer-002` launched 19:25:37Z on server 171431887**
+(cpx32/hel1, EUR 0.06924/h, reservation EUR 0.32, timeout 110 min): the same five-step verification against
+the fixed package and the same private release. The worker watcher picks it up from jobs/ automatically.
+
+**Records.** Fetched into .factory/food-consumer-001/reports/: the 40 accept-code_*.txt outputs, baseline.log
+and container.log, each sha256-verified against the release's own manifest (the 1,034,240-byte source.tar
+part skipped as bulk); .factory/food-publish-002's three result assets are in its own record. Committed with
+this entry: STATE.md, the candidate's record.json (food-publish-002 and food-consumer-001 job entries,
+refreshed next_action), jobs/food-publish-002.json and jobs/food-consumer-001.json (both collected and
+destroyed), jobs/food-consumer-002.json (running), the consumer bundle spec
+(candidates/chicago-food-inspections/consumer/, now the -002 spec), and the package fix itself
+(release/chicago-food-inspections/code/materialize.py + MANIFEST.json). Deliberately not committed: the
+hourly dashboard's build/dashboard/ outputs. Next action is the candidate's recorded step 3 completion:
+collect food-consumer-002, require all five steps green before quoting anything, record it in VERIFICATION.md
+sections 5/6, regenerate the manifest and re-push the changed package files, then Hugging Face, then
+awaiting_operator for the flip.
+
 ## 2026-10-20 - food-publish-001: destination-staging transfer stopped one asset short - 200/201, a transient HTTP 500 on code_53-meta.json; the one-asset retry is running
 
 **`food-publish-001` failed with UploadError after 549 s, having transferred 200 of the 201 accepted food-001

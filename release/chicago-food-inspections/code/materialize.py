@@ -1,49 +1,53 @@
 #!/usr/bin/env python3
-"""Lay one config out the way the runner's contract expects.
+"""Materialize the runner's task directory from one fetched per-code config.
 
-    python3 code/materialize.py <dataset-dir> <work-dir> <config>
+Mirrors `bench/workdir.py` in the harness benchmark:
 
-Reads <dataset-dir>/<config>/{meta.json,quality.json,public/train.csv,public/eval.csv} and
-writes <work-dir>/task.json plus data/train.csv and data/eval.csv. The private holdout is
-deliberately not copied: the contract scores train and eval only, and the labelled holdout stays
-outside the workspace an evaluated agent is given.
+  * the runner's own `train.py`, `validate.py` and `validate.sh` are copied in unmodified
+    (run.sh does the copy; they are bundled verbatim and their hashes are recorded);
+  * `task.json` carries exactly the keys `bench/workdir.py` writes -
+    name, description, target, positive_label, id_columns, split, columns, rows;
+  * `data/train.csv` and `data/eval.csv` come from the config's **public** split.
 
-task.json carries the keys the runner reads - `target`, `positive_label`, `id_columns` - and the
-`id_columns` list is extended with the artifact's declared *carry* columns, so a column shipped
-for interpretation can never reach the model as a feature. MSHA's configs declare none, but the
-rule is applied rather than assumed.
+The private holdout is deliberately **never** copied into a workdir, exactly as the
+benchmark documents ("NEVER copied into a workdir; used only by `bench eval`").
+Nothing here scores it.
 
-<config> is one of the 45 per-section directories (sec_56_12004, sec_75_400, ...); the joint
-multi-label matrix is labels.csv at the dataset root and is not part of any config.
+Usage: materialize.py <config-dir> <workdir>
 """
-
 import json
 import shutil
 import sys
 from pathlib import Path
 
+# The keys bench/workdir.py puts in the task.json an agent cell receives.
+TASK_KEYS = ("name", "description", "target", "positive_label", "id_columns", "split",
+             "columns", "rows")
+
 
 def main() -> int:
-    if len(sys.argv) != 4:
-        raise SystemExit("usage: materialize.py <dataset-dir> <work-dir> <config>")
-    dataset, work, config = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3].rstrip("/")
-    source = dataset / config
-    meta = json.loads((source / "meta.json").read_text())
-    quality = json.loads((source / "quality.json").read_text()) if (source / "quality.json").is_file() else {}
+    if len(sys.argv) != 3:
+        raise SystemExit("usage: materialize.py <config-dir> <workdir>")
+    extract, workdir = Path(sys.argv[1]), Path(sys.argv[2])
+    meta = json.loads((extract / "meta.json").read_text())
+    missing = [key for key in TASK_KEYS if key not in meta]
+    if missing:
+        print(f"meta.json lacks keys the runner's task.json needs: {missing}", file=sys.stderr)
+        return 1
 
-    drop = list(meta.get("id_columns", []))
-    for column in quality.get("carry_columns", []):
-        if column not in drop:
-            drop.append(column)
-    task = dict(meta, id_columns=drop, carry_columns=quality.get("carry_columns", []))
+    (workdir / "data").mkdir(parents=True, exist_ok=True)
+    task = {key: meta[key] for key in TASK_KEYS}
+    (workdir / "task.json").write_text(json.dumps(task, indent=2) + "\n")
+    for name in ("train.csv", "eval.csv"):
+        source = extract / "public" / name
+        if not source.is_file():
+            print(f"public split missing: {source}", file=sys.stderr)
+            return 1
+        shutil.copyfile(source, workdir / "data" / name)
 
-    (work / "data").mkdir(parents=True, exist_ok=True)
-    (work / "task.json").write_text(json.dumps(task, indent=2) + "\n")
-    for split in ("train", "eval"):
-        shutil.copy2(source / "public" / f"{split}.csv", work / "data" / f"{split}.csv")
-    features = [c for c in meta.get("columns", []) if c not in drop]
-    print(f"[materialize] {config}: {len(features)} features, {len(drop)} identifier/carry columns dropped")
-    print(f"[materialize] dropped: {drop}")
+    print(f"  task.json: target={task['target']} positive_label={task['positive_label']!r} "
+          f"id_columns={task['id_columns']} rows={task['rows']}")
+    print("  data/: train.csv + eval.csv copied; the private holdout was NOT copied")
     return 0
 
 
