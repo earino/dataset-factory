@@ -138,6 +138,34 @@ page that replaces "explain more" in chat.
 - **Non-US share**: live candidates by publisher jurisdiction, `unknown` counted and shown, never
   guessed or silently dropped.
 
+## Visual design (P0.1, 2026-10-20)
+
+The first version was a generic tile wall. It was rebuilt from first principles around the question a
+reader actually opens it with: *is the machine healthy, and if not, what do I do*.
+
+- **Mobile first.** One column at phone width, a fixed three-item bottom bar within thumb reach,
+  `clamp()` type so the verdict stays legible at 360pt, and `viewport-fit=cover` with safe-area
+  padding. Two columns at 560pt, a 12-column grid at 900pt where the top nav replaces the bottom bar.
+- **Hierarchy is the design.** A verdict line (ship / attention), then four KPIs, then the funnel,
+  then the detail. The headline states a fact ("4 datasets shipped"), not a mood, and an alarm has to
+  earn its prominence — a running session is a notice, not an alarm.
+- **Charts are inline SVG**, no library, no network, no script: a semicircular gauge drawn with
+  `pathLength="100"` so the fill is exact at any value, a status donut with a two-column legend, a
+  sparkline that refuses to draw a trend from a single point, and bars that carry the count *and*
+  the conversion. Charts degrade to a static artifact that survives being emailed or archived.
+- **Tables become cards below 640pt.** A six-column job table cannot be read at 390pt, so phones get
+  stacked rows with a status pill and the table appears only when there is room.
+- **Palette and type**: near-black ink, three elevations, one accent per meaning (mint = shipped,
+  amber = needs a look, coral = broken, blue = queued). Tabular numerals everywhere so figures stop
+  jittering between renders.
+- **Visual QA is part of the build**: pages are rendered headless at 390pt and reviewed for
+  truncation, clipped charts and contrast before shipping. Two real defects were found this way and
+  fixed: funnel labels truncating at 390pt, and a gauge arc clipping its card.
+
+What it deliberately is not: a live console (state changes hourly, not per second), a table dump, or
+a place to show every field. If a number has no home on one of the three pages, it lives in
+`dashboard.json` rather than being crammed into the UI.
+
 ## Honesty rules for the generator (non-negotiable)
 
 1. Every figure renders with its `as_of` and its source path. No number appears without one.

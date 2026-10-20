@@ -3665,3 +3665,12 @@ Pages repo `earino/dataset-factory-dashboard` rather than under the catalogue si
 reviewed workflow over `.dataset-site/`. Verification is anonymous and part of the job: a publish that
 does not appear publicly fails the run. Missing inputs render "no data", never zero. Not yet shown:
 worker timings/euro spend (no per-job ledger), verdict ledger, history and sparklines - P1/P2.
+
+**Dashboard redesigned mobile-first 2026-10-20 (P0.1).** Rendering moved to `factory/dashboard_render.py`
+(design tokens, inline-SVG charts, three page renderers); the collector and publisher in
+`scripts/build-dashboard.py` are unchanged in behaviour. Phone layout (390pt) verified with headless
+Chromium screenshots and vision review: a funnel-label truncation and a clipped gauge arc were found and
+fixed, tables now collapse to cards below 640pt, and the gauge is drawn with pathLength=100 so the fill is
+exact rather than trigonometric. Hero states a fact ("4 datasets shipped") instead of a mood; a held
+research lock is a notice ("session in flight"), not an alarm. History begins 2026-10-20 and is never
+back-filled, so a one-point sparkline says "series begins today". 369 tests OK.

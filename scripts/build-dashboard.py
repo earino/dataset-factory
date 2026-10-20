@@ -24,7 +24,10 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from factory import dashboard_render as ui  # noqa: E402
 SNAPSHOT_SCHEMA = 1
+SNAPSHOT_GENERATED = ""
 PUBLISH_REPO = "earino/dataset-factory-dashboard"
 PAGES_URL = "https://earino.github.io/dataset-factory-dashboard/"
 SITE_SUBDIR = ""  # empty: the dashboard owns its repository root
@@ -280,269 +283,104 @@ def collect_snapshot(include_tests=True):
 
 # ---------------------------------------------------------------- rendering
 
-CSS = """
-:root{--bg:#0f1115;--panel:#171a21;--line:#262b36;--fg:#e6e9ef;--dim:#8b93a3;
---ok:#3ecf8e;--warn:#e5b567;--bad:#e06c75;--accent:#63a4ff}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);
-font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
-header{display:flex;justify-content:space-between;align-items:baseline;gap:16px;
-padding:18px 24px;border-bottom:1px solid var(--line);flex-wrap:wrap}
-header h1{font-size:17px;margin:0;letter-spacing:.2px}
-nav a{color:var(--dim);text-decoration:none;margin-left:14px;font-size:13px}
-nav a.on,nav a:hover{color:var(--fg)}
-.stamp{color:var(--dim);font-size:12px}
-main{padding:22px 24px 60px;max-width:1240px;margin:0 auto}
-h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);
-margin:26px 0 10px;font-weight:600}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px}
-.tile{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
-.tile .k{color:var(--dim);font-size:12px;margin-bottom:6px}
-.tile .v{font-size:27px;font-weight:600;letter-spacing:-.5px}
-.tile .v small{font-size:13px;font-weight:400;color:var(--dim);margin-left:4px}
-.tile .src{color:var(--dim);font-size:11px;margin-top:8px;overflow:hidden;text-overflow:ellipsis}
-.tile.stale{border-color:var(--warn)}
-.tile.stale .v{color:var(--warn)}
-.badge{display:inline-block;font-size:10px;text-transform:uppercase;letter-spacing:.06em;
-padding:1px 6px;border-radius:4px;border:1px solid var(--line);color:var(--dim)}
-.badge.ok{color:var(--ok);border-color:#1f4a38}.badge.bad{color:var(--bad);border-color:#4a2529}
-.badge.warn{color:var(--warn);border-color:#4a3d22}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
-th{color:var(--dim);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.05em}
-td.num{text-align:right;font-variant-numeric:tabular-nums}
-.bar{height:6px;background:var(--panel);border:1px solid var(--line);border-radius:4px;overflow:hidden}
-.bar>span{display:block;height:100%;background:var(--accent)}
-.alarm{border-left:3px solid var(--bad);padding:8px 12px;background:#1b1416;margin:6px 0;
-border-radius:0 6px 6px 0;font-size:13px}
-.note{color:var(--dim);font-size:12px;margin-top:10px;max-width:80ch}
-.meh{border-left-color:var(--warn);background:#1b1812}
-footer{color:var(--dim);font-size:11px;padding:0 24px 30px;max-width:1240px;margin:0 auto}
-"""
+def derive_alarms(snapshot):
+    """Return (html, plain, soft_plain). A running session is a notice, not an alarm."""
+    html_parts, plain, soft = [], [], []
+    budget = (snapshot.get("budget") or {}).get("decision") or {}
+    health = snapshot.get("health") or {}
+    reports = snapshot.get("releases", {}).get("releases", [])
 
+    def add(text, tone="bad", icon="!"):
+        html_parts.append(ui.alarm(ui.esc(text), tone, icon))
+        plain.append(text)
 
-def esc(value):
-    return html.escape("" if value is None else str(value))
-
-
-def tile(key, value, unit="", source="", stamp="", stale=False, note=""):
-    shown = "no data" if value is None else f"{value}"
-    return (f'<div class="tile{" stale" if stale else ""}"><div class="k">{esc(key)}</div>'
-            f'<div class="v">{esc(shown)}{f"<small>{esc(unit)}</small>" if unit and value is not None else ""}</div>'
-            f'<div class="src">{esc(note or source)}</div></div>')
-
-
-def layout(title, body, active):
-    stamp = esc(SNAPSHOT_GENERATED)
-    def link(href, label, key):
-        return f'<a href="{href}"{" class=on" if key == active else ""}>{label}</a>'
-    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow">
-<title>{esc(title)} - Scout</title><link rel="stylesheet" href="style.css"></head><body>
-<header><h1>Scout &middot; {esc(title)}</h1>
-<nav>{link("index.html","Executive","exec")}{link("cost.html","Cost","cost")}
-{link("reliability.html","Reliability","rel")}</nav></header>
-<div class="stamp" style="padding:6px 24px 0">state as of {stamp}</div>
-<main>{body}</main>
-<footer>Generated from repository state by scripts/build-dashboard.py. Every figure names its
-source; a missing input reads "no data" rather than zero. Snapshot: dashboard.json.</footer>
-</body></html>"""
-
-
-SNAPSHOT_GENERATED = ""
-
-
-def render_exec(snapshot):
-    c = snapshot["candidates"]
-    r = snapshot["releases"]
-    b = snapshot["budget"]
-    decision = b.get("decision") or {}
-    health = snapshot["health"]
-    counts = c["counts"]
-    published = len(r["releases"])
-    live = len(c["live"])
-    queue = [x for x in c["live"] if x["status"] == "investigating"]
-    qualified = counts.get("qualified", 0)
-    tokens = decision.get("research_tokens_last_7_days")
-    budget_tokens = decision.get("weekly_token_budget")
-    sessions = decision.get("runs_last_7_days")
-    session_cap = decision.get("session_cap_per_week")
-    verified_all = [x for x in r["releases"] if x["verified_all"]]
-    last_pub = max((parse_time(x["verified_at"]) for x in r["releases"] if x["verified_at"]),
-                   default=None)
-    days_since = None if last_pub is None else round((now() - last_pub).total_seconds() / 86400, 1)
-
-    alarms = []
-    for job in snapshot["cron"]["jobs"]:
+    for job in (snapshot.get("cron") or {}).get("jobs", []):
         if not job["enabled"]:
             continue
-        nxt = parse_time(job["next_run_at"])
+        nxt = parse_time(job.get("next_run_at"))
         if nxt and nxt < now() - timedelta(minutes=15):
-            alarms.append(f"{esc(job['name'])} missed its window ({esc(job['next_run_at'])}), "
-                          f"last status {esc(job['last_status'])}")
-        elif job["failure_streak"] >= 2 or (job["last_status"] not in (None, "ok")):
-            alarms.append(f"{esc(job['name'])} last status {esc(job['last_status'])} "
-                          f"(streak {job['failure_streak']})")
-    if decision.get("allowed") is False and decision.get("reasons"):
-        alarms.append("Research gate refused the next session: " + esc("; ".join(decision["reasons"])))
-    if tokens and budget_tokens and tokens / budget_tokens >= 0.8:
-        alarms.append(f"Token use at {round(100*tokens/budget_tokens)}% of the weekly ceiling")
-    ci = snapshot["health"].get("ci") or {}
-    if ci.get("conclusion") not in (None, "success"):
-        alarms.append(f"CI on {esc(ci.get('head_sha'))} concluded {esc(ci.get('conclusion'))}")
-    if len(verified_all) != published:
-        alarms.append(f"{published - len(verified_all)} release(s) not fully verified")
-    if not alarms:
-        alarms.append("Nothing above threshold.")
-
-    tiles = "".join([
-        tile("Live candidates", live, "", "candidates/*/record.json",
-             note=f"{qualified} qualified, {len(queue)} awaiting construction"),
-        tile("Published datasets", published, "", "release/*/MANIFEST.json",
-             note=f"{len(verified_all)}/{published} fully verified"),
-        tile("Days since publication", days_since if days_since is not None else None, "days",
-             "DESTINATIONS.json verified_at"),
-        tile("Non-US share of bench", round(100 * snapshot["coverage"].get("live_non_us_share", 0), 1)
-             if snapshot["coverage"].get("live") else None, "%", "discovery-coverage.py --json",
-             note=f"{snapshot['coverage'].get('live_non_us', 0)} of {snapshot['coverage'].get('live', 0)} active candidates; goal is 50%"),
-        tile("Research tokens this week", f"{tokens:,}" if tokens else None,
-             f"of {budget_tokens:,}" if budget_tokens else "", "research-budget.py --json",
-             stale=False, note="weekly ceiling 40,000,000 (measured, not estimated)"),
-        tile("Sessions this week", sessions, f"of {session_cap}" if session_cap else "",
-             "research-budget.py --json"),
-        tile("Tests", (health["tests"] or {}).get("count"), "passing",
-             "unittest discover", note="green" if (health["tests"] or {}).get("ok") else "not measured or failing"),
-        tile("Candidate checks", (health["checks"] or {}).get("passing"),
-             "OK", "check-candidate.py --all",
-             note="schema and identity checks across all candidates"),
-        tile("Newest CI", (health["ci"] or {}).get("conclusion") or None, "",
-             "GitHub Actions", note=f"commit {esc((health['ci'] or {}).get('head_sha'))}"),
-    ])
-
-    funnel_rows = "".join(
-        f"<tr><td>{esc(status)}</td><td class=num>{count}</td></tr>"
-        for status, count in sorted(counts.items(), key=lambda kv: -kv[1])) or (
-        "<tr><td colspan=2>no candidate records</td></tr>")
-    release_rows = "".join(
-        f"<tr><td>{esc(x['dataset'])}</td><td>{esc(x['release_tag'])}</td>"
-        f"<td class=num>{x['rows'] or '-'}</td>"
-        f"<td class=num>{'-' if x['baseline_eval_auc'] is None else x['baseline_eval_auc']}</td>"
-        f"<td><span class='badge {'ok' if x['verified_all'] else 'bad'}'>"
-        f"{'verified' if x['verified_all'] else 'unverified'}</span></td></tr>"
-        for x in r["releases"]) or ("<tr><td colspan=5>no releases recorded</td></tr>")
-    queue_rows = "".join(
-        f"<tr><td>{esc(x['id'])}</td><td>{esc(x['country'])}</td><td>{esc(x['status'])}</td>"
-        f"<td>{esc(x['next_action'])}</td></tr>" for x in sorted(
-            c["live"], key=lambda x: 0 if x["status"] == "qualified" else 1)) or (
-        "<tr><td colspan=4>nothing queued</td></tr>")
-
-    body = f"""
-<h2>The funnel</h2><div class="grid">{tiles}</div>
-<h2>Pipeline by status</h2>
-<table><thead><tr><th>Status</th><th class=num>Candidates</th></tr></thead><tbody>{funnel_rows}</tbody></table>
-<h2>Published releases</h2>
-<table><thead><tr><th>Dataset</th><th>Version</th><th class=num>Rows</th><th class=num>Baseline AUC</th><th>Destinations</th></tr></thead>
-<tbody>{release_rows}</tbody></table>
-<h2>Work queue</h2>
-<table><thead><tr><th>Candidate</th><th>Country</th><th>Status</th><th>Next action</th></tr></thead>
-<tbody>{queue_rows}</tbody></table>
-<h2>Alarms</h2>
-{''.join(f'<div class="alarm{"" if i == 0 else " meh"}">{a}</div>' for i, a in enumerate(alarms))}
-<div class="note">Read-only projection of the private factory. Nothing here is a credential,
-a session transcript or a staging URL.</div>"""
-    return body
-
-
-def render_cost(snapshot):
-    b = snapshot["budget"]
-    decision = b.get("decision") or {}
-    config = b.get("config") or {}
-    usage = decision.get("usage") or {}
-    tokens = decision.get("research_tokens_last_7_days")
-    ceiling = decision.get("weekly_token_budget")
-    pct = round(100 * tokens / ceiling, 1) if tokens and ceiling else None
-    sessions = decision.get("runs_last_7_days")
-    cap = decision.get("session_cap_per_week")
-    spct = round(100 * sessions / cap, 1) if sessions and cap else None
-
-    def bucket(name, body):
-        return (f"<tr><td>{esc(name)}</td><td class=num>{(body or {}).get('calls') or 0}</td>"
-                f"<td class=num>{((body or {}).get('input_tokens') or 0):,}</td>"
-                f"<td class=num>{((body or {}).get('output_tokens') or 0):,}</td></tr>")
-    rows = "".join(bucket(k, v) for k, v in usage.items())
-
-    body = f"""
-<h2>Model spend</h2><div class="grid">
-{tile("Research tokens (7d)", f"{tokens:,}" if tokens else None, f"of {ceiling:,}" if ceiling else "",
-      "research-budget.py --json", note=f"{pct}% of the weekly ceiling" if pct is not None else "")}
-{tile("Sessions (7d)", sessions, f"of {cap}" if cap else "", "research-budget.py --json",
-      note=f"{spct}% of the weekly cap" if spct is not None else "")}
-{tile("Next session allowed", "yes" if decision.get("allowed") else "no", "", "budget gate",
-      note="; ".join(decision.get("reasons") or [])[:120] or "gate open")}
-{tile("Worker spend (month)", None, "EUR", "not instrumented",
-      note="per-job cost is not recorded yet; P1 adds the worker ledger")}
-</div>
-<h2>Usage by source (all-time counters)</h2>
-<table><thead><tr><th>Source</th><th class=num>Calls</th><th class=num>Input tokens</th><th class=num>Output tokens</th></tr></thead>
-<tbody>{rows}</tbody></table>
-<div class="bar" style="margin-top:14px"><span style="width:{min(pct or 0, 100)}%"></span></div>
-<div class="note">Token figures are measured from the session ledger; cost in USD is not
-meaningful on this subscription and is deliberately not shown. Worker euros are the separate
-Hetzner allowance ({esc((config.get('period') or {}).get('kind'))}, {esc(json.loads((ROOT/'config/local.json').read_text()).get('monthly_budget_eur') if (ROOT/'config/local.json').is_file() else None)} EUR).</div>"""
-    return body
-
-
-def render_reliability(snapshot):
-    health = snapshot["health"]
-    tests = health.get("tests") or {}
-    checks = health.get("checks") or {}
-    coverage = health.get("coverage") or {}
-    head = health.get("head") or {}
+            add(f"{job['name']} missed its window ({job['next_run_at']}); last status {job['last_status']}",
+                "bad", "!")
+        elif job.get("failure_streak", 0) >= 2 or job.get("last_status") not in (None, "ok"):
+            add(f"{job['name']} last status {job['last_status']} (streak {job['failure_streak']})",
+                "warn", "!")
+    if budget.get("allowed") is False and budget.get("reasons"):
+        reasons = budget["reasons"]
+        if all("lock held" in r for r in reasons):
+            soft.append("A research session is running: " + "; ".join(reasons))
+        else:
+            add("Research gate refused the next session: " + "; ".join(reasons), "warn", "⏸")
+    tokens, ceiling = budget.get("research_tokens_last_7_days"), budget.get("weekly_token_budget")
+    if tokens and ceiling and tokens / ceiling >= 0.8:
+        add(f"Token use at {round(100 * tokens / ceiling)}% of the weekly ceiling", "warn", "!")
     ci = health.get("ci") or {}
-    jobs = [j for j in snapshot["cron"]["jobs"] if j["enabled"]]
-    job_rows = "".join(
-        f"<tr><td>{esc(j['name'])}</td><td>{esc(j['schedule'])}</td>"
-        f"<td>{esc(j['last_run_at'])}</td>"
-        f"<td><span class='badge {'ok' if j['last_status'] == 'ok' else ('warn' if not j['last_status'] else 'bad')}'>"
-        f"{esc(j['last_status'] or 'pending')}</span></td><td>{esc(j['next_run_at'])}</td>"
-        f"<td class=num>{j['failure_streak']}</td></tr>" for j in jobs)
-    ok = lambda flag: f"<span class='badge {'ok' if flag else 'bad'}'>{'pass' if flag else 'fail'}</span>"
-    body = f"""
-<h2>Gates</h2><div class="grid">
-{tile("Test suite", tests.get("count"), "tests", "unittest discover",
-      note="pass" if tests.get("ok") else "FAILING")}
-{tile("Candidate checks", checks.get("passing"), "OK", "check-candidate.py --all",
-      note="pass" if checks.get("ok") else "FAILING")}
-{tile("Discovery coverage", coverage.get("ok") and "determined" or "undetermined", "",
-      "discovery-coverage.py", note=(coverage.get("summary") or "")[:120])}
-{tile("CI", ci.get("conclusion") or None, "", "GitHub Actions",
-      note=f"{esc(ci.get('head_sha'))} at {esc(ci.get('created_at'))}")}
-</div>
-<h2>Scheduled jobs</h2>
-<table><thead><tr><th>Job</th><th>Schedule</th><th>Last run</th><th>Status</th><th>Next</th><th class=num>Failures</th></tr></thead>
-<tbody>{job_rows}</tbody></table>
-<h2>Repository head</h2>
-<table><tbody><tr><td>commit</td><td><code>{esc(head.get('sha'))}</code></td></tr>
-<tr><td>time</td><td>{esc(head.get('at'))}</td></tr>
-<tr><td>subject</td><td>{esc(head.get('subject'))}</td></tr></tbody></table>
-<div class="note">A job is not "alive" because it was launched. This table reads the scheduler's
-own record: last status, failure streak and next run time.</div>"""
-    return body
+    if ci.get("conclusion") not in (None, "success"):
+        add(f"CI on {ci.get('head_sha')} concluded {ci.get('conclusion')}", "bad", "!")
+    tests = health.get("tests") or {}
+    if tests and not tests.get("ok"):
+        add("Test suite is failing", "bad", "!")
+    checks = health.get("checks") or {}
+    if checks and not checks.get("ok"):
+        add("check-candidate --all is failing", "bad", "!")
+    unverified = [r for r in reports if not r["verified_all"]]
+    if unverified:
+        add(f"{len(unverified)} release(s) not fully verified", "bad", "!")
+    return html_parts, plain, soft
+
+
+def collect_history(out: Path, snapshot):
+    """Append one point per run to build/dashboard/history.json and return the series.
+
+    The series starts when this feature starts: it is never back-filled with invented
+    values, so a sparkline that has one point says so instead of drawing a trend.
+    """
+    path = out / "history.json"
+    points = read_json(path, []) or []
+    if not isinstance(points, list):
+        points = []
+    decision = (snapshot.get("budget") or {}).get("decision") or {}
+    point = {
+        "at": snapshot["generated_at"],
+        "published": len(snapshot["releases"]["releases"]),
+        "live": len(snapshot["candidates"]["live"]),
+        "tokens_7d": decision.get("research_tokens_last_7_days"),
+        "sessions_7d": decision.get("runs_last_7_days"),
+        "qualified": snapshot["candidates"]["counts"].get("qualified", 0),
+    }
+    last = parse_time(points[-1]["at"]) if points else None
+    if last is None or (now() - last) >= timedelta(minutes=20):
+        points.append(point)
+    points = points[-500:]
+    path.write_text(json.dumps(points, indent=1))
+    return points
 
 
 def build(out: Path, include_tests=True):
     global SNAPSHOT_GENERATED
     out.mkdir(parents=True, exist_ok=True)
     snapshot = collect_snapshot(include_tests=include_tests)
-    SNAPSHOT_GENERATED = snapshot["generated_at"]
-    pages = [("index.html", "Executive", "exec", render_exec(snapshot)),
-             ("cost.html", "Cost", "cost", render_cost(snapshot)),
-             ("reliability.html", "Reliability", "rel", render_reliability(snapshot))]
-    files = {name: layout(title, body, active) for name, title, active, body in pages}
-    files["style.css"] = CSS
+    history = collect_history(out, snapshot)
+    snapshot["history"] = history
+    alarms_html, alarms_plain, soft = derive_alarms(snapshot)
+    snapshot["alarms"] = alarms_plain
+    snapshot["notices"] = soft
+    stamp = snapshot["generated_at"]
+    SNAPSHOT_GENERATED = stamp
+    files = {
+        "index.html": ui.page("Overview", "exec", stamp,
+                              ui.render_overview(snapshot, alarms_html, alarms_plain),
+                              footer_extra="Sources: candidates/*/record.json, release/*/MANIFEST.json, "
+                                           "research-budget.py, cron jobs.json."),
+        "cost.html": ui.page("Cost", "cost", stamp, ui.render_cost(snapshot, alarms_html, alarms_plain),
+                             footer_extra="Token figures are measured from the session ledger; USD cost is "
+                                          "not meaningful on this subscription and is deliberately not shown."),
+        "reliability.html": ui.page("Ops", "ops", stamp, ui.render_ops(snapshot, alarms_html, alarms_plain),
+                                    footer_extra="A job is not alive because it was launched; this reads the "
+                                                 "scheduler's own record."),
+    }
+    files["style.css"] = ui.CSS
     files["robots.txt"] = "User-agent: *\nDisallow: /\n"
-    files["dashboard.json"] = json.dumps(snapshot, indent=1, sort_keys=True)
+    files["dashboard.json"] = json.dumps(snapshot, indent=1, sort_keys=True, default=str)
     assert_no_secrets(files)
     for name, content in files.items():
         (out / name).write_text(content)

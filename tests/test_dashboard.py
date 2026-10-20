@@ -1,8 +1,8 @@
 """The dashboard must not flatter the pipeline it reports on.
 
-Three rules are load-bearing and are tested here: a missing input renders "no data"
-rather than zero, an aged panel is labelled stale rather than healthy, and a
-credential can never reach a published page.
+Load-bearing rules tested here: a missing input renders "no data" rather than zero,
+an unmeasured suite is not called a failing one, a single history point is not drawn
+as a trend, and a credential can never reach a published page.
 """
 import importlib.util
 import tempfile
@@ -13,6 +13,24 @@ ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location("build_dashboard", ROOT / "scripts/build-dashboard.py")
 dashboard = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(dashboard)
+ui = dashboard.ui
+
+
+def snapshot(**overrides):
+    base = {
+        "schema": dashboard.SNAPSHOT_SCHEMA,
+        "generated_at": "2026-10-20T10:00:00+00:00",
+        "candidates": {"records": [], "counts": {}, "live": [], "errors": [],
+                       "countries": {}, "non_us_share": None},
+        "coverage": {"live": 0, "live_non_us": 0, "live_non_us_share": 0.0, "by_country": {}},
+        "releases": {"releases": [], "errors": []},
+        "budget": {"decision": {}, "config": {}},
+        "cron": {"jobs": [], "updated_at": None},
+        "health": {"tests": None, "checks": None, "coverage": None, "head": None, "ci": None},
+        "history": [],
+    }
+    base.update(overrides)
+    return base
 
 
 class PanelTests(unittest.TestCase):
@@ -49,47 +67,70 @@ class SecretTests(unittest.TestCase):
         dashboard.assert_no_secrets({"index.html": "<p>354 tests, 4 releases, 1.94M tokens</p>"})
 
 
-class RenderTests(unittest.TestCase):
-    def snapshot(self):
-        return {
-            "schema": dashboard.SNAPSHOT_SCHEMA,
-            "generated_at": "2026-10-20T10:00:00+00:00",
-            "candidates": {"records": [], "counts": {}, "live": [], "errors": [],
-                           "countries": {}, "non_us_share": None},
-            "coverage": {"live": 0, "live_non_us": 0, "live_non_us_share": 0.0},
-            "releases": {"releases": [], "errors": []},
-            "budget": {"decision": {}, "config": {}},
-            "cron": {"jobs": [], "updated_at": None},
-            "health": {"tests": None, "checks": None, "coverage": None, "head": None, "ci": None},
-        }
+class HonestyTests(unittest.TestCase):
+    def test_an_unmeasured_suite_is_not_called_a_failure(self):
+        html = ui.render_ops(snapshot(), [], [])
+        self.assertIn("not run", html)
+        self.assertIn("Gates not fully measured", html)
 
-    def test_an_unmeasured_value_is_no_data_while_a_true_zero_is_zero(self):
-        """Zero live candidates is a fact; an unread budget is not the same thing."""
-        body = dashboard.render_exec(self.snapshot())
-        self.assertIn("no data", body)
-        self.assertIn('<div class="k">Live candidates</div><div class="v">0</div>', body)
+    def test_a_failing_suite_is_called_a_failure(self):
+        bad = snapshot(health={"tests": {"ok": False, "count": "354"},
+                               "checks": {"ok": True, "passing": 28},
+                               "coverage": {"ok": True, "summary": "ok"},
+                               "head": None, "ci": {"conclusion": "success"}})
+        html = ui.render_ops(bad, [], [])
+        self.assertIn("A gate is failing", html)
 
-    def test_an_empty_table_says_so_instead_of_rendering_blank(self):
-        body = dashboard.render_exec(self.snapshot())
-        self.assertIn("no candidate records", body)
-        self.assertIn("no releases recorded", body)
-        self.assertIn("nothing queued", body)
+    def test_a_single_history_point_is_not_drawn_as_a_trend(self):
+        svg = ui.sparkline([4])
+        self.assertIn("series begins today", svg)
+        self.assertNotIn("<polyline", svg)
 
-    def test_a_failed_ci_run_becomes_an_alarm(self):
-        snapshot = self.snapshot()
-        snapshot["health"]["ci"] = {"conclusion": "failure", "head_sha": "abc1234"}
-        body = dashboard.render_exec(snapshot)
-        self.assertIn("concluded failure", body)
+    def test_two_points_draw_a_line(self):
+        self.assertIn("<polyline", ui.sparkline([4, 5]))
+
+    def test_the_gauge_clamps_out_of_range_input(self):
+        self.assertIn("100.0%", ui.gauge(140, "x"))
+        self.assertIn("0.0%", ui.gauge(-3, "x"))
+
+    def test_an_empty_pipeline_renders_zero_when_zero_is_the_truth(self):
+        html = ui.render_overview(snapshot(), [], [])
+        self.assertIn("no data", html)
+        self.assertIn("0 datasets shipped", html)
+
+
+class ChromeTests(unittest.TestCase):
+    def test_deltas_are_human_readable(self):
+        self.assertEqual("12m", ui.humanize(12))
+        self.assertEqual("1.2d", ui.humanize(1697))
+        self.assertEqual("90d", ui.humanize(129_762))
+        self.assertEqual("just now", ui.humanize(0))
+
+    def test_every_page_has_a_bottom_nav_and_a_viewport(self):
+        for render in (ui.render_overview, ui.render_ops, ui.render_cost):
+            html = ui.page("x", "exec", "2026-10-20T10:00:00+00:00", render(snapshot(), [], []))
+            self.assertIn("viewport-fit=cover", html)
+            self.assertIn("bottomnav", html)
+            self.assertIn("noindex", html)
 
 
 class BuildTests(unittest.TestCase):
-    def test_build_writes_the_three_p0_pages(self):
+    def test_build_writes_pages_and_a_snapshot(self):
         with tempfile.TemporaryDirectory() as tmp:
-            snapshot, out = dashboard.build(Path(tmp), include_tests=False)
+            snap, out = dashboard.build(Path(tmp), include_tests=False)
             for name in ("index.html", "cost.html", "reliability.html", "style.css",
-                         "dashboard.json"):
+                         "dashboard.json", "history.json", "robots.txt"):
                 self.assertTrue((out / name).is_file(), name)
-            self.assertEqual(dashboard.SNAPSHOT_SCHEMA, snapshot["schema"])
+            self.assertEqual(dashboard.SNAPSHOT_SCHEMA, snap["schema"])
+            self.assertTrue(snap["history"])
+
+    def test_history_does_not_grow_on_every_rebuild(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            dashboard.build(out, include_tests=False)
+            first = len(dashboard.read_json(out / "history.json"))
+            dashboard.build(out, include_tests=False)
+            self.assertEqual(first, len(dashboard.read_json(out / "history.json")))
 
 
 if __name__ == "__main__":
