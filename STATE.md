@@ -1,12 +1,52 @@
 
 # Current state
 
-Updated: 2026-10-20 (latest: food-baseline-001 failed before scoring anything - it was launched
-straight from the candidate's baseline/ directory, so the worker bundle never carried qualify_dataset.py
-or the runner's train.py/validate.py/validate.sh, and the qualification re-accept refused. The
-interactive session made the same diagnosis, assembled the bundle properly and already launched the
-corrected food-baseline-002, which was running when this was written. No AUC, no base rate, nothing was
-measured on the failed attempt.)
+Updated: 2026-10-20 (latest: the corrected food-baseline-002 succeeded - the code_38 sanity
+baseline ran through the qualification gate's re-accept and then the runner's own train.py and
+validate.sh, both clean, eval AUC 0.6326 on 35,358 eval rows at a 0.20745 positive rate. The scoring
+path is proved sound; the first measured number of the chicago-food-inspections suite is recorded in the
+candidate's record.json. Worker collected and destroyed; nothing failed on this attempt.)
+
+## 2026-10-20 - food-baseline-002: the code_38 baseline succeeded through the runner's contract - eval AUC 0.6326, gate re-accept and both entry points clean
+
+**`food-baseline-002` succeeded exit 0 in 31.7 s and measured the first baseline number of the
+chicago-food-inspections suite.** The corrected retry of food-baseline-001 (whose bundle had skipped
+assembly) ran on server 171396373 (cpx32/hel1, EUR 0.06924/h, reserved EUR 0.24): it fetched the five
+code_38 inputs of staging release 403508464 - the exact food-001 bytes - 31,520,896 bytes, each
+sha256-verified on arrival, zero failures; re-accepted those bytes through the qualification gate's
+`--accept` BEFORE any scoring ("ACCEPTED: /data/code_38 matches the qualified artifact 80a4291e3288dc07",
+exactly code_38's artifact_version in baseline/expected_artifact.json); then ran the runner's own
+`train.py` (exit 0) and `validate.sh` (exit 0, "[validate] CONTRACT OK") on the materialized task
+directory, into which the private holdout was never copied.
+
+**The measured result** (read back from the collected release 418558362's reports, each sha256-verified
+against that release's own manifest, not from the console): **eval AUC 0.6326**, printed by train.py and
+reproduced exactly by validate.py's predict_proba recompute with the target column removed. Rows: train
+156,841 / eval 35,358 / holdout 34,218; positive rates 0.371255 / 0.20745 / 0.216786 (the holdout was not
+scored by anything). The runner files are the benchmark's own templates, unmodified (bundled digests equal
+the committed train.py a3c6bcf1..., validate.py b597e7f8..., validate.sh 3f06ca48...), so "the existing
+runner, unmodified" is checkable rather than asserted. Dependencies on the worker: python 3.13.16, pandas
+2.3.3, numpy 2.5.4, xgboost 3.4.1, scikit-learn 1.9.1. Scope: one baseline on one config - the
+mid-prevalence sanity check named in next_action; no agent or harness comparison was run and none is
+implied; the other 39 configs' baselines are not measured yet.
+
+**Records and cleanup.** All six small report assets of release 418558362 (accept.log 72 B, baseline.json
+2,010 B, train.log 53 B, validate.log 178 B, container.log 3,171 B, plus the release manifest.json and
+source.tar 133,120 B whose digest equals the ledger's source_sha256) were fetched into
+`.factory/food-baseline-002/reports/` and mapped to their real names through the release's own manifest;
+no bulk CSV was downloaded to this host. `jobs/food-baseline-002.json` now carries the collected result
+and deleted status (server 171396373 destroy order 16:07:17 UTC, deletion re-verified at the provider by
+the 16:10:32 UTC reconcile that stamped the ledger). The candidate's record.json gained the
+food-baseline-002 job entry, the `baseline_code_38_food_baseline_002` measurement block, and a next_action
+that now points at finishing the packaging WIP and then the remaining 39 baselines. Committed with this
+entry: STATE.md, record.json, jobs/food-baseline-002.json. Still deliberately uncommitted, the interactive
+session's WIP: `skills/dataset-release/SKILL.md` (publication-authority wording),
+`candidates/chicago-food-inspections/baseline/expected_artifact.json` (reformat and note change for the
+packaging step), the untracked `candidates/chicago-food-inspections/release.json`,
+`release/chicago-food-inspections/` and `scripts/build-food-expected-artifact.py` /
+`scripts/build-food-package-measurements.py`, plus the hourly dashboard's build/dashboard outputs - none
+of them are this watcher's to commit.
+
 
 ## 2026-10-20 - food-baseline-001: failed before scoring; the launch skipped assembly, and the corrected retry is already running
 

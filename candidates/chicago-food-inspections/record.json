@@ -121,6 +121,34 @@
    },
    "shipped_bytes_total": 1286358734,
    "note": "shipped_bytes_total counts every uploaded asset including labels.csv and source.tar; bulk files stay in private staging and never touched this host"
+  },
+  "baseline_code_38_food_baseline_002": {
+   "measured_at": "2026-10-20",
+   "measured_by": "worker job food-baseline-002; every number read back from the collected staging release 418558362 reports (baseline.json, accept.log, train.log, validate.log, container.log), sha256-verified against the release's own manifest, not from the run's console",
+   "config": "code_38 (chicago-food-inspections-code_38), the mid-prevalence sanity-check config named in next_action",
+   "rows": {
+    "train": 156841,
+    "eval": 35358,
+    "holdout": 34218
+   },
+   "positive_rate": {
+    "train": 0.371255,
+    "eval": 0.20745,
+    "holdout": 0.216786
+   },
+   "eval_auc": 0.6326,
+   "eval_auc_source": "train.py's own 'Eval AUC' print, reproduced exactly by validate.py's predict_proba recompute with the target column removed",
+   "contract": "train.py exit 0, validate.sh exit 0, '[validate] CONTRACT OK'",
+   "gate_reaccept": "the fetched code_38 bytes were re-accepted through the qualification gate's --accept against the food-001 per-config report BEFORE any scoring (ACCEPTED: qualified artifact 80a4291e3288dc07); the private holdout was never copied into the runner's task directory",
+   "runner_unmodified": true,
+   "dependencies": {
+    "python": "3.13.16",
+    "pandas": "2.3.3",
+    "numpy": "2.5.4",
+    "xgboost": "3.4.1",
+    "scikit-learn": "1.9.1"
+   },
+   "scope": "one baseline on one config only, the scoring-path sanity check. No agent or harness comparison was run, and none is implied. The other 39 configs' baselines are not measured yet; the holdout is not scored by any baseline"
   }
  },
  "jobs": [
@@ -152,12 +180,35 @@
    "why": "run.sh's first real step re-accepts the fetched bytes via 'python3 /workspace/qualify_dataset.py --accept /workspace/qualification-code_38.json /data/code_38'; it died with \"can't open file '/workspace/qualify_dataset.py': [Errno 2] No such file or directory\" and run.sh exited 2, refusing to score. The file was never in the bundle: the job was launched directly from candidates/chicago-food-inspections/baseline/job.json, and factory.worker.source_bundle packs exactly that directory - so the worker's source/ carried only the directory's own six files (run.sh, report.py, materialize.py, qualification-code_38.json, bundle.json, expected_artifact.json) and none of what its bundle.json declares from elsewhere: qualify_dataset.py (skills/dataset-qualification/scripts/), the runner's train.py/validate.py/validate.sh verbatim from the benchmark clone, or their runner_files.json. scripts/assemble-job.py food-baseline, the step that resolves the declaration into .factory/jobs/<id>/, was skipped",
    "fix": "the interactive session reached the same diagnosis while this watcher collected: baseline/job.json id bumped to food-baseline-002, the bundle assembled properly (.factory/jobs/food-baseline-002/ now carries qualify_dataset.py, the three runner files and runner_files.json with their hashes), relaunched 2026-10-20T15:26:01Z on server 171396373 and running when this entry was written; this watcher launched nothing",
    "evidence": ".factory/food-baseline-001/result.json and .factory/food-baseline-001/reports/{accept.log,container.log,manifest.json,source.tar}, each fetched and sha256-verified against release 418547901's own asset list; the source.tar listing itself shows the six bundled files and the missing ones"
+  },
+  {
+   "id": "food-baseline-002",
+   "status": "succeeded",
+   "staging_release": 418558362,
+   "staging_repo": "earino/dataset-factory-staging",
+   "server_type": "cpx32/hel1",
+   "provider_server_id": "171396373",
+   "created_at": "2026-10-20T15:26:01Z",
+   "collected_at": "2026-10-20T16:03:08Z",
+   "deleted_at": "2026-10-20T16:10:32Z",
+   "elapsed_seconds": 31.7,
+   "exit_code": 0,
+   "oom_killed": false,
+   "what": "runner-contract baseline on the accepted artifact's code_38 config - the mid-prevalence sanity-check config named in next_action - fetched from staging (not rebuilt); the bytes measured are the bytes that passed the food-001 gate and the bytes to be released. This is the corrected retry of food-baseline-001, whose bundle had skipped assembly",
+   "runner": "the benchmark's own train.py, validate.py and validate.sh, bundled verbatim from /opt/data/harness_benchmark/task_template; the bundled digests equal the committed templates (verified a3c6bcf1... train.py, b597e7f8... validate.py, 3f06ca48... validate.sh), so 'the existing runner, unmodified' is checkable",
+   "fetch": "the five code_38 files pulled from staging release 403508464 (job food-001), 31,520,896 bytes, sha256-verified in transit by the worker, zero failures; no bulk CSV ever reached the coordinator",
+   "accept": "the qualification gate re-accepted the fetched bytes before anything was scored: 'ACCEPTED: /data/code_38 matches the qualified artifact 80a4291e3288dc07', which is exactly code_38's artifact_version (80a4291e3288dc072041c2db25764a1df80d4a04ea188f4d1158908cc8bb1f68) in baseline/expected_artifact.json",
+   "cost": "reserved EUR 0.24, ceiling EUR 0.08/h, provider rate EUR 0.06924/h, ~1 min wall; destroy order 2026-10-20T16:07:17Z, deletion re-verified at the provider by the 16:10:32Z reconcile that stamped the ledger",
+   "eval_auc": 0.6326,
+   "contract_ok": true,
+   "measured": "eval AUC 0.6326 on 35,358 eval rows (positive rate 0.20745); train.py's own print and validate.py's predict_proba recompute (target column removed) agree exactly. The private holdout (34,218 rows) was fetched for the gate's re-accept but never copied into the runner's task directory and was not scored",
+   "evidence": ".factory/food-baseline-002/result.json and .factory/food-baseline-002/reports/{output/baseline.json, output/accept.log, output/train.log, output/validate.log, container.log, manifest.json}, fetched from staging release 418558362 and each sha256-verified against that release's own asset list"
   }
  ],
  "artifacts": [],
  "rejection_reason": null,
  "review": null,
- "next_action": "The extract is built and gated. (1) Package the release (scripts/release-manifest.py + the dataset-release skill) from the staging assets of job food-001 - decide how the 40 per-code configs and labels.csv present in MANIFEST.json and the package layout, mirroring the per-level pattern noaa-tide-flooding shipped. (2) Measure the baseline through the runner's contract on a worker (a food-baseline-002 job) - one config first (a mid-prevalence code such as code_38 or code_55) to sanity-check the scoring path, then all 40 if the first is sound. (3) Human review precedes any publication; nothing ships publicly without the operator's approval.",
+ "next_action": "The code_38 sanity baseline passed end-to-end (job food-baseline-002: gate re-accept, then the runner's train.py and validate.sh both clean, eval AUC 0.6326 on 35,358 eval rows), so the scoring path is proved sound. (1) Finish the release packaging the interactive session left in the working tree (candidates/chicago-food-inspections/release.json, release/chicago-food-inspections/, the expected_artifact.json reformat and the dataset-release SKILL.md wording) - decide how the 40 per-code configs and labels.csv present in MANIFEST.json and the package layout, mirroring the per-level pattern noaa-tide-flooding shipped, then run scripts/check-package.py release/chicago-food-inspections. (2) Then measure the remaining 39 per-code baselines through the same contract (one worker job can carry them all; the code_38 path is the template). (3) Human review precedes any publication; nothing ships publicly without the operator's approval.",
  "superseded_by": null,
  "lead_priority_note": "Cleared 2026-10-12: msha-enforcement-citations is the priority lead on size and leakage risk (decided 2026-09-27), but it does not replace this candidate. chicago-food-inspections is the built and gated one - job food-001, gate 1.3.0, 40/40 configs, staging release 403508464 - and stays open until the operator chooses which candidate to package.",
  "novelty_check": {
