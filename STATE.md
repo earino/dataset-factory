@@ -3666,6 +3666,40 @@ reviewed workflow over `.dataset-site/`. Verification is anonymous and part of t
 does not appear publicly fails the run. Missing inputs render "no data", never zero. Not yet shown:
 worker timings/euro spend (no per-job ledger), verdict ledger, history and sparklines - P1/P2.
 
+## 2026-10-20 - Discovery tick (East Asia, first tick)
+
+Regional focus tick: East Asia. One source opened to a recorded verdict before the wall-clock
+budget was exhausted - short of the three-verdict quota, and the shortfall is reported rather
+than padded: no US source was substituted, and e-Stat, KOSIS, Taiwan and Hong Kong were left
+unprobed (no records created for them) so the next tick inherits them as fresh leads, not
+half-verdicts. All probes anonymous; no bulk data reached the coordinator (largest fetch was a
+HEAD request; `bst_all.zip` was never downloaded). After the tick: 29 candidates, 12 live, live
+non-US 6/12 (50%), East Asia 1 - the first East Asia candidate on the bench.
+
+- **`jma-typhoon-rapid-intensification` - REJECT (JMA RSMC Tokyo-Typhoon Center, Japan).**
+  East Asia's best-measured access of the tick: the full 1951-present tropical-cyclone best-track
+  record is one anonymous ~0.75 MB download (`Besttracks/bst_all.zip`, HEAD measured: HTTP 200,
+  content-length 744,954 bytes, last-modified 2026-09-29), fixed-width ASCII with every column
+  documented (position/unit) at `e_format_bst.html` (HTTP 200, 10,438 B), under the Japan Public
+  Data Licence v1.0 (terms quote recorded from jma.go.jp/jma/en/copyright.html - licence settled,
+  attribution required). Rejected on task grounds: the natural prediction question (rapid
+  intensification in the next 24 h from track state) already ships as ML-ready, split, scored
+  benchmarks - TCRISI (NTU; official train/val/test splits + benchmark repo, attention-model
+  results) and TCBench (arXiv 2601.23268; IBTrACS track/intensity, year-based splits) - plus
+  public SHIPS-predictor studies with chronological splits. A best-track-only RI task is a
+  mirror. The old `rsmc-hp/pub-egt` URL path is dead (404 measured); the section moved to
+  `rsmc-hp-pub-eg`. Next_action in the record also fences off JMA's other families
+  (earthquake felt-intensity, MLIT river levels) as family-level duplications of candidates
+  already on the bench.
+
+Storm/RI counts from the archive itself were NOT measured (estimates labelled as estimates in
+the record); the verdict did not depend on them. The one command refused by the unattended
+approval gate this session was the scoped cleanup `rm -rf .factory/probe-jma` (blocked as a
+recursive delete); the scratch probe files remain in `.factory/` (gitignored, ~60 KB of fetched
+HTML) - harmless, and reported rather than worked around. Next action for the East Asia
+rotation: open `e-Stat` (JP), `KOSIS` (KR) and one of Taiwan/Hong Kong first; the JMA record's
+jurisdiction (JP) already anchors the region on the coverage report.
+
 **Dashboard redesigned mobile-first 2026-10-20 (P0.1).** Rendering moved to `factory/dashboard_render.py`
 (design tokens, inline-SVG charts, three page renderers); the collector and publisher in
 `scripts/build-dashboard.py` are unchanged in behaviour. Phone layout (390pt) verified with headless
@@ -3681,3 +3715,9 @@ back-filled, so a one-point sparkline says "series begins today". 369 tests OK.
 Measured at build: EUR 0.38 month-to-date, EUR 2.83 lifetime across 51 jobs, 4 releases, 0 live servers,
 0 IPs. Excludes volumes and manual resources (not recorded) and says so. Publish verification now checks
 all four pages, not just the index, after a new page 404'd for ~90 s behind a healthy index. 371 tests OK.
+
+**Resources histogram added 2026-10-20.** Distribution of per-job cost normalised to the cpx32 reference
+rate the project actually paid (EUR 0.06924/h): 51 jobs, median EUR 0.018, p90 EUR 0.068, max EUR 0.63,
+buckets widening with cost so the long tail stays visible. Normalisation is by rate only (cost = lifetime x
+reference rate), never by duration - dividing by duration would collapse the chart to the three server
+prices. Bars sum to the job count in a test. 372 tests OK.

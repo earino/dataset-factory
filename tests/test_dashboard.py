@@ -151,6 +151,23 @@ class ResourceTests(unittest.TestCase):
         unfinished = [j for j in res["jobs"] if j["id"] == "c"][0]
         self.assertIsNone(unfinished["eur"])
 
+    def test_histogram_covers_every_job_and_normalises_by_reference_rate(self):
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.ledger(root)
+            with mock.patch.object(dashboard, "ROOT", root):
+                res = dashboard.collect_resources()
+        hist = res["histogram"]
+        self.assertEqual(2, hist["n"])
+        self.assertEqual(hist["n"], sum(b["count"] for b in hist["bins"]))
+        self.assertGreaterEqual(hist["max"], hist["median"])
+        # cpx42 job 'b' cost 0.10/h; at the cpx32 reference (0.06924) it is worth less.
+        b = [j for j in res["jobs"] if j["id"] == "b"][0]
+        self.assertLess(b["normalised_eur"], b["eur"])
+        a = [j for j in res["jobs"] if j["id"] == "a"][0]
+        self.assertAlmostEqual(a["eur"], a["normalised_eur"], places=4)
+
     def test_missing_provider_inventory_is_no_data_not_zero(self):
         from unittest import mock
         with tempfile.TemporaryDirectory() as tmp:

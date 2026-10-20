@@ -12,6 +12,8 @@ page whose newest input is older than its freshness SLA is labelled STALE.
 from __future__ import annotations
 
 import argparse
+import math
+import statistics
 import html
 import json
 import os
@@ -176,6 +178,45 @@ def collect_resources(published_count=0):
             "status": record.get("status"),
         })
 
+    # Normalise every job to one reference server type so a cpx42 job and a cpx32 job
+    # are comparable: reference rate is the modal cpx32 rate this project actually paid.
+    rates = sorted(j["rate_eur"] for j in jobs
+                   if j.get("rate_eur") and j.get("server_type") == "cpx32")
+    ref_rate = rates[len(rates) // 2] if rates else 0.06828
+    for job in jobs:
+        job["normalised_eur"] = (round(job["hours"] * ref_rate, 4)
+                                 if job.get("hours") is not None else None)
+
+    normalised = sorted(j["normalised_eur"] for j in jobs if j.get("normalised_eur") is not None)
+    histogram = {"ref_rate": ref_rate, "n": len(normalised), "bins": [],
+                 "median": None, "p90": None, "max": None, "total": None}
+    if normalised:
+        steps = sorted({round(step * (10 ** exp), 6)
+                        for exp in range(-5, 3) for step in (1, 2, 5)})
+        lo, hi = normalised[0], normalised[-1]
+        cuts = [e for e in steps if lo <= e < hi] or [lo]
+        if cuts[0] > lo:
+            # Start at a round floor so the first axis label is readable (0.003, not 0.0037).
+            magnitude = 10 ** math.floor(math.log10(lo))
+            cuts.insert(0, round(math.floor(lo / magnitude) * magnitude, 6))
+        if cuts[-1] <= hi:
+            cuts.append(round(hi * 1.01, 6))
+        while len(cuts) > 10:
+            cuts = [cuts[0]] + cuts[2:]
+        bins = []
+        for i in range(len(cuts) - 1):
+            a, b = cuts[i], cuts[i + 1]
+            last = i == len(cuts) - 2
+            bins.append({"lo": a, "hi": b,
+                         "count": sum(1 for v in normalised if (a <= v <= b if last else a <= v < b))})
+        histogram.update({
+            "bins": bins,
+            "median": round(statistics.median(normalised), 4),
+            "p90": round(normalised[min(len(normalised) - 1, int(len(normalised) * 0.9))], 4),
+            "max": round(normalised[-1], 4),
+            "total": round(sum(normalised), 2),
+        })
+
     months = {}
     for job in jobs:
         stamp = parse_time(job["created_at"])
@@ -223,6 +264,7 @@ def collect_resources(published_count=0):
         "jobs": jobs,
         "months": month_list,
         "eur_per_release": round(lifetime / published_count, 2) if published_count else None,
+        "histogram": histogram,
         "live": live,
         "errors": errors,
     }

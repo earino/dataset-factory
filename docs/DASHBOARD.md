@@ -126,6 +126,10 @@ Answers "what have we spent on Hetzner and is anything still billable".
   IPs, and the account-wide totals, timestamped. A survivor after a job ends is a leak, not a detail.
 - Month-to-date spend vs the €20 ceiling, a linear projection to month end, jobs and server-hours this
   month, and lifetime euros per published dataset.
+- **Normalised job cost histogram**: every job's lifetime priced at one cpx32 reference rate (the modal
+  rate this project actually paid), so a cpx42 job and a cpx32 job share one axis. Buckets widen as cost
+  grows so the tail stays visible; median, p90 and max are printed above the chart. The reference rate is
+  shown on the card, not implied.
 - Spend by month, computed as **server lifetime (`deleted_at - created_at`) × the hourly rate recorded
   at launch** — the same arithmetic the launcher's reservation guard uses, so the page and the budget
   cannot disagree. Per-job table with type, start, lifetime, cost and state.

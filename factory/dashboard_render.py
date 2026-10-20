@@ -312,6 +312,47 @@ def gauge(pct, label, sub="", marks=(80, 95), width=320, height=178):
             f'font-size="10" letter-spacing=".08em">{esc(sub).upper()}</text></svg>')
 
 
+def edge_label(value):
+    """Axis edge for a cost bucket: €0.003, €0.05, €0.64 - never 15 decimals."""
+    return f"€{float(value):.3g}"
+
+
+def histogram(bins, width=340, height=132, label="cost"):
+    """Vertical bars over log-ish buckets: lo/hi/count. Keeps the tail visible."""
+    if not bins:
+        return '<p class="sub">no data</p>'
+    top = max(b["count"] for b in bins) or 1
+    pad_l, pad_r, pad_b, pad_t = 4, 4, 26, 10
+    plot_w = width - pad_l - pad_r
+    plot_h = height - pad_b - pad_t
+    slot = plot_w / len(bins)
+    gap = max(2.0, slot * 0.16)
+    bars, labels = [], []
+    for i, b in enumerate(bins):
+        h = (b["count"] / top) * plot_h if b["count"] else 0
+        x = pad_l + i * slot + gap / 2
+        w = slot - gap
+        y = pad_t + plot_h - h
+        tone = "var(--mint)" if b["count"] else "var(--surface-3)"
+        bars.append(f'<rect x="{x:.1f}" y="{y:.1f}" width="{w:.1f}" height="{max(h, 1):.1f}" '
+                    f'rx="2.5" fill="{tone}" opacity="{0.95 if b["count"] else 0.5}">'
+                    f'<title>{fmt(b["lo"])}–{fmt(b["hi"])}: {b["count"]} job(s)</title></rect>')
+        if b["count"]:
+            bars.append(f'<text x="{x + w/2:.1f}" y="{y - 4:.1f}" text-anchor="middle" '
+                        f'fill="var(--dim)" font-size="9.5">{b["count"]}</text>')
+    edges = [bins[0]["lo"]] + [b["hi"] for b in bins]
+    for i, edge in enumerate(edges):
+        if len(edges) > 6 and i not in (0, len(edges) - 1, len(edges) // 2):
+            continue
+        x = pad_l + i * slot
+        labels.append(f'<text x="{x:.1f}" y="{height - 8}" text-anchor="{"start" if i == 0 else ("end" if i == len(edges) - 1 else "middle")}" '
+                      f'fill="var(--faint)" font-size="9">{edge_label(edge)}</text>')
+    return (f'<svg class="chart" viewBox="0 0 {width} {height}" role="img" aria-label="histogram of {esc(label)}">'
+            f'<line x1="{pad_l}" y1="{pad_t + plot_h}" x2="{width - pad_r}" y2="{pad_t + plot_h}" '
+            f'stroke="var(--line)" stroke-width="1"/>'
+            f'{"".join(bars)}{"".join(labels)}</svg>')
+
+
 def bar_list(items, tone="mint", money=False):
     """items: [(label, value)] - widths are relative to the largest value."""
     top = max([v for _, v in items], default=0) or 1
@@ -684,6 +725,25 @@ def render_resources(snapshot, alarms, alarms_plain=()):
     hero_text = ("All billable resources destroyed" if live.get("servers") == 0
                  else f"{live.get('servers')} server(s) still billable")
 
+    hist = res.get("histogram") or {}
+    bins = hist.get("bins") or []
+    if bins:
+        stats = "".join([
+            pill(f"median {eur(hist.get('median'))}", "neutral"),
+            pill(f"p90 {eur(hist.get('p90'))}", "neutral"),
+            pill(f"max {eur(hist.get('max'))}", "neutral"),
+            pill(f"{hist.get('n', 0)} jobs", "blue"),
+        ])
+        histogram_chart = (f'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">'
+                           f'{stats}</div>' + histogram(bins))
+        histogram_sub = (f"cost per job at the cpx32 reference rate of "
+                         f"€{hist.get('ref_rate', 0):.4f}/h")
+        histogram_foot = ("Each job's recorded lifetime is priced at one reference rate, so a cpx42 job "
+                          "and a cpx32 job land on the same axis. Buckets widen as cost grows so the tail stays "
+                          "visible; the right-hand tail is a handful of long jobs, not a billing error.")
+    else:
+        histogram_chart, histogram_sub, histogram_foot = '<p class="sub">no data</p>', "no data", ""
+
     job_rows = [(esc(j["id"]), esc(j.get("server_type") or "—"),
                  esc((j.get("created_at") or "")[:16].replace("T", " ")),
                  "—" if j.get("hours") is None else f'{j["hours"]:.2f} h',
@@ -712,6 +772,7 @@ def render_resources(snapshot, alarms, alarms_plain=()):
     {kpi("Per published dataset", eur(per_release), note="lifetime worker spend / releases")}
   </div></div>
 
+  <div class="col-12">{card("Normalised job cost", histogram_chart, sub=histogram_sub, foot=histogram_foot)}</div>
   <div class="col-7">{card("Spend by month", bar_list(month_items, money=True), sub="recorded server lifetime × hourly rate",
         foot="Computed from each job record's created_at and deleted_at and the provider rate captured at launch. "
              "This is what the reservation math uses, not an invoice.")}</div>
