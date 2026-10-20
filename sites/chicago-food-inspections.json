@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "site_revision": 1,
+  "title": "Chicago food inspections",
+  "summary": "Predict whether a restaurant inspection will cite a given municipal code section - 40 binary task instances over 1.2 GB of Chicago's inspection record, with a frozen per-code split.",
+  "task_type": "binary-classification",
+  "domain": "Public health and food safety",
+  "release_date": "2026-10-20",
+  "post": {
+    "title": "A citation-prediction task from Chicago's inspection record",
+    "paragraphs": [
+      "The City of Chicago publishes every food inspection it conducts, including the code sections cited. Access is not the contribution. The contribution is the frozen panel - 226,417 inspections split 156,841 train / 35,358 eval / 34,218 holdout - the declaration that the prediction instant is the moment the inspection begins, and features computed only from that establishment's strictly earlier history.",
+      "The release carries 40 task instances, one per cited code section, delivered as separate configs. Each config asks the same question with its own label: will this inspection cite section X? Prevalence varies enormously by section, from 0.15% to 56.1%, so accuracy is meaningless here and AUC is the only honest score.",
+      "The numbers ship with their floor. Across the 40 configs the eval AUC runs 0.5187 to 0.8292, median 0.7208. On 38 of 40 configs the model beats a persistence reference - yesterday's presence of the same code - by +0.028 to +0.247 AUC; on two it does not, and those two are recorded rather than hidden. One config, code_38, was reproduced three times independently (0.6326) including from the published bytes in a fresh environment with no factory access."
+    ]
+  },
+  "limitations": [
+    "A derived research dataset from the City of Chicago Data Portal, built under the City's Data Terms of Use, labelled as derived - not an official City of Chicago product.",
+    "Two of 40 configs (code_14 and code_32) do not beat their persistence reference. Recorded in measurements.json rather than left to be discovered.",
+    "Label prevalence spans 0.15% to 56.1% across configs. Score AUC; accuracy is misleading on the sparse configs.",
+    "The holdout is labelled and downloadable. Keep its labels outside the evaluated agent's workspace during an evaluation.",
+    "The source is the live register: a future refresh will not reproduce this exact panel, which is why the artifact version is pinned in the manifest."
+  ]
+}

@@ -4265,3 +4265,13 @@ recorded via check-novelty.py where status requires it; check-candidate.py OK on
 Coverage after this session: CH joins the map (WHO, UNHCR); the three verdicts are all from the tick's
 region, two non-US (WHO CH, UNHCR CH; UNICEF recorded honestly as US-HQ under the HQ-country
 convention).
+
+**Chicago published 2026-10-20 21:55Z on the operator's flip.** Both destinations were private and are now
+public: GitHub earino/chicago-food-inspections (release 418734355, tag v2026.10, 201 assets) and Hugging
+Face (213 files, tag v2026.10 = 9e17ba8). Anonymous verification with no credential: repository/release
+visible, 201/201 asset names and sizes match MANIFEST.json, three sampled assets downloaded and re-hashed
+OK; HF dataset public, card and LOADING.md readable, code_38-meta.json re-hashed OK, bulk file present.
+DESTINATIONS.json recorded the flip (private: false, anonymous_access block, files_verified for all 201
+paths on both platforms) BEFORE the manifest was regenerated, as the site plan requires. Record moved to
+`published` with published_at. Site: catalogue and dataset page deployed and live
+(earino.github.io/chicago-food-inspections, receipt status complete).
