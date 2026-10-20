@@ -614,8 +614,14 @@ def publish(out: Path, repo=PUBLISH_REPO):
         shutil.rmtree(work, ignore_errors=True)
 
 
-def verify(url=PAGES_URL, expect=SNAPSHOT_GENERATED, attempts=3):
-    """Anonymous read-back of the published page. No credential is used."""
+def verify(url=PAGES_URL, expect=SNAPSHOT_GENERATED, attempts=6, delay=20):
+    """Anonymous read-back of the published page. No credential is used.
+
+    Pages serves a build a minute or two after the push, so this waits rather than
+    calling a slow deploy a failure. A page that is live but lacks the new stamp is
+    a stale deployment, which is also a failure.
+    """
+    import time
     last = {"ok": False, "error": "not attempted"}
     for attempt in range(attempts):
         try:
@@ -623,11 +629,16 @@ def verify(url=PAGES_URL, expect=SNAPSHOT_GENERATED, attempts=3):
                                              headers={"User-Agent": "scout-dashboard-verify"})
             with urllib.request.urlopen(request, timeout=30) as response:
                 body = response.read().decode("utf-8", "replace")
-            return {"ok": response.status == 200 and expect in body,
-                    "status": response.status, "found_stamp": expect in body,
-                    "attempt": attempt + 1}
+            ok = response.status == 200 and expect in body and "noindex" in body
+            if ok:
+                return {"ok": True, "status": response.status, "found_stamp": True,
+                        "attempt": attempt + 1}
+            last = {"ok": False, "status": response.status, "found_stamp": expect in body,
+                    "noindex": "noindex" in body, "attempt": attempt + 1}
         except Exception as exc:
-            last = {"ok": False, "error": type(exc).__name__}
+            last = {"ok": False, "error": type(exc).__name__, "attempt": attempt + 1}
+        if attempt + 1 < attempts:
+            time.sleep(delay)
     return last
 
 
