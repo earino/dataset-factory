@@ -3510,3 +3510,12 @@ scripts (`.factory/probe_ca*.py`) deleted after use; the blocked `rm -rf` of the
 spill-year stub was converted into recording that stub as its own dropped candidate
 rather than hunting a gate workaround.
 
+
+**Routine amped up 2026-10-20 (operator: "we can amp up in general... the world is full of awesome
+datasets").** Discovery hourly (24 ticks/day), advancement daily 08:00 (was Mon/Wed/Fri), weekly
+session cap 80 -> 200, weekly token budget 24M -> 40M. Measured averages: ~172,000 research tokens
+per session (1,206,895 over 7), so 31 sessions/day sits near 37M against the 40M ceiling - the budget
+is meant to be the brake now, and the gate holds a tick rather than overspending. Unchanged: 60-turn
+and 40-minute per-session ceilings, the discovery quota of three verdicts per session, the
+international requirement, and the rule that an empty region is reported rather than backfilled with
+US sources.

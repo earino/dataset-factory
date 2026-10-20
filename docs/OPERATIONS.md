@@ -417,7 +417,7 @@ Every cost figure carries `cost_status = "estimated"` and `actual_cost_usd = 0`:
 estimates, and **no provider-reported actual exists**. On this provider the estimate is also
 literally zero for every call, so the USD allowance can never reach `stop_fraction` and is not
 what bounds the routine. The binding control is **`weekly_token_budget`** - tokens are measured
-per session, so a 24,000,000-token weekly ceiling holds the gate even when the dollar column
+per session, so a 40,000,000-token weekly ceiling holds the gate even when the dollar column
 reads 0.0000. The USD allowance is kept as the operator's stated intent and still fails closed
 when unset. This is therefore a budget guard on planned work. It **cannot** reconcile against the portal's subscription quota, its usage page
 or its reset period - none of which is visible to this instance.
@@ -433,7 +433,7 @@ Enforced mechanically, by the pre-check script attached to each research job:
 | --- | --- |
 | Weekly token budget (`weekly_token_budget`, measured) | Gate refuses to wake the model |
 | Period allowance, stop at `stop_fraction` (95%) | Gate refuses to wake the model |
-| Weekly session cap (80) | Counted from the run ledger; further ticks skip |
+| Weekly session cap (200) | Counted from the run ledger; further ticks skip |
 | Over-long session (over `session_token_cap`) | Counts **double** against the weekly cap |
 | Overlapping sessions | Refused while a run is in flight, or the lock is fresh |
 | Catch-up bursts | `cron.catch_up_missed: false`, plus a late-tick window; a missed slot is skipped |
@@ -481,10 +481,10 @@ trade was deliberately not taken.
 
 Two jobs share the routine and both are gated by `scripts/research-budget.py`:
 
-- `scout-discovery-session` (86fe52e55ef9) - **every 4 hours**, discovery only. Its brief
+- `scout-discovery-session` (86fe52e55ef9) - **hourly**, discovery only. Its brief
   (`docs/discovery-session-prompt.md`) forbids advancing an existing candidate and requires three
   new sources to a verdict, at least two of them published outside the US.
-- `scout-research-session` (69a5bc676d10) - Mon/Wed/Fri 08:00, advancement and packaging.
+- `scout-research-session` (69a5bc676d10) - **daily 08:00**, advancement and packaging.
 
 The discovery tick gets a rotating regional focus from the deployed shim, derived from the clock so
 a report is reproducible from its timestamp. `python3 scripts/discovery-coverage.py` prints the
