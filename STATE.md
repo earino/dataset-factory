@@ -1,9 +1,56 @@
 # Current state
 
-Updated: 2026-10-20 (latest: food-baseline-003 measured the runner-contract baseline on all 40
-per-code configs in one uniform run - 40/40 gate re-accept, 40/40 CONTRACT OK, eval AUC min 0.5187 /
-median 0.7208 / max 0.8292, code_38 reproducing food-baseline-002's 0.6326 exactly. The session packaged
-the candidate and this watcher verified and committed the recording; destination staging is next.)
+Updated: 2026-10-20 (latest: destination staging began - the private earino/chicago-food-inspections
+repository carries the package docs (main e61d4839a8), and the transfer food-publish-001 moved 200 of 201
+accepted assets (1,285,152,218 bytes) into private draft release v2026.10 before failing on the last one,
+code_53-meta.json, to a transient HTTP 500 on its source download. The interactive session destroyed the
+worker and launched the one-asset retry food-publish-002, running now. After it: verify all 201 target
+assets against MANIFEST.json, then the fresh-environment consumer job, then Hugging Face.)
+
+## 2026-10-20 - food-publish-001: destination-staging transfer stopped one asset short - 200/201, a transient HTTP 500 on code_53-meta.json; the one-asset retry is running
+
+**`food-publish-001` failed with UploadError after 549 s, having transferred 200 of the 201 accepted food-001
+assets (1,285,152,218 bytes) into the private draft release v2026.10 (418734355) of
+earino/chicago-food-inspections.** This is step 2 of the candidate's recorded destination-staging sequence;
+step 1, the private repository with the package documents as its initial commit, is done (main tip
+e61d4839a8, 2026-10-20T18:33:21Z, read back through the API). Server 171420107 (cpx32/hel1, EUR
+0.06924/h, reservation EUR 0.32).
+
+**What failed, exactly.** Each asset the loop touched was downloaded from staging release 403508464,
+sha256-verified on arrival, re-uploaded, and verified again against the target's own server-side digest;
+all 200 that completed are individually recorded in the collected result with their target asset ids and
+digests. The single failure is code_53-meta.json (source asset 611965805, 2,788 bytes): its source download
+returned HTTP 500 from GitHub. Transient and server-side, not a dataset, credential or authorization
+problem - the same worker moved the other 200 assets' 1.28 GB and uploaded its own result release without
+an auth error, and the target-repository guard read private: true. `workers/upload.py` gives `ensure_asset`
+three upload retries, but its source-download path has no 5xx retry, so the loop recorded the failure and
+the executor ended the job with "1 of 201 assets did not transfer".
+
+**exit=None and the 70-byte container.log are properties of this job type, not a second failure.** Transfer
+jobs run container-less on the worker host (workers/executor.py moves already-built artifacts between
+releases), so there is no exit code to read, and the shared `stop_and_capture` path writes docker's "No
+such container: scout-food-publish-001" message as the log.
+
+**Division of labor, same as the food-baseline-001 precedent.** While this watcher collected and diagnosed,
+the interactive session destroyed the worker (record deleted_at 2026-10-20T19:02:08Z, status deleted) and
+launched the corrected minimal retry `food-publish-002` at 19:02:28Z on server 171426472 (reservation EUR
+0.16, lifetime 45 min): the same source release 403508464 and target draft release 418734355, carrying only
+code_53-meta.json with its recorded size and sha256. `ensure_asset` skips any target asset already present
+at the manifest digest, so the retry cannot duplicate or overwrite the 200 completed assets; it was running
+when this entry was written. This watcher launched nothing - one worker at a time. When food-publish-002
+completes, the sequence requires reading the target release back and verifying all 201 assets by name, size
+and sha256 against release/chicago-food-inspections/MANIFEST.json before the fresh-environment consumer job
+runs against it.
+
+**Records and cleanup.** All three small result assets of release 418750781 were fetched into
+`.factory/food-publish-001/reports/` (source.tar 92,160 B, container.log 70 B, manifest.json 119,454 B),
+each sha256-verified against that release's own manifest; no bulk CSV was downloaded to this host. The
+target release was read back through the API with the publish credential: repository private: true,
+release draft: true, exactly 200 assets, code_53-meta.json absent. Committed with this entry: STATE.md, the
+candidate's record.json (the food-publish-001 job entry), and jobs/food-publish-001.json (status deleted:
+collected, then destroyed). Deliberately not committed: jobs/food-publish-002.json (the retry is still
+running; its record is committed at collection), the interactive session's consumer-job WIP
+(candidates/chicago-food-inspections/consumer/), and the hourly dashboard's build/dashboard/ outputs.
 
 ## 2026-10-20 - food-baseline-003: all-40 runner-contract baselines measured in one uniform run - gate re-accept and CONTRACT OK on every config; the candidate is now packaged
 

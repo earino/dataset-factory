@@ -234,6 +234,25 @@
       "accept": "40/40 configs accepted by the gate before scoring: each --accept verified the fetched bytes against the gate's own collected report for that config",
       "cost": "reserved EUR 0.24, ceiling EUR 0.08/h, provider rate EUR 0.06924/h, ~6.3 min wall; destroyed 2026-10-20T17:18:14Z, deletion recorded in the ledger",
       "evidence": ".factory/food-baseline-003/reports/output/baseline.json plus the per-config accept/train/validate logs beside it (164 assets fetched from staging release 418648610, each size+sha256-verified against that release's own manifest); consolidated into baseline/baseline_result.json"
+    },
+    {
+      "id": "food-publish-001",
+      "status": "failed",
+      "what": "destination-staging step 2 of the packaged candidate: transfer the 201 accepted food-001 artifact assets (1,285,155,006 bytes) from staging release 403508464 into the private draft release v2026.10 (418734355) of earino/chicago-food-inspections, whose creation with the package documents as its initial commit was step 1 (main tip e61d4839a8, 2026-10-20T18:33:21Z)",
+      "staging_release": 418750781,
+      "staging_tag": "untagged-ceff8e86fc14488cc133",
+      "server_id": 171420107,
+      "created_at": "2026-10-20T18:42:44Z",
+      "collected_at": "2026-10-20T18:59:55Z",
+      "deleted_at": "2026-10-20T19:02:08Z",
+      "elapsed_seconds": 549.0,
+      "exit_code": null,
+      "transfer": "200 of 201 assets, 1,285,152,218 bytes, each downloaded from staging release 403508464, sha256-verified on arrival, re-uploaded to the target and verified again against the target's own server-side digest; only code_53-meta.json (source asset 611965805, 2,788 bytes) did not transfer",
+      "measured": "nothing - not a measurement job: no AUC, no base rate, no scoring; it moves already-qualified bytes between private releases",
+      "why": "the source download of code_53-meta.json returned HTTP 500 from GitHub; workers/upload.py retries ensure_asset uploads three times but its source-download path has no 5xx retry, so the transfer loop recorded the single failure and raised UploadError ('1 of 201 assets did not transfer'). Transient and server-side, not a dataset, credential or authorization problem: the same worker moved the other 200 assets' 1.28 GB and uploaded its own result release without an auth error, and the target-repository guard read private: true. exit=None and the 70-byte container.log ('Error response from daemon: No such container: scout-food-publish-001') are expected for a container-less transfer job (workers/executor.py runs transfers on the worker host with no container), not a second failure",
+      "fix": "the interactive session destroyed the worker (record deleted_at 2026-10-20T19:02:08Z) and launched the minimal corrected retry food-publish-002 (created 2026-10-20T19:02:28Z, server 171426472, cpx32/hel1, reservation EUR 0.16, lifetime 45 min): the same source release 403508464 and target draft release 418734355, carrying only code_53-meta.json with its recorded size and sha256. ensure_asset skips any target asset already present at the manifest digest, so the retry cannot duplicate or overwrite the 200 completed assets. Running when this entry was written; this watcher launched nothing - one worker at a time",
+      "evidence": ".factory/food-publish-001/result.json (per-asset target ids and digests for all 200 transferred; failures = [{'target_name': 'code_53-meta.json', 'error': 'Asset download returned HTTP 500'}]) and .factory/food-publish-001/reports/{source.tar, container.log, manifest.json} fetched from release 418750781 and each sha256-verified against that release's own manifest; the target release read back through the GitHub API with the publish credential: repository private: true, release draft: true, exactly 200 assets present, code_53-meta.json absent",
+      "verify_after_retry": "once food-publish-002 completes, all 201 target assets must match release/chicago-food-inspections/MANIFEST.json by name, size and sha256 - read back from the release itself - before the fresh-environment consumer job runs against it"
     }
   ],
   "artifacts": [
