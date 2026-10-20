@@ -326,15 +326,22 @@
     },
     {
       "id": "food-hf-002",
-      "status": "running",
+      "status": "succeeded",
       "what": "corrected retry of food-hf-001 (which uploaded all 201 assets and then failed its loading check on the int64-declared inspection_type): same 201-asset bulk spec against earino/chicago-food-inspections - every target expected to skip as already present at its manifest digest - then the built-in code_38 loading check (train/eval/holdout rows 156841/35358/34218, positives 58228/7335/7418, the 18 declared columns, label code_38) against the corrected dataset_infos.json (inspection_type string, Hub revision 9e17ba8)",
-      "server_id": "171445940",
+      "server_id": 171445940,
       "created_at": "2026-10-20T20:59:52Z",
       "reservation_eur": "0.32",
       "spec": "candidates/chicago-food-inspections/hf/job.json",
       "hf_repo": "earino/chicago-food-inspections",
       "hf_revision": "main",
-      "hf_small_files_sha": "9e17ba8a6f20555c0a1932e0e314a8546b630854"
+      "hf_small_files_sha": "9e17ba8a6f20555c0a1932e0e314a8546b630854",
+      "collected_at": "2026-10-20T21:39:57Z",
+      "staging_release": 418876326,
+      "staging_tag": "untagged-f52fd348ec0a9ab3b95c",
+      "exit_code": null,
+      "uploads": "uploads 0, skips 201, failures 0, bytes 0 - every one of the 201 targets was already at its manifest digest from food-hf-001, so the retry was a pure verification pass over the existing Hub state (exactly as planned)",
+      "measured": "hf_loading ok: code_38 generated from the Hub-served CSVs against the declared schema - train 156841 rows / 58228 positives, eval 35358 rows / 7335 positives, holdout 34218 rows / 7418 positives, problems [] - the exact expected counts, read from the collected result.json and re-read from the release's own manifest.json (sha256 08101c97..)",
+      "note": "the container-less executor pattern again: exit=None/elapsed_min=0 and the 65-byte container.log ('No such container: scout-food-hf-002') are the collector reading after the container exited; the verdict is the runner status 'succeeded' with uploaded=true. Post-collection, from the coordinator: hf-publish --verify ok (201/201 present, 0 missing, 0 size-mismatched; 41 LFS paths digest-verified by the Hub, the rest re-hashed on download by food-hf-001; repo private; recorded in release/chicago-food-inspections/DESTINATIONS.json at 2026-10-20T21:41:09Z) and --tag LAST (Hub tag v2026.10 at 9e17ba8a6f20555c0a1932e0e314a8546b630854 = main, tag_matches_main true); check-package OK. The write credential stayed in its file; the inference credential was never read"
     }
   ],
   "artifacts": [
@@ -358,7 +365,7 @@
   ],
   "rejection_reason": null,
   "review": null,
-  "next_action": "PACKAGED (awaiting nothing but its own release steps) - destination staging steps 1-3 are COMPLETE: private repo earino/chicago-food-inspections carries the package documents (main 49d06bb5c921fab858204546e507ff96620a5623 = tag v2026.10 = the release), all 201 assets verified on private release v2026.10 (418734355, 1,285,155,006 bytes), and the fresh-environment consumer job food-consumer-002 passed all five steps (package 22/22, 201 assets failures [], sha256sum -c 201/201, gate --accept 40/40, code_38 baseline eval AUC 0.6326 = the recorded value through the unmodified contract). Step 4 (Hugging Face) is IN FLIGHT (second attempt food-hf-002; the first, food-hf-001, uploaded all 201 assets at their manifest digests and failed its loading check on the schema bug fixed in commit 3584924): the private Hub repo earino/chicago-food-inspections exists (created with the write credential; 11 small files at revision sha 2051a467, including the generated card and dataset_infos.json - 40 configs x 18 declared column types, generated from the release's own metas so the loading check does not depend on Hub type inference), and the bulk job food-hf-001 (server 171438942, launched 2026-10-20T20:06:05Z, reservation EUR 0.32) is uploading the 201 assets from the verified GitHub release and then runs the built-in code_38 loading check. When the watcher collects food-hf-002: (a) require exit 0, all 201 targets accounted (this run should report them as 'already at the manifest digest' skips), zero failures, and loading_check ok: true (code_38 train/eval/holdout rows 156841/35358/34218, positives 58228/7335/7418, the 18 declared columns); (b) python3 scripts/hf-publish.py --verify --candidate chicago-food-inspections (records the huggingface destination in release/chicago-food-inspections/DESTINATIONS.json) and then --tag LAST (Hub tag v2026.10 at the revision that carries the data; check the tag and main resolve to the same commit); (c) re-run scripts/check-package.py release/chicago-food-inspections, set awaiting_operator: true with the private-to-public flip as the sole remaining step, and let scout-release-notify deliver the ready-for-flip message. The flip is the operator's single approval. After it, publication is automatic: flip both destinations, prove both anonymously (no credential), record the change in DESTINATIONS.json BEFORE regenerating the manifest, refresh the card, LOADING.md, README and release notes, and then the website step.",
+  "next_action": "PACKAGED - ALL FOUR DESTINATION-STAGING STEPS COMPLETE; the sole remaining step is the operator's private-to-public flip (awaiting_operator: true; scout-release-notify delivers the request, deduped on id@packaged_at). GitHub: private earino/chicago-food-inspections, main = tag v2026.10 = 3584924, release 418734355 with all 201 assets, fresh-environment consumer verification food-consumer-002 all five steps green (package 22/22, 201 assets, sha256sum 201/201, gate --accept 40/40, code_38 eval AUC 0.6326). Hugging Face: private earino/chicago-food-inspections, main = tag v2026.10 = 9e17ba8a6f20555c0a1932e0e314a8546b630854, all 201 bulk assets + 8 small files verified against the package MANIFEST (hf-publish --verify ok, recorded in DESTINATIONS.json), code_38 loading check green (train/eval/holdout 156841/35358/34218 rows, 58228/7335/7418 positives). After the operator's 'flip chicago-food-inspections': flip both destinations, prove both anonymously (no credential), record the change in DESTINATIONS.json BEFORE regenerating the manifest (it derives visibility/published from that file), refresh the card, LOADING.md, README and release notes, then the website step (scripts/site-publish.py per docs/WEBSITE-SYSTEM.md).",
   "superseded_by": null,
   "lead_priority_note": "Cleared 2026-10-12: msha-enforcement-citations is the priority lead on size and leakage risk (decided 2026-09-27), but it does not replace this candidate. chicago-food-inspections is the built and gated one - job food-001, gate 1.3.0, 40/40 configs, staging release 403508464 - and stays open until the operator chooses which candidate to package.",
   "novelty_check": {
@@ -686,5 +693,6 @@
     },
     "note": "The windows exactly as shipped in every config's meta.json (split.windows, end-exclusive); rows identical across all 40 configs - the pooled inspection set. Read from the collected code_38 meta.json, which the gate verified rows against."
   },
-  "packaged_at": "2026-10-20T17:20:56.111144+00:00"
+  "packaged_at": "2026-10-20T17:20:56.111144+00:00",
+  "awaiting_operator": true
 }

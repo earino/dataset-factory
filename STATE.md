@@ -1,21 +1,51 @@
 # Current state
 
-Updated: 2026-10-20, latest (food-hf-001 FAILED its Hub loading check on a schema bug - inspection_type typed int64; fixed, retry food-hf-002 running. Earlier: food-consumer-002 PASSED all five steps of the fresh-environment
+Updated: 2026-10-20, latest (food-hf-002 SUCCEEDED - destination staging is COMPLETE on both platforms and
+chicago-food-inspections is awaiting_operator: true, waiting only on the private-to-public flip.
+The retry verified all 201 Hub targets at their manifest digests and passed the built-in code_38
+loading check against the corrected declared schema: train/eval/holdout 156841/35358/34218 rows,
+58228/7335/7418 positives. Post-collection: hf-publish --verify ok (201/201, 0 missing, 0
+size-mismatched, recorded in DESTINATIONS.json), Hub tag v2026.10 = main = 9e17ba8a, check-package OK.
+Next: the operator's single approval - 'flip chicago-food-inspections' - then anonymous proofs,
+DESTINATIONS.json before manifest regeneration, card/LOADING/README/release-notes refresh, website step.
+Earlier: food-hf-001 FAILED its Hub loading check on a schema bug - inspection_type typed int64; fixed.
+Earlier still: food-consumer-002 PASSED all five steps of the fresh-environment
 consumer verification on the published bytes - package 22/22, 201 assets failures [], sha256sum -c
 201/201, gate --accept 40/40, code_38 baseline eval AUC 0.6326 = the recorded value through the
-unmodified contract - and the result is recorded in the package's VERIFICATION.md and the private
-destination repo at main fbc3d77 = tag v2026.10, with dataset_infos.json declaring the Hub schema.
-Step 4 (Hugging Face) continues: food-hf-001 uploaded all 201 assets to the private Hub repo
-earino/chicago-food-inspections (each verified at its manifest digest) but failed the loading
-check - the generated dataset_infos.json typed the string column inspection_type as int64
-(undeclared columns silently defaulted to int64), so load_dataset raised ArrowInvalid on
-'Canvass'. Fixed: schema regenerated with inspection_type as string, generator hardened to
-refuse undeclared columns, docs advance pushed (destination main/tag v2026.10 = 3584924,
-byte-identical docs, anonymous fetch still 404), Hub small files refreshed (revision 9e17ba8),
-and retry food-hf-002 launched 20:59:52Z on server 171445940. When the watcher collects it:
-hf-publish --verify, --tag LAST, check-package, awaiting_operator: true and the ready-for-flip
-notification; the flip itself is the operator's single approval.)
+unmodified contract.)
 
+## 2026-10-20 - food-hf-002 succeeded: Hub destination verified and tagged; all four destination-staging steps complete; chicago-food-inspections now awaits only the operator's flip
+
+**`food-hf-002` succeeded (collected 21:39:57Z from server 171445940, staging release 418876326), and it
+did exactly what the retry was designed to do: prove the Hub state rather than move bytes.** The collected
+result reads uploads 0, skips 201, failures 0 - every one of the 201 targets was already at its manifest
+digest from food-hf-001 - and the built-in code_38 loading check passed against the corrected declared
+schema: `hf_loading ok: true, problems: []`, train 156841 rows / 58228 positives, eval 35358 / 7335,
+holdout 34218 / 7418 - the exact expected counts. The same numbers were re-read from the release's own
+manifest.json (sha256 08101c97..); container.log is the 65-byte container-less executor note
+('No such container: scout-food-hf-002'), not a defect.
+
+**Post-collection steps, all run from the coordinator and verified before recording:**
+
+1. `hf-publish.py --verify --candidate chicago-food-inspections` (write credential from its mode-0600
+   file): **ok** - 201/201 files present, 0 missing, 0 size-mismatched; 41 LFS paths digest-verified by
+   the Hub, the rest re-hashed on download by food-hf-001; repo private; recorded in
+   `release/chicago-food-inspections/DESTINATIONS.json` (huggingface verified: true, 2026-10-20T21:41:09Z;
+   stale 'bulk assets to be uploaded' note replaced with the completed state).
+2. `hf-publish.py --tag` LAST: Hub tag **v2026.10** created at
+   `9e17ba8a6f20555c0a1932e0e314a8546b630854` with **tag_matches_main: true** - the revision that
+   carries both the 201 bulk assets and the corrected dataset_infos.json.
+3. `check-package.py release/chicago-food-inspections`: OK.
+4. `candidates/chicago-food-inspections/record.json`: food-hf-002 entry updated running -> succeeded with
+   the measured facts; `awaiting_operator: true` set; `next_action` rewritten to the flip-waiting state.
+
+**Both destinations now carry the same accepted artifact, privately:** GitHub earino/chicago-food-inspections
+(main = tag v2026.10 = 3584924, release 418734355, 201 assets, consumer verification green) and Hugging Face
+earino/chicago-food-inspections (main = tag v2026.10 = 9e17ba8, 201 bulk assets + 8 small files verified
+against the package MANIFEST). The only remaining step is the operator's single approval; after it,
+publication is mechanical: flip both destinations, prove both anonymously, record in DESTINATIONS.json
+BEFORE regenerating the manifest, refresh card/LOADING.md/README/release notes, website step.
+`scout-release-notify` (hourly at :55) delivers the ready-for-flip request, deduped on id@packaged_at.
 
 ## 2026-10-20 - food-hf-001 failed its Hub loading check: inspection_type was typed int64; schema fixed, generator hardened, retry food-hf-002 launched
 
