@@ -3802,3 +3802,21 @@ obeyed by the brief. Cadence changed to alternating 2-hour slots every four hour
 fits its slot and the two jobs can never share a lock. config/research-budget.json session_max_minutes
 raised 40 -> 90 (it sets the stale-lock window; at 40 a live 90-minute session would have been treated as
 dead and overlapped). 12 sessions/day at 150-250k tokens is ~21M/week against the 40M ceiling.
+
+**Two failures on 2026-10-20, both structural, both fixed.**
+
+1. `food-baseline-001` died at 26.8 s with exit 2: the job was launched straight from
+   `candidates/chicago-food-inspections/baseline/job.json`, and `factory.worker.source_bundle` packs
+   exactly that directory, so `qualify_dataset.py` and the runner's train/validate files never reached
+   the worker ("can't open file '/workspace/qualify_dataset.py'"). Nothing was scored. The corrected
+   retry `food-baseline-002` was assembled with `scripts/assemble-job.py` first (bundle now carries
+   qualify_dataset.py, train.py, validate.py, validate.sh, runner_files.json) and launched 15:26 on
+   worker 171396373; the 5-minute watchdog collects it. Rule that follows: never launch a job from a
+   candidate directory - assemble it, then launch the assembled bundle.
+
+2. The advancement cron was killed at 3600 s by the scheduler's script ceiling, not by its own budget:
+   a 90-minute run plus 300 s grace needs 5700 s, and `cron.script_timeout_seconds` defaulted to 3600.
+   Set to 6000 in /opt/data/config.yaml (the loader caches on file signature, so the next fire sees it).
+   The session had already launched the corrected baseline and written most of the Chicago package
+   (licences, code/, measurements.json, DATA_DICTIONARY.md, get_dataset.py) before it was killed; the
+   manifest is the missing piece.
