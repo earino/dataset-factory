@@ -152,18 +152,40 @@ Rules that are not negotiable:
 - Terms are recorded in the manifest, **generated from the declaration** rather than edited in
   afterwards - a hand-edited block is lost the next time the manifest is regenerated.
 
-## Publication: the one step that needs the operator
+## Publication: the flip is the operator's, everything else is yours
 
-Everything above produces a **private** release. Publication is a separate, approved act, and it is
-the operator's decision - never inferred from a plan digest you happen to hold.
+Everything above produces a **private** release. The boundary is one event: **making a private
+repository or Hub repo public** (the flip). Up to it you act freely - build, qualify, package,
+verify, write the docs, and leave the repository one call away from public. The flip itself is the
+operator's single approval; nothing about packaging, checks or planning is theirs to grant.
 
-**Standing authority.** This operator grants standing publication authority: a release that passes
-every gate should be published without waiting for a per-release yes, and reported afterwards. The
-authority changes *who says yes*, never *what must be true* - the gate list, the anonymous
-verification and the recorded state are unchanged - and it is still a logged act: version, both
-destinations and the verification result go into `STATE.md`. The authority covers ordinary releases
-of an accepted candidate; it does not cover reopening a decision the operator has already settled
-(a repository they made public stays public) without saying so.
+After the flip, publication is automatic: GitHub and Hugging Face, the site page, and the anonymous
+verification all run without another yes, and the operator is told the link. Do not re-ask for a
+per-release approval you already have, and do not infer a flip from a plan digest you happen to hold.
+
+Record the boundary in the candidate record so both humans and the scheduler can see it:
+
+- `packaged_at` - ISO timestamp, set when the package is verified.
+- `awaiting_operator: true` - set **only** while the flip is the sole remaining step; clear it after.
+
+### Shipping outranks building
+
+Once a candidate is packaged and that state is still actionable (not `awaiting_operator`), it takes
+priority over all construction: no new construction job launches while it exists, and the scheduled
+session spends its tick on it. Two mechanisms, both needed:
+
+- **Preemption.** The worker launcher refuses a construction job while an actionable packaged
+  candidate exists, and names the candidate. Release jobs - or a job flagged `release: true` - may
+  launch.
+- **A reserve.** Hold part of the monthly worker allowance back from construction so a release can
+  always afford its own job. Construction may spend `budget - reserve`; release work may spend the
+  whole budget. Refuse a reserve that is not smaller than the allowance.
+
+**Exempt the human wait, or the queue starves.** A packaged candidate waiting on the operator must
+not block anything - otherwise a slow approval freezes every build behind it. That is exactly why
+the record carries `awaiting_operator`: preemption applies to work *you* can do, never to work waiting
+on a person. Surface the wait as an ageing item on the dashboard instead, and alarm when actionable
+release work sits for hours.
 
 When it is approved:
 

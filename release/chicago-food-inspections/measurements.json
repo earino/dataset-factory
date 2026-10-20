@@ -1,0 +1,1127 @@
+{
+  "pool": {
+    "command": "candidates/chicago-food-inspections/source/build.py on worker job food-001; evidence build_summary.json, collected from staging release 403508464 and sha256-verified",
+    "pool_rows": 226417,
+    "definition": "inspections with results in Pass / Fail / Pass w/ Conditions and a non-null parseable violations blob, a non-null license id and an inspection_date inside a split window; every config ships this identical pool",
+    "split_rows": {
+      "train": 156841,
+      "eval": 35358,
+      "holdout": 34218
+    },
+    "split_windows": {
+      "train": "2010-01-01..2020-12-31",
+      "eval": "2021-01-01..2023-12-31",
+      "holdout": "2024-01-01..2026-09-30"
+    },
+    "rows_dropped": {
+      "unparsable_blob": 0,
+      "missing_license": 14,
+      "missing_date": 0,
+      "outside_windows": 42
+    }
+  },
+  "source_census": {
+    "command": "anonymous SoQL aggregate queries over the live portal, 2026-09-27 (probe scripts in candidates/chicago-food-inspections/; not the built pool)",
+    "rows_total": 316205,
+    "rows_with_violations": 227036,
+    "distinct_inspection_id": 316205,
+    "distinct_license": 49145,
+    "date_range": [
+      "2010-01-04",
+      "2026-09-25"
+    ],
+    "distinct_violation_codes_in_40000_row_scan": 61,
+    "labels_per_inspection": {
+      "mean": 3.08,
+      "median": 2,
+      "max": 19,
+      "codes_ge_1pct": 32,
+      "codes_ge_0.1pct": 43
+    },
+    "mean_codes_by_result": {
+      "Pass": 2.05,
+      "Pass w/ Conditions": 3.7,
+      "Fail": 4.85
+    },
+    "note": "the census is the discovery-time measurement of the whole source; the pool and the floor below are what construction actually shipped"
+  },
+  "floor": {
+    "command": "build.py floor pass on the constructed pool (job food-001): pool rate >= 1%, >= 30 positives and >= 20 distinct positive days in every window",
+    "codes_clearing_rate_floor": 48,
+    "shipped_configs": 40,
+    "dropped_by_window_minimums": [
+      12,
+      18,
+      19,
+      24,
+      30,
+      31,
+      34,
+      42
+    ],
+    "positive_rate_range": {
+      "min_holdout": 0.00146,
+      "max_holdout": 0.567
+    },
+    "note": "the pre-build estimate of 37 codes came from a 15,000-row recent scan; the full 226,417-row pool supports 40"
+  },
+  "extraction_cost": {
+    "command": "worker job food-001 (cx23, Helsinki, 2 vCPU / 4 GB)",
+    "wall_clock_seconds": 510.0,
+    "pages": 46,
+    "route": "anonymous paged Socrata pull of 4ijn-s7e5 ordered by inspection_id (46 pages at 5,000 rows), no credential",
+    "output_bytes": {
+      "split_files": 1260504640,
+      "labels_csv": 24319192
+    },
+    "staging_release_assets": "290 assets totalling 1,286,358,734 bytes on private staging release 403508464",
+    "probe_note": "the discovery-time probe measured the pull pattern on a 20,000-row sample (5 requests, 23.2 s, 28.9 MB) and estimated the full pull at 65 requests / 458 MB / 366 s - an ESTIMATE, labelled as such in the record; the figures above are the build's own measurements"
+  },
+  "levels": {
+    "code_01": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 1862,
+        "eval": 2120,
+        "holdout": 1869
+      },
+      "positive_rate": {
+        "train": 0.011872,
+        "eval": 0.059958,
+        "holdout": 0.05462
+      },
+      "positive_days": {
+        "train": 1041,
+        "eval": 680,
+        "holdout": 621
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.575455,
+        "eval_base_rate": 0.059958
+      }
+    },
+    "code_02": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 9172,
+        "eval": 4158,
+        "holdout": 3798
+      },
+      "positive_rate": {
+        "train": 0.05848,
+        "eval": 0.117597,
+        "holdout": 0.110994
+      },
+      "positive_days": {
+        "train": 2427,
+        "eval": 728,
+        "holdout": 649
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.587348,
+        "eval_base_rate": 0.117597
+      }
+    },
+    "code_03": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 22241,
+        "eval": 3639,
+        "holdout": 1599
+      },
+      "positive_rate": {
+        "train": 0.141806,
+        "eval": 0.102919,
+        "holdout": 0.04673
+      },
+      "positive_days": {
+        "train": 2586,
+        "eval": 706,
+        "holdout": 584
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.532086,
+        "eval_base_rate": 0.102919
+      }
+    },
+    "code_05": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 14891,
+        "eval": 3064,
+        "holdout": 1327
+      },
+      "positive_rate": {
+        "train": 0.094943,
+        "eval": 0.086656,
+        "holdout": 0.038781
+      },
+      "positive_days": {
+        "train": 633,
+        "eval": 691,
+        "holdout": 565
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.506672,
+        "eval_base_rate": 0.086656
+      }
+    },
+    "code_06": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 1991,
+        "eval": 179,
+        "holdout": 364
+      },
+      "positive_rate": {
+        "train": 0.012694,
+        "eval": 0.005063,
+        "holdout": 0.010638
+      },
+      "positive_days": {
+        "train": 1233,
+        "eval": 151,
+        "holdout": 268
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.575323,
+        "eval_base_rate": 0.005063
+      }
+    },
+    "code_08": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 2967,
+        "eval": 236,
+        "holdout": 311
+      },
+      "positive_rate": {
+        "train": 0.018917,
+        "eval": 0.006675,
+        "holdout": 0.009089
+      },
+      "positive_days": {
+        "train": 1629,
+        "eval": 203,
+        "holdout": 245
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.543227,
+        "eval_base_rate": 0.006675
+      }
+    },
+    "code_09": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 1900,
+        "eval": 228,
+        "holdout": 169
+      },
+      "positive_rate": {
+        "train": 0.012114,
+        "eval": 0.006448,
+        "holdout": 0.004939
+      },
+      "positive_days": {
+        "train": 1262,
+        "eval": 182,
+        "holdout": 146
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.549182,
+        "eval_base_rate": 0.006448
+      }
+    },
+    "code_10": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 8542,
+        "eval": 8086,
+        "holdout": 6976
+      },
+      "positive_rate": {
+        "train": 0.054463,
+        "eval": 0.228689,
+        "holdout": 0.203869
+      },
+      "positive_days": {
+        "train": 1263,
+        "eval": 735,
+        "holdout": 669
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.522135,
+        "eval_base_rate": 0.228689
+      }
+    },
+    "code_11": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 3643,
+        "eval": 52,
+        "holdout": 50
+      },
+      "positive_rate": {
+        "train": 0.023227,
+        "eval": 0.001471,
+        "holdout": 0.001461
+      },
+      "positive_days": {
+        "train": 1593,
+        "eval": 51,
+        "holdout": 48
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.518785,
+        "eval_base_rate": 0.001471
+      }
+    },
+    "code_14": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 1871,
+        "eval": 249,
+        "holdout": 207
+      },
+      "positive_rate": {
+        "train": 0.011929,
+        "eval": 0.007042,
+        "holdout": 0.006049
+      },
+      "positive_days": {
+        "train": 1223,
+        "eval": 212,
+        "holdout": 176
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.59774,
+        "eval_base_rate": 0.007042
+      }
+    },
+    "code_16": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 7370,
+        "eval": 3029,
+        "holdout": 3517
+      },
+      "positive_rate": {
+        "train": 0.04699,
+        "eval": 0.085667,
+        "holdout": 0.102782
+      },
+      "positive_days": {
+        "train": 2341,
+        "eval": 707,
+        "holdout": 654
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.556211,
+        "eval_base_rate": 0.085667
+      }
+    },
+    "code_21": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 9790,
+        "eval": 508,
+        "holdout": 504
+      },
+      "positive_rate": {
+        "train": 0.06242,
+        "eval": 0.014367,
+        "holdout": 0.014729
+      },
+      "positive_days": {
+        "train": 2304,
+        "eval": 367,
+        "holdout": 339
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.54992,
+        "eval_base_rate": 0.014367
+      }
+    },
+    "code_22": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 3059,
+        "eval": 2291,
+        "holdout": 2475
+      },
+      "positive_rate": {
+        "train": 0.019504,
+        "eval": 0.064794,
+        "holdout": 0.07233
+      },
+      "positive_days": {
+        "train": 1114,
+        "eval": 678,
+        "holdout": 618
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.546685,
+        "eval_base_rate": 0.064794
+      }
+    },
+    "code_23": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 5370,
+        "eval": 585,
+        "holdout": 516
+      },
+      "positive_rate": {
+        "train": 0.034238,
+        "eval": 0.016545,
+        "holdout": 0.01508
+      },
+      "positive_days": {
+        "train": 567,
+        "eval": 378,
+        "holdout": 348
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.598869,
+        "eval_base_rate": 0.016545
+      }
+    },
+    "code_25": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 4147,
+        "eval": 1292,
+        "holdout": 622
+      },
+      "positive_rate": {
+        "train": 0.026441,
+        "eval": 0.036541,
+        "holdout": 0.018178
+      },
+      "positive_days": {
+        "train": 724,
+        "eval": 594,
+        "holdout": 395
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.588443,
+        "eval_base_rate": 0.036541
+      }
+    },
+    "code_29": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 6381,
+        "eval": 247,
+        "holdout": 253
+      },
+      "positive_rate": {
+        "train": 0.040685,
+        "eval": 0.006986,
+        "holdout": 0.007394
+      },
+      "positive_days": {
+        "train": 2054,
+        "eval": 211,
+        "holdout": 207
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.566195,
+        "eval_base_rate": 0.006986
+      }
+    },
+    "code_32": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 53105,
+        "eval": 153,
+        "holdout": 191
+      },
+      "positive_rate": {
+        "train": 0.338591,
+        "eval": 0.004327,
+        "holdout": 0.005582
+      },
+      "positive_days": {
+        "train": 2251,
+        "eval": 139,
+        "holdout": 161
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.547773,
+        "eval_base_rate": 0.004327
+      }
+    },
+    "code_33": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 63131,
+        "eval": 1624,
+        "holdout": 1754
+      },
+      "positive_rate": {
+        "train": 0.402516,
+        "eval": 0.04593,
+        "holdout": 0.05126
+      },
+      "positive_days": {
+        "train": 2593,
+        "eval": 615,
+        "holdout": 579
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.464922,
+        "eval_base_rate": 0.04593
+      }
+    },
+    "code_35": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 63692,
+        "eval": 435,
+        "holdout": 530
+      },
+      "positive_rate": {
+        "train": 0.406093,
+        "eval": 0.012303,
+        "holdout": 0.015489
+      },
+      "positive_days": {
+        "train": 2277,
+        "eval": 321,
+        "holdout": 346
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.576832,
+        "eval_base_rate": 0.012303
+      }
+    },
+    "code_36": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 29336,
+        "eval": 3107,
+        "holdout": 2785
+      },
+      "positive_rate": {
+        "train": 0.187043,
+        "eval": 0.087873,
+        "holdout": 0.08139
+      },
+      "positive_days": {
+        "train": 2659,
+        "eval": 722,
+        "holdout": 637
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.509189,
+        "eval_base_rate": 0.087873
+      }
+    },
+    "code_37": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 11482,
+        "eval": 4513,
+        "holdout": 4204
+      },
+      "positive_rate": {
+        "train": 0.073208,
+        "eval": 0.127637,
+        "holdout": 0.122859
+      },
+      "positive_days": {
+        "train": 2480,
+        "eval": 720,
+        "holdout": 646
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.620475,
+        "eval_base_rate": 0.127637
+      }
+    },
+    "code_38": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 58228,
+        "eval": 7335,
+        "holdout": 7418
+      },
+      "positive_rate": {
+        "train": 0.371255,
+        "eval": 0.20745,
+        "holdout": 0.216786
+      },
+      "positive_days": {
+        "train": 2695,
+        "eval": 734,
+        "holdout": 667
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.527479,
+        "eval_base_rate": 0.20745
+      }
+    },
+    "code_39": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 3607,
+        "eval": 3845,
+        "holdout": 4358
+      },
+      "positive_rate": {
+        "train": 0.022998,
+        "eval": 0.108745,
+        "holdout": 0.12736
+      },
+      "positive_days": {
+        "train": 1123,
+        "eval": 717,
+        "holdout": 660
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.58279,
+        "eval_base_rate": 0.108745
+      }
+    },
+    "code_40": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 16518,
+        "eval": 1661,
+        "holdout": 2118
+      },
+      "positive_rate": {
+        "train": 0.105317,
+        "eval": 0.046977,
+        "holdout": 0.061897
+      },
+      "positive_days": {
+        "train": 2571,
+        "eval": 636,
+        "holdout": 617
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.615055,
+        "eval_base_rate": 0.046977
+      }
+    },
+    "code_41": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 35552,
+        "eval": 2379,
+        "holdout": 2173
+      },
+      "positive_rate": {
+        "train": 0.226675,
+        "eval": 0.067283,
+        "holdout": 0.063505
+      },
+      "positive_days": {
+        "train": 2647,
+        "eval": 685,
+        "holdout": 602
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.623805,
+        "eval_base_rate": 0.067283
+      }
+    },
+    "code_43": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 9147,
+        "eval": 1399,
+        "holdout": 1863
+      },
+      "positive_rate": {
+        "train": 0.05832,
+        "eval": 0.039567,
+        "holdout": 0.054445
+      },
+      "positive_days": {
+        "train": 2397,
+        "eval": 619,
+        "holdout": 595
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.607638,
+        "eval_base_rate": 0.039567
+      }
+    },
+    "code_44": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 1701,
+        "eval": 1499,
+        "holdout": 1580
+      },
+      "positive_rate": {
+        "train": 0.010845,
+        "eval": 0.042395,
+        "holdout": 0.046175
+      },
+      "positive_days": {
+        "train": 830,
+        "eval": 619,
+        "holdout": 567
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.608428,
+        "eval_base_rate": 0.042395
+      }
+    },
+    "code_45": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 8219,
+        "eval": 1446,
+        "holdout": 1602
+      },
+      "positive_rate": {
+        "train": 0.052403,
+        "eval": 0.040896,
+        "holdout": 0.046817
+      },
+      "positive_days": {
+        "train": 1243,
+        "eval": 609,
+        "holdout": 588
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.630655,
+        "eval_base_rate": 0.040896
+      }
+    },
+    "code_47": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 9100,
+        "eval": 10589,
+        "holdout": 10554
+      },
+      "positive_rate": {
+        "train": 0.058021,
+        "eval": 0.29948,
+        "holdout": 0.308434
+      },
+      "positive_days": {
+        "train": 608,
+        "eval": 736,
+        "holdout": 668
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.62668,
+        "eval_base_rate": 0.29948
+      }
+    },
+    "code_48": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 2983,
+        "eval": 2810,
+        "holdout": 2487
+      },
+      "positive_rate": {
+        "train": 0.019019,
+        "eval": 0.079473,
+        "holdout": 0.072681
+      },
+      "positive_days": {
+        "train": 589,
+        "eval": 714,
+        "holdout": 638
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.500753,
+        "eval_base_rate": 0.079473
+      }
+    },
+    "code_49": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 7949,
+        "eval": 10709,
+        "holdout": 9890
+      },
+      "positive_rate": {
+        "train": 0.050682,
+        "eval": 0.302873,
+        "holdout": 0.289029
+      },
+      "positive_days": {
+        "train": 604,
+        "eval": 733,
+        "holdout": 668
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.655849,
+        "eval_base_rate": 0.302873
+      }
+    },
+    "code_51": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 8841,
+        "eval": 9216,
+        "holdout": 8138
+      },
+      "positive_rate": {
+        "train": 0.056369,
+        "eval": 0.260648,
+        "holdout": 0.237828
+      },
+      "positive_days": {
+        "train": 610,
+        "eval": 736,
+        "holdout": 668
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.575344,
+        "eval_base_rate": 0.260648
+      }
+    },
+    "code_52": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 732,
+        "eval": 924,
+        "holdout": 658
+      },
+      "positive_rate": {
+        "train": 0.004667,
+        "eval": 0.026133,
+        "holdout": 0.01923
+      },
+      "positive_days": {
+        "train": 418,
+        "eval": 513,
+        "holdout": 397
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.507895,
+        "eval_base_rate": 0.026133
+      }
+    },
+    "code_53": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 5190,
+        "eval": 6553,
+        "holdout": 4453
+      },
+      "positive_rate": {
+        "train": 0.033091,
+        "eval": 0.185333,
+        "holdout": 0.130136
+      },
+      "positive_days": {
+        "train": 577,
+        "eval": 731,
+        "holdout": 658
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.548249,
+        "eval_base_rate": 0.185333
+      }
+    },
+    "code_54": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 1559,
+        "eval": 2188,
+        "holdout": 2283
+      },
+      "positive_rate": {
+        "train": 0.00994,
+        "eval": 0.061881,
+        "holdout": 0.066719
+      },
+      "positive_days": {
+        "train": 533,
+        "eval": 674,
+        "holdout": 624
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.535866,
+        "eval_base_rate": 0.061881
+      }
+    },
+    "code_55": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 17859,
+        "eval": 19828,
+        "holdout": 19406
+      },
+      "positive_rate": {
+        "train": 0.113867,
+        "eval": 0.560778,
+        "holdout": 0.567128
+      },
+      "positive_days": {
+        "train": 614,
+        "eval": 738,
+        "holdout": 673
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.61531,
+        "eval_base_rate": 0.560778
+      }
+    },
+    "code_56": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 6985,
+        "eval": 7731,
+        "holdout": 6866
+      },
+      "positive_rate": {
+        "train": 0.044536,
+        "eval": 0.218649,
+        "holdout": 0.200655
+      },
+      "positive_days": {
+        "train": 600,
+        "eval": 732,
+        "holdout": 661
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.601421,
+        "eval_base_rate": 0.218649
+      }
+    },
+    "code_57": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 5574,
+        "eval": 5386,
+        "holdout": 4366
+      },
+      "positive_rate": {
+        "train": 0.035539,
+        "eval": 0.152328,
+        "holdout": 0.127594
+      },
+      "positive_days": {
+        "train": 599,
+        "eval": 729,
+        "holdout": 659
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.599289,
+        "eval_base_rate": 0.152328
+      }
+    },
+    "code_58": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 8616,
+        "eval": 6271,
+        "holdout": 5386
+      },
+      "positive_rate": {
+        "train": 0.054935,
+        "eval": 0.177357,
+        "holdout": 0.157403
+      },
+      "positive_days": {
+        "train": 604,
+        "eval": 731,
+        "holdout": 658
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.582734,
+        "eval_base_rate": 0.177357
+      }
+    },
+    "code_60": {
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positives": {
+        "train": 1678,
+        "eval": 2732,
+        "holdout": 2118
+      },
+      "positive_rate": {
+        "train": 0.010699,
+        "eval": 0.077267,
+        "holdout": 0.061897
+      },
+      "positive_days": {
+        "train": 418,
+        "eval": 698,
+        "holdout": 600
+      },
+      "persistence_baseline": {
+        "persistence_prev_code_present_eval_auc": 0.59416,
+        "eval_base_rate": 0.077267
+      }
+    }
+  },
+  "labels_csv": {
+    "bytes": 24319192,
+    "sha256": "c891fd333a1691912a37aad1c4f9bfd3df1671aeecd3966ef052f08b511982d1",
+    "what": "the joint multi-label matrix at the dataset root: one row per pooled inspection, one column per floor code"
+  }
+}

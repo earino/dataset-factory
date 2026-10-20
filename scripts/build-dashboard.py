@@ -139,6 +139,10 @@ def collect_releases():
         aucs = [v.get("eval_auc") for v in baseline.values()
                 if isinstance(v, dict) and isinstance(v.get("eval_auc"), (int, float))]
         persistence = ((manifest.get("baseline") or {}).get("persistence_reference") or {})
+        # A release may describe its persistence reference in prose (the key predates a fixed
+        # schema); the dashboard reads figures, never crashes on a shape it does not expect.
+        if not isinstance(persistence, dict):
+            persistence = {}
         releases.append({
             "dataset": manifest.get("dataset", folder.name),
             "release_tag": manifest.get("release_tag") or "",

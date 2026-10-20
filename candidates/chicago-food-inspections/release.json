@@ -1,0 +1,20 @@
+{
+  "release_version": "2026.10",
+  "release_tag": "v2026.10",
+  "repository": "https://github.com/earino/chicago-food-inspections",
+  "construction_commit": "638a2b95cbfb46d70192c32324fba995594679ba",
+  "source": {
+    "name": "Food Inspections - Chicago Department of Public Health (City of Chicago Data Portal)",
+    "landing_page": "https://data.cityofchicago.org/Health-Human-Services/Food-Inspections/4ijn-s7e5",
+    "api": "https://data.cityofchicago.org/resource/4ijn-s7e5.json (anonymous Socrata API, no key, paged by inspection_id)",
+    "catalog": "https://data.cityofchicago.org/d/4ijn-s7e5",
+    "accessed": "2026-10-05",
+    "licence": "LicenseRef-CityOfChicago-DataTermsOfUse - the portal's own Data Terms of Use (Socrata licenseId SEE_TERMS_OF_USE); operator-accepted portal-terms posture decided 2026-09-28, reusing the 2026-09-26 DOAH acceptance"
+  },
+  "commands": {
+    "gate": "python3 code/qualify_dataset.py <dataset-dir>/<config>",
+    "baseline": "sh baseline/reproduce_baseline.sh ./task code_38",
+    "get_dataset": "python3 get_dataset.py --dest ./task"
+  },
+  "note": "40 per-code configs ship as 40 separate task instances (code_01, code_02, ... code_60), mirroring the per-level pattern of the noaa-tide-flooding and msha-enforcement-citations releases; the joint multi-label matrix is labels.csv at the dataset root and is documented rather than gated. The config list and every digest are recorded in candidates/chicago-food-inspections/baseline/expected_artifact.json, which is the authority the manifest is generated from."
+}
