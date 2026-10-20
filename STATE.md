@@ -3529,9 +3529,8 @@ US sources.
 3. **Melbourne: one dated attempt, then reject.** All four licence channels are consistent - open in
    intent, unstated in terms - so a written enquiry is drafted in the candidate's `notes.md`, and the
    candidate is rejected on 2026-11-03 if no written licence arrives.
-4. **Worker concurrency: raised to 3, budget unchanged at EUR 20/month.** `factory/worker.py` refused
-   any `max_workers != 1`; that guard is replaced by a bounded check (`MAX_WORKERS = 3`) and the
-   launch guard now counts both active ledger records and live provider servers against the limit, so
-   a lost ledger row cannot buy an extra paid server. Guard tests fail on the pre-fix launcher
-   (`FAILED (failures=1, errors=1)` before, 357 tests OK after). `config/local.json` is gitignored and
-   was edited in place.
+4. **Worker concurrency: raised to 3, then reverted to 1 the same day on operator instruction**
+   ("let's keep things to one worker at a time"). The bounded-check patch and its three guard tests
+   are removed by reverting `factory/worker.py` and `tests/test_workers.py`; `config/local.json` is
+   back to `max_workers: 1` with the budget unchanged at EUR 20/month. The one-worker invariant and
+   its refusal message ("An active or interrupted job exists") stand as before.
