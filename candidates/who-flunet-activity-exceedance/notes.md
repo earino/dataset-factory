@@ -117,3 +117,18 @@ via the France 2024-25 known-event fixture and publisher chart cross-check → f
 from weeks <= W only, INF_ALL/INF_NEGATIVE for the target week excluded from shipped
 columns → temporal splits (train <=2019 / eval 2020-22 / holdout 2023+), clustered
 country-season counts beside row counts → dataset-qualification on the worker.
+
+## Construction start 2026-10-20 (flunet-001)
+
+- Bounded smoke exercise on the coordinator (2024+2025 slice, 4,171,091 bytes, one
+  request): pipeline green end-to-end - timing self-check 200 rows / 0 mismatches
+  (features recomputed from a series physically truncated at week W), 0 duplicate
+  row_ids, holdout sample 36.8% positive with 54 clustered country-years.
+- **France fixture re-pinned at construction, correcting the record's candidate figure.**
+  Measured blended positivity (streams summed, denominator INF_ALL+INF_NEGATIVE) peaks
+  at 0.2379 in the week of 2025-01-27; July-August 2024/2025 off-season max 0.0071.
+  The proposed '>40% at peak' described sentinel-only curves of stronger seasons, not
+  this frame. Pinned assertion: season peak in (0.15, 0.95], off-season < 0.10 - both
+  sides measured, so the 10% threshold and 4-week lead are pinned with margin.
+- flunet-001 launched 22:16:07Z on worker 171454348 (cx23/hel1, reservation EUR 0.04):
+  full-table build + qualification gate on the worker, artifacts to private staging.
