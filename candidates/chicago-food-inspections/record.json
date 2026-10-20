@@ -1,668 +1,690 @@
 {
- "id": "chicago-food-inspections",
- "status": "packaged",
- "created_at": "2026-09-27T19:00:41.646988+00:00",
- "domain": "public health / food-safety inspection (multi-label)",
- "prediction_question": "Given everything documented about an establishment and its own prior inspections before an inspection begins, which of the 61 violation codes will the inspector record for this visit?",
- "prediction_time": "The moment the inspection is opened, before any observation: inspection_date is known when a canvass is scheduled or a complaint triggers a visit, and every intended feature is either a static facility attribute, the inspection's own type, or a field of an earlier inspection of the same licence.",
- "target_definition": "The set of violation codes recorded in the row's `violations` blob, parsed into codes 1-70 (multi-label, 61 observed codes; mean 3.08 per inspection). The label source column `violations` is excluded from every shipped file, together with `results` and the per-violation comment text.",
- "sources": [
-  {
-   "name": "Food Inspections - City of Chicago (CDPH)",
-   "url": "https://data.cityofchicago.org/Health-Human-Services/Food-Inspections/4ijn-s7e5",
-   "api": "https://data.cityofchicago.org/resource/4ijn-s7e5.json",
-   "license": "City of Chicago Data Terms of Use (Socrata licenseId SEE_TERMS_OF_USE); no SPDX licence",
-   "access": "anonymous Socrata API, no key, paged with a total order; measured live 2026-09-27"
-  },
-  {
-   "name": "Column documentation for the same dataset",
-   "url": "https://data.cityofchicago.org/api/views/4ijn-s7e5.json (Columns tab)",
-   "license": "Same City of Chicago Data Terms of Use",
-   "access": "21 documented columns; needed to establish which fields are post-hoc"
-  }
- ],
- "license_evidence": [
-  {
-   "field": "Socrata metadata licence for dataset 4ijn-s7e5",
-   "quote": "license: {\"name\": \"See Terms of Use\"}; licenseId SEE_TERMS_OF_USE; attribution: City of Chicago - no standard SPDX licence",
-   "url": "https://data.cityofchicago.org/api/views/4ijn-s7e5.json",
-   "read_on": "2026-09-27"
-  },
-  {
-   "field": "City of Chicago Data Terms of Use (the portal terms this dataset is governed by)",
-   "quote": "\"The City may require a user of this data to terminate any and all display, distribution or other use of any or all of the data provided at this website for any reason...\" and \"These Terms of Use do not grant anyone any title or right to any patent, copyright, trademark...\"",
-   "url": "https://data.cityofchicago.org/api/views/4ijn-s7e5.json (licenseId) -> City of Chicago Data Terms of Use; clauses reproduced in release/chicago-doah-adjudication/LICENSE-CITY-OF-CHICAGO-TERMS-OF-USE.md",
-   "read_on": "2026-09-26",
-   "terms": "Same portal-terms decision as chicago-doah-adjudication (candidates/chicago-doah-adjudication/license.json, LicenseRef-CityOfChicago-DataTermsOfUse): redistribution under the City's Terms, no CC0 or other standard open dedication may be claimed. Reusing that decision for this source id must be recorded explicitly before construction."
-  }
- ],
- "construction_script": "candidates/chicago-food-inspections/source/build.py",
- "runner_contract_decision": {
-  "decided_at": "2026-10-02",
-  "decision": "Ship one binary runner config per floor violation code: code_<NN>/ directories, each a complete runner layout (public/train.csv, public/eval.csv, private/holdout.csv, meta.json, quality.json) with target column code_<NN> = 1 iff code NN is in the inspection's violation set. The joint multi-label matrix ships as labels.csv at the extract root, one row per inspection, one column per floor code, so the set formulation is consumable without re-pulling the source.",
-  "why": "The runner reads ONE target from task.json and scores holdout AUC, so a 37-target multi-label task cannot ship as a single wide file: the other codes' label columns parse from the same post-visit violations blob as the target, so shipping them inside a config would be post-hoc cross-label leakage (the gate's leakage check scores every shipped column regardless of the declared feature list, and a sibling code's column would score AUC 1.0 against its own target definition context). The per-level pattern is the one noaa-tide-flooding shipped as its temporal and station_disjoint levels.",
-  "measured_cost": {
-   "row_bytes_mean": 138.2,
-   "sample_rows": 2500,
-   "per_config_mb_estimate": 31.3,
-   "configs_37_total_mb_estimate": 1156,
-   "note": "ESTIMATE, labelled as such: live 2,500-row sample rendered as the shipped row shape (probe recorded in .factory/probe_food_width.py output); labels.csv, manifest and per-config gate reports add on top. The 37-way duplication is inherent to the one-target-per-task runner contract, not a packaging defect."
-  },
-  "job_sizing": {
-   "max_artifact_mb": 1800,
-   "max_disk_mb": 3072,
-   "timeout_minutes": 90,
-   "note": "max_artifact_mb raised from 400 (which would have refused the upload of a successful build: measured estimate is ~1.16 GB of split CSVs alone). 1800 keeps a runaway guard while leaving headroom for labels.csv and 37 gate reports; single assets stay far under GitHub's 2 GiB release limit."
-  }
- },
- "split_strategy": "Temporal by inspection_date, no random component; three disjoint windows own the train, eval and holdout periods. Measured on the modelling pool (results in Pass/Fail/Pass w/ Conditions AND violations IS NOT NULL): train 2010-01-01..2020-12-31 156,853 rows / 28,930 licences; eval 2021-01-01..2023-12-31 35,360 rows / 12,992 licences; holdout 2024-01-01..2026-09-30 33,920 rows / 12,953 licences. All 37 floor codes (>=1% of a fresh 15,000-row recent scan) are present in every window (probe_splits.py, 2026-09-28). Licence overlap across windows is expected and is the point of the prior-history features; splits are disjoint in time.",
- "measurements": {
-  "rows_total": 316205,
-  "rows_with_violations": 227036,
-  "modelling_pool_pass_fail_pwc_with_violations": 226133,
-  "distinct_inspection_id": 316205,
-  "distinct_license": 49145,
-  "date_range": [
-   "2010-01-04",
-   "2026-09-25"
-  ],
-  "distinct_violation_codes_in_40000_row_scan": 61,
-  "codes_rendered_more_than_one_way": 28,
-  "density_recent_15000_rows": {
-   "mean": 3.08,
-   "median": 2,
-   "max": 19,
-   "codes_ge_1pct": 32,
-   "codes_ge_0.1pct": 43
-  },
-  "mean_codes_by_result": {
-   "Pass": 2.05,
-   "Pass w/ Conditions": 3.7,
-   "Fail": 4.85
-  },
-  "measured_at": "2026-09-27",
-  "measured_by": "anonymous SoQL queries, no credentials",
-  "built_food_001": {
-   "measured_at": "2026-10-05",
-   "measured_by": "worker job food-001 (candidates/chicago-food-inspections/source/build.py), full pull from https://data.cityofchicago.org/resource/4ijn-s7e5.json",
-   "pool_rows": 226417,
-   "pages": 46,
-   "splits": {
-    "train": 156841,
-    "eval": 35358,
-    "holdout": 34218
-   },
-   "rows_dropped": {
-    "unparsable_blob": 0,
-    "missing_license": 14,
-    "missing_date": 0,
-    "outside_windows": 42
-   },
-   "floor_rule": {
-    "min_pool_rate": 0.01,
-    "min_positives_per_window": 30,
-    "min_distinct_days_per_window": 20
-   },
-   "floor_codes_shipped": 40,
-   "floor_candidates_above_rate": 48,
-   "floor_dropped_by_window_minimums": [
-    12,
-    18,
-    19,
-    24,
-    30,
-    31,
-    34,
-    42
-   ],
-   "positive_rate_range": {
-    "min_holdout": 0.00146,
-    "max_holdout": 0.567
-   },
-   "shipped_bytes_total": 1286358734,
-   "note": "shipped_bytes_total counts every uploaded asset including labels.csv and source.tar; bulk files stay in private staging and never touched this host"
-  },
-  "baseline_code_38_food_baseline_002": {
-   "measured_at": "2026-10-20",
-   "measured_by": "worker job food-baseline-002; every number read back from the collected staging release 418558362 reports (baseline.json, accept.log, train.log, validate.log, container.log), sha256-verified against the release's own manifest, not from the run's console",
-   "config": "code_38 (chicago-food-inspections-code_38), the mid-prevalence sanity-check config named in next_action",
-   "rows": {
-    "train": 156841,
-    "eval": 35358,
-    "holdout": 34218
-   },
-   "positive_rate": {
-    "train": 0.371255,
-    "eval": 0.20745,
-    "holdout": 0.216786
-   },
-   "eval_auc": 0.6326,
-   "eval_auc_source": "train.py's own 'Eval AUC' print, reproduced exactly by validate.py's predict_proba recompute with the target column removed",
-   "contract": "train.py exit 0, validate.sh exit 0, '[validate] CONTRACT OK'",
-   "gate_reaccept": "the fetched code_38 bytes were re-accepted through the qualification gate's --accept against the food-001 per-config report BEFORE any scoring (ACCEPTED: qualified artifact 80a4291e3288dc07); the private holdout was never copied into the runner's task directory",
-   "runner_unmodified": true,
-   "dependencies": {
-    "python": "3.13.16",
-    "pandas": "2.3.3",
-    "numpy": "2.5.4",
-    "xgboost": "3.4.1",
-    "scikit-learn": "1.9.1"
-   },
-   "scope": "one baseline on one config only, the scoring-path sanity check. No agent or harness comparison was run, and none is implied. The other 39 configs' baselines are not measured yet; the holdout is not scored by any baseline"
-  },
-  "baseline_all_40_food_baseline_003": {
-   "command": "worker job food-baseline-003 via scripts/assemble-job.py food-baseline; evidence .factory/food-baseline-003/reports/output/baseline.json, consolidated by .factory/build-food-baseline-result.py into baseline/baseline_result.json",
-   "configs": 40,
-   "contract_ok": 40,
-   "accept_ok": 40,
-   "train_validate_auc_disagreements": 0,
-   "eval_auc_min": 0.5187,
-   "eval_auc_median": 0.7208,
-   "eval_auc_max": 0.8292,
-   "code_38_eval_auc": 0.6326,
-   "code_38_note": "identical to food-baseline-002's 0.6326 on the same accepted artifact version - the sanity check reproduces bit-for-bit",
-   "persistence_headroom": "the baseline beats the per-config persistence reference (prev_code_present alone) on 38/40 configs by +0.028 to +0.247 AUC; on code_14 (-0.008) and code_32 (-0.029) it does not - recorded rather than rounded away"
-  }
- },
- "jobs": [
-  {
-   "id": "food-001",
-   "status": "succeeded",
-   "staging_release": 403508464,
-   "staging_tag": "job-food-001",
-   "server_type": "cx23/hel1",
-   "elapsed_minutes": 8.5,
-   "exit_code": 0,
-   "what": "full extract build + qualification gate, both on the worker",
-   "gates": "40/40 per-code configs, gate 1.3.0, 32 checks each, 0 failed, 0 warnings"
-  },
-  {
-   "id": "food-baseline-001",
-   "status": "failed",
-   "what": "first baseline attempt through the runner's own training and validation contract, on the code_38 sanity-check config named in next_action: fetch the gated food-001 staging bytes, re-accept them through the qualification gate's --accept, then run train.py and validate.sh",
-   "staging_release": 418547901,
-   "staging_tag": "untagged-f536e064911a685c6405",
-   "server_id": 171395072,
-   "created_at": "2026-10-20T15:16:02Z",
-   "collected_at": "2026-10-20T15:22:13Z",
-   "deleted_at": "2026-10-20T15:31:03Z",
-   "elapsed_seconds": 26.8,
-   "exit_code": 2,
-   "fetch": "5/5 input assets, 31,520,896 bytes, zero failures, each digest-verified on arrival - not a fetch failure",
-   "measured": "nothing - no AUC, no base rate; the gate refused before anything was scored",
-   "why": "run.sh's first real step re-accepts the fetched bytes via 'python3 /workspace/qualify_dataset.py --accept /workspace/qualification-code_38.json /data/code_38'; it died with \"can't open file '/workspace/qualify_dataset.py': [Errno 2] No such file or directory\" and run.sh exited 2, refusing to score. The file was never in the bundle: the job was launched directly from candidates/chicago-food-inspections/baseline/job.json, and factory.worker.source_bundle packs exactly that directory - so the worker's source/ carried only the directory's own six files (run.sh, report.py, materialize.py, qualification-code_38.json, bundle.json, expected_artifact.json) and none of what its bundle.json declares from elsewhere: qualify_dataset.py (skills/dataset-qualification/scripts/), the runner's train.py/validate.py/validate.sh verbatim from the benchmark clone, or their runner_files.json. scripts/assemble-job.py food-baseline, the step that resolves the declaration into .factory/jobs/<id>/, was skipped",
-   "fix": "the interactive session reached the same diagnosis while this watcher collected: baseline/job.json id bumped to food-baseline-002, the bundle assembled properly (.factory/jobs/food-baseline-002/ now carries qualify_dataset.py, the three runner files and runner_files.json with their hashes), relaunched 2026-10-20T15:26:01Z on server 171396373 and running when this entry was written; this watcher launched nothing",
-   "evidence": ".factory/food-baseline-001/result.json and .factory/food-baseline-001/reports/{accept.log,container.log,manifest.json,source.tar}, each fetched and sha256-verified against release 418547901's own asset list; the source.tar listing itself shows the six bundled files and the missing ones"
-  },
-  {
-   "id": "food-baseline-002",
-   "status": "succeeded",
-   "staging_release": 418558362,
-   "staging_repo": "earino/dataset-factory-staging",
-   "server_type": "cpx32/hel1",
-   "provider_server_id": "171396373",
-   "created_at": "2026-10-20T15:26:01Z",
-   "collected_at": "2026-10-20T16:03:08Z",
-   "deleted_at": "2026-10-20T16:10:32Z",
-   "elapsed_seconds": 31.7,
-   "exit_code": 0,
-   "oom_killed": false,
-   "what": "runner-contract baseline on the accepted artifact's code_38 config - the mid-prevalence sanity-check config named in next_action - fetched from staging (not rebuilt); the bytes measured are the bytes that passed the food-001 gate and the bytes to be released. This is the corrected retry of food-baseline-001, whose bundle had skipped assembly",
-   "runner": "the benchmark's own train.py, validate.py and validate.sh, bundled verbatim from /opt/data/harness_benchmark/task_template; the bundled digests equal the committed templates (verified a3c6bcf1... train.py, b597e7f8... validate.py, 3f06ca48... validate.sh), so 'the existing runner, unmodified' is checkable",
-   "fetch": "the five code_38 files pulled from staging release 403508464 (job food-001), 31,520,896 bytes, sha256-verified in transit by the worker, zero failures; no bulk CSV ever reached the coordinator",
-   "accept": "the qualification gate re-accepted the fetched bytes before anything was scored: 'ACCEPTED: /data/code_38 matches the qualified artifact 80a4291e3288dc07', which is exactly code_38's artifact_version (80a4291e3288dc072041c2db25764a1df80d4a04ea188f4d1158908cc8bb1f68) in baseline/expected_artifact.json",
-   "cost": "reserved EUR 0.24, ceiling EUR 0.08/h, provider rate EUR 0.06924/h, ~1 min wall; destroy order 2026-10-20T16:07:17Z, deletion re-verified at the provider by the 16:10:32Z reconcile that stamped the ledger",
-   "eval_auc": 0.6326,
-   "contract_ok": true,
-   "measured": "eval AUC 0.6326 on 35,358 eval rows (positive rate 0.20745); train.py's own print and validate.py's predict_proba recompute (target column removed) agree exactly. The private holdout (34,218 rows) was fetched for the gate's re-accept but never copied into the runner's task directory and was not scored",
-   "evidence": ".factory/food-baseline-002/result.json and .factory/food-baseline-002/reports/{output/baseline.json, output/accept.log, output/train.log, output/validate.log, container.log, manifest.json}, fetched from staging release 418558362 and each sha256-verified against that release's own asset list"
-  },
-  {
-   "id": "food-baseline-003",
-   "status": "succeeded",
-   "staging_release": 418648610,
-   "staging_repo": "earino/dataset-factory-staging",
-   "server_type": "cpx32/hel1",
-   "provider_server_id": "171406685",
-   "created_at": "2026-10-20T16:50:10.700039+00:00",
-   "collected_at": "2026-10-20T17:12:35.203251+00:00",
-   "deleted_at": "2026-10-20T17:18:14.306312+00:00",
-   "elapsed_seconds": 376.5,
-   "exit_code": 0,
-   "what": "runner-contract baseline on every one of the 40 per-code configs, one uniform run: each config's five files fetched from staging release 403508464 (1,260,835,814 bytes, sha256-verified on arrival, zero failures), re-accepted through the gate's --accept against that config's own bundled gate report, then the benchmark's own train.py and validate.sh, bundled verbatim (digests recorded). The earlier code_38-only result from food-baseline-002 was re-measured in the same run rather than carried over, and reproduced exactly.",
-   "measured": "40/40 configs CONTRACT OK; train.py's AUC equals validate.py's independent predict_proba recompute on every config (zero disagreements); eval AUC min 0.5187 (code_32), median 0.7208, max 0.8292 (code_58); code_38 = 0.6326, identical to food-baseline-002 on the same accepted artifact version 80a4291e3288dc07...",
-   "accept": "40/40 configs accepted by the gate before scoring: each --accept verified the fetched bytes against the gate's own collected report for that config",
-   "cost": "reserved EUR 0.24, ceiling EUR 0.08/h, provider rate EUR 0.06924/h, ~6.3 min wall; destroyed 2026-10-20T17:18:14Z, deletion recorded in the ledger",
-   "evidence": ".factory/food-baseline-003/reports/output/baseline.json plus the per-config accept/train/validate logs beside it (164 assets fetched from staging release 418648610, each size+sha256-verified against that release's own manifest); consolidated into baseline/baseline_result.json"
-  },
-  {
-   "id": "food-publish-001",
-   "status": "failed",
-   "what": "destination-staging step 2 of the packaged candidate: transfer the 201 accepted food-001 artifact assets (1,285,155,006 bytes) from staging release 403508464 into the private draft release v2026.10 (418734355) of earino/chicago-food-inspections, whose creation with the package documents as its initial commit was step 1 (main tip e61d4839a8, 2026-10-20T18:33:21Z)",
-   "staging_release": 418750781,
-   "staging_tag": "untagged-ceff8e86fc14488cc133",
-   "server_id": 171420107,
-   "created_at": "2026-10-20T18:42:44Z",
-   "collected_at": "2026-10-20T18:59:55Z",
-   "deleted_at": "2026-10-20T19:02:08Z",
-   "elapsed_seconds": 549.0,
-   "exit_code": null,
-   "transfer": "200 of 201 assets, 1,285,152,218 bytes, each downloaded from staging release 403508464, sha256-verified on arrival, re-uploaded to the target and verified again against the target's own server-side digest; only code_53-meta.json (source asset 611965805, 2,788 bytes) did not transfer",
-   "measured": "nothing - not a measurement job: no AUC, no base rate, no scoring; it moves already-qualified bytes between private releases",
-   "why": "the source download of code_53-meta.json returned HTTP 500 from GitHub; workers/upload.py retries ensure_asset uploads three times but its source-download path has no 5xx retry, so the transfer loop recorded the single failure and raised UploadError ('1 of 201 assets did not transfer'). Transient and server-side, not a dataset, credential or authorization problem: the same worker moved the other 200 assets' 1.28 GB and uploaded its own result release without an auth error, and the target-repository guard read private: true. exit=None and the 70-byte container.log ('Error response from daemon: No such container: scout-food-publish-001') are expected for a container-less transfer job (workers/executor.py runs transfers on the worker host with no container), not a second failure",
-   "fix": "the interactive session destroyed the worker (record deleted_at 2026-10-20T19:02:08Z) and launched the minimal corrected retry food-publish-002 (created 2026-10-20T19:02:28Z, server 171426472, cpx32/hel1, reservation EUR 0.16, lifetime 45 min): the same source release 403508464 and target draft release 418734355, carrying only code_53-meta.json with its recorded size and sha256. ensure_asset skips any target asset already present at the manifest digest, so the retry cannot duplicate or overwrite the 200 completed assets. Running when this entry was written; this watcher launched nothing - one worker at a time",
-   "evidence": ".factory/food-publish-001/result.json (per-asset target ids and digests for all 200 transferred; failures = [{'target_name': 'code_53-meta.json', 'error': 'Asset download returned HTTP 500'}]) and .factory/food-publish-001/reports/{source.tar, container.log, manifest.json} fetched from release 418750781 and each sha256-verified against that release's own manifest; the target release read back through the GitHub API with the publish credential: repository private: true, release draft: true, exactly 200 assets present, code_53-meta.json absent",
-   "verify_after_retry": "once food-publish-002 completes, all 201 target assets must match release/chicago-food-inspections/MANIFEST.json by name, size and sha256 - read back from the release itself - before the fresh-environment consumer job runs against it"
-  },
-  {
-   "id": "food-publish-002",
-   "status": "succeeded",
-   "what": "destination-staging step 2 completed: the one-asset retry of food-publish-001, transferring only code_53-meta.json (2,788 bytes, sha256 e47bef876ba5e54d...) from staging release 403508464 into the private release v2026.10 (418734355) of earino/chicago-food-inspections",
-   "staging_release": 418761848,
-   "staging_tag": "untagged-ba72ca200bb227422d80",
-   "server_id": 171426472,
-   "created_at": "2026-10-20T19:02:28Z",
-   "collected_at": "2026-10-20T19:07:10Z",
-   "deleted_at": "2026-10-20T19:09:36Z",
-   "elapsed_seconds": null,
-   "exit_code": null,
-   "transfer": "1 of 1 assets: code_53-meta.json landed as target asset 660208719 at the recorded sha256; no failures; ensure_asset skipped the 200 assets already present at their manifest digests, so nothing was duplicated or overwritten",
-   "measured": "nothing - not a measurement job: no AUC, no base rate, no scoring; it moves already-qualified bytes between private releases",
-   "verified_by_watcher": "after collection, the target release was read back through the API with the publish credential: exactly 201 assets, every one matching release/chicago-food-inspections/MANIFEST.json by name, size and GitHub's server-side sha256 digest; 1,285,155,006 bytes total, equal to the manifest total; repository private: true. Destination-staging step 2 is complete"
-  },
-  {
-   "id": "food-consumer-001",
-   "status": "failed",
-   "what": "destination-staging step 3: fresh-environment consumer verification against the private release v2026.10 (418734355) - package docs byte-checked against MANIFEST.json, all 201 assets fetched in the layout get_dataset.py restores, sha256sum -c SHA256SUMS, the qualification gate's --accept on all 40 per-code configs against the gate's own collected reports, and the code_38 baseline reproduced through the runner's unmodified train.py/validate.sh contract (expected eval AUC 0.6326, tolerance 0.001)",
-   "staging_release": 418770807,
-   "staging_tag": "untagged-54181a15187728c907e3",
-   "server_id": 171429777,
-   "created_at": "2026-10-20T19:09:04Z",
-   "collected_at": "2026-10-20T19:14:48Z",
-   "deleted_at": "2026-10-20T19:25:09Z",
-   "elapsed_seconds": 168.7,
-   "exit_code": 1,
-   "measured": "no number from this run is quoted: steps 1-4 passed (package: 22 files match MANIFEST.json; layout: 201 files as fetched; sha256sum -c: 201/201 OK; gate --accept: exit 0 on all 40 configs, each 'ACCEPTED: ... matches the qualified artifact') and step 5 failed before train.py ran, so nothing was scored",
-   "why": "the package shipped the wrong code/materialize.py: MSHA's 3-arg variant (sha256 680b1c07..., docstring names 'the 45 per-section directories (sec_56_12004, sec_75_400, ...)' and 'MSHA's configs declare none') where this dataset's 2-arg bench/workdir.py-mirroring materializer belongs; baseline/reproduce_baseline.sh invokes it with the 2-arg food signature ('$DATASET/$CONFIG' '$WORK'), so materialize.py printed its usage line and exited 1 (baseline.log is exactly that 56-byte line). Every earlier check passed because verify_package.py, the gate and the transfer all compare bytes to recorded hashes, and the wrong file had been consistently hashed into MANIFEST.json's package_files; food-baseline-002/003 bundled the correct materialize.py from the candidate directory and never touched the package's copy. The fresh-consumer run is the first execution of the published file - the defect it exists to catch. Not a data defect: the 201 data assets are unchanged and all 40 configs re-accepted",
-   "fix": "replaced release/chicago-food-inspections/code/materialize.py with candidates/chicago-food-inspections/baseline/materialize.py (sha256 95cd40d9..., the exact file bundled in food-baseline-002/003 that measured eval AUC 0.6326), regenerated MANIFEST.json via scripts/release-manifest.py (the only change is package_files[code/materialize.py] 680b1c07... -> 95cd40d9...; SHA256SUMS is byte-identical over the unchanged 201 data assets), scripts/check-package.py release/chicago-food-inspections OK, and pushed the two changed files to the private destination repository (commit 0c765e3c650af796658533d9deac349ad60d2d44, read back through the API: main head, code/materialize.py digest 95cd40d9..., MANIFEST.json digest 867d9f0e..., repo private: true). Corrected retry food-consumer-002 launched 2026-10-20T19:25:37Z on server 171431887 (cpx32/hel1, reservation EUR 0.32, bundle re-assembled from the fixed release/ tree and verified to carry the 95cd40d9 file)"
-  },
-  {
-   "id": "food-consumer-002",
-   "status": "succeeded",
-   "what": "destination-staging step 3, corrected retry of food-consumer-001 (which failed at its step 5 on the shipped MSHA code/materialize.py, fixed in commit 0c765e3): fresh-environment consumer verification against the private release v2026.10 (418734355) - package docs byte-checked against MANIFEST.json, all 201 assets fetched in the layout get_dataset.py restores, sha256sum -c SHA256SUMS, the qualification gate's --accept on all 40 per-code configs against the gate's own collected reports, and the code_38 baseline reproduced through the runner's unmodified train.py/validate.sh contract (expected eval AUC 0.6326, tolerance 0.001)",
-   "staging_release": 418787656,
-   "staging_tag": "untagged-3dcb445708ceb4f662f8",
-   "server_id": 171431887,
-   "created_at": "2026-10-20T19:25:37Z",
-   "collected_at": "2026-10-20T19:39:34Z",
-   "deleted_at": "2026-10-20T19:41:11Z",
-   "elapsed_seconds": 144.9,
-   "exit_code": 0,
-   "measured": "ALL FIVE STEPS GREEN, read from the fetched reports (each sha256-verified against the release's own manifest): (1) package 22 files match MANIFEST.json, including the corrected code/materialize.py (95cd40d9...); (2) 201 assets fetched, 1,285,155,006 bytes, failures: [], laid out as get_dataset.py restores; (3) sha256sum -c SHA256SUMS 201/201 OK; (4) gate --accept exit 0 on all 40 configs, each 'ACCEPTED: ... matches the qualified artifact' (code_38 -> 80a4291e3288dc07...); (5) code_38 baseline through the runner's unmodified contract: eval AUC 0.6326 from both the train.py path and the independent validate.py recompute, CONTRACT OK - the recorded value itself (recorded 0.6326, tolerance 0.001). container.log ends '== consumer verification passed ==' with the summary in output/consumer.txt",
-   "note": "the code_38 eval AUC 0.6326 is now measured three times on the same accepted artifact version: food-baseline-002, food-baseline-003 and this consumer run from the published bytes. Recorded in VERIFICATION.md (new section 6; former 'Not covered' renumbered to 7 with the obsolete 'no fresh-environment consumer run yet' bullet replaced), manifest regenerated (only package_files[VERIFICATION.md] e35a4a75 -> dfea1ccf), check-package OK, and pushed to the destination repo (commit a7abfaa)"
-  },
-  {
-   "id": "food-hf-001",
-   "status": "running",
-   "what": "destination-staging step 4 (Hugging Face), bulk half: upload all 201 accepted assets (1,285,155,006 bytes) from the verified private GitHub release v2026.10 (418734355) into the private Hub dataset repo earino/chicago-food-inspections at data/<asset_name> for CSVs and <asset_name> for meta/quality, in batch commits of 6 with the msha-proven rate-limit backoff, each asset digest-verified on download and again on the Hub; then the built-in loading check on code_38 (expect train/eval/holdout rows 156841/35358/34218, positives 58228/7335/7418, the 18 declared columns, label code_38). The schema was declared up front: dataset_infos.json (40 configs x 18 types) was generated from the release's own metas before the first upload and ships with the small files, so the loading check runs against declared types instead of Hub inference (license_ is zero-padded text; latitude/longitude carry empty values)",
-   "server_id": 171438942,
-   "created_at": "2026-10-20T20:06:05Z",
-   "reservation_eur": "0.32",
-   "spec": "candidates/chicago-food-inspections/hf/job.json",
-   "hf_repo": "earino/chicago-food-inspections",
-   "hf_revision": "main",
-   "hf_small_files_sha": "307ae28c9e30672616767120166e93ca3a82aab4",
-   "note": "the private Hub repo was created by scripts/hf-publish.py --create --upload-small with the write credential (11 small files: card from candidates/chicago-food-inspections/card.md, LOADING.md, dataset_infos.json, MANIFEST.json, VERIFICATION.md, DATA_DICTIONARY.md, measurements.json, SHA256SUMS, LICENSE.md, LICENSE-MIT.txt, LICENSE-CITY-OF-CHICAGO-TERMS-OF-USE.md); read back through the Hub API: private true; the card and MANIFEST.json were refreshed after the corroborating_measurement relabel and re-verified byte-identical (revision sha 307ae28). The inference credential was never read"
-  }
- ],
- "artifacts": [
-  {
-   "job": "food-publish-001+002",
-   "repository": "https://github.com/earino/chicago-food-inspections",
-   "visibility": "private (publication requires explicit authorisation)",
-   "tag": "v2026.10",
-   "commit": "49d06bb5c921fab858204546e507ff96620a5623",
-   "release": "https://github.com/earino/chicago-food-inspections/releases/tag/v2026.10",
-   "release_id": 418734355,
-   "artifact_version": "c951bf5b42a0bfd20fea52f645486ecbd450ebef9d8c5387f01af40f70b58102",
-   "artifact_version_note": "derived exactly as the manifest derives it - the 40 per-config gate versions (gate 1.3.0, 32 checks each, 0 failed) joined and hashed, because each config is gated and scored as its own task instance",
-   "asset_bytes": 1285155006,
-   "assets": "201 files: 40 configs x 5 (meta.json, quality.json, public/train.csv, public/eval.csv, private/holdout.csv) plus the extract-root labels.csv. The per-file bytes+sha256 authority is release/chicago-food-inspections/MANIFEST.json (its files/assets blocks and its 40-entry levels block carrying the per-config gate versions), which is itself committed at the tagged commit",
-   "verified_from_the_service": "all 201 assets re-read from the GitHub API (release 418734355) match the package MANIFEST.json by name, size and server-side sha256, 201/201 with no extras (verified 2026-10-20 after food-publish-002 closed the transfer at 201/201); the repository is private; v2026.10 and main resolve to the same commit 49d06bb5c921fab858204546e507ff96620a5623 (re-pointed from e61d4839 through the documentation advances fbc3d77 - dataset_infos.json - and 49d06bb - the baseline.corroborating_measurement relabel); the 23 package files at that commit are byte-identical to release/chicago-food-inspections (API readback: dataset_infos.json b5ef01a5..., MANIFEST.json 8fd7e143..., VERIFICATION.md dfea1ccf...); the release was re-published (non-draft) with the tag naming the verified documents, and the anonymous fetch 404s as designed while the repository is private",
-   "consumer_verified": "food-consumer-002 (fresh-environment container, no factory access, no GitHub credential) passed all five steps on exactly these bytes: package vs MANIFEST 22/22, 201 assets fetched failures [], sha256sum -c 201/201, gate --accept 40/40, code_38 baseline eval AUC 0.6326 = the recorded value through the unmodified contract (144.9 s, result release 418787656)",
-   "compared": "release/chicago-food-inspections/MANIFEST.json",
-   "evidence": ".factory/food-publish-001/result.json, .factory/food-publish-002/result.json, .factory/food-consumer-002/result.json, .factory/food-consumer-002/reports/ (container.log, output/consumer.txt, output/baseline.log, 40 accept outputs - each sha256-verified against the release's own manifest), jobs/food-publish-001.json, jobs/food-publish-002.json, jobs/food-consumer-001.json, jobs/food-consumer-002.json"
-  }
- ],
- "rejection_reason": null,
- "review": null,
- "next_action": "PACKAGED (awaiting nothing but its own release steps) - destination staging steps 1-3 are COMPLETE: private repo earino/chicago-food-inspections carries the package documents (main 49d06bb5c921fab858204546e507ff96620a5623 = tag v2026.10 = the release), all 201 assets verified on private release v2026.10 (418734355, 1,285,155,006 bytes), and the fresh-environment consumer job food-consumer-002 passed all five steps (package 22/22, 201 assets failures [], sha256sum -c 201/201, gate --accept 40/40, code_38 baseline eval AUC 0.6326 = the recorded value through the unmodified contract). Step 4 (Hugging Face) is IN FLIGHT: the private Hub repo earino/chicago-food-inspections exists (created with the write credential; 11 small files at revision sha 2051a467, including the generated card and dataset_infos.json - 40 configs x 18 declared column types, generated from the release's own metas so the loading check does not depend on Hub type inference), and the bulk job food-hf-001 (server 171438942, launched 2026-10-20T20:06:05Z, reservation EUR 0.32) is uploading the 201 assets from the verified GitHub release and then runs the built-in code_38 loading check. When the watcher collects food-hf-001: (a) require exit 0, all 201 targets accounted (uploads or 'already at the manifest digest' skips), zero failures, and loading_check ok: true (code_38 train/eval/holdout rows 156841/35358/34218, positives 58228/7335/7418, the 18 declared columns); (b) python3 scripts/hf-publish.py --verify --candidate chicago-food-inspections (records the huggingface destination in release/chicago-food-inspections/DESTINATIONS.json) and then --tag LAST (Hub tag v2026.10 at the revision that carries the data; check the tag and main resolve to the same commit); (c) re-run scripts/check-package.py release/chicago-food-inspections, set awaiting_operator: true with the private-to-public flip as the sole remaining step, and let scout-release-notify deliver the ready-for-flip message. The flip is the operator's single approval. After it, publication is automatic: flip both destinations, prove both anonymously (no credential), record the change in DESTINATIONS.json BEFORE regenerating the manifest, refresh the card, LOADING.md, README and release notes, and then the website step.",
- "superseded_by": null,
- "lead_priority_note": "Cleared 2026-10-12: msha-enforcement-citations is the priority lead on size and leakage risk (decided 2026-09-27), but it does not replace this candidate. chicago-food-inspections is the built and gated one - job food-001, gate 1.3.0, 40/40 configs, staging release 403508464 - and stays open until the operator chooses which candidate to package.",
- "novelty_check": {
-  "checked_at": "2026-09-28T08:02:56+00:00",
-  "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
-  "queries": [
-   "chicago food inspections",
-   "food inspection violations",
-   "violation code prediction",
-   "multi-label food safety",
-   "restaurant inspection forecast"
-  ],
-  "evidence": {
-   "huggingface_datasets": [
+  "id": "chicago-food-inspections",
+  "status": "packaged",
+  "created_at": "2026-09-27T19:00:41.646988+00:00",
+  "domain": "public health / food-safety inspection (multi-label)",
+  "prediction_question": "Given everything documented about an establishment and its own prior inspections before an inspection begins, which of the 61 violation codes will the inspector record for this visit?",
+  "prediction_time": "The moment the inspection is opened, before any observation: inspection_date is known when a canvass is scheduled or a complaint triggers a visit, and every intended feature is either a static facility attribute, the inspection's own type, or a field of an earlier inspection of the same licence.",
+  "target_definition": "The set of violation codes recorded in the row's `violations` blob, parsed into codes 1-70 (multi-label, 61 observed codes; mean 3.08 per inspection). The label source column `violations` is excluded from every shipped file, together with `results` and the per-violation comment text.",
+  "sources": [
     {
-     "query": "chicago food inspections",
-     "hits": 0,
-     "top": []
+      "name": "Food Inspections - City of Chicago (CDPH)",
+      "url": "https://data.cityofchicago.org/Health-Human-Services/Food-Inspections/4ijn-s7e5",
+      "api": "https://data.cityofchicago.org/resource/4ijn-s7e5.json",
+      "license": "City of Chicago Data Terms of Use (Socrata licenseId SEE_TERMS_OF_USE); no SPDX licence",
+      "access": "anonymous Socrata API, no key, paged with a total order; measured live 2026-09-27"
     },
     {
-     "query": "food inspection violations",
-     "hits": 0,
-     "top": []
-    },
-    {
-     "query": "violation code prediction",
-     "hits": 0,
-     "top": []
-    },
-    {
-     "query": "multi-label food safety",
-     "hits": 0,
-     "top": []
-    },
-    {
-     "query": "restaurant inspection forecast",
-     "hits": 0,
-     "top": []
+      "name": "Column documentation for the same dataset",
+      "url": "https://data.cityofchicago.org/api/views/4ijn-s7e5.json (Columns tab)",
+      "license": "Same City of Chicago Data Terms of Use",
+      "access": "21 documented columns; needed to establish which fields are post-hoc"
     }
-   ],
-   "zenodo_records": [
-    {
-     "query": "chicago food inspections",
-     "hits": 155338,
-     "top": [
-      "Early detection of properties at risk of blight using spatiotemporal data",
-      "Food Safety Training Programmes and Hygiene Practices Among Commercial Food Service Workers in Nairobi, Kenya: A Mixed Methods Study",
-      "REGULATORY GOVERNANCE AND FOOD SAFETY COMPLIANCE: EVALUATING THE DETERRENT IMPACT OF FOOD ADULTERATION LAWS",
-      "REGULATORY GOVERNANCE AND FOOD SAFETY COMPLIANCE: EVALUATING THE DETERRENT IMPACT OF FOOD ADULTERATION LAWS",
-      "REGULATORY GOVERNANCE AND FOOD SAFETY COMPLIANCE: EVALUATING THE DETERRENT IMPACT OF FOOD ADULTERATION LAWS"
-     ]
-    },
-    {
-     "query": "food inspection violations",
-     "hits": 149208,
-     "top": [
-      "Repository of Established Plants Pictures from: \"Investigating key drivers influencing AI-based detection and identification of plants\"",
-      "Veterinarian's Duties After Postmortem Meat Inspection With Current Technology",
-      "Pathway risk analysis of weed seeds in imported grain: A Canadian perspective",
-      "Food Inspection.",
-      "viral-ampliseq-assembly v1.0.0"
-     ]
-    },
-    {
-     "query": "violation code prediction",
-     "hits": 291842,
-     "top": [
-      "Deep convolutional neural network model for bad code smells detection based on oversampling method",
-      "AI Safety and Reliability Auditing: DistilBART Zero-Shot Pipeline for Human\u2013Robot Interaction",
-      "Replication Package for the Paper: Warnings: Violation Symptoms Indicating Architecture Erosion",
-      "(Delete)",
-      "Relation Prediction as an Auxiliary Training Objective for Improving Multi-Relational Graph Representations"
-     ]
-    },
-    {
-     "query": "multi-label food safety",
-     "hits": 282744,
-     "top": [
-      "Monitoring and surveillance data for EFSA chemical risk assessment needs: data source inventory",
-      "Report on a request for initial assessment for marketing of the marine microalgae 258.97 on novel foods and novel food ingredients.",
-      "FOODSAFETY4EU: paving the way for the food safety system of the future",
-      "Advances in Smart Polymer and Nanomaterial-Based Packaging Systems: From Functional Films to Intelligent Food and Pharmaceutical Applications",
-      "scikit-multilearn: A scikit-based Python environment for performing multi-label classification"
-     ]
-    },
-    {
-     "query": "restaurant inspection forecast",
-     "hits": 30044,
-     "top": [
-      "Global Drone Wind Turbine Blade Inspection Market 2025 To 2034",
-      "Europe Fast Food & Quick Service Restaurant (QSR) Market 2025 To 2034",
-      "Recovery Strategy of Selected Filipino Restaurants in Tagaytay City",
-      "Global Testing Inspection and Certification TIC Market 2025 To 2034",
-      "Innovative Method of Bottled Water Preparation for Hospitality Industry Establishments"
-     ]
-    }
-   ],
-   "arxiv_preprints": [
-    {
-     "query": "chicago food inspections",
-     "hits": 5,
-     "top": [
-      "The Rise of Blockchain Technology in Agriculture and Food Supply Chains",
-      "Hindsight Analysis of the Chicago Food Inspection Forecasting Model",
-      "Spontaneous gelation of wheat gluten proteins in a food grade solvent",
-      "Application of Blockchain and Internet of Things to Ensure Tamper-Proof Data Availability for Food Safety",
-      "Shock propagation from the Russia-Ukraine conflict on international multilayer food production network determines global"
-     ]
-    },
-    {
-     "query": "food inspection violations",
-     "hits": 5,
-     "top": [
-      "The Rise of Blockchain Technology in Agriculture and Food Supply Chains",
-      "Spontaneous gelation of wheat gluten proteins in a food grade solvent",
-      "Application of Blockchain and Internet of Things to Ensure Tamper-Proof Data Availability for Food Safety",
-      "Shock propagation from the Russia-Ukraine conflict on international multilayer food production network determines global",
-      "Visual-Inertial Teach and Repeat for Aerial Inspection"
-     ]
-    },
-    {
-     "query": "violation code prediction",
-     "hits": 5,
-     "top": [
-      "Use of Source Code Similarity Metrics in Software Defect Prediction",
-      "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
-      "A Combined Deep Learning-Gradient Boosting Machine Framework for Fluid Intelligence Prediction",
-      "A New Prediction for Direct CP Violation \u03b5'/\u03b5and \u0394I = 1/2 Rule",
-      "CP Violation in SUSY"
-     ]
-    },
-    {
-     "query": "multi-label food safety",
-     "hits": 5,
-     "top": [
-      "The Rise of Blockchain Technology in Agriculture and Food Supply Chains",
-      "Spontaneous gelation of wheat gluten proteins in a food grade solvent",
-      "Application of Blockchain and Internet of Things to Ensure Tamper-Proof Data Availability for Food Safety",
-      "Food safety trends across Europe: insights from the 392-million-entry CompreHensive European Food Safety (CHEFS) databas",
-      "Shock propagation from the Russia-Ukraine conflict on international multilayer food production network determines global"
-     ]
-    },
-    {
-     "query": "restaurant inspection forecast",
-     "hits": 5,
-     "top": [
-      "Visual-Inertial Teach and Repeat for Aerial Inspection",
-      "Predicting health inspection results from online restaurant reviews",
-      "The inspection paradox in stochastic resetting",
-      "Deep inspection: an electrical distribution pole parts study via deep neural networks",
-      "A UAV-Mounted Sensor Network for Close-Range Inspection of Wind Turbine Rotor Blades"
-     ]
-    }
-   ]
-  },
-  "evidence_summary": "- huggingface_datasets / 'chicago food inspections': 0 hit(s) - nothing notable\n- huggingface_datasets / 'food inspection violations': 0 hit(s) - nothing notable\n- huggingface_datasets / 'violation code prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'multi-label food safety': 0 hit(s) - nothing notable\n- huggingface_datasets / 'restaurant inspection forecast': 0 hit(s) - nothing notable\n- zenodo_records / 'chicago food inspections': 155338 hit(s) - Early detection of properties at risk of blight using spatiotemporal data, Food Safety Training Programmes and Hygiene Practices Among Commercial Food Service Workers in Nairobi, Kenya: A Mixed Methods Study, REGULATORY GOVERNANCE AND FOOD SAFETY COMPLIANCE: EVALUATING THE DETERRENT IMPACT OF FOOD ADULTERATION LAWS, REGULATORY GOVERNANCE AND FOOD SAFETY COMPLIANCE: EVALUATING THE DETERRENT IMPACT OF FOOD ADULTERATION LAWS, REGULATORY GOVERNANCE AND FOOD SAFETY COMPLIANCE: EVALUATING THE DETERRENT IMPACT OF FOOD ADULTERATION LAWS\n- zenodo_records / 'food inspection violations': 149208 hit(s) - Repository of Established Plants Pictures from: \"Investigating key drivers influencing AI-based detection and identification of plants\", Veterinarian's Duties After Postmortem Meat Inspection With Current Technology, Pathway risk analysis of weed seeds in imported grain: A Canadian perspective, Food Inspection., viral-ampliseq-assembly v1.0.0\n- zenodo_records / 'violation code prediction': 291842 hit(s) - Deep convolutional neural network model for bad code smells detection based on oversampling method, AI Safety and Reliability Auditing: DistilBART Zero-Shot Pipeline for Human\u2013Robot Interaction, Replication Package for the Paper: Warnings: Violation Symptoms Indicating Architecture Erosion, (Delete), Relation Prediction as an Auxiliary Training Objective for Improving Multi-Relational Graph Representations\n- zenodo_records / 'multi-label food safety': 282744 hit(s) - Monitoring and surveillance data for EFSA chemical risk assessment needs: data source inventory, Report on a request for initial assessment for marketing of the marine microalgae 258.97 on novel foods and novel food ingredients., FOODSAFETY4EU: paving the way for the food safety system of the future, Advances in Smart Polymer and Nanomaterial-Based Packaging Systems: From Functional Films to Intelligent Food and Pharmaceutical Applications, scikit-multilearn: A scikit-based Python environment for performing multi-label classification\n- zenodo_records / 'restaurant inspection forecast': 30044 hit(s) - Global Drone Wind Turbine Blade Inspection Market 2025 To 2034, Europe Fast Food & Quick Service Restaurant (QSR) Market 2025 To 2034, Recovery Strategy of Selected Filipino Restaurants in Tagaytay City, Global Testing Inspection and Certification TIC Market 2025 To 2034, Innovative Method of Bottled Water Preparation for Hospitality Industry Establishments\n- arxiv_preprints / 'chicago food inspections': 5 hit(s) - The Rise of Blockchain Technology in Agriculture and Food Supply Chains, Hindsight Analysis of the Chicago Food Inspection Forecasting Model, Spontaneous gelation of wheat gluten proteins in a food grade solvent, Application of Blockchain and Internet of Things to Ensure Tamper-Proof Data Availability for Food Safety, Shock propagation from the Russia-Ukraine conflict on international multilayer food production network determines global\n- arxiv_preprints / 'food inspection violations': 5 hit(s) - The Rise of Blockchain Technology in Agriculture and Food Supply Chains, Spontaneous gelation of wheat gluten proteins in a food grade solvent, Application of Blockchain and Internet of Things to Ensure Tamper-Proof Data Availability for Food Safety, Shock propagation from the Russia-Ukraine conflict on international multilayer food production network determines global, Visual-Inertial Teach and Repeat for Aerial Inspection\n- arxiv_preprints / 'violation code prediction': 5 hit(s) - Use of Source Code Similarity Metrics in Software Defect Prediction, Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, A Combined Deep Learning-Gradient Boosting Machine Framework for Fluid Intelligence Prediction, A New Prediction for Direct CP Violation \u03b5'/\u03b5and \u0394I = 1/2 Rule, CP Violation in SUSY\n- arxiv_preprints / 'multi-label food safety': 5 hit(s) - The Rise of Blockchain Technology in Agriculture and Food Supply Chains, Spontaneous gelation of wheat gluten proteins in a food grade solvent, Application of Blockchain and Internet of Things to Ensure Tamper-Proof Data Availability for Food Safety, Food safety trends across Europe: insights from the 392-million-entry CompreHensive European Food Safety (CHEFS) databas, Shock propagation from the Russia-Ukraine conflict on international multilayer food production network determines global\n- arxiv_preprints / 'restaurant inspection forecast': 5 hit(s) - Visual-Inertial Teach and Repeat for Aerial Inspection, Predicting health inspection results from online restaurant reviews, The inspection paradox in stochastic resetting, Deep inspection: an electrical distribution pole parts study via deep neural networks, A UAV-Mounted Sensor Network for Close-Range Inspection of Wind Turbine Rotor Blades",
-  "prior_art": [
-   "City of Chicago food-inspections-evaluation (CDPH deployed model, 2015)",
-   "arXiv 1910.04906, Hindsight Analysis of the Chicago Food Inspection Forecasting Model (2019)",
-   "Kaggle/Socrata mirrors of 4ijn-s7e5"
   ],
-  "theirs": "CDPH ships the raw inspections table plus its own deployed BINARY critical-violation forecasting model (Chicago/food-inspections-evaluation, 2015, R) to prioritise canvass scheduling, evaluated in arXiv 1910.04906 (2019). Kaggle and Socrata host mirrors of this same table. No published formulation predicts the set of violation codes.",
-  "ours": "The multi-label formulation itself: one row per inspection, target = the set of violation codes (61 observed, parsed from the violations blob by code number, never by description string), with an explicit prediction instant at the inspection's opening, a pre-inspection-only feature set (facility attributes, inspection type, calendar position, and the establishment's own prior-inspection history under its license_), and three disjoint temporal windows. No ML-ready package ships this task.",
-  "verdict": "differentiated",
-  "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
- },
- "extraction_cost": {
-  "measured_at": "2026-09-28",
-  "measured_by": "candidates/chicago-food-inspections/probe_cost.py on the coordinator (1.9 GiB class), anonymous, no credentials, nothing stored",
-  "sample_rows": 20000,
-  "sample_bytes": 28948432,
-  "sample_requests": 5,
-  "sample_wall_seconds": 23.2,
-  "mean_bytes_per_row": 1447,
-  "total_rows_recounted": 316205,
-  "estimated_full_pull": {
-   "pages_at_5000": 64,
-   "requests": 65,
-   "bytes": 457681947,
-   "wall_seconds": 366,
-   "note": "ESTIMATE, labelled as such: measured sample rate scaled by the recounted total (arithmetic in probe_cost.py output). The full pull runs on the worker."
+  "license_evidence": [
+    {
+      "field": "Socrata metadata licence for dataset 4ijn-s7e5",
+      "quote": "license: {\"name\": \"See Terms of Use\"}; licenseId SEE_TERMS_OF_USE; attribution: City of Chicago - no standard SPDX licence",
+      "url": "https://data.cityofchicago.org/api/views/4ijn-s7e5.json",
+      "read_on": "2026-09-27"
+    },
+    {
+      "field": "City of Chicago Data Terms of Use (the portal terms this dataset is governed by)",
+      "quote": "\"The City may require a user of this data to terminate any and all display, distribution or other use of any or all of the data provided at this website for any reason...\" and \"These Terms of Use do not grant anyone any title or right to any patent, copyright, trademark...\"",
+      "url": "https://data.cityofchicago.org/api/views/4ijn-s7e5.json (licenseId) -> City of Chicago Data Terms of Use; clauses reproduced in release/chicago-doah-adjudication/LICENSE-CITY-OF-CHICAGO-TERMS-OF-USE.md",
+      "read_on": "2026-09-26",
+      "terms": "Same portal-terms decision as chicago-doah-adjudication (candidates/chicago-doah-adjudication/license.json, LicenseRef-CityOfChicago-DataTermsOfUse): redistribution under the City's Terms, no CC0 or other standard open dedication may be claimed. Reusing that decision for this source id must be recorded explicitly before construction."
+    }
+  ],
+  "construction_script": "candidates/chicago-food-inspections/source/build.py",
+  "runner_contract_decision": {
+    "decided_at": "2026-10-02",
+    "decision": "Ship one binary runner config per floor violation code: code_<NN>/ directories, each a complete runner layout (public/train.csv, public/eval.csv, private/holdout.csv, meta.json, quality.json) with target column code_<NN> = 1 iff code NN is in the inspection's violation set. The joint multi-label matrix ships as labels.csv at the extract root, one row per inspection, one column per floor code, so the set formulation is consumable without re-pulling the source.",
+    "why": "The runner reads ONE target from task.json and scores holdout AUC, so a 37-target multi-label task cannot ship as a single wide file: the other codes' label columns parse from the same post-visit violations blob as the target, so shipping them inside a config would be post-hoc cross-label leakage (the gate's leakage check scores every shipped column regardless of the declared feature list, and a sibling code's column would score AUC 1.0 against its own target definition context). The per-level pattern is the one noaa-tide-flooding shipped as its temporal and station_disjoint levels.",
+    "measured_cost": {
+      "row_bytes_mean": 138.2,
+      "sample_rows": 2500,
+      "per_config_mb_estimate": 31.3,
+      "configs_37_total_mb_estimate": 1156,
+      "note": "ESTIMATE, labelled as such: live 2,500-row sample rendered as the shipped row shape (probe recorded in .factory/probe_food_width.py output); labels.csv, manifest and per-config gate reports add on top. The 37-way duplication is inherent to the one-target-per-task runner contract, not a packaging defect."
+    },
+    "job_sizing": {
+      "max_artifact_mb": 1800,
+      "max_disk_mb": 3072,
+      "timeout_minutes": 90,
+      "note": "max_artifact_mb raised from 400 (which would have refused the upload of a successful build: measured estimate is ~1.16 GB of split CSVs alone). 1800 keeps a runaway guard while leaving headroom for labels.csv and 37 gate reports; single assets stay far under GitHub's 2 GiB release limit."
+    }
   },
-  "order_key": "inspection_id (unique per row, 316,205 distinct in 316,205 rows - own tiebreaker)"
- },
- "split_capacity": {
-  "measured_at": "2026-09-28",
-  "measured_by": "candidates/chicago-food-inspections/probe_splits.py --json (aggregate SoQL queries; anonymous)",
-  "modelling_pool_rows": 226133,
-  "pool_census_by_year": {
-   "2010": 12469,
-   "2011": 13476,
-   "2012": 13308,
-   "2013": 14729,
-   "2014": 16283,
-   "2015": 15623,
-   "2016": 17192,
-   "2017": 15783,
-   "2018": 13010,
-   "2019": 14229,
-   "2020": 10751,
-   "2021": 11013,
-   "2022": 11740,
-   "2023": 12607,
-   "2024": 13057,
-   "2025": 12963,
-   "2026_partial": 7900
+  "split_strategy": "Temporal by inspection_date, no random component; three disjoint windows own the train, eval and holdout periods. Measured on the modelling pool (results in Pass/Fail/Pass w/ Conditions AND violations IS NOT NULL): train 2010-01-01..2020-12-31 156,853 rows / 28,930 licences; eval 2021-01-01..2023-12-31 35,360 rows / 12,992 licences; holdout 2024-01-01..2026-09-30 33,920 rows / 12,953 licences. All 37 floor codes (>=1% of a fresh 15,000-row recent scan) are present in every window (probe_splits.py, 2026-09-28). Licence overlap across windows is expected and is the point of the prior-history features; splits are disjoint in time.",
+  "measurements": {
+    "rows_total": 316205,
+    "rows_with_violations": 227036,
+    "modelling_pool_pass_fail_pwc_with_violations": 226133,
+    "distinct_inspection_id": 316205,
+    "distinct_license": 49145,
+    "date_range": [
+      "2010-01-04",
+      "2026-09-25"
+    ],
+    "distinct_violation_codes_in_40000_row_scan": 61,
+    "codes_rendered_more_than_one_way": 28,
+    "density_recent_15000_rows": {
+      "mean": 3.08,
+      "median": 2,
+      "max": 19,
+      "codes_ge_1pct": 32,
+      "codes_ge_0.1pct": 43
+    },
+    "mean_codes_by_result": {
+      "Pass": 2.05,
+      "Pass w/ Conditions": 3.7,
+      "Fail": 4.85
+    },
+    "measured_at": "2026-09-27",
+    "measured_by": "anonymous SoQL queries, no credentials",
+    "built_food_001": {
+      "measured_at": "2026-10-05",
+      "measured_by": "worker job food-001 (candidates/chicago-food-inspections/source/build.py), full pull from https://data.cityofchicago.org/resource/4ijn-s7e5.json",
+      "pool_rows": 226417,
+      "pages": 46,
+      "splits": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "rows_dropped": {
+        "unparsable_blob": 0,
+        "missing_license": 14,
+        "missing_date": 0,
+        "outside_windows": 42
+      },
+      "floor_rule": {
+        "min_pool_rate": 0.01,
+        "min_positives_per_window": 30,
+        "min_distinct_days_per_window": 20
+      },
+      "floor_codes_shipped": 40,
+      "floor_candidates_above_rate": 48,
+      "floor_dropped_by_window_minimums": [
+        12,
+        18,
+        19,
+        24,
+        30,
+        31,
+        34,
+        42
+      ],
+      "positive_rate_range": {
+        "min_holdout": 0.00146,
+        "max_holdout": 0.567
+      },
+      "shipped_bytes_total": 1286358734,
+      "note": "shipped_bytes_total counts every uploaded asset including labels.csv and source.tar; bulk files stay in private staging and never touched this host"
+    },
+    "baseline_code_38_food_baseline_002": {
+      "measured_at": "2026-10-20",
+      "measured_by": "worker job food-baseline-002; every number read back from the collected staging release 418558362 reports (baseline.json, accept.log, train.log, validate.log, container.log), sha256-verified against the release's own manifest, not from the run's console",
+      "config": "code_38 (chicago-food-inspections-code_38), the mid-prevalence sanity-check config named in next_action",
+      "rows": {
+        "train": 156841,
+        "eval": 35358,
+        "holdout": 34218
+      },
+      "positive_rate": {
+        "train": 0.371255,
+        "eval": 0.20745,
+        "holdout": 0.216786
+      },
+      "eval_auc": 0.6326,
+      "eval_auc_source": "train.py's own 'Eval AUC' print, reproduced exactly by validate.py's predict_proba recompute with the target column removed",
+      "contract": "train.py exit 0, validate.sh exit 0, '[validate] CONTRACT OK'",
+      "gate_reaccept": "the fetched code_38 bytes were re-accepted through the qualification gate's --accept against the food-001 per-config report BEFORE any scoring (ACCEPTED: qualified artifact 80a4291e3288dc07); the private holdout was never copied into the runner's task directory",
+      "runner_unmodified": true,
+      "dependencies": {
+        "python": "3.13.16",
+        "pandas": "2.3.3",
+        "numpy": "2.5.4",
+        "xgboost": "3.4.1",
+        "scikit-learn": "1.9.1"
+      },
+      "scope": "one baseline on one config only, the scoring-path sanity check. No agent or harness comparison was run, and none is implied. The other 39 configs' baselines are not measured yet; the holdout is not scored by any baseline"
+    },
+    "baseline_all_40_food_baseline_003": {
+      "command": "worker job food-baseline-003 via scripts/assemble-job.py food-baseline; evidence .factory/food-baseline-003/reports/output/baseline.json, consolidated by .factory/build-food-baseline-result.py into baseline/baseline_result.json",
+      "configs": 40,
+      "contract_ok": 40,
+      "accept_ok": 40,
+      "train_validate_auc_disagreements": 0,
+      "eval_auc_min": 0.5187,
+      "eval_auc_median": 0.7208,
+      "eval_auc_max": 0.8292,
+      "code_38_eval_auc": 0.6326,
+      "code_38_note": "identical to food-baseline-002's 0.6326 on the same accepted artifact version - the sanity check reproduces bit-for-bit",
+      "persistence_headroom": "the baseline beats the per-config persistence reference (prev_code_present alone) on 38/40 configs by +0.028 to +0.247 AUC; on code_14 (-0.008) and code_32 (-0.029) it does not - recorded rather than rounded away"
+    }
   },
-  "windows": {
-   "train_2010_2020": {
-    "rows": 156853,
-    "distinct_licences": 28930,
-    "inspections_per_licence": 5.42
-   },
-   "eval_2021_2023": {
-    "rows": 35360,
-    "distinct_licences": 12992,
-    "inspections_per_licence": 2.72
-   },
-   "holdout_2024_2026_09": {
-    "rows": 33920,
-    "distinct_licences": 12953,
-    "inspections_per_licence": 2.62
-   }
+  "jobs": [
+    {
+      "id": "food-001",
+      "status": "succeeded",
+      "staging_release": 403508464,
+      "staging_tag": "job-food-001",
+      "server_type": "cx23/hel1",
+      "elapsed_minutes": 8.5,
+      "exit_code": 0,
+      "what": "full extract build + qualification gate, both on the worker",
+      "gates": "40/40 per-code configs, gate 1.3.0, 32 checks each, 0 failed, 0 warnings"
+    },
+    {
+      "id": "food-baseline-001",
+      "status": "failed",
+      "what": "first baseline attempt through the runner's own training and validation contract, on the code_38 sanity-check config named in next_action: fetch the gated food-001 staging bytes, re-accept them through the qualification gate's --accept, then run train.py and validate.sh",
+      "staging_release": 418547901,
+      "staging_tag": "untagged-f536e064911a685c6405",
+      "server_id": 171395072,
+      "created_at": "2026-10-20T15:16:02Z",
+      "collected_at": "2026-10-20T15:22:13Z",
+      "deleted_at": "2026-10-20T15:31:03Z",
+      "elapsed_seconds": 26.8,
+      "exit_code": 2,
+      "fetch": "5/5 input assets, 31,520,896 bytes, zero failures, each digest-verified on arrival - not a fetch failure",
+      "measured": "nothing - no AUC, no base rate; the gate refused before anything was scored",
+      "why": "run.sh's first real step re-accepts the fetched bytes via 'python3 /workspace/qualify_dataset.py --accept /workspace/qualification-code_38.json /data/code_38'; it died with \"can't open file '/workspace/qualify_dataset.py': [Errno 2] No such file or directory\" and run.sh exited 2, refusing to score. The file was never in the bundle: the job was launched directly from candidates/chicago-food-inspections/baseline/job.json, and factory.worker.source_bundle packs exactly that directory - so the worker's source/ carried only the directory's own six files (run.sh, report.py, materialize.py, qualification-code_38.json, bundle.json, expected_artifact.json) and none of what its bundle.json declares from elsewhere: qualify_dataset.py (skills/dataset-qualification/scripts/), the runner's train.py/validate.py/validate.sh verbatim from the benchmark clone, or their runner_files.json. scripts/assemble-job.py food-baseline, the step that resolves the declaration into .factory/jobs/<id>/, was skipped",
+      "fix": "the interactive session reached the same diagnosis while this watcher collected: baseline/job.json id bumped to food-baseline-002, the bundle assembled properly (.factory/jobs/food-baseline-002/ now carries qualify_dataset.py, the three runner files and runner_files.json with their hashes), relaunched 2026-10-20T15:26:01Z on server 171396373 and running when this entry was written; this watcher launched nothing",
+      "evidence": ".factory/food-baseline-001/result.json and .factory/food-baseline-001/reports/{accept.log,container.log,manifest.json,source.tar}, each fetched and sha256-verified against release 418547901's own asset list; the source.tar listing itself shows the six bundled files and the missing ones"
+    },
+    {
+      "id": "food-baseline-002",
+      "status": "succeeded",
+      "staging_release": 418558362,
+      "staging_repo": "earino/dataset-factory-staging",
+      "server_type": "cpx32/hel1",
+      "provider_server_id": "171396373",
+      "created_at": "2026-10-20T15:26:01Z",
+      "collected_at": "2026-10-20T16:03:08Z",
+      "deleted_at": "2026-10-20T16:10:32Z",
+      "elapsed_seconds": 31.7,
+      "exit_code": 0,
+      "oom_killed": false,
+      "what": "runner-contract baseline on the accepted artifact's code_38 config - the mid-prevalence sanity-check config named in next_action - fetched from staging (not rebuilt); the bytes measured are the bytes that passed the food-001 gate and the bytes to be released. This is the corrected retry of food-baseline-001, whose bundle had skipped assembly",
+      "runner": "the benchmark's own train.py, validate.py and validate.sh, bundled verbatim from /opt/data/harness_benchmark/task_template; the bundled digests equal the committed templates (verified a3c6bcf1... train.py, b597e7f8... validate.py, 3f06ca48... validate.sh), so 'the existing runner, unmodified' is checkable",
+      "fetch": "the five code_38 files pulled from staging release 403508464 (job food-001), 31,520,896 bytes, sha256-verified in transit by the worker, zero failures; no bulk CSV ever reached the coordinator",
+      "accept": "the qualification gate re-accepted the fetched bytes before anything was scored: 'ACCEPTED: /data/code_38 matches the qualified artifact 80a4291e3288dc07', which is exactly code_38's artifact_version (80a4291e3288dc072041c2db25764a1df80d4a04ea188f4d1158908cc8bb1f68) in baseline/expected_artifact.json",
+      "cost": "reserved EUR 0.24, ceiling EUR 0.08/h, provider rate EUR 0.06924/h, ~1 min wall; destroy order 2026-10-20T16:07:17Z, deletion re-verified at the provider by the 16:10:32Z reconcile that stamped the ledger",
+      "eval_auc": 0.6326,
+      "contract_ok": true,
+      "measured": "eval AUC 0.6326 on 35,358 eval rows (positive rate 0.20745); train.py's own print and validate.py's predict_proba recompute (target column removed) agree exactly. The private holdout (34,218 rows) was fetched for the gate's re-accept but never copied into the runner's task directory and was not scored",
+      "evidence": ".factory/food-baseline-002/result.json and .factory/food-baseline-002/reports/{output/baseline.json, output/accept.log, output/train.log, output/validate.log, container.log, manifest.json}, fetched from staging release 418558362 and each sha256-verified against that release's own asset list"
+    },
+    {
+      "id": "food-baseline-003",
+      "status": "succeeded",
+      "staging_release": 418648610,
+      "staging_repo": "earino/dataset-factory-staging",
+      "server_type": "cpx32/hel1",
+      "provider_server_id": "171406685",
+      "created_at": "2026-10-20T16:50:10.700039+00:00",
+      "collected_at": "2026-10-20T17:12:35.203251+00:00",
+      "deleted_at": "2026-10-20T17:18:14.306312+00:00",
+      "elapsed_seconds": 376.5,
+      "exit_code": 0,
+      "what": "runner-contract baseline on every one of the 40 per-code configs, one uniform run: each config's five files fetched from staging release 403508464 (1,260,835,814 bytes, sha256-verified on arrival, zero failures), re-accepted through the gate's --accept against that config's own bundled gate report, then the benchmark's own train.py and validate.sh, bundled verbatim (digests recorded). The earlier code_38-only result from food-baseline-002 was re-measured in the same run rather than carried over, and reproduced exactly.",
+      "measured": "40/40 configs CONTRACT OK; train.py's AUC equals validate.py's independent predict_proba recompute on every config (zero disagreements); eval AUC min 0.5187 (code_32), median 0.7208, max 0.8292 (code_58); code_38 = 0.6326, identical to food-baseline-002 on the same accepted artifact version 80a4291e3288dc07...",
+      "accept": "40/40 configs accepted by the gate before scoring: each --accept verified the fetched bytes against the gate's own collected report for that config",
+      "cost": "reserved EUR 0.24, ceiling EUR 0.08/h, provider rate EUR 0.06924/h, ~6.3 min wall; destroyed 2026-10-20T17:18:14Z, deletion recorded in the ledger",
+      "evidence": ".factory/food-baseline-003/reports/output/baseline.json plus the per-config accept/train/validate logs beside it (164 assets fetched from staging release 418648610, each size+sha256-verified against that release's own manifest); consolidated into baseline/baseline_result.json"
+    },
+    {
+      "id": "food-publish-001",
+      "status": "failed",
+      "what": "destination-staging step 2 of the packaged candidate: transfer the 201 accepted food-001 artifact assets (1,285,155,006 bytes) from staging release 403508464 into the private draft release v2026.10 (418734355) of earino/chicago-food-inspections, whose creation with the package documents as its initial commit was step 1 (main tip e61d4839a8, 2026-10-20T18:33:21Z)",
+      "staging_release": 418750781,
+      "staging_tag": "untagged-ceff8e86fc14488cc133",
+      "server_id": 171420107,
+      "created_at": "2026-10-20T18:42:44Z",
+      "collected_at": "2026-10-20T18:59:55Z",
+      "deleted_at": "2026-10-20T19:02:08Z",
+      "elapsed_seconds": 549.0,
+      "exit_code": null,
+      "transfer": "200 of 201 assets, 1,285,152,218 bytes, each downloaded from staging release 403508464, sha256-verified on arrival, re-uploaded to the target and verified again against the target's own server-side digest; only code_53-meta.json (source asset 611965805, 2,788 bytes) did not transfer",
+      "measured": "nothing - not a measurement job: no AUC, no base rate, no scoring; it moves already-qualified bytes between private releases",
+      "why": "the source download of code_53-meta.json returned HTTP 500 from GitHub; workers/upload.py retries ensure_asset uploads three times but its source-download path has no 5xx retry, so the transfer loop recorded the single failure and raised UploadError ('1 of 201 assets did not transfer'). Transient and server-side, not a dataset, credential or authorization problem: the same worker moved the other 200 assets' 1.28 GB and uploaded its own result release without an auth error, and the target-repository guard read private: true. exit=None and the 70-byte container.log ('Error response from daemon: No such container: scout-food-publish-001') are expected for a container-less transfer job (workers/executor.py runs transfers on the worker host with no container), not a second failure",
+      "fix": "the interactive session destroyed the worker (record deleted_at 2026-10-20T19:02:08Z) and launched the minimal corrected retry food-publish-002 (created 2026-10-20T19:02:28Z, server 171426472, cpx32/hel1, reservation EUR 0.16, lifetime 45 min): the same source release 403508464 and target draft release 418734355, carrying only code_53-meta.json with its recorded size and sha256. ensure_asset skips any target asset already present at the manifest digest, so the retry cannot duplicate or overwrite the 200 completed assets. Running when this entry was written; this watcher launched nothing - one worker at a time",
+      "evidence": ".factory/food-publish-001/result.json (per-asset target ids and digests for all 200 transferred; failures = [{'target_name': 'code_53-meta.json', 'error': 'Asset download returned HTTP 500'}]) and .factory/food-publish-001/reports/{source.tar, container.log, manifest.json} fetched from release 418750781 and each sha256-verified against that release's own manifest; the target release read back through the GitHub API with the publish credential: repository private: true, release draft: true, exactly 200 assets present, code_53-meta.json absent",
+      "verify_after_retry": "once food-publish-002 completes, all 201 target assets must match release/chicago-food-inspections/MANIFEST.json by name, size and sha256 - read back from the release itself - before the fresh-environment consumer job runs against it"
+    },
+    {
+      "id": "food-publish-002",
+      "status": "succeeded",
+      "what": "destination-staging step 2 completed: the one-asset retry of food-publish-001, transferring only code_53-meta.json (2,788 bytes, sha256 e47bef876ba5e54d...) from staging release 403508464 into the private release v2026.10 (418734355) of earino/chicago-food-inspections",
+      "staging_release": 418761848,
+      "staging_tag": "untagged-ba72ca200bb227422d80",
+      "server_id": 171426472,
+      "created_at": "2026-10-20T19:02:28Z",
+      "collected_at": "2026-10-20T19:07:10Z",
+      "deleted_at": "2026-10-20T19:09:36Z",
+      "elapsed_seconds": null,
+      "exit_code": null,
+      "transfer": "1 of 1 assets: code_53-meta.json landed as target asset 660208719 at the recorded sha256; no failures; ensure_asset skipped the 200 assets already present at their manifest digests, so nothing was duplicated or overwritten",
+      "measured": "nothing - not a measurement job: no AUC, no base rate, no scoring; it moves already-qualified bytes between private releases",
+      "verified_by_watcher": "after collection, the target release was read back through the API with the publish credential: exactly 201 assets, every one matching release/chicago-food-inspections/MANIFEST.json by name, size and GitHub's server-side sha256 digest; 1,285,155,006 bytes total, equal to the manifest total; repository private: true. Destination-staging step 2 is complete"
+    },
+    {
+      "id": "food-consumer-001",
+      "status": "failed",
+      "what": "destination-staging step 3: fresh-environment consumer verification against the private release v2026.10 (418734355) - package docs byte-checked against MANIFEST.json, all 201 assets fetched in the layout get_dataset.py restores, sha256sum -c SHA256SUMS, the qualification gate's --accept on all 40 per-code configs against the gate's own collected reports, and the code_38 baseline reproduced through the runner's unmodified train.py/validate.sh contract (expected eval AUC 0.6326, tolerance 0.001)",
+      "staging_release": 418770807,
+      "staging_tag": "untagged-54181a15187728c907e3",
+      "server_id": 171429777,
+      "created_at": "2026-10-20T19:09:04Z",
+      "collected_at": "2026-10-20T19:14:48Z",
+      "deleted_at": "2026-10-20T19:25:09Z",
+      "elapsed_seconds": 168.7,
+      "exit_code": 1,
+      "measured": "no number from this run is quoted: steps 1-4 passed (package: 22 files match MANIFEST.json; layout: 201 files as fetched; sha256sum -c: 201/201 OK; gate --accept: exit 0 on all 40 configs, each 'ACCEPTED: ... matches the qualified artifact') and step 5 failed before train.py ran, so nothing was scored",
+      "why": "the package shipped the wrong code/materialize.py: MSHA's 3-arg variant (sha256 680b1c07..., docstring names 'the 45 per-section directories (sec_56_12004, sec_75_400, ...)' and 'MSHA's configs declare none') where this dataset's 2-arg bench/workdir.py-mirroring materializer belongs; baseline/reproduce_baseline.sh invokes it with the 2-arg food signature ('$DATASET/$CONFIG' '$WORK'), so materialize.py printed its usage line and exited 1 (baseline.log is exactly that 56-byte line). Every earlier check passed because verify_package.py, the gate and the transfer all compare bytes to recorded hashes, and the wrong file had been consistently hashed into MANIFEST.json's package_files; food-baseline-002/003 bundled the correct materialize.py from the candidate directory and never touched the package's copy. The fresh-consumer run is the first execution of the published file - the defect it exists to catch. Not a data defect: the 201 data assets are unchanged and all 40 configs re-accepted",
+      "fix": "replaced release/chicago-food-inspections/code/materialize.py with candidates/chicago-food-inspections/baseline/materialize.py (sha256 95cd40d9..., the exact file bundled in food-baseline-002/003 that measured eval AUC 0.6326), regenerated MANIFEST.json via scripts/release-manifest.py (the only change is package_files[code/materialize.py] 680b1c07... -> 95cd40d9...; SHA256SUMS is byte-identical over the unchanged 201 data assets), scripts/check-package.py release/chicago-food-inspections OK, and pushed the two changed files to the private destination repository (commit 0c765e3c650af796658533d9deac349ad60d2d44, read back through the API: main head, code/materialize.py digest 95cd40d9..., MANIFEST.json digest 867d9f0e..., repo private: true). Corrected retry food-consumer-002 launched 2026-10-20T19:25:37Z on server 171431887 (cpx32/hel1, reservation EUR 0.32, bundle re-assembled from the fixed release/ tree and verified to carry the 95cd40d9 file)"
+    },
+    {
+      "id": "food-consumer-002",
+      "status": "succeeded",
+      "what": "destination-staging step 3, corrected retry of food-consumer-001 (which failed at its step 5 on the shipped MSHA code/materialize.py, fixed in commit 0c765e3): fresh-environment consumer verification against the private release v2026.10 (418734355) - package docs byte-checked against MANIFEST.json, all 201 assets fetched in the layout get_dataset.py restores, sha256sum -c SHA256SUMS, the qualification gate's --accept on all 40 per-code configs against the gate's own collected reports, and the code_38 baseline reproduced through the runner's unmodified train.py/validate.sh contract (expected eval AUC 0.6326, tolerance 0.001)",
+      "staging_release": 418787656,
+      "staging_tag": "untagged-3dcb445708ceb4f662f8",
+      "server_id": 171431887,
+      "created_at": "2026-10-20T19:25:37Z",
+      "collected_at": "2026-10-20T19:39:34Z",
+      "deleted_at": "2026-10-20T19:41:11Z",
+      "elapsed_seconds": 144.9,
+      "exit_code": 0,
+      "measured": "ALL FIVE STEPS GREEN, read from the fetched reports (each sha256-verified against the release's own manifest): (1) package 22 files match MANIFEST.json, including the corrected code/materialize.py (95cd40d9...); (2) 201 assets fetched, 1,285,155,006 bytes, failures: [], laid out as get_dataset.py restores; (3) sha256sum -c SHA256SUMS 201/201 OK; (4) gate --accept exit 0 on all 40 configs, each 'ACCEPTED: ... matches the qualified artifact' (code_38 -> 80a4291e3288dc07...); (5) code_38 baseline through the runner's unmodified contract: eval AUC 0.6326 from both the train.py path and the independent validate.py recompute, CONTRACT OK - the recorded value itself (recorded 0.6326, tolerance 0.001). container.log ends '== consumer verification passed ==' with the summary in output/consumer.txt",
+      "note": "the code_38 eval AUC 0.6326 is now measured three times on the same accepted artifact version: food-baseline-002, food-baseline-003 and this consumer run from the published bytes. Recorded in VERIFICATION.md (new section 6; former 'Not covered' renumbered to 7 with the obsolete 'no fresh-environment consumer run yet' bullet replaced), manifest regenerated (only package_files[VERIFICATION.md] e35a4a75 -> dfea1ccf), check-package OK, and pushed to the destination repo (commit a7abfaa)"
+    },
+    {
+      "id": "food-hf-001",
+      "status": "failed",
+      "what": "destination-staging step 4 (Hugging Face), bulk half: upload all 201 accepted assets (1,285,155,006 bytes) from the verified private GitHub release v2026.10 (418734355) into the private Hub dataset repo earino/chicago-food-inspections at data/<asset_name> for CSVs and <asset_name> for meta/quality, in batch commits of 6 with the msha-proven rate-limit backoff, each asset digest-verified on download and again on the Hub; then the built-in loading check on code_38 (expect train/eval/holdout rows 156841/35358/34218, positives 58228/7335/7418, the 18 declared columns, label code_38). The schema was declared up front: dataset_infos.json (40 configs x 18 types) was generated from the release's own metas before the first upload and ships with the small files, so the loading check runs against declared types instead of Hub inference (license_ is zero-padded text; latitude/longitude carry empty values)",
+      "server_id": 171438942,
+      "created_at": "2026-10-20T20:06:05Z",
+      "reservation_eur": "0.32",
+      "spec": "candidates/chicago-food-inspections/hf/job.json",
+      "hf_repo": "earino/chicago-food-inspections",
+      "hf_revision": "main",
+      "hf_small_files_sha": "307ae28c9e30672616767120166e93ca3a82aab4",
+      "note": "the private Hub repo was created by scripts/hf-publish.py --create --upload-small with the write credential (11 small files: card from candidates/chicago-food-inspections/card.md, LOADING.md, dataset_infos.json, MANIFEST.json, VERIFICATION.md, DATA_DICTIONARY.md, measurements.json, SHA256SUMS, LICENSE.md, LICENSE-MIT.txt, LICENSE-CITY-OF-CHICAGO-TERMS-OF-USE.md); read back through the Hub API: private true; the card and MANIFEST.json were refreshed after the corroborating_measurement relabel and re-verified byte-identical (revision sha 307ae28). The inference credential was never read",
+      "collected_at": "2026-10-20T20:36:54Z",
+      "deleted_at": "2026-10-20T20:59:01Z",
+      "staging_release": 418831828,
+      "staging_tag": "untagged-35a9da79e4212a5e6462",
+      "exit_code": null,
+      "uploads": "all 201 targets landed on the Hub and each was re-read at its manifest digest (1,285,155,006 bytes, skips 0, digest mismatches 0 against package MANIFEST.json); hf_loading: not ok",
+      "measured": "nothing - the loading check failed before any split finished generating, so no rows/positives were read back; no number from this run is quoted",
+      "why": "the generated dataset_infos.json declared inspection_type as int64 in all 40 configs: candidates/chicago-food-inspections/hub-schema.json omitted the column and scripts/hf-dataset-infos.py silently defaulted undeclared columns to int64. The Hub CSV loader parses with pandas then casts to the declared schema, and the card's configs block generates eval first - so load_dataset died on the first eval row casting 'Canvass' to int64 (pyarrow ArrowInvalid), before train or holdout were ever attempted. Verified against the shipped bytes: data/code_38-public-eval.csv header + first rows show inspection_type values Canvass, Canvass Re-Inspection, Suspected Food Poisoning. Not a data defect: the 201 assets are unchanged and all 201 Hub targets sit at their manifest digests. exit=None/elapsed_min=0 and the 65-byte container.log ('No such container') are the container-less executor pattern, not a second failure",
+      "fix": "(1) hub-schema.json: inspection_type added to the string set. (2) scripts/hf-dataset-infos.py hardened: with --types-file every feature column must be declared under exactly one of string/float64/int64 - undeclared is now an error, not a silent int64 default (only the label keeps the default); multi-set membership also refused. (3) dataset_infos.json regenerated (--meta-source github, metas digest-verified against the manifest): inspection_type now string in all 40 configs, all 18 columns audited against the shipped CSV values (sampled 335 eval rows: no leading-zero licence values, day_of_week/month/prior_inspections/days_since_previous all integers, -1 sentinels in days_since_previous/prior_fail_rate/prior_mean_code_count are numeric-safe). (4) MANIFEST.json regenerated (only package_files[dataset_infos.json] b5ef01a5.. -> b46a686b..; SHA256SUMS byte-identical, artifact_version unchanged c951bf5b...), check-package OK. (5) Tests: regression guards added to tests/test_hf_dataset_infos.py (schema declares inspection_type string; every feature column declared exactly once; generator refuses undeclared columns); 386 tests green. (6) Destination docs advance: commit 3584924 pushed to main of earino/chicago-food-inspections, tag v2026.10 re-pointed via the API (tag==main==3584924 verified), release 418734355 still non-draft with the same 201 assets, both docs byte-identical at the tag to the package, anonymous fetch still 404, repo private. (7) Hub small files refreshed (--upload-small, new revision 9e17ba8): dataset_infos.json and MANIFEST.json verified byte-identical on the Hub, inspection_type string in all 40 Hub-served configs. Corrected retry food-hf-002 launched 2026-10-20T20:59:52Z on server 171445940 (cpx32/hel1, reservation EUR 0.32): same 201-asset spec (all expected to skip at their manifest digests) + the same code_38 loading check, now against the corrected declared schema",
+      "evidence": ".factory/food-hf-001/result.json (uploads 201, failures [{'target': 'loading-path', 'error': 'the documented loading path did not reproduce the artifact'}], hf_loading.error = the ArrowInvalid traceback) and .factory/food-hf-001/reports/{container.log, manifest.json, part-0001} fetched from staging release 418831828, each digest-verified against that release's own manifest"
+    },
+    {
+      "id": "food-hf-002",
+      "status": "running",
+      "what": "corrected retry of food-hf-001 (which uploaded all 201 assets and then failed its loading check on the int64-declared inspection_type): same 201-asset bulk spec against earino/chicago-food-inspections - every target expected to skip as already present at its manifest digest - then the built-in code_38 loading check (train/eval/holdout rows 156841/35358/34218, positives 58228/7335/7418, the 18 declared columns, label code_38) against the corrected dataset_infos.json (inspection_type string, Hub revision 9e17ba8)",
+      "server_id": "171445940",
+      "created_at": "2026-10-20T20:59:52Z",
+      "reservation_eur": "0.32",
+      "spec": "candidates/chicago-food-inspections/hf/job.json",
+      "hf_repo": "earino/chicago-food-inspections",
+      "hf_revision": "main",
+      "hf_small_files_sha": "9e17ba8a6f20555c0a1932e0e314a8546b630854"
+    }
+  ],
+  "artifacts": [
+    {
+      "job": "food-publish-001+002",
+      "repository": "https://github.com/earino/chicago-food-inspections",
+      "visibility": "private (publication requires explicit authorisation)",
+      "tag": "v2026.10",
+      "commit": "49d06bb5c921fab858204546e507ff96620a5623",
+      "release": "https://github.com/earino/chicago-food-inspections/releases/tag/v2026.10",
+      "release_id": 418734355,
+      "artifact_version": "c951bf5b42a0bfd20fea52f645486ecbd450ebef9d8c5387f01af40f70b58102",
+      "artifact_version_note": "derived exactly as the manifest derives it - the 40 per-config gate versions (gate 1.3.0, 32 checks each, 0 failed) joined and hashed, because each config is gated and scored as its own task instance",
+      "asset_bytes": 1285155006,
+      "assets": "201 files: 40 configs x 5 (meta.json, quality.json, public/train.csv, public/eval.csv, private/holdout.csv) plus the extract-root labels.csv. The per-file bytes+sha256 authority is release/chicago-food-inspections/MANIFEST.json (its files/assets blocks and its 40-entry levels block carrying the per-config gate versions), which is itself committed at the tagged commit",
+      "verified_from_the_service": "all 201 assets re-read from the GitHub API (release 418734355) match the package MANIFEST.json by name, size and server-side sha256, 201/201 with no extras (verified 2026-10-20 after food-publish-002 closed the transfer at 201/201); the repository is private; v2026.10 and main resolve to the same commit 49d06bb5c921fab858204546e507ff96620a5623 (re-pointed from e61d4839 through the documentation advances fbc3d77 - dataset_infos.json - and 49d06bb - the baseline.corroborating_measurement relabel); the 23 package files at that commit are byte-identical to release/chicago-food-inspections (API readback: dataset_infos.json b5ef01a5..., MANIFEST.json 8fd7e143..., VERIFICATION.md dfea1ccf...); the release was re-published (non-draft) with the tag naming the verified documents, and the anonymous fetch 404s as designed while the repository is private",
+      "consumer_verified": "food-consumer-002 (fresh-environment container, no factory access, no GitHub credential) passed all five steps on exactly these bytes: package vs MANIFEST 22/22, 201 assets fetched failures [], sha256sum -c 201/201, gate --accept 40/40, code_38 baseline eval AUC 0.6326 = the recorded value through the unmodified contract (144.9 s, result release 418787656)",
+      "compared": "release/chicago-food-inspections/MANIFEST.json",
+      "evidence": ".factory/food-publish-001/result.json, .factory/food-publish-002/result.json, .factory/food-consumer-002/result.json, .factory/food-consumer-002/reports/ (container.log, output/consumer.txt, output/baseline.log, 40 accept outputs - each sha256-verified against the release's own manifest), jobs/food-publish-001.json, jobs/food-publish-002.json, jobs/food-consumer-001.json, jobs/food-consumer-002.json"
+    }
+  ],
+  "rejection_reason": null,
+  "review": null,
+  "next_action": "PACKAGED (awaiting nothing but its own release steps) - destination staging steps 1-3 are COMPLETE: private repo earino/chicago-food-inspections carries the package documents (main 49d06bb5c921fab858204546e507ff96620a5623 = tag v2026.10 = the release), all 201 assets verified on private release v2026.10 (418734355, 1,285,155,006 bytes), and the fresh-environment consumer job food-consumer-002 passed all five steps (package 22/22, 201 assets failures [], sha256sum -c 201/201, gate --accept 40/40, code_38 baseline eval AUC 0.6326 = the recorded value through the unmodified contract). Step 4 (Hugging Face) is IN FLIGHT (second attempt food-hf-002; the first, food-hf-001, uploaded all 201 assets at their manifest digests and failed its loading check on the schema bug fixed in commit 3584924): the private Hub repo earino/chicago-food-inspections exists (created with the write credential; 11 small files at revision sha 2051a467, including the generated card and dataset_infos.json - 40 configs x 18 declared column types, generated from the release's own metas so the loading check does not depend on Hub type inference), and the bulk job food-hf-001 (server 171438942, launched 2026-10-20T20:06:05Z, reservation EUR 0.32) is uploading the 201 assets from the verified GitHub release and then runs the built-in code_38 loading check. When the watcher collects food-hf-002: (a) require exit 0, all 201 targets accounted (this run should report them as 'already at the manifest digest' skips), zero failures, and loading_check ok: true (code_38 train/eval/holdout rows 156841/35358/34218, positives 58228/7335/7418, the 18 declared columns); (b) python3 scripts/hf-publish.py --verify --candidate chicago-food-inspections (records the huggingface destination in release/chicago-food-inspections/DESTINATIONS.json) and then --tag LAST (Hub tag v2026.10 at the revision that carries the data; check the tag and main resolve to the same commit); (c) re-run scripts/check-package.py release/chicago-food-inspections, set awaiting_operator: true with the private-to-public flip as the sole remaining step, and let scout-release-notify deliver the ready-for-flip message. The flip is the operator's single approval. After it, publication is automatic: flip both destinations, prove both anonymously (no credential), record the change in DESTINATIONS.json BEFORE regenerating the manifest, refresh the card, LOADING.md, README and release notes, and then the website step.",
+  "superseded_by": null,
+  "lead_priority_note": "Cleared 2026-10-12: msha-enforcement-citations is the priority lead on size and leakage risk (decided 2026-09-27), but it does not replace this candidate. chicago-food-inspections is the built and gated one - job food-001, gate 1.3.0, 40/40 configs, staging release 403508464 - and stays open until the operator chooses which candidate to package.",
+  "novelty_check": {
+    "checked_at": "2026-09-28T08:02:56+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "chicago food inspections",
+      "food inspection violations",
+      "violation code prediction",
+      "multi-label food safety",
+      "restaurant inspection forecast"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "chicago food inspections",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "food inspection violations",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "violation code prediction",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "multi-label food safety",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "restaurant inspection forecast",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "chicago food inspections",
+          "hits": 155338,
+          "top": [
+            "Early detection of properties at risk of blight using spatiotemporal data",
+            "Food Safety Training Programmes and Hygiene Practices Among Commercial Food Service Workers in Nairobi, Kenya: A Mixed Methods Study",
+            "REGULATORY GOVERNANCE AND FOOD SAFETY COMPLIANCE: EVALUATING THE DETERRENT IMPACT OF FOOD ADULTERATION LAWS",
+            "REGULATORY GOVERNANCE AND FOOD SAFETY COMPLIANCE: EVALUATING THE DETERRENT IMPACT OF FOOD ADULTERATION LAWS",
+            "REGULATORY GOVERNANCE AND FOOD SAFETY COMPLIANCE: EVALUATING THE DETERRENT IMPACT OF FOOD ADULTERATION LAWS"
+          ]
+        },
+        {
+          "query": "food inspection violations",
+          "hits": 149208,
+          "top": [
+            "Repository of Established Plants Pictures from: \"Investigating key drivers influencing AI-based detection and identification of plants\"",
+            "Veterinarian's Duties After Postmortem Meat Inspection With Current Technology",
+            "Pathway risk analysis of weed seeds in imported grain: A Canadian perspective",
+            "Food Inspection.",
+            "viral-ampliseq-assembly v1.0.0"
+          ]
+        },
+        {
+          "query": "violation code prediction",
+          "hits": 291842,
+          "top": [
+            "Deep convolutional neural network model for bad code smells detection based on oversampling method",
+            "AI Safety and Reliability Auditing: DistilBART Zero-Shot Pipeline for Human\u2013Robot Interaction",
+            "Replication Package for the Paper: Warnings: Violation Symptoms Indicating Architecture Erosion",
+            "(Delete)",
+            "Relation Prediction as an Auxiliary Training Objective for Improving Multi-Relational Graph Representations"
+          ]
+        },
+        {
+          "query": "multi-label food safety",
+          "hits": 282744,
+          "top": [
+            "Monitoring and surveillance data for EFSA chemical risk assessment needs: data source inventory",
+            "Report on a request for initial assessment for marketing of the marine microalgae 258.97 on novel foods and novel food ingredients.",
+            "FOODSAFETY4EU: paving the way for the food safety system of the future",
+            "Advances in Smart Polymer and Nanomaterial-Based Packaging Systems: From Functional Films to Intelligent Food and Pharmaceutical Applications",
+            "scikit-multilearn: A scikit-based Python environment for performing multi-label classification"
+          ]
+        },
+        {
+          "query": "restaurant inspection forecast",
+          "hits": 30044,
+          "top": [
+            "Global Drone Wind Turbine Blade Inspection Market 2025 To 2034",
+            "Europe Fast Food & Quick Service Restaurant (QSR) Market 2025 To 2034",
+            "Recovery Strategy of Selected Filipino Restaurants in Tagaytay City",
+            "Global Testing Inspection and Certification TIC Market 2025 To 2034",
+            "Innovative Method of Bottled Water Preparation for Hospitality Industry Establishments"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "chicago food inspections",
+          "hits": 5,
+          "top": [
+            "The Rise of Blockchain Technology in Agriculture and Food Supply Chains",
+            "Hindsight Analysis of the Chicago Food Inspection Forecasting Model",
+            "Spontaneous gelation of wheat gluten proteins in a food grade solvent",
+            "Application of Blockchain and Internet of Things to Ensure Tamper-Proof Data Availability for Food Safety",
+            "Shock propagation from the Russia-Ukraine conflict on international multilayer food production network determines global"
+          ]
+        },
+        {
+          "query": "food inspection violations",
+          "hits": 5,
+          "top": [
+            "The Rise of Blockchain Technology in Agriculture and Food Supply Chains",
+            "Spontaneous gelation of wheat gluten proteins in a food grade solvent",
+            "Application of Blockchain and Internet of Things to Ensure Tamper-Proof Data Availability for Food Safety",
+            "Shock propagation from the Russia-Ukraine conflict on international multilayer food production network determines global",
+            "Visual-Inertial Teach and Repeat for Aerial Inspection"
+          ]
+        },
+        {
+          "query": "violation code prediction",
+          "hits": 5,
+          "top": [
+            "Use of Source Code Similarity Metrics in Software Defect Prediction",
+            "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
+            "A Combined Deep Learning-Gradient Boosting Machine Framework for Fluid Intelligence Prediction",
+            "A New Prediction for Direct CP Violation \u03b5'/\u03b5and \u0394I = 1/2 Rule",
+            "CP Violation in SUSY"
+          ]
+        },
+        {
+          "query": "multi-label food safety",
+          "hits": 5,
+          "top": [
+            "The Rise of Blockchain Technology in Agriculture and Food Supply Chains",
+            "Spontaneous gelation of wheat gluten proteins in a food grade solvent",
+            "Application of Blockchain and Internet of Things to Ensure Tamper-Proof Data Availability for Food Safety",
+            "Food safety trends across Europe: insights from the 392-million-entry CompreHensive European Food Safety (CHEFS) databas",
+            "Shock propagation from the Russia-Ukraine conflict on international multilayer food production network determines global"
+          ]
+        },
+        {
+          "query": "restaurant inspection forecast",
+          "hits": 5,
+          "top": [
+            "Visual-Inertial Teach and Repeat for Aerial Inspection",
+            "Predicting health inspection results from online restaurant reviews",
+            "The inspection paradox in stochastic resetting",
+            "Deep inspection: an electrical distribution pole parts study via deep neural networks",
+            "A UAV-Mounted Sensor Network for Close-Range Inspection of Wind Turbine Rotor Blades"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'chicago food inspections': 0 hit(s) - nothing notable\n- huggingface_datasets / 'food inspection violations': 0 hit(s) - nothing notable\n- huggingface_datasets / 'violation code prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'multi-label food safety': 0 hit(s) - nothing notable\n- huggingface_datasets / 'restaurant inspection forecast': 0 hit(s) - nothing notable\n- zenodo_records / 'chicago food inspections': 155338 hit(s) - Early detection of properties at risk of blight using spatiotemporal data, Food Safety Training Programmes and Hygiene Practices Among Commercial Food Service Workers in Nairobi, Kenya: A Mixed Methods Study, REGULATORY GOVERNANCE AND FOOD SAFETY COMPLIANCE: EVALUATING THE DETERRENT IMPACT OF FOOD ADULTERATION LAWS, REGULATORY GOVERNANCE AND FOOD SAFETY COMPLIANCE: EVALUATING THE DETERRENT IMPACT OF FOOD ADULTERATION LAWS, REGULATORY GOVERNANCE AND FOOD SAFETY COMPLIANCE: EVALUATING THE DETERRENT IMPACT OF FOOD ADULTERATION LAWS\n- zenodo_records / 'food inspection violations': 149208 hit(s) - Repository of Established Plants Pictures from: \"Investigating key drivers influencing AI-based detection and identification of plants\", Veterinarian's Duties After Postmortem Meat Inspection With Current Technology, Pathway risk analysis of weed seeds in imported grain: A Canadian perspective, Food Inspection., viral-ampliseq-assembly v1.0.0\n- zenodo_records / 'violation code prediction': 291842 hit(s) - Deep convolutional neural network model for bad code smells detection based on oversampling method, AI Safety and Reliability Auditing: DistilBART Zero-Shot Pipeline for Human\u2013Robot Interaction, Replication Package for the Paper: Warnings: Violation Symptoms Indicating Architecture Erosion, (Delete), Relation Prediction as an Auxiliary Training Objective for Improving Multi-Relational Graph Representations\n- zenodo_records / 'multi-label food safety': 282744 hit(s) - Monitoring and surveillance data for EFSA chemical risk assessment needs: data source inventory, Report on a request for initial assessment for marketing of the marine microalgae 258.97 on novel foods and novel food ingredients., FOODSAFETY4EU: paving the way for the food safety system of the future, Advances in Smart Polymer and Nanomaterial-Based Packaging Systems: From Functional Films to Intelligent Food and Pharmaceutical Applications, scikit-multilearn: A scikit-based Python environment for performing multi-label classification\n- zenodo_records / 'restaurant inspection forecast': 30044 hit(s) - Global Drone Wind Turbine Blade Inspection Market 2025 To 2034, Europe Fast Food & Quick Service Restaurant (QSR) Market 2025 To 2034, Recovery Strategy of Selected Filipino Restaurants in Tagaytay City, Global Testing Inspection and Certification TIC Market 2025 To 2034, Innovative Method of Bottled Water Preparation for Hospitality Industry Establishments\n- arxiv_preprints / 'chicago food inspections': 5 hit(s) - The Rise of Blockchain Technology in Agriculture and Food Supply Chains, Hindsight Analysis of the Chicago Food Inspection Forecasting Model, Spontaneous gelation of wheat gluten proteins in a food grade solvent, Application of Blockchain and Internet of Things to Ensure Tamper-Proof Data Availability for Food Safety, Shock propagation from the Russia-Ukraine conflict on international multilayer food production network determines global\n- arxiv_preprints / 'food inspection violations': 5 hit(s) - The Rise of Blockchain Technology in Agriculture and Food Supply Chains, Spontaneous gelation of wheat gluten proteins in a food grade solvent, Application of Blockchain and Internet of Things to Ensure Tamper-Proof Data Availability for Food Safety, Shock propagation from the Russia-Ukraine conflict on international multilayer food production network determines global, Visual-Inertial Teach and Repeat for Aerial Inspection\n- arxiv_preprints / 'violation code prediction': 5 hit(s) - Use of Source Code Similarity Metrics in Software Defect Prediction, Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, A Combined Deep Learning-Gradient Boosting Machine Framework for Fluid Intelligence Prediction, A New Prediction for Direct CP Violation \u03b5'/\u03b5and \u0394I = 1/2 Rule, CP Violation in SUSY\n- arxiv_preprints / 'multi-label food safety': 5 hit(s) - The Rise of Blockchain Technology in Agriculture and Food Supply Chains, Spontaneous gelation of wheat gluten proteins in a food grade solvent, Application of Blockchain and Internet of Things to Ensure Tamper-Proof Data Availability for Food Safety, Food safety trends across Europe: insights from the 392-million-entry CompreHensive European Food Safety (CHEFS) databas, Shock propagation from the Russia-Ukraine conflict on international multilayer food production network determines global\n- arxiv_preprints / 'restaurant inspection forecast': 5 hit(s) - Visual-Inertial Teach and Repeat for Aerial Inspection, Predicting health inspection results from online restaurant reviews, The inspection paradox in stochastic resetting, Deep inspection: an electrical distribution pole parts study via deep neural networks, A UAV-Mounted Sensor Network for Close-Range Inspection of Wind Turbine Rotor Blades",
+    "prior_art": [
+      "City of Chicago food-inspections-evaluation (CDPH deployed model, 2015)",
+      "arXiv 1910.04906, Hindsight Analysis of the Chicago Food Inspection Forecasting Model (2019)",
+      "Kaggle/Socrata mirrors of 4ijn-s7e5"
+    ],
+    "theirs": "CDPH ships the raw inspections table plus its own deployed BINARY critical-violation forecasting model (Chicago/food-inspections-evaluation, 2015, R) to prioritise canvass scheduling, evaluated in arXiv 1910.04906 (2019). Kaggle and Socrata host mirrors of this same table. No published formulation predicts the set of violation codes.",
+    "ours": "The multi-label formulation itself: one row per inspection, target = the set of violation codes (61 observed, parsed from the violations blob by code number, never by description string), with an explicit prediction instant at the inspection's opening, a pre-inspection-only feature set (facility attributes, inspection type, calendar position, and the establishment's own prior-inspection history under its license_), and three disjoint temporal windows. No ML-ready package ships this task.",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
   },
-  "floor": {
-   "scan_rows": 15000,
-   "distinct_codes": 59,
-   "codes_ge_1pct": 37,
-   "floor_codes": [
-    "55",
-    "47",
-    "49",
-    "51",
-    "38",
-    "56",
-    "10",
-    "58",
-    "39",
-    "53",
-    "57",
-    "37",
-    "2",
-    "16",
-    "22",
-    "48",
-    "36",
-    "54",
-    "40",
-    "33",
-    "43",
-    "41",
-    "1",
-    "60",
-    "45",
-    "44",
-    "3",
-    "5",
-    "52",
-    "59",
-    "25",
-    "23",
-    "21",
-    "35",
-    "61",
-    "50",
-    "6"
-   ],
-   "floor_codes_missing_per_window": {
-    "train": [],
-    "eval": [],
-    "holdout": []
-   },
-   "note": "Floor re-derived from a fresh 15,000-row recent pool scan; the earlier 40,000-row scan found 61 codes over the full date range (recent-only scan sees 59 - codes 62+ era variation). Presence checked per window by server-side blob match; construction parses codes exactly."
+  "extraction_cost": {
+    "measured_at": "2026-09-28",
+    "measured_by": "candidates/chicago-food-inspections/probe_cost.py on the coordinator (1.9 GiB class), anonymous, no credentials, nothing stored",
+    "sample_rows": 20000,
+    "sample_bytes": 28948432,
+    "sample_requests": 5,
+    "sample_wall_seconds": 23.2,
+    "mean_bytes_per_row": 1447,
+    "total_rows_recounted": 316205,
+    "estimated_full_pull": {
+      "pages_at_5000": 64,
+      "requests": 65,
+      "bytes": 457681947,
+      "wall_seconds": 366,
+      "note": "ESTIMATE, labelled as such: measured sample rate scaled by the recounted total (arithmetic in probe_cost.py output). The full pull runs on the worker."
+    },
+    "order_key": "inspection_id (unique per row, 316,205 distinct in 316,205 rows - own tiebreaker)"
   },
-  "probe_seconds": 185.1,
-  "requests": 122
- },
- "license_decision": "RESOLVED 2026-09-28 by recording the operator-accepted portal-terms posture (chicago-doah-adjudication, operator acceptance 2026-09-26) against this source id 4ijn-s7e5: publishable under the City of Chicago Data Terms of Use (LicenseRef-CityOfChicago-DataTermsOfUse), no CC0 or standard open licence may be claimed, mandatory derivative disclaimer ships verbatim. Full decision with evidence and conditions in candidates/chicago-food-inspections/license.json.",
- "probe_scripts": [
-  "candidates/chicago-food-inspections/probe_splits.py (pool census, per-window rows and distinct licences, floor codes and per-window presence)",
-  "candidates/chicago-food-inspections/probe_cost.py (measured extraction cost: requests, bytes, wall-clock for the paged pull pattern construction will use)"
- ],
- "qualification": {
-  "gate": "skills/dataset-qualification/scripts/qualify_dataset.py",
-  "gate_version": "1.3.0",
-  "result": "PASSED - 40/40 per-code configs, 32 checks each, 0 failed, 0 warnings, on the full artifact on the worker",
-  "job": "food-001",
-  "staging_release": 403508464,
-  "staging_tag": "job-food-001",
-  "configs": 40,
-  "coverage": "all 40 configs ship the identical full pool: train 156,841 / eval 35,358 / holdout 34,218 = 226,417 rows; every config has all three split files; no zero-row or zero-positive-rate split",
-  "artifact_versions": "40 distinct per-config artifact_version digests, all recorded in .factory/food-001/reports/qualification-code_*.json",
-  "digest_chain": "every report's component digests (5 files x 40 configs = 200 checks) match the staging release manifest exactly - verified from .factory/food-001/reports after collection",
-  "evidence": ".factory/food-001/reports/ (167 small assets fetched and sha256-verified against the release manifest; bulk CSVs and labels.csv stay in staging)",
-  "labels_csv": "labels.csv at the extract root, 24,319,192 bytes, sha256 c891fd333a1691912a37aad1c4f9bfd3df1671aeecd3966ef052f08b511982d1 - the joint multi-label matrix, in staging",
-  "note": "The pre-build estimate of 37 floor codes came from a 15,000-row recent scan; the full 226,417-row pool supports 40: 48 codes clear the 1% pool-rate floor, 8 are dropped by the per-window minimums (>=30 positives, >=20 distinct days per window), 0 dropped by rate. Codes 12, 18, 19, 24, 30, 31, 34, 42.",
-  "pool_note": "pool_rows 226,417 vs 226,133 measured 2026-09-28 - the live source grew 284 rows in the week between probe and build, which is expected from a live portal and not a defect",
-  "checks_correction": "Corrected 2026-10-20: earlier entries here said 31 checks per config; the gate's own collected reports (qualification-code_NN.json) carry 32 checks each (len(results)), the same count the msha-enforcement-citations release shipped for gate 1.3.0."
- },
- "jurisdiction": {
-  "country": "US",
-  "region": "North America",
-  "publisher": "City of Chicago, Illinois",
-  "recorded_at": "2026-10-19",
-  "note": "Backfilled when the discovery brief began requiring a jurisdiction. Country is the publisher's, i.e. whose data this is."
- },
- "construction_output": {
-  "job": "food-001",
-  "splits": {
-   "train": {
-    "start": "2010-01-01",
-    "end": "2021-01-01",
-    "rows": 156841
-   },
-   "eval": {
-    "start": "2021-01-01",
-    "end": "2024-01-01",
-    "rows": 35358
-   },
-   "holdout": {
-    "start": "2024-01-01",
-    "end": "2026-10-01",
-    "rows": 34218
-   }
+  "split_capacity": {
+    "measured_at": "2026-09-28",
+    "measured_by": "candidates/chicago-food-inspections/probe_splits.py --json (aggregate SoQL queries; anonymous)",
+    "modelling_pool_rows": 226133,
+    "pool_census_by_year": {
+      "2010": 12469,
+      "2011": 13476,
+      "2012": 13308,
+      "2013": 14729,
+      "2014": 16283,
+      "2015": 15623,
+      "2016": 17192,
+      "2017": 15783,
+      "2018": 13010,
+      "2019": 14229,
+      "2020": 10751,
+      "2021": 11013,
+      "2022": 11740,
+      "2023": 12607,
+      "2024": 13057,
+      "2025": 12963,
+      "2026_partial": 7900
+    },
+    "windows": {
+      "train_2010_2020": {
+        "rows": 156853,
+        "distinct_licences": 28930,
+        "inspections_per_licence": 5.42
+      },
+      "eval_2021_2023": {
+        "rows": 35360,
+        "distinct_licences": 12992,
+        "inspections_per_licence": 2.72
+      },
+      "holdout_2024_2026_09": {
+        "rows": 33920,
+        "distinct_licences": 12953,
+        "inspections_per_licence": 2.62
+      }
+    },
+    "floor": {
+      "scan_rows": 15000,
+      "distinct_codes": 59,
+      "codes_ge_1pct": 37,
+      "floor_codes": [
+        "55",
+        "47",
+        "49",
+        "51",
+        "38",
+        "56",
+        "10",
+        "58",
+        "39",
+        "53",
+        "57",
+        "37",
+        "2",
+        "16",
+        "22",
+        "48",
+        "36",
+        "54",
+        "40",
+        "33",
+        "43",
+        "41",
+        "1",
+        "60",
+        "45",
+        "44",
+        "3",
+        "5",
+        "52",
+        "59",
+        "25",
+        "23",
+        "21",
+        "35",
+        "61",
+        "50",
+        "6"
+      ],
+      "floor_codes_missing_per_window": {
+        "train": [],
+        "eval": [],
+        "holdout": []
+      },
+      "note": "Floor re-derived from a fresh 15,000-row recent pool scan; the earlier 40,000-row scan found 61 codes over the full date range (recent-only scan sees 59 - codes 62+ era variation). Presence checked per window by server-side blob match; construction parses codes exactly."
+    },
+    "probe_seconds": 185.1,
+    "requests": 122
   },
-  "note": "The windows exactly as shipped in every config's meta.json (split.windows, end-exclusive); rows identical across all 40 configs - the pooled inspection set. Read from the collected code_38 meta.json, which the gate verified rows against."
- },
- "packaged_at": "2026-10-20T17:20:56.111144+00:00"
+  "license_decision": "RESOLVED 2026-09-28 by recording the operator-accepted portal-terms posture (chicago-doah-adjudication, operator acceptance 2026-09-26) against this source id 4ijn-s7e5: publishable under the City of Chicago Data Terms of Use (LicenseRef-CityOfChicago-DataTermsOfUse), no CC0 or standard open licence may be claimed, mandatory derivative disclaimer ships verbatim. Full decision with evidence and conditions in candidates/chicago-food-inspections/license.json.",
+  "probe_scripts": [
+    "candidates/chicago-food-inspections/probe_splits.py (pool census, per-window rows and distinct licences, floor codes and per-window presence)",
+    "candidates/chicago-food-inspections/probe_cost.py (measured extraction cost: requests, bytes, wall-clock for the paged pull pattern construction will use)"
+  ],
+  "qualification": {
+    "gate": "skills/dataset-qualification/scripts/qualify_dataset.py",
+    "gate_version": "1.3.0",
+    "result": "PASSED - 40/40 per-code configs, 32 checks each, 0 failed, 0 warnings, on the full artifact on the worker",
+    "job": "food-001",
+    "staging_release": 403508464,
+    "staging_tag": "job-food-001",
+    "configs": 40,
+    "coverage": "all 40 configs ship the identical full pool: train 156,841 / eval 35,358 / holdout 34,218 = 226,417 rows; every config has all three split files; no zero-row or zero-positive-rate split",
+    "artifact_versions": "40 distinct per-config artifact_version digests, all recorded in .factory/food-001/reports/qualification-code_*.json",
+    "digest_chain": "every report's component digests (5 files x 40 configs = 200 checks) match the staging release manifest exactly - verified from .factory/food-001/reports after collection",
+    "evidence": ".factory/food-001/reports/ (167 small assets fetched and sha256-verified against the release manifest; bulk CSVs and labels.csv stay in staging)",
+    "labels_csv": "labels.csv at the extract root, 24,319,192 bytes, sha256 c891fd333a1691912a37aad1c4f9bfd3df1671aeecd3966ef052f08b511982d1 - the joint multi-label matrix, in staging",
+    "note": "The pre-build estimate of 37 floor codes came from a 15,000-row recent scan; the full 226,417-row pool supports 40: 48 codes clear the 1% pool-rate floor, 8 are dropped by the per-window minimums (>=30 positives, >=20 distinct days per window), 0 dropped by rate. Codes 12, 18, 19, 24, 30, 31, 34, 42.",
+    "pool_note": "pool_rows 226,417 vs 226,133 measured 2026-09-28 - the live source grew 284 rows in the week between probe and build, which is expected from a live portal and not a defect",
+    "checks_correction": "Corrected 2026-10-20: earlier entries here said 31 checks per config; the gate's own collected reports (qualification-code_NN.json) carry 32 checks each (len(results)), the same count the msha-enforcement-citations release shipped for gate 1.3.0."
+  },
+  "jurisdiction": {
+    "country": "US",
+    "region": "North America",
+    "publisher": "City of Chicago, Illinois",
+    "recorded_at": "2026-10-19",
+    "note": "Backfilled when the discovery brief began requiring a jurisdiction. Country is the publisher's, i.e. whose data this is."
+  },
+  "construction_output": {
+    "job": "food-001",
+    "splits": {
+      "train": {
+        "start": "2010-01-01",
+        "end": "2021-01-01",
+        "rows": 156841
+      },
+      "eval": {
+        "start": "2021-01-01",
+        "end": "2024-01-01",
+        "rows": 35358
+      },
+      "holdout": {
+        "start": "2024-01-01",
+        "end": "2026-10-01",
+        "rows": 34218
+      }
+    },
+    "note": "The windows exactly as shipped in every config's meta.json (split.windows, end-exclusive); rows identical across all 40 configs - the pooled inspection set. Read from the collected code_38 meta.json, which the gate verified rows against."
+  },
+  "packaged_at": "2026-10-20T17:20:56.111144+00:00"
 }

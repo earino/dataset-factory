@@ -1,15 +1,77 @@
 # Current state
 
-Updated: 2026-10-20, latest (food-consumer-002 PASSED all five steps of the fresh-environment
+Updated: 2026-10-20, latest (food-hf-001 FAILED its Hub loading check on a schema bug - inspection_type typed int64; fixed, retry food-hf-002 running. Earlier: food-consumer-002 PASSED all five steps of the fresh-environment
 consumer verification on the published bytes - package 22/22, 201 assets failures [], sha256sum -c
 201/201, gate --accept 40/40, code_38 baseline eval AUC 0.6326 = the recorded value through the
 unmodified contract - and the result is recorded in the package's VERIFICATION.md and the private
 destination repo at main fbc3d77 = tag v2026.10, with dataset_infos.json declaring the Hub schema.
-Step 4 (Hugging Face) is in flight: the private Hub repo earino/chicago-food-inspections exists
-with the card/docs (11 small files), and bulk job food-hf-001 (server 171438942) is uploading the
-201 assets. After it: hf-publish --verify, --tag LAST, check-package, awaiting_operator: true and
-the ready-for-flip notification; the flip itself is the operator's single approval.)
+Step 4 (Hugging Face) continues: food-hf-001 uploaded all 201 assets to the private Hub repo
+earino/chicago-food-inspections (each verified at its manifest digest) but failed the loading
+check - the generated dataset_infos.json typed the string column inspection_type as int64
+(undeclared columns silently defaulted to int64), so load_dataset raised ArrowInvalid on
+'Canvass'. Fixed: schema regenerated with inspection_type as string, generator hardened to
+refuse undeclared columns, docs advance pushed (destination main/tag v2026.10 = 3584924,
+byte-identical docs, anonymous fetch still 404), Hub small files refreshed (revision 9e17ba8),
+and retry food-hf-002 launched 20:59:52Z on server 171445940. When the watcher collects it:
+hf-publish --verify, --tag LAST, check-package, awaiting_operator: true and the ready-for-flip
+notification; the flip itself is the operator's single approval.)
 
+
+## 2026-10-20 - food-hf-001 failed its Hub loading check: inspection_type was typed int64; schema fixed, generator hardened, retry food-hf-002 launched
+
+**`food-hf-001` failed (collected 20:36:54Z, server 171438942 destroyed 20:59:01Z), and the failure is
+a schema-declaration bug, not a data or transfer defect.** All 201 assets (1,285,155,006 bytes) are on
+the private Hub repo `earino/chicago-food-inspections`, each re-read at its manifest digest (uploads
+201, skips 0, digest mismatches 0). The job then ran its built-in code_38 loading check and
+`load_dataset` died generating the eval split: `pyarrow.lib.ArrowInvalid: Failed to parse string:
+'Canvass' as a scalar of type int64`.
+
+**Diagnosis, from the shipped bytes.** The Hub CSV loader parses with pandas and then casts each
+column to the schema `dataset_infos.json` declares. The generated file declared `inspection_type`
+int64 in all 40 configs because `candidates/chicago-food-inspections/hub-schema.json` omitted the
+column and `scripts/hf-dataset-infos.py` silently defaulted undeclared columns to int64. A bounded
+range probe of `data/code_38-public-eval.csv` on the Hub confirmed the column's actual values
+(`Canvass`, `Canvass Re-Inspection`, `Suspected Food Poisoning`, ...); the card's configs block
+generates eval first, so the cast failed on the first row. Train/holdout were never attempted.
+
+**Fix (all seven steps verified before the retry was launched):**
+
+1. `hub-schema.json`: `inspection_type` added to the string set.
+2. `scripts/hf-dataset-infos.py` hardened: with `--types-file`, every feature column must now be
+   declared under exactly one of string/float64/int64 - undeclared is an error, not a silent int64
+   guess; multi-set membership is refused; only the label keeps the int64 default. The built-in
+   (MSHA) sets keep their historical behaviour.
+3. `dataset_infos.json` regenerated from the release's own metas (digest-verified): inspection_type
+   string in all 40 configs; all 18 columns audited against the shipped values (sampled 335 eval rows
+   at four offsets: no leading-zero licence values, integer day_of_week/month/prior counts, -1
+   sentinels in days_since_previous/prior_fail_rate/prior_mean_code_count are numeric-safe,
+   latitude/longitude emptiness is null-safe for float64).
+4. `MANIFEST.json` regenerated - only `package_files[dataset_infos.json]` changed
+   (b5ef01a5.. -> b46a686b..); SHA256SUMS byte-identical over the unchanged 201 assets;
+   artifact_version unchanged (c951bf5b...); `check-package.py` OK.
+5. Regression guards added to `tests/test_hf_dataset_infos.py` (food schema declares
+   inspection_type string; every feature column declared exactly once; the generator refuses
+   undeclared columns); full suite 386 tests green locally.
+6. Destination docs advance: commit `3584924` pushed to main of the private
+   `earino/chicago-food-inspections`; tag `v2026.10` re-pointed through the GitHub git-refs API
+   update (the cron sandbox declines history-moving tag pushes, so the ref update went through the
+   API instead of a local git push) and verified tag==main==3584924; release 418734355 still
+   non-draft with the same 201 assets; both docs byte-identical at the tag to the package; the
+   anonymous fetch still 404s; `DESTINATIONS.json` records the advance.
+7. Hub small files refreshed with `--upload-small` (new revision `9e17ba8`): `dataset_infos.json`
+   and `MANIFEST.json` read back byte-identical to the package, inspection_type string in all 40
+   Hub-served configs, repo private. The write credential stayed in its file; the inference
+   credential was never read.
+
+**Retry `food-hf-002` launched 20:59:52Z on server 171445940** (cpx32/hel1, reservation EUR 0.32;
+October reservations now ~EUR 6.78 of the 20 EUR allowance): the identical 201-asset spec (every
+target expected to skip as already present at its manifest digest) plus the same code_38 loading
+check (rows 156841/35358/34218, positives 58228/7335/7418, 18 declared columns), now against the
+corrected declared schema. Spec committed at `candidates/chicago-food-inspections/hf/job.json`.
+When the watcher collects it: require exit 0, zero failures, loading check ok (all 201 targets
+accounted as skips), then `hf-publish.py --verify` (records the Hub destination), `--tag` LAST,
+check-package, `awaiting_operator: true`, and let scout-release-notify deliver the ready-for-flip
+message. The flip is the operator's single approval.
 
 ## 2026-10-20 - food-consumer-002 passed all five steps on the published bytes; VERIFICATION.md records it; the Hub step began (private repo + card + declared schema live, bulk job food-hf-001 running)
 

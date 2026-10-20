@@ -51,16 +51,40 @@ def load_types(path):
     for key in ("string", "float64", "int64"):
         if key not in declared or not isinstance(declared[key], list):
             raise SystemExit(f"types file {path} needs a list under '{key}'")
+    seen = {}
+    for key in ("string", "float64", "int64"):
+        for column in declared[key]:
+            if column in seen:
+                raise SystemExit(f"types file {path} declares '{column}' under both "
+                                 f"'{seen[column]}' and '{key}'")
+            seen[column] = key
     return declared
 
 
 def dtype_for(column, label, types=None):
+    """dtype for one column.
+
+    With a types file, every feature column must be declared under exactly one of
+    string/float64/int64; only the label column may fall through to the int64 default. An
+    undeclared feature column once fell through silently to int64, so the Hub `dataset_infos`
+    typed the string column `inspection_type` as int64 and `load_dataset` raised ArrowInvalid
+    casting 'Canvass' - a whole worker job failed on a schema nobody wrote. Declaring nothing
+    is an error, not a guess. Without a types file the built-in (MSHA) sets keep their
+    historical default: unlisted columns are int64.
+    """
     string_set = (types or {}).get("string", STRING_COLUMNS)
     float_set = (types or {}).get("float64", FLOAT_COLUMNS)
-    if column in string_set:
-        return "string"
-    if column in float_set:
-        return "float64"
+    int_set = (types or {}).get("int64", ())
+    matches = [name for name, members in (("string", string_set), ("float64", float_set),
+                                          ("int64", int_set)) if column in members]
+    if len(matches) > 1:
+        raise SystemExit(f"'{column}' is declared under multiple dtype sets: {matches}")
+    if matches:
+        return matches[0]
+    if types is not None and column != label:
+        raise SystemExit(f"the types file leaves '{column}' undeclared: every feature column "
+                         "must appear under exactly one of string/float64/int64 - undeclared "
+                         "columns must not be guessed")
     return "int64"
 
 
