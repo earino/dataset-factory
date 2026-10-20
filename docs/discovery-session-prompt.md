@@ -25,7 +25,19 @@ empties. This session exists to prevent that, so:
 Take **at least three new sources** to a recorded verdict this session, of which **at least two
 must be published outside the United States.**
 
-### Geography is part of the brief, not a nice-to-have
+### Write each verdict before you start the next source
+
+A session can be stopped at its wall clock; when that happens the transcript is lost but the repository
+is not. So the unit of durable progress is one recorded verdict, not one finished session:
+
+- The moment a source gets its `go` / `park` / `reject`, write `candidates/<id>/record.json` with the
+  verdict, the evidence and the jurisdiction. Do not hold three verdicts in your head and write them at
+  the end - a killed session that wrote as it went still moved the pipeline.
+- If you are running out of turns or time, stop probing and write up what you already have, including
+  the sources you opened but did not settle.
+- An empty region report is a valid outcome and must be recorded too.
+
+## Geography is part of the brief, not a nice-to-have
 
 The bench is 10 US sources to 1 Australian one, and **0 of 6 live candidates are non-US**: federal
 US data is simply the easiest to probe, so every session drifts there unless it is pushed. Measure
