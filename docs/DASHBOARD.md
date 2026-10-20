@@ -184,9 +184,13 @@ the same snapshot, and a local `--serve` mode for reading it inside the containe
 
 ## Decisions taken here (not put back to the operator)
 
-- **Public, not authenticated.** Everything shown is already in the public repo or the public release
-  record; adding auth would mean a server we cannot host. Nothing sensitive is included, and rule 4
-  is enforced in code.
+- **Public URL, unlisted, not authenticated.** Pages cannot enforce auth without a server we do not
+  have. The earlier justification ("everything shown is already public") was wrong: candidate names,
+  statuses and next actions come from the *private* factory repository. So the pages carry
+  `noindex,nofollow` and a `robots.txt` that disallows everything, and rule 4 is enforced in code:
+  no credentials, no session transcripts, no staging URLs, and no full budget config — only the
+  ceilings the page displays. If this is not acceptable, the alternative is a local `--serve` view
+  and no public site.
 - **Hourly, offset from the discovery tick**, so one build reflects a finished tick rather than racing
   it.
 - **Static, not a live console.** If truly live numbers are ever needed, the correct route is a Hermes

@@ -157,7 +157,11 @@ def collect_budget():
         pass
     if payload is None:
         return {"error": (result.stderr or result.stdout or "no output")[-300:], "decision": None}
-    return {"decision": payload.get("decision") or {}, "config": payload.get("config") or {}}
+    config = payload.get("config") or {}
+    keep = ("weekly_token_budget", "sessions_per_week", "allowance_usd", "period",
+            "session_max_minutes", "session_max_turns")
+    return {"decision": payload.get("decision") or {},
+            "config": {key: config[key] for key in keep if key in config}}
 
 
 def collect_cron():
@@ -334,6 +338,7 @@ def layout(title, body, active):
         return f'<a href="{href}"{" class=on" if key == active else ""}>{label}</a>'
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
 <title>{esc(title)} - Scout</title><link rel="stylesheet" href="style.css"></head><body>
 <header><h1>Scout &middot; {esc(title)}</h1>
 <nav>{link("index.html","Executive","exec")}{link("cost.html","Cost","cost")}
@@ -536,6 +541,7 @@ def build(out: Path, include_tests=True):
              ("reliability.html", "Reliability", "rel", render_reliability(snapshot))]
     files = {name: layout(title, body, active) for name, title, active, body in pages}
     files["style.css"] = CSS
+    files["robots.txt"] = "User-agent: *\nDisallow: /\n"
     files["dashboard.json"] = json.dumps(snapshot, indent=1, sort_keys=True)
     assert_no_secrets(files)
     for name, content in files.items():
