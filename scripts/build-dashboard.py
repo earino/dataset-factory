@@ -323,11 +323,16 @@ def collect_sessions(limit=40):
             except ValueError:
                 continue
     except OSError:
-        return {"recent": [], "killed_last_three": 0}
+        return {"recent": [], "failed_last_three": 0}
     sessions = [e for e in entries if e.get("event") == "session"]
     recent = sessions[-6:]
-    killed = sum(1 for e in sessions[-3:] if "killed" in str(e.get("outcome")))
-    return {"recent": recent, "killed_last_three": killed, "total": len(sessions)}
+
+    def failed(entry):
+        outcome = str(entry.get("outcome") or "")
+        return "killed" in outcome or outcome.startswith("exit")
+
+    return {"recent": recent, "failed_last_three": sum(1 for e in sessions[-3:] if failed(e)),
+            "total": len(sessions)}
 
 
 def collect_cron():
@@ -499,9 +504,9 @@ def derive_alarms(snapshot):
             add(f"{record['id']} is verified and waiting on the operator for the public flip ({age}h)",
                 "warn", "⏳")
     sessions = snapshot.get("sessions") or {}
-    if sessions.get("killed_last_three", 0) >= 2:
-        add(f"{sessions['killed_last_three']} of the last 3 scheduled sessions were killed at the wall "
-            f"clock and produced no report", "bad", "!")
+    if sessions.get("failed_last_three", 0) >= 2:
+        add(f"{sessions['failed_last_three']} of the last 3 scheduled sessions failed (wall clock or "
+            f"provider) and produced no usable report", "bad", "!")
     unverified = [r for r in reports if not r["verified_all"]]
     if unverified:
         add(f"{len(unverified)} release(s) not fully verified", "bad", "!")
