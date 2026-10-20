@@ -1,6 +1,6 @@
 {
  "id": "melbourne-pedestrian-counts",
- "status": "parked",
+ "status": "investigating",
  "created_at": "2026-09-18T09:31:08.922482+00:00",
  "domain": "urban activity sensing / pedestrian footfall",
  "prediction_question": "For a City of Melbourne pedestrian sensor, will the count in a given hour exceed a high-traffic threshold relative to that sensor's own distribution?",
@@ -25,7 +25,8 @@
   "DataVic's CKAN harvest of the same three Pedestrian Counting System datasets (search 'pedestrian counting system monthly counts per hour', 3 matches) reports licence_id 'other-open' with license_url null. That names no terms and is not a publishable licence.",
   "https://data.melbourne.vic.gov.au/pages/terms-of-use/ and /pages/terms/ return HTTP 404; https://www.melbourne.vic.gov.au/open-data returns HTTP 403 from this host.",
   "The City of Melbourne commonly publishes under CC BY 4.0, but that is an assumption, not evidence. Do not make a release claim for this candidate until a licence is actually read.",
-  "Re-checked 2026-10-20 in a real browser (the earlier 403 was a user-agent block, not a dead page): melbourne.vic.gov.au/open-data loads and describes an 'open-by-default' policy with five Open Data Principles, but names no licence. Its only relevant outbound link is /copyright, which speaks about website copyright and names no data licence or Creative Commons deed. So all four channels - the open-data page, the copyright page, the OpenDataSoft dataset metadata and the DataVic harvest - are consistent: open in intent, unstated in terms."
+  "Re-checked 2026-10-20 in a real browser (the earlier 403 was a user-agent block, not a dead page): melbourne.vic.gov.au/open-data loads and describes an 'open-by-default' policy with five Open Data Principles, but names no licence. Its only relevant outbound link is /copyright, which speaks about website copyright and names no data licence or Creative Commons deed. So all four channels - the open-data page, the copyright page, the OpenDataSoft dataset metadata and the DataVic harvest - are consistent: open in intent, unstated in terms.",
+  "Operator decision 2026-10-20: proceed without a readable licence - recorded in candidates/melbourne-pedestrian-counts/license.json with the five findings, the risk acceptance, attribution, and a takedown route in the dataset card. No publisher grant is claimed."
  ],
  "construction_script": null,
  "split_strategy": "Temporal: earlier years train, later periods eval and holdout, with per-sensor thresholds fixed from the training window so the threshold cannot leak holdout information.",
@@ -52,8 +53,8 @@
  "jobs": [],
  "artifacts": [],
  "rejection_reason": "No licence for redistribution is declared by any channel that carries this dataset (v2.1 API, dataset page, DataVic CKAN harvest), so it cannot be published - redistribution is contract 1 of dataset-discovery and it is unmet. Parked rather than dropped because the data itself is usable; only the terms are missing.",
- "review": "Parked with a dated path out. Nothing readable states the terms, so the choice is to ask the publisher in writing or drop it. A licence enquiry has been drafted in notes.md; if no written answer arrives by 2026-11-03 the candidate is rejected rather than carried indefinitely.",
- "next_action": "Operator: send the drafted licence enquiry in notes.md (or authorise an alternative contact). Agent: reject the candidate on 2026-11-03 if no written licence has arrived; do not spend construction effort before then.",
+ "review": "Unblocked by the operator on 2026-10-20 ('the license is fine'). Licence posture recorded in license.json: attribution plus takedown contact in the card, and no standard licence presented as the publisher's. Buildable now; queues behind Chicago packaging for the single worker.",
+ "next_action": "Construct: hourly pulls of the OpenDataSoft v2.1 API (1,626,831 records, ~200 sensors), derive the per-sensor threshold target, freeze temporal splits, then qualify. Queue behind the Chicago package - one worker at a time.",
  "jurisdiction": {
   "country": "AU",
   "region": "Oceania",

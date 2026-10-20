@@ -3587,3 +3587,11 @@ The region did not come up empty - it produced one GO and four honest parks, eac
 probes that produced the verdict recorded in its notes.md. Next action for the GO is specific
 in its record: worker-side extraction measurement (OpenAQ locationids or an XKDR key), then
 the station-day panel and the qualification gate.
+
+**Melbourne unblocked by operator risk acceptance 2026-10-20.** "The license is fine. If they get mad they can
+just email me." Recorded in `candidates/melbourne-pedestrian-counts/license.json` as exactly that - a risk
+acceptance by the dataset owner, explicitly not a publisher grant - with the five findings that show the City
+states no terms, attribution to the City, a takedown route in the card (repository issue tracker, plus an
+address if the operator supplies one), and the rule that no standard licence may be presented as the
+publisher's. Candidate moved parked -> investigating; next action is construction, queued behind Chicago
+packaging because there is one worker.
