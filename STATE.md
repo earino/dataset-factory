@@ -1,17 +1,19 @@
 # Current state
 
-Updated: 2026-10-22:05Z (advancement session). chicago-food-inspections is FULLY SHIPPED - the
-operator's flip went through at 21:55Z, both data destinations are public and anonymously
-verified, and the SITE PAGE IS LIVE AND VERIFIED TOO: the 21:55Z session had published it
-(dataset site repo commit 48dc0853 'Prepare website for chicago-food-inspections v2026.10',
-21:57:44Z) but was killed before recording that, so the committed record still said 'remaining:
-site page'. This session found the site live, re-verified anonymously (page + /versions/v2026.10/
-both 200 at 60,065 bytes, catalog.json 182,556 bytes lists the release, page prints
-load_dataset('earino/chicago-food-inspections', 'code_01', revision='v2026.10'), site-publish.py
-verify on fresh bundle .factory/sites/food-website-1 = status=verified, HTTPS enforced on both
-Pages sites), and recorded the site destination in DESTINATIONS.json (github/huggingface entries
-preserved). Nothing remains for this dataset. Release work is done; the tick continues on
-construction (who-flunet-activity-exceedance, the ready buffer candidate).
+Updated: 2026-10-22:26Z (advancement session). TWO things moved this tick:
+(1) chicago-food-inspections is FULLY SHIPPED - the operator's flip went through at 21:55Z,
+both data destinations are public and anonymously verified, and the SITE PAGE IS LIVE AND
+VERIFIED TOO: the 21:55Z session had published it (dataset site repo commit 48dc0853 'Prepare
+website for chicago-food-inspections v2026.10', 21:57:44Z) but was killed before recording
+that, so the committed record still said 'remaining: site page'. This session found the site
+live, re-verified anonymously (page + /versions/v2026.10/ both 200 at 60,065 bytes,
+catalog.json 182,556 bytes lists the release, page prints
+load_dataset('earino/chicago-food-inspections', 'code_01', revision='v2026.10'),
+site-publish.py verify on fresh bundle .factory/sites/food-website-1 = status=verified, HTTPS
+enforced on both Pages sites), and recorded the site destination in DESTINATIONS.json
+(github/huggingface entries preserved). Nothing remains for that dataset.
+(2) who-flunet-activity-exceedance CONSTRUCTED AND QUALIFIED (flunet-002 green). See the
+2026-10-20 section below.
 Earlier: food-hf-002 SUCCEEDED - destination staging was COMPLETE on both platforms and
 The retry verified all 201 Hub targets at their manifest digests and passed the built-in code_38
 loading check against the corrected declared schema: train/eval/holdout 156841/35358/34218 rows,
@@ -24,6 +26,56 @@ Earlier still: food-consumer-002 PASSED all five steps of the fresh-environment
 consumer verification on the published bytes - package 22/22, 201 assets failures [], sha256sum -c
 201/201, gate --accept 40/40, code_38 baseline eval AUC 0.6326 = the recorded value through the
 unmodified contract.)
+
+## 2026-10-20 - who-flunet-activity-exceedance constructed and qualified: flunet-002 green, artifact b1323a27 accepted; the France fixture was re-pinned at construction
+
+**The ready buffer candidate went ready -> qualified inside one tick.** `flunet-001` (worker
+171454348, launched 22:16:07Z) built the full artifact and failed the gate on exactly ONE
+check, `timing.every_feature_documented`: quality.json's `features_documented_at` carried
+documentation prose where the gate compares the bare availability class `prediction_time`
+(qualify_dataset.py:271-274) - a descriptor-value defect, not a data defect; every other check
+was green in the collected report. Diagnosed from the collected bytes, fixed (value set to
+`prediction_time`, the documentation reference moved to a `feature_documentation` key), worker
+destroyed 22:20:55Z, retried as **`flunet-002`** (worker 171454743, launched 22:21:03Z,
+job elapsed 31.2 s): build + qualification gate green on the worker - `ok: true`,
+`failed_checks: []`, gate 1.3.0, artifact `b1323a27fa02eb79...` - and
+`qualify_dataset.py --accept` on the coordinator re-verified the collected staging bytes ->
+`ACCEPTED`. Worker destroyed 22:26:25Z (both workers' deletion recorded in jobs/*.json).
+
+**Measured on the full table** (GET 32,246,617 B in 1.5 s, sha `5695e5d2c06c4179...`, one
+request; 189,645 source rows, 189 countries, 148,355 country-weeks, streams summed): 1,258 of
+3,499 country-years pass the systematic-negative rule. **26,093 eligible (country, prediction
+week) rows** - skipped: thin prediction week 106,611, thin target week 6,881, not-systematic
+8,015, no target 755. Splits: train 5,779 / 3,420 positive (59.2%) / 235 clustered
+country-years (2005-01-31..2019-12-23); eval 6,831 / 1,636 (23.9%) / 257
+(2019-12-30..2022-12-26); holdout 13,483 / 5,482 (40.7%) / 422 (2023-01-02..2026-09-14).
+The train-vs-eval base-rate gap is the documented phenomenon property (COVID era + the early
+systematic years), not a construction fault. Timing self-check: 201 rows recomputed from a
+series physically truncated at week W, 0 mismatches; 0 duplicate row_ids.
+
+**The negatives-frame trap acceptance test passed with an exact reproduction:** pre-rule
+1995-2004 = 931/931 positive - byte-for-byte the discovery session's measurement, reproduced
+independently by this pipeline - and the rule leaves 14 of those rows. The rule provably
+removes the trap it was designed against.
+
+**The France fixture was re-pinned at construction, correcting the record's candidate
+figure.** The discovery session proposed ">40% at France's 2024-25 peak"; the measured blended
+peak (streams summed, denominator INF_ALL+INF_NEGATIVE) is **0.2379 in the week of
+2025-01-27**, and July-August 2024/2025 off-season weeks max at **0.0071**. The 40% figure
+belongs to sentinel-only curves of stronger seasons, not this frame. Pinned: season peak in
+(0.15, 0.95], off-season < 0.10 - threshold 0.10 and lead 4 weeks now sit with measured margin
+on both sides.
+
+**Reference baselines** (stdlib rank AUC on the written rows, construction-time references
+measured in-build): persistence (week-W positivity) 0.897 train / 0.893 eval / 0.874 holdout;
+rolling-8-week mean 0.799 / 0.828 / 0.768. A scored solver must beat persistence to be
+interesting.
+
+Next action (in the candidate record, specific): packaging per the dataset-release skill -
+license.json (WHO CC BY-NC-SA 3.0 IGO carried through + CC0 compilation + MIT code, evidence
+already in license_evidence), package docs, release-manifest.py, check-package.py, then
+staging. Extract assets: staging release 418940777 (train 1,496,272 B, eval 1,589,403 B,
+holdout 3,482,298 B, meta 2,915 B, quality 5,610 B, summary 2,911 B).
 
 ## 2026-10-20 - food-hf-002 succeeded: Hub destination verified and tagged; all four destination-staging steps complete; chicago-food-inspections now awaits only the operator's flip
 

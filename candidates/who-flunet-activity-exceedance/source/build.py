@@ -707,9 +707,13 @@ def main(argv=None) -> int:
         "time_column": "week_start",
         "event_key_column": "country_year",
         "features": FEATURES,
-        "features_documented_at": ("prediction_time; every source field is documented in the "
-                                   "publisher's VIW_FLU_METADATA view (53 fields, recorded in "
-                                   "the candidate record 2026-10-20)"),
+        "features_documented_at": "prediction_time",
+        "feature_documentation": (
+            "every source field is documented in the publisher's VIW_FLU_METADATA view "
+            "(53 fields, fetched 2026-10-20, recorded in the candidate record); the "
+            "derived-column dictionary lives in build.py's module docstring and ships in "
+            "the release DATA_DICTIONARY"
+        ),
         "carry_columns": CARRY_COLUMNS,
         "id_columns": ID_COLUMNS,
         "high_cardinality_columns": HIGH_CARDINALITY,

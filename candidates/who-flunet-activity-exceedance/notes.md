@@ -132,3 +132,27 @@ country-season counts beside row counts → dataset-qualification on the worker.
   sides measured, so the 10% threshold and 4-week lead are pinned with margin.
 - flunet-001 launched 22:16:07Z on worker 171454348 (cx23/hel1, reservation EUR 0.04):
   full-table build + qualification gate on the worker, artifacts to private staging.
+
+## Qualification 2026-10-20 (flunet-002, gate 1.3.0)
+
+- flunet-001 failed on ONE gate check - `timing.every_feature_documented`: the
+  quality.json field `features_documented_at` carried documentation prose where the
+  gate compares the bare availability class `prediction_time` (qualify_dataset.py:271).
+  A descriptor-value defect, not a data defect; every other check was green. Diagnosed
+  from the collected report, fixed (value -> `prediction_time`, prose moved to a
+  `feature_documentation` key), retried as flunet-002.
+- flunet-002 SUCCEEDED (worker 171454743, job elapsed 31.2 s): build + gate green,
+  `ok: true`, `failed_checks: []`, artifact b1323a27fa02eb79...; `--accept` on the
+  coordinator re-verified the collected bytes -> ACCEPTED.
+- Measured on the full table (32,246,617 B, sha 5695e5d2c06c4179..., 189,645 source
+  rows, 189 countries): 26,093 eligible (country, prediction-week) rows -
+  train 5,779 / 3,420 pos (59.2%) / 235 clustered country-years,
+  eval 6,831 / 1,636 (23.9%) / 257, holdout 13,483 / 5,482 (40.7%) / 422.
+- Trap acceptance: pre-rule 1995-2004 = 931/931 positive (reproduces the discovery
+  measurement exactly); post-rule 14 rows. The systematic-negative rule removes the
+  frame trap it was designed against.
+- Timing self-check 201 rows / 0 mismatches; 0 duplicate row_ids.
+- Reference baselines (stdlib rank AUC, measured at construction): persistence
+  (week-W positivity) 0.897 train / 0.893 eval / 0.874 holdout; rolling-8-mean
+  0.799 / 0.828 / 0.768.
+- Next: packaging per the record's next_action.

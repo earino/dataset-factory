@@ -1,6 +1,6 @@
 {
   "id": "who-flunet-activity-exceedance",
-  "status": "ready",
+  "status": "qualified",
   "verdict": "go",
   "created_at": "2026-10-20T20:09:01+00:00",
   "domain": "global virological surveillance - respiratory-epidemic activity prediction (international organisation publisher)",
@@ -48,13 +48,37 @@
     "per_year_volume_2026_10_20": "$filter=ISO_YEAR eq 2026 -> 1,476 KiB, 9,226 rows, 1.3 s; ISO_YEAR eq 2010 -> 926 KiB, 5,276 rows, 0.8 s; the GHO OData API (ghoapi.azureedge.net) was also probed for comparison: 3,099 indicators, anonymous; its annual panels were set aside (cholera indicator CHOLERA_0000000001 ends 2016 - stale; see notes).",
     "construction_smoke_2026_10_20": "Bounded local exercise of source/build.py before the worker launch: $filter=(ISO_YEAR eq 2024) or (ISO_YEAR eq 2025) -> 4,171,091 bytes in one request (0.6 s on re-fetch), eligible-row pipeline, timing self-check 200 rows recomputed against a series physically truncated at week W: 0 mismatches; 0 duplicate row_ids; 2,000-row holdout-only sample at 36.8% positive, 54 clustered country-years. Smoke mode skips split-capacity, fixture-coverage and trap assertions that a two-year window cannot carry.",
     "france_fixture_pinned_2026_10_20": "The record's proposed fixture ('France 2024-25 peak positivity must exceed 40%') was a candidate figure, and construction measured it wrong for this frame: blended positivity (ORIGIN_SOURCE streams summed, denominator INF_ALL+INF_NEGATIVE) peaks at 0.2379 in the week of 2025-01-27 over the 2024-W40..2025-W15 season (28 measurable weeks), and July-August 2024/2025 off-season weeks max at 0.0071. The 40% figure belongs to sentinel-only curves of stronger seasons, not to the blended frame. Pinned fixture: season peak in (0.15, 0.95] and off-season max < 0.10 - which pins threshold 0.10 and lead 4 weeks with measured margin on both sides. Asserted at build from the source; smoke run measured it on the 2024+2025 slice.",
-    "construction_started_2026_10_20": "flunet-001 launched 2026-10-20T22:16:07Z on worker 171454348 (cx23/hel1, EUR 0.02/h recorded at plan, reservation EUR 0.04 for 2 hours). Full-table build: single CSV download, country-week panel with streams summed, systematic-negative frame, runner layout + qualification gate on the worker."
+    "construction_started_2026_10_20": "flunet-001 launched 2026-10-20T22:16:07Z on worker 171454348 (cx23/hel1, EUR 0.02/h recorded at plan, reservation EUR 0.04 for 2 hours). Full-table build: single CSV download, country-week panel with streams summed, systematic-negative frame, runner layout + qualification gate on the worker.",
+    "built_flunet_002": "Full-table build on worker 171454743 (cx23/hel1), job elapsed 31.2 s: source GET 32,246,617 bytes in 1.5 s (sha256 5695e5d2c06c4179...; the table grew from the 30.8 MiB measured at discovery - live register), 189,645 source rows, 189 countries, 148,355 country-weeks. Systematic-negative country-years 1,258/3,499. Eligible rows 26,093 (skipped: thin prediction week 106,611; thin target week 6,881; not-systematic 8,015; no target week 755). Splits at (country, prediction week W) grain: train 5,779 rows / 3,420 positive (59.2%) / 235 clustered country-years (2005-01-31..2019-12-23); eval 6,831 / 1,636 (23.9%) / 257 (2019-12-30..2022-12-26); holdout 13,483 / 5,482 (40.7%) / 422 (2023-01-02..2026-09-14). The train-vs-eval base-rate gap is the documented phenomenon property (COVID era + early systematic years), not a construction fault. Timing self-check: 201 rows recomputed from a series physically truncated at week W, 0 mismatches; 0 duplicate row_ids.",
+    "flunet_001_failure_diagnosis": "flunet-001 (worker 171454348) failed with exit 1 on exactly one gate check, timing.every_feature_documented: quality.json's features_documented_at carried documentation prose ('prediction_time; every source field is documented in...') where the gate compares the bare availability class 'prediction_time' (qualify_dataset.py:271-274). Every other check passed (30+ green, including the trap cross-check below). Fix: value set to 'prediction_time', documentation reference moved to a feature_documentation key the gate does not compare. Worker destroyed 22:20:55Z after collection; retry launched as flunet-002, not an unchanged re-run.",
+    "trap_acceptance_flunet_002": "Measured on the full table: the 1995-2004 window holds 931 pre-rule country-weeks at 100% positive - byte-for-byte the discovery session's 931/931 measurement, reproduced independently - and the systematic-negative rule leaves 14 of them. The frame rule is therefore proven to remove the trap it was designed against.",
+    "reference_baselines_flunet_002": "Stdlib rank-AUC references measured at construction on the written rows (prediction-time-safe single features): persistence (score = week-W positivity) train 0.8969 / eval 0.8929 / holdout 0.8745; rolling-8-week mean train 0.7990 / eval 0.8281 / holdout 0.7683. Four-week-ahead exceedance retains headroom above these but they are strong - the solver must beat persistence to be interesting; these figures are references, not the scored baseline.",
+    "qualification_flunet_002": "Gate 1.3.0 on the worker over the full artifact: ok=true, failed_checks=[], 2026-10-20 22:24Z; artifact_version b1323a27fa02eb79... (train sha 2515289b..., eval 7d809b16..., holdout f7dd814a...). Hand-off accept on the coordinator: qualify_dataset.py --accept report extract -> ACCEPTED, same artifact digest. Staging release 418940777 (untagged-5a0aa09b17777e11f345), collect verified every asset against the worker's manifest."
   },
-  "jobs": [],
+  "jobs": [
+    {
+      "id": "flunet-001",
+      "status": "failed",
+      "server_id": 171454348,
+      "launched_at": "2026-10-20T22:16:07Z",
+      "collected_at": "2026-10-20T22:19:17Z",
+      "destroyed_at": "2026-10-20T22:20:55Z",
+      "note": "exit 1: one gate check failed (timing.every_feature_documented, a descriptor value defect, not a data defect); full diagnosis in measurements.flunet_001_failure_diagnosis"
+    },
+    {
+      "id": "flunet-002",
+      "status": "succeeded",
+      "server_id": 171454743,
+      "launched_at": "2026-10-20T22:21:03Z",
+      "collected_at": "2026-10-20T22:24:33Z",
+      "job_elapsed_seconds": 31.2,
+      "note": "build + qualification gate green on the worker; --accept re-verified the collected bytes (artifact b1323a27fa02eb79...)"
+    }
+  ],
   "artifacts": [],
   "rejection_reason": null,
   "review": null,
-  "next_action": "flunet-001 running (launched 22:16Z, worker 171454348): collect via scripts/wait-job.py flunet-001, then record build summary + gate report, run qualify_dataset.py --accept on the collected artifact, and move the record to qualified. The France fixture was re-pinned at construction (see measurements.france_fixture_pinned_2026_10_20): blended peak 23.8% week of 2025-01-27, off-season max 0.7% - the record's 40% candidate figure was corrected.",
+  "next_action": "Packaging (dataset-release skill): assemble release/who-flunet-activity-exceedance from the qualified artifact b1323a27fa02eb79 - extract assets are in staging release 418940777 (train 1,496,272 B sha 2515289b..., eval 1,589,403 B sha 7d809b16..., holdout 3,482,298 B sha f7dd814a..., meta 2,915 B, quality 5,610 B, summary 2,911 B). Steps: write candidates/<id>/license.json (WHO CC BY-NC-SA 3.0 IGO carried through, CC0 for our compilation, MIT for our code, attribution + derived-label + no-emblem clauses - evidence already in license_evidence), build the package docs (README, DATA_DICTIONARY from build.py's docstring, REPRODUCE, RELEASE_NOTES, VERIFICATION), scripts/release-manifest.py, scripts/check-package.py, then hf/github staging. Record persistence AUC 0.8929 eval / 0.8745 holdout as the reference a solver must beat.",
   "jurisdiction": {
     "country": "CH",
     "region": "International organisations",
@@ -167,5 +191,33 @@
     "ours": "A binary country-week exceedance task on WHO FluNet laboratory positivity (INF_ALL/(INF_ALL+INF_NEGATIVE) > threshold at a 4-week lead), with disjoint temporal splits, a known-event fixture, systematic-negative-reporting gating rules, and a scored contract for coding-agent evaluation. No ML-ready version of this task exists: the formulation, threshold/lead, splits, gating and validation are the contribution.",
     "verdict": "differentiated",
     "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  },
+  "qualification": {
+    "gate_version": "1.3.0",
+    "ok": true,
+    "failed_checks": [],
+    "artifact_version": "b1323a27fa02eb79",
+    "report": "staging release 418940777 asset qualification-who-flunet-activity-exceedance.json",
+    "accepted_on_coordinator": "qualify_dataset.py --accept -> ACCEPTED (2026-10-20)",
+    "splits": {
+      "train": {
+        "rows": 5779,
+        "positives": 3420,
+        "positive_rate": 0.591798,
+        "distinct_events": 235
+      },
+      "eval": {
+        "rows": 6831,
+        "positives": 1636,
+        "positive_rate": 0.239496,
+        "distinct_events": 257
+      },
+      "holdout": {
+        "rows": 13483,
+        "positives": 5482,
+        "positive_rate": 0.406586,
+        "distinct_events": 422
+      }
+    }
   }
 }

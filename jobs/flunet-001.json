@@ -1,0 +1,232 @@
+{
+  "job": {
+    "id": "flunet-001",
+    "candidate": "who-flunet-activity-exceedance",
+    "image": "python:3.13-slim",
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 3072,
+    "timeout_minutes": 40,
+    "lifetime_minutes": 60,
+    "max_disk_mb": 8000,
+    "max_artifact_mb": 300,
+    "source_files": [
+      {
+        "bundled_as": "build.py",
+        "source": "candidates/who-flunet-activity-exceedance/source/build.py",
+        "bytes": 37297,
+        "sha256": "782fd634b08da14ef99add4ea40a3887136549bed7cfa928f9752cdba5f5328c"
+      },
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/who-flunet-activity-exceedance/source/run.sh",
+        "bytes": 1323,
+        "sha256": "3aeb4fac7b3aa2e66873898964584d7aee8ce55c4db7c0609bc168513d1476a3"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 39333,
+        "sha256": "71a8cac429656e27dbb631be8488b9f4662580994b115290a243fc1f4b9639f1"
+      }
+    ]
+  },
+  "reservation_eur": "0.04",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 2,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 133120,
+  "source_sha256": "8eea9ada0700234a9c106133a22d738617e5672acc3f4fae34fd89ee9184add7",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-10-20T22:16:07.094936+00:00",
+  "expires": 1792538167,
+  "budget_months": [
+    "2026-10"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 171454348,
+  "known_hosts": "/opt/data/dataset-factory/.factory/flunet-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "65.21.158.17",
+  "result": {
+    "job_id": "flunet-001",
+    "status": "failed",
+    "uploaded": true,
+    "image_id": "sha256:70729b46c69b4f1e97c4822c1af3df53a1476cf5ddc6c087c0c10bc3a5678c2f",
+    "image_digests": [
+      "python@sha256:70729b46c69b4f1e97c4822c1af3df53a1476cf5ddc6c087c0c10bc3a5678c2f"
+    ],
+    "exit_code": 1,
+    "oom_killed": false,
+    "elapsed_seconds": 31.3,
+    "summary": {
+      "name": "who-flunet-activity-exceedance",
+      "built_at_utc": "2026-10-20T22:18:12Z",
+      "source": {
+        "url": "https://xmart-api-public.who.int/FLUMART/VIW_FNT?$format=csv",
+        "bytes": 32246617,
+        "seconds": 3.4,
+        "requests": 1,
+        "sha256": "5695e5d2c06c4179a3123a5f993e33f4b8b11d6ffa8debe0d110f26f77f1d309"
+      },
+      "grain": "country x ISO week (ORIGIN_SOURCE streams summed)",
+      "threshold": {
+        "positivity_proportion": 0.1,
+        "comparison": "strictly greater than",
+        "lead_weeks": 4,
+        "min_denominator": {
+          "prediction_week": 50,
+          "target_week": 50
+        }
+      },
+      "systematic_rule": "target country-year has >= 4 specimen-bearing weeks and >= 50% of them report INF_NEGATIVE >= 1; country-years judged systematic: 1258/3349",
+      "skipped_candidate_rows": {
+        "no_target": 755,
+        "thin_pred": 106611,
+        "thin_target": 6881,
+        "not_systematic": 8015
+      },
+      "splits": {
+        "train": {
+          "rows": 5779,
+          "positives": 3420,
+          "positive_rate": 0.591798,
+          "distinct_events": 235
+        },
+        "eval": {
+          "rows": 6831,
+          "positives": 1636,
+          "positive_rate": 0.239496,
+          "distinct_events": 257
+        },
+        "holdout": {
+          "rows": 13483,
+          "positives": 5482,
+          "positive_rate": 0.406586,
+          "distinct_events": 422
+        }
+      },
+      "clustered_events_note": "distinct_events counts country-years of the target week carrying at least one positive - positives arrive in seasonal clusters, so this is the effective sample size figure, per the candidate record",
+      "france_fixture": {
+        "country": "FR",
+        "season_weeks": 28,
+        "peak_positivity": 0.23786617662955356,
+        "peak_week": "2025-01-27",
+        "offseason_weeks": 17,
+        "offseason_max_positivity": 0.007099391480730223,
+        "assertions": {
+          "peak_exceeds_0.15": true,
+          "offseason_under_0.10": true
+        }
+      },
+      "trap_acceptance": {
+        "window": "1995-2004",
+        "pre_rule_rows": 931,
+        "pre_rule_positive_rate": 1.0,
+        "post_rule_rows": 14,
+        "post_rule_positive_rate": 1.0,
+        "note": "the discovery session measured 931/931 positive here; the pre-rule rate reproduces that uniform result, and the rule is judged by how few of those rows survive it"
+      },
+      "timing_selfcheck": {
+        "checked": 201,
+        "mismatches": 0
+      },
+      "duplicate_row_ids": 0,
+      "reference_baselines": {
+        "note": "stdlib rank AUC measured at construction on the written rows; scores are prediction-time-safe single features",
+        "per_split": {
+          "train": {
+            "persistence_auc": 0.896870266665675,
+            "rolling8_mean_auc": 0.7990108183416008
+          },
+          "eval": {
+            "persistence_auc": 0.8928753550409342,
+            "rolling8_mean_auc": 0.8280553522641434
+          },
+          "holdout": {
+            "persistence_auc": 0.8744768815609103,
+            "rolling8_mean_auc": 0.7683456523425268
+          }
+        }
+      },
+      "crosscheck_hint": "the built France 2024-25 positivity curve (summary.france_fixture) is the same series the publisher's FluNet chart app draws (worldhealthorg.shinyapps.io/flunetchart); the fixture asserts its peak and off-season levels from the source"
+    },
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 418937696,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-c3dcef423150ae0655bb",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-c3dcef423150ae0655bb/manifest.json",
+    "assets": [
+      {
+        "id": 660646229,
+        "size": 2915,
+        "sha256": "133e1c38a2375d8f960c3d464fa1f9dc765ba10982f336a98eda753e36f28acd"
+      },
+      {
+        "id": 660646264,
+        "size": 3482298,
+        "sha256": "f7dd814a73c864df9d11ff2a1c39a899c97c9efe46b6687cb279c0d3c3ef276e"
+      },
+      {
+        "id": 660646360,
+        "size": 1589403,
+        "sha256": "7d809b16ed3b833bf13070b50a5f9fba83e3d2fb7569b993408e885eae9ad8e9"
+      },
+      {
+        "id": 660646429,
+        "size": 1496272,
+        "sha256": "2515289b43bdd49b51479b076f81a9f21bc2ec4382f3d0f7153687a8ecafb102"
+      },
+      {
+        "id": 660646468,
+        "size": 5464,
+        "sha256": "76e8916988ad4de7782b3c8cbb5a559a8e64b4c0b5e04f67242dc1dca8de97f0"
+      },
+      {
+        "id": 660646501,
+        "size": 2911,
+        "sha256": "1f2001a58ccf5e4de87603014f4b087b37c1a1c6d28860888fddcca465c2c0d1"
+      },
+      {
+        "id": 660646551,
+        "size": 11098,
+        "sha256": "695ed40db05d9d0805c8bec609dad90ee7a83ccee45bb3d4cd74532319740352"
+      },
+      {
+        "id": 660646594,
+        "size": 11098,
+        "sha256": "695ed40db05d9d0805c8bec609dad90ee7a83ccee45bb3d4cd74532319740352"
+      },
+      {
+        "id": 660646652,
+        "size": 2911,
+        "sha256": "1f2001a58ccf5e4de87603014f4b087b37c1a1c6d28860888fddcca465c2c0d1"
+      },
+      {
+        "id": 660646726,
+        "size": 133120,
+        "sha256": "8eea9ada0700234a9c106133a22d738617e5672acc3f4fae34fd89ee9184add7"
+      },
+      {
+        "id": 660646792,
+        "size": 12944,
+        "sha256": "34520223cda8a66a54c4a60ae0b2d03058c75e9bae68c242377025ab7aa5e0df"
+      },
+      {
+        "id": 660646848,
+        "size": 9244,
+        "sha256": "251d9eb18af655ea70bd33af2cc9df81a3f7be49a29db683513dc5a646ee80eb"
+      }
+    ]
+  },
+  "collected_at": "2026-10-20T22:19:17.347769+00:00",
+  "deleted_at": "2026-10-20T22:24:43.163588+00:00"
+}
