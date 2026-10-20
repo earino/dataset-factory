@@ -566,6 +566,30 @@ result in `STATE.md`. The authority covers ordinary releases of an accepted cand
 cover making a private repository public, which was the specific ambiguity on 2026-10-19 and is now
 settled in MSHA's favour.
 
+### Release priority and the flip boundary
+
+Authority is split at one event: **making a private repository public** (the flip).
+
+- Up to `packaged` Scout acts freely: discovery, construction, qualification, packaging, verification,
+  documentation, and preparing a repository to be made public.
+- The flip itself is the operator's. That is the only approval in the release path.
+- After the flip, publication is automatic: GitHub release, Hugging Face, site page and anonymous
+  verification run without another yes, and the operator is told the link.
+
+Two mechanisms keep "ship first" true rather than aspirational:
+
+- **Preemption.** Any candidate in `packaged` that is *actionable* (no `"awaiting_operator": true`)
+  blocks new worker launches for construction (`release_preempts`, default true). Release jobs, or any
+  job marked `"release": true`, may launch. A candidate waiting on the flip does **not** block
+  construction - otherwise a human wait would starve the queue.
+- **Reserve.** `release_reserve_eur` (default 5 of the 20 EUR monthly allowance) is held back from
+  construction reservations and available to release jobs. Construction cannot spend the last euro
+  that a release might need.
+
+Candidate records carry two fields for this: `packaged_at` (ISO timestamp, set when the package is
+verified) and `awaiting_operator` (true only while the flip is the sole remaining step). Clear
+`awaiting_operator` after the flip.
+
 ## Publishing to Hugging Face
 
 A second destination for the same accepted artifact, from the same release manifest.

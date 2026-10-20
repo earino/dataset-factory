@@ -13,7 +13,18 @@ carries the standing rules; the skill list carries the methods.
 
 ## What this session is for
 
-Advance **one** concrete step on the queue, whichever it needs:
+**Release work outranks everything.** Before choosing a step, list candidates with status `packaged`.
+If one is actionable (it does not carry `"awaiting_operator": true`), your whole tick goes to getting it
+out: verify the package against its manifest, finish the docs, make the repository public-ready. Do not
+start construction while a packaged candidate can still be advanced, and do not spend the tick on
+discovery.
+
+A packaged candidate with `"awaiting_operator": true` is waiting on the operator's private-to-public
+flip, not on you. Leave it alone, continue normal work, and do not ask: the dashboard reports the wait.
+When the operator answers the flip, completing publication - GitHub release, Hugging Face, site page,
+anonymous verification - needs no further approval.
+
+Otherwise, advance **one** concrete step on the queue, whichever it needs:
 
 1. **Discovery** - vet a lead into a verdict using the `dataset-discovery` skill.
 2. **Construction** - build an extract with the accepted construction pattern, then qualify it.

@@ -203,6 +203,34 @@ def plan(root, job_path, config):
             "cloud_calls": 0, "enabled": config.get("enabled") is True}
 
 
+def release_work_pending(root):
+    """Candidates that are packaged and waiting on *us*, not on the operator.
+
+    A candidate with `awaiting_operator: true` is blocked on the private-to-public flip;
+    blocking construction for it would starve the queue on a human.
+    """
+    pending = []
+    candidates_dir = Path(root) / "candidates"
+    for path in sorted(candidates_dir.glob("*/record.json")):
+        try:
+            record = read_json(path)
+        except FactoryError:
+            continue  # check-candidate owns record validity; a broken record must not block work
+        if not isinstance(record, dict) or record.get("status") != "packaged":
+            continue
+        if record.get("awaiting_operator"):
+            continue
+        pending.append(record.get("id") or path.parent.name)
+    return pending
+
+
+def is_release_job(job, pending):
+    """A job is release work if it says so explicitly or belongs to a pending candidate."""
+    if job.get("release") is True:
+        return True
+    return bool(job.get("candidate")) and job["candidate"] in pending
+
+
 def launch(root, job_path, config, cloud=None):
     if config.get("enabled") is not True or config.get("cleanup_configured") is not True:
         raise FactoryError("Worker launch disabled; configure policy and independent cleanup first")
@@ -222,7 +250,18 @@ def launch(root, job_path, config, cloud=None):
         records = [read_json(p) for p in (Path(root) / "jobs").glob("*.json")]
         if any(r["status"] != "deleted" for r in records) or cloud.list_resources("servers", config["project"]):
             raise FactoryError("An active or interrupted job exists; reconcile it before launching another")
+        pending = release_work_pending(root)
+        release_job = is_release_job(job, pending)
+        if config.get("release_preempts", True) and pending and not release_job:
+            raise FactoryError(
+                "Release work is pending for " + ", ".join(pending)
+                + "; ship it before starting " + job["id"])
         budget = number(config["monthly_budget_eur"], "monthly budget")
+        # A release may spend the whole allowance; construction may not touch the reserve.
+        reserve = number(config.get("release_reserve_eur", 0), "release reserve", positive=False)
+        if reserve >= budget:
+            raise FactoryError("release reserve must be smaller than the monthly allowance")
+        cap = budget if release_job else budget - reserve
         month = now.strftime("%Y-%m")
         # Reserve against both months if a job could straddle a month boundary.
         expires = int(now.timestamp()) + job["lifetime_minutes"] * 60
@@ -230,8 +269,12 @@ def launch(root, job_path, config, cloud=None):
         months = sorted({month, end_month})
         for period in months:
             spent = sum(Decimal(r["reservation_eur"]) for r in records if period in r["budget_months"])
-            if spent + Decimal(proposal["reservation_eur"]) > budget:
-                raise FactoryError("Conservative monthly cost reservations would exceed allowance")
+            if spent + Decimal(proposal["reservation_eur"]) > cap:
+                if release_job or reserve == 0:
+                    raise FactoryError("Conservative monthly cost reservations would exceed allowance")
+                raise FactoryError(
+                    f"Conservative monthly cost reservations would exceed the construction allowance "
+                    f"(EUR {cap} after the EUR {reserve} release reserve)")
         actual_rate = check_price(cloud, job, proposal["rate_ceiling_eur"])
         folder = Path(root) / ".factory" / job["id"]
         folder.mkdir(parents=True)

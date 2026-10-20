@@ -525,6 +525,29 @@ def render_overview(snapshot, alarms, alarms_plain=()):
         f'{"—" if r["baseline_eval_auc"] is None else f"{r['baseline_eval_auc']:.3f}"}</div></div>'
         f'<div class="side">{"".join(pill(k, "ok" if v else "bad") for k, v in (r["verified"] or {}).items())}</div></div>'
         for r in releases) + '</div>'
+    release_ready = (c.get("release") or {}).get("packaged") or []
+    release_card = ""
+    if release_ready:
+        rows = []
+        for record in sorted(release_ready, key=lambda r: (r.get("awaiting_operator") or False)):
+            age = record.get("age_hours")
+            age_text = f" · {age}h ago" if age is not None else ""
+            if record.get("awaiting_operator"):
+                desc = "packaged" + age_text + " — verified, waiting on the operator to flip it public"
+                state = pill("awaiting flip", "warn")
+            else:
+                desc = "packaged" + age_text + " — actionable now: shipping outranks construction"
+                state = pill("ship it", "bad")
+            rows.append(
+                '<div class="item"><div class="meta">'
+                f'<div class="name">{esc(record["id"])}</div>'
+                f'<div class="desc">{esc(desc)}</div>'
+                f'</div><div class="side">{state}</div></div>')
+        release_card = '<div class="col-12">' + card("Ready to ship", '<div class="list">' + "".join(rows) + '</div>',
+                            sub=f"{len(release_ready)} packaged",
+                            foot="While anything here is actionable, construction launches are refused. "
+                                 "Once the only step left is the flip, construction resumes and this waits on you.") + '</div>' 
+
     release_rows = [(
         f'<b>{esc(r["dataset"])}</b>', esc(r["release_tag"]),
         fmt(r["rows"]), "—" if r["baseline_eval_auc"] is None else f'{r["baseline_eval_auc"]:.3f}',
@@ -575,6 +598,7 @@ def render_overview(snapshot, alarms, alarms_plain=()):
         alarm("Nothing above threshold. Watchdog jobs, gates and budget are inside limits.", "ok", "✓"),
         sub="what needs a human")}</div>
 
+  {release_card}
   <div class="col-12">{card("Work queue", f'<div class="list">{queue_html}</div>', sub=f"{len(queue)} candidates",
         foot="Ordered: qualified first, then by discovery. Only one worker exists, so this is a queue, not parallelism.")}</div>
 

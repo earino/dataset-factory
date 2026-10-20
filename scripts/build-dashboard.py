@@ -91,6 +91,8 @@ def collect_candidates():
             "country": jurisdiction.get("country") or "unknown",
             "region": jurisdiction.get("region") or "unknown",
             "publisher": jurisdiction.get("publisher") or "",
+            "packaged_at": record.get("packaged_at"),
+            "awaiting_operator": bool(record.get("awaiting_operator")),
             "next_action": (record.get("next_action") or "")[:160],
             "path": str(path.relative_to(ROOT)),
         })
@@ -98,12 +100,21 @@ def collect_candidates():
     for record in records:
         counts[record["status"]] = counts.get(record["status"], 0) + 1
     live = [r for r in records if r["status"] in ("investigating", "qualified")]
+    packaged = [r for r in records if r["status"] == "packaged"]
+    for record in packaged:
+        record["age_hours"] = (round((now() - parse_time(record["packaged_at"])).total_seconds() / 3600, 1)
+                               if parse_time(record.get("packaged_at")) else None)
+    release = {
+        "pending": [r for r in packaged if not r["awaiting_operator"]],
+        "awaiting": [r for r in packaged if r["awaiting_operator"]],
+        "packaged": packaged,
+    }
     countries = {}
     for record in live:
         countries[record["country"]] = countries.get(record["country"], 0) + 1
     non_us = sum(1 for r in live if r["country"] not in ("US", "unknown"))
     return {
-        "records": records, "counts": counts, "live": live, "errors": errors,
+        "records": records, "counts": counts, "live": live, "errors": errors, "release": release,
         "countries": countries,
         "non_us_share": (round(100 * non_us / len(live), 1) if live else None),
     }
@@ -452,6 +463,17 @@ def derive_alarms(snapshot):
     checks = health.get("checks") or {}
     if checks and not checks.get("ok"):
         add("check-candidate --all is failing", "bad", "!")
+    release = (snapshot.get("candidates") or {}).get("release") or {}
+    for record in release.get("pending", []):
+        age = record.get("age_hours")
+        if age is not None and age > 6:
+            add(f"{record['id']} has been packaged and actionable for {age}h - shipping it outranks "
+                f"construction", "bad", "↑")
+    for record in release.get("awaiting", []):
+        age = record.get("age_hours")
+        if age is not None and age > 24:
+            add(f"{record['id']} is verified and waiting on the operator for the public flip ({age}h)",
+                "warn", "⏳")
     unverified = [r for r in reports if not r["verified_all"]]
     if unverified:
         add(f"{len(unverified)} release(s) not fully verified", "bad", "!")

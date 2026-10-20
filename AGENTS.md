@@ -99,6 +99,17 @@ python3 scripts/hf-publish.py --tag                       # LAST: tag the commit
 python3 scripts/check-package.py release/<dataset>
 ```
 
+## Ship first, once something is ready
+
+A candidate in `packaged` that is still actionable outranks construction: no new construction job
+may launch while one exists, and the scheduled session spends its tick shipping it. A packaged
+candidate carrying `"awaiting_operator": true` is waiting on the private-to-public flip - the one
+step that is the operator's, not yours - and does not block anything else. After the flip,
+publication to both destinations and its verification need no further approval.
+
+`release_reserve_eur` holds part of the monthly worker allowance back from construction so a release
+always has money. Details in `docs/OPERATIONS.md` ("Release priority and the flip boundary").
+
 Rules that are not negotiable:
 
 - **Private until the operator approves publication**, on both platforms, and the labelled holdout

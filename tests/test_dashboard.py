@@ -180,6 +180,43 @@ class ResourceTests(unittest.TestCase):
         self.assertIn("no data", html)
 
 
+class ReleaseQueueTests(unittest.TestCase):
+    def test_a_packaged_candidate_appears_as_ready_to_ship(self):
+        snap = snapshot()
+        snap["candidates"]["release"] = {"packaged": [
+            {"id": "ready-set", "status": "packaged", "age_hours": 3.0, "awaiting_operator": False}],
+            "pending": [], "awaiting": []}
+        html = ui.render_overview(snap, [], [])
+        self.assertIn("Ready to ship", html)
+        self.assertIn("ready-set", html)
+        self.assertIn("ship it", html)
+
+    def test_a_candidate_waiting_on_the_flip_is_labelled_as_such(self):
+        snap = snapshot()
+        snap["candidates"]["release"] = {"packaged": [
+            {"id": "held", "status": "packaged", "age_hours": 30.0, "awaiting_operator": True}],
+            "pending": [], "awaiting": []}
+        html = ui.render_overview(snap, [], [])
+        self.assertIn("awaiting flip", html)
+        self.assertIn("waiting on the operator", html)
+
+    def test_pending_release_work_raises_an_alarm_after_six_hours(self):
+        snap = snapshot()
+        snap["candidates"]["release"] = {
+            "packaged": [], "awaiting": [],
+            "pending": [{"id": "stuck", "status": "packaged", "age_hours": 9.0, "awaiting_operator": False}]}
+        _, alarms, _ = dashboard.derive_alarms(snap)
+        self.assertTrue(any("shipping it outranks construction" in a for a in alarms))
+
+    def test_waiting_on_the_operator_is_a_notice_not_an_alarm(self):
+        snap = snapshot()
+        snap["candidates"]["release"] = {
+            "packaged": [], "pending": [],
+            "awaiting": [{"id": "held", "status": "packaged", "age_hours": 30.0, "awaiting_operator": True}]}
+        _, alarms, _ = dashboard.derive_alarms(snap)
+        self.assertTrue(any("waiting on the operator" in a for a in alarms))
+
+
 class BuildTests(unittest.TestCase):
     def test_build_writes_pages_and_a_snapshot(self):
         with tempfile.TemporaryDirectory() as tmp:

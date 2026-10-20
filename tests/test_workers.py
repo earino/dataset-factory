@@ -136,6 +136,41 @@ class WorkerTests(unittest.TestCase):
             self.launch()
         self.assertEqual(self.cloud.created, 1)
 
+    def packaged(self, candidate_id, awaiting=False):
+        folder = self.root / "candidates" / candidate_id
+        folder.mkdir(parents=True, exist_ok=True)
+        write_json(folder / "record.json",
+                   {"id": candidate_id, "status": "packaged", "awaiting_operator": awaiting})
+
+    def test_packaged_release_blocks_a_construction_launch(self):
+        self.packaged("done-dataset")
+        with self.assertRaisesRegex(FactoryError, "Release work is pending"):
+            self.launch()
+        self.assertEqual(self.cloud.created, 0)
+
+    def test_a_release_job_may_launch_while_release_work_is_pending(self):
+        self.packaged("done-dataset")
+        self.job["release"] = True
+        write_json(self.path, self.job)
+        self.launch()
+        self.assertEqual(self.cloud.created, 1)
+
+    def test_a_candidate_waiting_on_the_operator_does_not_block_construction(self):
+        self.packaged("awaiting-flip", awaiting=True)
+        self.launch()
+        self.assertEqual(self.cloud.created, 1)
+
+    def test_the_release_reserve_is_held_back_from_construction_only(self):
+        self.config["monthly_budget_eur"] = "0.10"
+        self.config["release_reserve_eur"] = "0.09"
+        with self.assertRaisesRegex(FactoryError, "release reserve"):
+            self.launch()
+        self.assertEqual(self.cloud.created, 0)
+        self.job["release"] = True
+        write_json(self.path, self.job)
+        self.launch()
+        self.assertEqual(self.cloud.created, 1)
+
     def test_lost_creation_without_server_clears_only_after_expiry(self):
         self.cloud.ambiguous = True
         with self.assertRaises(FactoryError):

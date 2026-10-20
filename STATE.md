@@ -3721,3 +3721,14 @@ rate the project actually paid (EUR 0.06924/h): 51 jobs, median EUR 0.018, p90 E
 buckets widening with cost so the long tail stays visible. Normalisation is by rate only (cost = lifetime x
 reference rate), never by duration - dividing by duration would collapse the chart to the three server
 prices. Bars sum to the job count in a test. 372 tests OK.
+
+**Release priority added 2026-10-20 (operator: "once it's waiting on me, you're free to do whatever").**
+Authority is now split at the flip: Scout acts freely up to `packaged` (discovery, construction,
+qualification, packaging, docs, public-ready repo); the private-to-public flip is the operator's only
+approval; after the flip publication to GitHub/HF/site plus anonymous verification runs without asking.
+Mechanisms: `factory/worker.py` refuses a construction launch while an actionable packaged candidate
+exists (`release_preempts`), and holds back `release_reserve_eur` (5 of 20) from construction so a
+release always has budget. A candidate with `awaiting_operator: true` waits on the flip and blocks
+nothing - otherwise a human wait would starve the queue. Dashboard gained a "Ready to ship" card and
+alarms (>6h actionable is a real alarm, >24h waiting on the operator is a warning). Prompt, AGENTS.md
+and OPERATIONS.md updated. Guard tests fail on the pre-fix launcher ("FactoryError not raised"). 380 tests OK.
