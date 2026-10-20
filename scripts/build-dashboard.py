@@ -307,6 +307,29 @@ def collect_budget():
             "config": {key: config[key] for key in keep if key in config}}
 
 
+def collect_sessions(limit=40):
+    """Recent scheduled-session outcomes.
+
+    A session killed at the wall clock produces no report: the tick was paid for and
+    delivered nothing. That failure is invisible in the candidate records, so it is
+    collected here and alarmed on.
+    """
+    path = ROOT / ".factory" / "research-sessions.jsonl"
+    entries = []
+    try:
+        for line in path.read_text().splitlines()[-limit:]:
+            try:
+                entries.append(json.loads(line))
+            except ValueError:
+                continue
+    except OSError:
+        return {"recent": [], "killed_last_three": 0}
+    sessions = [e for e in entries if e.get("event") == "session"]
+    recent = sessions[-6:]
+    killed = sum(1 for e in sessions[-3:] if "killed" in str(e.get("outcome")))
+    return {"recent": recent, "killed_last_three": killed, "total": len(sessions)}
+
+
 def collect_cron():
     payload = read_json(CRON_JOBS, {}) or {}
     jobs = []
@@ -413,6 +436,7 @@ def collect_snapshot(include_tests=True):
         "releases": releases,
         "budget": collect_budget(),
         "cron": collect_cron(),
+        "sessions": collect_sessions(),
         "health": collect_health(run_tests=include_tests),
         "panels": {
             "candidates": panel(len(candidates["live"]), "candidates/*/record.json", stamp),
@@ -474,6 +498,10 @@ def derive_alarms(snapshot):
         if age is not None and age > 24:
             add(f"{record['id']} is verified and waiting on the operator for the public flip ({age}h)",
                 "warn", "⏳")
+    sessions = snapshot.get("sessions") or {}
+    if sessions.get("killed_last_three", 0) >= 2:
+        add(f"{sessions['killed_last_three']} of the last 3 scheduled sessions were killed at the wall "
+            f"clock and produced no report", "bad", "!")
     unverified = [r for r in reports if not r["verified_all"]]
     if unverified:
         add(f"{len(unverified)} release(s) not fully verified", "bad", "!")

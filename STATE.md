@@ -3742,3 +3742,13 @@ candidate through build -> qualification -> packaging while the budget allows, s
 blocker or the operator's flip. New hourly script job ba4c8610edf8 (scout-release-notify) sends the
 one chat message that matters - "ready for the flip" - deduped on id + packaged_at, silent otherwise.
 380 tests OK; runner `--if-work` dry-run verified.
+
+**Session overrun found and fixed 2026-10-20.** The 11:44, 12:45 and 13:45 discovery reports were all
+"killed by the wrapper after the run budget elapsed" at 2700s: hourly 40-minute sessions could not finish
+three sourced verdicts, so the tick was paid for and produced nothing, and the 14:00 tick then held the
+lock through the advancement slot. Fixes: discovery moved to every two hours at :00 with --run-budget 3000
+and --max-turns 80; advancement moved to odd hours at :05 so the two can never collide; both deliver
+locally (the dashboard and the flip notifier are the only chat output). The dashboard now reads
+.factory/research-sessions.jsonl: Ops lists the last six session outcomes and the executive page alarms
+when two of the last three were killed. That alarm is firing now, correctly, on the pre-fix history.
+383 tests OK.

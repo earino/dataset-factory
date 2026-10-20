@@ -720,6 +720,14 @@ def render_ops(snapshot, alarms, alarms_plain=()):
   <div class="col-6">{card("Gates", f'<div class="list">{gates}</div>', sub="merge blockers")}</div>
   <div class="col-6">{card("Alarms", "".join(alarms) if alarms else alarm("Nothing above threshold.", "ok", "✓"),
         sub="watchdogs")}</div>
+  <div class="col-12">{card("Recent sessions",
+        '<div class="list">' + "".join(
+            f'<div class="item"><div class="meta"><div class="name">{esc(e.get("prompt_file") or "session")}</div>'
+            f'<div class="desc">{esc(str(e.get("ts") or "")[:16].replace("T", " "))} · '
+            f'{esc(str(e.get("elapsed_seconds") or "?"))}s · {esc(e.get("max_turns") or "?")} turns</div></div>'
+            f'<div class="side">{pill("killed" if "killed" in str(e.get("outcome")) else str(e.get("outcome")), "bad" if "killed" in str(e.get("outcome")) else "ok")}</div></div>'
+            for e in reversed((snapshot.get("sessions") or {}).get("recent") or [])) + '</div>',
+        sub="last six scheduled runs", foot="A killed session produced no report: the tick was paid for and delivered nothing.")}</div>
   <div class="col-12">{card("Scheduled jobs",
         f'<div class="only-mobile">{job_cards}</div><div class="only-wide">{job_table}</div>',
         sub="from the scheduler's own record")}</div>
