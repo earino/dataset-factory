@@ -1,11 +1,69 @@
-
 # Current state
 
-Updated: 2026-10-20 (latest: the corrected food-baseline-002 succeeded - the code_38 sanity
-baseline ran through the qualification gate's re-accept and then the runner's own train.py and
-validate.sh, both clean, eval AUC 0.6326 on 35,358 eval rows at a 0.20745 positive rate. The scoring
-path is proved sound; the first measured number of the chicago-food-inspections suite is recorded in the
-candidate's record.json. Worker collected and destroyed; nothing failed on this attempt.)
+Updated: 2026-10-20 (latest: food-baseline-003 measured the runner-contract baseline on all 40
+per-code configs in one uniform run - 40/40 gate re-accept, 40/40 CONTRACT OK, eval AUC min 0.5187 /
+median 0.7208 / max 0.8292, code_38 reproducing food-baseline-002's 0.6326 exactly. The session packaged
+the candidate and this watcher verified and committed the recording; destination staging is next.)
+
+## 2026-10-20 - food-baseline-003: all-40 runner-contract baselines measured in one uniform run - gate re-accept and CONTRACT OK on every config; the candidate is now packaged
+
+**`food-baseline-003` succeeded exit 0 in 6.3 min (376.5 s) and measured every one of the 40 per-code
+configs of the accepted food-001 artifact through the runner's own contract in one uniform run.** The
+job fetched each config's five files from staging release 403508464 - 1,260,835,814 bytes, each
+sha256-verified on arrival, zero failures - then, per config: re-accepted the exact fetched bytes through
+the qualification gate's `--accept` against that config's own bundled gate report BEFORE anything was
+scored, materialized the runner's task directory the way the benchmark's bench/workdir.py does (public
+train+eval only; the private holdout was never copied into a workdir), and ran the benchmark's own
+train.py and validate.sh, bundled verbatim (bundled digests equal the declared digests, so "the existing
+runner, unmodified" is checkable). Server 171406685 (cpx32/hel1, EUR 0.06924/h, reserved EUR 0.24).
+
+**The measured result, read back from the fetched reports of release 418648610 (not from the console):
+40/40 configs accepted by the gate before scoring, 40/40 train.py + validate.sh clean
+("[validate] CONTRACT OK" on every config), and train.py's own Eval AUC equals validate.py's independent
+predict_proba recompute on every config - zero disagreements. Eval AUC across the suite: min 0.5187
+(code_32), median 0.7208, max 0.8292 (code_58). Eval base rates span 0.00147 (code_11) to 0.56078
+(code_55); every config shares the same temporal split rows: train 156,841 / eval 35,358 / holdout
+34,218. The holdout was not scored by anything. code_38 re-measured in this run at 0.6326 - identical to
+food-baseline-002's 0.6326 on the same accepted artifact version, so the earlier sanity check reproduces
+bit-for-bit.** Dependencies on the worker: python 3.13.16, pandas 2.3.3, numpy 2.5.4, xgboost 3.4.1,
+scikit-learn 1.9.1. Scope: baselines through the existing contract only - no agent or harness comparison
+was run and none is implied.
+
+**Persistence headroom, verified here against the package's own measurements.json:** the baseline beats
+the per-config persistence reference (prev_code_present alone) on 38/40 configs by +0.0281 to +0.2465
+AUC, and is below it on code_14 (-0.0075) and code_32 (-0.0291) - recorded in the candidate's record.json
+rather than rounded away.
+
+**Division of labor with the active session, and what this watcher verified.** The scout-research session
+launched the job (16:50 UTC), collected it (17:12:35 UTC), destroyed the server (deleted_at 17:18:14 UTC
+in its record), and at 17:20 wrote the candidate's record.json blocks: the food-baseline-003 jobs entry,
+the `baseline_all_40_food_baseline_003` measurement, `status: packaged` + `packaged_at` (its packaging
+milestone: release/chicago-food-inspections/ complete, check-package.py OK by its own run), and the
+destination-staging next_action. This watcher then fetched the 164 small report assets of release 418648610
+into `.factory/food-baseline-003/reports/` - mapped to their real names through the release's own
+manifest.json, every file's sha256 verified against both that manifest and the collected result.json -
+skipping only the 655,360 B source.tar part as bulk (its digest equals the ledger's source_sha256
+e074d1be1d9f..., cross-checked without downloading); re-verified every recorded number against those
+reports (all agree exactly, including the persistence headroom recomputed from
+release/chicago-food-inspections/measurements.json); re-verified the worker deletion (destroy order
+17:22:11 UTC, the ledger re-stamped; a second, idempotent destroy of an already-dead server); and ran
+`scripts/check-candidate.py --all` (chicago-food-inspections OK, status packaged) and the full 383-test
+suite locally (OK) before committing.
+
+**Records.** Committed with this entry: STATE.md, the session's verified
+`candidates/chicago-food-inspections/record.json`, and `jobs/food-baseline-003.json` (the collected job
+record: status collected, release 418648610, server deleted). Still deliberately uncommitted, the active
+session's WIP, none of it this watcher's to commit: the packaging set
+(`candidates/chicago-food-inspections/release.json`, `release/chicago-food-inspections/`,
+`baseline/baseline_result.json`, `baseline/report_all.py`, `baseline/qualification-reports/`, the
+baseline job spec edits `baseline/bundle.json`, `baseline/job.json`, `baseline/run.sh`,
+`baseline/expected_artifact.json`), `scripts/build-food-expected-artifact.py`,
+`scripts/build-food-package-measurements.py`, `skills/dataset-release/SKILL.md` (publication-authority
+wording), and the hourly dashboard's `build/dashboard/` outputs. Next action is the candidate's recorded
+destination-staging sequence: create the private earino/chicago-food-inspections repository, transfer the
+201 assets from staging release 403508464 to a private v2026.10 release via a worker job, run the
+fresh-environment consumer job, then Hugging Face from the same manifest - all before the operator's
+flip, which remains the only step that is not ours.
 
 ## 2026-10-20 - food-baseline-002: the code_38 baseline succeeded through the runner's contract - eval AUC 0.6326, gate re-accept and both entry points clean
 
