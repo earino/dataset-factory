@@ -4129,3 +4129,47 @@ dead and overlapped). 12 sessions/day at 150-250k tokens is ~21M/week against th
    The session had already launched the corrected baseline and written most of the Chicago package
    (licences, code/, measurements.json, DATA_DICTIONARY.md, get_dataset.py) before it was killed; the
    manifest is the missing piece.
+
+**Discovery 2026-10-20, 20:00 tick — region: international organisations. 3 sources opened, 3 recorded verdicts (2 non-US, 1 go).**
+
+- `who-flunet-activity-exceedance` (WHO, Geneva → CH) — **go, status ready**. The FluNet tool page links
+  the publisher's own full-dataset CSV (`xmart-api-public.who.int/FLUMART/VIW_FNT?$format=csv`):
+  measured 30.8 MiB / 189,645 rows / 4.0 s, anonymous, no key, updated to the current week
+  (week-start 2026-10-19 present). Task: will influenza positivity (INF_ALL/(INF_ALL+INF_NEGATIVE))
+  exceed 10% in ISO week W+4 for a reporting country, features from weeks <= W. Split windows computed
+  from the table at country-week grain (streams summed): eval 2020-22: 8,559 country-weeks, 2,485
+  positive (29.0%); 2023: 4,677 (42.4%); 2024-26: 12,707 (48.3%); clustered positives 278/131/400
+  country-years. Licence: WHO general terms CC BY-NC-SA 3.0 IGO (copyright policy quote recorded;
+  NC/SA carry through), data.who.int datasets CC BY 4.0. Trap recorded: pre-2015 rows mostly lack
+  INF_NEGATIVE, so positivity is ~100% by construction there (931/931 in 1995-2004 — the uniform-result
+  red flag); construction must gate on systematic negative reporting, pin threshold/lead with the
+  France 2024-25 known-event fixture, and cross-check against the publisher's chart app. Novelty:
+  differentiated (Kaggle mirrors the raw data; arXiv 2505.10213 is a paper experiment on two univariate
+  series; CDC FluSight/Flusion are other sources). GHO annual panels probed and set aside:
+  CHOLERA_0000000001 ends 2016. Next action: advancement session constructs it per the record.
+- `unhcr-refugee-data-finder` (UNHCR, Geneva → CH) — **park**. Licence is a clear GO: the methodology
+  page grants "Creative Commons Attribution 4.0 International Public License... Except where otherwise
+  indicated" for the RDF datasets (quote recorded), while the site-wide ToU separately restricts website
+  content and AI scraping (tension flagged). The blocker is access: www.unhcr.org 403s curl (182,520 B
+  challenge page) and even same-origin in-page fetch (222,964 B); the RDF is an interactive Symfony
+  app whose Download control is a JS-driven dialog form; the five homepage export deep links
+  (?v2url=…) are view selectors, not files; no API route appears in the app's controller JS; a
+  programmatic Download click produced no file. Old channels dead (popstats → 000, data.unhcr.org/en
+  → 404). HDX mirrors only per-country extracts, not the full series. Unpark question recorded
+  verbatim: a datacenter-fetchable export path, written UNHCR guidance, or an operator decision that a
+  browser-captured export is acceptable provenance.
+- `unicef-sdmx-refugee-origin-growth` (UNICEF Data and Analytics, New York → US; int-org region) —
+  **park**. Access and licence are good and recorded to avoid re-probing: anonymous SDMX REST API
+  (4,967 KiB / 12,452 rows / 0.5 s), CC BY 3.0 IGO (HDX record). The park is split capacity: the
+  growth>25% task's positives are surge situations — eval 2016-19 holds 378 origin-years but only 34
+  positives across 22 distinct surging origins (holdout 2020-24: 72 across 44) — too thin for a stable
+  scored eval; and the series is UNHCR-derived (DATA_SOURCE cites UNHCR Global Trends), so it adds no
+  data beyond the parked parent record. Unpark condition: the richer UNHCR grain becoming
+  machine-fetchable.
+
+Region measurement: beyond WHO's weekly surveillance channel, the named orgs' headline data is
+annual country panels; the one weekly-grain maintained series found (FluNet) is the go. Novelty checks
+recorded via check-novelty.py where status requires it; check-candidate.py OK on all three records.
+Coverage after this session: CH joins the map (WHO, UNHCR); the three verdicts are all from the tick's
+region, two non-US (WHO CH, UNHCR CH; UNICEF recorded honestly as US-HQ under the HQ-country
+convention).
