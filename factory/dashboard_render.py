@@ -17,6 +17,12 @@ from datetime import datetime, timezone
 TONE = {"ok": "ok", "warn": "warn", "bad": "bad", "neutral": "neutral"}
 
 
+def eur(value, digits=2):
+    if value is None:
+        return "no data"
+    return f"€{value:,.{digits}f}"
+
+
 def esc(value):
     return html.escape("" if value is None else str(value))
 
@@ -134,8 +140,8 @@ a{color:inherit}
 .bars{display:flex;flex-direction:column;gap:9px}
 .bar-row{display:grid;grid-template-columns:minmax(58px,auto) 1fr auto;align-items:center;gap:10px;font-size:13px}
 .bar-row .lab{color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34vw}
-.bar-row .track{height:8px;background:var(--surface-3);border-radius:99px;overflow:hidden}
-.bar-row .fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--mint),#3aa87c)}
+.bar-row .track{height:8px;background:var(--surface-3);border-radius:99px;overflow:hidden;display:block}
+.bar-row .fill{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--mint),#3aa87c)}
 .bar-row .num{color:var(--text);font-variant-numeric:tabular-nums;font-size:12px}
 /* funnel */
 .funnel{display:flex;flex-direction:column;gap:12px}
@@ -183,7 +189,7 @@ tr:last-child td{border-bottom:0}
 code{font:12px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--dim)}
 /* footer + nav */
 footer{color:var(--faint);font-size:var(--fs-micro);padding:34px 0 10px;line-height:1.6}
-.bottomnav{position:fixed;left:0;right:0;bottom:0;z-index:30;display:grid;grid-template-columns:1fr 1fr 1fr;
+.bottomnav{position:fixed;left:0;right:0;bottom:0;z-index:30;display:grid;grid-template-columns:repeat(4,1fr);
   background:rgba(10,12,15,.9);backdrop-filter:blur(18px);border-top:1px solid var(--line);
   padding-bottom:env(safe-area-inset-bottom)}
 .bottomnav a{display:flex;flex-direction:column;align-items:center;gap:3px;padding:11px 0 12px;
@@ -205,6 +211,10 @@ ICONS = {
             'stroke-width="1.6" stroke-linecap="round"/>',
     "ops": '<path d="M12 3l8 4v6c0 4.4-3.4 7.4-8 8-4.6-.6-8-3.6-8-8V7l8-4z" fill="none" '
            'stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
+    "res": '<rect x="3" y="4" width="18" height="7" rx="2" fill="none" stroke="currentColor" '
+           'stroke-width="1.6"/><rect x="3" y="13" width="18" height="7" rx="2" fill="none" '
+           'stroke="currentColor" stroke-width="1.6"/><circle cx="7" cy="7.5" r="1" fill="currentColor"/>'
+           '<circle cx="7" cy="16.5" r="1" fill="currentColor"/>',
 }
 
 
@@ -302,7 +312,7 @@ def gauge(pct, label, sub="", marks=(80, 95), width=320, height=178):
             f'font-size="10" letter-spacing=".08em">{esc(sub).upper()}</text></svg>')
 
 
-def bar_list(items, tone="mint"):
+def bar_list(items, tone="mint", money=False):
     """items: [(label, value)] - widths are relative to the largest value."""
     top = max([v for _, v in items], default=0) or 1
     rows = []
@@ -311,7 +321,7 @@ def bar_list(items, tone="mint"):
         rows.append(
             f'<div class="bar-row"><span class="lab" title="{esc(label)}">{esc(label)}</span>'
             f'<span class="track"><span class="fill" style="width:{width}%"></span></span>'
-            f'<span class="num">{fmt(value)}</span></div>')
+            f'<span class="num">{eur(value) if money else fmt(value)}</span></div>')
     return f'<div class="bars">{"".join(rows)}</div>'
 
 
@@ -392,7 +402,7 @@ def humanize(minutes):
 
 def page(title, active, generated_at, body, subtitle="", footer_extra=""):
     nav = [("exec", "index.html", "Overview"), ("cost", "cost.html", "Cost"),
-           ("ops", "reliability.html", "Ops")]
+           ("res", "resources.html", "Resources"), ("ops", "reliability.html", "Ops")]
     top = "".join(f'<a href="{href}" class="{"on" if key == active else ""}">{label}</a>'
                   for key, href, label in nav)
     bottom = "".join(
@@ -653,6 +663,78 @@ def render_ops(snapshot, alarms, alarms_plain=()):
         ("committed", esc(head.get('at'))),
         ("subject", esc(head.get('subject'))),
         ("checked", esc(snapshot['generated_at']))], num_cols=()), sub="source of truth")}</div>
+</div>"""
+    return body
+
+
+def render_resources(snapshot, alarms, alarms_plain=()):
+    res = snapshot.get("resources") or {}
+    months = res.get("months") or []
+    jobs = res.get("jobs") or []
+    live = res.get("live") or {}
+    mtd = res.get("month_to_date")
+    ceiling = res.get("ceiling_eur")
+    projected = res.get("projected_month_eur")
+    lifetime = res.get("lifetime_eur")
+    per_release = res.get("eur_per_release")
+
+    month_items = [(m["month"], round(m["eur"], 2)) for m in months][-6:]
+    over = projected is not None and ceiling is not None and projected > ceiling
+    hero_status = ("ok" if not over else "warn")
+    hero_text = ("All billable resources destroyed" if live.get("servers") == 0
+                 else f"{live.get('servers')} server(s) still billable")
+
+    job_rows = [(esc(j["id"]), esc(j.get("server_type") or "—"),
+                 esc((j.get("created_at") or "")[:16].replace("T", " ")),
+                 "—" if j.get("hours") is None else f'{j["hours"]:.2f} h',
+                 eur(j.get("eur")), pill("destroyed" if j.get("status") == "deleted"
+                                         else (j.get("status") or "—"),
+                                         "ok" if j.get("status") == "deleted" else "warn"))
+                for j in jobs[-10:]][::-1]
+
+    body = f"""
+<section class="hero compact">
+  <div class="eyebrow">Hetzner resources</div>
+  <h1>{eur(mtd)} this month</h1>
+  <p>{res.get('jobs_this_month', 'no data')} worker jobs across {res.get('month_hours', 0):.1f} server-hours.
+  Lifetime spend on this project is {eur(lifetime)} across {res.get('jobs_total', 'no data')} jobs.</p>
+  <div class="statusline {hero_status}"><span class="dot" style="background:{'var(--mint)' if hero_status == 'ok' else 'var(--amber)'}"></span>
+    <span><b>{hero_text}</b>{' — projected €' + format(projected, '.2f') + ' by month end' if projected is not None else ''}</span>
+    <time>{esc(snapshot['generated_at'][11:16])} UTC</time></div>
+</section>
+
+<div class="grid">
+  <div class="col-12"><div class="kpis">
+    {kpi("Month to date", eur(mtd), note=f"ceiling {eur(ceiling, 0)}/month")}
+    {kpi("Projected month", eur(projected), note="linear from today's run rate",
+         tone="warn" if over else "neutral")}
+    {kpi("Jobs this month", res.get("jobs_this_month"), note=f"{res.get('month_hours', 0):.1f} server-hours")}
+    {kpi("Per published dataset", eur(per_release), note="lifetime worker spend / releases")}
+  </div></div>
+
+  <div class="col-7">{card("Spend by month", bar_list(month_items, money=True), sub="recorded server lifetime × hourly rate",
+        foot="Computed from each job record's created_at and deleted_at and the provider rate captured at launch. "
+             "This is what the reservation math uses, not an invoice.")}</div>
+  <div class="col-5">{card("Billable right now", '<div class="list">'
+        + f'<div class="item"><div class="meta"><div class="name">Servers</div>'
+          f'<div class="desc">read from the provider API, not this project\'s bookkeeping</div></div>'
+          f'<div class="side">{pill(str(live.get("servers") if live.get("servers") is not None else "no data"), "ok" if live.get("servers") == 0 else "warn")}</div></div>'
+        + f'<div class="item"><div class="meta"><div class="name">Primary IPs</div>'
+          f'<div class="desc">released with the server; a survivor is a leak</div></div>'
+          f'<div class="side">{pill(str(live.get("primary_ips") if live.get("primary_ips") is not None else "no data"), "ok" if live.get("primary_ips") == 0 else "warn")}</div></div>'
+        + '</div>', sub="live inventory", foot=f"checked {esc(live.get('checked_at') or 'never')} · account-wide totals: "
+             f"{esc(live.get('servers_total'))} servers, {esc(live.get('primary_ips_total'))} IPs")}</div>
+
+  <div class="col-12">{card("Recent worker jobs",
+        f'<div class="only-mobile">{"".join(f"<div class=\'item\'><div class=\'meta\'><div class=\'name\'>{r[0]}</div><div class=\'desc\'>{r[1]} · {r[3]} · {r[4]}</div></div><div class=\'side\'>{r[5]}</div></div>" for r in job_rows)}</div>'
+        f'<div class="only-wide">{table(["Job", "Type", "Started (UTC)", "Lifetime", "Cost", "State"], job_rows, num_cols=(3,))}</div>',
+        sub="most recent first")}</div>
+
+  <div class="col-12">{card("What this counts", '<p class="sub" style="line-height:1.7">'
+        'Server lifetime × the hourly rate recorded when the job launched, plus primary IPv4s. '
+        'Excluded because they are free on this project: IPv6, egress inside the monthly allowance, and snapshots. '
+        'Not included because they are not recorded yet: volumes and any manual resources created outside the factory.</p>',
+        sub="scope")}</div>
 </div>"""
     return body
 

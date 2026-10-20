@@ -3674,3 +3674,10 @@ fixed, tables now collapse to cards below 640pt, and the gauge is drawn with pat
 exact rather than trigonometric. Hero states a fact ("4 datasets shipped") instead of a mood; a held
 research lock is a notice ("session in flight"), not an alarm. History begins 2026-10-20 and is never
 back-filled, so a one-point sparkline says "series begins today". 369 tests OK.
+
+**Resources page added 2026-10-20.** Fourth dashboard page: live Hetzner inventory from the provider API
+(servers, primary IPs, account totals) and spend computed from `jobs/*.json` as server lifetime
+(`deleted_at - created_at`) x the rate recorded at launch - the same arithmetic as the reservation guard.
+Measured at build: EUR 0.38 month-to-date, EUR 2.83 lifetime across 51 jobs, 4 releases, 0 live servers,
+0 IPs. Excludes volumes and manual resources (not recorded) and says so. Publish verification now checks
+all four pages, not just the index, after a new page 404'd for ~90 s behind a healthy index. 371 tests OK.

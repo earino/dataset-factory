@@ -1,0 +1,75 @@
+{
+  "id": "jma-typhoon-rapid-intensification",
+  "status": "dropped",
+  "verdict": "reject",
+  "created_at": "2026-10-20T23:40:00+00:00",
+  "domain": "tropical cyclone best track (Japan Meteorological Agency, RSMC Tokyo-Typhoon Center, western North Pacific)",
+  "prediction_question": "Formulation considered: from a tropical cyclone's JMA best-track state and history through the 6-hourly analysis time t (position, central pressure, maximum sustained wind, storm grade, past-24h track), predict whether the cyclone undergoes rapid intensification (RI) in the following 24 hours (Vmax increase >= 30 kt). NOT taken forward: the same prediction question already ships in ML-ready, split, scored form elsewhere (TCRISI: satellite-image + best-track RI benchmark with official train/validation/test splits and a benchmark repository; TCBench: IBTrACS-based TC track/intensity benchmark with year-based splits), so a best-track-only RI task is a mirror of an existing usable task, not a contribution.",
+  "prediction_time": "For the rejected formulation only: the 6-hourly best-track analysis instant t (all track parameters through t knowable); the label is the change in the same storm's final-analysis Vmax over the following 24 h, so rows at t+24h.. are label source. Best track is a post-season final analysis, which is the documented grain of the source, not a leakage defect.",
+  "target_definition": "Binary RI: Vmax(t+24h) - Vmax(t) >= 30 kt. Unit/reference-frame caveat recorded before the rejection was reached: the 30 kt/24 h RI standard is defined on 1-minute sustained winds (Kaplan & DeMaria convention), while JMA best-track winds are 10-minute sustained, so a JMA-units task would need an explicit threshold decision and a known-event fixture; this question is moot because the task is a mirror.",
+  "sources": [
+    {
+      "name": "JMA RSMC Tokyo-Typhoon Center - Best Track Data page",
+      "url": "https://www.jma.go.jp/jma/jma-eng/jma-center/rsmc-hp-pub-eg/besttrack.html",
+      "api": "static ASCII files: Besttracks/bst<NYEAR>.txt per season and Besttracks/bst_all.zip (whole archive), plus history_of_revision.csv and history_of_revision_format.pdf; no API needed",
+      "license": "JMA Website Terms of Use - Public Data License (Version 1.0) - see license_evidence",
+      "access": "measured 2026-10-20: besttrack.html HTTP 200 (6,536 B) listing bst2026.txt and bst_all.zip; anonymous, no key. Note the pre-2026 URL path .../rsmc-hp/pub-egt/ now answers 404 (2,203 B) - the section moved to rsmc-hp-pub-eg"
+    },
+    {
+      "name": "RSMC Best Track Data archive (bulk)",
+      "url": "https://www.jma.go.jp/jma/jma-eng/jma-center/rsmc-hp-pub-eg/Besttracks/bst_all.zip",
+      "api": "single zip of the full best-track record since 1951, fixed-width ASCII",
+      "license": "Public Data License (Version 1.0) per JMA Website Terms of Use",
+      "access": "measured 2026-10-20 by HEAD: HTTP 200, content-length 744,954 bytes, last-modified Tue, 29 Sep 2026 05:25:31 GMT. One request, anonymous - the cheapest bulk extraction measured in this region"
+    },
+    {
+      "name": "Format of RSMC Best Track Data (column documentation)",
+      "url": "https://www.jma.go.jp/jma/jma-eng/jma-center/rsmc-hp-pub-eg/Besttracks/e_format_bst.html",
+      "api": "fixed-width text: one header line per storm (international number ID, data-line count, storm name, revision date) then 6-hourly data lines: time yymmddhh UTC, grade (TD/TS/STS/TY/L), 0.1-deg latitude/longitude, central pressure hPa, maximum sustained wind kt, direction/longest/shortest radius of 50kt and 30kt winds, landfall indicator",
+      "license": "Public Data License (Version 1.0)",
+      "access": "measured 2026-10-20: HTTP 200, 10,438 B; every column has a documented meaning, position and unit"
+    }
+  ],
+  "license_evidence": [
+    {
+      "quote": "Information made available on the Japan Meteorological Agency website (hereinafter referred to as \"Content\") may be used in accordance with the terms and conditions of use stipulated in Public Data License (Version 1.0), unless otherwise indicated by a specific rights notice.",
+      "url": "https://www.jma.go.jp/jma/en/copyright.html",
+      "note": "JMA Website Terms of Use, read 2026-10-20 (HTTP 200, 13,749 B). Source citation is required (examples given on the page, e.g. 'Source: Japan Meteorological Agency website (URL)'), and edited content must carry an edited statement not implying creation by the Government of Japan. The licence is permissive and settled - it is NOT the blocker; the rejection is on task grounds."
+    }
+  ],
+  "measurements": {
+    "archive_head_2026_10_20": "HEAD https://www.jma.go.jp/jma/jma-eng/jma-center/rsmc-hp-pub-eg/Besttracks/bst_all.zip -> HTTP 200, content-length 744,954 bytes, last-modified Tue, 29 Sep 2026 05:25:31 GMT (1 request). Extraction cost of the whole archive: one HTTP GET of ~0.75 MB.",
+    "pages_2026_10_20": "GET RSMC_HP.htm 200 (9,087 B); GET trackarchives.html 200 (6,141 B); GET besttrack.html 200 (6,536 B, lists bst2026.txt, bst_all.zip, e_format_bst.html, history_of_revision.csv); GET e_format_bst.html 200 (10,438 B). Old path .../rsmc-hp/pub-egt/besttrack.html -> 404 (2,203 B): the RSMC section moved to rsmc-hp-pub-eg (this session's first probe caught the move).",
+    "storm_and_ri_counts": "NOT MEASURED - bst_all.zip was not downloaded this session (wall-clock budget ended at the verdict). Literature estimates, labelled as estimates: the WNP best-track record covers 1951-present, roughly 1,500-1,700 named storms, multiple RI events per season. Do not quote these as measured; if JMA is ever reopened, count from the archive itself."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "Mirror of an existing usable task. The prediction question this source most naturally supports - rapid intensification in the next 24 h from track parameters - already ships as scored, split, ML-ready benchmarks: (1) TCRISI (National Taiwan University, Hsuan-Tien Lin's group, csie.ntu.edu.tw/~htlin/program/TCRISI) - 'serves as the dataset for benchmarking the performance of TC rapid intensification prediction models', derived from the TCIR satellite-image + best-track dataset, with published training/validation/test splits and an official benchmark repository for loading tfrecords, plus benchmark results (Bai, Chen & Lin, attention-based deep models); (2) TCBench (arXiv 2601.23268, 2026) - an IBTrACS-derived benchmark for TC track and intensity with year-based storm splits and named baselines; (3) a research literature with public SHIPS predictor data (rammb2.cira.colostate.edu) and chronological train/test splits (e.g. Springer Nat Hazards 2023: train 1982-2015 vs test 2016-2020, RI = DELV >= 30 kt/24 h). Data mirrors of the raw source also exist (IBTrACS republishes RSMC Tokyo best track; Digital Typhoon archive; the jmastats R package reads best-track files directly). Per the standing rule, an existing packaged task with splits and scored models makes this a rejection regardless of how clean the JMA channel is: access (one anonymous 0.75 MB GET) and licence (Public Data License v1.0) were the best measured in this tick's region, which is exactly why the task-level check had to be applied before any construction was spent.",
+  "review": null,
+  "next_action": "None - terminal. Recorded so a future tick does not re-open JMA blind: the other JMA families are also family-level duplications of candidates already on the bench - JMA earthquake felt-intensity duplicates the bmkg-earthquake-felt family (parked on label availability, not on source access), and MLIT river-level exceedance duplicates the malaysia-river-danger-exceedance family. Reopening either needs an explicit operator decision naming the family, per the air4thai precedent. If a genuinely different JMA-anchored task is ever sought, it must first pass the same search for an existing packaged task that this record's RI formulation failed.",
+  "jurisdiction": {
+    "country": "JP",
+    "region": "East Asia",
+    "publisher": "Japan Meteorological Agency (JMA) - RSMC Tokyo-Typhoon Center",
+    "recorded_at": "2026-10-20"
+  },
+  "novelty_check": {
+    "checked_at": "2026-10-20T23:35:00+00:00",
+    "method": "web search this session, twice: (a) locate the RSMC best-track channel after the old URL 404'd, which surfaced the data mirrors; (b) search for ML-ready rapid-intensification benchmarks with splits",
+    "queries": [
+      "JMA RSMC Tokyo best track data format text file site:jma.go.jp",
+      "\"best track\" RSMC Tokyo tropical cyclone jma.go.jp download 2026",
+      "tropical cyclone rapid intensification prediction ML-ready benchmark dataset train test splits public"
+    ],
+    "prior_art": [
+      "TCRISI (csie.ntu.edu.tw/~htlin/program/TCRISI) - TC rapid intensification benchmark dataset with training/validation/test splits and an official loading repository; benchmark scored with attention-based deep models (Bai, Chen & Lin)",
+      "TCBench (arXiv 2601.23268) - IBTrACS-derived benchmark for TC track and intensity, storms split by year, named baselines",
+      "SHIPS-based RI studies with public predictor data and chronological train/test splits (e.g. Nat Hazards 2023, train 1982-2015 / test 2016-2020, RI = 30 kt/24 h)",
+      "Data mirrors: IBTrACS (NOAA NCEI) republishes RSMC Tokyo best track; Digital Typhoon (NII) archive; jmastats R package parses best-track files"
+    ],
+    "theirs": "A packaged, split, scored RI prediction task (TCRISI; TCBench for track/intensity forecasting), the raw best-track data from multiple channels including the publisher itself, and a mature literature with public predictors.",
+    "ours": "Nothing: a best-track-only RI task would be a thinner re-cut of benchmarks that already exist with splits and scored results. The channel quality (open licence, one-file bulk) is access, not contribution.",
+    "verdict": "mirror",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
+}

@@ -141,6 +141,93 @@ def collect_releases():
     return {"releases": releases, "errors": []}
 
 
+def collect_resources(published_count=0):
+    """Worker spend and live provider inventory.
+
+    Cost per job is server lifetime (deleted_at - created_at) multiplied by the hourly
+    rate the launcher recorded at launch. It is the same arithmetic the monthly
+    reservation uses, so the page and the budget guard cannot disagree.
+    """
+    ceiling = None
+    local = read_json(ROOT / "config" / "local.json", {}) or {}
+    if local.get("monthly_budget_eur") is not None:
+        ceiling = float(local["monthly_budget_eur"])
+
+    jobs, errors = [], []
+    for path in sorted((ROOT / "jobs").glob("*.json")):
+        record = read_json(path)
+        if not isinstance(record, dict) or "created_at" not in record:
+            errors.append(path.name)
+            continue
+        created = parse_time(record.get("created_at"))
+        deleted = parse_time(record.get("deleted_at"))
+        hours = round((deleted - created).total_seconds() / 3600, 3) if created and deleted else None
+        rate = float(record.get("provider_hourly_eur") or 0) or None
+        job = record.get("job") or {}
+        jobs.append({
+            "id": job.get("id") or path.stem,
+            "server_type": job.get("server_type"),
+            "location": job.get("location"),
+            "created_at": record.get("created_at"),
+            "deleted_at": record.get("deleted_at"),
+            "hours": hours,
+            "rate_eur": rate,
+            "eur": round(hours * rate, 4) if hours is not None and rate else None,
+            "status": record.get("status"),
+        })
+
+    months = {}
+    for job in jobs:
+        stamp = parse_time(job["created_at"])
+        if not stamp or job["eur"] is None:
+            continue
+        key = stamp.strftime("%Y-%m")
+        bucket = months.setdefault(key, {"month": key, "eur": 0.0, "jobs": 0, "hours": 0.0})
+        bucket["eur"] += job["eur"]
+        bucket["hours"] += job["hours"] or 0
+        bucket["jobs"] += 1
+    month_list = [{"month": m["month"], "eur": round(m["eur"], 4), "jobs": m["jobs"],
+                   "hours": round(m["hours"], 2)} for m in sorted(months.values(), key=lambda m: m["month"])]
+
+    today = now()
+    current = today.strftime("%Y-%m")
+    mtd_bucket = months.get(current, {"eur": 0.0, "jobs": 0, "hours": 0.0})
+    days = (today.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
+    projected = round(mtd_bucket["eur"] / today.day * days.day, 2) if today.day else None
+    lifetime = round(sum(j["eur"] for j in jobs if j["eur"] is not None), 2)
+
+    live = {"servers": None, "primary_ips": None, "servers_total": None,
+            "primary_ips_total": None, "checked_at": None, "error": None}
+    result = subprocess.run([sys.executable, str(ROOT / "scripts/provider-inventory.py")],
+                            cwd=ROOT, text=True, capture_output=True, timeout=120,
+                            env={**os.environ, "HCLOUD_TOKEN": "", "HETZNER_TOKEN": ""})
+    try:
+        inventory = json.loads(result.stdout)
+        live.update({
+            "servers": inventory.get("servers_count"), "primary_ips": inventory.get("primary_ips_count"),
+            "servers_total": inventory.get("servers_total_in_account"),
+            "primary_ips_total": inventory.get("primary_ips_total_in_account"),
+            "checked_at": iso(now()),
+        })
+    except ValueError:
+        live["error"] = (result.stderr or "no output")[-200:]
+
+    return {
+        "ceiling_eur": ceiling,
+        "month_to_date": round(mtd_bucket["eur"], 2) if current in months else 0.0,
+        "month_hours": round(mtd_bucket["hours"], 1),
+        "jobs_this_month": mtd_bucket["jobs"],
+        "projected_month_eur": projected,
+        "lifetime_eur": lifetime,
+        "jobs_total": len(jobs),
+        "jobs": jobs,
+        "months": month_list,
+        "eur_per_release": round(lifetime / published_count, 2) if published_count else None,
+        "live": live,
+        "errors": errors,
+    }
+
+
 def collect_coverage():
     result = subprocess.run([sys.executable, str(ROOT / "scripts/discovery-coverage.py"), "--json"],
                             cwd=ROOT, text=True, capture_output=True, timeout=120)
@@ -269,6 +356,7 @@ def collect_snapshot(include_tests=True):
         "repo": {"head": None},
         "candidates": candidates,
         "coverage": collect_coverage(),
+        "resources": collect_resources(),
         "releases": releases,
         "budget": collect_budget(),
         "cron": collect_cron(),
@@ -359,6 +447,7 @@ def build(out: Path, include_tests=True):
     global SNAPSHOT_GENERATED
     out.mkdir(parents=True, exist_ok=True)
     snapshot = collect_snapshot(include_tests=include_tests)
+    snapshot["resources"] = collect_resources(len(snapshot["releases"]["releases"]))
     history = collect_history(out, snapshot)
     snapshot["history"] = history
     alarms_html, alarms_plain, soft = derive_alarms(snapshot)
@@ -374,6 +463,10 @@ def build(out: Path, include_tests=True):
         "cost.html": ui.page("Cost", "cost", stamp, ui.render_cost(snapshot, alarms_html, alarms_plain),
                              footer_extra="Token figures are measured from the session ledger; USD cost is "
                                           "not meaningful on this subscription and is deliberately not shown."),
+        "resources.html": ui.page("Resources", "res", stamp,
+                                  ui.render_resources(snapshot, alarms_html, alarms_plain),
+                                  footer_extra="Worker spend is server lifetime × the rate recorded at launch; "
+                                               "live inventory is read from the Hetzner API."),
         "reliability.html": ui.page("Ops", "ops", stamp, ui.render_ops(snapshot, alarms_html, alarms_plain),
                                     footer_extra="A job is not alive because it was launched; this reads the "
                                                  "scheduler's own record."),
@@ -453,28 +546,33 @@ def publish(out: Path, repo=PUBLISH_REPO):
 
 
 def verify(url=PAGES_URL, expect=SNAPSHOT_GENERATED, attempts=6, delay=20):
-    """Anonymous read-back of the published page. No credential is used.
+    """Anonymous read-back of every published page. No credential is used.
 
     Pages serves a build a minute or two after the push, so this waits rather than
-    calling a slow deploy a failure. A page that is live but lacks the new stamp is
-    a stale deployment, which is also a failure.
+    calling a slow deploy a failure. A page that is live but lacks the new stamp is a
+    stale deployment, and a page that 404s is a missing page - both are failures.
     """
     import time
+    pages = ("index.html", "cost.html", "resources.html", "reliability.html")
     last = {"ok": False, "error": "not attempted"}
     for attempt in range(attempts):
-        try:
-            request = urllib.request.Request(f"{url}index.html?ts={int(now().timestamp())}",
-                                             headers={"User-Agent": "scout-dashboard-verify"})
-            with urllib.request.urlopen(request, timeout=30) as response:
-                body = response.read().decode("utf-8", "replace")
-            ok = response.status == 200 and expect in body and "noindex" in body
-            if ok:
-                return {"ok": True, "status": response.status, "found_stamp": True,
-                        "attempt": attempt + 1}
-            last = {"ok": False, "status": response.status, "found_stamp": expect in body,
-                    "noindex": "noindex" in body, "attempt": attempt + 1}
-        except Exception as exc:
-            last = {"ok": False, "error": type(exc).__name__, "attempt": attempt + 1}
+        results, ok_all = {}, True
+        for page in pages:
+            try:
+                request = urllib.request.Request(
+                    f"{url}{page}?ts={int(now().timestamp())}",
+                    headers={"User-Agent": "scout-dashboard-verify"})
+                with urllib.request.urlopen(request, timeout=30) as response:
+                    body = response.read().decode("utf-8", "replace")
+                ok = (response.status == 200 and expect in body and "noindex" in body)
+                results[page] = {"status": response.status, "fresh": expect in body}
+            except Exception as exc:
+                results[page] = {"status": None, "error": type(exc).__name__}
+                ok = False
+            ok_all = ok_all and ok
+        if ok_all:
+            return {"ok": True, "pages": results, "attempt": attempt + 1}
+        last = {"ok": False, "pages": results, "attempt": attempt + 1}
         if attempt + 1 < attempts:
             time.sleep(delay)
     return last

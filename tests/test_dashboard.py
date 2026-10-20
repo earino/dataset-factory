@@ -114,6 +114,55 @@ class ChromeTests(unittest.TestCase):
             self.assertIn("noindex", html)
 
 
+class ResourceTests(unittest.TestCase):
+    """Worker spend is server lifetime x the rate recorded at launch."""
+
+    def ledger(self, root):
+        (root / "config").mkdir(parents=True)
+        (root / "config" / "local.json").write_text('{"monthly_budget_eur": 20}')
+        (root / "jobs").mkdir()
+        jobs = {
+            "a": {"created_at": "2026-10-02T00:00:00+00:00", "deleted_at": "2026-10-02T02:00:00+00:00",
+                  "provider_hourly_eur": "0.06924", "status": "deleted",
+                  "job": {"id": "a", "server_type": "cpx32", "location": "hel1"}},
+            "b": {"created_at": "2026-10-03T00:00:00+00:00", "deleted_at": "2026-10-03T01:00:00+00:00",
+                  "provider_hourly_eur": "0.1", "status": "deleted",
+                  "job": {"id": "b", "server_type": "cpx42", "location": "hel1"}},
+            "c": {"created_at": "2026-10-04T00:00:00+00:00", "provider_hourly_eur": "0.1",
+                  "status": "provisioning", "job": {"id": "c"}},
+        }
+        for name, record in jobs.items():
+            import json as _json
+            (root / "jobs" / f"{name}.json").write_text(_json.dumps(record))
+
+    def test_lifetime_and_month_costs_come_from_recorded_intervals(self):
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.ledger(root)
+            with mock.patch.object(dashboard, "ROOT", root):
+                res = dashboard.collect_resources(published_count=4)
+        self.assertAlmostEqual(0.24, res["month_to_date"], places=2)
+        self.assertAlmostEqual(0.24, res["lifetime_eur"], places=2)
+        self.assertEqual(2, res["jobs_this_month"])
+        self.assertAlmostEqual(3.0, res["month_hours"], places=1)
+        self.assertEqual(3, res["jobs_total"])
+        self.assertAlmostEqual(0.06, res["eur_per_release"], places=2)
+        unfinished = [j for j in res["jobs"] if j["id"] == "c"][0]
+        self.assertIsNone(unfinished["eur"])
+
+    def test_missing_provider_inventory_is_no_data_not_zero(self):
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.ledger(root)
+            with mock.patch.object(dashboard, "ROOT", root):
+                res = dashboard.collect_resources()
+        self.assertIsNone(res["live"]["servers"])
+        html = ui.render_resources({"resources": res, "generated_at": "2026-10-20T10:00:00+00:00"}, [], [])
+        self.assertIn("no data", html)
+
+
 class BuildTests(unittest.TestCase):
     def test_build_writes_pages_and_a_snapshot(self):
         with tempfile.TemporaryDirectory() as tmp:

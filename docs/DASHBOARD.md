@@ -18,7 +18,7 @@ server:
 - Generator: `scripts/build-dashboard.py`, stdlib only, deterministic (same inputs -> byte-identical
   output apart from a timestamp).
 - Output: one `dashboard.json` snapshot plus static pages (`index.html`, `cost.html`,
-  `reliability.html`, `style.css`).
+  `resources.html`, `reliability.html`, `style.css`).
 - Publish: the hourly job commits them to **`earino/dataset-factory-dashboard`**, served from that
   repository root at **https://earino.github.io/dataset-factory-dashboard/**.
 - Refresh: every hour at `:50`, after the discovery tick, via `scout-dashboard-refresh`
@@ -28,6 +28,8 @@ server:
   that path. Adding a second publisher to it would either bypass that review or teach the reviewed
   builder about a directory it does not own. A separate Pages repo keeps the catalogue's
   publication semantics intact.
+- Publish verification covers **all four pages**: a page that 404s or lacks the current stamp fails the
+  job, because a healthy index with a missing page is still a broken dashboard.
 - The generator is `scripts/build-dashboard.py` (`--publish`), the scheduler entry point is
   `/opt/data/scripts/scout_dashboard.py`, and the anonymous read-back is built in: a publish that
   does not appear publicly is recorded as a failure, not a success.
@@ -116,7 +118,21 @@ Process is not outcome: this page is whether the datasets are any good as benchm
 - Unit economics: tokens per verdict, euros per built candidate, euros per published dataset.
 - Waste: failed or retried jobs and their cost; verdicts that produced no construction.
 
-### 7. Candidate drilldown — `/dashboard/candidate/<id>/`
+### 7. Resources — `/dashboard/resources.html` (built 2026-10-20)
+
+Answers "what have we spent on Hetzner and is anything still billable".
+
+- Live inventory straight from the provider API (`scripts/provider-inventory.py`): servers, primary
+  IPs, and the account-wide totals, timestamped. A survivor after a job ends is a leak, not a detail.
+- Month-to-date spend vs the €20 ceiling, a linear projection to month end, jobs and server-hours this
+  month, and lifetime euros per published dataset.
+- Spend by month, computed as **server lifetime (`deleted_at - created_at`) × the hourly rate recorded
+  at launch** — the same arithmetic the launcher's reservation guard uses, so the page and the budget
+  cannot disagree. Per-job table with type, start, lifetime, cost and state.
+- Scope note on the page: excludes IPv6, egress within allowance and snapshots (free here); excludes
+  volumes and manual resources (not recorded). It is a cost ledger, not an invoice.
+
+### 8. Candidate drilldown — `/dashboard/candidate/<id>/`
 
 One page per candidate, the thing to open when deciding. Identity (publisher, jurisdiction, source
 URLs), verdict and novelty reasoning, licence posture and its evidence chain, the measured facts
@@ -202,7 +218,9 @@ timings and euro spend (the per-job ledger is not written), the verdict ledger, 
 sparklines — those are P1/P2.
 
 **P1 — one day.** Discovery, construction and releases pages; candidate drilldowns; the verdict
-ledger; the byte-level trust panel.
+ledger; the byte-level trust panel. **Resources page shipped 2026-10-20** (worker spend + live
+inventory); its P1 remainder is per-job volumes and any manual resources, which the launcher does not
+record yet.
 
 **P2 — half day.** Quality page (baseline-vs-persistence, drift, defects), 30-day sparklines from
 snapshotted `dashboard.json` history committed daily, and region-rotation analytics.
