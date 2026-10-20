@@ -1,12 +1,53 @@
 
 # Current state
 
-Updated: 2026-10-19 (latest: msha-hf-004 re-verified the Hub loading path after the dataset_infos.json
-schema fix landed - the identical 226-asset plan found all 226 targets already at the manifest digest (0
-uploads, 0 failures) and the loading check that sank msha-hf-003 now passes exactly as pinned. While it
-ran, the interactive session executed the publication act: both destinations were observed public from
-anonymous clients at ~10:47 UTC and its publication edits were still uncommitted in the working tree -
-the watcher did not touch visibility, the Hub tag, DESTINATIONS.json or record.json.)
+Updated: 2026-10-20 (latest: food-baseline-001 failed before scoring anything - it was launched
+straight from the candidate's baseline/ directory, so the worker bundle never carried qualify_dataset.py
+or the runner's train.py/validate.py/validate.sh, and the qualification re-accept refused. The
+interactive session made the same diagnosis, assembled the bundle properly and already launched the
+corrected food-baseline-002, which was running when this was written. No AUC, no base rate, nothing was
+measured on the failed attempt.)
+
+## 2026-10-20 - food-baseline-001: failed before scoring; the launch skipped assembly, and the corrected retry is already running
+
+**`food-baseline-001` failed exit 2 in 26.8 s without measuring anything - a bundle failure, not a
+dataset failure.** The job fetched all five food-001 staging inputs (31,520,896 bytes, each digest-verified
+on arrival: code_38 train/eval/holdout CSVs, meta.json, quality.json), then its first real step -
+re-accepting those bytes through the qualification gate (`python3 /workspace/qualify_dataset.py --accept
+/workspace/qualification-code_38.json /data/code_38`) - died with `can't open file
+'/workspace/qualify_dataset.py': [Errno 2] No such file or directory`, and run.sh exited 2 with "refusing
+to score: the fetched bytes are not the qualified artifact". No AUC, no base rate, no scoring ran.
+
+**Root cause, re-derivable from the collected source.tar.** `factory.worker.source_bundle()` packs
+whatever directory the launched job.json lives in. This job was launched straight from
+`candidates/chicago-food-inspections/baseline/job.json`, so the worker's `source/` carried only that
+directory's own six files (run.sh, report.py, materialize.py, qualification-code_38.json, bundle.json,
+expected_artifact.json) and none of what its bundle.json declares from elsewhere:
+`qualify_dataset.py` (skills/dataset-qualification/scripts/), the runner's `train.py`/`validate.py`/
+`validate.sh` verbatim from the benchmark clone, and their `runner_files.json`.
+`scripts/assemble-job.py food-baseline` - the step that resolves the declaration into
+`.factory/jobs/<id>/` - was skipped. Everything about the artifact itself remains as food-001 gated it.
+
+**The retry was already in flight before this watcher could prepare one.** While this watcher collected
+-001, the interactive session made the same diagnosis (its own fetch script for the same assets is at
+`.factory/fetch_food_baseline_logs.py`), bumped the candidate's `baseline/job.json` id to
+`food-baseline-002`, assembled the bundle properly (`.factory/jobs/food-baseline-002/` carries
+qualify_dataset.py, the three runner files and runner_files.json), and launched it at 15:26:01 UTC on
+server 171396373 (cpx32/hel1, EUR 0.06924/h; status running when this was written). This watcher launched
+nothing - one worker at a time, and the corrected job was already up.
+
+**Records and cleanup.** All four small assets of release 418547901 were fetched into
+`.factory/food-baseline-001/reports/` (accept.log 94 B, container.log 660 B, manifest.json 4,192 B,
+source.tar 143,360 B), each sha256-verified against the release's own asset list; source.tar's digest
+equals the ledger's source_sha256. Server 171395072 is gone - this watcher's `worker destroy` at
+15:27:09, then a `worker status` reconcile that re-verified at the provider that no server with that ID
+exists (deleted_at 15:31:03). `jobs/food-baseline-001.json` is committed with this entry, together with
+the `jobs/food-baseline-002.json` launch snapshot, the candidate's job.json id bump, and the failed-attempt
+entry in the candidate's record.json. Two working-tree edits remain the interactive session's and were
+deliberately left uncommitted: `skills/dataset-release/SKILL.md` (publication-authority wording) and
+`candidates/chicago-food-inspections/baseline/expected_artifact.json` (reformat and note change for the
+packaging step).
+
 
 
 ## 2026-10-19 - msha-hf-004: the Hub loading path now verifies end-to-end; the publication act was running while it finished

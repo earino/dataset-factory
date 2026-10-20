@@ -133,13 +133,31 @@
    "elapsed_minutes": 8.5,
    "exit_code": 0,
    "what": "full extract build + qualification gate, both on the worker",
-   "gates": "40/40 per-code configs, gate 1.3.0, 31 checks each, 0 failed, 0 warnings"
+   "gates": "40/40 per-code configs, gate 1.3.0, 32 checks each, 0 failed, 0 warnings"
+  },
+  {
+   "id": "food-baseline-001",
+   "status": "failed",
+   "what": "first baseline attempt through the runner's own training and validation contract, on the code_38 sanity-check config named in next_action: fetch the gated food-001 staging bytes, re-accept them through the qualification gate's --accept, then run train.py and validate.sh",
+   "staging_release": 418547901,
+   "staging_tag": "untagged-f536e064911a685c6405",
+   "server_id": 171395072,
+   "created_at": "2026-10-20T15:16:02Z",
+   "collected_at": "2026-10-20T15:22:13Z",
+   "deleted_at": "2026-10-20T15:31:03Z",
+   "elapsed_seconds": 26.8,
+   "exit_code": 2,
+   "fetch": "5/5 input assets, 31,520,896 bytes, zero failures, each digest-verified on arrival - not a fetch failure",
+   "measured": "nothing - no AUC, no base rate; the gate refused before anything was scored",
+   "why": "run.sh's first real step re-accepts the fetched bytes via 'python3 /workspace/qualify_dataset.py --accept /workspace/qualification-code_38.json /data/code_38'; it died with \"can't open file '/workspace/qualify_dataset.py': [Errno 2] No such file or directory\" and run.sh exited 2, refusing to score. The file was never in the bundle: the job was launched directly from candidates/chicago-food-inspections/baseline/job.json, and factory.worker.source_bundle packs exactly that directory - so the worker's source/ carried only the directory's own six files (run.sh, report.py, materialize.py, qualification-code_38.json, bundle.json, expected_artifact.json) and none of what its bundle.json declares from elsewhere: qualify_dataset.py (skills/dataset-qualification/scripts/), the runner's train.py/validate.py/validate.sh verbatim from the benchmark clone, or their runner_files.json. scripts/assemble-job.py food-baseline, the step that resolves the declaration into .factory/jobs/<id>/, was skipped",
+   "fix": "the interactive session reached the same diagnosis while this watcher collected: baseline/job.json id bumped to food-baseline-002, the bundle assembled properly (.factory/jobs/food-baseline-002/ now carries qualify_dataset.py, the three runner files and runner_files.json with their hashes), relaunched 2026-10-20T15:26:01Z on server 171396373 and running when this entry was written; this watcher launched nothing",
+   "evidence": ".factory/food-baseline-001/result.json and .factory/food-baseline-001/reports/{accept.log,container.log,manifest.json,source.tar}, each fetched and sha256-verified against release 418547901's own asset list; the source.tar listing itself shows the six bundled files and the missing ones"
   }
  ],
  "artifacts": [],
  "rejection_reason": null,
  "review": null,
- "next_action": "The extract is built and gated. (1) Package the release (scripts/release-manifest.py + the dataset-release skill) from the staging assets of job food-001 - decide how the 40 per-code configs and labels.csv present in MANIFEST.json and the package layout, mirroring the per-level pattern noaa-tide-flooding shipped. (2) Measure the baseline through the runner's contract on a worker (a food-baseline-001 job) - one config first (a mid-prevalence code such as code_38 or code_55) to sanity-check the scoring path, then all 40 if the first is sound. (3) Human review precedes any publication; nothing ships publicly without the operator's approval.",
+ "next_action": "The extract is built and gated. (1) Package the release (scripts/release-manifest.py + the dataset-release skill) from the staging assets of job food-001 - decide how the 40 per-code configs and labels.csv present in MANIFEST.json and the package layout, mirroring the per-level pattern noaa-tide-flooding shipped. (2) Measure the baseline through the runner's contract on a worker (a food-baseline-002 job) - one config first (a mid-prevalence code such as code_38 or code_55) to sanity-check the scoring path, then all 40 if the first is sound. (3) Human review precedes any publication; nothing ships publicly without the operator's approval.",
  "superseded_by": null,
  "lead_priority_note": "Cleared 2026-10-12: msha-enforcement-citations is the priority lead on size and leakage risk (decided 2026-09-27), but it does not replace this candidate. chicago-food-inspections is the built and gated one - job food-001, gate 1.3.0, 40/40 configs, staging release 403508464 - and stays open until the operator chooses which candidate to package.",
  "novelty_check": {
@@ -425,7 +443,7 @@
  "qualification": {
   "gate": "skills/dataset-qualification/scripts/qualify_dataset.py",
   "gate_version": "1.3.0",
-  "result": "PASSED - 40/40 per-code configs, 31 checks each, 0 failed, 0 warnings, on the full artifact on the worker",
+  "result": "PASSED - 40/40 per-code configs, 32 checks each, 0 failed, 0 warnings, on the full artifact on the worker",
   "job": "food-001",
   "staging_release": 403508464,
   "staging_tag": "job-food-001",
@@ -436,7 +454,8 @@
   "evidence": ".factory/food-001/reports/ (167 small assets fetched and sha256-verified against the release manifest; bulk CSVs and labels.csv stay in staging)",
   "labels_csv": "labels.csv at the extract root, 24,319,192 bytes, sha256 c891fd333a1691912a37aad1c4f9bfd3df1671aeecd3966ef052f08b511982d1 - the joint multi-label matrix, in staging",
   "note": "The pre-build estimate of 37 floor codes came from a 15,000-row recent scan; the full 226,417-row pool supports 40: 48 codes clear the 1% pool-rate floor, 8 are dropped by the per-window minimums (>=30 positives, >=20 distinct days per window), 0 dropped by rate. Codes 12, 18, 19, 24, 30, 31, 34, 42.",
-  "pool_note": "pool_rows 226,417 vs 226,133 measured 2026-09-28 - the live source grew 284 rows in the week between probe and build, which is expected from a live portal and not a defect"
+  "pool_note": "pool_rows 226,417 vs 226,133 measured 2026-09-28 - the live source grew 284 rows in the week between probe and build, which is expected from a live portal and not a defect",
+  "checks_correction": "Corrected 2026-10-20: earlier entries here said 31 checks per config; the gate's own collected reports (qualification-code_NN.json) carry 32 checks each (len(results)), the same count the msha-enforcement-citations release shipped for gate 1.3.0."
  },
  "jurisdiction": {
   "country": "US",
@@ -444,5 +463,26 @@
   "publisher": "City of Chicago, Illinois",
   "recorded_at": "2026-10-19",
   "note": "Backfilled when the discovery brief began requiring a jurisdiction. Country is the publisher's, i.e. whose data this is."
+ },
+ "construction_output": {
+  "job": "food-001",
+  "splits": {
+   "train": {
+    "start": "2010-01-01",
+    "end": "2021-01-01",
+    "rows": 156841
+   },
+   "eval": {
+    "start": "2021-01-01",
+    "end": "2024-01-01",
+    "rows": 35358
+   },
+   "holdout": {
+    "start": "2024-01-01",
+    "end": "2026-10-01",
+    "rows": 34218
+   }
+  },
+  "note": "The windows exactly as shipped in every config's meta.json (split.windows, end-exclusive); rows identical across all 40 configs - the pooled inspection set. Read from the collected code_38 meta.json, which the gate verified rows against."
  }
 }
