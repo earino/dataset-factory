@@ -41,6 +41,39 @@ wrapper = load("scout_research_session", WRAPPER)
 budget = load("research_budget_for_wrapper", BUDGET)
 
 
+class ActionableWorkTests(unittest.TestCase):
+    """The --if-work gate: high cadence must not mean paying for empty ticks."""
+
+    def test_a_qualified_candidate_needs_packaging(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "candidates" / "x").mkdir(parents=True)
+            (root / "candidates" / "x" / "record.json").write_text(
+                json.dumps({"id": "x", "status": "qualified"}))
+            self.assertEqual([("x", "package")], wrapper.actionable_work(root))
+
+    def test_a_packaged_candidate_is_release_work_but_one_awaiting_the_flip_is_not(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for name, awaiting in (("ready", False), ("held", True)):
+                folder = root / "candidates" / name
+                folder.mkdir(parents=True)
+                (folder / "record.json").write_text(
+                    json.dumps({"id": name, "status": "packaged", "awaiting_operator": awaiting}))
+            self.assertEqual([("ready", "release")], wrapper.actionable_work(root))
+
+    def test_parked_published_and_investigating_without_go_are_idle(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for name, status, action in (("p", "parked", ""), ("d", "published", ""),
+                                         ("i", "investigating", "waiting on a licence answer")):
+                folder = root / "candidates" / name
+                folder.mkdir(parents=True)
+                (folder / "record.json").write_text(
+                    json.dumps({"id": name, "status": status, "next_action": action}))
+            self.assertEqual([], wrapper.actionable_work(root))
+
+
 class PromptTests(unittest.TestCase):
     def test_the_scheduler_brief_selects_the_task_without_lifting_the_limits(self):
         prompt = wrapper.build_prompt("CONTEXT", "Do the thing.")
