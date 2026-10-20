@@ -35,6 +35,10 @@ Pick the step that unblocks the most work. A candidate record with `next_action`
 a candidate with no verdict and no blocker is the worst state to leave a lead in. Prefer
 finishing one thing over starting three.
 
+**Finish inside the budget.** The run gives you 90 minutes and 120 tool calls. You get a wrap-up notice at
+80% of the wall clock: when it arrives, stop probing and write your report and your records *then*.
+A session that is killed at the hard ceiling produces no report at all, which wastes the whole tick.
+
 **Do not stop at a step boundary.** Once a candidate is identified as worth shipping, carry it as far
 as this session's turn and time budget allows: build, then qualify, then package, then baseline. A
 session that packs up immediately after one step while the same candidate's next step is available,

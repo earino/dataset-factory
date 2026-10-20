@@ -481,14 +481,18 @@ trade was deliberately not taken.
 
 Two jobs share the routine and both are gated by `scripts/research-budget.py`:
 
-- `scout-discovery-session` (86fe52e55ef9) - **hourly**, discovery only. Its brief
+- `scout-discovery-session` (86fe52e55ef9) - **every four hours at :00**, discovery only, one 2-hour
+  slot. Its brief
   (`docs/discovery-session-prompt.md`) forbids advancing an existing candidate and requires three
   new sources to a verdict, at least two of them published outside the US.
-- `scout-research-session` (69a5bc676d10) - **every two hours at :25**, advancement and packaging.
+- `scout-research-session` (69a5bc676d10) - **every four hours at :00, offset to 02/06/10/14/18/22**,
+  advancement and packaging, one 2-hour slot.
   The shim passes `--if-work`: the tick exits without starting an agent when no candidate is
-  `ready`, `qualified`, `packaged`-and-actionable, or carrying a GO verdict. High cadence, no cost
-  when the queue is empty. A session is told not to stop at a step boundary: carry a candidate
-  through build, qualification and packaging while the budget allows.
+  `ready`, `qualified`, `packaged`-and-actionable, or carrying a GO verdict, so an empty queue costs
+  nothing. A session is told not to stop at a step boundary and to finish inside its budget: 90
+  minutes and 120 tool calls, with a wrap-up notice at 80% that must be obeyed. Measured sessions used
+  110k-370k tokens while dying at the old 40-minute ceiling, so the binding constraint was time, not
+  tokens.
 - `scout-release-notify` (ba4c8610edf8) - **hourly at :55**, script only. Prints one message when a
   candidate becomes `packaged` and `awaiting_operator`, deduped on id + `packaged_at`. Silence
   otherwise, so the only chat message the routine sends is the flip request.

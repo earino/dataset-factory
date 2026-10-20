@@ -3752,3 +3752,12 @@ locally (the dashboard and the flip notifier are the only chat output). The dash
 .factory/research-sessions.jsonl: Ops lists the last six session outcomes and the executive page alarms
 when two of the last three were killed. That alarm is firing now, correctly, on the pre-fix history.
 383 tests OK.
+
+**Session window doubled 2026-10-20 (operator: "I wonder if we should expand that window").** Measured
+first: sessions were ending at 40-45 min on 110k-370k tokens, so time - not tokens - was the binding
+constraint. Both jobs now get --run-budget 5400 (90 min) and --max-turns 120, with 80% wrap-up to be
+obeyed by the brief. Cadence changed to alternating 2-hour slots every four hours: discovery at
+00/04/08/12/16/20, advancement at 02/06/10/14/18/22, so a 90-minute run plus a 95-minute hard stop always
+fits its slot and the two jobs can never share a lock. config/research-budget.json session_max_minutes
+raised 40 -> 90 (it sets the stale-lock window; at 40 a live 90-minute session would have been treated as
+dead and overlapped). 12 sessions/day at 150-250k tokens is ~21M/week against the 40M ceiling.
