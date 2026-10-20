@@ -136,7 +136,11 @@ Rules that are not negotiable:
 
 - **CC0 is not a blanket override of upstream terms.** A source requiring attribution, share-alike
   or non-commercial use keeps those terms, carried through unchanged. A source whose licence cannot
-  be read is not published at all. Terms are chosen per dataset to be compatible with each source.
+  be read is not published at all **unless the operator has recorded a risk acceptance in
+  `candidates/<id>/license.json`** - written as a risk acceptance, never as a grant: our
+  contribution only under our dedication, attribution to the publisher, a takedown route in the
+  card, and no standard licence presented as the publisher's. Terms are chosen per dataset to be
+  compatible with each source; the licence-posture notes live in `dataset-discovery`.
 - **State the scope.** The dedication covers our contribution and not the source, which keeps its
   own designation, attribution and suggested citation.
 - **Label derived data as derived**, and never present it as the source agency's official product.
@@ -151,7 +155,17 @@ Rules that are not negotiable:
 ## Publication: the one step that needs the operator
 
 Everything above produces a **private** release. Publication is a separate, approved act, and it is
-the operator's decision - never inferred from a plan digest you happen to hold. When it is approved:
+the operator's decision - never inferred from a plan digest you happen to hold.
+
+**Standing authority.** This operator grants standing publication authority: a release that passes
+every gate should be published without waiting for a per-release yes, and reported afterwards. The
+authority changes *who says yes*, never *what must be true* - the gate list, the anonymous
+verification and the recorded state are unchanged - and it is still a logged act: version, both
+destinations and the verification result go into `STATE.md`. The authority covers ordinary releases
+of an accepted candidate; it does not cover reopening a decision the operator has already settled
+(a repository they made public stays public) without saying so.
+
+When it is approved:
 
 1. **Flip both destinations, then prove it anonymously.** GitHub: `gh api -X PATCH repos/<owner>/<repo>
    -F private=false`. Hugging Face: `HfApi.update_repo_settings(repo_id=..., repo_type="dataset",

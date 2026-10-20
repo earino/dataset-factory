@@ -1,6 +1,7 @@
 # Dashboard: executive and operational views
 
-Status: specification, 2026-10-20. Nothing here is built yet.
+Status: **P0 shipped 2026-10-20.** Exec, Cost and Reliability are live at
+https://earino.github.io/dataset-factory-dashboard/. P1 and P2 below are not built.
 
 The pipeline produces a lot of state that currently reaches the operator as chat prose: eight
 candidates in flight, a worker ledger, six cron jobs, a token budget, four published releases with
@@ -16,11 +17,20 @@ server:
 
 - Generator: `scripts/build-dashboard.py`, stdlib only, deterministic (same inputs -> byte-identical
   output apart from a timestamp).
-- Output: one `dashboard.json` snapshot plus static pages under `dashboard/` in the site repo.
-- Publish: a scheduled job commits the build to `earino/dataset-factory-site`; Pages serves it at
-  **https://earino.github.io/dataset-factory-site/dashboard/**.
-- Refresh: every hour, offset to run after the discovery tick. This is a *pull* dashboard with an
-  honest `as of` stamp, not a real-time console.
+- Output: one `dashboard.json` snapshot plus static pages (`index.html`, `cost.html`,
+  `reliability.html`, `style.css`).
+- Publish: the hourly job commits them to **`earino/dataset-factory-dashboard`**, served from that
+  repository root at **https://earino.github.io/dataset-factory-dashboard/**.
+- Refresh: every hour at `:50`, after the discovery tick, via `scout-dashboard-refresh`
+  (job `4d8053a69ed2`, script-only, output kept local so it cannot spam chat).
+- It lives in **its own repository, not under `/dashboard/` on the catalogue site**: the catalogue is
+  deployed by a reviewed workflow that builds `_site` from `.dataset-site/` and only triggers on
+  that path. Adding a second publisher to it would either bypass that review or teach the reviewed
+  builder about a directory it does not own. A separate Pages repo keeps the catalogue's
+  publication semantics intact.
+- The generator is `scripts/build-dashboard.py` (`--publish`), the scheduler entry point is
+  `/opt/data/scripts/scout_dashboard.py`, and the anonymous read-back is built in: a publish that
+  does not appear publicly is recorded as a failure, not a success.
 
 Consequence to be explicit about: freshness is a first-class number on every page ("state as of
 12:20 UTC, 4 minutes ago"), because a static page that silently ages is worse than no page.
@@ -155,9 +165,13 @@ the dashboard, and the answer to "how are we doing" becomes a link rather than a
 
 ## Build plan
 
-**P0 — one day.** `scripts/build-dashboard.py` with the executive page, cost page and reliability
-strip, all from files that already exist. Publish to Pages on an hourly job. This alone removes most
-of the chat traffic.
+**P0 — shipped 2026-10-20.** `scripts/build-dashboard.py` renders the executive page, the cost page
+and the reliability page from files that already exist; `scout-dashboard-refresh` publishes hourly
+at :50 and verifies the public page without credentials. Nine dashboard tests guard the honesty
+rules (missing input renders "no data", an aged panel is stale, a true zero stays zero, an empty
+table says so, and a token in any page aborts the build). What P0 does *not* yet show: worker-job
+timings and euro spend (the per-job ledger is not written), the verdict ledger, and any history or
+sparklines — those are P1/P2.
 
 **P1 — one day.** Discovery, construction and releases pages; candidate drilldowns; the verdict
 ledger; the byte-level trust panel.

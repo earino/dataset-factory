@@ -1,6 +1,6 @@
 ---
 name: dataset-discovery
-description: "Use when choosing or vetting an open-data source as a prediction task. Decides usability before any construction work is spent."
+description: "Use when vetting an open-data source as a prediction task, before construction."
 version: 1.0.0
 license: MIT
 platforms: [linux, macos]
@@ -32,7 +32,9 @@ looks. Each is cheap to test and expensive to discover late:
 
 1. **Redistribution.** The licence or terms must permit publishing derived rows. Publicly
    *viewable* is not *redistributable*. A source silent on redistribution is not publishable -
-   record the question and escalate it as a decision, never assume permission.
+   record the question and escalate it as a decision, never assume permission. When the operator
+   accepts the risk instead of producing a licence, record it as a **risk acceptance, not a
+   grant**: `references/licence-posture.md`.
 2. **Prediction timing.** The instant a prediction is made must be stateable, and every
    intended feature's meaning must be documented by the publisher. An undocumented column is
    unusable, not "probably fine".
@@ -131,6 +133,7 @@ command behind it is a guess.
 | Thousands of positives, tiny effective sample | Positives cluster (same storm/day/station) | Report the clustered count and put intervals on it |
 | Uniform result from a threshold | Threshold's unit/reference frame unstated | Find the frame; add a known-event fixture before using it |
 | "Public data" assumed publishable | Licence silent on redistribution | Record the question, escalate as a decision, do not ship |
+| "The publisher states no terms" | A 403 to a plain HTTP client read as an absent page | Re-read it in a real browser before recording silence; then `references/licence-posture.md` |
 | Feature list looks right, dataset scores perfectly | A carried source column shipped the answer | Hand to `dataset-qualification`; it tests shipped columns, not lists |
 | Cost estimate wrong by an order of magnitude | Paging arithmetic guessed instead of measured | Wrap the fetch, count requests, record the machine class |
 | Candidate sits "interesting" for weeks | No verdict recorded | Force build/park/drop with the reason; parking is a valid outcome |
@@ -159,6 +162,9 @@ failed construction never leaves the queue empty.
 
 - `references/geographic-coverage.md` - a region rotation for international sourcing, with the
   portals, licence habits and gotchas of each.
+- `references/licence-posture.md` - what to record when a publisher states no terms: the channels to
+  read, the enquiry and its deadline, and how to write an operator risk acceptance so it cannot be
+  mistaken for a grant.
 - `scripts/check-candidate.py` - mechanical completeness check over a candidate record.
 - `skills/dataset-qualification/` - the gate that runs after construction.
 - `skills/dataset-release/` - packaging and publication once a dataset is qualified.
