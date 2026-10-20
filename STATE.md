@@ -3595,3 +3595,65 @@ states no terms, attribution to the City, a takedown route in the card (reposito
 address if the operator supplies one), and the rule that no standard licence may be presented as the
 publisher's. Candidate moved parked -> investigating; next action is construction, queued behind Chicago
 packaging because there is one worker.
+
+## 2026-10-20 - Discovery tick (South & Southeast Asia, second tick)
+
+Regional focus tick: South and Southeast Asia again. Five new sources opened, **all five
+from the tick's region** (India, Indonesia, Philippines, Vietnam, Singapore) - the quota of
+three verdicts with two from the region is exceeded without touching a US source, and no
+US backfill was needed or used. No re-vetting of last tick's candidates (CPCB/IMD/Malaysia/
+BMKG/Air4Thai were left untouched). All probes anonymous; no bulk data reached the
+coordinator (largest fetch: the data.gov.sg catalog metadata, 467 requests, id+name pairs
+only, deleted after recording). `scripts/check-candidate.py --all` exit 0 for all 28
+candidates; coverage after this tick: 28 candidates, 12 live, live non-US 6/12 (50%),
+South & South-East Asia 10.
+
+- **`india-datagovin-portal` - PARK (Government of India open data platform).** Both
+  https://data.gov.in and https://api.data.gov.in refuse TCP connections from the
+  coordinator (measured twice: curl exit 7 at ~0.6 s, HTTP 000, 0 bytes; api.data.gov.in
+  already measured HTTP 000 twice in the cpcb candidate the same day). Infrastructure
+  blocker, not a data judgement. Unpark: probe both hosts from a worker in another
+  network region, then enumerate API-enabled datasets excluding the AQI family cpcb
+  already covers.
+- **`indonesia-bps-webapi` - REJECT (BPS, Statistics Indonesia).** Access is fine
+  (measured: API root 200, 55 bytes, anonymous; router 404s on undocumented paths; docs
+  at webapi.bps.go.id/documentation; key token free on registration). Rejected on task
+  grounds: the publisher's own terms describe the Web API as access to "aggregate data"
+  (ppid.bps.go.id quote recorded) - aggregate statistical tables cannot carry a
+  per-event/per-entity prediction task, so no task was formulated and none ever could be.
+- **`philippines-psa-openstat` - REJECT (Philippine Statistics Authority).** OpenSTAT is
+  Cloudflare-walled to headless clients (403 "Just a moment..." measured) but passed in a
+  real browser session; the legacy CKAN API is gone (404), the current channel is a
+  documented PXWeb-style API with a database of statistical-domain tables (Birth
+  Statistics, Marriage Statistics, census counts and projections - grain measured).
+  Rejected on task grounds: aggregate tables only, no event-level outcomes; same verdict
+  shape as BPS, recorded separately because the operator named PSA.
+- **`vietnam-nso-publications` - PARK (National Statistics Office of Vietnam).** The GSO
+  was renamed NSO (MoF Decision 384/QD-BTC, 26 Feb 2025) and moved to nso.gov.vn; the old
+  gso.gov.vn names are NXDOMAIN at the authoritative level (measured via dns.google DoH),
+  and the 2018 national open-data portal data.gov.vn is dark in DNS (zone alive, no A
+  record at apex or www). The current site (200 measured) is an Avada/WordPress
+  publication archive; no API found; .vn resolution from the coordinator is intermittent
+  (same host 200 then DNS failure minutes apart). PDF-only publisher = park per the brief.
+- **`singapore-datagov-catalog` - PARK (data.gov.sg; best access in the region, no
+  differentiated task).** Fully anonymous machine-readable APIs measured: v2 catalog
+  (4,664 datasets enumerated in 467 page requests; page_limit/query params measured to be
+  ignored server-side) and datastore_search rows (Weekly Infectious Disease Bulletin:
+  20,070 rows, epi_week x disease x cases since 2012-W01; Historical Rainfall 2021:
+  7,044,646 rows of per-station readings - ~63M rows for 2016-2024). Licence read: Singapore
+  Government Open Data Licence (commercial and non-commercial use with attribution).
+  Parked on task-family grounds: every event/series-grain formulation duplicates a family
+  the bench already carries (own-history environmental exceedance - cpcb/noaa/air4thai;
+  outbreak forecasting - DengAI precedent, ~29 entities; tender outcomes - chilecompra) or
+  is a mirror (HDB resale on Kaggle); real-time feeds (carpark/taxi/flood/dengue clusters)
+  are snapshots without archives. Unpark: an operator decision naming a family to accept,
+  or a quarterly catalog diff surfacing a new event-level register.
+
+No GO this tick: the region's named statistical portals are aggregate-only by mandate
+(BPS, PSA - both removed permanently), its remaining named channels are network-blocked
+from the coordinator (data.gov.in) or publication-only (Vietnam NSO), and the best
+access found (Singapore) duplicates task families the bench already carries - that
+comparison is recorded in the candidate's novelty block rather than assumed. The live
+buffer behind construction is unchanged (cpcb-aqi-exceedance GO from the previous tick).
+Probe scripts and the catalog extract were deleted from `.factory/` after the results
+were recorded (scoped `rm` of three exact paths, accepted).

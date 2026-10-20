@@ -1,0 +1,76 @@
+{
+  "id": "singapore-datagov-catalog",
+  "status": "parked",
+  "verdict": "park",
+  "created_at": "2026-10-20T10:29:00+00:00",
+  "domain": "national open-data catalog - access excellent, task families duplicate the bench",
+  "prediction_question": "Two formulations were measured and NOT taken forward: (a) station-level next-day rainfall exceedance at an NEA rain station from its own 5-minute reading history (7,044,646 rows for 2021 alone, ~70 stations, anonymous API) - this duplicates the own-history environmental-exceedance family already carried by cpcb-aqi-exceedance (GO) and noaa-tide-flooding (live); (b) multi-disease weekly outbreak exceedance from the MOH Weekly Infectious Disease Bulletin (20,070 rows, epi_week x disease x cases since 2012-W01) - only ~29 disease entities, the exceedance threshold would be ours rather than a published band edge, and the dengue-forecasting family has the DrivenData DengAI ML-ready precedent (city-level weekly case counts, not exceedance). HDB resale price prediction - the catalog's most-mirrored dataset - exists on Kaggle. PSI exceedance duplicates (a)'s family.",
+  "prediction_time": "Stated for the not-taken-forward formulations only: (a) 23:59 SGT on day D, all readings through D knowable, D+1 readings are label source; (b) end of epi-week W, bulletin cases published after the week closes.",
+  "target_definition": "(a) daily station rainfall total on D+1 above a threshold - the threshold would be ours; Singapore's NEA publishes rainfall but no exceedance band edge for daily totals, so the label would not carry a published threshold; (b) disease-week cases above a threshold - again ours, not the publisher's. Both are mechanically derivable from the series; neither carries a publisher-defined decision edge.",
+  "sources": [
+    {
+      "name": "data.gov.sg - v2 catalog API (anonymous, no key)",
+      "url": "https://data.gov.sg/",
+      "api": "GET https://api-production.data.gov.sg/v2/public/api/datasets?page=N - 10 rows/page fixed (page_limit ignored, measured), 467 pages, meta totalRowCount=4664; query/search params not honoured server-side",
+      "license": "datasets carry the Singapore Government Open Data Licence - see license_evidence",
+      "access": "measured 2026-10-20: full catalog enumerated anonymously in 467 page requests; id+name extract kept out of Git in .factory scratch (621,858 bytes)"
+    },
+    {
+      "name": "data.gov.sg - datastore_search row API (anonymous, no key)",
+      "url": "https://data.gov.sg/api/action/datastore_search?resource_id=<dataset_id>",
+      "api": "the per-dataset query API documented on every dataset view page (curl example on the page: curl --location https://data.gov.sg/api/action/datastore_search?resource_id=...); supports limit/offset and returns total",
+      "license": "same Singapore Open Data Licence",
+      "access": "measured 2026-10-20 on d_ca168b2cb763640d72c4600a68f9909e (Weekly Infectious Disease Bulletin Cases: HTTP 200, total 20,070 rows, fields epi_week/disease/no._of_cases, first record 2012-W01) and d_3b41598f74f1f11fc3430348fea51af5 (Historical Rainfall across Singapore (2021): HTTP 200, total 7,044,646 rows, fields date/timestamp/station_id/station_name/lon/lat/readings)"
+    },
+    {
+      "name": "NEA historical weather / MOH weekly bulletin datasets enumerated in the catalog",
+      "url": "https://data.gov.sg/datasets/d_ca168b2cb763640d72c4600a68f9909e/view",
+      "api": "per-year 'Historical Rainfall / Air Temperature / Wind Speed / Wind Direction / PSI across Singapore' series (2016-2024 observed), 'Historical Daily Weather Records', 'Weekly Infectious Disease Bulletin Cases', 'Dengue Clusters (GEOJSON)' (snapshot), 'Flood Alerts across Singapore', 'Carpark Availability' (real-time snapshot)",
+      "license": "Singapore Open Data Licence",
+      "access": "names and dataset ids measured in the full catalog enumeration; row counts measured for the two series above"
+    }
+  ],
+  "license_evidence": [
+    {
+      "quote": "datasets may be used commercially or non-commercially ('Use'). Attribution: You must include in your products, applications or websites that Use the datasets, a conspicuous notice acknowledging ...",
+      "url": "https://data.gov.sg/open-data-licence",
+      "note": "Singapore Government Open Data Licence, read 2026-10-20 (HTTP 200): use for any purpose with attribution required. Redistribution is permitted - the licence is not the blocker."
+    }
+  ],
+  "measurements": {
+    "catalog_2026_10_20": "GET https://api-production.data.gov.sg/v2/public/api/datasets?page=N -> 4,664 datasets over 467 requests (fixed 10/page; page_limit and query/search params measured to be ignored server-side). Keyword survey of all 4,664 names: rain 27, weather 33, temperature 22, wind 23, psi 12, dengue 8, infectious 1, carpark 6, taxi 3, mrt 12, accident 8, complaint 1, inspection 1, food 18, hawker 5, water 25, flood 2, resale 13, tender 1, crime 1, fire 4. Extract (id+name pairs, 621,858 bytes) in .factory/sg_catalog.json, scratch, not committed.",
+    "rows_infectious_bulletin_2026_10_20": "datastore_search on d_ca168b2cb763640d72c4600a68f9909e&limit=2 -> HTTP 200, total=20,070; schema: epi_week (2012-W01 first), disease (e.g. 'Acute Viral hepatitis B'), no._of_cases. One request, <1 s.",
+    "rows_rainfall_2026_10_20": "datastore_search on d_3b41598f74f1f11fc3430348fea51af5&limit=1 -> HTTP 200, total=7,044,646 (single year, 2021); schema: date, timestamp, update_timestamp, station_id, station_name, station_device_id, longitude, latitude, reading fields. Per-year files at this grain -> ~63M rows for 2016-2024, a worker-scale extraction.",
+    "legacy_ckan_gone_2026_10_20": "GET data.gov.sg/api/3/action/site_status -> HTTP 404 {}; the old CKAN API is retired; the current API is /api/action/datastore_search (documented on dataset pages)."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "Parked on task-family grounds, with access and licence settled: the catalog is the best-connected publisher measured in this region (fully anonymous v2 catalog + row APIs, machine-readable, permissive licence with attribution) - but a full enumeration of its 4,664 datasets shows every event/series-grain dataset supports a task family the bench already carries or a mirror: own-history environmental exceedance (rainfall/PSI/temperature - the family of cpcb-aqi-exceedance GO, noaa-tide-flooding live, air4thai parked with the same duplication note), outbreak forecasting (DrivenData DengAI precedent, and only ~29 disease entities), HDB resale (Kaggle mirror), real-time snapshots with no archive (carpark, taxi, flood alerts), aggregate statistics (most of the catalog is Singapore DOS tables). The air4thai park already records that a second same-family environmental task needs an explicit operator decision, and this candidate does not claim one.",
+  "review": null,
+  "next_action": "Unpark path (a decision, not a re-probe): the operator names which, if any, family to accept - (a) Singapore rainfall exceedance (access/licence settled, extraction measured at ~63M rows for 2016-2024, threshold ours), or (b) MOH multi-disease weekly exceedance (20,070 rows, threshold ours, DengAI adjacency), or (c) neither. Independently of the operator, a quarterly catalog diff (re-run the 467-request enumeration and compare dataset ids) would catch a new event-level register if an agency adds one - that, not a re-probe of the same 4,664 datasets, is the only unpark trigger available.",
+  "jurisdiction": {
+    "country": "SG",
+    "region": "South & South-East Asia",
+    "publisher": "Government of Singapore open data portal (data.gov.sg; datasets from NEA, MOH, LTA, HDB, Singapore DOS and other agencies)",
+    "recorded_at": "2026-10-20"
+  },
+  "novelty_check": {
+    "checked_at": "2026-10-20T10:29:00+00:00",
+    "method": "web search for ML-ready formulations of the candidate tasks on this source (station-level rainfall exceedance, Singapore disease-week exceedance, HDB resale)",
+    "queries": [
+      "Singapore rainfall prediction benchmark dataset splits",
+      "Weekly Infectious Disease Bulletin Singapore dataset prediction",
+      "HDB resale price prediction dataset Kaggle"
+    ],
+    "prior_art": [
+      "HDB resale transactions are a long-standing Kaggle mirror dataset (prediction notebooks widespread) - a mirror, not a contribution",
+      "DrivenData 'DengAI' (2015-): ML-ready weekly dengue case-count prediction for San Juan and Iquitos - adjacent to formulation (b), city-level weekly counts rather than exceedance",
+      "Singapore rainfall forecasting papers (NUS/NTU, station or island models with private splits) - models on their own pulls, no packaged task",
+      "No packaged train/eval/holdout task with a scored contract was found for any data.gov.sg series"
+    ],
+    "theirs": "Kaggle mirrors of the raw resale data; DengAI's ML-ready dengue task on two other cities; rainfall papers with private splits; no packaged task on this publisher's series.",
+    "ours": "Nothing worth claiming: the only novel formulations (rainfall/disease-week exceedance) duplicate task families the bench already carries and carry no publisher-defined threshold. The park records that access and licence were never the blocker.",
+    "verdict": "no_precedent",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
+}

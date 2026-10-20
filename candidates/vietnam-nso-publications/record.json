@@ -1,0 +1,48 @@
+{
+  "id": "vietnam-nso-publications",
+  "status": "parked",
+  "verdict": "park",
+  "created_at": "2026-10-20T10:29:00+00:00",
+  "domain": "national statistical office - publication archive (no machine-readable channel found)",
+  "prediction_question": "Hypothetical only - no task could be selected: the publisher's current site is a publication archive and no machine-readable data channel was found this session, so no prediction question was formulated.",
+  "prediction_time": "Not stated - no task was selected.",
+  "target_definition": "Not stated - no task was selected.",
+  "sources": [
+    {
+      "name": "National Statistics Office of Vietnam (formerly General Statistics Office, renamed by Ministry of Finance Decision 384/QD-BTC, 26 Feb 2025) - publication website",
+      "url": "https://www.nso.gov.vn/en/",
+      "api": "none found: the English site is a publication archive (statistical yearbooks, summary books, monthly releases); a guessed /en/statistics-data/ path returns HTTP 404 'Page not found'",
+      "license": "unread this session: no licence terms were captured from the publisher; the site footer states 'Copyright belongs to the National Statistics Office' (seen via web search snippet of an NSO page)",
+      "access": "measured 2026-10-20: https://www.nso.gov.vn/en/ -> HTTP 200, 107,925 bytes, WordPress/Avada publication site (homepage); a repeat probe minutes later failed to resolve the host locally (curl exit 6), while public DoH resolves nso.gov.vn -> 160.25.148.3 - local .vn resolution is intermittent"
+    },
+    {
+      "name": "data.gov.vn - Vietnam's national open-data portal (launched 2018)",
+      "url": "https://data.gov.vn/",
+      "api": "unknown - the host does not resolve: apex and www have no A record in public DNS (measured via dns.google DoH; the data.gov.vn zone itself is alive with nameservers ns1.zonedns.vn)",
+      "license": "unreadable - the portal is dark in DNS",
+      "access": "measured 2026-10-20: local curl exit 6 (Could not resolve host) and dns.google DoH NXDOMAIN/NODATA for data.gov.vn and www.data.gov.vn"
+    }
+  ],
+  "license_evidence": [
+    {
+      "note": "No licence text was read: the publisher's reachable pages are publication listings and a copyright footer; the national open-data portal that would carry open-data licence terms is dark in DNS. The licence question stays open with the park.",
+      "url": "https://www.nso.gov.vn/en/"
+    }
+  ],
+  "measurements": {
+    "gso_dns_2026_10_20": "dns.google DoH: gso.gov.vn, www.gso.gov.vn, opendata.gov.vn -> Status 3 NXDOMAIN (authoritative SOA from gov.vn zone: dns-master.vnnic.vn). The old GSO hostnames no longer exist - the office moved to nso.gov.vn after the Feb 2025 rename.",
+    "datagov_vn_dns_2026_10_20": "dns.google DoH: data.gov.vn -> Status 0 with no Answer record (zone alive, NS ns1.zonedns.vn); www.data.gov.vn -> NXDOMAIN. Local getent: 'Name or service not known' for all .vn hosts tried.",
+    "nso_homepage_2026_10_20": "https://www.nso.gov.vn/en/ -> HTTP 200 (redirected to /en/homepage/), 107,925 bytes, Avada WordPress theme - a publication/listing site, not a data API. /en/statistics-data/ -> HTTP 404. A repeat homepage probe minutes later: local DNS failure (curl exit 6) though public DoH still resolves nso.gov.vn -> 160.25.148.3 - .vn resolution from the coordinator is intermittent."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "Parked as a PDF/publication-only publisher per the standing rule: the current publisher channel is a publication archive with no machine-readable API and no event-level data found; the 2018 national open-data portal data.gov.vn is dark in DNS (no A record at apex or www). Compounding it, .vn name resolution from this coordinator is unreliable (same hosts resolving then failing within minutes, measured). This is an access/infrastructure park, not a data judgement - nothing about the publisher's data quality was evaluated.",
+  "review": null,
+  "next_action": "Unpark path: (1) identify the current machine-readable channel, if any - probe from a worker for Vietnamese-language data sections (XLSX monthly releases), and watch for a relaunch of data.gov.vn or a new VNNIC open-data host; (2) re-probe quarterly. If a machine-readable channel appears, re-evaluate from scratch - the bench would still need a task family absent from it. Until then this source yields nothing.",
+  "jurisdiction": {
+    "country": "VN",
+    "region": "South & South-East Asia",
+    "publisher": "National Statistics Office of Vietnam (NSO, formerly GSO, under the Ministry of Finance)",
+    "recorded_at": "2026-10-20"
+  }
+}

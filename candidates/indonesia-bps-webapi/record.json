@@ -1,0 +1,49 @@
+{
+  "id": "indonesia-bps-webapi",
+  "status": "dropped",
+  "verdict": "reject",
+  "created_at": "2026-10-20T10:29:00+00:00",
+  "domain": "national statistical office - aggregate statistics access",
+  "prediction_question": "None exists. A prediction task needs per-event or per-entity outcomes with a documented label; BPS's own service terms describe its machine-readable channel as access to aggregate statistical data ('data agregat'), and everything enumerated under its API verbs (domain, subject lists, static/dynamic tables) is aggregate tabular statistics. No dataset on this publisher can carry the task contract, so no task was formulated.",
+  "prediction_time": "Not applicable - no task exists for this source.",
+  "target_definition": "Not applicable - no task exists for this source.",
+  "sources": [
+    {
+      "name": "WebAPI Badan Pusat Statistik (BPS, Statistics Indonesia) - official web API",
+      "url": "https://webapi.bps.go.id/",
+      "api": "https://webapi.bps.go.id/v1/ - JSON router; documented endpoints under /v1/api/... require a key token from the API portal (free self-registration per BPS's PPID terms); undocumented paths return 404 {status: Error, 'Unable to resolve the request'}",
+      "license": "BPS official statistics; dissemination policy (ppid.bps.go.id) states the Web API is a free interoperability service for aggregate data - no redistribution question was pursued because no task exists",
+      "access": "measured 2026-10-20: GET https://webapi.bps.go.id/v1/ -> 200, 55 bytes, {\"title\":\"API Badan Pusat Statistik\",\"version\":\"1.0.0\"} (1.3 s, anonymous); guessed verb paths (domain, statictable, list-verbs) -> 404 JSON router errors; documentation at webapi.bps.go.id/documentation (found via web search; site link) states 'The BPS API identifies user with key token'"
+    },
+    {
+      "name": "BPS PPID service catalogue (Kebijakan Diseminasi Statistik) - the publisher's own description of what the Web API carries",
+      "url": "https://ppid.bps.go.id/app/konten/0000/Layanan-BPS.html",
+      "api": "n/a - terms page",
+      "license": "quote: 'The BPS Interoperability Services (Web API) provide access to aggregate data and other publicly available information as published on the official BPS website. Users ... are required to register independently through the BPS Web API portal, free of charge.'",
+      "access": "read via web search result snippet 2026-10-20 (page not fetched directly this session)"
+    }
+  ],
+  "license_evidence": [
+    {
+      "quote": "The BPS Interoperability Services (Web API) provide access to aggregate data and other publicly available information as published on the official BPS website. Users of the BPS Web API are required to register independently through the BPS Web API portal, free of charge.",
+      "url": "https://ppid.bps.go.id/app/konten/0000/Layanan-BPS.html",
+      "note": "Publisher's own terms define the machine-readable channel as aggregate data. Read via web search snippet 2026-10-20."
+    }
+  ],
+  "measurements": {
+    "api_root_2026_10_20": "GET https://webapi.bps.go.id/v1/ -> HTTP 200, 55 bytes, {\"title\":\"API Badan Pusat Statistik\",\"version\":\"1.0.0\"}, 1.29 s, anonymous, no key.",
+    "router_404s_2026_10_20": "GET /v1/domain/type/0, /v1/domain/type/all/key/xyz, /v1/statictable/list/0/100/key/xyz, /v1/list-verbs, /v1/domain, /v1/press -> all HTTP 404 with {\"status\":\"Error\",\"message\":\"Please re-check your URL Request.\"} - the service responds, the path contract is documented in webapi.bps.go.id/documentation, and access is key-token gated.",
+    "dsp2_dns_2026_10_20": "dsp2.bps.go.id -> NXDOMAIN (curl exit 6); the older DSP catalog hostname no longer resolves."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "Rejected on task grounds, not access: the API host is live and anonymous at the root (200 measured), and the Web API is a free registered service - but the publisher is a national statistics office whose entire machine-readable offering is aggregate statistical tables, by its own terms ('access to aggregate data'). Aggregate tables (counts, indices, rates by period and region) cannot supply per-event/per-entity outcomes with documented labels at a stated prediction instant, so the source supports no candidate task at all. No novelty comparison is meaningful: there is nothing to differentiate because there is no task.",
+  "review": null,
+  "next_action": "None - dropped. Re-open only if BPS starts publishing register-level or event-level data through the Web API (contrary to its statistics mandate), which is the steady state working against that ever happening.",
+  "jurisdiction": {
+    "country": "ID",
+    "region": "South & South-East Asia",
+    "publisher": "Badan Pusat Statistik (BPS, Statistics Indonesia)",
+    "recorded_at": "2026-10-20"
+  }
+}
