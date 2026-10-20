@@ -1,0 +1,74 @@
+{
+  "id": "cpcb-aqi-exceedance",
+  "status": "investigating",
+  "verdict": "go",
+  "created_at": "2026-10-20T09:09:59+00:00",
+  "domain": "air quality / environmental prediction",
+  "prediction_question": "For a CPCB continuous ambient air-quality monitoring station in India, will the station's next-day (D+1) 24-hour mean PM2.5 concentration exceed 90 micrograms/m3 - the lower breakpoint of the CPCB National AQI 'Poor' band for 24-hour PM2.5 - given only that station's own hourly PM2.5 history through the end of day D?",
+  "prediction_time": "23:59 IST on day D: every hourly reading through day D is knowable at that instant and no D+1 reading exists yet. Features are the station's own trailing hourly/daily PM2.5 statistics and calendar terms only; every D+1 measurement is label source and never ships as a feature.",
+  "target_definition": "Binary and mechanical from the source series: mean of the station's hourly PM2.5 values on D+1 > 90 micrograms/m3. The label source is the D+1 PM2.5 series itself, excluded from all shipped columns; the runner ships only the binary label. The threshold is a published, documented band edge (CPCB National AQI breakpoints), not a human judgement.",
+  "sources": [
+    {
+      "name": "India Air Quality API (XKDR Forum) - CPCB CAAQMS + US Embassy hourly readings, cleaned into one table",
+      "url": "https://airquality.xkdr.org/",
+      "api": "GET /v1/meta, /v1/stations, /v1/parameters, /v1/measurements (json|csv|parquet), /v1/files/<key>; the page publishes a demo key (aqi_demo_..., 10,000 rows/query, 2024 bulk files only); a full key is a free short form with a Cloudflare human check",
+      "license": "XKDR is a republisher; its own terms page was not read this session - the redistribution-rights evidence recorded below is OpenAQ's, which republishes the same CPCB network",
+      "access": "anonymous with the published demo key (measured 2026-10-20); full-history access needs a key a human must request"
+    },
+    {
+      "name": "OpenAQ archive (public S3 bucket) - global air-quality archive that ingests CPCB stations",
+      "url": "https://docs.openaq.org/aws/about",
+      "api": "https://openaq-data-archive.s3.amazonaws.com/records/csv.gz/locationid=<id>/year=YYYY/month=MM/location-<id>-YYYYMMDD.csv.gz - anonymous, no AWS account (layout from docs.openaq.org, read 2026-10-20)",
+      "license": "per docs.openaq.org read 2026-10-20: OpenAQ 'only ingests openly-licensed data (e.g. CC0, CC BY 4.0)'; its licenses resource records CC BY 4.0 with attributionRequired=true, redistributionAllowed=true",
+      "access": "anonymous bulk; CPCB locationids enumerable via the v3 locations API (keyed) - layout measured, not yet exercised for a CPCB locationid this session"
+    },
+    {
+      "name": "Central Pollution Control Board, Government of India (publisher of record) - CAAQMS network",
+      "url": "https://airquality.cpcb.gov.in/ccr/",
+      "api": "official CCR bulk download is registration-gated; api.data.gov.in resource API unreachable from the coordinator (measured HTTP 000, 2026-10-20)",
+      "license": "GODL-India is data.gov.in's standing licence for CPCB resources - widely documented but NOT re-verified from here because the API host was unreachable; verify before construction",
+      "access": "the publisher's own bulk channels are registration-gated or unreachable from this network; discovery and construction use the OpenAQ/XKDR republish channels"
+    }
+  ],
+  "license_evidence": [
+    "Measured 2026-10-20 from docs.openaq.org (terms, FAQ and licenses pages, read via search): 'OpenAQ only ingests openly-licensed data (e.g. CC0, CC BY 4.0) that report air quality measurements in concentration values'; license id 41 'CC BY 4.0 DEED' carries commercialUseAllowed=true, attributionRequired=true, redistributionAllowed=true; the terms additionally require acknowledging the original source and OpenAQ as access point. A derived release would carry CC-BY-4.0 attribution to CPCB and OpenAQ with the source's own designation preserved.",
+    "CPCB/data.gov.in licence not re-verified: api.data.gov.in was unreachable from the coordinator (measured HTTP 000, two attempts, 2026-10-20). GODL-India is the platform's documented standing licence for CPCB resources; that claim is labelled unverified-from-here and must be read once the host is reachable from a worker."
+  ],
+  "construction_script": null,
+  "split_strategy": "Temporal by day, computed at construction: candidate windows train 2019-2023, eval 2024, holdout 2025-2026-03 (XKDR archive ends 2026-03, measured). Both classes present in the one window measured so far (Delhi Q1-2024: 58.89% positive - winter; annual and per-station base rates must be measured over the full window at construction, and the threshold may need to sit at the 'Very Poor' band edge if 'Poor' is too easy nationally). ~558 stations in the archive; stations with sparse coverage drop out at construction.",
+  "measurements": {
+    "xkdr_meta_2026_10_20": "GET https://airquality.xkdr.org/v1/meta with the published demo key: HTTP 200; measurements 196,521,834 rows over 207 months (2009-01..2026-03), 558 stations, 15 parameters; schema station_id, station_name, state_name, city_name, parameter_name, unit, collected_at (naive IST), value, source (cpcb_caaqm|us_embassy), year, month; demo tier capped at 10,000 rows/query, 30 s query timeout.",
+    "xkdr_delhi_sample_2026_10_20": "GET /v1/measurements?city=Delhi&parameter=PM2.5&start=2024-01-01&end=2024-03-31&agg=daily&format=csv: HTTP 200, 252,729 bytes, 3,384 data rows across 39 distinct station_ids; columns station_id, parameter_name, unit, period_start, mean, min, max, n. Base rate measured on this sample at the proposed threshold: 1,993/3,384 = 58.89% of station-days with mean PM2.5 > 90 micrograms/m3 (Delhi winter; not the annual rate). One request, ~3 s.",
+    "openaq_archive_2026_10_20": "Bucket listing https://openaq-data-archive.s3.amazonaws.com/?list-type=2: HTTP 200, single top-level prefix 'records/'; a guessed provider-prefixed layout (real-cpcb-gov-in/2024/) measured absent (KeyCount 0), confirming the documented hive layout records/csv.gz/locationid=... instead. CPCB locationids not enumerated this session (v3 locations API needs a key).",
+    "data_gov_in_unreachable_2026_10_20": "https://api.data.gov.in/resource/3b01bcb8-0b14-4abf-b6f2-c1bfd384ba69?format=csv&limit=5: connection failure (HTTP 000) from the coordinator on two attempts - the official keyed API cannot be evaluated from this network."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": null,
+  "next_action": "GO to construction (advancement session owns it). Construction step: (1) on a worker, enumerate CPCB stations and measure a full-window extraction - either request a free XKDR key (operator fills the 30-second form at airquality.xkdr.org) or use the OpenAQ archive by resolving CPCB locationids (v3 locations API key or the archive's per-location listing) and pulling per-station-month gzipped CSVs for a fixed window (2019-01..2026-03); (2) build the station-day panel from hourly PM2.5, label = next-day mean > 90 micrograms/m3, features strictly day-D-and-earlier lags/rolling statistics, label source excluded from shipped columns and absence asserted; (3) measure full-window base rates per year and per station, decide the final band threshold from the measured annual rates, then run the qualification gate on the worker over the full artifact. Note the archive ends 2026-03 (measured) - the monthly-refresh path (fresh OpenAQ sync or an XKDR key) must be picked before the first release.",
+  "jurisdiction": {
+    "country": "IN",
+    "region": "South & South-East Asia",
+    "publisher": "Central Pollution Control Board, Government of India (CAAQMS network), republished by OpenAQ (US nonprofit) and XKDR Forum (India)",
+    "recorded_at": "2026-10-20"
+  },
+  "novelty_check": {
+    "checked_at": "2026-10-20T09:09:59+00:00",
+    "method": "web search for an existing ML-ready formulation of this exact task (station-level next-day PM2.5/AQI exceedance on CPCB data with packaged splits and a scored contract)",
+    "queries": [
+      "India CPCB AQI station-level prediction benchmark dataset splits",
+      "CPCB PM2.5 exceedance prediction task dataset"
+    ],
+    "prior_art": [
+      "Research papers fitting AQI forecasters on CPCB data with private chronological splits (arXiv 2404.08702, 22 stations, own splits; Discover Artificial Intelligence 2026 hybrid DL on CPCB records; several city-level studies) - models, not packaged tasks",
+      "Kaggle mirrors of the raw data ('Time Series Air Quality Data of India 2010-2023', CC BY-SA, 487 MB; 'Air Quality Data in India') - data mirrors with no prediction contract",
+      "OpenAQ/XKDR archives - the data, not a task",
+      "Vayuayan AQI Archive (saketlab) - station CSV mirrors of CPCB, no task"
+    ],
+    "theirs": "Papers with private splits on their own pulls of CPCB data; open data mirrors of the raw readings; no published train/eval/holdout prediction task with a scored contract on this source was found",
+    "ours": "A packaged station-level next-day 'Poor-or-worse' PM2.5 exceedance task on the CPCB CAAQMS network: mechanical band-edge label, temporal splits, monthly-refreshable windows from an anonymous documented archive (OpenAQ), and the runner contract. The task does not exist in ML-ready form anywhere found; the heavy literature is what makes a measured benchmark of it valuable rather than redundant.",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
+}

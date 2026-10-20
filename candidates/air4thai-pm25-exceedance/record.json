@@ -1,0 +1,39 @@
+{
+  "id": "air4thai-pm25-exceedance",
+  "status": "parked",
+  "verdict": "park",
+  "created_at": "2026-10-20T09:09:59+00:00",
+  "domain": "air quality / environmental prediction",
+  "prediction_question": "Hypothetical task this source would support (not taken forward): for a Pollution Control Department (PCD) Air4Thai automatic monitoring station, will next-day mean PM2.5 exceed the Thai 24-hour standard, given the station's own hourly history through day D? Probed to a verdict because Thailand is a tick source.",
+  "prediction_time": "Would be 23:59 ICT on day D: station history through D knowable, D+1 readings not yet made.",
+  "target_definition": "Would be mechanical: mean of the station's D+1 hourly PM2.5 values above the Thai 24-hour PM2.5 standard (a published regulatory threshold), the D+1 series excluded from shipped columns.",
+  "sources": [
+    {
+      "name": "Air4Thai - Pollution Control Department (PCD), Ministry of Natural Resources and Environment, Thailand; catalog entry 'hourly PM2.5 from Air4Thai automatic stations' on the national Envilink data catalog",
+      "url": "https://envilink.go.th/dataset/air-quality-pm2point5 (catalog page) and http://air4thai.pcd.go.th/webV3/#/History (publisher's history page)",
+      "api": "the Envilink catalog lists JSON/XML API resources for nationwide and Bangkok-metropolitan station data (65 and 19 recorded downloads); the actual resource URLs sit behind the catalog page, which Cloudflare-walls headless clients (measured 403)",
+      "license": "unstated on anything fetchable this session (measured); a third-party site asserts 'reproduced with attribution' for Air4Thai data, which is a third-party claim, not a publisher licence",
+      "access": "no anonymous bulk path measured: catalog page Cloudflare-walled (403 to curl), air4thai.pcd.go.th fails at TLS from the coordinator (HTTP 000; plain HTTP answers 301), and PCD's own service document describes bulk data as a per-case request service"
+    }
+  ],
+  "license_evidence": [
+    "Measured 2026-10-20: the Envilink catalog page returns a Cloudflare challenge (HTTP 403, 5,485-byte challenge page) to anonymous curl, so no licence statement on the catalog entry could be read; air4thai.pcd.go.th is not reachable over TLS from the coordinator (HTTP 000). A PCD service-description PDF (pcd.go.th, read via search) describes bulk air-quality data provision as a per-case request service ('จัดทาชุดข้อมูลตามที่ผู้รับบริการร้องขอ เป็นรายกรณี' - datasets prepared case by case on request, historically delivered on physical media). No open licence found; per the standing rule, unstated terms are not assumed."
+  ],
+  "construction_script": null,
+  "split_strategy": null,
+  "measurements": {
+    "access_probes_2026_10_20": "https://envilink.go.th/dataset/air-quality-pm2point5: HTTP 403 Cloudflare challenge (5,485 bytes). https://air4thai.pcd.go.th/webV3/api/airquality?limit=5: TLS connection failure (HTTP 000); http:// variant answers 301 (to https, which then fails). https://air4thai.com/webV3/api/airquality?limit=5: HTTP 000. All measured 2026-10-20 from the coordinator.",
+    "catalog_metadata_via_search_2026_10_20": "The Envilink catalog entry (read via search snippet) records: update frequency hourly; data source 'automatic air-quality stations from the AQM Thai database'; access condition 'Download'; resources JSON (nationwide), JSON/XML (Bangkok metro); the publisher's history page is http://air4thai.pcd.go.th/webV3/#/History."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "PARK (status parked), reason: three stacked blockers, in order of weight. (1) Access: no anonymous bulk path was measurable - the official catalog is Cloudflare-walled to headless clients, the station host fails TLS from the coordinator, and PCD's own document describes bulk data as a per-request service. (2) Licence: unstated on everything reachable; a third-party attribution claim is not a publisher licence. (3) Task shape: a Thai station-level PM2.5 exceedance task would duplicate the cpcb-aqi-exceedance candidate opened this same session - the bench does not need two same-shape air-quality tasks, so even with access and licence resolved this should wait for an explicit operator decision that a second air-quality task is wanted. Not a rejection: nothing about the source itself disqualifies the task.",
+  "review": null,
+  "next_action": "If the operator wants a Thai air-quality task: (1) load the Envilink catalog page in a real browser, record the actual resource URLs and any per-dataset licence statement; (2) obtain written licence confirmation from PCD for redistribution of derived station-day tables; (3) only then reopen, with a novelty check that positions it against cpcb-aqi-exceedance (a second air-quality task must argue why the bench needs it).",
+  "jurisdiction": {
+    "country": "TH",
+    "region": "South & South-East Asia",
+    "publisher": "Pollution Control Department (PCD), Ministry of Natural Resources and Environment, Thailand - Air4Thai / Envilink data catalog",
+    "recorded_at": "2026-10-20"
+  }
+}

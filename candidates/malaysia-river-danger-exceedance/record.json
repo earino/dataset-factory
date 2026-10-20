@@ -1,0 +1,40 @@
+{
+  "id": "malaysia-river-danger-exceedance",
+  "status": "parked",
+  "verdict": "park",
+  "created_at": "2026-10-20T09:09:59+00:00",
+  "domain": "hydrology / flood early-warning prediction",
+  "prediction_question": "For a Department of Irrigation and Drainage (JPS) telemetric river-level station in Malaysia, will the station's water level exceed its official published Danger threshold at any hourly reading within the next 24 hours, given the station's own water-level and rainfall history through hour H?",
+  "prediction_time": "Hour H of day D: hourly telemetry through H is knowable, and no reading after H exists. Features are the station's own trailing level/rainfall statistics; every reading in (H, H+24] is label source and never ships as a feature.",
+  "target_definition": "Binary: any hourly water-level reading for the station in (H, H+24] strictly above the station's published Danger Level (m). The thresholds are official per-station values shown on the publisher's per-state river pages (Normal/Alert/Warning/Danger columns, measured present in the fetched HTML), not chosen by us. Label source = the future level series; ships only as the binary label.",
+  "sources": [
+    {
+      "name": "PublicInfoBanjir portal - Department of Irrigation and Drainage (JPS) Malaysia, real-time rainfall and river water-level telemetry",
+      "url": "https://publicinfobanjir.water.gov.my/ (home, 93,377 bytes, measured 2026-10-20); per-state current pages /aras-air/data-paras-air/?state=<CODE>&lang=en; trend page /trend-hujan-aras-air/?lang=en (190,352 bytes)",
+      "api": "anonymous WordPress AJAX query endpoints extracted from the trend page JS: /wp-content/themes/enlighten/query/searchresulttrenddata1hour.php?lang=en&state=<S>&district=<D>&station=<ST>&from=<F>&to=<T>&datafreq=<FREQ>; searchresulttrenddata15min.php (same params); searchresultwaterleveldtlead_rptdb.php?station=<ST>&from=<F>&to=<T>&datafreq=<FREQ>; searchresultrainfalldthourlylead_rptdb.php (same); helpers searchdistricttrend.php?name=, searchstationTrend.php?lang=en&name=",
+      "license": "No licence or copyright statement found on any portal HTML fetched (measured: grep of home, state and trend pages found no copyright/terms/licence text). data.gov.my's homepage advertises 'flood-warning' and 'rainfall' catalog categories, but the catalog pages load client-side and the entry for this telemetry was not located this session - licence question OPEN",
+      "access": "current-conditions pages fully anonymous (measured); the historical-series endpoints are alive and anonymous but their exact parameter contract was not reverse-engineered this session (see measurements)"
+    }
+  ],
+  "license_evidence": [
+    "Measured 2026-10-20: no licence, copyright or terms text appears anywhere in the fetched portal HTML (home page 93,377 bytes, KEL state river page 76,926 bytes, trend page 190,352 bytes - grepped for copyright/hak cipta/terms/privacy). The publisher displays data publicly and states the system's purpose (public flood information), but display is not redistribution; per the standing rule the licence is recorded as an open question, not assumed."
+  ],
+  "construction_script": null,
+  "split_strategy": null,
+  "measurements": {
+    "current_pages_2026_10_20": "State river page /aras-air/data-paras-air/?state=KEL&lang=en: HTTP 200, 76,926 bytes, per-station rows carrying Normal/Alert/Warning/Danger threshold columns ('Danger Level:', 'Warning Level:', 'Alert Level:', 'Normal Level.' measured in HTML); 15 state options enumerated (PLS Kedah through WLP Labuan). The portal describes nearly 200 hydrological stations with real-time telemetry.",
+    "trend_endpoints_2026_10_20": "Trend page JS (lines 1300/1409/2752/3327 of the fetched HTML) issues the four anonymous AJAX endpoints listed in sources; all answered HTTP 200.",
+    "historical_probe_failure_2026_10_20": "The 1-hour endpoint answers 'Tiada data / No data' for state=KEL with placeholder district/station values; the water-level DT endpoint answers '{\"count\":,]}No result' for a station code taken from the state page (CC2127) across four date formats (2026-07-01/2026-07-03 and 01/07/2026/03/07/2026, datafreq=60). Endpoints are alive and anonymous, but the district/station keys and date format the frontend actually sends were not captured. The dropdown helpers return only the 'ALL' placeholder for the values tried, and a third-party-documented live-feed path (latestreadingstrendabc.json) 404s at three guessed locations."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "PARK (status parked), reason: the historical-series access contract could not be exercised anonymously within session bounds. The portal's own trend AJAX endpoints exist and answer, but the exact parameter contract (district/station keys and date format) was not reverse-engineered after several targeted attempts, and without a historical pull the split windows cannot be computed - so this is not yet a lead that can be budgeted. The licence is equally unresolved (no terms text on the portal, catalog entry not located). Prior art checked, no mirror: river-stage/discharge forecasting literature exists (Caravan global discharge benchmark, arXiv 2212.00719 - continuous discharge regression, not official-threshold classification; Google Flood Hub - operational forecasts, not a downloadable task; FloodCastBench 2025 - coastal), but no packaged official-threshold exceedance classification task on this publisher's telemetry was found, so this stays a candidate, not a rejection.",
+  "review": null,
+  "next_action": "Unpark steps, in order: (1) load https://publicinfobanjir.water.gov.my/trend-hujan-aras-air/?lang=en in a real browser, pick a state/district/station and a date range, and capture the exact XHR the page issues (parameter names, station key format, date format) - then re-probe headlessly and confirm a multi-year historical pull works; (2) locate the data.gov.my catalog entry for this telemetry (homepage advertises flood-warning/rainfall categories; the catalog loads client-side) and read the licence it declares; (3) if both resolve, this becomes a GO for construction on a worker: station-hour panel, label = any (H, H+24] reading above the official Danger Level, features from trailing level/rainfall only.",
+  "jurisdiction": {
+    "country": "MY",
+    "region": "South & South-East Asia",
+    "publisher": "Department of Irrigation and Drainage (JPS), Ministry of Energy Transition and Water Transformation, Malaysia - PublicInfoBanjir portal",
+    "recorded_at": "2026-10-20"
+  }
+}

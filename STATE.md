@@ -3534,3 +3534,56 @@ US sources.
    are removed by reverting `factory/worker.py` and `tests/test_workers.py`; `config/local.json` is
    back to `max_workers: 1` with the budget unchanged at EUR 20/month. The one-worker invariant and
    its refusal message ("An active or interrupted job exists") stand as before.
+
+## 2026-10-20 - Discovery tick (South & Southeast Asia)
+
+Regional focus tick: South and Southeast Asia. Five new sources opened, **all five from the
+tick's region** (India x2, Malaysia, Indonesia, Thailand) - the quota of three verdicts with
+two from the region is satisfied without touching a US source, and no US backfill was needed
+or used. Every probe was anonymous; no bulk data was downloaded to the coordinator. Probe
+HTML/CSVs (~2.1 MB) sit in `.factory/probe_tmp/` (git-ignored scratch): the scoped
+`rm -rf .factory/probe_tmp` was refused by the approval gate in single-query mode, so the
+files are left in place rather than worked around. `scripts/check-candidate.py
+--all` exit 0 and the suite passes (354 tests OK); `scripts/discovery-coverage.py` now reports
+23 candidates, 11 live, **live non-US 5/11 (was 4/10)**, South & South-East Asia 5.
+
+- **`cpcb-aqi-exceedance` - GO (CPCB CAAQMS, India; republish channels OpenAQ + XKDR).**
+  Predict whether a station's next-day 24-hour mean PM2.5 exceeds the CPCB 'Poor' band edge
+  (90 ug/m3), from its own hourly history through day D. Measured: XKDR demo API 196,521,834
+  readings, 558 stations, 2009-01..2026-03 (GET /v1/meta, 1 request); Delhi Q1-2024 daily
+  sample 3,384 station-days over 39 stations in 252,729 bytes / ~3 s (1 request), 58.89%
+  above threshold (winter window - annual rate to be measured at construction). Anonymous
+  bulk channel: OpenAQ archive S3 (CC BY 4.0, redistribution allowed, no account), layout
+  documented and bucket listing measured; CPCB locationids unresolved this session (first
+  construction step). Novelty `differentiated`: heavy paper literature and Kaggle data
+  mirrors exist, no packaged train/eval/holdout task with a scored contract anywhere.
+  Official api.data.gov.in unreachable from the coordinator (measured HTTP 000).
+- **`malaysia-river-danger-exceedance` - PARK (JPS PublicInfoBanjir, Malaysia).** Official
+  per-station Danger-threshold exceedance from river/rainfall telemetry. Current pages,
+  per-station Normal/Alert/Warning/Danger thresholds and the historical AJAX endpoints all
+  confirmed anonymous, but the trend endpoints' exact parameter contract (station key + date
+  format) was not reverse-engineered after targeted attempts ("Tiada data"/"No result"
+  measured), and no licence text exists on any fetched portal page. Unpark: browser-capture
+  the trend page XHR and find the data.gov.my catalog entry that declares the licence.
+- **`bmkg-earthquake-felt` - PARK (BMKG, Indonesia).** Felt-vs-instrumental earthquake
+  classification from detection-time parameters; the felt-quake feed measured to serve only
+  the latest 15 events (4,602 bytes, 15 items counted) and the open-data pages expose no
+  historical archive, so labels are unobtainable from anything published today. Unpark: probe
+  the SATU PETA MKG API (gis.bmkg.go.id) for a historical catalogue, or commit to a 12-month
+  collection loop on the live feeds.
+- **`imd-station-observation-series` - PARK (IMD, India).** Station-level historical series
+  are enrolment-gated and chargeable per the Data Supply Portal's own pages (V4.0 enrolment
+  note), and both IMD public portals were unreachable from the coordinator (measured HTTP
+  000) - an infrastructure + access blocker, not a data judgement. Unpark: probe from a
+  worker in another network region and ask the operator whether to enrol.
+- **`air4thai-pm25-exceedance` - PARK (PCD Air4Thai, Thailand).** The official catalog page
+  is Cloudflare-walled to headless clients (403 measured), the station host fails TLS from
+  the coordinator, PCD's own service document describes bulk data as a per-case request
+  service, and the licence is unstated; additionally the task shape duplicates
+  cpcb-aqi-exceedance, so reopening needs an explicit operator decision even after access
+  and licence resolve.
+
+The region did not come up empty - it produced one GO and four honest parks, each with the
+probes that produced the verdict recorded in its notes.md. Next action for the GO is specific
+in its record: worker-side extraction measurement (OpenAQ locationids or an XKDR key), then
+the station-day panel and the qualification gate.

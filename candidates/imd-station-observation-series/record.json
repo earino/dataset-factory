@@ -1,0 +1,46 @@
+{
+  "id": "imd-station-observation-series",
+  "status": "parked",
+  "verdict": "park",
+  "created_at": "2026-10-20T09:09:59+00:00",
+  "domain": "meteorology / weather-station prediction",
+  "prediction_question": "Hypothetical task this source would support (not taken forward): for an IMD observation station, will the next day's rainfall (or temperature) exceed a documented threshold, given the station's own history through day D? Named as a tick source (India: IMD) and probed to a verdict rather than left on the bench.",
+  "prediction_time": "Would be 23:59 IST on day D: station history through D knowable, day D+1 observations not yet made.",
+  "target_definition": "Would be mechanical from the station's own D+1 observation series (rainfall mm or temperature) against a documented IMD threshold; the label source is the D+1 series itself, which would be excluded from shipped columns.",
+  "sources": [
+    {
+      "name": "IMD Data Supply Portal (IMD-DSP), India Meteorological Department, Ministry of Earth Sciences",
+      "url": "https://dsp.imdpune.gov.in/ (pages read via web search 2026-10-20; dsp.imdpune.gov.in/home_freedataaccess.php)",
+      "api": "no open API for station-level historical series; 'Free Data Access' products listed are aggregate/gridded (All-India monthly and seasonal mean temperature/rainfall series, gridded climatological data, climate tables, historical extremes); station-level procurement goes through the portal's request workflow",
+      "license": "no open-licence statement located on the portal pages read; the portal documents data charges for users outside MoES (payment procedure and tariff pages)",
+      "access": "registration-gated: 'Henceforth [Version 4.0, operational from 2021-08-16], the account-login enrolment process is introduced for the procurement of data' (read on the DSP pages via web search 2026-10-20)"
+    },
+    {
+      "name": "mausam.imd.gov.in and dps.imd.gov.in (IMD public portals)",
+      "url": "https://mausam.imd.gov.in/ and https://dps.imd.gov.in/",
+      "api": "not reachable from the coordinator: connection failure (HTTP 000) for both, measured 2026-10-20 on two attempts",
+      "license": "unknown - pages could not be fetched from this network",
+      "access": "unreachable from the coordinator's network during this session; infrastructure failure, which per AGENTS.md does not prove the source unsuitable"
+    }
+  ],
+  "license_evidence": [
+    "Measured 2026-10-20: both IMD public portals fail at connection level from the coordinator (curl HTTP 000, twice), so no IMD page could be read first-hand this session; everything recorded about the DSP comes from search-engine reads of dsp.imdpune.gov.in pages. The portal documents paid data supply for non-MoES users and an enrolment gate for procurement - no open redistribution licence was found for station-level series."
+  ],
+  "construction_script": null,
+  "split_strategy": null,
+  "measurements": {
+    "unreachable_2026_10_20": "curl to https://mausam.imd.gov.in/ and https://dps.imd.gov.in/: HTTP 000 (connection failure) from the coordinator, two attempts each, 2026-10-20 - possibly network/geo filtering of this host; a worker in another region may see otherwise.",
+    "dsp_policy_2026_10_20": "dsp.imdpune.gov.in pages (read via web search): 'Free Data Access' carries aggregate/gridded products only; station-level observation data (hourly rainfall, temperature, humidity, wind, pressure - the Data Supply list) is procured through enrolment, request forms and (for non-MoES users) data charges."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "PARK (status parked), reason: the product this bench's task shapes need - station-level historical observation series - is documented as enrolment-gated and chargeable on the publisher's own Data Supply Portal, and both IMD public portals were unreachable from the coordinator (measured HTTP 000), so even the free-product inventory could not be enumerated from here. This is an access and network blocker, not a judgement about the data; per AGENTS.md an infrastructure failure does not prove unsuitability, hence park rather than reject.",
+  "review": null,
+  "next_action": "Unpark steps: (1) probe dsp.imdpune.gov.in and mausam.imd.gov.in from a worker in another network region and enumerate the free products (if any station-level series are free, this reopens); (2) otherwise ask the operator whether to enrol for the paid station series - without that decision this stays parked. Any free gridded product would need its own novelty check first: monsoon and rainfall prediction is an enormous literature.",
+  "jurisdiction": {
+    "country": "IN",
+    "region": "South & South-East Asia",
+    "publisher": "India Meteorological Department (IMD), Ministry of Earth Sciences - Data Supply Portal",
+    "recorded_at": "2026-10-20"
+  }
+}
