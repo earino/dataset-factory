@@ -1,0 +1,58 @@
+{
+  "id": "unhcr-refugee-data-finder",
+  "status": "parked",
+  "verdict": "park",
+  "created_at": "2026-10-20T20:18:13+00:00",
+  "domain": "forced displacement - situation-level population prediction (international organisation publisher)",
+  "prediction_question": "Hypothetical task this source would support (blocked on access, not formulated further): for a displacement situation (origin country, year D), will the population of refugees and others in need of international protection from that origin grow by more than a stated fraction (e.g. 25%) in year D+1? A second, higher-grain shape exists in the same publisher's asylum-application series (monthly applications by origin x country of asylum).",
+  "prediction_time": "Would be end of year D, when the situation's year-D figures are published (RDF updates monthly with revisions; end-year data for D appears during D+1).",
+  "target_definition": "Would be derived from the RDF population table's year-D+1 row for the origin (columns for refugees, asylum-seekers, other people in need of international protection), with the year-D+1 row's population columns as the label source, excluded from shipped features.",
+  "sources": [
+    {
+      "name": "UNHCR Refugee Data Finder (RDF) - the publisher's current statistics channel, replacing the retired popstats.unhcr.org",
+      "url": "https://www.unhcr.org/refugee-statistics/",
+      "api": "none documented: the RDF is an interactive Symfony UX application; bulk exports are produced by the app's own Download control (form POST of the current filters); the homepage links five deep-link exports at opaque hashed URLs (e.g. https://www.unhcr.org/refugee-statistics/download/?v2url=dc36b6 'Refugees, asylum-seekers and other people in need of international protection by country of origin'); the app's data_finder controller JS contains no public API route (measured)",
+      "license": "CC BY 4.0 for the datasets, per the methodology page's 'Data terms and conditions of usage' (see license_evidence); the site-wide website terms are more restrictive for website Content but the dataset licence is the specific grant",
+      "access": "measured 2026-10-20: https://www.unhcr.org/refugee-statistics/ -> HTTP 403 to curl (182,520-byte challenge page); loads only in a real browser. An in-page same-origin fetch() of the deep-link export URL also returns 403 (222,964 bytes) - the WAF distinguishes XHR from navigation. Real navigation to the deep link opens the interactive Data Finder app, not a file. The Download control is JS-driven (dialog form POST); an attempted click produced no file in the browser download dir during this session. Old channels are dead: popstats.unhcr.org -> HTTP 000; data.unhcr.org/en/index -> HTTP 404"
+    },
+    {
+      "name": "HDX (OCHA Centre for Humanitarian Data) - UNHCR organisation catalog",
+      "url": "https://data.humdata.org/api/3/action/package_search?q=unhcr+population&rows=5",
+      "api": "anonymous CKAN v3 API; used to check whether the RDF population series is mirrored with a stable resource URL",
+      "license": "UNHCR datasets on HDX carry licence metadata 'Creative Commons Attribution International (CC BY)' / 'CC BY-IGO' (e.g. unhcr-statistical-yearbooks, unhcr-situations)",
+      "access": "measured 2026-10-20: CKAN API HTTP 200 (84,789 B for 8 results). The full origin-year population series is NOT mirrored on HDX - only per-country extracts (afg/bgd 'forcibly displaced population by origin', updated 2026-08-17) and reference/geodata layers. So the HDX path does not unblock the full series"
+    }
+  ],
+  "license_evidence": [
+    {
+      "note": "RDF methodology page, read 2026-10-20 in a real browser (curl is WAF-blocked): 'Data terms and conditions of usage - Creative Commons Attribution 4.0 International Public License. Except where otherwise indicated, the datasets made available by UNHCR on UNHCR Refugee Population Statistics Database are licensed under the Creative Commons Attribution 4.0 International Public License.' followed by 'Please refer to the Terms of Use for Datasets'.",
+      "url": "https://www.unhcr.org/refugee-statistics/methodology"
+    },
+    {
+      "note": "Site-wide website terms (read 2026-10-20, same browser session): 'Extracts of the information on this website may be reviewed, reproduced or translated for research or private study but not for sale or for use in conjunction with commercial purposes. Any use of Content from the UNHCR website shall be accompanied by an acknowledgment of the source... Any use other than for personal or educational purposes, including reproduction, scraping by artificial intelligence (AI), or translation of substantial portions of the Content of the UNHCR website, requires the express prior written permission of UNHCR.' Recorded as the website-Content default; the dataset-specific CC BY 4.0 grant above is the operative licence for the statistics themselves, and this tension is flagged for the operator if this source is ever unparked.",
+      "url": "https://www.unhcr.org/contact-us/terms-and-conditions-use"
+    }
+  ],
+  "construction_script": null,
+  "split_strategy": null,
+  "measurements": {
+    "waf_probe_2026_10_20": "curl https://www.unhcr.org/refugee-statistics/ -> HTTP 403, 182,520 B (challenge page); the same URL loads normally in a real browser (title 'Refugee Data Finder - Key Indicators'). In-page same-origin fetch of the export deep link -> HTTP 403, 222,964 B. Both measured from the coordinator.",
+    "deep_links_2026_10_20": "The homepage's five export deep links (extracted from the rendered page): population by country of origin (?v2url=dc36b6), population by host country (?v2url=bd1059), demographics of refugees (?v2url=d3e49d), solutions 2015-2024 (?v2url=d63e73), new asylum applications during 2024 (?v2url=1e3087). Navigating a real tab to the origin deep link opens the interactive Data Finder app with that dataset preselected - the URL is a view selector, not a file.",
+    "app_internals_2026_10_20": "The app is a Symfony/UX live-component application (assets under /refugee-statistics/assets/, controllers incl. data_finder_controller-*.js, turbo/stimulus bundles); the data_finder controller submits a FormData via Turbo form POST; no JSON/CSV API route appears in the controller source or in the page's network resource entries. The Download control is an <a> with no href (JS-driven dialog form); a programmatic click produced no downloaded file in this session.",
+    "dead_channels_2026_10_20": "http://popstats.unhcr.org/en/overview -> HTTP 000 (host gone); https://data.unhcr.org/en/index -> HTTP 404. The pre-RDF population database channel no longer exists.",
+    "hdx_mirrors_2026_10_20": "HDX CKAN search 'unhcr population' -> 860 results, of which the full origin-year population series is absent; only per-country extracts (CC BY) and GIS reference layers. 'refugee data finder' search -> 3,427 results, none the full series. HDX does not unblock the bulk data.",
+    "recency_2026_10_20": "The RDF homepage reports 'Forcibly displaced people worldwide at end-2025: 117.8 million' with charts spanning 2000-2025, so the series is maintained to end-2025 (annual grain) - current and republished on a rolling schedule."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "PARK (status parked), reason: access/automation blocker, in order of weight. (1) No machine-fetchable bulk path: the host is WAF-gated to plain HTTP clients (403 to curl and to same-origin fetch; only real-browser navigation passes), exports are produced by an interactive application's Download control with opaque hashed view URLs, no documented API route exists in the app, and a programmatic click of Download yielded no file this session. A Hetzner worker would face the same WAF from a datacenter IP with a higher challenge rate. (2) The licence is NOT the blocker: the methodology page grants CC BY 4.0 on the datasets. (3) The full series is not mirrored on HDX (only per-country extracts), and UNICEF republishes only the annual country-of-origin refugee counts through its own SDMX API (different publisher, annual grain). Unpark requires either a documented anonymous export URL that a datacenter client can fetch, an operator decision that a browser-captured export is acceptable provenance for a monthly release, or UNHCR guidance in writing.",
+  "review": null,
+  "next_action": "Unpark question (exact): can the RDF population CSV be fetched by a non-interactive client - a documented export URL, an API, or a fetch pattern that passes the WAF from a Hetzner worker IP? Concretely: (1) ask UNHCR's data team (RDF feedback form) for a machine-readable distribution of the population and asylum-application series; (2) or the operator decides a once-per-release browser-captured export is acceptable provenance; (3) if neither, keep using UNICEF's SDMX republishing (MG_RFGS_CNTRY_ORIGIN, annual) for a thinner annual task and leave this record parked.",
+  "jurisdiction": {
+    "country": "CH",
+    "region": "International organisations",
+    "publisher": "United Nations High Commissioner for Refugees (UNHCR), headquartered in Geneva, Switzerland",
+    "convention": "The publisher's HQ country is recorded because 'international' is not a country; UNHCR is a UN programme headquartered in Geneva, Switzerland.",
+    "recorded_at": "2026-10-20"
+  }
+}
