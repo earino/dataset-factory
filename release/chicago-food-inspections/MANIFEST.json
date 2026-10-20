@@ -2155,7 +2155,7 @@
     "RELEASE_NOTES.md": "84d5fd98ce0763498c973cfa2631d4145cf5a183c16dae772a28af68548e204a",
     "REPRODUCE.md": "24a3cb1a10aa011bd2c033aa7790a3149674eb74de79fdb6164bad397e866b21",
     "SHA256SUMS": "bf9c1edcf5fc7cd242e76ec7451b056685a2c1348f2086d0f58d2969bee75311",
-    "VERIFICATION.md": "e35a4a759209755e1b4b0ae3411a6b67490ed48e4a5233aa4447a2ffc041e218",
+    "VERIFICATION.md": "dfea1ccf64493395454816303e4229c8649fc2c4998ad99ef096b929c13cff4c",
     "baseline/README.md": "2535e8da0ef554958d87df992fee898a214aed910849f76aa31c2d0369727eed",
     "baseline/reproduce_baseline.sh": "58a688e1143fdc4164902ec6ddf369b8edf3a093ec3c7ec3e3ffce125d6fc6b0",
     "baseline/train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
@@ -2167,6 +2167,7 @@
     "code/probe_splits.py": "192f52bb04565498b9e6f35520c304f881d920b1300502524ba47aacbd22d8fa",
     "code/qualify_dataset.py": "71a8cac429656e27dbb631be8488b9f4662580994b115290a243fc1f4b9639f1",
     "code/run.sh": "74885433339ba7be5fb6fc460f22a41731cfa5ee313c4366528d91a4dbe51788",
+    "dataset_infos.json": "b5ef01a53a6e612c33ec62208e90e5072b5d0d00bad3bff14b8232ce2aedbf86",
     "get_dataset.py": "a3dd598df89bb45b958ad448ed0213a4b31338dc4b948baaff5e080d2328bbdb",
     "measurements.json": "a79b0f6752a5ef487d32c91bf494e05cc190479fd29e6e52c5a5547f38e83d97"
   },
@@ -4560,15 +4561,15 @@
       "xgboost": "3.4.1",
       "scikit-learn": "1.9.1"
     },
-    "previous_measurement": {
+    "persistence_reference": "each config's eval AUC for prev_code_present alone (was this code cited on the licence's most recent strictly-earlier inspection) is recorded in the package measurements (measurements.json -> levels.<config>.persistence_baseline), so any model's headroom over the code's own persistence is checkable per config; the baselines here do not recompute it",
+    "scope": "baselines only, through the runner's own contract. No coding agent and no harness comparison was run, and none is implied.",
+    "evidence": ".factory/food-baseline-003/reports/output/baseline.json plus the per-config accept/train/validate logs beside it, fetched from the job's staging release and sha256-verified against that release's own asset list",
+    "corroborating_measurement": {
       "job": "food-baseline-002",
       "config": "code_38",
       "eval_auc": 0.6326,
-      "what": "the earlier sanity check through the same contract on the mid-prevalence config, on the same accepted artifact (re-accepted through --accept first)"
-    },
-    "persistence_reference": "each config's eval AUC for prev_code_present alone (was this code cited on the licence's most recent strictly-earlier inspection) is recorded in the package measurements (measurements.json -> levels.<config>.persistence_baseline), so any model's headroom over the code's own persistence is checkable per config; the baselines here do not recompute it",
-    "scope": "baselines only, through the runner's own contract. No coding agent and no harness comparison was run, and none is implied.",
-    "evidence": ".factory/food-baseline-003/reports/output/baseline.json plus the per-config accept/train/validate logs beside it, fetched from the job's staging release and sha256-verified against that release's own asset list"
+      "what": "an earlier pass measured the same quantity through the same contract on the mid-prevalence config, on the same accepted artifact (re-accepted through --accept first); the suite baseline reproduced it exactly, so this is corroborating history, not a superseded value"
+    }
   },
   "scope": "One baseline through the runner's training and validation contract. No agent or harness comparison was run and none is implied.",
   "published": false,

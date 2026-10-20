@@ -87,7 +87,8 @@ qualified bytes), then trained and scored through the runner's contract.
   (`code_58`)** — read each against its own config's eval positive rate (0.0015 to 0.56), never
   against 0.5.
 - **`code_38` reproduced its earlier sanity-check measurement exactly** (`food-baseline-002`, same
-  accepted artifact version `80a4291e3288dc07…`): eval AUC **0.6326** both times.
+  accepted artifact version `80a4291e3288dc07…`): eval AUC **0.6326** both times — and a third time,
+  from the published bytes, by the fresh-environment consumer run (section 6): **0.6326** again.
 - Persistence reference (the eval AUC of `prev_code_present` alone, measured on the build): the
   baseline clears it on **38 of 40 configs** (headroom +0.028 to +0.247) and does **not** clear it on
   `code_14` (−0.008) and `code_32` (−0.029) — for those two codes the baseline adds nothing over
@@ -98,14 +99,45 @@ Full evidence: the factory's `baseline/baseline_result.json` (generated from the
 `baseline.json`), the per-config accept/train/validate logs in the job's collected reports, and
 the job's staging release `418648610`. No agent or harness comparison was run, and none is implied.
 
-## 6. Not covered
+## 6. Fresh-environment consumer verification: PASSED on the published bytes
 
-- **No fresh-environment consumer run yet.** The documented path (`get_dataset.py` →
-  `sha256sum -c` → gate → baseline) has been exercised end-to-end **by the worker jobs that
-  produced the evidence** (fetch with digest verification on arrival, `--accept`, materialize,
-  contract), but not yet by a separate consumer job against this package's own release, and not
-  from an environment with no factory access. That check is part of destination staging and will be
-  recorded when it runs.
+Run in a clean-room container on a worker (job `food-consumer-002`, `cpx32`, Helsinki, 145 s,
+exit 0): **no dataset-factory access, no GitHub credential**. It received the published package
+tree (byte-checked against `MANIFEST.json` before anything else ran) and the release assets exactly
+as a consumer receives them — fetched by the worker host, which alone holds the credential, from
+the release the dataset is published in (`earino/chicago-food-inspections`, private release
+`v2026.10`: all **201 assets, 1,285,155,006 bytes**, each against the sha256 pinned in the job's
+fetch spec, zero failures) — and then followed the published instructions end to end.
+
+| step | result |
+| --- | --- |
+| published package vs `MANIFEST.json` | every listed file (22) matched its recorded hash |
+| assets fetched as a consumer receives them | 201/201, 1,285,155,006 bytes, `failures: []`, laid out as `get_dataset.py` restores |
+| `sha256sum -c SHA256SUMS` (the published verification command) | OK — all 201 lines |
+| qualification gate `--accept`, all 40 configs | exit 0 on every config, each printing that the bytes "match the qualified artifact" (e.g. `code_38` → `80a4291e3288dc07…`) |
+| baseline, `code_38` | `CONTRACT OK`, eval AUC **0.6326** from both contract paths — the recorded value itself |
+
+The same check's **first attempt (`food-consumer-001`) did not pass, and that failure is the check
+doing its job.** Steps 1–4 were green; step 5 died at the first execution of the published
+materializer, because the package's `code/materialize.py` was another dataset's three-argument
+variant that had been *recorded as shipped*: every hash-based check passed because the wrong file
+was consistently the hashed file. Only running the published code caught it. The file was replaced
+with the two-argument materializer the baseline jobs actually measured (data assets untouched —
+`SHA256SUMS` byte-identical, all 201 asset digests unchanged, all 40 configs re-accepted), the
+destination repository was updated (commit `0c765e3`), and the retry passed all five steps above.
+
+Every gate artifact version the consumer re-accepted equals the version `MANIFEST.json` records
+for the same level, so the bytes a consumer receives are the gated bytes, and the baseline
+reproduction returned the recorded value to the digit.
+
+## 7. Not covered
+
+- **This document was revised after the consumer check ran.** The data assets were not touched —
+  their digests are unchanged and the gate names the same artifact versions — and the passing
+  consumer run above verified the package *with* the corrected `code/materialize.py` already in
+  place (that correction preceded it). What changed after the check is this document — the consumer
+  section above — and, with it, `MANIFEST.json`'s digest entry for this file; every other file the
+  consumer verified is byte-identical to what it verified.
 - **No anonymous read.** Both destinations are private at this stage; nothing here establishes that
   either is readable without a credential. That check happens at the publication flip and is
   recorded in `DESTINATIONS.json`.

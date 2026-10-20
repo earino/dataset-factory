@@ -1,21 +1,116 @@
 # Current state
 
-Updated: 2026-10-20 (latest: destination staging began - the private earino/chicago-food-inspections
-repository carries the package docs (main e61d4839a8), and the transfer food-publish-001 moved 200 of 201
-accepted assets (1,285,152,218 bytes) into private draft release v2026.10 before failing on the last one,
-code_53-meta.json, to a transient HTTP 500 on its source download. The interactive session destroyed the
-worker and launched the one-asset retry food-publish-002, running now. After it: verify all 201 target
-assets against MANIFEST.json, then the fresh-environment consumer job, then Hugging Face.)
+Updated: 2026-10-20, latest (food-consumer-002 PASSED all five steps of the fresh-environment
+consumer verification on the published bytes - package 22/22, 201 assets failures [], sha256sum -c
+201/201, gate --accept 40/40, code_38 baseline eval AUC 0.6326 = the recorded value through the
+unmodified contract - and the result is recorded in the package's VERIFICATION.md and the private
+destination repo at main fbc3d77 = tag v2026.10, with dataset_infos.json declaring the Hub schema.
+Step 4 (Hugging Face) is in flight: the private Hub repo earino/chicago-food-inspections exists
+with the card/docs (11 small files), and bulk job food-hf-001 (server 171438942) is uploading the
+201 assets. After it: hf-publish --verify, --tag LAST, check-package, awaiting_operator: true and
+the ready-for-flip notification; the flip itself is the operator's single approval.)
 
-Updated: 2026-10-20, later (latest: destination-staging step 2 is COMPLETE - the one-asset retry food-publish-002
-landed code_53-meta.json and the watcher verified all 201 target assets on private release v2026.10 against
-MANIFEST.json (name, size, server-side sha256; 1,285,155,006 bytes). Step 3's first attempt food-consumer-001
-FAILED at its step 5 and caught a real package defect: the published code/materialize.py was MSHA's 3-arg
-variant, not this dataset's 2-arg one; fixed in release/, MANIFEST.json and the private repo (commit 0c765e3),
-with steps 1-4 of the verification already green (package OK, 201/201 checksums OK, gate --accept OK on all 40
-configs). The corrected retry food-consumer-002 is running on server 171431887. After it: VERIFICATION.md
-sections 5/6 + manifest regeneration, then Hugging Face, then the operator's flip.)
 
+## 2026-10-20 - food-consumer-002 passed all five steps on the published bytes; VERIFICATION.md records it; the Hub step began (private repo + card + declared schema live, bulk job food-hf-001 running)
+
+**`food-consumer-002` succeeded (exit 0, 144.9 s, server 171431887), and every step was verified
+from the fetched reports before anything was quoted.** The watcher collected the job 19:39:34Z,
+fetched its 43 small report assets from staging release 418787656 into
+`.factory/food-consumer-002/reports/` (each sha256-verified against that release's own manifest; the
+1,034,240-byte source.tar skipped as bulk), destroyed the worker 19:41:11Z, and read the five steps
+out of `container.log`, `output/consumer.txt`, `output/baseline.log` and the 40 accept outputs:
+
+1. **package vs MANIFEST.json**: every listed file (22) matched its recorded hash - including the
+   corrected `code/materialize.py` (95cd40d9...) whose absence killed food-consumer-001;
+2. **assets as a consumer receives them**: all 201 fetched by asset id from private release
+   v2026.10 (418734355), 1,285,155,006 bytes, `failures: []`, in the layout `get_dataset.py` restores;
+3. **`sha256sum -c SHA256SUMS`**: OK on all 201 lines;
+4. **qualification gate `--accept`**: exit 0 on all 40 configs, each printing "ACCEPTED: ... matches
+   the qualified artifact" (code_38 -> 80a4291e3288dc07...);
+5. **code_38 baseline through the runner's unmodified contract**: eval AUC **0.6326** from both the
+   `train.py` path and the independent `validate.py` recompute, `CONTRACT OK` - the recorded value
+   itself (recorded 0.6326, tolerance 0.001). `container.log` ends "== consumer verification
+   passed ==".
+
+That 0.6326 is now measured three times on the same accepted artifact version (food-baseline-002,
+food-baseline-003, and this run from the published bytes). The full log chain is preserved in
+`.factory/food-consumer-002/reports/`.
+
+**Recorded where the package says it must be.** VERIFICATION.md gained "## 6. Fresh-environment
+consumer verification: PASSED on the published bytes" (the five-step table, plus the honest story
+of the failed first attempt that caught the shipped MSHA materialize.py at step 5 - the check doing
+its job); the former section 6 ("Not covered") became section 7 with its obsolete "no
+fresh-environment consumer run yet" bullet replaced by a "this document was revised after the
+consumer check ran" note (data assets untouched). Section 5 gained the third code_38 reproduction.
+`scripts/release-manifest.py` regenerated the manifest (only `package_files[VERIFICATION.md]`
+e35a4a75 -> dfea1ccf), `scripts/check-package.py` OK. Both files were pushed to the private
+destination repo (commit a7abfaa) and read back through the API: byte-identical, main head, repo
+private.
+
+**Step 4 (Hugging Face) began, with the msha lessons applied up front.** The Hub repository
+`earino/chicago-food-inspections` was created **private** by `scripts/hf-publish.py --create
+--upload-small` (write credential from the mode-0600 file, never printed, never in a bundle; the
+inference credential never read), and 11 small files landed (read back through the Hub API: private
+true, revision sha 2051a467): the generated card (from the new `candidates/chicago-food-inspections/
+card.md` - City-of-Chicago terms preserved verbatim, the DOAH licence posture, no CC0 claim),
+LOADING.md, `dataset_infos.json`, MANIFEST.json, VERIFICATION.md, DATA_DICTIONARY.md,
+measurements.json, SHA256SUMS and the three licence files. The declared schema is the msha
+`dataset_infos.json` lesson applied before the first upload instead of after a failed loading check:
+`scripts/hf-dataset-infos.py` was extended with `--meta-source github` (metas read from the
+dataset's own verified GitHub release, each digest-checked against the manifest, so the schema can
+be generated before anything is on the Hub) and `--types-file` (per-candidate column typing; the
+documented msha invocation is unchanged). `candidates/chicago-food-inspections/hub-schema.json`
+declares the food types - `license_` is zero-padded text and must not be read back as an integer,
+`latitude`/`longitude` carry empty values, identifiers ship as published - producing
+`dataset_infos.json`: 40 configs x 18 columns, feature lists and dtypes verified identical across
+all 40. A latent crash in `hf-publish.py`'s `navigation_record()` (missing DESTINATIONS.json on a
+first-ever --plan) was fixed to read as "no site yet", the state its docstring already describes.
+
+`release/chicago-food-inspections/DESTINATIONS.json` now exists, recording the GitHub destination
+as verified/private (201/201 digests via the API, the consumer check, the docs-advance commits) and
+the Hugging Face destination as pending the bulk job. The package documents advance
+(`dataset_infos.json` + `MANIFEST.json`) was pushed to the destination repo (commit fbc3d77) and
+**the version tag was re-pointed from e61d4839 through the advances to 49d06bb**, so v2026.10 and
+main resolve to the same commit and the version-pinned documents describe the shipped schema (the
+recorded msha practice; the 201 release assets are unchanged). Each tag cycle turned the release
+back into a draft, so it was re-published (non-draft, still inside the private repo) and the
+anonymous fetch was checked to 404. `scripts/check-package.py` OK.
+
+**A second docs advance, forced by the card contract the test suite enforces.** Writing the food
+card made `chicago-food-inspections` eligible for `tests/test_hf_card.py`, which caught two real
+defects in what would have shipped: the card stated no `**Rows:**` total (added: {ROWS_TOTAL} —
+the pool, not the config-sum), and the manifest recorded the food-baseline-002 sanity check under
+`baseline.previous_measurement`, whose contract meaning is a *retired* value - but 0.6326 was
+never retired: the suite baseline reproduced it exactly, and the same number is the CURRENT
+code_38 result in RELEASE_NOTES' table, where a retirement marker would be false. The block was
+relabeled `baseline.corroborating_measurement` (generator and generated file, measured values
+untouched), the manifest regenerated, all 383 tests green, and the result pushed (commit 49d06bb,
+tag re-pointed, release re-published, MANIFEST.json at the tag verified byte-identical: 8fd7e143).
+The Hub small files were refreshed with the new card and manifest (--upload-small, idempotent) and
+re-verified byte-identical at Hub revision 307ae28.
+
+**`food-hf-001` launched 20:06:05Z on server 171438942** (cpx32/hel1, EUR 0.06924/h, reservation
+EUR 0.32; October reservations now ~EUR 6.46 of the 20 EUR allowance, and release work may draw the
+full budget). Spec committed at `candidates/chicago-food-inspections/hf/job.json`: all 201 assets
+from the verified private release to the Hub (`data/<asset_name>` for CSVs, root for meta/quality),
+batch commits of 6 with the rate-limit backoff, digest verified on download and again on the Hub,
+then the built-in code_38 loading check (rows 156841/35358/34218, positives 58228/7335/7418, 18
+declared columns). When the watcher collects it: require exit 0 with zero failures and the loading
+check ok, run `hf-publish.py --verify` (records the Hub destination in DESTINATIONS.json), then
+`--tag` LAST, re-run check-package, set `awaiting_operator: true`, and let scout-release-notify
+deliver the ready-for-flip message. The flip is the operator's single approval.
+
+**Records.** Committed with this entry: STATE.md, the candidate's record.json (food-consumer-002
+succeeded with all five steps; food-hf-001 running; the artifacts block replaced by the verified
+private-destination entry per the msha pattern; refreshed next_action),
+`candidates/chicago-food-inspections/card.md`, `hub-schema.json`, `hf/job.json`,
+`release/chicago-food-inspections/{VERIFICATION.md,MANIFEST.json,dataset_infos.json,
+DESTINATIONS.json}`, `candidates/chicago-food-inspections/baseline/baseline_result.json` (the
+corroborating_measurement relabel), `scripts/hf-dataset-infos.py`, `scripts/hf-publish.py`,
+`jobs/food-consumer-002.json` (collected and destroyed) and `jobs/food-hf-001.json` (running). The
+watcher marker for food-consumer-002 is written in untracked `.factory/` as usual. Deliberately not committed: the hourly dashboard's build/ outputs and
+the untracked `candidates/who-flunet-activity-exceedance/` working directory (another session's
+WIP; `check-candidate.py --all` fails on it locally but the pushed tree does not contain it).
 ## 2026-10-20 - food-publish-002 closed the transfer at 201/201; food-consumer-001 caught the package shipping MSHA's materialize.py - fixed, retried as food-consumer-002 (running)
 
 **`food-publish-002` succeeded and completed destination-staging step 2.** The one-asset retry of

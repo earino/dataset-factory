@@ -10,14 +10,26 @@ loader parse every column as the type the artifact actually uses, instead of gue
 Identifiers are declared `string` on purpose: `mine_id` is zero-padded (`0100003`) and must
 not be read back as `100003`.
 
+Column typing is per candidate. Without `--types-file` the built-in MSHA sets apply, so the
+documented MSHA invocation is unchanged; with `--types-file candidates/<id>/hub-schema.json`
+the declared sets win ({"string": [...], "float64": [...], "int64": [...]}).
+
+The metas come from the Hub by default (`--meta-source hub`, the MSHA path: the files are on
+the Hub by the time the schema is regenerated). `--meta-source github` reads each config's
+`meta.json` from the dataset's own GitHub release instead - digest-verified against the
+package manifest - so the schema can be generated BEFORE the first Hub upload and ship with
+the first one; that is the order that avoids a loading check failing on inferred types.
+
     python3 scripts/hf-dataset-infos.py --candidate msha-enforcement-citations \
         --token-file /opt/data/.secrets/huggingface-write.token --out /tmp/dataset_infos.json
 """
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
+import urllib.request
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -31,10 +43,23 @@ STRING_COLUMNS = {
 FLOAT_COLUMNS = {"prior_mean_citations"}
 
 
-def dtype_for(column, label):
-    if column == label or column in STRING_COLUMNS:
-        return "string" if column in STRING_COLUMNS else "int64"
-    if column in FLOAT_COLUMNS:
+def load_types(path):
+    """Per-candidate column typing; None keeps the built-in (MSHA) sets."""
+    if not path:
+        return None
+    declared = json.loads(Path(path).read_text())
+    for key in ("string", "float64", "int64"):
+        if key not in declared or not isinstance(declared[key], list):
+            raise SystemExit(f"types file {path} needs a list under '{key}'")
+    return declared
+
+
+def dtype_for(column, label, types=None):
+    string_set = (types or {}).get("string", STRING_COLUMNS)
+    float_set = (types or {}).get("float64", FLOAT_COLUMNS)
+    if column in string_set:
+        return "string"
+    if column in float_set:
         return "float64"
     return "int64"
 
@@ -45,9 +70,13 @@ def main() -> int:
     parser.add_argument("--package", default=None)
     parser.add_argument("--token-file", required=True)
     parser.add_argument("--out", required=True)
+    parser.add_argument("--meta-source", choices=("hub", "github"), default="hub",
+                        help="where each config's meta.json is read from")
+    parser.add_argument("--github-token-file", default=None,
+                        help="publish credential for --meta-source github (never printed)")
+    parser.add_argument("--types-file", default=None,
+                        help="candidates/<id>/hub-schema.json declaring string/float64/int64 sets")
     args = parser.parse_args()
-
-    from huggingface_hub import hf_hub_download
 
     package = Path(args.package) if args.package else REPO_ROOT / "release" / args.candidate
     manifest = json.loads((package / "MANIFEST.json").read_text())
@@ -55,10 +84,44 @@ def main() -> int:
     repo = manifest["repository"].rstrip("/").split("github.com/", 1)[-1]
     token = Path(args.token_file).read_text().strip()
 
+    def github_meta(config):
+        """Read <config>-meta.json from the dataset's own GitHub release, verified against the
+        package manifest's recorded digest - the same bytes the Hub will receive, read where they
+        already live so the schema can be generated before the first upload."""
+        gh_token = Path(args.github_token_file).read_text().strip() if args.github_token_file \
+            else (_ for _ in ()).throw(SystemExit(
+                "--meta-source github needs --github-token-file (the publish credential)"))
+        tag = manifest["release_tag"]
+
+        def call(url, accept="application/vnd.github+json"):
+            request = urllib.request.Request(url, headers={
+                "Accept": accept,
+                "Authorization": f"Bearer {gh_token}",
+                "X-GitHub-Api-Version": "2022-11-28"})
+            with urllib.request.urlopen(request, timeout=120) as response:
+                return response.read()
+
+        release = json.loads(call(f"https://api.github.com/repos/{repo}/releases/tags/{tag}"))
+        wanted = f"{config}-meta.json"
+        asset = next((a for a in release.get("assets", []) if a["name"] == wanted), None)
+        if asset is None:
+            raise SystemExit(f"{wanted} is not an asset of release {tag} in {repo}")
+        data = call(
+            f"https://api.github.com/repos/{repo}/releases/assets/{asset['id']}",
+            accept="application/octet-stream")
+        expected = (manifest["levels"][config].get("files") or {}).get(f"{config}/meta.json", {})
+        if expected.get("sha256") and hashlib.sha256(data).hexdigest() != expected["sha256"]:
+            raise SystemExit(f"{wanted}: GitHub bytes do not match the manifest digest")
+        return json.loads(data)
+
     metas, features = {}, None
     for config in sorted(manifest["levels"]):
-        path = hf_hub_download(repo, f"{config}-meta.json", repo_type="dataset", token=token)
-        meta = json.loads(Path(path).read_text())
+        if args.meta_source == "github":
+            meta = github_meta(config)
+        else:
+            from huggingface_hub import hf_hub_download
+            path = hf_hub_download(repo, f"{config}-meta.json", repo_type="dataset", token=token)
+            meta = json.loads(Path(path).read_text())
         names = [c for c in meta["columns"] if c != meta["target"]]
         if features is None:
             features = names
@@ -68,11 +131,12 @@ def main() -> int:
     if not features:
         raise SystemExit("no configs in the manifest")
 
+    types = load_types(args.types_file)
     infos = {}
     for config in sorted(manifest["levels"]):
         label = metas[config]["target"]
         columns = list(features) + [label]
-        declared = {column: {"dtype": dtype_for(column, label), "_type": "Value"}
+        declared = {column: {"dtype": dtype_for(column, label, types), "_type": "Value"}
                     for column in columns}
         splits = {}
         for split, want in sorted(manifest["levels"][config].get("splits", {}).items()

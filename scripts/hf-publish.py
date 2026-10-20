@@ -294,7 +294,12 @@ def navigation_record():
     None until DESTINATIONS.json records a verified site, so a staged package never advertises a
     page that does not exist yet.
     """
-    destinations = json.loads((PACKAGE / "DESTINATIONS.json").read_text())
+    record_path = PACKAGE / "DESTINATIONS.json"
+    if not record_path.is_file():
+        # No destinations recorded at all: the same state as "no verified site", which is the
+        # staged-package case this function exists for. A first-ever --plan must not crash on it.
+        return None
+    destinations = json.loads(record_path.read_text())
     site = (destinations.get("publication") or {}).get("site") or {}
     if site.get("status") != "verified":
         return None
