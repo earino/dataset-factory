@@ -1,0 +1,168 @@
+{
+  "id": "who-flunet-activity-exceedance",
+  "status": "ready",
+  "verdict": "go",
+  "created_at": "2026-10-20T20:09:01+00:00",
+  "domain": "global virological surveillance - respiratory-epidemic activity prediction (international organisation publisher)",
+  "prediction_question": "For a WHO FluNet reporting country with a history of systematic weekly specimen reporting, will influenza test positivity in ISO week W+4 exceed a fixed activity threshold (proposed: 10% positive of specimens processed), given that country's weekly FluNet laboratory series (specimens processed, influenza A/B detections by subtype, non-influenza respiratory-virus detections) through ISO week W?",
+  "prediction_time": "End of ISO week W (the Sunday that closes week W): every feature is derived from weekly laboratory counts published for weeks <= W; the target is week W+4's row, which is not yet observed. FluNet is updated weekly (measured: on 2026-10-20 the table already carries week-start 2026-10-19), so a monthly refresh of this task is honest.",
+  "target_definition": "Binary, computed from the source row of week W+4: influenza positivity = INF_ALL / (INF_ALL + INF_NEGATIVE) exceeds 0.10, with a minimum denominator of 50 specimens in the week. Unit: proportion of specimens testing positive for influenza. Reference frame: country x ISO week, SENTINEL and NONSENTINEL origin streams summed (the table's grain is country x ISO week x ORIGIN_SOURCE). Label source columns INF_ALL and INF_NEGATIVE are recorded in label_source_columns and must be absent from the shipped feature columns; the threshold and lead are to be pinned at construction against a named known-event fixture before any number is quoted.",
+  "sources": [
+    {
+      "name": "WHO FluNet - Global Influenza Programme, World Health Organization, Geneva",
+      "url": "https://www.who.int/tools/flunet",
+      "api": "https://xmart-api-public.who.int/FLUMART/VIW_FNT?$format=csv - the publisher's own 'Download the full dataset (CSV)' link on https://www.who.int/tools/flunet; anonymous, no key, single request returns the full table",
+      "license": "No dataset-specific licence is stated on the FluNet tool page (measured: the page links only a site-wide 'Terms of use'); WHO publishing policy makes WHO materials generally available under CC BY-NC-SA 3.0 IGO (https://www.who.int/about/policies/publishing/copyright), and WHO's dataset terms at https://data.who.int/about/data/terms-and-conditions state CC BY 4.0 for datasets 'unless specifically indicated otherwise'. NC and SA terms, whichever apply, carry through unchanged per the standing licensing policy.",
+      "access": "measured 2026-10-20: full-table GET -> HTTP 200, 30.8 MiB, 189,645 rows, 4.0 s wall clock, single request from the coordinator; year-filtered queries (e.g. $filter=ISO_YEAR eq 2026) return 1.5 MiB / 9,226 rows in 1.3 s; per-country queries ($filter=ISO2 eq 'FR') return the country's all-time series (1,693 weekly rows, 1997-2026) in 2.5 s"
+    },
+    {
+      "name": "FluNet data dictionary (publisher's own metadata view, 53 fields)",
+      "url": "https://xmart-api-public.who.int/FLUMART/VIW_FLU_METADATA?$format=csv&$filter=contains(DatasetName,%20%27FluNet%27)",
+      "api": "same public xmart API; returned 53 rows with columns DatasetName, TableName, FieldName, DataType, Description, Comments",
+      "license": "as above",
+      "access": "measured 2026-10-20: HTTP 200, 10 KiB, 0.1 s; every VIW_FNT column is listed (WHOREGION, FLUSEASON, HEMISPHERE, ITZ, COUNTRY_CODE, ISO_WEEKSTARTDATE, ISO_YEAR, ISO_WEEK, ORIGIN_SOURCE, SPEC_PROCESSED_NB, SPEC_RECEIVED_NB, AH1N12009, AH1, AH3, AH5, AH7N9, ANOTSUBTYPED, INF_A, BVIC_*, BYAM, BNOTDETERMINED, INF_B, INF_ALL, INF_NEGATIVE, ILI_ACTIVITY, ADENO, BOCA, HUMAN_CORONA, METAPNEUMO, PARAINFLUENZA, RHINO, RSV, RSV_PROCESSED, PSOURCE_*, LAB_RESULT_COMMENT, WCR_COMMENT)"
+    }
+  ],
+  "license_evidence": [
+    {
+      "note": "WHO copyright policy, read 2026-10-20 via search snippet of https://www.who.int/about/policies/publishing/copyright: 'Permission from WHO is not required for the use of WHO materials issued under the Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Intergovernmental Organization (CC BY-NC-SA 3.0 IGO) licence.' The licence 'allows users to freely copy, reproduce, reprint, distribute, translate and adapt the work for non-commercial purposes, provided WHO is acknowledged as the source'. Attribution form: '[Title]. [Place of publication]: World Health Organization; [Year]. Licence: CC BY-NC-SA 3.0 IGO.'",
+      "url": "https://www.who.int/about/policies/publishing/copyright"
+    },
+    {
+      "note": "WHO dataset terms at data.who.int, read 2026-10-20 via search snippet of https://data.who.int/about/data/terms-and-conditions: 'Unless specifically indicated otherwise, these Datasets are provided to you under a Creative Commons Attribution 4.0 International License (CC BY 4.0)' with mandatory citation per dataset metadata and a no-emblem clause. The FluNet tool page itself states no dataset-specific licence, so the general WHO posture (CC BY-NC-SA 3.0 IGO) is the conservative reading for this source; either way the terms permit redistribution of derived rows for non-commercial research with attribution, and any NC/SA conditions carry through unchanged.",
+      "url": "https://data.who.int/about/data/terms-and-conditions"
+    }
+  ],
+  "label_source_columns": [
+    "INF_ALL",
+    "INF_NEGATIVE"
+  ],
+  "construction_script": null,
+  "split_strategy": "Temporal, one row per country-week: train ISO years <=2019, eval 2020-2022, holdout 2023 onward. Measured on the full table (country-week grain, origin streams summed, denominator >= 50): train window 2005-2019 has 14,870 usable country-weeks; eval window 2020-2022 has 8,559 usable country-weeks of which 29.0% are positives (2,485) - the COVID-era base-rate break is a property of the phenomenon and is documented, not smoothed away; holdout window 2023 has 4,677 country-weeks (42.4% positive, 1,984), extending through 2024-2026 (12,707 country-weeks, 48.3% positive, 6,135). Positives cluster by country-season: 278 clustered country-years in the eval window, 400 in 2024-2026. Construction must restrict to country-weeks where negatives are systematically reported (see measurements: pre-2015 rows are ~uniform-positive where negatives are missing, so those rows cannot carry the rate frame), and the clustered count, not the row count, is the effective sample-size figure.",
+  "measurements": {
+    "full_download_2026_10_20": "GET https://xmart-api-public.who.int/FLUMART/VIW_FNT?$format=csv -> HTTP 200, 30.8 MiB, 189,645 rows, 4.0 s, single request (coordinator). Table spans ISO years 1995-2026; latest week-start present: 2026-10-19 (i.e. updated to the current week).",
+    "grain_2026_10_20": "Grain is country x ISO week x ORIGIN_SOURCE (SENTINEL 59,391 rows / NONSENTINEL 43,366 / NOTDEFINED 86,888). 148,355 distinct country-week keys over 189 countries/territories; France 2025 example: 104 rows over 52 weeks = two origin streams. Aggregation for the task grain must sum or select streams explicitly.",
+    "split_window_counts_2026_10_20": "Computed from the downloaded table at country-week grain (streams summed, denominator INF_ALL+INF_NEGATIVE >= 50): 2005-2019: 14,870 country-weeks, 81.8% positive - INFLATED, see negatives trap; 2020-2022: 8,559 country-weeks, 2,485 positive (29.0%); 2023: 4,677 country-weeks, 1,984 positive (42.4%); 2024-2026: 12,707 country-weeks, 6,135 positive (48.3%). Clustered positives (country-years with >=1 positive week): 278 (eval window), 131 (2023), 400 (2024-2026).",
+    "negatives_frame_trap_2026_10_20": "Pre-2015 FluNet rows mostly lack INF_NEGATIVE, so positivity computed as INF_ALL/(INF_ALL+INF_NEGATIVE) is 100% by construction there: the 1995-2004 window measures 931/931 country-weeks positive (a uniform result - the reference-frame red flag, not a finding). The construction must restrict to weeks where negatives are systematically reported (or pin the frame with a known-event fixture) and cross-check aggregate positivity curves against the publisher's own chart app (https://worldhealthorg.shinyapps.io/flunetchart/, linked from the FluNet page).",
+    "sample_probe_2026_10_20": "$filter=ISO2 eq 'FR': 1,693 rows, ISO_YEAR 1997-2026, week-start range through 2026-10-05; recent French off-season weeks: INF_ALL 4-7 against SPEC_PROCESSED_NB 126-169 (positivity ~3-5%), illustrating both classes around a 10% threshold.",
+    "per_year_volume_2026_10_20": "$filter=ISO_YEAR eq 2026 -> 1,476 KiB, 9,226 rows, 1.3 s; ISO_YEAR eq 2010 -> 926 KiB, 5,276 rows, 0.8 s; the GHO OData API (ghoapi.azureedge.net) was also probed for comparison: 3,099 indicators, anonymous; its annual panels were set aside (cholera indicator CHOLERA_0000000001 ends 2016 - stale; see notes)."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": null,
+  "next_action": "Construction (worker job, no local bulk work): (1) download the single publisher CSV (30.8 MiB, one request); (2) build country-week rows at one-grain-per-week with explicit ORIGIN_SOURCE handling, restricted to country-weeks with systematic negative reporting (the pre-2015 trap in measurements.negatives_frame_trap is the acceptance test for this rule); (3) pin threshold and lead with a named known-event fixture before any number is quoted - candidate fixture: France's 2024-25 season peak week (positivity must exceed 40% at the peak and stay under 10% in off-season weeks), cross-checked against the publisher's FluNet chart app; (4) ship features = weekly counts through week W only (INF_ALL/INF_NEGATIVE for weeks W+1..W+4 are the label source and must be absent from shipped columns); (5) temporal splits per split_strategy with the clustered country-season count reported beside row counts; then hand the artifact to dataset-qualification on the worker.",
+  "jurisdiction": {
+    "country": "CH",
+    "region": "International organisations",
+    "publisher": "World Health Organization (WHO) - Global Influenza Programme / FluNet, headquartered in Geneva, Switzerland",
+    "convention": "The publisher's HQ country is recorded because 'international' is not a country; WHO is a UN specialised agency headquartered in Geneva, Switzerland.",
+    "recorded_at": "2026-10-20"
+  },
+  "novelty_check": {
+    "checked_at": "2026-10-20T20:11:16+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "FluNet influenza prediction",
+      "WHO influenza forecasting benchmark",
+      "influenza positivity prediction task dataset"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "FluNet influenza prediction",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "WHO influenza forecasting benchmark",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "influenza positivity prediction task dataset",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "FluNet influenza prediction",
+          "hits": 86566,
+          "top": [
+            "Data and code for: Public genomic data deposition for seasonal influenza in Gulf Cooperation Council states, 2017-2025",
+            "Dearth of influenza among older adults admitted with respiratory symptoms in Malaysia during the coronavirus disease 2019 pandemic in 2021",
+            "Excretion dynamics of Henipa-related viruses in the Egyptian Rousette bat and triggers for potential spillover",
+            "Deep biologically interpreted networks to predict influenza adaptation to human",
+            "Initial Genetic Characterization of the 1918 \"Spanish\" Influenza Virus"
+          ]
+        },
+        {
+          "query": "WHO influenza forecasting benchmark",
+          "hits": 262030,
+          "top": [
+            "WangDongHKU/Ensemble_Influenza_Forecasting: Ensemble_Influenza_Forecasting",
+            "Influenza A (H5N1 Bird Flu): Pandemic Potential, Historical Timeline, and Global Public Health Implications",
+            "Pre-existing systemic and nasal antibodies against avian H5 influenza A viruses vary according to childhood imprinting",
+            "ACCIDDA/influpaint: paper-version",
+            "SEASONAL SPREAD OF INFLUENZA AND PREVENTIVE MEASURES"
+          ]
+        },
+        {
+          "query": "influenza positivity prediction task dataset",
+          "hits": 433305,
+          "top": [
+            "Clinico-Epidemiological Profile and Study of Influenza and Their Subtypes Among Suspected Influenza Patients in a Tertiary Care Teaching Hospital of Vadodara",
+            "CONVERGE Challenge Dataset: Multimodal Sensing for 6G Wireless Communications (ICASSP 2026)",
+            "Comparative Analysis of Deep Neural Networks for Online Facial Expression Recognition and Facial Shape Classification",
+            "Data from: Clinical and laboratory predictors of influenza infection among individuals with influenza-like illness presenting to an urban Thai hospital over a five-year period",
+            "WangDongHKU/Ensemble_Influenza_Forecasting: Ensemble_Influenza_Forecasting"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "FluNet influenza prediction",
+          "hits": 5,
+          "top": [
+            "Shesop Healthcare: Stress and influenza classification using support vector machine kernel",
+            "Shesop Healthcare: Android application to monitor heart rate variance, display influenza and stress condition using Pola",
+            "Exploiting routinely collected severe case data to monitor and predict influenza outbreaks",
+            "Religious Festivals and Influenza",
+            "Supporting information for: New methods for analyzing serological data with applications to influenza surveillance"
+          ]
+        },
+        {
+          "query": "WHO influenza forecasting benchmark",
+          "hits": 5,
+          "top": [
+            "Quantile Regression for Qualifying Match of GEFCom2017 Probabilistic Load Forecasting",
+            "Lasso estimation for GEFCom2014 probabilistic electric load forecasting",
+            "Forecasting intermittent time series with Gaussian Processes and Tweedie likelihood",
+            "Probabilistic Hierarchical Forecasting with Deep Poisson Mixtures",
+            "LASSO Principal Component Averaging -- a fully automated approach for point forecast pooling"
+          ]
+        },
+        {
+          "query": "influenza positivity prediction task dataset",
+          "hits": 5,
+          "top": [
+            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+            "Conditionally positive definite kernels in Hilbert $C^*$-modules",
+            "Shesop Healthcare: Stress and influenza classification using support vector machine kernel",
+            "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'FluNet influenza prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'WHO influenza forecasting benchmark': 0 hit(s) - nothing notable\n- huggingface_datasets / 'influenza positivity prediction task dataset': 0 hit(s) - nothing notable\n- zenodo_records / 'FluNet influenza prediction': 86566 hit(s) - Data and code for: Public genomic data deposition for seasonal influenza in Gulf Cooperation Council states, 2017-2025, Dearth of influenza among older adults admitted with respiratory symptoms in Malaysia during the coronavirus disease 2019 pandemic in 2021, Excretion dynamics of Henipa-related viruses in the Egyptian Rousette bat and triggers for potential spillover, Deep biologically interpreted networks to predict influenza adaptation to human, Initial Genetic Characterization of the 1918 \"Spanish\" Influenza Virus\n- zenodo_records / 'WHO influenza forecasting benchmark': 262030 hit(s) - WangDongHKU/Ensemble_Influenza_Forecasting: Ensemble_Influenza_Forecasting, Influenza A (H5N1 Bird Flu): Pandemic Potential, Historical Timeline, and Global Public Health Implications, Pre-existing systemic and nasal antibodies against avian H5 influenza A viruses vary according to childhood imprinting, ACCIDDA/influpaint: paper-version, SEASONAL SPREAD OF INFLUENZA AND PREVENTIVE MEASURES\n- zenodo_records / 'influenza positivity prediction task dataset': 433305 hit(s) - Clinico-Epidemiological Profile and Study of Influenza and Their Subtypes Among Suspected Influenza Patients in a Tertiary Care Teaching Hospital of Vadodara, CONVERGE Challenge Dataset: Multimodal Sensing for 6G Wireless Communications (ICASSP 2026), Comparative Analysis of Deep Neural Networks for Online Facial Expression Recognition and Facial Shape Classification, Data from: Clinical and laboratory predictors of influenza infection among individuals with influenza-like illness presenting to an urban Thai hospital over a five-year period, WangDongHKU/Ensemble_Influenza_Forecasting: Ensemble_Influenza_Forecasting\n- arxiv_preprints / 'FluNet influenza prediction': 5 hit(s) - Shesop Healthcare: Stress and influenza classification using support vector machine kernel, Shesop Healthcare: Android application to monitor heart rate variance, display influenza and stress condition using Pola, Exploiting routinely collected severe case data to monitor and predict influenza outbreaks, Religious Festivals and Influenza, Supporting information for: New methods for analyzing serological data with applications to influenza surveillance\n- arxiv_preprints / 'WHO influenza forecasting benchmark': 5 hit(s) - Quantile Regression for Qualifying Match of GEFCom2017 Probabilistic Load Forecasting, Lasso estimation for GEFCom2014 probabilistic electric load forecasting, Forecasting intermittent time series with Gaussian Processes and Tweedie likelihood, Probabilistic Hierarchical Forecasting with Deep Poisson Mixtures, LASSO Principal Component Averaging -- a fully automated approach for point forecast pooling\n- arxiv_preprints / 'influenza positivity prediction task dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, Conditionally positive definite kernels in Hilbert $C^*$-modules, Shesop Healthcare: Stress and influenza classification using support vector machine kernel, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset",
+    "prior_art": [
+      "Kaggle mirror patricklford/flunet-global-influenza-programme-who (raw data only); arXiv 2505.10213 (LLM time-series experiment, no benchmark release); CDC FluSight (US ILINet challenge); ECDC Flusion (EU)"
+    ],
+    "theirs": "WHO publishes the FluNet surveillance data itself (weekly, anonymous CSV API) and Kaggle mirrors it raw (patricklford/flunet-global-influenza-programme-who, no task). arXiv 2505.10213 runs an LLM forecasting experiment on two univariate FluNet series (MAE/MAPE, no released task). CDC FluSight and ECDC Flusion are forecasting challenges on other sources (US ILINet, EU hospitalisations), not FluNet positivity.",
+    "ours": "A binary country-week exceedance task on WHO FluNet laboratory positivity (INF_ALL/(INF_ALL+INF_NEGATIVE) > threshold at a 4-week lead), with disjoint temporal splits, a known-event fixture, systematic-negative-reporting gating rules, and a scored contract for coding-agent evaluation. No ML-ready version of this task exists: the formulation, threshold/lead, splits, gating and validation are the contribution.",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
+}
