@@ -3732,3 +3732,13 @@ release always has budget. A candidate with `awaiting_operator: true` waits on t
 nothing - otherwise a human wait would starve the queue. Dashboard gained a "Ready to ship" card and
 alarms (>6h actionable is a real alarm, >24h waiting on the operator is a warning). Prompt, AGENTS.md
 and OPERATIONS.md updated. Guard tests fail on the pre-fix launcher ("FactoryError not raised"). 380 tests OK.
+
+**Advancement no longer waits for 08:00 (2026-10-20, operator: "once we have a dataset identified,
+we shouldn't stop").** Cron 69a5bc676d10 moved daily 08:00 -> every two hours at :25, running
+scout_advancement.py which passes --if-work: the tick scans candidates and exits without starting an
+agent when nothing is ready, qualified, packaged-and-actionable, or GO-to-construct, so the higher
+cadence costs nothing on an empty queue. The brief now forbids stopping at a step boundary: carry a
+candidate through build -> qualification -> packaging while the budget allows, stopping only at a real
+blocker or the operator's flip. New hourly script job ba4c8610edf8 (scout-release-notify) sends the
+one chat message that matters - "ready for the flip" - deduped on id + packaged_at, silent otherwise.
+380 tests OK; runner `--if-work` dry-run verified.

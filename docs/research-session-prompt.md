@@ -35,6 +35,12 @@ Pick the step that unblocks the most work. A candidate record with `next_action`
 a candidate with no verdict and no blocker is the worst state to leave a lead in. Prefer
 finishing one thing over starting three.
 
+**Do not stop at a step boundary.** Once a candidate is identified as worth shipping, carry it as far
+as this session's turn and time budget allows: build, then qualify, then package, then baseline. A
+session that packs up immediately after one step while the same candidate's next step is available,
+cheap and unblocked has spent a tick to make no progress. Stop only at a real blocker: the operator's
+flip, a missing licence decision, a source that will not answer, or the session ceiling.
+
 ## Running commands in this session
 
 There is no user to approve a dangerous command, so the approval gate **refuses** flagged ones

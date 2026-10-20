@@ -484,7 +484,14 @@ Two jobs share the routine and both are gated by `scripts/research-budget.py`:
 - `scout-discovery-session` (86fe52e55ef9) - **hourly**, discovery only. Its brief
   (`docs/discovery-session-prompt.md`) forbids advancing an existing candidate and requires three
   new sources to a verdict, at least two of them published outside the US.
-- `scout-research-session` (69a5bc676d10) - **daily 08:00**, advancement and packaging.
+- `scout-research-session` (69a5bc676d10) - **every two hours at :25**, advancement and packaging.
+  The shim passes `--if-work`: the tick exits without starting an agent when no candidate is
+  `ready`, `qualified`, `packaged`-and-actionable, or carrying a GO verdict. High cadence, no cost
+  when the queue is empty. A session is told not to stop at a step boundary: carry a candidate
+  through build, qualification and packaging while the budget allows.
+- `scout-release-notify` (ba4c8610edf8) - **hourly at :55**, script only. Prints one message when a
+  candidate becomes `packaged` and `awaiting_operator`, deduped on id + `packaged_at`. Silence
+  otherwise, so the only chat message the routine sends is the flip request.
 
 The discovery tick gets a rotating regional focus from the deployed shim, derived from the clock so
 a report is reproducible from its timestamp. `python3 scripts/discovery-coverage.py` prints the

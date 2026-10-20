@@ -73,6 +73,30 @@ def now():
     return datetime.now(timezone.utc)
 
 
+def actionable_work(root=REPO):
+    """Candidates that need an agent step now.
+
+    Advancement used to run once a day, so a qualified candidate could sit for 20 hours.
+    This is the cheap pre-check that lets the tick run often without paying for an agent
+    when there is nothing to do. A candidate waiting on the operator's flip is not work.
+    """
+    work = []
+    for path in sorted((Path(root) / "candidates").glob("*/record.json")):
+        try:
+            record = json.loads(path.read_text())
+        except (OSError, ValueError):
+            continue
+        status = record.get("status")
+        if status == "packaged":
+            if not record.get("awaiting_operator"):
+                work.append((record.get("id") or path.parent.name, "release"))
+        elif status in ("ready", "qualified"):
+            work.append((record.get("id") or path.parent.name, "build" if status == "ready" else "package"))
+        elif status == "investigating" and str(record.get("next_action") or "").upper().startswith("GO"):
+            work.append((record.get("id") or path.parent.name, "construct"))
+    return work
+
+
 def note(entry):
     FACTORY_DIR.mkdir(parents=True, exist_ok=True)
     entry = {"ts": now().isoformat(), **entry}
@@ -166,12 +190,24 @@ def main(argv=None):
                              "reason instead of staying silent")
     parser.add_argument("--prompt-file", default=str(PROMPT_TEMPLATE),
                         help="brief for this run; a discovery tick passes the discovery prompt")
+    parser.add_argument("--if-work", action="store_true",
+                        help="run only when a candidate needs a step; otherwise exit quietly "
+                             "without starting an agent (keeps the cadence high, the cost low)")
     parser.add_argument("--source-tag", default=SOURCE_TAG,
                         help="session source tag; use a distinct one for verification runs so "
                              "they are not counted as research sessions")
     args = parser.parse_args(argv)
     global SOURCE_TAG_ACTIVE
     SOURCE_TAG_ACTIVE = args.source_tag
+
+    if args.if_work:
+        work = actionable_work()
+        if not work:
+            note({"event": "idle", "reason": "no actionable candidate"})
+            return 0
+        args.extra = (args.extra + "\n\n" if args.extra else "") + (
+            "Actionable now: " + ", ".join(f"{name} ({step})" for name, step in work) + ". "
+            "Release work outranks construction.")
 
     allowed, resume_block, reason = run_gate(args.late_minutes)
 
