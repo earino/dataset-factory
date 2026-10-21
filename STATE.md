@@ -4998,3 +4998,11 @@ sorted by class so a C cannot consume build time. Closed under the policy: `melb
 (no licence on any of four channels) and `cpcb-aqi-exceedance` (only a republisher's terms were read).
 All active candidates (investigating/ready) now carry a class: 16 A, 3 B, 3 C, 30 unclassified - and
 every one of the unclassified is already parked or dropped.
+
+**nhs-ae-four-hour-decline DROPPED 2026-10-21 (operator decision).** Three rebuilds and three independent audits produced a
+correct artifact, and the correct artifact showed the task is not worth having: persistence 0.5758, a train-only month prior
+0.6027 and reversal 0.5839 all beat the shipped baseline 0.5511, so the headline finding is that a one-line rule wins. The
+publication lag also cannot be established point-in-time (NHS publishes no vintage archive), so every timing claim is a bound.
+The staged v2026.13 release stays private and unpublished; v2026.10/v2026.11/v2026.12 are already marked superseded.
+Lesson adopted: a candidate whose reference baselines beat every model that can be built on it is a negative result, not a
+benchmark - decide that at construction time, not after three audits.
