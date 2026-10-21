@@ -1,6 +1,6 @@
 {
  "ok": true,
- "dataset": ".factory/nhsae-v12b/task",
+ "dataset": "release/nhs-ae-four-hour-decline",
  "gate_version": "1.4.0",
  "artifact": {
   "train": {
@@ -20,16 +20,16 @@
   },
   "meta.json": {
    "file": "meta.json",
-   "sha256": "196d300ec0c6b7fc3e8b04809019f075c2d2f93a76bdc66d2b26cdd08122aadc",
-   "bytes": 3579
+   "sha256": "9dd3dc380cd072f1a5d174248054bf156feacb99c2972908e8e64fbdd6f736cc",
+   "bytes": 3657
   },
   "quality.json": {
    "file": "quality.json",
-   "sha256": "0fb29a658ac5d097994534177de60a463b46fe8cf0adac37f3ec742a40690256",
-   "bytes": 6679
+   "sha256": "286d2de52bfd8fde2bcdc7c69fa7ecac6281a789b489e1a0ab9d2b7b0fed6d33",
+   "bytes": 6941
   },
   "artifact_version": {
-   "digest": "d871b45b667448a123bad9762cf066fd5d31c08700761b27ca8ff57a8a0690f9",
+   "digest": "5784f80a29df04f4c115a680341eb026945cd3d8c5beec121eefd0c2bcbadfb9",
    "components": [
     "eval",
     "holdout",
@@ -127,7 +127,7 @@
     "prediction_instant": {
      "kind": "publication",
      "period": "M",
-     "days_after_period_end": 13,
+     "days_after_period_end": 21,
      "citation": "NHS England publishes monthly A&E activity about ten days after the month ends; e.g. August 2026 data was published 2026-09-10"
     }
    }
@@ -135,9 +135,14 @@
   {
    "check": "timing.publication_lag_measured",
    "ok": true,
-   "detail": "3 of 3 observed period_end -> published dates are usable (statistical release: at least one observed publication date is required)",
+   "detail": "4 of 4 observed period_end -> published dates are usable (statistical release: at least one observed publication date is required)",
    "evidence": {
     "observations": [
+     {
+      "period": "2026-03",
+      "period_end": "2026-03-31",
+      "published": "2026-04-16"
+     },
      {
       "period": "2026-06",
       "period_end": "2026-06-30",
@@ -154,18 +159,18 @@
       "published": "2026-09-10"
      }
     ],
-    "measured_lag_days": 13,
+    "measured_lag_days": 16,
     "source_kind": "statistical_release"
    }
   },
   {
    "check": "timing.features_available_at_instant",
    "ok": true,
-   "detail": "features publish 13d after the period, instant is 13d after it",
+   "detail": "features publish 21d after the period, instant is 21d after it",
    "evidence": {
-    "features_lag_days": 13,
-    "instant_lag_days": 13,
-    "measured_lag_days": 13
+    "features_lag_days": 21,
+    "instant_lag_days": 21,
+    "measured_lag_days": 16
    }
   },
   {
@@ -174,7 +179,7 @@
    "detail": "instant is a publication instant",
    "evidence": {
     "kind": "publication",
-    "features_lag_days": 13
+    "features_lag_days": 21
    }
   },
   {
@@ -215,7 +220,7 @@
      {
       "column": "target_month",
       "unit": "YYYY-MM of the target month M+1",
-      "frame": "the month the label is drawn from; the prediction instant is the end of the previous month"
+      "frame": "the month the label is drawn from; the prediction instant is 21 days after month M ends, when month M's CSV is published (observed lags 9-16 days)"
      },
      {
       "column": "declines",

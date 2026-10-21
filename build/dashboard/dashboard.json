@@ -1,6 +1,6 @@
 {
  "alarms": [
-  "CI on 664001b concluded failure"
+  "CI on 9bd4f62 concluded failure"
  ],
  "budget": {
   "config": {
@@ -17,7 +17,7 @@
   "decision": {
    "allowance_usd": 30.0,
    "allowed": true,
-   "moment": "2026-10-21T21:34:19.242732+00:00",
+   "moment": "2026-10-21T21:38:15.269409+00:00",
    "period_start": "2026-10-01T00:00:00+00:00",
    "reasons": [],
    "research_cost_usd": 0.233495,
@@ -37,14 +37,14 @@
      "output_tokens": 643747
     },
     "interactive": {
-     "calls": 2990,
+     "calls": 3013,
      "cost_status": [
       "estimated",
       "unknown"
      ],
-     "cost_usd": 1.553442,
-     "input_tokens": 11707099,
-     "output_tokens": 1680062
+     "cost_usd": 1.562068,
+     "input_tokens": 11739181,
+     "output_tokens": 1692501
     },
     "research": {
      "calls": 2322,
@@ -72,16 +72,14 @@
  },
  "candidates": {
   "countries": {
-   "AU": 1,
    "CA": 2,
    "DE": 1,
    "GB": 2,
-   "IN": 1,
    "US": 1
   },
   "counts": {
-   "dropped": 10,
-   "investigating": 8,
+   "dropped": 12,
+   "investigating": 6,
    "packaged": 1,
    "parked": 21,
    "published": 6,
@@ -142,63 +140,6 @@
     "split_strategy": "Temporal, one row per (sample x reporting year) in the Campylobacter frame: train 2021, eval 2022, holdout 2023 - the only three reporting years the publisher exposes. Measured on the downloaded CSVs (2026-10-21): Campylobacter genus rows 2021: 1,394 rows / 443 positive (31.8%); 2022: 2,364 / 613 (25.9%); 2023: 1,312 / 390 (29.7%) - both classes present in every window, so the split-capacity contract is satisfied as measured, but each window is a single reporting year (thin depth; no second holdout year exists yet). Positives cluster by sampling batch/day: distinct samples per year are 5,373 (2021) and 5,969 (2022), but the ProbenNrPseud column is EMPTY in the 2023 file (measured: 0 distinct values vs thousands in 2021/2022) - a publisher data-quality defect that forces 2023 clustering to fall back to matrix x month proxies, and construction must report the clustered count under that limitation. Fallback parameter with the same timing if Campylobacter is too thin: ESBL/AmpC-bildende E. coli 1,947/1,900/1,825 rows at 32.3%/19.8%/26.4%.",
     "status": "investigating",
     "target": "Binary from the source row: ErgAlphaT = 'positiv; nachgewiesen' (detected) vs 'negativ; nicht nachgewiesen' (not detected), restricted to rows whose Parameter is the Campylobacter genus detection ('Genus Campylobacter'; Parameter/ParameterT1 columns). Label source columns ErgAlpha, ErgAlphaT and the legally derived assessment Bewertung/BewertungT ('Beanstandet'/'Ohne Beanstandung') are recorded in label_source_columns and must be absent from the shipped features. Unit/frame: qualitative presence/absence per sample at the method's declared analytical amount (Methode/Probenvorbereitung columns, e.g. 10 g), the publisher's own frame - no external threshold is compared, so no known-event fixture is required. Rows where a quantitative result or a different parameter vocabulary appears are out of frame and must be pinned at construction from the Datensatzbeschreibung column dictionary."
-   },
-   {
-    "awaiting_operator": false,
-    "baseline": {},
-    "country": "IN",
-    "domain": "air quality / environmental prediction",
-    "id": "cpcb-aqi-exceedance",
-    "jobs": [],
-    "licence_summary": {
-     "compilation_spdx": null,
-     "source_spdx": null,
-     "status": null
-    },
-    "measurements": {
-     "data_gov_in_unreachable_2026_10_20": "https://api.data.gov.in/resource/3b01bcb8-0b14-4abf-b6f2-c1bfd384ba69?format=csv&limit=5: connection failure (HTTP 000) from the coordinator on two attempts - the official keyed API cannot be evaluated from this network.",
-     "openaq_archive_2026_10_20": "Bucket listing https://openaq-data-archive.s3.amazonaws.com/?list-type=2: HTTP 200, single top-level prefix 'records/'; a guessed provider-prefixed layout (real-cpcb-gov-in/2024/) measured absent (KeyCount 0), confirming the documented hive layout records/csv.gz/locationid=... instead. CPCB locationids not enumerated this session (v3 locations API needs a key).",
-     "xkdr_delhi_sample_2026_10_20": "GET /v1/measurements?city=Delhi&parameter=PM2.5&start=2024-01-01&end=2024-03-31&agg=daily&format=csv: HTTP 200, 252,729 bytes, 3,384 data rows across 39 distinct station_ids; columns station_id, parameter_name, unit, period_start, mean, min, max, n. Base rate measured on this sample at the proposed threshold: 1,993/3,384 = 58.89% of station-days with mean PM2.5 > 90 micrograms/m3 (Delhi winter; not the annual rate). One request, ~3 s.",
-     "xkdr_meta_2026_10_20": "GET https://airquality.xkdr.org/v1/meta with the published demo key: HTTP 200; measurements 196,521,834 rows over 207 months (2009-01..2026-03), 558 stations, 15 parameters; schema station_id, station_name, state_name, city_name, parameter_name, unit, collected_at (naive IST), value, source (cpcb_caaqm|us_embassy), year, month; demo tier capped at 10,000 rows/query, 30 s query timeout."
-    },
-    "next_action": "GO to construction (advancement session owns it). Construction step: (1) on a worker, enumerate CPCB stations and measure a full-window extraction - either requ",
-    "packaged_at": null,
-    "path": "candidates/cpcb-aqi-exceedance/record.json",
-    "prediction_time": "23:59 IST on day D: every hourly reading through day D is knowable at that instant and no D+1 reading exists yet. Features are the station's own trailing hourly/daily PM2.5 statistics and calendar terms only; every D+1 measurement is label source and never ships as a feature.",
-    "publisher": "Central Pollution Control Board, Government of India (CAAQMS network), republished by OpenAQ (US nonprofit) and XKDR Forum (India)",
-    "qualification": {
-     "artifact_version": null,
-     "result": null,
-     "splits": null
-    },
-    "question": "For a CPCB continuous ambient air-quality monitoring station in India, will the station's next-day (D+1) 24-hour mean PM2.5 concentration exceed 90 micrograms/m3 - the lower breakpoint of the CPCB National AQI 'Poor' band for 24-hour PM2.5 - given only that station's own hourly PM2.5 history through the end of day D?",
-    "region": "South & South-East Asia",
-    "release_baseline": {
-     "auc": null,
-     "reference": null
-    },
-    "release_splits": {},
-    "review": "",
-    "sources": [
-     {
-      "licence": "XKDR is a republisher; its own terms page was not read this session - the redistribution-rights evidence recorded below is OpenAQ's, which republishes the same CPCB network",
-      "name": "India Air Quality API (XKDR Forum) - CPCB CAAQMS + US Embassy hourly readings, cleaned into one table",
-      "url": "https://airquality.xkdr.org/"
-     },
-     {
-      "licence": "per docs.openaq.org read 2026-10-20: OpenAQ 'only ingests openly-licensed data (e.g. CC0, CC BY 4.0)'; its licenses resource records CC BY 4.0 with attributionRequired=true, redistributionAllowed=true",
-      "name": "OpenAQ archive (public S3 bucket) - global air-quality archive that ingests CPCB stations",
-      "url": "https://docs.openaq.org/aws/about"
-     },
-     {
-      "licence": "GODL-India is data.gov.in's standing licence for CPCB resources - widely documented but NOT re-verified from here because the API host was unreachable; verify before construction",
-      "name": "Central Pollution Control Board, Government of India (publisher of record) - CAAQMS network",
-      "url": "https://airquality.cpcb.gov.in/ccr/"
-     }
-    ],
-    "split_strategy": "Temporal by day, computed at construction: candidate windows train 2019-2023, eval 2024, holdout 2025-2026-03 (XKDR archive ends 2026-03, measured). Both classes present in the one window measured so far (Delhi Q1-2024: 58.89% positive - winter; annual and per-station base rates must be measured over the full window at construction, and the threshold may need to sit at the 'Very Poor' band edge if 'Poor' is too easy nationally). ~558 stations in the archive; stations with sparse coverage drop out at construction.",
-    "status": "investigating",
-    "target": "Binary and mechanical from the source series: mean of the station's hourly PM2.5 values on D+1 > 90 micrograms/m3. The label source is the D+1 PM2.5 series itself, excluded from all shipped columns; the runner ships only the binary label. The threshold is a published, documented band edge (CPCB National AQI breakpoints), not a human judgement."
    },
    {
     "awaiting_operator": false,
@@ -386,72 +327,6 @@
    {
     "awaiting_operator": false,
     "baseline": {},
-    "country": "AU",
-    "domain": "urban activity sensing / pedestrian footfall",
-    "id": "melbourne-pedestrian-counts",
-    "jobs": [],
-    "licence_summary": {
-     "compilation_spdx": "CC-BY-4.0",
-     "source_spdx": "LicenseRef-Unstated-CityOfMelbourne",
-     "status": "No licence stated by the publisher in any channel that could be read. Not public domain, not a standard open licence. Redistributed on the operator's recorded risk acceptance, with attribution and a working takedown path."
-    },
-    "measurements": {
-     "measured_on": "2026-09-18 via the portal API and information page",
-     "records_per_year_measured": {
-      "2024": 223972,
-      "2025": 815447,
-      "2026": 582482
-     },
-     "records_total_measured": 1621901,
-     "sample_fields_measured": [
-      "id",
-      "location_id",
-      "sensing_date",
-      "hourday",
-      "direction_1",
-      "direction_2",
-      "pedestriancount",
-      "sensor_name",
-      "location"
-     ]
-    },
-    "next_action": "Construct: hourly pulls of the OpenDataSoft v2.1 API (1,626,831 records, ~200 sensors), derive the per-sensor threshold target, freeze temporal splits, then qua",
-    "packaged_at": null,
-    "path": "candidates/melbourne-pedestrian-counts/record.json",
-    "prediction_time": "Shortly before the hour being predicted, using only prior hours, calendar position and sensor identity. The same hour's direction splits are the label source and must not be features.",
-    "publisher": "City of Melbourne, Australia",
-    "qualification": {
-     "artifact_version": null,
-     "result": null,
-     "splits": null
-    },
-    "question": "For a City of Melbourne pedestrian sensor, will the count in a given hour exceed a high-traffic threshold relative to that sensor's own distribution?",
-    "region": "Oceania",
-    "release_baseline": {
-     "auc": null,
-     "reference": null
-    },
-    "release_splits": {},
-    "review": "Unblocked by the operator on 2026-10-20 ('the license is fine'). Licence posture recorded in license.json: attribution plus takedown contact in the card, and no standard licence presented as the publisher's. Buildable now; queues behind Chicago packaging for the single worker.",
-    "sources": [
-     {
-      "licence": "",
-      "name": "City of Melbourne - Pedestrian Counting System (counts per hour)",
-      "url": "https://data.melbourne.vic.gov.au/explore/dataset/pedestrian-counting-system-monthly-counts-per-hour/"
-     },
-     {
-      "licence": "",
-      "name": "Sensor locations dataset",
-      "url": "https://data.melbourne.vic.gov.au/explore/dataset/pedestrian-counting-system-sensor-locations/"
-     }
-    ],
-    "split_strategy": "Temporal: earlier years train, later periods eval and holdout, with per-sensor thresholds fixed from the training window so the threshold cannot leak holdout information.",
-    "status": "investigating",
-    "target": "Binary: pedestriancount for the hour exceeds a per-sensor quantile threshold frozen from the training window. The threshold is not yet chosen; the per-sensor distribution must be measured first."
-   },
-   {
-    "awaiting_operator": false,
-    "baseline": {},
     "country": "CA",
     "domain": "industrial facility survival / environmental reporting compliance",
     "id": "npri-facility-reporting-exit",
@@ -579,7 +454,7 @@
     "target": "Binary: the per-warning `verify` boolean returned by IEM cow for phenomena=TO, significance=W - whether >=1 tornado local storm report (buffered by cow's default 15 km) falls inside the polygon during the valid window. The method is documented on the cow page ('NWS Storm Based Warning Verification') and matches the official storm-based verification concept in NWS Instruction 10-1601 ('FAR is the number of false alarms (unverified warnings) divided by the total number of warnings'; storm report points verify warning areas)."
    }
   ],
-  "non_us_share": 87.5,
+  "non_us_share": 83.3,
   "records": [
    {
     "awaiting_operator": false,
@@ -1528,7 +1403,7 @@
      "xkdr_delhi_sample_2026_10_20": "GET /v1/measurements?city=Delhi&parameter=PM2.5&start=2024-01-01&end=2024-03-31&agg=daily&format=csv: HTTP 200, 252,729 bytes, 3,384 data rows across 39 distinct station_ids; columns station_id, parameter_name, unit, period_start, mean, min, max, n. Base rate measured on this sample at the proposed threshold: 1,993/3,384 = 58.89% of station-days with mean PM2.5 > 90 micrograms/m3 (Delhi winter; not the annual rate). One request, ~3 s.",
      "xkdr_meta_2026_10_20": "GET https://airquality.xkdr.org/v1/meta with the published demo key: HTTP 200; measurements 196,521,834 rows over 207 months (2009-01..2026-03), 558 stations, 15 parameters; schema station_id, station_name, state_name, city_name, parameter_name, unit, collected_at (naive IST), value, source (cpcb_caaqm|us_embassy), year, month; demo tier capped at 10,000 rows/query, 30 s query timeout."
     },
-    "next_action": "GO to construction (advancement session owns it). Construction step: (1) on a worker, enumerate CPCB stations and measure a full-window extraction - either requ",
+    "next_action": "None - closed on licence grounds. Re-open only if CPCB publishes its own explicit reuse licence.",
     "packaged_at": null,
     "path": "candidates/cpcb-aqi-exceedance/record.json",
     "prediction_time": "23:59 IST on day D: every hourly reading through day D is knowable at that instant and no D+1 reading exists yet. Features are the station's own trailing hourly/daily PM2.5 statistics and calendar terms only; every D+1 measurement is label source and never ships as a feature.",
@@ -1564,7 +1439,7 @@
      }
     ],
     "split_strategy": "Temporal by day, computed at construction: candidate windows train 2019-2023, eval 2024, holdout 2025-2026-03 (XKDR archive ends 2026-03, measured). Both classes present in the one window measured so far (Delhi Q1-2024: 58.89% positive - winter; annual and per-station base rates must be measured over the full window at construction, and the threshold may need to sit at the 'Very Poor' band edge if 'Poor' is too easy nationally). ~558 stations in the archive; stations with sparse coverage drop out at construction.",
-    "status": "investigating",
+    "status": "dropped",
     "target": "Binary and mechanical from the source series: mean of the station's hourly PM2.5 values on D+1 > 90 micrograms/m3. The label source is the D+1 PM2.5 series itself, excluded from all shipped columns; the runner ships only the binary label. The threshold is a published, documented band edge (CPCB National AQI breakpoints), not a human judgement."
    },
    {
@@ -2770,7 +2645,7 @@
       "location"
      ]
     },
-    "next_action": "Construct: hourly pulls of the OpenDataSoft v2.1 API (1,626,831 records, ~200 sensors), derive the per-sensor threshold target, freeze temporal splits, then qua",
+    "next_action": "None - closed. Re-open only if Melbourne publishes an explicit data licence.",
     "packaged_at": null,
     "path": "candidates/melbourne-pedestrian-counts/record.json",
     "prediction_time": "Shortly before the hour being predicted, using only prior hours, calendar position and sensor identity. The same hour's direction splits are the label source and must not be features.",
@@ -2801,7 +2676,7 @@
      }
     ],
     "split_strategy": "Temporal: earlier years train, later periods eval and holdout, with per-sensor thresholds fixed from the training window so the threshold cannot leak holdout information.",
-    "status": "investigating",
+    "status": "dropped",
     "target": "Binary: pedestriancount for the hour exceeds a per-sensor quantile threshold frozen from the training window. The threshold is not yet chosen; the per-sensor distribution must be measured first."
    },
    {
@@ -3093,7 +2968,7 @@
     "target": "Binary: modal(price of item i at premise p over all observations in ISO week W+1) > modal(same over week W). Modal price = most frequent observed price that week (ties broken by higher price, deterministic). Pairs with <3 observations in either week are excluded from that transition's rows (exclusion is a function of data through week W+1, applied identically everywhere; it affects ~3% of subsample pairs). The label source columns are the W+1 price observations themselves: no price observation with date > end of week W may ship as a feature column; the shipped target is 0/1."
    },
    {
-    "age_hours": 0.1,
+    "age_hours": 0.2,
     "awaiting_operator": true,
     "baseline": {
      "accepted_artifact_version": "d871b45b667448a123bad9762cf066fd5d31c08700761b27ca8ff57a8a0690f9",
@@ -4501,7 +4376,7 @@
   "release": {
    "awaiting": [
     {
-     "age_hours": 0.1,
+     "age_hours": 0.2,
      "awaiting_operator": true,
      "baseline": {
       "accepted_artifact_version": "d871b45b667448a123bad9762cf066fd5d31c08700761b27ca8ff57a8a0690f9",
@@ -4673,7 +4548,7 @@
    ],
    "packaged": [
     {
-     "age_hours": 0.1,
+     "age_hours": 0.2,
      "awaiting_operator": true,
      "baseline": {
       "accepted_artifact_version": "d871b45b667448a123bad9762cf066fd5d31c08700761b27ca8ff57a8a0690f9",
@@ -4880,17 +4755,17 @@
    "South & South-East Asia": 13
   },
   "by_status": {
-   "dropped": 10,
-   "investigating": 8,
+   "dropped": 12,
+   "investigating": 6,
    "packaged": 1,
    "parked": 21,
    "published": 6,
    "ready": 6
   },
   "candidates": 52,
-  "live": 21,
-  "live_non_us": 15,
-  "live_non_us_share": 0.714,
+  "live": 19,
+  "live_non_us": 13,
+  "live_non_us_share": 0.684,
   "unknown_jurisdiction": []
  },
  "cron": {
@@ -4960,10 +4835,10 @@
     "failure_streak": 0,
     "id": "98b45d983280",
     "last_error": "",
-    "last_run_at": "2026-10-21T21:31:34.141564+00:00",
+    "last_run_at": "2026-10-21T21:36:36.472624+00:00",
     "last_status": "ok",
     "name": "scout-worker-watch",
-    "next_run_at": "2026-10-21T21:36:34.141564+00:00",
+    "next_run_at": "2026-10-21T21:41:36.472624+00:00",
     "no_agent": false,
     "schedule": "every 5m"
    },
@@ -5052,9 +4927,9 @@
     "schedule": "once at 2026-10-20 16:40"
    }
   ],
-  "updated_at": "2026-10-21T21:31:34.142269+00:00"
+  "updated_at": "2026-10-21T21:36:36.473351+00:00"
  },
- "generated_at": "2026-10-21T21:34:18+00:00",
+ "generated_at": "2026-10-21T21:38:14+00:00",
  "health": {
   "checks": {
    "ok": true,
@@ -5062,19 +4937,19 @@
   },
   "ci": {
    "conclusion": "failure",
-   "created_at": "2026-10-21T21:34:19Z",
-   "head_sha": "664001b",
+   "created_at": "2026-10-21T21:37:39Z",
+   "head_sha": "9bd4f62",
    "status": "completed",
-   "url": "https://github.com/earino/dataset-factory/actions/runs/39679867890"
+   "url": "https://github.com/earino/dataset-factory/actions/runs/39680317310"
   },
   "coverage": {
    "ok": true,
-   "summary": "live non-US: 15/21 (71%)"
+   "summary": "live non-US: 13/19 (68%)"
   },
   "head": {
-   "at": "2026-10-21T21:34:15Z",
-   "sha": "664001b",
-   "subject": "Licence triage first: class the source before probing, sort the queue by it"
+   "at": "2026-10-21T21:37:36Z",
+   "sha": "9bd4f62",
+   "subject": "Only build on clean licences: an unclear licence is a drop, not a park"
   },
   "tests": {
    "count": "406",
@@ -5415,7 +5290,7 @@
  "panels": {
   "budget": {
    "age_minutes": 0.2,
-   "as_of": "2026-10-21T21:34:18+00:00",
+   "as_of": "2026-10-21T21:38:14+00:00",
    "expected": null,
    "note": null,
    "source": "scripts/research-budget.py --json",
@@ -5425,17 +5300,17 @@
   },
   "candidates": {
    "age_minutes": 0.2,
-   "as_of": "2026-10-21T21:34:18+00:00",
+   "as_of": "2026-10-21T21:38:14+00:00",
    "expected": null,
    "note": null,
    "source": "candidates/*/record.json",
    "stale": false,
    "status": "ok",
-   "value": 8
+   "value": 6
   },
   "releases": {
    "age_minutes": 0.2,
-   "as_of": "2026-10-21T21:34:18+00:00",
+   "as_of": "2026-10-21T21:38:14+00:00",
    "expected": null,
    "note": null,
    "source": "release/*/MANIFEST.json",
@@ -6495,7 +6370,7 @@
   "jobs_total": 73,
   "lifetime_eur": 3.13,
   "live": {
-   "checked_at": "2026-10-21T21:34:32+00:00",
+   "checked_at": "2026-10-21T21:38:28+00:00",
    "error": null,
    "primary_ips": 0,
    "primary_ips_total": 0,

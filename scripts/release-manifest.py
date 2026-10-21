@@ -143,8 +143,14 @@ def main() -> int:
         "release_tag": desc["release_tag"],
         "repository": desc["repository"],
         "visibility": visibility,
-        "artifact_version": expected.get("artifact_version") or (levels and
-                                                                combined_artifact_version(levels)),
+        # One identity for the artifact: the gate's digest. It is what staging, verification and
+        # every audit reference. The packaging digest is recorded separately so the two can never
+        # again disagree about which bytes were qualified.
+        "artifact_version": (qualification or {}).get("artifact", {}).get(
+            "artifact_version", {}).get("digest")
+        or expected.get("artifact_version")
+        or (levels and combined_artifact_version(levels)),
+        "package_digest": combined_artifact_version(levels) if levels else None,
         "artifact_job": expected["job"],
         # The staging release id, because a *draft* release has no tag namespace: looking it up
         # with releases/tags/<tag> returns 404 even though the release exists.
@@ -169,7 +175,19 @@ def main() -> int:
                                         for relative in sorted(expected["files"])},
         "files": expected["files"],
         "splits": (record or {}).get("construction_output", {}).get("splits"),
-        "qualification": (record or {}).get("qualification"),
+        # Qualification comes from the gate report beside the artifact, not from the candidate
+        # record: the record can lag a rebuild, and a stale digest here is exactly how the manifest
+        # ended up naming two different artifacts.
+        "qualification": {
+            "gate_version": (qualification or {}).get("gate_version"),
+            "ok": (qualification or {}).get("ok"),
+            "failed_checks": (qualification or {}).get("failed_checks", []),
+            "result": ("PASSED" if (qualification or {}).get("ok")
+                       else "FAILED"),
+            "artifact_version": (((qualification or {}).get("artifact") or {})
+                                 .get("artifact_version") or {}).get("digest"),
+            "report": "qualification.json",
+        } if qualification else (record or {}).get("qualification"),
         "baseline": baseline,
         "scope": "One baseline through the runner's training and validation contract. No agent or "
                  "harness comparison was run and none is implied.",

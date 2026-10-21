@@ -7,7 +7,8 @@ that produced it is named beside it.
 v2026.10 (`9903df974f233dfa`). An independent audit on 2026-10-21 found v2026.10 had a temporal
 defect (features published after the claimed instant) and hindsight selection (M+1 attendance and
 a whole-snapshot history count); a re-audit the same day found v2026.11 still let a volume-qualified
-target month decide whether a row existed. Both are fixed here.
+target month decide whether a row existed. The selection defect is fixed here; the timing defect is
+fixed by moving the instant to a 21-day bound, after the third audit showed a 16-day March release.
 
 **How this rebuild came to exist.** The first v2026.12 attempt (2026-10-21 15:26Z) fixed the rule
 but shipped an internally inconsistent package: its `qualification.json` carried per-file digests
@@ -33,7 +34,7 @@ corrected question text).
 Artifact version **`d871b45b667448a1...`** (`MANIFEST.json.artifact_version`), built
 2026-10-21T18:06:51Z on the coordinator from the 102 publisher CSVs fetched over HTTP
 (source composite sha256 `99cb3339b31ae204...`). The CSVs are byte-identical to v2026.11's, whose
-labels an earlier audit reconstructed (11,457 in agreement), so that finding carries over to these
+labels an earlier audit reconstructed (9,420 in agreement), so that finding carries over to these
 bytes.
 
 ## 1. Qualification gate
@@ -58,7 +59,7 @@ bytes.
 
 | Audit finding | Disposition |
 | --- | --- |
-| 25 features carry month-M values published 9-13 days after month end | **Fixed.** The instant is the publication date, using the **maximum** observed lag (13 days), not a mean or a fixed 10: NHS published 9, 13 and 10 days after the period end in June, July and August 2026. All three observations ship in `quality.json`. No feature changed; the claim about when they exist did. |
+| 25 features carry month-M values published after month end | **Fixed, on the third attempt.** The instant is now **21 days** after month M ends: a bound above every observed release, after the third audit found a March 2026 release that took 16 days while the metadata said 13. Observations (16, 9, 13, 10 days) ship in `quality.json`. A 13-day rule read March's features three days early; 21 days cannot. No feature changed; the claim about when they exist did. |
 | Eligibility used M+1 attendance and a whole-snapshot >=24-month count | **Fixed twice.** The v2026.11 fix removed the whole-snapshot count but still built the pair list from volume-qualified months, so the target month still decided membership - the re-audit caught it at `build.py:634-642`. The rule is now: the provider has 24 volume-qualified months at or before M, and month M qualifies. The target month is looked up only to compute the label; if it is absent the row is counted as `unobserved_target` (134 provider-months), which is missing outcome data, not exclusion. 129 providers ship from 142 candidates. |
 | `rate_delta_1m` documented with the wrong sign | **Fixed.** The build reports both directions: `momentum_auc` (`rate_m1 - rate_m`) 0.4161 eval and `reversal_auc` (`rate_m - rate_m1`, the shipped column) 0.5839. The README table names both and says the column is a reversal signal. |
 | Baseline loses to persistence and a calendar prior | **Fixed by publication.** Persistence (`rate_m`) 0.5758 / 0.6046 and a train-only target-month prior 0.6027 / 0.5294 ship as references, alongside mean reversion and the winter rule. The baseline is 0.5511 and is stated to be below all of them. |
@@ -104,7 +105,8 @@ Command: `sh baseline/reproduce_baseline.sh .` from the package root (exit 0). T
 | Momentum (`rate_m1 - rate_m`) | 0.4161 | 0.3993 |
 | Runner-contract XGBoost | 0.5511 | not scored |
 
-The XGBoost pass sits below every eval reference. That is the honest state of this task: the label
+The XGBoost pass sits below the persistence, month-prior and reversal references, and above
+momentum and the winter rule. That is the honest state of this task: the label
 is largely persistent and seasonal, and a competent solution has to beat 0.6027 on eval and 0.6562
 on holdout to be interesting.
 

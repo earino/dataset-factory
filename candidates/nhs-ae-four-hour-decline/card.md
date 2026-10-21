@@ -44,7 +44,8 @@ task uses the **maximum observed lag (13 days)** so no month is read before it e
 feature, and every eligibility test, uses provider months <= M:
 the within-4-hour rate and its lags and rolling summaries, attendances by department type,
 over-4-hour counts, decision-to-admit waits and emergency admissions, plus the calendar.
-Month M+1's counts never ship - only the binary label does.
+Month M+1's counts are not carried as columns - only the binary label. They can be recovered from
+the next row in the panel, which is documented rather than assumed away.
 
 - **Artifact version:** `{ARTIFACT_VERSION}`
 - **Version tag:** `{RELEASE_TAG}` (use this revision for reproducibility)

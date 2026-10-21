@@ -21,7 +21,7 @@ public no credential is needed and the plain download URL works.
 
 The equivalent by hand:
 
-    gh release download v2026.11 --repo earino/nhs-ae-four-hour-decline --dir ./flat
+    gh release download v2026.13 --repo earino/nhs-ae-four-hour-decline --dir ./flat
 """
 from __future__ import annotations
 
@@ -35,7 +35,7 @@ import urllib.request
 from pathlib import Path
 
 REPO = "earino/nhs-ae-four-hour-decline"
-TAG = "v2026.12"
+TAG = "v2026.13"
 # flat asset name -> destination relative to --dest
 LAYOUT = {
     "public-train.csv": "public/train.csv",

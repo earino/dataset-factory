@@ -70,7 +70,7 @@ sha256sum rebuilt/public/train.csv rebuilt/public/eval.csv rebuilt/private/holdo
 Two measured caveats:
 
 - **The source is a live register.** NHS England republishes recent months as revised CSVs and
-  adds a new month 9-13 days after it ends, so a rebuild after 2026-10-21 will not
+  adds a new month 9-16 days after it ends, so a rebuild after 2026-10-21 will not
   reproduce these digests. The published artifact is the 2026-10-21 vintage;
   `meta.json`'s `built_at_utc` and `measurements.json`'s source composite sha256 identify it.
 - **Datacenter IPs are blocked.** The publisher's CDN serves HTTP 202 with an empty body to
@@ -92,5 +92,6 @@ Two measured caveats:
   **mean reversion** (`rate_m - rate_mean_6m`) 0.6562 holdout, with reversal (`rate_delta_1m`)
   0.5839 / 0.6007 and persistence (`rate_m`) 0.5758 / 0.6046 between them. Momentum is
   anti-predictive (0.4161 / 0.3993). The runner-contract XGBoost baseline measured **0.5511**
-  eval AUC - below every eval reference; treat the references as the floor for a useful
+  eval AUC - below the persistence, month-prior and reversal references, and above momentum and the
+winter rule; treat those references as the floor for a useful
   solution, and see `VERIFICATION.md` before quoting it.

@@ -37,7 +37,7 @@ Frame rules (each measured and reported in summary.json)
   exclusion (measured on the 2026-10-21 snapshot: 142 candidate providers,
   12,835 qualifying provider-months, 129 providers ship).
 * Prediction instant: the publication date of month M's monthly CSV. NHS
-  England publishes 9-13 days after the period ends (June, July and August
+  England publishes 9-16 days after the period ends (measured across four months),
   2026: 9, 13 and 10 days), so the task uses the MAXIMUM observed lag,
   13 days - no month's data is used before it existed. Every shipped
   feature is derived from months <= M. The label is month M+1's
@@ -85,7 +85,8 @@ Data dictionary (shipped columns)
 ---------------------------------
 row_id            id: "<ORG CODE>-<YYYY-MM>" of the target month M+1.
 target_month      "YYYY-MM" of the target month M+1 (the time column; the
-                  prediction instant is the end of the previous month).
+                  prediction instant is 21 days after month M ends, when
+                  month M's CSV is certainly published).
 org_code          publisher's Org Code (the event key: positives cluster
                   within providers, so scores are quoted against distinct
                   positive providers per window).
@@ -285,9 +286,10 @@ LAYOUT = {"train": "public/train.csv", "eval": "public/eval.csv",
           "holdout": "private/holdout.csv"}
 
 PREDICTION_TIME = (
-    "At the publication of month M's monthly A&E CSV: observed 9, 13 and 10 days after the period "
-    "end for June, July and August 2026, so the task uses the MAXIMUM observed lag (13 days) rather "
-    "than a mean - no month's data is used before it existed. Every feature is derived from the "
+    "At least 21 days after month M ends, when month M's monthly A&E CSV is certainly published. "
+    "Observed lags are 9, 13, 10 and 16 days (June-August 2026 and March 2026); 21 is a conservative "
+    "bound above every observation, not a mean, and it covers the 16-day March release that a "
+    "13-day rule would have read three days early. Every feature is derived from the "
     "provider's monthly series for months <= M, and every eligibility test uses those same months; "
     "the label is month M+1's within-4-hour rate versus month M's, published about a month later. "
     "The instant is the publication date, not the period end: at the end of month M these values "
@@ -1087,11 +1089,11 @@ def main(argv=None) -> int:
         "features_documented_at": "prediction_time",
         "timing": {
             "prediction_instant": {"kind": "publication", "period": "M",
-                                   "days_after_period_end": 13,
+                                   "days_after_period_end": 21,
                                    "citation": "NHS England publishes monthly A&E activity about ten "
                                                "days after the month ends; e.g. August 2026 data was "
                                                "published 2026-09-10"},
-            "features": {"period": "M", "published_days_after_period_end": 13,
+            "features": {"period": "M", "published_days_after_period_end": 21,
                          "source_kind": "statistical_release"},
             "row_selection": {"latest_period_used": "M",
                               "fields": ["att1_m", "over4_1_m", "rate_m", "months_reported_12m"],
@@ -1099,12 +1101,14 @@ def main(argv=None) -> int:
                                        "before M; the target month M+1 is used only to compute the "
                                        "label, never to decide whether a row exists"},
             "observations": [
+                {"period": "2026-03", "period_end": "2026-03-31", "published": "2026-04-16"},
                 {"period": "2026-06", "period_end": "2026-06-30", "published": "2026-07-09"},
                 {"period": "2026-07", "period_end": "2026-07-31", "published": "2026-08-13"},
                 {"period": "2026-08", "period_end": "2026-08-31", "published": "2026-09-10"}],
-            "observations_note": "NHS England published 9, 13 and 10 days after the period end in "
-                                 "these three months. The instant uses the MAXIMUM observed lag, not "
-                                 "the mean, so no month's data is used before it existed.",
+            "observations_note": "Observed publication lags are 16, 9, 13 and 10 days. The instant "
+                                 "uses 21 days: above every observation with five days of margin, "
+                                 "because the March 2026 release took 16 days and a 13-day rule read "
+                                 "it three days early.",
         },
         "feature_documentation": (
             "every source field is documented in NHS England's A&E "
@@ -1134,7 +1138,8 @@ def main(argv=None) -> int:
             {"column": "target_month",
              "unit": "YYYY-MM of the target month M+1",
              "frame": "the month the label is drawn from; the prediction "
-                      "instant is the end of the previous month"},
+                      "instant is 21 days after month M ends, when month M's "
+                      "CSV is published (observed lags 9-16 days)"},
             {"column": "declines",
              "unit": "binary label",
              "frame": "within4h_rate(M+1) < within4h_rate(M), computed from "

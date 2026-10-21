@@ -10,7 +10,7 @@ data published 2026-09-10), not the period end.
 | Column | Type | Meaning |
 | --- | --- | --- |
 | `row_id` | string | `<Org Code>-<YYYY-MM>` of the target month M+1; unique in the artifact (0 duplicate values measured at build) |
-| `target_month` | string | `YYYY-MM` of the target month M+1 - the time column; the prediction instant is the **publication** of month M's CSV, 9-13 days after month M ends (13 used, the maximum observed) |
+| `target_month` | string | `YYYY-MM` of the target month M+1 - the time column; the prediction instant is the **publication** of month M's CSV, taken as 21 days after month M ends (a bound above every observed lag of 9-16 days) |
 | `org_code` | string | Publisher's Org Code - the event key: positives cluster within providers, so scores are quoted against distinct positive providers per window |
 | `parent_org` | string | Publisher's Parent Org (NHS England region), categorical |
 | `target_year` | int | Calendar year of the target month (knowable at the prediction instant) |
@@ -23,7 +23,9 @@ data published 2026-09-10), not the period end.
 | `declines` | int | **Target.** 1 iff `within4h_rate(M+1) < within4h_rate(M)`, where `within4h_rate(Y) = 1 - Attendances over 4hrs Type 1 / A&E attendances Type 1` for that provider-month |
 
 `positive_label` is `1`. The label source columns (month M+1's `A&E attendances Type 1` and
-`Attendances over 4hrs Type 1`) are **not shipped**: only the binary label is written. Month M's
+`Attendances over 4hrs Type 1`) are **not shipped as columns**: only the binary label is written.
+Consecutive months mean those counts can be recovered by joining a row to the next for the same
+provider - documented here rather than assumed away. Month M's
 own attendances and over-4-hour counts ARE knowable at the prediction instant and ship as
 features.
 
@@ -58,11 +60,13 @@ direction label is threshold-free and balanced in every window.
 
 ## Frame rules that decide which rows exist
 
-1. **Volume gate.** A provider-month is eligible only when Type 1 attendances >= 100 in BOTH the
+1. **Volume gate.** A provider-month is eligible when Type 1 attendances >= 100 in month M. The
+   target month is not gated: it supplies the label and never decides whether a row exists. The
    feature month M and the target month M+1, and the provider has >= 24 such qualifying months.
-   Measured on the 2026-10-21 vintage: 134 providers, 12,765 qualifying provider-months.
+   Measured on the 2026-10-21 vintage: 142 candidate providers, 12,835 qualifying provider-months,
+   129 providers shipping at least one row.
 2. **Consecutive pair.** A row needs the target month M+1 to follow the feature month M in the
-   panel (12,631 consecutive qualifying pairs; 1,040 pairs fall before the train window and are
+   panel (3,152 provider-months are skipped for fewer than 24 months of history; 134 have no
    excluded from the splits).
 3. **Revisions.** NHS England republishes recent months as "...revised..." CSVs; duplicate
    (org, month) keys keep the copy from the latest upload (deterministic from the filename
@@ -76,7 +80,7 @@ direction label is threshold-free and balanced in every window.
 
 ## Timing and leakage self-checks (from the build)
 
-- **Truncation self-check:** 201 rows recomputed against a panel copy physically truncated at
+- **Truncation self-check:** 204 rows recomputed against a panel copy physically truncated at
   month M - **0 mismatches**. Any accidental future-month access would fail this check.
 - **Duplicate row_ids:** 0 across all three splits.
 - **Publisher cross-check:** the panel's August 2026 volume-gated Type 1 within-4h rate is

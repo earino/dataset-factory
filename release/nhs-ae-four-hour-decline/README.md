@@ -9,7 +9,7 @@ provider's monthly A&E series for all months through M, plus the calendar?
 This is a binary provider-month prediction task built from NHS England's monthly provider-level
 A&E statistics. It is a **derived research dataset**, not an NHS England product.
 
-- **Prediction instant:** the **publication** of month M's monthly CSV, 9-13 days after month M
+- **Prediction instant:** the **publication** of month M's monthly CSV, taken as 21 days after month M
   ends (observed: June, July and August 2026 were published 9, 13 and 10 days after the period
   end; the task uses the maximum, 13 days). This is not the period end - at
   the end of month M those values did not yet exist. Every feature, and every eligibility test, uses
@@ -76,7 +76,9 @@ as measured headroom information, not a defect.
 ## Prediction timing and leakage
 
 The label source - month M+1's `A&E attendances Type 1` and `Attendances over 4hrs Type 1` - is
-never written into any shipped file; only the binary `declines` ships. Month M's own
+not carried as a column; only the binary `declines` ships. Because consecutive months are present,
+those counts can be recovered by joining a row to the next one for the same provider - that is a
+property of a panel built this way, stated rather than prevented. Month M's own
 attendances, over-4-hour counts, decision-to-admit waits and emergency admissions ARE knowable
 at the prediction instant and ship as features. The build recomputes a sample of rows against a
 panel copy that physically contains no months after M and reports zero mismatches (204 rows
