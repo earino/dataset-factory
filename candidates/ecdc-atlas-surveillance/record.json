@@ -1,0 +1,52 @@
+{
+  "id": "ecdc-atlas-surveillance",
+  "status": "dropped",
+  "verdict": "reject",
+  "created_at": "2026-10-21T00:00:00+00:00",
+  "domain": "EU infectious-disease surveillance - ECDC Atlas of Infectious Diseases (EU agency publisher)",
+  "prediction_question": "Not formulated - the only binary prediction task the publisher's public surveillance data can carry is a country-period activity-exceedance formulation (will disease X's reported activity in country C exceed threshold T in the next period), and that exact task shape is already on the bench. See rejection_reason.",
+  "prediction_time": "Not stated - no non-mirror task was selected. (For the mirrored formulation it would be the end of the last reporting period, exactly as in who-flunet-activity-exceedance.)",
+  "target_definition": "Not stated - no non-mirror task was selected.",
+  "sources": [
+    {
+      "name": "ECDC Surveillance Atlas of Infectious Diseases (interactive application)",
+      "url": "https://atlas.ecdc.europa.eu/public/index.aspx",
+      "api": "none found at a documented URL: measured 2026-10-21 - GET /public/index.aspx -> HTTP 200, 34,120 B HTML shell (an interactive ASP.NET/JS viewer); the historical '?Dataset=27&Output=json' query pattern returns the same HTML shell, not JSON (34,144 B measured); the data-loading endpoints are internal to the JS app and not part of a documented public API",
+      "license": "ECDC content generally permits reuse with attribution (ECDC copyright statement), but no dataset-level terms were read this session because no task survived the mirror test - the licence question is moot for this record",
+      "access": "measured 2026-10-21: interactive viewer only at the URL above; the ECDC site links TESSy (European Surveillance System) microdata via a data-access request process (https://www.ecdc.europa.eu/en/about-us/what-we-do/surveillance/european-surveillance-system-tessy-data-access), and the surveillance-data surfaces reachable anonymously (Atlas, annual epidemiological reports, weekly threats reports, ERVSS) are country x disease x period panels or PDFs"
+    },
+    {
+      "name": "ECDC surveillance data surfaces reachable anonymously (Atlas landing page links, measured)",
+      "url": "https://www.ecdc.europa.eu/en/surveillance-atlas-infectious-diseases",
+      "api": "page fetched 2026-10-21 (HTTP 200, 78,205 B): links to TESSy data access (request process), antimicrobial-resistance pages, /en/data and /en/data-tools, publications-and-data sections (annual epidemiological reports, weekly threats reports, ERVSS, EpiPulse). EpiPulse is the surveillance portal (account-based for case data); the Atlas is the anonymous surface.",
+      "license": "not read this session - moot for a rejection",
+      "access": "measured 2026-10-21: https://www.ecdc.europa.eu/en/publications-data -> HTTP 200, 88,627 B; sections: Surveillance and monitoring, Assessment, Public health guidance, Operational support"
+    }
+  ],
+  "license_evidence": [
+    {
+      "note": "No licence text was read: the candidate was rejected on task-novelty and access grounds before the licence step. Recorded so no one mistakes the absence for permission.",
+      "url": "https://atlas.ecdc.europa.eu/public/index.aspx"
+    }
+  ],
+  "label_source_columns": [],
+  "construction_script": "none - rejected before construction",
+  "split_strategy": "not applicable - rejected before construction",
+  "measurements": {
+    "atlas_probe_2026_10_21": "GET https://atlas.ecdc.europa.eu/public/index.aspx -> HTTP 200, 34,120 B, interactive HTML shell; GET with the historical '?Dataset=27&Output=json' pattern -> HTTP 200 but the same HTML shell (34,144 B), i.e. no JSON API on the documented pattern; no anonymous bulk download link found on the Atlas or its landing pages (.factory/eu_probe_ecdc.py).",
+    "tessy_access_2026_10_21": "The ECDC site routes case-level surveillance microdata (TESSy, EpiPulse) through a data-access request process - not an anonymous channel; the anonymous surfaces publish aggregated country x disease x period data (Atlas viewer) and PDFs (weekly/monthly reports).",
+    "grain_2026_10_21": "The Atlas data model is country (x age/gender) x disease x period surveillance panels - the same shape as WHO FluNet at coarser period resolution."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "Rejected as a task-shape mirror with an access blocker on top. (1) Mirror: the only binary prediction the publisher's anonymous surveillance data supports is 'will reported disease activity in country C exceed threshold T next period' - the exact formulation this bench already ships as who-flunet-activity-exceedance (ready, qualified as flunet-002 on 2026-10-20): same country-period grain, same activity-threshold target, same lead-time framing. ECDC's respiratory-virus products (Flu News Europe, ERVSS) are the same surveillance family FluNet draws from; a measles/legionellosis/other-disease version would be repeating last month's task on a different source, which the project's novelty rule names as not a discovery. (2) Access: case-level microdata sits behind the TESSy/EpiPulse data-access request process, and the anonymous Atlas is an interactive viewer without a documented bulk API (measured: the historical Output=json pattern returns the HTML shell), so even the mirrored task would need a browser-scraping construction the publisher has not offered an anonymous channel for. Both findings are recorded so a future tick does not re-open this publisher for the same task shape; a genuinely different ECDC product (e.g. a newly published event-level dataset with its own documented anonymous bulk channel) would be a new candidate, not a re-vetting of this one.",
+  "review": null,
+  "next_action": "None for this record (terminal). Do not re-probe ECDC surveillance for activity-exceedance tasks; the flunet prior art settles them. If a future ECDC product publishes event-level data with an anonymous bulk channel (EpiPulse public exports, EU wastewater surveillance dashboards, etc.), open a fresh candidate rather than reopening this one.",
+  "jurisdiction": {
+    "country": "EU",
+    "region": "Europe",
+    "publisher": "European Centre for Disease Prevention and Control (ECDC), an EU agency headquartered in Solna, Sweden",
+    "convention": "Supranational EU agency; 'EU' recorded as the country because an agency of the Union has the Union's jurisdiction, per the same convention as eutl-installation-net-short.",
+    "recorded_at": "2026-10-21"
+  }
+}

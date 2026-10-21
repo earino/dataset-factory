@@ -1,6 +1,74 @@
 # Current state
 
-Updated: 2026-10-22:26Z (advancement session). TWO things moved this tick:
+Updated: 2026-10-21 00:35Z (scheduled discovery session, EU/EEA regional tick). Three new
+sources opened, three verdicts recorded - all three publishers in the EU/EEA region as the
+tick required (quota: >=3 verdicts, >=2 EU/EEA). TWO new `go` candidates for the advancement
+sessions' queue, one documented rejection. No existing candidate was advanced (discovery-only
+tick, per the standing rule).
+
+## 2026-10-21 - EU/EEA discovery tick: eutl-installation-net-short READY (go), bvl-zoom-sample-positivity (go), ecdc-atlas-surveillance (reject)
+
+Coverage before this tick (scripts/discovery-coverage.py): 32 candidates, 13 live, 7/13 non-US,
+Europe region = 3 (all GB) and **zero EU/EEA-publisher candidates live** - this tick's whole
+purpose. After: 35 candidates, Europe region = 6, of which 3 EU/EEA (EU institution + DE +
+EU agency dropped). Probes started from data.europa.eu as the brief required.
+
+**1. eutl-installation-net-short - status `ready`, verdict `go` (the strongest find).** Task:
+for a stationary EU ETS installation, will verified emissions for compliance year t exceed the
+free allocation it holds for year t (net-short year)? Data: the Union Registry Public Website
+(union-registry-data.ec.europa.eu, DG CLIMA) publishes **anonymous stable bulk extracts on
+Azure blob storage** - `operators_yearly_activity_daily.csv.gz` measured 2026-10-20: HTTP 200,
+5,959,551 B, 616,408 rows, 23,708 (registry, installation) keys x PERIOD_YEAR 2005-2030
+(rectangular: future years carry advance ALLOCATION, VERIFIED_EMISSIONS = n/a), 32 registries
+(EU-27 + GB/IS/LI/NO/XI), daily refresh (SNAPSHOT_DATE). Measured net-short base rate by year:
+28.0% (2005) -> 27.5% (2012) -> 56.4% (2013) -> 71.5% (2018) -> 80.6% (2021) -> 73.7% (2025)
+- both classes in every year; the phase drift is a documented phenomenon property. Prediction
+instant pinned at 30 April of year t (t-1 settled; year-t allocation published in advance;
+year-t emissions not yet observed). Licence: Commission legal notice CC BY 4.0 (quoted in
+record) + EEA metadata independently stating "License CC-BY 4.0. Copyright holder: European
+Commission, European Environment Agency". **Publisher-summary cross-check executed at
+discovery**: DE 2023 panel sum VERIFIED_EMISSIONS 296,989,213 t vs EEA aggregate
+'2.1 EU-ETS Verified Emission' 296,989,209 t (4 t difference); panel ALLOCATION sum 127,923,163
+vs EEA '1.1 Freely allocated allowances' 127,958,123 (0.027%) - also proving ALLOCATION is the
+free-allocation field. Novelty check recorded (differentiated; check-novelty.py, 3 queries,
+HF/Zenodo/arXiv). check-candidate.py OK at status `ready`. Next action: construction
+(build.py on a worker; composite row id (registry, installation, year); cross-checks against
+the EEA aggregate + per-year compliance xlsx already published).
+
+**2. bvl-zoom-sample-positivity - status `investigating`, verdict `go`.** Task: will a food
+sample drawn under the German zoonoses monitoring programme (ZooM, BVL - German federal sector
+regulator) from a stated matrix test positive for Campylobacter spp., using only sampling-plan
+attributes decided at sampling time. Clean timing by construction (label = standardised lab
+detection; features = year/month/matrix/stage/production-type/origin/processing/packaging).
+Measured across the three published reporting-year CSVs (stable anonymous URLs, cp1252
+semicolon CSVs): Campylobacter genus 1,394 rows/443 positive (31.8%) 2021; 2,364/613 (25.9%)
+2022; 1,312/390 (29.7%) 2023 - both classes in every year, so disjoint one-year-per-window
+splits exist as measured. Licence dl-de/by-2.0 (DCAT record + govdata.de text quoted). Carried
+risks recorded: only 3 reporting years exist (2020/2024/2025 URLs 404 - refresh lagging),
+ProbenNrPseud blank in the 2023 file (measured 0 vs 5,373/5,969), matrix dominates the base
+rate so the reference baseline is a matrix-stratified rate. Novelty check differentiated.
+check-candidate.py OK.
+
+**3. ecdc-atlas-surveillance - status `dropped`, verdict `reject` (a mirror + access).** The
+ECDC Atlas data model is country x disease x period surveillance panels: the only binary task
+it can carry is country-period activity exceedance - the exact formulation already on the
+bench (who-flunet-activity-exceedance, qualified 2026-10-20); ECDC's respiratory products are
+the same surveillance family FluNet draws from. Measured access findings: the Atlas is an
+interactive viewer (HTTP 200 HTML shell; the historical ?Output=json pattern returns HTML, not
+JSON), case microdata sits behind the TESSy/EpiPulse data-access process. Rejection recorded
+with prior art named so the publisher is not re-opened for this task shape.
+
+Held / not settled this tick: the third named EU agency family (EFSA) was probed only through
+the catalogue - its zoonoses/occurrence microdata is behind the dwh.efsa.europa.eu
+BusinessObjects interactive interface (no anonymous bulk channel found; the catalogue
+distribution URLs are report IDs, not data APIs) - so no EFSA record was written this session;
+a future tick can write it up as a `park` or probe EFSA's Zenodo releases properly. Frontex
+was probed (catalogue distributions point at the ArcGIS migratory-map embed; monthly-count
+exceedance would also be a flunet-shape mirror) and set aside for the same reason as ECDC.
+Probe scripts under .factory/ (gitignored scratch) were deleted after recording; raw probe
+artifacts live in $TMPDIR/eu-catalog (24h-pruned scratch).
+
+Previous tick (advancement session). TWO things moved that tick:
 (1) chicago-food-inspections is FULLY SHIPPED - the operator's flip went through at 21:55Z,
 both data destinations are public and anonymously verified, and the SITE PAGE IS LIVE AND
 VERIFIED TOO: the 21:55Z session had published it (dataset site repo commit 48dc0853 'Prepare
