@@ -1,10 +1,70 @@
 # Current state
 
-Updated: 2026-10-21 02:52Z (worker watcher: flunet-baseline-001 finished; the launching session was
-killed mid-packaging at 02:37:09Z and this session completed, verified and recorded the staging).
-who-flunet-activity-exceedance is now PACKAGED and FULLY STAGED on both destinations, private,
+Updated: 2026-10-21 06:27Z (advancement session: nhs-ae-four-hour-decline constructed and
+qualified on the worker; the discovery panel's recorded figures were corrected - two probe
+defects found and documented; the publisher's CDN blocks worker IPs, so construction runs as
+a staged-fetch job).
+who-flunet-activity-exceedance is PACKAGED and FULLY STAGED on both destinations, private,
 awaiting only the operator's flip. The runner-contract baseline measured 0.8700 eval AUC on the
 released bytes.
+nhs-ae-four-hour-decline is CONSTRUCTED AND QUALIFIED: artifact 9903df974f233dfa (job nhsae-002,
+staging release 419222791), gate 1.3.0 green on the worker, --accept re-verified on the
+coordinator; next is the runner-contract baseline job, then packaging.
+
+## 2026-10-21 - nhs-ae-four-hour-decline constructed and qualified (nhsae-002 green, artifact 9903df974f233dfa accepted); discovery panel figures corrected (two probe defects); publisher CDN blocks worker IPs
+
+The session's tick went to construction (release work outranks it, but the only packaged
+candidate, who-flunet-activity-exceedance, carries awaiting_operator: true - the operator's
+flip, not actionable by a session). Picked nhs-ae-four-hour-decline: status ready, fully
+measured, GB publisher, 3.1 MB source.
+
+**Two defects in the discovery panel probe, found because the build asserts the recorded
+figures.** The first full local build produced train 6,116 rows against the recorded 3,714 and
+failed its own acceptance check. Diagnosis (kept in notes.md with commands):
+
+1. probe_panel.py opens the CSVs with `encoding="utf-8"`, so the five BOM-prefixed files
+   (July 2019, August 2021, July/August/September 2023) key Period as "\ufeffPeriod" and
+   every row of those files was silently dropped - the probe's "1,152 non-monthly rows" was
+   really 101 TOTAL artefact rows plus 1,051 BOM-file rows.
+2. The probe looks up "A&E attendances Type 1", but the 2018-04..2020-03 files name the
+   column "Number of A&E attendances Type 1", so att1 parsed as 0 for 24 months and no
+   provider-month before 2020-04 ever passed the volume gate (hence the recorded "97 months"
+   and a train window that really started at 2020-05).
+
+Corrected figures (recomputed with utf-8-sig + the "Number of" alias, recorded in the record
+and notes): 102 months 2018-04..2026-09, 21,548 provider-months, 134 providers, 12,765
+qualifying provider-months; m/m-decline splits train 6,116/53.7% (133 distinct positive
+providers), eval 2,937/50.3% (124), holdout 2,538/48.6% (121). The fixed-threshold refusals
+were re-computed on the corrected panel and still hold (<95% -> holdout 99.9% positive).
+record.json corrected (check-candidate.py OK), notes.md carries the commands.
+
+**Worker cycle.** nhsae-001 failed at 11.9 s: 0 CSV URLs enumerated. Two measured findings:
+the Hetzner POST returned a transient 412 (record written first, server_id null; the
+identical POST succeeded on retry and reconcile adopted the server), and - the real cause -
+**www.england.nhs.uk (CloudFront) serves HTTP 202 with an empty body to datacenter IPs**,
+so the year pages carry no CSV links from a worker. nhsae-002 was assembled as a fetch job:
+the 102 CSVs (the coordinator's measured publisher fetch) packed into a deterministic
+608,327-byte tar, staged in private release source-nhsae-001, fetched with sha256
+verification, extracted, rebuilt and gated on the worker - **exit 0 in 12.1 s**, inner
+composite digest identical to the coordinator exercise. Qualification gate 1.3.0 green on
+the full artifact on the worker; on the coordinator every released file was re-fetched,
+re-hashed against the release manifest, and `--accept` re-verified: **ACCEPTED, artifact
+9903df974f233dfa**. Reference baselines measured at construction (rank AUC): mean reversion
+rate_m - rate_mean_6m eval 0.5659 / holdout 0.6562 (the bar a competent model must beat);
+momentum is anti-predictive (0.416/0.399). Both workers destroyed (06:19:52Z, 06:25:02Z),
+ledger closed. Worker spend this month: ~5.92 EUR of the 20 EUR allowance (nhsae-001+002
+reservations 0.08 EUR).
+
+**Booked-appointment columns are parsed but NOT shipped**: they only exist from 2020-08, so
+train feature months 2018-12..2020-07 would lack them - split-dependent availability is a
+prediction-timing defect wearing a feature-list costume. Measured and recorded in
+measurements.schema_evolution_2026_10_21.
+
+NEXT: runner-contract baseline job on the accepted artifact (model flunet-baseline-001;
+fetch release 419222791, re-accept through the gate, run the benchmark's train.py/validate.sh
+unmodified), then packaging per dataset-release. The baseline job needs no new construction
+- the extract is staged and verified.
+
 
 ## 2026-10-21 - flunet-baseline-001 succeeded (contract baseline 0.8700); who-flunet staging completed on both destinations after the launching session died mid-flight
 

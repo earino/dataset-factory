@@ -1,0 +1,262 @@
+{
+  "job": {
+    "id": "nhsae-002",
+    "candidate": "nhs-ae-four-hour-decline",
+    "image": "python:3.13-slim",
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 3072,
+    "timeout_minutes": 40,
+    "lifetime_minutes": 60,
+    "max_disk_mb": 8000,
+    "max_artifact_mb": 300,
+    "what": "full construction of the nhs-ae-four-hour-decline extract from the staged publisher CSVs (the publisher CDN blocks datacenter IPs, measured on nhsae-001), then the qualification gate over the exact artifact",
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 419221351,
+      "assets": [
+        {
+          "asset_id": 661561799,
+          "dest": "nhsae-source.tar.gz",
+          "size": 608327,
+          "sha256": "8d8bc1b1a9e9f8303c8e0125aa2d6b7668fe3ebaf15051cd511bd74f2800d1fb"
+        }
+      ]
+    },
+    "source_files": [
+      {
+        "bundled_as": "build.py",
+        "source": "candidates/nhs-ae-four-hour-decline/source/build.py",
+        "bytes": 45466,
+        "sha256": "7ecf2e1e934b8fa3b790b00a7f51a0be25a34eb6384602071e5b1b30e6ec580a"
+      },
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/nhs-ae-four-hour-decline/source/run.sh",
+        "bytes": 2439,
+        "sha256": "fb0de15f201d3e7a09fe976b1609136efb6bfe6e457c6442036059ddd1efedd6"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 39333,
+        "sha256": "71a8cac429656e27dbb631be8488b9f4662580994b115290a243fc1f4b9639f1"
+      }
+    ]
+  },
+  "reservation_eur": "0.04",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 2,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 143360,
+  "source_sha256": "8fddab0f13d67fcc23e2e208639b67733dd63390ca3ff88116625f096e6fa3e2",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-10-21T06:21:18.942910+00:00",
+  "expires": 1792567278,
+  "budget_months": [
+    "2026-10"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 171523693,
+  "known_hosts": "/opt/data/dataset-factory/.factory/nhsae-002/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "65.21.158.17",
+  "result": {
+    "job_id": "nhsae-002",
+    "status": "succeeded",
+    "uploaded": true,
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 419221351,
+      "fetched": [
+        {
+          "dest": "nhsae-source.tar.gz",
+          "bytes": 608327,
+          "sha256": "8d8bc1b1a9e9f8303c8e0125aa2d6b7668fe3ebaf15051cd511bd74f2800d1fb"
+        }
+      ],
+      "failures": [],
+      "bytes": 608327
+    },
+    "image_id": "sha256:98ce6fb13b3803744fbca11434f00818f1e300e4e48a4f204e07b2c928b6218e",
+    "image_digests": [
+      "python@sha256:98ce6fb13b3803744fbca11434f00818f1e300e4e48a4f204e07b2c928b6218e"
+    ],
+    "exit_code": 0,
+    "oom_killed": false,
+    "elapsed_seconds": 12.1,
+    "summary": {
+      "name": "nhs-ae-four-hour-decline",
+      "built_at_utc": "2026-10-21T06:22:45Z",
+      "source": {
+        "mode": "local",
+        "files": 102,
+        "requests": 0,
+        "bytes": 3115779,
+        "seconds": null,
+        "note": "CSVs read from a local directory",
+        "provenance": "staged fetch from earino/dataset-factory-staging release source-nhsae-001 (asset 661561799, sha256 8d8bc1b1a9e9f8303c8e0125aa2d6b7668fe3ebaf15051cd511bd74f2800d1fb, extracted then verified per-file by build.py); the bytes are the publisher fetch measured on the coordinator 2026-10-21 (102 CSV GETs, 3,115,779 bytes, 1.2 s) - the publisher's CDN serves HTTP 202 with an empty body to this datacenter IP, so the worker cannot fetch the publisher directly (measured on nhsae-001)",
+        "composite_sha256": "99cb3339b31ae2045c990c950a40fb44dc93f1dfc4d58f1ae1879fa851666833"
+      },
+      "grain": "provider (Org Code) x calendar month",
+      "label": {
+        "definition": "declines = 1 iff within4h_rate(M+1) < within4h_rate(M)",
+        "within4h_rate": "1 - Attendances over 4hrs Type 1 / A&E attendances Type 1",
+        "external_threshold": null,
+        "note": "fixed thresholds measured near-uniform rates and were refused (record: <95% -> holdout 99.9% positive; <80% -> 95.8%); the m/m direction label is threshold-free"
+      },
+      "volume_gate": {
+        "min_att1": 100,
+        "min_provider_months": 24,
+        "applies_to": "both the feature month M and the target month M+1"
+      },
+      "revision_policy": "duplicate (org, month) keys keep the copy from the latest upload, ordered by (revision datestamp in filename, revised flag, filename); originals without a datestamp sort before every revision",
+      "load_stats": {
+        "files": 102,
+        "rows_read": 21649,
+        "skipped_period": 101,
+        "skipped_no_org": 0,
+        "deduped_keys": 0,
+        "booked_cells_seen": 90012
+      },
+      "gate": {
+        "providers": 134,
+        "provider_months": 12765,
+        "skipped": {
+          "not_consecutive": 0
+        }
+      },
+      "skipped_rows_outside_windows": 1040,
+      "splits": {
+        "train": {
+          "rows": 6116,
+          "positives": 3285,
+          "positive_rate": 0.537116,
+          "distinct_events": 133
+        },
+        "eval": {
+          "rows": 2937,
+          "positives": 1478,
+          "positive_rate": 0.503235,
+          "distinct_events": 124
+        },
+        "holdout": {
+          "rows": 2538,
+          "positives": 1233,
+          "positive_rate": 0.485816,
+          "distinct_events": 121
+        }
+      },
+      "clustered_events_note": "distinct_events counts distinct positive Org Codes per window - positives cluster within providers, so this is the conservative independent-unit count",
+      "national_crosscheck": {
+        "month": "2026-08",
+        "attendances": 1407535.0,
+        "panel_rate": 0.6086,
+        "publisher_commentary_rate": 0.611
+      },
+      "timing_selfcheck": {
+        "checked": 201,
+        "mismatches": 0
+      },
+      "duplicate_row_ids": 0,
+      "schema_evolution": "16 data columns 2018-04..2020-07 (with 'Number of' prefixes in 2018-19); booked-appointment columns from 2020-08 (22 columns); unnamed padding columns from 2024-09 (28 header fields); booked columns parsed but not shipped - they are absent for train feature months 2018-12..2020-07",
+      "reference_baselines": {
+        "note": "stdlib rank AUC measured at construction on the written rows; every score is a prediction-time-safe single feature",
+        "per_split": {
+          "train": {
+            "momentum_auc": 0.5211130089942456,
+            "mean_reversion_auc": 0.5133364194095916,
+            "winter_auc": 0.5333066124291452
+          },
+          "eval": {
+            "momentum_auc": 0.4160875384088867,
+            "mean_reversion_auc": 0.5659125710326739,
+            "winter_auc": 0.5472757398666853
+          },
+          "holdout": {
+            "momentum_auc": 0.39930642951030565,
+            "mean_reversion_auc": 0.6562146339644452,
+            "winter_auc": 0.5090164163660262
+          }
+        }
+      }
+    },
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 419222791,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-93b4dce7226821c061e5",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-93b4dce7226821c061e5/manifest.json",
+    "assets": [
+      {
+        "id": 661566461,
+        "size": 3292,
+        "sha256": "c2f9f43a29d231019396a42c7791639e4acb96179afc0ecd4dfed0c634401813"
+      },
+      {
+        "id": 661566548,
+        "size": 1099411,
+        "sha256": "527a385f12a920b019434c70588c6532af1bd4dd5459eb64ed46809b5ef99b70"
+      },
+      {
+        "id": 661566619,
+        "size": 1246633,
+        "sha256": "cb786792ac321dd851c272bd159fed24e13d6b633276606b294ddc976e72f266"
+      },
+      {
+        "id": 661566688,
+        "size": 2543862,
+        "sha256": "819b6715ad55272ca0d2a482fb4471edd84ee09ae2ee62e560fe786bd9aeb404"
+      },
+      {
+        "id": 661566746,
+        "size": 5148,
+        "sha256": "e7576e8a2431bacd0596161526a418a1c3c5dfea9e37399148db0f24d1d67a77"
+      },
+      {
+        "id": 661566815,
+        "size": 3579,
+        "sha256": "bfea35bea0a008d08230fb787b29af73c82a973042423427df62bf5cd23dc8cb"
+      },
+      {
+        "id": 661566857,
+        "size": 10453,
+        "sha256": "dde24b820b2ca6fdd0eac5ac9fe4c101e5e7fc4d6409baa7729338b9bd53946b"
+      },
+      {
+        "id": 661566905,
+        "size": 10453,
+        "sha256": "dde24b820b2ca6fdd0eac5ac9fe4c101e5e7fc4d6409baa7729338b9bd53946b"
+      },
+      {
+        "id": 661567004,
+        "size": 3579,
+        "sha256": "bfea35bea0a008d08230fb787b29af73c82a973042423427df62bf5cd23dc8cb"
+      },
+      {
+        "id": 661567103,
+        "size": 143360,
+        "sha256": "8fddab0f13d67fcc23e2e208639b67733dd63390ca3ff88116625f096e6fa3e2"
+      },
+      {
+        "id": 661567168,
+        "size": 12309,
+        "sha256": "63afb6d67fc092442690406420a8a50194af8b8057f8ce8ffbdff416fa8ac29d"
+      },
+      {
+        "id": 661567239,
+        "size": 10805,
+        "sha256": "6f798bd8fe3cbb2994a696147b41e7bd2c35af1b76f3ff4a2498a89f3f2da482"
+      }
+    ]
+  },
+  "collected_at": "2026-10-21T06:23:34.007182+00:00",
+  "deleted_at": "2026-10-21T06:25:02.314804+00:00"
+}

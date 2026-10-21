@@ -65,3 +65,111 @@ Admissions" - https://www.england.nhs.uk/statistics/statistical-work-areas/ae-wa
   - No Hugging Face/Zenodo dataset for four-hour performance prediction found.
 - Verdict: differentiated - ours is the first scored, split, leak-gated
   provider-month formulation of NHS four-hour performance direction known to us.
+
+## 2026-10-21 construction session - discovery panel figures corrected (two probe defects)
+
+The kept `probe_panel.py` reproduces its own recorded numbers, but both were computed on a
+silently damaged panel. The construction build (`source/build.py`) failed its acceptance
+assertions against the recorded figures, and the diagnosis found two defects in the probe:
+
+1. **BOM handling.** The probe opens files with `encoding="utf-8"`, so the five BOM-prefixed
+   files key Period as `"\ufeffPeriod"`; `d.get("Period", "")` returns `""` and every row of
+   those files is counted as a non-monthly Period and dropped. BOM files (measured with
+   `head -c 3` per file): July 2019, August 2021, July/August/September 2023 - five whole
+   months. The probe's "1,152 rows had non-monthly Period tokens" was really 101 TOTAL
+   artefact rows + 1,051 BOM-file rows.
+2. **Column-name variant.** The 2018-04..2020-03 files prefix counts with "Number of"
+   ("Number of A&E attendances Type 1"). The probe looks up "A&E attendances Type 1", so
+   att1 parsed as 0 for 24 months and no provider-month before 2020-04 ever passed the
+   >= 100 volume gate. The recorded "97 months" panel in fact had no qualifying month
+   before 2020-04 - which is also why the probe's national series starts at 2020.
+
+Corrected measurements, commands and outputs:
+
+- `python3 .factory/nhsae_recompute.py` (kept logic inline in this entry; the same 102
+  CSVs, utf-8-sig + "Number of" alias):
+  `rows_read=21649 bad_period=101 provider_months=21548 months=102 ((2018, 4)..(2026, 9))`
+  `providers=134 qualifying_provider_months=12765 consecutive pairs=12631` (1,040 with
+  target months before 2019-01, outside the windows).
+- m/m decline label, recomputed: **train 6,116 rows / 3,285 pos (53.7%) / 133 distinct
+  positive providers; eval 2,937 / 1,478 (50.3%) / 124; holdout 2,538 / 1,233 (48.6%) /
+  121.** The recorded 3,714 / 2,449 / 2,538 came from the damaged panel.
+- Fixed-threshold labels re-computed on the corrected panel, still REFUSED: <95% ->
+  train 87.2% / eval 97.5% / holdout 99.9% positive; <80% -> holdout 95.8%; <74% ->
+  holdout 90.8%. The refusal conclusion is unchanged.
+- National Type 1 within-4h by year, corrected: 2018 83.0%, 2019 78.1%, 2020 82.6%,
+  2021 72.9%, 2022 62.4%, 2023 59.8%, 2024 58.6%, 2025 60.2%, 2026 YTD 61.0%; August 2026
+  60.86% vs the publisher commentary's 61.1% - the cross-check holds.
+- Revision policy re-measured: **no duplicate (org, month) keys exist** across the 102
+  files (each month appears in exactly one file; revised files replace originals on the
+  year page), so the recorded "keep max attendances" dedup never operated. The build
+  implements prefer-latest-upload anyway and measures dedup count = 0.
+- Schema evolution measured: 16 data columns 2018-04..2020-07 (with "Number of" prefixes
+  through 2020-03), booked-appointment columns from 2020-08 (22 columns), unnamed padding
+  columns from 2024-09 (28 header fields). Booked columns are parsed but NOT shipped -
+  they are absent for train feature months 2018-12..2020-07 (split-dependent
+  availability).
+- Local full build exercised on the coordinator before the worker run:
+  `python3 candidates/nhs-ae-four-hour-decline/source/build.py --out <scratch> --source-dir
+  <scratch>/ae_csvs` -> exit 0, splits 6,116/2,937/2,538;
+  `python3 skills/dataset-qualification/scripts/qualify_dataset.py <scratch>/extract` ->
+  QUALIFICATION PASSED (all 32 checks, artifact 4be4ee71013ae1cb); gate `--selftest` OK.
+  Reference baselines measured at construction (rank AUC, single features): momentum
+  (rate_m1 - rate_m) eval 0.416 / holdout 0.399 - anti-predictive; mean reversion
+  (rate_m - rate_mean_6m) eval 0.566 / holdout 0.656 - the reference a competent model
+  must beat; winter (Nov/Dec) holdout 0.509.
+
+Worker job nhsae-001 (cx23/hel1) launched by this session: the launcher's first Hetzner
+POST servers returned a transient HTTP 412 with no server created (ledger recorded
+provisioning, server_id null); diagnosis via read-only API calls found no leftovers and
+one registered SSH key; re-issuing the identical POST created server 171522297
+(scout-nhsae-001, labels factory/job/expires matching the ledger), which reconcile
+adopted and `worker resume --job-file` bootstrapped.
+
+## 2026-10-21 construction: nhsae-002 green - built, qualified, accepted
+
+**Worker jobs** (cx23/hel1, both destroyed; ledger `jobs/nhsae-001.json`, `jobs/nhsae-002.json`):
+
+- `nhsae-001` **failed**, exit 2 in 11.9 s (release 419218537): "only 0 monthly CSV URLs
+  enumerated". Two infrastructural findings, both measured:
+  1. The launcher's first Hetzner POST /servers returned HTTP 412 with no server created
+     (record written first, server_id null - the ledger's designed ambiguous-response
+     state). Read-only API diagnosis found no leftover servers and one registered SSH key;
+     re-issuing the identical POST created server 171522297, reconcile adopted it, and
+     `worker resume --job-file` bootstrapped normally. The 412 did not recur for nhsae-002.
+  2. The build failure itself: **www.england.nhs.uk (CloudFront) serves HTTP 202 with an
+     empty body to the worker's datacenter IP** (fetched a year page from the worker: status
+     202, 0 bytes, no CSV links; the same URL from the coordinator: 200, 82,127 B, 12 links,
+     under three UAs). The publisher is not fetchable from Hetzner workers.
+- `nhsae-002` **succeeded**, exit 0 in 12.1 s (release 419222791): fetch job consuming the
+  staged source. The 102 CSVs (the coordinator's measured publisher fetch, 3,115,779 bytes)
+  were packed deterministically (`tar --sort=name --owner=0 --group=0 --mtime=@0 | gzip -n`)
+  into nhsae-source.tar.gz (608,327 B, sha256 8d8bc1b1a9e9f8303c8e0125aa2d6b7668fe3ebaf15
+  051cd511bd74f2800d1fb), staged in private release source-nhsae-001 (419221351, asset
+  661561799), fetched by the executor with sha256 verification, extracted and re-verified
+  per-file by build.py. Inner composite digest 99cb3339b31ae2045c990c950a40fb44dc93f1dfc4d
+  58f1ae1879fa851666833 - identical to the coordinator exercise.
+
+**Built artifact** (extract in release 419222791, runner layout + quality.json):
+
+- train 6,116 rows / 3,285 positives (53.7%) / 133 distinct positive providers;
+  eval 2,937 / 1,478 (50.3%) / 124; holdout 2,538 / 1,233 (48.6%) / 121.
+- Timing self-check: 121 rows recomputed against a physically truncated panel, 0 mismatches.
+- Label-source columns absent from every shipped header (asserted in-build).
+- National cross-check on the built panel: August 2026 Type 1 within-4h 60.86% vs the
+  publisher commentary's 61.1% (revised-vs-provisional states).
+- Reference baselines (std rank AUC, prediction-time-safe single features):
+  momentum (rate_m1 - rate_m) eval 0.4161 / holdout 0.3993 (anti-predictive);
+  mean reversion (rate_m - rate_mean_6m) eval 0.5659 / holdout 0.6562 - the reference bar;
+  winter (Nov/Dec) holdout 0.5090.
+
+**Qualification**: gate 1.3.0 over the full artifact ON THE WORKER, all checks green
+(report in the release). Hand-off re-verification on the coordinator: every extract file
+fetched from the release, each sha256 verified against the release manifest, then
+`qualify_dataset.py --accept output/qualification-nhs-ae-four-hour-decline.json output/extract`
+-> **ACCEPTED, artifact 9903df974f233dfa**. Gate `--selftest` re-run this session: PASSED.
+
+**Reproducibility note**: the default build path (HTTP enumeration + download) is retained
+and is the documented path for an unblocked network; from this project's workers the
+publisher is CDN-blocked, so the staged-fetch path is the operative one and is recorded in
+summary.source.provenance of the built artifact.
