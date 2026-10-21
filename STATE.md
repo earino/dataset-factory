@@ -4739,3 +4739,16 @@ Verification: GitHub 5/5 assets anonymously downloaded and re-hashed; HF 15 file
 readable on both; tag v2026.10 moved to the docs commit on both destinations (this was required - the site
 publisher pins the tag and refused while the tag still carried the old CC licence). Site published, receipt
 complete.
+
+**nhs-ae-four-hour-decline: independent audit FAILED it, release pulled back from the flip queue (2026-10-21).**
+The audit reproduced the bytes and the baseline (AUC 0.552621) but found two structural defects. (1) Temporal:
+25 features carry month-M values that NHS England publishes about 10 days after the month ends, while the
+record documented the prediction instant as month end - the features did not exist at the claimed instant.
+(2) Hindsight selection: eligibility uses M+1 attendance and a >=24-month count computed over the whole
+snapshot, so the retained population depends on future information. Splits, integrity and label arithmetic
+passed (11,457 labels reproduced exactly; 134 terminal rows unverifiable). Baseline loses to persistence
+(0.5758) and to a target-month-of-year prior (0.6168). Docs errors: rate_delta_1m scored with the wrong sign,
+"no credentials" wrong, inconsistent checksum paths. Candidate moved packaged -> qualified, awaiting_operator
+cleared, packaged_at cleared, audit block recorded. The staged v2026.10 artifacts must not be published.
+Plan: redefine the prediction instant as month M's publication date, select the population without M+1,
+rebuild, re-qualify, re-baseline with persistence and calendar priors, re-package, re-audit.

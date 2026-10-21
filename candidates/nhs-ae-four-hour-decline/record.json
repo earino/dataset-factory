@@ -1,6 +1,6 @@
 {
  "id": "nhs-ae-four-hour-decline",
- "status": "packaged",
+ "status": "qualified",
  "verdict": "go",
  "jurisdiction": {
   "country": "GB",
@@ -165,7 +165,7 @@
  ],
  "rejection_reason": null,
  "review": null,
- "next_action": "PACKAGED 2026-10-21T10:18:40Z - fully staged on both destinations, private on both (anonymous GitHub 404, Hub 401): GitHub release v2026.10 (tag == main == f36e4fc3) carries the five accepted files at manifest digests with get_dataset.py verified end-to-end (--accept ACCEPTED, artifact 9903df974f233dfa); the Hugging Face repo carries the same five files with the card's documented loading path verified split-by-split (nhsae-hf-002 ok, problems []). Awaiting only the operator's flip; after it, publication per dataset-release on both platforms plus the website.",
+ "next_action": "REBUILD, do not flip. Two structural defects found by independent audit 2026-10-21: (1) temporal - the prediction instant must be the publication date of month M (about 10 days after month end), not month end, because 25 features are published then; (2) hindsight selection - eligibility must use only months <= M, not M+1 attendance or a whole-snapshot months-reported count. Fix code/build.py, rebuild, re-qualify, re-baseline (add persistence and target-month prior), re-package, then re-audit. Correct the documentation errors listed in audit_2026_10_21. The staged v2026.10 artifacts on both destinations are invalidated and must not be published.",
  "novelty_check": {
   "checked_at": "2026-10-21T04:36:13+00:00",
   "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
@@ -398,6 +398,18 @@
   "staging_release": 419227918,
   "note": "Measured on the released bytes fetched from staging (digest-verified, re-accepted through the gate before scoring), not a rebuild; the private holdout was never copied into the runner workdir. The XGBoost pass (0.5526 eval) sits below the construction-time mean-reversion reference (0.5659 eval / 0.6562 holdout), which is the bar a competent model must beat - recorded as measured headroom information, not a defect."
  },
- "packaged_at": "2026-10-21T10:18:40Z",
- "awaiting_operator": true
+ "packaged_at": null,
+ "awaiting_operator": false,
+ "audit_2026_10_21": {
+  "auditor": "independent agent, gh CLI, read-only, did not read dataset-factory",
+  "artifact": "9903df974f233dfa",
+  "integrity": "PASS - 26 checksum-covered files match; tag == main == f36e4fc3",
+  "labels": "UNCERTAIN - 11,457 reconstructed labels agree with the shipped label; 134 cannot be reconstructed (10 train, 3 eval, 121 holdout) because target-month counts are absent from the released rows",
+  "temporal_safety": "FAIL - 25 features carry month-M statistics that NHS England publishes about 10 days after month end (rate_m, att1_m, over4_1_m, the delta and mean families, months_reported_12m, ...). The prediction instant was documented as end of month M, which is before those values existed. Revision vintages are unverified.",
+  "population_selection": "FAIL - eligibility uses M+1 attendance and a >=24-month criterion evaluated over the whole snapshot, so the retained rows depend on future information (example: R0A-2019-01 has months_reported_12m=9 yet is retained). Hindsight selection independent of feature leakage.",
+  "splits": "PASS - no duplicate provider-months, no overlapping target months, no training targets inside eval; train 2019-01..2022-12, eval 2023-01..2024-12, holdout 2025-01..2026-09",
+  "baseline": "reproduces at AUC 0.552621 / Brier 0.398525, but persistence 0.575845 and a target-month-of-year prior 0.616765 both beat it",
+  "holdout": "labelled and shipped by design; blind evaluation requires isolation",
+  "documentation": "FAIL - timing conflation, rate_delta_1m scored with the opposite sign (it yields 0.5839/0.6007 eval/holdout), 'public/no credentials' wrong, checksum instructions use inconsistent paths, downloader does not consult SHA256SUMS or implement its gh fallback"
+ }
 }
