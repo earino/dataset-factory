@@ -1,0 +1,53 @@
+{
+  "id": "defra-la-household-recycling-rate",
+  "status": "parked",
+  "verdict": "park",
+  "jurisdiction": {
+    "country": "GB",
+    "region": "Europe",
+    "publisher": "Department for Environment, Food and Rural Affairs (Defra, United Kingdom)",
+    "recorded_at": "2026-10-21"
+  },
+  "created_at": "2026-10-21T04:44:23.893699+00:00",
+  "domain": "waste and resource policy - local authority household recycling performance prediction (annual LA panel)",
+  "prediction_question": "Hypothetical task this source would support (parked, not taken to construction): for an English local authority, will its household waste recycling rate (recycled/reused/composted as a share of household waste) be at least 50% in financial year Y, given its published annual waste series for years before Y? The 50% threshold is the published Waste Framework Directive 2008/98/EC art.11(2)(a) target (50% household recycling by 2020) that England's LAs were tracked against, not an invented cutoff.",
+  "prediction_time": "Would be the publication date of the year Y-1 annual results (Defra publishes final year-Y figures roughly in Q4 of the following financial year; 2024/25 final figures were cut from WasteDataFlow in February 2026 and published in 2026). Features would come from published years <= Y-1; the label is computed from year Y's row, published later.",
+  "target_definition": "Would be binary: Household - waste sent for recycling-composting-reuse (tonnes) / Household - total waste (tonnes) >= 0.50 for the LA in year Y, both columns from Defra's cumulative LA table. Label source columns: year Y's household tonnage columns (excluded from shipped features).",
+  "sources": [
+    {
+      "name": "Defra - Local authority collected waste management, annual results (LA-level cumulative ODS)",
+      "url": "https://www.gov.uk/government/statistics/local-authority-collected-waste-management-annual-results",
+      "api": "the 2024/25 release's 'LA_and_Regional_Spreadsheet_2024-25.ods' (2.04 MB) carries Table_1 with the full cumulative LA x year panel 2014-15..2024-25 (3,770 rows, ~320-350 authorities/year) - a single anonymous GET is the whole dataset; older env18 collection page (gov.uk/government/statistical-data-sets/env18-local-authority-collected-waste-annual-results-tables) holds per-year files back to 1996/97 in XLS/ODS",
+      "license": "Open Government Licence v3.0 (gov.uk standing licence; the figures-and-tables dataset records Defra/WasteDataFlow as source). Note the dataset's own caveat: 'Copyright of data and/or information presented or attached in this document may not reside solely with this Department' - WasteDataFlow data collected from local authorities is published under OGL by Defra.",
+      "access": "measured 2026-10-21: 9 year-files downloaded for probing, 11,120,901 bytes total in 2.3 s; construction needs only the single cumulative 2024-25 ODS (2.04 MB). Anonymous HTTPS, no key. ODS parses with stdlib (zipfile + content.xml; numeric cells carry office:value attributes)."
+    },
+    {
+      "name": "Defra - Local authority collected waste management annual results 2024/25 (statistical release and methodological summary)",
+      "url": "https://www.gov.uk/government/statistics/local-authority-collected-waste-management-annual-results/local-authority-collected-waste-management-annual-results-202425",
+      "api": "none - HTML commentary; used for headline cross-check",
+      "license": "Open Government Licence v3.0",
+      "access": "measured 2026-10-21 via search: 'Recycled/composted waste as percentage of total [local authority collected] = 41.2%' in 2024/25; methodology page records 321 reporting authorities in England for 2024/25, all with full returns, and that final cuts are downloaded from WasteDataFlow before publication."
+    }
+  ],
+  "license_evidence": [
+    {
+      "note": "gov.uk content is published under the Open Government Licence v3.0 by default; the landing page for these statistics and the accompanying ODS files carry the standing gov.uk OGL v3 statement. Redistribution of derived rows is permitted. Recorded 2026-10-21. The WasteDataFlow source records carry Defra's own copyright caveat noted in sources[0].license.",
+      "url": "https://www.gov.uk/government/statistics/local-authority-collected-waste-management-annual-results"
+    }
+  ],
+  "construction_script": null,
+  "split_strategy": "Measured on the cumulative panel (would be): train target years 2014-15..2020-21 = 2,070 LA-years (480 positives, 23.2%); eval 2021-22..2022-23 = 666 (146 positives, 21.9%); holdout 2023-24..2024-25 = 642 (137 positives, 21.3%). Both classes present in every window; distinct positive authorities 122/80/72. The panel satisfies the split contract - it fails on headroom (see measurements).",
+  "measurements": {
+    "panel_2026_10_21": "Script .factory/waste_panel.py (session, stdlib only) over the 2024-25 cumulative ODS Table_1: 3,730 LA-years with computable rates, 11 years 2014-15..2024-25, 321-352 authorities/year. Per-year positives at >=50%: 66-84 (21-24%); median rate 41.3-43.4%, max 61.6-67.3%.",
+    "persistence_baseline_measured": "the naive baseline 'next year's label = last year's label' scores 92.6% to 97.8% accuracy year-over-year (n=317-351 transitions/year; pos->pos 62-75, pos->neg 3-14, neg->pos 1-16, neg->neg 245-260). Only ~10 authorities flip across the 50% line in a typical year. THE BLOCKER: a competent model has almost no headroom over this baseline - the eval would score a near-saturated persistence rule, and the informative signal (which LAs flip) is ~10 events/year, noise-dominated at this grain.",
+    "national_cross_check": "panel-summed national household recycling rate (Unitary+Disposal authorities only, per the file's own double-counting note): 2024-25 42.0%, 2019-20 43.8%, 2014-15 43.7% - consistent with the publisher's published England figures (~41-44% band; 41.2% of total LA-collected waste recycled/composted in 2024/25 per the release). England's household recycling rate has been flat-to-declining since 2016/17 - a documented stagnation that itself explains the low flip rate.",
+    "cost_measured": "one cumulative ODS (2.04 MB) IS the full 11-year panel - the cheapest panel measured in this session; 9 historical year-files (11.1 MB) downloaded in 2.3 s for cross-checking. Coordinator-class parsing is fine; no worker needed for discovery.",
+    "definitional_notes": "the LA tables' 'household waste' rate differs slightly from Defra's headline 'waste from households' measure (excludes street sweepings etc.); the WFH_England_Data ODS on the same page carries the official WFH series if a construction is ever unparked. Older years use different column names ('Recycled/ Composted' vs 'Household - waste sent for recycling-composting-reuse'); the cumulative 2024-25 file normalises 2014-15 onwards itself, so no per-year schema mapping is needed for 2014-15+.",
+    "decline_variant_assessed": "an alternative label (y/y rate decline rather than the fixed 50% threshold) would have more movement, but at annual grain with features limited to the LA's own tonnage history plus authority type/region it is a thin-feature, annual-cadence sibling of this session's NHS A&E monthly-decline candidate, which has monthly cadence, 97 provider-months and richer per-month features; the marginal value of the annual variant does not justify a construction slot."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "PARKED on measured headroom, not on access or licence (both clean): the policy-anchored >=50% task is already solved by a persistence rule at 92.6-97.8% accuracy with only ~10 threshold-crossing LAs per year, so a scored eval could not distinguish a competent model from the naive baseline; and the alternative decline label is an annual, thin-feature near-duplicate of the NHS A&E candidate promoted this session. The source itself is excellent (single 2 MB cumulative ODS, OGL v3, 11-year panel) and stays on the bench for future formulations.",
+  "review": null,
+  "next_action": "Parked. Unpark only if one of these becomes true: (1) a finer-grain export channel opens (WasteDataFlow quarterly exports at LA grain would make movement measurable at sub-annual scale - check whether Defra's quarterly 'waste from households' releases ever publish LA breakdowns); (2) the operator wants an annual-grain policy task where the persistence ceiling is acceptable (e.g. for evaluating agents' honesty about un-beatable baselines); or (3) a task review wants the y/y-decline variant with cross-sectional joins (ONS rurality, deprivation) that might move it beyond persistence. Any of these requires re-measuring the flip counts first."
+}

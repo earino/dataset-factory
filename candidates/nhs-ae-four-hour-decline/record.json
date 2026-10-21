@@ -1,0 +1,165 @@
+{
+  "id": "nhs-ae-four-hour-decline",
+  "status": "ready",
+  "verdict": "go",
+  "jurisdiction": {
+    "country": "GB",
+    "region": "Europe",
+    "publisher": "NHS England (United Kingdom)",
+    "recorded_at": "2026-10-21"
+  },
+  "created_at": "2026-10-21T04:28:59.794832+00:00",
+  "domain": "health-system operations - NHS emergency care four-hour performance prediction (UK public-service performance panel)",
+  "prediction_question": "For an NHS England provider operating a consultant-led (Type 1) A&E department, will the percentage of its Type 1 attendances admitted, transferred or discharged within 4 hours of arrival decline in month M+1 relative to month M, given that provider's monthly A&E series (attendances by department type and booked-appointment status, over-4-hour counts, waits from decision-to-admit, emergency admissions) for all months through M, plus calendar month? A relative month-over-month change is used instead of a fixed standard threshold because the fixed thresholds measured near-uniform positive rates in recent years (see measurements).",
+  "prediction_time": "End of month M, when month M's monthly CSV is published (measured: the September 2026 monthly CSV was already downloadable on 2026-10-21, i.e. a ~3 week publication lag). Every feature is derived from provider months <= M; the label is month M+1's within-4-hour rate versus month M's, and month M+1's row is published about a month after the prediction is made.",
+  "target_definition": "Binary, computed from the source row of month M+1: within4h_rate(M+1) < within4h_rate(M), where within4h_rate(Y) = 1 - Attendances over 4hrs Type 1 / A&E attendances Type 1 for the provider in month Y. Unit: proportion of Type 1 attendances within 4 hours. Label source columns: month M+1's 'A&E attendances Type 1' and 'Attendances over 4hrs Type 1' (recorded in label_source_columns; excluded from shipped columns). Volume gate: provider-month excluded unless Type 1 attendances >= 100 in both M and M+1 (measured: leaves 124 providers with >= 24 such months).",
+  "sources": [
+    {
+      "name": "NHS England - A&E Attendances and Emergency Admissions, statistical work area (monthly provider-level CSVs)",
+      "url": "https://www.england.nhs.uk/statistics/statistical-work-areas/ae-waiting-times-and-activity/",
+      "api": "per-financial-year sub-pages (2018-19 through 2026-27) each link 12 monthly provider-level CSVs (about 30 KB each, 21 columns: Period, Org Code, Parent Org, Org name, attendances by department type incl. booked, attendances over 4hrs by department type, DTA waits 4-12h/12+h, emergency admissions); pre-2018-19 months are XLS-only; the main page also carries a cumulative 'Monthly-AE-Time-Series' XLS (all months in one file) for use on a worker",
+      "license": "Open Government Licence v3.0 - stated in the work-area page footer, linking to https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/ (Crown copyright)",
+      "access": "anonymous HTTPS, no key. Measured 2026-10-21: 102 monthly CSVs (2018-04 through 2026-09) = 3,115,779 bytes fetched in 1.2 s total from the coordinator; year pages are ~71-81 KB each and 11 were read to enumerate the CSV URLs"
+    },
+    {
+      "name": "NHS England - monthly statistical commentary PDF (publisher's own summary product, used as cross-check)",
+      "url": "https://www.england.nhs.uk/statistics/wp-content/uploads/sites/2/2026/09/Statistical-commentary-August-2026-WE76sa.pdf",
+      "api": "none - published commentary",
+      "license": "Open Government Licence v3.0 (same standing terms as the statistics pages)",
+      "access": "measured 2026-10-21 via web search snippet: '61.1% of patients were admitted, transferred or discharged within 4 hours in Type 1 A&E Departments in August 2026 compared to 61.7% in July 2026' - cross-check against the panel's own 60.9% for 2026-08 (difference consistent with revised-vs-provisional publication states)"
+    }
+  ],
+  "license_evidence": [
+    {
+      "note": "Measured 2026-10-21 from https://www.england.nhs.uk/statistics/statistical-work-areas/ae-waiting-times-and-activity/: the page footer carries a menu item 'Open Government Licence v3.0' linking to https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/. NHS England statistics content is published under OGL v3 unless otherwise stated; OGL v3 permits commercial and non-commercial reuse and redistribution with attribution. Third-party reusers (e.g. github.com/rajatgaur505/nhs-ae-performance-analysis) state the same basis: 'publicly available NHS England data (Open Government Licence)'.",
+      "url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+    }
+  ],
+  "label_source_columns": [
+    "A&E attendances Type 1 (month M+1 row)",
+    "Attendances over 4hrs Type 1 (month M+1 row)"
+  ],
+  "construction_script": null,
+  "split_strategy": "Temporal, on the target month M+1, windows computed from the measured panel (97 provider-months per provider, 2018-04..2026-09): train targets 2019-01..2022-12 = 3,714 provider-months (2,098 positives, 56.5%); eval targets 2023-01..2024-12 = 2,449 (1,152 positives, 47.0%); holdout targets 2025-01..2026-09 = 2,538 (1,233 positives, 48.6%). Both classes present in every window. Positives cluster within providers (a declining provider tends to keep declining), so the conservative independent-unit count is the distinct positive providers per window: 110 (train) / 124 (eval) / 121 (holdout) of 124 providers. Features for the earliest train rows draw on 2018-04..2018-12 history. Rows are keyed (Org Code, target month); providers with <100 Type 1 attendances in either month are excluded by the volume gate.",
+  "measurements": {
+    "panel_2026_10_21": "Script .factory/ae_panel.py (this session, stdlib csv only): 102 monthly CSVs 2018-04..2026-09, 21,649 rows read, 20,497 (org, month) keys after revision dedup (keep max Type 1 attendances copy), 124 providers with Type 1 attendances >= 100 in >= 24 months -> 9,071 provider-months. Month coverage 97 months.",
+    "national_within4h_type1_by_year": "computed from panel: 2020 85.1%, 2021 73.2%, 2022 62.4%, 2023 60.1%, 2024 58.6%, 2025 60.2%, 2026 YTD 61.0% - matches the publisher's own commentary (Aug 2026 Type 1 61.1%) and the NAO report's fiscal-year figures (Type 1 low 56.7% in 2022-23, 60.9% in 2025-26) within calendar/fiscal-year offsets.",
+    "label_base_rates_measured": "m/m decline label: train 56.5% / eval 47.0% / holdout 48.6% (balanced). Fixed-threshold labels measured and REFUSED for this task: within4h < 95% (the constitutional standard) gives eval 97.1% / holdout 99.9% positive (uniform-class red flag); < 80% gives holdout 95.8%; < 74% gives holdout 90.8%. Base rate is non-stationary with the system's deterioration (documented property, not a construction fault): a fixed threshold that separates in 2019 does not separate in 2025.",
+    "cost_measured": "102 CSV GETs, 3,115,779 bytes, 1.2 s wall clock on the coordinator (1.9 GiB class host) + 11 year-page GETs (~80 KB each) to enumerate URLs. Full-history extension to 2015-06 requires the cumulative Monthly-AE-Time-Series .xls (440 KB) parsed on a worker (xlrd), or per-month XLS for 2015-16..2017-18.",
+    "revision_policy_measured": "recent months are republished as '...revised...' CSVs on the same year page (e.g. Monthly-AE-March-2026-revised); the panel dedups by keeping the copy with the larger Type 1 attendances; construction must prefer the latest revised upload and record the policy.",
+    "known_event_note": "December 2021 (Omicron) moves the national aggregate only slightly (65.6% vs 66.2% in Nov 2021, quick un-deduped national check) - winter pressure shows at provider grain, so it is not a usable national known-event fixture; the publisher-commentary cross-check above anchors the rate computation instead. The m/m-decline label has no external threshold, so the qualification known-event fixture requirement does not apply; seasonal structure (winter declines) is the headroom signal a competent model must capture.",
+    "no_cross_split_entities": "org codes repeat across splits by design (same providers tracked over time) - the entity is the provider-month, not the provider; the gate's expected_duplicate_ids must not claim org codes as entity keys, and id columns for the runner are (Org Code, target month)."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": null,
+  "next_action": "GO to construction (advancement session owns it). Construction step: on a worker, enumerate year pages and download the monthly CSVs (2018-04..present; optionally parse the cumulative XLS with xlrd to extend to 2015-06), build the provider-month panel keyed (Org Code, month) with revision dedup preferring latest upload, apply the Type 1 >= 100 volume gate, label each row m/m within-4h decline for month M+1, features strictly from months <= M (rate history and deltas, attendances by type, booked attendances, DTA waits, emergency admissions, calendar month, provider code declared high-cardinality), ship nothing from month M+1's row, freeze train 2019-01..2022-12 / eval 2023-01..2024-12 / holdout 2025-01..2026-09, run the qualification gate on the full artifact, and measure seasonal-naive baselines (e.g. predict decline iff November/December, predict persistence) against a competent model on eval before quoting headroom.",
+  "novelty_check": {
+    "checked_at": "2026-10-21T04:36:13+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "NHS A&E four hour wait prediction",
+      "emergency department performance forecasting dataset",
+      "hospital four hour target benchmark"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "NHS A&E four hour wait prediction",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "emergency department performance forecasting dataset",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "hospital four hour target benchmark",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "NHS A&E four hour wait prediction",
+          "hits": 3303809,
+          "top": [
+            "Large Scale Travelling Ionospheric Disturbances during geomagnetic storms of 17 March and 23 June 2015 in the Australian region",
+            "There Is an Hour, a Pensive Hour. Four-Part Song",
+            "Corridor Care in the NHS II",
+            "Queue Wait Time Prediction in Supercomputers",
+            "Long-term temperature prediction with hybrid auto encoder algorithms"
+          ]
+        },
+        {
+          "query": "emergency department performance forecasting dataset",
+          "hits": 1137344,
+          "top": [
+            "People waiting and median waits in emergency departments, Queensland, live",
+            "Emergency department busyness by day and hour, Queensland",
+            "Public hospital emergency departments and minor injury clinics, Queensland, live list",
+            "Forecasting hourly emergency department arrival using time series analysis",
+            "A Time-Series Forecasting Model for Clinical Outcomes in Ghanaian Emergency Care Units: A Methodological Evaluation, 2000\u20132024"
+          ]
+        },
+        {
+          "query": "hospital four hour target benchmark",
+          "hits": 494673,
+          "top": [
+            "The Private Nurse and Twenty-Four Hour Hospital Duty1:",
+            "Data from:  Exploring emergency department 4-hour target performance and cancelled elective operations: a regression analysis of routinely collected and openly reported NHS trust data.",
+            "The Distributional Misery Index (DMI): Making the Five Economies Visible",
+            "target-benchmark/target: ACL Submission Version - Feb15th",
+            "Catching the Stars Across Time: A 24-Hour Orbital Transformation and the Four Target Points"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "NHS A&E four hour wait prediction",
+          "hits": 5,
+          "top": [
+            "Measurements of Four-Fermion Production via Neutral Elektroweak Currents at LEP",
+            "\"Wait, I'm Still Talking!\" Predicting the Dialogue Interaction Behavior Using Imagine-Then-Arbitrate Model",
+            "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
+            "Hey, wait a minute: on at-issue sensitivity in Language Models",
+            "A Combined Deep Learning-Gradient Boosting Machine Framework for Fluid Intelligence Prediction"
+          ]
+        },
+        {
+          "query": "emergency department performance forecasting dataset",
+          "hits": 5,
+          "top": [
+            "SDWPF: A Dataset for Spatial Dynamic Wind Power Forecasting Challenge at KDD Cup 2022",
+            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+            "Forecasting intermittent time series with Gaussian Processes and Tweedie likelihood",
+            "Probabilistic Hierarchical Forecasting with Deep Poisson Mixtures",
+            "Quantile Regression for Qualifying Match of GEFCom2017 Probabilistic Load Forecasting"
+          ]
+        },
+        {
+          "query": "hospital four hour target benchmark",
+          "hits": 5,
+          "top": [
+            "Global maps of travel time to emergency and tertiary hospitals",
+            "Target search by active particles",
+            "Measurements of Four-Fermion Production via Neutral Elektroweak Currents at LEP",
+            "Fluid fragmentation from hospital toilets",
+            "Towards a Large Language-Vision Question Answering Model for MSTAR Automatic Target Recognition"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'NHS A&E four hour wait prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'emergency department performance forecasting dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'hospital four hour target benchmark': 0 hit(s) - nothing notable\n- zenodo_records / 'NHS A&E four hour wait prediction': 3303809 hit(s) - Large Scale Travelling Ionospheric Disturbances during geomagnetic storms of 17 March and 23 June 2015 in the Australian region, There Is an Hour, a Pensive Hour. Four-Part Song, Corridor Care in the NHS II, Queue Wait Time Prediction in Supercomputers, Long-term temperature prediction with hybrid auto encoder algorithms\n- zenodo_records / 'emergency department performance forecasting dataset': 1137344 hit(s) - People waiting and median waits in emergency departments, Queensland, live, Emergency department busyness by day and hour, Queensland, Public hospital emergency departments and minor injury clinics, Queensland, live list, Forecasting hourly emergency department arrival using time series analysis, A Time-Series Forecasting Model for Clinical Outcomes in Ghanaian Emergency Care Units: A Methodological Evaluation, 2000\u20132024\n- zenodo_records / 'hospital four hour target benchmark': 494673 hit(s) - The Private Nurse and Twenty-Four Hour Hospital Duty1:, Data from:  Exploring emergency department 4-hour target performance and cancelled elective operations: a regression analysis of routinely collected and openly reported NHS trust data., The Distributional Misery Index (DMI): Making the Five Economies Visible, target-benchmark/target: ACL Submission Version - Feb15th, Catching the Stars Across Time: A 24-Hour Orbital Transformation and the Four Target Points\n- arxiv_preprints / 'NHS A&E four hour wait prediction': 5 hit(s) - Measurements of Four-Fermion Production via Neutral Elektroweak Currents at LEP, \"Wait, I'm Still Talking!\" Predicting the Dialogue Interaction Behavior Using Imagine-Then-Arbitrate Model, Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, Hey, wait a minute: on at-issue sensitivity in Language Models, A Combined Deep Learning-Gradient Boosting Machine Framework for Fluid Intelligence Prediction\n- arxiv_preprints / 'emergency department performance forecasting dataset': 5 hit(s) - SDWPF: A Dataset for Spatial Dynamic Wind Power Forecasting Challenge at KDD Cup 2022, The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, Forecasting intermittent time series with Gaussian Processes and Tweedie likelihood, Probabilistic Hierarchical Forecasting with Deep Poisson Mixtures, Quantile Regression for Qualifying Match of GEFCom2017 Probabilistic Load Forecasting\n- arxiv_preprints / 'hospital four hour target benchmark': 5 hit(s) - Global maps of travel time to emergency and tertiary hospitals, Target search by active particles, Measurements of Four-Fermion Production via Neutral Elektroweak Currents at LEP, Fluid fragmentation from hospital toilets, Towards a Large Language-Vision Question Answering Model for MSTAR Automatic Target Recognition",
+    "prior_art": [
+      "A unified machine learning approach to time series forecasting with an application to hospital demand, BMC Emerg Med 20:36 (2020) - ED daily-arrival volume forecasting, private data",
+      "github.com/rajatgaur505/nhs-ae-performance-analysis - descriptive dashboard, not a benchmark"
+    ],
+    "theirs": "NHS England publishes the raw monthly provider CSVs and its own headline commentary; hobby GitHub repos analyse 12 months descriptively and project 3 months with regression; academic work forecasts ED arrival volume at two London hospitals from non-public data",
+    "ours": "the first scored, split, leak-gated provider-month formulation of NHS England four-hour A&E performance direction (m/m decline, Type 1 providers, 2018-2026, temporal train/eval/holdout windows with both classes measured in every window); no existing artifact ships this prediction task with splits and a scored contract",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
+}

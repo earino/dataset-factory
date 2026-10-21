@@ -1,0 +1,52 @@
+{
+  "id": "ons-la-claimant-count-direction",
+  "status": "parked",
+  "verdict": "park",
+  "jurisdiction": {
+    "country": "GB",
+    "region": "Europe",
+    "publisher": "Office for National Statistics (United Kingdom); data via nomis (Durham University on behalf of ONS) with DWP administrative source",
+    "recorded_at": "2026-10-21"
+  },
+  "created_at": "2026-10-21T04:50:35.541891+00:00",
+  "domain": "labour-market statistics - local authority monthly claimant count direction prediction (aggregate macro panel)",
+  "prediction_question": "Hypothetical task this source would support (parked, not constructed): for an English local authority district, will its claimant count (stock of Universal Credit conditionality + JSA claimants, ONS/DWP administrative series) rise in month M+1 relative to month M, given the authority's monthly series through month M? This is the best-cross-section task found across ONS's published outputs this session; ONS publishes aggregate statistics, so any ONS-hosted task is a direction-forecast on own history plus small-area attributes.",
+  "prediction_time": "Would be the publication date of month M's figures (ONS labour market statistics are published monthly with a fixed lag; measured: the 2026-09 claimant count was already published on 2026-10-21 via nomis, i.e. roughly a 3-week lag). Features from months <= M; label from month M+1's row.",
+  "target_definition": "Would be binary: OBS_VALUE for the authority rises from month M to M+1 (nomis NM_162_1, measures=20100, gender=Total, age=All categories: Age 16+). Label source column: month M+1's OBS_VALUE (excluded from shipped features). Count-level alternative would need the denominators dataset (NM_52_1, residents 16-64) for a rate - recorded as a construction detail.",
+  "sources": [
+    {
+      "name": "ONS claimant count via nomis - NM_162_1 'Claimant count by sex and age' (current, actively updated)",
+      "url": "https://www.nomisweb.co.uk/api/v01/dataset/NM_162_1.def.sdmx.json",
+      "api": "anonymous SDMX/REST + CSV: https://www.nomisweb.co.uk/api/v01/dataset/NM_162_1.data.csv - working form is minimal (geography and date only); the dimension-parameter form (gender=7&age=0&measures=20100 and five other combinations) returns HTTP 200 with zero bytes (measured), so queries must let the API default unspecified dimensions and filter the returned GENDER/AGE/MEASURE/MEASURES columns locally",
+      "license": "Open Government Licence v3.0 - ONS site-wide statement 'All content is available under the Open Government Licence v3.0, except where otherwise stated' (read from ons.gov.uk 2026-10-21); nomis serves ONS/DWP data",
+      "access": "measured 2026-10-21: national latest month (2026-09) via one GET = 163,239 bytes; national first month = 1986-01 (489 months of history); LA districts via geography=TYPE480: latest month = 1,936,993 bytes / 4,897 rows (all gender/age/measure breakdowns, ~360 authorities); the full LA panel is roughly 40-60 MB - worker-scale, not coordinator-scale"
+    },
+    {
+      "name": "ONS main website and the new ONS API host (probed, negative results recorded)",
+      "url": "https://www.ons.gov.uk/",
+      "api": "https://api.beta.ons.gov.io/ - the new ONS 'Arlo' API host does not complete TLS from the coordinator (HTTP 000 on root and /v1/datasets, measured 2026-10-21); ons.gov.uk itself answers (a /api path 404s with the normal site page)",
+      "license": "Open Government Licence v3.0 (site-wide statement)",
+      "access": "measured 2026-10-21: the ONS website is reachable; its per-dataset pages serve XLSX/CSV downloads per release rather than a bulk API; the beta API host is unreachable from this coordinator - recorded so a future session does not read that as 'no API exists'"
+    }
+  ],
+  "license_evidence": [
+    {
+      "note": "ONS site-wide footer, read 2026-10-21 from ons.gov.uk (even on its 404 page): 'All content is available under the Open Government Licence v3.0, except where otherwise stated'. OGL v3 permits redistribution of derived rows with attribution. The claimant count is ONS/DWP Crown-copyright administrative statistics.",
+      "url": "https://www.ons.gov.uk/"
+    }
+  ],
+  "construction_script": null,
+  "split_strategy": "Not computed to split level (parked before that spend). Order of magnitude from measured access: ~360 authorities x 489 months of history (1986-01..2026-09) gives ample temporal depth for train/eval/holdout windows; the panel would trivially satisfy the split contract - the park is about task value, not capacity.",
+  "measurements": {
+    "nomis_probe_trail_2026_10_21": "def.sdmx.json full dataset list: HTTP 200, 5,459,028 bytes, 1,617 keyfamilies. The documented search parameter (?search=claimant and name-prefixed variants) returns a 568-byte 'keyfamilies: null' document - the search endpoint does not match this pattern (measured 4 forms); grep the full list locally instead. NM_2_1 (old quarterly JSA series) is annotated 'Historical (not actively being updated)'; NM_162_1 is the current claimant count (annotation 'Current (being actively updated)').",
+    "nomis_data_quirk_measured": "data.csv with dimension parameters (sex=/item=/measures=20100, gender=/age=/measure= combos) returns HTTP 200 with 0 bytes (6 combinations measured); the minimal form '?geography=...&date=latest' works and returns all dimension combinations for the cell, with GENDER/AGE/MEASURE/MEASURES as output columns - filter locally.",
+    "series_shape_measured": "latest month 2026-09 (published by 2026-10-21, ~3-week lag), first month 1986-01, monthly; UK total claimants 1,702,905 in 2026-09 (row: measures=20100, gender Total, age 16+, OBS_STATUS A 'Free for publication'); LA-level latest month via TYPE480 = 1,936,993 bytes / 4,897 rows.",
+    "ons_api_host_negative": "api.beta.ons.gov.io: TLS connection failure (HTTP 000) from the coordinator on root and /v1/datasets - measured 2026-10-21.",
+    "microdata_channels": "The only ONS-held individual-level products (Understanding Society via UK Data Service, the Secure Research Service, Census microdata) all require registration/application and do not permit redistribution - a licence/access veto for an open redistributable dataset, not an inconvenience."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "PARKED on task value, not on access or licence (both clean and measured): ONS is an aggregate-statistics publisher. Every task its published outputs can support - the claimant-count direction panel measured here, CPI/HPI/vacancy direction, annual LA panels - is a direction-forecast over an area's own published history, a family already served in ML-ready form by macro time-series forecasting benchmarks (M4/Monash ship UK monthly economic series with fixed train/test splits) and with heavy academic prior art; the contribution claim we could make ('our splits, our scored direction contract') is thin, and for coding-agent evaluation a univariate-own-history task measures almost nothing an agent does beyond fitting a seasonal model. Access, licence, cadence (monthly, current to within ~3 weeks) and panel depth (489 months x ~360 LAs) are genuinely good - the source is parked, not dropped, because a micro-grained or event-grained ONS release would change the assessment.",
+  "review": null,
+  "next_action": "Parked. Unpark question: does ONS publish (or begin publishing) an open, redistributable dataset at event or case grain with a documented schedule - e.g. business demography at firm grain, an open insolvency-events feed, or the ONS 'Arlo' API becoming reachable and exposing sub-aggregate products? Re-open the publisher then. The claimant-count direction task specifically should only be constructed if the operator explicitly wants a macro direction task despite the thin differentiation - in which case re-measure base rates and the seasonal-naive baseline first (no split numbers were computed for this park)."
+}

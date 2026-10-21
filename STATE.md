@@ -4453,3 +4453,46 @@ DESTINATIONS.json recorded the flip (private: false, anonymous_access block, fil
 paths on both platforms) BEFORE the manifest was regenerated, as the site plan requires. Record moved to
 `published` with published_at. Site: catalogue and dataset page deployed and live
 (earino.github.io/chicago-food-inspections, receipt status complete).
+
+**Discovery 2026-10-21, 04:00 tick — region: United Kingdom. 3 sources opened, 3 recorded verdicts (all GB; 1 go, 2 parks).**
+
+- `nhs-ae-four-hour-decline` (NHS England — the NHS Digital family post-2022/23 merger) — **go, status ready**.
+  Monthly provider-level A&E CSVs, anonymous, OGL v3: 102 files 2018-04..2026-09 measured at 3,115,779
+  bytes / 1.2 s total (pre-2018 months are XLS-only; a cumulative Monthly-AE-Time-Series XLS can extend
+  to 2015-06 on a worker). Panel: 124 providers with Type 1 attendances ≥100 in ≥24 months → 9,071
+  provider-months. Task: will a provider's Type 1 four-hour performance decline m/m next month. The m/m
+  label is balanced in all windows (train 2019-01..2022-12: 3,714 rows / 56.5% pos; eval 2023-24:
+  2,449 / 47.0%; holdout 2025-26: 2,538 / 48.6%); fixed thresholds were measured and REFUSED (<95% →
+  holdout 99.9% positive, uniform-class; <80% → 95.8%) — base rate drift with the system's
+  deterioration is a documented property. Cross-check vs the publisher's own commentary: Aug 2026
+  Type 1 61.1% vs panel 60.9%; NAO HC 588 figures consistent. Novelty: differentiated (prior art is
+  ED *arrival-volume* forecasting on private data + descriptive GitHub dashboards; no shipped
+  four-hour-performance task found on HF/Zenodo/arXiv). New bench family (health-services
+  operations). Next action: advancement constructs per the record.
+- `defra-la-household-recycling-rate` (Defra) — **park**. The 2024/25 cumulative ODS Table_1 IS the
+  full 11-year LA panel (3,730 LA-years, 2014-15..2024-25, 321-352 authorities/year) in a single
+  2.04 MB anonymous GET — the cheapest panel this session. Licence OGL v3. The ≥50% task (Waste
+  Framework Directive art.11 threshold) carries both classes in all windows (23.2%/21.9%/21.3% pos)
+  but persistence is 92.6-97.8% accurate year-over-year with only ~10 threshold-crossing LAs/year —
+  no measurable headroom over a naive baseline, so a scored eval could not tell a competent model
+  from the naive rule. A y/y-decline variant was assessed and set aside as an annual, thin-feature
+  sibling of the A&E candidate. Unpark conditions in the record (finer-grain export channel, operator
+  appetite for an annual-grain policy task, or a re-formulation with cross-sectional joins).
+- `ons-la-claimant-count-direction` (ONS via nomis) — **park**. Access measured clean: nomis
+  NM_162_1 is current to 2026-09 (~3-week lag), monthly back to 1986-01, LA-level via
+  geography=TYPE480 (latest month 1.94 MB / 4,897 rows; full panel ~40-60 MB, worker-scale), OGL v3
+  (ONS site-wide statement). Two API quirks recorded: the nomis `?search=` endpoint returns a null
+  document (grep the 5.5 MB full def list locally), and `data.csv` with dimension parameters returns
+  empty 200s — the minimal `?geography=&date=` form works and outputs all breakdown columns to
+  filter locally; api.beta.ons.gov.io does not complete TLS from the coordinator. Park reason: ONS
+  is an aggregate-statistics publisher — every candidate task is a direction-forecast on own history
+  (family served by M4/Monash-style macro benchmarks, thin differentiation, low agent-eval value);
+  individual-level ONS products (Understanding Society, SRS, Census microdata) require registration
+  and forbid redistribution. Unpark question in the record: an open event/case-grain ONS release.
+
+Region measurement: all three verdicts are GB-publisher sources as the tick required; GB joins the
+map at 6 candidates (Companies House, DVSA, EA bathing water + today's three), Europe moves 6 → 9,
+live non-US 9/15 → 10/16 (62%). Probe scripts kept per the skill convention as
+candidates/<id>/probe_*.py (A&E: collect_urls/download/panel/fixture; waste: waste_panel; ONS:
+nomis_list). check-candidate.py OK on all three; 386 tests OK; coverage script run before and
+after (38 candidates, live 16).
