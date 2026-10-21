@@ -4814,7 +4814,7 @@ WITH the verify_loading block, expectations taken from the v2026.11 manifest (tr
 positives; eval 2,937 / 1,478; holdout 2,538 / 1,233; label values ['0','1']; the same 37 columns,
 re-derived from quality.json and identical to v2026.10's list). Green: uploads 0 / skipped 5 / failures 0,
 hf_loading ok: true, problems: [], every split exactly at the manifest. Result release 419681562, worker
-destroyed 14:51:44Z. October worker reservation now EUR 7.06 of the EUR 20 allowance (EUR 5 of which stays
+destroyed 14:51:44Z. October worker reservation now EUR 7.02 of the EUR 20 allowance (EUR 5 of which stays
 held for release work).
 
 Coordinator-side verification by this run (not inherited from the session's notes): hf-publish.py --verify
