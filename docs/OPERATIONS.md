@@ -665,3 +665,20 @@ Licence documents are package files, so editing one changes its hash. Regenerate
 to Hugging Face (`scripts/hf-publish.py --upload-small --verify`) and re-point the version tag
 (`--tag`, idempotent, last). The **dataset assets themselves are untouched**: their digests are
 unchanged, which is what "preserving the accepted bytes" means in practice.
+
+## Knowable at the period is not knowable at the release
+
+A feature stamped month M did not exist at the end of month M. Statistical releases publish after
+their period closes - NHS England's monthly A&E data about ten days later, FluNet about a week - and
+a prediction instant placed at the period boundary silently uses the future.
+
+Every `quality.json` carries a `timing` block: the instant's kind, the measured lag in days, at least
+one observed `period_end -> published` pair for a statistical release, and the latest period the row
+selection used. `qualify_dataset.py` (gate 1.4.0) refuses a dataset without one, refuses features that
+publish after the instant, refuses a period-end instant for late-published features, and refuses a
+selection that reaches into M+1 or beyond.
+
+This is not a documentation rule. `nhs-ae-four-hour-decline` was packaged under gate 1.3.0 with 25
+late-published features and a hindsight-selected population; an independent audit caught it after the
+bytes were already staged. The gate could not have caught it, because it checked that a feature was
+*documented* as available, not that it was *published* then.

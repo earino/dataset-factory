@@ -67,8 +67,9 @@ def analyse(year, chunks=4, chunk_len=1_048_576):
         dp = r[10] or ""
         yr = dp[:4] or "?"
         by_year[yr] = by_year.get(yr, 0) + 1
-        sit = (r[25] or "?").strip()
-        statuses[sit] = statuses.get(sit, 0) + 1
+        sit = (r[26] or "?").strip()
+        sid = (r[25] or "?").strip()
+        statuses[(sid, sit)] = statuses.get((sid, sit), 0) + 1
         if (r[16] or "").strip():
             urn_final += 1
         if any(w in sit for w in ("Senado", "Lei", "Promulg", "Transformad")):
@@ -76,8 +77,8 @@ def analyse(year, chunks=4, chunk_len=1_048_576):
     print(f"   dataApresentacao year distribution (top 8):")
     for k, v in sorted(by_year.items(), key=lambda kv: -kv[1])[:8]:
         print(f"     {k}: {v} ({v / len(samples):.0%})")
-    print(f"   ultimoStatus_descricaoSituacao (top 12):")
-    for k, v in sorted(statuses.items(), key=lambda kv: -kv[1])[:12]:
+    print(f"   ultimoStatus idSituacao + descricaoSituacao (top 14):")
+    for k, v in sorted(statuses.items(), key=lambda kv: -kv[1])[:14]:
         print(f"     {k}: {v} ({v / len(samples):.1%})")
     n = len(samples)
     print(f"   urnFinal non-empty (became law): {urn_final}/{n} = {urn_final / n:.1%}")

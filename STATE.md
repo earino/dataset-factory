@@ -4752,3 +4752,16 @@ passed (11,457 labels reproduced exactly; 134 terminal rows unverifiable). Basel
 cleared, packaged_at cleared, audit block recorded. The staged v2026.10 artifacts must not be published.
 Plan: redefine the prediction instant as month M's publication date, select the population without M+1,
 rebuild, re-qualify, re-baseline with persistence and calendar priors, re-package, re-audit.
+
+**Factory lesson encoded 2026-10-21: knowable at the period is not knowable at the release.**
+`qualify_dataset.py` is gate 1.4.0 and refuses any dataset without a `timing` block: prediction-instant
+kind and citation, a measured publication lag in days, an observed `period_end -> published` date for a
+statistical release, and the latest period used by row selection. It refuses late-published features at
+a period-end instant, understated lags, and selections that reach into M+1. `tests/test_timing_gate.py`
+pins eight shapes; all eight ERROR on the pre-fix gate (KeyError on the missing check) and pass on the
+fixed one. Builders updated: msha, chicago food, austin 911, chicago DOAH (administrative record, lag 0),
+nhs-ae (statistical release, 10 days, observed 2026-08-31 -> 2026-09-10). Skill and OPERATIONS.md carry
+the rule. Fixtures carry a synthetic timing block so the gate stays exercisable offline.
+Also fixed while here: `Report.failed_checks` (tests crashed while reporting a gate failure, hiding the
+reason) and `check-candidate --all` now treats a *fresh* investigating record as in progress for 3 hours,
+so a live discovery session no longer turns CI red mid-write, while a stale record still fails.

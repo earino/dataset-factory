@@ -148,7 +148,40 @@ column is absent from `FEATURES` - and the file still contains it. The gate repo
 
 ### 2. Prediction timing - every shipped feature must be knowable when the prediction is made
 
-Declare the instant the prediction is made, then sort every column into available / post-hoc /
+**Knowable at the period is not knowable at the release.** A statistical release publishes after its
+period ends - NHS England's monthly A&E data lands about ten days late, FluNet about a week - so a
+feature stamped "month M" did not exist at the end of month M. If the prediction instant is the
+period end, every such feature is an oracle. This defect reached `packaged` once
+(`nhs-ae-four-hour-decline`, 25 features, audited 2026-10-21); the string
+`features_documented_at: "prediction_time"` was true of the period and false of the release.
+
+Every `quality.json` must now carry a `timing` block, and the gate refuses the dataset without one:
+
+```json
+"timing": {
+  "prediction_instant": {"kind": "publication", "period": "M",
+                         "days_after_period_end": 10, "citation": "<publisher release calendar>"},
+  "features": {"period": "M", "published_days_after_period_end": 10,
+               "source_kind": "statistical_release"},
+  "row_selection": {"latest_period_used": "M", "fields": ["..."],
+                    "basis": "eligibility uses only months up to M"},
+  "observations": [{"period": "2026-08", "period_end": "2026-08-31", "published": "2026-09-10"}]
+}
+```
+
+- **`kind`** is `publication`, `period_end` or `event_time`. `period_end` is only admissible when
+  the feature lag is zero.
+- **`observations`** are observed release dates, not the schedule you assumed. A
+  `statistical_release` needs at least one; an `administrative_record` (a citation written at the
+  event, a 911 call closed at the event) may ship none.
+- **`row_selection`** must not reach past the instant. Using M+1 to decide which rows qualify
+  conditions the population on the future even when every feature is clean.
+
+The gate checks `timing.instant_declared`, `timing.publication_lag_measured`,
+`timing.features_available_at_instant`, `timing.instant_accounts_for_publication_lag` and
+`timing.selection_uses_only_available_data`. `tests/test_timing_gate.py` pins each failure shape.
+
+Then sort every column into available / post-hoc /
 label source. **Read the column documentation for every field**, not only the suspicious ones:
 a name that sounds dispatch-time can be documented otherwise. Fields documented as set at
 officer arrival, at call disposition, or from a final problem description are post-hoc, and

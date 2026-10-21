@@ -1034,6 +1034,21 @@ def main(argv=None) -> int:
         "event_key_column": "org_code",
         "features": FEATURES,
         "features_documented_at": "prediction_time",
+        "timing": {
+            "prediction_instant": {"kind": "publication", "period": "M",
+                                   "days_after_period_end": 10,
+                                   "citation": "NHS England publishes monthly A&E activity about ten "
+                                               "days after the month ends; e.g. August 2026 data was "
+                                               "published 2026-09-10"},
+            "features": {"period": "M", "published_days_after_period_end": 10,
+                         "source_kind": "statistical_release"},
+            "row_selection": {"latest_period_used": "M",
+                              "fields": ["att1_m", "over4_1_m", "rate_m", "months_reported_12m"],
+                              "basis": "the rebuilt selection must use only months up to M; the "
+                                       "audited v2026.10 build also used M+1 attendance"},
+            "observations": [{"period": "2026-08", "period_end": "2026-08-31",
+                              "published": "2026-09-10"}],
+        },
         "feature_documentation": (
             "every source field is documented in NHS England's A&E "
             "Attendances and Emergency Admissions statistics (column meanings "

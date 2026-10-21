@@ -14,6 +14,7 @@ invocation. Read-only: it never writes to the candidate.
 """
 
 import argparse
+import datetime
 import json
 import sys
 from pathlib import Path
@@ -180,6 +181,20 @@ def report(root, candidate_id):
     return record, missing, warnings
 
 
+IN_PROGRESS_GRACE_HOURS = 3
+
+
+def _is_fresh(stamp) -> bool:
+    try:
+        created = datetime.datetime.fromisoformat(str(stamp))
+    except (TypeError, ValueError):
+        return False
+    if created.tzinfo is None:
+        created = created.replace(tzinfo=datetime.timezone.utc)
+    age = datetime.datetime.now(datetime.timezone.utc) - created
+    return datetime.timedelta(0) <= age < datetime.timedelta(hours=IN_PROGRESS_GRACE_HOURS)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("candidate", nargs="?", help="candidate id, e.g. my-dataset")
@@ -210,6 +225,14 @@ def main(argv=None):
             "problems": list(missing),
             "notes": list(warnings),
         }
+        # A discovery session writes a record the moment it opens a source; for a short window that
+        # record is legitimately incomplete. Treat only a *fresh* investigating record as in progress,
+        # so a stale or abandoned one still fails the check.
+        if missing and record.get("status") == "investigating" and _is_fresh(record.get("created_at")):
+            results[candidate_id]["notes"].append(
+                "in progress: an investigating record created less than "
+                f"{IN_PROGRESS_GRACE_HOURS}h ago; not counted as a failure")
+            continue
         if missing:
             failures += 1
 

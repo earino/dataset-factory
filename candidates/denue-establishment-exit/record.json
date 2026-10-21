@@ -1,19 +1,58 @@
 {
   "id": "denue-establishment-exit",
-  "status": "investigating",
+  "status": "parked",
   "created_at": "2026-10-21T12:06:45.933028+00:00",
-  "domain": null,
-  "prediction_question": null,
-  "prediction_time": null,
-  "target_definition": null,
-  "sources": [],
-  "license_evidence": [],
+  "domain": "business demography - establishment exit prediction from directory snapshots (Mexico)",
+  "prediction_question": "Hypothetical task this source would support (NOT constructible from what INEGI publishes today): for an active economic establishment (a DENUE unit identified by the cross-version stable ID), given its snapshot attributes - SCIAN activity sector, municipality, size stratum by personnel, age since incorporation - will it have exited the directory by the next semiannual DENUE edition?",
+  "prediction_time": "Would be the publication date of a DENUE edition: the current snapshot's attributes are knowable, the next edition is not yet published. The label is the absence of the stable ID from the next edition - a derived-inference label, not a registered legal event.",
+  "target_definition": "Would be: stable DENUE ID present in edition V+1 (survived) vs absent (exited). Requires at least 2 downloadable editions; at least 4 for three disjoint diff-windows. Only 1 edition is downloadable (measured).",
+  "sources": [
+    {
+      "name": "Current DENUE bulk download (per-sector national zips)",
+      "url": "https://www.inegi.org.mx/contenidos/masiva/denue/denue_00_{sector}_csv.zip",
+      "api": "25 national per-activity-sector CSV zips (sector codes 11, 21, 22, 23, 31-33, 43, 46111, 46112-46311, 46321-46531, 46591-46911, 48-49, 51, 52, 53, 54, 55, 56, 61, 62, 71, 72_1, 72_2, 81_1, 81_2, 93). Anonymous. Each zip holds conjunto_de_datos (CSV), diccionario_de_datos, metadatos.",
+      "license": "INEGI free-use terms (see license_evidence)",
+      "access": "measured 2026-10-21 (probe_denue.py): all 25 URLs are REAL zips (PK magic on ranged GET; INEGI soft-404s unknown paths with HTTP 200 HTML, so magic bytes - not status - are the probe for this publisher). Measured total 571,891,279 B (572 MB) compressed for the current edition."
+    },
+    {
+      "name": "DENUE editions documentation (INEGI RNM study catalogue)",
+      "url": "https://inegi.org.mx/rnm/index.php/catalog/924 (2023 edition), /catalog/979 (11/2024 edition)",
+      "api": "Documents semiannual editions since 2019 (05/2019, 11/2019, ..., 05/2024, 11/2024 - ~12 editions), the establishment counts per edition (5,564,612 in 05/2024; 6,058,548 in 11/2024), and that 'se mantiene la publicaci\u00f3n de la clave ID del DENUE para identificar a cada establecimiento y, como factor vinculante de los datos entre las diferentes versiones publicadas' - the ID is the cross-version linking key, which is what an exit panel would be built on.",
+      "license": "INEGI free-use terms (see license_evidence)",
+      "access": "fetched 2026-10-21; the catalogue's 'Descarga masiva' link points at the Descarga Masiva app (www.inegi.org.mx/app/descarga/?ti=6), which serves the CURRENT edition only."
+    },
+    {
+      "name": "INEGI Descarga Masiva app",
+      "url": "https://www.inegi.org.mx/app/descarga/?ti=6",
+      "api": "SPA behind an undocumented JSON API (/app/api/descarga/descarga/descargamasiva/lista/obtenerlistado - POST with a JSON body of filter params; minimal param attempts answer 'Ocurrio un error, ver los detalles'). Not needed: the direct masiva URLs serve the current edition.",
+      "license": "INEGI free-use terms",
+      "access": "probed 2026-10-21; current-edition only."
+    }
+  ],
+  "license_evidence": [
+    {
+      "note": "INEGI T\u00e9rminos de Libre Uso de la Informaci\u00f3n (fetched 2026-10-21): 'Puede hacer y distribuir copias de la informaci\u00f3n... Puede difundir y publicar la informaci\u00f3n... Puede adaptar y reordenar la informaci\u00f3n... Puede extraer total o parcialmente la informaci\u00f3n... Puede explotar comercialmente la informaci\u00f3n, utiliz\u00e1ndola como insumo para generar otros productos o servicios. Debe otorgar los cr\u00e9ditos correspondientes al INEGI como autor, y cuando t\u00e9cnicamente sea posible, mencionar la fuente... \"Fuente: INEGI, nombre del producto de donde se extrae la informaci\u00f3n\"'. Licence is settled (free use incl. commercial, attribution required, no official-posture implication) and is NOT the blocker.",
+      "url": "https://www.inegi.org.mx/inegi/terminos.html"
+    }
+  ],
   "construction_script": null,
-  "split_strategy": null,
-  "measurements": {},
+  "split_strategy": "NOT SATISFIABLE (measured): the exit label requires diffing consecutive DENUE editions, but only the CURRENT edition is downloadable. Split capacity fails - there is no second observation, hence no label and no train/eval/holdout windows. Split-capacity failure recorded rather than assumed: historical-edition URL patterns (2015/, 2019/, denue_2019_00_, denue_05_2024_00_ variants) all return INEGI's HTML error page behind HTTP 200, and a deliberately bogus filename returns the same - proving the soft-404 pattern and the absence of prior editions on that channel.",
+  "measurements": {
+    "current_edition_bulk_2026_10_21": "probe_denue.py: 25/25 per-sector zips real (PK magic), measured total 571,891,279 B compressed; per-sector sizes recorded in the probe output (largest: 46111 59,835,497 B; smallest: 55 58,074 B).",
+    "historical_absence_2026_10_21": "Variant URL patterns for prior editions (2019/, 2015/, denue_2019_00_, denue_05_2024_00_) and a bogus control filename (zzz_nonexistent.zip) ALL answer HTTP 200 + HTML error page - identical soft-404 behavior, verified by first-bytes check rather than status. No historical DENUE edition found on any probed INEGI path; the Descarga Masiva app lists the current edition only.",
+    "descarga_app_api_2026_10_21": "POST obtenerlistado with minimal JSON params -> 'Ocurrio un error, ver los detalles' (endpoint requires the SPA's full filter vocabulary; not pursued further because the direct masiva URLs already serve the current edition).",
+    "editions_documented_2026_10_21": "RNM catalogue pages (924, 979) and press bulletins document ~12 semiannual editions 2019-2024 with per-edition establishment counts (e.g. DENUE 05/2024: 5,564,612; 11/2024: 6,058,548 establishments) - the editions EXIST as described but are not published for download."
+  },
   "jobs": [],
   "artifacts": [],
-  "rejection_reason": null,
+  "rejection_reason": "PARK (status parked), reason: SPLIT CAPACITY UNBUILDABLE from what the publisher publishes. (1) The exit label needs consecutive-edition diffs; INEGI makes only the current edition downloadable (measured; the ~12 documented semiannual editions 2019-2024 are replaced, not archived). One snapshot = no second observation = no label = no windows. (2) Secondary, recorded as a comparison rather than the primary reason: the entity-exit family is already carried on the bench by companies-house-company-exit (GB) - even with historical editions, a second same-family task would need an explicit operator decision that the bench wants two exit tasks (same reasoning as the air4thai-pm25-exceedance park). (3) Licence is NOT a blocker (INEGI free use with attribution, terms quoted). Not a rejection: nothing about the source itself disqualifies the task if a historical archive appears.",
   "review": null,
-  "next_action": "Investigate source and observable target"
+  "next_action": "Unpark conditions (any one): (1) a verifiable archive of >=4 historical DENUE editions appears on an INEGI download channel - probe with the PK-magic check, never HTTP status (this publisher soft-404s); (2) an institutional mirror (national library, university archive, or INEGI's own historical-data service) serves historical editions whose row counts verify against the published per-edition totals; (3) the operator decides the bench wants a second entity-exit task AND such a source is found. If reopened: first probe is a known-event fixture (a large surviving retailer chain must survive across editions) because ID churn - not exit - reads as absence; INEGI states the ID is the cross-version linking key but that claim must be measured before absence-as-exit is trusted.",
+  "verdict": "park",
+  "jurisdiction": {
+    "country": "MX",
+    "region": "Latin America",
+    "publisher": "Instituto Nacional de Estad\u00edstica y Geograf\u00eda (INEGI), Mexico - DENUE (Directorio Estad\u00edstico Nacional de Unidades Econ\u00f3micas)",
+    "recorded_at": "2026-10-21"
+  }
 }

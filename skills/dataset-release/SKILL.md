@@ -13,6 +13,12 @@ metadata:
 
 # Dataset release
 
+
+**Before packaging, re-read the `timing` block against the release.** Gate 1.4.0 refuses a dataset
+without one, but the numbers are your claim: the instant must be the publication instant, the lag must
+come from an observed release date, and the row selection must not reach past it. A packaged artifact
+with a wrong timing claim is worse than an unpackaged one - it looks done.
+
 ## When to use
 
 Once a dataset is qualified and someone else must be able to get it, verify it, and reproduce it:
