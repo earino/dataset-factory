@@ -1,0 +1,374 @@
+{
+  "dataset": "nhs-ae-four-hour-decline",
+  "release_version": "2026.10",
+  "release_tag": "v2026.10",
+  "repository": "https://github.com/earino/nhs-ae-four-hour-decline",
+  "visibility": "private (publication requires explicit authorisation)",
+  "artifact_version": "9903df974f233dfaeaa2a005f12012fc97e561673031de44f4b8d7f016d9d957",
+  "artifact_job": "nhsae-002",
+  "staging_release": 419222791,
+  "staging_release_tag": "job-nhsae-002",
+  "staging_repo": "earino/dataset-factory-staging",
+  "construction_commit": "48eab83",
+  "gate_version": "1.3.0",
+  "gate_command": "python3 code/qualify_dataset.py ./task",
+  "measurements": {
+    "name": "nhs-ae-four-hour-decline",
+    "built_at_utc": "2026-10-21T06:22:45Z",
+    "source": {
+      "publisher": "NHS England, A&E Attendances and Emergency Admissions statistical work area",
+      "landing_page": "https://www.england.nhs.uk/statistics/statistical-work-areas/ae-waiting-times-and-activity/",
+      "files": 102,
+      "months": "2018-04..2026-09",
+      "bytes": 3115779,
+      "requests": 113,
+      "requests_note": "102 monthly provider-level CSV GETs plus 11 year-page GETs (~80 KB each) to enumerate the URLs; measured 1.2 s wall clock on the coordinator (1.9 GiB class host)",
+      "composite_sha256": "99cb3339b31ae2045c990c950a40fb44dc93f1dfc4d58f1ae1879fa851666833",
+      "worker_provenance": "the publisher's CDN serves HTTP 202 with an empty body to datacenter IPs (measured 2026-10-21, job nhsae-001), so job nhsae-002 consumed the same bytes from staging release source-nhsae-001 (asset 661561799, sha256 verified on arrival and per-file by build.py)"
+    },
+    "grain": "provider (Org Code) x calendar month",
+    "label": {
+      "definition": "declines = 1 iff within4h_rate(M+1) < within4h_rate(M)",
+      "within4h_rate": "1 - Attendances over 4hrs Type 1 / A&E attendances Type 1",
+      "external_threshold": null,
+      "note": "fixed thresholds measured near-uniform rates and were refused (record: <95% -> holdout 99.9% positive; <80% -> 95.8%); the m/m direction label is threshold-free"
+    },
+    "volume_gate": {
+      "min_att1": 100,
+      "min_provider_months": 24,
+      "applies_to": "both the feature month M and the target month M+1"
+    },
+    "panel": {
+      "rows_read": 21649,
+      "skipped_period_total_rows": 101,
+      "provider_month_keys": 21548,
+      "duplicate_keys_deduplicated": 0,
+      "note": "each month is published in exactly one file, so the prefer-latest-upload revision policy never had anything to dedup on the 2026-10-21 vintage (it is still implemented and reported)"
+    },
+    "gate": {
+      "providers": 134,
+      "provider_months": 12765,
+      "consecutive_qualifying_pairs": 12631,
+      "skipped_not_consecutive": 0
+    },
+    "skipped_rows_outside_windows": 1040,
+    "splits": {
+      "train": {
+        "rows": 6116,
+        "positives": 3285,
+        "positive_rate": 0.537116,
+        "distinct_events": 133
+      },
+      "eval": {
+        "rows": 2937,
+        "positives": 1478,
+        "positive_rate": 0.503235,
+        "distinct_events": 124
+      },
+      "holdout": {
+        "rows": 2538,
+        "positives": 1233,
+        "positive_rate": 0.485816,
+        "distinct_events": 121
+      }
+    },
+    "split_windows": {
+      "train": "target months 2019-01..2022-12",
+      "eval": "target months 2023-01..2024-12",
+      "holdout": "target months 2025-01..2026-09"
+    },
+    "clustered_events_note": "distinct_events counts distinct positive Org Codes per window - positives cluster within providers, so this is the conservative independent-unit count",
+    "national_crosscheck": {
+      "month": "2026-08",
+      "attendances": 1407535,
+      "panel_rate": 0.6086,
+      "publisher_commentary_rate": 0.611,
+      "by_year_panel_within4h_type1": {
+        "2018": 0.83,
+        "2019": 0.781,
+        "2020": 0.826,
+        "2021": 0.729,
+        "2022": 0.624,
+        "2023": 0.598,
+        "2024": 0.586,
+        "2025": 0.602,
+        "2026_ytd": 0.61
+      }
+    },
+    "schema_evolution": "16 data columns 2018-04..2020-07 (with 'Number of' prefixes in 2018-19); booked-appointment columns from 2020-08 (22 columns); unnamed padding columns from 2024-09 (28 header fields); booked columns parsed but not shipped - they are absent for train feature months 2018-12..2020-07, so shipping them would be a split-dependent prediction-timing defect",
+    "timing_selfcheck": {
+      "checked": 201,
+      "mismatches": 0
+    },
+    "duplicate_row_ids": 0,
+    "reference_baselines": {
+      "note": "stdlib rank AUC measured at construction on the written rows; every score is a prediction-time-safe single feature",
+      "per_split": {
+        "train": {
+          "momentum_auc": 0.5211,
+          "mean_reversion_auc": 0.5133,
+          "winter_auc": 0.5333
+        },
+        "eval": {
+          "momentum_auc": 0.4161,
+          "mean_reversion_auc": 0.5659,
+          "winter_auc": 0.5473
+        },
+        "holdout": {
+          "momentum_auc": 0.3993,
+          "mean_reversion_auc": 0.6562,
+          "winter_auc": 0.509
+        }
+      }
+    },
+    "runner_contract_baseline": {
+      "job": "nhsae-baseline-001",
+      "eval_auc_from_train_py": 0.5526,
+      "eval_auc_from_validate_py": 0.5526,
+      "contract_ok": true,
+      "note": "measured on the released bytes fetched from staging (digest-verified, gate re-accepted before scoring), below the mean-reversion reference (0.5659 eval / 0.6562 holdout) which is the bar a competent model must beat"
+    }
+  },
+  "assets": {
+    "meta.json": {
+      "asset_name": "meta.json",
+      "bytes": 3292,
+      "sha256": "c2f9f43a29d231019396a42c7791639e4acb96179afc0ecd4dfed0c634401813"
+    },
+    "private/holdout.csv": {
+      "asset_name": "private-holdout.csv",
+      "bytes": 1099411,
+      "sha256": "527a385f12a920b019434c70588c6532af1bd4dd5459eb64ed46809b5ef99b70"
+    },
+    "public/eval.csv": {
+      "asset_name": "public-eval.csv",
+      "bytes": 1246633,
+      "sha256": "cb786792ac321dd851c272bd159fed24e13d6b633276606b294ddc976e72f266"
+    },
+    "public/train.csv": {
+      "asset_name": "public-train.csv",
+      "bytes": 2543862,
+      "sha256": "819b6715ad55272ca0d2a482fb4471edd84ee09ae2ee62e560fe786bd9aeb404"
+    },
+    "quality.json": {
+      "asset_name": "quality.json",
+      "bytes": 5148,
+      "sha256": "e7576e8a2431bacd0596161526a418a1c3c5dfea9e37399148db0f24d1d67a77"
+    }
+  },
+  "package_files": {
+    "DATA_DICTIONARY.md": "5ec7761455d2ab0a58af0c335a28a21bf82aff13af4cde5217a1393ace63fc17",
+    "LICENSE-CC0-1.0.txt": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+    "LICENSE-MIT.txt": "200f782f6b8bc23b926ea774cbacb4147826b3b2b59200917d8dc5ec68159535",
+    "LICENSE.md": "26ff25559ad266db6d047aa6eeb7eea5fa2f95e35751d2f93a13aaadf2dc6801",
+    "README.md": "9d19bcae017202b748531cc7d909c24fae47f9207cc0b69494c0216fbf7fd997",
+    "RELEASE_NOTES.md": "7b188bd1a6702e875ff52e31257c96a6048e0e79f65ff43b8edbbc29380579c2",
+    "REPRODUCE.md": "12685964978e1d3ff398e2a42e335b81a2278bac91883356c6185d5b4dd2a457",
+    "SHA256SUMS": "f04b13ca96e7830907264ba8afc59a5692917016ce30f67b7f0210bd2e7f83d0",
+    "VERIFICATION.md": "02dbb6a1c1edad6479dacc95ba01685d8d525add244cd546f19a275847934a6e",
+    "baseline/README.md": "f1d5f55074a88e1ce6e0689304c80297abf57d14eac71c5a1bd4bad09cc07e09",
+    "baseline/reproduce_baseline.sh": "32de96032ab1b55d19fdcd1e04e0f5a6b10a187633aa280e9ee76aee9f03c584",
+    "baseline/train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+    "baseline/validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+    "baseline/validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d",
+    "code/build.py": "cb1d508a4a7e009a7c126b238b409e7a6cce8fd286892e5846cf412c2ce0ea7f",
+    "code/materialize.py": "f5b7329ba3435493ba4fbb620cde826f059010a55d8eed7a5ba72da654cf9ed5",
+    "code/qualify_dataset.py": "71a8cac429656e27dbb631be8488b9f4662580994b115290a243fc1f4b9639f1",
+    "code/run.sh": "fb0de15f201d3e7a09fe976b1609136efb6bfe6e457c6442036059ddd1efedd6",
+    "get_dataset.py": "5e678caa688db328ed50ec53c1c3747fa3585416c408e344244c8ccc4d12c5e7",
+    "measurements.json": "9eb0773f7f996a8e89cf0a5ea967ac1c2a100ec58f90cb95d343c422558ed1fe",
+    "qualification.json": "dde24b820b2ca6fdd0eac5ac9fe4c101e5e7fc4d6409baa7729338b9bd53946b"
+  },
+  "baseline_command": "sh baseline/reproduce_baseline.sh ./task",
+  "get_dataset_command": "python3 get_dataset.py --dest ./task",
+  "source": {
+    "name": "NHS England - A&E Attendances and Emergency Admissions, statistical work area (monthly provider-level CSVs)",
+    "landing_page": "https://www.england.nhs.uk/statistics/statistical-work-areas/ae-waiting-times-and-activity/",
+    "api": "per-financial-year sub-pages (2018-19 through 2026-27) each link 12 monthly provider-level CSVs (~30 KB, 21 columns); pre-2018-19 months are XLS-only; the publisher's CDN serves HTTP 202 with an empty body to datacenter IPs (measured 2026-10-21), so reproduction fetches from this package's build use the coordinator-measured URL set",
+    "accessed": "2026-10-21",
+    "licence": "Open Government Licence v3.0 (NHS England / Crown copyright; attribution carries through). Derived research dataset - not an NHS England official product.",
+    "licence_evidence": [
+      {
+        "note": "Measured 2026-10-21 from https://www.england.nhs.uk/statistics/statistical-work-areas/ae-waiting-times-and-activity/: the page footer carries a menu item 'Open Government Licence v3.0' linking to https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/. NHS England statistics content is published under OGL v3 unless otherwise stated; OGL v3 permits commercial and non-commercial reuse and redistribution with attribution. Third-party reusers (e.g. github.com/rajatgaur505/nhs-ae-performance-analysis) state the same basis: 'publicly available NHS England data (Open Government Licence)'.",
+        "url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+      }
+    ]
+  },
+  "layout": {
+    "public/train.csv": "public/train.csv",
+    "public/eval.csv": "public/eval.csv",
+    "private/holdout.csv": "private/holdout.csv",
+    "meta.json": "meta.json",
+    "quality.json": "quality.json"
+  },
+  "files": {
+    "public/train.csv": {
+      "bytes": 2543862,
+      "sha256": "819b6715ad55272ca0d2a482fb4471edd84ee09ae2ee62e560fe786bd9aeb404"
+    },
+    "public/eval.csv": {
+      "bytes": 1246633,
+      "sha256": "cb786792ac321dd851c272bd159fed24e13d6b633276606b294ddc976e72f266"
+    },
+    "private/holdout.csv": {
+      "bytes": 1099411,
+      "sha256": "527a385f12a920b019434c70588c6532af1bd4dd5459eb64ed46809b5ef99b70"
+    },
+    "meta.json": {
+      "bytes": 3292,
+      "sha256": "c2f9f43a29d231019396a42c7791639e4acb96179afc0ecd4dfed0c634401813"
+    },
+    "quality.json": {
+      "bytes": 5148,
+      "sha256": "e7576e8a2431bacd0596161526a418a1c3c5dfea9e37399148db0f24d1d67a77"
+    }
+  },
+  "splits": {
+    "train": {
+      "rows": 6116,
+      "positives": 3285,
+      "positive_rate": 0.537116,
+      "distinct_events": 133
+    },
+    "eval": {
+      "rows": 2937,
+      "positives": 1478,
+      "positive_rate": 0.503235,
+      "distinct_events": 124
+    },
+    "holdout": {
+      "rows": 2538,
+      "positives": 1233,
+      "positive_rate": 0.485816,
+      "distinct_events": 121
+    }
+  },
+  "qualification": {
+    "gate_version": "1.3.0",
+    "ok": true,
+    "failed_checks": [],
+    "artifact_version": "9903df974f233dfa",
+    "report": "staging release 419222791 (job nhsae-002), qualification-nhs-ae-four-hour-decline.json; bundled as qualification.json and re-accepted by job nhsae-baseline-001 before scoring",
+    "accepted_on_coordinator": "qualify_dataset.py --accept -> ACCEPTED (2026-10-21); every extract file re-fetched and re-hashed against the release manifest first",
+    "splits": {
+      "train": {
+        "rows": 6116,
+        "positives": 3285,
+        "positive_rate": 0.537116,
+        "distinct_events": 133
+      },
+      "eval": {
+        "rows": 2937,
+        "positives": 1478,
+        "positive_rate": 0.503235,
+        "distinct_events": 124
+      },
+      "holdout": {
+        "rows": 2538,
+        "positives": 1233,
+        "positive_rate": 0.485816,
+        "distinct_events": 121
+      }
+    }
+  },
+  "baseline": {
+    "job": "nhsae-baseline-001",
+    "purpose": "one baseline through the runner's existing training and validation contract, on the accepted NHS England provider-month A&E decline artifact",
+    "artifact": {
+      "name": "nhs-ae-four-hour-decline",
+      "target": "declines",
+      "positive_label": 1,
+      "id_columns": [
+        "row_id"
+      ],
+      "rows": {
+        "train": 6116,
+        "eval": 2937,
+        "holdout": 2538
+      },
+      "positive_rate": {
+        "train": 0.537116,
+        "eval": 0.503235,
+        "holdout": 0.485816
+      },
+      "label_rule": "declines = 1 iff within4h_rate(M+1) < within4h_rate(M), within4h_rate(Y) = 1 - Attendances over 4hrs Type 1 / A&E attendances Type 1; provider-months with Type 1 attendances < 100 in either month are excluded"
+    },
+    "qualification_report": {
+      "bundled": "qualification.json",
+      "sha256": "dde24b820b2ca6fdd0eac5ac9fe4c101e5e7fc4d6409baa7729338b9bd53946b",
+      "accepted_before_scoring": true,
+      "accepted_artifact_version": "9903df974f233dfa"
+    },
+    "contract": {
+      "contract_ok": true,
+      "eval_auc_from_train_py": 0.5526,
+      "eval_auc_from_validate_py": 0.5526
+    },
+    "runner_files": {
+      "bundled_sha256": {
+        "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+        "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+        "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      },
+      "expected_sha256": {
+        "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+        "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+        "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      },
+      "unmodified": true
+    },
+    "dependencies": {
+      "python": "3.13.16",
+      "pandas": "2.3.3",
+      "numpy": "2.5.4",
+      "xgboost": "3.4.1",
+      "scikit-learn": "1.9.1"
+    },
+    "scope": "baseline only, through the runner's own contract. No agent or harness comparison was run, and none is implied."
+  },
+  "scope": "One baseline through the runner's training and validation contract. No agent or harness comparison was run and none is implied.",
+  "published": false,
+  "publication_note": "Prepared for human review. Nothing here has been published.",
+  "licenses": {
+    "policy_version": "2026-09-19",
+    "decided": "2026-10-21",
+    "code": {
+      "spdx": "MIT",
+      "file": "LICENSE-MIT.txt",
+      "copyright": "Copyright (c) 2026 E. Arino de la Rubia (earino)",
+      "third_party": [
+        {
+          "file": "baseline/train.py, baseline/validate.py, baseline/validate.sh",
+          "terms": "MIT - the harness benchmark's own runner files, shipped verbatim and unmodified (bundled sha256 equal the benchmark's declared hashes, recorded in the baseline job result)",
+          "permission": "The benchmark checkout is read-only; permission to distribute verbatim copies of its runner files covers the distributed copies only"
+        }
+      ]
+    },
+    "data_compilation": {
+      "spdx": "CC0-1.0",
+      "file": "LICENSE-CC0-1.0.txt",
+      "scope": "Our contribution - the row selection, the derived month-over-month decline label, the temporal partition, the volume gate, the feature derivations and the packaging - is dedicated to the public domain under CC0-1.0. The dedication covers only our contribution: the underlying NHS England statistics keep their own designation and remain subject to OGL v3, whose attribution condition carries through to every copy of the derived data. Nothing here relicenses the source or presents CC0 as the source's terms."
+    },
+    "source_data": {
+      "spdx": "OGL-3.0",
+      "status": "Open Government Licence v3.0, stated by NHS England in the A&E Attendances and Emergency Admissions statistical work-area page footer, linking to https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/ (Crown copyright). OGL v3 permits use and redistribution, including commercial use, with attribution. NHS England publishes under the standing NHS/DOH position that its statistical work-area materials are OGL v3 unless stated otherwise.",
+      "evidence": [
+        "[https://www.england.nhs.uk/statistics/statistical-work-areas/ae-waiting-times-and-activity/, read 2026-10-21] the work-area page footer carries the OGL v3 statement and link (recorded in the candidate record's license_evidence at discovery).",
+        "[https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/, read 2026-10-21] OGL v3 terms: 'You may use and re-use the information... freely and flexibly, with only the conditions of attribution...' - attribution, no distortion of meaning, no false endorsement.",
+        "The monthly provider-level CSVs themselves carry no licence header; the work-area page statement is the publisher's own declaration covering them.",
+        "Suggested attribution form recorded from the OGL v3 text: 'Contains public sector information licensed under the Open Government Licence v3.0. Source: NHS England, A&E Attendances and Emergency Admissions.'"
+      ],
+      "attribution": "NHS England, A&E Attendances and Emergency Admissions (monthly provider-level statistics), https://www.england.nhs.uk/statistics/statistical-work-areas/ae-waiting-times-and-activity/, data retrieved 2026-10-21. Contains public sector information licensed under the Open Government Licence v3.0. Crown copyright.",
+      "citation": "NHS England. A&E Attendances and Emergency Admissions, statistical work area. London: NHS England (monthly provider-level CSVs, 2018-04..2026-09 vintage of 2026-10-21). Licensed under the Open Government Licence v3.0. Derived dataset: NHS England A&E four-hour performance month-over-month decline prediction task (not an official NHS England product).",
+      "derived_labelling": "Labelled as a derived research dataset throughout; it is not an official NHS England product and NHS England has not reviewed or endorsed it. The publisher's own designation, attribution and suggested citation are preserved verbatim."
+    },
+    "rules": [
+      "Code and documentation: MIT by default.",
+      "Our rights in a derived compilation: CC0-1.0 by default.",
+      "The source's own terms are preserved and never relicensed; the compilation dedication covers only our contribution.",
+      "Each dataset must use terms compatible with its sources. CC0 is NOT a blanket override of upstream terms: attribution, share-alike and non-commercial requirements from a source are carried through unchanged.",
+      "A source whose licence terms cannot be read is not published at all.",
+      "The chosen terms are declared per dataset in candidates/<id>/license.json and recorded in the release manifest, so the manifest cannot drift from the decision."
+    ]
+  }
+}

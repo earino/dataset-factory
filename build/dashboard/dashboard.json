@@ -15,7 +15,7 @@
   "decision": {
    "allowance_usd": 30.0,
    "allowed": true,
-   "moment": "2026-10-21T09:27:34.176975+00:00",
+   "moment": "2026-10-21T09:50:03.032599+00:00",
    "period_start": "2026-10-01T00:00:00+00:00",
    "reasons": [],
    "research_cost_usd": 0.233495,
@@ -35,14 +35,14 @@
      "output_tokens": 624082
     },
     "interactive": {
-     "calls": 2711,
+     "calls": 2735,
      "cost_status": [
       "estimated",
       "unknown"
      ],
-     "cost_usd": 1.333241,
-     "input_tokens": 10430808,
-     "output_tokens": 1512138
+     "cost_usd": 1.354175,
+     "input_tokens": 10464178,
+     "output_tokens": 1527887
     },
     "research": {
      "calls": 1696,
@@ -3846,7 +3846,7 @@
     "target": "Not stated - no task was selected."
    },
    {
-    "age_hours": 7.0,
+    "age_hours": 7.3,
     "awaiting_operator": true,
     "baseline": {
      "accepted_artifact_version": "b1323a27fa02eb79",
@@ -3910,6 +3910,80 @@
      "per_year_volume_2026_10_20": "$filter=ISO_YEAR eq 2026 -> 1,476 KiB, 9,226 rows, 1.3 s; ISO_YEAR eq 2010 -> 926 KiB, 5,276 rows, 0.8 s; the GHO OData API (ghoapi.azureedge.net) was also probed for comparison: 3,099 indicators, anonymous; its annual panels were set aside (cholera indicator CHOLERA_0000000001 ends 2016 - stale; see notes).",
      "qualification_flunet_002": "Gate 1.3.0 on the worker over the full artifact: ok=true, failed_checks=[], 2026-10-20 22:24Z; artifact_version b1323a27fa02eb79... (train sha 2515289b..., eval 7d809b16..., holdout f7dd814a...). Hand-off accept on the coordinator: qualify_dataset.py --accept report extract -> ACCEPTED, same artifact digest. Staging release 418940777 (untagged-5a0aa09b17777e11f345), collect verified every asset against the worker's manifest.",
      "reference_baselines_flunet_002": "Stdlib rank-AUC references measured at construction on the written rows (prediction-time-safe single features): persistence (score = week-W positivity) train 0.8969 / eval 0.8929 / holdout 0.8745; rolling-8-week mean train 0.7990 / eval 0.8281 / holdout 0.7683. Four-week-ahead exceedance retains headroom above these but they are strong - the solver must beat persistence to be interesting; these figures are references, not the scored baseline.",
+     "review_response_2026_10_21": {
+      "calendar_only_global_week_prior": {
+       "by_year": {
+        "2020": 0.6691,
+        "2021": 0.5014,
+        "2022": 0.455,
+        "2023": 0.5098
+       },
+       "eval": 0.5437
+      },
+      "conclusion": "Not seasonal predictability: calendar-only tops out at 0.6269 while the full model reaches 0.8700. But the full model is BELOW week-W persistence (0.8929), so the current baseline demonstrates no value over a one-line rule. On this construction the label is essentially persistent, not a forecast of change.",
+      "full_model_baseline": {
+       "eval": 0.87
+      },
+      "independent_calendar_only_gbm": {
+       "eval": 0.6269,
+       "note": "external replication, country one-hot + cyclical week + hierarchical seasonal prior; per-year 2020 0.6561, 2021 0.6263, 2022 0.5919, 2023 0.6534"
+      },
+      "lag_audit": "not performed: the publisher exposes only the current vintage, so historical publication times and revisions are unavailable; a defensible cutoff must be assumed (W-1 or W-2) and stated.",
+      "persistence_week_W_positivity": {
+       "eval": 0.8929,
+       "holdout": 0.8745,
+       "note": "reproduced independently from the released rows; score is week-W positivity, known at the prediction instant",
+       "train": 0.8969
+      },
+      "prevalence_shift": {
+       "eval_positive_rate": 0.2395,
+       "holdout_positive_rate": 0.4066,
+       "note": "train targets 2005-2020 (concentrated 2015-2019), eval 2020-2023, holdout 2023-2026; the eval window is the COVID disruption, so this is an out-of-distribution test as much as a temporal one.",
+       "train_positive_rate": 0.5918
+      },
+      "question": "Is the reported 0.8700 eval AUC more than seasonal predictability, and does it beat a one-line rule?",
+      "rows": "the released artifact, private release v2026.10 (5 assets, 6,576,498 B); public-train 5,779 rows / public-eval 6,831 rows",
+      "seasonal_prior_country_x_target_week": {
+       "by_year": {
+        "2020": 0.678,
+        "2021": 0.513,
+        "2022": 0.5172,
+        "2023": 0.6222
+       },
+       "eval": 0.5509
+      },
+      "sentinel_only_feasibility": {
+       "by_year": {
+        "2020": {
+         "combined": 2624,
+         "sentinel_only": 875
+        },
+        "2021": {
+         "combined": 3159,
+         "sentinel_only": 1099
+        },
+        "2022": {
+         "combined": 4224,
+         "sentinel_only": 2308
+        },
+        "2023": {
+         "combined": 4874,
+         "sentinel_only": 2936
+        }
+       },
+       "eligible_country_weeks_denominator_50": {
+        "combined": 64001,
+        "sentinel_only": 19634
+       },
+       "note": "sentinel-only is feasible but shrinks the eligible panel by about 3x in the eval window; 46% of source rows carry ORIGIN_SOURCE=NOTDEFINED, so the current combined positivity mixes three categories.",
+       "origin_rows": {
+        "NONSENTINEL": 43366,
+        "NOTDEFINED": 86890,
+        "SENTINEL": 59393
+       },
+       "source": "WHO FluNet full table, xmart-api-public.who.int/FLUMART/VIW_FNT (189,649 rows)"
+      }
+     },
      "sample_probe_2026_10_20": "$filter=ISO2 eq 'FR': 1,693 rows, ISO_YEAR 1997-2026, week-start range through 2026-10-05; recent French off-season weeks: INF_ALL 4-7 against SPEC_PROCESSED_NB 126-169 (positivity ~3-5%), illustrating both classes around a 10% threshold.",
      "split_window_counts_2026_10_20": "Computed from the downloaded table at country-week grain (streams summed, denominator INF_ALL+INF_NEGATIVE >= 50): 2005-2019: 14,870 country-weeks, 81.8% positive - INFLATED, see negatives trap; 2020-2022: 8,559 country-weeks, 2,485 positive (29.0%); 2023: 4,677 country-weeks, 1,984 positive (42.4%); 2024-2026: 12,707 country-weeks, 6,135 positive (48.3%). Clustered positives (country-years with >=1 positive week): 278 (eval window), 131 (2023), 400 (2024-2026).",
      "trap_acceptance_flunet_002": "Measured on the full table: the 1995-2004 window holds 931 pre-rule country-weeks at 100% positive - byte-for-byte the discovery session's 931/931 measurement, reproduced independently - and the systematic-negative rule leaves 14 of them. The frame rule is therefore proven to remove the trap it was designed against."
@@ -3990,7 +4064,7 @@
   "release": {
    "awaiting": [
     {
-     "age_hours": 7.0,
+     "age_hours": 7.3,
      "awaiting_operator": true,
      "baseline": {
       "accepted_artifact_version": "b1323a27fa02eb79",
@@ -4054,6 +4128,80 @@
       "per_year_volume_2026_10_20": "$filter=ISO_YEAR eq 2026 -> 1,476 KiB, 9,226 rows, 1.3 s; ISO_YEAR eq 2010 -> 926 KiB, 5,276 rows, 0.8 s; the GHO OData API (ghoapi.azureedge.net) was also probed for comparison: 3,099 indicators, anonymous; its annual panels were set aside (cholera indicator CHOLERA_0000000001 ends 2016 - stale; see notes).",
       "qualification_flunet_002": "Gate 1.3.0 on the worker over the full artifact: ok=true, failed_checks=[], 2026-10-20 22:24Z; artifact_version b1323a27fa02eb79... (train sha 2515289b..., eval 7d809b16..., holdout f7dd814a...). Hand-off accept on the coordinator: qualify_dataset.py --accept report extract -> ACCEPTED, same artifact digest. Staging release 418940777 (untagged-5a0aa09b17777e11f345), collect verified every asset against the worker's manifest.",
       "reference_baselines_flunet_002": "Stdlib rank-AUC references measured at construction on the written rows (prediction-time-safe single features): persistence (score = week-W positivity) train 0.8969 / eval 0.8929 / holdout 0.8745; rolling-8-week mean train 0.7990 / eval 0.8281 / holdout 0.7683. Four-week-ahead exceedance retains headroom above these but they are strong - the solver must beat persistence to be interesting; these figures are references, not the scored baseline.",
+      "review_response_2026_10_21": {
+       "calendar_only_global_week_prior": {
+        "by_year": {
+         "2020": 0.6691,
+         "2021": 0.5014,
+         "2022": 0.455,
+         "2023": 0.5098
+        },
+        "eval": 0.5437
+       },
+       "conclusion": "Not seasonal predictability: calendar-only tops out at 0.6269 while the full model reaches 0.8700. But the full model is BELOW week-W persistence (0.8929), so the current baseline demonstrates no value over a one-line rule. On this construction the label is essentially persistent, not a forecast of change.",
+       "full_model_baseline": {
+        "eval": 0.87
+       },
+       "independent_calendar_only_gbm": {
+        "eval": 0.6269,
+        "note": "external replication, country one-hot + cyclical week + hierarchical seasonal prior; per-year 2020 0.6561, 2021 0.6263, 2022 0.5919, 2023 0.6534"
+       },
+       "lag_audit": "not performed: the publisher exposes only the current vintage, so historical publication times and revisions are unavailable; a defensible cutoff must be assumed (W-1 or W-2) and stated.",
+       "persistence_week_W_positivity": {
+        "eval": 0.8929,
+        "holdout": 0.8745,
+        "note": "reproduced independently from the released rows; score is week-W positivity, known at the prediction instant",
+        "train": 0.8969
+       },
+       "prevalence_shift": {
+        "eval_positive_rate": 0.2395,
+        "holdout_positive_rate": 0.4066,
+        "note": "train targets 2005-2020 (concentrated 2015-2019), eval 2020-2023, holdout 2023-2026; the eval window is the COVID disruption, so this is an out-of-distribution test as much as a temporal one.",
+        "train_positive_rate": 0.5918
+       },
+       "question": "Is the reported 0.8700 eval AUC more than seasonal predictability, and does it beat a one-line rule?",
+       "rows": "the released artifact, private release v2026.10 (5 assets, 6,576,498 B); public-train 5,779 rows / public-eval 6,831 rows",
+       "seasonal_prior_country_x_target_week": {
+        "by_year": {
+         "2020": 0.678,
+         "2021": 0.513,
+         "2022": 0.5172,
+         "2023": 0.6222
+        },
+        "eval": 0.5509
+       },
+       "sentinel_only_feasibility": {
+        "by_year": {
+         "2020": {
+          "combined": 2624,
+          "sentinel_only": 875
+         },
+         "2021": {
+          "combined": 3159,
+          "sentinel_only": 1099
+         },
+         "2022": {
+          "combined": 4224,
+          "sentinel_only": 2308
+         },
+         "2023": {
+          "combined": 4874,
+          "sentinel_only": 2936
+         }
+        },
+        "eligible_country_weeks_denominator_50": {
+         "combined": 64001,
+         "sentinel_only": 19634
+        },
+        "note": "sentinel-only is feasible but shrinks the eligible panel by about 3x in the eval window; 46% of source rows carry ORIGIN_SOURCE=NOTDEFINED, so the current combined positivity mixes three categories.",
+        "origin_rows": {
+         "NONSENTINEL": 43366,
+         "NOTDEFINED": 86890,
+         "SENTINEL": 59393
+        },
+        "source": "WHO FluNet full table, xmart-api-public.who.int/FLUMART/VIW_FNT (189,649 rows)"
+       }
+      },
       "sample_probe_2026_10_20": "$filter=ISO2 eq 'FR': 1,693 rows, ISO_YEAR 1997-2026, week-start range through 2026-10-05; recent French off-season weeks: INF_ALL 4-7 against SPEC_PROCESSED_NB 126-169 (positivity ~3-5%), illustrating both classes around a 10% threshold.",
       "split_window_counts_2026_10_20": "Computed from the downloaded table at country-week grain (streams summed, denominator INF_ALL+INF_NEGATIVE >= 50): 2005-2019: 14,870 country-weeks, 81.8% positive - INFLATED, see negatives trap; 2020-2022: 8,559 country-weeks, 2,485 positive (29.0%); 2023: 4,677 country-weeks, 1,984 positive (42.4%); 2024-2026: 12,707 country-weeks, 6,135 positive (48.3%). Clustered positives (country-years with >=1 positive week): 278 (eval window), 131 (2023), 400 (2024-2026).",
       "trap_acceptance_flunet_002": "Measured on the full table: the 1995-2004 window holds 931 pre-rule country-weeks at 100% positive - byte-for-byte the discovery session's 931/931 measurement, reproduced independently - and the systematic-negative rule leaves 14 of them. The frame rule is therefore proven to remove the trap it was designed against."
@@ -4133,7 +4281,7 @@
    ],
    "packaged": [
     {
-     "age_hours": 7.0,
+     "age_hours": 7.3,
      "awaiting_operator": true,
      "baseline": {
       "accepted_artifact_version": "b1323a27fa02eb79",
@@ -4197,6 +4345,80 @@
       "per_year_volume_2026_10_20": "$filter=ISO_YEAR eq 2026 -> 1,476 KiB, 9,226 rows, 1.3 s; ISO_YEAR eq 2010 -> 926 KiB, 5,276 rows, 0.8 s; the GHO OData API (ghoapi.azureedge.net) was also probed for comparison: 3,099 indicators, anonymous; its annual panels were set aside (cholera indicator CHOLERA_0000000001 ends 2016 - stale; see notes).",
       "qualification_flunet_002": "Gate 1.3.0 on the worker over the full artifact: ok=true, failed_checks=[], 2026-10-20 22:24Z; artifact_version b1323a27fa02eb79... (train sha 2515289b..., eval 7d809b16..., holdout f7dd814a...). Hand-off accept on the coordinator: qualify_dataset.py --accept report extract -> ACCEPTED, same artifact digest. Staging release 418940777 (untagged-5a0aa09b17777e11f345), collect verified every asset against the worker's manifest.",
       "reference_baselines_flunet_002": "Stdlib rank-AUC references measured at construction on the written rows (prediction-time-safe single features): persistence (score = week-W positivity) train 0.8969 / eval 0.8929 / holdout 0.8745; rolling-8-week mean train 0.7990 / eval 0.8281 / holdout 0.7683. Four-week-ahead exceedance retains headroom above these but they are strong - the solver must beat persistence to be interesting; these figures are references, not the scored baseline.",
+      "review_response_2026_10_21": {
+       "calendar_only_global_week_prior": {
+        "by_year": {
+         "2020": 0.6691,
+         "2021": 0.5014,
+         "2022": 0.455,
+         "2023": 0.5098
+        },
+        "eval": 0.5437
+       },
+       "conclusion": "Not seasonal predictability: calendar-only tops out at 0.6269 while the full model reaches 0.8700. But the full model is BELOW week-W persistence (0.8929), so the current baseline demonstrates no value over a one-line rule. On this construction the label is essentially persistent, not a forecast of change.",
+       "full_model_baseline": {
+        "eval": 0.87
+       },
+       "independent_calendar_only_gbm": {
+        "eval": 0.6269,
+        "note": "external replication, country one-hot + cyclical week + hierarchical seasonal prior; per-year 2020 0.6561, 2021 0.6263, 2022 0.5919, 2023 0.6534"
+       },
+       "lag_audit": "not performed: the publisher exposes only the current vintage, so historical publication times and revisions are unavailable; a defensible cutoff must be assumed (W-1 or W-2) and stated.",
+       "persistence_week_W_positivity": {
+        "eval": 0.8929,
+        "holdout": 0.8745,
+        "note": "reproduced independently from the released rows; score is week-W positivity, known at the prediction instant",
+        "train": 0.8969
+       },
+       "prevalence_shift": {
+        "eval_positive_rate": 0.2395,
+        "holdout_positive_rate": 0.4066,
+        "note": "train targets 2005-2020 (concentrated 2015-2019), eval 2020-2023, holdout 2023-2026; the eval window is the COVID disruption, so this is an out-of-distribution test as much as a temporal one.",
+        "train_positive_rate": 0.5918
+       },
+       "question": "Is the reported 0.8700 eval AUC more than seasonal predictability, and does it beat a one-line rule?",
+       "rows": "the released artifact, private release v2026.10 (5 assets, 6,576,498 B); public-train 5,779 rows / public-eval 6,831 rows",
+       "seasonal_prior_country_x_target_week": {
+        "by_year": {
+         "2020": 0.678,
+         "2021": 0.513,
+         "2022": 0.5172,
+         "2023": 0.6222
+        },
+        "eval": 0.5509
+       },
+       "sentinel_only_feasibility": {
+        "by_year": {
+         "2020": {
+          "combined": 2624,
+          "sentinel_only": 875
+         },
+         "2021": {
+          "combined": 3159,
+          "sentinel_only": 1099
+         },
+         "2022": {
+          "combined": 4224,
+          "sentinel_only": 2308
+         },
+         "2023": {
+          "combined": 4874,
+          "sentinel_only": 2936
+         }
+        },
+        "eligible_country_weeks_denominator_50": {
+         "combined": 64001,
+         "sentinel_only": 19634
+        },
+        "note": "sentinel-only is feasible but shrinks the eligible panel by about 3x in the eval window; 46% of source rows carry ORIGIN_SOURCE=NOTDEFINED, so the current combined positivity mixes three categories.",
+        "origin_rows": {
+         "NONSENTINEL": 43366,
+         "NOTDEFINED": 86890,
+         "SENTINEL": 59393
+        },
+        "source": "WHO FluNet full table, xmart-api-public.who.int/FLUMART/VIW_FNT (189,649 rows)"
+       }
+      },
       "sample_probe_2026_10_20": "$filter=ISO2 eq 'FR': 1,693 rows, ISO_YEAR 1997-2026, week-start range through 2026-10-05; recent French off-season weeks: INF_ALL 4-7 against SPEC_PROCESSED_NB 126-169 (positivity ~3-5%), illustrating both classes around a 10% threshold.",
       "split_window_counts_2026_10_20": "Computed from the downloaded table at country-week grain (streams summed, denominator INF_ALL+INF_NEGATIVE >= 50): 2005-2019: 14,870 country-weeks, 81.8% positive - INFLATED, see negatives trap; 2020-2022: 8,559 country-weeks, 2,485 positive (29.0%); 2023: 4,677 country-weeks, 1,984 positive (42.4%); 2024-2026: 12,707 country-weeks, 6,135 positive (48.3%). Clustered positives (country-years with >=1 positive week): 278 (eval window), 131 (2023), 400 (2024-2026).",
       "trap_acceptance_flunet_002": "Measured on the full table: the 1995-2004 window holds 931 pre-rule country-weeks at 100% positive - byte-for-byte the discovery session's 931/931 measurement, reproduced independently - and the systematic-negative rule leaves 14 of them. The frame rule is therefore proven to remove the trap it was designed against."
@@ -4337,10 +4559,10 @@
     "failure_streak": 0,
     "id": "e80975eddd4a",
     "last_error": "",
-    "last_run_at": "2026-10-21T09:20:01.688772+00:00",
+    "last_run_at": "2026-10-21T09:50:02.637138+00:00",
     "last_status": "ok",
     "name": "scout-secondary-cleanup-sweep",
-    "next_run_at": "2026-10-21T09:30:00+00:00",
+    "next_run_at": "2026-10-21T10:00:00+00:00",
     "no_agent": true,
     "schedule": "*/10 * * * *"
    },
@@ -4385,10 +4607,10 @@
     "failure_streak": 0,
     "id": "98b45d983280",
     "last_error": "",
-    "last_run_at": "2026-10-21T09:26:40.881245+00:00",
+    "last_run_at": "2026-10-21T09:46:48.471320+00:00",
     "last_status": "ok",
     "name": "scout-worker-watch",
-    "next_run_at": "2026-10-21T09:31:40.881245+00:00",
+    "next_run_at": "2026-10-21T09:51:48.471320+00:00",
     "no_agent": false,
     "schedule": "every 5m"
    },
@@ -4424,7 +4646,7 @@
     "last_run_at": "2026-10-21T08:50:20.386431+00:00",
     "last_status": "ok",
     "name": "scout-dashboard-refresh",
-    "next_run_at": "2026-10-21T09:50:00+00:00",
+    "next_run_at": "2026-10-21T10:50:00+00:00",
     "no_agent": true,
     "schedule": "50 * * * *"
    },
@@ -4477,9 +4699,9 @@
     "schedule": "once at 2026-10-20 16:40"
    }
   ],
-  "updated_at": "2026-10-21T09:26:40.882018+00:00"
+  "updated_at": "2026-10-21T09:50:02.638120+00:00"
  },
- "generated_at": "2026-10-21T09:27:33+00:00",
+ "generated_at": "2026-10-21T09:50:01+00:00",
  "health": {
   "checks": {
    "ok": true,
@@ -4487,21 +4709,24 @@
   },
   "ci": {
    "conclusion": "success",
-   "created_at": "2026-10-21T08:56:19Z",
-   "head_sha": "d1d7a3c",
+   "created_at": "2026-10-21T09:28:52Z",
+   "head_sha": "d9bc1f8",
    "status": "completed",
-   "url": "https://github.com/earino/dataset-factory/actions/runs/39573067042"
+   "url": "https://github.com/earino/dataset-factory/actions/runs/39577277200"
   },
   "coverage": {
    "ok": true,
    "summary": "live non-US: 11/17 (65%)"
   },
   "head": {
-   "at": "2026-10-21T08:56:16Z",
-   "sha": "d1d7a3c",
-   "subject": "Link the ready-to-ship card to the dataset pages too"
+   "at": "2026-10-21T09:28:49Z",
+   "sha": "d9bc1f8",
+   "subject": "Measure what the flunet baseline actually establishes: persistence beats it, seasonality does not explain it"
   },
-  "tests": null
+  "tests": {
+   "count": "390",
+   "ok": true
+  }
  },
  "history": [
   {
@@ -4703,13 +4928,21 @@
    "qualified": 1,
    "sessions_7d": 24,
    "tokens_7d": 5251871
+  },
+  {
+   "at": "2026-10-21T09:50:01+00:00",
+   "live": 9,
+   "published": 6,
+   "qualified": 1,
+   "sessions_7d": 24,
+   "tokens_7d": 5251871
   }
  ],
  "notices": [],
  "panels": {
   "budget": {
-   "age_minutes": 0.0,
-   "as_of": "2026-10-21T09:27:33+00:00",
+   "age_minutes": 0.3,
+   "as_of": "2026-10-21T09:50:01+00:00",
    "expected": null,
    "note": null,
    "source": "scripts/research-budget.py --json",
@@ -4718,8 +4951,8 @@
    "value": null
   },
   "candidates": {
-   "age_minutes": 0.0,
-   "as_of": "2026-10-21T09:27:33+00:00",
+   "age_minutes": 0.3,
+   "as_of": "2026-10-21T09:50:01+00:00",
    "expected": null,
    "note": null,
    "source": "candidates/*/record.json",
@@ -4728,8 +4961,8 @@
    "value": 9
   },
   "releases": {
-   "age_minutes": 0.0,
-   "as_of": "2026-10-21T09:27:33+00:00",
+   "age_minutes": 0.3,
+   "as_of": "2026-10-21T09:50:01+00:00",
    "expected": null,
    "note": null,
    "source": "release/*/MANIFEST.json",
@@ -5702,7 +5935,7 @@
   "jobs_total": 67,
   "lifetime_eur": 3.12,
   "live": {
-   "checked_at": "2026-10-21T09:27:35+00:00",
+   "checked_at": "2026-10-21T09:50:17+00:00",
    "error": null,
    "primary_ips": 0,
    "primary_ips_total": 0,

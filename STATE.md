@@ -4653,3 +4653,14 @@ Sentinel-only feasibility measured from the WHO source: 19,634 eligible country-
 three categories. Lag audit impossible: only the current vintage is published.
 Dashboard defect fixed: the dataset page showed "reference: no data" while the record contained 0.8929;
 the reference is now extracted from measurements and flagged when the model is below it.
+
+**who-flunet flip BLOCKED on gate 1 (licensing), 2026-10-21.** The operator authorised release subject to five gates. Gate 1
+(verify redistribution rights under the *dataset-specific* terms) fails. The FluNet tool page links a "Data policy" whose
+terms and conditions for WHO data compilations, aggregations, evaluations and analyses state: clause 04 - "Any other
+alteration or modification of the Datasets (including abbreviations, additions, or deletions) may be made only with the prior
+written authorization of WHO"; clause 05 - "You will not sell or otherwise transfer the Datasets and/or data contained therein
+to any third party, except within the Licensed Use." Our artifact is a substantial alteration (re-grained country-weeks, a
+derived binary label, row selection), so the redistribution right is not established. The CC BY-NC-SA 3.0 IGO claim in
+LICENSE.md rests on WHO's general publishing copyright page, which the gate explicitly excludes as evidence. No flip performed;
+nothing was made public. Resolution paths: written permission from WHO (gisrs-whohq@who.int) for a derived compilation, or a
+dataset-specific licence statement we can quote. Gates 2-5 were not started, per the instruction to stop at the first blocker.

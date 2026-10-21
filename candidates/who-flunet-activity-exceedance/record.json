@@ -31,7 +31,8 @@
   {
    "note": "WHO dataset terms at data.who.int, read 2026-10-20 via search snippet of https://data.who.int/about/data/terms-and-conditions: 'Unless specifically indicated otherwise, these Datasets are provided to you under a Creative Commons Attribution 4.0 International License (CC BY 4.0)' with mandatory citation per dataset metadata and a no-emblem clause. The FluNet tool page itself states no dataset-specific licence, so the general WHO posture (CC BY-NC-SA 3.0 IGO) is the conservative reading for this source; either way the terms permit redistribution of derived rows for non-commercial research with attribution, and any NC/SA conditions carry through unchanged.",
    "url": "https://data.who.int/about/data/terms-and-conditions"
-  }
+  },
+  "BLOCKING FINDING 2026-10-21: the FluNet page links a 'Data policy' (https://www.who.int/about/policies/publishing/data-policy), whose linked 'Terms and conditions of use for WHO data compilations, aggregations, evaluations and analyses' (https://www.who.int/about/policies/publishing/data-policy/terms-and-conditions) govern this dataset and are NOT the CC BY-NC-SA 3.0 IGO posture asserted in LICENSE.md. Clause 01 grants use/reproduction/distribution only 'for public health purposes'; clause 04 states 'Any other alteration or modification of the Datasets (including abbreviations, additions, or deletions) may be made only with the prior written authorization of WHO'; clause 05 states 'You will not sell or otherwise transfer the Datasets and/or data contained therein to any third party, except within the Licensed Use.' This release is a substantial alteration (new grain, derived label, row selection), so redistribution without prior written authorization is not established by any WHO instrument we could read. The CC BY-NC-SA 3.0 IGO claim rests on WHO's general publishing copyright page, which the operator's gate 1 explicitly forbids treating as dataset-specific evidence."
  ],
  "label_source_columns": [
   "INF_ALL",
@@ -210,7 +211,7 @@
  ],
  "rejection_reason": null,
  "review": null,
- "next_action": "AWAITING THE OPERATOR'S PRIVATE-TO-PUBLIC FLIP - staging is complete on both destinations. GitHub earino/who-flunet-activity-exceedance is private with release v2026.10 (5/5 assets at the accepted artifact digests, release 419078118) and tag == main == 617cc50 (docs-only commit that fixed get_dataset.py's private download path; executed once end-to-end before shipping). Hugging Face earino/who-flunet-activity-exceedance is private with all five data files plus docs (hf_publish job flunet-hf-001), MANIFEST.json byte-identical at tag v2026.10 == main b46995b1. DESTINATIONS.json records both destinations verified private. After the operator approves the flip: flip both destinations (gh api PATCH private=false; HfApi.update_repo_settings private=False with the write credential), prove it from an anonymous client, record DESTINATIONS.json BEFORE regenerating the manifest, re-run check-package, refresh the card/LOADING.md/README/release notes which were written while private, re-upload the small files, move the tag last and confirm tag == main on both destinations, then site prepare/publish/verify per the dataset-release skill.",
+ "next_action": "BLOCKED ON LICENSING (2026-10-21). Do not flip. The applicable WHO instrument for WHO data compilations (linked from the FluNet page as 'Data policy') requires prior written authorization for alterations and restricts transfer to third parties; the release's asserted CC BY-NC-SA 3.0 IGO posture is not dataset-specific. Resolve by obtaining written permission from WHO (gisrs-whohq@who.int) covering redistribution of a derived compilation, or by a dataset-specific grant we can quote, then re-run the gates.",
  "jurisdiction": {
   "country": "CH",
   "region": "International organisations",
@@ -427,5 +428,5 @@
   "note": "Measured on the bytes being released (fetched, digest-verified), not a rebuild. The XGBoost pass (0.8700) sits below the persistence reference (0.8929 eval), which is recorded as measured headroom information."
  },
  "packaged_at": "2026-10-21T02:29:20Z",
- "awaiting_operator": true
+ "awaiting_operator": false
 }

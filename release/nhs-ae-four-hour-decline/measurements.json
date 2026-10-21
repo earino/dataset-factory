@@ -1,0 +1,110 @@
+{
+ "name": "nhs-ae-four-hour-decline",
+ "built_at_utc": "2026-10-21T06:22:45Z",
+ "source": {
+  "publisher": "NHS England, A&E Attendances and Emergency Admissions statistical work area",
+  "landing_page": "https://www.england.nhs.uk/statistics/statistical-work-areas/ae-waiting-times-and-activity/",
+  "files": 102,
+  "months": "2018-04..2026-09",
+  "bytes": 3115779,
+  "requests": 113,
+  "requests_note": "102 monthly provider-level CSV GETs plus 11 year-page GETs (~80 KB each) to enumerate the URLs; measured 1.2 s wall clock on the coordinator (1.9 GiB class host)",
+  "composite_sha256": "99cb3339b31ae2045c990c950a40fb44dc93f1dfc4d58f1ae1879fa851666833",
+  "worker_provenance": "the publisher's CDN serves HTTP 202 with an empty body to datacenter IPs (measured 2026-10-21, job nhsae-001), so job nhsae-002 consumed the same bytes from staging release source-nhsae-001 (asset 661561799, sha256 verified on arrival and per-file by build.py)"
+ },
+ "grain": "provider (Org Code) x calendar month",
+ "label": {
+  "definition": "declines = 1 iff within4h_rate(M+1) < within4h_rate(M)",
+  "within4h_rate": "1 - Attendances over 4hrs Type 1 / A&E attendances Type 1",
+  "external_threshold": null,
+  "note": "fixed thresholds measured near-uniform rates and were refused (record: <95% -> holdout 99.9% positive; <80% -> 95.8%); the m/m direction label is threshold-free"
+ },
+ "volume_gate": {
+  "min_att1": 100,
+  "min_provider_months": 24,
+  "applies_to": "both the feature month M and the target month M+1"
+ },
+ "panel": {
+  "rows_read": 21649,
+  "skipped_period_total_rows": 101,
+  "provider_month_keys": 21548,
+  "duplicate_keys_deduplicated": 0,
+  "note": "each month is published in exactly one file, so the prefer-latest-upload revision policy never had anything to dedup on the 2026-10-21 vintage (it is still implemented and reported)"
+ },
+ "gate": {
+  "providers": 134,
+  "provider_months": 12765,
+  "consecutive_qualifying_pairs": 12631,
+  "skipped_not_consecutive": 0
+ },
+ "skipped_rows_outside_windows": 1040,
+ "splits": {
+  "train": {
+   "rows": 6116,
+   "positives": 3285,
+   "positive_rate": 0.537116,
+   "distinct_events": 133
+  },
+  "eval": {
+   "rows": 2937,
+   "positives": 1478,
+   "positive_rate": 0.503235,
+   "distinct_events": 124
+  },
+  "holdout": {
+   "rows": 2538,
+   "positives": 1233,
+   "positive_rate": 0.485816,
+   "distinct_events": 121
+  }
+ },
+ "split_windows": {
+  "train": "target months 2019-01..2022-12",
+  "eval": "target months 2023-01..2024-12",
+  "holdout": "target months 2025-01..2026-09"
+ },
+ "clustered_events_note": "distinct_events counts distinct positive Org Codes per window - positives cluster within providers, so this is the conservative independent-unit count",
+ "national_crosscheck": {
+  "month": "2026-08",
+  "attendances": 1407535,
+  "panel_rate": 0.6086,
+  "publisher_commentary_rate": 0.611,
+  "by_year_panel_within4h_type1": {
+   "2018": 0.830, "2019": 0.781, "2020": 0.826, "2021": 0.729, "2022": 0.624,
+   "2023": 0.598, "2024": 0.586, "2025": 0.602, "2026_ytd": 0.610
+  }
+ },
+ "schema_evolution": "16 data columns 2018-04..2020-07 (with 'Number of' prefixes in 2018-19); booked-appointment columns from 2020-08 (22 columns); unnamed padding columns from 2024-09 (28 header fields); booked columns parsed but not shipped - they are absent for train feature months 2018-12..2020-07, so shipping them would be a split-dependent prediction-timing defect",
+ "timing_selfcheck": {
+  "checked": 201,
+  "mismatches": 0
+ },
+ "duplicate_row_ids": 0,
+ "reference_baselines": {
+  "note": "stdlib rank AUC measured at construction on the written rows; every score is a prediction-time-safe single feature",
+  "per_split": {
+   "train": {
+    "momentum_auc": 0.5211,
+    "mean_reversion_auc": 0.5133,
+    "winter_auc": 0.5333
+   },
+   "eval": {
+    "momentum_auc": 0.4161,
+    "mean_reversion_auc": 0.5659,
+    "winter_auc": 0.5473
+   },
+   "holdout": {
+    "momentum_auc": 0.3993,
+    "mean_reversion_auc": 0.6562,
+    "winter_auc": 0.5090
+   }
+  }
+ },
+ "runner_contract_baseline": {
+  "job": "nhsae-baseline-001",
+  "eval_auc_from_train_py": 0.5526,
+  "eval_auc_from_validate_py": 0.5526,
+  "contract_ok": true,
+  "note": "measured on the released bytes fetched from staging (digest-verified, gate re-accepted before scoring), below the mean-reversion reference (0.5659 eval / 0.6562 holdout) which is the bar a competent model must beat"
+ }
+}

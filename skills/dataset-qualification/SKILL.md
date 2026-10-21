@@ -68,6 +68,61 @@ A passing gate is **necessary, not sufficient**: it proves the files lack the de
 see. It says nothing about whether the source is what you think it is, and nothing about
 whether a model can beat the baseline.
 
+### The baseline triad - one AUC is not evidence
+
+Before any AUC is quoted as evidence that the task teaches something, measure three references on
+**exactly the same evaluation rows**:
+
+1. **Persistence** - the most recent observed value (or last observed label) as the score. This is
+the rule the task has to beat; if it does not, the label is a level that persists, not a forecast.
+2. **Calendar-only** - country/entity identity plus cyclical week-of-year plus a seasonal prior
+   estimated only from training-era rows. This separates learned signal from seasonality.
+3. **The full model**, on the same rows and the same fit/eval boundary.
+
+Report the gap, not just the top-line AUC. A model below persistence is a **recorded defect**, not
+an encouraging result: on a four-week-ahead exceedance task a baseline reached 0.870 while week-W
+persistence reached 0.893, and that single comparison changed the dataset from "promising" to "not
+yet a forecast". Write the comparison into the record next to the number, so no later reader quotes
+the model AUC alone.
+
+Two structural checks belong with it:
+
+- **Per-year, not pooled.** A pooled eval window that contains a structural break (a pandemic, a
+  policy change, a reporting-system migration) hides the break inside one number. Report AUC and
+  Brier by target year as well.
+- **Prevalence shift between splits.** Compare positive rates per split and per year. A training
+  split at ~59% positives scored against an evaluation window at ~24% is an out-of-distribution
+  test as much as a temporal one, and it explains a model that trails a trivial rule. Say which
+  it is rather than letting the pooled AUC imply a clean temporal split.
+
+When the label is persistent, the usual fix is to re-target **change**: onset, transition or
+sustained-exceedance rather than a single future week's level, because persistence cannot win that
+by construction. Treat that as a new task instance with its own qualification, not a tweak.
+
+**Replicate the decisive number independently.** The comparison above is the one a reviewer will
+audit, so have a second implementation compute it from the published artifact with its own code -
+not a re-run of yours. Give it the same rows and forbid reading your implementation; if its
+calendar-only AUC lands near yours the finding stands, and if it diverges the likely bug is in your
+baseline, which is exactly what the check is for. State in the report that the full-model figure was
+quoted rather than independently rerun.
+
+### Answering an external review with measurements
+
+A review is a list of hypotheses, not a verdict. Convert each claim into the cheapest measurement
+that can confirm or refute it, and lead the reply with numbers:
+
+- **Seasonality** -> calendar-only AUC on identical rows (above). If it lands near the model, the
+  task is a calendar exercise; a 0.24 gap is evidence of real signal.
+- **Mixed populations** -> count eligible rows per provenance stream from the source itself, and
+  say what fraction of the panel survives the stricter definition.
+- **Leakage through the timing claim** -> check whether the publisher exposes historical vintages.
+  If only the current vintage exists, the audit is **not performable**; say so and state the cutoff
+  as an assumption with its justification, rather than dressing a guess as a reconstruction.
+
+What cannot be measured must be labelled, not argued away. The output of this pass is a short record
+block (the numbers, the rows they came from, and the conclusion) so a later reader cannot quote the
+top-line figure without the comparison that qualifies it.
+
 ## The five checks
 
 ### 1. Leakage - no shipped column may determine the target
@@ -175,6 +230,8 @@ and any column shipped beyond the declared set.
 | Test contaminates the artifact | Loading code under test by path writes `__pycache__` into a bundled dir | `exec(compile(...))`, or assert no bytecode is written |
 | Passes under UTC, fails elsewhere | Timezone-free timestamp parsed with `astimezone` under host TZ | Treat timestamps as UTC explicitly; run the suite under a TZ ahead of UTC too |
 | A whole directory disappeared | `rmtree` on a user-supplied path | Clear generated paths through an ownership marker; name exact owned paths |
+| A model AUC is quoted with no reference | Only one baseline was ever run, or the reference lives in a notes field nobody compares | Run the triad (persistence, calendar-only, full model) on identical rows; record all three beside the number |
+| The model trails a one-line rule | The label is largely persistent, or the eval window shifts prevalence | Record it as a defect; re-target a change/onset label or report the task as persistence |
 
 ## Completion criteria
 

@@ -199,6 +199,12 @@ When it is approved:
 2. **Record it before regenerating.** Set `private: false`, the note and the timestamp in
    `DESTINATIONS.json` first. The manifest derives its `visibility`, `published` and
    `publication_note` from that file, so regenerating before recording re-asserts "private".
+   The website planner reads two more fields from the same file and refuses without them: a
+   top-level `artifact_version` equal to the manifest's, and `files_verified` as **lists**, not
+   counts - every logical manifest path for GitHub, and the Hub target path for each asset
+   (`data/<name>.csv` for CSVs, the basename otherwise). A count or a missing field fails with
+   "Destination evidence describes a different release or artifact" / "verification omits an
+   asset" after the flip, when the release is already public.
 3. **Regenerate, then re-verify.** `python3 scripts/release-manifest.py <candidate>`, then
    `check-package.py`, then the website pipeline `publish`/`verify`. Re-run `prepare` and confirm the
    plan digest is unchanged: publication is not supposed to alter the plan, and a changed digest
@@ -248,6 +254,8 @@ and run its commands.
 | Transfer fails 404 | Token scoped to staging only | Use the publish credential for non-staging targets; record the scope widening |
 | Consumer fails on a read-only mount | Job already lays out paths; the container's `/data` is read-only | Prepare inputs read-only; write only to the output path |
 | A worker dies with no report | An exception escapes the handler | Validate before dispatch so it fails at plan time, not mid-run |
+| Worker dies seconds in: `can't open file '/workspace/qualify_dataset.py'` | The job was launched straight from the candidate's `baseline/job.json`, so the bundle was that one directory and the gate script plus runner files were never packed | Assemble first (`scripts/assemble-job.py`), confirm the bundle carries `qualify_dataset.py`, `train.py`, `validate.py`, `validate.sh` and `runner_files.json`, then launch the assembled job |
+| Every digest matches but the shipped code is wrong | Hashing proves integrity, not correctness: a wrong file that was hashed into the manifest is consistently wrong everywhere | The fresh-environment consumer must **execute** the artifact (materialise, gate, train), not only `sha256sum -c`; that is how a foreign `materialize.py` with the wrong arity is caught before publication |
 | Package reviewed against the wrong bytes | Manifest built before the last edit | Rebuild the manifest last, then re-tag |
 | Reviewer cannot reproduce | Instructions depend on the private repo | Ship the code, pin to the package's own tag, verify from a clean clone |
 | Version-pinned load returns nothing | Tag created before the data landed | Tag last, and confirm the tag and `main` point at the same commit |

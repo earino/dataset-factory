@@ -118,6 +118,14 @@ command behind it is a guess.
 
 1. **Licence and terms.** Free to check, and a veto.
 2. **Aggregate queries.** Counts, ranges, base rates, distinct keys - offline, no bulk transfer.
+   **Also count the mix of every categorical provenance column** (`ORIGIN_SOURCE`, `SENTINEL` /
+   `NONSENTINEL`, `status`, `measure_type`) before deciding what a row means. Summing two streams
+   that are not the same population (sentinel vs non-sentinel sampling, clinical vs survey testing)
+   silently changes the label's meaning, and an unlabelled bucket makes it worse: in one source 46%
+   of rows carried `ORIGIN_SOURCE=NOTDEFINED`, so a "sentinel + non-sentinel" total was really a
+   mixture of three populations. Record the mix and the eligible-row count per stream; if one
+   stream cannot carry the task alone, say so at discovery time rather than discovering it when a
+   reviewer asks what the target means.
 3. **Read the column documentation.** Every field, not the suspicious ones. This is where
    post-hoc fields are caught before they reach a feature list.
 4. **Uniqueness and ordering probes.** Establish a total order before any paging (see below).
@@ -140,6 +148,7 @@ command behind it is a guess.
 | The "dataset" is really a mirror | Only the source was checked, not the existing task | Search public catalogs *and* the literature for the exact task; `check-novelty.py` refuses an absent verdict and marks `mirror` as unpublishable |
 | The publisher nearly hands us the task | Feasibility mistaken for contribution | The easier the fetch, the *less* the access is worth: state what is ours (formulation, splits, gating, validation) or don't publish |
 | A negative finding from a wrong probe | Query typo read as "does not exist" | The API's own error text lists valid parameters; read it, and re-probe before recording a negative |
+| Target meaning shifts between years or countries | Two provenance streams summed into one rate, or an unlabelled bucket included | Count the provenance mix first; define the task on one stream, or record the mixture as part of the definition |
 
 ## Completion criteria
 

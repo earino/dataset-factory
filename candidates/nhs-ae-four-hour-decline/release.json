@@ -1,0 +1,30 @@
+{
+  "release_version": "2026.10",
+  "release_tag": "v2026.10",
+  "repository": "https://github.com/earino/nhs-ae-four-hour-decline",
+  "construction_commit": "48eab83",
+  "construction_commit_note": "48eab83 carries candidates/nhs-ae-four-hour-decline/source/build.py as committed after the worker run (sha256 cb1d508a...). The bytes job nhsae-002 executed were bundled earlier (sha256 7ecf2e1e...); the delta is confined to the HTTP fetch path - the client ladder and failure diagnostics added after nhsae-001 measured the publisher CDN serving HTTP 202 with an empty body to datacenter IPs - and nhsae-002 consumed the staged verified source via --source-dir, so no code path of the delta ran in the build. The panel-construction, gating, split and file-writing core is identical; the artifact digests are unchanged.",
+  "source": {
+    "name": "NHS England - A&E Attendances and Emergency Admissions, statistical work area (monthly provider-level CSVs)",
+    "landing_page": "https://www.england.nhs.uk/statistics/statistical-work-areas/ae-waiting-times-and-activity/",
+    "api": "per-financial-year sub-pages (2018-19 through 2026-27) each link 12 monthly provider-level CSVs (~30 KB, 21 columns); pre-2018-19 months are XLS-only; the publisher's CDN serves HTTP 202 with an empty body to datacenter IPs (measured 2026-10-21), so reproduction fetches from this package's build use the coordinator-measured URL set",
+    "accessed": "2026-10-21",
+    "licence": "Open Government Licence v3.0 (NHS England / Crown copyright; attribution carries through). Derived research dataset - not an NHS England official product."
+  },
+  "commands": {
+    "gate": "python3 code/qualify_dataset.py ./task",
+    "baseline": "sh baseline/reproduce_baseline.sh ./task",
+    "get_dataset": "python3 get_dataset.py --dest ./task"
+  },
+  "layout": {
+    "public/train.csv": "public/train.csv",
+    "public/eval.csv": "public/eval.csv",
+    "private/holdout.csv": "private/holdout.csv",
+    "meta.json": "meta.json",
+    "quality.json": "quality.json"
+  },
+  "required_docs": [
+    "code/materialize.py"
+  ],
+  "note": "One task instance, one artifact. The five shipped files are the nhsae-002 gate artifact 9903df974f233dfa; the package's code/ carries the construction script and the gate, baseline/ the runner-contract baseline. The holdout ships as an asset like the other splits; it is not copied into any runner workdir."
+}
