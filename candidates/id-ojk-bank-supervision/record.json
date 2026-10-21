@@ -1,0 +1,40 @@
+{
+  "id": "id-ojk-bank-supervision",
+  "status": "parked",
+  "created_at": "2026-10-21T20:19:19.427835+00:00",
+  "domain": "financial-sector supervision / bank soundness",
+  "prediction_question": "Hypothetical task this source would support (parked before formulation was finished): for a commercial bank in OJK's monthly Statistik Perbankan Indonesia (SPI) panel, predict deterioration-onset - e.g. whether the bank's gross NPL ratio crosses the 5% regulatory impairment benchmark, or whether it appears on OJK's bank supervisory-status list (Bank dalam Pengawasan Khusus / special supervision), within the next quarter - given only the bank's own published ratios and the panel's cross-sectional history through the prediction instant. A per-bank financial-supervision task exists nowhere on the current bench (no financial-sector candidate), which is why this source is parked rather than dropped.",
+  "prediction_time": "Would be the monthly SPI publication instant (one month after the reporting period); the observed lag for the old SPI channel and the new portal was not measurable this session (see access blockers) - measuring it is part of the unpark path.",
+  "target_definition": "Not fixed this session. Candidate label sources measured to exist on the publisher's site: (a) per-bank gross NPL / CAR / asset ratios in the monthly SPI tables; (b) OJK's published supervisory status of banks (site navigation exposes a 'Status Pengawasan Bank' section: Bank Umum, Bank Perekonomian Rakyat, Bank Syariah). Historical availability of the supervisory-status lists was NOT measured - the channel is the same WAF-walled portal.",
+  "sources": [
+    {
+      "name": "Otoritas Jasa Keuangan (OJK, Financial Services Authority of Indonesia) - Statistik Perbankan Indonesia and the Portal Data Sektor Jasa Keuangan Terintegrasi",
+      "url": "https://www.ojk.go.id/id/kanal/perbankan/data-dan-statistik/statistik-perbankan-indonesia/Default.aspx (announcement page); new portal https://data.ojk.go.id/SJKPublic",
+      "api": "No documented download API. Measured 2026-10-21: the SPI page states that from the July 2025 reporting period all SPI presentation moved to the integrated data portal (https://data.ojk.go.id/SJKPublic) 'untuk memberikan pengalaman akses data yang lebih interaktif dan dinamis'; periods before July 2025 'tetap dapat diakses dan diunduh' on the old (SharePoint) pages. The old page's raw HTML exposes only a 'Mapping Statistik Perbankan SPI.xlsx' document link - monthly files are loaded by JavaScript not present in the served HTML. The new portal's data endpoint (POST https://data.ojk.go.id/Public/GetIndustriData) answers 'Request Rejected ... Your support ID is ...' (WAF) to a scripted client.",
+      "license": "No grant found. Measured 2026-10-21 from https://www.ojk.go.id/id/Pages/syarat-dan-kondisi.aspx (377,070 B, HTTP 200): the page text contains no redistribution permission; the only rights statement is the footer 'Copyright Otoritas Jasa Keuangan 2024'. Indonesian state agencies assert copyright by default; per the standing rule, silence is not a grant.",
+      "access": "www.ojk.go.id reachable but slow from the coordinator (home page 200 in 17.1 s; SPI page 200 in 9.0-13.9 s). data.ojk.go.id/SJKPublic reachable (200, 47,249 B, 2.0 s) but is a JavaScript application; its dataset action endpoints (/SJKPublic/Dataset/Dataset, /Public/GetIndustriData) return HTML shells or WAF rejections to headless clients."
+    }
+  ],
+  "license_evidence": [
+    "Measured 2026-10-21: https://www.ojk.go.id/id/Pages/syarat-dan-kondisi.aspx fetched (HTTP 200, 377,070 B) and its full text searched for hak cipta / diperbanyak / copyright / lisensi: no permission statement of any kind; footer asserts 'Copyright Otoritas Jasa Keuangan 2024'. https://www.ojk.go.id/id/term-of-use.aspx answers 404.",
+    "Per skills/dataset-discovery references/licence-posture.md this is an unstated-terms publisher: the licence question must be escalated as a decision (written OJK permission for derived per-bank tables) or covered by an operator risk acceptance recorded in candidates/<id>/license.json - never assumed."
+  ],
+  "construction_script": null,
+  "split_strategy": null,
+  "measurements": {
+    "access_probes_2026_10_21": "https://www.ojk.go.id/ 200 (655,895 B, 17.1 s). SPI page (statistik-perbankan-indonesia/Default.aspx) 200 (384,394 B, 9.0-13.9 s); raw HTML contains exactly one document link, 'Mapping Statistik Perbankan SPI.xlsx' (URL-encoded and plain variants), and 49 <script> tags - the monthly archive is JS-loaded. https://data.ojk.go.id/SJKPublic 200 (47,249 B, 2.0 s), title 'OJK - Portal Data', custom JS app (scripts.js, PortalDictionary.js, sweetalert2). GET /SJKPublic/Dataset/Dataset 200 but returns an HTML shell (37,873 B). POST /Public/GetIndustriData 200 with WAF body 'Request Rejected ... support ID 17926015242475000066' (247 B) - the data API is walled to scripted clients. Site navigation exposes a 'Status Pengawasan Bank' section (Bank Umum / Bank Perekonomian Rakyat / Bank Syariah), confirming a published supervisory-status product exists; its history and format were not measurable this session.",
+    "novelty_scan_context_2026_10_21": "Prior art (from bench knowledge + this session's context, not a dedicated search since the candidate is parked): Indonesian bank-distress/NPL prediction is an established academic literature (bank failure early-warning models), but no ML-ready per-bank supervision-status dataset with splits and a scored contract is known to exist; a dedicated novelty check is required as the first step of any unpark."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "PARK (status parked), reason: two stacked blockers, licence first. (1) Licence: no redistribution grant anywhere on the publisher's terms page (measured; footer asserts copyright only) - unstated terms are escalated as a decision or an operator risk acceptance, never assumed. (2) Access: since July 2025 the SPI bulk channel is a JavaScript portal whose data endpoint rejects scripted requests at a WAF (measured 'Request Rejected'), and the legacy SharePoint pages load their monthly archive via scripts absent from the served HTML; anonymous bulk extraction is therefore not currently measurable from the coordinator. Not a rejection: the publisher demonstrably maintains a distinctive per-bank panel and a published supervisory-status product, and the bench has no financial-supervision task; both blockers are of the kind that can be removed by a real-browser re-read and a licence enquiry.",
+  "review": null,
+  "next_action": "Unpark steps, in order: (1) load https://data.ojk.go.id/SJKPublic in a real browser, capture the exact XHRs (URL, method, headers, cookies) the app issues for a per-bank SPI table, and measure whether a headless client replaying them can page the per-bank history at least 3 years back anonymously - if yes, record requests/bytes/wall-clock; if no, record the wall as permanent and drop to the old-page XLSX archive instead. (2) Measure the publication schedule/lag of the SPI (period end -> file visible) and whether the supervisory-status lists have a downloadable history. (3) Licence: write to OJK asking for written permission to publish derived per-bank monthly tables (attribution preserved), or record an operator risk acceptance in candidates/id-ojk-bank-supervision/license.json per references/licence-posture.md. (4) Run the novelty check vs the Indonesian bank-distress prediction literature and any published early-warning datasets before formulating the task. (5) Only then design the deterioration-onset label (NPL > 5% crossing or supervisory-status listing) and hand to construction.",
+  "jurisdiction": {
+    "country": "ID",
+    "region": "South & South-East Asia",
+    "publisher": "Otoritas Jasa Keuangan (OJK), Financial Services Authority of Indonesia",
+    "recorded_at": "2026-10-21"
+  },
+  "verdict": "park"
+}

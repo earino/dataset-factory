@@ -1,0 +1,40 @@
+{
+  "id": "ph-pagasa-climate-station-data",
+  "status": "parked",
+  "created_at": "2026-10-21T20:20:27.322823+00:00",
+  "domain": "weather / climate station observations",
+  "prediction_question": "Hypothetical task this source would support (parked on access before formulation): for a PAGASA synoptic or climatological station, predict next-day/next-week rainfall or temperature exceedance at a documented threshold, given the station's own observation history - the same source family as the parked singapore-datagov-catalog rainfall option and the published air-quality tasks. Not formulated further because the observation channel is request-gated (see access).",
+  "prediction_time": "Would be end of day D at the station (observations through D knowable); not fixed further because the channel is request-gated.",
+  "target_definition": "Would be mechanical from the station's own subsequent observations; not fixed further because the channel is request-gated.",
+  "sources": [
+    {
+      "name": "Philippine Atmospheric, Geophysical and Astronomical Services Administration (PAGASA), Department of Science and Technology (DOST) - climatological station data",
+      "url": "https://www.pagasa.dost.gov.ph/climate/climate-data (Climate Data Request page, measured 2026-10-21); formerly also https://philida.pagasa.dost.gov.ph/ (PhilDA climate data portal - host now NXDOMAIN, measured); CliMap gridded-observation portal https://bagong.pagasa.dost.gov.ph/climate/climate-change/dynamic-downscaling/climap (downloads require email registration; gridded observation datasets 'currently under development')",
+      "api": "None for historical observations. Measured 2026-10-21: the publisher's own Climate Data Request page routes raw climatological data (Excel format) through identity-verified request forms - consultants/agencies submit form CADS-01A with a valid ID and an accomplished Terms-and-Conditions-of-Use document; students/academics submit CADS-02A with school ID, an approved research proposal, the TOU document, and a formal request letter 'addressed to PAGASA Administrator (signed and noted by your research adviser/s or committee member/s)'. A request-status tracking page exists. This is a per-request, TOU-bound, identity-verified channel, not an anonymous documented API.",
+      "license": "No open licence measured. Redistribution terms are governed by the per-request Terms and Conditions of Use for Climatological Data (TOU), which must be 'accomplished' (signed) as part of each request; the TOU text itself sits behind the request process and was not readable anonymously this session. Per the standing rule, a request-bound TOU with no readable grant is not an open licence.",
+      "access": "philida.pagasa.dost.gov.ph: NXDOMAIN (measured via getent, 2026-10-21) - the newer PhilDA data portal host no longer resolves. www.pagasa.dost.gov.ph resolves (56.11.0.240 / 18.140.93.223, AWS ALB ap-southeast-1) and serves 200 (climate-data page: 258,361 B in 2.6 s), though an earlier same-session curl transiently failed DNS resolution for the same host (recorded: DNS from the coordinator is occasionally flaky for this domain; a probe that fails should be retried before recording a negative)."
+    }
+  ],
+  "license_evidence": [
+    "Measured 2026-10-21 from https://www.pagasa.dost.gov.ph/climate/climate-data (HTTP 200, 258,361 B): 'For Climatological Data (Raw Data in Excel Format): Consultants/Private Agencies/Government Agencies: Link: Climatological Raw Data Request Form (CADS-01A) Kindly prepare the following docments before submitting your request: 1. Valid id 2. Accomplished Terms and Conditions of use for climatological data (TOU)' and for students '3. Terms and Condition of Use for Climatological Data (TOU) 4. Formal request letter addressed to PAGASA Administrator...'. The TOU governs use of the data; its text was not anonymously readable, so no grant can be recorded.",
+    "PAGASA's own FOI inventory PDF (pubfiles.pagasa.dost.gov.ph, retrieved via search 2026-10-21) classifies most information products and requires request routing - consistent with the request-gated channel measured."
+  ],
+  "construction_script": null,
+  "split_strategy": null,
+  "measurements": {
+    "access_probes_2026_10_21": "https://philida.pagasa.dost.gov.ph/ and /api/ -> curl (6) Could not resolve host; getent confirms NXDOMAIN. https://www.pagasa.dost.gov.ph/climate/climate-data -> HTTP 200, 258,361 B, 2.58 s (after a transient DNS failure on first attempt the same session - retried before recording). CliMap (bagong.pagasa.dost.gov.ph/climap, via search): 'download links will be sent to the registered email address of the user'; gridded observation datasets 'currently under development'. PAGASA also publishes forecast/projection MapServers on GeoRisk PH's anonymous ArcGIS REST endpoint (portal.georisk.gov.ph/arcgis/rest/services/PAGASA - Rainfall_Forecast, Rainfall_Forecast_Observed, Projected_ClimateChange_Rainfall etc., via search) - an anonymous channel for forecast products, not historical station observations; noted as a distinct possible source for a future tick, not probed further this session.",
+    "region_texture_2026_10_21": "Second request-gated national met service encountered in this tick family (the India IMD candidate is parked the same way). For South/South-East Asia weather observations the pattern is: national met services keep station archives request-gated with signed TOUs, while the openly licensed, anonymous channels are the aggregated/regional ones (data.gov.my weather API, Air4Thai, BMKG) - a discovery-level regularity worth remembering when the next weather tick picks sources."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "PARK (status parked), reason: the historical station-observation channel is identity-verified and request-gated with a signed terms-of-use document per request (measured from the publisher's own request page), and the newer PhilDA portal host is NXDOMAIN - no anonymous, documented, bulkable observation channel exists to build from, and no readable licence grant exists to publish derived rows. Not a rejection: nothing about the underlying data makes it unusable; if PAGASA opens a portal (or the operator accepts a request-route acquisition with a recorded licence posture), the source reopens with a proper novelty check against the rainfall-exceedance tasks already on the bench (singapore-datagov-catalog option, cpcb-aqi-exceedance), to which a second weather task must argue differentiation.",
+  "review": null,
+  "next_action": "Unpark question, exact: does PAGASA (or a successor portal such as PhilDA relaunched, or the GeoRisk PH platform) ever publish historical station observations anonymously and bulk-downloadable with readable terms? If a future tick revisits the Philippines, first re-resolve philida.pagasa.dost.gov.ph and probe portal.georisk.gov.ph/arcgis/rest/services/PAGASA/Rainfall_Forecast_Observed for its data currency and licence; the FOI route (FOI request for a bulk archive + permission to republish derived tables) is the alternative acquisition path and needs an operator decision, not a Scout assumption. Do not open the request forms on the user's behalf.",
+  "jurisdiction": {
+    "country": "PH",
+    "region": "South & South-East Asia",
+    "publisher": "Philippine Atmospheric, Geophysical and Astronomical Services Administration (PAGASA), DOST",
+    "recorded_at": "2026-10-21"
+  },
+  "verdict": "park"
+}

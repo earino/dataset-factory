@@ -4908,3 +4908,63 @@ Session hygiene: `python3 -m unittest discover -s tests` = 398 tests OK; `check-
 OK; probe scripts kept per convention (probe_label_stats.py, probe_workbook_peek.py); the rest of
 the session scratch (including 82 MB of measured bulk CSVs) deleted from .factory and never committed.
 
+## 2026-10-21 (late) - South/South-East Asia discovery tick: three verdicts, one new live Malaysian candidate
+
+Scheduled discovery session (regional focus: South and Southeast Asia). Quota met: three new
+sources taken to recorded verdicts, all three with publishers in the region (MY, ID, PH); no
+build, qualification, packaging or publication commands were run this session. Every named
+regional portal (data.gov.in, IMD, CPCB, BPS, PSA, Thailand Air4Thai, Vietnam GSO, Malaysia DID)
+was already in candidates/, so this tick opened three NEW publishers rather than re-vetting.
+
+- `my-pricecatcher-weekly-increase` (KPDN + DOSM, via data.gov.my / OpenDOSM) - **go, status
+  ready**; the bench's first retail-pricing task and its fifth ready-buffer candidate. Task: for
+  an item-premise pair active in week W (>=3 observations), will the weekly modal price INCREASE
+  in week W+1? Panel measured on 2 full month files (1,933,285 rows Aug 2026 + 1,742,320 rows Sep
+  2026): 2,158 premises x 343 items, 0 duplicate rows, 58 monthly editions 2022-01..2026-10,
+  same-day freshness measured (2026-10 file carried 2026-10-21 rows at the 12:10 UTC refresh).
+  Label measured on a 10% premise subsample, 7 transitions: increase rate 0.155-0.222, decrease
+  0.145-0.201, both classes everywhere, positives spread over 54-58 items (top-10 items 38-45%).
+  Licence measured per-dataset on the page: CC BY 4.0 verbatim. Novelty differentiated
+  (check-novelty.py, 3 queries): prior retail benchmarks are demand forecasting (M5 etc.) where
+  price is a feature; no retail micro-price increase task found. Cross-check: The Star 2025-12-04
+  parliamentary reply corroborates the panel (2,170 premises / 316 items / 850+ officers). Cost
+  measured: 45-65 MB/month, ~58 requests for the full window (estimate from 3 measured sizes).
+  Next action: worker construction per record.json's six-step list (snapshot+hash monthly files,
+  pair-week panel, week-W-gated features, longitudinal-panel identifier policy in quality.json,
+  known-event fixtures: diesel 2024-06-10 + sugar 2022-11 + festive control schemes, baseline
+  triad first).
+- `id-ojk-bank-supervision` (Otoritas Jasa Keuangan, Indonesia) - **park, licence-blocked +
+  access-blocked**. Per-bank monthly SPI panel + a published bank supervisory-status product (a
+  task family the bench lacks entirely), but measured: terms page carries no grant (footer
+  'Copyright Otoritas Jasa Keuangan 2024' only), SPI moved July 2025 to data.ojk.go.id/SJKPublic
+  whose data endpoint answers a WAF 'Request Rejected' page to scripted clients, and the legacy
+  SharePoint pages load monthly files via JS absent from served HTML. Unpark: real-browser XHR
+  capture + written OJK permission or operator risk acceptance + novelty check vs the Indonesian
+  bank-distress literature.
+- `ph-pagasa-climate-station-data` (PAGASA/DOST, Philippines) - **park, request-gated channel**.
+  Measured: raw climatological Excel data requires identity-verified request forms with a signed
+  TOU (CADS-01A/02A: valid ID, for students an approved thesis proposal and a signed letter to the
+  Administrator); the PhilDA portal host is NXDOMAIN; CliMap downloads are email-registration-
+  gated with gridded obs 'under development'. Unpark question: does PAGASA or GeoRisk PH ever
+  publish historical station observations anonymously with readable terms (probe
+  portal.georisk.gov.ph ArcGIS REST 'Rainfall_Forecast_Observed' first)?
+
+Region texture for the next S/SEA tick: national met services keep station archives behind
+signed-TOU request forms (IMD parked the same way - now PAGASA too), while the open+anonymous
+channels are the operational/sector ones (data.gov.my's new portal is exceptional: 338 datasets,
+45 agencies, per-dataset CC BY 4.0, parquet+CSV, current-month files refresh same-day). The
+data.gov.my catalogue holds several more distinctive sources not yet opened (hourly KTMB
+origin-destination ridership, JPJ car registration transactions 2000-present, NPRA approved/
+cancelled pharmaceutical products, daily blood donations by state) - the next tick should open
+one of those before looking outside the portal.
+
+Coverage after this session (discovery-coverage.py): 52 candidates, 21 live; South & South-East
+Asia 13 (MY 2, ID 3, IN 3, PH 2, TH 1, SG 1, VN 1); live non-US 15/21 (71%). Ready buffer behind
+construction: tsb-railway-occurrence-casualty, chilecompra-tender-outcome, camara-bill-
+advancement, za-municipal-audit-opinion, my-pricecatcher-weekly-increase.
+
+Session hygiene: 398 tests OK; check-candidate.py --all exit 0; probe script kept per convention
+(probe_panel_stats.py in the candidate directory); session scratch deleted (95 MB of measured
+month CSVs, never committed). No US source substituted for the regional quota.
+
+
