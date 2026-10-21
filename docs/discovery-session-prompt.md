@@ -48,6 +48,28 @@ the current state with `python3 scripts/discovery-coverage.py` before choosing w
 - Record it explicitly in `record.json`:
   `"jurisdiction": {"country": "FR", "region": "Europe", "publisher": "..."}`. A candidate with no
   jurisdiction is reported as `unknown` by the coverage script - do not guess it from a URL.
+## Triage the licence before you probe the task
+
+Half the parked candidates died on licence or terms after the probing had already been paid for.
+Classify first, in the first few minutes, and record it in `record.json` as `licence_class`:
+
+- **A** - explicit open licence permitting redistribution *and* derivatives (OGL v3, CC BY 4.0,
+  CC0, US federal public domain).
+- **B** - open but conditional: attribution-plus-sharealike, or a compilation licence over a source
+  with its own terms. Publishable; the conditions must be stated.
+- **C** - unclear, unstated, or "contact us". Park immediately with a dated path out; do not spend
+  the session on a source whose terms you cannot read. A written enquiry may be drafted, but the
+  candidate does not proceed until an answer exists or the operator accepts the risk in writing.
+- **D** - prohibits redistribution or derivatives, or needs an authorisation we do not hold. Reject
+  on the spot, with the clause quoted.
+
+Only A and B proceed to the novelty and probe work. A session that ends with three C verdicts has
+done its job: it has closed three doors cheaply. What it must not do is spend forty minutes
+characterising a source that was never shippable.
+
+`python3 scripts/licence-rank.py` prints the construction queue sorted by class; the advancement
+session works down it from the top.
+
 - Prefer sources with an open licence and an anonymous, documented API. National statistical
   offices, sector regulators, and the EU/UN/OECD/World Bank family usually have both; a PDF-only
   publisher is a `park`, not a `go`.
@@ -77,7 +99,7 @@ Prefer sources where:
   excluded by construction;
 - labels come from a documented process rather than a human judgement applied after the fact;
 - the publisher republishes on a schedule, so a monthly release is honest rather than a one-off;
-- the licence permits redistribution without a legal question that stalls the pipeline.
+- the licence is class A or B (see the triage above) - a class C source cannot be built.
 
 Cheap probes first: registry search, a ranged read of the first rows, an API count. A source that
 takes more than a handful of calls to characterise is not yet a lead — record what blocked it.

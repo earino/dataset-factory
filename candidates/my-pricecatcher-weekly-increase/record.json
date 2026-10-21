@@ -1,160 +1,162 @@
 {
-  "id": "my-pricecatcher-weekly-increase",
-  "status": "ready",
-  "created_at": "2026-10-21T20:15:59.707209+00:00",
-  "domain": "retail micro-pricing / consumer price dynamics",
-  "prediction_question": "For an item-premise pair in Malaysia's official daily price-monitoring panel that was actively quoted in week W (at least 3 observations that week), will the pair's weekly modal price be HIGHER in week W+1 than in week W? The panel is the KPDN/DOSM PriceCatcher programme (2,158 premises, 343 items measured in the 2026-08/09 sample), so this is a week-ahead retail price-increase prediction at item x premise grain.",
-  "prediction_time": "End of week W (Sunday 23:59:59 MYT = UTC+8, i.e. 15:59:59 UTC). Features may use only price observations with date <= end of week W, from files whose data_as_of is within week W or earlier. The publisher's storage channel is measured to carry rows dated the same day (2026-10-21 rows present in the 2026-10 file, file last-modified 2026-10-21 12:10 UTC), so no publication lag is incurred for the feature instant; the label (week W+1 modal price) is computable from files available by day 2 of week W+2 at the latest (current-month file refreshes daily; a completed month's file was last modified 12 days after month end, 2026-09 file -> 2026-10-12, so construction snapshots and hashes monthly files at freeze time - see construction notes).",
-  "target_definition": "Binary: modal(price of item i at premise p over all observations in ISO week W+1) > modal(same over week W). Modal price = most frequent observed price that week (ties broken by higher price, deterministic). Pairs with <3 observations in either week are excluded from that transition's rows (exclusion is a function of data through week W+1, applied identically everywhere; it affects ~3% of subsample pairs). The label source columns are the W+1 price observations themselves: no price observation with date > end of week W may ship as a feature column; the shipped target is 0/1.",
-  "sources": [
-    {
-      "name": "PriceCatcher: Transactional Records - Ministry of Domestic Trade and Cost of Living (KPDN) and Department of Statistics Malaysia (DOSM), published through the national open-data portal data.gov.my / OpenDOSM",
-      "url": "https://data.gov.my/data-catalogue/pricecatcher (dataset page with variable definitions and licence); bulk files at https://storage.data.gov.my/pricecatcher/pricecatcher_YYYY-MM.csv and .parquet",
-      "api": "Anonymous bulk HTTP(S) download of one CSV/parquet per calendar month, 58 editions measured (2022-01 through 2026-10 inclusive). No API for this dataset by design: the publisher states on the dataset page 'This data catalog is not available through OpenAPI as the nature of the data makes it unsuitable for API access'; the generic catalogue API (https://api.data.gov.my/data-catalogue/?id=pricecatcher) answers 404, measured.",
-      "license": "Per-dataset licence statement measured on the dataset page (fetched 2026-10-21): 'This data is made open under the Creative Commons Attribution 4.0 International License (CC BY 4.0). A copy of the license is available Here' with link to https://creativecommons.org/licenses/by/4.0/.",
-      "access": "No key, no registration, no rate wall measured. Two 45-50 MB month files downloaded in 3.7-3.8 s each from the coordinator. Current-month file is refreshed same-day (2026-10 file last-modified 2026-10-21 12:10 UTC and carries rows dated 2026-10-21)."
-    },
-    {
-      "name": "PriceCatcher lookup tables: Premise Lookup and Item Lookup (same publisher and licence)",
-      "url": "https://storage.data.gov.my/pricecatcher/lookup_premise.csv (486,306 B, last-modified 2026-10-12), https://storage.data.gov.my/pricecatcher/lookup_item.csv (56,042 B, last-modified 2026-09-09)",
-      "api": "Anonymous CSV/parquet download.",
-      "license": "CC BY 4.0, same per-dataset statement.",
-      "access": "premise_code -> premise, address, premise_type, state, district; item_code -> item, unit, item_group, item_category. 797 items in the lookup across 60 categories (measured)."
-    }
-  ],
-  "license_evidence": [
-    "Measured 2026-10-21 from https://data.gov.my/data-catalogue/pricecatcher (HTML, page-embedded metadata license_text): 'This data is made open under the Creative Commons Attribution 4.0 International License (CC BY 4.0). A copy of the license is available Here'. The same statement is served by OpenDOSM's mirror (open.dosm.gov.my/data-catalogue/pricecatcher, retrieved via search 2026-10-21).",
-    "CC BY 4.0 permits redistribution and commercial use with attribution; the attribution requirement carries through unchanged to any release. No share-alike, no NC restriction. No risk acceptance needed.",
-    "Publisher caveat measured on the dataset page: the data is collected for price surveillance, is 'excellent for high-frequency analysis of specific items in specific locations', and 'Inflation analysis should be conducted using DOSM's CPI data' - the task below is a pair-level micro-pricing task, not inflation nowcasting, consistent with the publisher's own stated scope."
-  ],
-  "construction_script": null,
-  "split_strategy": "Temporal splits on ISO-week transitions, disjoint and ordered: candidate windows (to be fixed at construction from the full 58-month archive, ~250 weekly transitions 2022-01..2026-10): train on transitions up to 2024-12, eval on 2025 transitions, holdout on 2026 transitions (exact windows fixed at construction). Each weekly transition carries both classes: measured increase rate 15.5%-22.2% and decrease rate 14.5%-20.1% across all 7 measured transitions (Aug-Sep 2026, 10% premise subsample), so class balance holds window-to-window. Positives cluster by item: 54-58 distinct items show >=1 increasing pair per transition, and the top-10 items carry 38-45% of positive pairs - the clustered event count (item-level, not pair-level) must be reported per split and is ~55/week in the subsample (~170/week full panel, estimate). Cross-split identifier policy: item-premise pairs (and premises/items) recur across windows by design - the panel is longitudinal - so entity keys are NOT split-exclusive; the no-cross-split-entities check does not apply to pair panels where the same pair legitimately appears in many weekly transitions. This must be declared in quality.json (expected_duplicate_ids / documented repeats) at construction, mirroring the runner-contract handling of longitudinal panels.",
-  "measurements": {
-    "access_probes_2026_10_21": "https://data.gov.my/ HTTP 200 (142,373 B); https://developer.data.gov.my/ HTTP 200 (48,218 B, documents Data Catalogue API, OpenDOSM API, Transport/GTFS, Weather APIs); https://api.data.gov.my/data-catalogue/?id=pricecatcher&limit=6 HTTP 404 'The data catalogue (pricecatcher) requested does not exist' (measured - bulk-only for this dataset); https://storage.data.gov.my/pricecatcher/pricecatcher_2026-09.csv HEAD 200 content-length 45,137,790 last-modified 2026-10-12 06:42:57 GMT; pricecatcher_2026-10.csv HEAD 200 content-length 20,407,078 last-modified 2026-10-21 12:10:13 GMT (current month, still filling); pricecatcher_2022-01.csv HEAD 200 content-length 65,359,198; pricecatcher_2026-09-01.csv HEAD 404 (filename pattern is YYYY-MM, not YYYY-MM-DD).",
-    "panel_shape_2026_10_21": "Measured on full 2026-08 (1,933,285 rows, 29 of 31 days, 2026-08-01..2026-08-30) and 2026-09 (1,742,320 rows, 28 of 30 days, 2026-09-01..2026-09-29) files: 2,158 distinct premises x 343 distinct items; 0 duplicate (date, premise_code, item_code) rows; schema date,premise_code,item_code,price; mean row length 25.9 B. Publisher states 'over a million price records per month' and 'collected and verified by groundstaff on a daily basis' (dataset page); a parliamentary written reply reported by The Star (2025-12-04) corroborates the panel: '2,170 premises and keeps tabs on 316 items across six categories, supported by more than 850 price monitoring officers'. Monthly files can have missing collection days (29/31 and 28/30 measured), which the >=3 observations/week threshold absorbs.",
-    "label_structure_2026_10_21": "Weekly modal-price transitions measured on a 10% premise subsample (premise_code % 10 == 0; 216 premises, 326 items, 179,707 pair-weeks from 375,665 rows), 7 transitions with both weeks >=6 covered days: increase rate 0.2217/0.1947/0.1823/0.1774/0.1809/0.1548/0.1875, decrease rate 0.1604/0.1950/0.2014/0.1621/0.1791/0.1862/0.1448, flat rate 0.61-0.67; 3,911-4,031 eligible pairs per transition in the subsample (~40,000 full panel, estimate). Both classes present in every transition. Persistence rule for this task: predicting 'no increase' scores 78-84% accuracy - the AUC-relevant base rate (~18%) is far from degenerate, and the task is a change forecast, not a level forecast, so the persistence baseline is beatable in principle; the triad (persistence, calendar-only, model) must be measured at construction before any number is quoted.",
-    "clustering_2026_10_21": "Positives cluster by item: 54-58 distinct items with >=1 increasing pair per transition; top-10 items carry 38-45% of positive pairs. The per-transition clustered event count (~55 items in subsample) and its interval go into the record at construction.",
-    "extraction_cost_2026_10_21": "Measured from the coordinator: each month CSV is 45,137,790-65,359,198 B (measured for 2026-09 and 2022-01; 2026-08 measured at 50,122,871 B) and downloads in ~3.7-3.8 s (~12-13 MB/s). Full 58-edition window is therefore ~2.6-3.5 GB and ~58 HTTP requests (estimate derived from 3 measured file sizes; labelled estimate). Worker-side full extraction is trivially within budget; the coordinator probe was capped at 2 month files (95 MB, deleted after measurement, never committed).",
-    "publication_schedule_2026_10_21": "Current-month file refreshed same-day (2026-10-21 rows present at 12:10 UTC refresh); a completed month's file last-modified 12 days after month end (2026-09 -> 2026-10-12). The portal's own data-request ticket log (https://data.gov.my/data-request, retrieved via search 2026-10-21) records a 2026-10-06 rejected ticket complaining the pricecatcher table had not updated in >1 week (data as of 24 Sep) - updates can stall for a week+, so construction must snapshot and hash the monthly files it uses and record their last-modified dates as the observed lag evidence in quality.json's timing block.",
-    "known_event_fixtures_for_construction": "External, dated policy events to land as fixtures when the full archive is built: (1) diesel subsidy rationalisation of 2024-06-10 (pump diesel price rose from RM2.15 to RM3.30), which should show pass-through into transport-sensitive item prices in the weeks after; (2) Malaysia's retail sugar price step-changes after sugar subsidy removal (2022-11, refined white sugar items in the lookup: GULA PUTIH BERTAPIS KASAR/HALUS, item codes 1589/1590); (3) festive-season price-control schemes (Program Subsidi Harga chicken/egg ceilings with published scheme dates). Each fixture: named event, expected direction of the item's modal price around the date, publisher source for the event date. These are construction-time checks, not measured this session.",
-    "cross_check_plan": "Cross-check the built artifact against the publisher's own summary product at construction: item-level national modal prices from PriceCatcher vs the item's price series on KPDN's MyHarga/PriceCatcher consumer dashboard, and vs DOSM's published monthly average price tables, for a fixed item list."
+ "id": "my-pricecatcher-weekly-increase",
+ "status": "ready",
+ "created_at": "2026-10-21T20:15:59.707209+00:00",
+ "domain": "retail micro-pricing / consumer price dynamics",
+ "prediction_question": "For an item-premise pair in Malaysia's official daily price-monitoring panel that was actively quoted in week W (at least 3 observations that week), will the pair's weekly modal price be HIGHER in week W+1 than in week W? The panel is the KPDN/DOSM PriceCatcher programme (2,158 premises, 343 items measured in the 2026-08/09 sample), so this is a week-ahead retail price-increase prediction at item x premise grain.",
+ "prediction_time": "End of week W (Sunday 23:59:59 MYT = UTC+8, i.e. 15:59:59 UTC). Features may use only price observations with date <= end of week W, from files whose data_as_of is within week W or earlier. The publisher's storage channel is measured to carry rows dated the same day (2026-10-21 rows present in the 2026-10 file, file last-modified 2026-10-21 12:10 UTC), so no publication lag is incurred for the feature instant; the label (week W+1 modal price) is computable from files available by day 2 of week W+2 at the latest (current-month file refreshes daily; a completed month's file was last modified 12 days after month end, 2026-09 file -> 2026-10-12, so construction snapshots and hashes monthly files at freeze time - see construction notes).",
+ "target_definition": "Binary: modal(price of item i at premise p over all observations in ISO week W+1) > modal(same over week W). Modal price = most frequent observed price that week (ties broken by higher price, deterministic). Pairs with <3 observations in either week are excluded from that transition's rows (exclusion is a function of data through week W+1, applied identically everywhere; it affects ~3% of subsample pairs). The label source columns are the W+1 price observations themselves: no price observation with date > end of week W may ship as a feature column; the shipped target is 0/1.",
+ "sources": [
+  {
+   "name": "PriceCatcher: Transactional Records - Ministry of Domestic Trade and Cost of Living (KPDN) and Department of Statistics Malaysia (DOSM), published through the national open-data portal data.gov.my / OpenDOSM",
+   "url": "https://data.gov.my/data-catalogue/pricecatcher (dataset page with variable definitions and licence); bulk files at https://storage.data.gov.my/pricecatcher/pricecatcher_YYYY-MM.csv and .parquet",
+   "api": "Anonymous bulk HTTP(S) download of one CSV/parquet per calendar month, 58 editions measured (2022-01 through 2026-10 inclusive). No API for this dataset by design: the publisher states on the dataset page 'This data catalog is not available through OpenAPI as the nature of the data makes it unsuitable for API access'; the generic catalogue API (https://api.data.gov.my/data-catalogue/?id=pricecatcher) answers 404, measured.",
+   "license": "Per-dataset licence statement measured on the dataset page (fetched 2026-10-21): 'This data is made open under the Creative Commons Attribution 4.0 International License (CC BY 4.0). A copy of the license is available Here' with link to https://creativecommons.org/licenses/by/4.0/.",
+   "access": "No key, no registration, no rate wall measured. Two 45-50 MB month files downloaded in 3.7-3.8 s each from the coordinator. Current-month file is refreshed same-day (2026-10 file last-modified 2026-10-21 12:10 UTC and carries rows dated 2026-10-21)."
   },
-  "jobs": [],
-  "artifacts": [],
-  "rejection_reason": null,
-  "review": null,
-  "next_action": "GO to construction (advancement session owns it; this was a discovery-only session). Construction steps: (1) enumerate all 58 monthly editions and snapshot+hash the files used (record last-modified dates as observed publication-lag evidence); (2) build the pair-week panel with >=3 observations/week eligibility, modal price with deterministic tie-break; (3) construct features from data through end of week W only (pair history: weeks-since-last-change, last change size; item-level distribution signals within W: national modal, dispersion, share of premises increasing in W; premise/item/category/state metadata; calendar incl. festive windows); (4) fix split windows on the ~250 transitions (train<=2024, eval 2025, holdout 2026), declare the longitudinal-panel identifier policy and expected duplicate counts in quality.json; (5) land the known-event fixtures (diesel 2024-06-10, sugar 2022-11, festive control schemes) and the publisher cross-check; (6) run the qualification gate on the worker over the full artifact, and measure the baseline triad (persistence 'no increase', calendar-only, full model) on identical rows before any number is quoted. The 2-month coordinator probe sample (pc_2026-08.csv, pc_2026-09.csv, 95 MB) and probe scripts live uncommitted under .factory/probe/ and must be deleted, not committed.",
-  "jurisdiction": {
-    "country": "MY",
-    "region": "South & South-East Asia",
-    "publisher": "Ministry of Domestic Trade and Cost of Living (KPDN) with Department of Statistics Malaysia (DOSM), via the national open data portal data.gov.my / OpenDOSM (Malaysia)",
-    "recorded_at": "2026-10-21"
-  },
-  "verdict": "go",
-  "novelty_check": {
-    "checked_at": "2026-10-21T20:16:49+00:00",
-    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
-    "queries": [
-      "PriceCatcher Malaysia",
-      "Malaysia retail price prediction machine learning",
-      "retail price change prediction dataset store item"
-    ],
-    "evidence": {
-      "huggingface_datasets": [
-        {
-          "query": "PriceCatcher Malaysia",
-          "hits": 0,
-          "top": []
-        },
-        {
-          "query": "Malaysia retail price prediction machine learning",
-          "hits": 0,
-          "top": []
-        },
-        {
-          "query": "retail price change prediction dataset store item",
-          "hits": 0,
-          "top": []
-        }
-      ],
-      "zenodo_records": [
-        {
-          "query": "PriceCatcher Malaysia",
-          "hits": 48403,
-          "top": [
-            "MEI-YING LIN & SI-QIN GE (2021) Tsounkranaglenea hefferni gen. et sp. nov. from Sabah, Malaysia (Coleoptera, Cerambycidae, Lamiinae: Saperdini). Zootaxa, 5048: 289-297.",
-            "1 st Malaysia Sustainable University Network Conference2022",
-            "Simplified distribution and classification of soils in Peninsular Malaysia",
-            "joelgohtzewen/dosm-data-open: DOSM Open Data (forked 2023_12_24)",
-            "moh \u2014 COVID-19 data for Malaysia (mirror for pyvoa)"
-          ]
-        },
-        {
-          "query": "Malaysia retail price prediction machine learning",
-          "hits": 466037,
-          "top": [
-            "E-Commerce Dynamic Price Prediction and Time Series Forecasting System",
-            "Machine learning building price prediction with green building determinant",
-            "Housing Price Prediction with Machine Learning",
-            "Smart Price Forecasting and Trend Analysis System",
-            "Campus Placement Prediction System using  Machine Learning"
-          ]
-        },
-        {
-          "query": "retail price change prediction dataset store item",
-          "hits": 607067,
-          "top": [
-            "DMP: Retail Sales Prediction for Rossmann Germany",
-            "(Un)designing a Grocery Prediction Algorithm",
-            "Retail Store Choice Criteria in the Overcrowding of Retail Stores Neighbourhood: A Study on Grocery Retail Customers at Sylhet City, Bangladesh",
-            "E-Commerce Dynamic Price Prediction and Time Series Forecasting System",
-            "Making Convenience Work in the City: International Format Insights and Consumer Preferences for Urban Retail in Germany and Switzerland - Replication package"
-          ]
-        }
-      ],
-      "arxiv_preprints": [
-        {
-          "query": "PriceCatcher Malaysia",
-          "hits": 5,
-          "top": [
-            "Constructing a Social Accounting Matrix Framework to Analyse the Impact of Public Expenditure on Income Distribution in ",
-            "Infrastructure Disparities in Northern Malaysia",
-            "Web Document Analysis for Companies Listed in Bursa Malaysia",
-            "Auditing scholarly journals published in Malaysia and assessing their visibility",
-            "Determinants of Social-economic Mobility in the Northern Region of Malaysia"
-          ]
-        },
-        {
-          "query": "Malaysia retail price prediction machine learning",
-          "hits": 5,
-          "top": [
-            "Changing Data Sources in the Age of Machine Learning for Official Statistics",
-            "DOME: Recommendations for supervised machine learning validation in biology",
-            "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
-            "Active learning for data streams: a survey",
-            "Privacy-preserving machine learning for healthcare: open challenges and future perspectives"
-          ]
-        },
-        {
-          "query": "retail price change prediction dataset store item",
-          "hits": 5,
-          "top": [
-            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
-            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
-            "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset",
-            "GOO: A Dataset for Gaze Object Prediction in Retail Environments",
-            "Retail prices, environmental footprints, and nutritional profiles of commonly sold retail food items in 181 countries"
-          ]
-        }
-      ]
-    },
-    "evidence_summary": "- huggingface_datasets / 'PriceCatcher Malaysia': 0 hit(s) - nothing notable\n- huggingface_datasets / 'Malaysia retail price prediction machine learning': 0 hit(s) - nothing notable\n- huggingface_datasets / 'retail price change prediction dataset store item': 0 hit(s) - nothing notable\n- zenodo_records / 'PriceCatcher Malaysia': 48403 hit(s) - MEI-YING LIN & SI-QIN GE (2021) Tsounkranaglenea hefferni gen. et sp. nov. from Sabah, Malaysia (Coleoptera, Cerambycidae, Lamiinae: Saperdini). Zootaxa, 5048: 289-297., 1 st Malaysia Sustainable University Network Conference2022, Simplified distribution and classification of soils in Peninsular Malaysia, joelgohtzewen/dosm-data-open: DOSM Open Data (forked 2023_12_24), moh \u2014 COVID-19 data for Malaysia (mirror for pyvoa)\n- zenodo_records / 'Malaysia retail price prediction machine learning': 466037 hit(s) - E-Commerce Dynamic Price Prediction and Time Series Forecasting System, Machine learning building price prediction with green building determinant, Housing Price Prediction with Machine Learning, Smart Price Forecasting and Trend Analysis System, Campus Placement Prediction System using  Machine Learning\n- zenodo_records / 'retail price change prediction dataset store item': 607067 hit(s) - DMP: Retail Sales Prediction for Rossmann Germany, (Un)designing a Grocery Prediction Algorithm, Retail Store Choice Criteria in the Overcrowding of Retail Stores Neighbourhood: A Study on Grocery Retail Customers at Sylhet City, Bangladesh, E-Commerce Dynamic Price Prediction and Time Series Forecasting System, Making Convenience Work in the City: International Format Insights and Consumer Preferences for Urban Retail in Germany and Switzerland - Replication package\n- arxiv_preprints / 'PriceCatcher Malaysia': 5 hit(s) - Constructing a Social Accounting Matrix Framework to Analyse the Impact of Public Expenditure on Income Distribution in , Infrastructure Disparities in Northern Malaysia, Web Document Analysis for Companies Listed in Bursa Malaysia, Auditing scholarly journals published in Malaysia and assessing their visibility, Determinants of Social-economic Mobility in the Northern Region of Malaysia\n- arxiv_preprints / 'Malaysia retail price prediction machine learning': 5 hit(s) - Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Active learning for data streams: a survey, Privacy-preserving machine learning for healthcare: open challenges and future perspectives\n- arxiv_preprints / 'retail price change prediction dataset store item': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, GOO: A Dataset for Gaze Object Prediction in Retail Environments, Retail prices, environmental footprints, and nutritional profiles of commonly sold retail food items in 181 countries",
-    "prior_art": [
-      "M5 Forecasting competition (Walmart, Makridakis et al. 2022, sales forecasting with sell_prices as features); Kaggle Store Item Demand (sales); no retail price-increase benchmark found by mechanical search (Hugging Face, Kaggle, arXiv, web) 2026-10-21"
-    ],
-    "theirs": "KPDN/DOSM publish the raw PriceCatcher observations and lookups themselves (CC BY 4.0), a consumer app, and aggregate CPI; M5/Kaggle Store Item Demand/Rossmann/Favorita are demand-forecasting benchmarks where price is a feature and sales is the target; the price-direction classification literature is equity price movement, not retail micro-prices; no published task, splits or scored contract exists on retail week-ahead price increases at item-premise grain",
-    "ours": "week-ahead item x premise weekly modal-price INCREASE prediction over Malaysia's official daily price-monitoring panel (2,158 premises x 343 items, 58 monthly editions 2022-01..2026-10), with leak-free feature gating (only observations through end of week W), temporal week-transition splits, measured 15-22% increase base rate, item-clustered event accounting, and dated policy-event fixtures (diesel subsidy rationalisation 2024-06-10, sugar subsidy removal 2022-11, festive price-control schemes)",
-    "verdict": "differentiated",
-    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  {
+   "name": "PriceCatcher lookup tables: Premise Lookup and Item Lookup (same publisher and licence)",
+   "url": "https://storage.data.gov.my/pricecatcher/lookup_premise.csv (486,306 B, last-modified 2026-10-12), https://storage.data.gov.my/pricecatcher/lookup_item.csv (56,042 B, last-modified 2026-09-09)",
+   "api": "Anonymous CSV/parquet download.",
+   "license": "CC BY 4.0, same per-dataset statement.",
+   "access": "premise_code -> premise, address, premise_type, state, district; item_code -> item, unit, item_group, item_category. 797 items in the lookup across 60 categories (measured)."
   }
+ ],
+ "license_evidence": [
+  "Measured 2026-10-21 from https://data.gov.my/data-catalogue/pricecatcher (HTML, page-embedded metadata license_text): 'This data is made open under the Creative Commons Attribution 4.0 International License (CC BY 4.0). A copy of the license is available Here'. The same statement is served by OpenDOSM's mirror (open.dosm.gov.my/data-catalogue/pricecatcher, retrieved via search 2026-10-21).",
+  "CC BY 4.0 permits redistribution and commercial use with attribution; the attribution requirement carries through unchanged to any release. No share-alike, no NC restriction. No risk acceptance needed.",
+  "Publisher caveat measured on the dataset page: the data is collected for price surveillance, is 'excellent for high-frequency analysis of specific items in specific locations', and 'Inflation analysis should be conducted using DOSM's CPI data' - the task below is a pair-level micro-pricing task, not inflation nowcasting, consistent with the publisher's own stated scope."
+ ],
+ "construction_script": null,
+ "split_strategy": "Temporal splits on ISO-week transitions, disjoint and ordered: candidate windows (to be fixed at construction from the full 58-month archive, ~250 weekly transitions 2022-01..2026-10): train on transitions up to 2024-12, eval on 2025 transitions, holdout on 2026 transitions (exact windows fixed at construction). Each weekly transition carries both classes: measured increase rate 15.5%-22.2% and decrease rate 14.5%-20.1% across all 7 measured transitions (Aug-Sep 2026, 10% premise subsample), so class balance holds window-to-window. Positives cluster by item: 54-58 distinct items show >=1 increasing pair per transition, and the top-10 items carry 38-45% of positive pairs - the clustered event count (item-level, not pair-level) must be reported per split and is ~55/week in the subsample (~170/week full panel, estimate). Cross-split identifier policy: item-premise pairs (and premises/items) recur across windows by design - the panel is longitudinal - so entity keys are NOT split-exclusive; the no-cross-split-entities check does not apply to pair panels where the same pair legitimately appears in many weekly transitions. This must be declared in quality.json (expected_duplicate_ids / documented repeats) at construction, mirroring the runner-contract handling of longitudinal panels.",
+ "measurements": {
+  "access_probes_2026_10_21": "https://data.gov.my/ HTTP 200 (142,373 B); https://developer.data.gov.my/ HTTP 200 (48,218 B, documents Data Catalogue API, OpenDOSM API, Transport/GTFS, Weather APIs); https://api.data.gov.my/data-catalogue/?id=pricecatcher&limit=6 HTTP 404 'The data catalogue (pricecatcher) requested does not exist' (measured - bulk-only for this dataset); https://storage.data.gov.my/pricecatcher/pricecatcher_2026-09.csv HEAD 200 content-length 45,137,790 last-modified 2026-10-12 06:42:57 GMT; pricecatcher_2026-10.csv HEAD 200 content-length 20,407,078 last-modified 2026-10-21 12:10:13 GMT (current month, still filling); pricecatcher_2022-01.csv HEAD 200 content-length 65,359,198; pricecatcher_2026-09-01.csv HEAD 404 (filename pattern is YYYY-MM, not YYYY-MM-DD).",
+  "panel_shape_2026_10_21": "Measured on full 2026-08 (1,933,285 rows, 29 of 31 days, 2026-08-01..2026-08-30) and 2026-09 (1,742,320 rows, 28 of 30 days, 2026-09-01..2026-09-29) files: 2,158 distinct premises x 343 distinct items; 0 duplicate (date, premise_code, item_code) rows; schema date,premise_code,item_code,price; mean row length 25.9 B. Publisher states 'over a million price records per month' and 'collected and verified by groundstaff on a daily basis' (dataset page); a parliamentary written reply reported by The Star (2025-12-04) corroborates the panel: '2,170 premises and keeps tabs on 316 items across six categories, supported by more than 850 price monitoring officers'. Monthly files can have missing collection days (29/31 and 28/30 measured), which the >=3 observations/week threshold absorbs.",
+  "label_structure_2026_10_21": "Weekly modal-price transitions measured on a 10% premise subsample (premise_code % 10 == 0; 216 premises, 326 items, 179,707 pair-weeks from 375,665 rows), 7 transitions with both weeks >=6 covered days: increase rate 0.2217/0.1947/0.1823/0.1774/0.1809/0.1548/0.1875, decrease rate 0.1604/0.1950/0.2014/0.1621/0.1791/0.1862/0.1448, flat rate 0.61-0.67; 3,911-4,031 eligible pairs per transition in the subsample (~40,000 full panel, estimate). Both classes present in every transition. Persistence rule for this task: predicting 'no increase' scores 78-84% accuracy - the AUC-relevant base rate (~18%) is far from degenerate, and the task is a change forecast, not a level forecast, so the persistence baseline is beatable in principle; the triad (persistence, calendar-only, model) must be measured at construction before any number is quoted.",
+  "clustering_2026_10_21": "Positives cluster by item: 54-58 distinct items with >=1 increasing pair per transition; top-10 items carry 38-45% of positive pairs. The per-transition clustered event count (~55 items in subsample) and its interval go into the record at construction.",
+  "extraction_cost_2026_10_21": "Measured from the coordinator: each month CSV is 45,137,790-65,359,198 B (measured for 2026-09 and 2022-01; 2026-08 measured at 50,122,871 B) and downloads in ~3.7-3.8 s (~12-13 MB/s). Full 58-edition window is therefore ~2.6-3.5 GB and ~58 HTTP requests (estimate derived from 3 measured file sizes; labelled estimate). Worker-side full extraction is trivially within budget; the coordinator probe was capped at 2 month files (95 MB, deleted after measurement, never committed).",
+  "publication_schedule_2026_10_21": "Current-month file refreshed same-day (2026-10-21 rows present at 12:10 UTC refresh); a completed month's file last-modified 12 days after month end (2026-09 -> 2026-10-12). The portal's own data-request ticket log (https://data.gov.my/data-request, retrieved via search 2026-10-21) records a 2026-10-06 rejected ticket complaining the pricecatcher table had not updated in >1 week (data as of 24 Sep) - updates can stall for a week+, so construction must snapshot and hash the monthly files it uses and record their last-modified dates as the observed lag evidence in quality.json's timing block.",
+  "known_event_fixtures_for_construction": "External, dated policy events to land as fixtures when the full archive is built: (1) diesel subsidy rationalisation of 2024-06-10 (pump diesel price rose from RM2.15 to RM3.30), which should show pass-through into transport-sensitive item prices in the weeks after; (2) Malaysia's retail sugar price step-changes after sugar subsidy removal (2022-11, refined white sugar items in the lookup: GULA PUTIH BERTAPIS KASAR/HALUS, item codes 1589/1590); (3) festive-season price-control schemes (Program Subsidi Harga chicken/egg ceilings with published scheme dates). Each fixture: named event, expected direction of the item's modal price around the date, publisher source for the event date. These are construction-time checks, not measured this session.",
+  "cross_check_plan": "Cross-check the built artifact against the publisher's own summary product at construction: item-level national modal prices from PriceCatcher vs the item's price series on KPDN's MyHarga/PriceCatcher consumer dashboard, and vs DOSM's published monthly average price tables, for a fixed item list."
+ },
+ "jobs": [],
+ "artifacts": [],
+ "rejection_reason": null,
+ "review": null,
+ "next_action": "GO to construction (advancement session owns it; this was a discovery-only session). Construction steps: (1) enumerate all 58 monthly editions and snapshot+hash the files used (record last-modified dates as observed publication-lag evidence); (2) build the pair-week panel with >=3 observations/week eligibility, modal price with deterministic tie-break; (3) construct features from data through end of week W only (pair history: weeks-since-last-change, last change size; item-level distribution signals within W: national modal, dispersion, share of premises increasing in W; premise/item/category/state metadata; calendar incl. festive windows); (4) fix split windows on the ~250 transitions (train<=2024, eval 2025, holdout 2026), declare the longitudinal-panel identifier policy and expected duplicate counts in quality.json; (5) land the known-event fixtures (diesel 2024-06-10, sugar 2022-11, festive control schemes) and the publisher cross-check; (6) run the qualification gate on the worker over the full artifact, and measure the baseline triad (persistence 'no increase', calendar-only, full model) on identical rows before any number is quoted. The 2-month coordinator probe sample (pc_2026-08.csv, pc_2026-09.csv, 95 MB) and probe scripts live uncommitted under .factory/probe/ and must be deleted, not committed.",
+ "jurisdiction": {
+  "country": "MY",
+  "region": "South & South-East Asia",
+  "publisher": "Ministry of Domestic Trade and Cost of Living (KPDN) with Department of Statistics Malaysia (DOSM), via the national open data portal data.gov.my / OpenDOSM (Malaysia)",
+  "recorded_at": "2026-10-21"
+ },
+ "verdict": "go",
+ "novelty_check": {
+  "checked_at": "2026-10-21T20:16:49+00:00",
+  "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+  "queries": [
+   "PriceCatcher Malaysia",
+   "Malaysia retail price prediction machine learning",
+   "retail price change prediction dataset store item"
+  ],
+  "evidence": {
+   "huggingface_datasets": [
+    {
+     "query": "PriceCatcher Malaysia",
+     "hits": 0,
+     "top": []
+    },
+    {
+     "query": "Malaysia retail price prediction machine learning",
+     "hits": 0,
+     "top": []
+    },
+    {
+     "query": "retail price change prediction dataset store item",
+     "hits": 0,
+     "top": []
+    }
+   ],
+   "zenodo_records": [
+    {
+     "query": "PriceCatcher Malaysia",
+     "hits": 48403,
+     "top": [
+      "MEI-YING LIN & SI-QIN GE (2021) Tsounkranaglenea hefferni gen. et sp. nov. from Sabah, Malaysia (Coleoptera, Cerambycidae, Lamiinae: Saperdini). Zootaxa, 5048: 289-297.",
+      "1 st Malaysia Sustainable University Network Conference2022",
+      "Simplified distribution and classification of soils in Peninsular Malaysia",
+      "joelgohtzewen/dosm-data-open: DOSM Open Data (forked 2023_12_24)",
+      "moh \u2014 COVID-19 data for Malaysia (mirror for pyvoa)"
+     ]
+    },
+    {
+     "query": "Malaysia retail price prediction machine learning",
+     "hits": 466037,
+     "top": [
+      "E-Commerce Dynamic Price Prediction and Time Series Forecasting System",
+      "Machine learning building price prediction with green building determinant",
+      "Housing Price Prediction with Machine Learning",
+      "Smart Price Forecasting and Trend Analysis System",
+      "Campus Placement Prediction System using  Machine Learning"
+     ]
+    },
+    {
+     "query": "retail price change prediction dataset store item",
+     "hits": 607067,
+     "top": [
+      "DMP: Retail Sales Prediction for Rossmann Germany",
+      "(Un)designing a Grocery Prediction Algorithm",
+      "Retail Store Choice Criteria in the Overcrowding of Retail Stores Neighbourhood: A Study on Grocery Retail Customers at Sylhet City, Bangladesh",
+      "E-Commerce Dynamic Price Prediction and Time Series Forecasting System",
+      "Making Convenience Work in the City: International Format Insights and Consumer Preferences for Urban Retail in Germany and Switzerland - Replication package"
+     ]
+    }
+   ],
+   "arxiv_preprints": [
+    {
+     "query": "PriceCatcher Malaysia",
+     "hits": 5,
+     "top": [
+      "Constructing a Social Accounting Matrix Framework to Analyse the Impact of Public Expenditure on Income Distribution in ",
+      "Infrastructure Disparities in Northern Malaysia",
+      "Web Document Analysis for Companies Listed in Bursa Malaysia",
+      "Auditing scholarly journals published in Malaysia and assessing their visibility",
+      "Determinants of Social-economic Mobility in the Northern Region of Malaysia"
+     ]
+    },
+    {
+     "query": "Malaysia retail price prediction machine learning",
+     "hits": 5,
+     "top": [
+      "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+      "DOME: Recommendations for supervised machine learning validation in biology",
+      "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
+      "Active learning for data streams: a survey",
+      "Privacy-preserving machine learning for healthcare: open challenges and future perspectives"
+     ]
+    },
+    {
+     "query": "retail price change prediction dataset store item",
+     "hits": 5,
+     "top": [
+      "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+      "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+      "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset",
+      "GOO: A Dataset for Gaze Object Prediction in Retail Environments",
+      "Retail prices, environmental footprints, and nutritional profiles of commonly sold retail food items in 181 countries"
+     ]
+    }
+   ]
+  },
+  "evidence_summary": "- huggingface_datasets / 'PriceCatcher Malaysia': 0 hit(s) - nothing notable\n- huggingface_datasets / 'Malaysia retail price prediction machine learning': 0 hit(s) - nothing notable\n- huggingface_datasets / 'retail price change prediction dataset store item': 0 hit(s) - nothing notable\n- zenodo_records / 'PriceCatcher Malaysia': 48403 hit(s) - MEI-YING LIN & SI-QIN GE (2021) Tsounkranaglenea hefferni gen. et sp. nov. from Sabah, Malaysia (Coleoptera, Cerambycidae, Lamiinae: Saperdini). Zootaxa, 5048: 289-297., 1 st Malaysia Sustainable University Network Conference2022, Simplified distribution and classification of soils in Peninsular Malaysia, joelgohtzewen/dosm-data-open: DOSM Open Data (forked 2023_12_24), moh \u2014 COVID-19 data for Malaysia (mirror for pyvoa)\n- zenodo_records / 'Malaysia retail price prediction machine learning': 466037 hit(s) - E-Commerce Dynamic Price Prediction and Time Series Forecasting System, Machine learning building price prediction with green building determinant, Housing Price Prediction with Machine Learning, Smart Price Forecasting and Trend Analysis System, Campus Placement Prediction System using  Machine Learning\n- zenodo_records / 'retail price change prediction dataset store item': 607067 hit(s) - DMP: Retail Sales Prediction for Rossmann Germany, (Un)designing a Grocery Prediction Algorithm, Retail Store Choice Criteria in the Overcrowding of Retail Stores Neighbourhood: A Study on Grocery Retail Customers at Sylhet City, Bangladesh, E-Commerce Dynamic Price Prediction and Time Series Forecasting System, Making Convenience Work in the City: International Format Insights and Consumer Preferences for Urban Retail in Germany and Switzerland - Replication package\n- arxiv_preprints / 'PriceCatcher Malaysia': 5 hit(s) - Constructing a Social Accounting Matrix Framework to Analyse the Impact of Public Expenditure on Income Distribution in , Infrastructure Disparities in Northern Malaysia, Web Document Analysis for Companies Listed in Bursa Malaysia, Auditing scholarly journals published in Malaysia and assessing their visibility, Determinants of Social-economic Mobility in the Northern Region of Malaysia\n- arxiv_preprints / 'Malaysia retail price prediction machine learning': 5 hit(s) - Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Active learning for data streams: a survey, Privacy-preserving machine learning for healthcare: open challenges and future perspectives\n- arxiv_preprints / 'retail price change prediction dataset store item': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, GOO: A Dataset for Gaze Object Prediction in Retail Environments, Retail prices, environmental footprints, and nutritional profiles of commonly sold retail food items in 181 countries",
+  "prior_art": [
+   "M5 Forecasting competition (Walmart, Makridakis et al. 2022, sales forecasting with sell_prices as features); Kaggle Store Item Demand (sales); no retail price-increase benchmark found by mechanical search (Hugging Face, Kaggle, arXiv, web) 2026-10-21"
+  ],
+  "theirs": "KPDN/DOSM publish the raw PriceCatcher observations and lookups themselves (CC BY 4.0), a consumer app, and aggregate CPI; M5/Kaggle Store Item Demand/Rossmann/Favorita are demand-forecasting benchmarks where price is a feature and sales is the target; the price-direction classification literature is equity price movement, not retail micro-prices; no published task, splits or scored contract exists on retail week-ahead price increases at item-premise grain",
+  "ours": "week-ahead item x premise weekly modal-price INCREASE prediction over Malaysia's official daily price-monitoring panel (2,158 premises x 343 items, 58 monthly editions 2022-01..2026-10), with leak-free feature gating (only observations through end of week W), temporal week-transition splits, measured 15-22% increase base rate, item-clustered event accounting, and dated policy-event fixtures (diesel subsidy rationalisation 2024-06-10, sugar subsidy removal 2022-11, festive price-control schemes)",
+  "verdict": "differentiated",
+  "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+ },
+ "licence_class": "A",
+ "licence_note": "CC BY 4.0, stated on the dataset page"
 }

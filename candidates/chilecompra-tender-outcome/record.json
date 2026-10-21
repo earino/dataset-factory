@@ -1,176 +1,178 @@
 {
-  "id": "chilecompra-tender-outcome",
-  "status": "ready",
-  "created_at": "2026-10-21T12:06:45.115079+00:00",
-  "domain": "public procurement - tender-level outcome prediction (desertion), Chile",
-  "prediction_question": "A Chilean public-sector tender (licitaci\u00f3n) is published on Mercado P\u00fablico. At the publication instant, given only publication-time context - the buying organism and its unit (CL-RUT identifier, region, municipality), tender title and description, item list with UNSPSC categories and quantities, estimated value and currency, procedure type (L1/LE/LP/LQ/LR public by UTM band, E2/CO/B2/H2/I2 private, LS specialised services), convocatoria type, payment/duration terms and the publication calendar position - will the process end deserted (desierta: no valid bids, Ley 19.886 art. 3 or 9) rather than adjudicated?",
-  "prediction_time": "The instant the tender is published on Mercado P\u00fablico (tender publication date; OCDS release date). Everything decided or observed after publication is excluded from shipped features: the closing act, bids received and their counts, the evaluation, the adjudication/revocation decision and award documents, and contract fields. The OCDS award-stage status fields are the label source and are excluded from shipped columns. Construction note: a tender document fetched for a closed month carries the tender's final status/statusDetails (e.g. '5-Publicada' vs closed states) - construction must reconstruct publication-time state from publication-stage fields only.",
-  "target_definition": "Binary: the process's OCDS award status is 'unsuccessful' with statusDetails vocabulary '7-Desierta (o art. 3 \u00f3 9 Ley 19.886)' (positive) vs 'active' / '8-Adjudicada' (negative). Measured on the first-100 samples of closed months: 17/98 = 17.3% desertion (2019-06), 14/98 = 14.3% (2023-06); cancelled/revoked ('15-Revocada', ~2-3%) are excluded from the scored population at construction with the exclusion recorded. Label source columns: award release status/statusDetails (+ tender final status as cross-check); excluded from shipped feature columns.",
-  "sources": [
-    {
-      "name": "ChileCompra OCDS monthly process list API (licitaciones)",
-      "url": "https://api.mercadopublico.cl/APISOCDS/OCDS/listaOCDSAgnoMes/{a\u00f1o}/{mes}/{pos_inicial}/{pos_final}",
-      "api": "anonymous, no ticket/registration, max 1000 records per query, pagination.total in response; per-item urlTender/urlAward/urlPlanning point at per-process OCDS documents. Publisher page documents it as real-time OCDS access 'sin necesidad de registro' (datos-abiertos.chilecompra.cl/descargas/procesos-ocds).",
-      "license": "see license_evidence (CC0 per OCP registry; publisher terms permit reuse)",
-      "access": "measured 2026-10-21 (probe_desertion.py): monthly licitaci\u00f3n totals 2010-01: 33,366; 2014-01: 22,218; 2018-01: 13,049; 2020-01: 11,661; 2023-01: 11,382; 2025-01: 7,785."
-    },
-    {
-      "name": "ChileCompra OCDS monthly bulk zips (licitaciones stream) - the construction path",
-      "url": "https://ocds.blob.core.windows.net/ocds/{yyyymm}.zip",
-      "api": "anonymous Azure blob; real zips verified by PK magic on ranged GET; clean 404 (XML) for missing months. Series measured 2009-01 through 2022-04 present (2022-05 -> 404). Sizes measured via Content-Range: 201001: 377,010,777 B; 201406: 948,139,521 B; 201806: 613,891,953 B; 201906: 1,131,029,693 B. URL pattern documented on the publisher's descargas page (found in the React bundle: 'variantes URLs en las que se modifique la fecha del archivo').",
-      "license": "see license_evidence",
-      "access": "PROVENANCE STREAM NOTE (per the discovery skill's stream-mix rule): the OCP registry records that the publisher's bulk downloads carry ONLY the Licitaci\u00f3n stream; Trato Directo and Convenio Marco are separate API endpoints (listaOCDSAgnoMesTratoDirecto / ...Convenio) and are NOT in the bulk zips. The task is defined on the licitaci\u00f3n stream only; streams are not summed."
-    },
-    {
-      "name": "Per-process OCDS documents (tender / award / planning)",
-      "url": "https://api.mercadopublico.cl/APISOCDS/OCDS/tender/{code} and /award/{code}",
-      "api": "OCDS 1.1 releases. Tender docs: parties with CL-RUT identifiers, region, buyer role; tender.title/description/status/statusDetails, value amount+currency, items[] with UNSPSC classification ids and quantities, procurementMethod. Award docs: awards[].status (active/unsuccessful), statusDetails ('7-Desierta (o art. 3 \u00f3 9 Ley 19.886)', '8-Adjudicada', '15-Revocada'), suppliers.",
-      "license": "see license_evidence",
-      "access": "measured 2026-10-21: tender doc avg 100,620 B (2019-06, n=5) / 31,987 B (2023-06, n=5) - large spread; award doc avg 11,418 B (n=98) / 8,488 B (n=98); 2/100 processes per closed month lack urlAward. Throughput ~1 request/s (214 requests in 209 s) - per-process API fetching is infeasible for the full panel (~100k+ processes/year); the monthly bulk zips are the construction channel."
-    },
-    {
-      "name": "Open Contracting Partnership publication registry (third-party mirror + cross-check product)",
-      "url": "https://data.open-contracting.org/es/publication/144",
-      "api": "OCP-hosted per-year mirrors of the publisher's OCDS API: full.jsonl.gz 2,527 MB; 2022: 506 MB; 2023: 620 MB; 2024: 682 MB; 2025: 434 MB; 2026: 186 MB (harvested Jan 2022 - May 2026, all streams). Counts recorded there: 4,920,375 licitaciones, 4,939,558 awards, 2,364,782 bidders (cross-check aggregate only; not the construction bytes - publisher bytes preferred).",
-      "license": "registry records 'Licencia: Creative Commons CC0 1.0 Universal Dedicaci\u00f3n de Dominio P\u00fablico' for this publication",
-      "access": "fetched 2026-10-21; also records 'su API es lenta (puede llevar m\u00e1s de un mes descargar todos los datos disponibles)'."
-    },
-    {
-      "name": "API Mercado P\u00fablico - Licitaciones field dictionary (publisher PDF)",
-      "url": "https://www.chilecompra.cl/wp-content/uploads/2026/03/Documentacion-API-Mercado-Publico-Licitaciones.pdf",
-      "api": "documents the ticket-gated v1 API's field set (tender states incl. 'publicada, cerrada, desierta, adjudicada, revocada y suspendida'; buyer fields; item/adjudicaci\u00f3n fields; procedure-type code table L1/LE/LP/LQ/LR/E2/CO/B2/H2/I2/LS). Field meanings for the OCDS documents come from the OCDS 1.1 standard itself.",
-      "license": "see license_evidence",
-      "access": "fetched 2026-10-21 (web_extract); the OCDS route is anonymous - the ticket in the v1 API is NOT needed for the channels this task uses."
-    }
-  ],
-  "license_evidence": [
-    {
-      "note": "OCP publication registry (the OCDS standard's registry; publisher-profiled entry): 'Licencia: Creative Commons CC0 1.0 Universal Dedicaci\u00f3n de Dominio P\u00fablico ... Puede copiar, modificar, distribuir e interpretar la obra, incluso para prop\u00f3sitos comerciales, sin pedir permiso.'",
-      "url": "https://data.open-contracting.org/es/publication/144"
-    },
-    {
-      "note": "Publisher's own terms (chilecompra.cl/terminos-y-condiciones/, fetched 2026-10-21): 'La plataforma de Datos Abiertos, a disposici\u00f3n del p\u00fablico en general a trav\u00e9s del Sistema de Informaci\u00f3n, contiene la informaci\u00f3n de las compras p\u00fablicas realizadas a trav\u00e9s de dicho sistema, en formatos que facilitan su an\u00e1lisis, monitoreo y fiscalizaci\u00f3n, as\u00ed como la reutilizaci\u00f3n de la informaci\u00f3n para el desarrollo de nuevos informes o aplicaciones.' - reuse explicitly contemplated by the publisher for its open-data platform.",
-      "url": "https://www.chilecompra.cl/terminos-y-condiciones/"
-    },
-    {
-      "note": "Statutory context (chilecompra.cl/datos-abiertos/, fetched 2026-10-21): 'Con las modificaciones a la Ley de Compras P\u00fablicas, que entran en vigencia el 12 de diciembre de 2024, la normativa indica que deber\u00e1 encontrarse disponible a trav\u00e9s de formatos de datos abiertos y reutilizables toda la informaci\u00f3n que los organismos del Estado publiquen en el sistema de informaci\u00f3n y gesti\u00f3n.'",
-      "url": "https://www.chilecompra.cl/datos-abiertos/"
-    },
-    {
-      "note": "Channels checked that carry NO licence statement (all measured 2026-10-21, per the licence-posture procedure): the datos-abiertos React app bundle (3.1 MB main.b731c6dc.js grepped case-insensitively for licencia/t\u00e9rminos/creative commons - no match, so no licence text renders on any site page); the OCDS list API metadata (no licence field); the publisher publication-policy URL recorded by the OCP registry (api.mercadopublico.cl/APISOCDS/Utilidades/Politicas/Actualizacion -> HTTP 404); the national harvest catalogue datos.gob.cl (CKAN package_search q=chilecompra -> count 0); the Pol\u00edtica de Gobierno de Datos PDF (Res. Exenta 143-B/2024 - internal staff data-governance rules only, no public licensing deed). LICENCE DECISION: redistribution permitted - CC0 recorded for this publication by the standard's registry, plus publisher terms that explicitly contemplate reuse, plus a statutory open-formats mandate. Residual question recorded honestly: no licence deed appears on the publisher's own web surfaces; a one-time written enquiry to ChileCompra (noting the CC0 registry record, asking for preferred attribution wording) is a pre-construction confirmation step, not a blocker. Source terms preserved; our derived compilation dedicated CC0 per standing policy; derived, never presented as the publisher's official product.",
-      "url": "https://datos-abiertos.chilecompra.cl/"
-    }
-  ],
-  "construction_script": null,
-  "split_strategy": "Windows over the 2009-01..2022-04 bulk months (160 months, all anonymously fetchable). Proposed: train 2009-01..2016-12 (96 months), eval 2017-01..2019-12 (36 months), holdout 2020-01..2022-04 (28 months). Every window carries tens of thousands of processes (monthly totals measured 7,785-33,366) with positives at the measured 14-17% desertion rate; exact per-window counts are a construction-time measurement on the full panel. Grain: one tender process = one row, keyed by ocid. Buyers legitimately repeat across rows and across windows (an organism runs many tenders) - the descriptor must NOT claim id_columns_are_entity_keys for the buyer; buyer identity is a feature source, and cross-window buyer repetition is expected, not leakage. No storm-style clustering of positives: desertion is decided per process.",
-  "measurements": {
-    "award_outcome_samples_2026_10_21": "probe_desertion.py, first 100 processes of each closed month: 2019-06 award statuses: active 78 (79.6%), unsuccessful 17 (17.3%), cancelled 3 (3.1%), 2 processes without urlAward; 2023-06: active 78 (79.6%), unsuccessful 14 (14.3%), cancelled 2 + '15-Revocada' 2 (4.0%), 1 with empty status, 2 without urlAward. statusDetails vocabulary observed: '7-Desierta (o art. 3 \u00f3 9 Ley 19.886)', '8-Adjudicada', '15-Revocada'.",
-    "monthly_totals_2026_10_21": "listaOCDSAgnoMes pagination.total (licitaciones stream): 2010-01: 33,366; 2014-01: 22,218; 2018-01: 13,049; 2020-01: 11,661; 2023-01: 11,382; 2025-01: 7,785. Declining volumes over time - window sizing must use per-month counts, not a single year's.",
-    "bulk_zip_series_2026_10_21": "ocds.blob.core.windows.net/ocds/{yyyymm}.zip: present 2009-01..2022-04 (2022-05 -> 404, clean Azure XML error). Ranged-GET sizes: 201001 377,010,777 B; 201406 948,139,521 B; 201806 613,891,953 B; 201906 1,131,029,693 B. PANEL BYTES = ESTIMATE: ~160 months x 0.38-1.13 GB ~= 100-150 GB compressed JSON - worker-scale only, streamed per month, bytes never through the coordinator.",
-    "doc_sizes_2026_10_21": "tender docs avg 100,620 B (2019-06, n=5) / 31,987 B (2023-06, n=5); award docs avg 11,418 B / 8,488 B (n=98 each). API throughput measured ~1 request/s (214 requests, 209 s) - full-panel per-process API fetching infeasible; bulk zips are the channel.",
-    "cost_measured": "Discovery cost: 214 requests / 2.67 MB / 209 s for the award samples (probe_desertion.py), plus ~30 ranged HEAD/GET probes for bulk sizes, month totals and zip verification. Construction cost on the worker: 160 zip downloads (~100-150 GB, ESTIMATE from 4 measured month sizes) + per-month stream extraction; trivial for a Hetzner worker with adequate disk."
+ "id": "chilecompra-tender-outcome",
+ "status": "ready",
+ "created_at": "2026-10-21T12:06:45.115079+00:00",
+ "domain": "public procurement - tender-level outcome prediction (desertion), Chile",
+ "prediction_question": "A Chilean public-sector tender (licitaci\u00f3n) is published on Mercado P\u00fablico. At the publication instant, given only publication-time context - the buying organism and its unit (CL-RUT identifier, region, municipality), tender title and description, item list with UNSPSC categories and quantities, estimated value and currency, procedure type (L1/LE/LP/LQ/LR public by UTM band, E2/CO/B2/H2/I2 private, LS specialised services), convocatoria type, payment/duration terms and the publication calendar position - will the process end deserted (desierta: no valid bids, Ley 19.886 art. 3 or 9) rather than adjudicated?",
+ "prediction_time": "The instant the tender is published on Mercado P\u00fablico (tender publication date; OCDS release date). Everything decided or observed after publication is excluded from shipped features: the closing act, bids received and their counts, the evaluation, the adjudication/revocation decision and award documents, and contract fields. The OCDS award-stage status fields are the label source and are excluded from shipped columns. Construction note: a tender document fetched for a closed month carries the tender's final status/statusDetails (e.g. '5-Publicada' vs closed states) - construction must reconstruct publication-time state from publication-stage fields only.",
+ "target_definition": "Binary: the process's OCDS award status is 'unsuccessful' with statusDetails vocabulary '7-Desierta (o art. 3 \u00f3 9 Ley 19.886)' (positive) vs 'active' / '8-Adjudicada' (negative). Measured on the first-100 samples of closed months: 17/98 = 17.3% desertion (2019-06), 14/98 = 14.3% (2023-06); cancelled/revoked ('15-Revocada', ~2-3%) are excluded from the scored population at construction with the exclusion recorded. Label source columns: award release status/statusDetails (+ tender final status as cross-check); excluded from shipped feature columns.",
+ "sources": [
+  {
+   "name": "ChileCompra OCDS monthly process list API (licitaciones)",
+   "url": "https://api.mercadopublico.cl/APISOCDS/OCDS/listaOCDSAgnoMes/{a\u00f1o}/{mes}/{pos_inicial}/{pos_final}",
+   "api": "anonymous, no ticket/registration, max 1000 records per query, pagination.total in response; per-item urlTender/urlAward/urlPlanning point at per-process OCDS documents. Publisher page documents it as real-time OCDS access 'sin necesidad de registro' (datos-abiertos.chilecompra.cl/descargas/procesos-ocds).",
+   "license": "see license_evidence (CC0 per OCP registry; publisher terms permit reuse)",
+   "access": "measured 2026-10-21 (probe_desertion.py): monthly licitaci\u00f3n totals 2010-01: 33,366; 2014-01: 22,218; 2018-01: 13,049; 2020-01: 11,661; 2023-01: 11,382; 2025-01: 7,785."
   },
-  "jobs": [],
-  "artifacts": [],
-  "rejection_reason": null,
-  "review": null,
-  "next_action": "Advancement session constructs: (1) worker job fetches the monthly zips for the three windows (~100-150 GB - size the worker disk, stream-extract per month, keep publication-stage tender fields + award status only, delete each zip after extraction); (2) freeze the label rule: primary label unsuccessful/desierta vs active; cancelled/revoked excluded from the scored population with the exclusion and its measured share recorded in the descriptor; (3) build publication-time features only (buyer RUT + region + unit type from parties, item UNSPSC top-level codes + item count + quantity stats, estimated value/currency, procedure type, convocatoria, publication calendar features) - EXCLUDE every award/contract-stage field and any bid-count field (bids arrive after publication); (4) measure naive baselines first (global desertion rate, per-buyer, per-UNSPSC-category, per-procedure-type) and require headroom over them before spending the rest of the construction; (5) run the qualification gate on the full artifact on the worker; (6) send the one-time written licence enquiry to ChileCompra (CC0 registry record noted, preferred attribution wording requested).",
-  "novelty_check": {
-    "checked_at": "2026-10-21T12:20:35+00:00",
-    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
-    "queries": [
-      "public procurement tender outcome prediction",
-      "procurement desertion prediction dataset",
-      "ChileCompra machine learning tender"
-    ],
-    "evidence": {
-      "huggingface_datasets": [
-        {
-          "query": "public procurement tender outcome prediction",
-          "hits": 0,
-          "top": []
-        },
-        {
-          "query": "procurement desertion prediction dataset",
-          "hits": 0,
-          "top": []
-        },
-        {
-          "query": "ChileCompra machine learning tender",
-          "hits": 0,
-          "top": []
-        }
-      ],
-      "zenodo_records": [
-        {
-          "query": "public procurement tender outcome prediction",
-          "hits": 364587,
-          "top": [
-            "Challenges in Procurement of Works in Design Bid Build Institutional Projects",
-            "\u0412\u041d\u0415\u0428\u041d\u0415\u0415 \u0420\u0415\u0413\u0423\u041b\u0418\u0420\u041e\u0412\u0410\u041d\u0418\u0415 \u0421\u0418\u0421\u0422\u0415\u041c\u042b \u0413\u041e\u0421\u0423\u0414\u0410\u0420\u0421\u0422\u0412\u0415\u041d\u041d\u042b\u0425 \u0422\u0415\u041d\u0414\u0415\u0420\u041d\u042b\u0425 \u0417\u0410\u041a\u0423\u041f\u041e\u041a",
-            "OncNGS PCP: D3.6 Call for Tender Publishable Report",
-            "\u0424\u041e\u0420\u041c\u042b \u041e\u0420\u0413\u0410\u041d\u0418\u0417\u0410\u0426\u0418\u0418 \u0421\u0418\u0421\u0422\u0415\u041c\u042b \u0413\u041e\u0421\u0423\u0414\u0410\u0420\u0421\u0422\u0412\u0415\u041d\u041d\u042b\u0425 \u0422\u0415\u041d\u0414\u0415\u0420\u041d\u042b\u0425 \u0417\u0410\u041a\u0423\u041f\u041e\u041a",
-            "\"Prozorro\" electronic system as a revolution in the public procurement system in Ukraine"
-          ]
-        },
-        {
-          "query": "procurement desertion prediction dataset",
-          "hits": 379001,
-          "top": [
-            "O crime de deser\u00e7\u00e3o e sua recep\u00e7\u00e3o pela constitui\u00e7\u00e3o federal de 1988: os contornos legais e doutrin\u00e1rios dos crimes de deser\u00e7\u00e3o simples e especial e a an\u00e1lise de compatibilidade entre os artigos 187 e 190 do c\u00f3digo penal militar e a constitui\u00e7\u00e3o",
-            "\" Fugitives of War: Desertion, Defection, and Military Disobedience in the Greek Army (1821\u20131949)\"",
-            "Desertion in Distance Education, Living Together in Higher Education",
-            "Remating opportunities and low costs underlie maternal desertion",
-            "Females compensate for moult-associated male nest desertion in the Hooded Warbler"
-          ]
-        },
-        {
-          "query": "ChileCompra machine learning tender",
-          "hits": 325476,
-          "top": [
-            "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
-            "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI",
-            "RGB and RGNIR Plastic Waste Database",
-            "mushrooms",
-            "DisMo: Disentangled Motion Representations for Open-World Motion Transfer"
-          ]
-        }
-      ],
-      "arxiv_preprints": [
-        {
-          "query": "public procurement tender outcome prediction",
-          "error": "HTTPError",
-          "hits": null,
-          "top": []
-        },
-        {
-          "query": "procurement desertion prediction dataset",
-          "error": "TimeoutError",
-          "hits": null,
-          "top": []
-        },
-        {
-          "query": "ChileCompra machine learning tender",
-          "error": "TimeoutError",
-          "hits": null,
-          "top": []
-        }
-      ]
-    },
-    "evidence_summary": "- huggingface_datasets / 'public procurement tender outcome prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'procurement desertion prediction dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'ChileCompra machine learning tender': 0 hit(s) - nothing notable\n- zenodo_records / 'public procurement tender outcome prediction': 364587 hit(s) - Challenges in Procurement of Works in Design Bid Build Institutional Projects, \u0412\u041d\u0415\u0428\u041d\u0415\u0415 \u0420\u0415\u0413\u0423\u041b\u0418\u0420\u041e\u0412\u0410\u041d\u0418\u0415 \u0421\u0418\u0421\u0422\u0415\u041c\u042b \u0413\u041e\u0421\u0423\u0414\u0410\u0420\u0421\u0422\u0412\u0415\u041d\u041d\u042b\u0425 \u0422\u0415\u041d\u0414\u0415\u0420\u041d\u042b\u0425 \u0417\u0410\u041a\u0423\u041f\u041e\u041a, OncNGS PCP: D3.6 Call for Tender Publishable Report, \u0424\u041e\u0420\u041c\u042b \u041e\u0420\u0413\u0410\u041d\u0418\u0417\u0410\u0426\u0418\u0418 \u0421\u0418\u0421\u0422\u0415\u041c\u042b \u0413\u041e\u0421\u0423\u0414\u0410\u0420\u0421\u0422\u0412\u0415\u041d\u041d\u042b\u0425 \u0422\u0415\u041d\u0414\u0415\u0420\u041d\u042b\u0425 \u0417\u0410\u041a\u0423\u041f\u041e\u041a, \"Prozorro\" electronic system as a revolution in the public procurement system in Ukraine\n- zenodo_records / 'procurement desertion prediction dataset': 379001 hit(s) - O crime de deser\u00e7\u00e3o e sua recep\u00e7\u00e3o pela constitui\u00e7\u00e3o federal de 1988: os contornos legais e doutrin\u00e1rios dos crimes de deser\u00e7\u00e3o simples e especial e a an\u00e1lise de compatibilidade entre os artigos 187 e 190 do c\u00f3digo penal militar e a constitui\u00e7\u00e3o, \" Fugitives of War: Desertion, Defection, and Military Disobedience in the Greek Army (1821\u20131949)\", Desertion in Distance Education, Living Together in Higher Education, Remating opportunities and low costs underlie maternal desertion, Females compensate for moult-associated male nest desertion in the Hooded Warbler\n- zenodo_records / 'ChileCompra machine learning tender': 325476 hit(s) - plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database, mushrooms, DisMo: Disentangled Motion Representations for Open-World Motion Transfer\n- arxiv_preprints / 'public procurement tender outcome prediction': unavailable (HTTPError)\n- arxiv_preprints / 'procurement desertion prediction dataset': unavailable (TimeoutError)\n- arxiv_preprints / 'ChileCompra machine learning tender': unavailable (TimeoutError)",
-    "prior_art": [
-      "TenderKG arXiv:2608.14066 (FR, 2021-2023, bidder recommendation); Fatima/Nai/Meo, Machine Learning in Procurement with a View to Equity (ANAC Italy, tender-variation prediction); Springer 10.1007/s11115-026-01001-8 (TED void analysis); MiDES WBER (BR municipal tenders, descriptive only)"
-    ],
-    "theirs": "The publisher ships the raw OCDS data (monthly bulk zips 2009-01..2022-04 + real-time API; OCP registry mirrors per-year JSONL/CSV 2022+) but no prediction task, splits or scoring. Research prior art on other labels/countries: TenderKG (French tenders 2021-2023, bidder-recommendation KG benchmark, FigShare); UniTo/ANAC Italy ML papers (tender contract-variation prediction, 96.5% XGBoost); 'Failed Procurements as a Measure of Public Procurement Performance' (Springer 2026, TED/CAN void-rate empirical analysis, no ML task); MiDES (Brazilian municipal procurement raw tables, descriptive desertion rates).",
-    "ours": "First scored, temporally-split prediction task on ChileCompra Mercado Publico licitaciones: at tender publication, predict whether the process will be declared deserted (desierta, Ley 19.886 art. 3/9) at adjudication, from publication-time features only (buyer, region, UNSPSC items, estimated value, procedure type, publication calendar), over the 2009-2022 monthly OCDS bulk panel with train/eval/holdout windows and a runner-compatible binary contract. No prior art ships this task: existing procurement-ML work predicts other labels (contract variations, bidder recommendation) on other countries.",
-    "verdict": "differentiated",
-    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  {
+   "name": "ChileCompra OCDS monthly bulk zips (licitaciones stream) - the construction path",
+   "url": "https://ocds.blob.core.windows.net/ocds/{yyyymm}.zip",
+   "api": "anonymous Azure blob; real zips verified by PK magic on ranged GET; clean 404 (XML) for missing months. Series measured 2009-01 through 2022-04 present (2022-05 -> 404). Sizes measured via Content-Range: 201001: 377,010,777 B; 201406: 948,139,521 B; 201806: 613,891,953 B; 201906: 1,131,029,693 B. URL pattern documented on the publisher's descargas page (found in the React bundle: 'variantes URLs en las que se modifique la fecha del archivo').",
+   "license": "see license_evidence",
+   "access": "PROVENANCE STREAM NOTE (per the discovery skill's stream-mix rule): the OCP registry records that the publisher's bulk downloads carry ONLY the Licitaci\u00f3n stream; Trato Directo and Convenio Marco are separate API endpoints (listaOCDSAgnoMesTratoDirecto / ...Convenio) and are NOT in the bulk zips. The task is defined on the licitaci\u00f3n stream only; streams are not summed."
   },
-  "verdict": "go",
-  "jurisdiction": {
-    "country": "CL",
-    "region": "Latin America",
-    "publisher": "Direcci\u00f3n de Compras y Contrataci\u00f3n P\u00fablica (ChileCompra) - Mercado P\u00fablico platform",
-    "recorded_at": "2026-10-21"
+  {
+   "name": "Per-process OCDS documents (tender / award / planning)",
+   "url": "https://api.mercadopublico.cl/APISOCDS/OCDS/tender/{code} and /award/{code}",
+   "api": "OCDS 1.1 releases. Tender docs: parties with CL-RUT identifiers, region, buyer role; tender.title/description/status/statusDetails, value amount+currency, items[] with UNSPSC classification ids and quantities, procurementMethod. Award docs: awards[].status (active/unsuccessful), statusDetails ('7-Desierta (o art. 3 \u00f3 9 Ley 19.886)', '8-Adjudicada', '15-Revocada'), suppliers.",
+   "license": "see license_evidence",
+   "access": "measured 2026-10-21: tender doc avg 100,620 B (2019-06, n=5) / 31,987 B (2023-06, n=5) - large spread; award doc avg 11,418 B (n=98) / 8,488 B (n=98); 2/100 processes per closed month lack urlAward. Throughput ~1 request/s (214 requests in 209 s) - per-process API fetching is infeasible for the full panel (~100k+ processes/year); the monthly bulk zips are the construction channel."
+  },
+  {
+   "name": "Open Contracting Partnership publication registry (third-party mirror + cross-check product)",
+   "url": "https://data.open-contracting.org/es/publication/144",
+   "api": "OCP-hosted per-year mirrors of the publisher's OCDS API: full.jsonl.gz 2,527 MB; 2022: 506 MB; 2023: 620 MB; 2024: 682 MB; 2025: 434 MB; 2026: 186 MB (harvested Jan 2022 - May 2026, all streams). Counts recorded there: 4,920,375 licitaciones, 4,939,558 awards, 2,364,782 bidders (cross-check aggregate only; not the construction bytes - publisher bytes preferred).",
+   "license": "registry records 'Licencia: Creative Commons CC0 1.0 Universal Dedicaci\u00f3n de Dominio P\u00fablico' for this publication",
+   "access": "fetched 2026-10-21; also records 'su API es lenta (puede llevar m\u00e1s de un mes descargar todos los datos disponibles)'."
+  },
+  {
+   "name": "API Mercado P\u00fablico - Licitaciones field dictionary (publisher PDF)",
+   "url": "https://www.chilecompra.cl/wp-content/uploads/2026/03/Documentacion-API-Mercado-Publico-Licitaciones.pdf",
+   "api": "documents the ticket-gated v1 API's field set (tender states incl. 'publicada, cerrada, desierta, adjudicada, revocada y suspendida'; buyer fields; item/adjudicaci\u00f3n fields; procedure-type code table L1/LE/LP/LQ/LR/E2/CO/B2/H2/I2/LS). Field meanings for the OCDS documents come from the OCDS 1.1 standard itself.",
+   "license": "see license_evidence",
+   "access": "fetched 2026-10-21 (web_extract); the OCDS route is anonymous - the ticket in the v1 API is NOT needed for the channels this task uses."
   }
+ ],
+ "license_evidence": [
+  {
+   "note": "OCP publication registry (the OCDS standard's registry; publisher-profiled entry): 'Licencia: Creative Commons CC0 1.0 Universal Dedicaci\u00f3n de Dominio P\u00fablico ... Puede copiar, modificar, distribuir e interpretar la obra, incluso para prop\u00f3sitos comerciales, sin pedir permiso.'",
+   "url": "https://data.open-contracting.org/es/publication/144"
+  },
+  {
+   "note": "Publisher's own terms (chilecompra.cl/terminos-y-condiciones/, fetched 2026-10-21): 'La plataforma de Datos Abiertos, a disposici\u00f3n del p\u00fablico en general a trav\u00e9s del Sistema de Informaci\u00f3n, contiene la informaci\u00f3n de las compras p\u00fablicas realizadas a trav\u00e9s de dicho sistema, en formatos que facilitan su an\u00e1lisis, monitoreo y fiscalizaci\u00f3n, as\u00ed como la reutilizaci\u00f3n de la informaci\u00f3n para el desarrollo de nuevos informes o aplicaciones.' - reuse explicitly contemplated by the publisher for its open-data platform.",
+   "url": "https://www.chilecompra.cl/terminos-y-condiciones/"
+  },
+  {
+   "note": "Statutory context (chilecompra.cl/datos-abiertos/, fetched 2026-10-21): 'Con las modificaciones a la Ley de Compras P\u00fablicas, que entran en vigencia el 12 de diciembre de 2024, la normativa indica que deber\u00e1 encontrarse disponible a trav\u00e9s de formatos de datos abiertos y reutilizables toda la informaci\u00f3n que los organismos del Estado publiquen en el sistema de informaci\u00f3n y gesti\u00f3n.'",
+   "url": "https://www.chilecompra.cl/datos-abiertos/"
+  },
+  {
+   "note": "Channels checked that carry NO licence statement (all measured 2026-10-21, per the licence-posture procedure): the datos-abiertos React app bundle (3.1 MB main.b731c6dc.js grepped case-insensitively for licencia/t\u00e9rminos/creative commons - no match, so no licence text renders on any site page); the OCDS list API metadata (no licence field); the publisher publication-policy URL recorded by the OCP registry (api.mercadopublico.cl/APISOCDS/Utilidades/Politicas/Actualizacion -> HTTP 404); the national harvest catalogue datos.gob.cl (CKAN package_search q=chilecompra -> count 0); the Pol\u00edtica de Gobierno de Datos PDF (Res. Exenta 143-B/2024 - internal staff data-governance rules only, no public licensing deed). LICENCE DECISION: redistribution permitted - CC0 recorded for this publication by the standard's registry, plus publisher terms that explicitly contemplate reuse, plus a statutory open-formats mandate. Residual question recorded honestly: no licence deed appears on the publisher's own web surfaces; a one-time written enquiry to ChileCompra (noting the CC0 registry record, asking for preferred attribution wording) is a pre-construction confirmation step, not a blocker. Source terms preserved; our derived compilation dedicated CC0 per standing policy; derived, never presented as the publisher's official product.",
+   "url": "https://datos-abiertos.chilecompra.cl/"
+  }
+ ],
+ "construction_script": null,
+ "split_strategy": "Windows over the 2009-01..2022-04 bulk months (160 months, all anonymously fetchable). Proposed: train 2009-01..2016-12 (96 months), eval 2017-01..2019-12 (36 months), holdout 2020-01..2022-04 (28 months). Every window carries tens of thousands of processes (monthly totals measured 7,785-33,366) with positives at the measured 14-17% desertion rate; exact per-window counts are a construction-time measurement on the full panel. Grain: one tender process = one row, keyed by ocid. Buyers legitimately repeat across rows and across windows (an organism runs many tenders) - the descriptor must NOT claim id_columns_are_entity_keys for the buyer; buyer identity is a feature source, and cross-window buyer repetition is expected, not leakage. No storm-style clustering of positives: desertion is decided per process.",
+ "measurements": {
+  "award_outcome_samples_2026_10_21": "probe_desertion.py, first 100 processes of each closed month: 2019-06 award statuses: active 78 (79.6%), unsuccessful 17 (17.3%), cancelled 3 (3.1%), 2 processes without urlAward; 2023-06: active 78 (79.6%), unsuccessful 14 (14.3%), cancelled 2 + '15-Revocada' 2 (4.0%), 1 with empty status, 2 without urlAward. statusDetails vocabulary observed: '7-Desierta (o art. 3 \u00f3 9 Ley 19.886)', '8-Adjudicada', '15-Revocada'.",
+  "monthly_totals_2026_10_21": "listaOCDSAgnoMes pagination.total (licitaciones stream): 2010-01: 33,366; 2014-01: 22,218; 2018-01: 13,049; 2020-01: 11,661; 2023-01: 11,382; 2025-01: 7,785. Declining volumes over time - window sizing must use per-month counts, not a single year's.",
+  "bulk_zip_series_2026_10_21": "ocds.blob.core.windows.net/ocds/{yyyymm}.zip: present 2009-01..2022-04 (2022-05 -> 404, clean Azure XML error). Ranged-GET sizes: 201001 377,010,777 B; 201406 948,139,521 B; 201806 613,891,953 B; 201906 1,131,029,693 B. PANEL BYTES = ESTIMATE: ~160 months x 0.38-1.13 GB ~= 100-150 GB compressed JSON - worker-scale only, streamed per month, bytes never through the coordinator.",
+  "doc_sizes_2026_10_21": "tender docs avg 100,620 B (2019-06, n=5) / 31,987 B (2023-06, n=5); award docs avg 11,418 B / 8,488 B (n=98 each). API throughput measured ~1 request/s (214 requests, 209 s) - full-panel per-process API fetching infeasible; bulk zips are the channel.",
+  "cost_measured": "Discovery cost: 214 requests / 2.67 MB / 209 s for the award samples (probe_desertion.py), plus ~30 ranged HEAD/GET probes for bulk sizes, month totals and zip verification. Construction cost on the worker: 160 zip downloads (~100-150 GB, ESTIMATE from 4 measured month sizes) + per-month stream extraction; trivial for a Hetzner worker with adequate disk."
+ },
+ "jobs": [],
+ "artifacts": [],
+ "rejection_reason": null,
+ "review": null,
+ "next_action": "Advancement session constructs: (1) worker job fetches the monthly zips for the three windows (~100-150 GB - size the worker disk, stream-extract per month, keep publication-stage tender fields + award status only, delete each zip after extraction); (2) freeze the label rule: primary label unsuccessful/desierta vs active; cancelled/revoked excluded from the scored population with the exclusion and its measured share recorded in the descriptor; (3) build publication-time features only (buyer RUT + region + unit type from parties, item UNSPSC top-level codes + item count + quantity stats, estimated value/currency, procedure type, convocatoria, publication calendar features) - EXCLUDE every award/contract-stage field and any bid-count field (bids arrive after publication); (4) measure naive baselines first (global desertion rate, per-buyer, per-UNSPSC-category, per-procedure-type) and require headroom over them before spending the rest of the construction; (5) run the qualification gate on the full artifact on the worker; (6) send the one-time written licence enquiry to ChileCompra (CC0 registry record noted, preferred attribution wording requested).",
+ "novelty_check": {
+  "checked_at": "2026-10-21T12:20:35+00:00",
+  "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+  "queries": [
+   "public procurement tender outcome prediction",
+   "procurement desertion prediction dataset",
+   "ChileCompra machine learning tender"
+  ],
+  "evidence": {
+   "huggingface_datasets": [
+    {
+     "query": "public procurement tender outcome prediction",
+     "hits": 0,
+     "top": []
+    },
+    {
+     "query": "procurement desertion prediction dataset",
+     "hits": 0,
+     "top": []
+    },
+    {
+     "query": "ChileCompra machine learning tender",
+     "hits": 0,
+     "top": []
+    }
+   ],
+   "zenodo_records": [
+    {
+     "query": "public procurement tender outcome prediction",
+     "hits": 364587,
+     "top": [
+      "Challenges in Procurement of Works in Design Bid Build Institutional Projects",
+      "\u0412\u041d\u0415\u0428\u041d\u0415\u0415 \u0420\u0415\u0413\u0423\u041b\u0418\u0420\u041e\u0412\u0410\u041d\u0418\u0415 \u0421\u0418\u0421\u0422\u0415\u041c\u042b \u0413\u041e\u0421\u0423\u0414\u0410\u0420\u0421\u0422\u0412\u0415\u041d\u041d\u042b\u0425 \u0422\u0415\u041d\u0414\u0415\u0420\u041d\u042b\u0425 \u0417\u0410\u041a\u0423\u041f\u041e\u041a",
+      "OncNGS PCP: D3.6 Call for Tender Publishable Report",
+      "\u0424\u041e\u0420\u041c\u042b \u041e\u0420\u0413\u0410\u041d\u0418\u0417\u0410\u0426\u0418\u0418 \u0421\u0418\u0421\u0422\u0415\u041c\u042b \u0413\u041e\u0421\u0423\u0414\u0410\u0420\u0421\u0422\u0412\u0415\u041d\u041d\u042b\u0425 \u0422\u0415\u041d\u0414\u0415\u0420\u041d\u042b\u0425 \u0417\u0410\u041a\u0423\u041f\u041e\u041a",
+      "\"Prozorro\" electronic system as a revolution in the public procurement system in Ukraine"
+     ]
+    },
+    {
+     "query": "procurement desertion prediction dataset",
+     "hits": 379001,
+     "top": [
+      "O crime de deser\u00e7\u00e3o e sua recep\u00e7\u00e3o pela constitui\u00e7\u00e3o federal de 1988: os contornos legais e doutrin\u00e1rios dos crimes de deser\u00e7\u00e3o simples e especial e a an\u00e1lise de compatibilidade entre os artigos 187 e 190 do c\u00f3digo penal militar e a constitui\u00e7\u00e3o",
+      "\" Fugitives of War: Desertion, Defection, and Military Disobedience in the Greek Army (1821\u20131949)\"",
+      "Desertion in Distance Education, Living Together in Higher Education",
+      "Remating opportunities and low costs underlie maternal desertion",
+      "Females compensate for moult-associated male nest desertion in the Hooded Warbler"
+     ]
+    },
+    {
+     "query": "ChileCompra machine learning tender",
+     "hits": 325476,
+     "top": [
+      "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
+      "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI",
+      "RGB and RGNIR Plastic Waste Database",
+      "mushrooms",
+      "DisMo: Disentangled Motion Representations for Open-World Motion Transfer"
+     ]
+    }
+   ],
+   "arxiv_preprints": [
+    {
+     "query": "public procurement tender outcome prediction",
+     "error": "HTTPError",
+     "hits": null,
+     "top": []
+    },
+    {
+     "query": "procurement desertion prediction dataset",
+     "error": "TimeoutError",
+     "hits": null,
+     "top": []
+    },
+    {
+     "query": "ChileCompra machine learning tender",
+     "error": "TimeoutError",
+     "hits": null,
+     "top": []
+    }
+   ]
+  },
+  "evidence_summary": "- huggingface_datasets / 'public procurement tender outcome prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'procurement desertion prediction dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'ChileCompra machine learning tender': 0 hit(s) - nothing notable\n- zenodo_records / 'public procurement tender outcome prediction': 364587 hit(s) - Challenges in Procurement of Works in Design Bid Build Institutional Projects, \u0412\u041d\u0415\u0428\u041d\u0415\u0415 \u0420\u0415\u0413\u0423\u041b\u0418\u0420\u041e\u0412\u0410\u041d\u0418\u0415 \u0421\u0418\u0421\u0422\u0415\u041c\u042b \u0413\u041e\u0421\u0423\u0414\u0410\u0420\u0421\u0422\u0412\u0415\u041d\u041d\u042b\u0425 \u0422\u0415\u041d\u0414\u0415\u0420\u041d\u042b\u0425 \u0417\u0410\u041a\u0423\u041f\u041e\u041a, OncNGS PCP: D3.6 Call for Tender Publishable Report, \u0424\u041e\u0420\u041c\u042b \u041e\u0420\u0413\u0410\u041d\u0418\u0417\u0410\u0426\u0418\u0418 \u0421\u0418\u0421\u0422\u0415\u041c\u042b \u0413\u041e\u0421\u0423\u0414\u0410\u0420\u0421\u0422\u0412\u0415\u041d\u041d\u042b\u0425 \u0422\u0415\u041d\u0414\u0415\u0420\u041d\u042b\u0425 \u0417\u0410\u041a\u0423\u041f\u041e\u041a, \"Prozorro\" electronic system as a revolution in the public procurement system in Ukraine\n- zenodo_records / 'procurement desertion prediction dataset': 379001 hit(s) - O crime de deser\u00e7\u00e3o e sua recep\u00e7\u00e3o pela constitui\u00e7\u00e3o federal de 1988: os contornos legais e doutrin\u00e1rios dos crimes de deser\u00e7\u00e3o simples e especial e a an\u00e1lise de compatibilidade entre os artigos 187 e 190 do c\u00f3digo penal militar e a constitui\u00e7\u00e3o, \" Fugitives of War: Desertion, Defection, and Military Disobedience in the Greek Army (1821\u20131949)\", Desertion in Distance Education, Living Together in Higher Education, Remating opportunities and low costs underlie maternal desertion, Females compensate for moult-associated male nest desertion in the Hooded Warbler\n- zenodo_records / 'ChileCompra machine learning tender': 325476 hit(s) - plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database, mushrooms, DisMo: Disentangled Motion Representations for Open-World Motion Transfer\n- arxiv_preprints / 'public procurement tender outcome prediction': unavailable (HTTPError)\n- arxiv_preprints / 'procurement desertion prediction dataset': unavailable (TimeoutError)\n- arxiv_preprints / 'ChileCompra machine learning tender': unavailable (TimeoutError)",
+  "prior_art": [
+   "TenderKG arXiv:2608.14066 (FR, 2021-2023, bidder recommendation); Fatima/Nai/Meo, Machine Learning in Procurement with a View to Equity (ANAC Italy, tender-variation prediction); Springer 10.1007/s11115-026-01001-8 (TED void analysis); MiDES WBER (BR municipal tenders, descriptive only)"
+  ],
+  "theirs": "The publisher ships the raw OCDS data (monthly bulk zips 2009-01..2022-04 + real-time API; OCP registry mirrors per-year JSONL/CSV 2022+) but no prediction task, splits or scoring. Research prior art on other labels/countries: TenderKG (French tenders 2021-2023, bidder-recommendation KG benchmark, FigShare); UniTo/ANAC Italy ML papers (tender contract-variation prediction, 96.5% XGBoost); 'Failed Procurements as a Measure of Public Procurement Performance' (Springer 2026, TED/CAN void-rate empirical analysis, no ML task); MiDES (Brazilian municipal procurement raw tables, descriptive desertion rates).",
+  "ours": "First scored, temporally-split prediction task on ChileCompra Mercado Publico licitaciones: at tender publication, predict whether the process will be declared deserted (desierta, Ley 19.886 art. 3/9) at adjudication, from publication-time features only (buyer, region, UNSPSC items, estimated value, procedure type, publication calendar), over the 2009-2022 monthly OCDS bulk panel with train/eval/holdout windows and a runner-compatible binary contract. No prior art ships this task: existing procurement-ML work predicts other labels (contract variations, bidder recommendation) on other countries.",
+  "verdict": "differentiated",
+  "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+ },
+ "verdict": "go",
+ "jurisdiction": {
+  "country": "CL",
+  "region": "Latin America",
+  "publisher": "Direcci\u00f3n de Compras y Contrataci\u00f3n P\u00fablica (ChileCompra) - Mercado P\u00fablico platform",
+  "recorded_at": "2026-10-21"
+ },
+ "licence_class": "A",
+ "licence_note": "CC0 1.0 per the OCP publication registry; publisher terms permit reuse"
 }

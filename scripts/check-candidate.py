@@ -41,6 +41,11 @@ IDENTITY_FIELDS = (
     "id", "status", "domain", "prediction_question", "prediction_time", "target_definition",
     "sources", "license_evidence", "next_action", "jurisdiction",
 )
+# Licence triage is a sort key, not an afterthought: 18 of 31 parked candidates were parked for
+# licence reasons, and the probing that discovered that had already been paid for. Anything that
+# is about to be built, or has been built, must carry a class; `investigating` may be unclassified.
+LICENCE_CLASSES = ("A", "B", "C", "D")
+LICENCE_REQUIRED = ("ready",) + CONSTRUCTED
 
 
 def _nonempty(value):
@@ -115,6 +120,22 @@ def check_record(record, notes_present=True):
         jobs = record.get("jobs") or []
         if not jobs:
             warnings.append("no worker job recorded for a constructed candidate")
+
+    if status in LICENCE_REQUIRED:
+        licence = str(record.get("licence_class") or "").strip().upper()
+        if licence not in LICENCE_CLASSES:
+            missing.append(
+                "licence_class: required before this dataset may be built "
+                "(A open, B open-with-conditions, C unresolved, D prohibited)")
+        elif (licence == "C" and status in ("qualified", "packaged", "published")
+              and not record.get("licence_risk_accepted")):
+            missing.append(
+                "licence_class C cannot be published without a recorded operator risk acceptance "
+                "(set licence_risk_accepted with the decision date and basis)")
+        elif licence == "D" and status in ("qualified", "packaged", "published"):
+            missing.append(
+                f"licence_class {licence} cannot be published: unresolved or prohibited licences "
+                "must be recorded as an operator risk acceptance before packaging")
 
     if status in NOVELTY_REQUIRED:
         # Publishing a dataset that already exists in ML-ready form is a mirror, not a

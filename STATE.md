@@ -4978,3 +4978,14 @@ with 24 months of history whose target month falls below the volume gate must st
 the v2026.11 build it fails ("'TEST-2022-01' not found in set()"); on v2026.12 it passes. Also covers
 the 24-month exclusion and the unobserved-target accounting.
 Held from the flip pending a third independent pass.
+
+**Licence triage moved to the front of the queue (2026-10-21).** 18 of 31 parked candidates were
+parked on licence or terms after probing had been paid for. `licence_class` (A open / B open with
+conditions / C unresolved / D prohibited) is now part of the candidate identity: required for any
+status at or beyond `ready`, and a C may not be packaged or published without a recorded operator
+risk acceptance. `scripts/licence-rank.py` sorts the construction queue by class, and the discovery
+prompt now triages the licence in the first minutes and rejects D on the spot. Backfilled honestly:
+10 candidates classified from recorded evidence at the time, 6 ready ones reviewed and all class A
+(CC0 Chile, CC BY Malaysia and EU, OGL Canada, public domain Brazil, Treasury terms South Africa),
+WHO FluNet carries class C plus the 2026-10-21 risk acceptance. 42 remain unclassified and cannot
+be built until triaged.
