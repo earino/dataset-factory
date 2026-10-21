@@ -1,16 +1,70 @@
 # Current state
 
-Updated: 2026-10-21 06:43Z (worker watcher: nhsae-baseline-001 green - runner-contract
-baseline on the accepted nhs-ae artifact, eval AUC 0.5526, CONTRACT OK; both watched jobs
-collected, reports fetched, outcomes recorded, workers destroyed).
-who-flunet-activity-exceedance is PACKAGED and FULLY STAGED on both destinations, private,
-awaiting only the operator's flip. The runner-contract baseline measured 0.8700 eval AUC on the
-released bytes.
-nhs-ae-four-hour-decline is QUALIFIED WITH A GREEN RUNNER-CONTRACT BASELINE: artifact
-9903df974f233dfa (job nhsae-002, staging release 419222791), gate 1.3.0 green, --accept
-re-verified; nhsae-baseline-001 re-accepted the bytes and measured eval AUC 0.5526 through the
-unmodified benchmark scripts, below the mean-reversion reference (0.5659 eval / 0.6562 holdout -
-the bar a competent model must beat); next is packaging per dataset-release.
+Updated: 2026-10-21 10:31Z (worker watcher: the three nhs-ae packaging jobs all green and closed -
+nhsae-publish-001 GitHub destination transfer, nhsae-hf-001 Hub upload, nhsae-hf-002 loading check;
+this run recorded the packaged state, pushed the commits that had piled up unpushed since 08:13Z,
+checked CI and wrote the handled markers).
+who-flunet-activity-exceedance is PUBLISHED (2026-10-21 10:24Z, the operator's "ship it"): public on
+GitHub and Hugging Face with an honest unresolved-licence label (no open licence asserted over the
+source rows, WHO data-compilation clause quotes recorded), measured results and limitations on the
+card, and the dataset site + catalogue live.
+nhs-ae-four-hour-decline is PACKAGED AND FULLY STAGED ON BOTH DESTINATIONS, PRIVATE, awaiting only
+the operator's flip: GitHub release v2026.10 (tag == main == f36e4fc3) and the Hugging Face repo both
+carry the five accepted artifact files (artifact 9903df974f233dfa, --accept re-verified through
+get_dataset.py; the documented loading path verified split-by-split by nhsae-hf-002).
+
+## 2026-10-21 - nhs-ae packaged and staged private on both destinations (three green jobs); who-flunet PUBLISHED on the operator's "ship it"; this watcher run closed a two-crash arc
+
+**nhsae-publish-001** (worker 171563321, cx23/hel1, destroyed 10:12:08Z, result release 419407464):
+copied the five accepted nhsae-002 files from private staging (release 419222791) into the private
+dataset repository earino/nhs-ae-four-hour-decline release v2026.10 (419405716) - transfers 5,
+failures 0, 4,898,346 bytes, every sha256 verified on arrival and against the server's own digest
+after upload; the bytes never passed through the coordinator. Re-verified from the coordinator
+through the GitHub API: 5/5 assets with matching ids and sizes, and meta.json + quality.json
+re-hashed at exactly their manifest digests. **nhsae-hf-001** (worker 171563744, destroyed
+10:14:03Z, result release 419411258): hf_publish job - uploaded all five data files to the private
+Hugging Face repo from the staged GitHub release (uploads 5, skipped 0, failures 0, 4,898,346 bytes).
+**nhsae-hf-002** (worker 171564314, destroyed 10:17:48Z, result release 419414704): loading-check
+retry - every upload skipped (already at the manifest digests) and the card's documented
+load_dataset path ran against the private repo: train 6,116 rows / 3,285 positives, eval 2,937 /
+1,478, holdout 2,538 / 1,233, label values ['0','1'], 37 columns per split, all matching the
+manifest - hf_loading ok: true, problems: [] (the check that caught the food release's
+declared-schema bug before shipping). All three workers already collected and destroyed by the
+packaging arc; this run fetched the small reports into .factory/nhsae-{publish-001,hf-001,hf-002}/
+reports/ (each job's container.log asset is only a post-destroy docker capture error - "No such
+container" - the real evidence is the result records).
+
+Both destinations were verified private and complete before recording: get_dataset.py executed
+end-to-end against the private GitHub release (all five assets token-downloaded via the API
+asset-id path, digests verified, runner layout restored, exit 0) and qualify_dataset.py --accept
+re-verified the downloaded tree (ACCEPTED, artifact 9903df974f233dfa); GitHub tag v2026.10 == main
+== f36e4fc3; Hub tag v2026.10 created last (tag_matches_main true); anonymous GitHub 404 / Hub 401.
+Record: qualified -> packaged (packaged_at 2026-10-21T10:18:40Z, awaiting_operator true - the flip
+is the operator's), three job entries, three result-release artifacts and both destination
+artifacts added; check-candidate.py OK. DESTINATIONS.json (written by the packaging arc, committed
+f3369ba) carries the full per-destination check log.
+
+**who-flunet-activity-exceedance PUBLISHED 2026-10-21 10:24Z** by the same arc on the operator's
+"ship it", recorded in commits bcd3d57 + f3369ba: licence reworked to the honest unresolved label
+(compilation NOASSERTION, WHO data-compilation clause quotes, takedown route; Hub card license
+field 'other'), both destinations flipped public with anonymous verification (GitHub 5/5 assets
+re-hashed anonymously; Hub 15 files), the tag moved to the docs commit on both destinations (the
+site publisher pins the tag and refused while it carried the old CC claim), website published with
+the receipt complete (dataset site + catalogue live at earino.github.io, both Actions deployments
+success). Follow-up in the record: written WHO permission would replace the risk-acceptance label.
+
+**Two sessions died in flight; this watcher run closed the loop.** The research session (started
+10:00Z) exited 1 at 10:19:14Z mid-ceremony; its continuation completed the platform work, the
+flunet record, STATE.md and commit f3369ba (10:25:05Z) but died before the nhs-ae record, the
+dashboard rebuild (10:25:24Z, left uncommitted) and any push - five commits sat unpushed since
+08:13Z. This watcher run: verified both nhs-ae destinations read-only, wrote the packaged record,
+rebuilt the dashboard, committed, pushed everything and checked CI for the exact commit. Worker
+spend this month: ~6.1 EUR of the 20 EUR allowance (the three packaging jobs add 0.12 EUR in
+reservations, each under 3.5 minutes of runtime).
+
+NEXT: the operator's flip for nhs-ae-four-hour-decline (both destinations staged private), then
+publication per dataset-release on both platforms plus the website.
+
 
 ## 2026-10-21 - nhsae-baseline-001 green (contract baseline 0.5526 eval AUC); nhs-ae qualified end to end; both watched jobs closed
 

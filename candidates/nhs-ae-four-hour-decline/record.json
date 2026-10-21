@@ -1,6 +1,6 @@
 {
  "id": "nhs-ae-four-hour-decline",
- "status": "qualified",
+ "status": "packaged",
  "verdict": "go",
  "jurisdiction": {
   "country": "GB",
@@ -82,6 +82,34 @@
    "destroyed_at": "2026-10-21T06:41:51Z",
    "job_elapsed_seconds": 56.8,
    "note": "runner-contract baseline on the accepted artifact fetched from staging release 419222791 (not rebuilt): gate --accept re-verified the released bytes (artifact 9903df974f233dfa) before scoring, the benchmark's own train.py and validate.sh ran unmodified, eval AUC 0.5526 on both independent paths, CONTRACT OK; below the mean-reversion reference (0.5659 eval / 0.6562 holdout) - recorded as headroom. Reports in .factory/nhsae-baseline-001/reports/ and staging release 419227918."
+  },
+  {
+   "id": "nhsae-publish-001",
+   "status": "succeeded",
+   "server_id": 171563321,
+   "launched_at": "2026-10-21T10:07:19Z",
+   "collected_at": "2026-10-21T10:09:44Z",
+   "destroyed_at": "2026-10-21T10:12:08Z",
+   "target_repo": "earino/nhs-ae-four-hour-decline",
+   "note": "destination-staging transfer: copied the five accepted nhsae-002 files from private staging release 419222791 into the private dataset repository earino/nhs-ae-four-hour-decline release v2026.10 (419405716) under the flat asset names the download helper restores, verifying each sha256 on arrival and against the server's own digest after upload (transfers 5, failures 0, 4,898,346 bytes); the bytes never passed through the coordinator. Result release 419407464."
+  },
+  {
+   "id": "nhsae-hf-001",
+   "status": "succeeded",
+   "server_id": 171563744,
+   "launched_at": "2026-10-21T10:10:30Z",
+   "collected_at": "2026-10-21T10:13:47Z",
+   "destroyed_at": "2026-10-21T10:14:03Z",
+   "note": "hf_publish worker job: uploaded the five data files to the private Hugging Face dataset repo earino/nhs-ae-four-hour-decline from the staged private GitHub release, verifying each sha256 before and after transfer (uploads 5, skipped 0, failures 0, 4,898,346 bytes); the bytes never passed through the coordinator. Result release 419411258."
+  },
+  {
+   "id": "nhsae-hf-002",
+   "status": "succeeded",
+   "server_id": 171564314,
+   "launched_at": "2026-10-21T10:14:34Z",
+   "collected_at": "2026-10-21T10:17:35Z",
+   "destroyed_at": "2026-10-21T10:17:48Z",
+   "note": "loading-check retry: every per-file upload skipped (already at the manifest digests; uploads 0, skipped 5, failures 0) and the card's documented loading path executed on the worker - load_dataset against the private repo returned train 6,116 rows / 3,285 positives, eval 2,937 / 1,478, holdout 2,538 / 1,233, label values ['0','1'], 37 columns per split, exactly matching the manifest (hf_loading ok: true, problems: []). Result release 419414704."
   }
  ],
  "artifacts": [
@@ -96,11 +124,48 @@
    "repo": "earino/dataset-factory-staging",
    "id": 419227918,
    "note": "nhsae-baseline-001 reports and logs (baseline result, gate re-acceptance, train/validate output, pip freeze)"
+  },
+  {
+   "kind": "staging_release",
+   "repo": "earino/dataset-factory-staging",
+   "id": 419407464,
+   "note": "nhsae-publish-001 result: worker-side transfer record and source bundle"
+  },
+  {
+   "kind": "staging_release",
+   "repo": "earino/dataset-factory-staging",
+   "id": 419411258,
+   "note": "nhsae-hf-001 reports: worker-side hf_publish upload record and source bundle"
+  },
+  {
+   "kind": "staging_release",
+   "repo": "earino/dataset-factory-staging",
+   "id": 419414704,
+   "note": "nhsae-hf-002 reports: loading-check record and source bundle"
+  },
+  {
+   "job": "staging (GitHub)",
+   "repository": "https://github.com/earino/nhs-ae-four-hour-decline",
+   "visibility": "private (publication requires explicit authorisation)",
+   "tag": "v2026.10",
+   "commit": "f36e4fc3ade4c10da9a1e84e8a47bb24f58f7698",
+   "release": "https://github.com/earino/nhs-ae-four-hour-decline/releases/tag/v2026.10",
+   "release_id": 419405716,
+   "artifact_version": "9903df974f233dfaeaa2a005f12012fc97e561673031de44f4b8d7f016d9d957",
+   "artifact_version_note": "5/5 release assets match the package MANIFEST digests, read back from the GitHub API after the nhsae-publish-001 transfer (transfers 5, failures 0); get_dataset.py executed end-to-end against the private release (token download of all five assets via the API asset-id path, every digest verified, runner layout restored, exit 0) and qualify_dataset.py --accept on the downloaded tree returned ACCEPTED, artifact 9903df974f233dfa; tag == main == f36e4fc3; anonymous fetch 404s (private)."
+  },
+  {
+   "job": "staging (Hugging Face)",
+   "repository": "https://huggingface.co/datasets/earino/nhs-ae-four-hour-decline",
+   "visibility": "private (publication requires explicit authorisation)",
+   "revision": "v2026.10",
+   "artifact_version": "9903df974f233dfaeaa2a005f12012fc97e561673031de44f4b8d7f016d9d957",
+   "artifact_version_note": "all five data files present at manifest sizes (hf-publish.py --verify: missing 0, size_mismatch 0; repository private); nhsae-hf-002 executed the card's documented loading path against the private repo and every split matched the manifest (train 6,116/3,285 positives, eval 2,937/1,478, holdout 2,538/1,233, label ['0','1'], 37 columns; ok true, problems []); Hub tag v2026.10 created last at 7ed0e20603514a7b30af648f1f6fd6c9c155cdfd with tag_matches_main true; anonymous Hub API answers 401 (private)."
   }
  ],
  "rejection_reason": null,
  "review": null,
- "next_action": "QUALIFIED, runner-contract baseline green (nhsae-baseline-001: artifact 9903df974f233dfa re-accepted before scoring, benchmark train.py+validate.sh unmodified, eval AUC 0.5526 both paths, CONTRACT OK; the mean-reversion reference 0.5659 eval / 0.6562 holdout is the bar a competent model must beat, momentum anti-predictive at 0.4161/0.3993). Next: packaging per dataset-release - license.json (source OGL v3 terms carried through unchanged, our compilation CC0-1.0, code MIT), card, get_dataset.py, MANIFEST, private staging to both destinations, then the operator's flip. Quote the record's corrected panel figures (the discovery session's 3,714/2,449 row counts were probe defects - see probe_defect_correction_2026_10_21).",
+ "next_action": "PACKAGED 2026-10-21T10:18:40Z - fully staged on both destinations, private on both (anonymous GitHub 404, Hub 401): GitHub release v2026.10 (tag == main == f36e4fc3) carries the five accepted files at manifest digests with get_dataset.py verified end-to-end (--accept ACCEPTED, artifact 9903df974f233dfa); the Hugging Face repo carries the same five files with the card's documented loading path verified split-by-split (nhsae-hf-002 ok, problems []). Awaiting only the operator's flip; after it, publication per dataset-release on both platforms plus the website.",
  "novelty_check": {
   "checked_at": "2026-10-21T04:36:13+00:00",
   "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
@@ -332,5 +397,7 @@
   },
   "staging_release": 419227918,
   "note": "Measured on the released bytes fetched from staging (digest-verified, re-accepted through the gate before scoring), not a rebuild; the private holdout was never copied into the runner workdir. The XGBoost pass (0.5526 eval) sits below the construction-time mean-reversion reference (0.5659 eval / 0.6562 holdout), which is the bar a competent model must beat - recorded as measured headroom information, not a defect."
- }
+ },
+ "packaged_at": "2026-10-21T10:18:40Z",
+ "awaiting_operator": true
 }
