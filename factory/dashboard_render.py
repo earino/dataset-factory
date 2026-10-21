@@ -543,7 +543,7 @@ def render_overview(snapshot, alarms, alarms_plain=()):
                 state = pill("ship it", "bad")
             rows.append(
                 '<div class="item"><div class="meta">'
-                f'<div class="name">{esc(record["id"])}</div>'
+                f'<a class="name" href="candidate-{esc(record["id"])}.html">{esc(record["id"])}</a>'
                 f'<div class="desc">{esc(desc)}</div>'
                 f'</div><div class="side">{state}</div></div>')
         release_card = '<div class="col-12">' + card("Ready to ship", '<div class="list">' + "".join(rows) + '</div>',

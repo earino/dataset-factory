@@ -191,6 +191,8 @@ class ReleaseQueueTests(unittest.TestCase):
         self.assertIn("Ready to ship", html)
         self.assertIn("ready-set", html)
         self.assertIn("ship it", html)
+        # The card is the thing a reader clicks when they want to know what the dataset is.
+        self.assertIn('href="candidate-ready-set.html"', html)
 
     def test_a_candidate_waiting_on_the_flip_is_labelled_as_such(self):
         snap = snapshot()
