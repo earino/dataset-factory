@@ -4640,3 +4640,16 @@ access + era samples, executed after commit-ready edit; CER: download/measure + 
 StatCan/ECCC/HC: catalogue probes, executed). check-candidate.py --all OK (43 records); 386 tests OK;
 coverage run before and after. Session scratch scripts in .factory/ deleted; nothing else touched -
 no build, qualification, packaging or publication commands were run this session.
+
+**Review response on who-flunet (2026-10-21).** Ran the decisive comparisons on the released rows.
+Persistence (week-W positivity) reproduces exactly at eval 0.8929; a hierarchical country x target-week
+seasonal prior reaches 0.5509 and a global week-of-year prior 0.5437; an independent calendar-only GBM
+reached 0.6269. The full model is 0.8700. So the review's seasonality hypothesis is wrong - calendar
+signal tops out ~0.63 - but the model is *below* the persistence rule, which is the more serious defect:
+the current label is largely persistent, not a forecast of change. Prevalence shifts from 59.2% positive
+in train (targets 2005-2020) to 23.9% in eval (2020-2023), so the eval window is the COVID disruption.
+Sentinel-only feasibility measured from the WHO source: 19,634 eligible country-weeks vs 64,001 combined
+(2020: 875 vs 2,624), and 46% of source rows are ORIGIN_SOURCE=NOTDEFINED - the combined positivity mixes
+three categories. Lag audit impossible: only the current vintage is published.
+Dashboard defect fixed: the dataset page showed "reference: no data" while the record contained 0.8929;
+the reference is now extracted from measurements and flagged when the model is below it.

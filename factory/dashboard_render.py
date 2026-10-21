@@ -800,7 +800,9 @@ def render_candidate(record, snapshot):
                 f'{"one representative config; the release carries the rest" if from_release else "on eval"}</span></div>'
                 f'<div class="kpi"><span class="sub">reference</span><span class="v">'
                 f'{f"{reference:.4f}" if isinstance(reference, (int, float)) else "no data"}</span>'
-                f'<span class="n">persistence / prior</span></div></div>'
+                f'<span class="n">'
+                f'{"persistence — the model is BELOW it" if isinstance(reference, (int, float)) and auc < reference else "persistence / prior"}'
+                f'</span></div></div>'
                 if isinstance(auc, (int, float)) else
                 '<p class="sub">Not measured yet. A baseline runs on the released bytes before packaging.</p>')
 

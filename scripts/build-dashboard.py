@@ -108,10 +108,20 @@ def collect_candidates():
                         return found
             return None
 
+        # Some records state their reference baselines as prose in measurements rather than as
+        # numbers in `baseline`. Extract the eval figure so the page cannot show "no data" while
+        # the record contains the number - that hid a model sitting below its own baseline.
+        import re as _re
+        persistence = None
+        for value in (record.get("measurements") or {}).values():
+            match = _re.search(r"persistence[^;]*?eval\s+([0-9]\.[0-9]+)", json.dumps(value))
+            if match:
+                persistence = float(match.group(1))
+                break
         release_baseline = {"auc": find_number(release_manifest.get("baseline"), ("eval_auc",)),
-                            "reference": find_number(release_manifest.get("baseline"),
+                            "reference": (find_number(release_manifest.get("baseline"),
                                                      ("persistence_prev_target_cited_eval_auc",
-                                                      "persistence_eval_auc"))}
+                                                      "persistence_eval_auc")) or persistence)}
         measurements = record.get("measurements") or {}
         qualification = record.get("qualification") or {}
         baseline = record.get("baseline") or {}

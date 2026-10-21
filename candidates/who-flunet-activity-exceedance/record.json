@@ -53,7 +53,81 @@
   "flunet_001_failure_diagnosis": "flunet-001 (worker 171454348) failed with exit 1 on exactly one gate check, timing.every_feature_documented: quality.json's features_documented_at carried documentation prose ('prediction_time; every source field is documented in...') where the gate compares the bare availability class 'prediction_time' (qualify_dataset.py:271-274). Every other check passed (30+ green, including the trap cross-check below). Fix: value set to 'prediction_time', documentation reference moved to a feature_documentation key the gate does not compare. Worker destroyed 22:20:55Z after collection; retry launched as flunet-002, not an unchanged re-run.",
   "trap_acceptance_flunet_002": "Measured on the full table: the 1995-2004 window holds 931 pre-rule country-weeks at 100% positive - byte-for-byte the discovery session's 931/931 measurement, reproduced independently - and the systematic-negative rule leaves 14 of them. The frame rule is therefore proven to remove the trap it was designed against.",
   "reference_baselines_flunet_002": "Stdlib rank-AUC references measured at construction on the written rows (prediction-time-safe single features): persistence (score = week-W positivity) train 0.8969 / eval 0.8929 / holdout 0.8745; rolling-8-week mean train 0.7990 / eval 0.8281 / holdout 0.7683. Four-week-ahead exceedance retains headroom above these but they are strong - the solver must beat persistence to be interesting; these figures are references, not the scored baseline.",
-  "qualification_flunet_002": "Gate 1.3.0 on the worker over the full artifact: ok=true, failed_checks=[], 2026-10-20 22:24Z; artifact_version b1323a27fa02eb79... (train sha 2515289b..., eval 7d809b16..., holdout f7dd814a...). Hand-off accept on the coordinator: qualify_dataset.py --accept report extract -> ACCEPTED, same artifact digest. Staging release 418940777 (untagged-5a0aa09b17777e11f345), collect verified every asset against the worker's manifest."
+  "qualification_flunet_002": "Gate 1.3.0 on the worker over the full artifact: ok=true, failed_checks=[], 2026-10-20 22:24Z; artifact_version b1323a27fa02eb79... (train sha 2515289b..., eval 7d809b16..., holdout f7dd814a...). Hand-off accept on the coordinator: qualify_dataset.py --accept report extract -> ACCEPTED, same artifact digest. Staging release 418940777 (untagged-5a0aa09b17777e11f345), collect verified every asset against the worker's manifest.",
+  "review_response_2026_10_21": {
+   "question": "Is the reported 0.8700 eval AUC more than seasonal predictability, and does it beat a one-line rule?",
+   "rows": "the released artifact, private release v2026.10 (5 assets, 6,576,498 B); public-train 5,779 rows / public-eval 6,831 rows",
+   "persistence_week_W_positivity": {
+    "train": 0.8969,
+    "eval": 0.8929,
+    "holdout": 0.8745,
+    "note": "reproduced independently from the released rows; score is week-W positivity, known at the prediction instant"
+   },
+   "seasonal_prior_country_x_target_week": {
+    "eval": 0.5509,
+    "by_year": {
+     "2020": 0.678,
+     "2021": 0.513,
+     "2022": 0.5172,
+     "2023": 0.6222
+    }
+   },
+   "calendar_only_global_week_prior": {
+    "eval": 0.5437,
+    "by_year": {
+     "2020": 0.6691,
+     "2021": 0.5014,
+     "2022": 0.455,
+     "2023": 0.5098
+    }
+   },
+   "independent_calendar_only_gbm": {
+    "eval": 0.6269,
+    "note": "external replication, country one-hot + cyclical week + hierarchical seasonal prior; per-year 2020 0.6561, 2021 0.6263, 2022 0.5919, 2023 0.6534"
+   },
+   "full_model_baseline": {
+    "eval": 0.87
+   },
+   "conclusion": "Not seasonal predictability: calendar-only tops out at 0.6269 while the full model reaches 0.8700. But the full model is BELOW week-W persistence (0.8929), so the current baseline demonstrates no value over a one-line rule. On this construction the label is essentially persistent, not a forecast of change.",
+   "prevalence_shift": {
+    "train_positive_rate": 0.5918,
+    "eval_positive_rate": 0.2395,
+    "holdout_positive_rate": 0.4066,
+    "note": "train targets 2005-2020 (concentrated 2015-2019), eval 2020-2023, holdout 2023-2026; the eval window is the COVID disruption, so this is an out-of-distribution test as much as a temporal one."
+   },
+   "sentinel_only_feasibility": {
+    "source": "WHO FluNet full table, xmart-api-public.who.int/FLUMART/VIW_FNT (189,649 rows)",
+    "origin_rows": {
+     "NOTDEFINED": 86890,
+     "SENTINEL": 59393,
+     "NONSENTINEL": 43366
+    },
+    "eligible_country_weeks_denominator_50": {
+     "combined": 64001,
+     "sentinel_only": 19634
+    },
+    "by_year": {
+     "2020": {
+      "combined": 2624,
+      "sentinel_only": 875
+     },
+     "2021": {
+      "combined": 3159,
+      "sentinel_only": 1099
+     },
+     "2022": {
+      "combined": 4224,
+      "sentinel_only": 2308
+     },
+     "2023": {
+      "combined": 4874,
+      "sentinel_only": 2936
+     }
+    },
+    "note": "sentinel-only is feasible but shrinks the eligible panel by about 3x in the eval window; 46% of source rows carry ORIGIN_SOURCE=NOTDEFINED, so the current combined positivity mixes three categories."
+   },
+   "lag_audit": "not performed: the publisher exposes only the current vintage, so historical publication times and revisions are unavailable; a defensible cutoff must be assumed (W-1 or W-2) and stated."
+  }
  },
  "jobs": [
   {
