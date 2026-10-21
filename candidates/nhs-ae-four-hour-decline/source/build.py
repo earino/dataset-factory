@@ -28,14 +28,20 @@ Frame rules (each measured and reported in summary.json)
   datestamp sort before every revision, which is exactly the "prefer the
   latest upload" policy (a revision is always a later upload than the
   original it corrects). The count of deduplicated keys is reported.
-* Volume gate: a provider-month is eligible only when Type 1 attendances
-  >= 100 in BOTH the feature month M and the target month M+1 (measured on
-  the 2026-10-21 snapshot: leaves 124 providers with >= 24 qualifying
-  months -> 9,071 provider-months).
-* Prediction instant: the end of month M, when month M's monthly CSV is
-  published (measured ~3 week publication lag). Every shipped feature is
-  derived from months <= M. The label is month M+1's within-4-hour rate
-  versus month M's.
+* Volume gate: a provider-month qualifies when its Type 1 attendances
+  >= 100. A row for feature month M exists when the provider has
+  MIN_PROVIDER_MONTHS (24) qualifying months at or before M and month M
+  itself qualifies; the target month M+1 supplies the label only and never
+  decides whether a row exists - when it is absent from the register the
+  row is counted as unobserved_target, which is missing outcome data, not
+  exclusion (measured on the 2026-10-21 snapshot: 142 candidate providers,
+  12,835 qualifying provider-months, 129 providers ship).
+* Prediction instant: the publication date of month M's monthly CSV. NHS
+  England publishes 9-13 days after the period ends (June, July and August
+  2026: 9, 13 and 10 days), so the task uses the MAXIMUM observed lag,
+  13 days - no month's data is used before it existed. Every shipped
+  feature is derived from months <= M. The label is month M+1's
+  within-4-hour rate versus month M's.
 * Label: declines = 1 iff within4h_rate(M+1) < within4h_rate(M), where
   within4h_rate(Y) = 1 - Attendances over 4hrs Type 1 / A&E attendances
   Type 1 for that provider-month. A relative m/m change is used because the
@@ -288,8 +294,9 @@ PREDICTION_TIME = (
     "did not yet exist.")
 PREDICTION_QUESTION = (
     "For an NHS England provider operating a consultant-led (Type 1) A&E "
-    "department with at least 100 Type 1 attendances in each of months M and "
-    "M+1, will the provider's Type 1 within-4-hour performance rate decline "
+    "department with at least 100 Type 1 attendances in month M and at "
+    "least 24 such volume-qualified months at or before M, will the "
+    "provider's Type 1 within-4-hour performance rate decline "
     "in month M+1 relative to month M, given the provider's monthly A&E "
     "series (attendances by department type, over-4-hour counts, "
     "decision-to-admit waits, emergency admissions) for all months through "
