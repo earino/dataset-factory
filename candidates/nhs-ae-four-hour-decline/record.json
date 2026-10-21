@@ -1,6 +1,6 @@
 {
  "id": "nhs-ae-four-hour-decline",
- "status": "ready",
+ "status": "qualified",
  "verdict": "go",
  "jurisdiction": {
   "country": "GB",
@@ -72,12 +72,35 @@
    "destroyed_at": "2026-10-21T06:25:02Z",
    "job_elapsed_seconds": 12.1,
    "note": "build + qualification gate green on the worker over the staged source (fetch job, release source-nhsae-001); composite source digest 99cb3339... identical to the coordinator exercise; --accept re-verified the collected bytes (artifact 9903df974f233dfa). Result release 419222791."
+  },
+  {
+   "id": "nhsae-baseline-001",
+   "status": "succeeded",
+   "server_id": 171525370,
+   "launched_at": "2026-10-21T06:28:45Z",
+   "collected_at": "2026-10-21T06:31:47Z",
+   "destroyed_at": "2026-10-21T06:41:51Z",
+   "job_elapsed_seconds": 56.8,
+   "note": "runner-contract baseline on the accepted artifact fetched from staging release 419222791 (not rebuilt): gate --accept re-verified the released bytes (artifact 9903df974f233dfa) before scoring, the benchmark's own train.py and validate.sh ran unmodified, eval AUC 0.5526 on both independent paths, CONTRACT OK; below the mean-reversion reference (0.5659 eval / 0.6562 holdout) - recorded as headroom. Reports in .factory/nhsae-baseline-001/reports/ and staging release 419227918."
   }
  ],
- "artifacts": [],
+ "artifacts": [
+  {
+   "kind": "staging_release",
+   "repo": "earino/dataset-factory-staging",
+   "id": 419222791,
+   "note": "nhsae-002 build: the five gated extract files plus the gate report, build summary, container log and job bundle"
+  },
+  {
+   "kind": "staging_release",
+   "repo": "earino/dataset-factory-staging",
+   "id": 419227918,
+   "note": "nhsae-baseline-001 reports and logs (baseline result, gate re-acceptance, train/validate output, pip freeze)"
+  }
+ ],
  "rejection_reason": null,
  "review": null,
- "next_action": "CONSTRUCTED AND QUALIFIED (nhsae-002, artifact 9903df974f233dfa, gate 1.3.0 green, --accept re-verified). Next: (1) runner-contract baseline job on the accepted artifact (model the flunet-baseline-001 job: fetch the five extract files from staging release 419222791, re-accept through the gate, materialise the runner workdir, run the benchmark's own train.py/validate.sh unmodified, record eval/holdout AUC against the reference baselines - mean reversion 0.5659 eval / 0.6562 holdout is the bar a competent model must beat; momentum is anti-predictive at 0.416/0.399); then (2) packaging per dataset-release (license.json: OGL v3 carried through, our compilation CC0-1.0, code MIT), card, get_dataset.py, MANIFEST, private staging to both destinations. The record's corrected panel figures are the ones to quote; the discovery session's 3,714/2,449 row counts were probe defects (see probe_defect_correction_2026_10_21).",
+ "next_action": "QUALIFIED, runner-contract baseline green (nhsae-baseline-001: artifact 9903df974f233dfa re-accepted before scoring, benchmark train.py+validate.sh unmodified, eval AUC 0.5526 both paths, CONTRACT OK; the mean-reversion reference 0.5659 eval / 0.6562 holdout is the bar a competent model must beat, momentum anti-predictive at 0.4161/0.3993). Next: packaging per dataset-release - license.json (source OGL v3 terms carried through unchanged, our compilation CC0-1.0, code MIT), card, get_dataset.py, MANIFEST, private staging to both destinations, then the operator's flip. Quote the record's corrected panel figures (the discovery session's 3,714/2,449 row counts were probe defects - see probe_defect_correction_2026_10_21).",
  "novelty_check": {
   "checked_at": "2026-10-21T04:36:13+00:00",
   "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
@@ -185,6 +208,34 @@
   "verdict": "differentiated",
   "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
  },
+ "qualification": {
+  "gate_version": "1.3.0",
+  "ok": true,
+  "failed_checks": [],
+  "artifact_version": "9903df974f233dfa",
+  "report": "staging release 419222791 (job nhsae-002), qualification-nhs-ae-four-hour-decline.json; bundled as qualification.json and re-accepted by job nhsae-baseline-001 before scoring",
+  "accepted_on_coordinator": "qualify_dataset.py --accept -> ACCEPTED (2026-10-21); every extract file re-fetched and re-hashed against the release manifest first",
+  "splits": {
+   "train": {
+    "rows": 6116,
+    "positives": 3285,
+    "positive_rate": 0.537116,
+    "distinct_events": 133
+   },
+   "eval": {
+    "rows": 2937,
+    "positives": 1478,
+    "positive_rate": 0.503235,
+    "distinct_events": 124
+   },
+   "holdout": {
+    "rows": 2538,
+    "positives": 1233,
+    "positive_rate": 0.485816,
+    "distinct_events": 121
+   }
+  }
+ },
  "construction_output": {
   "job": "nhsae-002",
   "artifact_version": "9903df974f233dfa",
@@ -261,5 +312,25 @@
     "winter": 0.509
    }
   }
+ },
+ "baseline": {
+  "job": "nhsae-baseline-001",
+  "server_id": 171525370,
+  "elapsed_seconds": 56.8,
+  "artifact_fetched_from_staging": 419222791,
+  "accepted_artifact_version": "9903df974f233dfa",
+  "contract_ok": true,
+  "eval_auc_from_train_py": 0.5526,
+  "eval_auc_from_validate_py": 0.5526,
+  "runner_files_unmodified": true,
+  "dependencies": {
+   "python": "3.13.16",
+   "pandas": "2.3.3",
+   "numpy": "2.5.4",
+   "xgboost": "3.4.1",
+   "scikit-learn": "1.9.1"
+  },
+  "staging_release": 419227918,
+  "note": "Measured on the released bytes fetched from staging (digest-verified, re-accepted through the gate before scoring), not a rebuild; the private holdout was never copied into the runner workdir. The XGBoost pass (0.5526 eval) sits below the construction-time mean-reversion reference (0.5659 eval / 0.6562 holdout), which is the bar a competent model must beat - recorded as measured headroom information, not a defect."
  }
 }

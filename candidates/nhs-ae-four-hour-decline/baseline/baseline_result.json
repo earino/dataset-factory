@@ -1,0 +1,55 @@
+{
+  "job": "nhsae-baseline-001",
+  "purpose": "one baseline through the runner's existing training and validation contract, on the accepted NHS England provider-month A&E decline artifact",
+  "artifact": {
+    "name": "nhs-ae-four-hour-decline",
+    "target": "declines",
+    "positive_label": 1,
+    "id_columns": [
+      "row_id"
+    ],
+    "rows": {
+      "train": 6116,
+      "eval": 2937,
+      "holdout": 2538
+    },
+    "positive_rate": {
+      "train": 0.537116,
+      "eval": 0.503235,
+      "holdout": 0.485816
+    },
+    "label_rule": "declines = 1 iff within4h_rate(M+1) < within4h_rate(M), within4h_rate(Y) = 1 - Attendances over 4hrs Type 1 / A&E attendances Type 1; provider-months with Type 1 attendances < 100 in either month are excluded"
+  },
+  "qualification_report": {
+    "bundled": "qualification.json",
+    "sha256": "dde24b820b2ca6fdd0eac5ac9fe4c101e5e7fc4d6409baa7729338b9bd53946b",
+    "accepted_before_scoring": true,
+    "accepted_artifact_version": "9903df974f233dfa"
+  },
+  "contract": {
+    "contract_ok": true,
+    "eval_auc_from_train_py": 0.5526,
+    "eval_auc_from_validate_py": 0.5526
+  },
+  "runner_files": {
+    "bundled_sha256": {
+      "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+      "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+      "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+    },
+    "expected_sha256": {
+      "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+      "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+      "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+    },
+    "unmodified": true
+  },
+  "dependencies": {
+    "python": "3.13.16",
+    "pandas": "2.3.3",
+    "numpy": "2.5.4",
+    "xgboost": "3.4.1",
+    "scikit-learn": "1.9.1"
+  },
+  "scope": "baseline only, through the runner's own contract. No agent or harness comparison was run, and none is implied."
+}

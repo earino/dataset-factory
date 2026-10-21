@@ -173,3 +173,23 @@ fetched from the release, each sha256 verified against the release manifest, the
 and is the documented path for an unblocked network; from this project's workers the
 publisher is CDN-blocked, so the staged-fetch path is the operative one and is recorded in
 summary.source.provenance of the built artifact.
+
+
+## Runner-contract baseline (nhsae-baseline-001, 2026-10-21)
+
+Worker 171525370 (cx23/hel1), 56.8 s, result release 419227918, destroyed 06:41:51Z. Fetched
+the five extract files from staging release 419222791 (4,898,346 B, every sha256 verified on
+arrival, 0 failures) - the released bytes, not a rebuild. The qualification gate re-accepted
+them before scoring (ACCEPTED, artifact 9903df974f233dfa). The runner workdir carried task.json
+(target=declines, positive_label=1, id_columns=['row_id']) and data/train.csv + eval.csv only -
+the private holdout was never copied in. The benchmark's own train.py and validate.sh ran
+unmodified (bundled sha256 == the declared benchmark hashes):
+
+- train.py: eval AUC 0.5526 (training 0.2 s, eval 0.0 s)
+- validate.py: eval AUC via predict_proba 0.5526, [validate] CONTRACT OK
+- deps: python 3.13.16, pandas 2.3.3, numpy 2.5.4, xgboost 3.4.1, scikit-learn 1.9.1
+
+Headroom reading: the off-the-shelf XGBoost pass (0.5526 eval) sits below the construction-time
+mean-reversion single-feature reference (0.5659 eval / 0.6562 holdout) - that reference is the
+bar a competent model must beat, so the task is not saturated by a generic pipeline; momentum is
+anti-predictive (0.4161/0.3993). Reports: .factory/nhsae-baseline-001/reports/.

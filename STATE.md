@@ -1,15 +1,44 @@
 # Current state
 
-Updated: 2026-10-21 06:27Z (advancement session: nhs-ae-four-hour-decline constructed and
-qualified on the worker; the discovery panel's recorded figures were corrected - two probe
-defects found and documented; the publisher's CDN blocks worker IPs, so construction runs as
-a staged-fetch job).
+Updated: 2026-10-21 06:43Z (worker watcher: nhsae-baseline-001 green - runner-contract
+baseline on the accepted nhs-ae artifact, eval AUC 0.5526, CONTRACT OK; both watched jobs
+collected, reports fetched, outcomes recorded, workers destroyed).
 who-flunet-activity-exceedance is PACKAGED and FULLY STAGED on both destinations, private,
 awaiting only the operator's flip. The runner-contract baseline measured 0.8700 eval AUC on the
 released bytes.
-nhs-ae-four-hour-decline is CONSTRUCTED AND QUALIFIED: artifact 9903df974f233dfa (job nhsae-002,
-staging release 419222791), gate 1.3.0 green on the worker, --accept re-verified on the
-coordinator; next is the runner-contract baseline job, then packaging.
+nhs-ae-four-hour-decline is QUALIFIED WITH A GREEN RUNNER-CONTRACT BASELINE: artifact
+9903df974f233dfa (job nhsae-002, staging release 419222791), gate 1.3.0 green, --accept
+re-verified; nhsae-baseline-001 re-accepted the bytes and measured eval AUC 0.5526 through the
+unmodified benchmark scripts, below the mean-reversion reference (0.5659 eval / 0.6562 holdout -
+the bar a competent model must beat); next is packaging per dataset-release.
+
+## 2026-10-21 - nhsae-baseline-001 green (contract baseline 0.5526 eval AUC); nhs-ae qualified end to end; both watched jobs closed
+
+**nhsae-002 (build)** was constructed, gated and recorded by the advancement session (commit
+48eab83); this watcher run closed the loop: small reports fetched into
+.factory/nhsae-002/reports/ (gate report ok=true, 0 failed checks; build_summary coverage 134
+providers / 12,765 qualifying provider-months / splits 6,116-2,937-2,538 - identical to the
+corrected recorded figures), worker already destroyed, handled marker written.
+
+**nhsae-baseline-001** (worker 171525370, cx23/hel1, 56.8 s, destroyed 06:41:51Z, result release
+419227918): the runner-contract baseline on the ACCEPTED nhsae-002 artifact, fetched from staging
+release 419222791 (4,898,346 bytes, all five extract files sha256-verified on arrival, 0 failures)
+- not rebuilt. The gate re-accepted the released bytes before any scoring (`ACCEPTED ...
+9903df974f233dfa`); the benchmark's own train.py and validate.sh ran UNMODIFIED (bundled sha256
+equal the declared benchmark hashes); both independent paths measured **eval AUC 0.5526** and
+`[validate] CONTRACT OK` (xgboost 3.4.1 / scikit-learn 1.9.1 / pandas 2.3.3 / numpy 2.5.4,
+python 3.13.16; rows train 6,116 / eval 2,937 / holdout 2,538, positives 53.7% / 50.3% / 48.6%;
+the private holdout was never copied into the runner workdir). The XGBoost pass sits below the
+construction-time mean-reversion reference (0.5659 eval / 0.6562 holdout) - that reference is the
+bar a competent model must beat, so the measured headroom is real; momentum is anti-predictive
+(0.416/0.399). Record: status ready -> qualified, top-level qualification + baseline keys, jobs
+and artifacts entries added, baseline_result.json committed with the job bundle; notes.md
+carries the evidence. Reports: .factory/nhsae-baseline-001/reports/. Worker spend this month:
+~5.98 EUR of the 20 EUR allowance (nhsae-baseline-001 reservation 0.06 EUR, ~57 s runtime).
+
+NEXT: packaging per dataset-release (license.json: OGL v3 source terms carried through unchanged,
+our compilation CC0-1.0, code MIT; card, get_dataset.py, MANIFEST, private staging to both
+destinations), then the operator's flip.
 
 ## 2026-10-21 - nhs-ae-four-hour-decline constructed and qualified (nhsae-002 green, artifact 9903df974f233dfa accepted); discovery panel figures corrected (two probe defects); publisher CDN blocks worker IPs
 

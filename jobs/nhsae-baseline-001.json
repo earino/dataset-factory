@@ -1,0 +1,230 @@
+{
+  "job": {
+    "id": "nhsae-baseline-001",
+    "candidate": "nhs-ae-four-hour-decline",
+    "image": "python:3.13-slim",
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 3072,
+    "timeout_minutes": 45,
+    "lifetime_minutes": 90,
+    "max_disk_mb": 4096,
+    "max_artifact_mb": 16,
+    "what": "runner-contract baseline on the accepted nhsae-002 artifact (9903df974f233dfa), fetched from staging (not rebuilt): re-accept the five fetched files through the qualification gate against the gate's own report, materialize the runner workdir (public train+eval only; the private holdout is never copied into the workdir), then run the benchmark's own train.py and validate.sh unmodified and record both AUCs. This is the contract only, not the agent harness loop.",
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 419222791,
+      "assets": [
+        {
+          "asset_id": 661566461,
+          "dest": "extract/meta.json",
+          "size": 3292,
+          "sha256": "c2f9f43a29d231019396a42c7791639e4acb96179afc0ecd4dfed0c634401813"
+        },
+        {
+          "asset_id": 661566548,
+          "dest": "extract/private/holdout.csv",
+          "size": 1099411,
+          "sha256": "527a385f12a920b019434c70588c6532af1bd4dd5459eb64ed46809b5ef99b70"
+        },
+        {
+          "asset_id": 661566619,
+          "dest": "extract/public/eval.csv",
+          "size": 1246633,
+          "sha256": "cb786792ac321dd851c272bd159fed24e13d6b633276606b294ddc976e72f266"
+        },
+        {
+          "asset_id": 661566688,
+          "dest": "extract/public/train.csv",
+          "size": 2543862,
+          "sha256": "819b6715ad55272ca0d2a482fb4471edd84ee09ae2ee62e560fe786bd9aeb404"
+        },
+        {
+          "asset_id": 661566746,
+          "dest": "extract/quality.json",
+          "size": 5148,
+          "sha256": "e7576e8a2431bacd0596161526a418a1c3c5dfea9e37399148db0f24d1d67a77"
+        }
+      ]
+    },
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "source_files": [
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/nhs-ae-four-hour-decline/baseline/run.sh",
+        "bytes": 3043,
+        "sha256": "346f9039306593276b2f17df3d1cbddb6a63fd66723011eced7fb5e0bdcb0c24"
+      },
+      {
+        "bundled_as": "materialize.py",
+        "source": "candidates/nhs-ae-four-hour-decline/baseline/materialize.py",
+        "bytes": 2257,
+        "sha256": "839707f377678fca52698ae8a8ee558a28b0208ea5b12f6d91954e99f78f493e"
+      },
+      {
+        "bundled_as": "report.py",
+        "source": "candidates/nhs-ae-four-hour-decline/baseline/report.py",
+        "bytes": 4398,
+        "sha256": "81bcc5258ed96db4d789764923594e583cb0a9b69c49e38abb6d9a3da7b7f20f"
+      },
+      {
+        "bundled_as": "qualification.json",
+        "source": "candidates/nhs-ae-four-hour-decline/baseline/qualification.json",
+        "bytes": 10453,
+        "sha256": "dde24b820b2ca6fdd0eac5ac9fe4c101e5e7fc4d6409baa7729338b9bd53946b"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 39333,
+        "sha256": "71a8cac429656e27dbb631be8488b9f4662580994b115290a243fc1f4b9639f1"
+      },
+      {
+        "bundled_as": "train.py",
+        "source": "/opt/data/harness_benchmark/task_template/train.py",
+        "bytes": 2500,
+        "sha256": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8"
+      },
+      {
+        "bundled_as": "validate.py",
+        "source": "/opt/data/harness_benchmark/task_template/validate.py",
+        "bytes": 1277,
+        "sha256": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b"
+      },
+      {
+        "bundled_as": "validate.sh",
+        "source": "/opt/data/harness_benchmark/task_template/validate.sh",
+        "bytes": 482,
+        "sha256": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      }
+    ]
+  },
+  "reservation_eur": "0.06",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 3,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 133120,
+  "source_sha256": "b3336cabed84f90f8a2f64013b39428db01425f9a4d8649df494a6d1ecfeaea6",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-10-21T06:28:45.593740+00:00",
+  "expires": 1792569525,
+  "budget_months": [
+    "2026-10"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 171525370,
+  "known_hosts": "/opt/data/dataset-factory/.factory/nhsae-baseline-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "65.21.158.17",
+  "result": {
+    "job_id": "nhsae-baseline-001",
+    "status": "succeeded",
+    "uploaded": true,
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 419222791,
+      "fetched": [
+        {
+          "dest": "extract/meta.json",
+          "bytes": 3292,
+          "sha256": "c2f9f43a29d231019396a42c7791639e4acb96179afc0ecd4dfed0c634401813"
+        },
+        {
+          "dest": "extract/private/holdout.csv",
+          "bytes": 1099411,
+          "sha256": "527a385f12a920b019434c70588c6532af1bd4dd5459eb64ed46809b5ef99b70"
+        },
+        {
+          "dest": "extract/public/eval.csv",
+          "bytes": 1246633,
+          "sha256": "cb786792ac321dd851c272bd159fed24e13d6b633276606b294ddc976e72f266"
+        },
+        {
+          "dest": "extract/public/train.csv",
+          "bytes": 2543862,
+          "sha256": "819b6715ad55272ca0d2a482fb4471edd84ee09ae2ee62e560fe786bd9aeb404"
+        },
+        {
+          "dest": "extract/quality.json",
+          "bytes": 5148,
+          "sha256": "e7576e8a2431bacd0596161526a418a1c3c5dfea9e37399148db0f24d1d67a77"
+        }
+      ],
+      "failures": [],
+      "bytes": 4898346
+    },
+    "image_id": "sha256:98ce6fb13b3803744fbca11434f00818f1e300e4e48a4f204e07b2c928b6218e",
+    "image_digests": [
+      "python@sha256:98ce6fb13b3803744fbca11434f00818f1e300e4e48a4f204e07b2c928b6218e"
+    ],
+    "exit_code": 0,
+    "oom_killed": false,
+    "elapsed_seconds": 56.8,
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 419227918,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-0e007f9a3723acb9a144",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-0e007f9a3723acb9a144/manifest.json",
+    "assets": [
+      {
+        "id": 661586139,
+        "size": 72,
+        "sha256": "798cd7c6995522d2889a498ac98f69f6a6a6bad81dfb7515a1335451b9e65bde"
+      },
+      {
+        "id": 661586200,
+        "size": 2037,
+        "sha256": "b38b633f4c64514381060bcb696d476b741daf1bf0d6f058eb0bd589b3b1b097"
+      },
+      {
+        "id": 661586235,
+        "size": 253,
+        "sha256": "31a61b8fd4d599949750c081ef57a6054bcf1d93deb249cb2bc75735d3f98621"
+      },
+      {
+        "id": 661586284,
+        "size": 193,
+        "sha256": "d7ffeeba5fe7f460143d8001b9477287de95dd81fa6324d8f08e9c8e8f3c82aa"
+      },
+      {
+        "id": 661586322,
+        "size": 477,
+        "sha256": "98dce432b364e531ac51a59f0ce168b88ae5e3380927f7d1058b19e39280af6a"
+      },
+      {
+        "id": 661586375,
+        "size": 53,
+        "sha256": "1ae97ba089718a4fb4d2a92bdce6d5c7a3e39361d27ce3e26474d8e1457d54eb"
+      },
+      {
+        "id": 661586416,
+        "size": 178,
+        "sha256": "755ba2ff0d13fc1c27ea4ac08f64b82c9d827ac412bc8e457c250b427fd496e3"
+      },
+      {
+        "id": 661586466,
+        "size": 133120,
+        "sha256": "b3336cabed84f90f8a2f64013b39428db01425f9a4d8649df494a6d1ecfeaea6"
+      },
+      {
+        "id": 661586510,
+        "size": 840,
+        "sha256": "9d1ecb22ad72000f36f81df39d10909bdad28f217d3b7f8eeedeb864937dac03"
+      },
+      {
+        "id": 661586582,
+        "size": 8829,
+        "sha256": "5784e1542a2ee44bdb4aca82f0542ef7f7ac064b252714264ff9246a3e8b3623"
+      }
+    ]
+  },
+  "collected_at": "2026-10-21T06:31:47.211560+00:00",
+  "deleted_at": "2026-10-21T06:41:51.771085+00:00"
+}
