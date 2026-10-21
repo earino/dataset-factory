@@ -136,9 +136,15 @@ Answers "what have we spent on Hetzner and is anything still billable".
 - Scope note on the page: excludes IPv6, egress within allowance and snapshots (free here); excludes
   volumes and manual resources (not recorded). It is a cost ledger, not an invoice.
 
-### 8. Candidate drilldown — `/dashboard/candidate/<id>/`
+### 8. Candidate drilldown — `/dashboard/candidate-<id>.html` (built 2026-10-21)
 
-One page per candidate, the thing to open when deciding. Identity (publisher, jurisdiction, source
+**Shipped.** One page per candidate, linked from the work queue and from every row of the releases
+table. It answers "what is this dataset" before "what state is it in": the full prediction question, the
+target definition, the information cut-off, the sources with their stated licence, the split table with
+row counts and positive rates, the measured baseline against its reference, the licence posture, the job
+history and the next action. Values are read from `record.json`, `license.json` and — for published
+releases — `release/<id>/MANIFEST.json`, which is why a published dataset shows its real splits and AUC
+rather than "not recorded". Identity (publisher, jurisdiction, source
 URLs), verdict and novelty reasoning, licence posture and its evidence chain, the measured facts
 (rows, columns, label rate, time coverage), construction state, release state if published, and a
 chronological event log assembled from `record.json`, job records and session reports. This is the

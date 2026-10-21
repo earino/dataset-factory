@@ -85,6 +85,36 @@ def collect_candidates():
             errors.append(str(path.relative_to(ROOT)))
             continue
         jurisdiction = record.get("jurisdiction") or {}
+        licence = read_json(path.parent / "license.json", {}) or {}
+        release_manifest = read_json(ROOT / "release" / (record.get("id") or path.parent.name)
+                                     / "MANIFEST.json", {}) or {}
+
+        def find_number(node, names, depth=0):
+            """First numeric value under a matching key, anywhere in a nested manifest."""
+            if depth > 6:
+                return None
+            if isinstance(node, dict):
+                for key, value in node.items():
+                    if key in names and isinstance(value, (int, float)):
+                        return value
+                for value in node.values():
+                    found = find_number(value, names, depth + 1)
+                    if found is not None:
+                        return found
+            elif isinstance(node, list):
+                for value in node:
+                    found = find_number(value, names, depth + 1)
+                    if found is not None:
+                        return found
+            return None
+
+        release_baseline = {"auc": find_number(release_manifest.get("baseline"), ("eval_auc",)),
+                            "reference": find_number(release_manifest.get("baseline"),
+                                                     ("persistence_prev_target_cited_eval_auc",
+                                                      "persistence_eval_auc"))}
+        measurements = record.get("measurements") or {}
+        qualification = record.get("qualification") or {}
+        baseline = record.get("baseline") or {}
         records.append({
             "id": record.get("id", path.parent.name),
             "status": record.get("status", "unknown"),
@@ -95,6 +125,29 @@ def collect_candidates():
             "awaiting_operator": bool(record.get("awaiting_operator")),
             "next_action": (record.get("next_action") or "")[:160],
             "path": str(path.relative_to(ROOT)),
+            "domain": record.get("domain") or "",
+            "question": record.get("prediction_question") or "",
+            "prediction_time": record.get("prediction_time") or "",
+            "target": record.get("target_definition") or "",
+            "split_strategy": record.get("split_strategy") or "",
+            "review": record.get("review") or "",
+            "sources": [{"name": (src.get("name") or ""), "url": (src.get("url") or ""),
+                         "licence": (src.get("licence") or src.get("license") or "")}
+                        for src in (record.get("sources") or []) if isinstance(src, dict)][:6],
+            "licence_summary": {
+                "source_spdx": ((licence.get("source") or {}).get("spdx") or None),
+                "compilation_spdx": ((licence.get("compilation") or {}).get("spdx") or None),
+                "status": ((licence.get("source") or {}).get("status") or None),
+            },
+            "measurements": measurements if isinstance(measurements, dict) else {},
+            "release_splits": release_manifest.get("splits") or {},
+            "release_baseline": release_baseline,
+            "qualification": {"result": qualification.get("result"),
+                              "splits": qualification.get("splits"),
+                              "artifact_version": qualification.get("artifact_version")},
+            "baseline": baseline if isinstance(baseline, dict) else {},
+            "jobs": [{"id": job.get("id"), "status": job.get("status"), "at": job.get("at") or job.get("created_at")}
+                     for job in (record.get("jobs") or []) if isinstance(job, dict)][-8:],
         })
     counts = {}
     for record in records:
@@ -572,6 +625,10 @@ def build(out: Path, include_tests=True):
                                     footer_extra="A job is not alive because it was launched; this reads the "
                                                  "scheduler's own record."),
     }
+    for record in snapshot["candidates"]["records"]:
+        files[f"candidate-{record['id']}.html"] = ui.page(
+            record["id"], "exec", stamp, ui.render_candidate(record, snapshot),
+            footer_extra=f"Source: {record['path']}. Generated from the record, not retyped.")
     files["style.css"] = ui.CSS
     files["robots.txt"] = "User-agent: *\nDisallow: /\n"
     files["dashboard.json"] = json.dumps(snapshot, indent=1, sort_keys=True, default=str)
@@ -654,7 +711,12 @@ def verify(url=PAGES_URL, expect=SNAPSHOT_GENERATED, attempts=6, delay=20):
     stale deployment, and a page that 404s is a missing page - both are failures.
     """
     import time
-    pages = ("index.html", "cost.html", "resources.html", "reliability.html")
+    pages = ["index.html", "cost.html", "resources.html", "reliability.html"]
+    for path in sorted((ROOT / "candidates").glob("*/record.json")):
+        record = read_json(path, {}) or {}
+        if record.get("status") in ("parked", "dropped"):
+            continue  # detail pages exist for every record; verification covers the live ones
+        pages.append(f"candidate-{record.get('id') or path.parent.name}.html")
     last = {"ok": False, "error": "not attempted"}
     for attempt in range(attempts):
         results, ok_all = {}, True

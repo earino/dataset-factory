@@ -4,6 +4,7 @@ Load-bearing rules tested here: a missing input renders "no data" rather than ze
 an unmeasured suite is not called a failing one, a single history point is not drawn
 as a trend, and a credential can never reach a published page.
 """
+import html as html_lib
 import importlib.util
 import tempfile
 import unittest
@@ -215,6 +216,50 @@ class ReleaseQueueTests(unittest.TestCase):
             "awaiting": [{"id": "held", "status": "packaged", "age_hours": 30.0, "awaiting_operator": True}]}
         _, alarms, _ = dashboard.derive_alarms(snap)
         self.assertTrue(any("waiting on the operator" in a for a in alarms))
+
+
+class CandidatePageTests(unittest.TestCase):
+    def record(self, **overrides):
+        base = {
+            "id": "demo-set", "status": "qualified", "country": "GB",
+            "domain": "Public health", "question": "Will it rain on Tuesday?",
+            "target": "Binary: rainfall > 1mm", "prediction_time": "End of Monday",
+            "sources": [{"name": "Met Office", "url": "https://example.org", "licence": "OGL v3"}],
+            "licence_summary": {"source_spdx": "OGL-3.0", "compilation_spdx": "CC0-1.0",
+                                "status": "stated"},
+            "qualification": {"splits": {"train": {"rows": 100, "positives": 40},
+                                         "eval": {"rows": 20, "positives": 8}}},
+            "baseline": {"eval_auc_from_train_py": 0.71, "persistence_auc": 0.62},
+            "jobs": [{"id": "job-1", "status": "succeeded", "at": "2026-10-20T10:00:00+00:00"}],
+            "next_action": "package it", "release_splits": {}, "release_baseline": {},
+        }
+        base.update(overrides)
+        return base
+
+    def test_the_page_states_what_the_dataset_actually_is(self):
+        html = html_lib.unescape(
+            ui.render_candidate(self.record(), {"generated_at": "2026-10-21T08:00:00+00:00"}))
+        for text in ("Will it rain on Tuesday?", "Binary: rainfall > 1mm", "End of Monday",
+                     "Met Office", "OGL-3.0", "0.7100", "0.6200", "100"):
+            self.assertIn(text, html)
+
+    def test_a_record_without_a_question_says_so(self):
+        html = ui.render_candidate(self.record(question=""), {"generated_at": "2026-10-21T08:00:00+00:00"})
+        self.assertIn("not recorded", html)
+
+    def test_a_packaged_candidate_says_it_is_waiting_on_the_flip(self):
+        html = ui.render_candidate(self.record(status="packaged", awaiting_operator=True),
+                                   {"generated_at": "2026-10-21T08:00:00+00:00"})
+        self.assertIn("waiting on the operator for the flip", html)
+
+    def test_published_splits_and_baseline_come_from_the_release_manifest(self):
+        html = ui.render_candidate(
+            self.record(baseline={}, qualification={},
+                        release_splits={"train": {"rows": 226417, "positives": 1000}},
+                        release_baseline={"auc": 0.6326, "reference": 0.5831}),
+            {"generated_at": "2026-10-21T08:00:00+00:00"})
+        self.assertIn("226,417", html)
+        self.assertIn("0.6326", html)
 
 
 class BuildTests(unittest.TestCase):

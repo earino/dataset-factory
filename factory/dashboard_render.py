@@ -164,6 +164,8 @@ a{color:inherit}
 .item:first-child{border-top:0;padding-top:0}
 .item .meta{min-width:0;flex:1}
 .item .name{font-weight:560;font-size:14px;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+a.name{color:inherit;text-decoration:none}
+a.name:hover{text-decoration:underline}
 .item .desc{color:var(--faint);font-size:var(--fs-small);margin-top:3px;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .item .side{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:none}
@@ -513,8 +515,9 @@ def render_overview(snapshot, alarms, alarms_plain=()):
 
     queue = sorted(c["live"], key=lambda x: 0 if x["status"] == "qualified" else 1)
     queue_html = "".join(
-        f'<div class="item"><div class="meta"><div class="name">{esc(q["id"])}</div>'
-        f'<div class="desc">{esc(q["next_action"])}</div></div>'
+        f'<div class="item"><div class="meta">'
+        f'<a class="name" href="candidate-{esc(q["id"])}.html">{esc(q["id"])}</a>'
+        f'<div class="desc">{esc((q.get("question") or q.get("next_action") or "")[:150])}</div></div>'
         f'<div class="side">{pill(q["country"], "blue")}'
         f'{pill(q["status"], "ok" if q["status"] == "qualified" else "neutral")}</div></div>'
         for q in queue)
@@ -549,7 +552,8 @@ def render_overview(snapshot, alarms, alarms_plain=()):
                                  "Once the only step left is the flip, construction resumes and this waits on you.") + '</div>' 
 
     release_rows = [(
-        f'<b>{esc(r["dataset"])}</b>', esc(r["release_tag"]),
+        f'<a class="name" href="candidate-{esc(r["dataset"])}.html"><b>{esc(r["dataset"])}</b></a>',
+        esc(r["release_tag"]),
         fmt(r["rows"]), "—" if r["baseline_eval_auc"] is None else f'{r["baseline_eval_auc"]:.3f}',
         "".join(pill(k, "ok" if v else "bad") for k, v in (r["verified"] or {}).items()) or pill("—"),
     ) for r in releases]
@@ -736,6 +740,111 @@ def render_ops(snapshot, alarms, alarms_plain=()):
         ("committed", esc(head.get('at'))),
         ("subject", esc(head.get('subject'))),
         ("checked", esc(snapshot['generated_at']))], num_cols=()), sub="source of truth")}</div>
+</div>"""
+    return body
+
+
+def _source_link(url):
+    if not url:
+        return pill("no url")
+    return f'<a class="pill blue" href="{esc(url)}" target="_blank" rel="noopener">open</a>'
+
+
+def render_candidate(record, snapshot):
+    """One page per candidate: what the dataset actually is, not just its status."""
+    status = record.get("status") or "unknown"
+    tone = {"published": "ok", "qualified": "ok", "packaged": "ok", "ready": "blue",
+            "investigating": "neutral", "parked": "warn", "dropped": "bad"}.get(status, "neutral")
+    question = record.get("question") or ""
+    target = record.get("target") or ""
+    timing = record.get("prediction_time") or ""
+    sources = record.get("sources") or []
+    licence = record.get("licence_summary") or {}
+    splits = ((record.get("qualification") or {}).get("splits")
+              or (record.get("release_splits") or {})
+              or (record.get("measurements") or {}).get("splits")
+              or (record.get("baseline") or {}).get("splits") or {})
+    baseline = record.get("baseline") or {}
+    auc = (baseline.get("eval_auc_from_train_py") or baseline.get("eval_auc")
+           or baseline.get("auc") or baseline.get("eval_AUC")
+           or (record.get("release_baseline") or {}).get("auc"))
+    reference = next((baseline[k] for k in ("persistence_auc", "reference_auc",
+                                            "reference_eval_auc", "persistence_reference_auc")
+                      if isinstance(baseline.get(k), (int, float))),
+                     (record.get("release_baseline") or {}).get("reference"))
+
+    source_rows = "".join(
+        '<div class="item"><div class="meta">'
+        f'<div class="name">{esc(src.get("name") or "source")}</div>'
+        f'<div class="desc">{esc(src.get("licence") or "licence not stated on the source entry")}</div>'
+        f'</div><div class="side">{_source_link(src.get("url"))}</div></div>'
+        for src in sources) or '<p class="sub">no sources recorded</p>'
+
+    split_rows = "".join(
+        f'<tr><td>{esc(name)}</td><td class="num">'
+        f'{format(value["rows"], ",") if isinstance(value.get("rows"), int) else "—"}</td>'
+        f'<td class="num">{fmt(round(100 * value["positives"] / value["rows"], 1)) + "%" if value.get("positives") and value.get("rows") else "—"}</td></tr>'
+        for name, value in splits.items() if isinstance(value, dict)) or (
+        '<tr><td colspan=3>splits not recorded yet</td></tr>')
+
+    jobs = record.get("jobs") or []
+    job_rows = "".join(
+        f'<div class="item"><div class="meta"><div class="name">{esc(job.get("id") or "job")}</div>'
+        f'<div class="desc">{esc(str(job.get("at") or "")[:16].replace("T", " "))}</div></div>'
+        f'<div class="side">{pill(job.get("status") or "—", "ok" if job.get("status") in ("succeeded", "deleted") else "warn")}</div></div>'
+        for job in reversed(jobs)) or '<p class="sub">no jobs recorded</p>'
+
+    from_release = not baseline and isinstance(auc, (int, float))
+    measured = (f'<div class="kpis"><div class="kpi"><span class="sub">baseline AUC</span>'
+                f'<span class="v">{auc:.4f}</span><span class="n">'
+                f'{"one representative config; the release carries the rest" if from_release else "on eval"}</span></div>'
+                f'<div class="kpi"><span class="sub">reference</span><span class="v">'
+                f'{f"{reference:.4f}" if isinstance(reference, (int, float)) else "no data"}</span>'
+                f'<span class="n">persistence / prior</span></div></div>'
+                if isinstance(auc, (int, float)) else
+                '<p class="sub">Not measured yet. A baseline runs on the released bytes before packaging.</p>')
+
+    body = f"""
+<section class="hero compact">
+  <div class="eyebrow"><a href="index.html" style="color:inherit;text-decoration:none">← all datasets</a>
+    · {esc((record.get("domain") or "dataset")[:70])}</div>
+  <h1>{esc(record["id"])}</h1>
+  <div class="statusline {'ok' if tone in ('ok', 'blue') else ('warn' if tone == 'warn' else '')}">
+    <span class="dot" style="background:var(--{'mint' if tone == 'ok' else ('amber' if tone == 'warn' else ('coral' if tone == 'bad' else 'blue'))})"></span>
+    <span><b>{esc(status)}</b> · {esc(record.get("country") or "?")}
+    {('· ' + esc(str(record.get("packaged_at"))[:10])) if record.get("packaged_at") else ''}
+    {('· waiting on the operator for the flip') if record.get("awaiting_operator") else ''}</span>
+    <time>{esc(snapshot["generated_at"][11:16])} UTC</time>
+  </div>
+</section>
+<div class="grid">
+  <div class="col-12">{card("The question", f'<p style="margin:0;line-height:1.6">{esc(question) or "not recorded"}</p>',
+        sub="what a model is asked to predict")}</div>
+  <div class="col-6">{card("What you predict", f'<p style="margin:0;line-height:1.6">{esc(target) or "not recorded"}</p>',
+        sub="target definition")}</div>
+  <div class="col-6">{card("When the prediction is made",
+        f'<p style="margin:0;line-height:1.6">{esc(timing) or "not recorded"}</p>',
+        sub="the information cut-off")}</div>
+
+  <div class="col-6">{card("Where the data comes from", f'<div class="list">{source_rows}</div>',
+        sub="sources and their stated licence")}</div>
+  <div class="col-6">{card("How it is split", table(["Split", "Rows", "Positive"], [], num_cols=(1, 2))
+        .replace("<tbody></tbody>", f"<tbody>{split_rows}</tbody>"),
+        sub=esc(record.get("split_strategy") or "split strategy not recorded")[:80])}</div>
+
+  <div class="col-6">{card("Measured", measured, sub="from the released bytes")}</div>
+  <div class="col-6">{card("Licence", '<div class="list">'
+        f'<div class="item"><div class="meta"><div class="name">Source</div>'
+        f'<div class="desc">{esc(licence.get("status") or "no licence decision recorded")}</div></div>'
+        f'<div class="side">{pill(licence.get("source_spdx") or "undeclared", "blue" if licence.get("source_spdx") else "warn")}</div></div>'
+        f'<div class="item"><div class="meta"><div class="name">Our compilation</div>'
+        f'<div class="desc">code and derived feature work</div></div>'
+        f'<div class="side">{pill(licence.get("compilation_spdx") or "undeclared", "ok" if licence.get("compilation_spdx") else "warn")}</div></div>'
+        '</div>', sub="recorded in the candidate's license.json")}</div>
+
+  <div class="col-6">{card("History", f'<div class="list">{job_rows}</div>', sub="worker jobs")}</div>
+  <div class="col-6">{card("Next", f'<p style="margin:0;line-height:1.6">{esc(record.get("next_action") or "—")}</p>',
+        sub="what unblocks it")}</div>
 </div>"""
     return body
 
