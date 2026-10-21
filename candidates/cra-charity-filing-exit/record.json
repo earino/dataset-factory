@@ -1,164 +1,166 @@
 {
-  "id": "cra-charity-filing-exit",
-  "status": "investigating",
-  "verdict": "go",
-  "created_at": "2026-10-19T20:11:39.599293+00:00",
-  "domain": "nonprofit sector compliance / organizational survival prediction",
-  "prediction_question": "For a Canadian registered charity that filed a T3010 Registered Charity Information Return for a fiscal period ending in year Y, will it file NO return for any fiscal period ending in year Y+1 (i.e., exit the filing population), given only its returns filed through year Y plus its identification attributes?",
-  "prediction_time": "The T3010 filing deadline for the year-Y fiscal period: six months after the fiscal period end (documented on the publisher's T3010 form page: 'submit annually ... within six months of the end of its fiscal period'). At that instant everything the charity has ever filed (year-Y return and all earlier ones) is knowable, and the year-Y+1 outcome is not: returns for fiscal periods ending in Y+1 are not due until at least six months into Y+1, and the publisher's year-Y+1 list product appears later still. Features are therefore the year-Y and earlier returns only; every year-Y+1 field is the label source and never ships.",
-  "target_definition": "Binary and mechanical, from the publisher's own per-year products: positive iff the charity's BN is present in the year-Y 'List of charities' Identification file and absent from the year-Y+1 Identification file. The publisher's data dictionary states 'The list only includes charities that have filed a T3010 ... for the period concerned', so absence means no filed return for any fiscal period ending in Y+1. No human judgement enters the label. Measured caveat frozen into the wording: 'absent in Y+1' is not 'never files again' - 4.73% of 2012 filers absent in 2013 reappear in 2014, so late/skipped filings are a known, measured minority of positives.",
-  "sources": [
-    {
-      "name": "List of charities (per-fiscal-year T3010 open data), Canada Revenue Agency",
-      "url": "https://open.canada.ca/data/en/dataset/80c00cdb-1358-415c-bb8b-0de7f12675b8 (2024; per-year packages 1990-2024 verified present via CKAN package_search 2026-10-19)",
-      "api": "https://open.canada.ca/data/en/api/3/action/package_show?id=<package-id> (anonymous CKAN; resource URLs like https://open.canada.ca/data/dataset/80c00cdb-1358-415c-bb8b-0de7f12675b8/resource/694fdc72-eae4-4ee0-83eb-832ab7b230e3/download/ident_2024_updated.csv)",
-      "license": "Open Government Licence - Canada (license_title measured via CKAN package_show 2026-10-19; license_url https://open.canada.ca/en/open-government-licence-canada)",
-      "access": "anonymous bulk CSV download, no key; per year: Identification (~12-13 MB), Financial data (~21 MB), General information (~11 MB), Charitable Programs (~29 MB), Compensation, Foundations, Gifts, Disbursement Quota and more; data dictionary + code lists as PDFs in every package"
-    },
-    {
-      "name": "List of charities data dictionary (Open Data) - column meanings",
-      "url": "https://open.canada.ca/data/dataset/80c00cdb-1358-415c-bb8b-0de7f12675b8/resource/8214f42c-f14d-407c-a84a-94c7da16e438/download/data_en.pdf",
-      "api": "downloaded in-session (1,275,518 bytes) and read",
-      "license": "Open Government Licence - Canada",
-      "access": "documents every file's fields: Identification (BN, Category, Designation, name, address); Financial Data = T3010 Section D + Schedule 6 line codes (4020-5910: assets, liabilities, revenue by source, expenditures by category, political-activity spend), 'Section Used' distinguishes Section D vs Schedule 6 filers; line-code semantics pinned to guide T4033"
-    },
-    {
-      "name": "T3010 Registered Charity Information Return - form and filing deadline",
-      "url": "https://www.canada.ca/en/revenue-agency/services/forms-publications/forms/t3010.html",
-      "api": "read 2026-10-19 (web search result excerpt): 'submit within six months of the end of its fiscal period'",
-      "license": "Government of Canada web content",
-      "access": "establishes the prediction instant and that the return is the publisher's documented process, not an after-the-fact judgement"
-    }
-  ],
-  "license_evidence": [
-    "Measured 2026-10-19: CKAN package_show for the 2012, 2013, 2014, 2023 and 2024 'List of charities' packages all return license_title 'Open Government Licence - Canada' with license_url https://open.canada.ca/en/open-government-licence-canada; publisher organization 'Canada Revenue Agency | Agence du revenu du Canada' (cra-arc).",
-    "OGL-Canada 2.0 requires attribution (title of the information, name of the source, link to the licence) and does not restrict commercial use or impose share-alike; compatible with the standing policy - source terms preserved verbatim, our derived compilation dedicated CC0 with scope stated, attribution carried on any release. The licence is recorded in the catalog; the CSV files themselves carry no embedded licence text.",
-    "Publisher caveats to carry on any release, from the CKAN notes (measured 2026-10-19): 'The dataset reflects data as provided by the organizations'; data is a filing record, not CRA's verification of the charity's condition."
-  ],
-  "construction_script": null,
-  "split_strategy": "Temporal by the outcome year Y+1 (label year): train Y+1 in 2005-2016, eval 2017-2019, holdout 2020-2023. 2024 filings exist (83,761 BNs) but the 2025 list is not yet published, so 2024 exits are not observable and 2024 rows can only serve as feature history. Measured base rates (full-file BN set comparisons, not samples): 2012->2013 exit 2,305/85,113 = 2.708%; 2013->2014 1,498/84,729 = 1.768%; 2023->2024 2,376/84,519 = 2.811% - both classes present in every measured year-pair, and ~1.5-2.9k positives per year means train (~12 label years) ~20-30k positives, eval ~5-7k, holdout ~7-11k. Positives cluster by charity BN (a BN can appear in many year-rows), so the charity is the clustered unit: the runner id column must be the unique row key (BN, Y), BN ships only as a declared high-cardinality column, and clustered independent-positive counts are recomputed per window at construction. Cross-split BN overlap is inherent to a panel task and is handled exactly as the MOT candidate does: the row key is unique per row and the entity column is declared, not used as the id column.",
-  "measurements": {
-    "catalog_and_licence_2026_10_19": "CKAN package_search 'List of charities': per-year packages exist for every year 1990-2024 (35 packages enumerated); package_show measured for 2012 (66217614-917b-4df9-a5c0-19760f318e23), 2013 (49cb599c-03f6-4191-b8d3-fb5b8e35b218), 2014 (0bb1fb56-74d0-47f4-b4b3-2b574229416d), 2023 (05b3abd0-e70f-4b3b-a9c5-acc436bd15b6), 2024 (80c00cdb-1358-415c-bb8b-0de7f12675b8) - all OGL-Canada, all org cra-arc.",
-    "identification_shape_2026_10_19": "Full-file reads (downloaded to coordinator scratch, deleted afterwards): ident_2012.csv 12,232,993 B / 85,113 rows = 85,113 distinct BN (BN unique within a year); ident_2013_updated.csv 12,683,006 B / 84,729; ident_2014_updated.csv 12,696,669 B / 84,855; ident_2023_updated.csv 13,339,737 B / 84,519; ident_2024_updated.csv 13,203,780 B / 83,761. Header measured: BN, Category, Sub Category (absent in 2012), Designation, Legal Name, Account Name, Address Line 1/2, City, Province, Postal Code, Country. 2012 file is not UTF-8 (accents garble under utf-8; reads cleanly as cp1252).",
-    "exit_rates_2026_10_19": "Set comparisons over the full BN sets: 2012->2013 absent 2,305 (2.708%), new entrants 1,921; 2013->2014 absent 1,498 (1.768%), entrants 1,624; 2023->2024 absent 2,376 (2.811%), entrants 1,618. Late-filing artifact measured: 109 of the 2,305 absent-from-2013 BNs (4.73%) reappear in 2014.",
-    "financial_schema_2026_10_19": "financial_d_and_schedule_6_2024_updated.csv measured: 20,969,638 B, header BN,FPE,Form ID,Section Used then T3010 line-code columns 4020..5910 (~86 numeric/text fields = full Section D + Schedule 6: assets, liabilities, revenue by source incl. government levels, expenditures incl. compensation/fundraising/political activities). General information file (11,267,258 B): program codes + Yes/No compliance questions. Data dictionary PDF read in-session; line-code meanings pinned to guide T4033.",
-    "extraction_cost_2026_10_19": "Measured: one 21 MB financial CSV downloads in 4.3 s (4.83 MB/s) from open.canada.ca on the coordinator; five Identification files (64.2 MB total) plus one financial file (21 MB) fetched in-session. Per-year full feature set ~80 MB (Identification 13 + Financial 21 + General 11 + Programs 29 + Compensation 2.4 + Foundations 3 + smaller files) - ESTIMATE summed from measured per-file sizes, not a measured full-year pull. A 2005-2023 construction window is ~1.5 GB download, worker-scale and modest; ~85k charity-year rows per year, ~1.6M over the window."
+ "id": "cra-charity-filing-exit",
+ "status": "investigating",
+ "verdict": "go",
+ "created_at": "2026-10-19T20:11:39.599293+00:00",
+ "domain": "nonprofit sector compliance / organizational survival prediction",
+ "prediction_question": "For a Canadian registered charity that filed a T3010 Registered Charity Information Return for a fiscal period ending in year Y, will it file NO return for any fiscal period ending in year Y+1 (i.e., exit the filing population), given only its returns filed through year Y plus its identification attributes?",
+ "prediction_time": "The T3010 filing deadline for the year-Y fiscal period: six months after the fiscal period end (documented on the publisher's T3010 form page: 'submit annually ... within six months of the end of its fiscal period'). At that instant everything the charity has ever filed (year-Y return and all earlier ones) is knowable, and the year-Y+1 outcome is not: returns for fiscal periods ending in Y+1 are not due until at least six months into Y+1, and the publisher's year-Y+1 list product appears later still. Features are therefore the year-Y and earlier returns only; every year-Y+1 field is the label source and never ships.",
+ "target_definition": "Binary and mechanical, from the publisher's own per-year products: positive iff the charity's BN is present in the year-Y 'List of charities' Identification file and absent from the year-Y+1 Identification file. The publisher's data dictionary states 'The list only includes charities that have filed a T3010 ... for the period concerned', so absence means no filed return for any fiscal period ending in Y+1. No human judgement enters the label. Measured caveat frozen into the wording: 'absent in Y+1' is not 'never files again' - 4.73% of 2012 filers absent in 2013 reappear in 2014, so late/skipped filings are a known, measured minority of positives.",
+ "sources": [
+  {
+   "name": "List of charities (per-fiscal-year T3010 open data), Canada Revenue Agency",
+   "url": "https://open.canada.ca/data/en/dataset/80c00cdb-1358-415c-bb8b-0de7f12675b8 (2024; per-year packages 1990-2024 verified present via CKAN package_search 2026-10-19)",
+   "api": "https://open.canada.ca/data/en/api/3/action/package_show?id=<package-id> (anonymous CKAN; resource URLs like https://open.canada.ca/data/dataset/80c00cdb-1358-415c-bb8b-0de7f12675b8/resource/694fdc72-eae4-4ee0-83eb-832ab7b230e3/download/ident_2024_updated.csv)",
+   "license": "Open Government Licence - Canada (license_title measured via CKAN package_show 2026-10-19; license_url https://open.canada.ca/en/open-government-licence-canada)",
+   "access": "anonymous bulk CSV download, no key; per year: Identification (~12-13 MB), Financial data (~21 MB), General information (~11 MB), Charitable Programs (~29 MB), Compensation, Foundations, Gifts, Disbursement Quota and more; data dictionary + code lists as PDFs in every package"
   },
-  "jobs": [],
-  "artifacts": [],
-  "rejection_reason": null,
-  "review": null,
-  "next_action": "GO to construction (advancement session owns it). Construction step: on a worker, download the per-year Identification + Financial + General (+ Programs/Compensation/Foundations as decided) packages for a fixed window (label years train 2005-2016, eval 2017-2019, holdout 2020-2023), decode as cp1252 not UTF-8 (measured), build the (BN, Y) panel keyed by BN+FPE, label = BN absent from the Y+1 Identification file, features strictly from returns with FPE in Y and earlier (financial line codes, Section Used, program mix, compensation, designation/category/province), exclude every Y+1 field from the shipped columns and assert absence, runner id = unique (BN, Y) key with BN declared high-cardinality (never the id column), declare the measured exit base rates (~1.8-2.8%/yr) as the cross-check fixture against the construction output, then run the qualification gate on the worker over the full artifact.",
-  "jurisdiction": {
-    "country": "CA",
-    "region": "North America",
-    "publisher": "Canada Revenue Agency - Charities Directorate (List of charities / T3010 open data)",
-    "recorded_at": "2026-10-19"
+  {
+   "name": "List of charities data dictionary (Open Data) - column meanings",
+   "url": "https://open.canada.ca/data/dataset/80c00cdb-1358-415c-bb8b-0de7f12675b8/resource/8214f42c-f14d-407c-a84a-94c7da16e438/download/data_en.pdf",
+   "api": "downloaded in-session (1,275,518 bytes) and read",
+   "license": "Open Government Licence - Canada",
+   "access": "documents every file's fields: Identification (BN, Category, Designation, name, address); Financial Data = T3010 Section D + Schedule 6 line codes (4020-5910: assets, liabilities, revenue by source, expenditures by category, political-activity spend), 'Section Used' distinguishes Section D vs Schedule 6 filers; line-code semantics pinned to guide T4033"
   },
-  "novelty_check": {
-    "checked_at": "2026-10-19T20:19:37+00:00",
-    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
-    "queries": [
-      "charity closure prediction",
-      "T3010 machine learning",
-      "nonprofit dissolution prediction"
-    ],
-    "evidence": {
-      "huggingface_datasets": [
-        {
-          "query": "charity closure prediction",
-          "hits": 0,
-          "top": []
-        },
-        {
-          "query": "T3010 machine learning",
-          "hits": 0,
-          "top": []
-        },
-        {
-          "query": "nonprofit dissolution prediction",
-          "hits": 0,
-          "top": []
-        }
-      ],
-      "zenodo_records": [
-        {
-          "query": "charity closure prediction",
-          "hits": 109704,
-          "top": [
-            "THE IMPACT OF TYPE 2 DIABETES MELLITUS DURATION ON DIMINISHING VISUAL ACUITY IN PAKISTAN",
-            "Role of Ethics in Modern Day Research",
-            "Charity",
-            "Charity",
-            "AGE-RELATED EFFECTS OF DONOR ON CORNEAL TRANSPLANTATION AND CLINICAL STUDY OF CASUAL ALLOGRAFT REJECTION IN PAKISTAN"
-          ]
-        },
-        {
-          "query": "T3010 machine learning",
-          "hits": 323057,
-          "top": [
-            "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
-            "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI",
-            "RGB and RGNIR Plastic Waste Database",
-            "mushrooms",
-            "DisMo: Disentangled Motion Representations for Open-World Motion Transfer"
-          ]
-        },
-        {
-          "query": "nonprofit dissolution prediction",
-          "hits": 96361,
-          "top": [
-            "Cognitive prediction of dissolution [CPS4]",
-            "Permeability Prediction in Rocks Experiencing Mineral Precipitation and Dissolution: A Numerical Study",
-            "faezesarlakifar/AllerTrans: Version 1.0.0: AllerTrans Model Release",
-            "\u7d4c\u55b6\u5b66\u306b\u3088\u308b\u975e\u55b6\u5229\u7d44\u7e54\u7814\u7a76\u306e\u610f\u5473\u306b\u95a2\u3059\u308b\u4e88\u5099\u7684\u8003\u5bdf(1) \u2015 \u65e5\u672c\u306e\u7d4c\u55b6\u5b66\u80ce\u52d5\u671f\u306e\u7814\u7a76\u3092\u3082\u3068\u306b",
-            "A data-driven approach to predict the in vitro dissolution time of sustained-release tablets using raw material databases and machine learning algorithms"
-          ]
-        }
-      ],
-      "arxiv_preprints": [
-        {
-          "query": "charity closure prediction",
-          "hits": 5,
-          "top": [
-            "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
-            "Continuous closure, axes closure, and natural closure",
-            "Beyond SIFT using Binary features for Loop Closure Detection",
-            "Internal Neighbourhood Structures II: Closure and closed morphisms",
-            "Matrix orbit closures"
-          ]
-        },
-        {
-          "query": "T3010 machine learning",
-          "hits": 5,
-          "top": [
-            "Changing Data Sources in the Age of Machine Learning for Official Statistics",
-            "DOME: Recommendations for supervised machine learning validation in biology",
-            "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
-            "Active learning for data streams: a survey",
-            "Physics-Inspired Interpretability Of Machine Learning Models"
-          ]
-        },
-        {
-          "query": "nonprofit dissolution prediction",
-          "hits": 5,
-          "top": [
-            "Modeling the adoption and use of social media by nonprofit organizations",
-            "Natural Disasters and the Nonprofit Sector",
-            "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
-            "AMINA: The Inclusive and Accountable AI for Marginalized Immigrant Nonprofit Assistance",
-            "A Combined Deep Learning-Gradient Boosting Machine Framework for Fluid Intelligence Prediction"
-          ]
-        }
-      ]
-    },
-    "evidence_summary": "- huggingface_datasets / 'charity closure prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'T3010 machine learning': 0 hit(s) - nothing notable\n- huggingface_datasets / 'nonprofit dissolution prediction': 0 hit(s) - nothing notable\n- zenodo_records / 'charity closure prediction': 109704 hit(s) - THE IMPACT OF TYPE 2 DIABETES MELLITUS DURATION ON DIMINISHING VISUAL ACUITY IN PAKISTAN, Role of Ethics in Modern Day Research, Charity, Charity, AGE-RELATED EFFECTS OF DONOR ON CORNEAL TRANSPLANTATION AND CLINICAL STUDY OF CASUAL ALLOGRAFT REJECTION IN PAKISTAN\n- zenodo_records / 'T3010 machine learning': 323057 hit(s) - plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database, mushrooms, DisMo: Disentangled Motion Representations for Open-World Motion Transfer\n- zenodo_records / 'nonprofit dissolution prediction': 96361 hit(s) - Cognitive prediction of dissolution [CPS4], Permeability Prediction in Rocks Experiencing Mineral Precipitation and Dissolution: A Numerical Study, faezesarlakifar/AllerTrans: Version 1.0.0: AllerTrans Model Release, \u7d4c\u55b6\u5b66\u306b\u3088\u308b\u975e\u55b6\u5229\u7d44\u7e54\u7814\u7a76\u306e\u610f\u5473\u306b\u95a2\u3059\u308b\u4e88\u5099\u7684\u8003\u5bdf(1) \u2015 \u65e5\u672c\u306e\u7d4c\u55b6\u5b66\u80ce\u52d5\u671f\u306e\u7814\u7a76\u3092\u3082\u3068\u306b, A data-driven approach to predict the in vitro dissolution time of sustained-release tablets using raw material databases and machine learning algorithms\n- arxiv_preprints / 'charity closure prediction': 5 hit(s) - Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, Continuous closure, axes closure, and natural closure, Beyond SIFT using Binary features for Loop Closure Detection, Internal Neighbourhood Structures II: Closure and closed morphisms, Matrix orbit closures\n- arxiv_preprints / 'T3010 machine learning': 5 hit(s) - Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Active learning for data streams: a survey, Physics-Inspired Interpretability Of Machine Learning Models\n- arxiv_preprints / 'nonprofit dissolution prediction': 5 hit(s) - Modeling the adoption and use of social media by nonprofit organizations, Natural Disasters and the Nonprofit Sector, Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, AMINA: The Inclusive and Accountable AI for Marginalized Immigrant Nonprofit Assistance, A Combined Deep Learning-Gradient Boosting Machine Framework for Fluid Intelligence Prediction",
-    "prior_art": [
-      "US Form 990 nonprofit-failure literature (Tuckman-Chang 1991 ratios; Predicting Discontinued Operations in Nonprofit Institutions, Rutgers; Why Do Nonprofits Fail?, ODU); no Canadian T3010 prediction task found"
-    ],
-    "theirs": "CRA publishes the raw per-year T3010 open data; US academic literature predicts nonprofit demise from IRS Form 990 (Polytechnic UPR 990-EZ study; ODU logit study; Rutgers 990 e-file Random Forest; Wang/Lee/Dull) but on US data, without shared task artifacts or splits",
-    "ours": "Canadian T3010 panel: predict whether a registered charity files no return for the next fiscal year, from its own full T3010 history (Section D/Schedule 6 financial line codes, program mix, compensation) with temporal splits and a leak-free label derived mechanically from the publisher's per-year lists; no ML-ready task on this source exists anywhere",
-    "verdict": "differentiated",
-    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  {
+   "name": "T3010 Registered Charity Information Return - form and filing deadline",
+   "url": "https://www.canada.ca/en/revenue-agency/services/forms-publications/forms/t3010.html",
+   "api": "read 2026-10-19 (web search result excerpt): 'submit within six months of the end of its fiscal period'",
+   "license": "Government of Canada web content",
+   "access": "establishes the prediction instant and that the return is the publisher's documented process, not an after-the-fact judgement"
   }
+ ],
+ "license_evidence": [
+  "Measured 2026-10-19: CKAN package_show for the 2012, 2013, 2014, 2023 and 2024 'List of charities' packages all return license_title 'Open Government Licence - Canada' with license_url https://open.canada.ca/en/open-government-licence-canada; publisher organization 'Canada Revenue Agency | Agence du revenu du Canada' (cra-arc).",
+  "OGL-Canada 2.0 requires attribution (title of the information, name of the source, link to the licence) and does not restrict commercial use or impose share-alike; compatible with the standing policy - source terms preserved verbatim, our derived compilation dedicated CC0 with scope stated, attribution carried on any release. The licence is recorded in the catalog; the CSV files themselves carry no embedded licence text.",
+  "Publisher caveats to carry on any release, from the CKAN notes (measured 2026-10-19): 'The dataset reflects data as provided by the organizations'; data is a filing record, not CRA's verification of the charity's condition."
+ ],
+ "construction_script": null,
+ "split_strategy": "Temporal by the outcome year Y+1 (label year): train Y+1 in 2005-2016, eval 2017-2019, holdout 2020-2023. 2024 filings exist (83,761 BNs) but the 2025 list is not yet published, so 2024 exits are not observable and 2024 rows can only serve as feature history. Measured base rates (full-file BN set comparisons, not samples): 2012->2013 exit 2,305/85,113 = 2.708%; 2013->2014 1,498/84,729 = 1.768%; 2023->2024 2,376/84,519 = 2.811% - both classes present in every measured year-pair, and ~1.5-2.9k positives per year means train (~12 label years) ~20-30k positives, eval ~5-7k, holdout ~7-11k. Positives cluster by charity BN (a BN can appear in many year-rows), so the charity is the clustered unit: the runner id column must be the unique row key (BN, Y), BN ships only as a declared high-cardinality column, and clustered independent-positive counts are recomputed per window at construction. Cross-split BN overlap is inherent to a panel task and is handled exactly as the MOT candidate does: the row key is unique per row and the entity column is declared, not used as the id column.",
+ "measurements": {
+  "catalog_and_licence_2026_10_19": "CKAN package_search 'List of charities': per-year packages exist for every year 1990-2024 (35 packages enumerated); package_show measured for 2012 (66217614-917b-4df9-a5c0-19760f318e23), 2013 (49cb599c-03f6-4191-b8d3-fb5b8e35b218), 2014 (0bb1fb56-74d0-47f4-b4b3-2b574229416d), 2023 (05b3abd0-e70f-4b3b-a9c5-acc436bd15b6), 2024 (80c00cdb-1358-415c-bb8b-0de7f12675b8) - all OGL-Canada, all org cra-arc.",
+  "identification_shape_2026_10_19": "Full-file reads (downloaded to coordinator scratch, deleted afterwards): ident_2012.csv 12,232,993 B / 85,113 rows = 85,113 distinct BN (BN unique within a year); ident_2013_updated.csv 12,683,006 B / 84,729; ident_2014_updated.csv 12,696,669 B / 84,855; ident_2023_updated.csv 13,339,737 B / 84,519; ident_2024_updated.csv 13,203,780 B / 83,761. Header measured: BN, Category, Sub Category (absent in 2012), Designation, Legal Name, Account Name, Address Line 1/2, City, Province, Postal Code, Country. 2012 file is not UTF-8 (accents garble under utf-8; reads cleanly as cp1252).",
+  "exit_rates_2026_10_19": "Set comparisons over the full BN sets: 2012->2013 absent 2,305 (2.708%), new entrants 1,921; 2013->2014 absent 1,498 (1.768%), entrants 1,624; 2023->2024 absent 2,376 (2.811%), entrants 1,618. Late-filing artifact measured: 109 of the 2,305 absent-from-2013 BNs (4.73%) reappear in 2014.",
+  "financial_schema_2026_10_19": "financial_d_and_schedule_6_2024_updated.csv measured: 20,969,638 B, header BN,FPE,Form ID,Section Used then T3010 line-code columns 4020..5910 (~86 numeric/text fields = full Section D + Schedule 6: assets, liabilities, revenue by source incl. government levels, expenditures incl. compensation/fundraising/political activities). General information file (11,267,258 B): program codes + Yes/No compliance questions. Data dictionary PDF read in-session; line-code meanings pinned to guide T4033.",
+  "extraction_cost_2026_10_19": "Measured: one 21 MB financial CSV downloads in 4.3 s (4.83 MB/s) from open.canada.ca on the coordinator; five Identification files (64.2 MB total) plus one financial file (21 MB) fetched in-session. Per-year full feature set ~80 MB (Identification 13 + Financial 21 + General 11 + Programs 29 + Compensation 2.4 + Foundations 3 + smaller files) - ESTIMATE summed from measured per-file sizes, not a measured full-year pull. A 2005-2023 construction window is ~1.5 GB download, worker-scale and modest; ~85k charity-year rows per year, ~1.6M over the window."
+ },
+ "jobs": [],
+ "artifacts": [],
+ "rejection_reason": null,
+ "review": null,
+ "next_action": "GO to construction (advancement session owns it). Construction step: on a worker, download the per-year Identification + Financial + General (+ Programs/Compensation/Foundations as decided) packages for a fixed window (label years train 2005-2016, eval 2017-2019, holdout 2020-2023), decode as cp1252 not UTF-8 (measured), build the (BN, Y) panel keyed by BN+FPE, label = BN absent from the Y+1 Identification file, features strictly from returns with FPE in Y and earlier (financial line codes, Section Used, program mix, compensation, designation/category/province), exclude every Y+1 field from the shipped columns and assert absence, runner id = unique (BN, Y) key with BN declared high-cardinality (never the id column), declare the measured exit base rates (~1.8-2.8%/yr) as the cross-check fixture against the construction output, then run the qualification gate on the worker over the full artifact.",
+ "jurisdiction": {
+  "country": "CA",
+  "region": "North America",
+  "publisher": "Canada Revenue Agency - Charities Directorate (List of charities / T3010 open data)",
+  "recorded_at": "2026-10-19"
+ },
+ "novelty_check": {
+  "checked_at": "2026-10-19T20:19:37+00:00",
+  "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+  "queries": [
+   "charity closure prediction",
+   "T3010 machine learning",
+   "nonprofit dissolution prediction"
+  ],
+  "evidence": {
+   "huggingface_datasets": [
+    {
+     "query": "charity closure prediction",
+     "hits": 0,
+     "top": []
+    },
+    {
+     "query": "T3010 machine learning",
+     "hits": 0,
+     "top": []
+    },
+    {
+     "query": "nonprofit dissolution prediction",
+     "hits": 0,
+     "top": []
+    }
+   ],
+   "zenodo_records": [
+    {
+     "query": "charity closure prediction",
+     "hits": 109704,
+     "top": [
+      "THE IMPACT OF TYPE 2 DIABETES MELLITUS DURATION ON DIMINISHING VISUAL ACUITY IN PAKISTAN",
+      "Role of Ethics in Modern Day Research",
+      "Charity",
+      "Charity",
+      "AGE-RELATED EFFECTS OF DONOR ON CORNEAL TRANSPLANTATION AND CLINICAL STUDY OF CASUAL ALLOGRAFT REJECTION IN PAKISTAN"
+     ]
+    },
+    {
+     "query": "T3010 machine learning",
+     "hits": 323057,
+     "top": [
+      "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
+      "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI",
+      "RGB and RGNIR Plastic Waste Database",
+      "mushrooms",
+      "DisMo: Disentangled Motion Representations for Open-World Motion Transfer"
+     ]
+    },
+    {
+     "query": "nonprofit dissolution prediction",
+     "hits": 96361,
+     "top": [
+      "Cognitive prediction of dissolution [CPS4]",
+      "Permeability Prediction in Rocks Experiencing Mineral Precipitation and Dissolution: A Numerical Study",
+      "faezesarlakifar/AllerTrans: Version 1.0.0: AllerTrans Model Release",
+      "\u7d4c\u55b6\u5b66\u306b\u3088\u308b\u975e\u55b6\u5229\u7d44\u7e54\u7814\u7a76\u306e\u610f\u5473\u306b\u95a2\u3059\u308b\u4e88\u5099\u7684\u8003\u5bdf(1) \u2015 \u65e5\u672c\u306e\u7d4c\u55b6\u5b66\u80ce\u52d5\u671f\u306e\u7814\u7a76\u3092\u3082\u3068\u306b",
+      "A data-driven approach to predict the in vitro dissolution time of sustained-release tablets using raw material databases and machine learning algorithms"
+     ]
+    }
+   ],
+   "arxiv_preprints": [
+    {
+     "query": "charity closure prediction",
+     "hits": 5,
+     "top": [
+      "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
+      "Continuous closure, axes closure, and natural closure",
+      "Beyond SIFT using Binary features for Loop Closure Detection",
+      "Internal Neighbourhood Structures II: Closure and closed morphisms",
+      "Matrix orbit closures"
+     ]
+    },
+    {
+     "query": "T3010 machine learning",
+     "hits": 5,
+     "top": [
+      "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+      "DOME: Recommendations for supervised machine learning validation in biology",
+      "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
+      "Active learning for data streams: a survey",
+      "Physics-Inspired Interpretability Of Machine Learning Models"
+     ]
+    },
+    {
+     "query": "nonprofit dissolution prediction",
+     "hits": 5,
+     "top": [
+      "Modeling the adoption and use of social media by nonprofit organizations",
+      "Natural Disasters and the Nonprofit Sector",
+      "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
+      "AMINA: The Inclusive and Accountable AI for Marginalized Immigrant Nonprofit Assistance",
+      "A Combined Deep Learning-Gradient Boosting Machine Framework for Fluid Intelligence Prediction"
+     ]
+    }
+   ]
+  },
+  "evidence_summary": "- huggingface_datasets / 'charity closure prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'T3010 machine learning': 0 hit(s) - nothing notable\n- huggingface_datasets / 'nonprofit dissolution prediction': 0 hit(s) - nothing notable\n- zenodo_records / 'charity closure prediction': 109704 hit(s) - THE IMPACT OF TYPE 2 DIABETES MELLITUS DURATION ON DIMINISHING VISUAL ACUITY IN PAKISTAN, Role of Ethics in Modern Day Research, Charity, Charity, AGE-RELATED EFFECTS OF DONOR ON CORNEAL TRANSPLANTATION AND CLINICAL STUDY OF CASUAL ALLOGRAFT REJECTION IN PAKISTAN\n- zenodo_records / 'T3010 machine learning': 323057 hit(s) - plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database, mushrooms, DisMo: Disentangled Motion Representations for Open-World Motion Transfer\n- zenodo_records / 'nonprofit dissolution prediction': 96361 hit(s) - Cognitive prediction of dissolution [CPS4], Permeability Prediction in Rocks Experiencing Mineral Precipitation and Dissolution: A Numerical Study, faezesarlakifar/AllerTrans: Version 1.0.0: AllerTrans Model Release, \u7d4c\u55b6\u5b66\u306b\u3088\u308b\u975e\u55b6\u5229\u7d44\u7e54\u7814\u7a76\u306e\u610f\u5473\u306b\u95a2\u3059\u308b\u4e88\u5099\u7684\u8003\u5bdf(1) \u2015 \u65e5\u672c\u306e\u7d4c\u55b6\u5b66\u80ce\u52d5\u671f\u306e\u7814\u7a76\u3092\u3082\u3068\u306b, A data-driven approach to predict the in vitro dissolution time of sustained-release tablets using raw material databases and machine learning algorithms\n- arxiv_preprints / 'charity closure prediction': 5 hit(s) - Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, Continuous closure, axes closure, and natural closure, Beyond SIFT using Binary features for Loop Closure Detection, Internal Neighbourhood Structures II: Closure and closed morphisms, Matrix orbit closures\n- arxiv_preprints / 'T3010 machine learning': 5 hit(s) - Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Active learning for data streams: a survey, Physics-Inspired Interpretability Of Machine Learning Models\n- arxiv_preprints / 'nonprofit dissolution prediction': 5 hit(s) - Modeling the adoption and use of social media by nonprofit organizations, Natural Disasters and the Nonprofit Sector, Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, AMINA: The Inclusive and Accountable AI for Marginalized Immigrant Nonprofit Assistance, A Combined Deep Learning-Gradient Boosting Machine Framework for Fluid Intelligence Prediction",
+  "prior_art": [
+   "US Form 990 nonprofit-failure literature (Tuckman-Chang 1991 ratios; Predicting Discontinued Operations in Nonprofit Institutions, Rutgers; Why Do Nonprofits Fail?, ODU); no Canadian T3010 prediction task found"
+  ],
+  "theirs": "CRA publishes the raw per-year T3010 open data; US academic literature predicts nonprofit demise from IRS Form 990 (Polytechnic UPR 990-EZ study; ODU logit study; Rutgers 990 e-file Random Forest; Wang/Lee/Dull) but on US data, without shared task artifacts or splits",
+  "ours": "Canadian T3010 panel: predict whether a registered charity files no return for the next fiscal year, from its own full T3010 history (Section D/Schedule 6 financial line codes, program mix, compensation) with temporal splits and a leak-free label derived mechanically from the publisher's per-year lists; no ML-ready task on this source exists anywhere",
+  "verdict": "differentiated",
+  "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+ },
+ "licence_class": "A",
+ "licence_note": "Open Government Licence - Canada"
 }

@@ -57,11 +57,16 @@ Classify first, in the first few minutes, and record it in `record.json` as `lic
   CC0, US federal public domain).
 - **B** - open but conditional: attribution-plus-sharealike, or a compilation licence over a source
   with its own terms. Publishable; the conditions must be stated.
-- **C** - unclear, unstated, or "contact us". Park immediately with a dated path out; do not spend
-  the session on a source whose terms you cannot read. A written enquiry may be drafted, but the
-  candidate does not proceed until an answer exists or the operator accepts the risk in writing.
+- **C** - unclear, unstated, or "contact us". **Drop it in the same breath.** Do not park it with a
+  dated path out, do not draft a permission email, do not wait: an unclear licence is a closed door,
+  not a queue. Record the class, the absence, and one line saying what evidence would reopen it.
 - **D** - prohibits redistribution or derivatives, or needs an authorisation we do not hold. Reject
   on the spot, with the clause quoted.
+
+The standing rule (2026-10-21): **we only build on sources that are already clean.** A source we
+must ask permission for is a source we do not use. That is not a judgement about the publisher; it
+is about what the pipeline can afford - every C that gets probed costs the same as an A and returns
+nothing.
 
 Only A and B proceed to the novelty and probe work. A session that ends with three C verdicts has
 done its job: it has closed three doors cheaply. What it must not do is spend forty minutes

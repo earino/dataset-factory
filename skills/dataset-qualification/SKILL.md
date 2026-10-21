@@ -155,7 +155,9 @@ period end, every such feature is an oracle. This defect reached `packaged` once
 (`nhs-ae-four-hour-decline`, 25 features, audited 2026-10-21); the string
 `features_documented_at: "prediction_time"` was true of the period and false of the release.
 
-Every `quality.json` must now carry a `timing` block, and the gate refuses the dataset without one:
+Every `quality.json` must carry a `timing` block, and the gate refuses the dataset without one.
+A passing timing check means the declaration is coherent - it does not mean the build implements
+it, which is what the counterfactual test below is for:
 
 ```json
 "timing": {
@@ -176,6 +178,28 @@ Every `quality.json` must now carry a `timing` block, and the gate refuses the d
   event, a 911 call closed at the event) may ship none.
 - **`row_selection`** must not reach past the instant. Using M+1 to decide which rows qualify
   conditions the population on the future even when every feature is clean.
+- **Use the maximum observed lag, not the mean or the mode.** Publications slip: a source that
+  lands 9, 13 and 10 days after three consecutive period ends has no single lag, and the mean
+  reads one of those months three days before it existed. Record at least three observations and
+  set `days_after_period_end` to the largest.
+
+#### Removing the history count is not removing the future
+
+A selection can be fixed at the top and stay broken in its loop. Counting `MIN_MONTHS` of history
+`<= M` is the visible half; if the row list is built by pairing consecutive *qualifying* months,
+the target month still has to clear the volume gate for the M row to exist, so a quiet month
+deletes the forecast that preceded it. Two rounds of audit found this: the first fix changed the
+count, the second was still failing on the pair list.
+
+The rule: **iterate the provider's months, not pairs of qualifying months.** Eligibility reads only
+`<= M`; the target month is looked up afterwards, solely to compute the label. A missing or
+thinly-attended target month is *missing outcome data* - count it in its own bucket
+(`unobserved_target`) and report it - never a membership decision.
+
+Pin it with the smallest counterfactual rather than a declaration: build a panel with a full
+history and one target month below the volume gate, and assert the M row is emitted. On the
+pre-fix code the row vanishes, which is what makes the test worth keeping. Do the reverse too
+(lower a *history* month, expect the row to disappear) so the gate is shown to still bite.
 
 The gate checks `timing.instant_declared`, `timing.publication_lag_measured`,
 `timing.features_available_at_instant`, `timing.instant_accounts_for_publication_lag` and

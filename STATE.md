@@ -4989,3 +4989,12 @@ prompt now triages the licence in the first minutes and rejects D on the spot. B
 (CC0 Chile, CC BY Malaysia and EU, OGL Canada, public domain Brazil, Treasury terms South Africa),
 WHO FluNet carries class C plus the 2026-10-21 risk acceptance. 42 remain unclassified and cannot
 be built until triaged.
+
+**Standing licence policy (2026-10-21): we only build on sources that are already clean.**
+Class C ("unclear / contact us") is now a **drop**, not a park: no permission emails, no dated path
+out, no waiting. Class D is a drop on sight with the clause quoted. Only A and B are pursued. The
+discovery prompt, `scripts/licence-rank.py` and `docs/OPERATIONS.md` carry the rule; the queue is
+sorted by class so a C cannot consume build time. Closed under the policy: `melbourne-pedestrian-counts`
+(no licence on any of four channels) and `cpcb-aqi-exceedance` (only a republisher's terms were read).
+All active candidates (investigating/ready) now carry a class: 16 A, 3 B, 3 C, 30 unclassified - and
+every one of the unclassified is already parked or dropped.

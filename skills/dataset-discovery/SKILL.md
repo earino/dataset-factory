@@ -25,7 +25,7 @@ While looking for a prediction task, or when deciding whether a lead is worth co
 Not for building the files (`dataset-qualification` gates them) and not for publishing
 (`dataset-release`). Discovery ends when a candidate is **ready**, not when it is constructed.
 
-## The four contracts a source must satisfy
+## The five contracts a source must satisfy
 
 A source that fails any one of these cannot produce a usable dataset, however interesting it
 looks. Each is cheap to test and expensive to discover late:
@@ -46,6 +46,31 @@ looks. Each is cheap to test and expensive to discover late:
    raw data is fine and expected; the publisher or anyone else already shipping this prediction
    task with splits and a scored contract is not. **A mirror is not published** - better to
    publish nothing than to republish what a consumer can already download.
+
+## Triage the licence before you probe the task
+
+The licence is the cheapest veto and the most common one: when half the parked candidates die on
+licence or terms, almost all of them died **after** their schemas had been read and their volume
+measured. That order is the waste. Classify first, in minutes, and record it on the candidate as
+`licence_class`:
+
+| Class | Meaning | What happens |
+| --- | --- | --- |
+| **A** | Explicit open licence permitting redistribution *and* derivatives (OGL, CC BY, CC0, US federal public domain) | Probe the task |
+| **B** | Open but conditional - attribution-plus-sharealike, or a compilation licence over a source with its own terms | Probe, and plan to state the conditions in `LICENSE.md` |
+| **C** | Unstated, ambiguous, or "contact us" | Park at once with a dated path out; a written enquiry may be drafted, the candidate does not proceed until an answer exists or the operator accepts the risk |
+| **D** | Prohibits redistribution or derivatives, or requires an authorisation not held | Reject on the spot with the clause quoted |
+
+- **Classify from the publisher's own instrument**, not from a general policy page. A general
+  open-content policy can coexist with dataset-specific terms that restrict alteration or transfer;
+  read the terms linked from the dataset itself.
+- **`licence_class` belongs in the candidate's required fields** for any status at or beyond
+  `ready`, so a candidate cannot reach construction unclassified. Investigate-status records may
+  stay unclassified; nothing else may.
+- **Sort the construction queue by class**, not by novelty or volume: `python3 scripts/licence-rank.py`
+  prints it A -> D and flags buildable-looking candidates stuck at triage. Work down from the top.
+- A session that ends with three C verdicts has done its job: it closed three doors cheaply. What it
+  must not do is spend the session characterising a source that was never shippable.
 
 ## Geographic coverage is a measured property
 
@@ -116,7 +141,8 @@ command behind it is a guess.
 
 ## Order of work, cheapest first
 
-1. **Licence and terms.** Free to check, and a veto.
+1. **Licence and terms.** Free to check, and a veto: class it (A/B/C/D above) and stop at C or D
+   before spending anything on schema or volume.
 2. **Aggregate queries.** Counts, ranges, base rates, distinct keys - offline, no bulk transfer.
    **Also count the mix of every categorical provenance column** (`ORIGIN_SOURCE`, `SENTINEL` /
    `NONSENTINEL`, `status`, `measure_type`) before deciding what a row means. Summing two streams
@@ -158,6 +184,8 @@ A candidate is **ready** - the buffer state, before construction - when:
 - [ ] `jurisdiction` recorded as country, region and publisher — measured from the publisher, not
       inferred from the URL.
 - [ ] The licence question is either settled or explicitly escalated as a decision.
+- [ ] `licence_class` recorded (A or B for anything heading to construction; C only with a dated
+      path out; D rejected), and the quoted evidence stored in `license_evidence`.
 - [ ] `check-candidate.py` reports no missing required field, including a **novelty check** with
       a verdict of `no_precedent` or `differentiated` - never `mirror`.
 - [ ] Split windows and their computed counts are recorded, with clustered counts where they differ.

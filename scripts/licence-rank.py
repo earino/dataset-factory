@@ -11,7 +11,7 @@ Classes (record.licence_class):
      (OGL v3, CC BY 4.0, CC0, US federal public domain)
   B  open, but conditional - attribution-plus-sharealike, or a compilation licence sitting on a
      source with its own terms (publish, but say plainly what the conditions are)
-  C  unclear, unstated, or requires written permission (park with a dated path out)
+  C  unclear, unstated, or requires written permission (do not build, do not wait - drop)
   D  prohibits redistribution or derivatives, or needs an authorisation we do not hold
 
 Usage:
@@ -29,7 +29,7 @@ ORDER = {"A": 0, "B": 1, "C": 2, "D": 3, "unclassified": 4}
 LABEL = {
     "A": "open licence, redistribution and derivatives permitted",
     "B": "open with conditions - publish and state them",
-    "C": "licence unresolved - written permission needed, park with an expiry",
+    "C": "licence unresolved - not a candidate; drop it",
     "D": "does not permit redistribution or derivatives - do not build",
     "unclassified": "no licence triage recorded yet",
 }

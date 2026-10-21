@@ -682,3 +682,14 @@ This is not a documentation rule. `nhs-ae-four-hour-decline` was packaged under 
 late-published features and a hindsight-selected population; an independent audit caught it after the
 bytes were already staged. The gate could not have caught it, because it checked that a feature was
 *documented* as available, not that it was *published* then.
+
+## We only build on clean licences
+
+Standing policy, 2026-10-21: a source whose licence is not already established as permitting
+redistribution and derivatives is **not pursued**. No permission emails, no parked candidates
+waiting on an answer, no "probably fine". The discovery session classifies the licence in its first
+minutes and drops anything that is not class A or B; the construction queue is sorted by class so a
+C can never consume build time.
+
+The reason is arithmetic, not purism: 18 of 31 parked candidates had already been probed before the
+licence question was asked. A C costs the same as an A and returns nothing.

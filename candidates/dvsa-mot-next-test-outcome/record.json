@@ -1,177 +1,179 @@
 {
-  "id": "dvsa-mot-next-test-outcome",
-  "status": "investigating",
-  "verdict": "go",
-  "created_at": "2026-10-19T17:00:41.144098+00:00",
-  "domain": "vehicle roadworthiness testing / recurrent inspection outcomes",
-  "prediction_question": "For a vehicle with at least one completed MOT test, will its next MOT test end in an initial failure (test_result F, or PRS - pass only after rectification at the station) rather than a clean pass, given only what is known up to and including its previous completed test?",
-  "prediction_time": "The completion instant of the vehicle's previous test (completed_date in the prior test's row). Features are the vehicle's static attributes (make, model, colour, fuel_type, cylinder_capacity, first_use_date, test class) plus its full prior-test history (test dates, intervals, test types including NT/RT, prior results, mileage and mileage deltas, prior defect-item categories from the companion failure-item files). The next test's own fields (test_result, its test_mileage, its completed_date, its defect items) are the label source and never ship as features.",
-  "target_definition": "Binary from the documented test_result field of the next test: positive if test_result is F or PRS - the DfT/DVSA documented 'initial failure' definition ('Initial failure rate = (Test Fail Results + Test PRS Results) / Total Tests', MOT Testing Data User Guide; the same definition drives the published DVSA/MOT/01 statistical tables). Negative if P. Abandoned/aborted codes (ABR, ABA - measured present at <0.6%) are excluded or handled at construction, to be decided and documented there.",
-  "sources": [
-    {
-      "name": "Anonymised MOT tests and results - DVSA (2023-2024 files)",
-      "url": "https://www.data.gov.uk/dataset/c63fca52-ae4c-4b75-bab5-8b4735e1a4c9/anonymised-mot-tests-and-results",
-      "api": "https://edh-dvsa-data-gov-uk-files-prod.s3.eu-west-1.amazonaws.com/MOT+testing+data+results+(2024).zip (anonymous S3 GET, Range supported, measured 2026-10-19); CKAN metadata: https://ckan.publishing.service.gov.uk/api/3/action/package_show?id=c63fca52-ae4c-4b75-bab5-8b4735e1a4c9",
-      "license": "UK Open Government Licence v3.0 (CKAN license_title/license_url, read 2026-10-19)",
-      "access": "anonymous bulk download, no key; per-year zips of monthly result CSVs plus per-year failure-item zips"
-    },
-    {
-      "name": "Anonymised MOT tests and results - DfT (2005-2022 files)",
-      "url": "https://www.data.gov.uk/dataset/e3939ef8-30c7-4ca8-9c7c-ad9475cc9b2f/anonymised-mot-tests-and-results",
-      "api": "https://data.dft.gov.uk/anonymised-mot-test/test_data/dft_test_result_2019.zip (pattern per year 2017-2022; 2005-2016 are txt.gz pairs); CKAN metadata: https://ckan.publishing.service.gov.uk/api/3/action/package_show?id=e3939ef8-30c7-4ca8-9c7c-ad9475cc9b2f",
-      "license": "UK Open Government Licence v3.0 (CKAN license_title/license_url, read 2026-10-19)",
-      "access": "anonymous bulk download; per-year result files plus matching failure-item files for 2005-2022 listed in CKAN, measured 2026-10-19"
-    },
-    {
-      "name": "MOT Testing Data User Guide (post-May 2018) v5.1 + lookup tables",
-      "url": "https://edh-dvsa-data-gov-uk-files-prod.s3.eu-west-1.amazonaws.com/mot-testing-data-user-guide-v5.1.odt",
-      "api": "lookup: https://edh-dvsa-data-gov-uk-files-prod.s3.eu-west-1.amazonaws.com/lookup.zip",
-      "license": "UK Open Government Licence v3.0 (part of the same OGL dataset)",
-      "access": "downloaded in-session (73,606 bytes), read 2026-10-19; documents the test regime, the result codes (P/F/PRS) and RfR types"
-    },
-    {
-      "name": "DVSA/MOT/01 - MOT test results by class of vehicle (publisher's own summary product, cross-check)",
-      "url": "https://www.gov.uk/government/statistical-data-sets/mot-testing-data-for-great-britain",
-      "license": "UK Open Government Licence v3.0 (gov.uk)",
-      "access": "CSV read 2026-10-19: FY2025-26 totals classes 3&4 initial fail rate 27.51% / final 22.30%; classes 1&2 13.40%/8.20%; class 7 34.00%/27.01%"
-    }
-  ],
-  "license_evidence": [
-    "Measured 2026-10-19: CKAN package_show for both datasets (DfT e3939ef8..., DVSA c63fca52...) returns license_title 'UK Open Government Licence (OGL)' with license_url https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/.",
-    "Publisher caveats to carry onto any release, read from the CKAN notes 2026-10-19: 'This data set comes from data held by the Driver and Vehicle Standards Agency (DVSA). It is not classed as an official statistic'; the 2018 MOT regime change affected the information presented; the 2017 file was revised in June 2022 to include missing test results.",
-    "Vehicle identity is pseudonymised by the publisher (vehicle_id is a pseudonym over registration+VIN) - measured in the row sample; no personal data ships."
-  ],
-  "construction_script": null,
-  "split_strategy": "Temporal by the NEXT test's year (the label year): train next-tests 2010-2018, eval 2019-2021, holdout 2022-2024; tests 2005-2009 usable only as prior-history priming, never as labelled rows. Measured anchor (2024-08 month prefix, 34,924 rows): initial-fail (F+PRS) 22.1%, clean-pass 77.3%, ABR+ABA 0.55% - both classes amply present every month. Positives cluster by vehicle (19,328 distinct vehicle_ids in the 34,924-row prefix; multiple tests per vehicle per month are normal), so the vehicle is the clustered unit and vehicle_id must NOT be the runner id column: the row id is the unique next-test key, prior-history features are precomputed at construction, and the raw vehicle pseudonym ships only as a declared high-cardinality column if at all.",
-  "measurements": {
-    "zip_shape_2026_10_19": {
-      "method": "ranged HTTP reads only (zip central directory + partial member decompression; ~14 ranged requests, ~4.5 MB transferred for the whole measurement)",
-      "result": "MOT testing data results (2024).zip = 1,531,265,132 bytes compressed (Last-Modified 2025-05-13), 12 monthly members test_result_202401..202412.csv, 7,667,648,876 bytes uncompressed total (per-month 461-746 MB). S3 answers Range requests; construction is a worker job (ESTIMATE: other years are of similar per-year size - only 2024 was measured)."
-    },
-    "row_schema_2026_10_19": "Header of test_result_202408.csv, verbatim: test_id,vehicle_id,test_date,test_class_id,test_type,test_result,test_mileage,postcode_area,make,model,colour,fuel_type,cylinder_capacity,first_use_date,completed_date. Sample row: 982603987,596187188,2024-08-19,4,NT,P,65494.0,HG,BENTLEY,CONTINENTAL,SILVER,PE,5998,2006-03-01,2024-08-19T14:10:35.000Z",
-    "prefix_base_rate_2026_10_19": "First 4 MB of test_result_202408.csv = 34,924 rows: P 27,026 (77.3%), F 6,190 (17.7%), PRS 1,516 (4.3%), ABR 157, ABA 35 -> initial-fail 22.1%, final-fail 17.7%. test_type: NT 29,058 / RT 5,866. test_class_id: 4 -> 32,073; 7 -> 1,911; 2 -> 734; 1 -> 149; 5 -> 53; 3 -> 4. 19,328 distinct vehicle_ids.",
-    "key_uniqueness_warning_measured": "test_id is NOT unique: 6,336 test_id values appear more than once within the one-month prefix (top test_id 1934795005 appears 36 times; the file's first two rows are byte-identical). Construction must define a total order and dedup explicitly - keying or paging on test_id alone would repeat or drop rows.",
-    "cross_check_against_published_summary_products": "Prefix initial-fail 22.1% / final-fail 17.7% (August 2024, all classes, predominantly class 4) against the publisher's DVSA/MOT/01: FY2025-26 classes 3&4 initial 27.51% / final 22.30%, classes 1&2 13.40%, class 7 34.00%. Same magnitude and class ordering (August is a historically lenient month and the prefix mixes classes); no contradiction.",
-    "extraction_cost": "Measured on the coordinator class: the whole shape measurement was ~14 ranged requests / ~4.5 MB / seconds. Construction is worker-scale: 1.53 GB compressed per year (2024 measured; other years labelled estimates) and ~7.7 GB uncompressed per year, so a 2010-2024 build is roughly 23 GB download and ~115 GB uncompressed processing - ESTIMATE derived from the single measured year; re-measure one more year on the worker before committing to the full window. Bounding to class 4 plus adjacent classes cuts this sharply."
+ "id": "dvsa-mot-next-test-outcome",
+ "status": "investigating",
+ "verdict": "go",
+ "created_at": "2026-10-19T17:00:41.144098+00:00",
+ "domain": "vehicle roadworthiness testing / recurrent inspection outcomes",
+ "prediction_question": "For a vehicle with at least one completed MOT test, will its next MOT test end in an initial failure (test_result F, or PRS - pass only after rectification at the station) rather than a clean pass, given only what is known up to and including its previous completed test?",
+ "prediction_time": "The completion instant of the vehicle's previous test (completed_date in the prior test's row). Features are the vehicle's static attributes (make, model, colour, fuel_type, cylinder_capacity, first_use_date, test class) plus its full prior-test history (test dates, intervals, test types including NT/RT, prior results, mileage and mileage deltas, prior defect-item categories from the companion failure-item files). The next test's own fields (test_result, its test_mileage, its completed_date, its defect items) are the label source and never ship as features.",
+ "target_definition": "Binary from the documented test_result field of the next test: positive if test_result is F or PRS - the DfT/DVSA documented 'initial failure' definition ('Initial failure rate = (Test Fail Results + Test PRS Results) / Total Tests', MOT Testing Data User Guide; the same definition drives the published DVSA/MOT/01 statistical tables). Negative if P. Abandoned/aborted codes (ABR, ABA - measured present at <0.6%) are excluded or handled at construction, to be decided and documented there.",
+ "sources": [
+  {
+   "name": "Anonymised MOT tests and results - DVSA (2023-2024 files)",
+   "url": "https://www.data.gov.uk/dataset/c63fca52-ae4c-4b75-bab5-8b4735e1a4c9/anonymised-mot-tests-and-results",
+   "api": "https://edh-dvsa-data-gov-uk-files-prod.s3.eu-west-1.amazonaws.com/MOT+testing+data+results+(2024).zip (anonymous S3 GET, Range supported, measured 2026-10-19); CKAN metadata: https://ckan.publishing.service.gov.uk/api/3/action/package_show?id=c63fca52-ae4c-4b75-bab5-8b4735e1a4c9",
+   "license": "UK Open Government Licence v3.0 (CKAN license_title/license_url, read 2026-10-19)",
+   "access": "anonymous bulk download, no key; per-year zips of monthly result CSVs plus per-year failure-item zips"
   },
-  "jobs": [],
-  "artifacts": [],
-  "rejection_reason": null,
-  "review": null,
-  "next_action": "GO to construction (advancement session owns it). Construction step: on a worker, download per-year results and failure-item zips for the chosen window (2010-2024), sort by (vehicle_id, test_date, completed_date) for a total order and dedup explicitly (test_id repeats are measured), join each vehicle's consecutive tests, label next-test initial-fail (F/PRS positive, P negative, ABR/ABA resolved and documented), features strictly from the previous test and earlier (static vehicle attributes + history including mileage deltas and prior defect categories from the item files), exclude every next-test field and its defect items from the shipped columns, freeze train next-year 2010-2018 / eval 2019-2021 / holdout 2022-2024, declare vehicle_id as high-cardinality (never the runner id column; row id = unique next-test key), pin the DVSA/MOT/01 aggregate rates as the cross-check fixture, then run the qualification gate on the worker over the full artifact.",
-  "jurisdiction": {
-    "country": "GB",
-    "region": "Europe",
-    "publisher": "Driver and Vehicle Standards Agency / Department for Transport (Great Britain)",
-    "recorded_at": "2026-10-19"
+  {
+   "name": "Anonymised MOT tests and results - DfT (2005-2022 files)",
+   "url": "https://www.data.gov.uk/dataset/e3939ef8-30c7-4ca8-9c7c-ad9475cc9b2f/anonymised-mot-tests-and-results",
+   "api": "https://data.dft.gov.uk/anonymised-mot-test/test_data/dft_test_result_2019.zip (pattern per year 2017-2022; 2005-2016 are txt.gz pairs); CKAN metadata: https://ckan.publishing.service.gov.uk/api/3/action/package_show?id=e3939ef8-30c7-4ca8-9c7c-ad9475cc9b2f",
+   "license": "UK Open Government Licence v3.0 (CKAN license_title/license_url, read 2026-10-19)",
+   "access": "anonymous bulk download; per-year result files plus matching failure-item files for 2005-2022 listed in CKAN, measured 2026-10-19"
   },
-  "novelty_check": {
-    "checked_at": "2026-10-19T17:06:04+00:00",
-    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
-    "queries": [
-      "MOT test prediction",
-      "vehicle inspection failure prediction",
-      "MOT dataset"
-    ],
-    "evidence": {
-      "huggingface_datasets": [
-        {
-          "query": "MOT test prediction",
-          "hits": 0,
-          "top": []
-        },
-        {
-          "query": "vehicle inspection failure prediction",
-          "hits": 0,
-          "top": []
-        },
-        {
-          "query": "MOT dataset",
-          "hits": 2,
-          "top": [
-            "backseollgi/mot_dataset",
-            "yutiangu/dataset_uav_multimap_multicamera_mot_weather500"
-          ]
-        }
-      ],
-      "zenodo_records": [
-        {
-          "query": "MOT test prediction",
-          "hits": 260274,
-          "top": [
-            "bee test set of MOT",
-            "\u00ceNV\u0102\u021aARE \u0218I DEZV\u0102\u021aARE \u00ceN EDUCA\u021aIA TEOLOGIC\u0102",
-            "Taeniogyrus mijim Yamana & Tanaka & Nakachi 2017, sp. nov.",
-            "Rowedota motoshimaensis Yamana & Tanaka & Nakachi 2017, sp. nov.",
-            "Proteomic analysis of silenced cathepsin B expression suggests non-proteolytic cathepsin B functionality."
-          ]
-        },
-        {
-          "query": "vehicle inspection failure prediction",
-          "hits": 174714,
-          "top": [
-            "An Improved Method Based On Delay Time Model and Compromise Programming for Analysing Maintenance Interval of an Auto Transport Industry Machinery",
-            "Development of risk-based inspection of 28-years-old subsea sales gas pipelines to support the energy demand",
-            "RDW OpenData full vehicle inspections and recall data translated to English until 26th November 2024",
-            "VEHICLE DETECTION USING HAAR CASCADE",
-            "Online Motor Vehicle Licensing System Using RBAC Mechanism"
-          ]
-        },
-        {
-          "query": "MOT dataset",
-          "hits": 302460,
-          "top": [
-            "BAMBI - MOT Dataset",
-            "Kold_39: MOT 39K dataset",
-            "\u00ceNV\u0102\u021aARE \u0218I DEZV\u0102\u021aARE \u00ceN EDUCA\u021aIA TEOLOGIC\u0102",
-            "Dataset of code metrics",
-            "The BAMBI Matched Dataset: Raw Nadir UAV RGB/Thermal Recordings of Forest Wildlife with Red Deer MOT Labels (Part 1)"
-          ]
-        }
-      ],
-      "arxiv_preprints": [
-        {
-          "query": "MOT test prediction",
-          "hits": 5,
-          "top": [
-            "DepTR-MOT: Unveiling the Potential of Depth-Informed Trajectory Refinement for Multi-Object Tracking",
-            "MOT-SR: Multi-Objective Tool-Augmented Scientific Equation Discovery with Large Language Models",
-            "A simple way to speedup Gauss Elimination",
-            "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
-            "PS-MOT: Cultivating Instance Awareness from Point Seeds for Multi-Object Tracking"
-          ]
-        },
-        {
-          "query": "vehicle inspection failure prediction",
-          "hits": 5,
-          "top": [
-            "Joint vehicle state and parameters estimation via Twin-in-the-Loop observers",
-            "B-ETS: A Trusted Blockchain-based Emissions Trading System for Vehicle-to-Vehicle Networks",
-            "From Noisy Telemetry to Actionable Warnings: GPU Failure Prediction in Industrial Clusters",
-            "Visual-Inertial Teach and Repeat for Aerial Inspection",
-            "Cloud Failure Prediction with Hierarchical Temporal Memory: An Empirical Assessment"
-          ]
-        },
-        {
-          "query": "MOT dataset",
-          "hits": 5,
-          "top": [
-            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
-            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
-            "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset",
-            "DepTR-MOT: Unveiling the Potential of Depth-Informed Trajectory Refinement for Multi-Object Tracking",
-            "MOT-SR: Multi-Objective Tool-Augmented Scientific Equation Discovery with Large Language Models"
-          ]
-        }
-      ]
-    },
-    "evidence_summary": "- huggingface_datasets / 'MOT test prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'vehicle inspection failure prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'MOT dataset': 2 hit(s) - backseollgi/mot_dataset, yutiangu/dataset_uav_multimap_multicamera_mot_weather500\n- zenodo_records / 'MOT test prediction': 260274 hit(s) - bee test set of MOT, \u00ceNV\u0102\u021aARE \u0218I DEZV\u0102\u021aARE \u00ceN EDUCA\u021aIA TEOLOGIC\u0102, Taeniogyrus mijim Yamana & Tanaka & Nakachi 2017, sp. nov., Rowedota motoshimaensis Yamana & Tanaka & Nakachi 2017, sp. nov., Proteomic analysis of silenced cathepsin B expression suggests non-proteolytic cathepsin B functionality.\n- zenodo_records / 'vehicle inspection failure prediction': 174714 hit(s) - An Improved Method Based On Delay Time Model and Compromise Programming for Analysing Maintenance Interval of an Auto Transport Industry Machinery, Development of risk-based inspection of 28-years-old subsea sales gas pipelines to support the energy demand, RDW OpenData full vehicle inspections and recall data translated to English until 26th November 2024, VEHICLE DETECTION USING HAAR CASCADE, Online Motor Vehicle Licensing System Using RBAC Mechanism\n- zenodo_records / 'MOT dataset': 302460 hit(s) - BAMBI - MOT Dataset, Kold_39: MOT 39K dataset, \u00ceNV\u0102\u021aARE \u0218I DEZV\u0102\u021aARE \u00ceN EDUCA\u021aIA TEOLOGIC\u0102, Dataset of code metrics, The BAMBI Matched Dataset: Raw Nadir UAV RGB/Thermal Recordings of Forest Wildlife with Red Deer MOT Labels (Part 1)\n- arxiv_preprints / 'MOT test prediction': 5 hit(s) - DepTR-MOT: Unveiling the Potential of Depth-Informed Trajectory Refinement for Multi-Object Tracking, MOT-SR: Multi-Objective Tool-Augmented Scientific Equation Discovery with Large Language Models, A simple way to speedup Gauss Elimination, Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, PS-MOT: Cultivating Instance Awareness from Point Seeds for Multi-Object Tracking\n- arxiv_preprints / 'vehicle inspection failure prediction': 5 hit(s) - Joint vehicle state and parameters estimation via Twin-in-the-Loop observers, B-ETS: A Trusted Blockchain-based Emissions Trading System for Vehicle-to-Vehicle Networks, From Noisy Telemetry to Actionable Warnings: GPU Failure Prediction in Industrial Clusters, Visual-Inertial Teach and Repeat for Aerial Inspection, Cloud Failure Prediction with Hierarchical Temporal Memory: An Empirical Assessment\n- arxiv_preprints / 'MOT dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, DepTR-MOT: Unveiling the Potential of Depth-Informed Trajectory Refinement for Multi-Object Tracking, MOT-SR: Multi-Objective Tool-Augmented Scientific Equation Discovery with Large Language Models",
-    "prior_art": [
-      "adin786/mot-data (GitHub EDA, 2019 G-postcode class 4); Lisense vehicle insights (commercial); gov.uk DVSA/MOT/01 aggregate tables"
-    ],
-    "theirs": "The raw per-year DVSA/DfT anonymised MOT files (open, OGL); a personal GitHub EDA with a 2-feature SGD pass/fail experiment on one year/postcode/class (adin786/mot-data, 76% acc); a commercial MOT-failure predictor (Lisense) built on DVSA history; the publisher's own aggregate fail-rate tables (DVSA/MOT/01)",
-    "ours": "Full-history next-MOT-test outcome prediction: prior-test history features (results, mileage deltas, defect categories from the failure-item files) plus static vehicle attributes, frozen temporal splits (next-test years 2010-2018/2019-2021/2022-2024), leakage-disciplined shipped columns, scored runner contract for coding-agent evals",
-    "verdict": "differentiated",
-    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  {
+   "name": "MOT Testing Data User Guide (post-May 2018) v5.1 + lookup tables",
+   "url": "https://edh-dvsa-data-gov-uk-files-prod.s3.eu-west-1.amazonaws.com/mot-testing-data-user-guide-v5.1.odt",
+   "api": "lookup: https://edh-dvsa-data-gov-uk-files-prod.s3.eu-west-1.amazonaws.com/lookup.zip",
+   "license": "UK Open Government Licence v3.0 (part of the same OGL dataset)",
+   "access": "downloaded in-session (73,606 bytes), read 2026-10-19; documents the test regime, the result codes (P/F/PRS) and RfR types"
+  },
+  {
+   "name": "DVSA/MOT/01 - MOT test results by class of vehicle (publisher's own summary product, cross-check)",
+   "url": "https://www.gov.uk/government/statistical-data-sets/mot-testing-data-for-great-britain",
+   "license": "UK Open Government Licence v3.0 (gov.uk)",
+   "access": "CSV read 2026-10-19: FY2025-26 totals classes 3&4 initial fail rate 27.51% / final 22.30%; classes 1&2 13.40%/8.20%; class 7 34.00%/27.01%"
   }
+ ],
+ "license_evidence": [
+  "Measured 2026-10-19: CKAN package_show for both datasets (DfT e3939ef8..., DVSA c63fca52...) returns license_title 'UK Open Government Licence (OGL)' with license_url https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/.",
+  "Publisher caveats to carry onto any release, read from the CKAN notes 2026-10-19: 'This data set comes from data held by the Driver and Vehicle Standards Agency (DVSA). It is not classed as an official statistic'; the 2018 MOT regime change affected the information presented; the 2017 file was revised in June 2022 to include missing test results.",
+  "Vehicle identity is pseudonymised by the publisher (vehicle_id is a pseudonym over registration+VIN) - measured in the row sample; no personal data ships."
+ ],
+ "construction_script": null,
+ "split_strategy": "Temporal by the NEXT test's year (the label year): train next-tests 2010-2018, eval 2019-2021, holdout 2022-2024; tests 2005-2009 usable only as prior-history priming, never as labelled rows. Measured anchor (2024-08 month prefix, 34,924 rows): initial-fail (F+PRS) 22.1%, clean-pass 77.3%, ABR+ABA 0.55% - both classes amply present every month. Positives cluster by vehicle (19,328 distinct vehicle_ids in the 34,924-row prefix; multiple tests per vehicle per month are normal), so the vehicle is the clustered unit and vehicle_id must NOT be the runner id column: the row id is the unique next-test key, prior-history features are precomputed at construction, and the raw vehicle pseudonym ships only as a declared high-cardinality column if at all.",
+ "measurements": {
+  "zip_shape_2026_10_19": {
+   "method": "ranged HTTP reads only (zip central directory + partial member decompression; ~14 ranged requests, ~4.5 MB transferred for the whole measurement)",
+   "result": "MOT testing data results (2024).zip = 1,531,265,132 bytes compressed (Last-Modified 2025-05-13), 12 monthly members test_result_202401..202412.csv, 7,667,648,876 bytes uncompressed total (per-month 461-746 MB). S3 answers Range requests; construction is a worker job (ESTIMATE: other years are of similar per-year size - only 2024 was measured)."
+  },
+  "row_schema_2026_10_19": "Header of test_result_202408.csv, verbatim: test_id,vehicle_id,test_date,test_class_id,test_type,test_result,test_mileage,postcode_area,make,model,colour,fuel_type,cylinder_capacity,first_use_date,completed_date. Sample row: 982603987,596187188,2024-08-19,4,NT,P,65494.0,HG,BENTLEY,CONTINENTAL,SILVER,PE,5998,2006-03-01,2024-08-19T14:10:35.000Z",
+  "prefix_base_rate_2026_10_19": "First 4 MB of test_result_202408.csv = 34,924 rows: P 27,026 (77.3%), F 6,190 (17.7%), PRS 1,516 (4.3%), ABR 157, ABA 35 -> initial-fail 22.1%, final-fail 17.7%. test_type: NT 29,058 / RT 5,866. test_class_id: 4 -> 32,073; 7 -> 1,911; 2 -> 734; 1 -> 149; 5 -> 53; 3 -> 4. 19,328 distinct vehicle_ids.",
+  "key_uniqueness_warning_measured": "test_id is NOT unique: 6,336 test_id values appear more than once within the one-month prefix (top test_id 1934795005 appears 36 times; the file's first two rows are byte-identical). Construction must define a total order and dedup explicitly - keying or paging on test_id alone would repeat or drop rows.",
+  "cross_check_against_published_summary_products": "Prefix initial-fail 22.1% / final-fail 17.7% (August 2024, all classes, predominantly class 4) against the publisher's DVSA/MOT/01: FY2025-26 classes 3&4 initial 27.51% / final 22.30%, classes 1&2 13.40%, class 7 34.00%. Same magnitude and class ordering (August is a historically lenient month and the prefix mixes classes); no contradiction.",
+  "extraction_cost": "Measured on the coordinator class: the whole shape measurement was ~14 ranged requests / ~4.5 MB / seconds. Construction is worker-scale: 1.53 GB compressed per year (2024 measured; other years labelled estimates) and ~7.7 GB uncompressed per year, so a 2010-2024 build is roughly 23 GB download and ~115 GB uncompressed processing - ESTIMATE derived from the single measured year; re-measure one more year on the worker before committing to the full window. Bounding to class 4 plus adjacent classes cuts this sharply."
+ },
+ "jobs": [],
+ "artifacts": [],
+ "rejection_reason": null,
+ "review": null,
+ "next_action": "GO to construction (advancement session owns it). Construction step: on a worker, download per-year results and failure-item zips for the chosen window (2010-2024), sort by (vehicle_id, test_date, completed_date) for a total order and dedup explicitly (test_id repeats are measured), join each vehicle's consecutive tests, label next-test initial-fail (F/PRS positive, P negative, ABR/ABA resolved and documented), features strictly from the previous test and earlier (static vehicle attributes + history including mileage deltas and prior defect categories from the item files), exclude every next-test field and its defect items from the shipped columns, freeze train next-year 2010-2018 / eval 2019-2021 / holdout 2022-2024, declare vehicle_id as high-cardinality (never the runner id column; row id = unique next-test key), pin the DVSA/MOT/01 aggregate rates as the cross-check fixture, then run the qualification gate on the worker over the full artifact.",
+ "jurisdiction": {
+  "country": "GB",
+  "region": "Europe",
+  "publisher": "Driver and Vehicle Standards Agency / Department for Transport (Great Britain)",
+  "recorded_at": "2026-10-19"
+ },
+ "novelty_check": {
+  "checked_at": "2026-10-19T17:06:04+00:00",
+  "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+  "queries": [
+   "MOT test prediction",
+   "vehicle inspection failure prediction",
+   "MOT dataset"
+  ],
+  "evidence": {
+   "huggingface_datasets": [
+    {
+     "query": "MOT test prediction",
+     "hits": 0,
+     "top": []
+    },
+    {
+     "query": "vehicle inspection failure prediction",
+     "hits": 0,
+     "top": []
+    },
+    {
+     "query": "MOT dataset",
+     "hits": 2,
+     "top": [
+      "backseollgi/mot_dataset",
+      "yutiangu/dataset_uav_multimap_multicamera_mot_weather500"
+     ]
+    }
+   ],
+   "zenodo_records": [
+    {
+     "query": "MOT test prediction",
+     "hits": 260274,
+     "top": [
+      "bee test set of MOT",
+      "\u00ceNV\u0102\u021aARE \u0218I DEZV\u0102\u021aARE \u00ceN EDUCA\u021aIA TEOLOGIC\u0102",
+      "Taeniogyrus mijim Yamana & Tanaka & Nakachi 2017, sp. nov.",
+      "Rowedota motoshimaensis Yamana & Tanaka & Nakachi 2017, sp. nov.",
+      "Proteomic analysis of silenced cathepsin B expression suggests non-proteolytic cathepsin B functionality."
+     ]
+    },
+    {
+     "query": "vehicle inspection failure prediction",
+     "hits": 174714,
+     "top": [
+      "An Improved Method Based On Delay Time Model and Compromise Programming for Analysing Maintenance Interval of an Auto Transport Industry Machinery",
+      "Development of risk-based inspection of 28-years-old subsea sales gas pipelines to support the energy demand",
+      "RDW OpenData full vehicle inspections and recall data translated to English until 26th November 2024",
+      "VEHICLE DETECTION USING HAAR CASCADE",
+      "Online Motor Vehicle Licensing System Using RBAC Mechanism"
+     ]
+    },
+    {
+     "query": "MOT dataset",
+     "hits": 302460,
+     "top": [
+      "BAMBI - MOT Dataset",
+      "Kold_39: MOT 39K dataset",
+      "\u00ceNV\u0102\u021aARE \u0218I DEZV\u0102\u021aARE \u00ceN EDUCA\u021aIA TEOLOGIC\u0102",
+      "Dataset of code metrics",
+      "The BAMBI Matched Dataset: Raw Nadir UAV RGB/Thermal Recordings of Forest Wildlife with Red Deer MOT Labels (Part 1)"
+     ]
+    }
+   ],
+   "arxiv_preprints": [
+    {
+     "query": "MOT test prediction",
+     "hits": 5,
+     "top": [
+      "DepTR-MOT: Unveiling the Potential of Depth-Informed Trajectory Refinement for Multi-Object Tracking",
+      "MOT-SR: Multi-Objective Tool-Augmented Scientific Equation Discovery with Large Language Models",
+      "A simple way to speedup Gauss Elimination",
+      "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
+      "PS-MOT: Cultivating Instance Awareness from Point Seeds for Multi-Object Tracking"
+     ]
+    },
+    {
+     "query": "vehicle inspection failure prediction",
+     "hits": 5,
+     "top": [
+      "Joint vehicle state and parameters estimation via Twin-in-the-Loop observers",
+      "B-ETS: A Trusted Blockchain-based Emissions Trading System for Vehicle-to-Vehicle Networks",
+      "From Noisy Telemetry to Actionable Warnings: GPU Failure Prediction in Industrial Clusters",
+      "Visual-Inertial Teach and Repeat for Aerial Inspection",
+      "Cloud Failure Prediction with Hierarchical Temporal Memory: An Empirical Assessment"
+     ]
+    },
+    {
+     "query": "MOT dataset",
+     "hits": 5,
+     "top": [
+      "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+      "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+      "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset",
+      "DepTR-MOT: Unveiling the Potential of Depth-Informed Trajectory Refinement for Multi-Object Tracking",
+      "MOT-SR: Multi-Objective Tool-Augmented Scientific Equation Discovery with Large Language Models"
+     ]
+    }
+   ]
+  },
+  "evidence_summary": "- huggingface_datasets / 'MOT test prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'vehicle inspection failure prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'MOT dataset': 2 hit(s) - backseollgi/mot_dataset, yutiangu/dataset_uav_multimap_multicamera_mot_weather500\n- zenodo_records / 'MOT test prediction': 260274 hit(s) - bee test set of MOT, \u00ceNV\u0102\u021aARE \u0218I DEZV\u0102\u021aARE \u00ceN EDUCA\u021aIA TEOLOGIC\u0102, Taeniogyrus mijim Yamana & Tanaka & Nakachi 2017, sp. nov., Rowedota motoshimaensis Yamana & Tanaka & Nakachi 2017, sp. nov., Proteomic analysis of silenced cathepsin B expression suggests non-proteolytic cathepsin B functionality.\n- zenodo_records / 'vehicle inspection failure prediction': 174714 hit(s) - An Improved Method Based On Delay Time Model and Compromise Programming for Analysing Maintenance Interval of an Auto Transport Industry Machinery, Development of risk-based inspection of 28-years-old subsea sales gas pipelines to support the energy demand, RDW OpenData full vehicle inspections and recall data translated to English until 26th November 2024, VEHICLE DETECTION USING HAAR CASCADE, Online Motor Vehicle Licensing System Using RBAC Mechanism\n- zenodo_records / 'MOT dataset': 302460 hit(s) - BAMBI - MOT Dataset, Kold_39: MOT 39K dataset, \u00ceNV\u0102\u021aARE \u0218I DEZV\u0102\u021aARE \u00ceN EDUCA\u021aIA TEOLOGIC\u0102, Dataset of code metrics, The BAMBI Matched Dataset: Raw Nadir UAV RGB/Thermal Recordings of Forest Wildlife with Red Deer MOT Labels (Part 1)\n- arxiv_preprints / 'MOT test prediction': 5 hit(s) - DepTR-MOT: Unveiling the Potential of Depth-Informed Trajectory Refinement for Multi-Object Tracking, MOT-SR: Multi-Objective Tool-Augmented Scientific Equation Discovery with Large Language Models, A simple way to speedup Gauss Elimination, Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, PS-MOT: Cultivating Instance Awareness from Point Seeds for Multi-Object Tracking\n- arxiv_preprints / 'vehicle inspection failure prediction': 5 hit(s) - Joint vehicle state and parameters estimation via Twin-in-the-Loop observers, B-ETS: A Trusted Blockchain-based Emissions Trading System for Vehicle-to-Vehicle Networks, From Noisy Telemetry to Actionable Warnings: GPU Failure Prediction in Industrial Clusters, Visual-Inertial Teach and Repeat for Aerial Inspection, Cloud Failure Prediction with Hierarchical Temporal Memory: An Empirical Assessment\n- arxiv_preprints / 'MOT dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, DepTR-MOT: Unveiling the Potential of Depth-Informed Trajectory Refinement for Multi-Object Tracking, MOT-SR: Multi-Objective Tool-Augmented Scientific Equation Discovery with Large Language Models",
+  "prior_art": [
+   "adin786/mot-data (GitHub EDA, 2019 G-postcode class 4); Lisense vehicle insights (commercial); gov.uk DVSA/MOT/01 aggregate tables"
+  ],
+  "theirs": "The raw per-year DVSA/DfT anonymised MOT files (open, OGL); a personal GitHub EDA with a 2-feature SGD pass/fail experiment on one year/postcode/class (adin786/mot-data, 76% acc); a commercial MOT-failure predictor (Lisense) built on DVSA history; the publisher's own aggregate fail-rate tables (DVSA/MOT/01)",
+  "ours": "Full-history next-MOT-test outcome prediction: prior-test history features (results, mileage deltas, defect categories from the failure-item files) plus static vehicle attributes, frozen temporal splits (next-test years 2010-2018/2019-2021/2022-2024), leakage-disciplined shipped columns, scored runner contract for coding-agent evals",
+  "verdict": "differentiated",
+  "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+ },
+ "licence_class": "A",
+ "licence_note": "UK Open Government Licence v3.0"
 }

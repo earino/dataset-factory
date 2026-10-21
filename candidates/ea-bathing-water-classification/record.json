@@ -1,161 +1,163 @@
 {
-  "id": "ea-bathing-water-classification",
-  "status": "investigating",
-  "verdict": "go",
-  "created_at": "2026-10-19T17:00:42.005440+00:00",
-  "domain": "environmental water quality / regulatory classification prediction",
-  "prediction_question": "For a designated bathing water in England, given its classification history and prior-season sample-derived history through the end of season Y-1, will its annual rBWD classification for season Y (published the following autumn) be below 'Good' (Sufficient or Poor)?",
-  "prediction_time": "End of season Y-1 (30 September). Features are knowable at that instant: the water's classifications for prior seasons, its designation metadata (coastal/inland/estuarine type, district, catchment, designation year via the bathing-water-profile dataset), and prior-season sample summaries from the in-season sample slices. The label depends on season Y's own samples and the 4-season rBWD window, which do not exist at the prediction instant - the label is therefore not computable from the shipped features.",
-  "target_definition": "Binary from the publisher's own annual classification observation (compliance-rBWD year slice, result.primaryTopic.observation[].complianceClassification): positive if the season-Y classification is 'Sufficient' or 'Poor' (below Good); negative if 'Excellent' or 'Good'; 'Closed' waters (1-2 per season, measured) excluded. The classification is produced by the Environment Agency under the Bathing Water Regulations 2013 / revised Bathing Water Directive 2006/7/EC percentile methodology - a documented publisher process, not a human judgement applied after the fact.",
-  "sources": [
-    {
-      "name": "EA Bathing Water Quality linked-data API (compliance + in-season sample datasets)",
-      "url": "https://environment.data.gov.uk/bwq/",
-      "api": "Season classifications: https://environment.data.gov.uk/data/bathing-water-quality/compliance-rBWD/slice/year/{year}?_format=json (item page; assessments under result.primaryTopic.observation). In-season samples per point: .../in-season/slice/point/{bwspid}?_format=json. API reference: https://environment.data.gov.uk/bwq/doc/api-reference.html",
-      "license": "Open Government Licence v3.0",
-      "access": "anonymous, no key; measured 2026-10-19 (season slices ~230 KB each, answered in <1 s)"
-    },
-    {
-      "name": "EA bathing water classification methodology (how the label is computed)",
-      "url": "https://environmentagency.blog.gov.uk/2024/02/23/bathing-water-classifications-and-short-term-pollution/",
-      "license": "Open Government Licence v3.0 (gov.uk blog)",
-      "access": "read 2026-10-19: classifications use four years of sample data under the rBWD; ~450 designated bathing waters monitored in England with weekly samples May-September"
-    },
-    {
-      "name": "data.gov.uk dataset entry for the bathing water data service",
-      "url": "https://www.data.gov.uk/dataset/5e06b230-6e2f-4bce-a129-0ede919bcb52/bathing-water1",
-      "license": "Open Government Licence v3.0 (per the bwq site itself)",
-      "access": "read 2026-10-19; documents the service entry point and SPARQL access"
-    }
-  ],
-  "license_evidence": [
-    "Measured 2026-10-19 from the live service: 'All of the bathing-water quality data published via this site is freely available under the Open Government License' (bwq profile page) and the bwq landing page links 'Open Government Licence v3.0' to https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/.",
-    "Caveat to carry on any release: this is Environment Agency data for England; a derived dataset must be labelled derived, not the EA's official product, with the source designation and attribution preserved."
-  ],
-  "construction_script": null,
-  "split_strategy": "Temporal by classification season: train 2015-2021 (7 seasons, ~2,930 rows), eval 2022-2023 (2 seasons, ~845 rows), holdout 2024-2025 (2 seasons, ~902 rows). Measured per-season assessments and below-Good (Sufficient+Poor+Closed) counts: 2015: 415 / 42; 2016: 415 / 30; 2018: 422 / 34; 2022: 421 / 32; 2023: 424 / 44; 2024: 451 / 67; 2025: 451 / 59. Both classes present in every measured season (eval ~76 positives, holdout ~126 at the measured 7.6%/10.4% and 14.9%/12.9% rates). The 2020 slice does not exist (monitoring year suspended - consistent with the slice list 2004-2025 minus 2020). Entities repeat across seasons by design: row id = (bwspid, season); the water id ships as a declared high-cardinality feature, never as the runner id column.",
-  "measurements": {
-    "api_contract_2026_10_19": "LDA conventions learned from the API's own error text (each from a 400/404 that named the problem): regime segment is compliance-rBWD (not 'bwd'); the generic /compliance/... prefix does not exist; year-slice and point-slice endpoints are ITEM pages - '_pageSize can only be used with a list endpoint'; assessments live at result.primaryTopic.observation; '?year=...' is 'unrecognised short name or literal: year'.",
-    "season_counts_2026_10_19": "Measured via 11 season-slice requests (each ~230 KB, <1 s, ~2.5 MB total - the panel itself needs no worker): 2015: 415 (E 264 / G 109 / S 29 / P 11 / Closed 2); 2016: 415 (287/98/22/6/2); 2018: 422 (282/106/23/9/2); 2022: 421 (302/87/18/12/2); 2023: 424 (281/99/25/18/1); 2024: 451 (289/95/29/37/1); 2025: 451 (297/95/25/32/2). Below-Good rate range 7.2% (2016) to 14.9% (2024). 2017/2019/2021 not individually printed in notes but present in the slice list 2015-2025 (2017, 2019, 2021 fetched without counts recorded).",
-    "sample_grain_2026_10_19": "In-season point slice for point 05300 (South Shields): 794 sample observations back to 1988 (first item: sample 1988-05-11 14:40, week 1988-W19) - per-sample records exist through the API for feature history.",
-    "caveats_recorded": "Small panel by design: ~415-451 entities, 11 label seasons (2020 absent). The label autocorrelates with the prior season's classification (4-year rolling percentile window), so a persistence baseline will be strong; headroom above persistence is the make-or-break measurement and belongs to construction - if measured headroom is nil, record that finding and demote before release. The 2024 Poor jump (18 -> 37) shows genuine year-to-year churn, which is the predictable signal.",
-    "cross_check_against_published_summary_products": "At construction, cross-check per-season counts against the EA's published annual classification announcements and Swimfo's national percentages for the same seasons (the measured 2024/2025 Poor counts of 37/32 are the fixture to match)."
+ "id": "ea-bathing-water-classification",
+ "status": "investigating",
+ "verdict": "go",
+ "created_at": "2026-10-19T17:00:42.005440+00:00",
+ "domain": "environmental water quality / regulatory classification prediction",
+ "prediction_question": "For a designated bathing water in England, given its classification history and prior-season sample-derived history through the end of season Y-1, will its annual rBWD classification for season Y (published the following autumn) be below 'Good' (Sufficient or Poor)?",
+ "prediction_time": "End of season Y-1 (30 September). Features are knowable at that instant: the water's classifications for prior seasons, its designation metadata (coastal/inland/estuarine type, district, catchment, designation year via the bathing-water-profile dataset), and prior-season sample summaries from the in-season sample slices. The label depends on season Y's own samples and the 4-season rBWD window, which do not exist at the prediction instant - the label is therefore not computable from the shipped features.",
+ "target_definition": "Binary from the publisher's own annual classification observation (compliance-rBWD year slice, result.primaryTopic.observation[].complianceClassification): positive if the season-Y classification is 'Sufficient' or 'Poor' (below Good); negative if 'Excellent' or 'Good'; 'Closed' waters (1-2 per season, measured) excluded. The classification is produced by the Environment Agency under the Bathing Water Regulations 2013 / revised Bathing Water Directive 2006/7/EC percentile methodology - a documented publisher process, not a human judgement applied after the fact.",
+ "sources": [
+  {
+   "name": "EA Bathing Water Quality linked-data API (compliance + in-season sample datasets)",
+   "url": "https://environment.data.gov.uk/bwq/",
+   "api": "Season classifications: https://environment.data.gov.uk/data/bathing-water-quality/compliance-rBWD/slice/year/{year}?_format=json (item page; assessments under result.primaryTopic.observation). In-season samples per point: .../in-season/slice/point/{bwspid}?_format=json. API reference: https://environment.data.gov.uk/bwq/doc/api-reference.html",
+   "license": "Open Government Licence v3.0",
+   "access": "anonymous, no key; measured 2026-10-19 (season slices ~230 KB each, answered in <1 s)"
   },
-  "jobs": [],
-  "artifacts": [],
-  "rejection_reason": null,
-  "review": null,
-  "next_action": "GO to construction (advancement session owns it). Construction step: pull the 11 season slices 2015-2025 via the measured compliance-rBWD endpoint (~2.5 MB total, coordinator-class is fine), pull water metadata via the bathing-water-profile dataset endpoint and prior-season sample summaries via the in-season point slices (measure their cost on a 5-point sample first), form the panel keyed (bwspid, season) with binary below-Good labels, features strictly from seasons before Y (prior classifications, prior sample summaries, water metadata), exclude every season-Y observation from the shipped columns, freeze the declared train/eval/holdout windows, declare the water id as high-cardinality, then measure the persistence baseline against a competent model on eval - publish or demote on that headroom finding - and run the qualification gate on the full artifact.",
-  "jurisdiction": {
-    "country": "GB",
-    "region": "Europe",
-    "publisher": "Environment Agency (England)",
-    "recorded_at": "2026-10-19"
+  {
+   "name": "EA bathing water classification methodology (how the label is computed)",
+   "url": "https://environmentagency.blog.gov.uk/2024/02/23/bathing-water-classifications-and-short-term-pollution/",
+   "license": "Open Government Licence v3.0 (gov.uk blog)",
+   "access": "read 2026-10-19: classifications use four years of sample data under the rBWD; ~450 designated bathing waters monitored in England with weekly samples May-September"
   },
-  "novelty_check": {
-    "checked_at": "2026-10-19T17:06:10+00:00",
-    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
-    "queries": [
-      "bathing water quality prediction",
-      "bathing water classification",
-      "water quality exceedance forecasting"
-    ],
-    "evidence": {
-      "huggingface_datasets": [
-        {
-          "query": "bathing water quality prediction",
-          "hits": 0,
-          "top": []
-        },
-        {
-          "query": "bathing water classification",
-          "hits": 0,
-          "top": []
-        },
-        {
-          "query": "water quality exceedance forecasting",
-          "hits": 0,
-          "top": []
-        }
-      ],
-      "zenodo_records": [
-        {
-          "query": "bathing water quality prediction",
-          "hits": 468882,
-          "top": [
-            "The Theoretical and Legal Foundation of Beach Law",
-            "Governance conditions to overcome the challenges of realizing safe urban bathing water sites",
-            "Effects of bathing intensity, rainfall events, and location on the recreational water quality of stream pools in southern Ecuador",
-            "Remote sensing data driven bathing water quality assessment using sentinel-3",
-            "predicted_summary_stats_ecoli"
-          ]
-        },
-        {
-          "query": "bathing water classification",
-          "hits": 358294,
-          "top": [
-            "The Theoretical and Legal Foundation of Beach Law",
-            "Governance conditions to overcome the challenges of realizing safe urban bathing water sites",
-            "Dew-bathing in the Atlantic Forest endemic Robust Woodpecker Campephilus robustus (Lichtenstein, 1823) (Aves: Picidae)",
-            "Water-Smart Management of Bathing Waters via Digitalisation - Challenges and Opportunities",
-            "Water-Smart Management of Bathing Waters via Digitalisation - Challenges and Opportunities"
-          ]
-        },
-        {
-          "query": "water quality exceedance forecasting",
-          "hits": 423105,
-          "top": [
-            "Fuzzy random forests: A new approach to groundwater contaminant modelling in Uganda",
-            "Water Quality Forecasting",
-            "Automated water quality monitoring and regression-based  forecasting system for aquaculture",
-            "A New Flashiness Index: Characteristics and Applications to Midwestern Rivers and Streams",
-            "Environmental quality of upper Honey Creek: A preliminary assessment"
-          ]
-        }
-      ],
-      "arxiv_preprints": [
-        {
-          "query": "bathing water quality prediction",
-          "hits": 5,
-          "top": [
-            "Water Bridging Dynamics of Polymerase Chain Reaction in the Gauge Theory Paradigm of Quantum Fields",
-            "Graph Neural Networks for Pressure Estimation in Water Distribution Systems",
-            "Extending Behavior Trees for Robotic Missions with Quality Requirements",
-            "A modeling system for monitoring the air - water pollution",
-            "On Understanding the Relation of Knowledge and Confidence to Requirements Quality"
-          ]
-        },
-        {
-          "query": "bathing water classification",
-          "hits": 5,
-          "top": [
-            "Water Bridging Dynamics of Polymerase Chain Reaction in the Gauge Theory Paradigm of Quantum Fields",
-            "Graph Neural Networks for Pressure Estimation in Water Distribution Systems",
-            "Analysis Acoustic Features for Acoustic Scene Classification and Score fusion of multi-classification systems applied to",
-            "Non-intrusive Water Usage Classification Considering Limited Training Data",
-            "Non-integrable supersymmetries and their classification for $\\mathfrak{gl}(1,1)$ and $\\mathfrak{sl}(1,1)$"
-          ]
-        },
-        {
-          "query": "water quality exceedance forecasting",
-          "hits": 5,
-          "top": [
-            "Urban Water Consumption Forecasting Using Deep Learning and Correlated District Metered Areas",
-            "Probabilistic Multi-Step-Ahead Short-Term Water Demand Forecasting with Lasso",
-            "Forecasting intermittent time series with Gaussian Processes and Tweedie likelihood",
-            "Quantile Regression for Qualifying Match of GEFCom2017 Probabilistic Load Forecasting",
-            "Lasso estimation for GEFCom2014 probabilistic electric load forecasting"
-          ]
-        }
-      ]
-    },
-    "evidence_summary": "- huggingface_datasets / 'bathing water quality prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'bathing water classification': 0 hit(s) - nothing notable\n- huggingface_datasets / 'water quality exceedance forecasting': 0 hit(s) - nothing notable\n- zenodo_records / 'bathing water quality prediction': 468882 hit(s) - The Theoretical and Legal Foundation of Beach Law, Governance conditions to overcome the challenges of realizing safe urban bathing water sites, Effects of bathing intensity, rainfall events, and location on the recreational water quality of stream pools in southern Ecuador, Remote sensing data driven bathing water quality assessment using sentinel-3, predicted_summary_stats_ecoli\n- zenodo_records / 'bathing water classification': 358294 hit(s) - The Theoretical and Legal Foundation of Beach Law, Governance conditions to overcome the challenges of realizing safe urban bathing water sites, Dew-bathing in the Atlantic Forest endemic Robust Woodpecker Campephilus robustus (Lichtenstein, 1823) (Aves: Picidae), Water-Smart Management of Bathing Waters via Digitalisation - Challenges and Opportunities, Water-Smart Management of Bathing Waters via Digitalisation - Challenges and Opportunities\n- zenodo_records / 'water quality exceedance forecasting': 423105 hit(s) - Fuzzy random forests: A new approach to groundwater contaminant modelling in Uganda, Water Quality Forecasting, Automated water quality monitoring and regression-based  forecasting system for aquaculture, A New Flashiness Index: Characteristics and Applications to Midwestern Rivers and Streams, Environmental quality of upper Honey Creek: A preliminary assessment\n- arxiv_preprints / 'bathing water quality prediction': 5 hit(s) - Water Bridging Dynamics of Polymerase Chain Reaction in the Gauge Theory Paradigm of Quantum Fields, Graph Neural Networks for Pressure Estimation in Water Distribution Systems, Extending Behavior Trees for Robotic Missions with Quality Requirements, A modeling system for monitoring the air - water pollution, On Understanding the Relation of Knowledge and Confidence to Requirements Quality\n- arxiv_preprints / 'bathing water classification': 5 hit(s) - Water Bridging Dynamics of Polymerase Chain Reaction in the Gauge Theory Paradigm of Quantum Fields, Graph Neural Networks for Pressure Estimation in Water Distribution Systems, Analysis Acoustic Features for Acoustic Scene Classification and Score fusion of multi-classification systems applied to, Non-intrusive Water Usage Classification Considering Limited Training Data, Non-integrable supersymmetries and their classification for $\\mathfrak{gl}(1,1)$ and $\\mathfrak{sl}(1,1)$\n- arxiv_preprints / 'water quality exceedance forecasting': 5 hit(s) - Urban Water Consumption Forecasting Using Deep Learning and Correlated District Metered Areas, Probabilistic Multi-Step-Ahead Short-Term Water Demand Forecasting with Lasso, Forecasting intermittent time series with Gaussian Processes and Tweedie likelihood, Quantile Regression for Qualifying Match of GEFCom2017 Probabilistic Load Forecasting, Lasso estimation for GEFCom2014 probabilistic electric load forecasting",
-    "prior_art": [
-      "EA Pollution Risk Forecasting (operational, not a dataset); Duncan et al. 2025 Exeter conference contribution (per-sample exceedance EWS); Bacti project 2012-13; US EPA Virtual Beach"
-    ],
-    "theirs": "The EA's linked-data API (open, OGL) serving per-season classifications and per-point in-season samples; EA's operational Pollution Risk Forecasting (daily nowcasts at 171 sites); Duncan et al. 2025 (Exeter) DT/ANN per-sample exceedance early-warning at 8 SW-England beaches; US EPA Virtual Beach exceedance nowcasting tools",
-    "ours": "Season-ahead prediction of the EA's annual rBWD bathing-water classification (below-Good or not) from prior-season history only - label not computable from features by construction; frozen temporal splits 2015-2021/2022-2023/2024-2025; scored runner contract",
-    "verdict": "differentiated",
-    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  {
+   "name": "data.gov.uk dataset entry for the bathing water data service",
+   "url": "https://www.data.gov.uk/dataset/5e06b230-6e2f-4bce-a129-0ede919bcb52/bathing-water1",
+   "license": "Open Government Licence v3.0 (per the bwq site itself)",
+   "access": "read 2026-10-19; documents the service entry point and SPARQL access"
   }
+ ],
+ "license_evidence": [
+  "Measured 2026-10-19 from the live service: 'All of the bathing-water quality data published via this site is freely available under the Open Government License' (bwq profile page) and the bwq landing page links 'Open Government Licence v3.0' to https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/.",
+  "Caveat to carry on any release: this is Environment Agency data for England; a derived dataset must be labelled derived, not the EA's official product, with the source designation and attribution preserved."
+ ],
+ "construction_script": null,
+ "split_strategy": "Temporal by classification season: train 2015-2021 (7 seasons, ~2,930 rows), eval 2022-2023 (2 seasons, ~845 rows), holdout 2024-2025 (2 seasons, ~902 rows). Measured per-season assessments and below-Good (Sufficient+Poor+Closed) counts: 2015: 415 / 42; 2016: 415 / 30; 2018: 422 / 34; 2022: 421 / 32; 2023: 424 / 44; 2024: 451 / 67; 2025: 451 / 59. Both classes present in every measured season (eval ~76 positives, holdout ~126 at the measured 7.6%/10.4% and 14.9%/12.9% rates). The 2020 slice does not exist (monitoring year suspended - consistent with the slice list 2004-2025 minus 2020). Entities repeat across seasons by design: row id = (bwspid, season); the water id ships as a declared high-cardinality feature, never as the runner id column.",
+ "measurements": {
+  "api_contract_2026_10_19": "LDA conventions learned from the API's own error text (each from a 400/404 that named the problem): regime segment is compliance-rBWD (not 'bwd'); the generic /compliance/... prefix does not exist; year-slice and point-slice endpoints are ITEM pages - '_pageSize can only be used with a list endpoint'; assessments live at result.primaryTopic.observation; '?year=...' is 'unrecognised short name or literal: year'.",
+  "season_counts_2026_10_19": "Measured via 11 season-slice requests (each ~230 KB, <1 s, ~2.5 MB total - the panel itself needs no worker): 2015: 415 (E 264 / G 109 / S 29 / P 11 / Closed 2); 2016: 415 (287/98/22/6/2); 2018: 422 (282/106/23/9/2); 2022: 421 (302/87/18/12/2); 2023: 424 (281/99/25/18/1); 2024: 451 (289/95/29/37/1); 2025: 451 (297/95/25/32/2). Below-Good rate range 7.2% (2016) to 14.9% (2024). 2017/2019/2021 not individually printed in notes but present in the slice list 2015-2025 (2017, 2019, 2021 fetched without counts recorded).",
+  "sample_grain_2026_10_19": "In-season point slice for point 05300 (South Shields): 794 sample observations back to 1988 (first item: sample 1988-05-11 14:40, week 1988-W19) - per-sample records exist through the API for feature history.",
+  "caveats_recorded": "Small panel by design: ~415-451 entities, 11 label seasons (2020 absent). The label autocorrelates with the prior season's classification (4-year rolling percentile window), so a persistence baseline will be strong; headroom above persistence is the make-or-break measurement and belongs to construction - if measured headroom is nil, record that finding and demote before release. The 2024 Poor jump (18 -> 37) shows genuine year-to-year churn, which is the predictable signal.",
+  "cross_check_against_published_summary_products": "At construction, cross-check per-season counts against the EA's published annual classification announcements and Swimfo's national percentages for the same seasons (the measured 2024/2025 Poor counts of 37/32 are the fixture to match)."
+ },
+ "jobs": [],
+ "artifacts": [],
+ "rejection_reason": null,
+ "review": null,
+ "next_action": "GO to construction (advancement session owns it). Construction step: pull the 11 season slices 2015-2025 via the measured compliance-rBWD endpoint (~2.5 MB total, coordinator-class is fine), pull water metadata via the bathing-water-profile dataset endpoint and prior-season sample summaries via the in-season point slices (measure their cost on a 5-point sample first), form the panel keyed (bwspid, season) with binary below-Good labels, features strictly from seasons before Y (prior classifications, prior sample summaries, water metadata), exclude every season-Y observation from the shipped columns, freeze the declared train/eval/holdout windows, declare the water id as high-cardinality, then measure the persistence baseline against a competent model on eval - publish or demote on that headroom finding - and run the qualification gate on the full artifact.",
+ "jurisdiction": {
+  "country": "GB",
+  "region": "Europe",
+  "publisher": "Environment Agency (England)",
+  "recorded_at": "2026-10-19"
+ },
+ "novelty_check": {
+  "checked_at": "2026-10-19T17:06:10+00:00",
+  "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+  "queries": [
+   "bathing water quality prediction",
+   "bathing water classification",
+   "water quality exceedance forecasting"
+  ],
+  "evidence": {
+   "huggingface_datasets": [
+    {
+     "query": "bathing water quality prediction",
+     "hits": 0,
+     "top": []
+    },
+    {
+     "query": "bathing water classification",
+     "hits": 0,
+     "top": []
+    },
+    {
+     "query": "water quality exceedance forecasting",
+     "hits": 0,
+     "top": []
+    }
+   ],
+   "zenodo_records": [
+    {
+     "query": "bathing water quality prediction",
+     "hits": 468882,
+     "top": [
+      "The Theoretical and Legal Foundation of Beach Law",
+      "Governance conditions to overcome the challenges of realizing safe urban bathing water sites",
+      "Effects of bathing intensity, rainfall events, and location on the recreational water quality of stream pools in southern Ecuador",
+      "Remote sensing data driven bathing water quality assessment using sentinel-3",
+      "predicted_summary_stats_ecoli"
+     ]
+    },
+    {
+     "query": "bathing water classification",
+     "hits": 358294,
+     "top": [
+      "The Theoretical and Legal Foundation of Beach Law",
+      "Governance conditions to overcome the challenges of realizing safe urban bathing water sites",
+      "Dew-bathing in the Atlantic Forest endemic Robust Woodpecker Campephilus robustus (Lichtenstein, 1823) (Aves: Picidae)",
+      "Water-Smart Management of Bathing Waters via Digitalisation - Challenges and Opportunities",
+      "Water-Smart Management of Bathing Waters via Digitalisation - Challenges and Opportunities"
+     ]
+    },
+    {
+     "query": "water quality exceedance forecasting",
+     "hits": 423105,
+     "top": [
+      "Fuzzy random forests: A new approach to groundwater contaminant modelling in Uganda",
+      "Water Quality Forecasting",
+      "Automated water quality monitoring and regression-based  forecasting system for aquaculture",
+      "A New Flashiness Index: Characteristics and Applications to Midwestern Rivers and Streams",
+      "Environmental quality of upper Honey Creek: A preliminary assessment"
+     ]
+    }
+   ],
+   "arxiv_preprints": [
+    {
+     "query": "bathing water quality prediction",
+     "hits": 5,
+     "top": [
+      "Water Bridging Dynamics of Polymerase Chain Reaction in the Gauge Theory Paradigm of Quantum Fields",
+      "Graph Neural Networks for Pressure Estimation in Water Distribution Systems",
+      "Extending Behavior Trees for Robotic Missions with Quality Requirements",
+      "A modeling system for monitoring the air - water pollution",
+      "On Understanding the Relation of Knowledge and Confidence to Requirements Quality"
+     ]
+    },
+    {
+     "query": "bathing water classification",
+     "hits": 5,
+     "top": [
+      "Water Bridging Dynamics of Polymerase Chain Reaction in the Gauge Theory Paradigm of Quantum Fields",
+      "Graph Neural Networks for Pressure Estimation in Water Distribution Systems",
+      "Analysis Acoustic Features for Acoustic Scene Classification and Score fusion of multi-classification systems applied to",
+      "Non-intrusive Water Usage Classification Considering Limited Training Data",
+      "Non-integrable supersymmetries and their classification for $\\mathfrak{gl}(1,1)$ and $\\mathfrak{sl}(1,1)$"
+     ]
+    },
+    {
+     "query": "water quality exceedance forecasting",
+     "hits": 5,
+     "top": [
+      "Urban Water Consumption Forecasting Using Deep Learning and Correlated District Metered Areas",
+      "Probabilistic Multi-Step-Ahead Short-Term Water Demand Forecasting with Lasso",
+      "Forecasting intermittent time series with Gaussian Processes and Tweedie likelihood",
+      "Quantile Regression for Qualifying Match of GEFCom2017 Probabilistic Load Forecasting",
+      "Lasso estimation for GEFCom2014 probabilistic electric load forecasting"
+     ]
+    }
+   ]
+  },
+  "evidence_summary": "- huggingface_datasets / 'bathing water quality prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'bathing water classification': 0 hit(s) - nothing notable\n- huggingface_datasets / 'water quality exceedance forecasting': 0 hit(s) - nothing notable\n- zenodo_records / 'bathing water quality prediction': 468882 hit(s) - The Theoretical and Legal Foundation of Beach Law, Governance conditions to overcome the challenges of realizing safe urban bathing water sites, Effects of bathing intensity, rainfall events, and location on the recreational water quality of stream pools in southern Ecuador, Remote sensing data driven bathing water quality assessment using sentinel-3, predicted_summary_stats_ecoli\n- zenodo_records / 'bathing water classification': 358294 hit(s) - The Theoretical and Legal Foundation of Beach Law, Governance conditions to overcome the challenges of realizing safe urban bathing water sites, Dew-bathing in the Atlantic Forest endemic Robust Woodpecker Campephilus robustus (Lichtenstein, 1823) (Aves: Picidae), Water-Smart Management of Bathing Waters via Digitalisation - Challenges and Opportunities, Water-Smart Management of Bathing Waters via Digitalisation - Challenges and Opportunities\n- zenodo_records / 'water quality exceedance forecasting': 423105 hit(s) - Fuzzy random forests: A new approach to groundwater contaminant modelling in Uganda, Water Quality Forecasting, Automated water quality monitoring and regression-based  forecasting system for aquaculture, A New Flashiness Index: Characteristics and Applications to Midwestern Rivers and Streams, Environmental quality of upper Honey Creek: A preliminary assessment\n- arxiv_preprints / 'bathing water quality prediction': 5 hit(s) - Water Bridging Dynamics of Polymerase Chain Reaction in the Gauge Theory Paradigm of Quantum Fields, Graph Neural Networks for Pressure Estimation in Water Distribution Systems, Extending Behavior Trees for Robotic Missions with Quality Requirements, A modeling system for monitoring the air - water pollution, On Understanding the Relation of Knowledge and Confidence to Requirements Quality\n- arxiv_preprints / 'bathing water classification': 5 hit(s) - Water Bridging Dynamics of Polymerase Chain Reaction in the Gauge Theory Paradigm of Quantum Fields, Graph Neural Networks for Pressure Estimation in Water Distribution Systems, Analysis Acoustic Features for Acoustic Scene Classification and Score fusion of multi-classification systems applied to, Non-intrusive Water Usage Classification Considering Limited Training Data, Non-integrable supersymmetries and their classification for $\\mathfrak{gl}(1,1)$ and $\\mathfrak{sl}(1,1)$\n- arxiv_preprints / 'water quality exceedance forecasting': 5 hit(s) - Urban Water Consumption Forecasting Using Deep Learning and Correlated District Metered Areas, Probabilistic Multi-Step-Ahead Short-Term Water Demand Forecasting with Lasso, Forecasting intermittent time series with Gaussian Processes and Tweedie likelihood, Quantile Regression for Qualifying Match of GEFCom2017 Probabilistic Load Forecasting, Lasso estimation for GEFCom2014 probabilistic electric load forecasting",
+  "prior_art": [
+   "EA Pollution Risk Forecasting (operational, not a dataset); Duncan et al. 2025 Exeter conference contribution (per-sample exceedance EWS); Bacti project 2012-13; US EPA Virtual Beach"
+  ],
+  "theirs": "The EA's linked-data API (open, OGL) serving per-season classifications and per-point in-season samples; EA's operational Pollution Risk Forecasting (daily nowcasts at 171 sites); Duncan et al. 2025 (Exeter) DT/ANN per-sample exceedance early-warning at 8 SW-England beaches; US EPA Virtual Beach exceedance nowcasting tools",
+  "ours": "Season-ahead prediction of the EA's annual rBWD bathing-water classification (below-Good or not) from prior-season history only - label not computable from features by construction; frozen temporal splits 2015-2021/2022-2023/2024-2025; scored runner contract",
+  "verdict": "differentiated",
+  "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+ },
+ "licence_class": "A",
+ "licence_note": "Open Government Licence v3.0"
 }

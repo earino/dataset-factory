@@ -1,170 +1,172 @@
 {
-  "id": "bvl-zoom-sample-positivity",
-  "status": "investigating",
-  "verdict": "go",
-  "created_at": "2026-10-21T00:00:00+00:00",
-  "domain": "German federal zoonoses monitoring - sample-level food pathogen detection prediction (national sector-regulator publisher, EU member state)",
-  "prediction_question": "For a food sample drawn under the German zoonoses monitoring programme (Zoonosen-Monitoring, ZooM) from a stated matrix, will it test positive for Campylobacter spp., given only the sampling-plan and item attributes decided when the sample is taken: reporting year, sampling date/month, matrix and matrix group, sampling stage (slaughterhouse/retail etc.), production type (conventional/organic), origin country, processing (chilled/frozen...), packaging, and programme?",
-  "prediction_time": "The moment the sample is taken: every feature is an attribute of the sampling plan or of the sampled item as recorded at sampling (Jahr, PNDat, MatrixGr/Matrix, Betriebsart, ZusA, HerkStaat, Verarbeitung, Verpackung, PNMG); the label is the laboratory result reported afterwards (ErgAlphaT 'positiv; nachgewiesen' / 'negativ; nicht nachgewiesen' from the programme's standardised qualitative detection methods). No post-hoc field is needed as a feature. A secondary parameter family with the same timing (ESBL/AmpC-bildende E. coli) is measured as a fallback in case Campylobacter proves too thin at construction.",
-  "target_definition": "Binary from the source row: ErgAlphaT = 'positiv; nachgewiesen' (detected) vs 'negativ; nicht nachgewiesen' (not detected), restricted to rows whose Parameter is the Campylobacter genus detection ('Genus Campylobacter'; Parameter/ParameterT1 columns). Label source columns ErgAlpha, ErgAlphaT and the legally derived assessment Bewertung/BewertungT ('Beanstandet'/'Ohne Beanstandung') are recorded in label_source_columns and must be absent from the shipped features. Unit/frame: qualitative presence/absence per sample at the method's declared analytical amount (Methode/Probenvorbereitung columns, e.g. 10 g), the publisher's own frame - no external threshold is compared, so no known-event fixture is required. Rows where a quantitative result or a different parameter vocabulary appears are out of frame and must be pinned at construction from the Datensatzbeschreibung column dictionary.",
-  "sources": [
-    {
-      "name": "Bundesamt fuer Verbraucherschutz und Lebensmittelsicherheit (BVL) - Zoonosen-Monitoring individual datasets (open data), reporting years 2021, 2022, 2023",
-      "url": "https://www.bvl.bund.de/DE/Arbeitsbereiche/01_Lebensmittel/01_Aufgaben/02_AmtlicheLebensmittelueberwachung/06_ZoonosenMonitoring/lm_zoonosen_monitoring_node.html",
-      "api": "per-reporting-year CSV zips at stable URLs: https://opendata.bvl.bund.de/datapolicy/2021/20250108_opendata_zoom_21.csv.zip ; .../2022/20250108_opendata_zoom_22.csv.zip ; .../2023/20250108_opendata_zoom_23.csv.zip - anonymous, tokenless; catalogued on data.europa.eu as 'Individual data set from zoonoses monitoring (ZooM)' (ids 22ceaf62-768a-44fc-864d-b870650bb4d3 for 2023, aa0f900d-4670-4756-bde6-b74944c85805 for 2022, cd6d88c5-790f-4b9d-928b-d4ce2d6b3e5a for 2021)",
-      "license": "Datenlizenz Deutschland - Namensnennung 2.0 (dl-de/by-2.0): the DCAT distribution record on data.europa.eu names http://dcat-ap.de/def/licenses/dl-by-de/2.0 (measured 2026-10-21); the licence text permits commercial and non-commercial use including copying, transmission to third parties, merging into new datasets, with an attribution notice naming the provider, the licence and the dataset URI, and a change notice for modified data.",
-      "access": "measured 2026-10-21: HTTP 200 for 2021 (418,430 B), 2022 (532,407 B), 2023 (330,490 B); each zip holds one semicolon-delimited cp1252 CSV at (sample x parameter) grain with 49 columns. Reporting years 2020, 2024 and 2025 probed by URL pattern and 404 (2020 also via its data.europa.eu dataset id 3ed1ba49..., which 404s) - the open-data series currently starts at 2021 and the newest published reporting year is 2023, released 2025-01-08 (two reporting years behind at probe time)."
-    },
-    {
-      "name": "BVL - column dictionary and legal basis",
-      "url": "https://opendata.bvl.bund.de/datapolicy/2023/20250214_Datensatzbeschreibung_BJ2020_2023.pdf",
-      "api": "Datensatzbeschreibung (dataset description) PDF for reporting years 2020-2023, 200,127 B, downloaded 2026-10-21 - the publisher's per-column documentation for all 49 fields; the programme's legal basis is the Allgemeine Verwaltungsvorschrift Zoonosen Lebensmittelkette (German administrative regulation, 2012) implementing Directive 2003/99/EC",
-      "license": "dl-de/by-2.0 as above",
-      "access": "downloaded and archived in scratch; per-column meanings for the feature and label fields are read from it at construction (the dictionary documents Jahr, PNMG, ProbenNrPseud, Matrix/MatrixGr, Betriebsart, PNDat, HerkStaat, Verarbeitung, Verpackung, Parameter, ErgAlpha, Bewertung, Norm* and method fields)."
-    }
-  ],
-  "license_evidence": [
-    {
-      "note": "data.europa.eu DCAT distribution licence for the ZooM CSVs (read 2026-10-21 via the catalogue API, dataset 22ceaf62-768a-44fc-864d-b870650bb4d3): {\"resource\": \"http://dcat-ap.de/def/licenses/dl-by-de/2.0\", \"id\": \"http://dcat-ap.de/def/licenses/dl-by-de/2.0\", \"label\": \"http://dcat-ap.de/def/licenses/dl-by-de/2.0\"} - i.e. Datenlizenz Deutschland Namensnennung 2.0.",
-      "url": "https://data.europa.eu/api/hub/search/datasets/22ceaf62-768a-44fc-864d-b870650bb4d3"
-    },
-    {
-      "note": "Licence text read 2026-10-21 at govdata.de: 'Datenlizenz Deutschland - Namensnennung - Version 2.0 (1) Jede Nutzung ist unter den Bedingungen dieser Datenlizenz zulaessig. Die bereitgestellten Daten und Metadaten duerfen fuer die kommerzielle und nicht kommerzielle Nutzung insbesondere vervielfaeltigt, ausgedruckt, praesentiert, veraendert, bearbeitet sowie an Dritte uebermittelt werden; ... zu selbstaendigen neuen Datensaetzen verbunden werden ... (2) Bei der Nutzung ist sicherzustellen, dass folgende Angaben als Quellenvermerk enthalten sind: Bezeichnung des Bereitstellers ..., der Vermerk Datenlizenz Deutschland - Namensnennung - Version 2.0 ... sowie einen Verweis auf den Datensatz (URI). (3) Veraenderungen ... sind im Quellenvermerk mit dem Hinweis zu versehen, dass die Daten geaendert wurden.' Redistribution of derived rows is explicitly permitted with attribution; the English parallel text confirms 'copied, printed, presented, altered, processed and transmitted to third parties'.",
-      "url": "https://www.govdata.de/dl-de/by-2-0"
-    }
-  ],
-  "label_source_columns": [
-    "ErgAlpha",
-    "ErgAlphaT",
-    "Bewertung",
-    "BewertungT"
-  ],
-  "construction_script": "planned: candidates/bvl-zoom-sample-positivity/source/build.py (stdlib only; downloads the three year zips, filters to the Campylobacter genus parameter, feature columns from the sampling-plan fields, label from ErgAlphaT, runner layout + qualification gate)",
-  "split_strategy": "Temporal, one row per (sample x reporting year) in the Campylobacter frame: train 2021, eval 2022, holdout 2023 - the only three reporting years the publisher exposes. Measured on the downloaded CSVs (2026-10-21): Campylobacter genus rows 2021: 1,394 rows / 443 positive (31.8%); 2022: 2,364 / 613 (25.9%); 2023: 1,312 / 390 (29.7%) - both classes present in every window, so the split-capacity contract is satisfied as measured, but each window is a single reporting year (thin depth; no second holdout year exists yet). Positives cluster by sampling batch/day: distinct samples per year are 5,373 (2021) and 5,969 (2022), but the ProbenNrPseud column is EMPTY in the 2023 file (measured: 0 distinct values vs thousands in 2021/2022) - a publisher data-quality defect that forces 2023 clustering to fall back to matrix x month proxies, and construction must report the clustered count under that limitation. Fallback parameter with the same timing if Campylobacter is too thin: ESBL/AmpC-bildende E. coli 1,947/1,900/1,825 rows at 32.3%/19.8%/26.4%.",
-  "measurements": {
-    "year_zips_2026_10_21": "GET 2021 zip -> 200, 418,430 B; 2022 -> 200, 532,407 B; 2023 -> 200, 330,490 B; HEAD probes for 2020/2024/2025 URL patterns -> HTTP 404. Each zip: one cp1252 semicolon CSV (quoted fields with embedded semicolons - a naive split(';') parse misreads rows, measured).",
-    "grain_and_counts_2026_10_21": "(sample x parameter) rows: 2021: 22,224 rows / 5,373 distinct ProbenNrPseud; 2022: 27,347 / 5,969; 2023: 22,349 / 0 (sample ID column blank). 49 columns per the Datensatzbeschreibung.",
-    "campylobacter_frame_2026_10_21": "Proper csv parse (delimiter=';', quotechar='\"'): 'Genus Campylobacter' rows 1,394 (2021, 443 positive, 31.8%), 2,364 (2022, 613, 25.9%), 1,312 (2023, 390, 29.7%). Matrix-level 2021 rates show real structure beyond a single base rate: chicken parts 41.8% genus-level (871 rows), chicken breast 15.7% (248), Campylobacter jejuni 71.7% (364), C. coli 76.0% (346) - species-level parameters are confirmatory follow-ups on genus-positive or enrichment samples and must NOT be pooled with genus rows.",
-    "other_parameters_2026_10_21": "Measured per-year rates for alternative frames: Listeria monocytogenes 7.0%/10.2%/3.9% (2,140/2,329/2,932 rows); Salmonella genus 2.2%/7.4%/2.1% (2,220/3,454/2,491); E. coli ESBL/AmpC 32.3%/19.8%/26.4%; STEC (verotoxinbildende E. coli) 4.3%/9.4% (2021/2023); MRSA-verdaechtig 5.3%/11.4%/15.5%.",
-    "sampling_dates_2026_10_21": "PNDat carries ddMMMyy-style SAS dates (e.g. 30MAY23:00:00:00) - month-of-year features are derivable; months spread across the year (APR/MAY/JUN/JUL/SEP observed in sample rows), supporting seasonality as a real feature.",
-    "novelty_risk_note": "Matrix dominates the base rate (chicken-family matrices ~15-70% vs ~0 for beef/leaf matrices), so the reference baseline will be a matrix-stratified rate; the task's headroom over that baseline (season, stage, origin, production type) is the measured question at construction, as with flunet's persistence baseline."
+ "id": "bvl-zoom-sample-positivity",
+ "status": "investigating",
+ "verdict": "go",
+ "created_at": "2026-10-21T00:00:00+00:00",
+ "domain": "German federal zoonoses monitoring - sample-level food pathogen detection prediction (national sector-regulator publisher, EU member state)",
+ "prediction_question": "For a food sample drawn under the German zoonoses monitoring programme (Zoonosen-Monitoring, ZooM) from a stated matrix, will it test positive for Campylobacter spp., given only the sampling-plan and item attributes decided when the sample is taken: reporting year, sampling date/month, matrix and matrix group, sampling stage (slaughterhouse/retail etc.), production type (conventional/organic), origin country, processing (chilled/frozen...), packaging, and programme?",
+ "prediction_time": "The moment the sample is taken: every feature is an attribute of the sampling plan or of the sampled item as recorded at sampling (Jahr, PNDat, MatrixGr/Matrix, Betriebsart, ZusA, HerkStaat, Verarbeitung, Verpackung, PNMG); the label is the laboratory result reported afterwards (ErgAlphaT 'positiv; nachgewiesen' / 'negativ; nicht nachgewiesen' from the programme's standardised qualitative detection methods). No post-hoc field is needed as a feature. A secondary parameter family with the same timing (ESBL/AmpC-bildende E. coli) is measured as a fallback in case Campylobacter proves too thin at construction.",
+ "target_definition": "Binary from the source row: ErgAlphaT = 'positiv; nachgewiesen' (detected) vs 'negativ; nicht nachgewiesen' (not detected), restricted to rows whose Parameter is the Campylobacter genus detection ('Genus Campylobacter'; Parameter/ParameterT1 columns). Label source columns ErgAlpha, ErgAlphaT and the legally derived assessment Bewertung/BewertungT ('Beanstandet'/'Ohne Beanstandung') are recorded in label_source_columns and must be absent from the shipped features. Unit/frame: qualitative presence/absence per sample at the method's declared analytical amount (Methode/Probenvorbereitung columns, e.g. 10 g), the publisher's own frame - no external threshold is compared, so no known-event fixture is required. Rows where a quantitative result or a different parameter vocabulary appears are out of frame and must be pinned at construction from the Datensatzbeschreibung column dictionary.",
+ "sources": [
+  {
+   "name": "Bundesamt fuer Verbraucherschutz und Lebensmittelsicherheit (BVL) - Zoonosen-Monitoring individual datasets (open data), reporting years 2021, 2022, 2023",
+   "url": "https://www.bvl.bund.de/DE/Arbeitsbereiche/01_Lebensmittel/01_Aufgaben/02_AmtlicheLebensmittelueberwachung/06_ZoonosenMonitoring/lm_zoonosen_monitoring_node.html",
+   "api": "per-reporting-year CSV zips at stable URLs: https://opendata.bvl.bund.de/datapolicy/2021/20250108_opendata_zoom_21.csv.zip ; .../2022/20250108_opendata_zoom_22.csv.zip ; .../2023/20250108_opendata_zoom_23.csv.zip - anonymous, tokenless; catalogued on data.europa.eu as 'Individual data set from zoonoses monitoring (ZooM)' (ids 22ceaf62-768a-44fc-864d-b870650bb4d3 for 2023, aa0f900d-4670-4756-bde6-b74944c85805 for 2022, cd6d88c5-790f-4b9d-928b-d4ce2d6b3e5a for 2021)",
+   "license": "Datenlizenz Deutschland - Namensnennung 2.0 (dl-de/by-2.0): the DCAT distribution record on data.europa.eu names http://dcat-ap.de/def/licenses/dl-by-de/2.0 (measured 2026-10-21); the licence text permits commercial and non-commercial use including copying, transmission to third parties, merging into new datasets, with an attribution notice naming the provider, the licence and the dataset URI, and a change notice for modified data.",
+   "access": "measured 2026-10-21: HTTP 200 for 2021 (418,430 B), 2022 (532,407 B), 2023 (330,490 B); each zip holds one semicolon-delimited cp1252 CSV at (sample x parameter) grain with 49 columns. Reporting years 2020, 2024 and 2025 probed by URL pattern and 404 (2020 also via its data.europa.eu dataset id 3ed1ba49..., which 404s) - the open-data series currently starts at 2021 and the newest published reporting year is 2023, released 2025-01-08 (two reporting years behind at probe time)."
   },
-  "jobs": [],
-  "artifacts": [],
-  "rejection_reason": null,
-  "review": null,
-  "next_action": "Construction (advancement session): read the Datensatzbeschreibung PDF column-by-column and pin every feature's documented meaning; write source/build.py (three year zips -> Campylobacter frame -> runner layout + gate on a worker); decide the 2023 clustering proxy (ProbenNrPseud is blank there) and report clustered positive counts; cross-check the built frame against the BVL national ZooM annual report's published Campylobacter prevalence figures (the publisher's summary product, e.g. Zoonosen_Monitoring_Bericht_2023.pdf, already linked from the catalogue record); record the matrix-stratified rate as the reference baseline a solver must beat. Risks to carry: only three reporting years exist (one per split window), the 2024/2025 files 404 as of 2026-10-21 (refresh cadence lagging - re-probe quarterly, it would deepen holdout), and the 2023 blank sample-ID defect.",
-  "jurisdiction": {
-    "country": "DE",
-    "region": "Europe",
-    "publisher": "Bundesamt fuer Verbraucherschutz und Lebensmittelsicherheit (BVL) - Federal Office of Consumer Protection and Food Safety, Germany",
-    "convention": "National sector regulator of an EU member state; the programme implements EU Directive 2003/99/EC and the data are also the German contribution to EFSA's EU-wide zoonoses reporting.",
-    "recorded_at": "2026-10-21"
-  },
-  "novelty_check": {
-    "checked_at": "2026-10-21T00:30:48+00:00",
-    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
-    "queries": [
-      "Campylobacter prevalence prediction",
-      "zoonoses monitoring sample positivity dataset",
-      "food sample pathogen prediction benchmark"
-    ],
-    "evidence": {
-      "huggingface_datasets": [
-        {
-          "query": "Campylobacter prevalence prediction",
-          "hits": 0,
-          "top": []
-        },
-        {
-          "query": "zoonoses monitoring sample positivity dataset",
-          "hits": 0,
-          "top": []
-        },
-        {
-          "query": "food sample pathogen prediction benchmark",
-          "hits": 0,
-          "top": []
-        }
-      ],
-      "zenodo_records": [
-        {
-          "query": "Campylobacter prevalence prediction",
-          "hits": 127256,
-          "top": [
-            "Prevalence and antibiotic susceptibility patterns of Campylobacter jejuni isolates from children with diarrhoea in Maiduguri, Nigeria",
-            "Real-time PCR detection of Campylobacter spp. In free-ranging mountain gorillas (Gorilla beringei beringei)",
-            "Prevalence and antimicrobial resistance of Campylobacter isolated from carcasses of chickens slaughtered in Poland \u2013 a retrospective study",
-            "The prevalence, counts, and MLST genotypes of Campylobacter in poultry meat and genomic comparison with clinical isolates",
-            "National Food and Veterinary Risk Assessment Institute Report and analysis on the prevalence of zoonotic bacteria and their resistance to antimicrobial substances"
-          ]
-        },
-        {
-          "query": "zoonoses monitoring sample positivity dataset",
-          "hits": 536194,
-          "top": [
-            "Sample based prevalence data complementing the European Union One Health 2018 Zoonoses Report",
-            "Sample based prevalence data complementing the European Union One Health 2019 Zoonoses Report",
-            "Sample based prevalence data complementing the European Union One Health 2024 Zoonoses Report - Ireland",
-            "Sample based prevalence data complementing the European Union One Health 2021 Zoonoses Report - Norway",
-            "Sample based prevalence data complementing the European Union One Health 2020 Zoonoses Report - Luxembourg"
-          ]
-        },
-        {
-          "query": "food sample pathogen prediction benchmark",
-          "hits": 386461,
-          "top": [
-            "The nutritional content of anthropogenic resources affects wildlife disease dynamics",
-            "Global trends in antimicrobial resistance on organic and conventional farms",
-            "LAMP Technology for Foodborne Pathogen Detection \u2013 MYCOBEANS Hands-on Workshop (Parma, 2026)",
-            "Linking anthropogenic resources to wildlife--pathogen dynamics: a review and meta-analysis",
-            "A trait-based framework for predicting foodborne pathogen risk from wild birds"
-          ]
-        }
-      ],
-      "arxiv_preprints": [
-        {
-          "query": "Campylobacter prevalence prediction",
-          "hits": 5,
-          "top": [
-            "DiPPER: A Bayesian approach to differential prevalence analysis with applications in microbiome studies",
-            "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
-            "Predicting Antimicrobial Resistance (AMR) in Campylobacter, a Foodborne Pathogen, and Cost Burden Analysis Using Machine",
-            "An Alternative Perspective on the Robust Poisson Method for Estimating Risk or Prevalence Ratios",
-            "Rapid host switching in generalist Campylobacter strains erodes the signal for tracing human infections"
-          ]
-        },
-        {
-          "query": "zoonoses monitoring sample positivity dataset",
-          "hits": 5,
-          "top": [
-            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
-            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
-            "Conditionally positive definite kernels in Hilbert $C^*$-modules",
-            "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset",
-            "Night-sky brightness monitoring in Hong Kong - a city-wide light pollution assessment"
-          ]
-        },
-        {
-          "query": "food sample pathogen prediction benchmark",
-          "hits": 5,
-          "top": [
-            "The Rise of Blockchain Technology in Agriculture and Food Supply Chains",
-            "Spontaneous gelation of wheat gluten proteins in a food grade solvent",
-            "Food Delivery Time Prediction in Indian Cities Using Machine Learning Models",
-            "Food4All: An Agentic Framework and Benchmark for Food Resource Navigation with Adaptive User Understanding",
-            "TasteBench: Multimodal Benchmark for Sensory Prediction, from Molecules to Sustainable Foods"
-          ]
-        }
-      ]
-    },
-    "evidence_summary": "- huggingface_datasets / 'Campylobacter prevalence prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'zoonoses monitoring sample positivity dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'food sample pathogen prediction benchmark': 0 hit(s) - nothing notable\n- zenodo_records / 'Campylobacter prevalence prediction': 127256 hit(s) - Prevalence and antibiotic susceptibility patterns of Campylobacter jejuni isolates from children with diarrhoea in Maiduguri, Nigeria, Real-time PCR detection of Campylobacter spp. In free-ranging mountain gorillas (Gorilla beringei beringei), Prevalence and antimicrobial resistance of Campylobacter isolated from carcasses of chickens slaughtered in Poland \u2013 a retrospective study, The prevalence, counts, and MLST genotypes of Campylobacter in poultry meat and genomic comparison with clinical isolates, National Food and Veterinary Risk Assessment Institute Report and analysis on the prevalence of zoonotic bacteria and their resistance to antimicrobial substances\n- zenodo_records / 'zoonoses monitoring sample positivity dataset': 536194 hit(s) - Sample based prevalence data complementing the European Union One Health 2018 Zoonoses Report, Sample based prevalence data complementing the European Union One Health 2019 Zoonoses Report, Sample based prevalence data complementing the European Union One Health 2024 Zoonoses Report - Ireland, Sample based prevalence data complementing the European Union One Health 2021 Zoonoses Report - Norway, Sample based prevalence data complementing the European Union One Health 2020 Zoonoses Report - Luxembourg\n- zenodo_records / 'food sample pathogen prediction benchmark': 386461 hit(s) - The nutritional content of anthropogenic resources affects wildlife disease dynamics, Global trends in antimicrobial resistance on organic and conventional farms, LAMP Technology for Foodborne Pathogen Detection \u2013 MYCOBEANS Hands-on Workshop (Parma, 2026), Linking anthropogenic resources to wildlife--pathogen dynamics: a review and meta-analysis, A trait-based framework for predicting foodborne pathogen risk from wild birds\n- arxiv_preprints / 'Campylobacter prevalence prediction': 5 hit(s) - DiPPER: A Bayesian approach to differential prevalence analysis with applications in microbiome studies, Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, Predicting Antimicrobial Resistance (AMR) in Campylobacter, a Foodborne Pathogen, and Cost Burden Analysis Using Machine, An Alternative Perspective on the Robust Poisson Method for Estimating Risk or Prevalence Ratios, Rapid host switching in generalist Campylobacter strains erodes the signal for tracing human infections\n- arxiv_preprints / 'zoonoses monitoring sample positivity dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, Conditionally positive definite kernels in Hilbert $C^*$-modules, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, Night-sky brightness monitoring in Hong Kong - a city-wide light pollution assessment\n- arxiv_preprints / 'food sample pathogen prediction benchmark': 5 hit(s) - The Rise of Blockchain Technology in Agriculture and Food Supply Chains, Spontaneous gelation of wheat gluten proteins in a food grade solvent, Food Delivery Time Prediction in Indian Cities Using Machine Learning Models, Food4All: An Agentic Framework and Benchmark for Food Resource Navigation with Adaptive User Understanding, TasteBench: Multimodal Benchmark for Sensory Prediction, from Molecules to Sustainable Foods",
-    "prior_art": [
-      "EFSA/EU baseline survey prevalence summaries and the BVL annual ZooM reports (aggregate statistics, not prediction tasks); Campylobacter risk-factor literature (farm-level studies); no public sample-level monitoring-positivity benchmark found"
-    ],
-    "theirs": "The publisher (BVL) publishes the raw sample-parameter records per reporting year and prevalence summaries in national/EU zoonoses reports (EFSA One Health reports aggregate prevalence by category); risk-factor literature models Campylobacter in broiler flocks at farm level, not a released prediction task with splits.",
-    "ours": "A binary sample-level detection task on the German zoonoses monitoring open data (will a monitoring sample from a stated matrix test positive for Campylobacter spp.), with disjoint reporting-year splits (2021/2022/2023 - the only years published), features restricted to sampling-plan attributes decided when the sample is taken, and a scored contract for coding-agent evaluation. No ML-ready version of this formulation exists in public catalogs.",
-    "verdict": "differentiated",
-    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  {
+   "name": "BVL - column dictionary and legal basis",
+   "url": "https://opendata.bvl.bund.de/datapolicy/2023/20250214_Datensatzbeschreibung_BJ2020_2023.pdf",
+   "api": "Datensatzbeschreibung (dataset description) PDF for reporting years 2020-2023, 200,127 B, downloaded 2026-10-21 - the publisher's per-column documentation for all 49 fields; the programme's legal basis is the Allgemeine Verwaltungsvorschrift Zoonosen Lebensmittelkette (German administrative regulation, 2012) implementing Directive 2003/99/EC",
+   "license": "dl-de/by-2.0 as above",
+   "access": "downloaded and archived in scratch; per-column meanings for the feature and label fields are read from it at construction (the dictionary documents Jahr, PNMG, ProbenNrPseud, Matrix/MatrixGr, Betriebsart, PNDat, HerkStaat, Verarbeitung, Verpackung, Parameter, ErgAlpha, Bewertung, Norm* and method fields)."
   }
+ ],
+ "license_evidence": [
+  {
+   "note": "data.europa.eu DCAT distribution licence for the ZooM CSVs (read 2026-10-21 via the catalogue API, dataset 22ceaf62-768a-44fc-864d-b870650bb4d3): {\"resource\": \"http://dcat-ap.de/def/licenses/dl-by-de/2.0\", \"id\": \"http://dcat-ap.de/def/licenses/dl-by-de/2.0\", \"label\": \"http://dcat-ap.de/def/licenses/dl-by-de/2.0\"} - i.e. Datenlizenz Deutschland Namensnennung 2.0.",
+   "url": "https://data.europa.eu/api/hub/search/datasets/22ceaf62-768a-44fc-864d-b870650bb4d3"
+  },
+  {
+   "note": "Licence text read 2026-10-21 at govdata.de: 'Datenlizenz Deutschland - Namensnennung - Version 2.0 (1) Jede Nutzung ist unter den Bedingungen dieser Datenlizenz zulaessig. Die bereitgestellten Daten und Metadaten duerfen fuer die kommerzielle und nicht kommerzielle Nutzung insbesondere vervielfaeltigt, ausgedruckt, praesentiert, veraendert, bearbeitet sowie an Dritte uebermittelt werden; ... zu selbstaendigen neuen Datensaetzen verbunden werden ... (2) Bei der Nutzung ist sicherzustellen, dass folgende Angaben als Quellenvermerk enthalten sind: Bezeichnung des Bereitstellers ..., der Vermerk Datenlizenz Deutschland - Namensnennung - Version 2.0 ... sowie einen Verweis auf den Datensatz (URI). (3) Veraenderungen ... sind im Quellenvermerk mit dem Hinweis zu versehen, dass die Daten geaendert wurden.' Redistribution of derived rows is explicitly permitted with attribution; the English parallel text confirms 'copied, printed, presented, altered, processed and transmitted to third parties'.",
+   "url": "https://www.govdata.de/dl-de/by-2-0"
+  }
+ ],
+ "label_source_columns": [
+  "ErgAlpha",
+  "ErgAlphaT",
+  "Bewertung",
+  "BewertungT"
+ ],
+ "construction_script": "planned: candidates/bvl-zoom-sample-positivity/source/build.py (stdlib only; downloads the three year zips, filters to the Campylobacter genus parameter, feature columns from the sampling-plan fields, label from ErgAlphaT, runner layout + qualification gate)",
+ "split_strategy": "Temporal, one row per (sample x reporting year) in the Campylobacter frame: train 2021, eval 2022, holdout 2023 - the only three reporting years the publisher exposes. Measured on the downloaded CSVs (2026-10-21): Campylobacter genus rows 2021: 1,394 rows / 443 positive (31.8%); 2022: 2,364 / 613 (25.9%); 2023: 1,312 / 390 (29.7%) - both classes present in every window, so the split-capacity contract is satisfied as measured, but each window is a single reporting year (thin depth; no second holdout year exists yet). Positives cluster by sampling batch/day: distinct samples per year are 5,373 (2021) and 5,969 (2022), but the ProbenNrPseud column is EMPTY in the 2023 file (measured: 0 distinct values vs thousands in 2021/2022) - a publisher data-quality defect that forces 2023 clustering to fall back to matrix x month proxies, and construction must report the clustered count under that limitation. Fallback parameter with the same timing if Campylobacter is too thin: ESBL/AmpC-bildende E. coli 1,947/1,900/1,825 rows at 32.3%/19.8%/26.4%.",
+ "measurements": {
+  "year_zips_2026_10_21": "GET 2021 zip -> 200, 418,430 B; 2022 -> 200, 532,407 B; 2023 -> 200, 330,490 B; HEAD probes for 2020/2024/2025 URL patterns -> HTTP 404. Each zip: one cp1252 semicolon CSV (quoted fields with embedded semicolons - a naive split(';') parse misreads rows, measured).",
+  "grain_and_counts_2026_10_21": "(sample x parameter) rows: 2021: 22,224 rows / 5,373 distinct ProbenNrPseud; 2022: 27,347 / 5,969; 2023: 22,349 / 0 (sample ID column blank). 49 columns per the Datensatzbeschreibung.",
+  "campylobacter_frame_2026_10_21": "Proper csv parse (delimiter=';', quotechar='\"'): 'Genus Campylobacter' rows 1,394 (2021, 443 positive, 31.8%), 2,364 (2022, 613, 25.9%), 1,312 (2023, 390, 29.7%). Matrix-level 2021 rates show real structure beyond a single base rate: chicken parts 41.8% genus-level (871 rows), chicken breast 15.7% (248), Campylobacter jejuni 71.7% (364), C. coli 76.0% (346) - species-level parameters are confirmatory follow-ups on genus-positive or enrichment samples and must NOT be pooled with genus rows.",
+  "other_parameters_2026_10_21": "Measured per-year rates for alternative frames: Listeria monocytogenes 7.0%/10.2%/3.9% (2,140/2,329/2,932 rows); Salmonella genus 2.2%/7.4%/2.1% (2,220/3,454/2,491); E. coli ESBL/AmpC 32.3%/19.8%/26.4%; STEC (verotoxinbildende E. coli) 4.3%/9.4% (2021/2023); MRSA-verdaechtig 5.3%/11.4%/15.5%.",
+  "sampling_dates_2026_10_21": "PNDat carries ddMMMyy-style SAS dates (e.g. 30MAY23:00:00:00) - month-of-year features are derivable; months spread across the year (APR/MAY/JUN/JUL/SEP observed in sample rows), supporting seasonality as a real feature.",
+  "novelty_risk_note": "Matrix dominates the base rate (chicken-family matrices ~15-70% vs ~0 for beef/leaf matrices), so the reference baseline will be a matrix-stratified rate; the task's headroom over that baseline (season, stage, origin, production type) is the measured question at construction, as with flunet's persistence baseline."
+ },
+ "jobs": [],
+ "artifacts": [],
+ "rejection_reason": null,
+ "review": null,
+ "next_action": "Construction (advancement session): read the Datensatzbeschreibung PDF column-by-column and pin every feature's documented meaning; write source/build.py (three year zips -> Campylobacter frame -> runner layout + gate on a worker); decide the 2023 clustering proxy (ProbenNrPseud is blank there) and report clustered positive counts; cross-check the built frame against the BVL national ZooM annual report's published Campylobacter prevalence figures (the publisher's summary product, e.g. Zoonosen_Monitoring_Bericht_2023.pdf, already linked from the catalogue record); record the matrix-stratified rate as the reference baseline a solver must beat. Risks to carry: only three reporting years exist (one per split window), the 2024/2025 files 404 as of 2026-10-21 (refresh cadence lagging - re-probe quarterly, it would deepen holdout), and the 2023 blank sample-ID defect.",
+ "jurisdiction": {
+  "country": "DE",
+  "region": "Europe",
+  "publisher": "Bundesamt fuer Verbraucherschutz und Lebensmittelsicherheit (BVL) - Federal Office of Consumer Protection and Food Safety, Germany",
+  "convention": "National sector regulator of an EU member state; the programme implements EU Directive 2003/99/EC and the data are also the German contribution to EFSA's EU-wide zoonoses reporting.",
+  "recorded_at": "2026-10-21"
+ },
+ "novelty_check": {
+  "checked_at": "2026-10-21T00:30:48+00:00",
+  "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+  "queries": [
+   "Campylobacter prevalence prediction",
+   "zoonoses monitoring sample positivity dataset",
+   "food sample pathogen prediction benchmark"
+  ],
+  "evidence": {
+   "huggingface_datasets": [
+    {
+     "query": "Campylobacter prevalence prediction",
+     "hits": 0,
+     "top": []
+    },
+    {
+     "query": "zoonoses monitoring sample positivity dataset",
+     "hits": 0,
+     "top": []
+    },
+    {
+     "query": "food sample pathogen prediction benchmark",
+     "hits": 0,
+     "top": []
+    }
+   ],
+   "zenodo_records": [
+    {
+     "query": "Campylobacter prevalence prediction",
+     "hits": 127256,
+     "top": [
+      "Prevalence and antibiotic susceptibility patterns of Campylobacter jejuni isolates from children with diarrhoea in Maiduguri, Nigeria",
+      "Real-time PCR detection of Campylobacter spp. In free-ranging mountain gorillas (Gorilla beringei beringei)",
+      "Prevalence and antimicrobial resistance of Campylobacter isolated from carcasses of chickens slaughtered in Poland \u2013 a retrospective study",
+      "The prevalence, counts, and MLST genotypes of Campylobacter in poultry meat and genomic comparison with clinical isolates",
+      "National Food and Veterinary Risk Assessment Institute Report and analysis on the prevalence of zoonotic bacteria and their resistance to antimicrobial substances"
+     ]
+    },
+    {
+     "query": "zoonoses monitoring sample positivity dataset",
+     "hits": 536194,
+     "top": [
+      "Sample based prevalence data complementing the European Union One Health 2018 Zoonoses Report",
+      "Sample based prevalence data complementing the European Union One Health 2019 Zoonoses Report",
+      "Sample based prevalence data complementing the European Union One Health 2024 Zoonoses Report - Ireland",
+      "Sample based prevalence data complementing the European Union One Health 2021 Zoonoses Report - Norway",
+      "Sample based prevalence data complementing the European Union One Health 2020 Zoonoses Report - Luxembourg"
+     ]
+    },
+    {
+     "query": "food sample pathogen prediction benchmark",
+     "hits": 386461,
+     "top": [
+      "The nutritional content of anthropogenic resources affects wildlife disease dynamics",
+      "Global trends in antimicrobial resistance on organic and conventional farms",
+      "LAMP Technology for Foodborne Pathogen Detection \u2013 MYCOBEANS Hands-on Workshop (Parma, 2026)",
+      "Linking anthropogenic resources to wildlife--pathogen dynamics: a review and meta-analysis",
+      "A trait-based framework for predicting foodborne pathogen risk from wild birds"
+     ]
+    }
+   ],
+   "arxiv_preprints": [
+    {
+     "query": "Campylobacter prevalence prediction",
+     "hits": 5,
+     "top": [
+      "DiPPER: A Bayesian approach to differential prevalence analysis with applications in microbiome studies",
+      "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
+      "Predicting Antimicrobial Resistance (AMR) in Campylobacter, a Foodborne Pathogen, and Cost Burden Analysis Using Machine",
+      "An Alternative Perspective on the Robust Poisson Method for Estimating Risk or Prevalence Ratios",
+      "Rapid host switching in generalist Campylobacter strains erodes the signal for tracing human infections"
+     ]
+    },
+    {
+     "query": "zoonoses monitoring sample positivity dataset",
+     "hits": 5,
+     "top": [
+      "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+      "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+      "Conditionally positive definite kernels in Hilbert $C^*$-modules",
+      "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset",
+      "Night-sky brightness monitoring in Hong Kong - a city-wide light pollution assessment"
+     ]
+    },
+    {
+     "query": "food sample pathogen prediction benchmark",
+     "hits": 5,
+     "top": [
+      "The Rise of Blockchain Technology in Agriculture and Food Supply Chains",
+      "Spontaneous gelation of wheat gluten proteins in a food grade solvent",
+      "Food Delivery Time Prediction in Indian Cities Using Machine Learning Models",
+      "Food4All: An Agentic Framework and Benchmark for Food Resource Navigation with Adaptive User Understanding",
+      "TasteBench: Multimodal Benchmark for Sensory Prediction, from Molecules to Sustainable Foods"
+     ]
+    }
+   ]
+  },
+  "evidence_summary": "- huggingface_datasets / 'Campylobacter prevalence prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'zoonoses monitoring sample positivity dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'food sample pathogen prediction benchmark': 0 hit(s) - nothing notable\n- zenodo_records / 'Campylobacter prevalence prediction': 127256 hit(s) - Prevalence and antibiotic susceptibility patterns of Campylobacter jejuni isolates from children with diarrhoea in Maiduguri, Nigeria, Real-time PCR detection of Campylobacter spp. In free-ranging mountain gorillas (Gorilla beringei beringei), Prevalence and antimicrobial resistance of Campylobacter isolated from carcasses of chickens slaughtered in Poland \u2013 a retrospective study, The prevalence, counts, and MLST genotypes of Campylobacter in poultry meat and genomic comparison with clinical isolates, National Food and Veterinary Risk Assessment Institute Report and analysis on the prevalence of zoonotic bacteria and their resistance to antimicrobial substances\n- zenodo_records / 'zoonoses monitoring sample positivity dataset': 536194 hit(s) - Sample based prevalence data complementing the European Union One Health 2018 Zoonoses Report, Sample based prevalence data complementing the European Union One Health 2019 Zoonoses Report, Sample based prevalence data complementing the European Union One Health 2024 Zoonoses Report - Ireland, Sample based prevalence data complementing the European Union One Health 2021 Zoonoses Report - Norway, Sample based prevalence data complementing the European Union One Health 2020 Zoonoses Report - Luxembourg\n- zenodo_records / 'food sample pathogen prediction benchmark': 386461 hit(s) - The nutritional content of anthropogenic resources affects wildlife disease dynamics, Global trends in antimicrobial resistance on organic and conventional farms, LAMP Technology for Foodborne Pathogen Detection \u2013 MYCOBEANS Hands-on Workshop (Parma, 2026), Linking anthropogenic resources to wildlife--pathogen dynamics: a review and meta-analysis, A trait-based framework for predicting foodborne pathogen risk from wild birds\n- arxiv_preprints / 'Campylobacter prevalence prediction': 5 hit(s) - DiPPER: A Bayesian approach to differential prevalence analysis with applications in microbiome studies, Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, Predicting Antimicrobial Resistance (AMR) in Campylobacter, a Foodborne Pathogen, and Cost Burden Analysis Using Machine, An Alternative Perspective on the Robust Poisson Method for Estimating Risk or Prevalence Ratios, Rapid host switching in generalist Campylobacter strains erodes the signal for tracing human infections\n- arxiv_preprints / 'zoonoses monitoring sample positivity dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, Conditionally positive definite kernels in Hilbert $C^*$-modules, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, Night-sky brightness monitoring in Hong Kong - a city-wide light pollution assessment\n- arxiv_preprints / 'food sample pathogen prediction benchmark': 5 hit(s) - The Rise of Blockchain Technology in Agriculture and Food Supply Chains, Spontaneous gelation of wheat gluten proteins in a food grade solvent, Food Delivery Time Prediction in Indian Cities Using Machine Learning Models, Food4All: An Agentic Framework and Benchmark for Food Resource Navigation with Adaptive User Understanding, TasteBench: Multimodal Benchmark for Sensory Prediction, from Molecules to Sustainable Foods",
+  "prior_art": [
+   "EFSA/EU baseline survey prevalence summaries and the BVL annual ZooM reports (aggregate statistics, not prediction tasks); Campylobacter risk-factor literature (farm-level studies); no public sample-level monitoring-positivity benchmark found"
+  ],
+  "theirs": "The publisher (BVL) publishes the raw sample-parameter records per reporting year and prevalence summaries in national/EU zoonoses reports (EFSA One Health reports aggregate prevalence by category); risk-factor literature models Campylobacter in broiler flocks at farm level, not a released prediction task with splits.",
+  "ours": "A binary sample-level detection task on the German zoonoses monitoring open data (will a monitoring sample from a stated matrix test positive for Campylobacter spp.), with disjoint reporting-year splits (2021/2022/2023 - the only years published), features restricted to sampling-plan attributes decided when the sample is taken, and a scored contract for coding-agent evaluation. No ML-ready version of this formulation exists in public catalogs.",
+  "verdict": "differentiated",
+  "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+ },
+ "licence_class": "A",
+ "licence_note": "Datenlizenz Deutschland - Namensnennung 2.0 (dl-de/by-2.0)"
 }
