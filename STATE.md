@@ -4585,3 +4585,58 @@ live non-US 9/15 → 10/16 (62%). Probe scripts kept per the skill convention as
 candidates/<id>/probe_*.py (A&E: collect_urls/download/panel/fixture; waste: waste_panel; ONS:
 nomis_list). check-candidate.py OK on all three; 386 tests OK; coverage script run before and
 after (38 candidates, live 16).
+
+**Discovery 2026-10-21, 16:00 tick — region: Canada. 5 sources opened, 5 recorded verdicts (all CA; 1 go, 3 parks, 1 reject).**
+Coverage before: 38 candidates / 16 live / 62% non-US. After: 43 / 17 / 65%; CA 4 -> 9.
+
+- `tsb-railway-occurrence-casualty` (Transportation Safety Board of Canada) — **go, status ready**. RODSdb,
+  5 anonymous CSVs released on/after the 15th monthly (occurrence table 97,765,258 B, 345 documented
+  columns, 1983-01..2026-08, vintage 2026-09-15). Plain-client 403 is UA filtering - a browser-like
+  header set (recorded in probe_access.py) gets 200/206; reproducible programmatic path, not a bot wall.
+  Task: at occurrence onset, from pre-onset context only (date/time+zone, subdivision, nearest
+  location, province, lat/long, railway, train activity), will the occurrence produce >=1 casualty?
+  Label source InjuriesIND/Total*Injuries; TSB's outcome-coded accident-type taxonomy ('... (NO
+  DAMAGE)'), all investigation fields, weather, process dates and the Summary narrative excluded as
+  post-hoc. Measured injury base rates on bounded era samples (probe_era_samples.py): 13.9-18.0%
+  across 1995/2001-02/2008-10/2025-26, both classes everywhere; 1983-84 tail 30.2% with DG LEAKER/
+  HISTORICAL types -> modern-era start proposed (2004-01). DG release (0.1% sample; TSB's own 2025
+  summary: 3 releases) and evacuation (0.2%) ruled out as labels. Row count ~70,000 is an ESTIMATE;
+  full panel measured on the worker at construction. Cross-check product: TSB 2025 annual summary
+  (831 accidents / 332 incidents / 82 DG-involved). Novelty: differentiated (check-novelty.py; prior
+  art = NRC derailment risk-map on RODS historical counts + Rana et al. 2024 grade-crossing severity
+  paper; no public ML-ready rail-occurrence benchmark). Next action: advancement constructs per the
+  record (worker fetch, naive baselines first: global/per-railway/per-subdivision).
+- `cer-pipeline-incident-significant` (Canada Energy Regulator) — **park**. Access perfect (anonymous
+  CSVs, 580 KB + 2.45 MB, last-modified 2026-10-01), OGL-CA clean, and the split contract is
+  satisfiable (2,034 rows 2008-2026, Significant 361/17.75%, both classes every year) - but the
+  dictionary defines 'Significant' mechanically from consequence fields that cannot ship, and the
+  measured honest-feature AUCs (Company 0.73, Province 0.70, Substance 0.66; label-adjacent Incident
+  Types 0.91) show the surviving task is operator risk profiling at 2,034 rows, duplicating the
+  hc-recalls-classification family. Publisher's GitHub repo checked: it is their viz app, not ML.
+  Unpark conditions in the record.
+- `statcan-wds-aggregate-series` (Statistics Canada) — **park** (source class). WDS is anonymous,
+  key-free, 15 REST methods + SDMX over a 13,356-table catalogue plus 158 PUMF products - but every
+  open product is either an aggregate series (direction-forecast-on-own-history, M4/Monash family)
+  or a cross-sectional survey snapshot (census-income family); case/event-grain products are
+  registration-gated. Same verdict shape as the ONS park. Microdata index page returned HTTP 500
+  (recorded as a probe result, not silence).
+- `eccc-hydrometric-daily-flows` (ECCC Water Survey of Canada) — **reject (mirror)**. The task this
+  source would carry (Canadian station streamflow forecasting/exceedance) already ships ML-ready:
+  CAMELS-SPAT (1,426 US+Canada basins, daily+hourly flows, 4 forcing sets; Knoben et al. 2025,
+  doi:10.5194/egusphere-2025-893) and HYSETS (Arsenault et al., ESSD 2020); the family is also live
+  here (malaysia-river-danger-exceedance). check-novelty.py verdict 'mirror' recorded (exit 3 =
+  expected refusal). Extraction cost deliberately not measured - the prior art already paid it.
+- `hc-canada-vigilance-adverse-reactions` (Health Canada) — **park**. No machine-readable bulk
+  channel exists: both Canada Vigilance packages list HTML query-form resources only, and the 'Data
+  on cannabis adverse reactions' package is 12 PDF annual reports (all measured via CKAN
+  package_show; database landing page timed out twice from the coordinator - recorded). Building a
+  panel would need undocumented form scraping = unacceptable provenance (UNHCR-precedent posture).
+  Secondary: FAERS/openFDA already serves the ADR-outcome family publicly.
+
+Region measurement: all five verdicts are CA-publisher sources (the tick's named federal family:
+TSB, CER, StatCan, ECCC, Health Canada, all found via open.canada.ca CKAN); the quota is met without
+leaving the tick region. Probe scripts kept per convention as candidates/<id>/probe_*.py (TSB:
+access + era samples, executed after commit-ready edit; CER: download/measure + honest-AUC, executed;
+StatCan/ECCC/HC: catalogue probes, executed). check-candidate.py --all OK (43 records); 386 tests OK;
+coverage run before and after. Session scratch scripts in .factory/ deleted; nothing else touched -
+no build, qualification, packaging or publication commands were run this session.

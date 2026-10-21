@@ -1,0 +1,149 @@
+{
+  "id": "eccc-hydrometric-daily-flows",
+  "status": "dropped",
+  "verdict": "reject",
+  "jurisdiction": {
+    "country": "CA",
+    "region": "North America",
+    "publisher": "Environment and Climate Change Canada (ECCC) - Water Survey of Canada",
+    "recorded_at": "2026-10-21"
+  },
+  "created_at": "2026-10-21T08:09:18.582162+00:00",
+  "domain": "hydrology - daily river flow / water level series for Canadian gauging stations",
+  "prediction_question": "The task this source would support (rejected before construction): predict station-level daily flow exceedance or the next-day/day-ahead flow for Canadian hydrometric stations - the canonical streamflow-forecasting task on Water Survey of Canada / HYDAT data.",
+  "prediction_time": "Would be stateable (day T observations -> day T+1 outcome) - but the task already exists in ML-ready form, which is the reason for the verdict.",
+  "target_definition": "Not fixed: flow exceedance vs a datum/threshold, or day-ahead flow. The exact label is moot given the verdict.",
+  "sources": [
+    {
+      "name": "ECCC hydrometric records on open.canada.ca (catalog identity measured 2026-10-21 via anonymous CKAN package_search/package_show, query 'hydrometric')",
+      "url": "https://open.canada.ca/data/en/dataset/0b30719a-f7a6-4f3c-ae37-000acfe9f5a3",
+      "api": "catalogue records: 'Environment Canada Hydrometric stations and network information, 1850-' (id 0b30719a-f7a6-4f3c-ae37-000acfe9f5a3), 'Environment Canada Water Level Data, 1850-' (id 9128b287-7659-49d9-8445-7d69fd5a2d77), 'Real Time Hydrometric Data Tool' (id ef2161a8-b01d-4dfb-ad00-1a70f7c4073b), 'Hydrometric Monitoring, Oil Sands Region' (id 0c4b0757-8e20-4f7d-b8fb-7df8ae5d93f5), plus AAFC drainage-area tables; bulk history is distributed as HYDAT (publisher's SQLite/CSV archive, ~1.7 GB publisher-claimed; NOT downloaded here - see measurements.",
+      "license": "open.canada.ca records carry license_id ca-ogl-lgo (Open Government Licence - Canada 2.0) - measured 2026-10-21. Licence is not the blocker.",
+      "access": "catalogue API anonymous and clean; HYDAT bulk download not re-probed because the verdict does not depend on access cost (see measurements.mirror_evidence)."
+    }
+  ],
+  "license_evidence": [
+    {
+      "note": "OGL-Canada 2.0 per the open.canada.ca catalogue records (license_id ca-ogl-lgo, measured 2026-10-21). Redistribution with attribution permitted. Not the blocker; the source is rejected on mirror grounds.",
+      "url": "https://open.canada.ca/data/en/dataset/0b30719a-f7a6-4f3c-ae37-000acfe9f5a3"
+    }
+  ],
+  "construction_script": null,
+  "split_strategy": "Not built. Measured prior art already ships the panel and the splits: CAMELS-SPAT provides 'Streamflow observations, forcing data and geospatial data... for 1426 streamflow measurement stations located across the United States and Canada' (daily and hourly streamflow at basin outlets, 4 meteorological forcings, catchment attributes - FRDR datasets 9ca63670-9e40-477c-a8a8-30f61205d668 / fef15147-940a-4a7d-86c3-373ec7d67ec4, Knoben et al., 'Catchment Attributes and MEteorology for Large-Sample SPATially distributed analysis (CAMELS-SPAT)', doi:10.5194/egusphere-2025-893), and HYSETS ('Hydrometeorological Sandbox - \u00c9cole de Technologie Sup\u00e9rieure', Arsenault et al., Earth System Science Data 2020) covers 14,000+ North American basins including Canada with daily streamflow and forcings.",
+  "measurements": {
+    "mirror_evidence": "Web search 2026-10-21 (queries recorded in notes.md): CAMELS-SPAT explicitly ships Canadian-station daily/hourly streamflow with forcings and static catchment attributes in a research dataset designed for ML (papers already benchmark LSTM streamflow models on it, e.g. Kratzert et al. line of work extended to CAMELS-SPAT in a 2025 preprint evaluating across 921 North American catchments); HYSETS ships the same for Canadian basins. A Scout-built Canadian streamflow task would repackage data a consumer can already download with splits and a scored contract only one step removed - the exact mirror case the standing novelty rule refuses. The canonical task is also already represented in this bench's own family (malaysia-river-danger-exceedance, live), so a Canadian twin would duplicate the family as well as the public prior art.",
+    "cost_note": "Extraction cost was deliberately NOT measured: CAMELS-SPAT has already paid it for the Canadian stations, which is precisely why this is a mirror and not a candidate. Catalogue identity was measured (5 CKAN records read back anonymously)."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "REJECTED as a mirror: the prediction task this source would carry (Canadian station-level streamflow forecasting / flow exceedance) already exists in public ML-ready form - CAMELS-SPAT (1,426 US+Canada basins, daily+hourly streamflow, 4 forcing sets, catchment attributes; FRDR, Knoben et al. 2025) and HYSETS (Arsenault et al., ESSD 2020) - and is a live family in this bench (malaysia-river-danger-exceedance). Publishing a HYDAT derivative would ship nothing the consumer cannot already download. Novelty check recorded via check-novelty.py with verdict 'mirror'.",
+  "review": null,
+  "next_action": "Dropped. Do not re-open while CAMELS-SPAT and HYSETS remain downloadable. A genuinely different formulation (e.g. real-time flood-warning verification against ECCC's own issued warnings - a warnings-outcome task rather than a flow-forecast task) would have to be argued as a NEW candidate with its own novelty check, not as a reopening of this one.",
+  "novelty_check": {
+    "checked_at": "2026-10-21T08:11:10+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "streamflow prediction Canada",
+      "CAMELS Canada basins",
+      "river flow forecast dataset"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "streamflow prediction Canada",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "CAMELS Canada basins",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "river flow forecast dataset",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "streamflow prediction Canada",
+          "hits": 164865,
+          "top": [
+            "National Hydrological Services - Post Processing Library (NHS_PostProcessing)",
+            "Models and Predictions for \"Diffusion-Based Probabilistic Modeling for Hourly Streamflow Prediction and Assimilation\"",
+            "Jucazinho Dam Streamflow Prediction: A Comparative Analysis of Machine Learning Techniques",
+            "Code of the Soil Vegetation and Snow (SVS) land surface scheme integrated in the ECCC Surface Prediction System with the official physics package that includes the enhanced frozen soil infiltration configuration",
+            "Columbia River headwaters - hydroclimate and glacier change, 1977-2017"
+          ]
+        },
+        {
+          "query": "CAMELS Canada basins",
+          "hits": 93399,
+          "top": [
+            "List of 530 CAMELS basins",
+            "climatechange-ai-tutorials/camels-hydrological-modeling",
+            "Andean Glacierized Catchment (Andean-GC) dataset",
+            "Caravan - A global community dataset for large-sample hydrology (csv version)",
+            "Caravan - A global community dataset for large-sample hydrology"
+          ]
+        },
+        {
+          "query": "river flow forecast dataset",
+          "hits": 494652,
+          "top": [
+            "Conditional Seasonal Markov-Switching Autoregressive Model to Simulate Extreme Events: Application to River Flow",
+            "Streamflow Forecasts, Observations, Basin Characteristics, AR Recon Records, and Forecast Performance Metrics for Sites in California, Nevada, and Oregon (Water Years 2014\u20132025)",
+            "CNRFC_SWE_1979_2023",
+            "A comprehensive calibration approach for the Northwest River Forecast Center - supplementary data data for reproducing paper figures",
+            "HEFS Data for Lake Erie HAB Scenarios"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "streamflow prediction Canada",
+          "hits": 5,
+          "top": [
+            "Network-Based Subbasin-Scale Mapping of Streamflow Alteration in Ontario, Canada",
+            "Exploring Quantum Responsible Innovation efforts in Canada and the world",
+            "Short-term Hourly Streamflow Prediction with Graph Convolutional GRU Networks",
+            "Temporal Fusion Transformers for Streamflow Prediction: Value of Combining Attention with Recurrence",
+            "A Data Scientist's Guide to Streamflow Prediction"
+          ]
+        },
+        {
+          "query": "CAMELS Canada basins",
+          "hits": 5,
+          "top": [
+            "The CAMELS project: Cosmology and Astrophysics with MachinE Learning Simulations",
+            "The CAMELS Multifield Dataset: Learning the Universe's Fundamental Parameters with Artificial Intelligence",
+            "Basins of convergence of equilibrium points in the generalized Hill problem",
+            "From Basins to safe sets: a machine learning perspective on chaotic dynamics",
+            "Exploring Quantum Responsible Innovation efforts in Canada and the world"
+          ]
+        },
+        {
+          "query": "river flow forecast dataset",
+          "hits": 5,
+          "top": [
+            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+            "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset",
+            "Time-averaged velocity and scalar fields of the flow surrounding a group of cylinders",
+            "SDWPF: A Dataset for Spatial Dynamic Wind Power Forecasting Challenge at KDD Cup 2022"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'streamflow prediction Canada': 0 hit(s) - nothing notable\n- huggingface_datasets / 'CAMELS Canada basins': 0 hit(s) - nothing notable\n- huggingface_datasets / 'river flow forecast dataset': 0 hit(s) - nothing notable\n- zenodo_records / 'streamflow prediction Canada': 164865 hit(s) - National Hydrological Services - Post Processing Library (NHS_PostProcessing), Models and Predictions for \"Diffusion-Based Probabilistic Modeling for Hourly Streamflow Prediction and Assimilation\", Jucazinho Dam Streamflow Prediction: A Comparative Analysis of Machine Learning Techniques, Code of the Soil Vegetation and Snow (SVS) land surface scheme integrated in the ECCC Surface Prediction System with the official physics package that includes the enhanced frozen soil infiltration configuration, Columbia River headwaters - hydroclimate and glacier change, 1977-2017\n- zenodo_records / 'CAMELS Canada basins': 93399 hit(s) - List of 530 CAMELS basins, climatechange-ai-tutorials/camels-hydrological-modeling, Andean Glacierized Catchment (Andean-GC) dataset, Caravan - A global community dataset for large-sample hydrology (csv version), Caravan - A global community dataset for large-sample hydrology\n- zenodo_records / 'river flow forecast dataset': 494652 hit(s) - Conditional Seasonal Markov-Switching Autoregressive Model to Simulate Extreme Events: Application to River Flow, Streamflow Forecasts, Observations, Basin Characteristics, AR Recon Records, and Forecast Performance Metrics for Sites in California, Nevada, and Oregon (Water Years 2014\u20132025), CNRFC_SWE_1979_2023, A comprehensive calibration approach for the Northwest River Forecast Center - supplementary data data for reproducing paper figures, HEFS Data for Lake Erie HAB Scenarios\n- arxiv_preprints / 'streamflow prediction Canada': 5 hit(s) - Network-Based Subbasin-Scale Mapping of Streamflow Alteration in Ontario, Canada, Exploring Quantum Responsible Innovation efforts in Canada and the world, Short-term Hourly Streamflow Prediction with Graph Convolutional GRU Networks, Temporal Fusion Transformers for Streamflow Prediction: Value of Combining Attention with Recurrence, A Data Scientist's Guide to Streamflow Prediction\n- arxiv_preprints / 'CAMELS Canada basins': 5 hit(s) - The CAMELS project: Cosmology and Astrophysics with MachinE Learning Simulations, The CAMELS Multifield Dataset: Learning the Universe's Fundamental Parameters with Artificial Intelligence, Basins of convergence of equilibrium points in the generalized Hill problem, From Basins to safe sets: a machine learning perspective on chaotic dynamics, Exploring Quantum Responsible Innovation efforts in Canada and the world\n- arxiv_preprints / 'river flow forecast dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, Time-averaged velocity and scalar fields of the flow surrounding a group of cylinders, SDWPF: A Dataset for Spatial Dynamic Wind Power Forecasting Challenge at KDD Cup 2022",
+    "prior_art": [
+      "CAMELS-SPAT, FRDR dataset 9ca63670-9e40-477c-a8a8-30f61205d668, Knoben et al. 2025",
+      "HYSETS, Arsenault et al., Earth Syst. Sci. Data 12, 2020"
+    ],
+    "theirs": "CAMELS-SPAT ships daily and hourly streamflow observations, four meteorological forcing sets and catchment attributes for 1,426 US and Canadian basins (FRDR, Knoben et al. 2025, doi:10.5194/egusphere-2025-893); HYSETS ships daily streamflow+forcings for 14,000+ North American basins including Canada (Arsenault et al., ESSD 2020); the task family is also live in this bench (malaysia-river-danger-exceedance)",
+    "ours": "nothing - this is a mirror: the exact task (Canadian station-level streamflow forecasting/exceedance) is already shipped ML-ready",
+    "verdict": "mirror",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
+}

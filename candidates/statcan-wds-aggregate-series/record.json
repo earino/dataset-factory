@@ -1,0 +1,49 @@
+{
+  "id": "statcan-wds-aggregate-series",
+  "status": "parked",
+  "verdict": "park",
+  "jurisdiction": {
+    "country": "CA",
+    "region": "North America",
+    "publisher": "Statistics Canada (StatCan), Ottawa",
+    "recorded_at": "2026-10-21"
+  },
+  "created_at": "2026-10-21T08:09:18.030047+00:00",
+  "domain": "national statistical office - aggregate time series (parked as a source class, not a single dataset)",
+  "prediction_question": "Hypothetical tasks this publisher class would support (parked): direction/level forecasts on StatCan's own aggregate series (e.g. will monthly table X rise next period), or cross-sectional prediction on a public-use microdata file (PUMF) survey snapshot. Neither class is being taken to construction; see rejection_reason.",
+  "prediction_time": "Would be the publication date of the prior reference period for an aggregate forecast - stateable, but the task class is the problem, not the timing.",
+  "target_definition": "Not fixed (parked before one was chosen): aggregate-series direction labels or same-survey PUMF outcomes - both are documented classes with known problems (see rejection_reason).",
+  "sources": [
+    {
+      "name": "Statistics Canada Web Data Service (WDS) - developer documentation",
+      "url": "https://www.statcan.gc.ca/en/developers/wds",
+      "api": "anonymous REST: 'Our Web Data Service gives developers access to Statistics Canada data via the following 15 methods: getChangedSeriesList, getChangedCubeList, getCubeMetadata, getSeriesInfoFromCubePidCoord, getSerie...' plus 'The Statistics Canada SDMX REST web services provide access to the time series made available on the Statistics Canada's website' - no API key mentioned anywhere on the page (measured 2026-10-21, HTTP 200, 22,322 bytes).",
+      "license": "StatCan publishes under the Open Government Licence - Canada (OGL-CA 2.0) family; per-table licence to be quoted at candidate level if ever unparked.",
+      "access": "measured 2026-10-21: docs page HTTP 200 anonymous; the WDS is documented and key-free. Access is NOT the blocker."
+    },
+    {
+      "name": "Statistics Canada data catalogue (tables list)",
+      "url": "https://www150.statcan.gc.ca/n1/en/type/data",
+      "api": "HTML catalogue, anonymous: '13,356 results' data tables plus a distinct 'Public use microdata (158)' results class (measured 2026-10-21, HTTP 200, 135,545 bytes); includes series (e.g. Table 33-10-0036-01 daily FX rates, 27 series from 1981) and directly-downloadable public-use microdata files (e.g. 'National Travel Survey microdata file Public use microdata: 24-25-0001', with monthly files 'available back to 2006 and can be directly downloaded' and earlier periods by EFT request).",
+      "license": "OGL-CA family; PUMF files carry their own terms.",
+      "access": "measured 2026-10-21: catalogue page HTTP 200 anonymous."
+    }
+  ],
+  "license_evidence": [
+    {
+      "note": "Not the blocker; StatCan's open tables are published under the Government of Canada's open-licence family. The microdata index (statcan.gc.ca/en/microdata/index) returned HTTP 500 on 2026-10-21 (recorded as a probe result, not silence); gated microdata channels (Research Data Centres) are known to require application and restrict redistribution. No licence question was escalated because the park does not turn on licence.",
+      "url": "https://www.statcan.gc.ca/en/developers/wds"
+    }
+  ],
+  "construction_script": null,
+  "split_strategy": "Not measured beyond the probes above: the park is at the source-class level, before any single table was selected. Aggregate series would trivially fill temporal windows (daily/monthly series back to the 1980s), but window-filling is not the binding constraint here.",
+  "measurements": {
+    "probes_2026_10_21": "WDS docs page: HTTP 200, 22,322 bytes, 15 documented REST methods + SDMX, no API key, anonymous. Catalogue page: HTTP 200, 135,545 bytes, 13,356 data tables plus a distinct 'Public use microdata (158)' class (Labour Force Survey PUMF among them). Microdata index page: HTTP 500 (measured failure, recorded). No table was downloaded; no cost was incurred beyond three page fetches.",
+    "source_class_analysis": "Every open StatCan product found by these probes falls into one of two classes: (a) aggregate time series (13,356-table catalogue; daily/monthly/annual series by province/industry/etc.) whose natural task is a direction-forecast on the series' own history - the family already served by M4/Monash-style macro benchmarks, thinned further by the fact that the publisher's own seasonal adjustment and commentary ship with the table; or (b) cross-sectional survey PUMF snapshots (e.g. National Travel Survey 24-25-0001) whose natural task is a same-survey outcome prediction - the census-income/adult-data family, the most mirrored task class in public ML. Same-shape verdict as the ONS park of 2026-10-21 (ons-la-claimant-count-direction): an aggregate-statistics publisher with registration-gated microdata."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "PARKED as a source class: StatCan's open catalogue is aggregate series (direction-forecast-on-own-history family, low agent-eval value, prior art M4/Monash) plus cross-sectional survey snapshots (census-income family, already mirrored publicly); the case/event-grain products (UCR microdata, RDC files) are registration-gated and not redistributable. This mirrors the recorded ONS verdict and prevents the tick's named 'Statistics Canada' from consuming a construction slot on a task class the bench has already judged thin.",
+  "review": null,
+  "next_action": "Parked. Unpark only if an open case/event-grain StatCan release appears (per-month incident- or record-level data with a documented schema, no registration wall) - check the WDS getChangedCubeList endpoint and the open.canada.ca StatCan feed on a future Canada tick; a PUMF-based task would additionally need a differentiation argument over the census-income family."
+}

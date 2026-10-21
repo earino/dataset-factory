@@ -1,0 +1,49 @@
+{
+  "id": "hc-canada-vigilance-adverse-reactions",
+  "status": "parked",
+  "verdict": "park",
+  "jurisdiction": {
+    "country": "CA",
+    "region": "North America",
+    "publisher": "Health Canada - MedEffect Canada / Canada Vigilance Program",
+    "recorded_at": "2026-10-21"
+  },
+  "created_at": "2026-10-21T08:09:19.167347+00:00",
+  "domain": "pharmacovigilance - adverse drug reaction reports (Canada Vigilance database)",
+  "prediction_question": "Hypothetical task this source would support (parked): predict the outcome or seriousness of a reported adverse drug reaction (patient demographics, suspect drug, reaction) from the Canada Vigilance reports - the Canadian counterpart of FAERS/openFDA-style tasks.",
+  "prediction_time": "Would be the report's receipt by the Canada Vigilance Program; seriousness/outcome classification is assigned and updated later, so timing would be stateable - but the source never got that far (access blocker below).",
+  "target_definition": "Not fixed: report-level seriousness or outcome class. Moot given the park reason.",
+  "sources": [
+    {
+      "name": "Canada Vigilance Adverse Reaction Online Database (open.canada.ca packages 9cbaef00 / 98cad9a3)",
+      "url": "https://www.canada.ca/en/health-canada/services/drugs-health-products/medeffect-canada/adverse-reaction-database.html",
+      "api": "NONE - measured 2026-10-21 via anonymous CKAN package_show: both packages list ONLY HTML resources (the English and French database pages); no CSV, API or bulk resource exists on the records. The database itself is an interactive query form (search by drug, reaction, date range, with on-screen results).",
+      "license": "open.canada.ca records carry license_id ca-ogl-lgo (Open Government Licence - Canada 2.0); but licence on viewable database content does not create a bulk channel.",
+      "access": "measured 2026-10-21: CKAN package_show for 98cad9a3 answered anonymously (resources: 2 HTML links). Direct fetch of the database page from this coordinator timed out twice (90 s read timeout, two attempts on 2026-10-21) - recorded as coordinator-side network behaviour; the CKAN record itself is the evidence for the resource shape, so the access verdict does not rest on the page fetch."
+    },
+    {
+      "name": "'Data on cannabis adverse reactions' (open.canada.ca package 371d84b2) - checked as a possible bulk side-channel",
+      "url": "https://open.canada.ca/data/en/dataset/371d84b2-e439-4c39-a4ef-8817d65a1485",
+      "api": "measured 2026-10-21 via CKAN package_show: resources are PDF annual reports only (rept_ocss-2020 through 2024-annual-report.pdf, English and French) - the 'data' package is a set of PDF reports, not machine-readable data.",
+      "license": "ca-ogl-lgo per the package record.",
+      "access": "CKAN package_show anonymous; resource list read back (12 PDF resources, no CSV/API)."
+    }
+  ],
+  "license_evidence": [
+    {
+      "note": "open.canada.ca records list license_id ca-ogl-lgo for the Canada Vigilance packages (measured 2026-10-21). Licence is not the blocker; there is no machine-readable redistribution channel to license in the first place.",
+      "url": "https://open.canada.ca/data/en/dataset/98cad9a3-5b61-4c1e-965d-531804542560"
+    }
+  ],
+  "construction_script": null,
+  "split_strategy": "Not built - no bulk access to measure a panel from. The query-form database returns on-screen results only; a panel would have to be assembled by scripted query traffic, which is exactly the kind of undocumented scraping the pipeline avoids as provenance.",
+  "measurements": {
+    "access_probe_2026_10_21": "CKAN package_show x3 (two Vigilance packages, one cannabis-ADR package): all resources are HTML (query-form pages) or PDF (annual reports). No CSV, no API, no bulk export on any of the three records. Database landing page: two fetch attempts timed out from the coordinator (90 s), recorded. Total probe cost: 3 small API calls + 2 failed page fetches.",
+    "task_family_comparison": "Even with access, differentiation would be uphill: the US counterpart (FDA FAERS via openFDA) ships event-level ADR data through a documented anonymous API and already exists in this bench's family (openfda-food-recall-classification is the recalls sibling; ADR-outcome prediction on FAERS is a heavily published literature). A Canadian ADR task's novelty would rest on the Canadian-only reporting population and the seriousness/outcome coding - a thin contribution against the public FAERS ecosystem."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "PARKED on access: the Canada Vigilance adverse reaction data has no bulk or API channel - the open.canada.ca records list HTML query-form resources only, and the related 'data on cannabis adverse reactions' package is PDF annual reports (a PDF-only publisher is a park, not a go). Assembling a panel would require undocumented scripted scraping of an interactive form, which this pipeline does not treat as acceptable provenance. Secondary reason: even unparked, the FAERS/openFDA ecosystem already serves the ADR-outcome task family publicly.",
+  "review": null,
+  "next_action": "Parked. Unpark only if Health Canada publishes a machine-readable export of Canada Vigilance (watch the two open.canada.ca packages for a CSV/API resource appearing, e.g. on the next Canada tick), or the operator records a risk acceptance that a browser-captured query export is acceptable provenance - the UNHCR precedent (unhcr-refugee-data-finder) applies verbatim here."
+}

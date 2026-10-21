@@ -1,0 +1,174 @@
+{
+  "id": "tsb-railway-occurrence-casualty",
+  "status": "ready",
+  "verdict": "go",
+  "jurisdiction": {
+    "country": "CA",
+    "region": "North America",
+    "publisher": "Transportation Safety Board of Canada (TSB / BST), Gatineau, Quebec",
+    "recorded_at": "2026-10-21"
+  },
+  "created_at": "2026-10-21T08:09:17.014606+00:00",
+  "domain": "railway safety - prediction of casualty outcomes of reported rail occurrences (Canada, federal)",
+  "prediction_question": "A railway occurrence begins at a known place, time and operating context on the Canadian network (crossing accident, derailment, trespasser event, fire, collision, movement exceeding limits of authority, ...). At that instant, given only pre-occurrence context - where (subdivision, nearest location, province, region, lat/long), which railway, when (date, time of day, season), and what the train was doing (activity type) - will the occurrence result in at least one casualty (fatality or any injury)?",
+  "prediction_time": "The instant the occurrence begins (OccDate/OccTime, with the documented local time zone via TimeZoneID). Everything the TSB records during or after the occurrence is excluded from the shipped features: TSB's accident/incident type assignment (its taxonomy embeds outcomes, e.g. 'NON-MAIN-TRACK TRAIN DERAILMENT (NO DAMAGE)'), all injury/DG-release/fire/evacuation/damage flags and counts, weather observations taken at the occurrence, track and rolling-stock attributes measured during the occurrence, investigation/deployment/closeout fields, process dates (ENTRY_DT, RELEASE_DT, DAILY_RELEASED_DT, OccClosedDate), the free-text Summary, and even ReportedDate/ReportedTime (the notification instant, which post-dates the onset) - the last is shipped only in the record's provenance, never as a feature. The casualty outcome unfolds after onset and is the label.",
+  "target_definition": "Binary: occurrence resulted in >=1 casualty. Label source columns: InjuriesIND ('Injuries indicator'), cross-checked against TotalFatalInjuries / TotalSeriousInjuries / TotalMinorInjuries ('Total fatal/serious/minor injuries') and the separate INJURIES table (RODSdb_MDOTW_VW_INJURIES_PUBLIC.csv, 2,710,400 bytes). All are excluded from the shipped feature columns by construction.",
+  "sources": [
+    {
+      "name": "TSB Rail Occurrence Database System (RODS) - 'Rail transportation occurrence data from January 1983' dataset page",
+      "url": "https://www.tsb.gc.ca/eng/stats/rail/data-5.html",
+      "api": "5 anonymous bulk CSVs + a CSV data dictionary; publisher states 'The RODS datasets are is released on or soon after the 15th of each month, and contains data from January 1983 to the last day of the month preceding its release' and that the Occurrence table contains 'Occurrence summary data... Notification data, including the date and time that the occurrence was reported. Track infrastructure data...'",
+      "license": "see license_evidence; page carries a use-at-your-own-risk disclaimer, the licence comes from the open.canada.ca record (OGL - Canada 2.0)",
+      "access": "measured 2026-10-21 (probe_access.py): plain urllib with a custom User-Agent gets HTTP 403 on all TSB file URLs; a full browser-like header set gets HTTP 200/206 with Range support. The exact working header set is recorded in probe_access.py (User-Agent, Accept, Accept-Language, Referer) - a documented, reproducible programmatic path suitable for a worker."
+    },
+    {
+      "name": "RODSdb public tables (CSV, measured sizes, last-modified 2026-09-15)",
+      "url": "https://www.tsb.gc.ca/sites/default/files/stats/RODSdb_MDOTW_VW_OCCURRENCE_PUBLIC.csv",
+      "api": "OCCURRENCE 97,765,258 bytes / 345 columns (OccID, OccNo, occurrence date/time/year, time zone, occurrence+accident/incident type, train activity, subdivision owner+name+mileage, province, station, nearest location, latitude/longitude, region, outcome flags InjuriesIND/FireIND/EvacuationIND/DGReleasedCarsIND..., TotalFatal/Serious/MinorInjuries, NumEvacuated, IsolationRadius_Feet, DeployedIND, process dates, 345-col schema); TRAIN 21,742,734 bytes; ROLLING_STOCK 34,723,267 bytes; INJURIES 2,710,400 bytes; COMPONENTS 42,523 bytes; data dictionary https://www.tsb.gc.ca/sites/default/files/data/en/RODSdb-dd.csv (109,771 bytes, 699 rows, per-column documented meanings). File is ordered newest-first; rows span 2026-09-05 (row 1) back to 1983-01-02 (last row).",
+      "license": "OGL - Canada 2.0 via open.canada.ca package",
+      "access": "measured 2026-10-21 via ranged GETs (browser-like headers): 2 MB samples at offsets 0 / 30,000,000 / 50,000,000 / 70,000,000 and 1.5 MB tail. Row density ~1.4 KB/row -> total row count ESTIMATE ~70,000 occurrences (labelled estimate; full count to be measured on the worker)."
+    },
+    {
+      "name": "open.canada.ca catalogue record for the TSB railway occurrence data",
+      "url": "https://open.canada.ca/data/en/dataset/4f8d9b0d-c4af-4be2-b751-3f5a403993ff",
+      "api": "CKAN package_show answered anonymously 2026-10-21; license_id=ca-ogl-lgo; resources list the 5 CSVs in en+fr plus the data dictionary",
+      "license": "Open Government Licence - Canada 2.0 (ca-ogl-lgo)",
+      "access": "CKAN API (https://open.canada.ca/data/en/api/3/action/package_show) anonymous, clean JSON."
+    },
+    {
+      "name": "TSB Rail transportation occurrences in 2025 - annual statistical summary (publisher's own cross-check product)",
+      "url": "https://www.tsb.gc.ca/eng/stats/rail/2025/sser-ssro-2025.html",
+      "api": "HTML+PDF annual summary, released monthly then compiled annually",
+      "license": "OGL - Canada 2.0 (open.canada.ca TSB statistics package f9073ffd)",
+      "access": "measured 2026-10-21: 'In 2025, 831 rail accidents... were reported to the TSB... down from the 2024 total of 895, and 17% below the previous 10-year (2015 to 2024) average of 1007'; '332 rail transportation incidents reported to the TSB in 2025, a 10% increase from 2024 (303)'; 'Among all rail transportation accidents, 82 involved dangerous goods... Three accidents in 2025 resulted in dangerous goods being released.'"
+    }
+  ],
+  "license_evidence": [
+    {
+      "note": "open.canada.ca package records license_id 'ca-ogl-lgo' (Open Government Licence - Canada 2.0) for the TSB railway occurrence data (CKAN package_show, measured 2026-10-21). The TSB dataset page itself (data-5.html) carries no licence text, only: 'The dataset is for information purposes only. The user of the data assumes all responsibilities for the data's use and for verifying their completeness and accuracy for both critical and non-critical uses and applications.' OGL-CA permits commercial and non-commercial redistribution with attribution: 'Acknowledge the source of the Information by including any attribution statement specified by the Information Provider(s) and, where possible, provide a link to this licence. If the Information Provider does not provide a specific attribution statement... you must use the following attribution statement: Contains information licensed under the Open Government Licence - Canada.' (open.canada.ca/en/open-government-licence-canada, fetched 2026-10-21). Licence decision: redistribution permitted under OGL-CA 2.0; source terms preserved; our derived compilation dedicated CC0-1.0 per standing policy; derived, not official.",
+      "url": "https://open.canada.ca/en/open-government-licence-canada"
+    }
+  ],
+  "construction_script": null,
+  "split_strategy": "Proposed (windows to be recomputed on the full panel on the worker at construction - counts below are measured on bounded 2 MB samples, not the full file). Panel: occurrences 1983-01..2026-08 (file vintage: released 2026-09-15, data through the preceding month-end). Construction would start the panel at a modern-era boundary (2004-01 proposed; the 1983-1990s rows are shaped differently - in the 1.5 MB tail sample of 1983-84 rows: injuries 30.2%, accident types include 'DG LEAKER' (343/1450) and 'HISTORICAL' (120), time zone 'N/A', OccClassID 'N/A' - so early years need separate treatment or exclusion). Proposed windows, occurrences by onset date: train 2004-01..2021-12, eval 2022-01..2024-12, holdout 2025-01..2026-08. Both classes present in every era window by measured sample injury rates: 13.9% (2008-10 sample, n=1,499), 15.0% (2001-02, n=1,359), 18.0% (1995, n=1,383), 14.7% (2025-26, n=1,501). Occurrences are independent single events (no storm-style clustering); each row is one occurrence; multiple casualties within one occurrence do not duplicate rows. Row key: OccID (occurrence identification number; OccNo like 'R26E0080' as secondary). At ~1,100-1,500 occurrences/year in the modern era, each window carries thousands of rows; exact per-window counts are a construction-time measurement.",
+  "measurements": {
+    "access_2026_10_21": "probe_access.py: plain urllib (custom UA) -> HTTP 403 on all www.tsb.gc.ca CSVs; browser-like headers (User-Agent: Mozilla/5.0 (X11; Linux x86_64)... Chrome/128, Accept, Accept-Language, Referer: https://www.tsb.gc.ca/) -> HTTP 200, Range requests honored (HTTP 206). All 5 table sizes measured by bytes=0-0 ranged GET (Content-Range read back): OCCURRENCE 97,765,258; TRAIN 21,742,734; ROLLING_STOCK 34,723,267; INJURIES 2,710,400; COMPONENTS 42,523 bytes; all last-modified 2026-09-15 17:13-17:14 GMT (consistent with the documented on-or-after-the-15th monthly release).",
+    "label_base_rates_measured": "Bounded 2 MB era samples of the occurrence CSV (InjuriesIND; reproduced by candidates/tsb-railway-occurrence-casualty/probe_era_samples.py): 1995: 18.0% (249/1,383); 2001-02: 15.0% (204/1,359); 2008-10: 13.9% (208/1,499); 2025-26: 14.7% (220/1,501). Fatality rows (TotalFatalInjuries>0): 5.7% (1995, n=1,383), 5.7% (2001-02, n=1,359), 6.3% (2008-10, n=1,499), 7.4% (111/1,501 in 2025-26). Other outcome flags in the 2025-26 sample: FireIND 7.4%, DerailedRSIND 48.4%, DGCarsInvolvedIND 8.4%, EvacuationIND 0.2%, DGReleasedCarsIND 0.1% - which rules out DG-release (3/year per the publisher's own 2025 summary) and evacuation as primary labels; casualty is the right label.",
+    "publisher_cross_check": "TSB 2025 annual summary (fetched 2026-10-21): 831 rail accidents in 2025 (895 in 2024; 10-year average 1,007), 332 incidents (303 in 2024), 82 accidents involving dangerous goods, 3 with DG released, 'Freight trains accounted for 42% of all rolling stock involved in rail accidents in 2025'. Sample consistency: the newest 2 MB sample holds 665 rows from 2025 and 836 from 2026 (to 2026-09-05) - consistent in order of magnitude with 831+332=1,163 occurrences in 2025. Full-panel accident/incident counts must be cross-checked against these published figures at construction.",
+    "row_count_estimate": "97,765,258 bytes / (2,097,152 bytes per 1,502 rows ~= 1,396 B/row) ~= 70,000 occurrences total (ESTIMATE; measured on samples only - the full file was not downloaded to the coordinator, per the coordinator's no-bulk-download rule). Construction fetches it on the worker.",
+    "novelty_prior_art": "Web search 2026-10-21: (1) NRC/CNR publication 'Development of a daily updated train derailment impact map...' - a risk-mapping tool built on RODS historical counts, explicitly deferring predictive derailment models to future work; (2) Rana, Sattari, Lefsrud & Hendry (2024), 'Machine Learning Approach to Enhance Highway Railroad Grade Crossing Safety by Analyzing Crash Data and Identifying Hotspot Crash Locations' (doi:10.1177/03611981231212162) - ML analysis of grade-crossing casualty severity from TSB/RODS data, a research paper, not a shipped dataset/benchmark; (3) TSB's own statistics products are descriptive. No public ML-ready rail-occurrence prediction dataset with splits and a scored contract found; mechanical catalog search recorded via check-novelty.py.",
+    "cost_measured": "Coordinator discovery cost: 8 ranged HTTP requests (5 size probes + dictionary + 4 era samples + tail) ~= 8.6 MB transferred, <60 s wall clock. Construction cost on the worker: one ~157 MB fetch of 5 CSVs plus joins; trivial for a Hetzner worker; the bytes never pass through the coordinator."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": null,
+  "next_action": "Advancement session constructs (per this record): (1) worker job downloads the 5 RODSdb CSVs with the browser-like header set from probe_access.py (~157 MB) and recomputes full-panel counts: occurrences/year, injury rate by year and by window, distinct OccID check, accident-type distribution vs the 2025 summary figures; (2) fix the modern-era start (2004-01 proposed) after inspecting the injury-rate and schema-completeness transition (1983-1990s rows differ: DG LEAKER/HISTORICAL types, N/A time zones); (3) build context-only features - occurrence datetime (UTC-normalised via documented time zone), subdivision, nearest location, province, region, lat/long, railway (subdivision owner), train activity type - and EXCLUDE every post-onset column (accident/incident type, occurrence type, all outcome flags/counts, process dates, Summary, weather, track/rolling-stock attributes, NumberTrainsInvolved); (4) measure naive baselines first (global rate, per-railway, per-subdivision, per-activity) and require headroom over them before spending the rest of the construction; (5) run the qualification gate on the full artifact on the worker.",
+  "novelty_check": {
+    "checked_at": "2026-10-21T08:11:04+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "railway occurrence prediction",
+      "rail accident severity dataset",
+      "train derailment prediction benchmark"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "railway occurrence prediction",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "rail accident severity dataset",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "train derailment prediction benchmark",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "railway occurrence prediction",
+          "hits": 167498,
+          "top": [
+            "Fig. 3 in The ammonoids from the Gattendorfia Limestone of Oberr\u00f6dinghausen (Early Carboniferous; Rhenish Mountains, Germany)",
+            "Quantifying the impact of risk factors at railway level crossings using accident prediction models: A cross-country study",
+            "The electromagnetic interferance caused by high voltage power lines along the electrical railway equipment",
+            "A Comprehensive Review of Automated Gate Control, Airbag Systems and Smoke Detectors in Enhancing Railway Safety",
+            "Fig. 4 in The ammonoids from the Gattendorfia Limestone of Oberr\u00f6dinghausen (Early Carboniferous; Rhenish Mountains, Germany)"
+          ]
+        },
+        {
+          "query": "rail accident severity dataset",
+          "hits": 331722,
+          "top": [
+            "Analyses on three-wheeled vehicles in relation to congestion: A case study  in Bishoftu City, Ethiopia",
+            "ROAD ACCIDENT SEVERITY PREDICTION USING MACHINE LEARNING",
+            "Real-Time AI-Driven Accident Detection and Emergency Alert Architecture for Smart City Infrastructure",
+            "Data for Accident Severity Prediction Modelling for Indian Highways Case Study",
+            "Graded Dashcam Events (GraDE)"
+          ]
+        },
+        {
+          "query": "train derailment prediction benchmark",
+          "hits": 140511,
+          "top": [
+            "East Palestine Train Derailment Health Tracking Study: Survey Summer/Fall 2024",
+            "East Palestine Train Derailment Health Tracking Study: Survey Spring/Summer 2025",
+            "East Palestine Train Derailment Health Tracking Study: Focus Groups",
+            "REFLECTING ON THE DERAILMENT IN OHIO, USA",
+            "An Assessment of the Ocular Toxicity of Two Major Sources of Environmental Exposure"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "railway occurrence prediction",
+          "hits": 5,
+          "top": [
+            "Unveiling connectivity patterns of railway timetables through complex network theory and Infomap clustering",
+            "Railway Operation Rescheduling System via Dynamic Simulation and Reinforcement Learning",
+            "Neural Network Approach to Railway Stand Lateral Skew Control",
+            "Integrated Maintenance: analysis and perspective of innovation in railway sector",
+            "Integrated Digital Management System for Railway Workshops: A Modular Multi-Workflow Architecture for Machine, Permit, C"
+          ]
+        },
+        {
+          "query": "rail accident severity dataset",
+          "hits": 5,
+          "top": [
+            "Markov switching negative binomial models: an application to vehicle accident frequencies",
+            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+            "Empirical assessment of the impact of highway design exceptions on the frequency and severity of vehicle accidents",
+            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+            "ROAR: Robust Accident Recognition and Anticipation for Autonomous Driving"
+          ]
+        },
+        {
+          "query": "train derailment prediction benchmark",
+          "hits": 5,
+          "top": [
+            "MLIM: Vision-and-Language Model Pre-training with Masked Language and Image Modeling",
+            "Conversation Modeling to Predict Derailment",
+            "Understanding and Predicting Derailment in Toxic Conversations on GitHub",
+            "Conversation Derailment Forecasting with Graph Convolutional Networks",
+            "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'railway occurrence prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'rail accident severity dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'train derailment prediction benchmark': 0 hit(s) - nothing notable\n- zenodo_records / 'railway occurrence prediction': 167498 hit(s) - Fig. 3 in The ammonoids from the Gattendorfia Limestone of Oberr\u00f6dinghausen (Early Carboniferous; Rhenish Mountains, Germany), Quantifying the impact of risk factors at railway level crossings using accident prediction models: A cross-country study, The electromagnetic interferance caused by high voltage power lines along the electrical railway equipment, A Comprehensive Review of Automated Gate Control, Airbag Systems and Smoke Detectors in Enhancing Railway Safety, Fig. 4 in The ammonoids from the Gattendorfia Limestone of Oberr\u00f6dinghausen (Early Carboniferous; Rhenish Mountains, Germany)\n- zenodo_records / 'rail accident severity dataset': 331722 hit(s) - Analyses on three-wheeled vehicles in relation to congestion: A case study  in Bishoftu City, Ethiopia, ROAD ACCIDENT SEVERITY PREDICTION USING MACHINE LEARNING, Real-Time AI-Driven Accident Detection and Emergency Alert Architecture for Smart City Infrastructure, Data for Accident Severity Prediction Modelling for Indian Highways Case Study, Graded Dashcam Events (GraDE)\n- zenodo_records / 'train derailment prediction benchmark': 140511 hit(s) - East Palestine Train Derailment Health Tracking Study: Survey Summer/Fall 2024, East Palestine Train Derailment Health Tracking Study: Survey Spring/Summer 2025, East Palestine Train Derailment Health Tracking Study: Focus Groups, REFLECTING ON THE DERAILMENT IN OHIO, USA, An Assessment of the Ocular Toxicity of Two Major Sources of Environmental Exposure\n- arxiv_preprints / 'railway occurrence prediction': 5 hit(s) - Unveiling connectivity patterns of railway timetables through complex network theory and Infomap clustering, Railway Operation Rescheduling System via Dynamic Simulation and Reinforcement Learning, Neural Network Approach to Railway Stand Lateral Skew Control, Integrated Maintenance: analysis and perspective of innovation in railway sector, Integrated Digital Management System for Railway Workshops: A Modular Multi-Workflow Architecture for Machine, Permit, C\n- arxiv_preprints / 'rail accident severity dataset': 5 hit(s) - Markov switching negative binomial models: an application to vehicle accident frequencies, The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, Empirical assessment of the impact of highway design exceptions on the frequency and severity of vehicle accidents, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, ROAR: Robust Accident Recognition and Anticipation for Autonomous Driving\n- arxiv_preprints / 'train derailment prediction benchmark': 5 hit(s) - MLIM: Vision-and-Language Model Pre-training with Masked Language and Image Modeling, Conversation Modeling to Predict Derailment, Understanding and Predicting Derailment in Toxic Conversations on GitHub, Conversation Derailment Forecasting with Graph Convolutional Networks, Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
+    "prior_art": [
+      "Rana, Sattari, Lefsrud, Hendry (2024), Machine Learning Approach to Enhance Highway Railroad Grade Crossing Safety, doi:10.1177/03611981231212162",
+      "NRC/CNR: Development of a daily updated train derailment impact map (uses RODS 2006-2019, historical counts only)"
+    ],
+    "theirs": "TSB publishes the raw RODS occurrence tables plus descriptive monthly/annual statistics; prior analyses use RODS for a derailment risk-mapping tool (NRC) and a grade-crossing casualty-severity ML study (Rana et al. 2024) - research papers on subsets, not shipped datasets or benchmarks",
+    "ours": "Occurrence-level casualty prediction for Canadian rail occurrences from pre-onset context only (time, place, railway, activity): monthly-republished 1983-2026 panel, temporal splits, context-only features with TSB's outcome-coded accident-type taxonomy and all investigation fields excluded by construction",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
+}

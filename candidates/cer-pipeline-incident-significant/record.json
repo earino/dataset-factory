@@ -1,0 +1,51 @@
+{
+  "id": "cer-pipeline-incident-significant",
+  "status": "parked",
+  "verdict": "park",
+  "jurisdiction": {
+    "country": "CA",
+    "region": "North America",
+    "publisher": "Canada Energy Regulator (CER / REC), Calgary",
+    "recorded_at": "2026-10-21"
+  },
+  "created_at": "2026-10-21T08:09:17.538382+00:00",
+  "domain": "energy infrastructure safety - regulatory significance classification of reported pipeline incidents (Canada, federal)",
+  "prediction_question": "Hypothetical task this source would support (parked, not taken to construction): when an incident is reported to the CER on a federally-regulated pipeline or facility, will the CER ultimately classify it 'Significant'? Honest report-time features: reported date, company, province, nearest populated centre, substance carried. The strongest columns (Incident Types, Release Type, Approximate Volume Released) are label-adjacent and would have to be excluded.",
+  "prediction_time": "Would be the incident's report to the CER (Reported Date). The 'Significant' classification is the CER's post-assessment determination, so the label genuinely post-dates the instant - the timing contract is the one clean thing about this source.",
+  "target_definition": "Would be binary: Significant = yes/no (data dictionary: 'Whether the incident is a significant incident, which is an acute event that results in: -death; -a serious injury (as defined in the OPR); -a fire or explosion that causes a pipeline or facility to be inoperative; -a LVP hydrocarbon release in excess of...' - i.e. mechanically derived from consequence fields that cannot ship as features).",
+  "sources": [
+    {
+      "name": "CER Pipeline Incident Data (open.canada.ca package 7dffedc4 / fd17f08f)",
+      "url": "https://www.cer-rec.gc.ca/open/incident/pipeline-incidents-data.csv",
+      "api": "anonymous CSV, no key; 16 columns: Incident Number, Incident Types, Reported Date, Nearest Populated Centre, Province, Company, Status, Latitude, Longitude, Approximate Volume Released (m3), Substance, Release Type, Significant, Year, What Happened, Why It Happened. Companion comprehensive file pipeline-incidents-comprehensive-data.csv (2,451,628 bytes) adds Occurrence/Discovered Date and Time and detailed what/why; data dictionary pipeline-incidents-data-dictionary.csv (15,407 bytes, last-modified 2020-03-09).",
+      "license": "open.canada.ca package license_id=ca-ogl-lgo (Open Government Licence - Canada 2.0)",
+      "access": "measured 2026-10-21 (probe_download_measure.py): plain HTTP GET, anonymous, Range honored (HTTP 206); data.csv 580,376 bytes last-modified 2026-10-01, comprehensive 2,451,628 bytes last-modified 2026-10-01. Full 3.0 MB pulled to the coordinator for measurement (small enough)."
+    },
+    {
+      "name": "CER's own GitHub repository CER-REC/incidents-pipeliniers_pipeline-incidents",
+      "url": "https://github.com/CER-REC/incidents-pipeliniers_pipeline-incidents",
+      "api": "GitHub API, anonymous: 'A visualization of pipeline incident data from the National Energy Board' - a JS/webapp (babelrc, webpack, app/) for visualizing the incidents, NOT a machine-learning dataset, benchmark or scored task. Confirms the publisher ships raw CSVs + a viewer, nothing ML-ready.",
+      "license": "repository LICENSE_EN.md (publisher's own repo licence)",
+      "access": "measured 2026-10-21 via api.github.com (anonymous): HTTP 200, file listing read back."
+    }
+  ],
+  "license_evidence": [
+    {
+      "note": "open.canada.ca CKAN package_show for both CER incident packages records license_id ca-ogl-lgo (Open Government Licence - Canada 2.0), measured 2026-10-21. Redistribution permitted with attribution ('Contains information licensed under the Open Government Licence - Canada'). Licence is NOT the blocker for this candidate.",
+      "url": "https://open.canada.ca/data/en/dataset/fd17f08f-f14d-433f-91df-c90a34e1e9a6"
+    }
+  ],
+  "construction_script": null,
+  "split_strategy": "Measured on the full file (2,034 rows, 2008-2026): rows/year 52-173; Significant=yes per year 6-51, both classes in every one of the 19 years; total positives 361 (17.75%). Windows would be e.g. train 2008-2019 (~1,235 rows, ~177 positives), eval 2020-2022 (~380, ~98), holdout 2023-2026 (~385, ~126) - the split contract is satisfiable. The blocker is below, not the splits.",
+  "measurements": {
+    "panel_2026_10_21": "probe_download_measure.py over pipeline-incidents-data.csv: 2,034 rows x 16 columns, years 2008-2026, Significant 361/2,034 = 17.75%; Status: Closed 2,002, Submitted 15, Initially Submitted 17; Incident Types distribution: 'Release of Substance' 810, 'Operation Beyond Design Limits' 499, 'Fire' 446, 'Serious Injury (as defined in the OPR)' 125, 'Adverse Environmental Effects' 80, 'Fatality' 7 (combinations rarer); Substance: 'Not Applicable' 1,188, 'Natural Gas - Sweet' 559, crude/propane/NGL etc; Release Type: 'Not Applicable' 1,188, Gas 673, Liquid 97. Volume released (m3): n=594 numeric, median 19.3, >=1 m3: 479, >=10: 330, >=100: 233.",
+    "honest_feature_auc_measured": "In-sample single-categorical AUC vs Significant (levels with >=5 rows; measured, in-sample, no holdout - recorded to show the signal that survives the timing exclusion): Company 0.7295 (26 levels), Province 0.7015 (9), Substance 0.6585 (19), Year 0.6526 (19), Release Type 0.5294 (4). Label-adjacent Incident Types alone: 0.9143 - the strongest column is the one that cannot ship.",
+    "label_mechanics": "The data dictionary defines Significant mechanically from consequences (death; serious injury as defined in the OPR; fire/explosion rendering pipeline/facility inoperative; LVP hydrocarbon release above threshold) - i.e. the label is a deterministic function of consequence fields (Incident Types, volume) that are excluded as post-hoc/label-adjacent. A solver never sees the information the CER used.",
+    "cost_measured": "3.0 MB across 3 files in 6.5 s, anonymous, from the coordinator - trivially cheap access; monthly-ish update cadence implied by last-modified 2026-10-01."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "PARKED on task shape, not access or licence (both clean, measured): (1) the label is mechanically derived from consequence fields that cannot ship, so the honest report-time feature set collapses to company/province/substance/date, and the measured in-sample AUC of the best honest column (Company, 0.73) shows the task is mostly operator risk profiling; (2) only 2,034 rows and ~180 positives total across 19 years - thin for a scored eval; (3) it is the same 'predict the regulator's classification of a reported event' family as the existing hc-recalls-classification candidate, in the same jurisdiction, with weaker data. Prior art comparison: PHMSA's US pipeline-incident data (raw, Kaggle-visible) and CER's own viewer exist, but no public ML-ready pipeline-incident significance benchmark was found - so this is not a mirror verdict; it is a marginal-task park.",
+  "review": null,
+  "next_action": "Parked. Unpark only if: (1) a formulation is wanted that ships the company's initial notification free text with verified timing (the comprehensive file's 'Detailed what happened' is likely post-investigation - timing would need evidence), or (2) the operator explicitly wants a small regulator-classification task despite the operator-profiling ceiling, or (3) CER's data is re-probed and the comprehensive file turns out to carry report-time fields that materially widen the honest feature set. Re-measure honest-feature AUC before any construction."
+}
