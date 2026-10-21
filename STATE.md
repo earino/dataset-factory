@@ -2,8 +2,9 @@
 
 Updated: 2026-10-21 10:31Z (worker watcher: the three nhs-ae packaging jobs all green and closed -
 nhsae-publish-001 GitHub destination transfer, nhsae-hf-001 Hub upload, nhsae-hf-002 loading check;
-this run recorded the packaged state, pushed the commits that had piled up unpushed since 08:13Z,
-checked CI and wrote the handled markers).
+this run recorded the packaged state, pushed the recording commit and checked CI green; all earlier
+commits of the arc were already on the remote - the local remote-tracking ref was stale, pushes from
+this clone go through an explicit credential URL that does not update it).
 who-flunet-activity-exceedance is PUBLISHED (2026-10-21 10:24Z, the operator's "ship it"): public on
 GitHub and Hugging Face with an honest unresolved-licence label (no open licence asserted over the
 source rows, WHO data-compilation clause quotes recorded), measured results and limitations on the
@@ -55,10 +56,14 @@ success). Follow-up in the record: written WHO permission would replace the risk
 
 **Two sessions died in flight; this watcher run closed the loop.** The research session (started
 10:00Z) exited 1 at 10:19:14Z mid-ceremony; its continuation completed the platform work, the
-flunet record, STATE.md and commit f3369ba (10:25:05Z) but died before the nhs-ae record, the
-dashboard rebuild (10:25:24Z, left uncommitted) and any push - five commits sat unpushed since
-08:13Z. This watcher run: verified both nhs-ae destinations read-only, wrote the packaged record,
-rebuilt the dashboard, committed, pushed everything and checked CI for the exact commit. Worker
+flunet record, STATE.md and commit f3369ba (10:25:05Z, pushed - CI Local checks green at
+10:25:08Z) but died before the nhs-ae record and the dashboard rebuild (10:25:24Z, left
+uncommitted). This watcher run: verified both nhs-ae destinations read-only, wrote the packaged
+record, rebuilt the dashboard, committed b6217ad, pushed it and confirmed CI Local checks green
+(run 39585437173; the website-preview workflow is paths-filtered and did not trigger - no website
+files changed). A first reading of "five commits unpushed since 08:13Z" was a stale local
+remote-tracking ref (pushes from this clone go through an explicit credential URL that does not
+update it); the Actions API showed every arc commit already pushed and green. Worker
 spend this month: ~6.1 EUR of the 20 EUR allowance (the three packaging jobs add 0.12 EUR in
 reservations, each under 3.5 minutes of runtime).
 
