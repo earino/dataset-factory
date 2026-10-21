@@ -1,0 +1,64 @@
+{
+  "id": "kenya-opendata-knbs",
+  "status": "parked",
+  "verdict": "park",
+  "created_at": "2026-10-21T16:25:15.976345+00:00",
+  "domain": "national open-data infrastructure / statistical publishing (country portal record, Kenya)",
+  "prediction_question": "No task carried to formulation this session: this is a country-infrastructure record for the Africa tick. Kenya's statistical publishing currently offers no measured anonymous bulk/API channel whose licence and timing could carry a prediction task, so no concrete prediction question was opened. Candidate task shapes that would have been probed with a live channel: KNBS monthly/quarterly economic indicator series (CPI components, trade, tourism arrivals) at national or county level.",
+  "prediction_time": "n/a while parked. KNBS does publish on a monthly/quarterly release calendar (statistical releases are announced on knbs.or.ke), so a publication-instant formulation would be stateable IF an anonymous machine-readable channel existed.",
+  "target_definition": "n/a while parked. No machine-readable label source was measurable this session (see measurements).",
+  "sources": [
+    {
+      "name": "Kenya Open Data (national portal) - open.data.go.ke",
+      "url": "https://open.data.go.ke",
+      "api": "none measurable: the hostname no longer resolves (NXDOMAIN, measured 2026-10-21 from the coordinator: 'Name or service not known')",
+      "license": "unreadable - the portal is gone from DNS, so no licence statement can be read; historically CKAN-based with per-dataset licences",
+      "access": "Dead: DNS resolution fails. The Kenya Open Data portal that carried government datasets since 2011 is not reachable."
+    },
+    {
+      "name": "Kenya National Bureau of Statistics (KNBS) - knbs.or.ke",
+      "url": "https://www.knbs.or.ke/ (WordPress site), https://www.knbs.or.ke/data-portals/ (portal link page)",
+      "api": "none found on the site probed; the data-portals page carries no direct data files (measured: zero .pdf/.xlsx/.csv/.zip links) and links out to third-party dashboards",
+      "license": "'Copyright 2026 (c) Kenya National Bureau of Statistics | All Rights Reserved' - measured in the site footer; all-rights-reserved with no open-data licence found",
+      "access": "Measured 2026-10-21: knbs.or.ke serves an incomplete TLS chain ('unable to get local issuer certificate') - probes needed verification disabled (same consumer-side defect class as saps.gov.za). Site is otherwise reachable (200). /data-portal/ redirects to /data-portals/ (200); /download-centre/ is 404."
+    },
+    {
+      "name": "Third-party channels KNBS points to: kenya.opendataforafrica.org (Knoema) and kenya-sdg.github.io",
+      "url": "https://kenya.opendataforafrica.org/, https://kenya-sdg.github.io/",
+      "api": "kenya.opendataforafrica.org: Cloudflare challenge (403 'Just a moment...', 5,620 B) to headless clients - not anonymously readable; kenya-sdg.github.io: static dashboard (22,502 B HTML), a visualisation, not a bulk source",
+      "license": "Both are third parties: a Knoema-hosted aggregator (platform terms, not the publisher's licence, and the schema is the aggregator's guess) and a GitHub Pages SDG dashboard. Neither gives a publisher licence for derived-row redistribution.",
+      "access": "Measured 2026-10-21. An aggregator is not an open-licence substitute for the publisher (per the standing rule: the aggregator's licence statement may not be the publisher's)."
+    }
+  ],
+  "license_evidence": [
+    "Measured 2026-10-21: knbs.or.ke footer - 'Copyright 2026 (c) Kenya National Bureau of Statistics | All Rights Reserved'. No open-data licence, no terms-of-use page found on the site probed.",
+    "Measured 2026-10-21: the only 'data portal' the NSO itself links (kenya.opendataforafrica.org) answers a Cloudflare challenge to anonymous clients, and is a commercial-platform mirror - its terms are not KNBS's, and the publisher's own licence remains unreadable.",
+    "The national open-data portal (open.data.go.ke), which historically carried per-dataset licences, no longer resolves, so there is no portal-level licence to read. Per the standing rule, unstated/unreadable terms are not assumed: the licence question is escalated, not decided."
+  ],
+  "construction_script": null,
+  "split_strategy": "n/a - no data channel to build on (measured, not assumed).",
+  "measurements": {
+    "portal_probe_2026_10_21": "open.data.go.ke: NXDOMAIN ('Name or service not known'), both https attempts. Same failure class as data.gov.za (ZA) this session.",
+    "knbs_probe_2026_10_21": "https://www.knbs.or.ke/: 200 (294,945 B) with TLS verification disabled; strict TLS fails 'unable to get local issuer certificate'. /data-portals/: 200 (149,772 B); /data-portal/ redirects there; /download-centre/: 404. Zero data-file links (.pdf/.xlsx/.csv/.zip) on the data-portals page (grep measured). Footer: 'Copyright 2026 (c) Kenya National Bureau of Statistics | All Rights Reserved'.",
+    "third_party_probe_2026_10_21": "kenya.opendataforafrica.org: HTTP 403 Cloudflare challenge page (5,620 B, 'Just a moment...'). kenya-sdg.github.io: 200 (22,502 B static dashboard HTML).",
+    "cost_note_2026_10_21": "Six probe requests total, all cheap; the finding is about absence of a channel, not about cost."
+  },
+  "novelty_check": {
+    "verdict": "not run - access and licence vetoes precede novelty work; no candidate dataset reached formulation",
+    "queries": [],
+    "ours": "n/a while parked",
+    "theirs": "n/a while parked",
+    "prior_art": "n/a while parked"
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "PARK (infrastructure, not a task defect). Three stacked, measured blockers, in order of weight: (1) the national open-data portal open.data.go.ke no longer resolves (NXDOMAIN), so the historical per-dataset licence channel is gone; (2) the NSO's own site is all-rights-reserved with no machine-readable data channel - its data-portals page links out to third parties instead of hosting data; (3) the third-party channels it links are a Cloudflare-walled commercial aggregator (whose terms would not be the publisher's licence anyway) and a static SDG dashboard. Nothing here disqualifies Kenyan statistical products as a task - the publishing machinery just cannot currently carry one. Recorded as an honest empty result for the Africa tick's Kenya probe, with the probes that produced it.",
+  "review": null,
+  "next_action": "Unpark question (exact): does any KNBS-published channel offer anonymous bulk/API access with stated licence terms? Concretely, probe in this order: (a) a KNBS microdata/NADA catalogue (IHSN family) - note NADA studies usually require application rather than open bulk, so per-dataset licence terms must be readable; (b) whether Kenya Open Data has a successor domain (search for the portal's successor, then CKAN package_show to read per-dataset licences); (c) sector regulators with their own publishing (Central Bank of Kenya, KRA, NTSA) for a task-shaped series with documented release dates. If all three fail again, the Kenya verdict stays parked and the next Africa tick moves on.",
+  "jurisdiction": {
+    "country": "KE",
+    "region": "Africa",
+    "publisher": "Kenya National Bureau of Statistics (KNBS); defunct national portal open.data.go.ke",
+    "recorded_at": "2026-10-21"
+  }
+}

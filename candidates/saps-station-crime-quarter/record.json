@@ -1,0 +1,50 @@
+{
+  "id": "saps-station-crime-quarter",
+  "status": "parked",
+  "verdict": "park",
+  "created_at": "2026-10-21T16:22:32.260208+00:00",
+  "domain": "public safety / recorded crime statistics",
+  "prediction_question": "Hypothetical task this source would support (not taken forward this session, licence-blocked): for a SAPS police station, predict a change-shaped outcome on its recorded-crime counts for the next quarter - e.g. whether a station-category count crosses a threshold for the first time - rather than the next quarter's level, because station-level counts are strongly persistent.",
+  "prediction_time": "Would be the quarterly crime-statistics release (SAPS publishes per financial-year quarter with a pre-release calendar; 'Pre-Release-Crime-Statistics-Release-Calendar-For-2023-2024.pdf' and a 'Postponement-of-crime-statistics-release-for-the-first-quarter-letter.pdf' are on the downloads page - a release calendar exists but exact per-quarter dates were not pinned because the licence veto came first).",
+  "target_definition": "Would be mechanical: the station x crime-category count for quarter Q from SAPS's own quarterly workbook (columns Station, District, Province, Crime_Category, Code, plus national/provincial contribution and count-diff placement columns), with the next quarter's counts excluded from shipped features. Not built.",
+  "sources": [
+    {
+      "name": "South African Police Service (SAPS) - crime statistics downloads",
+      "url": "https://www.saps.gov.za/services/crimestats.php (current releases), https://www.saps.gov.za/services/older_crimestats.php (2019/20 onwards)",
+      "api": "Direct XLSX/XLSM downloads under /services/downloads/<year>/..., e.g. 2025-2026_-_2nd_Quarter_WEB.xlsx (11,554,369 B, PK zip verified); annual and per-quarter workbooks, FY2023-24 through FY2026-27 Q1 observed on the pages",
+      "license": "https://www.saps.gov.za/copyright.php: 'All material on this site is subject to copyright.' - affirmative copyright, no reuse/redistribution grant anywhere on the site; disclaimer.php adds the site's 'sole purpose ... is to provide information', with no data-use terms",
+      "access": "Measured 2026-10-21: anonymous HTTP works, but www.saps.gov.za presents an incomplete TLS certificate chain ('unable to get local issuer certificate') - every probe this session needed certificate verification disabled (recorded as a consumer-side property; a browser fetches the missing intermediate via AIA). Relative download hrefs resolve under /services/downloads/."
+    }
+  ],
+  "license_evidence": [
+    "Measured 2026-10-21 at https://www.saps.gov.za/copyright.php: 'All material on this site is subject to copyright.' No open licence, no reuse or redistribution grant, no terms-of-use page found (copyright.php and disclaimer.php both read in full).",
+    "Measured 2026-10-21 at https://www.saps.gov.za/disclaimer.php: 'The sole purpose of this Web site is to provide information to anyone who enters the South African Police Service Web site' - informational purpose only; no permission to adapt, extract or redistribute derived tables.",
+    "Per the standing rule this is a licence question escalated as a decision, not an assumed permission: derived station-quarter tables may not be published without written SAPS confirmation. Until then the candidate is parked."
+  ],
+  "construction_script": null,
+  "split_strategy": "Not built. Measured shape that a construction would use: quarterly workbooks from 2019/20 to 2026/27 Q1 (older_crimestats.php lists 2019/20 through 2024/25; crimestats.php lists 2023-24 Q1 onwards plus 2025-26 Q1-Q4 and 2026-27 Q1), ~1,140 stations x ~17 crime categories per quarter (2025-26 Q2 workbook: 8 sheets, 162,533 shared strings, headers Station/District/Province/Crime_Category/Code/National+Provincial contribution and count-diff placement).",
+  "measurements": {
+    "workbook_2026_10_21": "downloads/2025/2025-2026_-_2nd_Quarter_WEB.xlsx: 11,554,369 B, PK-magic verified, 36 zip entries, 8 worksheets, 162,533 shared strings. Header row measured: Station, District, Province, Crime_Category, Code, 'National contribution placement', 'National count diff placement', 'Provincial contribution placement', 'Provincial count diff placement'. Categories observed in sharedStrings: Murder, Attempted murder, Culpable homicide, Robbery with aggravating circumstances, Common robbery, Public violence, Rape, Crimen injuria, Neglect and ill-treatment of children, Kidnapping, Abduction, Assault GBH, Common assault, Burglary at non-residential/residential premises, Theft of motor vehicle and motorcycle, Theft out of motor vehicle, All theft not mentioned elsewhere, Robbery of cash in transit.",
+    "series_coverage_2026_10_21": "Quarterly per-station workbooks observed on the two SAPS pages cover FY2019/20 through FY2026-27 Q1; annual workbooks for FY2023-24 and earlier annual report PDFs also present. The pre-2019/20 station-level series (2005/06 onwards) was historically distributed via the national open-data portal data.gov.za, which currently does not resolve (see za-municipal-audit-opinion notes).",
+    "access_probes_2026_10_21": "www.saps.gov.za: HTTP 200 with verification disabled; strict TLS fails with 'unable to get local issuer certificate' (incomplete chain). Deep link https://www.saps.gov.za/downloads/2025/... 404s; the correct base is /services/downloads/ (relative hrefs on /services/crimestats.php).",
+    "cost_note_2026_10_21": "One quarter workbook = 11.55 MB; the full quarterly series (~28 quarters) is roughly 300 MB across ~28 requests - cheap, but irrelevant until the licence question is settled."
+  },
+  "novelty_check": {
+    "verdict": "not run - licence veto precedes novelty work",
+    "queries": [],
+    "ours": "n/a while parked",
+    "theirs": "Unverified note for whoever unparks: SAPS annual crime statistics have circulated on Kaggle and academic repositories for years (e.g. 2005-2016 era extracts); any unpark must run the full check-novelty.py search positioned against those mirrors, and against whether the bench needs a crime-count task at all.",
+    "prior_art": "not measured this session"
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "PARK (licence, plus task-shape risk recorded). (1) Licence is the blocker: SAPS asserts copyright on all site material with no reuse or redistribution terms anywhere on the site - derived station-quarter tables may not be published without written permission, so per the standing rule the question is escalated as a decision rather than assumed. (2) Task-shape risk recorded second: station-quarterly recorded-crime counts are strongly persistent, so a level-predicting task would likely be beaten by the naive no-change rule; any unpark needs a change/onset formulation designed in from the first probe. (3) data.gov.za (the portal that historically carried these datasets under an open-data banner) does not resolve from DNS - there is no portal-level licence to fall back on. Access itself is fine: anonymous, quarterly, station-level, ~11.5 MB/quarter.",
+  "review": null,
+  "next_action": "Unpark question (exact): written licence confirmation from SAPS (via the saps.gov.za contact/feedback channel) permitting redistribution of derived station x quarter x crime-category tables, including whether attribution wording suffices. Only then: pin observed per-quarter release dates from the pre-release calendar PDFs, run check-novelty.py positioned against existing SAPS-derived Kaggle/academic mirrors, and design the change/onset label with the persistence comparison built in.",
+  "jurisdiction": {
+    "country": "ZA",
+    "region": "Africa",
+    "publisher": "South African Police Service (SAPS), Republic of South Africa",
+    "recorded_at": "2026-10-21"
+  }
+}

@@ -1,0 +1,165 @@
+{
+  "id": "za-municipal-audit-opinion",
+  "status": "ready",
+  "verdict": "go",
+  "created_at": "2026-10-21T16:15:59.614999+00:00",
+  "domain": "public-sector accountability / municipal audit outcome prediction",
+  "prediction_question": "Primary (onset) formulation: for a South African municipality whose most recently RELEASED audit opinion (financial year ending 30 June, year_end <= k-1) was clean-ish (unqualified, with or without emphasis of matter), will its financial year k audit outcome be qualified-or-worse? Secondary (level) formulation, only reported beside the persistence baseline: will any municipality receive a qualified-or-worse opinion for FY k? Both are stated at the statutory annual-financial-statements submission instant.",
+  "prediction_time": "31 August of year k: the statutory deadline for a municipality to submit its FY k annual financial statements to the Auditor-General (AFS due three months after the 30 June year end; exact MFMA section wording to be verified at construction). At that instant the FY k audit has not been performed, so the label cannot exist. Knowable features: FY k's as-submitted (pre-audit) figures, budget phases already tabled (original/tabled budgets for FY k and FY k+1), audited actuals and audit opinions for strictly earlier years (observed general-report tabling dates: 27 Aug 2024 for FY2022-23 and 24 Jun 2026 for FY2024-25, i.e. 12-14 months after year end, so opinions are conservatively treated as known only through year_end k-2), plus static municipality demographics. Everything post-instant (FY k audit results, later tabled budgets, IBY/ITY forecast vintages) is excluded.",
+  "target_definition": "Binary label from the audit_opinions cube ('Code' column, bulk CSV audit_opinion_facts on munimoney-media S3): 1 = qualified, disclaimer or adverse; 0 = unqualified or unqualified_emphasis_of_matter; 'outstanding' rows (audit not completed) are excluded, not imputed. Label source column is never shipped as a feature: the label CSV is used only to build y; features come from the separate incexp/cflow/capital/bsheet/grants/uifwexp/repmaint/aged-debtor/aged-creditor cubes and the demographics API. Measured per-year positive rates (qualified-or-worse, outstanding excluded): 35.0%-56.5% across all 14 label years, never degenerate. Measured persistence: 83.88% year-over-year agreement (2018-2020), so the level label is persistence-shaped and the primary task is the deterioration-onset conditioning; onset base rate measured 69/381 = 18.1% of clean-prev municipality-years in 2018-2020.",
+  "sources": [
+    {
+      "name": "Municipal Finance Data - National Treasury of South Africa (cubes + bulk downloads)",
+      "url": "https://municipaldata.treasury.gov.za/ (portal), https://municipaldata.treasury.gov.za/docs (cube documentation + bulk list)",
+      "api": "Anonymous bulk CSV/XLSX per cube per year on https://munimoney-media.s3.eu-west-1.amazonaws.com/munimoney-media/media/bulk_downloads/<cube>/..., each with index.json carrying md5/sha1/file sizes; per-cube explorer at /table/<cube>; data regenerated 2026-07-30/2026-08-05 (site banner: 'Figures have been updated with the latest 2026 Q2 data')",
+      "license": "Terms of use at https://municipaldata.treasury.gov.za/terms: free download, copy, publish, distribute, transmit, adapt and extract, commercial and non-commercial, at no cost; obligation to acknowledge the source and date of publication; no endorsement/trademark grant",
+      "access": "Measured 2026-10-21 from the coordinator, all anonymous: portal 200, docs 200, terms 200, S3 bulk GETs 200. Label cube audit_opinion_facts CSV = 733,716 B / 3,689 rows / 292 municipalities (incl. disestablished) / 14 label years 2011-2024. Feature cube incexp_facts_v2 year file (year_end 2025) = 76,734,977 B / 396,080 rows / 257 municipalities, amount types AUDA 84,696, PAUD 87,903, ORGB 37,873, TABB 36,849, IBY1 37,553, IBY2 37,751, ITY1 36,628, ITY2 36,827, all length='year'. cflow_facts_v2: closed years collapse to annual rows (2025 file: only length='year'), live year carries months 1-9 (2026 file) - the annual task does not depend on quarterly detail."
+    },
+    {
+      "name": "Municipal Money - National Treasury (per-municipality profiles and demographics API)",
+      "url": "https://municipalmoney.gov.za/",
+      "api": "https://municipalmoney.gov.za/api/ (index), /api/municipality-profile/ (count 292, one-shot JSON), /api/geography/geography/?search=... (demographics, demarcation, category, population)",
+      "license": "Same National Treasury terms family as municipaldata (read at construction before shipping any derived demographic fields)",
+      "access": "Measured 2026-10-21: api index 200, municipality-profile 200 (6,971,176 B full dump), geography search 200 (188,507 B sample)"
+    },
+    {
+      "name": "Auditor-General of South Africa (AGSA) - origin of the label and its release dates",
+      "url": "https://www.agsa.co.za/reports/mfma-reports; general reports at mfma-2023.agsa.co.za (FY2022-23), mfma-2024.agsareports.co.za (FY2023-24), mfma-2025.agsa.co.za (FY2024-25)",
+      "api": "none needed; the general-report tabling dates are the observed label-release dates for the timing block",
+      "license": "AGSA report PDFs are not redistributed by us; only National Treasury cube data ships. AGSA site content referenced for release-date evidence only",
+      "access": "Measured 2026-10-21 via search: 'Auditor-General Tsakani Maluleke tabled the Consolidated Report on Local Government Audit Outcomes 2024-25 on 24 June 2026' (agsa.co.za/reports/mfma-reports); FY2022-23 media release dated 27 August 2024 (mfma-2023.agsa.co.za/pages/media); FY2023-24 inclusion cut-off 31 January 2025 (mfma-2024.agsareports.co.za/pages/overview). The audit_opinions cube carries per-row AGSA report URLs (mfma.treasury.gov.za Documents; one sampled URL redirects to a directory listing, recorded)."
+    }
+  ],
+  "license_evidence": [
+    "Measured 2026-10-21 at https://municipaldata.treasury.gov.za/terms (National Treasury Terms of Use): 'Subject to certain limitations summarized below, you are free to use the data on this website and published through our APIs (Application Programming Interface) freely and flexibly, for both commercial and non-commercial purposes, at no cost.' You MAY: 'Download, copy, publish, distribute and transmit the data / Adapt and extract the data'. You MAY NOT: 'Use the data in any form without acknowledging the source of the data and the date of publication'. Redistribution of derived rows is therefore permitted with attribution of source and publication date; no share-alike, no non-commercial restriction.",
+    "The terms page also states NT 'will not make claims to any intellectual property arising from applications or analysis of the data'; trademarks/logos stay NT property and no endorsement may be implied - our card must attribute National Treasury and the publication date, label the dataset as derived, and avoid NT marks.",
+    "Per-row AGSA audit report URLs point at mfma.treasury.gov.za (AGSA-authored PDFs). We do not redistribute those PDFs; the label values are Treasury's cube data."
+  ],
+  "construction_script": null,
+  "split_strategy": "Temporal, by label year (year_end), computed from the actual audit_opinion_facts CSV (command: python3 candidates/za-municipal-audit-opinion/probe_label_stats.py <audit_opinions.csv>, scratch kept this session): train 2011-2017 = 1,863 rows / 878 positives (47.13%); eval 2018-2020 = 738 rows / 376 positives (50.95%); holdout 2021-2024 = 982 rows / 415 positives (42.26%). Both classes present in every one of the 14 label years (measured per-year rates 35.0%-56.5%). Clustered positives: audit outcomes correlate within an audit cycle/year, so the independence scale is ~14 label years, not 3,689 rows - confidence intervals must be clustered by year and the onset-conditioned variant recomputed at construction. Municipalities are repeated entities across years: features may include each municipality's own history, and the runner's id_columns handle the municipality code; no cross-split entity leakage arises because splits are by time, but the descriptor must declare expected duplicate ids.",
+  "measurements": {
+    "label_panel_2026_10_21": "audit_opinion_facts_2026-07-30_11-42-36.csv: 733,716 B, 3,688 data rows, 292 demarcation codes (incl. disestablished), 14 label years 2011-2024. Rows per year: 2011:277 2012:278 2013:278 2014:278 2015:278 2016:243 2017:257 2018:257 2019:257 2020:257 2021:257 2022:257 2023:257 2024:257. Opinion vocabulary and counts (all years): unqualified_emphasis_of_matter 1472, qualified 1066, disclaimer 522, unqualified 442, outstanding 105, adverse 81. FY2024 mix: qualified 90, uEoM 99, unqualified 41, disclaimer 11, outstanding 10, adverse 6.",
+    "binary_rates_2026_10_21": "Qualified-or-worse rate per year (outstanding excluded, same command): 2011 53.09%, 2012 54.86%, 2013 56.47%, 2014 46.40%, 2015 40.43%, 2016 34.98%, 2017 42.35%, 2018 51.38%, 2019 51.53%, 2020 50.00%, 2021 39.91%, 2022 43.92%, 2023 41.70%, 2024 43.32%.",
+    "persistence_2026_10_21": "Last-opinion persistence accuracy on eval years 2018-2020: 619/738 = 83.88%; transitions prev->next: clean->bad 69, bad->clean 50. Onset (clean-prev) base rate in eval window: 69/381 = 18.1%.",
+    "feature_cube_2026_10_21": "incexp_facts_v2 year_end 2025 file: 76,734,977 B, 396,080 rows, 257 municipalities, 17 columns (demarcation, name, function code/label, category, subcategory, mSCOA item code/label, position, return form structure, composition, year end, length, period, amount type code/label, amount); amount types AUDA/PAUD/ORGB/TABB/IBY1/IBY2/ITY1/ITY2 as counted above; all rows length='year'. Function dimension sample: 1110 Mayor and Council (Municipal governance and administration / Executive and council); item sample: 1600 Operational Revenue, 3100 Employee related costs. incexp_facts_v2 'All' file = 834,044,751 B (would be a worker-side fetch); per-year files 2018: 12,134,397 B ... 2025: 76,734,977 B; cflow_facts_v2 'All' = 25,119,450 B.",
+    "release_dates_2026_10_21": "AGSA general-report tabling (observed): FY2022-23 -> media release 27 Aug 2024 (14 months after the 30 June 2023 year end); FY2024-25 -> tabled 24 June 2026 (12 months after 30 June 2025); FY2023-24 -> inclusion cut-off 31 Jan 2025, exact tabling date still to pin at construction. The cube regenerated 2026-07-30 does not yet carry year_end 2025 opinions (measured: max year_end in file = 2024) even though the FY2024-25 report was tabled 24 June 2026 - Treasury ingestion lags tabling; construction must snapshot which label years the pinned artifact carries.",
+    "extraction_cost_measured_2026_10_21": "Coordinator probes: 8 S3/portal GETs totalling ~82 MB (audit_opinions 0.73 MB; incexp 2025 76.7 MB; cflow 2025+2026 4.87 MB; portal/docs/terms HTML 0.2 MB), wall clock ~90 s of the probe script. Construction estimate (labelled estimate): all needed cubes are per-year bulk files listed in each cube's index.json with checksums; ~20-30 requests, 0.3-1.0 GB total, minutes on a worker - incexp 'All' (834 MB) is the largest single file and can be replaced by per-year fetches."
+  },
+  "novelty_check": {
+    "checked_at": "2026-10-21T16:19:48+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "municipal audit opinion prediction",
+      "South Africa municipalities audit outcomes machine learning",
+      "local government audit outcomes dataset"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "municipal audit opinion prediction",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "South Africa municipalities audit outcomes machine learning",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "local government audit outcomes dataset",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "municipal audit opinion prediction",
+          "hits": 157611,
+          "top": [
+            "Audit Opinion Prediction Using the Decision Tree Algorithm",
+            "COOPERATION BETWEEN LAW ENFORCEMENT AGENCIES AND CIVIL SOCIETY INSTITUTIONS: FOREIGN EXPERIENCE",
+            "Audit Opinion Score Dataset",
+            "Pengaruh Debt Default, Kualitas Audit, Opini Audit, dan Pertumbuhan terhadap Opini Going Concern",
+            "The Influence of Solvability, Profitability, and Prior Audit Opinion on Going concern Audit Opinion"
+          ]
+        },
+        {
+          "query": "South Africa municipalities audit outcomes machine learning",
+          "hits": 849331,
+          "top": [
+            "Time-Series Forecasting Model for Cost-Efficient Municipal Infrastructure Asset Management in South Africa",
+            "Waste Management Framework in Circular Economy Initiatives within South African Municipalities: A Methodological Approach",
+            "Waste Management Strategies in South African Municipalities within the Circular Economy Paradigm",
+            "Waste Management Strategies within the Circular Economy Framework in South African Municipalities: An Analysis",
+            "Waste Management and the Circular Economy in South African Municipalities: A Dataset"
+          ]
+        },
+        {
+          "query": "local government audit outcomes dataset",
+          "hits": 682466,
+          "top": [
+            "Decentralised Governance and Accountability: Local Government Audit and Oversight: Lessons from the COVID-19 Pandemic",
+            "The Effect of SKPD Complexity, Government Size, Budget Absorption, and Audit Opinion on Audit Delay in Central Java Province Government in 2017-2021",
+            "FAKTOR-FAKTOR YANG MEMPENGARUHI AUDIT DELAY PEMERINTAH PROVINSI DI PULAU SUMATERA",
+            "The Effect of Regional Original Income and Financial Performance on Compliance with Disclosure of Financial Information on the Website with Audit Opinion as Moderating",
+            "Open surface water gauging stations, Queensland"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "municipal audit opinion prediction",
+          "hits": 5,
+          "top": [
+            "Councils in Action: Automating the Curation of Municipal Governance Data for Research",
+            "What Must a Fairness Audit Report When Demographic Data Is Incomplete?",
+            "CLIPPER Beyond Shortlisting: Auditable Decision Support for Changing Municipal Micromobility Policies",
+            "Modeling Opinion Toroidal Polarization: Insights from Bounding Confidence Beyond, Distance Matters",
+            "Exposing Paid Opinion Manipulation Trolls"
+          ]
+        },
+        {
+          "query": "South Africa municipalities audit outcomes machine learning",
+          "hits": 5,
+          "top": [
+            "DOME: Recommendations for supervised machine learning validation in biology",
+            "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+            "Cross-cohort TB classification using clinical data gathered in Uganda and South Africa",
+            "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
+            "Active learning for data streams: a survey"
+          ]
+        },
+        {
+          "query": "local government audit outcomes dataset",
+          "hits": 5,
+          "top": [
+            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+            "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset",
+            "Digital Democracy: Episode IV -- A New Hope, How a Corporation for Public Software Could Transform Digital Engagement fo",
+            "What Must a Fairness Audit Report When Demographic Data Is Incomplete?"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'municipal audit opinion prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'South Africa municipalities audit outcomes machine learning': 0 hit(s) - nothing notable\n- huggingface_datasets / 'local government audit outcomes dataset': 0 hit(s) - nothing notable\n- zenodo_records / 'municipal audit opinion prediction': 157611 hit(s) - Audit Opinion Prediction Using the Decision Tree Algorithm, COOPERATION BETWEEN LAW ENFORCEMENT AGENCIES AND CIVIL SOCIETY INSTITUTIONS: FOREIGN EXPERIENCE, Audit Opinion Score Dataset, Pengaruh Debt Default, Kualitas Audit, Opini Audit, dan Pertumbuhan terhadap Opini Going Concern, The Influence of Solvability, Profitability, and Prior Audit Opinion on Going concern Audit Opinion\n- zenodo_records / 'South Africa municipalities audit outcomes machine learning': 849331 hit(s) - Time-Series Forecasting Model for Cost-Efficient Municipal Infrastructure Asset Management in South Africa, Waste Management Framework in Circular Economy Initiatives within South African Municipalities: A Methodological Approach, Waste Management Strategies in South African Municipalities within the Circular Economy Paradigm, Waste Management Strategies within the Circular Economy Framework in South African Municipalities: An Analysis, Waste Management and the Circular Economy in South African Municipalities: A Dataset\n- zenodo_records / 'local government audit outcomes dataset': 682466 hit(s) - Decentralised Governance and Accountability: Local Government Audit and Oversight: Lessons from the COVID-19 Pandemic, The Effect of SKPD Complexity, Government Size, Budget Absorption, and Audit Opinion on Audit Delay in Central Java Province Government in 2017-2021, FAKTOR-FAKTOR YANG MEMPENGARUHI AUDIT DELAY PEMERINTAH PROVINSI DI PULAU SUMATERA, The Effect of Regional Original Income and Financial Performance on Compliance with Disclosure of Financial Information on the Website with Audit Opinion as Moderating, Open surface water gauging stations, Queensland\n- arxiv_preprints / 'municipal audit opinion prediction': 5 hit(s) - Councils in Action: Automating the Curation of Municipal Governance Data for Research, What Must a Fairness Audit Report When Demographic Data Is Incomplete?, CLIPPER Beyond Shortlisting: Auditable Decision Support for Changing Municipal Micromobility Policies, Modeling Opinion Toroidal Polarization: Insights from Bounding Confidence Beyond, Distance Matters, Exposing Paid Opinion Manipulation Trolls\n- arxiv_preprints / 'South Africa municipalities audit outcomes machine learning': 5 hit(s) - DOME: Recommendations for supervised machine learning validation in biology, Changing Data Sources in the Age of Machine Learning for Official Statistics, Cross-cohort TB classification using clinical data gathered in Uganda and South Africa, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Active learning for data streams: a survey\n- arxiv_preprints / 'local government audit outcomes dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, Digital Democracy: Episode IV -- A New Hope, How a Corporation for Public Software Could Transform Digital Engagement fo, What Must a Fairness Audit Report When Demographic Data Is Incomplete?",
+    "prior_art": [
+      "PLOS ONE 17(3):e0261245 (2022); MDPI Sustainability 15(1):12 (2023); MDPI Economies 8(1):18 + Zenodo 10.5281/zenodo.18376321"
+    ],
+    "theirs": "Mongwe/Malan/Marwala et al. predict SA municipal audit outcomes from same-year audited-statement ratios (PLOS ONE 17(3):e0261245 2022; MDPI Sustainability 15(1):12 2023, AUC ~0.69-0.71, 1560 obs, no artifact); 'Forecasting Municipal Financial Distress in South Africa' (MDPI Economies 8(1):18) ships Zenodo 10.5281/zenodo.18376321 for one-year-ahead financial DISTRESS, adjacent label on the same source",
+    "ours": "Ex-ante, instant-honest benchmark: predict FY k audit opinion at the statutory AFS submission instant (31 Aug k) from as-submitted pre-audit figures and strictly-earlier released data, deterioration-onset conditioned (persistence cannot win by construction), temporal splits, persistence and calendar-only baselines shipped beside the model, runner-compatible versioned artifact with publisher checksums",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": null,
+  "next_action": "Construction (worker): (1) verify the exact MFMA statutory AFS-submission deadline wording (s127 area) and pin observed AGSA release dates per label year, including the FY2023-24 tabling date; (2) snapshot bulk CSVs by checksum (audit_opinions, incexp per-year, bsheet, capital_v2, grants_v2, uifwexp, repmaint_v2, aged_debtor_v2, aged_creditor_v2) plus the demographics API for static covariates; (3) build onset-conditioned rows at the 31 Aug k instant: FY k PAUD features + audited/budget phases through k-1 + opinions through k-2 (widen to k-1 only where an observed tabling date precedes the instant), excluding every post-instant field (FY k audit results, IBY/ITY forecast vintages tabled after the instant); (4) run the baseline triad FIRST and report gaps (persistence, calendar-only province/category/year, full model) - the level formulation must be reported beside persistence, and if the model trails it, record that as a defect and re-target; (5) assert the label CSV never enters shipped columns.",
+  "jurisdiction": {
+    "country": "ZA",
+    "region": "Africa",
+    "publisher": "National Treasury of South Africa (Municipal Finance Data / Municipal Money); label origin: Auditor-General of South Africa (AGSA)",
+    "recorded_at": "2026-10-21"
+  }
+}

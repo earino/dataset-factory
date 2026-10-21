@@ -4849,3 +4849,62 @@ listed are fixed (month-end wording, flat-path checksum command, three-week lag,
 construction"). Data bytes are identical to v2026.11; only quality.json and the documents change.
 Artifact f4cb7fde0af5c211, gate 1.4.0 PASSED, baseline re-run 0.5511 CONTRACT OK, 129 shipped
 providers from 142 candidates. v2026.10 and v2026.11 are superseded; neither may be published.
+
+## 2026-10-21 (evening) - Africa discovery tick: three verdicts, the bench's first African live candidate
+
+Scheduled discovery session (regional focus: Africa). Quota met: three new sources taken to
+recorded verdicts, all three with African publishers; no build, qualification, packaging or
+publication commands were run this session. Full evidence in each candidate's record.json/notes.md;
+probe scripts backing recorded measurements kept in the candidate directories.
+
+- `za-municipal-audit-opinion` (National Treasury Municipal Finance Data / Municipal Money; label
+  origin Auditor-General of South Africa) - **go, status ready**; the bench's first live African
+  candidate and the fourth in the ready buffer. Anonymous bulk CSVs per cube per year on S3, each
+  with index.json checksums, regenerated 2026-07-30/08-05 (live pipeline: banner "updated with the
+  latest 2026 Q2 data"). Terms of use measured at /terms: free download, adapt, distribute,
+  commercial and non-commercial, with attribution of source and publication date. Label panel
+  measured: AGSA audit opinions 2011-2024, 292 demarcation codes, both classes every year
+  (qualified-or-worse 35.0%-56.5% per year). Primary formulation is deterioration-onset on
+  clean-prev municipalities because the level label measured 83.88% persistent year-over-year
+  (2018-2020); onset base rate 69/381 = 18.1% in the eval window. Instant: the statutory AFS
+  submission deadline (31 Aug k, MFMA wording to verify at construction), with observed AGSA
+  general-report tabling dates recorded (27 Aug 2024 for FY2022-23; 24 Jun 2026 for FY2024-25)
+  and a conservative opinion-knowledge bound through year_end k-2. Novelty differentiated
+  (check-novelty.py, 3 queries): Mongwe/Malan/Marwala et al. (PLOS ONE 17(3):e0261245 (2022);
+  MDPI Sustainability 15(1):12 (2023)) predict the same opinions post-hoc from same-year audited
+  ratios with no published artifact; Economies 8(1):18 ships a Zenodo dataset for the adjacent
+  distress task. Next action: worker construction per record.json's five-step list (verify MFMA
+  deadline, checksum-snapshot bulk cubes, build onset rows at the instant, baseline triad FIRST).
+- `saps-station-crime-quarter` (South African Police Service) - **park, licence-blocked**.
+  Station-level quarterly XLSX measured (FY2025/26 Q2 workbook 11,554,369 B, PK-verified, headers
+  Station/District/Province/Crime_Category/Code + national and provincial contribution/count-diff
+  placements; quarterly series FY2019/20-FY2026/27 Q1 across the two pages), but copyright.php:
+  "All material on this site is subject to copyright" and disclaimer.php grants nothing - escalated
+  as a decision, never assumed. Secondary: station-quarter counts are persistence-shaped (an
+  onset/change formulation must be designed in before any unpark); www.saps.gov.za also serves an
+  incomplete TLS chain (all probes needed verification disabled - recorded). Unpark: written SAPS
+  permission for derived station-quarter tables, then novelty vs existing Kaggle/academic mirrors.
+- `kenya-opendata-knbs` (Kenya) - **park, honest empty result**. open.data.go.ke no longer resolves
+  (NXDOMAIN, measured) so the historical per-dataset licence channel is gone; knbs.or.ke is
+  "All Rights Reserved" and hosts no data files itself (zero .pdf/.xlsx/.csv/.zip links on its
+  data-portals page, measured; also serves an incomplete TLS chain); the third-party channels it
+  names are a Cloudflare-walled Knoema aggregator (403 challenge to headless clients, and its
+  terms are not the publisher's) and a static SDG dashboard. Unpark path in the record (KNBS NADA
+  microdata catalogue, then any successor portal, then sector regulators). No US source substituted.
+
+Region texture for the next Africa tick: both national portals named in the rotation's starting
+map (data.gov.za, open.data.go.ke) are NXDOMAIN as of 2026-10-21, and StatsSA sits behind an
+Incapsula bot-wall (212-byte challenge page, measured; a real-browser re-read is required before
+recording licence silence there). The live, openly licensed channel this tick was sector
+infrastructure - a treasury/audit data platform - so the next Africa tick should lead with
+treasury/audit/procurement-style sector infrastructure rather than the national portals.
+
+Coverage after this session (discovery-coverage.py): 49 candidates, 20 live; Africa 3 (ZA 2, KE 1);
+live non-US 14/20 (70%); live African candidates 1 (za-municipal-audit-opinion, ready). Ready
+buffer behind construction: tsb-railway-occurrence-casualty, chilecompra-tender-outcome,
+camara-bill-advancement, za-municipal-audit-opinion.
+
+Session hygiene: `python3 -m unittest discover -s tests` = 398 tests OK; `check-candidate.py --all`
+OK; probe scripts kept per convention (probe_label_stats.py, probe_workbook_peek.py); the rest of
+the session scratch (including 82 MB of measured bulk CSVs) deleted from .factory and never committed.
+
