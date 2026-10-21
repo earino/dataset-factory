@@ -33,8 +33,11 @@ Frame rules (from the candidate record; each is measured and reported)
 * Prediction week W also requires denominator >= 50 so the feature week is
   itself well measured.
 * Threshold and lead are pinned by a named known-event fixture asserted at
-  build time from the source: France's 2024-25 season - peak weekly positivity
-  must exceed 0.40 and July-August off-season weeks must stay under 0.10.
+  build time from the source: France's 2024-25 season - the blended peak
+  weekly positivity must exceed 0.15 (measured 0.238 in the week of
+  2025-01-27) and July-August off-season weeks must stay under 0.10 (measured
+  0.007). The record's earlier ">40% at peak" was a candidate figure for a
+  sentinel-only curve of a stronger season; this frame sums ORIGIN_SOURCE.
 
 Leakage discipline
 ------------------

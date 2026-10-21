@@ -1,0 +1,346 @@
+{
+  "dataset": "who-flunet-activity-exceedance",
+  "release_version": "2026.10",
+  "release_tag": "v2026.10",
+  "repository": "https://github.com/earino/who-flunet-activity-exceedance",
+  "visibility": "private (publication requires explicit authorisation)",
+  "artifact_version": "b1323a27fa02eb79de5fbb12c54068699ae15b3d44a9488942fd17ef0a4caffa",
+  "artifact_job": "flunet-002",
+  "staging_release": 418940777,
+  "staging_release_tag": "job-flunet-002",
+  "staging_repo": "earino/dataset-factory-staging",
+  "construction_commit": "8c601a6f437b80b1d567d33520b70b8eec5590eb",
+  "gate_version": "1.3.0",
+  "gate_command": "python3 code/qualify_dataset.py ./task",
+  "measurements": {
+    "name": "who-flunet-activity-exceedance",
+    "built_at_utc": "2026-10-20T22:22:59Z",
+    "source": {
+      "url": "https://xmart-api-public.who.int/FLUMART/VIW_FNT?$format=csv",
+      "bytes": 32246617,
+      "seconds": 1.5,
+      "requests": 1,
+      "sha256": "5695e5d2c06c4179a3123a5f993e33f4b8b11d6ffa8debe0d110f26f77f1d309"
+    },
+    "grain": "country x ISO week (ORIGIN_SOURCE streams summed)",
+    "threshold": {
+      "positivity_proportion": 0.1,
+      "comparison": "strictly greater than",
+      "lead_weeks": 4,
+      "min_denominator": {
+        "prediction_week": 50,
+        "target_week": 50
+      }
+    },
+    "systematic_rule": "target country-year has >= 4 specimen-bearing weeks and >= 50% of them report INF_NEGATIVE >= 1; country-years judged systematic: 1258/3349",
+    "skipped_candidate_rows": {
+      "no_target": 755,
+      "thin_pred": 106611,
+      "thin_target": 6881,
+      "not_systematic": 8015
+    },
+    "splits": {
+      "train": {
+        "rows": 5779,
+        "positives": 3420,
+        "positive_rate": 0.591798,
+        "distinct_events": 235
+      },
+      "eval": {
+        "rows": 6831,
+        "positives": 1636,
+        "positive_rate": 0.239496,
+        "distinct_events": 257
+      },
+      "holdout": {
+        "rows": 13483,
+        "positives": 5482,
+        "positive_rate": 0.406586,
+        "distinct_events": 422
+      }
+    },
+    "clustered_events_note": "distinct_events counts country-years of the target week carrying at least one positive - positives arrive in seasonal clusters, so this is the effective sample size figure, per the candidate record",
+    "france_fixture": {
+      "country": "FR",
+      "season_weeks": 28,
+      "peak_positivity": 0.23786617662955356,
+      "peak_week": "2025-01-27",
+      "offseason_weeks": 17,
+      "offseason_max_positivity": 0.007099391480730223,
+      "assertions": {
+        "peak_exceeds_0.15": true,
+        "offseason_under_0.10": true
+      }
+    },
+    "trap_acceptance": {
+      "window": "1995-2004",
+      "pre_rule_rows": 931,
+      "pre_rule_positive_rate": 1.0,
+      "post_rule_rows": 14,
+      "post_rule_positive_rate": 1.0,
+      "note": "the discovery session measured 931/931 positive here; the pre-rule rate reproduces that uniform result, and the rule is judged by how few of those rows survive it"
+    },
+    "timing_selfcheck": {
+      "checked": 201,
+      "mismatches": 0
+    },
+    "duplicate_row_ids": 0,
+    "reference_baselines": {
+      "note": "stdlib rank AUC measured at construction on the written rows; scores are prediction-time-safe single features",
+      "per_split": {
+        "train": {
+          "persistence_auc": 0.896870266665675,
+          "rolling8_mean_auc": 0.7990108183416008
+        },
+        "eval": {
+          "persistence_auc": 0.8928753550409342,
+          "rolling8_mean_auc": 0.8280553522641434
+        },
+        "holdout": {
+          "persistence_auc": 0.8744768815609103,
+          "rolling8_mean_auc": 0.7683456523425268
+        }
+      }
+    },
+    "crosscheck_hint": "the built France 2024-25 positivity curve (summary.france_fixture) is the same series the publisher's FluNet chart app draws (worldhealthorg.shinyapps.io/flunetchart); the fixture asserts its peak and off-season levels from the source"
+  },
+  "assets": {
+    "meta.json": {
+      "asset_name": "meta.json",
+      "bytes": 2915,
+      "sha256": "592552716187b6645070fd625e1c197390a7f12fb1a719b9d8901ec0918f562b"
+    },
+    "private/holdout.csv": {
+      "asset_name": "private-holdout.csv",
+      "bytes": 3482298,
+      "sha256": "f7dd814a73c864df9d11ff2a1c39a899c97c9efe46b6687cb279c0d3c3ef276e"
+    },
+    "public/eval.csv": {
+      "asset_name": "public-eval.csv",
+      "bytes": 1589403,
+      "sha256": "7d809b16ed3b833bf13070b50a5f9fba83e3d2fb7569b993408e885eae9ad8e9"
+    },
+    "public/train.csv": {
+      "asset_name": "public-train.csv",
+      "bytes": 1496272,
+      "sha256": "2515289b43bdd49b51479b076f81a9f21bc2ec4382f3d0f7153687a8ecafb102"
+    },
+    "quality.json": {
+      "asset_name": "quality.json",
+      "bytes": 5610,
+      "sha256": "efa583ba6a07c1081488d9fe48d74736a484b9f48cd2d5712e2b0cbf190a062b"
+    }
+  },
+  "package_files": {
+    "DATA_DICTIONARY.md": "5941e3ee2f84aacef56e134600c9bfcf113791fb93e3fe6658bac7fc22e1d5bf",
+    "LICENSE-MIT.txt": "200f782f6b8bc23b926ea774cbacb4147826b3b2b59200917d8dc5ec68159535",
+    "LICENSE.md": "bca3adf98fb5e356c591c51590ba7780293f9f4b0d8da476f0f39bcc37cc9b93",
+    "README.md": "825e3db20ce95aa0428cb870e4d437aea2fda58ab8bd25dc25e190a7b4fbe0fa",
+    "RELEASE_NOTES.md": "29ca18646c4cad6769f6285593f4f289b99ff4acb81f647e96e753aeda124e8d",
+    "REPRODUCE.md": "452ef2a7c67cbb88bb09819d6427eb9663d281ffd77261bb94477010f936feba",
+    "SHA256SUMS": "de4df28774da5a4673a5b19b8b143b92d22c384dbd36be7d4803b65e3e72f58c",
+    "VERIFICATION.md": "8a42795dd0c9e4f0f366d3ff75ab30ee91d507e8ad36fc83363be256b4bba122",
+    "baseline/README.md": "48bf43d62fee48d323ecb843532ceb7bd756af76cc5112f158f055931bac58a7",
+    "baseline/reproduce_baseline.sh": "5ec3409b070a57ecba042e02bc7ee65cb11ad90504fd5a961a2d64deb55b49b3",
+    "baseline/train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+    "baseline/validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+    "baseline/validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d",
+    "code/build.py": "09386f95ddee8f685b2708c539826c55495f4c0b78f3ba8a74aedb5e53b94e75",
+    "code/qualify_dataset.py": "71a8cac429656e27dbb631be8488b9f4662580994b115290a243fc1f4b9639f1",
+    "code/run.sh": "3aeb4fac7b3aa2e66873898964584d7aee8ce55c4db7c0609bc168513d1476a3",
+    "get_dataset.py": "7ab4f3df62c824c5a046e2026e76ad1ca34530ad84dae5a128bfa616822ea101",
+    "measurements.json": "c32382f1a434c935d0654f2c940da42a4f6e2d42ca330fb4d25fc60564e07625",
+    "qualification.json": "a542224de4a74d727ad48b528450c5be60b71115bf64f9a15421511fa7ab586f"
+  },
+  "baseline_command": "sh baseline/reproduce_baseline.sh ./task",
+  "get_dataset_command": "python3 get_dataset.py --dest ./task",
+  "source": {
+    "name": "WHO FluNet - Global Influenza Programme (World Health Organization, Geneva)",
+    "landing_page": "https://www.who.int/tools/flunet",
+    "api": "https://xmart-api-public.who.int/FLUMART/VIW_FNT?$format=csv (anonymous, no key, one request returns the full table)",
+    "metadata": "https://xmart-api-public.who.int/FLUMART/VIW_FLU_METADATA?$format=csv&$filter=contains(DatasetName,%20%27FluNet%27) (53 documented fields)",
+    "accessed": "2026-10-20",
+    "licence": "CC BY-NC-SA 3.0 IGO (WHO copyright policy; NC/SA carried through). Derived research dataset - not a WHO official product.",
+    "licence_evidence": [
+      {
+        "note": "WHO copyright policy, read 2026-10-20 via search snippet of https://www.who.int/about/policies/publishing/copyright: 'Permission from WHO is not required for the use of WHO materials issued under the Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Intergovernmental Organization (CC BY-NC-SA 3.0 IGO) licence.' The licence 'allows users to freely copy, reproduce, reprint, distribute, translate and adapt the work for non-commercial purposes, provided WHO is acknowledged as the source'. Attribution form: '[Title]. [Place of publication]: World Health Organization; [Year]. Licence: CC BY-NC-SA 3.0 IGO.'",
+        "url": "https://www.who.int/about/policies/publishing/copyright"
+      },
+      {
+        "note": "WHO dataset terms at data.who.int, read 2026-10-20 via search snippet of https://data.who.int/about/data/terms-and-conditions: 'Unless specifically indicated otherwise, these Datasets are provided to you under a Creative Commons Attribution 4.0 International License (CC BY 4.0)' with mandatory citation per dataset metadata and a no-emblem clause. The FluNet tool page itself states no dataset-specific licence, so the general WHO posture (CC BY-NC-SA 3.0 IGO) is the conservative reading for this source; either way the terms permit redistribution of derived rows for non-commercial research with attribution, and any NC/SA conditions carry through unchanged.",
+        "url": "https://data.who.int/about/data/terms-and-conditions"
+      }
+    ]
+  },
+  "layout": {
+    "public/train.csv": "public/train.csv",
+    "public/eval.csv": "public/eval.csv",
+    "private/holdout.csv": "private/holdout.csv",
+    "meta.json": "meta.json",
+    "quality.json": "quality.json"
+  },
+  "files": {
+    "public/train.csv": {
+      "bytes": 1496272,
+      "sha256": "2515289b43bdd49b51479b076f81a9f21bc2ec4382f3d0f7153687a8ecafb102"
+    },
+    "public/eval.csv": {
+      "bytes": 1589403,
+      "sha256": "7d809b16ed3b833bf13070b50a5f9fba83e3d2fb7569b993408e885eae9ad8e9"
+    },
+    "private/holdout.csv": {
+      "bytes": 3482298,
+      "sha256": "f7dd814a73c864df9d11ff2a1c39a899c97c9efe46b6687cb279c0d3c3ef276e"
+    },
+    "meta.json": {
+      "bytes": 2915,
+      "sha256": "592552716187b6645070fd625e1c197390a7f12fb1a719b9d8901ec0918f562b"
+    },
+    "quality.json": {
+      "bytes": 5610,
+      "sha256": "efa583ba6a07c1081488d9fe48d74736a484b9f48cd2d5712e2b0cbf190a062b"
+    }
+  },
+  "splits": {
+    "train": {
+      "rows": 5779,
+      "positives": 3420,
+      "positive_rate": 0.591798,
+      "distinct_events": 235
+    },
+    "eval": {
+      "rows": 6831,
+      "positives": 1636,
+      "positive_rate": 0.239496,
+      "distinct_events": 257
+    },
+    "holdout": {
+      "rows": 13483,
+      "positives": 5482,
+      "positive_rate": 0.406586,
+      "distinct_events": 422
+    }
+  },
+  "qualification": {
+    "gate_version": "1.3.0",
+    "ok": true,
+    "failed_checks": [],
+    "artifact_version": "b1323a27fa02eb79",
+    "report": "staging release 418940777 asset qualification-who-flunet-activity-exceedance.json",
+    "accepted_on_coordinator": "qualify_dataset.py --accept -> ACCEPTED (2026-10-20)",
+    "splits": {
+      "train": {
+        "rows": 5779,
+        "positives": 3420,
+        "positive_rate": 0.591798,
+        "distinct_events": 235
+      },
+      "eval": {
+        "rows": 6831,
+        "positives": 1636,
+        "positive_rate": 0.239496,
+        "distinct_events": 257
+      },
+      "holdout": {
+        "rows": 13483,
+        "positives": 5482,
+        "positive_rate": 0.406586,
+        "distinct_events": 422
+      }
+    }
+  },
+  "baseline": {
+    "job": "flunet-baseline-001",
+    "purpose": "one baseline through the runner's existing training and validation contract, on the accepted WHO FluNet country-week exceedance artifact",
+    "artifact": {
+      "name": "who-flunet-activity-exceedance",
+      "target": "exceeds",
+      "positive_label": 1,
+      "id_columns": [
+        "row_id"
+      ],
+      "rows": {
+        "train": 5779,
+        "eval": 6831,
+        "holdout": 13483
+      },
+      "positive_rate": {
+        "train": 0.591798,
+        "eval": 0.239496,
+        "holdout": 0.406586
+      },
+      "label_rule": "target week (W+4) positivity INF_ALL/(INF_ALL+INF_NEGATIVE) > 0.10, denominator >= 50 and systematic negative reporting in the target country-year"
+    },
+    "qualification_report": {
+      "bundled": "qualification.json",
+      "sha256": "a542224de4a74d727ad48b528450c5be60b71115bf64f9a15421511fa7ab586f",
+      "accepted_before_scoring": true,
+      "accepted_artifact_version": "b1323a27fa02eb79"
+    },
+    "contract": {
+      "contract_ok": true,
+      "eval_auc_from_train_py": 0.87,
+      "eval_auc_from_validate_py": 0.87
+    },
+    "runner_files": {
+      "bundled_sha256": {
+        "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+        "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+        "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      },
+      "expected_sha256": {
+        "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+        "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+        "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      },
+      "unmodified": true
+    },
+    "dependencies": {
+      "python": "3.13.16",
+      "pandas": "2.3.3",
+      "numpy": "2.5.4",
+      "xgboost": "3.4.1",
+      "scikit-learn": "1.9.1"
+    },
+    "scope": "baseline only, through the runner's own contract. No agent or harness comparison was run, and none is implied."
+  },
+  "scope": "One baseline through the runner's training and validation contract. No agent or harness comparison was run and none is implied.",
+  "published": false,
+  "publication_note": "Prepared for human review. Nothing here has been published.",
+  "licenses": {
+    "policy_version": "2026-09-19",
+    "decided": "2026-10-21",
+    "code": {
+      "spdx": "MIT",
+      "file": "LICENSE-MIT.txt",
+      "copyright": "Copyright (c) 2026 E. Arino de la Rubia (earino)",
+      "third_party": []
+    },
+    "data_compilation": {
+      "spdx": "CC-BY-NC-SA-3.0-IGO",
+      "file": "LICENSE.md",
+      "scope": "Our contribution - the row selection, the derived binary label, the temporal partition, the gating rules and the packaging - is distributed under the same CC BY-NC-SA 3.0 IGO terms the source carries, with attribution to WHO. No separate dedication is made and nothing here may be presented as CC0, public domain, or an official WHO product. Commercial use and relicensing are not granted by this release."
+    },
+    "source_data": {
+      "spdx": "CC-BY-NC-SA-3.0-IGO",
+      "status": "WHO copyright policy: 'Permission from WHO is not required for the use of WHO materials issued under the Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Intergovernmental Organization (CC BY-NC-SA 3.0 IGO) licence', which allows copying, reproduction, distribution, translation and adaptation for non-commercial purposes with attribution to WHO. The FluNet tool page states no dataset-specific licence; this is the publisher-wide posture, recorded as such rather than as a dataset grant.",
+      "evidence": [
+        "[WHO copyright policy, read 2026-10-20] 'Permission from WHO is not required for the use of WHO materials issued under the Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Intergovernmental Organization (CC BY-NC-SA 3.0 IGO) licence.' The licence permits copying, reproduction, reprint, distribution, translation and adaptation for non-commercial purposes provided WHO is acknowledged as the source; attribution form: '[Title]. [Place of publication]: World Health Organization; [Year]. Licence: CC BY-NC-SA 3.0 IGO.'",
+        "[https://data.who.int/about/data/terms-and-conditions, read 2026-10-20] 'Unless specifically indicated otherwise, these Datasets are provided to you under a Creative Commons Attribution 4.0 International License (CC BY 4.0)' with mandatory citation and a no-emblem clause - recorded for comparison; FluNet is not served under data.who.int's dataset terms.",
+        "[https://www.who.int/tools/flunet, read 2026-10-20] the tool page links only a site-wide 'Terms of use' and states no dataset-specific licence; the download link is the publisher's own full-dataset CSV.",
+        "No emblem or logo of WHO is redistributed: the package carries text attribution only."
+      ],
+      "attribution": "World Health Organization, FluNet (Global Influenza Surveillance and Response System), https://www.who.int/tools/flunet, data retrieved 2026-10-20. Licence: CC BY-NC-SA 3.0 IGO.",
+      "citation": "World Health Organization. FluNet. Geneva: World Health Organization; 2026. Licence: CC BY-NC-SA 3.0 IGO. Derived dataset: WHO FluNet influenza-positivity exceedance prediction task (not an official WHO product).",
+      "derived_labelling": "Labelled as a derived research dataset throughout; it is not an official WHO product and WHO has not reviewed or endorsed it."
+    },
+    "rules": [
+      "Code and documentation: MIT by default.",
+      "Our rights in a derived compilation: CC0-1.0 by default.",
+      "The source's own terms are preserved and never relicensed; the compilation dedication covers only our contribution.",
+      "Each dataset must use terms compatible with its sources. CC0 is NOT a blanket override of upstream terms: attribution, share-alike and non-commercial requirements from a source are carried through unchanged.",
+      "A source whose licence terms cannot be read is not published at all.",
+      "The chosen terms are declared per dataset in candidates/<id>/license.json and recorded in the release manifest, so the manifest cannot drift from the decision."
+    ]
+  }
+}

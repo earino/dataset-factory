@@ -1,0 +1,92 @@
+{
+ "name": "who-flunet-activity-exceedance",
+ "built_at_utc": "2026-10-20T22:22:59Z",
+ "source": {
+  "url": "https://xmart-api-public.who.int/FLUMART/VIW_FNT?$format=csv",
+  "bytes": 32246617,
+  "seconds": 1.5,
+  "requests": 1,
+  "sha256": "5695e5d2c06c4179a3123a5f993e33f4b8b11d6ffa8debe0d110f26f77f1d309"
+ },
+ "grain": "country x ISO week (ORIGIN_SOURCE streams summed)",
+ "threshold": {
+  "positivity_proportion": 0.1,
+  "comparison": "strictly greater than",
+  "lead_weeks": 4,
+  "min_denominator": {
+   "prediction_week": 50,
+   "target_week": 50
+  }
+ },
+ "systematic_rule": "target country-year has >= 4 specimen-bearing weeks and >= 50% of them report INF_NEGATIVE >= 1; country-years judged systematic: 1258/3349",
+ "skipped_candidate_rows": {
+  "no_target": 755,
+  "thin_pred": 106611,
+  "thin_target": 6881,
+  "not_systematic": 8015
+ },
+ "splits": {
+  "train": {
+   "rows": 5779,
+   "positives": 3420,
+   "positive_rate": 0.591798,
+   "distinct_events": 235
+  },
+  "eval": {
+   "rows": 6831,
+   "positives": 1636,
+   "positive_rate": 0.239496,
+   "distinct_events": 257
+  },
+  "holdout": {
+   "rows": 13483,
+   "positives": 5482,
+   "positive_rate": 0.406586,
+   "distinct_events": 422
+  }
+ },
+ "clustered_events_note": "distinct_events counts country-years of the target week carrying at least one positive - positives arrive in seasonal clusters, so this is the effective sample size figure, per the candidate record",
+ "france_fixture": {
+  "country": "FR",
+  "season_weeks": 28,
+  "peak_positivity": 0.23786617662955356,
+  "peak_week": "2025-01-27",
+  "offseason_weeks": 17,
+  "offseason_max_positivity": 0.007099391480730223,
+  "assertions": {
+   "peak_exceeds_0.15": true,
+   "offseason_under_0.10": true
+  }
+ },
+ "trap_acceptance": {
+  "window": "1995-2004",
+  "pre_rule_rows": 931,
+  "pre_rule_positive_rate": 1.0,
+  "post_rule_rows": 14,
+  "post_rule_positive_rate": 1.0,
+  "note": "the discovery session measured 931/931 positive here; the pre-rule rate reproduces that uniform result, and the rule is judged by how few of those rows survive it"
+ },
+ "timing_selfcheck": {
+  "checked": 201,
+  "mismatches": 0
+ },
+ "duplicate_row_ids": 0,
+ "reference_baselines": {
+  "note": "stdlib rank AUC measured at construction on the written rows; scores are prediction-time-safe single features",
+  "per_split": {
+   "train": {
+    "persistence_auc": 0.896870266665675,
+    "rolling8_mean_auc": 0.7990108183416008
+   },
+   "eval": {
+    "persistence_auc": 0.8928753550409342,
+    "rolling8_mean_auc": 0.8280553522641434
+   },
+   "holdout": {
+    "persistence_auc": 0.8744768815609103,
+    "rolling8_mean_auc": 0.7683456523425268
+   }
+  }
+ },
+ "crosscheck_hint": "the built France 2024-25 positivity curve (summary.france_fixture) is the same series the publisher's FluNet chart app draws (worldhealthorg.shinyapps.io/flunetchart); the fixture asserts its peak and off-season levels from the source"
+}

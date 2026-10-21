@@ -1,0 +1,28 @@
+{
+  "release_version": "2026.10",
+  "release_tag": "v2026.10",
+  "repository": "https://github.com/earino/who-flunet-activity-exceedance",
+  "construction_commit": "8c601a6f437b80b1d567d33520b70b8eec5590eb",
+  "construction_commit_note": "8c601a6 carries source/build.py as it was executed by job flunet-002. A later documentation-only edit corrected the module docstring's France-fixture paragraph (it still quoted the record's superseded '>40% at peak' candidate figure); no code path, threshold or output changed, and the artifact digests are unchanged.",
+  "source": {
+    "name": "WHO FluNet - Global Influenza Programme (World Health Organization, Geneva)",
+    "landing_page": "https://www.who.int/tools/flunet",
+    "api": "https://xmart-api-public.who.int/FLUMART/VIW_FNT?$format=csv (anonymous, no key, one request returns the full table)",
+    "metadata": "https://xmart-api-public.who.int/FLUMART/VIW_FLU_METADATA?$format=csv&$filter=contains(DatasetName,%20%27FluNet%27) (53 documented fields)",
+    "accessed": "2026-10-20",
+    "licence": "CC BY-NC-SA 3.0 IGO (WHO copyright policy; NC/SA carried through). Derived research dataset - not a WHO official product."
+  },
+  "commands": {
+    "gate": "python3 code/qualify_dataset.py ./task",
+    "baseline": "sh baseline/reproduce_baseline.sh ./task",
+    "get_dataset": "python3 get_dataset.py --dest ./task"
+  },
+  "layout": {
+    "public/train.csv": "public/train.csv",
+    "public/eval.csv": "public/eval.csv",
+    "private/holdout.csv": "private/holdout.csv",
+    "meta.json": "meta.json",
+    "quality.json": "quality.json"
+  },
+  "note": "One task instance, one artifact. The five shipped files are the flunet-002 gate artifact b1323a27fa02eb79; the package's code/ carries the construction script and the gate, baseline/ the runner-contract baseline. The holdout ships as an asset like the other splits; it is not copied into any runner workdir."
+}

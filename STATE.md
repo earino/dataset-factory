@@ -1,10 +1,57 @@
 # Current state
 
-Updated: 2026-10-21 00:35Z (scheduled discovery session, EU/EEA regional tick). Three new
-sources opened, three verdicts recorded - all three publishers in the EU/EEA region as the
-tick required (quota: >=3 verdicts, >=2 EU/EEA). TWO new `go` candidates for the advancement
-sessions' queue, one documented rejection. No existing candidate was advanced (discovery-only
-tick, per the standing rule).
+Updated: 2026-10-21 02:52Z (worker watcher: flunet-baseline-001 finished; the launching session was
+killed mid-packaging at 02:37:09Z and this session completed, verified and recorded the staging).
+who-flunet-activity-exceedance is now PACKAGED and FULLY STAGED on both destinations, private,
+awaiting only the operator's flip. The runner-contract baseline measured 0.8700 eval AUC on the
+released bytes.
+
+## 2026-10-21 - flunet-baseline-001 succeeded (contract baseline 0.8700); who-flunet staging completed on both destinations after the launching session died mid-flight
+
+**flunet-baseline-001** (worker 171493937, cx23/hel1, ledger deleted_at 02:32:29Z, result release
+419075223): the runner-contract baseline on the ACCEPTED flunet-002 artifact, fetched from staging
+(6,576,498 bytes, every sha256 verified on arrival, 0 failures) - not rebuilt. The gate re-accepted
+the released bytes (`ACCEPTED ... b1323a27fa02eb79`) before any scoring; the benchmark's own train.py
+and validate.sh ran UNMODIFIED (bundled sha256 equal the declared benchmark hashes); both independent
+paths measured **eval AUC 0.8700** and `[validate] CONTRACT OK` (xgboost 3.4.1 / scikit-learn 1.9.1 /
+pandas 2.3.3 / numpy 2.5.4, python 3.13.16; rows train 5,779 / eval 6,831 / holdout 13,483; positives
+59.2% / 23.9% / 40.7%). The XGBoost pass sits below the persistence reference (0.8929 eval) - recorded
+as measured headroom information, not a defect. Reports: .factory/flunet-baseline-001/reports/.
+
+**The launching session (research tick, started 02:00Z) died at 02:37:09Z** (exit 1, ~37 min in)
+right after collecting flunet-hf-001, leaving its packaging half-done and uncommitted. This watcher
+session owned the completion:
+
+- **get_dataset.py private-download fix carried through.** The session's last edit (02:31:16Z) added
+  the API asset-id path because the `releases/download` URL 404s to a token client while the repo is
+  private (measured on this release). This session EXECUTED it once before shipping: token download of
+  all five assets, every digest verified, tree laid out for the runner, exit 0. check-package had been
+  failing (manifest recorded the pre-fix get_dataset.py hash); manifest regenerated, check-package OK.
+- **flunet-hf-001 recorded** (worker 171494792, ledger deleted_at 02:37:12Z, result release 419082025):
+  the hf_publish worker job uploaded all five data files to the Hugging Face repo from the staged
+  GitHub release, verifying each sha256 before and after transfer (uploads 5, skipped 0, failures 0);
+  the bytes never passed through the coordinator.
+- **GitHub destination verified private:** repo earino/who-flunet-activity-exceedance, release 419078118
+  (v2026.10, non-draft, 5/5 assets at the accepted artifact digests read from the API), tag == main ==
+  d3619bd (two fast-forward docs-only commits; no history rewrite), get_dataset.py/MANIFEST.json/
+  VERIFICATION.md blob-identical to the package at the tag, anonymous GET 404s.
+- **Hub destination verified private:** all five data files + docs present (hf-publish --verify ok,
+  missing 0, size_mismatch 0), MANIFEST.json at tag v2026.10 re-downloaded and byte-identical to the
+  package (sha256 f983cab3aefb5b5569c66381b4faafabfcbce3c71afd7a3739a5a52b7a6bbf9d), tag == main
+  (f475facc), tagged LAST after the data and the docs refresh.
+- **VERIFICATION.md correction:** the shipped text said the baseline worker was destroyed 02:28:57Z,
+  which the job ledger contradicts (deleted_at 02:32:29Z, the record written by the destroy operation
+  itself); corrected against the ledger in a second docs-only commit. No data or asset digest changed.
+- **DESTINATIONS.json written** (staged-private shape, both destinations verified with evidence) and
+  record.json updated (jobs flunet-baseline-001 + flunet-hf-001, destination artifacts, next_action).
+  check-package: OK. Status: packaged, awaiting_operator.
+
+**NEXT: the operator's private-to-public flip is the only remaining step.** Both destinations are
+staged, verified and private; after the flip: record DESTINATIONS.json BEFORE regenerating the
+manifest, refresh the private-state wording in the card/LOADING.md/README/release notes, re-upload
+the small files, move the tag last (tag == main on both), then the website pipeline
+(site prepare/publish/verify) per the dataset-release skill.
+
 
 ## 2026-10-21 - EU/EEA discovery tick: eutl-installation-net-short READY (go), bvl-zoom-sample-positivity (go), ecdc-atlas-surveillance (reject)
 

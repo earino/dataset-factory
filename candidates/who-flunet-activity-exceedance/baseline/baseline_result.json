@@ -1,0 +1,55 @@
+{
+  "job": "flunet-baseline-001",
+  "purpose": "one baseline through the runner's existing training and validation contract, on the accepted WHO FluNet country-week exceedance artifact",
+  "artifact": {
+    "name": "who-flunet-activity-exceedance",
+    "target": "exceeds",
+    "positive_label": 1,
+    "id_columns": [
+      "row_id"
+    ],
+    "rows": {
+      "train": 5779,
+      "eval": 6831,
+      "holdout": 13483
+    },
+    "positive_rate": {
+      "train": 0.591798,
+      "eval": 0.239496,
+      "holdout": 0.406586
+    },
+    "label_rule": "target week (W+4) positivity INF_ALL/(INF_ALL+INF_NEGATIVE) > 0.10, denominator >= 50 and systematic negative reporting in the target country-year"
+  },
+  "qualification_report": {
+    "bundled": "qualification.json",
+    "sha256": "a542224de4a74d727ad48b528450c5be60b71115bf64f9a15421511fa7ab586f",
+    "accepted_before_scoring": true,
+    "accepted_artifact_version": "b1323a27fa02eb79"
+  },
+  "contract": {
+    "contract_ok": true,
+    "eval_auc_from_train_py": 0.87,
+    "eval_auc_from_validate_py": 0.87
+  },
+  "runner_files": {
+    "bundled_sha256": {
+      "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+      "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+      "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+    },
+    "expected_sha256": {
+      "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+      "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+      "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+    },
+    "unmodified": true
+  },
+  "dependencies": {
+    "python": "3.13.16",
+    "pandas": "2.3.3",
+    "numpy": "2.5.4",
+    "xgboost": "3.4.1",
+    "scikit-learn": "1.9.1"
+  },
+  "scope": "baseline only, through the runner's own contract. No agent or harness comparison was run, and none is implied."
+}

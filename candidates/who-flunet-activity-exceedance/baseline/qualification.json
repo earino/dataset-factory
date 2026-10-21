@@ -1,0 +1,472 @@
+{
+ "ok": true,
+ "dataset": "/output/extract",
+ "gate_version": "1.3.0",
+ "artifact": {
+  "train": {
+   "file": "public/train.csv",
+   "sha256": "2515289b43bdd49b51479b076f81a9f21bc2ec4382f3d0f7153687a8ecafb102",
+   "bytes": 1496272
+  },
+  "eval": {
+   "file": "public/eval.csv",
+   "sha256": "7d809b16ed3b833bf13070b50a5f9fba83e3d2fb7569b993408e885eae9ad8e9",
+   "bytes": 1589403
+  },
+  "holdout": {
+   "file": "private/holdout.csv",
+   "sha256": "f7dd814a73c864df9d11ff2a1c39a899c97c9efe46b6687cb279c0d3c3ef276e",
+   "bytes": 3482298
+  },
+  "meta.json": {
+   "file": "meta.json",
+   "sha256": "592552716187b6645070fd625e1c197390a7f12fb1a719b9d8901ec0918f562b",
+   "bytes": 2915
+  },
+  "quality.json": {
+   "file": "quality.json",
+   "sha256": "efa583ba6a07c1081488d9fe48d74736a484b9f48cd2d5712e2b0cbf190a062b",
+   "bytes": 5610
+  },
+  "artifact_version": {
+   "digest": "b1323a27fa02eb79de5fbb12c54068699ae15b3d44a9488942fd17ef0a4caffa",
+   "components": [
+    "eval",
+    "holdout",
+    "meta.json",
+    "quality.json",
+    "train"
+   ]
+  }
+ },
+ "results": [
+  {
+   "check": "descriptor",
+   "ok": true,
+   "detail": "quality.json loaded for 'who-flunet-activity-exceedance'",
+   "evidence": {}
+  },
+  {
+   "check": "leakage.declared_columns",
+   "ok": true,
+   "detail": "every shipped column is declared",
+   "evidence": {
+    "undeclared": []
+   }
+  },
+  {
+   "check": "leakage.answer_source_absent",
+   "ok": true,
+   "detail": "no answer source or post-hoc column is shipped",
+   "evidence": {
+    "shipped_forbidden": []
+   }
+  },
+  {
+   "check": "leakage.no_single_column_determines_the_target",
+   "ok": true,
+   "detail": "no shipped column separates the classes on its own",
+   "evidence": {
+    "offenders": [],
+    "high_cardinality": [
+     "row_id@eval",
+     "row_id@holdout",
+     "row_id@train"
+    ],
+    "missing_splits": []
+   }
+  },
+  {
+   "check": "leakage.high_cardinality_declared",
+   "ok": true,
+   "detail": "high-cardinality columns are declared as identifiers or free fields",
+   "evidence": {
+    "undeclared": [],
+    "declared": [
+     "country_year",
+     "iso2",
+     "row_id",
+     "week_start"
+    ]
+   }
+  },
+  {
+   "check": "timing.prediction_time_declared",
+   "ok": true,
+   "detail": "prediction instant is declared",
+   "evidence": {}
+  },
+  {
+   "check": "timing.no_post_hoc_feature",
+   "ok": true,
+   "detail": "no feature is documented as post-hoc",
+   "evidence": {
+    "overlap": []
+   }
+  },
+  {
+   "check": "timing.label_source_is_not_a_feature",
+   "ok": true,
+   "detail": "the label source is not a feature",
+   "evidence": {
+    "source_features": []
+   }
+  },
+  {
+   "check": "timing.every_feature_documented",
+   "ok": true,
+   "detail": "features documented as available 'prediction_time'",
+   "evidence": {
+    "features_documented_at": "prediction_time"
+   }
+  },
+  {
+   "check": "units.measured_columns_declare_unit_and_frame",
+   "ok": true,
+   "detail": "2 measured column(s) declare unit and frame",
+   "evidence": {
+    "measurements": [
+     {
+      "column": "positivity_w",
+      "unit": "proportion INF_ALL/(INF_ALL+INF_NEGATIVE), streams summed",
+      "frame": "week W, the week whose Sunday is the prediction instant"
+     },
+     {
+      "column": "country_year",
+      "unit": "ISO2 '-' ISO year of the target week",
+      "frame": "clustered-event key: positives of one country-season arrive together, so scores are quoted against distinct_events"
+     }
+    ]
+   }
+  },
+  {
+   "check": "units.known_event_fixture_recorded",
+   "ok": true,
+   "detail": "known-event fixture recorded: 'France 2024-25 influenza season (peak week of 2025-01-27, measured blended positivity 23.8%)'",
+   "evidence": {
+    "known_event": {
+     "name": "France 2024-25 influenza season (peak week of 2025-01-27, measured blended positivity 23.8%)",
+     "expected_verdict": "exceeds",
+     "source": "WHO FluNet VIW_FNT, asserted at build against the measured series (summary.france_fixture): the season peak clears the 10% threshold (pinned floor 0.15) and July-August 2024/2025 weeks stay under it; the discovery session's cross-check of aggregate positivity against the publisher's FluNet chart app is recorded in the candidate record (2026-10-20). The record's proposed '>40% at peak' was a candidate figure for a sentinel-only curve of a stronger season; the pinned fixture uses the measured blended frame"
+    }
+   }
+  },
+  {
+   "check": "splits.time_column_declared",
+   "ok": true,
+   "detail": "split overlap is checked against 'week_start'",
+   "evidence": {}
+  },
+  {
+   "check": "splits.machine_readable_windows",
+   "ok": true,
+   "detail": "train/eval/holdout windows are declared with start/end",
+   "evidence": {
+    "split_windows": {
+     "train": {
+      "start": null,
+      "end": "2019-12-30"
+     },
+     "eval": {
+      "start": "2019-12-30",
+      "end": "2023-01-02"
+     },
+     "holdout": {
+      "start": "2023-01-02",
+      "end": null
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.files_present",
+   "ok": true,
+   "detail": "all three split files exist",
+   "evidence": {
+    "missing": []
+   }
+  },
+  {
+   "check": "splits.non_empty",
+   "ok": true,
+   "detail": "every split has rows",
+   "evidence": {
+    "train": {
+     "rows": 5779,
+     "positives": 3420,
+     "negatives": 2359,
+     "positive_rate": 0.591798
+    },
+    "eval": {
+     "rows": 6831,
+     "positives": 1636,
+     "negatives": 5195,
+     "positive_rate": 0.239496
+    },
+    "holdout": {
+     "rows": 13483,
+     "positives": 5482,
+     "negatives": 8001,
+     "positive_rate": 0.406586
+    }
+   }
+  },
+  {
+   "check": "splits.eval_and_holdout_have_both_classes",
+   "ok": true,
+   "detail": "eval and holdout each contain positives and negatives",
+   "evidence": {
+    "train": {
+     "rows": 5779,
+     "positives": 3420,
+     "negatives": 2359,
+     "positive_rate": 0.591798
+    },
+    "eval": {
+     "rows": 6831,
+     "positives": 1636,
+     "negatives": 5195,
+     "positive_rate": 0.239496
+    },
+    "holdout": {
+     "rows": 13483,
+     "positives": 5482,
+     "negatives": 8001,
+     "positive_rate": 0.406586
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_declared",
+   "ok": true,
+   "detail": "eval and holdout declare positives and distinct events",
+   "evidence": {
+    "declared": {
+     "eval": {
+      "positives": 1636,
+      "distinct_events": 257
+     },
+     "holdout": {
+      "positives": 5482,
+      "distinct_events": 422
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_match_rows",
+   "ok": true,
+   "detail": "declared positive counts match the rows",
+   "evidence": {
+    "mismatched": []
+   }
+  },
+  {
+   "check": "splits.event_key_column_declared",
+   "ok": true,
+   "detail": "clustered events are counted by 'country_year' (date part)",
+   "evidence": {}
+  },
+  {
+   "check": "splits.distinct_events_match_rows",
+   "ok": true,
+   "detail": "declared clustered event counts match the rows",
+   "evidence": {
+    "recomputed": {
+     "train": 235,
+     "eval": 257,
+     "holdout": 422
+    },
+    "declared": {
+     "eval": {
+      "positives": 1636,
+      "distinct_events": 257
+     },
+     "holdout": {
+      "positives": 5482,
+      "distinct_events": 422
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.enough_clustered_positives",
+   "ok": true,
+   "detail": "eval and holdout carry enough independent positive events to score",
+   "evidence": {
+    "thin": [],
+    "recomputed_events": {
+     "train": 235,
+     "eval": 257,
+     "holdout": 422
+    },
+    "minimums": {
+     "positives": 30,
+     "distinct_events": 20
+    }
+   }
+  },
+  {
+   "check": "splits.rates_not_uniform",
+   "ok": true,
+   "detail": "positive rates are between 0 and 1",
+   "evidence": {
+    "rates": [
+     0.591798,
+     0.239496,
+     0.406586
+    ]
+   }
+  },
+  {
+   "check": "splits.actual_ranges_computed",
+   "ok": true,
+   "detail": "row timestamps found for every split",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "2005-01-31",
+      "max": "2019-12-23"
+     },
+     "eval": {
+      "min": "2019-12-30",
+      "max": "2022-12-26"
+     },
+     "holdout": {
+      "min": "2023-01-02",
+      "max": "2026-09-14"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.actual_ranges_disjoint",
+   "ok": true,
+   "detail": "the rows of the three splits occupy disjoint periods",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "2005-01-31",
+      "max": "2019-12-23"
+     },
+     "eval": {
+      "min": "2019-12-30",
+      "max": "2022-12-26"
+     },
+     "holdout": {
+      "min": "2023-01-02",
+      "max": "2026-09-14"
+     }
+    },
+    "overlaps": []
+   }
+  },
+  {
+   "check": "splits.rows_within_declared_windows",
+   "ok": true,
+   "detail": "every row falls inside its split's declared window",
+   "evidence": {
+    "windows": {
+     "train": {
+      "start": null,
+      "end": "2019-12-30"
+     },
+     "eval": {
+      "start": "2019-12-30",
+      "end": "2023-01-02"
+     },
+     "holdout": {
+      "start": "2023-01-02",
+      "end": null
+     }
+    },
+    "ranges": {
+     "train": {
+      "min": "2005-01-31",
+      "max": "2019-12-23"
+     },
+     "eval": {
+      "min": "2019-12-30",
+      "max": "2022-12-26"
+     },
+     "holdout": {
+      "min": "2023-01-02",
+      "max": "2026-09-14"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.no_cross_split_entities",
+   "ok": true,
+   "detail": "no row_id appears in more than one split",
+   "evidence": {
+    "shared_sample": [],
+    "shared_count": 0
+   }
+  },
+  {
+   "check": "splits.duplicate_entities_within_splits",
+   "ok": true,
+   "detail": "0 repeated-identifier rows within splits, at most the declared 0",
+   "evidence": {
+    "duplicate_rows": {},
+    "declared": 0
+   }
+  },
+  {
+   "check": "runner.layout",
+   "ok": true,
+   "detail": "holdout is private and train/eval are public",
+   "evidence": {}
+  },
+  {
+   "check": "runner.meta_json_keys",
+   "ok": true,
+   "detail": "meta.json carries the keys the runner reads",
+   "evidence": {
+    "keys": [
+     "built_at_utc",
+     "columns",
+     "description",
+     "features",
+     "id_columns",
+     "label_rule",
+     "label_source_columns",
+     "license",
+     "name",
+     "positive_label",
+     "positive_rate",
+     "prediction_time",
+     "rows",
+     "source",
+     "source_sha256",
+     "split",
+     "target",
+     "threshold"
+    ]
+   }
+  },
+  {
+   "check": "runner.meta_matches_files",
+   "ok": true,
+   "detail": "meta.json agrees with the split files",
+   "evidence": {
+    "problems": []
+   }
+  },
+  {
+   "check": "runner.meta_counts_match_files",
+   "ok": true,
+   "detail": "meta rows and rates match the files",
+   "evidence": {}
+  },
+  {
+   "check": "runner.id_columns_are_not_features",
+   "ok": true,
+   "detail": "declared identifiers are not also listed as features",
+   "evidence": {}
+  }
+ ],
+ "failed_checks": []
+}

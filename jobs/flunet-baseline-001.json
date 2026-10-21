@@ -1,0 +1,230 @@
+{
+  "job": {
+    "id": "flunet-baseline-001",
+    "candidate": "who-flunet-activity-exceedance",
+    "image": "python:3.13-slim",
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 3072,
+    "timeout_minutes": 45,
+    "lifetime_minutes": 90,
+    "max_disk_mb": 4096,
+    "max_artifact_mb": 16,
+    "what": "runner-contract baseline on the accepted flunet-002 artifact, fetched from staging (not rebuilt): re-accept the five fetched files through the qualification gate against the gate's own report, materialize the runner workdir (public train+eval only; the private holdout is never copied into the workdir), then run the benchmark's own train.py and validate.sh unmodified and record both AUCs. This is the contract only, not the agent harness loop.",
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 418940777,
+      "assets": [
+        {
+          "asset_id": 660655748,
+          "dest": "extract/meta.json",
+          "size": 2915,
+          "sha256": "592552716187b6645070fd625e1c197390a7f12fb1a719b9d8901ec0918f562b"
+        },
+        {
+          "asset_id": 660655783,
+          "dest": "extract/private/holdout.csv",
+          "size": 3482298,
+          "sha256": "f7dd814a73c864df9d11ff2a1c39a899c97c9efe46b6687cb279c0d3c3ef276e"
+        },
+        {
+          "asset_id": 660655855,
+          "dest": "extract/public/eval.csv",
+          "size": 1589403,
+          "sha256": "7d809b16ed3b833bf13070b50a5f9fba83e3d2fb7569b993408e885eae9ad8e9"
+        },
+        {
+          "asset_id": 660655919,
+          "dest": "extract/public/train.csv",
+          "size": 1496272,
+          "sha256": "2515289b43bdd49b51479b076f81a9f21bc2ec4382f3d0f7153687a8ecafb102"
+        },
+        {
+          "asset_id": 660655984,
+          "dest": "extract/quality.json",
+          "size": 5610,
+          "sha256": "efa583ba6a07c1081488d9fe48d74736a484b9f48cd2d5712e2b0cbf190a062b"
+        }
+      ]
+    },
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "source_files": [
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/who-flunet-activity-exceedance/baseline/run.sh",
+        "bytes": 3049,
+        "sha256": "ba57d714149c33356feeb8fb90fab9db18a74f68936e88fb3fdbe95ee563f80f"
+      },
+      {
+        "bundled_as": "materialize.py",
+        "source": "candidates/who-flunet-activity-exceedance/baseline/materialize.py",
+        "bytes": 2257,
+        "sha256": "839707f377678fca52698ae8a8ee558a28b0208ea5b12f6d91954e99f78f493e"
+      },
+      {
+        "bundled_as": "report.py",
+        "source": "candidates/who-flunet-activity-exceedance/baseline/report.py",
+        "bytes": 4394,
+        "sha256": "b85c2f1321dc7cc750b06dd8f6bcdfa7fe0a033911c74dba025f41145c459bbf"
+      },
+      {
+        "bundled_as": "qualification.json",
+        "source": "candidates/who-flunet-activity-exceedance/baseline/qualification.json",
+        "bytes": 10792,
+        "sha256": "a542224de4a74d727ad48b528450c5be60b71115bf64f9a15421511fa7ab586f"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 39333,
+        "sha256": "71a8cac429656e27dbb631be8488b9f4662580994b115290a243fc1f4b9639f1"
+      },
+      {
+        "bundled_as": "train.py",
+        "source": "/opt/data/harness_benchmark/task_template/train.py",
+        "bytes": 2500,
+        "sha256": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8"
+      },
+      {
+        "bundled_as": "validate.py",
+        "source": "/opt/data/harness_benchmark/task_template/validate.py",
+        "bytes": 1277,
+        "sha256": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b"
+      },
+      {
+        "bundled_as": "validate.sh",
+        "source": "/opt/data/harness_benchmark/task_template/validate.sh",
+        "bytes": 482,
+        "sha256": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      }
+    ]
+  },
+  "reservation_eur": "0.06",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 3,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 133120,
+  "source_sha256": "1b611008c8574f483eaf0b7a2ecf6a624dd30b80fdb6b748de81563214053f7c",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-10-21T02:24:57.335166+00:00",
+  "expires": 1792554897,
+  "budget_months": [
+    "2026-10"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 171493937,
+  "known_hosts": "/opt/data/dataset-factory/.factory/flunet-baseline-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "65.21.158.17",
+  "result": {
+    "job_id": "flunet-baseline-001",
+    "status": "succeeded",
+    "uploaded": true,
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 418940777,
+      "fetched": [
+        {
+          "dest": "extract/meta.json",
+          "bytes": 2915,
+          "sha256": "592552716187b6645070fd625e1c197390a7f12fb1a719b9d8901ec0918f562b"
+        },
+        {
+          "dest": "extract/private/holdout.csv",
+          "bytes": 3482298,
+          "sha256": "f7dd814a73c864df9d11ff2a1c39a899c97c9efe46b6687cb279c0d3c3ef276e"
+        },
+        {
+          "dest": "extract/public/eval.csv",
+          "bytes": 1589403,
+          "sha256": "7d809b16ed3b833bf13070b50a5f9fba83e3d2fb7569b993408e885eae9ad8e9"
+        },
+        {
+          "dest": "extract/public/train.csv",
+          "bytes": 1496272,
+          "sha256": "2515289b43bdd49b51479b076f81a9f21bc2ec4382f3d0f7153687a8ecafb102"
+        },
+        {
+          "dest": "extract/quality.json",
+          "bytes": 5610,
+          "sha256": "efa583ba6a07c1081488d9fe48d74736a484b9f48cd2d5712e2b0cbf190a062b"
+        }
+      ],
+      "failures": [],
+      "bytes": 6576498
+    },
+    "image_id": "sha256:70729b46c69b4f1e97c4822c1af3df53a1476cf5ddc6c087c0c10bc3a5678c2f",
+    "image_digests": [
+      "python@sha256:70729b46c69b4f1e97c4822c1af3df53a1476cf5ddc6c087c0c10bc3a5678c2f"
+    ],
+    "exit_code": 0,
+    "oom_killed": false,
+    "elapsed_seconds": 37.1,
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 419075223,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-2f9fd3c4ae1162c7c3a2",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-2f9fd3c4ae1162c7c3a2/manifest.json",
+    "assets": [
+      {
+        "id": 661113963,
+        "size": 72,
+        "sha256": "b53ce8a7a59852072dc79312d5faee06aca1685ab0e1f4b3bf71563de3282123"
+      },
+      {
+        "id": 661114004,
+        "size": 1974,
+        "sha256": "7a89527238a58588d1d070a154cd44800cc8a905805eff6eb8e7d03506939264"
+      },
+      {
+        "id": 661114036,
+        "size": 253,
+        "sha256": "31a61b8fd4d599949750c081ef57a6054bcf1d93deb249cb2bc75735d3f98621"
+      },
+      {
+        "id": 661114083,
+        "size": 193,
+        "sha256": "5fcf6b715db6d8d75fe9257b2407ba2339602982255e40c8e385808b5cb11db4"
+      },
+      {
+        "id": 661114135,
+        "size": 477,
+        "sha256": "98dce432b364e531ac51a59f0ce168b88ae5e3380927f7d1058b19e39280af6a"
+      },
+      {
+        "id": 661114171,
+        "size": 53,
+        "sha256": "98b3dd50b8221658669424a788512339db86ca9a692effb2214e39f962f0eac8"
+      },
+      {
+        "id": 661114215,
+        "size": 178,
+        "sha256": "0a7606f03d595de8e3f2bacdc71f806d3db363426829172dd8b5140d5ced7c89"
+      },
+      {
+        "id": 661114250,
+        "size": 133120,
+        "sha256": "1b611008c8574f483eaf0b7a2ecf6a624dd30b80fdb6b748de81563214053f7c"
+      },
+      {
+        "id": 661114290,
+        "size": 836,
+        "sha256": "3008354f033fac1e227422a93a11cd09b9ff60e8d6d37577ea053cfcfa706cd0"
+      },
+      {
+        "id": 661114329,
+        "size": 8843,
+        "sha256": "0a9922d178c6ccb2666f02eea9ff68c88df61b2d8e3ea275608c1581cb5e17e2"
+      }
+    ]
+  },
+  "collected_at": "2026-10-21T02:28:13.513845+00:00",
+  "deleted_at": "2026-10-21T02:32:29.541124+00:00"
+}
