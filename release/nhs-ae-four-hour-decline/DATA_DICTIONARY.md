@@ -1,8 +1,9 @@
 # Data dictionary
 
-One row per (provider, target month M+1). The label comes from month M+1's source row only;
-every feature is derived from provider months <= M. The prediction instant is the end of month
-M, when month M's monthly CSV is published.
+One row per (provider, target month M+1). The label comes from month M+1's source row only; every
+feature, and every eligibility test, uses provider months <= M. The prediction instant is the
+**publication** of month M's monthly CSV, about ten days after month M ends (observed: August 2026
+data published 2026-09-10), not the period end.
 
 ## Identity and time
 

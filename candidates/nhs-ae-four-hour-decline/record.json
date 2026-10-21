@@ -165,7 +165,7 @@
  ],
  "rejection_reason": null,
  "review": null,
- "next_action": "REBUILD, do not flip. Two structural defects found by independent audit 2026-10-21: (1) temporal - the prediction instant must be the publication date of month M (about 10 days after month end), not month end, because 25 features are published then; (2) hindsight selection - eligibility must use only months <= M, not M+1 attendance or a whole-snapshot months-reported count. Fix code/build.py, rebuild, re-qualify, re-baseline (add persistence and target-month prior), re-package, then re-audit. Correct the documentation errors listed in audit_2026_10_21. The staged v2026.10 artifacts on both destinations are invalidated and must not be published.",
+ "next_action": "Stage v2026.11 to both destinations (private), then commission an independent re-audit of the rebuilt artifact before any flip. The audit must check the selection in code, not only the declaration. Do not publish v2026.10: its staged artifacts are superseded.",
  "novelty_check": {
   "checked_at": "2026-10-21T04:36:13+00:00",
   "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
@@ -274,18 +274,17 @@
   "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
  },
  "qualification": {
-  "gate_version": "1.3.0",
+  "gate_version": "1.4.0",
   "ok": true,
   "failed_checks": [],
-  "artifact_version": "9903df974f233dfa",
-  "report": "staging release 419222791 (job nhsae-002), qualification-nhs-ae-four-hour-decline.json; bundled as qualification.json and re-accepted by job nhsae-baseline-001 before scoring",
-  "accepted_on_coordinator": "qualify_dataset.py --accept -> ACCEPTED (2026-10-21); every extract file re-fetched and re-hashed against the release manifest first",
+  "artifact_version": "0990af0f90fbe304cb94bd53754a337f7704e1005d92f8d9d250b2e8e157b3b5",
+  "result": "PASSED - gate 1.4.0 on the rebuilt full artifact (9,549 rows), including the five new timing checks",
   "splits": {
    "train": {
-    "rows": 6116,
-    "positives": 3285,
-    "positive_rate": 0.537116,
-    "distinct_events": 133
+    "rows": 4074,
+    "positives": 2260,
+    "positive_rate": 0.554737,
+    "distinct_events": 114
    },
    "eval": {
     "rows": 2937,
@@ -411,5 +410,33 @@
   "baseline": "reproduces at AUC 0.552621 / Brier 0.398525, but persistence 0.575845 and a target-month-of-year prior 0.616765 both beat it",
   "holdout": "labelled and shipped by design; blind evaluation requires isolation",
   "documentation": "FAIL - timing conflation, rate_delta_1m scored with the opposite sign (it yields 0.5839/0.6007 eval/holdout), 'public/no credentials' wrong, checksum instructions use inconsistent paths, downloader does not consult SHA256SUMS or implement its gh fallback"
+ },
+ "rebuild_2026_10_21": {
+  "artifact": "0990af0f90fbe304cb94bd53754a337f7704e1005d92f8d9d250b2e8e157b3b5",
+  "release": "v2026.11",
+  "built_at": "2026-10-21T12:38:18Z",
+  "fixed": [
+   "prediction instant is the publication date of month M (observed 2026-08-31 -> 2026-09-10), not the period end",
+   "eligibility counts qualifying months at or before M; M+1 attendance and the whole-snapshot history count are gone",
+   "rate_delta_1m documented and reported with the correct sign (reversal 0.5839 eval, momentum 0.4161)",
+   "persistence, reversal and a train-only target-month prior published as references"
+  ],
+  "measured": {
+   "baseline_eval_auc": 0.5511,
+   "persistence_eval": 0.5758,
+   "persistence_holdout": 0.6046,
+   "month_prior_eval": 0.6027,
+   "reversal_eval": 0.5839,
+   "mean_reversion_eval": 0.5659,
+   "mean_reversion_holdout": 0.6562
+  },
+  "rows": {
+   "train": 4074,
+   "eval": 2937,
+   "holdout": 2538
+  },
+  "providers": 141,
+  "removed_training_rows": 2042,
+  "note": "Eval and holdout bytes are unchanged from v2026.10; only training rows a provider had not yet earned were removed."
  }
 }

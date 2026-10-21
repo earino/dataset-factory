@@ -241,11 +241,15 @@ CROSSCHECK_TOLERANCE = 0.025  # revised-vs-provisional publication states
 # so att1 read as 0 for 24 months and no provider-month before 2020-04 ever
 # passed the volume gate. Both defects are fixed here (utf-8-sig + the
 # "Number of" alias); the corrected figures are the measured truth.
+# Recomputed 2026-10-21 after the hindsight-selection fix: eligibility now counts a provider's
+# volume-gated months at or before M instead of across the whole snapshot, so training rows that a
+# provider had not yet earned are gone (train 6116 -> 4074). Eval and holdout are unchanged because
+# every provider there already had a full history.
 EXPECTED = {
-    "providers": 134,
-    "provider_months": 12765,
+    "providers": 141,
+    "provider_months": 12834,
     "splits": {
-        "train": {"rows": 6116, "positives": 3285},
+        "train": {"rows": 4074, "positives": 2260},
         "eval": {"rows": 2937, "positives": 1478},
         "holdout": {"rows": 2538, "positives": 1233},
     },
@@ -275,11 +279,12 @@ LAYOUT = {"train": "public/train.csv", "eval": "public/eval.csv",
           "holdout": "private/holdout.csv"}
 
 PREDICTION_TIME = (
-    "The end of month M, when month M's monthly A&E CSV is published "
-    "(measured ~3 week publication lag: the September 2026 CSV was already "
-    "downloadable on 2026-10-21). Every feature is derived from the "
-    "provider's monthly series for months <= M; the label is month M+1's "
-    "within-4-hour rate versus month M's, published about a month later.")
+    "At the publication of month M's monthly A&E CSV, about ten days after month M ends "
+    "(observed: the August 2026 file was published 2026-09-10). Every feature is derived from the "
+    "provider's monthly series for months <= M and every eligibility test uses those same months; "
+    "the label is month M+1's within-4-hour rate versus month M's, published about a month later. "
+    "The instant is the publication date, not the period end: at the end of month M these values "
+    "did not yet exist.")
 PREDICTION_QUESTION = (
     "For an NHS England provider operating a consultant-led (Type 1) A&E "
     "department with at least 100 Type 1 attendances in each of months M and "
@@ -614,13 +619,18 @@ def make_rows(panel: dict) -> tuple[list[dict], dict]:
         att1 = record["values"].get("att1")
         if att1 is not None and att1 >= MIN_ATT1:
             by_org.setdefault(org, []).append(key)
-    providers = {org: sorted(keys) for org, keys in by_org.items()
-                if len(keys) >= MIN_PROVIDER_MONTHS}
+    # Eligibility is counted from history, never from the whole snapshot. Counting a provider's
+    # qualifying months across the entire panel lets months *after* the feature month decide whether
+    # an earlier row exists - the hindsight selection an independent audit found in v2026.10.
+    providers = {org: sorted(keys) for org, keys in by_org.items() if len(keys) >= 2}
 
     rows = []
-    skipped = {"not_consecutive": 0}
+    skipped = {"not_consecutive": 0, "insufficient_history": 0}
     for org, keys in providers.items():
         for index in range(len(keys) - 1):
+            if index + 1 < MIN_PROVIDER_MONTHS:
+                skipped["insufficient_history"] += 1
+                continue
             feature_key, target_key = keys[index], keys[index + 1]
             if month_of_year(feature_key[0], feature_key[1], 1) != target_key:
                 skipped["not_consecutive"] += 1
@@ -907,7 +917,28 @@ def main(argv=None) -> int:
                                                for row in split_rows]),
             "winter_auc": auc(labels, [1.0 if row["target_month_num"] in (11, 12)
                                        else 0.0 for row in split_rows]),
+            # The same signal read the other way. rate_m1 - rate_m (momentum) scores 0.416 on eval,
+            # so rate_delta_1m - the column the dictionary describes - is a *reversal* signal: a
+            # rising rate predicts a decline next month. Naming both removes the sign trap an
+            # independent audit found in the v2026.10 description.
+            "reversal_auc": auc(labels, [row["rate_m"] - row["rate_m1"]
+                                         for row in split_rows]),
+            "persistence_auc": auc(labels, [row["rate_m"] for row in split_rows]),
+            "month_prior_auc": None,  # filled below from training-split month means
         }
+
+    # A target-month-of-year prior estimated on TRAIN ONLY. This is the reference that decides
+    # whether the task is more than seasonality; it beat the shipped model in the v2026.10 audit.
+    train_rows = rows_by_split["train"]
+    by_month: dict[int, list[int]] = {}
+    for row in train_rows:
+        by_month.setdefault(row["target_month_num"], []).append(row[TARGET])
+    month_prior = {month: sum(values) / len(values) for month, values in by_month.items()}
+    overall = (sum(row[TARGET] for row in train_rows) / len(train_rows)) if train_rows else 0.5
+    for split, rows in rows_by_split.items():
+        baselines[split]["month_prior_auc"] = auc(
+            [row[TARGET] for row in rows],
+            [month_prior.get(row["target_month_num"], overall) for row in rows])
 
     crosscheck = national_crosscheck(panel)
 
@@ -926,7 +957,8 @@ def main(argv=None) -> int:
         },
         "volume_gate": {"min_att1": MIN_ATT1,
                         "min_provider_months": MIN_PROVIDER_MONTHS,
-                        "applies_to": "both the feature month M and the target month M+1"},
+                        "applies_to": "the provider's qualifying months at or before M; the "
+                                      "target month M+1 supplies only the label"},
         "revision_policy": "duplicate (org, month) keys keep the copy from "
                             "the latest upload, ordered by (revision datestamp "
                             "in filename, revised flag, filename); originals "
@@ -1044,8 +1076,9 @@ def main(argv=None) -> int:
                          "source_kind": "statistical_release"},
             "row_selection": {"latest_period_used": "M",
                               "fields": ["att1_m", "over4_1_m", "rate_m", "months_reported_12m"],
-                              "basis": "the rebuilt selection must use only months up to M; the "
-                                       "audited v2026.10 build also used M+1 attendance"},
+                              "basis": "eligibility counts the provider's volume-gated months at or "
+                                       "before M; the target month M+1 is used only to compute the "
+                                       "label, never to decide whether a row exists"},
             "observations": [{"period": "2026-08", "period_end": "2026-08-31",
                               "published": "2026-09-10"}],
         },

@@ -8,10 +8,11 @@ provider's monthly A&E series for all months through M, plus the calendar?
 This is a binary provider-month prediction task built from NHS England's monthly provider-level
 A&E statistics. It is a **derived research dataset**, not an NHS England product.
 
-- **Prediction instant:** the end of month M, when month M's monthly CSV is published (measured
-  publication lag ~3 weeks: the September 2026 CSV was already downloadable on 2026-10-21).
-  Every feature is derived from provider months <= M. The label is month M+1's within-4-hour
-  rate versus month M's, published about a month after the prediction.
+- **Prediction instant:** the **publication** of month M's monthly CSV, about ten days after month M
+  ends (observed: the August 2026 file was published 2026-09-10). This is not the period end - at
+  the end of month M those values did not yet exist. Every feature, and every eligibility test, uses
+  provider months <= M only. The label is month M+1's within-4-hour rate versus month M's, published
+  about a month after the prediction.
 - **Target:** `declines = 1` iff `within4h_rate(M+1) < within4h_rate(M)`, where
   `within4h_rate(Y) = 1 - Attendances over 4hrs Type 1 / A&E attendances Type 1`. A relative
   month-over-month change is used because every fixed standard threshold measured near-uniform
@@ -27,7 +28,7 @@ A&E statistics. It is a **derived research dataset**, not an NHS England product
 
 | File | Rows | Positive rate | Distinct positive providers |
 | --- | ---: | ---: | ---: |
-| `public/train.csv` | 6,116 | 53.7% | 133 |
+| `public/train.csv` | 4,074 | 55.5% | 114 |
 | `public/eval.csv` | 2,937 | 50.3% | 124 |
 | `private/holdout.csv` | 2,538 | 48.6% | 121 |
 
@@ -53,13 +54,18 @@ prediction-time-safe features):
 
 | Reference | Eval AUC | Holdout AUC |
 | --- | ---: | ---: |
-| Momentum (`rate_delta_1m`) | 0.4161 | 0.3993 |
+| Momentum (`rate_m1 - rate_m`) | 0.4161 | 0.3993 |
+| Reversal (`rate_delta_1m`, the same signal read the other way) | 0.5839 | 0.6007 |
+| Persistence (`rate_m`) | 0.5758 | 0.6046 |
 | Mean reversion (`rate_m - rate_mean_6m`) | **0.5659** | **0.6562** |
+| Target-month-of-year prior, train only | **0.6027** | 0.5294 |
 | Winter calendar rule | 0.5473 | 0.5090 |
-| Runner-contract XGBoost baseline | 0.5526 | not scored (see `VERIFICATION.md`) |
+| Runner-contract XGBoost baseline | 0.5511 | not scored (see `VERIFICATION.md`) |
 
-Mean reversion is the strongest reference and the bar a competent model must beat; momentum is
-anti-predictive. The XGBoost contract baseline sits **below** mean reversion on eval - recorded
+The strongest eval references are the target-month prior (0.6027) and reversal (0.5839); on the
+holdout it is mean reversion (0.6562). Momentum is anti-predictive, and `rate_delta_1m` is that same
+signal negated - a rising rate predicts a decline, which is why the two rows appear together. The
+XGBoost contract baseline sits **below** every one of them on eval - recorded
 as measured headroom information, not a defect.
 
 ## Prediction timing and leakage

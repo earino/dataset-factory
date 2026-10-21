@@ -1,0 +1,105 @@
+{
+ "name": "nhs-ae-four-hour-decline",
+ "built_at_utc": "2026-10-21T12:38:18Z",
+ "source": {
+  "mode": "http",
+  "files": 102,
+  "requests": 114,
+  "bytes": 3115779,
+  "seconds": 1.0,
+  "pages": 12,
+  "composite_sha256": "99cb3339b31ae2045c990c950a40fb44dc93f1dfc4d58f1ae1879fa851666833"
+ },
+ "grain": "provider (Org Code) x calendar month",
+ "label": {
+  "definition": "declines = 1 iff within4h_rate(M+1) < within4h_rate(M)",
+  "within4h_rate": "1 - Attendances over 4hrs Type 1 / A&E attendances Type 1",
+  "external_threshold": null,
+  "note": "fixed thresholds measured near-uniform rates and were refused (record: <95% -> holdout 99.9% positive; <80% -> 95.8%); the m/m direction label is threshold-free"
+ },
+ "volume_gate": {
+  "min_att1": 100,
+  "min_provider_months": 24,
+  "applies_to": "the provider's qualifying months at or before M; the target month M+1 supplies only the label"
+ },
+ "revision_policy": "duplicate (org, month) keys keep the copy from the latest upload, ordered by (revision datestamp in filename, revised flag, filename); originals without a datestamp sort before every revision",
+ "load_stats": {
+  "files": 102,
+  "rows_read": 21649,
+  "skipped_period": 101,
+  "skipped_no_org": 0,
+  "deduped_keys": 0,
+  "booked_cells_seen": 90012
+ },
+ "gate": {
+  "providers": 141,
+  "provider_months": 12834,
+  "skipped": {
+   "not_consecutive": 0,
+   "insufficient_history": 3144
+  }
+ },
+ "skipped_rows_outside_windows": 0,
+ "splits": {
+  "train": {
+   "rows": 4074,
+   "positives": 2260,
+   "positive_rate": 0.554737,
+   "distinct_events": 114
+  },
+  "eval": {
+   "rows": 2937,
+   "positives": 1478,
+   "positive_rate": 0.503235,
+   "distinct_events": 124
+  },
+  "holdout": {
+   "rows": 2538,
+   "positives": 1233,
+   "positive_rate": 0.485816,
+   "distinct_events": 121
+  }
+ },
+ "clustered_events_note": "distinct_events counts distinct positive Org Codes per window - positives cluster within providers, so this is the conservative independent-unit count",
+ "national_crosscheck": {
+  "month": "2026-08",
+  "attendances": 1407535.0,
+  "panel_rate": 0.6086,
+  "publisher_commentary_rate": 0.611
+ },
+ "timing_selfcheck": {
+  "checked": 204,
+  "mismatches": 0
+ },
+ "duplicate_row_ids": 0,
+ "schema_evolution": "16 data columns 2018-04..2020-07 (with 'Number of' prefixes in 2018-19); booked-appointment columns from 2020-08 (22 columns); unnamed padding columns from 2024-09 (28 header fields); booked columns parsed but not shipped - they are absent for train feature months 2018-12..2020-07",
+ "reference_baselines": {
+  "note": "stdlib rank AUC measured at construction on the written rows; every score is a prediction-time-safe single feature",
+  "per_split": {
+   "train": {
+    "momentum_auc": 0.5446827038471671,
+    "mean_reversion_auc": 0.4994870281292992,
+    "winter_auc": 0.5166424368968983,
+    "reversal_auc": 0.45531729615283295,
+    "persistence_auc": 0.41767045399108216,
+    "month_prior_auc": 0.6543650174161634
+   },
+   "eval": {
+    "momentum_auc": 0.4160875384088867,
+    "mean_reversion_auc": 0.5659125710326739,
+    "winter_auc": 0.5472757398666853,
+    "reversal_auc": 0.5839124615911133,
+    "persistence_auc": 0.5758453201212019,
+    "month_prior_auc": 0.602671950777267
+   },
+   "holdout": {
+    "momentum_auc": 0.39930642951030565,
+    "mean_reversion_auc": 0.6562146339644452,
+    "winter_auc": 0.5090164163660262,
+    "reversal_auc": 0.6006935704896943,
+    "persistence_auc": 0.604619452912095,
+    "month_prior_auc": 0.5293695406959943
+   }
+  }
+ }
+}

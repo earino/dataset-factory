@@ -21,8 +21,10 @@ baseline run and digest-verified on arrival.
 
 Will a provider's Type 1 within-4-hour rate decline next month relative to this month, given its
 monthly A&E series through this month? Splits are temporal on the target month: train
-2019-01..2022-12, eval 2023-01..2024-12, holdout 2025-01..2026-09. 11,591 provider-months
-(6,116 / 2,937 / 2,538) over 134 volume-gated providers.
+2019-01..2022-12, eval 2023-01..2024-12, holdout 2025-01..2026-09. 9,549 provider-months
+(4,074 / 2,937 / 2,538) over 141 volume-gated providers. **v2026.11 rebuild:** eligibility counts a
+provider's qualifying months **at or before M**, not across the whole snapshot, so 2,042 training
+rows a provider had not yet earned are gone; eval and holdout are unchanged.
 
 A relative m/m label is used because every fixed standard threshold measured near-uniform
 positive rates in recent years (<95% -> 99.9% of the holdout positive; <80% -> 95.8%): the
@@ -32,10 +34,11 @@ drifts with the system itself. The m/m label is balanced in every window (53.7% 
 
 ## Numbers
 
-- Reference points (rank AUC on the written rows): mean reversion 0.5659 eval / 0.6562 holdout -
-  the bar to beat; momentum anti-predictive at 0.4161 / 0.3993; winter calendar 0.5473 / 0.5090.
-- Runner-contract baseline: eval AUC **0.5526** (both independent paths, `CONTRACT OK`), below
-  mean reversion - recorded as headroom, not a defect. See `VERIFICATION.md`.
+- Reference points (rank AUC on the written rows): target-month prior 0.6027 eval / 0.5294 holdout;
+  reversal (`rate_delta_1m`) 0.5839 / 0.6007; persistence (`rate_m`) 0.5758 / 0.6046; mean reversion
+  0.5659 / 0.6562; momentum 0.4161 / 0.3993 (anti-predictive); winter calendar 0.5473 / 0.5090.
+- Runner-contract baseline: eval AUC **0.5511** (both independent paths, `CONTRACT OK`), below every
+  reference - recorded as headroom, not a defect. See `VERIFICATION.md`.
 - Publisher cross-check: August 2026 national Type 1 within-4h 61.1% (publisher commentary) vs
   60.86% recomputed on this panel.
 
