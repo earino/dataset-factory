@@ -1,6 +1,6 @@
 {
  "id": "nhs-ae-four-hour-decline",
- "status": "qualified",
+ "status": "packaged",
  "verdict": "go",
  "jurisdiction": {
   "country": "GB",
@@ -210,7 +210,7 @@
  ],
  "rejection_reason": null,
  "review": null,
- "next_action": "Stage v2026.12 privately on both destinations, then commission a third audit pass focused on the counterfactual the re-audit used: change only a target month and confirm the row survives. v2026.11 and v2026.10 are superseded and must not be published.",
+ "next_action": "Staged private on GitHub (v2026.12 draft release 420072089) and Hugging Face (16 files, digests verified). Held from the flip pending the third audit pass: the counterfactual test (change only a target month, confirm the row survives) is now a unit test in the factory. Flip is the operator's call; v2026.10 and v2026.11 remain superseded.",
  "novelty_check": {
   "checked_at": "2026-10-21T04:36:13+00:00",
   "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
@@ -322,8 +322,8 @@
   "gate_version": "1.4.0",
   "ok": true,
   "failed_checks": [],
-  "artifact_version": "f4cb7fde0af5c21105e4e41bf17d8535801f305c694ba901b110280ad2b2e302",
-  "result": "PASSED - gate 1.4.0 on the v2026.12 artifact (13-day maximum publication lag; eligibility at M only)",
+  "artifact_version": "d871b45b667448a123bad9762cf066fd5d31c08700761b27ca8ff57a8a0690f9",
+  "result": "PASSED - gate 1.4.0 on the v2026.12 rebuild c artifact (2026-10-21T18:06:51Z; 13-day maximum publication lag; eligibility decided at M only), and qualify_dataset.py --accept re-verified the package bytes against the bundled report (ACCEPTED, artifact d871b45b667448a1)",
   "splits": {
    "train": {
     "rows": 4074,
@@ -346,10 +346,10 @@
   }
  },
  "construction_output": {
-  "job": "coordinator-rebuild-2026-10-21",
-  "artifact_version": "0990af0f90fbe304cb94bd53754a337f7704e1005d92f8d9d250b2e8e157b3b5",
+  "job": "coordinator-rebuild-2026-10-21c",
+  "artifact_version": "d871b45b667448a123bad9762cf066fd5d31c08700761b27ca8ff57a8a0690f9",
   "gate_version": "1.4.0",
-  "built_at_utc": "2026-10-21T12:38:18Z",
+  "built_at_utc": "2026-10-21T18:06:51Z",
   "rows": 9549,
   "splits": {
    "train": {
@@ -377,7 +377,7 @@
    "holdout": "target months 2025-01..2026-09"
   },
   "source_composite_sha256": "99cb3339b31ae2045c990c950a40fb44dc93f1dfc4d58f1ae1879fa851666833",
-  "source_staging": "v2026.11 fetched the 102 publisher CSVs over HTTP on the coordinator (114 requests, 3,115,779 bytes, composite digest above - identical to the nhsae-002 staged source, because the publisher serves the same bytes; v2026.10 consumed them from staging release source-nhsae-001, id 419221351, asset 661561799, sha256 8d8bc1b1...)",
+  "source_staging": "v2026.12 rebuild c fetched the 102 publisher CSVs over HTTP on the coordinator (114 requests, 3,115,779 bytes, 5.9 s, composite sha256 99cb3339b31ae204... - identical to the 15:26 v2026.12 build and to the nhsae-002 staged source, because the publisher serves the same bytes and the snapshot did not move on 2026-10-21; v2026.10 consumed them from staging release source-nhsae-001, id 419221351, asset 661561799, sha256 8d8bc1b1...)",
   "files": {
    "public/train.csv": {
     "bytes": 1664506,
@@ -392,12 +392,12 @@
     "sha256": "527a385f12a920b019434c70588c6532af1bd4dd5459eb64ed46809b5ef99b70"
    },
    "meta.json": {
-    "bytes": 3432,
-    "sha256": "778b863389e2e65326168c3dbbc39e4683a9ec45c74f0052c70dc074e93bf03d"
+    "bytes": 3579,
+    "sha256": "196d300ec0c6b7fc3e8b04809019f075c2d2f93a76bdc66d2b26cdd08122aadc"
    },
    "quality.json": {
-    "bytes": 6123,
-    "sha256": "31600cdf1d166bd4ae11189b2d1c7717ecb7abf418bc051a92be8c0b8f6c714b"
+    "bytes": 6679,
+    "sha256": "0fb29a658ac5d097994534177de60a463b46fe8cf0adac37f3ec742a40690256"
    }
   },
   "staging_release": null,
@@ -411,15 +411,15 @@
   "superseded_v2026_10": "the v2026.10 construction_output (job nhsae-002, artifact 9903df974f233dfa, gate 1.3.0, 11,591 rows, staging release 419222791) is preserved in git history and in that staging release"
  },
  "baseline": {
-  "job": "coordinator-rebuild-2026-10-21",
-  "where": "coordinator, baseline/reproduce_baseline.sh on the rebuilt public splits (the runner files unmodified, bundled sha256 == expected)",
-  "accepted_artifact_version": "0990af0f90fbe304cb94bd53754a337f7704e1005d92f8d9d250b2e8e157b3b5",
+  "job": "coordinator-rebuild-2026-10-21c",
+  "where": "coordinator, baseline/reproduce_baseline.sh re-run on the v2026.12 rebuild c public splits (the runner files unmodified, bundled sha256 == expected)",
+  "accepted_artifact_version": "d871b45b667448a123bad9762cf066fd5d31c08700761b27ca8ff57a8a0690f9",
   "contract_ok": true,
   "eval_auc_from_train_py": 0.5511,
   "eval_auc_from_validate_py": 0.5511,
   "runner_files_unmodified": true,
   "dependencies": {
-   "python": "3.13",
+   "python": "3.14",
    "xgboost": "3.4.1",
    "scikit-learn": "1.9.1",
    "pandas": "2.3.3",
@@ -441,10 +441,10 @@
    "month_prior_auc": 0.5294,
    "momentum_auc": 0.3993
   },
-  "note": "The runner-contract baseline for the v2026.11 artifact: 0.5511 eval AUC through both independent paths, CONTRACT OK - below every eval reference (target-month prior 0.6027, reversal 0.5839, persistence 0.5758, mean reversion 0.5659): recorded as measured headroom. The superseded v2026.10 worker baseline nhsae-baseline-001 (server 171525370, 56.8 s, eval AUC 0.5526 on artifact 9903df974f233dfa, reports in staging release 419227918) is preserved in jobs[] and in the audit block."
+  "note": "The runner-contract baseline re-run on exactly the v2026.12 rebuild c bytes: 0.5511 eval AUC through both independent paths, CONTRACT OK (python 3.14.7; the v2026.11 run under python 3.13.16 measured the identical 0.5511 on the byte-identical CSVs) - below every eval reference (target-month prior 0.6027, reversal 0.5839, persistence 0.5758, mean reversion 0.5659): recorded as measured headroom. The superseded v2026.10 worker baseline nhsae-baseline-001 (server 171525370, 56.8 s, eval AUC 0.5526 on artifact 9903df974f233dfa, reports in staging release 419227918) is preserved in jobs[] and in the audit block."
  },
- "packaged_at": "2026-10-21T14:53Z",
- "awaiting_operator": false,
+ "packaged_at": "2026-10-21T21:27:10Z",
+ "awaiting_operator": true,
  "audit_2026_10_21": {
   "auditor": "independent agent, gh CLI, read-only, did not read dataset-factory",
   "artifact": "9903df974f233dfa",
@@ -512,5 +512,29 @@
    "month_prior_eval": 0.6027,
    "reversal_eval": 0.5839
   }
+ },
+ "rebuild_2026_10_21_c": {
+  "artifact": "d871b45b667448a123bad9762cf066fd5d31c08700761b27ca8ff57a8a0690f9",
+  "release": "v2026.12",
+  "built_at": "2026-10-21T18:06:51Z",
+  "construction_commit": "efb8191e14e2658fa463133c535e8dcbc47e616c",
+  "trigger": "qualify_dataset.py --accept refused the 15:26 v2026.12 package: its qualification.json carried per-file digests (train b5f2721d..., eval b2519cba..., holdout 4d837f39..., meta 7f4723c6..., quality 8a70f479...) that matched no shipped bytes - the package still held the v2026.11 CSVs (55af8129... / cb786792... / 527a385f...) and a hand-carried report over mid-fix bytes that were never shipped. VERIFICATION.md, REPRODUCE.md and RELEASE_NOTES.md also still described v2026.11, and build.py's docstring and PREDICTION_QUESTION still described the pre-fix M+1 volume gate that the re-audit rejected.",
+  "fixed": [
+   "rebuilt from the committed build.py (efb8191: M-only docstring and question; no data-path change); the three CSVs reproduced byte-identically to v2026.11, so no shipped row depends on the target month's volume on this snapshot - the fix is a sensitivity property, and it now holds by construction",
+   "gate 1.4.0 re-run over the exact shipped bytes (QUALIFICATION PASSED, artifact d871b45b...) and --accept re-verified on the package (ACCEPTED)",
+   "docs made consistent with v2026.12: VERIFICATION.md artifact table and history, REPRODUCE.md artifact version, RELEASE_NOTES.md rewritten for v2026.12, README question and grain text, measurements.json refreshed from the fresh summary",
+   "baseline re-run on the shipped bytes (0.5511 / 0.5511, CONTRACT OK, python 3.14.7)"
+  ],
+  "rows": {
+   "train": 4074,
+   "eval": 2937,
+   "holdout": 2538
+  },
+  "providers": {
+   "shipped": 129,
+   "candidates": 142
+  },
+  "data_bytes_identical_to_v2026_11": true,
+  "superseded_artifact_claim": "the 15:26 session's f4cb7fde0af5c211... version described mid-fix bytes that were never shipped and is superseded"
  }
 }

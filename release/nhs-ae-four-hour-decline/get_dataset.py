@@ -35,7 +35,7 @@ import urllib.request
 from pathlib import Path
 
 REPO = "earino/nhs-ae-four-hour-decline"
-TAG = "v2026.11"
+TAG = "v2026.12"
 # flat asset name -> destination relative to --dest
 LAYOUT = {
     "public-train.csv": "public/train.csv",
@@ -52,10 +52,10 @@ EXPECTED = {
                         "sha256": "cb786792ac321dd851c272bd159fed24e13d6b633276606b294ddc976e72f266"},
     "private-holdout.csv": {"bytes": 1099411,
                             "sha256": "527a385f12a920b019434c70588c6532af1bd4dd5459eb64ed46809b5ef99b70"},
-    "meta.json": {"bytes": 3432,
-                  "sha256": "778b863389e2e65326168c3dbbc39e4683a9ec45c74f0052c70dc074e93bf03d"},
-    "quality.json": {"bytes": 6123,
-                     "sha256": "31600cdf1d166bd4ae11189b2d1c7717ecb7abf418bc051a92be8c0b8f6c714b"},
+    "meta.json": {"bytes": 3579,
+                  "sha256": "196d300ec0c6b7fc3e8b04809019f075c2d2f93a76bdc66d2b26cdd08122aadc"},
+    "quality.json": {"bytes": 6679,
+                     "sha256": "0fb29a658ac5d097994534177de60a463b46fe8cf0adac37f3ec742a40690256"},
 }
 URL = "https://github.com/{repo}/releases/download/{tag}/{name}"
 

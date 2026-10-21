@@ -29,7 +29,7 @@ python3 -c "import json;print(json.load(open('MANIFEST.json'))['artifact_version
 ```
 
 `MANIFEST.json` records the artifact version the qualification gate produced
-(`0990af0f90fbe304...`) and every package file's digest. The flat asset names are
+(`d871b45b667448a1...`) and every package file's digest. The flat asset names are
 `public-train.csv`, `public-eval.csv`, `private-holdout.csv`, `meta.json`, `quality.json`.
 
 ## 3. Re-run the qualification gate

@@ -1,5 +1,5 @@
 {
- "job": "coordinator-rebuild-2026-10-21",
+ "job": "coordinator-rebuild-2026-10-21c",
  "purpose": "one baseline through the runner's existing training and validation contract, on the accepted NHS England provider-month A&E decline artifact",
  "artifact": {
   "name": "nhs-ae-four-hour-decline",
@@ -18,15 +18,15 @@
    "eval": 0.503235,
    "holdout": 0.485816
   },
-  "label_rule": "declines = 1 iff within4h_rate(M+1) < within4h_rate(M), within4h_rate(Y) = 1 - Attendances over 4hrs Type 1 / A&E attendances Type 1; provider-months with Type 1 attendances < 100 in either month are excluded"
+  "label_rule": "declines = 1 iff within4h_rate(M+1) < within4h_rate(M), within4h_rate(Y) = 1 - Attendances over 4hrs Type 1 / A&E attendances Type 1; a row for feature month M requires >= 100 Type 1 attendances in M and 24 such volume-qualified months at or before M (the target month supplies the label only; a missing target month is unobserved outcome data, not exclusion)"
  },
  "qualification_report": {
   "bundled": "qualification.json",
-  "sha256": "2118ecd4f7498a3c1e7f25f95707857b8be5a162519fa87d6149a4b25c9a18d2",
+  "sha256": "d38243699d6fc64a624d66fe7a5bd9e3b02d9f5e6aaa1a0a9145800b52c2ad40",
   "gate_passed_on_full_artifact": true,
   "gate_version": "1.4.0",
-  "accepted_artifact_version": "0990af0f90fbe304cb94bd53754a337f7704e1005d92f8d9d250b2e8e157b3b5",
-  "note": "gate 1.4.0 passed on the full rebuilt artifact at build time (2026-10-21T12:38Z, report bundled as qualification.json, sha256 above); the package bytes were re-accepted through qualify_dataset.py --accept on 2026-10-21T14:07Z before staging (ACCEPTED, artifact 0990af0f90fbe304). The v2026.10 worker baseline nhsae-baseline-001 (0.5526 on superseded artifact 9903df974f233dfa) is preserved in record.json jobs[] and staging release 419227918."
+  "accepted_artifact_version": "d871b45b667448a123bad9762cf066fd5d31c08700761b27ca8ff57a8a0690f9",
+  "note": "gate 1.4.0 passed on the full v2026.12 rebuild c artifact at build time (2026-10-21T18:06:51Z, report bundled as qualification.json, sha256 above); the package bytes were re-accepted through qualify_dataset.py --accept the same evening (ACCEPTED, artifact d871b45b667448a1) and the baseline below was re-run on exactly those bytes (0.5511 / 0.5511, CONTRACT OK). Superseded artifacts preserved for provenance: v2026.11 0990af0f90fbe304 (baseline 0.5511, same CSV bytes) and v2026.10 9903df974f233dfa (worker baseline nhsae-baseline-001, 0.5526, staging release 419227918)."
  },
  "contract": {
   "contract_ok": true,
@@ -47,7 +47,7 @@
   "unmodified": true
  },
  "dependencies": {
-  "python": "3.13.16",
+  "python": "3.14.7",
   "pandas": "2.3.3",
   "numpy": "2.5.4",
   "xgboost": "3.4.1",
@@ -59,13 +59,13 @@
   "validate_py_eval_auc": 0.5511,
   "contract": "CONTRACT OK",
   "dependencies": {
-   "python": "3.13",
+   "python": "3.14",
    "xgboost": "3.4.1",
    "scikit-learn": "1.9.1",
    "pandas": "2.3.3",
    "numpy": "2.5.4"
   },
-  "run": "baseline/reproduce_baseline.sh against the rebuilt public splits, coordinator, 2026-10-21",
+  "run": "baseline/reproduce_baseline.sh against the v2026.12 rebuild c public splits, coordinator, 2026-10-21T18:2xZ (the v2026.11 run recorded python 3.13.16; same package versions, same 0.5511 result)",
   "note": "Reproduced twice through independent paths (train.py and validate.py predict_proba). Below every reference."
  },
  "reference_points": {

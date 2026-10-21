@@ -1,15 +1,17 @@
 # NHS England A&E four-hour performance month-over-month decline
 
 **Task.** For an NHS England provider operating a consultant-led (Type 1) A&E department with at
-least 100 Type 1 attendances in each of months M and M+1, will the provider's Type 1
+least 100 Type 1 attendances in month M and at least 24 such volume-qualified months at or
+before M, will the provider's Type 1
 within-4-hour performance rate **decline in month M+1 relative to month M**, given the
 provider's monthly A&E series for all months through M, plus the calendar?
 
 This is a binary provider-month prediction task built from NHS England's monthly provider-level
 A&E statistics. It is a **derived research dataset**, not an NHS England product.
 
-- **Prediction instant:** the **publication** of month M's monthly CSV, about ten days after month M
-  ends (observed: the August 2026 file was published 2026-09-10). This is not the period end - at
+- **Prediction instant:** the **publication** of month M's monthly CSV, 9-13 days after month M
+  ends (observed: June, July and August 2026 were published 9, 13 and 10 days after the period
+  end; the task uses the maximum, 13 days). This is not the period end - at
   the end of month M those values did not yet exist. Every feature, and every eligibility test, uses
   provider months <= M only. The label is month M+1's within-4-hour rate versus month M's, published
   about a month after the prediction.
@@ -20,7 +22,10 @@ A&E statistics. It is a **derived research dataset**, not an NHS England product
   the national standard deteriorated from ~83% (2018) to ~60% (2026), so the base rate's drift is
   a documented property of the phenomenon, not a construction choice.
 - **Grain:** one row per (provider, target month M+1), keyed `row_id = <ORG CODE>-<YYYY-MM>`.
-  Provider-months with Type 1 attendances < 100 in either month are excluded.
+  A row for feature month M requires >= 100 Type 1 attendances in M and 24 such volume-qualified
+  months at or before M; the target month supplies the label only and never decides whether a row
+  exists (a provider-month whose target month is absent from the register is counted as
+  unobserved outcome data, 134 in this build).
 - **Splits:** temporal on the target month - train 2019-01..2022-12, eval 2023-01..2024-12,
   holdout 2025-01..2026-09.
 
@@ -97,8 +102,9 @@ v3.0."
 - Cross-check against the publisher's own commentary: August 2026 national Type 1 within-4h
   61.1% (publisher) vs 60.86% recomputed on this panel at build time (revised-vs-provisional
   publication states).
-- Construction: `code/build.py`, run on the coordinator 2026-10-21T12:38:18Z from the 102
+- Construction: `code/build.py`, run on the coordinator 2026-10-21T18:06:51Z from the 102
   publisher CSVs over HTTP (datacenter IPs are CDN-blocked, so no worker can fetch this
-  publisher); artifact version `0990af0f90fbe304...`, gate 1.4.0. Reproduction instructions in
-  `REPRODUCE.md`. v2026.10 history: the superseded artifact `9903df974f233dfa...` (gate 1.3.0,
-  worker job nhsae-002) remains under the `v2026.10` tag.
+  publisher); artifact version `d871b45b667448a1...`, gate 1.4.0, `--accept` re-verified on the
+  package bytes. Reproduction instructions in
+  `REPRODUCE.md`. v2026.11 and v2026.10 history: the superseded artifacts `0990af0f90fbe304...`
+  and `9903df974f233dfa...` remain under their tags and must not be used.

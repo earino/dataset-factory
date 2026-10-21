@@ -1,11 +1,13 @@
-# Release notes - v2026.11
+# Release notes - v2026.12
 
-Second release of **nhs-ae-four-hour-decline**: a binary provider-month prediction task on NHS
-England A&E four-hour performance. **v2026.11 supersedes v2026.10**: an independent audit on
-2026-10-21 found v2026.10 had a temporal defect (25 features carried month-M values published
-about ten days after the claimed prediction instant) and hindsight selection (eligibility used
-month M+1 attendance and a whole-snapshot history count). Both are fixed here; the v2026.10
-assets remain under the `v2026.10` tag and must not be used.
+Third release of **nhs-ae-four-hour-decline**: a binary provider-month prediction task on NHS
+England A&E four-hour performance. **v2026.12 supersedes v2026.11 and v2026.10.** An independent
+audit found v2026.10 shipped a temporal defect (features published after the claimed instant)
+and hindsight selection (M+1 attendance and a whole-snapshot history count); a re-audit found
+v2026.11 still let the target month's attendance decide whether a row existed - the counterfactual
+was a single provider-month (R0A 2022-03) whose row vanished when only the target month's
+attendances changed. v2026.12 decides eligibility at M only. The superseded releases remain
+under their tags and must not be used.
 
 ## What ships
 
@@ -14,32 +16,34 @@ assets remain under the `v2026.10` tag and must not be used.
 | `public-train.csv` | 1,664,506 | `55af812900519d39` |
 | `public-eval.csv` | 1,246,633 | `cb786792ac321dd8` |
 | `private-holdout.csv` | 1,099,411 | `527a385f12a920b0` |
-| `meta.json` | 3,432 | `778b863389e2e653` |
-| `quality.json` | 6,123 | `31600cdf1d166bd4` |
+| `meta.json` | 3,579 | `196d300ec0c6b7fc` |
+| `quality.json` | 6,679 | `0fb29a658ac5d097` |
 
-Artifact version `0990af0f90fbe304...`, gate **1.4.0**, `ok: true`, 0 failed checks. The five
-files were built on the coordinator from the 102 publisher CSVs (the publisher's CDN serves
-HTTP 202 with an empty body to datacenter IPs, so a worker cannot fetch it; see
-`VERIFICATION.md` section 5). Eval and holdout bytes are unchanged from v2026.10; only training
-rows a provider had not yet earned were removed.
+Artifact version `d871b45b667448a1...`, gate **1.4.0**, `ok: true`, 0 failed checks,
+`--accept` re-verified on the package bytes. The five files were built on the coordinator from
+the 102 publisher CSVs (the publisher's CDN serves HTTP 202 with an empty body to datacenter IPs,
+so a worker cannot fetch it; see `VERIFICATION.md` section 5). The three CSVs are byte-identical
+to v2026.11's: on this snapshot the eligibility fix changes no shipped row - it changes what a
+hypothetical edit to a target month could do to the population, and it makes that property hold
+by construction instead of by accident.
 
-## What changed from v2026.10
+## What changed from v2026.11
 
-- **Prediction instant restated as the publication date** of month M's CSV, about ten days
-  after month end: NHS published 9, 13 and 10 days after the period end in June, July and August
-  2026, so the instant uses the maximum, 13 days, and never assumes a mean. No feature changed; the claim about when they exist did. Gate 1.4.0 now refuses
-  the old period-end claim.
-- **Eligibility counts a provider's qualifying months at or before M.** 2,042 training rows a
-  provider had not yet earned are gone (train 6,116 -> 4,074; 129 providers ship, from 142
-  candidates). Eligibility is decided at M only: the target month supplies the label and never
-  decides whether a row exists. 134 provider-months have no reported target month and are counted
-  as missing outcomes, not as excluded rows. Eval and holdout
-  are byte-identical.
-- `rate_delta_1m` documented with the correct sign: it is a **reversal** signal (0.5839 eval /
-  0.6007 holdout), with momentum (its negation, 0.4161 / 0.3993) reported beside it.
-- References shipped with the artifact: target-month-of-year prior, persistence, reversal,
-  mean reversion and the winter rule. The runner-contract baseline (0.5511) is below every
-  eval reference and the documentation says so.
+- **Eligibility is decided at M only.** A row for feature month M exists when the provider has
+  24 volume-qualified months (>= 100 Type 1 attendances) at or before M and month M itself
+  qualifies. The target month M+1 supplies the label and never decides membership; 134
+  provider-months whose target month is absent from the register are counted as
+  `unobserved_target` - missing outcome data, not exclusion. 129 providers ship, from 142
+  candidates.
+- **The prediction instant uses the maximum observed publication lag** (13 days; June, July and
+  August 2026 were published 9, 13 and 10 days after their period ends), not a fixed 10.
+- **The shipped question text now matches the enforced rule.** v2026.11's `quality.json` still
+  described the population as "at least 100 Type 1 attendances in each of months M and M+1" -
+  the pre-fix rule. The module docstring, the generated question and the README now state the
+  M-only rule (construction commit `efb8191`).
+- **The package's qualification report now describes the shipped bytes.** The first v2026.12
+  attempt carried a report over mid-fix bytes that were never shipped; `qualify_dataset.py
+  --accept` refused it, and this rebuild re-gated the exact bytes in the package.
 
 ## Task
 
@@ -60,22 +64,22 @@ windows - close to balanced, not guaranteed to be.
   holdout; reversal (`rate_delta_1m`) 0.5839 / 0.6007; persistence (`rate_m`) 0.5758 / 0.6046;
   mean reversion 0.5659 / 0.6562; momentum 0.4161 / 0.3993 (anti-predictive); winter calendar
   0.5473 / 0.5090.
-- Runner-contract baseline: eval AUC **0.5511** (both independent paths, `CONTRACT OK`), below
-  every eval reference - recorded as headroom, not a defect. See `VERIFICATION.md`.
+- Runner-contract baseline: eval AUC **0.5511** (both independent paths, `CONTRACT OK`),
+  re-run on exactly these bytes - below every eval reference, recorded as headroom, not a
+  defect. See `VERIFICATION.md`.
 - Publisher cross-check: August 2026 national Type 1 within-4h 61.1% (publisher commentary) vs
   60.86% recomputed on this panel.
 
 ## Corrections carried into this release
 
-- The discovery panel probe had two defects (UTF-8 BOM handling dropped five whole months;
-  the "Number of" column-name alias missed 24 pre-2020-04 months), which understated the panel
-  at 97 months / 124 providers. The corrected panel - 102 months, 142 candidate providers,
-  12,834 qualifying provider-months under history-only selection - is what this artifact was
-  built from, and the split figures published here are the corrected ones.
+- The discovery panel probe had two defects (UTF-8 BOM handling dropped five whole months; the
+  "Number of" column-name alias missed 24 pre-2020-04 months), which understated the panel at
+  97 months / 124 providers. The corrected panel - 102 months, 142 candidate providers, 12,835
+  qualifying provider-months - is what this artifact was built from.
 - `code/build.py` gained a fetch client ladder after the publisher's CDN was measured serving
-  HTTP 202 with an empty body to datacenter IPs. In the v2026.10 build that code never ran
-  (the worker consumed a staged, digest-verified copy); in this v2026.11 build it did - the
-  102 CSVs were fetched over HTTP from the coordinator. See `VERIFICATION.md` section 5.
+  HTTP 202 with an empty body to datacenter IPs. In the v2026.10 build that code never ran (the
+  worker consumed a staged, digest-verified copy); from v2026.11 on it did - the 102 CSVs were
+  fetched over HTTP from the coordinator. See `VERIFICATION.md` section 5.
 
 ## Known limits
 
@@ -84,5 +88,6 @@ windows - close to balanced, not guaranteed to be.
 - Booked-appointment columns exist only from 2020-08 and are therefore not shipped (they would
   be available in some splits and absent in others).
 - No agent or harness comparison was run on this artifact.
-- The rebuild has not yet been re-audited by an independent party; it should be before the
-  release is made public (see `VERIFICATION.md` section 5).
+- This rebuild has not yet been re-audited by an independent party; a third audit pass focused
+  on the re-audit's counterfactual is commissioned before the release is made public (see
+  `VERIFICATION.md` section 5).

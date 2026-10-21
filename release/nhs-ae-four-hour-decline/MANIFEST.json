@@ -4,17 +4,17 @@
   "release_tag": "v2026.12",
   "repository": "https://github.com/earino/nhs-ae-four-hour-decline",
   "visibility": "private (publication requires explicit authorisation)",
-  "artifact_version": "f4cb7fde0af5c21105e4e41bf17d8535801f305c694ba901b110280ad2b2e302",
-  "artifact_job": "coordinator-rebuild-2026-10-21b",
+  "artifact_version": "d871b45b667448a123bad9762cf066fd5d31c08700761b27ca8ff57a8a0690f9",
+  "artifact_job": "coordinator-rebuild-2026-10-21c",
   "staging_release": null,
-  "staging_release_tag": "job-coordinator-rebuild-2026-10-21b",
+  "staging_release_tag": "job-coordinator-rebuild-2026-10-21c",
   "staging_repo": "earino/dataset-factory-staging",
-  "construction_commit": "5f3fe45",
+  "construction_commit": "efb8191",
   "gate_version": "1.4.0",
   "gate_command": "python3 code/qualify_dataset.py ./task",
   "measurements": {
     "name": "nhs-ae-four-hour-decline",
-    "built_at_utc": "2026-10-21T12:38:18Z",
+    "built_at_utc": "2026-10-21T18:06:51Z",
     "source": {
       "publisher": "NHS England, A&E Attendances and Emergency Admissions statistical work area",
       "landing_page": "https://www.england.nhs.uk/statistics/statistical-work-areas/ae-waiting-times-and-activity/",
@@ -23,10 +23,10 @@
       "months": "2018-04..2026-09",
       "bytes": 3115779,
       "requests": 114,
-      "seconds": 1.0,
-      "requests_note": "102 monthly provider-level CSV GETs plus 12 year-page GETs to enumerate the URLs; measured ~1 s wall clock on the coordinator (1.9 GiB class host)",
+      "seconds": 5.9,
+      "requests_note": "102 monthly provider-level CSV GETs plus 12 year-page GETs to enumerate the URLs; measured 5.9 s wall clock on the coordinator (1.9 GiB class host) for the v2026.12 rebuild c (the v2026.11 fetch of the same 114 requests measured 1.0 s)",
       "composite_sha256": "99cb3339b31ae2045c990c950a40fb44dc93f1dfc4d58f1ae1879fa851666833",
-      "fetch_provenance": "v2026.11 fetched over HTTP on the coordinator. The publisher's CDN (CloudFront) serves HTTP 202 with an empty body to datacenter IPs (measured 2026-10-21 on worker job nhsae-001), so a worker cannot fetch this publisher; the v2026.10 build consumed the same bytes from staging release source-nhsae-001 (asset 661561799, sha256 8d8bc1b1..., verified per-file by build.py)"
+      "fetch_provenance": "v2026.12 rebuild c fetched over HTTP on the coordinator (composite sha256 identical to the 15:26 v2026.12 build and to v2026.11 - the source snapshot did not move on 2026-10-21). The publisher's CDN (CloudFront) serves HTTP 202 with an empty body to datacenter IPs (measured 2026-10-21 on worker job nhsae-001), so a worker cannot fetch this publisher; the v2026.10 build consumed the same bytes from staging release source-nhsae-001 (asset 661561799, sha256 8d8bc1b1..., verified per-file by build.py)"
     },
     "grain": "provider (Org Code) x calendar month",
     "label": {
@@ -50,13 +50,15 @@
       "booked_cells_seen": 90012
     },
     "gate": {
-      "providers": 141,
-      "provider_months": 12834,
+      "providers": 129,
+      "candidate_providers": 142,
+      "provider_months": 12835,
       "skipped": {
-        "not_consecutive": 0,
-        "insufficient_history": 3144
+        "insufficient_history": 3152,
+        "unobserved_target": 134,
+        "uncomputable_label": 0
       },
-      "note": "eligibility counts a provider's volume-gated months at or before M, so the >=24-month history test can no longer see months after the feature month (the hindsight selection the 2026-10-21 audit found in v2026.10)"
+      "note": "eligibility is decided at M only: the provider has 24 volume-qualified months at or before M and month M qualifies; the target month supplies the label and never decides whether a row exists (a missing target month is counted as unobserved_target - missing outcome data, not exclusion)"
     },
     "skipped_rows_outside_windows": 0,
     "splits": {
@@ -138,18 +140,18 @@
       }
     },
     "runner_contract_baseline": {
-      "job": "coordinator-rebuild-2026-10-21",
+      "job": "coordinator-rebuild-2026-10-21c",
       "eval_auc_from_train_py": 0.5511,
       "eval_auc_from_validate_py": 0.5511,
       "contract_ok": true,
-      "note": "measured via baseline/reproduce_baseline.sh on the rebuilt public splits, coordinator, after gate 1.4.0 passed on the full artifact; below every eval reference (target-month prior 0.6027, reversal 0.5839, persistence 0.5758, mean reversion 0.5659). The v2026.10 worker baseline nhsae-baseline-001 (0.5526 on superseded artifact 9903df974f233dfa) is preserved in the candidate record and in staging release 419227918."
+      "note": "measured via baseline/reproduce_baseline.sh on the v2026.12 rebuild c public splits, coordinator (python 3.14.7, pandas 2.3.3, numpy 2.5.4, xgboost 3.4.1, scikit-learn 1.9.1), after gate 1.4.0 passed on the full artifact; below every eval reference (target-month prior 0.6027, reversal 0.5839, persistence 0.5758, mean reversion 0.5659). The v2026.10 worker baseline nhsae-baseline-001 (0.5526 on superseded artifact 9903df974f233dfa) is preserved in the candidate record and in staging release 419227918."
     }
   },
   "assets": {
     "meta.json": {
       "asset_name": "meta.json",
-      "bytes": 3536,
-      "sha256": "667f935f6d58e093382d1e45e8c63e14e8e31de36f4b4cd853c4c392062ee29c"
+      "bytes": 3579,
+      "sha256": "196d300ec0c6b7fc3e8b04809019f075c2d2f93a76bdc66d2b26cdd08122aadc"
     },
     "private/holdout.csv": {
       "asset_name": "private-holdout.csv",
@@ -168,8 +170,8 @@
     },
     "quality.json": {
       "asset_name": "quality.json",
-      "bytes": 6636,
-      "sha256": "765a6f5506c9f0125e1e73deaedacb52eabaf2776c426695f3cc4d1ae65e959c"
+      "bytes": 6679,
+      "sha256": "0fb29a658ac5d097994534177de60a463b46fe8cf0adac37f3ec742a40690256"
     }
   },
   "package_files": {
@@ -177,29 +179,29 @@
     "LICENSE-CC0-1.0.txt": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
     "LICENSE-MIT.txt": "200f782f6b8bc23b926ea774cbacb4147826b3b2b59200917d8dc5ec68159535",
     "LICENSE.md": "26ff25559ad266db6d047aa6eeb7eea5fa2f95e35751d2f93a13aaadf2dc6801",
-    "README.md": "ff84593bcc21cd6787efeb3bc7a76d8093e8a1b197ded34bf4fa99cae2ec6ae3",
-    "RELEASE_NOTES.md": "fa9b579a1477000e63bf3c0db3744fa432a2ccf327de9e5cd46e9aa382807c13",
-    "REPRODUCE.md": "54709cd24f2e4a52eb91daa16849f99fdb42a43982f36e95a90fa4f282963f4a",
-    "SHA256SUMS": "85731163c168a0a0e9da238730273f1b10f1c9ca897107877d1d1e74e31cf732",
-    "VERIFICATION.md": "0c8ca944a5679e3c8e7acbd529ed1a97289a46f5594ec9b293cf21c3629ef813",
+    "README.md": "bbb406526f5cbe7b24254651e1d127d8c76674179e7d18ebde39bda22c5fdcc4",
+    "RELEASE_NOTES.md": "96155f88815827512e51d383341f9d0e89309b7c15aabab965635280862234ab",
+    "REPRODUCE.md": "34d99214cba70c195a76c3118d1d298c8c72b0189913f450c05c4b05b2c353a0",
+    "SHA256SUMS": "5f20df6e9b76cc7bdcefc041486d3d6f83bdfb16ea10459788b11e6ba90d61cc",
+    "VERIFICATION.md": "579fa8243a2f35a76f6fb7572cc2d8ee31957127d382805808d9bc330b025e24",
     "baseline/README.md": "f1d5f55074a88e1ce6e0689304c80297abf57d14eac71c5a1bd4bad09cc07e09",
     "baseline/reproduce_baseline.sh": "32de96032ab1b55d19fdcd1e04e0f5a6b10a187633aa280e9ee76aee9f03c584",
     "baseline/train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
     "baseline/validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
     "baseline/validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d",
-    "code/build.py": "114ceb89b2ed32e669f262844f929fa58b072952d7c1ecd9d23152b6a4eee53b",
+    "code/build.py": "9e97c1b160a9dcf001c38ac1d8b16c80c319dea39da06e2c413173e5fb35bb93",
     "code/materialize.py": "f5b7329ba3435493ba4fbb620cde826f059010a55d8eed7a5ba72da654cf9ed5",
     "code/qualify_dataset.py": "70f2f2a98db883be3cc88241e42170e26896185e066c5bdd63f192479b48ce39",
     "code/run.sh": "c8f94bc2d5dfdb557d253c9ad693bf0f1522d3b416dbf8dfbfcd61371e98adbe",
     "get_dataset.py": "b7b9ff12d674567a51869db3627c9010b85ef837b5f7af92c195fa1b6799063f",
-    "measurements.json": "d2661c5d52502bd78f16093db3e98006d0441659349f27ba5f7b3986dd91137a",
-    "meta.json": "667f935f6d58e093382d1e45e8c63e14e8e31de36f4b4cd853c4c392062ee29c",
+    "measurements.json": "cece6a7f0f345d2c761c22c391deaa0fe93ae748b2b37a7f97a3b2e3bd1db991",
+    "meta.json": "196d300ec0c6b7fc3e8b04809019f075c2d2f93a76bdc66d2b26cdd08122aadc",
     "private/holdout.csv": "527a385f12a920b019434c70588c6532af1bd4dd5459eb64ed46809b5ef99b70",
     "public/eval.csv": "cb786792ac321dd851c272bd159fed24e13d6b633276606b294ddc976e72f266",
     "public/train.csv": "55af812900519d39b5a294c38c76f554ed67f0aeb721862592b4d3c588ea7430",
-    "qualification.json": "f7f036c7a9fa7d9ccab88506e5fec8b88583ee0a3eac9df5bee2724dbfc2bd13",
-    "quality.json": "765a6f5506c9f0125e1e73deaedacb52eabaf2776c426695f3cc4d1ae65e959c",
-    "summary.json": "5facd887aadd0edcfa2e589f452b71d80ccc8aa900b5cf68bb9c2bfe58b65cdf"
+    "qualification.json": "d38243699d6fc64a624d66fe7a5bd9e3b02d9f5e6aaa1a0a9145800b52c2ad40",
+    "quality.json": "0fb29a658ac5d097994534177de60a463b46fe8cf0adac37f3ec742a40690256",
+    "summary.json": "fa62c5cc07f50f5399bdaa81a4727afbc93fe0d91c230bef4544cdfc3fa94afd"
   },
   "baseline_command": "sh baseline/reproduce_baseline.sh ./task",
   "get_dataset_command": "python3 get_dataset.py --dest ./task",
@@ -237,12 +239,12 @@
       "sha256": "527a385f12a920b019434c70588c6532af1bd4dd5459eb64ed46809b5ef99b70"
     },
     "meta.json": {
-      "bytes": 3536,
-      "sha256": "667f935f6d58e093382d1e45e8c63e14e8e31de36f4b4cd853c4c392062ee29c"
+      "bytes": 3579,
+      "sha256": "196d300ec0c6b7fc3e8b04809019f075c2d2f93a76bdc66d2b26cdd08122aadc"
     },
     "quality.json": {
-      "bytes": 6636,
-      "sha256": "765a6f5506c9f0125e1e73deaedacb52eabaf2776c426695f3cc4d1ae65e959c"
+      "bytes": 6679,
+      "sha256": "0fb29a658ac5d097994534177de60a463b46fe8cf0adac37f3ec742a40690256"
     }
   },
   "splits": {
@@ -269,8 +271,8 @@
     "gate_version": "1.4.0",
     "ok": true,
     "failed_checks": [],
-    "artifact_version": "0990af0f90fbe304cb94bd53754a337f7704e1005d92f8d9d250b2e8e157b3b5",
-    "result": "PASSED - gate 1.4.0 on the rebuilt full artifact (9,549 rows), including the five new timing checks",
+    "artifact_version": "f4cb7fde0af5c21105e4e41bf17d8535801f305c694ba901b110280ad2b2e302",
+    "result": "PASSED - gate 1.4.0 on the v2026.12 artifact (13-day maximum publication lag; eligibility at M only)",
     "splits": {
       "train": {
         "rows": 4074,
@@ -290,11 +292,10 @@
         "positive_rate": 0.485816,
         "distinct_events": 121
       }
-    },
-    "accept_recheck": "qualify_dataset.py --accept re-verified the package bytes (2026-10-21T14:07Z) and the bytes downloaded from the staged private GitHub release v2026.11 (2026-10-21T14:26Z): ACCEPTED, artifact 0990af0f90fbe304"
+    }
   },
   "baseline": {
-    "job": "coordinator-rebuild-2026-10-21",
+    "job": "coordinator-rebuild-2026-10-21c",
     "purpose": "one baseline through the runner's existing training and validation contract, on the accepted NHS England provider-month A&E decline artifact",
     "artifact": {
       "name": "nhs-ae-four-hour-decline",
@@ -313,15 +314,15 @@
         "eval": 0.503235,
         "holdout": 0.485816
       },
-      "label_rule": "declines = 1 iff within4h_rate(M+1) < within4h_rate(M), within4h_rate(Y) = 1 - Attendances over 4hrs Type 1 / A&E attendances Type 1; provider-months with Type 1 attendances < 100 in either month are excluded"
+      "label_rule": "declines = 1 iff within4h_rate(M+1) < within4h_rate(M), within4h_rate(Y) = 1 - Attendances over 4hrs Type 1 / A&E attendances Type 1; a row for feature month M requires >= 100 Type 1 attendances in M and 24 such volume-qualified months at or before M (the target month supplies the label only; a missing target month is unobserved outcome data, not exclusion)"
     },
     "qualification_report": {
       "bundled": "qualification.json",
-      "sha256": "2118ecd4f7498a3c1e7f25f95707857b8be5a162519fa87d6149a4b25c9a18d2",
+      "sha256": "d38243699d6fc64a624d66fe7a5bd9e3b02d9f5e6aaa1a0a9145800b52c2ad40",
       "gate_passed_on_full_artifact": true,
       "gate_version": "1.4.0",
-      "accepted_artifact_version": "0990af0f90fbe304cb94bd53754a337f7704e1005d92f8d9d250b2e8e157b3b5",
-      "note": "gate 1.4.0 passed on the full rebuilt artifact at build time (2026-10-21T12:38Z, report bundled as qualification.json, sha256 above); the package bytes were re-accepted through qualify_dataset.py --accept on 2026-10-21T14:07Z before staging (ACCEPTED, artifact 0990af0f90fbe304). The v2026.10 worker baseline nhsae-baseline-001 (0.5526 on superseded artifact 9903df974f233dfa) is preserved in record.json jobs[] and staging release 419227918."
+      "accepted_artifact_version": "d871b45b667448a123bad9762cf066fd5d31c08700761b27ca8ff57a8a0690f9",
+      "note": "gate 1.4.0 passed on the full v2026.12 rebuild c artifact at build time (2026-10-21T18:06:51Z, report bundled as qualification.json, sha256 above); the package bytes were re-accepted through qualify_dataset.py --accept the same evening (ACCEPTED, artifact d871b45b667448a1) and the baseline below was re-run on exactly those bytes (0.5511 / 0.5511, CONTRACT OK). Superseded artifacts preserved for provenance: v2026.11 0990af0f90fbe304 (baseline 0.5511, same CSV bytes) and v2026.10 9903df974f233dfa (worker baseline nhsae-baseline-001, 0.5526, staging release 419227918)."
     },
     "contract": {
       "contract_ok": true,
@@ -342,7 +343,7 @@
       "unmodified": true
     },
     "dependencies": {
-      "python": "3.13.16",
+      "python": "3.14.7",
       "pandas": "2.3.3",
       "numpy": "2.5.4",
       "xgboost": "3.4.1",
@@ -354,13 +355,13 @@
       "validate_py_eval_auc": 0.5511,
       "contract": "CONTRACT OK",
       "dependencies": {
-        "python": "3.13",
+        "python": "3.14",
         "xgboost": "3.4.1",
         "scikit-learn": "1.9.1",
         "pandas": "2.3.3",
         "numpy": "2.5.4"
       },
-      "run": "baseline/reproduce_baseline.sh against the rebuilt public splits, coordinator, 2026-10-21",
+      "run": "baseline/reproduce_baseline.sh against the v2026.12 rebuild c public splits, coordinator, 2026-10-21T18:2xZ (the v2026.11 run recorded python 3.13.16; same package versions, same 0.5511 result)",
       "note": "Reproduced twice through independent paths (train.py and validate.py predict_proba). Below every reference."
     },
     "reference_points": {

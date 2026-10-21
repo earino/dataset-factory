@@ -4968,3 +4968,13 @@ Session hygiene: 398 tests OK; check-candidate.py --all exit 0; probe script kep
 month CSVs, never committed). No US source substituted for the regional quota.
 
 
+
+**nhs-ae v2026.12 staged private on both destinations (2026-10-21).** GitHub draft release 420072089
+(5 assets, digests re-read from the API after upload; v2026.10 and v2026.11 renamed SUPERSEDED) and
+Hugging Face (16 files, all five data files re-downloaded and re-hashed at the manifest digests).
+Status `packaged`, `awaiting_operator: true`.
+New test `tests/test_nhs_ae_selection.py` turns the re-audit's counterfactual into a guard: a provider
+with 24 months of history whose target month falls below the volume gate must still produce a row. On
+the v2026.11 build it fails ("'TEST-2022-01' not found in set()"); on v2026.12 it passes. Also covers
+the 24-month exclusion and the unobserved-target accounting.
+Held from the flip pending a third independent pass.

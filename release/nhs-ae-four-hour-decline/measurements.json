@@ -1,6 +1,6 @@
 {
  "name": "nhs-ae-four-hour-decline",
- "built_at_utc": "2026-10-21T12:38:18Z",
+ "built_at_utc": "2026-10-21T18:06:51Z",
  "source": {
   "publisher": "NHS England, A&E Attendances and Emergency Admissions statistical work area",
   "landing_page": "https://www.england.nhs.uk/statistics/statistical-work-areas/ae-waiting-times-and-activity/",
@@ -9,10 +9,10 @@
   "months": "2018-04..2026-09",
   "bytes": 3115779,
   "requests": 114,
-  "seconds": 1.0,
-  "requests_note": "102 monthly provider-level CSV GETs plus 12 year-page GETs to enumerate the URLs; measured ~1 s wall clock on the coordinator (1.9 GiB class host)",
+  "seconds": 5.9,
+  "requests_note": "102 monthly provider-level CSV GETs plus 12 year-page GETs to enumerate the URLs; measured 5.9 s wall clock on the coordinator (1.9 GiB class host) for the v2026.12 rebuild c (the v2026.11 fetch of the same 114 requests measured 1.0 s)",
   "composite_sha256": "99cb3339b31ae2045c990c950a40fb44dc93f1dfc4d58f1ae1879fa851666833",
-  "fetch_provenance": "v2026.11 fetched over HTTP on the coordinator. The publisher's CDN (CloudFront) serves HTTP 202 with an empty body to datacenter IPs (measured 2026-10-21 on worker job nhsae-001), so a worker cannot fetch this publisher; the v2026.10 build consumed the same bytes from staging release source-nhsae-001 (asset 661561799, sha256 8d8bc1b1..., verified per-file by build.py)"
+  "fetch_provenance": "v2026.12 rebuild c fetched over HTTP on the coordinator (composite sha256 identical to the 15:26 v2026.12 build and to v2026.11 - the source snapshot did not move on 2026-10-21). The publisher's CDN (CloudFront) serves HTTP 202 with an empty body to datacenter IPs (measured 2026-10-21 on worker job nhsae-001), so a worker cannot fetch this publisher; the v2026.10 build consumed the same bytes from staging release source-nhsae-001 (asset 661561799, sha256 8d8bc1b1..., verified per-file by build.py)"
  },
  "grain": "provider (Org Code) x calendar month",
  "label": {
@@ -36,13 +36,15 @@
   "booked_cells_seen": 90012
  },
  "gate": {
-  "providers": 141,
-  "provider_months": 12834,
+  "providers": 129,
+  "candidate_providers": 142,
+  "provider_months": 12835,
   "skipped": {
-   "not_consecutive": 0,
-   "insufficient_history": 3144
+   "insufficient_history": 3152,
+   "unobserved_target": 134,
+   "uncomputable_label": 0
   },
-  "note": "eligibility counts a provider's volume-gated months at or before M, so the >=24-month history test can no longer see months after the feature month (the hindsight selection the 2026-10-21 audit found in v2026.10)"
+  "note": "eligibility is decided at M only: the provider has 24 volume-qualified months at or before M and month M qualifies; the target month supplies the label and never decides whether a row exists (a missing target month is counted as unobserved_target - missing outcome data, not exclusion)"
  },
  "skipped_rows_outside_windows": 0,
  "splits": {
@@ -117,10 +119,10 @@
   }
  },
  "runner_contract_baseline": {
-  "job": "coordinator-rebuild-2026-10-21",
+  "job": "coordinator-rebuild-2026-10-21c",
   "eval_auc_from_train_py": 0.5511,
   "eval_auc_from_validate_py": 0.5511,
   "contract_ok": true,
-  "note": "measured via baseline/reproduce_baseline.sh on the rebuilt public splits, coordinator, after gate 1.4.0 passed on the full artifact; below every eval reference (target-month prior 0.6027, reversal 0.5839, persistence 0.5758, mean reversion 0.5659). The v2026.10 worker baseline nhsae-baseline-001 (0.5526 on superseded artifact 9903df974f233dfa) is preserved in the candidate record and in staging release 419227918."
+  "note": "measured via baseline/reproduce_baseline.sh on the v2026.12 rebuild c public splits, coordinator (python 3.14.7, pandas 2.3.3, numpy 2.5.4, xgboost 3.4.1, scikit-learn 1.9.1), after gate 1.4.0 passed on the full artifact; below every eval reference (target-month prior 0.6027, reversal 0.5839, persistence 0.5758, mean reversion 0.5659). The v2026.10 worker baseline nhsae-baseline-001 (0.5526 on superseded artifact 9903df974f233dfa) is preserved in the candidate record and in staging release 419227918."
  }
 }
