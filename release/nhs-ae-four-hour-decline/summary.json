@@ -1,12 +1,12 @@
 {
  "name": "nhs-ae-four-hour-decline",
- "built_at_utc": "2026-10-21T12:38:18Z",
+ "built_at_utc": "2026-10-21T15:26:44Z",
  "source": {
   "mode": "http",
   "files": 102,
   "requests": 114,
   "bytes": 3115779,
-  "seconds": 1.0,
+  "seconds": 1.1,
   "pages": 12,
   "composite_sha256": "99cb3339b31ae2045c990c950a40fb44dc93f1dfc4d58f1ae1879fa851666833"
  },
@@ -20,7 +20,7 @@
  "volume_gate": {
   "min_att1": 100,
   "min_provider_months": 24,
-  "applies_to": "the provider's qualifying months at or before M; the target month M+1 supplies only the label"
+  "applies_to": "the provider's qualifying months at or before M only; the target month M+1 supplies the label and never decides whether a row exists"
  },
  "revision_policy": "duplicate (org, month) keys keep the copy from the latest upload, ordered by (revision datestamp in filename, revised flag, filename); originals without a datestamp sort before every revision",
  "load_stats": {
@@ -32,11 +32,13 @@
   "booked_cells_seen": 90012
  },
  "gate": {
-  "providers": 141,
-  "provider_months": 12834,
+  "providers": 129,
+  "candidate_providers": 142,
+  "provider_months": 12835,
   "skipped": {
-   "not_consecutive": 0,
-   "insufficient_history": 3144
+   "insufficient_history": 3152,
+   "unobserved_target": 134,
+   "uncomputable_label": 0
   }
  },
  "skipped_rows_outside_windows": 0,

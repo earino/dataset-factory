@@ -2,7 +2,7 @@
  "name": "nhs-ae-four-hour-decline",
  "task": {
   "question": "For an NHS England provider operating a consultant-led (Type 1) A&E department with at least 100 Type 1 attendances in each of months M and M+1, will the provider's Type 1 within-4-hour performance rate decline in month M+1 relative to month M, given the provider's monthly A&E series (attendances by department type, over-4-hour counts, decision-to-admit waits, emergency admissions) for all months through M, plus the calendar?",
-  "prediction_time": "At the publication of month M's monthly A&E CSV, about ten days after month M ends (observed: the August 2026 file was published 2026-09-10). Every feature is derived from the provider's monthly series for months <= M and every eligibility test uses those same months; the label is month M+1's within-4-hour rate versus month M's, published about a month later. The instant is the publication date, not the period end: at the end of month M these values did not yet exist."
+  "prediction_time": "At the publication of month M's monthly A&E CSV: observed 9, 13 and 10 days after the period end for June, July and August 2026, so the task uses the MAXIMUM observed lag (13 days) rather than a mean - no month's data is used before it existed. Every feature is derived from the provider's monthly series for months <= M, and every eligibility test uses those same months; the label is month M+1's within-4-hour rate versus month M's, published about a month later. The instant is the publication date, not the period end: at the end of month M these values did not yet exist."
  },
  "target": "declines",
  "positive_label": 1,
@@ -49,12 +49,12 @@
   "prediction_instant": {
    "kind": "publication",
    "period": "M",
-   "days_after_period_end": 10,
+   "days_after_period_end": 13,
    "citation": "NHS England publishes monthly A&E activity about ten days after the month ends; e.g. August 2026 data was published 2026-09-10"
   },
   "features": {
    "period": "M",
-   "published_days_after_period_end": 10,
+   "published_days_after_period_end": 13,
    "source_kind": "statistical_release"
   },
   "row_selection": {
@@ -69,11 +69,22 @@
   },
   "observations": [
    {
+    "period": "2026-06",
+    "period_end": "2026-06-30",
+    "published": "2026-07-09"
+   },
+   {
+    "period": "2026-07",
+    "period_end": "2026-07-31",
+    "published": "2026-08-13"
+   },
+   {
     "period": "2026-08",
     "period_end": "2026-08-31",
     "published": "2026-09-10"
    }
-  ]
+  ],
+  "observations_note": "NHS England published 9, 13 and 10 days after the period end in these three months. The instant uses the MAXIMUM observed lag, not the mean, so no month's data is used before it existed."
  },
  "feature_documentation": "every source field is documented in NHS England's A&E Attendances and Emergency Admissions statistics (column meanings recorded in the candidate record from the publisher's work area; the derived-column dictionary lives in build.py's module docstring and ships in the release DATA_DICTIONARY); month M columns are published before the prediction instant and month M+1 columns are not shipped at all",
  "carry_columns": [
@@ -158,7 +169,7 @@
   "eval": "public/eval.csv",
   "holdout": "private/holdout.csv"
  },
- "built_at_utc": "2026-10-21T12:38:18Z",
+ "built_at_utc": "2026-10-21T15:26:44Z",
  "shipped_columns": [
   "row_id",
   "org_code",

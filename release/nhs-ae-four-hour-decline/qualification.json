@@ -5,31 +5,31 @@
  "artifact": {
   "train": {
    "file": "public/train.csv",
-   "sha256": "55af812900519d39b5a294c38c76f554ed67f0aeb721862592b4d3c588ea7430",
+   "sha256": "b5f2721d28b163d508d817a3dfa79b37180de9aa2da94de7a8499a608f96156d",
    "bytes": 1664506
   },
   "eval": {
    "file": "public/eval.csv",
-   "sha256": "cb786792ac321dd851c272bd159fed24e13d6b633276606b294ddc976e72f266",
+   "sha256": "b2519cbab4a191faaeff06b42162490eaae18fbb7a5c9c3ed759df9ad67488a8",
    "bytes": 1246633
   },
   "holdout": {
    "file": "private/holdout.csv",
-   "sha256": "527a385f12a920b019434c70588c6532af1bd4dd5459eb64ed46809b5ef99b70",
+   "sha256": "4d837f39cc5332a277c82c296cd3a9f43f78ad8553d0ec72cb6573f8e76ce9b4",
    "bytes": 1099411
   },
   "meta.json": {
    "file": "meta.json",
-   "sha256": "778b863389e2e65326168c3dbbc39e4683a9ec45c74f0052c70dc074e93bf03d",
-   "bytes": 3432
+   "sha256": "7f4723c64d68df108c3cd2fd7294e86b9a994f6216fc11960d00753d16ba83ef",
+   "bytes": 3536
   },
   "quality.json": {
    "file": "quality.json",
-   "sha256": "31600cdf1d166bd4ae11189b2d1c7717ecb7abf418bc051a92be8c0b8f6c714b",
-   "bytes": 6123
+   "sha256": "8a70f47931fdcd01fa05bc7e48aae4546bd5e62114572663f5e6733685154c2e",
+   "bytes": 6636
   },
   "artifact_version": {
-   "digest": "0990af0f90fbe304cb94bd53754a337f7704e1005d92f8d9d250b2e8e157b3b5",
+   "digest": "f4cb7fde0af5c21105e4e41bf17d8535801f305c694ba901b110280ad2b2e302",
    "components": [
     "eval",
     "holdout",
@@ -127,7 +127,7 @@
     "prediction_instant": {
      "kind": "publication",
      "period": "M",
-     "days_after_period_end": 10,
+     "days_after_period_end": 13,
      "citation": "NHS England publishes monthly A&E activity about ten days after the month ends; e.g. August 2026 data was published 2026-09-10"
     }
    }
@@ -135,27 +135,37 @@
   {
    "check": "timing.publication_lag_measured",
    "ok": true,
-   "detail": "1 of 1 observed period_end -> published dates are usable (statistical release: at least one observed publication date is required)",
+   "detail": "3 of 3 observed period_end -> published dates are usable (statistical release: at least one observed publication date is required)",
    "evidence": {
     "observations": [
+     {
+      "period": "2026-06",
+      "period_end": "2026-06-30",
+      "published": "2026-07-09"
+     },
+     {
+      "period": "2026-07",
+      "period_end": "2026-07-31",
+      "published": "2026-08-13"
+     },
      {
       "period": "2026-08",
       "period_end": "2026-08-31",
       "published": "2026-09-10"
      }
     ],
-    "measured_lag_days": 10,
+    "measured_lag_days": 13,
     "source_kind": "statistical_release"
    }
   },
   {
    "check": "timing.features_available_at_instant",
    "ok": true,
-   "detail": "features publish 10d after the period, instant is 10d after it",
+   "detail": "features publish 13d after the period, instant is 13d after it",
    "evidence": {
-    "features_lag_days": 10,
-    "instant_lag_days": 10,
-    "measured_lag_days": 10
+    "features_lag_days": 13,
+    "instant_lag_days": 13,
+    "measured_lag_days": 13
    }
   },
   {
@@ -164,7 +174,7 @@
    "detail": "instant is a publication instant",
    "evidence": {
     "kind": "publication",
-    "features_lag_days": 10
+    "features_lag_days": 13
    }
   },
   {

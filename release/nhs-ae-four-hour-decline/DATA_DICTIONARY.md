@@ -10,7 +10,7 @@ data published 2026-09-10), not the period end.
 | Column | Type | Meaning |
 | --- | --- | --- |
 | `row_id` | string | `<Org Code>-<YYYY-MM>` of the target month M+1; unique in the artifact (0 duplicate values measured at build) |
-| `target_month` | string | `YYYY-MM` of the target month M+1 - the time column; the prediction instant is the end of the *previous* month |
+| `target_month` | string | `YYYY-MM` of the target month M+1 - the time column; the prediction instant is the **publication** of month M's CSV, 9-13 days after month M ends (13 used, the maximum observed) |
 | `org_code` | string | Publisher's Org Code - the event key: positives cluster within providers, so scores are quoted against distinct positive providers per window |
 | `parent_org` | string | Publisher's Parent Org (NHS England region), categorical |
 | `target_year` | int | Calendar year of the target month (knowable at the prediction instant) |

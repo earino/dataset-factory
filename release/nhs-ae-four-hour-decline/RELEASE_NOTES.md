@@ -26,12 +26,14 @@ rows a provider had not yet earned were removed.
 ## What changed from v2026.10
 
 - **Prediction instant restated as the publication date** of month M's CSV, about ten days
-  after month end (observed: the August 2026 file, period end 2026-08-31, was published
-  2026-09-10). No feature changed; the claim about when they exist did. Gate 1.4.0 now refuses
+  after month end: NHS published 9, 13 and 10 days after the period end in June, July and August
+  2026, so the instant uses the maximum, 13 days, and never assumes a mean. No feature changed; the claim about when they exist did. Gate 1.4.0 now refuses
   the old period-end claim.
 - **Eligibility counts a provider's qualifying months at or before M.** 2,042 training rows a
-  provider had not yet earned are gone (train 6,116 -> 4,074; providers 134 -> 141, because a
-  provider now qualifies when it has history, not when it has a long future). Eval and holdout
+  provider had not yet earned are gone (train 6,116 -> 4,074; 129 providers ship, from 142
+  candidates). Eligibility is decided at M only: the target month supplies the label and never
+  decides whether a row exists. 134 provider-months have no reported target month and are counted
+  as missing outcomes, not as excluded rows. Eval and holdout
   are byte-identical.
 - `rate_delta_1m` documented with the correct sign: it is a **reversal** signal (0.5839 eval /
   0.6007 holdout), with momentum (its negation, 0.4161 / 0.3993) reported beside it.
@@ -44,13 +46,13 @@ rows a provider had not yet earned were removed.
 Will a provider's Type 1 within-4-hour rate decline next month relative to this month, given its
 monthly A&E series through this month? Splits are temporal on the target month: train
 2019-01..2022-12, eval 2023-01..2024-12, holdout 2025-01..2026-09. 9,549 provider-months
-(4,074 / 2,937 / 2,538) over 141 volume-gated providers.
+(4,074 / 2,937 / 2,538) over 129 providers.
 
 A relative m/m label is used because every fixed standard threshold measured near-uniform
 positive rates in recent years (<95% -> 99.9% of the holdout positive; <80% -> 95.8%): the
 national standard deteriorated from ~83% (2018) to ~60% (2026), so a threshold label's base rate
-drifts with the system itself. The m/m label is balanced in every window (55.5% / 50.3% /
-48.6%).
+drifts with the system itself. The m/m label measures 55.5% / 50.3% / 48.6% in the shipped
+windows - close to balanced, not guaranteed to be.
 
 ## Numbers
 
@@ -67,7 +69,7 @@ drifts with the system itself. The m/m label is balanced in every window (55.5% 
 
 - The discovery panel probe had two defects (UTF-8 BOM handling dropped five whole months;
   the "Number of" column-name alias missed 24 pre-2020-04 months), which understated the panel
-  at 97 months / 124 providers. The corrected panel - 102 months, 141 gated providers,
+  at 97 months / 124 providers. The corrected panel - 102 months, 142 candidate providers,
   12,834 qualifying provider-months under history-only selection - is what this artifact was
   built from, and the split figures published here are the corrected ones.
 - `code/build.py` gained a fetch client ladder after the publisher's CDN was measured serving

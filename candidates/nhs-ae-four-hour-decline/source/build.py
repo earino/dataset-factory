@@ -246,8 +246,8 @@ CROSSCHECK_TOLERANCE = 0.025  # revised-vs-provisional publication states
 # provider had not yet earned are gone (train 6116 -> 4074). Eval and holdout are unchanged because
 # every provider there already had a full history.
 EXPECTED = {
-    "providers": 141,
-    "provider_months": 12834,
+    "providers": 129,
+    "provider_months": 12835,
     "splits": {
         "train": {"rows": 4074, "positives": 2260},
         "eval": {"rows": 2937, "positives": 1478},
@@ -279,9 +279,10 @@ LAYOUT = {"train": "public/train.csv", "eval": "public/eval.csv",
           "holdout": "private/holdout.csv"}
 
 PREDICTION_TIME = (
-    "At the publication of month M's monthly A&E CSV, about ten days after month M ends "
-    "(observed: the August 2026 file was published 2026-09-10). Every feature is derived from the "
-    "provider's monthly series for months <= M and every eligibility test uses those same months; "
+    "At the publication of month M's monthly A&E CSV: observed 9, 13 and 10 days after the period "
+    "end for June, July and August 2026, so the task uses the MAXIMUM observed lag (13 days) rather "
+    "than a mean - no month's data is used before it existed. Every feature is derived from the "
+    "provider's monthly series for months <= M, and every eligibility test uses those same months; "
     "the label is month M+1's within-4-hour rate versus month M's, published about a month later. "
     "The instant is the publication date, not the period end: at the end of month M these values "
     "did not yet exist.")
@@ -613,32 +614,40 @@ def features_for(panel: dict, org: str, year: int, month: int) -> dict:
 
 
 def make_rows(panel: dict) -> tuple[list[dict], dict]:
-    """Eligible (provider, target month) rows under the volume gate."""
+    """Rows whose eligibility is decided at month M; M+1 supplies the label only.
+
+    The v2026.11 build still required the target month to be volume-qualified, which meant a
+    provider's attendance in M+1 decided whether the M row existed - the same hindsight the first
+    audit found, one layer down. Eligibility is now: the provider has MIN_PROVIDER_MONTHS
+    volume-qualified months at or before M, and month M itself qualifies. The target month is used
+    only to compute the label, never to decide membership.
+    """
     by_org: dict[str, list] = {}
     for (org, key), record in panel.items():
         att1 = record["values"].get("att1")
         if att1 is not None and att1 >= MIN_ATT1:
             by_org.setdefault(org, []).append(key)
-    # Eligibility is counted from history, never from the whole snapshot. Counting a provider's
-    # qualifying months across the entire panel lets months *after* the feature month decide whether
-    # an earlier row exists - the hindsight selection an independent audit found in v2026.10.
-    providers = {org: sorted(keys) for org, keys in by_org.items() if len(keys) >= 2}
 
     rows = []
-    skipped = {"not_consecutive": 0, "insufficient_history": 0}
-    for org, keys in providers.items():
-        for index in range(len(keys) - 1):
+    skipped = {"insufficient_history": 0, "unobserved_target": 0,
+               "uncomputable_label": 0}
+    for org, keys in by_org.items():
+        keys = sorted(keys)
+        for index, feature_key in enumerate(keys):
             if index + 1 < MIN_PROVIDER_MONTHS:
                 skipped["insufficient_history"] += 1
                 continue
-            feature_key, target_key = keys[index], keys[index + 1]
-            if month_of_year(feature_key[0], feature_key[1], 1) != target_key:
-                skipped["not_consecutive"] += 1
+            target_key = month_of_year(feature_key[0], feature_key[1], 1)
+            target = panel.get((org, target_key))
+            # A missing target month is missing outcome data, not a reason the row did not exist.
+            # It is counted and reported separately so the distinction stays auditable.
+            if target is None:
+                skipped["unobserved_target"] += 1
                 continue
             rate_m = within4h(panel[(org, feature_key)])
-            rate_next = within4h(panel[(org, target_key)])
+            rate_next = within4h(target)
             if rate_m is None or rate_next is None:
-                skipped["not_consecutive"] += 1
+                skipped["uncomputable_label"] += 1
                 continue
             features = features_for(panel, org, *feature_key)
             row = {
@@ -649,9 +658,11 @@ def make_rows(panel: dict) -> tuple[list[dict], dict]:
             }
             rows.append(row)
     rows.sort(key=lambda row: (row["org_code"], row["target_month"]))
+    emitted = {row["org_code"] for row in rows}
     return rows, {
-        "providers": len(providers),
-        "provider_months": sum(len(keys) for keys in providers.values()),
+        "providers": len(emitted),
+        "candidate_providers": len(by_org),
+        "provider_months": sum(len(keys) for keys in by_org.values()),
         "skipped": skipped,
     }
 
@@ -957,8 +968,9 @@ def main(argv=None) -> int:
         },
         "volume_gate": {"min_att1": MIN_ATT1,
                         "min_provider_months": MIN_PROVIDER_MONTHS,
-                        "applies_to": "the provider's qualifying months at or before M; the "
-                                      "target month M+1 supplies only the label"},
+                        "applies_to": "the provider's qualifying months at or before M only; the "
+                                      "target month M+1 supplies the label and never decides "
+                                      "whether a row exists"},
         "revision_policy": "duplicate (org, month) keys keep the copy from "
                             "the latest upload, ordered by (revision datestamp "
                             "in filename, revised flag, filename); originals "
@@ -1068,19 +1080,24 @@ def main(argv=None) -> int:
         "features_documented_at": "prediction_time",
         "timing": {
             "prediction_instant": {"kind": "publication", "period": "M",
-                                   "days_after_period_end": 10,
+                                   "days_after_period_end": 13,
                                    "citation": "NHS England publishes monthly A&E activity about ten "
                                                "days after the month ends; e.g. August 2026 data was "
                                                "published 2026-09-10"},
-            "features": {"period": "M", "published_days_after_period_end": 10,
+            "features": {"period": "M", "published_days_after_period_end": 13,
                          "source_kind": "statistical_release"},
             "row_selection": {"latest_period_used": "M",
                               "fields": ["att1_m", "over4_1_m", "rate_m", "months_reported_12m"],
                               "basis": "eligibility counts the provider's volume-gated months at or "
                                        "before M; the target month M+1 is used only to compute the "
                                        "label, never to decide whether a row exists"},
-            "observations": [{"period": "2026-08", "period_end": "2026-08-31",
-                              "published": "2026-09-10"}],
+            "observations": [
+                {"period": "2026-06", "period_end": "2026-06-30", "published": "2026-07-09"},
+                {"period": "2026-07", "period_end": "2026-07-31", "published": "2026-08-13"},
+                {"period": "2026-08", "period_end": "2026-08-31", "published": "2026-09-10"}],
+            "observations_note": "NHS England published 9, 13 and 10 days after the period end in "
+                                 "these three months. The instant uses the MAXIMUM observed lag, not "
+                                 "the mean, so no month's data is used before it existed.",
         },
         "feature_documentation": (
             "every source field is documented in NHS England's A&E "

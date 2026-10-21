@@ -4837,3 +4837,15 @@ working tree; double-recording was the risk), then took over the unfinished step
 Next action: commission the independent re-audit of the staged v2026.11 artifact - the selection must be
 checked in code, not only the declaration, which is how the v2026.10 audit found the temporal defect. Only
 after a passing audit, ask the operator for the flip. Do not publish v2026.10: superseded.
+**nhs-ae rebuilt again (v2026.12) after the re-audit: eligibility now decided at M only.**
+The re-audit was right. v2026.11 counted history from the past but still built its pair list from
+volume-qualified months, so a volume-qualified M+1 still decided whether the M row existed; the
+counterfactual (changing only R0A-2022-03's target-month attendances) removed the row. `make_rows` now
+iterates the provider's qualifying months, checks 24 months of history at or before M, and looks up the
+target month purely to compute the label. A missing target month is counted as `unobserved_target`
+(134) - missing outcome data, not exclusion. Also: the instant uses the MAXIMUM observed publication
+lag (13 days; 9/13/10 for Jun/Jul/Aug 2026) instead of a fixed 10, and the doc defects the auditor
+listed are fixed (month-end wording, flat-path checksum command, three-week lag, "balanced by
+construction"). Data bytes are identical to v2026.11; only quality.json and the documents change.
+Artifact f4cb7fde0af5c211, gate 1.4.0 PASSED, baseline re-run 0.5511 CONTRACT OK, 129 shipped
+providers from 142 candidates. v2026.10 and v2026.11 are superseded; neither may be published.

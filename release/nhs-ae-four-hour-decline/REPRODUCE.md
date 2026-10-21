@@ -24,7 +24,7 @@ task/private/holdout.csv   task/meta.json      task/quality.json
 ## 2. Check the bytes
 
 ```bash
-sha256sum -c SHA256SUMS      # run in a directory holding the five flat asset names
+sha256sum -c SHA256SUMS      # run from the package root: the manifest names nested paths
 python3 -c "import json;print(json.load(open('MANIFEST.json'))['artifact_version'])"
 ```
 
@@ -70,7 +70,7 @@ sha256sum rebuilt/public/train.csv rebuilt/public/eval.csv rebuilt/private/holdo
 Two measured caveats:
 
 - **The source is a live register.** NHS England republishes recent months as revised CSVs and
-  adds a new month roughly three weeks after it ends, so a rebuild after 2026-10-21 will not
+  adds a new month 9-13 days after it ends, so a rebuild after 2026-10-21 will not
   reproduce these digests. The published artifact is the 2026-10-21 vintage;
   `meta.json`'s `built_at_utc` and `measurements.json`'s source composite sha256 identify it.
 - **Datacenter IPs are blocked.** The publisher's CDN serves HTTP 202 with an empty body to
@@ -81,8 +81,9 @@ Two measured caveats:
 
 ## 6. What the numbers mean
 
-- The m/m-decline label is balanced in all three windows (55.5% / 50.3% / 48.6%) **by
-  construction**; the underlying within-4-hour rate is not stationary (83.0% national Type 1 in
+- The m/m-decline label measures 55.5% / 50.3% / 48.6% in the three shipped windows. It is not
+  guaranteed balanced: it is close to balanced because the underlying within-4-hour rate is not
+  stationary (83.0% national Type 1 in
   2018, ~60% in 2025-26). A model can win on the direction without the level being learnable
   from history.
 - Positives cluster within providers. The effective sample size is the distinct positive provider

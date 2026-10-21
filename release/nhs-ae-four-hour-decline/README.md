@@ -32,7 +32,7 @@ A&E statistics. It is a **derived research dataset**, not an NHS England product
 | `public/eval.csv` | 2,937 | 50.3% | 124 |
 | `private/holdout.csv` | 2,538 | 48.6% | 121 |
 
-The label is balanced in every window by construction; the underlying four-hour rate is not
+The label measures close to balanced in every shipped window; it is not guaranteed to be, and the underlying four-hour rate is not
 stationary (see `DATA_DICTIONARY.md`). Positives cluster within providers, so the distinct
 positive provider count is the conservative independent-unit figure beside the row counts.
 

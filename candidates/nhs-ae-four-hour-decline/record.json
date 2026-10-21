@@ -1,6 +1,6 @@
 {
  "id": "nhs-ae-four-hour-decline",
- "status": "packaged",
+ "status": "qualified",
  "verdict": "go",
  "jurisdiction": {
   "country": "GB",
@@ -210,7 +210,7 @@
  ],
  "rejection_reason": null,
  "review": null,
- "next_action": "Commission the independent re-audit of the staged v2026.11 artifact before any flip - it must check the selection in code, not only the declaration (the 2026-10-21 audit of v2026.10 found the temporal defect that way). v2026.11 is staged private on both destinations: GitHub release 419642457 (tag == main == 98139919) and the Hugging Face repo (tag v2026.11 == main == 18b2e97, loading check green). After a passing audit, request the operator's flip. Do not publish v2026.10: its staged artifacts are superseded.",
+ "next_action": "Stage v2026.12 privately on both destinations, then commission a third audit pass focused on the counterfactual the re-audit used: change only a target month and confirm the row survives. v2026.11 and v2026.10 are superseded and must not be published.",
  "novelty_check": {
   "checked_at": "2026-10-21T04:36:13+00:00",
   "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
@@ -322,8 +322,8 @@
   "gate_version": "1.4.0",
   "ok": true,
   "failed_checks": [],
-  "artifact_version": "0990af0f90fbe304cb94bd53754a337f7704e1005d92f8d9d250b2e8e157b3b5",
-  "result": "PASSED - gate 1.4.0 on the rebuilt full artifact (9,549 rows), including the five new timing checks",
+  "artifact_version": "f4cb7fde0af5c21105e4e41bf17d8535801f305c694ba901b110280ad2b2e302",
+  "result": "PASSED - gate 1.4.0 on the v2026.12 artifact (13-day maximum publication lag; eligibility at M only)",
   "splits": {
    "train": {
     "rows": 4074,
@@ -343,8 +343,7 @@
     "positive_rate": 0.485816,
     "distinct_events": 121
    }
-  },
-  "accept_recheck": "qualify_dataset.py --accept re-verified the package bytes (2026-10-21T14:07Z) and the bytes downloaded from the staged private GitHub release v2026.11 (2026-10-21T14:26Z): ACCEPTED, artifact 0990af0f90fbe304"
+  }
  },
  "construction_output": {
   "job": "coordinator-rebuild-2026-10-21",
@@ -485,5 +484,33 @@
   "providers": 141,
   "removed_training_rows": 2042,
   "note": "Eval and holdout bytes are unchanged from v2026.10; only training rows a provider had not yet earned were removed."
+ },
+ "rebuild_2026_10_21_b": {
+  "artifact": "f4cb7fde0af5c21105e4e41bf17d8535801f305c694ba901b110280ad2b2e302",
+  "release": "v2026.12",
+  "built_at": "2026-10-21T15:26:44Z",
+  "trigger": "re-audit 2026-10-21: v2026.11 fixed the history count but still required a volume-qualified M+1 for a row to exist (build.py:634-642). The counterfactual: R0A-2022-03, changing only the target month's attendances, removed the row.",
+  "fixed": [
+   "eligibility decided at M only: 24 volume-qualified months at or before M, and M qualifies",
+   "the target month is looked up only to compute the label; an absent target month is counted as `unobserved_target` (134), not as exclusion",
+   "publication instant uses the MAXIMUM observed lag (13 days; observations 9/13/10 for Jun/Jul/Aug 2026), not a fixed 10",
+   "docs corrected: month-end wording in DATA_DICTIONARY, flat-path checksum instruction, three-week lag, 'balanced by construction'"
+  ],
+  "rows": {
+   "train": 4074,
+   "eval": 2937,
+   "holdout": 2538
+  },
+  "providers": {
+   "shipped": 129,
+   "candidates": 142
+  },
+  "data_bytes_unchanged_from": "v2026.11 (same row sets and values; only quality.json and the documents differ)",
+  "measured": {
+   "baseline_eval_auc": 0.5511,
+   "persistence_eval": 0.5758,
+   "month_prior_eval": 0.6027,
+   "reversal_eval": 0.5839
+  }
  }
 }
