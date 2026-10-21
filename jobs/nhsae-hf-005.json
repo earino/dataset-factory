@@ -1,0 +1,350 @@
+{
+  "job": {
+    "id": "nhsae-hf-005",
+    "candidate": "nhs-ae-four-hour-decline",
+    "release": true,
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 2048,
+    "timeout_minutes": 25,
+    "lifetime_minutes": 45,
+    "max_disk_mb": 2000,
+    "max_artifact_mb": 8,
+    "what": "hf_publish loading-check retry for nhs-ae-four-hour-decline v2026.11, correcting nhsae-hf-004: that job's spec omitted the verify_loading block, so the worker ran only the upload pass (all five uploads skipped, already at the v2026.11 manifest digests) and the documented loading path was never exercised. This job repeats the same upload pass (all five expected to skip, verified against the manifest before and after) and then executes the card's documented load_dataset path against the private repo earino/nhs-ae-four-hour-decline revision main, checking rows, positives, label values and the 37 columns per split against the v2026.11 manifest (train 4,074 rows / 2,260 positives; eval 2,937 / 1,478; holdout 2,538 / 1,233), the way nhsae-hf-002 did for v2026.10 and the food release caught a declared-schema bug before shipping. The bytes never pass through the coordinator.",
+    "hf_publish": {
+      "repo": "earino/nhs-ae-four-hour-decline",
+      "revision": "main",
+      "source_repo": "earino/nhs-ae-four-hour-decline",
+      "assets": [
+        {
+          "asset_id": 662728598,
+          "dest": "meta.json",
+          "target": "meta.json",
+          "size": 3432,
+          "sha256": "778b863389e2e65326168c3dbbc39e4683a9ec45c74f0052c70dc074e93bf03d"
+        },
+        {
+          "asset_id": 662728610,
+          "dest": "private-holdout.csv",
+          "target": "data/private-holdout.csv",
+          "size": 1099411,
+          "sha256": "527a385f12a920b019434c70588c6532af1bd4dd5459eb64ed46809b5ef99b70"
+        },
+        {
+          "asset_id": 662728615,
+          "dest": "public-eval.csv",
+          "target": "data/public-eval.csv",
+          "size": 1246633,
+          "sha256": "cb786792ac321dd851c272bd159fed24e13d6b633276606b294ddc976e72f266"
+        },
+        {
+          "asset_id": 662728602,
+          "dest": "public-train.csv",
+          "target": "data/public-train.csv",
+          "size": 1664506,
+          "sha256": "55af812900519d39b5a294c38c76f554ed67f0aeb721862592b4d3c588ea7430"
+        },
+        {
+          "asset_id": 662728601,
+          "dest": "quality.json",
+          "target": "quality.json",
+          "size": 6123,
+          "sha256": "31600cdf1d166bd4ae11189b2d1c7717ecb7abf418bc051a92be8c0b8f6c714b"
+        }
+      ],
+      "verify_loading": {
+        "splits": {
+          "train": {
+            "rows": 4074,
+            "positives": 2260
+          },
+          "eval": {
+            "rows": 2937,
+            "positives": 1478
+          },
+          "holdout": {
+            "rows": 2538,
+            "positives": 1233
+          }
+        },
+        "columns": [
+          "row_id",
+          "org_code",
+          "parent_org",
+          "target_year",
+          "target_month_num",
+          "rate_m",
+          "rate_m1",
+          "rate_m2",
+          "rate_m3",
+          "rate_m6",
+          "rate_m12",
+          "rate_mean_6m",
+          "rate_min_6m",
+          "rate_max_6m",
+          "rate_delta_1m",
+          "rate_delta_2m",
+          "rate_delta_3m",
+          "rate_delta_6m",
+          "att1_m",
+          "att2_m",
+          "att_other_m",
+          "over4_1_m",
+          "over4_2_m",
+          "over4_other_m",
+          "dta_4_12_m",
+          "dta_12p_m",
+          "emadm_1_m",
+          "emadm_2_m",
+          "emadm_other_m",
+          "emadm_other2_m",
+          "emadm_share_m",
+          "att1_delta_1m",
+          "att1_delta_12m",
+          "att1_mean_6m",
+          "months_reported_12m",
+          "target_month",
+          "declines"
+        ],
+        "label": "declines",
+        "label_values": [
+          "0",
+          "1"
+        ]
+      }
+    }
+  },
+  "reservation_eur": "0.04",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 2,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 61440,
+  "source_sha256": "84a6f40c655c15110844095974dbc42e3c5d3ae66021e21081839dca5d722adb",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-10-21T14:46:49.208214+00:00",
+  "expires": 1792596709,
+  "budget_months": [
+    "2026-10"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 171616919,
+  "known_hosts": "/opt/data/dataset-factory/.factory/nhsae-hf-005/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "65.21.158.17",
+  "result": {
+    "job_id": "nhsae-hf-005",
+    "status": "succeeded",
+    "uploaded": true,
+    "venv": "/opt/scout/.hf-venv",
+    "pip_bootstrapped": true,
+    "hf_publish": {
+      "repo": "earino/nhs-ae-four-hour-decline",
+      "revision": "main",
+      "uploads": [],
+      "skipped": [
+        {
+          "target": "meta.json",
+          "reason": "already at the manifest digest"
+        },
+        {
+          "target": "data/private-holdout.csv",
+          "reason": "already at the manifest digest"
+        },
+        {
+          "target": "data/public-eval.csv",
+          "reason": "already at the manifest digest"
+        },
+        {
+          "target": "data/public-train.csv",
+          "reason": "already at the manifest digest"
+        },
+        {
+          "target": "quality.json",
+          "reason": "already at the manifest digest"
+        }
+      ],
+      "failures": [],
+      "bytes": 0
+    },
+    "hf_loading": {
+      "splits": [
+        "train",
+        "eval",
+        "holdout"
+      ],
+      "checked": {
+        "eval": {
+          "rows": 2937,
+          "columns": [
+            "att1_delta_12m",
+            "att1_delta_1m",
+            "att1_m",
+            "att1_mean_6m",
+            "att2_m",
+            "att_other_m",
+            "declines",
+            "dta_12p_m",
+            "dta_4_12_m",
+            "emadm_1_m",
+            "emadm_2_m",
+            "emadm_other2_m",
+            "emadm_other_m",
+            "emadm_share_m",
+            "months_reported_12m",
+            "org_code",
+            "over4_1_m",
+            "over4_2_m",
+            "over4_other_m",
+            "parent_org",
+            "rate_delta_1m",
+            "rate_delta_2m",
+            "rate_delta_3m",
+            "rate_delta_6m",
+            "rate_m",
+            "rate_m1",
+            "rate_m12",
+            "rate_m2",
+            "rate_m3",
+            "rate_m6",
+            "rate_max_6m",
+            "rate_mean_6m",
+            "rate_min_6m",
+            "row_id",
+            "target_month",
+            "target_month_num",
+            "target_year"
+          ],
+          "label_values": [
+            "0",
+            "1"
+          ],
+          "positives": 1478
+        },
+        "holdout": {
+          "rows": 2538,
+          "columns": [
+            "att1_delta_12m",
+            "att1_delta_1m",
+            "att1_m",
+            "att1_mean_6m",
+            "att2_m",
+            "att_other_m",
+            "declines",
+            "dta_12p_m",
+            "dta_4_12_m",
+            "emadm_1_m",
+            "emadm_2_m",
+            "emadm_other2_m",
+            "emadm_other_m",
+            "emadm_share_m",
+            "months_reported_12m",
+            "org_code",
+            "over4_1_m",
+            "over4_2_m",
+            "over4_other_m",
+            "parent_org",
+            "rate_delta_1m",
+            "rate_delta_2m",
+            "rate_delta_3m",
+            "rate_delta_6m",
+            "rate_m",
+            "rate_m1",
+            "rate_m12",
+            "rate_m2",
+            "rate_m3",
+            "rate_m6",
+            "rate_max_6m",
+            "rate_mean_6m",
+            "rate_min_6m",
+            "row_id",
+            "target_month",
+            "target_month_num",
+            "target_year"
+          ],
+          "label_values": [
+            "0",
+            "1"
+          ],
+          "positives": 1233
+        },
+        "train": {
+          "rows": 4074,
+          "columns": [
+            "att1_delta_12m",
+            "att1_delta_1m",
+            "att1_m",
+            "att1_mean_6m",
+            "att2_m",
+            "att_other_m",
+            "declines",
+            "dta_12p_m",
+            "dta_4_12_m",
+            "emadm_1_m",
+            "emadm_2_m",
+            "emadm_other2_m",
+            "emadm_other_m",
+            "emadm_share_m",
+            "months_reported_12m",
+            "org_code",
+            "over4_1_m",
+            "over4_2_m",
+            "over4_other_m",
+            "parent_org",
+            "rate_delta_1m",
+            "rate_delta_2m",
+            "rate_delta_3m",
+            "rate_delta_6m",
+            "rate_m",
+            "rate_m1",
+            "rate_m12",
+            "rate_m2",
+            "rate_m3",
+            "rate_m6",
+            "rate_max_6m",
+            "rate_mean_6m",
+            "rate_min_6m",
+            "row_id",
+            "target_month",
+            "target_month_num",
+            "target_year"
+          ],
+          "label_values": [
+            "0",
+            "1"
+          ],
+          "positives": 2260
+        }
+      },
+      "problems": [],
+      "ok": true
+    },
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 419681562,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-2397e3aa4429efd2e179",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-2397e3aa4429efd2e179/manifest.json",
+    "assets": [
+      {
+        "id": 662830500,
+        "size": 61440,
+        "sha256": "84a6f40c655c15110844095974dbc42e3c5d3ae66021e21081839dca5d722adb"
+      },
+      {
+        "id": 662830578,
+        "size": 66,
+        "sha256": "5cef507344aeb7b9a3251d886270571c9bb7489e3a40b3525b37251fb97ed564"
+      },
+      {
+        "id": 662830684,
+        "size": 9397,
+        "sha256": "7ecd8743015dd9136e2802766c7ca188794265e5c4e7d61d8124b43948e22968"
+      }
+    ]
+  },
+  "collected_at": "2026-10-21T14:50:41.505911+00:00",
+  "deleted_at": "2026-10-21T14:51:44.455137+00:00"
+}

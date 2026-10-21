@@ -1,12 +1,12 @@
 {
  "ok": true,
- "dataset": "/output/extract",
- "gate_version": "1.3.0",
+ "dataset": "release/nhs-ae-four-hour-decline",
+ "gate_version": "1.4.0",
  "artifact": {
   "train": {
    "file": "public/train.csv",
-   "sha256": "819b6715ad55272ca0d2a482fb4471edd84ee09ae2ee62e560fe786bd9aeb404",
-   "bytes": 2543862
+   "sha256": "55af812900519d39b5a294c38c76f554ed67f0aeb721862592b4d3c588ea7430",
+   "bytes": 1664506
   },
   "eval": {
    "file": "public/eval.csv",
@@ -20,16 +20,16 @@
   },
   "meta.json": {
    "file": "meta.json",
-   "sha256": "c2f9f43a29d231019396a42c7791639e4acb96179afc0ecd4dfed0c634401813",
-   "bytes": 3292
+   "sha256": "778b863389e2e65326168c3dbbc39e4683a9ec45c74f0052c70dc074e93bf03d",
+   "bytes": 3432
   },
   "quality.json": {
    "file": "quality.json",
-   "sha256": "e7576e8a2431bacd0596161526a418a1c3c5dfea9e37399148db0f24d1d67a77",
-   "bytes": 5148
+   "sha256": "31600cdf1d166bd4ae11189b2d1c7717ecb7abf418bc051a92be8c0b8f6c714b",
+   "bytes": 6123
   },
   "artifact_version": {
-   "digest": "9903df974f233dfaeaa2a005f12012fc97e561673031de44f4b8d7f016d9d957",
+   "digest": "0990af0f90fbe304cb94bd53754a337f7704e1005d92f8d9d250b2e8e157b3b5",
    "components": [
     "eval",
     "holdout",
@@ -120,6 +120,68 @@
    }
   },
   {
+   "check": "timing.instant_declared",
+   "ok": true,
+   "detail": "prediction instant kind='publication' citation=True",
+   "evidence": {
+    "prediction_instant": {
+     "kind": "publication",
+     "period": "M",
+     "days_after_period_end": 10,
+     "citation": "NHS England publishes monthly A&E activity about ten days after the month ends; e.g. August 2026 data was published 2026-09-10"
+    }
+   }
+  },
+  {
+   "check": "timing.publication_lag_measured",
+   "ok": true,
+   "detail": "1 of 1 observed period_end -> published dates are usable (statistical release: at least one observed publication date is required)",
+   "evidence": {
+    "observations": [
+     {
+      "period": "2026-08",
+      "period_end": "2026-08-31",
+      "published": "2026-09-10"
+     }
+    ],
+    "measured_lag_days": 10,
+    "source_kind": "statistical_release"
+   }
+  },
+  {
+   "check": "timing.features_available_at_instant",
+   "ok": true,
+   "detail": "features publish 10d after the period, instant is 10d after it",
+   "evidence": {
+    "features_lag_days": 10,
+    "instant_lag_days": 10,
+    "measured_lag_days": 10
+   }
+  },
+  {
+   "check": "timing.instant_accounts_for_publication_lag",
+   "ok": true,
+   "detail": "instant is a publication instant",
+   "evidence": {
+    "kind": "publication",
+    "features_lag_days": 10
+   }
+  },
+  {
+   "check": "timing.selection_uses_only_available_data",
+   "ok": true,
+   "detail": "row selection declares its latest period as 'M'",
+   "evidence": {
+    "latest_period_used": "M",
+    "fields": [
+     "att1_m",
+     "over4_1_m",
+     "rate_m",
+     "months_reported_12m"
+    ]
+   }
+  },
+  {
    "check": "units.measured_columns_declare_unit_and_frame",
    "ok": true,
    "detail": "5 measured column(s) declare unit and frame",
@@ -200,10 +262,10 @@
    "detail": "every split has rows",
    "evidence": {
     "train": {
-     "rows": 6116,
-     "positives": 3285,
-     "negatives": 2831,
-     "positive_rate": 0.537116
+     "rows": 4074,
+     "positives": 2260,
+     "negatives": 1814,
+     "positive_rate": 0.554737
     },
     "eval": {
      "rows": 2937,
@@ -225,10 +287,10 @@
    "detail": "eval and holdout each contain positives and negatives",
    "evidence": {
     "train": {
-     "rows": 6116,
-     "positives": 3285,
-     "negatives": 2831,
-     "positive_rate": 0.537116
+     "rows": 4074,
+     "positives": 2260,
+     "negatives": 1814,
+     "positive_rate": 0.554737
     },
     "eval": {
      "rows": 2937,
@@ -281,7 +343,7 @@
    "detail": "declared clustered event counts match the rows",
    "evidence": {
     "recomputed": {
-     "train": 133,
+     "train": 114,
      "eval": 124,
      "holdout": 121
     },
@@ -304,7 +366,7 @@
    "evidence": {
     "thin": [],
     "recomputed_events": {
-     "train": 133,
+     "train": 114,
      "eval": 124,
      "holdout": 121
     },
@@ -320,7 +382,7 @@
    "detail": "positive rates are between 0 and 1",
    "evidence": {
     "rates": [
-     0.537116,
+     0.554737,
      0.503235,
      0.485816
     ]
@@ -333,7 +395,7 @@
    "evidence": {
     "ranges": {
      "train": {
-      "min": "2019-01",
+      "min": "2020-04",
       "max": "2022-12"
      },
      "eval": {
@@ -354,7 +416,7 @@
    "evidence": {
     "ranges": {
      "train": {
-      "min": "2019-01",
+      "min": "2020-04",
       "max": "2022-12"
      },
      "eval": {
@@ -390,7 +452,7 @@
     },
     "ranges": {
      "train": {
-      "min": "2019-01",
+      "min": "2020-04",
       "max": "2022-12"
      },
      "eval": {

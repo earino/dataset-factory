@@ -4,30 +4,40 @@
  "destinations": {
   "github": {
    "repo": "earino/nhs-ae-four-hour-decline",
-   "release_id": 419405716,
+   "release_id": 419642457,
    "release_tag": "v2026.11",
+   "target_commit": "29d567aebdbec66ee6ddd985ac687eb9068c8a9c",
    "private": true,
-   "verified": false,
-   "verified_at": null,
+   "verified": true,
+   "verified_at": "2026-10-21T14:47:00Z",
+   "files_verified": [
+    "meta.json",
+    "private/holdout.csv",
+    "public/eval.csv",
+    "public/train.csv",
+    "quality.json"
+   ],
    "checks": [
-    "nhsae-publish-001 worker transfer (server 171563321, destroyed 10:09:58Z, result release 419407464): copied the five accepted nhsae-002 files from staging release 419222791 into this release, verifying each sha256 on arrival and against the server's own digest after upload (transfers 5, failures 0, 4,898,346 bytes); the bytes never passed through the coordinator",
-    "5/5 asset names, sizes and sha256 digests match the package MANIFEST.json, read back from the GitHub API's own digest field after transfer (meta.json c2f9f43a..., private-holdout.csv 527a385f..., public-eval.csv cb786792..., public-train.csv 819b6715..., quality.json e7576e8a...)",
-    "tag v2026.10 == main == f36e4fc3 (single documentation commit 'NHS England A&E four-hour performance decline task v2026.10 (staged, private)'; the release was created non-draft at that commit and no later commit exists, so no tag move was needed)",
-    "get_dataset.py executed once end-to-end against the private release before recording (token download via the API asset-id path, all five assets, every digest verified, runner layout restored, exit 0), and qualify_dataset.py --accept on the downloaded tree returned ACCEPTED, artifact 9903df974f233dfa - the bytes the release serves are the qualified artifact",
-    "anonymous GET of the repository and of a release asset both answer 404 (checked 2026-10-21 with curl, no credential): the repository is private by design; the flip is the operator's act"
+    "v2026.11 staged 2026-10-21: documentation commit 29d567a ('NHS England A&E four-hour performance decline task v2026.11 (staged, private)') pushed to main on top of the v2026.10 commit f36e4fc; release v2026.11 (id 419642457) created non-draft at that commit",
+    "the five assets were uploaded from the coordinator (4,020,105 bytes total; the v2026.11 artifact was built on the coordinator because the publisher's CDN serves HTTP 202 with an empty body to datacenter IPs, so no worker can fetch this source - measured 2026-10-21 on job nhsae-001); v2026.10's transfer went staging-release -> worker -> destination because the build then ran on a worker",
+    "GitHub API readback after upload: 5/5 asset ids, sizes and server-reported sha256 digests match package MANIFEST.json exactly (meta.json 778b8633..., private-holdout.csv 527a385f..., public-eval.csv cb786792..., public-train.csv 55af8129..., quality.json 31600cdf...)",
+    "get_dataset.py executed end-to-end against the private release (token download via the API asset-id path, all five assets, every digest verified, runner layout restored, exit 0; rows train 4,074 / eval 2,937 / holdout 2,538), then qualify_dataset.py --accept on the downloaded tree returned ACCEPTED, artifact 0990af0f90fbe304 - the bytes the release serves are the qualified artifact",
+    "anonymous GET of the repository and of a release asset both answer 404 (checked 2026-10-21 with curl, no credential): the repository is private by design; the flip is the operator's act",
+    "watcher readback 2026-10-21T14:47Z: GitHub API reports all five release assets at exactly the MANIFEST sizes and server-side sha256 digests (meta.json 778b8633..., private-holdout.csv 527a385f..., public-eval.csv cb786792..., public-train.csv 55af8129..., quality.json 31600cdf...); anonymous repo GET answers 404",
+    "after the release target commit 29d567a, main advanced to 98139919 (14:40:10Z, 'v2026.11 manifest: construction_output splits corrected to the rebuilt artifact'); the 14:47Z readback shows tag v2026.11 resolving to 98139919 == main, so tag == main holds, and the release assets (attached to the release, not to a commit) are unchanged"
    ],
    "anonymous_access": false,
-   "note": "Superseded: v2026.10 was staged on both destinations and then invalidated by the 2026-10-21 independent audit (temporal defect and hindsight selection). v2026.11 has not been staged yet as of 2026-10-21T12:43:01Z.",
+   "note": "v2026.11 staged private and verified. Supersedes v2026.10, which was staged 2026-10-21 and invalidated the same day by the independent audit (temporal defect and hindsight selection); the v2026.10 release (419405716) and its tag are preserved unchanged.",
    "superseded": [
     "v2026.10"
    ]
   },
   "huggingface": {
    "repo": "earino/nhs-ae-four-hour-decline",
-   "revision": "v2026.10",
+   "revision": "v2026.11",
    "private": true,
-   "verified": false,
-   "verified_at": null,
+   "verified": true,
+   "verified_at": "2026-10-21T14:44:42+00:00",
    "files_verified": [
     "data/private-holdout.csv",
     "data/public-eval.csv",
@@ -38,14 +48,15 @@
    "missing": [],
    "size_mismatch": [],
    "checks": [
-    "nhsae-hf-001 worker job (server 171563744, destroyed 10:14:03Z, result release 419411258): uploaded all five data files to the Hub from the staged private GitHub release, verifying each sha256 before and after transfer (uploads 5, skipped 0, failures 0, 4,898,346 bytes); the bytes never passed through the coordinator",
-    "nhsae-hf-002 loading-check retry (server 171564314, destroyed 10:17:48Z, result release 419414704): per-file uploads all skipped (already at the manifest digest, uploads 0 skipped 5 failures 0) and the card's documented loading path was executed on the worker - load_dataset against the private repo returned train 6,116 rows / 3,285 positives, eval 2,937 / 1,478, holdout 2,538 / 1,233, label values ['0','1'], 37 columns per split exactly matching the manifest - hf_loading ok: true, problems: []",
-    "hf-publish.py --verify after the upload (write credential from its mode-0600 file): files present 5/5, missing 0, size_mismatch 0, repository private",
-    "hf-publish.py --tag LAST: Hub tag v2026.10 created at 7ed0e20603514a7b30af648f1f6fd6c9c155cdfd with tag_matches_main: true (no existing tag, nothing replaced)",
-    "anonymous access check: the Hub API answers 401 with no credential (checked 2026-10-21 with curl): the dataset is private by design; the flip is the operator's act"
+    "nhsae-hf-003 worker job (server 171610910, created 14:14:40Z, destroyed 14:23:17Z, result release 419647149): uploaded the v2026.11 bytes to the Hub from the private GitHub release v2026.11 (419642457), verifying each sha256 against the manifest before and after transfer - uploads 3 (public-train.csv 55af8129..., meta.json 778b8633..., quality.json 31600cdf...), skipped 2 (public-eval.csv, private-holdout.csv, byte-identical to v2026.10 and already at their manifest digests), failures 0, 1,674,061 bytes; the bytes never passed through the coordinator",
+    "nhsae-hf-004 (server 171612481, result release 419656381) was the intended loading check but its job spec omitted the verify_loading block, so the worker ran only the upload pass (uploads 0, skipped 5, failures 0) and the documented loading path was never exercised; recorded as superseded by nhsae-hf-005 (diagnosed by the 14:22Z worker-watch run)",
+    "nhsae-hf-005 loading-check retry (server 171616919, created 14:46:49Z, destroyed 14:51:44Z, result release 419681562): uploads 0 / skipped 5 / failures 0 and the card's documented loading path executed on the worker - load_dataset against the private repo revision main returned train 4,074 rows / 2,260 positives, eval 2,937 / 1,478, holdout 2,538 / 1,233, label values ['0','1'], 37 columns per split, exactly matching the v2026.11 manifest - hf_loading ok: true, problems: []",
+    "hf-publish.py --verify from the coordinator (2026-10-21T14:44:42Z, write credential from its mode-0600 file): files present 5/5, missing 0, size_mismatch 0; the Hub's MANIFEST.json at revision main is byte-identical to the package manifest (sha256 b8185338b86d0fc0...); repository private",
+    "hf-publish.py --tag LAST (14:52Z): Hub tag v2026.11 created at 18b2e97f9ad3981c48d8168acec76a5aa032c2c0 with tag_matches_main: true (no existing tag, nothing replaced); the tag pins exactly the bytes nhsae-hf-005 loaded",
+    "anonymous access check: the Hub API answers 401 with no credential (rechecked 2026-10-21 14:52Z): the dataset is private by design; the flip is the operator's act"
    ],
-   "loading_check": "run by worker job nhsae-hf-002 and recorded in its report (.factory/nhsae-hf-002/result.json, hf_loading ok=true)",
-   "note": "Superseded: v2026.10 was staged on both destinations and then invalidated by the 2026-10-21 independent audit (temporal defect and hindsight selection). v2026.11 has not been staged yet as of 2026-10-21T12:43:01Z.",
+   "loading_check": "run by the worker job and recorded in its report",
+   "note": "v2026.11 staged private and fully verified: all five data files at the v2026.11 manifest digests, the documented loading path reproduces the artifact split-by-split (nhsae-hf-005), tag v2026.11 == main. The independent re-audit must pass before any flip. Supersedes v2026.10 (staged 2026-10-21, invalidated the same day by the independent audit; v2026.10 release 419405716 and its tag are preserved unchanged).",
    "release_tag": "v2026.11",
    "superseded": [
     "v2026.10"

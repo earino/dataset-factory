@@ -46,12 +46,13 @@ from __future__ import annotations
 
 import argparse
 import csv
+import datetime
 import hashlib
 import json
 import sys
 from pathlib import Path
 
-GATE_VERSION = "1.3.0"
+GATE_VERSION = "1.4.0"
 
 MIN_GROUP_FOR_CATEGORICAL = 5
 MIN_EVAL_POSITIVES = 30
@@ -169,6 +170,10 @@ class Report:
                              "evidence": evidence or {}})
 
     @property
+    def failed_checks(self) -> list[str]:
+        return [result["check"] for result in self.results if not result["ok"]]
+
+    @property
     def ok(self) -> bool:
         return all(result["ok"] for result in self.results)
 
@@ -272,6 +277,75 @@ def check_prediction_time(quality: dict, report: Report) -> None:
                documented == "prediction_time",
                f"features documented as available {documented!r}",
                {"features_documented_at": documented})
+
+    # A declaration is not evidence. These checks exist because two datasets were packaged with a
+    # prediction instant that preceded the publication of their own features: the string
+    # "prediction_time" was true of the *period*, not of the *release*. Every dataset must now state
+    # when its source actually publishes, with observed dates, and state that its row selection did
+    # not use any later period.
+    timing = quality.get("timing") if isinstance(quality.get("timing"), dict) else {}
+    instant = timing.get("prediction_instant") if isinstance(timing.get("prediction_instant"), dict) else {}
+    features = timing.get("features") if isinstance(timing.get("features"), dict) else {}
+    selection = timing.get("row_selection") if isinstance(timing.get("row_selection"), dict) else {}
+    observations = timing.get("observations") if isinstance(timing.get("observations"), list) else []
+
+    report.add("timing.instant_declared",
+               bool(instant.get("kind")) and bool(instant.get("citation")),
+               f"prediction instant kind={instant.get('kind')!r} citation={bool(instant.get('citation'))}",
+               {"prediction_instant": instant})
+
+    def _date(value):
+        try:
+            return datetime.date.fromisoformat(str(value))
+        except (TypeError, ValueError):
+            return None
+
+    lags = []
+    for observation in observations:
+        if not isinstance(observation, dict):
+            continue
+        end, published = _date(observation.get("period_end")), _date(observation.get("published"))
+        if end and published and published >= end:
+            lags.append((published - end).days)
+    # A dataset drawn from an administrative system can honestly claim the record existed at the
+    # event. A dataset drawn from a *statistical release* cannot: the publisher emits it later, and
+    # the lag must be observed, not assumed. That distinction is what the nhs-ae audit turned on.
+    source_kind = str(features.get("source_kind") or "")
+    needs_observations = source_kind == "statistical_release"
+    measured_ok = (len(observations) >= 1 and len(lags) == len(observations)) if needs_observations \
+        else (not observations or len(lags) == len(observations))
+    report.add("timing.publication_lag_measured",
+               measured_ok,
+               (f"{len(lags)} of {len(observations)} observed period_end -> published dates are usable"
+                + (" (statistical release: at least one observed publication date is required)"
+                   if needs_observations else "")),
+               {"observations": observations[:4], "measured_lag_days": max(lags) if lags else None,
+                "source_kind": source_kind})
+
+    feature_lag = features.get("published_days_after_period_end")
+    instant_lag = instant.get("days_after_period_end")
+    numeric = all(isinstance(v, int) and v >= 0 for v in (feature_lag, instant_lag))
+    report.add("timing.features_available_at_instant",
+               numeric and feature_lag <= instant_lag,
+               (f"features publish {feature_lag}d after the period, instant is {instant_lag}d after it"
+                if numeric else "features or instant do not state a publication lag in days"),
+               {"features_lag_days": feature_lag, "instant_lag_days": instant_lag,
+                "measured_lag_days": max(lags) if lags else None})
+
+    report.add("timing.instant_accounts_for_publication_lag",
+               not (isinstance(feature_lag, int) and feature_lag > 0 and instant.get("kind") != "publication"),
+               ("instant is a publication instant" if instant.get("kind") == "publication"
+                else f"instant kind is {instant.get('kind')!r} while features publish "
+                     f"{feature_lag}d after the period"),
+               {"kind": instant.get("kind"), "features_lag_days": feature_lag})
+
+    latest = str(selection.get("latest_period_used") or "")
+    report.add("timing.selection_uses_only_available_data",
+               bool(latest) and "+" not in latest,
+               f"row selection declares its latest period as {latest!r}"
+               + ("" if latest and "+" not in latest else " - a selection that reaches into a later "
+                  "period (M+1 or beyond) makes the retained population depend on the future"),
+               {"latest_period_used": latest, "fields": selection.get("fields")})
 
 
 def check_units_and_frames(quality: dict, report: Report) -> None:
@@ -798,7 +872,8 @@ def main(argv=None) -> int:
     else:
         print(report.render())
         print()
-        print(f"artifact version: {report.artifact['artifact_version']['digest'][:16]}")
+        digest = (report.artifact.get("artifact_version") or {}).get("digest")
+        print(f"artifact version: {digest[:16] if digest else 'not computed'}")
         print("QUALIFICATION PASSED" if report.ok else "QUALIFICATION FAILED")
     return 0 if report.ok else 1
 

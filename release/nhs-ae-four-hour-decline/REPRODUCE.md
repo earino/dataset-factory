@@ -7,12 +7,14 @@ checkable against `SHA256SUMS` and `MANIFEST.json`.
 ## 1. Get the data
 
 ```bash
-python3 get_dataset.py --dest ./task        # 5 files, ~4.9 MB
+python3 get_dataset.py --dest ./task        # 5 files, ~4.0 MB
 ```
 
-The repository is public, so no credential is needed. `get_dataset.py` verifies every file
-against the release's recorded size and sha256 and refuses the download on any mismatch. It
-restores the layout the runner expects:
+**While this repository is private (under review), `get_dataset.py` needs `GITHUB_TOKEN` or an
+authenticated `gh` CLI** and downloads through the API's asset path; publication to public is
+the operator's approval, and once the repository is public no credential is needed at all.
+`get_dataset.py` verifies every file against the release's recorded size and sha256 and refuses
+the download on any mismatch. It restores the layout the runner expects:
 
 ```
 task/public/train.csv      task/public/eval.csv
@@ -27,12 +29,12 @@ python3 -c "import json;print(json.load(open('MANIFEST.json'))['artifact_version
 ```
 
 `MANIFEST.json` records the artifact version the qualification gate produced
-(`9903df974f233dfa...`) and every package file's digest. The flat asset names are
+(`0990af0f90fbe304...`) and every package file's digest. The flat asset names are
 `public-train.csv`, `public-eval.csv`, `private-holdout.csv`, `meta.json`, `quality.json`.
 
 ## 3. Re-run the qualification gate
 
-The gate is shipped at `code/qualify_dataset.py` (version 1.3.0).
+The gate is shipped at `code/qualify_dataset.py` (version 1.4.0).
 
 ```bash
 python3 code/qualify_dataset.py ./task
@@ -79,13 +81,15 @@ Two measured caveats:
 
 ## 6. What the numbers mean
 
-- The m/m-decline label is balanced in all three windows (53.7% / 50.3% / 48.6%) **by
+- The m/m-decline label is balanced in all three windows (55.5% / 50.3% / 48.6%) **by
   construction**; the underlying within-4-hour rate is not stationary (83.0% national Type 1 in
   2018, ~60% in 2025-26). A model can win on the direction without the level being learnable
   from history.
 - Positives cluster within providers. The effective sample size is the distinct positive provider
-  count (133 / 124 / 121), not the row count.
-- The bar to beat is **mean reversion** (`rate_m - rate_mean_6m`): 0.5659 eval / 0.6562 holdout
-  rank AUC. Momentum (`rate_delta_1m`) is anti-predictive (0.4161 / 0.3993). The runner-contract
-  XGBoost baseline measured 0.5526 eval AUC - below mean reversion; treat the references as the
-  floor for a useful solution, and see `VERIFICATION.md` before quoting it.
+  count (114 / 124 / 121), not the row count.
+- The bars to beat: **target-month-of-year prior** 0.6027 eval (train-only seasonal prior) and
+  **mean reversion** (`rate_m - rate_mean_6m`) 0.6562 holdout, with reversal (`rate_delta_1m`)
+  0.5839 / 0.6007 and persistence (`rate_m`) 0.5758 / 0.6046 between them. Momentum is
+  anti-predictive (0.4161 / 0.3993). The runner-contract XGBoost baseline measured **0.5511**
+  eval AUC - below every eval reference; treat the references as the floor for a useful
+  solution, and see `VERIFICATION.md` before quoting it.

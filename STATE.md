@@ -1,18 +1,18 @@
 # Current state
 
-Updated: 2026-10-21 10:31Z (worker watcher: the three nhs-ae packaging jobs all green and closed -
-nhsae-publish-001 GitHub destination transfer, nhsae-hf-001 Hub upload, nhsae-hf-002 loading check;
-this run recorded the packaged state, pushed the recording commit and checked CI green; all earlier
-commits of the arc were already on the remote - the local remote-tracking ref was stale, pushes from
-this clone go through an explicit credential URL that does not update it).
-who-flunet-activity-exceedance is PUBLISHED (2026-10-21 10:24Z, the operator's "ship it"): public on
-GitHub and Hugging Face with an honest unresolved-licence label (no open licence asserted over the
-source rows, WHO data-compilation clause quotes recorded), measured results and limitations on the
-card, and the dataset site + catalogue live.
-nhs-ae-four-hour-decline is PACKAGED AND FULLY STAGED ON BOTH DESTINATIONS, PRIVATE, awaiting only
-the operator's flip: GitHub release v2026.10 (tag == main == f36e4fc3) and the Hugging Face repo both
-carry the five accepted artifact files (artifact 9903df974f233dfa, --accept re-verified through
-get_dataset.py; the documented loading path verified split-by-split by nhsae-hf-002).
+Updated: 2026-10-21 14:55Z (worker watcher closed the v2026.11 staging arc: the 14:00 research session
+rebuilt nhs-ae as v2026.11 and staged it private on both destinations but hit its 120-turn limit before
+recording anything; this run verified both destinations from the coordinator, diagnosed and corrected the
+nhsae-hf-004 loading-check spec defect (nhsae-hf-005 green), tagged the Hub last, and pushed the recording
+commit).
+who-flunet-activity-exceedance stays PUBLISHED (2026-10-21 10:24Z, the operator's "ship it").
+nhs-ae-four-hour-decline v2026.11 is PACKAGED AND FULLY STAGED PRIVATE ON BOTH DESTINATIONS, awaiting the
+independent re-audit BEFORE any flip: GitHub release v2026.11 (419642457, tag == main == 98139919, 5/5
+assets at the manifest digests, --accept re-verified on bytes downloaded from the release) and the Hugging
+Face repo (tag v2026.11 == main == 18b2e97; nhsae-hf-003 uploaded the three changed files; nhsae-hf-005
+verified the documented loading path split-by-split: train 4,074 rows / 2,260 positives, eval 2,937 / 1,478,
+holdout 2,538 / 1,233, label ['0','1']). Artifact 0990af0f90fbe304, gate 1.4.0. The v2026.10 staging is
+superseded and must not be published.
 
 ## 2026-10-21 - nhs-ae packaged and staged private on both destinations (three green jobs); who-flunet PUBLISHED on the operator's "ship it"; this watcher run closed a two-crash arc
 
@@ -4785,3 +4785,55 @@ own dependency ranges. References now shipped: month-of-year prior 0.6027 eval, 
 persistence 0.5758/0.6046, mean reversion 0.5659/0.6562, momentum 0.4161. The baseline is below all of
 them and the docs say so. Artifact 0990af0f90fbe304. v2026.10 staged artifacts are superseded and must
 not be published. Next: stage v2026.11, then an independent re-audit before the flip.
+
+## 2026-10-21 (afternoon) - v2026.11 staged private on both destinations; the worker watcher closed the arc the research session could not finish
+
+The 14:00Z research session (exit 1 at 14:41:33Z, 41.5 min in, at its 120-turn limit; near the end one of
+its commands was blocked as a force-push shape - the correct outcome, there is never anything to force, and
+pushes from this clone go through an explicit credential URL that leaves the remote-tracking ref stale) did
+the whole v2026.11 staging and recorded none of it: rebuilt artifact 0990af0f90fbe304 on the coordinator
+(gate 1.4.0; the publisher's CDN 202-blocks datacenter IPs so no worker can fetch NHS England), regenerated
+the release package, created the private GitHub release v2026.11 (419642457) at docs commit 29d567a with
+5/5 assets at manifest digests, pushed the follow-up splits-correction commit 98139919 (14:40:10Z, tag
+v2026.11 now resolves to it == main), ran get_dataset.py end-to-end against the release and
+qualify_dataset.py --accept on the downloaded tree (ACCEPTED), and moved the Hub to v2026.11 through
+nhsae-hf-003 (uploads 3 - public-train.csv, meta.json, quality.json; skipped 2 byte-identical
+public-eval.csv / private-holdout.csv; failures 0; 1,674,061 bytes; result release 419647149) plus the
+v2026.11 docs (Hub MANIFEST byte-identical to the package, sha256 b8185338...). All of that stayed
+uncommitted in the working tree until this run.
+
+**nhsae-hf-004 never ran the loading check it was named for.** Its job spec omitted the `verify_loading`
+block that makes the worker execute the card's documented load_dataset path, so the job did only the
+all-skip upload pass (uploads 0, skipped 5, failures 0) and reported success with no `hf_loading` block in
+its result - found by comparing the result with nhsae-hf-002's, the same check that caught the food
+release's declared-schema bug before shipping. Recorded as superseded; its worker was still alive when the
+session died and was destroyed by this run at 14:43:20Z. Result release 419656381.
+
+**nhsae-hf-005 (correction, launched by this run within the standing allowance):** the identical upload pass
+WITH the verify_loading block, expectations taken from the v2026.11 manifest (train 4,074 rows / 2,260
+positives; eval 2,937 / 1,478; holdout 2,538 / 1,233; label values ['0','1']; the same 37 columns,
+re-derived from quality.json and identical to v2026.10's list). Green: uploads 0 / skipped 5 / failures 0,
+hf_loading ok: true, problems: [], every split exactly at the manifest. Result release 419681562, worker
+destroyed 14:51:44Z. October worker reservation now EUR 7.06 of the EUR 20 allowance (EUR 5 of which stays
+held for release work).
+
+Coordinator-side verification by this run (not inherited from the session's notes): hf-publish.py --verify
+against the Hub (present 5/5, missing 0, size_mismatch 0, repo private, acting account earino, token role
+write); GitHub API readback of release 419642457 (all five assets at exactly the MANIFEST sizes and the
+server's own sha256 digests); anonymous GETs: GitHub 404, Hub API 401 (private on both, the flip stays the
+operator's act); Hub tag v2026.11 created LAST at 18b2e97f... with tag_matches_main true, pinning exactly
+the bytes the loading check loaded.
+
+Recorded: record.json -> status packaged, packaged_at 2026-10-21T14:53Z, awaiting_operator false (the
+independent re-audit gate comes before the flip), jobs nhsae-hf-003/004/005 with the honest hf-004 note,
+artifacts extended with the three result releases and the two v2026.11 destination entries;
+DESTINATIONS.json Hugging Face block completed (the session had left it "staging in progress"); the
+session's release-package edits (MANIFEST, README, RELEASE_NOTES, REPRODUCE, get_dataset.py, code,
+measurements) committed as left - every digest in them cross-checked against both destinations first.
+check-package.py OK, check-candidate.py --all OK. Watcher note: this run fired at 14:22Z while the
+launching session was still alive, waited for it to exit before touching the tree (a live session owns the
+working tree; double-recording was the risk), then took over the unfinished steps.
+
+Next action: commission the independent re-audit of the staged v2026.11 artifact - the selection must be
+checked in code, not only the declaration, which is how the v2026.10 audit found the temporal defect. Only
+after a passing audit, ask the operator for the flip. Do not publish v2026.10: superseded.

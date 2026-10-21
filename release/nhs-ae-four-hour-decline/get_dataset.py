@@ -13,14 +13,15 @@ GitHub release asset names cannot contain `/`, so the five assets are flat
 Every file is checked against the release's own recorded size and against `SHA256SUMS`,
 so a download that does not match is refused rather than silently used.
 
-The repository is public, so no credential is needed. While it was private the script
-accepted `GITHUB_TOKEN` or an authenticated `gh` CLI; that path still works.
+While the repository is private (under review) the script needs `GITHUB_TOKEN` or an
+authenticated `gh` CLI and downloads through the API's asset path; once the release is
+public no credential is needed and the plain download URL works.
 
     python3 get_dataset.py --dest ./task
 
 The equivalent by hand:
 
-    gh release download v2026.10 --repo earino/nhs-ae-four-hour-decline --dir ./flat
+    gh release download v2026.11 --repo earino/nhs-ae-four-hour-decline --dir ./flat
 """
 from __future__ import annotations
 
@@ -34,7 +35,7 @@ import urllib.request
 from pathlib import Path
 
 REPO = "earino/nhs-ae-four-hour-decline"
-TAG = "v2026.10"
+TAG = "v2026.11"
 # flat asset name -> destination relative to --dest
 LAYOUT = {
     "public-train.csv": "public/train.csv",
@@ -45,16 +46,16 @@ LAYOUT = {
 }
 # Recorded at packaging time from the gate's artifact block; the manifest is the authority.
 EXPECTED = {
-    "public-train.csv": {"bytes": 2543862,
-                         "sha256": "819b6715ad55272ca0d2a482fb4471edd84ee09ae2ee62e560fe786bd9aeb404"},
+    "public-train.csv": {"bytes": 1664506,
+                         "sha256": "55af812900519d39b5a294c38c76f554ed67f0aeb721862592b4d3c588ea7430"},
     "public-eval.csv": {"bytes": 1246633,
                         "sha256": "cb786792ac321dd851c272bd159fed24e13d6b633276606b294ddc976e72f266"},
     "private-holdout.csv": {"bytes": 1099411,
                             "sha256": "527a385f12a920b019434c70588c6532af1bd4dd5459eb64ed46809b5ef99b70"},
-    "meta.json": {"bytes": 3292,
-                  "sha256": "c2f9f43a29d231019396a42c7791639e4acb96179afc0ecd4dfed0c634401813"},
-    "quality.json": {"bytes": 5148,
-                     "sha256": "e7576e8a2431bacd0596161526a418a1c3c5dfea9e37399148db0f24d1d67a77"},
+    "meta.json": {"bytes": 3432,
+                  "sha256": "778b863389e2e65326168c3dbbc39e4683a9ec45c74f0052c70dc074e93bf03d"},
+    "quality.json": {"bytes": 6123,
+                     "sha256": "31600cdf1d166bd4ae11189b2d1c7717ecb7abf418bc051a92be8c0b8f6c714b"},
 }
 URL = "https://github.com/{repo}/releases/download/{tag}/{name}"
 

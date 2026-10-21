@@ -1,6 +1,13 @@
 #!/bin/sh
 # Worker entrypoint for the nhs-ae-four-hour-decline full build (nhsae-002).
 #
+# v2026.11 provenance note: the shipped v2026.11 artifact was NOT built by this
+# worker entrypoint. The 2026-10-21 rebuild ran the same build.py and the same
+# gate on the coordinator, fetching the same 102 publisher CSVs over HTTP
+# (composite digest 99cb3339b31ae2045c990c950a40fb44dc93f1dfc4d58f1ae1879fa851666833),
+# because the audit fix changes row selection only, not fetching. This file is
+# kept as the documented worker path and as the v2026.10 provenance record: a
+# worker consumes the staged source tar via --source-dir exactly as below.
 # Runs on an expendable worker only. The publisher's CDN (CloudFront) serves
 # HTTP 202 with an empty body to this worker's datacenter IP (measured
 # 2026-10-21 from worker 171522297; the same URLs serve 200/82 KB to the

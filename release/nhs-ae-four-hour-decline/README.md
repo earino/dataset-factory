@@ -42,7 +42,7 @@ agent's workspace** and be used only for scoring.
 ## Quickstart
 
 ```bash
-python3 get_dataset.py --dest ./task        # 5 files, ~4.9 MB, sha256-verified
+python3 get_dataset.py --dest ./task        # 5 files, ~4.0 MB, sha256-verified
 python3 code/qualify_dataset.py ./task      # the gate: expect ok=true, 0 failed checks
 sh baseline/reproduce_baseline.sh ./task    # the benchmark's own train.py + validate.sh
 ```
@@ -74,7 +74,7 @@ The label source - month M+1's `A&E attendances Type 1` and `Attendances over 4h
 never written into any shipped file; only the binary `declines` ships. Month M's own
 attendances, over-4-hour counts, decision-to-admit waits and emergency admissions ARE knowable
 at the prediction instant and ship as features. The build recomputes a sample of rows against a
-panel copy that physically contains no months after M and reports zero mismatches (201 rows
+panel copy that physically contains no months after M and reports zero mismatches (204 rows
 checked). Booked-appointment columns exist only from 2020-08, so they are parsed but not
 shipped: their availability would be split-dependent.
 
@@ -97,5 +97,8 @@ v3.0."
 - Cross-check against the publisher's own commentary: August 2026 national Type 1 within-4h
   61.1% (publisher) vs 60.86% recomputed on this panel at build time (revised-vs-provisional
   publication states).
-- Construction: `code/build.py`, executed by job `nhsae-002`; artifact version
-  `9903df974f233dfa...`, gate 1.3.0. Reproduction instructions in `REPRODUCE.md`.
+- Construction: `code/build.py`, run on the coordinator 2026-10-21T12:38:18Z from the 102
+  publisher CSVs over HTTP (datacenter IPs are CDN-blocked, so no worker can fetch this
+  publisher); artifact version `0990af0f90fbe304...`, gate 1.4.0. Reproduction instructions in
+  `REPRODUCE.md`. v2026.10 history: the superseded artifact `9903df974f233dfa...` (gate 1.3.0,
+  worker job nhsae-002) remains under the `v2026.10` tag.

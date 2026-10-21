@@ -1,5 +1,8 @@
 {
- "alarms": [],
+ "alarms": [
+  "scout-worker-watch missed its window (2026-10-21T14:27:14.563589+00:00); last status ok",
+  "2 of the last 3 scheduled sessions failed (wall clock or provider) and produced no usable report"
+ ],
  "budget": {
   "config": {
    "allowance_usd": 30.0,
@@ -14,57 +17,55 @@
   },
   "decision": {
    "allowance_usd": 30.0,
-   "allowed": false,
-   "moment": "2026-10-21T12:24:20.048715+00:00",
+   "allowed": true,
+   "moment": "2026-10-21T14:50:02.792547+00:00",
    "period_start": "2026-10-01T00:00:00+00:00",
-   "reasons": [
-    "lock held for 1459s by scout-research"
-   ],
+   "reasons": [],
    "research_cost_usd": 0.233495,
-   "research_tokens_last_7_days": 5636234,
-   "runs_last_7_days": 26,
-   "runs_weighted_last_7_days": 27,
+   "research_tokens_last_7_days": 5842086,
+   "runs_last_7_days": 27,
+   "runs_weighted_last_7_days": 28,
    "session_cap_per_week": 200,
    "sessions_over_token_cap": 1,
    "usage": {
     "auxiliary": {
-     "calls": 621,
+     "calls": 624,
      "cost_status": [
       "unknown"
      ],
-     "cost_usd": 0.010705,
-     "input_tokens": 1177002,
-     "output_tokens": 643731
+     "cost_usd": 0.010937,
+     "input_tokens": 1178501,
+     "output_tokens": 643743
     },
     "interactive": {
-     "calls": 2848,
+     "calls": 2914,
      "cost_status": [
       "estimated",
       "unknown"
      ],
-     "cost_usd": 1.464375,
-     "input_tokens": 11193626,
-     "output_tokens": 1597974
+     "cost_usd": 1.500103,
+     "input_tokens": 11257527,
+     "output_tokens": 1635093
     },
     "research": {
-     "calls": 1892,
+     "calls": 2026,
      "cost_status": [
       "estimated",
       "unknown"
      ],
      "cost_usd": 0.233495,
-     "input_tokens": 5143083,
-     "output_tokens": 1741867
+     "input_tokens": 5265208,
+     "output_tokens": 1825594
     },
     "scheduled-other": {
-     "calls": 1405,
+     "calls": 1465,
      "cost_status": [
       "estimated",
       "unknown"
      ],
      "cost_usd": 0.000514,
-     "input_tokens": 2147854,
-     "output_tokens": 1042759
+     "input_tokens": 2210355,
+     "output_tokens": 1083445
     }
    },
    "weekly_token_budget": 40000000
@@ -452,24 +453,37 @@
    {
     "awaiting_operator": false,
     "baseline": {
-     "accepted_artifact_version": "9903df974f233dfa",
-     "artifact_fetched_from_staging": 419222791,
+     "accepted_artifact_version": "0990af0f90fbe304cb94bd53754a337f7704e1005d92f8d9d250b2e8e157b3b5",
      "contract_ok": true,
      "dependencies": {
       "numpy": "2.5.4",
       "pandas": "2.3.3",
-      "python": "3.13.16",
+      "python": "3.13",
       "scikit-learn": "1.9.1",
       "xgboost": "3.4.1"
      },
-     "elapsed_seconds": 56.8,
-     "eval_auc_from_train_py": 0.5526,
-     "eval_auc_from_validate_py": 0.5526,
-     "job": "nhsae-baseline-001",
-     "note": "Measured on the released bytes fetched from staging (digest-verified, re-accepted through the gate before scoring), not a rebuild; the private holdout was never copied into the runner workdir. The XGBoost pass (0.5526 eval) sits below the construction-time mean-reversion reference (0.5659 eval / 0.6562 holdout), which is the bar a competent model must beat - recorded as measured headroom information, not a defect.",
+     "eval_auc_from_train_py": 0.5511,
+     "eval_auc_from_validate_py": 0.5511,
+     "job": "coordinator-rebuild-2026-10-21",
+     "note": "The runner-contract baseline for the v2026.11 artifact: 0.5511 eval AUC through both independent paths, CONTRACT OK - below every eval reference (target-month prior 0.6027, reversal 0.5839, persistence 0.5758, mean reversion 0.5659): recorded as measured headroom. The superseded v2026.10 worker baseline nhsae-baseline-001 (server 171525370, 56.8 s, eval AUC 0.5526 on artifact 9903df974f233dfa, reports in staging release 419227918) is preserved in jobs[] and in the audit block.",
+     "references_eval": {
+      "mean_reversion_auc": 0.5659,
+      "momentum_auc": 0.4161,
+      "month_prior_auc": 0.6027,
+      "persistence_auc": 0.5758,
+      "reversal_auc": 0.5839,
+      "winter_auc": 0.5473
+     },
+     "references_holdout": {
+      "mean_reversion_auc": 0.6562,
+      "momentum_auc": 0.3993,
+      "month_prior_auc": 0.5294,
+      "persistence_auc": 0.6046,
+      "reversal_auc": 0.6007,
+      "winter_auc": 0.509
+     },
      "runner_files_unmodified": true,
-     "server_id": 171525370,
-     "staging_release": 419227918
+     "where": "coordinator, baseline/reproduce_baseline.sh on the rebuilt public splits (the runner files unmodified, bundled sha256 == expected)"
     },
     "country": "GB",
     "domain": "health-system operations - NHS emergency care four-hour performance prediction (UK public-service performance panel)",
@@ -523,14 +537,14 @@
      "revision_policy_measured": "Re-measured 2026-10-21 at construction: across the 102 monthly CSVs there are NO duplicate (org, month) keys - each calendar month is published in exactly one file (originals are replaced on the year page by their '...revised...' successor, e.g. April-2020-revised-260421), so the recorded 'keep max Type 1 attendances' dedup never operated on anything. The build still implements prefer-latest-upload (ordered by the revision datestamp in the filename, then revised flag) and reports the dedup count, which measured 0.",
      "schema_evolution_2026_10_21": "Measured at construction across all 102 files: 16 data columns 2018-04..2020-07 (the 2018-04..2020-03 files prefix counts with 'Number of'); booked-appointment columns appear from 2020-08 (22 columns); files from 2024-09 carry 28 header fields of which the last six are unnamed/zero padding. Booked-appointment columns are parsed but NOT shipped: they are absent for train feature months 2018-12..2020-07, so their availability would be split-dependent - a prediction-timing defect wearing a feature-list costume. The 12 core columns are published across the whole window and are the only shipped source columns."
     },
-    "next_action": "REBUILD, do not flip. Two structural defects found by independent audit 2026-10-21: (1) temporal - the prediction instant must be the publication date of month ",
+    "next_action": "Stage v2026.11 to both destinations (private), then commission an independent re-audit of the rebuilt artifact before any flip. The audit must check the selecti",
     "packaged_at": null,
     "path": "candidates/nhs-ae-four-hour-decline/record.json",
     "prediction_time": "End of month M, when month M's monthly CSV is published (measured: the September 2026 monthly CSV was already downloadable on 2026-10-21, i.e. a ~3 week publication lag). Every feature is derived from provider months <= M; the label is month M+1's within-4-hour rate versus month M's, and month M+1's row is published about a month after the prediction is made.",
     "publisher": "NHS England (United Kingdom)",
     "qualification": {
-     "artifact_version": "9903df974f233dfa",
-     "result": null,
+     "artifact_version": "0990af0f90fbe304cb94bd53754a337f7704e1005d92f8d9d250b2e8e157b3b5",
+     "result": "PASSED - gate 1.4.0 on the rebuilt full artifact (9,549 rows), including the five new timing checks",
      "splits": {
       "eval": {
        "distinct_events": 124,
@@ -545,10 +559,10 @@
        "rows": 2538
       },
       "train": {
-       "distinct_events": 133,
-       "positive_rate": 0.537116,
-       "positives": 3285,
-       "rows": 6116
+       "distinct_events": 114,
+       "positive_rate": 0.554737,
+       "positives": 2260,
+       "rows": 4074
       }
      }
     },
@@ -572,10 +586,10 @@
       "rows": 2538
      },
      "train": {
-      "distinct_events": 133,
-      "positive_rate": 0.537116,
-      "positives": 3285,
-      "rows": 6116
+      "distinct_events": 114,
+      "positive_rate": 0.554737,
+      "positives": 2260,
+      "rows": 4074
      }
     },
     "review": "",
@@ -3083,24 +3097,37 @@
    {
     "awaiting_operator": false,
     "baseline": {
-     "accepted_artifact_version": "9903df974f233dfa",
-     "artifact_fetched_from_staging": 419222791,
+     "accepted_artifact_version": "0990af0f90fbe304cb94bd53754a337f7704e1005d92f8d9d250b2e8e157b3b5",
      "contract_ok": true,
      "dependencies": {
       "numpy": "2.5.4",
       "pandas": "2.3.3",
-      "python": "3.13.16",
+      "python": "3.13",
       "scikit-learn": "1.9.1",
       "xgboost": "3.4.1"
      },
-     "elapsed_seconds": 56.8,
-     "eval_auc_from_train_py": 0.5526,
-     "eval_auc_from_validate_py": 0.5526,
-     "job": "nhsae-baseline-001",
-     "note": "Measured on the released bytes fetched from staging (digest-verified, re-accepted through the gate before scoring), not a rebuild; the private holdout was never copied into the runner workdir. The XGBoost pass (0.5526 eval) sits below the construction-time mean-reversion reference (0.5659 eval / 0.6562 holdout), which is the bar a competent model must beat - recorded as measured headroom information, not a defect.",
+     "eval_auc_from_train_py": 0.5511,
+     "eval_auc_from_validate_py": 0.5511,
+     "job": "coordinator-rebuild-2026-10-21",
+     "note": "The runner-contract baseline for the v2026.11 artifact: 0.5511 eval AUC through both independent paths, CONTRACT OK - below every eval reference (target-month prior 0.6027, reversal 0.5839, persistence 0.5758, mean reversion 0.5659): recorded as measured headroom. The superseded v2026.10 worker baseline nhsae-baseline-001 (server 171525370, 56.8 s, eval AUC 0.5526 on artifact 9903df974f233dfa, reports in staging release 419227918) is preserved in jobs[] and in the audit block.",
+     "references_eval": {
+      "mean_reversion_auc": 0.5659,
+      "momentum_auc": 0.4161,
+      "month_prior_auc": 0.6027,
+      "persistence_auc": 0.5758,
+      "reversal_auc": 0.5839,
+      "winter_auc": 0.5473
+     },
+     "references_holdout": {
+      "mean_reversion_auc": 0.6562,
+      "momentum_auc": 0.3993,
+      "month_prior_auc": 0.5294,
+      "persistence_auc": 0.6046,
+      "reversal_auc": 0.6007,
+      "winter_auc": 0.509
+     },
      "runner_files_unmodified": true,
-     "server_id": 171525370,
-     "staging_release": 419227918
+     "where": "coordinator, baseline/reproduce_baseline.sh on the rebuilt public splits (the runner files unmodified, bundled sha256 == expected)"
     },
     "country": "GB",
     "domain": "health-system operations - NHS emergency care four-hour performance prediction (UK public-service performance panel)",
@@ -3154,14 +3181,14 @@
      "revision_policy_measured": "Re-measured 2026-10-21 at construction: across the 102 monthly CSVs there are NO duplicate (org, month) keys - each calendar month is published in exactly one file (originals are replaced on the year page by their '...revised...' successor, e.g. April-2020-revised-260421), so the recorded 'keep max Type 1 attendances' dedup never operated on anything. The build still implements prefer-latest-upload (ordered by the revision datestamp in the filename, then revised flag) and reports the dedup count, which measured 0.",
      "schema_evolution_2026_10_21": "Measured at construction across all 102 files: 16 data columns 2018-04..2020-07 (the 2018-04..2020-03 files prefix counts with 'Number of'); booked-appointment columns appear from 2020-08 (22 columns); files from 2024-09 carry 28 header fields of which the last six are unnamed/zero padding. Booked-appointment columns are parsed but NOT shipped: they are absent for train feature months 2018-12..2020-07, so their availability would be split-dependent - a prediction-timing defect wearing a feature-list costume. The 12 core columns are published across the whole window and are the only shipped source columns."
     },
-    "next_action": "REBUILD, do not flip. Two structural defects found by independent audit 2026-10-21: (1) temporal - the prediction instant must be the publication date of month ",
+    "next_action": "Stage v2026.11 to both destinations (private), then commission an independent re-audit of the rebuilt artifact before any flip. The audit must check the selecti",
     "packaged_at": null,
     "path": "candidates/nhs-ae-four-hour-decline/record.json",
     "prediction_time": "End of month M, when month M's monthly CSV is published (measured: the September 2026 monthly CSV was already downloadable on 2026-10-21, i.e. a ~3 week publication lag). Every feature is derived from provider months <= M; the label is month M+1's within-4-hour rate versus month M's, and month M+1's row is published about a month after the prediction is made.",
     "publisher": "NHS England (United Kingdom)",
     "qualification": {
-     "artifact_version": "9903df974f233dfa",
-     "result": null,
+     "artifact_version": "0990af0f90fbe304cb94bd53754a337f7704e1005d92f8d9d250b2e8e157b3b5",
+     "result": "PASSED - gate 1.4.0 on the rebuilt full artifact (9,549 rows), including the five new timing checks",
      "splits": {
       "eval": {
        "distinct_events": 124,
@@ -3176,10 +3203,10 @@
        "rows": 2538
       },
       "train": {
-       "distinct_events": 133,
-       "positive_rate": 0.537116,
-       "positives": 3285,
-       "rows": 6116
+       "distinct_events": 114,
+       "positive_rate": 0.554737,
+       "positives": 2260,
+       "rows": 4074
       }
      }
     },
@@ -3203,10 +3230,10 @@
       "rows": 2538
      },
      "train": {
-      "distinct_events": 133,
-      "positive_rate": 0.537116,
-      "positives": 3285,
-      "rows": 6116
+      "distinct_events": 114,
+      "positive_rate": 0.554737,
+      "positives": 2260,
+      "rows": 4074
      }
     },
     "review": "",
@@ -4380,10 +4407,10 @@
     "failure_streak": 0,
     "id": "e80975eddd4a",
     "last_error": "",
-    "last_run_at": "2026-10-21T12:20:02.545448+00:00",
+    "last_run_at": "2026-10-21T14:50:02.172080+00:00",
     "last_status": "ok",
     "name": "scout-secondary-cleanup-sweep",
-    "next_run_at": "2026-10-21T12:30:00+00:00",
+    "next_run_at": "2026-10-21T15:00:00+00:00",
     "no_agent": true,
     "schedule": "*/10 * * * *"
    },
@@ -4404,10 +4431,10 @@
     "failure_streak": 0,
     "id": "69a5bc676d10",
     "last_error": "",
-    "last_run_at": "2026-10-21T10:19:14.216885+00:00",
+    "last_run_at": "2026-10-21T14:41:33.981516+00:00",
     "last_status": "ok",
     "name": "scout-research-session",
-    "next_run_at": "2026-10-21T14:00:00+00:00",
+    "next_run_at": "2026-10-21T18:00:00+00:00",
     "no_agent": true,
     "schedule": "0 2-22/4 * * *"
    },
@@ -4428,10 +4455,10 @@
     "failure_streak": 0,
     "id": "98b45d983280",
     "last_error": "",
-    "last_run_at": "2026-10-21T12:21:00.137046+00:00",
+    "last_run_at": "2026-10-21T14:17:12.713160+00:00",
     "last_status": "ok",
     "name": "scout-worker-watch",
-    "next_run_at": "2026-10-21T12:26:00.137046+00:00",
+    "next_run_at": "2026-10-21T14:27:14.563589+00:00",
     "no_agent": false,
     "schedule": "every 5m"
    },
@@ -4440,7 +4467,7 @@
     "failure_streak": 0,
     "id": "86fe52e55ef9",
     "last_error": "",
-    "last_run_at": "2026-10-21T08:14:23.544777+00:00",
+    "last_run_at": "2026-10-21T12:27:32.956521+00:00",
     "last_status": "ok",
     "name": "scout-discovery-session",
     "next_run_at": "2026-10-21T16:00:00+00:00",
@@ -4464,10 +4491,10 @@
     "failure_streak": 0,
     "id": "4d8053a69ed2",
     "last_error": "",
-    "last_run_at": "2026-10-21T11:50:23.389283+00:00",
+    "last_run_at": "2026-10-21T13:50:25.004094+00:00",
     "last_status": "ok",
     "name": "scout-dashboard-refresh",
-    "next_run_at": "2026-10-21T12:50:00+00:00",
+    "next_run_at": "2026-10-21T15:50:00+00:00",
     "no_agent": true,
     "schedule": "50 * * * *"
    },
@@ -4476,10 +4503,10 @@
     "failure_streak": 0,
     "id": "ba4c8610edf8",
     "last_error": "",
-    "last_run_at": "2026-10-21T11:55:00.998214+00:00",
+    "last_run_at": "2026-10-21T13:55:01.015248+00:00",
     "last_status": "ok",
     "name": "scout-release-notify",
-    "next_run_at": "2026-10-21T12:55:00+00:00",
+    "next_run_at": "2026-10-21T14:55:00+00:00",
     "no_agent": true,
     "schedule": "55 * * * *"
    },
@@ -4520,29 +4547,29 @@
     "schedule": "once at 2026-10-20 16:40"
    }
   ],
-  "updated_at": "2026-10-21T12:24:00.830270+00:00"
+  "updated_at": "2026-10-21T14:50:02.173266+00:00"
  },
- "generated_at": "2026-10-21T12:24:18+00:00",
+ "generated_at": "2026-10-21T14:50:01+00:00",
  "health": {
   "checks": {
    "ok": true,
    "passing": 46
   },
   "ci": {
-   "conclusion": null,
-   "created_at": "2026-10-21T12:24:19Z",
-   "head_sha": "0bd50ca",
-   "status": "in_progress",
-   "url": "https://github.com/earino/dataset-factory/actions/runs/39599321519"
+   "conclusion": "success",
+   "created_at": "2026-10-21T13:54:59Z",
+   "head_sha": "5f3fe45",
+   "status": "completed",
+   "url": "https://github.com/earino/dataset-factory/actions/runs/39612182534"
   },
   "coverage": {
    "ok": true,
    "summary": "live non-US: 13/19 (68%)"
   },
   "head": {
-   "at": "2026-10-21T12:24:16Z",
-   "sha": "0bd50ca",
-   "subject": "Gate 1.4.0: refuse a prediction instant that precedes the publication of its features"
+   "at": "2026-10-21T12:43:09Z",
+   "sha": "5f3fe45",
+   "subject": "Rebuild nhs-ae: publication-date prediction instant, history-only selection, honest references"
   },
   "tests": {
    "count": "398",
@@ -4789,15 +4816,37 @@
    "qualified": 1,
    "sessions_7d": 26,
    "tokens_7d": 5636234
+  },
+  {
+   "at": "2026-10-21T12:50:01+00:00",
+   "live": 9,
+   "published": 7,
+   "qualified": 1,
+   "sessions_7d": 26,
+   "tokens_7d": 5653983
+  },
+  {
+   "at": "2026-10-21T13:50:01+00:00",
+   "live": 9,
+   "published": 7,
+   "qualified": 1,
+   "sessions_7d": 26,
+   "tokens_7d": 5653983
+  },
+  {
+   "at": "2026-10-21T14:50:01+00:00",
+   "live": 9,
+   "published": 7,
+   "qualified": 1,
+   "sessions_7d": 27,
+   "tokens_7d": 5842086
   }
  ],
- "notices": [
-  "A research session is running: lock held for 1459s by scout-research"
- ],
+ "notices": [],
  "panels": {
   "budget": {
-   "age_minutes": 0.2,
-   "as_of": "2026-10-21T12:24:18+00:00",
+   "age_minutes": 0.3,
+   "as_of": "2026-10-21T14:50:01+00:00",
    "expected": null,
    "note": null,
    "source": "scripts/research-budget.py --json",
@@ -4806,8 +4855,8 @@
    "value": null
   },
   "candidates": {
-   "age_minutes": 0.2,
-   "as_of": "2026-10-21T12:24:18+00:00",
+   "age_minutes": 0.3,
+   "as_of": "2026-10-21T14:50:01+00:00",
    "expected": null,
    "note": null,
    "source": "candidates/*/record.json",
@@ -4816,8 +4865,8 @@
    "value": 9
   },
   "releases": {
-   "age_minutes": 0.2,
-   "as_of": "2026-10-21T12:24:18+00:00",
+   "age_minutes": 0.3,
+   "as_of": "2026-10-21T14:50:01+00:00",
    "expected": null,
    "note": null,
    "source": "release/*/MANIFEST.json",
@@ -4897,14 +4946,14 @@
     "dataset": "nhs-ae-four-hour-decline",
     "persistence_auc": null,
     "publication_note": "Prepared for human review. Nothing here has been published.",
-    "release_tag": "v2026.10",
-    "rows": 11591,
+    "release_tag": "v2026.11",
+    "rows": 9549,
     "verified": {
      "github": true,
      "huggingface": true
     },
     "verified_all": true,
-    "verified_at": "2026-10-21T10:18:40Z"
+    "verified_at": "2026-10-21T14:44:42+00:00"
    },
    {
     "assets": 10,
@@ -4958,12 +5007,12 @@
      "lo": 0.005
     },
     {
-     "count": 17,
+     "count": 18,
      "hi": 0.02,
      "lo": 0.01
     },
     {
-     "count": 17,
+     "count": 18,
      "hi": 0.05,
      "lo": 0.02
     },
@@ -4990,10 +5039,10 @@
    ],
    "max": 0.6296,
    "median": 0.0175,
-   "n": 70,
-   "p90": 0.0611,
+   "n": 72,
+   "p90": 0.0561,
    "ref_rate": 0.06924,
-   "total": 3.02
+   "total": 3.05
   },
   "jobs": [
    {
@@ -5645,6 +5694,42 @@
     "status": "deleted"
    },
    {
+    "created_at": "2026-10-21T14:14:40.516570+00:00",
+    "deleted_at": "2026-10-21T14:23:17.770062+00:00",
+    "eur": 0.0017,
+    "hours": 0.144,
+    "id": "nhsae-hf-003",
+    "location": "hel1",
+    "normalised_eur": 0.01,
+    "rate_eur": 0.01152,
+    "server_type": "cx23",
+    "status": "deleted"
+   },
+   {
+    "created_at": "2026-10-21T14:23:50.718971+00:00",
+    "deleted_at": "2026-10-21T14:43:20.716857+00:00",
+    "eur": 0.0037,
+    "hours": 0.325,
+    "id": "nhsae-hf-004",
+    "location": "hel1",
+    "normalised_eur": 0.0225,
+    "rate_eur": 0.01152,
+    "server_type": "cx23",
+    "status": "deleted"
+   },
+   {
+    "created_at": "2026-10-21T14:46:49.208214+00:00",
+    "deleted_at": null,
+    "eur": null,
+    "hours": null,
+    "id": "nhsae-hf-005",
+    "location": "hel1",
+    "normalised_eur": null,
+    "rate_eur": 0.01152,
+    "server_type": "cx23",
+    "status": "running"
+   },
+   {
     "created_at": "2026-10-21T10:07:19.141723+00:00",
     "deleted_at": "2026-10-21T10:12:08.037029+00:00",
     "eur": 0.0009,
@@ -5837,19 +5922,19 @@
     "status": "deleted"
    }
   ],
-  "jobs_this_month": 29,
-  "jobs_total": 70,
+  "jobs_this_month": 31,
+  "jobs_total": 73,
   "lifetime_eur": 3.13,
   "live": {
-   "checked_at": "2026-10-21T12:24:33+00:00",
+   "checked_at": "2026-10-21T14:50:17+00:00",
    "error": null,
-   "primary_ips": 0,
-   "primary_ips_total": 0,
-   "servers": 0,
-   "servers_total": 0
+   "primary_ips": 1,
+   "primary_ips_total": 1,
+   "servers": 1,
+   "servers_total": 1
   },
-  "month_hours": 9.7,
-  "month_to_date": 0.68,
+  "month_hours": 10.2,
+  "month_to_date": 0.69,
   "months": [
    {
     "eur": 2.4452,
@@ -5858,9 +5943,9 @@
     "month": "2026-09"
    },
    {
-    "eur": 0.682,
-    "hours": 9.71,
-    "jobs": 29,
+    "eur": 0.6874,
+    "hours": 10.18,
+    "jobs": 31,
     "month": "2026-10"
    }
   ],
@@ -5868,26 +5953,8 @@
  },
  "schema": 1,
  "sessions": {
-  "failed_last_three": 1,
+  "failed_last_three": 2,
   "recent": [
-   {
-    "elapsed_seconds": 2133.3,
-    "event": "session",
-    "max_turns": 120,
-    "outcome": "completed",
-    "prompt_file": "discovery-session-prompt.md",
-    "run_budget": 5400,
-    "ts": "2026-10-21T00:35:34.721367+00:00"
-   },
-   {
-    "elapsed_seconds": 2228.3,
-    "event": "session",
-    "max_turns": 120,
-    "outcome": "exit 1",
-    "prompt_file": "research-session-prompt.md",
-    "run_budget": 5400,
-    "ts": "2026-10-21T02:37:09.683371+00:00"
-   },
    {
     "elapsed_seconds": 3335.1,
     "event": "session",
@@ -5923,6 +5990,24 @@
     "prompt_file": "research-session-prompt.md",
     "run_budget": 5400,
     "ts": "2026-10-21T10:19:14.174457+00:00"
+   },
+   {
+    "elapsed_seconds": 1651.6,
+    "event": "session",
+    "max_turns": 120,
+    "outcome": "completed",
+    "prompt_file": "discovery-session-prompt.md",
+    "run_budget": 5400,
+    "ts": "2026-10-21T12:27:32.916673+00:00"
+   },
+   {
+    "elapsed_seconds": 2490.0,
+    "event": "session",
+    "max_turns": 120,
+    "outcome": "exit 1",
+    "prompt_file": "research-session-prompt.md",
+    "run_budget": 5400,
+    "ts": "2026-10-21T14:41:33.937058+00:00"
    }
   ],
   "total": 33

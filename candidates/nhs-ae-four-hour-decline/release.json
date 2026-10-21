@@ -2,8 +2,8 @@
  "release_version": "2026.11",
  "release_tag": "v2026.11",
  "repository": "https://github.com/earino/nhs-ae-four-hour-decline",
- "construction_commit": "48eab83",
- "construction_commit_note": "48eab83 carries candidates/nhs-ae-four-hour-decline/source/build.py as committed after the worker run (sha256 cb1d508a...). The bytes job nhsae-002 executed were bundled earlier (sha256 7ecf2e1e...); the delta is confined to the HTTP fetch path - the client ladder and failure diagnostics added after nhsae-001 measured the publisher CDN serving HTTP 202 with an empty body to datacenter IPs - and nhsae-002 consumed the staged verified source via --source-dir, so no code path of the delta ran in the build. The panel-construction, gating, split and file-writing core is identical; the artifact digests are unchanged.",
+ "construction_commit": "5f3fe45",
+ "construction_commit_note": "5f3fe45 is the commit carrying candidates/nhs-ae-four-hour-decline/source/build.py with the hindsight-selection fix and the publication-date prediction instant - the code the v2026.11 build executed (run from the working tree at 2026-10-21T12:38:18Z; the committed state of that tree is 5f3fe45, pushed and CI-green). v2026.10 history, kept for provenance: 48eab83 carried the pre-fix build.py (sha256 cb1d508a...) whose bytes job nhsae-002 executed were bundled earlier (sha256 7ecf2e1e...); that delta was confined to the HTTP fetch path (the client ladder and failure diagnostics added after nhsae-001 measured the publisher CDN serving HTTP 202 with an empty body to datacenter IPs), and nhsae-002 consumed the staged verified source via --source-dir. The v2026.11 build fetched the 102 CSVs over HTTP from the coordinator (summary.source.mode http, 114 requests), so the shipped fetch path did run this time.",
  "source": {
   "name": "NHS England - A&E Attendances and Emergency Admissions, statistical work area (monthly provider-level CSVs)",
   "landing_page": "https://www.england.nhs.uk/statistics/statistical-work-areas/ae-waiting-times-and-activity/",
@@ -26,7 +26,7 @@
  "required_docs": [
   "code/materialize.py"
  ],
- "note": "One task instance, one artifact. The five shipped files are the nhsae-002 gate artifact 9903df974f233dfa; the package's code/ carries the construction script and the gate, baseline/ the runner-contract baseline. The holdout ships as an asset like the other splits; it is not copied into any runner workdir.",
+ "note": "One task instance, one artifact. The five shipped files are the v2026.11 coordinator-rebuild gate artifact 0990af0f90fbe304 (gate 1.4.0); the package's code/ carries the construction script and the gate, baseline/ the runner-contract baseline. The holdout ships as an asset like the other splits; it is not copied into any runner workdir.",
  "rebuilt_at": "2026-10-21",
  "rebuild_reason": "independent audit 2026-10-21: temporal defect (features published ~10 days after the claimed instant) and hindsight selection (M+1 attendance, whole-snapshot history count)"
 }
