@@ -1,0 +1,48 @@
+{
+  "release_tag": "v2026.10",
+  "artifact_version": "9903df974f233dfaeaa2a005f12012fc97e561673031de44f4b8d7f016d9d957",
+  "destinations": {
+    "github": {
+      "repo": "earino/nhs-ae-four-hour-decline",
+      "release_id": 419405716,
+      "release_tag": "v2026.10",
+      "private": true,
+      "verified": true,
+      "verified_at": "2026-10-21T10:18:40Z",
+      "checks": [
+        "nhsae-publish-001 worker transfer (server 171563321, destroyed 10:09:58Z, result release 419407464): copied the five accepted nhsae-002 files from staging release 419222791 into this release, verifying each sha256 on arrival and against the server's own digest after upload (transfers 5, failures 0, 4,898,346 bytes); the bytes never passed through the coordinator",
+        "5/5 asset names, sizes and sha256 digests match the package MANIFEST.json, read back from the GitHub API's own digest field after transfer (meta.json c2f9f43a..., private-holdout.csv 527a385f..., public-eval.csv cb786792..., public-train.csv 819b6715..., quality.json e7576e8a...)",
+        "tag v2026.10 == main == f36e4fc3 (single documentation commit 'NHS England A&E four-hour performance decline task v2026.10 (staged, private)'; the release was created non-draft at that commit and no later commit exists, so no tag move was needed)",
+        "get_dataset.py executed once end-to-end against the private release before recording (token download via the API asset-id path, all five assets, every digest verified, runner layout restored, exit 0), and qualify_dataset.py --accept on the downloaded tree returned ACCEPTED, artifact 9903df974f233dfa - the bytes the release serves are the qualified artifact",
+        "anonymous GET of the repository and of a release asset both answer 404 (checked 2026-10-21 with curl, no credential): the repository is private by design; the flip is the operator's act"
+      ],
+      "anonymous_access": false,
+      "note": "Private, staged for review. Public visibility is a separate operator-approved act."
+    },
+    "huggingface": {
+      "repo": "earino/nhs-ae-four-hour-decline",
+      "revision": "v2026.10",
+      "private": true,
+      "verified": true,
+      "verified_at": "2026-10-21T10:17:54+00:00",
+      "files_verified": [
+        "data/private-holdout.csv",
+        "data/public-eval.csv",
+        "data/public-train.csv",
+        "meta.json",
+        "quality.json"
+      ],
+      "missing": [],
+      "size_mismatch": [],
+      "checks": [
+        "nhsae-hf-001 worker job (server 171563744, destroyed 10:14:03Z, result release 419411258): uploaded all five data files to the Hub from the staged private GitHub release, verifying each sha256 before and after transfer (uploads 5, skipped 0, failures 0, 4,898,346 bytes); the bytes never passed through the coordinator",
+        "nhsae-hf-002 loading-check retry (server 171564314, destroyed 10:17:48Z, result release 419414704): per-file uploads all skipped (already at the manifest digest, uploads 0 skipped 5 failures 0) and the card's documented loading path was executed on the worker - load_dataset against the private repo returned train 6,116 rows / 3,285 positives, eval 2,937 / 1,478, holdout 2,538 / 1,233, label values ['0','1'], 37 columns per split exactly matching the manifest - hf_loading ok: true, problems: []",
+        "hf-publish.py --verify after the upload (write credential from its mode-0600 file): files present 5/5, missing 0, size_mismatch 0, repository private",
+        "hf-publish.py --tag LAST: Hub tag v2026.10 created at 7ed0e20603514a7b30af648f1f6fd6c9c155cdfd with tag_matches_main: true (no existing tag, nothing replaced)",
+        "anonymous access check: the Hub API answers 401 with no credential (checked 2026-10-21 with curl): the dataset is private by design; the flip is the operator's act"
+      ],
+      "loading_check": "run by worker job nhsae-hf-002 and recorded in its report (.factory/nhsae-hf-002/result.json, hf_loading ok=true)",
+      "note": "Private, staged for review. The card, LOADING.md and docs carry the private-state wording and are refreshed at publication."
+    }
+  }
+}

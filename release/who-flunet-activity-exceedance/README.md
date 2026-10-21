@@ -71,3 +71,48 @@ CC BY-NC-SA 3.0 IGO. Derived dataset: WHO FluNet influenza-positivity exceedance
 - Column meanings: the publisher's own `VIW_FLU_METADATA` view (53 documented fields).
 - Construction: `code/build.py`, executed by job `flunet-002`; artifact version
   `b1323a27fa02eb79...`, gate 1.3.0. Reproduction instructions in `REPRODUCE.md`.
+## Measured results, and what they establish
+
+These are the numbers this artifact ships with. They were measured on the released bytes, not on a
+rebuild, and they are reported here rather than left for a reader to discover.
+
+| Reference | Eval AUC | Notes |
+| --- | --- | --- |
+| Full model (benchmark baseline) | **0.869990** | Brier 0.1347. The reproducible baseline, not a best-known solution. |
+| Persistence (score = week-W positivity) | **0.8929** | A one-line rule, known at the prediction instant. **It beats the full model.** |
+| Calendar-only, independent replication | 0.6269 | Country + cyclical week-of-year + hierarchical seasonal prior; gradient boosting. |
+| Seasonal prior (this project) | 0.5509 | Country x target week-of-year, estimated from training history only. |
+| Global week-of-year prior | 0.5437 | No country identity. |
+
+Two conclusions follow, and both belong in the record:
+
+1. **The task is not merely seasonal.** Calendar-only references top out around 0.63 while the full
+   model reaches 0.87, so there is real learned signal beyond the calendar.
+2. **The current baseline does not beat persistence.** Week-W positivity alone scores 0.8929 on the
+   same eval rows. That is a property of this construction — the label is largely persistent — and it
+   is stated plainly here so nobody mistakes 0.87 for evidence of forecasting skill.
+
+Replication: the persistence and seasonal-prior figures were recomputed from `public-train.csv` and
+`public-eval.csv` with an independent rank-AUC implementation; the calendar-only figure came from an
+external agent that did not read this project's code. Artifact version, release identifiers and
+per-asset digests are recorded in `MANIFEST.json` and `DESTINATIONS.json`.
+
+## Limitations
+
+- **Retrospective observed-outcome forecasting.** The task is built from outcomes that have already
+  been observed. It is not a live prospective forecast and makes no claim to operational validity.
+- **Historical publication timing is unverified.** We could not reconstruct what a forecaster could
+  actually have seen at the end of week W; the publisher exposes only the current vintage, and
+  revisions are not available. The cutoff is an assumption, stated rather than proven.
+- **Row eligibility depends on the future.** Whether a row is eligible depends on whether its target
+  week was eventually observed and met the denominator rule — information that did not exist at
+  prediction time.
+- **Sentinel and non-sentinel provenance is lost.** WHO's source distinguishes SENTINEL,
+  NONSENTINEL and NOTDEFINED origins (46% of rows are NOTDEFINED). This release sums them, so the
+  target mixes surveillance streams, and a change in reporting composition can look like a change in
+  disease activity.
+- **Calibration is not established.** The baseline is reported by AUC and Brier; it was not
+  recalibrated, and the calendar-only replication showed substantial overprediction.
+- **110 training labels may be premature.** Rows whose target week fell after the first evaluation
+  prediction date were excluded from the replication's training set; the packaged split retains them.
+- **Not an official WHO product**, and not endorsed or reviewed by WHO.

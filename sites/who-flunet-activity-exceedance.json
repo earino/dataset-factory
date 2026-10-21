@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "site_revision": 1,
+  "title": "WHO FluNet activity exceedance",
+  "summary": "Predict whether a country's influenza test positivity will exceed 10% four weeks from now - a retrospective, observed-outcome forecasting task over WHO FluNet surveillance.",
+  "task_type": "binary-classification",
+  "domain": "Infectious disease surveillance",
+  "release_date": "2026-10-21",
+  "post": {
+    "title": "A four-week influenza activity forecast from FluNet",
+    "paragraphs": [
+      "WHO publishes weekly influenza laboratory surveillance by country. The contribution here is not access: it is the frozen country-week panel, the declaration that the prediction instant is the end of week W, and the derived label - will positivity in week W+4 exceed 10%.",
+      "The release ships a reproducible baseline at eval AUC 0.8700. Two independent checks are published with it, because they decide what that number means. A calendar-only model reaches 0.6269, so the task is not merely seasonal. But week-W persistence alone reaches 0.8929 - a one-line rule beats the shipped baseline. That is stated on the card, not left to be discovered.",
+      "This is a retrospective, observed-outcome benchmark. It is not a prospective forecast, it is not calibrated, and the information cutoff rests on an assumption about publication timing that the publisher does not expose. The source's licence is unresolved: no open licence is asserted, and the terms are stated plainly."
+    ]
+  },
+  "limitations": [
+    "Derived research dataset, not an official WHO product; WHO has not reviewed, authorised or endorsed it.",
+    "Licence unresolved: WHO states no dataset-specific licence for FluNet; terms for WHO data compilations require authorisation for alterations. No open licence is asserted. See LICENSE.md.",
+    "Retrospective observed-outcome forecasting. No claim of prospective operational validity.",
+    "The historical publication timing is unverified; the week-W information cutoff is an assumption, not a reconstruction of data vintages.",
+    "Row eligibility depends on whether the target week was later observed - information unavailable at prediction time.",
+    "Sentinel and non-sentinel surveillance are summed; 46% of source rows carry no origin label, so reporting-composition changes can look like activity changes.",
+    "The shipped baseline is below the persistence reference (0.8700 vs 0.8929); it is a reproducible baseline, not a best-known solution.",
+    "The holdout is labelled and published by design; keep its labels outside an evaluated agent's workspace."
+  ]
+}

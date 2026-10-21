@@ -45,3 +45,16 @@ onward. 26,093 country-weeks; 5,779 / 6,831 / 13,483 across the splits.
 - Country testing practice varies; the systematic-negative rule removes the largest known break
   (pre-2015 missing negatives) but is not a guarantee of comparability.
 - No agent or harness comparison was run on this artifact.
+## What we measured, including the result we did not want
+
+The full model reaches eval AUC 0.869990 (Brier 0.1347). An independent calendar-only model reaches
+0.6269, and a country x week-of-year seasonal prior 0.5509 - so the task is not merely seasonal
+pattern recognition.
+
+But **week-W persistence alone scores 0.8929 on the same rows and beats the full model**. That is
+the most important number in this release: as constructed, the label is largely persistent, and the
+shipped baseline does not out-perform a one-line rule. We publish it that way deliberately; treating
+0.87 as evidence of forecasting skill would be wrong.
+
+This is a retrospective, observed-outcome benchmark. It is not a prospective forecast, it is not
+calibrated, and it is not an operational early-warning system.

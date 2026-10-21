@@ -1,7 +1,7 @@
 ---
-license: cc-by-nc-sa-3.0
-license_name: cc-by-nc-sa-3.0-igo
-license_link: https://creativecommons.org/licenses/by-nc-sa/3.0/igo/
+license: other
+license_name: who-flunet-unresolved
+license_link: https://github.com/earino/who-flunet-activity-exceedance/blob/main/LICENSE.md
 language:
   - en
 pretty_name: WHO FluNet Influenza Positivity Exceedance

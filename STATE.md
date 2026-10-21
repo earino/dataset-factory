@@ -4664,3 +4664,19 @@ derived binary label, row selection), so the redistribution right is not establi
 LICENSE.md rests on WHO's general publishing copyright page, which the gate explicitly excludes as evidence. No flip performed;
 nothing was made public. Resolution paths: written permission from WHO (gisrs-whohq@who.int) for a derived compilation, or a
 dataset-specific licence statement we can quote. Gates 2-5 were not started, per the instruction to stop at the first blocker.
+
+**who-flunet PUBLISHED 2026-10-21 10:24Z on the operator's "ship it", with an unresolved-licence label.**
+Licence: the release no longer asserts CC BY-NC-SA 3.0 IGO. LICENSE.md states that WHO names that licence for
+publications but that FluNet is a dataset whose linked data terms require authorisation for alterations and
+restrict transfer, that no dataset-specific licence exists (checked page, metadata CSV, API headers), and that
+no open licence is granted over the rows or the compilation. MANIFEST source_data and data_compilation are
+NOASSERTION; the Hub card's license field is `other`, not a CC claim. Operator risk acceptance recorded in
+license.json with the clause quotes.
+Results published on the card and README: full model 0.869990 (Brier 0.1347), persistence 0.8929 (beats it),
+calendar-only 0.6269 independent, seasonal prior 0.5509, global week 0.5437. Limitations listed: retrospective,
+unverified publication timing, future-dependent eligibility, sentinel provenance lost (46% NOTDEFINED), no
+calibration, 110 possibly-premature training labels, holdout labelled by design.
+Verification: GitHub 5/5 assets anonymously downloaded and re-hashed; HF 15 files, meta.json re-hashed; docs
+readable on both; tag v2026.10 moved to the docs commit on both destinations (this was required - the site
+publisher pins the tag and refused while the tag still carried the old CC licence). Site published, receipt
+complete.
