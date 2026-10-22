@@ -1,9 +1,9 @@
 name: Website pipeline preview
 on:
   push:
-    paths: ['factory/site_*.py', 'scripts/site-*.py', 'sites/**', 'config/sites.json', 'release/**', '.github/workflows/site-preview.yml']
+    paths: ['factory/site_*.py', 'factory/release_schema.py', 'scripts/check-package.py', 'scripts/site-*.py', 'sites/**', 'config/sites.json', 'release/**', '.github/workflows/site-preview.yml']
   pull_request:
-    paths: ['factory/site_*.py', 'scripts/site-*.py', 'sites/**', 'config/sites.json', 'release/**', '.github/workflows/site-preview.yml']
+    paths: ['factory/site_*.py', 'factory/release_schema.py', 'scripts/check-package.py', 'scripts/site-*.py', 'sites/**', 'config/sites.json', 'release/**', '.github/workflows/site-preview.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -13,6 +13,9 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.13"
       - run: python3 -m unittest discover -s tests -p test_sites.py -v
       # Every release package that has an editorial file, rather than one named dataset: this
       # workflow used to preview a single dataset, so a second one was never exercised in CI.
