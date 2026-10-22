@@ -716,7 +716,62 @@
       "elapsed_seconds": 27.531,
       "response": "**Decision**\n\nNeither owner option. Do not drop the source on this evidence alone, and do not tune onset thresholds until the holdout beats persistence. Tuning against the holdout is evaluation-on-the-test: it destroys the only clean confirmation data and turns a real defect into a fabricated win. Holdout stays unread until the protocol is frozen.\n\nThe defensible next step is one bounded, eval-only diagnostic that decides between *drop* and *one retarget*: quantify whether the persistence gap is real, and check whether a change/onset label is even constructible from shipped columns.\n\n**Supporting evidence (supplied)**\n\n- Model 0.74, persistence 0.78, calendar/identity 0.60 on identical eval rows. A model below persistence is a recorded defect in the task definition, not an encouraging result \u2014 the label is largely a persistent level, and persistence is a one-line rule.\n- No uncertainty intervals and no alignment audit exist, so 0.78 vs 0.74 is a point comparison of unknown precision; I cannot call the gap real or noise.\n- Qualification and acceptance passed \u2014 the artifact is sound. Passing the gate says the files lack detectable defects; it says nothing about whether the task is a forecast. This is exactly the \"gate passes, task is still a negative result\" case.\n- Standing method: when the label is persistent, retarget change/onset, and treat that as a **new task instance with its own qualification**, not a tweak. Budget one rebuild per structural defect.\n\n**Uncertainty and the next discriminating check**\n\nTwo unknowns, one script answers both:\n\n1. Is the gap real? Positives likely cluster (event/day), so row counts overstate the effective sample. Compute a cluster bootstrap CI on the model-minus-persistence AUC gap, clustered on the event key, plus per-window and per-year AUC to expose any pooled structural break or prevalence shift between splits.\n2. Is onset constructible? From shipped columns only, count rows where a prior-period value exists and the label flips \u2014 i.e. whether disjoint train/eval/holdout windows can each carry both classes of an onset label with adequate independent positive counts.\n\nDiscriminating outcome: if the decomp gap is within interval and onset counts are adequate \u2192 retarget, don't drop. If the gap is real and persistence dominates and onset is thin or unconstructible \u2192 this is a negative result; drop and record it.\n\n**Ordered actions**\n\n1. Freeze holdout; note explicitly it was not read. No threshold scanning.\n2. Write one script in `.factory/` (no `python3 -c` in this session) that, on eval/train rows only: clips to the declared cluster key, bootstraps the decomp gap CI, reports per-year/per-window AUC and per-split prevalence, and counts onset-eligible rows per window. Emit compact JSON; delete the scratch script.\n3. Decide from that JSON: one retarget build (new task instance \u2192 construction \u2192 `dataset-qualification`) or drop with the negative finding recorded next to the number.\n4. Update `STATE.md` and the candidate record: defect, commands, results, verdict.\n\n**Stopping condition**\n\nStop after the single diagnostic plus at most one rebuild. Do not run a second or third rebuild \u2014 a third audit that keeps finding defects is Task-design failure, not code. Stop immediately if onset is not constructible, or if the gap proves real with persistence dominating and no onset path: drop.\n\n**Operator report**\n\nArtifact qualified; the level target is beaten by persistence (0.74 vs 0.78; calendar 0.60), so the task as defined is not a forecast. I did not drop it, and I did not touch the holdout \u2014 tuning thresholds against it would manufacture a result. Ran one eval-only diagnostic: clustered CI on the gap, per-year/prevalence breakdown, and onset-constructibility counts. Outcome decides between one retarget to an onset label (with fresh qualification) or a recorded drop. No publication action; holdout unexamined.\n",
       "response_sha256": "ed4dbd0b2c21cc02834bdfb782cbb3de067ee3254707a02d12446342e2d5b436"
+    },
+    {
+      "case": "advancement-baseline",
+      "arm": "revised",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-17",
+      "session_id": "20261022_224844_644791",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "d38d2c501032e78f3ab5c810ddd572ceac29e11e48af816bb04406756c36320e",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 33793,
+        "output_tokens": 1329,
+        "cache_read_tokens": 256,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 35378,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 314,
+          "output_tokens": 12,
+          "cache_read_tokens": 128,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 33479,
+          "output_tokens": 1317,
+          "cache_read_tokens": 128,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 20.747,
+      "response": "Decision: Neither proposal. Do not drop the source yet, and do not touch holdout to search onset thresholds \u2014 that is tuning the target against the scoring set, which the brief and `dataset-qualification` explicitly forbid. Spend the one bounded diagnostic on whether the 0.74 < 0.78 gap is a *measured* result or a defect.\n\nSupporting evidence: model 0.74, persistence 0.78, calendar/identity 0.60 on identical eval rows. That ordering says the label is largely persistent and the model has not demonstrated headroom \u2014 a recorded finding, not proof the source is unusable. But there are no uncertainty intervals and no alignment audit, so we cannot currently distinguish three cases: (a) persistence genuinely dominates; (b) the gap is inside sampling noise on clustered positives; (c) the persistence reference is misaligned or post-hoc (wrong instant, mismatched row pairing, or a \"most recent observed value\" that was not available at prediction time). Quoting 0.78 as decisive without intervals or an alignment check would repeat the exact failure the skill documents (0.870 vs 0.893 persistence example).\n\nUncertainty and next discriminating check: the decisive discriminator is a paired, cluster-aware bootstrap over the same eval rows \u2014 resample by `event_key`/entity, not by row \u2014 giving intervals on all three AUCs and on the persistence-minus-model difference, plus per-year and per-split AUC/Brier and a prevalence-shift table. In parallel, a bounded alignment audit: re-derive persistence from source using only data available at the declared prediction instant, confirm model and references scored on byte-identical rows, and confirm the model's feature set contains nothing post-hoc. That single pass separates noise, misalignment, and genuine dominance.\n\nOrdered actions:\n1. Freeze the protocol and record it before running anything: metric, split boundaries, target, and the three-reference triad on identical rows.\n2. Run the cluster-aware bootstrap and the alignment audit as one bounded diagnostic; write command, rows, and intervals into the candidate record. Holdout stays sealed.\n3. Branch on the result:\n   - If intervals overlap and the audit is clean \u2192 record \"no demonstrated headroom under this protocol\" with all three scores and intervals, and drop or explicitly re-scope (do not publish a benchmark claim).\n   - If the audit finds misalignment or a post-hoc persistence reference \u2192 one rebuild per structural defect, then re-qualify and re-compare.\n   - Only if dominance is real and alignment clean may a *change/onset* task instance be pre-specified as a new task \u2014 with its user need and protocol fixed before any evaluation, and holdout used once.\n4. Never select a threshold against holdout; a new instance gets fresh qualification and its own acceptance.\n\nStopping condition: one diagnostic pass, documented with intervals and audit scope. Stop at the branch outcome \u2014 no second rebuild, no threshold sweep, no holdout peek.\n\nOperator report: qualified artifact has model AUC 0.74 behind persistence 0.78 (calendar 0.60) on identical eval rows; no intervals or alignment audit exist and holdout is unexamined. I would not drop the source on one unreferenced comparison, and I would not tune onset thresholds against holdout. One bounded diagnostic (cluster-aware intervals on the three references, per-year prevalence, persistence alignment/instant audit) decides between \"no headroom, record and drop/re-scope\" and \"reference defect, one rebuild.\" Holdout remains sealed; any onset task would be a new, pre-specified instance.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "c303367690a4ef8839be600acb010a530c6a043b72b88395af8552227bbd2998"
     }
   ],
-  "updated_at": "2026-10-22T22:48:42Z"
+  "updated_at": "2026-10-22T22:49:04Z"
 }
