@@ -1,7 +1,5 @@
 {
- "alarms": [
-  "2 of the last 3 scheduled sessions failed (wall clock or provider) and produced no usable report"
- ],
+ "alarms": [],
  "budget": {
   "config": {
    "allowance_usd": 30.0,
@@ -17,13 +15,13 @@
   "decision": {
    "allowance_usd": 30.0,
    "allowed": true,
-   "moment": "2026-10-21T23:50:02.519021+00:00",
+   "moment": "2026-10-22T01:50:01.668052+00:00",
    "period_start": "2026-10-01T00:00:00+00:00",
    "reasons": [],
    "research_cost_usd": 0.233495,
-   "research_tokens_last_7_days": 6430954,
-   "runs_last_7_days": 31,
-   "runs_weighted_last_7_days": 32,
+   "research_tokens_last_7_days": 6842902,
+   "runs_last_7_days": 32,
+   "runs_weighted_last_7_days": 33,
    "session_cap_per_week": 200,
    "sessions_over_token_cap": 1,
    "usage": {
@@ -47,14 +45,14 @@
      "output_tokens": 1725023
     },
     "research": {
-     "calls": 2332,
+     "calls": 2413,
      "cost_status": [
       "estimated",
       "unknown"
      ],
      "cost_usd": 0.233495,
-     "input_tokens": 5624606,
-     "output_tokens": 2055064
+     "input_tokens": 5938773,
+     "output_tokens": 2152845
     },
     "scheduled-other": {
      "calls": 1499,
@@ -75,12 +73,13 @@
    "CA": 2,
    "DE": 1,
    "GB": 2,
+   "TW": 1,
    "US": 1
   },
   "counts": {
    "dropped": 13,
-   "investigating": 6,
-   "parked": 21,
+   "investigating": 7,
+   "parked": 24,
    "published": 6,
    "ready": 6
   },
@@ -451,9 +450,70 @@
     "split_strategy": "Temporal by issue year, all three windows contiguous and disjoint. Proposed: train 2008-2018 (storm-based polygons began Oct 2007), eval 2019-2021, holdout 2022-2024. Anchor measurements support capacity but window totals are computed at construction: measured 2013 = 1,832 warnings / 441 verified (24.1%) spread over 100 distinct days with >=1 verified warning; measured 2023 = 2,531 / 656 (25.9%) over 115 distinct days. Positives cluster by outbreak day, so the clustered count (100-115 independent positive days per measured year) is the figure that matters for window capacity, not the row count. Base-rate drift is a documented property of the source (warning POD peaked 2011, declined 2012-14, then recovered - WAF-D-23-0153), so multi-year windows and a drift note are required, not a single-year holdout.",
     "status": "investigating",
     "target": "Binary: the per-warning `verify` boolean returned by IEM cow for phenomena=TO, significance=W - whether >=1 tornado local storm report (buffered by cow's default 15 km) falls inside the polygon during the valid window. The method is documented on the cow page ('NWS Storm Based Warning Verification') and matches the official storm-based verification concept in NWS Instruction 10-1601 ('FAR is the number of false alarms (unverified warnings) divided by the total number of warnings'; storm report points verify warning areas)."
+   },
+   {
+    "awaiting_operator": false,
+    "baseline": {},
+    "country": "TW",
+    "domain": "emergency management / government decision prediction",
+    "id": "tw-typhoon-day-closure",
+    "jobs": [],
+    "licence_summary": {
+     "compilation_spdx": null,
+     "source_spdx": null,
+     "status": null
+    },
+    "measurements": {
+     "dgpa_archive_span_2026_10_22": "DGPA archive: 500 announcements over 50 pages (10/page), oldest record \u6c11\u570b90.07.30 (CE 2001-07-30), newest \u6c11\u570b115.09.03 (CE 2026-09-02) - measured from informationlist pages 1 and 50, fetched anonymously 2026-10-22.",
+     "dgpa_attachment_formats_2026_10_22": "Sampled first record of list pages 1/6/12/20/30/40/45: static per-county status table found for 2002 (Big5), 2009-era, and 2024-10-04 (UTF-8 typhoon-event table, 21,661 bytes); shell-only files (no county rows, only the statutory disclaimer block) observed for 2023-06-01, 2025-09-30 and 2026-09-02 - per-county extraction for the modern era is the one unproven step and is pinned as the first construction task.",
+     "dgpa_fetch_sizes_2026_10_22": "Detail page pid=13097 = 34,360 bytes; attachments 3,058-21,661 bytes; full harvest is about 50 list pages + 500 detail pages + 500-1000 attachments, on the order of 1,050-1,550 requests and 20-30 MB total (estimate labelled as such; not yet measured end-to-end). DGPA HTTPS fails strict SSL validation (chain missing Subject Key Identifier), so probes used an unverified context; the browser accepts the chain."
+    },
+    "next_action": "Construction (coordinator-side scripts first, then worker): (1) PIN THE MODERN-ERA LABEL EXTRACTION - try DGPA daily-view query variants (the server-rendered /t",
+    "packaged_at": null,
+    "path": "candidates/tw-typhoon-day-closure/record.json",
+    "prediction_time": "The announcement instant is fixed by regulation, quoted from the DGPA daily closure page (2026-10-22) and repeated verbatim in the announcement attachments: full-day or morning closures must be announced between 19:00 and 22:00 the previous evening (\u524d\u4e00\u65e5\u665a\u95937\u6642\u81f310\u6642\u524d\u767c\u5e03); same-morning reinforced closures are announced by 04:30 and broadcast by 05:00. Features may therefore use only data published before 19:00 Taipei time on D-1 (CWA warning bulletins issued through 17:10/20:10 are the boundary cases and must be pinned per-bulletin by issuance timestamp).",
+    "publisher": "Directorate-General of Personnel Administration, Executive Yuan (\u884c\u653f\u9662\u4eba\u4e8b\u884c\u653f\u7e3d\u8655); features: Central Weather Administration (\u4ea4\u901a\u90e8\u4e2d\u592e\u6c23\u8c61\u7f72)",
+    "qualification": {
+     "artifact_version": null,
+     "result": null,
+     "splits": null
+    },
+    "question": "For a Taiwan county on a date D for which a typhoon land warning (\u9678\u4e0a\u98b1\u98a8\u8b66\u5831) is active or being considered, will offices and schools be fully closed (\u5168\u65e5\u505c\u6b62\u8fa6\u516c\u53ca\u4e0a\u8ab2) on D, predicted at the statutory announcement instant on the evening before D?",
+    "region": "East Asia",
+    "release_baseline": {
+     "auc": null,
+     "reference": null
+    },
+    "release_splits": {},
+    "review": "",
+    "sources": [
+     {
+      "licence": "Government website open declaration (\u653f\u5e9c\u7db2\u7ad9\u8cc7\u6599\u958b\u653e\u5ba3\u544a, linked in the site footer); same agency's mirror of this data on data.gov.tw is Open Government Data License 1.0",
+      "name": "DGPA \u6b77\u6b21\u5929\u7136\u707d\u5bb3\u505c\u6b62\u4e0a\u73ed\u4e0a\u8ab2\u8a0a\u606f (historical closure announcements)",
+      "url": "https://www.dgpa.gov.tw/informationlist?uid=374"
+     },
+     {
+      "licence": "Open Government Data License 1.0 (\u6388\u6b0a\u65b9\u5f0f: \u653f\u5e9c\u8cc7\u6599\u958b\u653e\u6388\u6b0a\u689d\u6b3e-\u7b2c1\u7248; \u8a08\u8cbb\u65b9\u5f0f: \u514d\u8cbb; authorization site: http://data.gov.tw/license)",
+      "name": "data.gov.tw dataset 20457 - Natural disaster stop working, stop attending class situation (DGPA, CAP feed)",
+      "url": "https://data.gov.tw/dataset/20457"
+     },
+     {
+      "licence": "CWA Government Website Open Information Declaration: all website data provided free of charge, non-exclusive, sublicensable, irrevocable, users may reproduce/adapt/compile/publicly transmit for any purpose with attribution (https://www.cwa.gov.tw/V8/C/information.html)",
+      "name": "CWA \u98b1\u98a8\u8cc7\u6599\u5eab typhoon database (warning bulletins 1958-present)",
+      "url": "https://rdc28.cwa.gov.tw/TDB/public/warning_typhoon_list"
+     },
+     {
+      "licence": "data.taipei open data licence (\u8cc7\u6599\u6388\u6b0a: \u516c\u958b), free",
+      "name": "data.taipei - \u81fa\u5317\u5e02\u6b77\u6b21\u5929\u7136\u707d\u5bb3\u505c\u6b62\u4e0a\u73ed\u4e0a\u8ab2\u8a0a\u606f (cross-check label source)",
+      "url": "https://data.taipei/dataset/detail?id=83b013c2-35f3-4470-98d7-03dd68a372cb"
+     }
+    ],
+    "split_strategy": "",
+    "status": "investigating",
+    "target": "Binary per (county, date): the county's status for date D is a full-day stop of both work and school, as published by the Directorate-General of Personnel Administration (DGPA). Label sources (excluded from shipped features): the DGPA \u6b77\u6b21\u5929\u7136\u707d\u5bb3\u505c\u6b62\u4e0a\u73ed\u4e0a\u8ab2\u8a0a\u606f archive (500 announcements, 2001-present, per-county status attachments) and, for the modern era, county-portal historical CSVs (e.g. data.taipei \u81fa\u5317\u5e02\u6b77\u6b21\u5929\u7136\u707d\u5bb3\u505c\u6b62\u4e0a\u73ed\u4e0a\u8ab2\u8a0a\u606f, fields \u6c11\u570b\u5e74/\u6708/\u65e5/\u5929\u7136\u707d\u5bb3\u540d\u7a31/\u505c\u6b62\u4e0a\u73ed\u4e0a\u8ab2\u60c5\u5f62)."
    }
   ],
-  "non_us_share": 83.3,
+  "non_us_share": 85.7,
   "records": [
    {
     "awaiting_operator": false,
@@ -2039,6 +2099,52 @@
    {
     "awaiting_operator": false,
     "baseline": {},
+    "country": "HK",
+    "domain": "government open-data catalog",
+    "id": "hk-datagov-portal",
+    "jobs": [],
+    "licence_summary": {
+     "compilation_spdx": null,
+     "source_spdx": null,
+     "status": null
+    },
+    "measurements": {
+     "event_grain_sweep_2026_10_22": "Keyword sweep over package names: 'accident' -> Transport Dept annual road traffic accident tables 2018-2024 (aggregate XLSX/CSV) and Marine Dept marine accident statistics; 'incident' -> EMSD lift/escalator/gas incident STATISTICS (the 'Reported Lift Incident Records' CSV measured at 43 rows: Year x Main Cause x Count, annual aggregate); 'burst' -> WSD annual water main burst CSV + one CSDI geoportal layer of individual burst cases; 'prosecut' -> ICAC/Customs quarterly-by-sector aggregates.",
+     "package_list_2026_10_22": "package_list: 3,831 packages. Provider prefix counts: censtatd 935, hkma 198, swd 167, lcsd 124, landsd 119, emsd 100, immd 88, dh 81, wsd 72, edb 71, dpo 65, td 60, epd 59, hko 57, afcd 56 - dominated by aggregate statistical tables.",
+     "wsd_burst_case_2026_10_22": "The only per-case dataset found: WSD 'Report of Main Burst Case' (hk-wsd-wsd9-report-of-main-burst-case), served as a CSDI geoportal layer (wsd_rcd_...). Positives-only (burst cases with location, pipe size, date); no pipe-network inventory covariates are exposed on the portal, so a supervised population cannot be defined from the portal alone."
+    },
+    "next_action": "Unpark only by operator decision, same shape as the Singapore catalog park: (a) accept a second own-history environmental-exceedance family member (cleanest can",
+    "packaged_at": null,
+    "path": "candidates/hk-datagov-portal/record.json",
+    "prediction_time": "N/A - no task identified.",
+    "publisher": "Office of the Government Chief Information Officer, HKSAR Government (DATA.GOV.HK)",
+    "qualification": {
+     "artifact_version": null,
+     "result": null,
+     "splits": null
+    },
+    "question": "No task: the portal was enumerated and every candidate task family it can carry duplicates a family already on the bench or parked on it (aggregate statistical series; own-history environmental exceedance; TC best-track mirrors).",
+    "region": "East Asia",
+    "release_baseline": {
+     "auc": null,
+     "reference": null
+    },
+    "release_splits": {},
+    "review": "",
+    "sources": [
+     {
+      "licence": "DATA.GOV.HK Terms and Conditions of Use",
+      "name": "DATA.GOV.HK (Hong Kong government open data portal)",
+      "url": "https://data.gov.hk/"
+     }
+    ],
+    "split_strategy": "",
+    "status": "parked",
+    "target": "N/A - no task identified."
+   },
+   {
+    "awaiting_operator": false,
+    "baseline": {},
     "country": "ID",
     "domain": "financial-sector supervision / bank soundness",
     "id": "id-ojk-bank-supervision",
@@ -2345,6 +2451,57 @@
     "split_strategy": "n/a - no data channel to build on (measured, not assumed).",
     "status": "parked",
     "target": "n/a while parked. No machine-readable label source was measurable this session (see measurements)."
+   },
+   {
+    "awaiting_operator": false,
+    "baseline": {},
+    "country": "KR",
+    "domain": "national statistics / meteorology (South Korea)",
+    "id": "kr-kosis-kma-access",
+    "jobs": [],
+    "licence_summary": {
+     "compilation_spdx": null,
+     "source_spdx": null,
+     "status": null
+    },
+    "measurements": {
+     "kma_portal_shell_2026_10_22": "GET https://data.kma.go.kr/{data,member,cmmn} pages: all return the same 1,872-byte JS shell to plain clients; the portal's own PDF guide states downloads happen after \ud68c\uc6d0\uac00\uc785 with PII (e-mail, name, phone number).",
+     "kosis_openapi_page_2026_10_22": "GET https://kosis.kr/openapi/: HTTP 200, contains 'OPEN API \uc778\uc99d\ud0a4 \uc2e0\uccad \ubc14\ub85c\uac00\uae30' (direct API-key application link), \ud65c\uc6a9\uc2e0\uccad menu, \ud68c\uc6d0\uac00\uc785 menu - programmatic access is gated on a personal key.",
+     "no_task_probed_2026_10_22": "No candidate task was opened: under the session rule 'a source that needs an authorisation we do not hold' and the anonymous-API preference, both portals were triaged out before any task probing."
+    },
+    "next_action": "Unpark by operator decision: register a KOSIS account, obtain an OpenAPI key, and store it as a mode-0600 credential file under /opt/data/.secrets (the existing",
+    "packaged_at": null,
+    "path": "candidates/kr-kosis-kma-access/record.json",
+    "prediction_time": "N/A - parked at access triage.",
+    "publisher": "\uad6d\uac00\ub370\uc774\ud130\ucc98 / Statistics Korea data platform (KOSIS); Korea Meteorological Administration (\uae30\uc0c1\uccad) data portal",
+    "qualification": {
+     "artifact_version": null,
+     "result": null,
+     "splits": null
+    },
+    "question": "No task opened: both national sources are behind personal-account walls for programmatic access, so no candidate task was probed past the access triage.",
+    "region": "East Asia",
+    "release_baseline": {
+     "auc": null,
+     "reference": null
+    },
+    "release_splits": {},
+    "review": "",
+    "sources": [
+     {
+      "licence": "KOSIS \ud1b5\uacc4\uc815\ubcf4 \uc774\uc6a9\uc9c0\uce68: free use, reuse AND redistribution (commercial and non-commercial) with mandatory source attribution (\ucd9c\ucc98\uba85\uc2dc); exceptions: international/North Korea statistics are non-commercial-only and redistribution-prohibited; publications follow KOGL type rules",
+      "name": "KOSIS \uad6d\uac00\ud1b5\uacc4\ud3ec\ud138 (National Statistical Portal, Statistics Korea data platform)",
+      "url": "https://kosis.kr/"
+     },
+     {
+      "licence": "KMA guide PDF: \uc774\uc6a9\ud5c8\ub77d \uc870\uac74 \ucd9c\ucc98 \ud45c\uc2dc ('\uae30\uc0c1\uccad \uc81c\uacf5') - attribution",
+      "name": "\uae30\uc0c1\uc790\ub8cc\uac1c\ubc29\ud3ec\ud138 data.kma.go.kr (KMA weather data open portal)",
+      "url": "https://data.kma.go.kr/"
+     }
+    ],
+    "split_strategy": "",
+    "status": "parked",
+    "target": "N/A - parked at access triage."
    },
    {
     "awaiting_operator": false,
@@ -3949,6 +4106,124 @@
    {
     "awaiting_operator": false,
     "baseline": {},
+    "country": "TW",
+    "domain": "water resources / drought indicators",
+    "id": "tw-reservoir-drought-storage",
+    "jobs": [],
+    "licence_summary": {
+     "compilation_spdx": null,
+     "source_spdx": null,
+     "status": null
+    },
+    "measurements": {
+     "fhy_api_probes_2026_10_22": "fhyv2 SPA network capture (browser): API family https://fhy.wra.gov.tw/Api/v2/... (Rainfall/Station, Event/Year/{y}, Event/Active, Basic/City) plus /disaster/Reservoir/Comparison.",
+     "fhy_api_status_2026_10_22": "Plain-client GET of https://fhy.wra.gov.tw/Api/v2/Event/Year/2025 and /Api/v2/Event/Active -> HTTP 401 (91 bytes each); /disaster/Reservoir/Comparison -> 4,252-byte AngularJS HTML shell, not JSON.",
+     "no_history_conclusion_2026_10_22": "No anonymously retrievable historical daily storage series found: data.gov.tw 45501/41568 publish current-day snapshots only (45501 '\u66f4\u65b0\u983b\u7387 \u6bcf1\u6642', resources CSV/JSON/XML).",
+     "opendata_wra_unreachable_2026_10_22": "opendata.wra.gov.tw unreachable from the coordinator: SSL certificate fails strict verification (same Missing Subject Key Identifier failure as dgpa.gov.tw) and DNS resolution for the host failed intermittently; the Swagger UI could not be read from either client."
+    },
+    "next_action": "Unpark only if (a) the routine seeds a standing snapshot collector (fetch 45501/41568 daily, one row per major reservoir, into the private staging; splits becom",
+    "packaged_at": null,
+    "path": "candidates/tw-reservoir-drought-storage/record.json",
+    "prediction_time": "Daily at the 07:00 observation instant (the dataset states \u6c34\u4f4d\u3001\u6709\u6548\u84c4\u6c34\u91cf\u53ca\u84c4\u6c34\u767e\u5206\u6bd4 are the current day's 07:00 values), using only snapshots up to that instant.",
+    "publisher": "Water Resources Agency, Ministry of Economic Affairs (\u7d93\u6fdf\u90e8\u6c34\u5229\u7f72)",
+    "qualification": {
+     "artifact_version": null,
+     "result": null,
+     "splits": null
+    },
+    "question": "Will a major Taiwan reservoir's effective storage ratio fall below a drought threshold (e.g. 20-30%) within the next 30 days, conditioned on it being above the threshold now (onset formulation)?",
+    "region": "East Asia",
+    "release_baseline": {
+     "auc": null,
+     "reference": null
+    },
+    "release_splits": {},
+    "review": "",
+    "sources": [
+     {
+      "licence": "Open Government Data License 1.0",
+      "name": "data.gov.tw 45501 \u6c34\u5eab\u6c34\u60c5\u8cc7\u6599 (reservoir water situation, real-time)",
+      "url": "https://data.gov.tw/dataset/45501"
+     },
+     {
+      "licence": "Open Government Data License 1.0",
+      "name": "data.gov.tw 41568 \u6c34\u5eab\u6bcf\u65e5\u71df\u904b\u72c0\u6cc1 (daily reservoir operation)",
+      "url": "https://data.gov.tw/dataset/41568"
+     },
+     {
+      "licence": "WRA site terms (\u7d93\u6fdf\u90e8\u6c34\u5229\u7f72\u00a92015 \u7248\u6b0a\u6240\u6709 footer); open-data portal datasets carry ODDL 1.0",
+      "name": "WRA \u9632\u707d\u8cc7\u8a0a\u670d\u52d9\u7db2 fhyv2 reservoir viewer",
+      "url": "https://fhy.wra.gov.tw/fhyv2/monitor/reservoir"
+     }
+    ],
+    "split_strategy": "",
+    "status": "parked",
+    "target": "Binary onset: storage percentage (\u84c4\u6c34\u767e\u5206\u6bd4) of reservoir R crosses below the threshold on some day within (t, t+30] while above it at t. Label source column is the same series' future values; excluded from features by the window construction."
+   },
+   {
+    "awaiting_operator": false,
+    "baseline": {},
+    "country": "TW",
+    "domain": "emergency management / government decision prediction",
+    "id": "tw-typhoon-day-closure",
+    "jobs": [],
+    "licence_summary": {
+     "compilation_spdx": null,
+     "source_spdx": null,
+     "status": null
+    },
+    "measurements": {
+     "dgpa_archive_span_2026_10_22": "DGPA archive: 500 announcements over 50 pages (10/page), oldest record \u6c11\u570b90.07.30 (CE 2001-07-30), newest \u6c11\u570b115.09.03 (CE 2026-09-02) - measured from informationlist pages 1 and 50, fetched anonymously 2026-10-22.",
+     "dgpa_attachment_formats_2026_10_22": "Sampled first record of list pages 1/6/12/20/30/40/45: static per-county status table found for 2002 (Big5), 2009-era, and 2024-10-04 (UTF-8 typhoon-event table, 21,661 bytes); shell-only files (no county rows, only the statutory disclaimer block) observed for 2023-06-01, 2025-09-30 and 2026-09-02 - per-county extraction for the modern era is the one unproven step and is pinned as the first construction task.",
+     "dgpa_fetch_sizes_2026_10_22": "Detail page pid=13097 = 34,360 bytes; attachments 3,058-21,661 bytes; full harvest is about 50 list pages + 500 detail pages + 500-1000 attachments, on the order of 1,050-1,550 requests and 20-30 MB total (estimate labelled as such; not yet measured end-to-end). DGPA HTTPS fails strict SSL validation (chain missing Subject Key Identifier), so probes used an unverified context; the browser accepts the chain."
+    },
+    "next_action": "Construction (coordinator-side scripts first, then worker): (1) PIN THE MODERN-ERA LABEL EXTRACTION - try DGPA daily-view query variants (the server-rendered /t",
+    "packaged_at": null,
+    "path": "candidates/tw-typhoon-day-closure/record.json",
+    "prediction_time": "The announcement instant is fixed by regulation, quoted from the DGPA daily closure page (2026-10-22) and repeated verbatim in the announcement attachments: full-day or morning closures must be announced between 19:00 and 22:00 the previous evening (\u524d\u4e00\u65e5\u665a\u95937\u6642\u81f310\u6642\u524d\u767c\u5e03); same-morning reinforced closures are announced by 04:30 and broadcast by 05:00. Features may therefore use only data published before 19:00 Taipei time on D-1 (CWA warning bulletins issued through 17:10/20:10 are the boundary cases and must be pinned per-bulletin by issuance timestamp).",
+    "publisher": "Directorate-General of Personnel Administration, Executive Yuan (\u884c\u653f\u9662\u4eba\u4e8b\u884c\u653f\u7e3d\u8655); features: Central Weather Administration (\u4ea4\u901a\u90e8\u4e2d\u592e\u6c23\u8c61\u7f72)",
+    "qualification": {
+     "artifact_version": null,
+     "result": null,
+     "splits": null
+    },
+    "question": "For a Taiwan county on a date D for which a typhoon land warning (\u9678\u4e0a\u98b1\u98a8\u8b66\u5831) is active or being considered, will offices and schools be fully closed (\u5168\u65e5\u505c\u6b62\u8fa6\u516c\u53ca\u4e0a\u8ab2) on D, predicted at the statutory announcement instant on the evening before D?",
+    "region": "East Asia",
+    "release_baseline": {
+     "auc": null,
+     "reference": null
+    },
+    "release_splits": {},
+    "review": "",
+    "sources": [
+     {
+      "licence": "Government website open declaration (\u653f\u5e9c\u7db2\u7ad9\u8cc7\u6599\u958b\u653e\u5ba3\u544a, linked in the site footer); same agency's mirror of this data on data.gov.tw is Open Government Data License 1.0",
+      "name": "DGPA \u6b77\u6b21\u5929\u7136\u707d\u5bb3\u505c\u6b62\u4e0a\u73ed\u4e0a\u8ab2\u8a0a\u606f (historical closure announcements)",
+      "url": "https://www.dgpa.gov.tw/informationlist?uid=374"
+     },
+     {
+      "licence": "Open Government Data License 1.0 (\u6388\u6b0a\u65b9\u5f0f: \u653f\u5e9c\u8cc7\u6599\u958b\u653e\u6388\u6b0a\u689d\u6b3e-\u7b2c1\u7248; \u8a08\u8cbb\u65b9\u5f0f: \u514d\u8cbb; authorization site: http://data.gov.tw/license)",
+      "name": "data.gov.tw dataset 20457 - Natural disaster stop working, stop attending class situation (DGPA, CAP feed)",
+      "url": "https://data.gov.tw/dataset/20457"
+     },
+     {
+      "licence": "CWA Government Website Open Information Declaration: all website data provided free of charge, non-exclusive, sublicensable, irrevocable, users may reproduce/adapt/compile/publicly transmit for any purpose with attribution (https://www.cwa.gov.tw/V8/C/information.html)",
+      "name": "CWA \u98b1\u98a8\u8cc7\u6599\u5eab typhoon database (warning bulletins 1958-present)",
+      "url": "https://rdc28.cwa.gov.tw/TDB/public/warning_typhoon_list"
+     },
+     {
+      "licence": "data.taipei open data licence (\u8cc7\u6599\u6388\u6b0a: \u516c\u958b), free",
+      "name": "data.taipei - \u81fa\u5317\u5e02\u6b77\u6b21\u5929\u7136\u707d\u5bb3\u505c\u6b62\u4e0a\u73ed\u4e0a\u8ab2\u8a0a\u606f (cross-check label source)",
+      "url": "https://data.taipei/dataset/detail?id=83b013c2-35f3-4470-98d7-03dd68a372cb"
+     }
+    ],
+    "split_strategy": "",
+    "status": "investigating",
+    "target": "Binary per (county, date): the county's status for date D is a full-day stop of both work and school, as published by the Directorate-General of Personnel Administration (DGPA). Label sources (excluded from shipped features): the DGPA \u6b77\u6b21\u5929\u7136\u707d\u5bb3\u505c\u6b62\u4e0a\u73ed\u4e0a\u8ab2\u8a0a\u606f archive (500 announcements, 2001-present, per-county status attachments) and, for the modern era, county-portal historical CSVs (e.g. data.taipei \u81fa\u5317\u5e02\u6b77\u6b21\u5929\u7136\u707d\u5bb3\u505c\u6b62\u4e0a\u73ed\u4e0a\u8ab2\u8a0a\u606f, fields \u6c11\u570b\u5e74/\u6708/\u65e5/\u5929\u7136\u707d\u5bb3\u540d\u7a31/\u505c\u6b62\u4e0a\u73ed\u4e0a\u8ab2\u60c5\u5f62)."
+   },
+   {
+    "awaiting_operator": false,
+    "baseline": {},
     "country": "CH",
     "domain": "forced displacement - situation-level population prediction (international organisation publisher)",
     "id": "unhcr-refugee-data-finder",
@@ -4387,22 +4662,25 @@
    "DE": 1,
    "EU": 2,
    "GB": 6,
+   "HK": 1,
    "ID": 3,
    "IN": 3,
    "JP": 1,
    "KE": 1,
+   "KR": 1,
    "MX": 1,
    "MY": 2,
    "PH": 2,
    "SG": 1,
    "TH": 1,
+   "TW": 2,
    "US": 11,
    "VN": 1,
    "ZA": 2
   },
   "by_region": {
    "Africa": 3,
-   "East Asia": 1,
+   "East Asia": 5,
    "Europe": 9,
    "International organisations": 3,
    "Latin America": 3,
@@ -4412,15 +4690,15 @@
   },
   "by_status": {
    "dropped": 13,
-   "investigating": 6,
-   "parked": 21,
+   "investigating": 7,
+   "parked": 24,
    "published": 6,
    "ready": 6
   },
-  "candidates": 52,
-  "live": 18,
-  "live_non_us": 12,
-  "live_non_us_share": 0.667,
+  "candidates": 56,
+  "live": 19,
+  "live_non_us": 13,
+  "live_non_us_share": 0.684,
   "unknown_jurisdiction": []
  },
  "cron": {
@@ -4442,10 +4720,10 @@
     "failure_streak": 0,
     "id": "e80975eddd4a",
     "last_error": "",
-    "last_run_at": "2026-10-21T23:50:01.755970+00:00",
+    "last_run_at": "2026-10-22T01:50:01.456512+00:00",
     "last_status": "ok",
     "name": "scout-secondary-cleanup-sweep",
-    "next_run_at": "2026-10-22T00:00:00+00:00",
+    "next_run_at": "2026-10-22T02:00:00+00:00",
     "no_agent": true,
     "schedule": "*/10 * * * *"
    },
@@ -4490,10 +4768,10 @@
     "failure_streak": 0,
     "id": "98b45d983280",
     "last_error": "",
-    "last_run_at": "2026-10-21T23:49:21.065844+00:00",
+    "last_run_at": "2026-10-22T01:49:53.689656+00:00",
     "last_status": "ok",
     "name": "scout-worker-watch",
-    "next_run_at": "2026-10-21T23:54:21.065844+00:00",
+    "next_run_at": "2026-10-22T01:54:53.689656+00:00",
     "no_agent": false,
     "schedule": "every 5m"
    },
@@ -4502,10 +4780,10 @@
     "failure_streak": 0,
     "id": "86fe52e55ef9",
     "last_error": "",
-    "last_run_at": "2026-10-21T20:24:32.587057+00:00",
+    "last_run_at": "2026-10-22T00:31:57.004704+00:00",
     "last_status": "ok",
     "name": "scout-discovery-session",
-    "next_run_at": "2026-10-22T00:00:00+00:00",
+    "next_run_at": "2026-10-22T04:00:00+00:00",
     "no_agent": true,
     "schedule": "0 */4 * * *"
    },
@@ -4526,10 +4804,10 @@
     "failure_streak": 0,
     "id": "4d8053a69ed2",
     "last_error": "",
-    "last_run_at": "2026-10-21T22:50:23.153367+00:00",
+    "last_run_at": "2026-10-22T00:51:00.807376+00:00",
     "last_status": "ok",
     "name": "scout-dashboard-refresh",
-    "next_run_at": "2026-10-22T00:50:00+00:00",
+    "next_run_at": "2026-10-22T02:50:00+00:00",
     "no_agent": true,
     "schedule": "50 * * * *"
    },
@@ -4538,10 +4816,10 @@
     "failure_streak": 0,
     "id": "ba4c8610edf8",
     "last_error": "",
-    "last_run_at": "2026-10-21T22:55:00.601113+00:00",
+    "last_run_at": "2026-10-22T00:55:00.805483+00:00",
     "last_status": "ok",
     "name": "scout-release-notify",
-    "next_run_at": "2026-10-21T23:55:00+00:00",
+    "next_run_at": "2026-10-22T01:55:00+00:00",
     "no_agent": true,
     "schedule": "55 * * * *"
    },
@@ -4582,29 +4860,29 @@
     "schedule": "once at 2026-10-20 16:40"
    }
   ],
-  "updated_at": "2026-10-21T23:50:01.756939+00:00"
+  "updated_at": "2026-10-22T01:50:01.457576+00:00"
  },
- "generated_at": "2026-10-21T23:50:01+00:00",
+ "generated_at": "2026-10-22T01:50:01+00:00",
  "health": {
   "checks": {
    "ok": true,
-   "passing": 52
+   "passing": 56
   },
   "ci": {
    "conclusion": "success",
-   "created_at": "2026-10-21T22:26:42Z",
-   "head_sha": "c6a1405",
+   "created_at": "2026-10-22T01:36:11Z",
+   "head_sha": "e966926",
    "status": "completed",
-   "url": "https://github.com/earino/dataset-factory/actions/runs/39686529349"
+   "url": "https://github.com/earino/dataset-factory/actions/runs/39706631911"
   },
   "coverage": {
    "ok": true,
-   "summary": "live non-US: 12/18 (67%)"
+   "summary": "live non-US: 13/19 (68%)"
   },
   "head": {
-   "at": "2026-10-21T21:48:14Z",
-   "sha": "c6a1405",
-   "subject": "Drop nhs-ae: correct artifact, task not worth shipping"
+   "at": "2026-10-22T00:29:43Z",
+   "sha": "e966926",
+   "subject": "tests: load nhs-ae build.py without writing bytecode (fix red CI from 2026-10-21)"
   },
   "tests": {
    "count": "406",
@@ -4963,13 +5241,29 @@
    "qualified": 0,
    "sessions_7d": 31,
    "tokens_7d": 6430954
+  },
+  {
+   "at": "2026-10-22T00:50:00+00:00",
+   "live": 7,
+   "published": 7,
+   "qualified": 0,
+   "sessions_7d": 32,
+   "tokens_7d": 6842902
+  },
+  {
+   "at": "2026-10-22T01:50:01+00:00",
+   "live": 7,
+   "published": 7,
+   "qualified": 0,
+   "sessions_7d": 32,
+   "tokens_7d": 6842902
   }
  ],
  "notices": [],
  "panels": {
   "budget": {
-   "age_minutes": 0.3,
-   "as_of": "2026-10-21T23:50:01+00:00",
+   "age_minutes": 0.1,
+   "as_of": "2026-10-22T01:50:01+00:00",
    "expected": null,
    "note": null,
    "source": "scripts/research-budget.py --json",
@@ -4978,18 +5272,18 @@
    "value": null
   },
   "candidates": {
-   "age_minutes": 0.3,
-   "as_of": "2026-10-21T23:50:01+00:00",
+   "age_minutes": 0.1,
+   "as_of": "2026-10-22T01:50:01+00:00",
    "expected": null,
    "note": null,
    "source": "candidates/*/record.json",
    "stale": false,
    "status": "ok",
-   "value": 6
+   "value": 7
   },
   "releases": {
-   "age_minutes": 0.3,
-   "as_of": "2026-10-21T23:50:01+00:00",
+   "age_minutes": 0.1,
+   "as_of": "2026-10-22T01:50:01+00:00",
    "expected": null,
    "note": null,
    "source": "release/*/MANIFEST.json",
@@ -6049,7 +6343,7 @@
   "jobs_total": 73,
   "lifetime_eur": 3.13,
   "live": {
-   "checked_at": "2026-10-21T23:50:16+00:00",
+   "checked_at": "2026-10-22T01:50:10+00:00",
    "error": null,
    "primary_ips": 0,
    "primary_ips_total": 0,
@@ -6072,21 +6366,12 @@
     "month": "2026-10"
    }
   ],
-  "projected_month_eur": 1.02
+  "projected_month_eur": 0.97
  },
  "schema": 1,
  "sessions": {
-  "failed_last_three": 2,
+  "failed_last_three": 1,
   "recent": [
-   {
-    "elapsed_seconds": 1651.6,
-    "event": "session",
-    "max_turns": 120,
-    "outcome": "completed",
-    "prompt_file": "discovery-session-prompt.md",
-    "run_budget": 5400,
-    "ts": "2026-10-21T12:27:32.916673+00:00"
-   },
    {
     "elapsed_seconds": 2490.0,
     "event": "session",
@@ -6131,6 +6416,15 @@
     "prompt_file": "research-session-prompt.md",
     "run_budget": 5400,
     "ts": "2026-10-21T22:41:02.800346+00:00"
+   },
+   {
+    "elapsed_seconds": 1913.9,
+    "event": "session",
+    "max_turns": 120,
+    "outcome": "completed",
+    "prompt_file": "discovery-session-prompt.md",
+    "run_budget": 5400,
+    "ts": "2026-10-22T00:31:56.960570+00:00"
    }
   ],
   "total": 34

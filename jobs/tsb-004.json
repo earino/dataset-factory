@@ -1,0 +1,628 @@
+{
+  "job": {
+    "id": "tsb-004",
+    "candidate": "tsb-railway-occurrence-casualty",
+    "image": "python:3.13-slim",
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 3072,
+    "timeout_minutes": 45,
+    "lifetime_minutes": 75,
+    "max_disk_mb": 8000,
+    "max_artifact_mb": 300,
+    "source_files": [
+      {
+        "bundled_as": "build.py",
+        "source": "candidates/tsb-railway-occurrence-casualty/source/build.py",
+        "bytes": 47861,
+        "sha256": "6774fe88bd493971d6bb3d543ab520ac9eacde8493a4b7cc11d02a938de02f5c"
+      },
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/tsb-railway-occurrence-casualty/source/run.sh",
+        "bytes": 1299,
+        "sha256": "33bd61296052cbeee161a3466c7f3dfecd4291a68f313e77f6287a013e90152b"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 43956,
+        "sha256": "70f2f2a98db883be3cc88241e42170e26896185e066c5bdd63f192479b48ce39"
+      }
+    ]
+  },
+  "reservation_eur": "0.06",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 3,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 153600,
+  "source_sha256": "6fe06f02f15a77e29c0e75d276d3c70c8e77f9f6bd67424986b097487f66ec0e",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-10-22T02:26:01.391581+00:00",
+  "expires": 1792640461,
+  "budget_months": [
+    "2026-10"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 171730217,
+  "known_hosts": "/opt/data/dataset-factory/.factory/tsb-004/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "65.21.158.17",
+  "result": {
+    "job_id": "tsb-004",
+    "status": "succeeded",
+    "uploaded": true,
+    "image_id": "sha256:27b7c9d4f13ca20bb1170148f02095d50a5dfce1f7f2dabf5ca273727e43b7ea",
+    "image_digests": [
+      "python@sha256:27b7c9d4f13ca20bb1170148f02095d50a5dfce1f7f2dabf5ca273727e43b7ea"
+    ],
+    "exit_code": 0,
+    "oom_killed": false,
+    "elapsed_seconds": 31.1,
+    "summary": {
+      "name": "tsb-railway-occurrence-casualty",
+      "built_at_utc": "2026-10-22T02:27:00Z",
+      "sources": {
+        "OCCURRENCE": {
+          "url": "https://www.tsb.gc.ca/sites/default/files/stats/RODSdb_MDOTW_VW_OCCURRENCE_PUBLIC.csv",
+          "bytes": 97894047,
+          "last_modified": "Wed, 21 Oct 2026 16:49:48 GMT",
+          "seconds": 5.5,
+          "sha256": "b4aa6cfa35dbbfacd46616c79e242da708d1fe901383cc41be8ab73400c51eea"
+        },
+        "TRAIN": {
+          "url": "https://www.tsb.gc.ca/sites/default/files/stats/RODSdb_MDOTW_VW_TRAIN_PUBLIC.csv",
+          "bytes": 21775681,
+          "last_modified": "Wed, 21 Oct 2026 16:50:08 GMT",
+          "seconds": 2.1,
+          "sha256": "ea8d99a853865cd0357cd03ae4134cefede09724a24a899b92d9b0963a248628"
+        },
+        "ROLLING_STOCK": {
+          "url": "https://www.tsb.gc.ca/sites/default/files/stats/RODSdb_MDOTW_VW_ROLLING_STOCK_PUBLIC.csv",
+          "bytes": 34758209,
+          "last_modified": "Wed, 21 Oct 2026 16:50:33 GMT",
+          "seconds": 3.5,
+          "sha256": "a7e0b143ae9c9f14232d27fc1781be1196a9f3621a1a414a22324f6c77d616f9"
+        },
+        "INJURIES": {
+          "url": "https://www.tsb.gc.ca/sites/default/files/stats/RODSdb_MDOTW_VW_INJURIES_PUBLIC.csv",
+          "bytes": 2713169,
+          "last_modified": "Wed, 21 Oct 2026 16:51:31 GMT",
+          "seconds": 1.4,
+          "sha256": "c229cb146f0248c2e2134fb95b8435e39a7bf8b7ef4fff6d23e692f5e3252d1f"
+        },
+        "COMPONENTS": {
+          "url": "https://www.tsb.gc.ca/sites/default/files/stats/RODSdb_MDOTW_VW_COMPONENTS_PUBLIC.csv",
+          "bytes": 42523,
+          "last_modified": "Wed, 21 Oct 2026 16:52:23 GMT",
+          "seconds": 0.6,
+          "sha256": "8f14b197ed132b00e8672bf2f9b046585047f31f1b46b272ed73d88b067ff1f8"
+        }
+      },
+      "grain": "one row per TSB rail occurrence (OccNo key)",
+      "panel_start": {
+        "year": 2016,
+        "rule": "first year from which the taxonomy-era share (AccIncType HISTORICAL/DG LEAKER) stays < 0.02 in every later year; measured, not assumed (record proposed 2004). Timezone-missingness is recorded per year as a separate property, not an era signal"
+      },
+      "diagnostics": {
+        "exact_duplicate_rows_dropped": 139,
+        "rows_without_parseable_occdate": 0,
+        "per_year": {
+          "1983": {
+            "rows": 1576,
+            "casualty_rate": 0.3293,
+            "era_sig_share": 0.2513,
+            "tz_missing_share": 0.9956
+          },
+          "1984": {
+            "rows": 1719,
+            "casualty_rate": 0.3008,
+            "era_sig_share": 0.2821,
+            "tz_missing_share": 0.9936
+          },
+          "1985": {
+            "rows": 1611,
+            "casualty_rate": 0.3023,
+            "era_sig_share": 0.2595,
+            "tz_missing_share": 0.9944
+          },
+          "1986": {
+            "rows": 1541,
+            "casualty_rate": 0.2641,
+            "era_sig_share": 0.3024,
+            "tz_missing_share": 0.9955
+          },
+          "1987": {
+            "rows": 1499,
+            "casualty_rate": 0.2915,
+            "era_sig_share": 0.3202,
+            "tz_missing_share": 0.9967
+          },
+          "1988": {
+            "rows": 1459,
+            "casualty_rate": 0.2872,
+            "era_sig_share": 0.3023,
+            "tz_missing_share": 0.9959
+          },
+          "1989": {
+            "rows": 1343,
+            "casualty_rate": 0.3075,
+            "era_sig_share": 0.309,
+            "tz_missing_share": 0.9918
+          },
+          "1990": {
+            "rows": 1387,
+            "casualty_rate": 0.2379,
+            "era_sig_share": 0.3244,
+            "tz_missing_share": 0.9488
+          },
+          "1991": {
+            "rows": 1821,
+            "casualty_rate": 0.2114,
+            "era_sig_share": 0.3822,
+            "tz_missing_share": 0.8913
+          },
+          "1992": {
+            "rows": 1883,
+            "casualty_rate": 0.2246,
+            "era_sig_share": 0.3128,
+            "tz_missing_share": 0.299
+          },
+          "1993": {
+            "rows": 2183,
+            "casualty_rate": 0.2066,
+            "era_sig_share": 0.1677,
+            "tz_missing_share": 0.0
+          },
+          "1994": {
+            "rows": 2501,
+            "casualty_rate": 0.1683,
+            "era_sig_share": 0.1327,
+            "tz_missing_share": 0.0
+          },
+          "1995": {
+            "rows": 2524,
+            "casualty_rate": 0.1807,
+            "era_sig_share": 0.1395,
+            "tz_missing_share": 0.0
+          },
+          "1996": {
+            "rows": 2243,
+            "casualty_rate": 0.1761,
+            "era_sig_share": 0.1476,
+            "tz_missing_share": 0.0
+          },
+          "1997": {
+            "rows": 1984,
+            "casualty_rate": 0.1608,
+            "era_sig_share": 0.1442,
+            "tz_missing_share": 0.0
+          },
+          "1998": {
+            "rows": 1901,
+            "casualty_rate": 0.1394,
+            "era_sig_share": 0.1431,
+            "tz_missing_share": 0.0
+          },
+          "1999": {
+            "rows": 1757,
+            "casualty_rate": 0.1616,
+            "era_sig_share": 0.095,
+            "tz_missing_share": 0.0
+          },
+          "2000": {
+            "rows": 1618,
+            "casualty_rate": 0.1638,
+            "era_sig_share": 0.1162,
+            "tz_missing_share": 0.0
+          },
+          "2001": {
+            "rows": 2065,
+            "casualty_rate": 0.1341,
+            "era_sig_share": 0.0939,
+            "tz_missing_share": 0.1734
+          },
+          "2002": {
+            "rows": 1955,
+            "casualty_rate": 0.1294,
+            "era_sig_share": 0.0854,
+            "tz_missing_share": 0.1754
+          },
+          "2003": {
+            "rows": 1927,
+            "casualty_rate": 0.1469,
+            "era_sig_share": 0.0778,
+            "tz_missing_share": 0.1645
+          },
+          "2004": {
+            "rows": 1921,
+            "casualty_rate": 0.1411,
+            "era_sig_share": 0.0682,
+            "tz_missing_share": 0.1379
+          },
+          "2005": {
+            "rows": 2048,
+            "casualty_rate": 0.1445,
+            "era_sig_share": 0.061,
+            "tz_missing_share": 0.1079
+          },
+          "2006": {
+            "rows": 1848,
+            "casualty_rate": 0.1342,
+            "era_sig_share": 0.0444,
+            "tz_missing_share": 0.1234
+          },
+          "2007": {
+            "rows": 1639,
+            "casualty_rate": 0.1501,
+            "era_sig_share": 0.0543,
+            "tz_missing_share": 0.0488
+          },
+          "2008": {
+            "rows": 1456,
+            "casualty_rate": 0.138,
+            "era_sig_share": 0.044,
+            "tz_missing_share": 0.0
+          },
+          "2009": {
+            "rows": 1278,
+            "casualty_rate": 0.1393,
+            "era_sig_share": 0.061,
+            "tz_missing_share": 0.0
+          },
+          "2010": {
+            "rows": 1348,
+            "casualty_rate": 0.1343,
+            "era_sig_share": 0.0504,
+            "tz_missing_share": 0.0
+          },
+          "2011": {
+            "rows": 1310,
+            "casualty_rate": 0.1252,
+            "era_sig_share": 0.0603,
+            "tz_missing_share": 0.0
+          },
+          "2012": {
+            "rows": 1301,
+            "casualty_rate": 0.1376,
+            "era_sig_share": 0.0715,
+            "tz_missing_share": 0.0
+          },
+          "2013": {
+            "rows": 1330,
+            "casualty_rate": 0.1211,
+            "era_sig_share": 0.0707,
+            "tz_missing_share": 0.0
+          },
+          "2014": {
+            "rows": 1470,
+            "casualty_rate": 0.1007,
+            "era_sig_share": 0.0429,
+            "tz_missing_share": 0.0
+          },
+          "2015": {
+            "rows": 1419,
+            "casualty_rate": 0.0902,
+            "era_sig_share": 0.0233,
+            "tz_missing_share": 0.0
+          },
+          "2016": {
+            "rows": 1198,
+            "casualty_rate": 0.126,
+            "era_sig_share": 0.0058,
+            "tz_missing_share": 0.0
+          },
+          "2017": {
+            "rows": 1322,
+            "casualty_rate": 0.1218,
+            "era_sig_share": 0.0,
+            "tz_missing_share": 0.0
+          },
+          "2018": {
+            "rows": 1454,
+            "casualty_rate": 0.1059,
+            "era_sig_share": 0.0,
+            "tz_missing_share": 0.0
+          },
+          "2019": {
+            "rows": 1499,
+            "casualty_rate": 0.1081,
+            "era_sig_share": 0.0,
+            "tz_missing_share": 0.0
+          },
+          "2020": {
+            "rows": 1217,
+            "casualty_rate": 0.0978,
+            "era_sig_share": 0.0,
+            "tz_missing_share": 0.0
+          },
+          "2021": {
+            "rows": 1235,
+            "casualty_rate": 0.1101,
+            "era_sig_share": 0.0,
+            "tz_missing_share": 0.0
+          },
+          "2022": {
+            "rows": 1383,
+            "casualty_rate": 0.1085,
+            "era_sig_share": 0.0,
+            "tz_missing_share": 0.0
+          },
+          "2023": {
+            "rows": 1246,
+            "casualty_rate": 0.1164,
+            "era_sig_share": 0.0,
+            "tz_missing_share": 0.0
+          },
+          "2024": {
+            "rows": 1202,
+            "casualty_rate": 0.1398,
+            "era_sig_share": 0.0008,
+            "tz_missing_share": 0.0
+          },
+          "2025": {
+            "rows": 1163,
+            "casualty_rate": 0.1402,
+            "era_sig_share": 0.0009,
+            "tz_missing_share": 0.0
+          },
+          "2026": {
+            "rows": 922,
+            "casualty_rate": 0.1497,
+            "era_sig_share": 0.0,
+            "tz_missing_share": 0.0
+          }
+        }
+      },
+      "vintage": {
+        "built_at_utc": "2026-10-22T02:27:00Z",
+        "data_max_occurrence": "2026-08-31",
+        "window_end": "2026-08-31",
+        "expected_vintage_coverage": "the vintage must contain occurrences at least through the window end",
+        "post_window_rows_excluded": 109,
+        "pre_panel_rows_excluded": 56865
+      },
+      "label_checks": {
+        "injuriesind_and_totals_both": 1624,
+        "injuriesind_only": 0,
+        "totals_only": 0,
+        "injuries_table_occnos_flagged": 1624,
+        "injuries_table_flagged_and_label_positive": 1624,
+        "note": "label = InjuriesIND==1 OR fatal+serious+minor totals > 0; the INJURIES child table cross-check counts panel occurrences whose OccNo carries any nonzero injury severity row"
+      },
+      "publisher_crosscheck_2025": {
+        "ACCIDENT": {
+          "published": 831,
+          "panel": 832
+        },
+        "INCIDENT": {
+          "published": 332,
+          "panel": 331
+        }
+      },
+      "child_tables": {
+        "TRAIN": {
+          "rows": 69204,
+          "distinct_occno": 64418
+        },
+        "ROLLING_STOCK": {
+          "rows": 98801,
+          "distinct_occno": 47924
+        },
+        "COMPONENTS": {
+          "rows": 412,
+          "distinct_occno": 399
+        }
+      },
+      "occno_collisions": {
+        "distinct_colliding_numbers": 7,
+        "rows_with_empty_occno": 0
+      },
+      "splits": {
+        "train": {
+          "rows": 7925,
+          "positives": 883,
+          "positive_rate": 0.11142,
+          "distinct_events": 883
+        },
+        "eval": {
+          "rows": 3831,
+          "positives": 463,
+          "positive_rate": 0.120856,
+          "distinct_events": 463
+        },
+        "holdout": {
+          "rows": 1976,
+          "positives": 278,
+          "positive_rate": 0.140688,
+          "distinct_events": 278
+        }
+      },
+      "reference_baselines": {
+        "note": "stdlib rank AUC measured at construction on the written rows; naive conditional rates estimated on train rows only, per the record's step (4) - measured before any model spend",
+        "global_rate_train": 0.11142,
+        "per_column": {
+          "activity_type": {
+            "levels_top": {
+              "PROCEEDING AFTER COLLISION": 0.3077,
+              "REVERSING DECELERATING": 0.25,
+              "PROCEEDING": 0.2118,
+              "STANDING": 0.1115,
+              "UNKNOWN": 0.1081,
+              "PROCEEDING ACCELERATING": 0.1,
+              "PROCEEDING DECELERATING": 0.0899,
+              "INSPECTION": 0.0698,
+              "MAINTENANCE": 0.0444,
+              "SWITCHING COUPLING": 0.029,
+              "REVERSING": 0.0266,
+              "SWITCHING HUMPING": 0.023
+            },
+            "n_levels": 18,
+            "eval_auc": 0.707,
+            "holdout_auc": 0.6987
+          },
+          "railway": {
+            "levels_top": {
+              "3RD": 1.0,
+              "OBRY": 1.0,
+              "SCR": 0.5,
+              "BNSF": 0.25,
+              "SLR": 0.25,
+              "VIA": 0.2208,
+              "GO": 0.2125,
+              "BCR": 0.16,
+              "GEXR": 0.1429,
+              "CRY": 0.1429,
+              "CN": 0.1197,
+              "ROV": 0.1111
+            },
+            "n_levels": 39,
+            "eval_auc": 0.5472,
+            "holdout_auc": 0.5234
+          },
+          "subdivision": {
+            "levels_top": {
+              "THIRD PARTY TRACK": 1.0,
+              "MACKLIN": 1.0,
+              "N & NW SPUR": 1.0,
+              "OWEN SOUND": 1.0,
+              "NORTH TORONTO": 0.6667,
+              "SMITHS FALLS": 0.5455,
+              "CHATHAM": 0.5238,
+              "CRAN": 0.5,
+              "TURNBERRY": 0.5,
+              "CROMER": 0.5,
+              "LUMBY": 0.5,
+              "VICTORIA": 0.5
+            },
+            "n_levels": 273,
+            "eval_auc": 0.6997,
+            "holdout_auc": 0.6544
+          },
+          "province": {
+            "levels_top": {
+              "NOVA SCOTIA": 0.194,
+              "ONTARIO": 0.1646,
+              "NEW BRUNSWICK": 0.117,
+              "QU\u00c9BEC": 0.1096,
+              "BRITISH COLUMBIA": 0.1016,
+              "ALBERTA": 0.0953,
+              "MANITOBA": 0.0943,
+              "SASKATCHEWAN": 0.0752,
+              "NEWFOUNDLAND": 0.0085,
+              "NORTHWEST TERRITORIES": 0.0
+            },
+            "n_levels": 10,
+            "eval_auc": 0.5576,
+            "holdout_auc": 0.5813
+          },
+          "occ_month": {
+            "levels_top": {
+              "6": 0.1523,
+              "9": 0.1355,
+              "7": 0.1246,
+              "8": 0.1242,
+              "10": 0.1242,
+              "11": 0.1212,
+              "5": 0.1209,
+              "12": 0.1173,
+              "1": 0.0918,
+              "2": 0.0853,
+              "4": 0.0837,
+              "3": 0.0752
+            },
+            "n_levels": 12,
+            "eval_auc": 0.5421,
+            "holdout_auc": 0.5599
+          }
+        },
+        "trailing_12m_rate_auc": {
+          "eval": 0.527,
+          "holdout": 0.4952
+        }
+      }
+    },
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 420246008,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-2b564130537390692b6a",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-2b564130537390692b6a/manifest.json",
+    "assets": [
+      {
+        "id": 664435153,
+        "size": 5263,
+        "sha256": "c9fe296f2f9a6be0ab970fd55cc37d0db6820641f76f110bf37c30696a166599"
+      },
+      {
+        "id": 664435246,
+        "size": 2606,
+        "sha256": "5f3852f3150cd808a1f58b7aa7f77c932ef315bb857628c6eff56a4530f06381"
+      },
+      {
+        "id": 664435320,
+        "size": 244586,
+        "sha256": "b00bf00bd4f918ce434b9821535669d465c9a63bab53b21f90f187f4c33c0ac4"
+      },
+      {
+        "id": 664435378,
+        "size": 474335,
+        "sha256": "2f1dcafb6cc701b1427a74d1969733f290ed6de030ed849a6988dcab31722a0d"
+      },
+      {
+        "id": 664435445,
+        "size": 980529,
+        "sha256": "4a032f68c4ad944a0b5d6ef96a904d4d13f3c3eb8b228e2fa74c3174b8054e94"
+      },
+      {
+        "id": 664435495,
+        "size": 7131,
+        "sha256": "a7343bd15a119c67f2ef79ba5b10f5414a6ef406fdeeb81772b22ba1bccf3789"
+      },
+      {
+        "id": 664435537,
+        "size": 11317,
+        "sha256": "d7c3900200c9e073f24a02b54e9a353cbde1a951e612a322d8b27d78095b2ee4"
+      },
+      {
+        "id": 664435591,
+        "size": 13361,
+        "sha256": "4aac3d111fd983186a0439eaf7e3d87d6cb6f9ce101b4b1d65b972d0247f8e1b"
+      },
+      {
+        "id": 664435645,
+        "size": 13361,
+        "sha256": "4aac3d111fd983186a0439eaf7e3d87d6cb6f9ce101b4b1d65b972d0247f8e1b"
+      },
+      {
+        "id": 664435701,
+        "size": 11317,
+        "sha256": "d7c3900200c9e073f24a02b54e9a353cbde1a951e612a322d8b27d78095b2ee4"
+      },
+      {
+        "id": 664435830,
+        "size": 153600,
+        "sha256": "6fe06f02f15a77e29c0e75d276d3c70c8e77f9f6bd67424986b097487f66ec0e"
+      },
+      {
+        "id": 664435906,
+        "size": 20779,
+        "sha256": "c952fe73f040aa6381a24ff45c2a59a3281e72ede3959543f5afbe1103fe9cee"
+      },
+      {
+        "id": 664435977,
+        "size": 21064,
+        "sha256": "1ae709c0aa828c1b26b3cb5282279d0a58e1823143e4de373a7bf182210e5456"
+      }
+    ]
+  },
+  "collected_at": "2026-10-22T02:29:02.769180+00:00",
+  "deleted_at": "2026-10-22T02:29:52.208637+00:00"
+}

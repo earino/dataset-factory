@@ -46,14 +46,18 @@ Frame rules (from the candidate record; each is measured and reported)
 * Label: casualty = InjuriesIND == 1 OR TotalFatalInjuries +
   TotalSeriousInjuries + TotalMinorInjuries > 0. Both components and the
   separate INJURIES child table are cross-checked and the agreement recorded.
-* Frames: latitude/longitude are integers scaled by 10^4 (measured: 505900 ->
-  50.59 N, Revelstoke-area BC), degrees, of the *nearest city or town*; the
-  build converts West longitudes to the east-positive convention and asserts
-  every present value inside the Canadian envelope (41-72 N, 52-145 W).
-  subd_mileage is miles from the subdivision start. occ_hour is the LOCAL hour
-  at the site; UTC normalization is deliberately not applied because the
-  DST-aware timezone string ships beside it and a hand-rolled offset map could
-  silently misplace an hour (the unit/frame discipline this gate exists for).
+* Frames: latitude/longitude arrive in three magnitude-disjoint packings
+  (measured 2026-10-22 over 3,088 values: packed ddmm.ff degrees+minutes+
+  hundredths dominant, plus decimal-degrees x 10^3 and x 10^6) and decode
+  unambiguously into the Canadian envelope 41-72 N / 52-145 W (Ottawa
+  452500 -> 45 deg 25.00' N, exact; values like 723566 rule out DDMMSS,
+  which cannot carry 66 seconds). The build negates West longitudes to the
+  east-positive convention and fails on any value that is ambiguous or
+  unplaceable. subd_mileage is miles from the subdivision start. occ_hour
+  is the LOCAL hour at the site; UTC normalization is deliberately not
+  applied because the DST-aware timezone string ships beside it and a
+  hand-rolled offset map could silently misplace an hour (the unit/frame
+  discipline this gate exists for).
 
 Leakage discipline
 -------------------
@@ -264,14 +268,47 @@ def parse_occurrence_datetime(raw: str) -> datetime | None:
     return None
 
 
-def scaled_coord(raw: str) -> float | None:
-    """RODS writes lat/long as degrees x 10^4 integers (measured 2026-10-22)."""
+def decode_coord(raw: str, is_lat: bool) -> float | None:
+    """Decode a RODS coordinate into decimal degrees, north/east positive.
+
+    Measured 2026-10-22 (probe_coords.py, 3,088 values in a 2020-2022 window:
+    zero ambiguous, zero undecodable): the publisher packs coordinates in
+    three magnitude-disjoint encodings, and exactly one decode lands inside
+    the Canadian envelope for every value -
+      * ddmm.ff  (dominant, 3,069/3,088): degrees*10000 + minutes*100 +
+        hundredths-of-minutes (NOT DDMMSS: values like 723566 carry a
+        "seconds" part of 66, impossible in DMS; Ottawa 452500 -> 45 deg
+        25.00' = 45.4167 N, exact);
+      * x1e3 (17/3,088): decimal degrees x 10^3 (49033 -> 49.033 N);
+      * x1e6 (2/3,088): decimal degrees x 10^6 (54053333 -> 54.053333 N).
+    Longitude is West: the build negates it (east-positive convention).
+    """
     value = parse_float(clean(raw))
     if value is None:
         return None
-    if abs(value) > 1000:            # still in the publisher's 10^4 scale
-        value = value / 10000.0
-    return value
+    lo, hi = (LAT_MIN, LAT_MAX) if is_lat else (-LON_MAX, -LON_MIN)
+    candidates: list[tuple[str, float]] = []
+    magnitude = abs(value)
+    if magnitude >= 10_000_000:
+        candidates.append(("x1e6", value / 1e6))
+    elif magnitude >= 10_000:
+        degrees = int(value // 10_000)
+        minutes = (value - degrees * 10_000) / 100.0
+        if minutes < 60:
+            candidates.append(("ddmm.ff", degrees + minutes / 60.0))
+        candidates.append(("x1e3", value / 1e3))
+    else:
+        candidates.append(("plain", value))
+    valid = [(label, decoded) for label, decoded in candidates
+             if lo <= decoded <= hi]
+    if len(valid) != 1:
+        # ambiguous or unplaceable coordinates are the frame error the
+        # assertion exists to catch; the caller fails the build on them
+        return None
+    decoded = valid[0][1]
+    if not is_lat and decoded > 0:            # Canadian longitudes are West
+        decoded = -decoded
+    return decoded
 
 
 def load_occurrences(path: Path) -> tuple[list[dict], dict]:
@@ -388,10 +425,8 @@ def split_of(onset: datetime, panel_start: date) -> str | None:
 
 def feature_row(row: dict, row_id: str) -> dict:
     onset: datetime = row["onset"]
-    lat = scaled_coord(row[F_LAT])
-    lon = scaled_coord(row[F_LON])
-    if lon is not None and lon > 0:            # Canadian longitudes are West
-        lon = -lon
+    lat = decode_coord(row[F_LAT], is_lat=True)
+    lon = decode_coord(row[F_LON], is_lat=False)
     return {
         "occ_no": row_id,
         "occ_year": onset.year,
@@ -851,14 +886,18 @@ def main(argv=None) -> int:
         "measurements": [
             {"column": "latitude",
              "unit": "decimal degrees, north positive",
-             "frame": "RODS writes degrees x 10^4 integers; the build divides by "
-                      "10^4 and asserts every present value inside the Canadian "
-                      "envelope 41-72 N (measured example 505900 -> 50.59)"},
+             "frame": "RODS packs coordinates in three magnitude-disjoint "
+                      "encodings (ddmm.ff packed degrees+minutes+hundredths "
+                      "dominant; decimal-degrees x 10^3; x 10^6), measured "
+                      "2026-10-22 over 3,088 values with zero ambiguous and "
+                      "zero undecodable; the build decodes, requires exactly "
+                      "one decode inside the Canadian envelope 41-72 N "
+                      "(Ottawa 452500 -> 45 deg 25.00' = 45.4167, exact)"},
             {"column": "longitude",
              "unit": "decimal degrees, east positive (West negative)",
-             "frame": "RODS writes degrees x 10^4 unsigned West longitudes; the "
-                      "build negates and asserts -145 <= lon <= -52 (measured "
-                      "example 1181200 -> -118.12)"},
+             "frame": "same decode as latitude, envelope 52-145 W, then "
+                      "negated to east-positive (1181200 -> 118 deg 12.00' "
+                      "-> -118.2, Revelstoke BC)"},
             {"column": "occ_hour",
              "unit": "local hour of day at the occurrence site (0-23)",
              "frame": "parsed from OccDate's local time; the DST-aware site "

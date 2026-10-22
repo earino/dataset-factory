@@ -141,7 +141,7 @@ Construction prep for job tsb-001. Two bounded ranged GETs (2 MB + 64 KB) plus
 the data dictionary (109,771 B) answered the remaining design questions; every
 claim below is from a probe, with the command recorded.
 
-- `python3 .factory/tsb/probe_head_values.py` (2 MB ranged GET of
+- `python3 probe_head_values.py (this directory)` (2 MB ranged GET of
   RODSdb_MDOTW_VW_OCCURRENCE_PUBLIC.csv, 1,495 rows, HTTP 206):
   - The file decodes cleanly as UTF-8; cp1252 fails (byte 0x9d). Earlier
     session scripts that read it as cp1252 printed mojibake ("QUÃ‰BEC");
@@ -167,10 +167,10 @@ claim below is from a probe, with the command recorded.
     'BEING ASSESSED') - post-onset taxonomy, excluded like AccIncType and
     OccurrenceType (ACCIDENT/INCIDENT is used only for the publisher
     cross-check, never shipped).
-- `python3 .factory/tsb/probe_keys.py` (same 2 MB sample + 64 KB of the
+- `python3 probe_keys.py (this directory)` (same 2 MB sample + 64 KB of the
   INJURIES table): OccNo distinct on 1,494/1,495 rows; the one collision
   (R26D0003) is a **byte-identical exported row** (all 345 columns equal -
-  `python3 .factory/tsb/probe_dup.py`), so exact duplicates are dropped and
+  `python3 probe_dup.py (this directory)`), so exact duplicates are dropped and
   counted at build time, and OccNo remains the row key. INJURIES joins on
   OccNo and carries per-person severity counts (Offtrain_*Fatal/Serious/Minor
   and more), used only as the label cross-check.
@@ -209,3 +209,61 @@ claim below is from a probe, with the command recorded.
   conditional-rate AUCs (activity, railway, subdivision, province, month;
   train-estimated, eval/holdout-scored) and a trailing-12-month-rate
   persistence analogue.
+
+## 2026-10-22 - construction outcome (jobs tsb-001..tsb-004, gate PASSED)
+
+The build ran four times; the first three failed by design on assertions, each
+diagnosis recorded here because the evidence is the point:
+
+- tsb-001 (exit 2, 33 s): panel-start band assertion. The era rule wrongly
+  counted timezone-missingness as an early-era signal; sporadic N/A timezones
+  persist into the 2010s, so the measured start came out 2016 under that rule.
+  Fix: the era signal is the taxonomy alone (AccIncType HISTORICAL / DG
+  LEAKER); tz-missingness is recorded per year as a separate property. Also
+  fixed: diagnostics now print and upload BEFORE assertions (tsb-001's only
+  evidence was one log line).
+- tsb-002 (exit 2, 28 s): same band, real cause found. Full per-year table
+  (diagnostics.json, kept in the staging release): taxonomy-era share 25-38%
+  1983-1991, 8-17% 1993-2000, 4-9% 2001-2013, 2.3% in 2015, 0.58% in 2016,
+  0.0% from 2017. The record's proposed 2004 start sits inside a measured
+  6.8% early-taxonomy tail. Decision: the panel starts 2016-01-01, measured;
+  assertion band re-pinned to [2014, 2018].
+- tsb-003 (exit 2, 29 s): lat/long frame assertion (this is the check doing
+  its job). The source does NOT use degrees-x-10^4: probe_coords.py (2 MB
+  window at offset 8,000,000, 2020-2022 era, 3,088 coordinate values) measured
+  three magnitude-disjoint encodings - packed ddmm.ff (degrees*10000 +
+  minutes*100 + hundredths-of-minutes; dominant, 3,069/3,088; Ottawa 452500
+  -> 45deg25.00'N exact; values like 723566 with a "seconds" part of 66 rule
+  out DDMMSS), decimal-degrees x10^3 (17) and x10^6 (2) - with 0 ambiguous
+  and 0 undecodable. The build decodes by magnitude class and requires
+  exactly one decode inside the Canadian envelope. Close-out re-probe of the four
+  occurrences that tripped the guard (same 2 MB window): R21V0255 raw 492200/122598,
+  R21V0233 49033/122150, R21Q0053 48598/723566, R21V0160 49033/122150 - every value
+  decodes to exactly one valid Canadian position (49.3667N ddmm.ff + 122.598W x1e3;
+  49.033N + 122.150W; 48.598N x1e3 + 72.594W ddmm.ff; 49.033N + 122.150W). The
+  tsb-003 'Gulf of Guinea / plainly corrupt' reading was a wrong-frame misplacement,
+  not a data defect.
+- tsb-004 (exit 0, 31 s): PASSED. Gate 1.4.0 over the full artifact: 37/37
+  checks, 0 failures; artifact digest
+  e75a59bb1116e39b980c9fa2f5ea7c2b984fa6ccce4b3286f194de69d2b32309.
+
+Measured full-panel results (summary.json, staging release
+untagged-2b564130537390692b6a, release 420246008):
+
+- Panel 2016-01-01..2026-08-31: train 7,925 rows / 883 positives (11.14%),
+  eval 3,831 / 463 (12.09%), holdout 1,976 / 278 (14.07%); 70,706 raw
+  occurrences kept (139 byte-identical export rows dropped; 56,865 pre-panel
+  and 109 post-window rows counted and excluded; data_max exactly 2026-08-31).
+- Label integrity: InjuriesIND and the injury totals agree on all 1,624
+  positive panel rows, 0 disagreements either way; the INJURIES child table
+  corroborates all 1,624.
+- Publisher cross-check: 2025 panel carries 832 ACCIDENT (published: 831)
+  and 331 INCIDENT (published: 332) - within 0.3% of TSB's own annual summary.
+- Naive baselines measured BEFORE model spend: activity_type conditional rate
+  AUC 0.707 eval / 0.699 holdout; subdivision 0.700/0.654; railway 0.547/0.523;
+  province 0.558/0.581; month 0.542/0.560; trailing-12m-rate persistence
+  analogue 0.527/0.495. Real context headroom over the global rate (0.111),
+  and persistence does NOT dominate - the nhs-ae failure mode is absent.
+- Workers destroyed after verified collection each time (server ids recorded
+  in record.json jobs[]); no leftover server or IP (destroy read back
+  "deleted").

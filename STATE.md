@@ -1,8 +1,57 @@
 # Current state
 
-Updated: 2026-10-22 02:25Z (tsb-003 cleared the re-pinned panel-start guard and measured the full-panel splits
-- train 7,925 / eval 3,831 / holdout 1,976 - then exited 2 on 5 corrupt source coordinates (4 occurrences,
-Gulf-of-Guinea lat/longs). Recorded; the live construction session owns the coordinate fix and tsb-004.)
+Updated: 2026-10-22 02:34Z (tsb-004 GREEN: the qualification gate passed on the full artifact -
+37/37 checks, gate 1.4.0 - and tsb-railway-occurrence-casualty is status qualified, the first
+candidate through the gate this cycle. The tsb-003 "corrupt coordinates" were a wrong-frame
+misreading, not a data defect - proven by re-probe. Next: the full-model baseline job, then packaging.)
+
+## 2026-10-22 - tsb-004: gate PASSED on the full artifact - tsb-railway-occurrence-casualty qualified; the tsb-003 "corrupt coordinates" were a wrong-frame misreading
+
+**tsb-004 (server 171730217, release 420246008, 31.1 s, exit 0) is the first green build, and the
+qualification gate passed over the full artifact: 37/37 checks (leakage, timing, units, splits, runner),
+0 failed, gate 1.4.0, artifact digest e75a59bb1116e39b980c9fa2f5ea7c2b984fa6ccce4b3286f194de69d2b32309.**
+Panel 2016-01-01..2026-08-31 (vintage data_max exactly at the window end; 56,865 pre-panel and 109
+post-window rows counted and excluded; 70,706 kept, 139 byte-identical export duplicates dropped):
+train 7,925 rows / 883 positives (11.14%), eval 3,831 / 463 (12.09%), holdout 1,976 / 278 (14.07%),
+each positive an independent occurrence (distinct_events == positives). Label integrity: InjuriesIND
+and the injury totals agree on all 1,624 positive panel rows (0 disagreements either way), and the
+INJURIES child table corroborates all 1,624. Publisher cross-check 2025: 832 ACCIDENT vs 831 published,
+331 INCIDENT vs 332 published - within 0.3% of TSB's own annual summary.
+
+**The coordinate story corrected.** tsb-003's failure was diagnosed here as "5 corrupt source values,
+Gulf of Guinea" - that diagnosis was wrong, and this close-out proved it with a targeted re-probe of
+the same 2 MB source window: all four occurrences (R21V0255, R21V0233, R21Q0053, R21V0160) decode to
+exactly one valid Canadian position under the measured three-encoding rule (raw 492200/122598 ->
+49.3667N ddmm.ff + 122.598W x1e3; 49033/122150 -> 49.033N + 122.150W; 48598/723566 -> 48.598N +
+72.594W ddmm.ff). The source mixes coordinate encodings per value; the assumed single x10^4 frame
+misplaced mixed values by an order of magnitude. tsb-004's frame check on the written rows: 0 of
+13,732 outside [41,72]N / [-145,-52]E. The correction is appended to the record's tsb-003 measurement,
+the notes, and the jobs[] entries.
+
+**Naive baselines measured inside the build, before any model spend:** activity_type conditional rate
+AUC 0.707 eval / 0.6987 holdout; subdivision 0.6997/0.6544; railway 0.5472/0.5234; province
+0.5576/0.5813; month 0.5421/0.5599; trailing-12m-rate persistence analogue 0.527/0.495. Real context
+headroom over the global train rate (0.111), and persistence does NOT dominate - the nhs-ae failure
+mode is absent. Status: **qualified**.
+
+**Close-out (this watcher).** The research session that ran the tsb-001..004 loop died immediately
+after collecting the result, leaving the close-out half-done: record.json carried a pre-written
+qualification block with three wrong facts - a staging tag matching no release, a 02:55Z timestamp
+still in the future, and "38 checks" where the report carries 37 - and no handled marker. This run
+fetched the small assets of release 420246008 into `.factory/tsb-004/reports/` (diagnostics.json,
+meta.json, quality.json, two byte-identical build summaries, two byte-identical qualification
+reports, source.tar, container.log, manifest.json; the three bulk CSVs skipped, and the 244 KB
+labelled holdout that slipped under the 256 KiB fetch threshold was deleted from this host), verified
+all 37 gate ok-flags, re-matched the report's five artifact sha256s against the release manifest
+(train/eval/holdout/meta/quality all match), corrected the three errors plus the corrupt-coordinate
+diagnosis, and recorded the outcome in record.json and here. The worker was already destroyed by the
+session (ledger deleted_at 02:29:52Z, re-read as deleted). Committed with this entry: the candidate's
+source/ (the three-encoding coordinate decoder), probe scripts kept per convention, jobs/tsb-004.json,
+the regenerated dashboard, and these records. Next action (owned by the construction session): the
+full-model baseline job with the harness runner (the flunet/msha pattern) - persistence 0.527/0.495
+and activity_type 0.707/0.699 are the numbers to beat - then packaging per dataset-release (OGL-Canada
+2.0 attribution, our compilation CC0-1.0), release-manifest, package check, private staging on both
+destinations.
 
 ## 2026-10-22 - tsb-003: past the panel-start guard, first full-panel splits measured; exited 2 on 5 corrupt source coordinates
 

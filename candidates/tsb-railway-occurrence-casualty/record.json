@@ -1,6 +1,6 @@
 {
  "id": "tsb-railway-occurrence-casualty",
- "status": "ready",
+ "status": "qualified",
  "verdict": "go",
  "jurisdiction": {
   "country": "CA",
@@ -49,8 +49,8 @@
    "url": "https://open.canada.ca/en/open-government-licence-canada"
   }
  ],
- "construction_script": null,
- "split_strategy": "Proposed (windows to be recomputed on the full panel on the worker at construction - counts below are measured on bounded 2 MB samples, not the full file). Panel: occurrences 1983-01..2026-08 (file vintage: released 2026-09-15, data through the preceding month-end). Construction would start the panel at a modern-era boundary (2004-01 proposed; the 1983-1990s rows are shaped differently - in the 1.5 MB tail sample of 1983-84 rows: injuries 30.2%, accident types include 'DG LEAKER' (343/1450) and 'HISTORICAL' (120), time zone 'N/A', OccClassID 'N/A' - so early years need separate treatment or exclusion). Proposed windows, occurrences by onset date: train 2004-01..2021-12, eval 2022-01..2024-12, holdout 2025-01..2026-08. Both classes present in every era window by measured sample injury rates: 13.9% (2008-10 sample, n=1,499), 15.0% (2001-02, n=1,359), 18.0% (1995, n=1,383), 14.7% (2025-26, n=1,501). Occurrences are independent single events (no storm-style clustering); each row is one occurrence; multiple casualties within one occurrence do not duplicate rows. Row key: OccID (occurrence identification number; OccNo like 'R26E0080' as secondary). At ~1,100-1,500 occurrences/year in the modern era, each window carries thousands of rows; exact per-window counts are a construction-time measurement.",
+ "construction_script": "candidates/tsb-railway-occurrence-casualty/source/build.py",
+ "split_strategy": "MEASURED on the full panel (worker job tsb-004, gate 1.4.0, artifact digest e75a59bb1116e39b980c9fa2f5ea7c2b984fa6ccce4b3286f194de69d2b32309, all 37 gate checks passed, 2026-10-22). Modern-era panel start is measured, not assumed: the taxonomy-era share (AccIncType HISTORICAL/DG LEAKER) runs 25-38% in 1983-1991, 8-17% in 1993-2000, 4-9% in 2001-2013, 2.3% in 2015 and ~0 only from 2016 (0.58%; 0.0% from 2017) - the record's proposed 2004 start sits inside a measured 6.8% early-taxonomy tail, so the panel starts 2016-01-01. Windows by occurrence date: train 2016-01-01..2021-12-31 (7,925 rows, 883 positives, 11.14%), eval 2022-01-01..2024-12-31 (3,831 rows, 463 positives, 12.09%), holdout 2025-01-01..2026-08-31 (1,976 rows, 278 positives, 14.07%); both classes in every split, each positive an independent occurrence (distinct_events == positives). Holdout ends one settling month behind the vintage (data through 2026-08-31 exactly; 109 later occurrences counted and excluded). 139 byte-identical exported rows deduplicated; 7 non-identical OccNo collisions suffixed and pinned via expected_duplicate_ids (id_columns_are_entity_keys=false).",
  "measurements": {
   "access_2026_10_21": "probe_access.py: plain urllib (custom UA) -> HTTP 403 on all www.tsb.gc.ca CSVs; browser-like headers (User-Agent: Mozilla/5.0 (X11; Linux x86_64)... Chrome/128, Accept, Accept-Language, Referer: https://www.tsb.gc.ca/) -> HTTP 200, Range requests honored (HTTP 206). All 5 table sizes measured by bytes=0-0 ranged GET (Content-Range read back): OCCURRENCE 97,765,258; TRAIN 21,742,734; ROLLING_STOCK 34,723,267; INJURIES 2,710,400; COMPONENTS 42,523 bytes; all last-modified 2026-09-15 17:13-17:14 GMT (consistent with the documented on-or-after-the-15th monthly release).",
   "label_base_rates_measured": "Bounded 2 MB era samples of the occurrence CSV (InjuriesIND; reproduced by candidates/tsb-railway-occurrence-casualty/probe_era_samples.py): 1995: 18.0% (249/1,383); 2001-02: 15.0% (204/1,359); 2008-10: 13.9% (208/1,499); 2025-26: 14.7% (220/1,501). Fatality rows (TotalFatalInjuries>0): 5.7% (1995, n=1,383), 5.7% (2001-02, n=1,359), 6.3% (2008-10, n=1,499), 7.4% (111/1,501 in 2025-26). Other outcome flags in the 2025-26 sample: FireIND 7.4%, DerailedRSIND 48.4%, DGCarsInvolvedIND 8.4%, EvacuationIND 0.2%, DGReleasedCarsIND 0.1% - which rules out DG-release (3/year per the publisher's own 2025 summary) and evacuation as primary labels; casualty is the right label.",
@@ -59,41 +59,50 @@
   "novelty_prior_art": "Web search 2026-10-21: (1) NRC/CNR publication 'Development of a daily updated train derailment impact map...' - a risk-mapping tool built on RODS historical counts, explicitly deferring predictive derailment models to future work; (2) Rana, Sattari, Lefsrud & Hendry (2024), 'Machine Learning Approach to Enhance Highway Railroad Grade Crossing Safety by Analyzing Crash Data and Identifying Hotspot Crash Locations' (doi:10.1177/03611981231212162) - ML analysis of grade-crossing casualty severity from TSB/RODS data, a research paper, not a shipped dataset/benchmark; (3) TSB's own statistics products are descriptive. No public ML-ready rail-occurrence prediction dataset with splits and a scored contract found; mechanical catalog search recorded via check-novelty.py.",
   "cost_measured": "Coordinator discovery cost: 8 ranged HTTP requests (5 size probes + dictionary + 4 era samples + tail) ~= 8.6 MB transferred, <60 s wall clock. Construction cost on the worker: one ~157 MB fetch of 5 CSVs plus joins; trivial for a Hetzner worker; the bytes never pass through the coordinator.",
   "full_panel_era_diagnostics_2026_10_22": "tsb-001/tsb-002 worker runs (staging releases 420237693/420240534, container.log + output/extract/diagnostics.json in .factory/tsb-00*/reports/): all 5 RODSdb CSVs downloaded clean with the browser-like header set (OCCURRENCE 97,894,047 B; TRAIN 21,775,681 B; ROLLING_STOCK 34,758,209 B; INJURIES 2,713,169 B; COMPONENTS 42,523 B); 70,706 occurrences parsed (139 exact duplicates dropped, 0 unparseable OccDate). Full-panel per-year measurement (year: rows casualty_rate era_sig_share tz_missing_share): 1983: rows=1576 casualty_rate=0.3293 era_sig_share=0.2513 tz_missing_share=0.9956; 1984: rows=1719 casualty_rate=0.3008 era_sig_share=0.2821 tz_missing_share=0.9936; 1985: rows=1611 casualty_rate=0.3023 era_sig_share=0.2595 tz_missing_share=0.9944; 1986: rows=1541 casualty_rate=0.2641 era_sig_share=0.3024 tz_missing_share=0.9955; 1987: rows=1499 casualty_rate=0.2915 era_sig_share=0.3202 tz_missing_share=0.9967; 1988: rows=1459 casualty_rate=0.2872 era_sig_share=0.3023 tz_missing_share=0.9959; 1989: rows=1343 casualty_rate=0.3075 era_sig_share=0.309 tz_missing_share=0.9918; 1990: rows=1387 casualty_rate=0.2379 era_sig_share=0.3244 tz_missing_share=0.9488; 1991: rows=1821 casualty_rate=0.2114 era_sig_share=0.3822 tz_missing_share=0.8913; 1992: rows=1883 casualty_rate=0.2246 era_sig_share=0.3128 tz_missing_share=0.299; 1993: rows=2183 casualty_rate=0.2066 era_sig_share=0.1677 tz_missing_share=0.0; 1994: rows=2501 casualty_rate=0.1683 era_sig_share=0.1327 tz_missing_share=0.0; 1995: rows=2524 casualty_rate=0.1807 era_sig_share=0.1395 tz_missing_share=0.0; 1996: rows=2243 casualty_rate=0.1761 era_sig_share=0.1476 tz_missing_share=0.0; 1997: rows=1984 casualty_rate=0.1608 era_sig_share=0.1442 tz_missing_share=0.0; 1998: rows=1901 casualty_rate=0.1394 era_sig_share=0.1431 tz_missing_share=0.0; 1999: rows=1757 casualty_rate=0.1616 era_sig_share=0.095 tz_missing_share=0.0; 2000: rows=1618 casualty_rate=0.1638 era_sig_share=0.1162 tz_missing_share=0.0; 2001: rows=2065 casualty_rate=0.1341 era_sig_share=0.0939 tz_missing_share=0.1734; 2002: rows=1955 casualty_rate=0.1294 era_sig_share=0.0854 tz_missing_share=0.1754; 2003: rows=1927 casualty_rate=0.1469 era_sig_share=0.0778 tz_missing_share=0.1645; 2004: rows=1921 casualty_rate=0.1411 era_sig_share=0.0682 tz_missing_share=0.1379; 2005: rows=2048 casualty_rate=0.1445 era_sig_share=0.061 tz_missing_share=0.1079; 2006: rows=1848 casualty_rate=0.1342 era_sig_share=0.0444 tz_missing_share=0.1234; 2007: rows=1639 casualty_rate=0.1501 era_sig_share=0.0543 tz_missing_share=0.0488; 2008: rows=1456 casualty_rate=0.138 era_sig_share=0.044 tz_missing_share=0.0; 2009: rows=1278 casualty_rate=0.1393 era_sig_share=0.061 tz_missing_share=0.0; 2010: rows=1348 casualty_rate=0.1343 era_sig_share=0.0504 tz_missing_share=0.0; 2011: rows=1310 casualty_rate=0.1252 era_sig_share=0.0603 tz_missing_share=0.0; 2012: rows=1301 casualty_rate=0.1376 era_sig_share=0.0715 tz_missing_share=0.0; 2013: rows=1330 casualty_rate=0.1211 era_sig_share=0.0707 tz_missing_share=0.0; 2014: rows=1470 casualty_rate=0.1007 era_sig_share=0.0429 tz_missing_share=0.0; 2015: rows=1419 casualty_rate=0.0902 era_sig_share=0.0233 tz_missing_share=0.0; 2016: rows=1198 casualty_rate=0.126 era_sig_share=0.0058 tz_missing_share=0.0; 2017: rows=1322 casualty_rate=0.1218 era_sig_share=0.0 tz_missing_share=0.0; 2018: rows=1454 casualty_rate=0.1059 era_sig_share=0.0 tz_missing_share=0.0; 2019: rows=1499 casualty_rate=0.1081 era_sig_share=0.0 tz_missing_share=0.0; 2020: rows=1217 casualty_rate=0.0978 era_sig_share=0.0 tz_missing_share=0.0; 2021: rows=1235 casualty_rate=0.1101 era_sig_share=0.0 tz_missing_share=0.0; 2022: rows=1383 casualty_rate=0.1085 era_sig_share=0.0 tz_missing_share=0.0; 2023: rows=1246 casualty_rate=0.1164 era_sig_share=0.0 tz_missing_share=0.0; 2024: rows=1202 casualty_rate=0.1398 era_sig_share=0.0008 tz_missing_share=0.0; 2025: rows=1163 casualty_rate=0.1402 era_sig_share=0.0009 tz_missing_share=0.0; 2026: rows=922 casualty_rate=0.1497 era_sig_share=0.0 tz_missing_share=0.0. The taxonomy-era share (AccIncType HISTORICAL/DG LEAKER) decays gradually - 25-38% through 1991, 13-17% 1993-1998, 4-7% 2004-2013, 2.3% at 2015, <2% only from 2016 - so the build's 2%-every-later-year rule measures the panel start at 2016, outside the asserted [1995, 2010] band, and both jobs exited 2 on that guard by design. Timezone-missingness is a different, abrupter boundary: ~99% through 1991, 29.9% at 1992, 0% 1993-2000, a sporadic 5-17% bump 2001-2007, 0% from 2008 on.",
-  "panel_split_and_coordinate_guard_2026_10_22": "tsb-003 worker run (staging release 420242998): with the band re-pinned to [2014, 2018] the panel-start guard passes (measured 2016-01-01) and the full-panel split windows compute to train 7,925 / eval 3,831 / holdout 1,976 rows (pre-window 56,865, post-window 109; total 70,706 as parsed twice before; 7 non-identical OccNo collisions, 0 empty OccNo). New guard fired: 5 lat/long values on 4 occurrences (R21V0255, R21V0233, R21Q0053, R21V0160; lat 4.9033/4.8598, lon -12.2598/-12.2150 in the east-positive convention) fall outside the asserted Canadian envelope (41-72 N, 52-145 W) - corrupt source coordinates, since the same x10^4 integer frame and West->east conversion validates the other ~70k rows."
+  "panel_split_and_coordinate_guard_2026_10_22": "tsb-003 worker run (staging release 420242998): with the band re-pinned to [2014, 2018] the panel-start guard passes (measured 2016-01-01) and the full-panel split windows compute to train 7,925 / eval 3,831 / holdout 1,976 rows (pre-window 56,865, post-window 109; total 70,706 as parsed twice before; 7 non-identical OccNo collisions, 0 empty OccNo). New guard fired: 5 lat/long values on 4 occurrences (R21V0255, R21V0233, R21Q0053, R21V0160; lat 4.9033/4.8598, lon -12.2598/-12.2150 in the east-positive convention) fall outside the asserted Canadian envelope (41-72 N, 52-145 W) - corrupt source coordinates, since the same x10^4 integer frame and West->east conversion validates the other ~70k rows. CORRECTION (tsb-004 close-out, targeted probe of the same 2 MB window): the four 'corrupt' occurrences are not corrupt - R21V0255 raw 492200/122598, R21V0233 49033/122150, R21Q0053 48598/723566, R21V0160 49033/122150 each decode to exactly one valid Canadian position under the measured three-encoding rule (49.3667N ddmm.ff + 122.598W x1e3; 49.033N + 122.150W; 48.598N x1e3 + 72.594W ddmm.ff; 49.033N + 122.150W). The defect was the assumed x10^4 frame, not the data: the source mixes encodings per value, which a single-scale assumption misplaces by an order of magnitude.",
+  "construction_2026_10_22": "Worker jobs tsb-001..tsb-004 (cx23, ~31-33 s each, EUR 0.06 reservation each; tsb-001/002/003 failed by design on assertions, each diagnosis recorded in notes.md; tsb-004 passed the gate on the full artifact). Full panel: 70,706 occurrences kept after dropping 139 byte-identical export duplicates; vintage last-modified 2026-10-21 16:49:48 GMT, data through 2026-08-31 (occurrences dated to 2026-10-10 exist in the raw file and are post-window excluded). Coordinates measured in three magnitude-disjoint encodings (ddmm.ff packed dominant, decimal-degrees x10^3 and x10^6; 3,088-value window: 0 ambiguous, 0 undecodable; Ottawa 452500 -> 45deg25.00'N exact; 723566-style values rule out DDMMSS). Publisher cross-check reproduced to 0.1%. Baselines measured inside the build (see qualification.reference_baselines). tsb-004 frame check on the written rows: 0 of 13,732 outside [41,72]N / [-145,-52]E (container.log), and the four occurrences that tripped tsb-003's guard all decode exactly under the measured rule (see the correction appended to panel_split_and_coordinate_guard_2026_10_22)."
  },
  "jobs": [
   {
    "id": "tsb-001",
-   "status": "failed",
-   "server_id": 171728396,
-   "launched_at": "2026-10-22T02:08:44Z",
-   "collected_at": "2026-10-22T02:13:02Z",
-   "destroyed_at": "2026-10-22T02:14:17Z",
-   "note": "exit 2 in 33 s, a construction guard firing by design, not a data defect: all five RODSdb CSVs downloaded cleanly (OCCURRENCE 97,894,047 B; TRAIN 21,775,681 B; ROLLING_STOCK 34,758,209 B; INJURIES 2,713,169 B; COMPONENTS 42,523 B) and 70,706 occurrences parsed (139 exact duplicates dropped, 0 unparseable OccDate), but the measured modern-era panel start landed at 2016-01-01, outside the asserted [1995, 2010] band, because the era rule folded TimeZone N/A missingness into the HISTORICAL/DG-LEAKER taxonomy signal and sporadic N/A timezones persist into the 2010s. Container log and source.tar in .factory/tsb-001/reports/ (staging release 420237693). Fixed for tsb-002: era signal = taxonomy alone; tz-missingness recorded per year as a separate property; per-year diagnostics now written before the assertion so a failed run still uploads evidence."
+   "date": "2026-10-22",
+   "outcome": "failed (panel-start band assertion): measured start 2016 under a rule that wrongly counted timezone-missingness as an era signal; diagnosed from container.log, worker destroyed",
+   "server_id": 171728396
   },
   {
    "id": "tsb-002",
-   "status": "failed",
-   "server_id": 171728935,
-   "launched_at": "2026-10-22T02:14:50Z",
-   "note": "exit 2 in 28 s on the same guard, now with the evidence uploaded: the taxonomy-only era signal still measures the panel start at 2016 (era share 2.3% at 2015, 0.58% at 2016, 0% from 2017), outside the asserted [1995, 2010] band. The new per-year diagnostics table was written before the assertion, so this run uploaded output/extract/diagnostics.json (release 420240534). Not a mechanical defect: the 2% rule and the asserted band are inconsistent on the full panel, and the resolution (re-pin the band to 2016 or re-derive the rule from shipped-feature completeness) is a recorded design decision in next_action, owned by the construction session.",
-   "collected_at": "2026-10-22T02:18:23Z",
-   "job_elapsed_seconds": 28.2
+   "date": "2026-10-22",
+   "outcome": "failed (same band): per-year diagnostics uploaded before assertions show the taxonomy-era share persists at 2-7% through 2015, reaching ~0 only at 2016 - the 2004 proposal was wrong, the band was wrong, not the data",
+   "server_id": 171728935
   },
   {
    "id": "tsb-003",
-   "status": "failed",
-   "server_id": 171729523,
-   "launched_at": "2026-10-22T02:19:43Z",
-   "note": "exit 2 in 28 s: the re-pinned band worked - panel start measured 2016-01-01, inside [2014, 2018] - and the build reached the split stage for the first time on full data (train 7,925 / eval 3,831 / holdout 1,976; pre-window 56,865, post-window 109; 7 non-identical OccNo collisions handled, 0 empty OccNo). It then failed a new guard: 5 coordinate values on 4 occurrences (R21V0255, R21V0233, R21Q0053, R21V0160) lie outside the Canadian envelope (lat 4.9033, lon -12.2598/-12.2150, lat 4.8598 - Gulf of Guinea, plainly corrupt source values, not a frame-conversion defect: the conversion is integer-scaled x10^4 with West->east-positive applied and all other ~70k rows pass). Container log + diagnostics.json in .factory/tsb-003/reports/ (staging release 420242998). Resolution belongs to the construction session: treat the corrupt coordinates as missing with a recorded count, or repair them from the source row evidence.",
-   "collected_at": "2026-10-22T02:22:53Z",
-   "job_elapsed_seconds": 28.5
+   "date": "2026-10-22",
+   "outcome": "failed (lat/long frame assertion): source uses three coordinate encodings, not the assumed degrees-x-10^4; bounded 2 MB window probe (offset 8,000,000) measured the decode rule with 0 ambiguous/0 undecodable",
+   "server_id": 171729523
+  },
+  {
+   "id": "tsb-004",
+   "date": "2026-10-22",
+   "outcome": "succeeded: gate 1.4.0 passed on the full artifact (37/37 checks, 0 failed), extract + qualification report uploaded to private staging release 420246008 (draft tag untagged-2b564130537390692b6a), worker destroyed after verified collection",
+   "server_id": 171730217,
+   "release": 420246008,
+   "collected_at": "2026-10-22T02:29:02Z",
+   "destroyed_at": "2026-10-22T02:29:52Z",
+   "job_elapsed_seconds": 31.1
   }
  ],
- "artifacts": [],
+ "artifacts": [
+  {
+   "kind": "staging_release",
+   "repo": "earino/dataset-factory-staging",
+   "id": 420246008,
+   "note": "tsb-004 build: gated extract (public/train.csv, public/eval.csv, private/holdout.csv, meta.json, quality.json), the gate report (two byte-identical copies), build summary, diagnostics.json, source.tar and container.log; artifact digest e75a59bb1116e39b980c9fa2f5ea7c2b984fa6ccce4b3286f194de69d2b32309"
+  }
+ ],
  "rejection_reason": null,
  "review": null,
- "next_action": "tsb-003 (exit 2, 2026-10-22T02:22Z) cleared the panel-start guard on the re-pinned [2014, 2018] band and measured the full-panel splits (train 7,925 / eval 3,831 / holdout 1,976) for the first time, then failed on 5 corrupt source coordinates (4 occurrences, Gulf-of-Guinea lat/longs; evidence in measurements.panel_split_and_coordinate_guard_2026_10_22). Next construction step, owned by the live session: handle the corrupt coordinates as missing values with a recorded count (or repair from source evidence), relaunch (tsb-004), and on a green build require the qualification gate's passing report on the exact artifact before any number is quoted; baselines before any model spend.",
+ "next_action": "Full-model baseline job (the flunet/msha pattern: assemble a baseline bundle with the harness runner's train.py/validate.py, fit on train, score eval+holdout, record the triad gap vs the construction-time naive baselines in qualification.reference_baselines - persistence analogue 0.527/0.495 and activity_type 0.707/0.699 are the numbers to beat). Then packaging per dataset-release: license.json decision (OGL-Canada 2.0 attribution, our compilation CC0-1.0), release-manifest, package check, private staging on both destinations. The extract lives in staging release tag untagged-2b564130537390692b6a (release 420246008) (fetch assets listed in its manifest.json); bulk data never passes through the coordinator.",
  "novelty_check": {
   "checked_at": "2026-10-21T08:11:04+00:00",
   "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
@@ -202,5 +211,44 @@
   "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
  },
  "licence_class": "A",
- "licence_note": "Open Government Licence - Canada 2.0 per the open.canada.ca package record"
+ "licence_note": "Open Government Licence - Canada 2.0 per the open.canada.ca package record",
+ "qualification": {
+  "qualified_at": "2026-10-22T02:34:00Z",
+  "gate_version": "1.4.0",
+  "job": "tsb-004",
+  "result": "passed; 0 failed checks of 37 (leakage, timing, units, splits, runner)",
+  "artifact_version": "e75a59bb1116e39b980c9fa2f5ea7c2b984fa6ccce4b3286f194de69d2b32309",
+  "report": "private staging release 420246008 (draft tag untagged-2b564130537390692b6a, 13 assets); the gate report is assets file-0007/file-0008 (byte-identical, sha256 4aac3d111fd9...); close-out re-matched the report's five artifact sha256s (train/eval/holdout/meta/quality) to the release manifest asset digests; the extract stays in staging, never on the coordinator",
+  "label_integrity": "InjuriesIND and fatal+serious+minor totals agree on all 1,624 positive panel rows (0 disagreements either way); the separate INJURIES child table corroborates all 1,624",
+  "publisher_crosscheck": "2025 panel: 832 ACCIDENT vs 831 published, 331 INCIDENT vs 332 published (TSB 2025 annual summary)",
+  "reference_baselines": {
+   "note": "measured at construction on the written rows, before any model spend (summary.json reference_baselines)",
+   "global_rate_train": 0.11142,
+   "activity_type_auc": {
+    "eval": 0.707,
+    "holdout": 0.6987
+   },
+   "subdivision_auc": {
+    "eval": 0.6997,
+    "holdout": 0.6544
+   },
+   "railway_auc": {
+    "eval": 0.5472,
+    "holdout": 0.5234
+   },
+   "province_auc": {
+    "eval": 0.5576,
+    "holdout": 0.5813
+   },
+   "month_auc": {
+    "eval": 0.5421,
+    "holdout": 0.5599
+   },
+   "trailing_12m_rate_auc": {
+    "eval": 0.527,
+    "holdout": 0.4952
+   },
+   "verdict": "real context signal with headroom over the global rate, and the persistence analogue does NOT dominate (0.527 eval) - unlike nhs-ae, this is not a persistence exercise; the full-model baseline job is the remaining step"
+  }
+ }
 }
