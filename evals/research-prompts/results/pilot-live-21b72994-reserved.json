@@ -394,11 +394,67 @@
       "elapsed_seconds": 18.449,
       "response": "Decision\nTreat this as a documents-only defect in the manifest generator, not a new data version. The bytes are unchanged and match recorded digests, so no data asset may be re-cut. Fix `scripts/release-manifest.py` so the `splits` block is derived from the qualification report / `quality.json` split stats in the *shape the consumer reads*, regenerate `MANIFEST.json` from that generator, re-hash the small files, and move the existing version tag onto the documentation commit **last**. Never hand-edit `MANIFEST.json`: a hand-edited block is lost the next time it is regenerated and is exactly how the manifest and qualification drifted apart.\n\nWhy not a new version: the release skill's rule is that a byte change requires a new version, while a documentation-only correction leaves every digest identical and is applied to the same version with the tag moved as the final action. The tag exists at the original commit; moving it is admissible *only* because no data digest changes.\n\nSupporting evidence\n- Stated in the case: bytes at both destinations match recorded digests. So the failure is the manifest's split shape, not content.\n- The skill's recorded failure mode is this exact shape: `MANIFEST.json` carries a legacy/`null` `splits`, the site planner iterates it and dies with a bare `TypeError`; fix is to derive `splits` from the gate report/`quality.json` and rebuild the manifest before pushing. It also warns the planner reads the manifest *at the pin*, not the local file \u2014 hence the tag move.\n- \"State is derived from recorded evidence, never asserted in a generator,\" and \"one rule shared\" \u2014 the consumer shape must come from one derivation, not a template literal.\n\nUncertainty and next discriminating check\nUnknown whether the consumer needs only a shape fix or also counts recomputable from rows, and whether any other consumer pins the tag *commit hash* rather than the tag. Discriminating check: reproduce the crash with the manifest fetched at the tag, and diff every data-asset digest (from `SHA256SUMS` and `DESTINATIONS.json` `files_verified`) before and after regeneration. If any data digest moves, stop \u2014 that is a new data version and needs review, not this repair.\n\nOrdered actions\n1. Reproduce the consumer crash against the manifest at the pinned tag; capture the traceback and the exact expected split field shape.\n2. Snapshot all data digests.\n3. Fix `release-manifest.py`; add a test that `splits` is derived from the qualification report in the consumer shape. Revert the fix and watch the test fail (a guard never seen to fail is not a guard).\n4. Regenerate `MANIFEST.json` and `SHA256SUMS`; assert every data digest is identical; run `check-package.py`.\n5. Commit/push docs; read CI for **that exact commit** via the `head_sha` API query.\n6. Move the version tag onto the documentation commit, last; delete-and-recreate on the Hub if it refuses a moved tag; read back through the contents API that tag and `main` resolve to the same commit and the pinned manifest carries the splits.\n7. Re-upload small HF files/card if they display splits; re-run anonymous verification at the tag (repo 200, ranged GETs on assets, `private: false`, data files at the tag revision).\n8. Update `DESTINATIONS.json` (`artifact_version` unchanged, `files_verified` lists), release notes, `STATE.md`; re-run site `prepare` (plan digest should be unchanged) then `verify`.\n\nStopping condition\nStop when: consumer runs at the pinned manifest; `check-package.py` passes; anonymous verification at the tag passes; CI green for the exact commit. Abort to a new version only if a data digest changed.\n\nOperator report\n\"Fixed a legacy `splits` shape in the public release's manifest by correcting the generator, not the bytes; moved the version tag to the documentation commit last. Data digests unchanged, manifest verified at the pin anonymously, CI green. No data re-release.\"\n",
       "response_sha256": "5100d8690855a8801ed36cc991b61be5bc2335de0dd638530152e894ac8209f5"
+    },
+    {
+      "partition": "reserved",
+      "case": "frozen-package",
+      "arm": "revised",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-57",
+      "session_id": "20261022_233408_a922f8",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "a579e8b53e74e182a8e9ae4daa1d5e1aaa9b3e610d947fa9778c159fc3bc71da",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 34410,
+        "output_tokens": 986,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 35396,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 442,
+          "output_tokens": 13,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 33968,
+          "output_tokens": 973,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 19.558,
+      "response": "Decision: preserve the published manifest and tag. Repair the consumer by normalizing the legacy split shape on read, in the reader path, with tests \u2014 not by regenerating `MANIFEST.json` and not by touching the existing tag.\n\nSupporting evidence: the case states bytes at both destinations match the recorded digests, so the artifact is intact; the failure is a reader compatibility defect over a legacy split shape, not data corruption. Project and skill rules are explicit: published `release/*/MANIFEST.json`, CSVs, digests and version tags are immutable; \"normalize legacy shapes through `factory.release_schema`\"; and a public manifest failing a new consumer means \"preserve it, reproduce the reader failure, and fix compatibility or record a new-version proposal.\" Regenerating would change package bytes for a display defect, break the frozen manifest's identity with the recorded digests and tag, and mask the reader bug for the next legacy release. The tagged commit also predates the data; rewriting it is exactly the \"tag created before/after content\" failure mode.\n\nUncertainty: I have not seen the actual failure trace or confirmed that the legacy difference is *only* the split shape (e.g. `splits: null` / flat vs nested) rather than a missing canonical field the adapter cannot reconstruct without loss. Without that, \"adapter fixes it\" is unreproduced. Nor is it established that the consumer is the site planner's `flatten_splits` path versus another reader.\n\nNext discriminating check: run the failing consumer against the manifest read at the pinned tag in a clean checkout and capture the exact exception and field path; then confirm the adapter maps that shape to the canonical structure the consumer expects, with no field silently defaulted.\n\nOrdered actions:\n1. Reproduce the crash from the pinned tag/manifest bytes; record trace and offending field.\n2. Extend/verify `factory.release_schema` normalization on read so legacy splits become the canonical shape; add a regression test using the historical manifest fixture, and show it fails before the fix.\n3. Assert the adapter leaves the file untouched: hash manifest before/after; confirm the tag still resolves to the original commit and that destination digests still match recorded values.\n4. Run the full test suite and the consumer; push, then read CI for that exact `head_sha` (not `gh run list --commit`).\n5. Re-verify anonymously: repository page 200, ranged GETs on assets and at the tag revision, Hub `private: false`, digests unchanged.\n\nStopping condition: stop when the consumer passes on the pinned manifest with unchanged bytes/digests/tag and CI is green for that commit. If the adapter cannot faithfully reconstruct the legacy semantics, stop repair and record a new-version proposal \u2014 do not edit historical bytes or move the tag.\n\nOperator report: a public release is crashing its new site consumer due to a legacy split shape. I am preserving the frozen manifest, digests and existing tag, and fixing the schema-adapter read path with a regression test; verification will show unchanged manifest hash, unchanged tag commit, unchanged destination digests, and anonymous re-verification. If normalization proves lossy, I will propose a new reviewed version instead. No publication action is taken.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "1085dea99bf7feb44b9a29847ef545cbd003101d7e0573d6925f81e587faf8d2"
     }
   ],
   "ledger": {
-    "calls": 57,
-    "tokens": 1928706
+    "calls": 58,
+    "tokens": 1964102
   },
-  "updated_at": "2026-10-22T23:34:12Z"
+  "updated_at": "2026-10-22T23:34:33Z"
 }
