@@ -170,11 +170,67 @@
       "elapsed_seconds": 19.39,
       "response": "**Decision.** No. B cannot inherit A's risk acceptance. A candidate-specific operator risk acceptance is scoped to that candidate and recorded as a *risk acceptance, not a grant*; standing policy (2026-10-21, OPERATIONS.md and discovery skill) forbids extending it to sibling sources, and new unresolved class C leads are closed, not parked.\n\n**Evidence.** A: no publisher grant; source SPDX `NOASSERTION`; compilation CC0-1.0 covers only our contribution; the operator decision is recorded candidate-specifically on A. B: its terms page is blocked \u2014 that is *inaccessible evidence*, not proof terms are absent, and the skill requires a supported-browser re-read before recording silence. B's metadata \"other-open\" with no deed is not a publisher instrument and cannot be classified from a general policy page; classifying from the publisher's own terms yields class C. Licences are read from the dataset's own terms, and a source whose licence cannot be read is not published.\n\n**Representation \u2014 two different objects, never one.**\n- A keeps its own record: `licence_class` C *exception* carried by the explicit candidate-specific operator decision; `license_evidence` quotes that decision and the publisher's silence; `license.json` states source terms `NOASSERTION`, our code/docs MIT, our rights in the derived compilation CC0-1.0, with an explicit scope sentence (we dedicate our contribution, not the source's data). `LICENSE.md`/card/README generated from the same decision so they cannot disagree.\n- B gets its own record with `licence_class: C`, `jurisdiction` stated (not inferred from URL), `license_evidence` holding the observed block (URL, date, response) plus the verbatim \"other-open\" metadata quote, and status closed/dropped with a named reopening event. No `license.json` grant, no CC0 claim over source data, no borrowed acceptance. If B later reaches a build, it would need its own candidate-specific operator decision, and A's is not precedent.\n\n**Uncertainty and next discriminating check.** The unresolved fact is whether B publishes any licence instrument at all: a blocked page could hide either explicit terms or none. Next check, bounded to one attempt: re-read B's terms URL in the supported browser; if it renders, quote the instrument and reclassify (A/B \u2192 proceed to task probing; D \u2192 reject quoting the clause). If still blocked, stop \u2014 the response proves neither emptiness nor permission.\n\n**Ordered actions, with stopping condition.**\n1. Re-read B's terms page in the browser (one retry). Record URL, timestamp, outcome.\n2. Classify B as C unless the retry produced readable terms.\n3. Write B's record via the candidate commands with licence evidence, jurisdiction, blocker and reopening event; write nothing into A's licence decision.\n4. Run `check-candidate.py <B>`, `discovery-coverage.py`; commit only these records; push; read CI for that exact commit.\n5. Stop. No permission email, no further B probing, no construction, no advance of A (advancement owns it). Stopping condition: one browser attempt plus recorded decision and passing checks \u2014 or, on readable terms, the record updated with the quoted instrument and a named next probe.\n\n**Operator report.** Opened B; closed/dropped as class C \u2014 terms unreadable after one browser attempt, metadata \"other-open\" is not an instrument. A's existing candidate-specific risk acceptance was not extended and remains recorded as a risk acceptance, `NOASSERTION` source with CC0 scoped to our contribution only. Checks/commit results reported as observed; CI status as found. Next: nothing on B unless it publishes a licence instrument or the operator grants B its own decision.\n\n\u2014 Scout (Hermes)\n",
       "response_sha256": "197ebae35fb3dc3e76f9529ef9bee8b107badfcc1ed1a1c4664a53240f9380f0"
+    },
+    {
+      "partition": "reserved",
+      "case": "licence-exception",
+      "arm": "baseline",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-53",
+      "session_id": "20261022_233037_d62515",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "152ab1791cfea34de30aa34d3775420697b3a44b237d50e82295499616d51ca6",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 34780,
+        "output_tokens": 833,
+        "cache_read_tokens": 2816,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 38429,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 132,
+          "output_tokens": 11,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 34648,
+          "output_tokens": 822,
+          "cache_read_tokens": 2432,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 19.546,
+      "response": "**Decision**\n\nNo. B cannot inherit A's risk acceptance, and B is dropped as licence class C this session. A remains a live candidate only under its own recorded, candidate-specific risk acceptance \u2014 which is an operator decision recorded for A, not a licence grant and not a policy that transfers.\n\n**Supporting evidence**\n\n- A: publisher grants nothing (SPDX `NOASSERTION`), but `candidates/A/license.json` carries an operator risk acceptance scoped to that candidate; our compilation is dedicated CC0 and that dedication covers **our contribution only** \u2014 row selection, derived label, partition, packaging \u2014 never the source's data or designation.\n- B: its terms page is blocked, its metadata says \"other-open\" with no deed attached, and there is **no recorded decision** for B.\n- The standing rule (2026-10-21): a source whose licence is not already established as permitting redistribution and derivatives is not pursued. Unclear is C: drop in the same breath, no permission email, no parked \"probably fine.\"\n- An acceptance is written as a *risk acceptance, never as a grant*. Grants are properties of a licence; acceptances are properties of a decision about one source. Nothing in A's record names B, and a blocked page plus a metadata label with no deed is precisely the ambiguity class B sits in.\n\nNote the trap: \"other-open\" plus CC0 in A's compilation field can look like a chain. It isn't. CC0 is not a blanket override of upstream terms, and B has no upstream terms we can read.\n\n**Uncertainty and next discriminating check**\n\nA's acceptance could in principle be widened by the operator to cover B, but only by an explicit new decision naming B \u2014 I cannot infer it, and B's own terms remain unread regardless. The discriminating check for B is narrow: fetch the terms page through a real browser (a 403 to a plain HTTP client is not silence), look for a deed or an SPDX identifier on the dataset itself rather than a general policy page, and record the exact quote. If that yields an explicit open licence permitting redistribution and derivatives, B reopens as class A/B on its own evidence; if it yields silence or \"contact us,\" B stays a recorded C-drop with one line stating what evidence would reopen it. A's next check is different: confirm `license.json` still names A alone and that the card, `LICENSE.md` and README carry the publisher's attribution and designation verbatim.\n\n**Ordered actions and stopping condition**\n\n1. Write `candidates/A/record.json` \u2014 jurisdiction, `licence_class`, `license_evidence` with the quoted absence, and the risk-acceptance reference, explicitly scoped to A.\n2. Write `candidates/B/record.json` \u2014 verdict `dropped`, `licence_class: C`, the blocked page as the evidence, and the reopening condition. Do not probe B's schema, volume or split capacity first.\n3. Run `scripts/check-candidate.py` on both; commit and push; read CI for that exact commit.\n4. Stop. Do not spend the tick characterising B. Count B toward the session's verdicts as a rejection \u2014 a rejection is a completed unit of work.\n\n**Operator report**\n\nA stays live under its own recorded risk acceptance, published with attribution, a takedown route and no standard licence presented as the publisher's. B has no readable terms and no decision of its own, so it is closed as class C; if you want B pursued, that requires a separate recorded acceptance naming B \u2014 and it would still ship without a licence we can quote. Two sources opened, one go, one reject.\n",
+      "response_sha256": "d214f29b8ebfcd9e0f7ca3c5ff8f4b735d5b9d16a0a3dd02d2e70ce60b1c5892"
     }
   ],
   "ledger": {
-    "calls": 53,
-    "tokens": 1771236
+    "calls": 54,
+    "tokens": 1809665
   },
-  "updated_at": "2026-10-22T23:30:48Z"
+  "updated_at": "2026-10-22T23:31:09Z"
 }
