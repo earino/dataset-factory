@@ -1,10 +1,88 @@
 # Current state
 
-Updated: 2026-10-22 04:35Z (Oceania discovery tick: four new sources to recorded verdicts -
-abs-visitor-arrivals-direction and nz-ea-wholesale-price-exceedance are **go (ready)**,
-both licence class A; bom-cyclone-best-track and atsb-aviation-occurrence-triage
-**rejected on terms** before any task probing was spent. Oceania 1 -> 5 candidates,
-ready buffer 5 -> 7, live non-US 15/21.)
+Updated: 2026-10-22 06:30Z (release tick: tsb-railway-occurrence-casualty qualified -> PACKAGED and
+fully staged private on both destinations - baseline job green at 0.8126 eval AUC, GitHub + Hugging
+Face both verified, awaiting the operator's flip. Release work outranked construction; no
+construction job launched.)
+
+## 2026-10-22 - Release tick: tsb-railway-occurrence-casualty PACKAGED - baseline 0.8126 beats every reference; staged private on both destinations
+
+**The tick went to release work, per the standing priority.** No candidate sat at status `packaged`
+(nhs-ae is `dropped` post-audit; who-flunet/msha/food are `published`), and tsb-railway-occurrence-
+casualty was the one candidate whose next step was packaging-side, so the session carried it from
+`qualified` through the baseline job, the full package, and private staging on both destinations.
+Three green worker jobs, one per step, all collected and destroyed; every number below was read from
+collected job results, fetched reports and API readbacks, not from consoles.
+
+**1. tsb-baseline-001 (server 171753063, 73.7 s, exit 0, result release 420361967).** The
+runner-contract baseline on the accepted tsb-004 artifact (e75a59bb...), fetched from staging
+release 420246008 - not rebuilt. The gate re-accepted the exact fetched bytes before any scoring
+(`ACCEPTED: /data/extract matches the qualified artifact e75a59bb1116e39b`), then the benchmark's
+own unmodified train.py + validate.sh measured **eval AUC 0.8126, printed identically by both
+entry points, `[validate] CONTRACT OK`** (runner digests equal the benchmark's declared hashes;
+python 3.13.17 / pandas 2.3.3 / numpy 2.5.4 / xgboost 3.4.1 / scikit-learn 1.9.1; the private
+holdout was never copied into the workdir). The triad the record required: persistence analogue
+(trailing-12m casualty rate) 0.527 eval / 0.495 holdout; best single context column (activity_type)
+0.707 / 0.699; full model **0.8126** - real headroom over both, the nhs-ae persistence failure mode
+is absent, and the reference numbers now live in the package's VERIFICATION.md, RELEASE_NOTES.md,
+measurements.json and the card beside the model number.
+
+**2. The package (release/tsb-railway-occurrence-casualty/).** Full single-config package after the
+flunet/nhs-ae pattern: README, DATA_DICTIONARY (every shipped column's documented meaning, role and
+availability class; the 34 post-hoc exclusions named), LICENSE.md + LICENSE-MIT.txt +
+LICENSE-CC0-1.0.txt (OGL-Canada 2.0 source terms carried through unchanged, attribution statement
+verbatim, our compilation CC0, code MIT - declared in candidates/<id>/license.json so the manifest
+generates it), REPRODUCE.md, RELEASE_NOTES.md, VERIFICATION.md (sections 1-5 + honest "not covered":
+no agent comparison, holdout AUC deliberately unmeasured, current-vintage-only caveat),
+measurements.json, get_dataset.py, code/{build,run.sh,qualify_dataset,materialize}, baseline/
+(the three runner files verbatim + reproduce_baseline.sh + README). `release-manifest.py` wrote
+MANIFEST.json + SHA256SUMS (artifact e75a59bb..., construction commit 296db53 - the exact build.py
+bytes tsb-004 executed); `check-package.py` OK. The 406-test suite caught one real defect before it
+shipped: the card declared train/eval/holdout but the manifest had no splits because the record
+carried no construction_output block - the tsb-004 close-out (written pre-baseline) never added it.
+construction_output (splits with counts) and the top-level baseline block are now in record.json;
+the manifest regenerated; suite green 406/406 after.
+
+**3. GitHub destination (tsb-publish-001, server 171755236, result release 420369733).** Private
+repository earino/tsb-railway-occurrence-casualty created; the package pushed as initial main
+commit 61f06f1d; draft release v2026.10 (420368897) created; the worker copied the five accepted
+assets from staging under flat names, each sha256 verified on arrival and against the server digest
+after upload (1,709,187 bytes, never through the coordinator). Read back through the API: exactly
+5/5 assets matching MANIFEST.json by name/size/server-side sha256; release published non-draft so
+the tag exists; **tag v2026.10 == main == 61f06f1d** (git-refs API); anonymous repo GET 404. Then
+the documented download path was EXECUTED against the private release: get_dataset.py exit 0 (all
+five assets token-downloaded via the API asset-id path, digests verified, runner layout restored)
+and `qualify_dataset.py --accept` on the downloaded tree -> **ACCEPTED, artifact e75a59bb...**.
+
+**4. Hugging Face destination (tsb-hf-001, server 171755920, result release 420373659).**
+`hf-publish.py --create --upload-small` (write credential from its mode-0600 file, never printed)
+created the private Hub repo and landed 10 small files (the rendered card from candidates/<id>/
+card.md - front matter carries license: other / ogl-canada-2.0-attribution-plus-cc0-compilation -
+plus LOADING.md generated from the manifest, MANIFEST.json, SHA256SUMS, both licence texts, the
+dictionary and VERIFICATION/measurements). The worker job then uploaded all five data files from the
+staged GitHub release with digest verification both ends (uploads 5, skipped 0, failures 0) and ran
+the built-in loading check against the uploaded bytes: **ok: true, problems: []** - train 7,925
+rows / 883 positives, eval 3,831 / 463, holdout 1,976 / 278, 17 columns per split, label values
+['0','1']. No dataset_infos.json is shipped: hf-dataset-infos.py is levels-only (multi-config), so
+this follows the nhs-ae single-config precedent - the Hub's own inference, proven by the loading
+check rather than assumed (occ_no is letter-prefixed, so the msha mostly-digits failure mode does
+not apply). `hf-publish.py --verify`: ok - 5/5 data files at manifest digests, 0 missing, 0
+size-mismatched, recorded in DESTINATIONS.json; `--tag` LAST: Hub tag v2026.10 ==
+main == e6fe2a2c, tag_matches_main true.
+
+**State.** Record: qualified -> **packaged** (packaged_at 2026-10-22T06:30Z, awaiting_operator
+true - the flip is the operator's single act), three job entries, three artifact entries (staging
+release + both destinations), construction_output + baseline blocks, next_action rewritten to the
+flip-waiting state with the full post-approval publication sequence. check-candidate.py OK
+(status=packaged), --all exit 0 (60 records), check-package OK, suite 406/406, dashboard rebuilt
+(8 releases). Worker spend this month: the three jobs add EUR 0.14 in reservations (0.06 + 0.04 +
+0.04) to the ~6.1 EUR recorded before, well inside the 20 EUR allowance; all three workers
+destroyed and re-read as deleted (06:10:12Z, 06:21:50Z, 06:27:46Z).
+
+**NEXT: the operator's flip for tsb-railway-occurrence-casualty** (scout-release-notify delivers
+the ready-for-flip message); after it, publication per the recorded sequence needs no further
+approval - DESTINATIONS.json first, flip both, anonymous proofs, docs refresh, tag last, website.
+
 
 ## 2026-10-22 - Oceania discovery tick: four verdicts (2 go / 2 reject), all four non-US
 

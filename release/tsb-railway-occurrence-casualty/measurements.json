@@ -1,0 +1,98 @@
+{
+ "name": "tsb-railway-occurrence-casualty",
+ "built_at_utc": "2026-10-22T02:27:00Z",
+ "source": {
+  "publisher": "Transportation Safety Board of Canada (TSB / BST), Rail Occurrence Database System (RODS)",
+  "landing_page": "https://www.tsb.gc.ca/eng/stats/rail/data-5.html",
+  "mode": "http",
+  "files": 5,
+  "vintage_last_modified": "2026-10-21 16:49-16:52 GMT (OCCURRENCE 16:49:48; TRAIN 16:50:08; ROLLING_STOCK 16:50:33; INJURIES 16:51:31; COMPONENTS 16:52:23)",
+  "bytes": 157183629,
+  "requests": 5,
+  "seconds": 13.1,
+  "requests_note": "one GET per RODSdb public CSV from the worker (OCCURRENCE 97,894,047 B / 5.5 s, sha b4aa6cfa...; TRAIN 21,775,681 B / 2.1 s, ea8d99a8...; ROLLING_STOCK 34,758,209 B / 3.5 s, a7e0b143...; INJURIES 2,713,169 B / 1.4 s, c229cb14...; COMPONENTS 42,523 B / 0.6 s, 8f14b197...), all with the browser-like header set recorded in code/build.py - plain HTTP clients are refused (measured 403 anti-scraping); RODS is republished on or soon after the 15th of each month",
+  "fetch_provenance": "worker job tsb-004 (server 171730217, cx23/hel1) fetched the publisher directly; the bytes never passed through the coordinator. The source fetch was reproduced identically by tsb-001/tsb-002 (same five sizes and sha256, last-modified 2026-09-15 vintage) before the panel band was re-pinned"
+ },
+ "grain": "one row per TSB rail occurrence (occ_no)",
+ "label": {
+  "definition": "casualty = 1 iff InjuriesIND == 1 or TotalFatal+TotalSerious+TotalMinor injuries > 0",
+  "external_threshold": null,
+  "integrity": "InjuriesIND and the injury totals agree on all 1,624 positive panel rows (0 disagreements either way) and the separate INJURIES child table corroborates all 1,624; label source columns are excluded from every shipped file",
+  "publisher_cross_check": "TSB 2025 annual summary: panel year 2025 counts 832 ACCIDENT vs 831 published, 331 INCIDENT vs 332 published - within 0.3% of the publisher's own figures"
+ },
+ "panel": {
+  "start_rule": "first year from which the taxonomy-era share (AccIncType HISTORICAL / DG LEAKER) stays < 0.02 in every later year - measured per year on the full panel, not assumed (the record's proposed 2004 sits inside a measured 6.8% early-taxonomy tail); panel start 2016-01-01, era share 0.58% at 2016 and 0% from 2017",
+  "rows_parsed": 70706,
+  "exact_duplicate_rows_dropped": 139,
+  "pre_window_rows_excluded": 56865,
+  "post_window_rows_excluded": 109,
+  "non_identical_occno_collisions_suffixed": 7,
+  "expected_duplicate_ids": 13,
+  "window": "2016-01-01 .. 2026-08-31 (data_max exactly at the window end; the vintage also carries occurrences dated to 2026-10-10, counted and excluded as post-window)"
+ },
+ "coordinates": {
+  "note": "RODS packs lat/long in three magnitude-disjoint encodings (ddmm.ff packed dominant; decimal-degrees x10^3; x10^6), measured 2026-10-22 over a 3,088-value window with 0 ambiguous and 0 undecodable; the build decodes and requires exactly one decode inside the Canadian envelope [41,72] N / [52,145] W (Ottawa 452500 -> 45deg25.00'N exact). Frame check on the written rows: 0 of 13,732 coordinate values outside the envelope. tsb-003's '5 corrupt source coordinates' diagnosis is corrected in the record: the four occurrences it flagged each decode to exactly one valid Canadian position under the measured three-encoding rule; the defect was the single-scale assumption, not the data"
+ },
+ "gate": {
+  "version": "1.4.0",
+  "checks": 37,
+  "failed": 0,
+  "artifact_version": "e75a59bb1116e39b980c9fa2f5ea7c2b984fa6ccce4b3286f194de69d2b32309",
+  "note": "passed on the full artifact on the worker (job tsb-004); the gate report ships as qualification.json and the extract as staging release 420246008"
+ },
+ "splits": {
+  "train": {
+   "rows": 7925,
+   "positives": 883,
+   "positive_rate": 0.11142,
+   "window": "2016-01-01 .. 2022-01-01"
+  },
+  "eval": {
+   "rows": 3831,
+   "positives": 463,
+   "positive_rate": 0.120856,
+   "distinct_events": 463,
+   "window": "2022-01-01 .. 2025-01-01"
+  },
+  "holdout": {
+   "rows": 1976,
+   "positives": 278,
+   "positive_rate": 0.140688,
+   "distinct_events": 278,
+   "window": "2025-01-01 .. 2026-08-31"
+  }
+ },
+ "reference_baselines": {
+  "note": "measured at construction on the written rows, before any model spend (summary.json reference_baselines); rank AUC",
+  "global_rate_train": 0.11142,
+  "activity_type_auc": {"eval": 0.707, "holdout": 0.6987},
+  "subdivision_auc": {"eval": 0.6997, "holdout": 0.6544},
+  "railway_auc": {"eval": 0.5472, "holdout": 0.5234},
+  "province_auc": {"eval": 0.5576, "holdout": 0.5813},
+  "month_auc": {"eval": 0.5421, "holdout": 0.5599},
+  "trailing_12m_rate_auc": {"eval": 0.527, "holdout": 0.4952},
+  "verdict": "real context signal with headroom over the global rate, and the persistence analogue does NOT dominate (0.527 eval) - unlike some panel tasks, this is not a persistence exercise"
+ },
+ "baseline": {
+  "job": "tsb-baseline-001",
+  "server_id": 171753063,
+  "elapsed_seconds": 73.7,
+  "artifact_fetched_from_staging": 420246008,
+  "accepted_artifact_version": "e75a59bb1116e39b",
+  "contract_ok": true,
+  "eval_auc_from_train_py": 0.8126,
+  "eval_auc_from_validate_py": 0.8126,
+  "runner_files_unmodified": true,
+  "dependencies": {
+   "python": "3.13.17",
+   "pandas": "2.3.3",
+   "numpy": "2.5.4",
+   "xgboost": "3.4.1",
+   "scikit-learn": "1.9.1"
+  },
+  "note": "Measured on the bytes being released (fetched from staging, digest-verified, gate re-accept before scoring), not a rebuild. The model clears the strongest construction-time reference (activity_type 0.707 eval) by +0.106 AUC and the persistence analogue (0.527) by +0.286, so the pre-onset context carries real signal beyond any single column. The holdout was not scored by anything."
+ },
+ "discovery_cost": {
+  "coordinator": "8 ranged HTTP requests (5 size probes + dictionary + 4 era samples + tail) ~= 8.6 MB, < 60 s wall clock; the full 157 MB source was never downloaded to the coordinator"
+ }
+}

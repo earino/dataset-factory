@@ -1,0 +1,55 @@
+{
+  "job": "tsb-baseline-001",
+  "purpose": "one baseline through the runner's existing training and validation contract, on the accepted TSB rail occurrence casualty artifact",
+  "artifact": {
+    "name": "tsb-railway-occurrence-casualty",
+    "target": "casualty",
+    "positive_label": 1,
+    "id_columns": [
+      "occ_no"
+    ],
+    "rows": {
+      "train": 7925,
+      "eval": 3831,
+      "holdout": 1976
+    },
+    "positive_rate": {
+      "train": 0.11142,
+      "eval": 0.120856,
+      "holdout": 0.140688
+    },
+    "label_rule": "casualty = 1 iff InjuriesIND == 1 or TotalFatal+TotalSerious+TotalMinor injuries > 0 (label source columns excluded from every shipped file)"
+  },
+  "qualification_report": {
+    "bundled": "qualification.json",
+    "sha256": "4aac3d111fd983186a0439eaf7e3d87d6cb6f9ce101b4b1d65b972d0247f8e1b",
+    "accepted_before_scoring": true,
+    "accepted_artifact_version": "e75a59bb1116e39b"
+  },
+  "contract": {
+    "contract_ok": true,
+    "eval_auc_from_train_py": 0.8126,
+    "eval_auc_from_validate_py": 0.8126
+  },
+  "runner_files": {
+    "bundled_sha256": {
+      "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+      "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+      "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+    },
+    "expected_sha256": {
+      "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+      "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+      "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+    },
+    "unmodified": true
+  },
+  "dependencies": {
+    "python": "3.13.17",
+    "pandas": "2.3.3",
+    "numpy": "2.5.4",
+    "xgboost": "3.4.1",
+    "scikit-learn": "1.9.1"
+  },
+  "scope": "baseline only, through the runner's own contract. No agent or harness comparison was run, and none is implied."
+}

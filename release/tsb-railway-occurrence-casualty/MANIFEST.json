@@ -1,0 +1,353 @@
+{
+  "dataset": "tsb-railway-occurrence-casualty",
+  "release_version": "2026.10",
+  "release_tag": "v2026.10",
+  "repository": "https://github.com/earino/tsb-railway-occurrence-casualty",
+  "visibility": "private (publication requires explicit authorisation)",
+  "artifact_version": "e75a59bb1116e39b980c9fa2f5ea7c2b984fa6ccce4b3286f194de69d2b32309",
+  "package_digest": null,
+  "artifact_job": "tsb-004 (gate 1.4.0, 37/37 checks)",
+  "staging_release": 420246008,
+  "staging_release_tag": "job-tsb-004 (gate 1.4.0, 37/37 checks)",
+  "staging_repo": "earino/dataset-factory-staging",
+  "construction_commit": "296db53",
+  "gate_version": "1.4.0",
+  "gate_command": "python3 code/qualify_dataset.py ./task",
+  "measurements": {
+    "name": "tsb-railway-occurrence-casualty",
+    "built_at_utc": "2026-10-22T02:27:00Z",
+    "source": {
+      "publisher": "Transportation Safety Board of Canada (TSB / BST), Rail Occurrence Database System (RODS)",
+      "landing_page": "https://www.tsb.gc.ca/eng/stats/rail/data-5.html",
+      "mode": "http",
+      "files": 5,
+      "vintage_last_modified": "2026-10-21 16:49-16:52 GMT (OCCURRENCE 16:49:48; TRAIN 16:50:08; ROLLING_STOCK 16:50:33; INJURIES 16:51:31; COMPONENTS 16:52:23)",
+      "bytes": 157183629,
+      "requests": 5,
+      "seconds": 13.1,
+      "requests_note": "one GET per RODSdb public CSV from the worker (OCCURRENCE 97,894,047 B / 5.5 s, sha b4aa6cfa...; TRAIN 21,775,681 B / 2.1 s, ea8d99a8...; ROLLING_STOCK 34,758,209 B / 3.5 s, a7e0b143...; INJURIES 2,713,169 B / 1.4 s, c229cb14...; COMPONENTS 42,523 B / 0.6 s, 8f14b197...), all with the browser-like header set recorded in code/build.py - plain HTTP clients are refused (measured 403 anti-scraping); RODS is republished on or soon after the 15th of each month",
+      "fetch_provenance": "worker job tsb-004 (server 171730217, cx23/hel1) fetched the publisher directly; the bytes never passed through the coordinator. The source fetch was reproduced identically by tsb-001/tsb-002 (same five sizes and sha256, last-modified 2026-09-15 vintage) before the panel band was re-pinned"
+    },
+    "grain": "one row per TSB rail occurrence (occ_no)",
+    "label": {
+      "definition": "casualty = 1 iff InjuriesIND == 1 or TotalFatal+TotalSerious+TotalMinor injuries > 0",
+      "external_threshold": null,
+      "integrity": "InjuriesIND and the injury totals agree on all 1,624 positive panel rows (0 disagreements either way) and the separate INJURIES child table corroborates all 1,624; label source columns are excluded from every shipped file",
+      "publisher_cross_check": "TSB 2025 annual summary: panel year 2025 counts 832 ACCIDENT vs 831 published, 331 INCIDENT vs 332 published - within 0.3% of the publisher's own figures"
+    },
+    "panel": {
+      "start_rule": "first year from which the taxonomy-era share (AccIncType HISTORICAL / DG LEAKER) stays < 0.02 in every later year - measured per year on the full panel, not assumed (the record's proposed 2004 sits inside a measured 6.8% early-taxonomy tail); panel start 2016-01-01, era share 0.58% at 2016 and 0% from 2017",
+      "rows_parsed": 70706,
+      "exact_duplicate_rows_dropped": 139,
+      "pre_window_rows_excluded": 56865,
+      "post_window_rows_excluded": 109,
+      "non_identical_occno_collisions_suffixed": 7,
+      "expected_duplicate_ids": 13,
+      "window": "2016-01-01 .. 2026-08-31 (data_max exactly at the window end; the vintage also carries occurrences dated to 2026-10-10, counted and excluded as post-window)"
+    },
+    "coordinates": {
+      "note": "RODS packs lat/long in three magnitude-disjoint encodings (ddmm.ff packed dominant; decimal-degrees x10^3; x10^6), measured 2026-10-22 over a 3,088-value window with 0 ambiguous and 0 undecodable; the build decodes and requires exactly one decode inside the Canadian envelope [41,72] N / [52,145] W (Ottawa 452500 -> 45deg25.00'N exact). Frame check on the written rows: 0 of 13,732 coordinate values outside the envelope. tsb-003's '5 corrupt source coordinates' diagnosis is corrected in the record: the four occurrences it flagged each decode to exactly one valid Canadian position under the measured three-encoding rule; the defect was the single-scale assumption, not the data"
+    },
+    "gate": {
+      "version": "1.4.0",
+      "checks": 37,
+      "failed": 0,
+      "artifact_version": "e75a59bb1116e39b980c9fa2f5ea7c2b984fa6ccce4b3286f194de69d2b32309",
+      "note": "passed on the full artifact on the worker (job tsb-004); the gate report ships as qualification.json and the extract as staging release 420246008"
+    },
+    "splits": {
+      "train": {
+        "rows": 7925,
+        "positives": 883,
+        "positive_rate": 0.11142,
+        "window": "2016-01-01 .. 2022-01-01"
+      },
+      "eval": {
+        "rows": 3831,
+        "positives": 463,
+        "positive_rate": 0.120856,
+        "distinct_events": 463,
+        "window": "2022-01-01 .. 2025-01-01"
+      },
+      "holdout": {
+        "rows": 1976,
+        "positives": 278,
+        "positive_rate": 0.140688,
+        "distinct_events": 278,
+        "window": "2025-01-01 .. 2026-08-31"
+      }
+    },
+    "reference_baselines": {
+      "note": "measured at construction on the written rows, before any model spend (summary.json reference_baselines); rank AUC",
+      "global_rate_train": 0.11142,
+      "activity_type_auc": {
+        "eval": 0.707,
+        "holdout": 0.6987
+      },
+      "subdivision_auc": {
+        "eval": 0.6997,
+        "holdout": 0.6544
+      },
+      "railway_auc": {
+        "eval": 0.5472,
+        "holdout": 0.5234
+      },
+      "province_auc": {
+        "eval": 0.5576,
+        "holdout": 0.5813
+      },
+      "month_auc": {
+        "eval": 0.5421,
+        "holdout": 0.5599
+      },
+      "trailing_12m_rate_auc": {
+        "eval": 0.527,
+        "holdout": 0.4952
+      },
+      "verdict": "real context signal with headroom over the global rate, and the persistence analogue does NOT dominate (0.527 eval) - unlike some panel tasks, this is not a persistence exercise"
+    },
+    "baseline": {
+      "job": "tsb-baseline-001",
+      "server_id": 171753063,
+      "elapsed_seconds": 73.7,
+      "artifact_fetched_from_staging": 420246008,
+      "accepted_artifact_version": "e75a59bb1116e39b",
+      "contract_ok": true,
+      "eval_auc_from_train_py": 0.8126,
+      "eval_auc_from_validate_py": 0.8126,
+      "runner_files_unmodified": true,
+      "dependencies": {
+        "python": "3.13.17",
+        "pandas": "2.3.3",
+        "numpy": "2.5.4",
+        "xgboost": "3.4.1",
+        "scikit-learn": "1.9.1"
+      },
+      "note": "Measured on the bytes being released (fetched from staging, digest-verified, gate re-accept before scoring), not a rebuild. The model clears the strongest construction-time reference (activity_type 0.707 eval) by +0.106 AUC and the persistence analogue (0.527) by +0.286, so the pre-onset context carries real signal beyond any single column. The holdout was not scored by anything."
+    },
+    "discovery_cost": {
+      "coordinator": "8 ranged HTTP requests (5 size probes + dictionary + 4 era samples + tail) ~= 8.6 MB, < 60 s wall clock; the full 157 MB source was never downloaded to the coordinator"
+    }
+  },
+  "assets": {
+    "meta.json": {
+      "asset_name": "meta.json",
+      "bytes": 2606,
+      "sha256": "5f3852f3150cd808a1f58b7aa7f77c932ef315bb857628c6eff56a4530f06381"
+    },
+    "private/holdout.csv": {
+      "asset_name": "private-holdout.csv",
+      "bytes": 244586,
+      "sha256": "b00bf00bd4f918ce434b9821535669d465c9a63bab53b21f90f187f4c33c0ac4"
+    },
+    "public/eval.csv": {
+      "asset_name": "public-eval.csv",
+      "bytes": 474335,
+      "sha256": "2f1dcafb6cc701b1427a74d1969733f290ed6de030ed849a6988dcab31722a0d"
+    },
+    "public/train.csv": {
+      "asset_name": "public-train.csv",
+      "bytes": 980529,
+      "sha256": "4a032f68c4ad944a0b5d6ef96a904d4d13f3c3eb8b228e2fa74c3174b8054e94"
+    },
+    "quality.json": {
+      "asset_name": "quality.json",
+      "bytes": 7131,
+      "sha256": "a7343bd15a119c67f2ef79ba5b10f5414a6ef406fdeeb81772b22ba1bccf3789"
+    }
+  },
+  "package_files": {
+    "DATA_DICTIONARY.md": "a0638d995b9a4ddc1d8336070ef6180545c160a10b1fffb4eeb26363a0b83f91",
+    "LICENSE-CC0-1.0.txt": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+    "LICENSE-MIT.txt": "200f782f6b8bc23b926ea774cbacb4147826b3b2b59200917d8dc5ec68159535",
+    "LICENSE.md": "9581fd5f0f0ce52b41a5d611cf4a95af181e3ace40556ca96224eb590b46cba7",
+    "README.md": "d0d6817ec776985ab881dcf6d565f1d8bf88b48cdba52cb11b90e3b54baebc6f",
+    "RELEASE_NOTES.md": "ef10186409d4367aea9385fa42058f0f832aa1702ac285fc45bf85d0addcfd12",
+    "REPRODUCE.md": "48802fc02596037fd9b4741b115c0fee3f163cddc37359e8d2871b8e6b4d80c4",
+    "SHA256SUMS": "39997f1efa2da219b79b9ea046a365308f0c753a046d56a7d50cf4c78da3b708",
+    "VERIFICATION.md": "5310d7fcd9e19f4a01123b3537aa5598e0227f8a525520d768d9e63bb78bdecd",
+    "baseline/README.md": "4e15d3d2badbd566febb43de0d8c7d78c771f7c7e481d23560f1ff876278ea53",
+    "baseline/reproduce_baseline.sh": "32de96032ab1b55d19fdcd1e04e0f5a6b10a187633aa280e9ee76aee9f03c584",
+    "baseline/train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+    "baseline/validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+    "baseline/validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d",
+    "code/build.py": "6774fe88bd493971d6bb3d543ab520ac9eacde8493a4b7cc11d02a938de02f5c",
+    "code/materialize.py": "9f59bedcbc5338fcff9eb3dc7eaf0430f4f209b407656b0d4a1033673acafd9a",
+    "code/qualify_dataset.py": "70f2f2a98db883be3cc88241e42170e26896185e066c5bdd63f192479b48ce39",
+    "code/run.sh": "33bd61296052cbeee161a3466c7f3dfecd4291a68f313e77f6287a013e90152b",
+    "get_dataset.py": "271c60f5e8bcc66dc9c6b8a6699190a5f9b1a48fa827ef6dede1ae3c676d3f6d",
+    "measurements.json": "0f94c968338928b56703269a2c15945142683f304c541e2c5dee01beec682028",
+    "qualification.json": "4aac3d111fd983186a0439eaf7e3d87d6cb6f9ce101b4b1d65b972d0247f8e1b"
+  },
+  "baseline_command": "sh baseline/reproduce_baseline.sh ./task",
+  "get_dataset_command": "python3 get_dataset.py --dest ./task",
+  "source": {
+    "name": "Transportation Safety Board of Canada - Rail Occurrence Database System (RODS), 'Rail transportation occurrence data from January 1983' (RODSdb public CSVs)",
+    "landing_page": "https://www.tsb.gc.ca/eng/stats/rail/data-5.html",
+    "api": "five anonymous bulk CSVs + a CSV data dictionary under https://www.tsb.gc.ca/sites/default/files/stats/ (browser-like header set required; plain clients get HTTP 403); republished on or soon after the 15th of each month",
+    "accessed": "2026-10-21",
+    "licence": "Open Government Licence - Canada 2.0 (open.canada.ca record 4f8d9b0d-c4af-4be2-b751-3f5a403993ff; attribution carries through). Derived research dataset - not a TSB official product.",
+    "licence_evidence": [
+      {
+        "note": "open.canada.ca package records license_id 'ca-ogl-lgo' (Open Government Licence - Canada 2.0) for the TSB railway occurrence data (CKAN package_show, measured 2026-10-21). The TSB dataset page itself (data-5.html) carries no licence text, only: 'The dataset is for information purposes only. The user of the data assumes all responsibilities for the data's use and for verifying their completeness and accuracy for both critical and non-critical uses and applications.' OGL-CA permits commercial and non-commercial redistribution with attribution: 'Acknowledge the source of the Information by including any attribution statement specified by the Information Provider(s) and, where possible, provide a link to this licence. If the Information Provider does not provide a specific attribution statement... you must use the following attribution statement: Contains information licensed under the Open Government Licence - Canada.' (open.canada.ca/en/open-government-licence-canada, fetched 2026-10-21). Licence decision: redistribution permitted under OGL-CA 2.0; source terms preserved; our derived compilation dedicated CC0-1.0 per standing policy; derived, not official.",
+        "url": "https://open.canada.ca/en/open-government-licence-canada"
+      }
+    ]
+  },
+  "layout": {
+    "public/train.csv": "public/train.csv",
+    "public/eval.csv": "public/eval.csv",
+    "private/holdout.csv": "private/holdout.csv",
+    "meta.json": "meta.json",
+    "quality.json": "quality.json"
+  },
+  "files": {
+    "public/train.csv": {
+      "bytes": 980529,
+      "sha256": "4a032f68c4ad944a0b5d6ef96a904d4d13f3c3eb8b228e2fa74c3174b8054e94"
+    },
+    "public/eval.csv": {
+      "bytes": 474335,
+      "sha256": "2f1dcafb6cc701b1427a74d1969733f290ed6de030ed849a6988dcab31722a0d"
+    },
+    "private/holdout.csv": {
+      "bytes": 244586,
+      "sha256": "b00bf00bd4f918ce434b9821535669d465c9a63bab53b21f90f187f4c33c0ac4"
+    },
+    "meta.json": {
+      "bytes": 2606,
+      "sha256": "5f3852f3150cd808a1f58b7aa7f77c932ef315bb857628c6eff56a4530f06381"
+    },
+    "quality.json": {
+      "bytes": 7131,
+      "sha256": "a7343bd15a119c67f2ef79ba5b10f5414a6ef406fdeeb81772b22ba1bccf3789"
+    }
+  },
+  "splits": {
+    "train": {
+      "rows": 7925,
+      "positives": 883,
+      "positive_rate": 0.11142,
+      "distinct_events": 883
+    },
+    "eval": {
+      "rows": 3831,
+      "positives": 463,
+      "positive_rate": 0.120856,
+      "distinct_events": 463
+    },
+    "holdout": {
+      "rows": 1976,
+      "positives": 278,
+      "positive_rate": 0.140688,
+      "distinct_events": 278
+    }
+  },
+  "qualification": {
+    "gate_version": "1.4.0",
+    "ok": true,
+    "failed_checks": [],
+    "result": "PASSED",
+    "artifact_version": "e75a59bb1116e39b980c9fa2f5ea7c2b984fa6ccce4b3286f194de69d2b32309",
+    "report": "qualification.json"
+  },
+  "baseline": {
+    "job": "tsb-baseline-001",
+    "purpose": "one baseline through the runner's existing training and validation contract, on the accepted TSB rail occurrence casualty artifact",
+    "artifact": {
+      "name": "tsb-railway-occurrence-casualty",
+      "target": "casualty",
+      "positive_label": 1,
+      "id_columns": [
+        "occ_no"
+      ],
+      "rows": {
+        "train": 7925,
+        "eval": 3831,
+        "holdout": 1976
+      },
+      "positive_rate": {
+        "train": 0.11142,
+        "eval": 0.120856,
+        "holdout": 0.140688
+      },
+      "label_rule": "casualty = 1 iff InjuriesIND == 1 or TotalFatal+TotalSerious+TotalMinor injuries > 0 (label source columns excluded from every shipped file)"
+    },
+    "qualification_report": {
+      "bundled": "qualification.json",
+      "sha256": "4aac3d111fd983186a0439eaf7e3d87d6cb6f9ce101b4b1d65b972d0247f8e1b",
+      "accepted_before_scoring": true,
+      "accepted_artifact_version": "e75a59bb1116e39b"
+    },
+    "contract": {
+      "contract_ok": true,
+      "eval_auc_from_train_py": 0.8126,
+      "eval_auc_from_validate_py": 0.8126
+    },
+    "runner_files": {
+      "bundled_sha256": {
+        "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+        "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+        "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      },
+      "expected_sha256": {
+        "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+        "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+        "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      },
+      "unmodified": true
+    },
+    "dependencies": {
+      "python": "3.13.17",
+      "pandas": "2.3.3",
+      "numpy": "2.5.4",
+      "xgboost": "3.4.1",
+      "scikit-learn": "1.9.1"
+    },
+    "scope": "baseline only, through the runner's own contract. No agent or harness comparison was run, and none is implied."
+  },
+  "scope": "One baseline through the runner's training and validation contract. No agent or harness comparison was run and none is implied.",
+  "published": false,
+  "publication_note": "Prepared for human review. Nothing here has been published.",
+  "licenses": {
+    "policy_version": "2026-09-19",
+    "decided": "2026-10-22",
+    "code": {
+      "spdx": "MIT",
+      "file": "LICENSE-MIT.txt",
+      "copyright": "Copyright (c) 2026 E. Arino de la Rubia (earino)",
+      "third_party": [
+        {
+          "file": "baseline/train.py, baseline/validate.py, baseline/validate.sh",
+          "terms": "MIT - the harness benchmark's own runner files, shipped verbatim and unmodified (bundled sha256 equal the benchmark's declared hashes, recorded in the baseline job result)",
+          "permission": "The benchmark checkout is read-only; permission to distribute verbatim copies of its runner files covers the distributed copies only"
+        }
+      ]
+    },
+    "data_compilation": {
+      "spdx": "CC0-1.0",
+      "file": "LICENSE-CC0-1.0.txt",
+      "scope": "Our contribution - the occurrence-level row selection, the derived casualty label, the coordinate decode of the publisher's three mixed encodings, the temporal partition, the feature derivations and the packaging - is dedicated to the public domain under CC0-1.0. The dedication covers only our contribution: the underlying TSB RODS data keep their own designation and remain subject to OGL-Canada 2.0, whose attribution condition carries through to every copy of the derived data. Nothing here relicenses the source or presents CC0 as the source's terms."
+    },
+    "source_data": {
+      "spdx": "OGL-CA-2.0",
+      "status": "Open Government Licence - Canada 2.0, recorded by the open.canada.ca catalogue record for the TSB railway occurrence data (license_id ca-ogl-lgo), linking to https://open.canada.ca/en/open-government-licence-canada. OGL-Canada 2.0 permits use, modification, publication and redistribution of the information, commercially and non-commercially, with attribution and no distortion of meaning or implication of endorsement.",
+      "evidence": [
+        "[https://open.canada.ca/data/en/dataset/4f8d9b0d-c4af-4be2-b751-3f5a403993ff, CKAN package_show read 2026-10-21] license_id 'ca-ogl-lgo' with the five RODSdb CSVs and the data dictionary as listed resources.",
+        "[https://open.canada.ca/en/open-government-licence-canada, fetched 2026-10-21] 'You are free to copy, modify, publish, translate, adapt, distribute or otherwise use the Information in any manner, for commercial or non-commercial purposes, and by any means' with the attribution condition: 'Contains information licensed under the Open Government Licence - Canada.'",
+        "[https://www.tsb.gc.ca/eng/stats/rail/data-5.html, read 2026-10-21] the dataset page carries a use-at-your-own-risk disclaimer and no licence text of its own; the open.canada.ca record is the operative publisher's instrument."
+      ],
+      "attribution": "Transportation Safety Board of Canada, Rail Occurrence Database System (RODS), rail transportation occurrence data from January 1983 (https://www.tsb.gc.ca/eng/stats/rail/data-5.html), vintage of 2026-10-21. Contains information licensed under the Open Government Licence - Canada.",
+      "citation": "Transportation Safety Board of Canada. Rail transportation occurrence data from January 1983 (RODSdb public tables). Gatineau: TSB, republished on or soon after the 15th of each month. Licensed under the Open Government Licence - Canada 2.0. Derived dataset: TSB railway occurrence casualty prediction task (not a TSB official product).",
+      "derived_labelling": "Labelled as a derived research dataset throughout; it is not a TSB official product and the TSB has not reviewed or endorsed it. The publisher's own designation, attribution and suggested citation are preserved verbatim."
+    },
+    "rules": [
+      "Code and documentation: MIT by default.",
+      "Our rights in a derived compilation: CC0-1.0 by default.",
+      "The source's own terms are preserved and never relicensed; the compilation dedication covers only our contribution.",
+      "Each dataset must use terms compatible with its sources. CC0 is NOT a blanket override of upstream terms: attribution, share-alike and non-commercial requirements from a source are carried through unchanged.",
+      "A source whose licence terms cannot be read is not published at all.",
+      "The chosen terms are declared per dataset in candidates/<id>/license.json and recorded in the release manifest, so the manifest cannot drift from the decision."
+    ]
+  }
+}

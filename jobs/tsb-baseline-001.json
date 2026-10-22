@@ -1,0 +1,230 @@
+{
+  "job": {
+    "id": "tsb-baseline-001",
+    "candidate": "tsb-railway-occurrence-casualty",
+    "image": "python:3.13-slim",
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 3072,
+    "timeout_minutes": 45,
+    "lifetime_minutes": 90,
+    "max_disk_mb": 4096,
+    "max_artifact_mb": 16,
+    "what": "runner-contract baseline on the accepted tsb-004 artifact (e75a59bb1116e39b980c9fa2f5ea7c2b984fa6ccce4b3286f194de69d2b32309), fetched from staging release 420246008 (not rebuilt): re-accept the five fetched files through the qualification gate against the gate's own collected report, materialize the runner workdir (public train+eval only; the private holdout is never copied into the workdir), then run the benchmark's own train.py and validate.sh unmodified and record both AUCs. This is the contract only, not the agent harness loop. Construction-time references to beat: persistence analogue (trailing-12m rate) 0.527 eval / 0.495 holdout; activity_type single-column 0.707 / 0.6987.",
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 420246008,
+      "assets": [
+        {
+          "asset_id": 664435246,
+          "dest": "extract/meta.json",
+          "size": 2606,
+          "sha256": "5f3852f3150cd808a1f58b7aa7f77c932ef315bb857628c6eff56a4530f06381"
+        },
+        {
+          "asset_id": 664435320,
+          "dest": "extract/private/holdout.csv",
+          "size": 244586,
+          "sha256": "b00bf00bd4f918ce434b9821535669d465c9a63bab53b21f90f187f4c33c0ac4"
+        },
+        {
+          "asset_id": 664435378,
+          "dest": "extract/public/eval.csv",
+          "size": 474335,
+          "sha256": "2f1dcafb6cc701b1427a74d1969733f290ed6de030ed849a6988dcab31722a0d"
+        },
+        {
+          "asset_id": 664435445,
+          "dest": "extract/public/train.csv",
+          "size": 980529,
+          "sha256": "4a032f68c4ad944a0b5d6ef96a904d4d13f3c3eb8b228e2fa74c3174b8054e94"
+        },
+        {
+          "asset_id": 664435495,
+          "dest": "extract/quality.json",
+          "size": 7131,
+          "sha256": "a7343bd15a119c67f2ef79ba5b10f5414a6ef406fdeeb81772b22ba1bccf3789"
+        }
+      ]
+    },
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "source_files": [
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/tsb-railway-occurrence-casualty/baseline/run.sh",
+        "bytes": 3048,
+        "sha256": "7ad92afaa06dcfb33b9f659b9224e3bd175c7fff7acda0308e017e9ccb716948"
+      },
+      {
+        "bundled_as": "materialize.py",
+        "source": "candidates/tsb-railway-occurrence-casualty/baseline/materialize.py",
+        "bytes": 2267,
+        "sha256": "9f59bedcbc5338fcff9eb3dc7eaf0430f4f209b407656b0d4a1033673acafd9a"
+      },
+      {
+        "bundled_as": "report.py",
+        "source": "candidates/tsb-railway-occurrence-casualty/baseline/report.py",
+        "bytes": 4398,
+        "sha256": "8747ab95e53f88e768d51405cea515d8bc8c6edfe651d396c08fa0aa833d59f8"
+      },
+      {
+        "bundled_as": "qualification.json",
+        "source": "candidates/tsb-railway-occurrence-casualty/baseline/qualification.json",
+        "bytes": 13361,
+        "sha256": "4aac3d111fd983186a0439eaf7e3d87d6cb6f9ce101b4b1d65b972d0247f8e1b"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 43956,
+        "sha256": "70f2f2a98db883be3cc88241e42170e26896185e066c5bdd63f192479b48ce39"
+      },
+      {
+        "bundled_as": "train.py",
+        "source": "/opt/data/harness_benchmark/task_template/train.py",
+        "bytes": 2500,
+        "sha256": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8"
+      },
+      {
+        "bundled_as": "validate.py",
+        "source": "/opt/data/harness_benchmark/task_template/validate.py",
+        "bytes": 1277,
+        "sha256": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b"
+      },
+      {
+        "bundled_as": "validate.sh",
+        "source": "/opt/data/harness_benchmark/task_template/validate.sh",
+        "bytes": 482,
+        "sha256": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      }
+    ]
+  },
+  "reservation_eur": "0.06",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 3,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 133120,
+  "source_sha256": "1b8efdbcf917a72e70e8583d30b2bfa46c3212355b475744da9e24c09898408d",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-10-22T06:04:51.055288+00:00",
+  "expires": 1792654491,
+  "budget_months": [
+    "2026-10"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 171753063,
+  "known_hosts": "/opt/data/dataset-factory/.factory/tsb-baseline-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "65.21.158.17",
+  "result": {
+    "job_id": "tsb-baseline-001",
+    "status": "succeeded",
+    "uploaded": true,
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 420246008,
+      "fetched": [
+        {
+          "dest": "extract/meta.json",
+          "bytes": 2606,
+          "sha256": "5f3852f3150cd808a1f58b7aa7f77c932ef315bb857628c6eff56a4530f06381"
+        },
+        {
+          "dest": "extract/private/holdout.csv",
+          "bytes": 244586,
+          "sha256": "b00bf00bd4f918ce434b9821535669d465c9a63bab53b21f90f187f4c33c0ac4"
+        },
+        {
+          "dest": "extract/public/eval.csv",
+          "bytes": 474335,
+          "sha256": "2f1dcafb6cc701b1427a74d1969733f290ed6de030ed849a6988dcab31722a0d"
+        },
+        {
+          "dest": "extract/public/train.csv",
+          "bytes": 980529,
+          "sha256": "4a032f68c4ad944a0b5d6ef96a904d4d13f3c3eb8b228e2fa74c3174b8054e94"
+        },
+        {
+          "dest": "extract/quality.json",
+          "bytes": 7131,
+          "sha256": "a7343bd15a119c67f2ef79ba5b10f5414a6ef406fdeeb81772b22ba1bccf3789"
+        }
+      ],
+      "failures": [],
+      "bytes": 1709187
+    },
+    "image_id": "sha256:27b7c9d4f13ca20bb1170148f02095d50a5dfce1f7f2dabf5ca273727e43b7ea",
+    "image_digests": [
+      "python@sha256:27b7c9d4f13ca20bb1170148f02095d50a5dfce1f7f2dabf5ca273727e43b7ea"
+    ],
+    "exit_code": 0,
+    "oom_killed": false,
+    "elapsed_seconds": 73.7,
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 420361967,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-d5ab622c7b2fbf0bf1e0",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-d5ab622c7b2fbf0bf1e0/manifest.json",
+    "assets": [
+      {
+        "id": 664860709,
+        "size": 72,
+        "sha256": "30ba256bf54fa7e62130c4bdf6ef340ea97573b7594feb3fe6255a9071c17ef9"
+      },
+      {
+        "id": 664860771,
+        "size": 1963,
+        "sha256": "11e8aa7a2076c70343dbc51ee61120496e536c0921c78986bb8be7e0b079f484"
+      },
+      {
+        "id": 664860804,
+        "size": 247,
+        "sha256": "5acdeacb55f71293d60706375f987af96d6a7463ae29869e06db24f36e94584e"
+      },
+      {
+        "id": 664860876,
+        "size": 193,
+        "sha256": "c1c96be2c47714d86a371e4cfda84f48590e4a1150567c20617c70f9a06814fd"
+      },
+      {
+        "id": 664860939,
+        "size": 364,
+        "sha256": "abd6f7249a473f07f501069dde0fe2436ada294e0816606ef6d35309752ff944"
+      },
+      {
+        "id": 664861004,
+        "size": 53,
+        "sha256": "8e6c20e15d05ccad0869157f2fe211fdb8afab918c879014dbb0e960add05c3a"
+      },
+      {
+        "id": 664861105,
+        "size": 178,
+        "sha256": "7916440871223a4c178083d29eea5ba2ce1092065fb60eb13a7d3e16ac0ac9fd"
+      },
+      {
+        "id": 664861155,
+        "size": 133120,
+        "sha256": "1b8efdbcf917a72e70e8583d30b2bfa46c3212355b475744da9e24c09898408d"
+      },
+      {
+        "id": 664861236,
+        "size": 1092,
+        "sha256": "7600ab4e359050d7b80fa8f26d5b372f404a9e0e102b796fb730c9714aec85dc"
+      },
+      {
+        "id": 664861302,
+        "size": 9080,
+        "sha256": "421c2ec5ec9d8055666126d9a8c303d09f093f3472ab9e006a57ac9e04757951"
+      }
+    ]
+  },
+  "collected_at": "2026-10-22T06:08:51.255067+00:00",
+  "deleted_at": "2026-10-22T06:16:36.713895+00:00"
+}

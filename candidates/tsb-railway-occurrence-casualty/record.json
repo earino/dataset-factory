@@ -1,7 +1,9 @@
 {
  "id": "tsb-railway-occurrence-casualty",
- "status": "qualified",
+ "status": "packaged",
  "verdict": "go",
+ "packaged_at": "2026-10-22T06:30:00Z",
+ "awaiting_operator": true,
  "jurisdiction": {
   "country": "CA",
   "region": "North America",
@@ -90,6 +92,28 @@
    "collected_at": "2026-10-22T02:29:02Z",
    "destroyed_at": "2026-10-22T02:29:52Z",
    "job_elapsed_seconds": 31.1
+  },
+  {
+   "id": "tsb-baseline-001",
+   "date": "2026-10-22",
+   "outcome": "succeeded: runner-contract baseline on the accepted artifact, exit 0 in 73.7 s - gate re-accept before scoring (ACCEPTED, artifact e75a59bb1116e39b), train.py and validate.py both eval AUC 0.8126, CONTRACT OK, runner files unmodified; result release 420361967, worker destroyed 06:10:12Z",
+   "server_id": 171753063,
+   "release": 420361967,
+   "job_elapsed_seconds": 73.7
+  },
+  {
+   "id": "tsb-publish-001",
+   "date": "2026-10-22",
+   "outcome": "succeeded: destination-staging transfer, 5/5 assets copied from private staging 420246008 into private earino/tsb-railway-occurrence-casualty release v2026.10 (420368897), every sha256 verified on arrival and against the server digest after upload; 1,709,187 bytes never touched the coordinator; result release 420369733, worker destroyed 06:21:50Z",
+   "server_id": 171755236,
+   "release": 420369733
+  },
+  {
+   "id": "tsb-hf-001",
+   "date": "2026-10-22",
+   "outcome": "succeeded: hf_publish job - 5/5 data files uploaded to the private Hugging Face repo earino/tsb-railway-occurrence-casualty from the staged private GitHub release, digest-verified both ends, and the built-in loading check passed (train 7,925/883 positives, eval 3,831/463, holdout 1,976/278, 17 columns, label ['0','1'], ok: true, problems: []); result release 420373659, worker destroyed 06:27:46Z",
+   "server_id": 171755920,
+   "release": 420373659
   }
  ],
  "artifacts": [
@@ -98,11 +122,103 @@
    "repo": "earino/dataset-factory-staging",
    "id": 420246008,
    "note": "tsb-004 build: gated extract (public/train.csv, public/eval.csv, private/holdout.csv, meta.json, quality.json), the gate report (two byte-identical copies), build summary, diagnostics.json, source.tar and container.log; artifact digest e75a59bb1116e39b980c9fa2f5ea7c2b984fa6ccce4b3286f194de69d2b32309"
+  },
+  {
+   "kind": "destination_release",
+   "repo": "earino/tsb-railway-occurrence-casualty",
+   "id": 420368897,
+   "tag": "v2026.10",
+   "commit": "61f06f1d9b3a0dec34a1cc8f4eceda3260758ba0",
+   "private": true,
+   "note": "GitHub destination, staged private: 5/5 assets at the manifest digests (API readback, server-side sha256), release non-draft, tag == main == 61f06f1d, get_dataset.py executed end-to-end against the private release (token, 1,709,187 bytes, digests verified) and qualify_dataset.py --accept ACCEPTED the downloaded tree; anonymous GET 404. Evidence in release/tsb-railway-occurrence-casualty/DESTINATIONS.json"
+  },
+  {
+   "kind": "destination_hub_repo",
+   "repo": "earino/tsb-railway-occurrence-casualty",
+   "revision_tag": "v2026.10",
+   "commit": "e6fe2a2c9d629b8a9a6f1efa6c5e7158b2e4a050",
+   "private": true,
+   "note": "Hugging Face destination, staged private: 5/5 data files at the manifest digests (hf-publish --verify ok, 0 missing, 0 size-mismatched) plus 10 small files (card, LOADING.md, MANIFEST.json, SHA256SUMS, licences, docs); the documented load_dataset path verified by the tsb-hf-001 loading check (ok: true, split rows/positives/columns/label all match); tag v2026.10 created last, tag_matches_main true"
   }
  ],
  "rejection_reason": null,
  "review": null,
- "next_action": "Full-model baseline job (the flunet/msha pattern: assemble a baseline bundle with the harness runner's train.py/validate.py, fit on train, score eval+holdout, record the triad gap vs the construction-time naive baselines in qualification.reference_baselines - persistence analogue 0.527/0.495 and activity_type 0.707/0.699 are the numbers to beat). Then packaging per dataset-release: license.json decision (OGL-Canada 2.0 attribution, our compilation CC0-1.0), release-manifest, package check, private staging on both destinations. The extract lives in staging release tag untagged-2b564130537390692b6a (release 420246008) (fetch assets listed in its manifest.json); bulk data never passes through the coordinator.",
+ "next_action": "PACKAGED 2026-10-22T06:30Z, fully staged PRIVATE on both destinations, awaiting the operator's private-to-public flip - the one step that is the operator's, not ours. GitHub: earino/tsb-railway-occurrence-casualty, release v2026.10 (420368897), tag == main == 61f06f1d, 5/5 assets at the manifest digests. Hugging Face: earino/tsb-railway-occurrence-casualty, 5 data files + 10 small files verified, loading check ok, tag v2026.10 == main == e6fe2a2c (tagged LAST). After the operator approves: per dataset-release publication - record private:false in DESTINATIONS.json BEFORE regenerating the manifest, flip both destinations (gh api -X PATCH -F private=false; HfApi.update_repo_settings), prove both anonymously (repo 200, ranged GETs on every asset, Hub API private:false, tag-revision data files), refresh the private-state wording in card/LOADING.md/README/release notes and re-upload the small files, move the tag onto the refresh commit last (tag == main on both), then the website pipeline (sites/tsb-railway-occurrence-casualty.json editorial file, site-publish prepare/publish/verify). scout-release-notify delivers the ready-for-flip message.",
+ "construction_output": {
+  "job": "tsb-004",
+  "artifact_version": "e75a59bb1116e39b980c9fa2f5ea7c2b984fa6ccce4b3286f194de69d2b32309",
+  "built_at_utc": "2026-10-22T02:27:00Z",
+  "rows": 13732,
+  "splits": {
+   "train": {
+    "rows": 7925,
+    "positives": 883,
+    "positive_rate": 0.11142,
+    "distinct_events": 883
+   },
+   "eval": {
+    "rows": 3831,
+    "positives": 463,
+    "positive_rate": 0.120856,
+    "distinct_events": 463
+   },
+   "holdout": {
+    "rows": 1976,
+    "positives": 278,
+    "positive_rate": 0.140688,
+    "distinct_events": 278
+   }
+  },
+  "split_windows": {
+   "train": "occurrences 2016-01-01 .. 2021-12-31",
+   "eval": "2022-01-01 .. 2024-12-31",
+   "holdout": "2025-01-01 .. 2026-08-31"
+  },
+  "files": {
+   "public/train.csv": {
+    "bytes": 980529,
+    "sha256": "4a032f68c4ad944a0b5d6ef96a904d4d13f3c3eb8b228e2fa74c3174b8054e94"
+   },
+   "public/eval.csv": {
+    "bytes": 474335,
+    "sha256": "2f1dcafb6cc701b1427a74d1969733f290ed6de030ed849a6988dcab31722a0d"
+   },
+   "private/holdout.csv": {
+    "bytes": 244586,
+    "sha256": "b00bf00bd4f918ce434b9821535669d465c9a63bab53b21f90f187f4c33c0ac4"
+   },
+   "meta.json": {
+    "bytes": 2606,
+    "sha256": "5f3852f3150cd808a1f58b7aa7f77c932ef315bb857628c6eff56a4530f06381"
+   },
+   "quality.json": {
+    "bytes": 7131,
+    "sha256": "a7343bd15a119c67f2ef79ba5b10f5414a6ef406fdeeb81772b22ba1bccf3789"
+   }
+  },
+  "staging_release": 420246008,
+  "distinct_events_note": "each positive is an independent occurrence (distinct_events == positives in every window; no storm-style clustering), so the row counts are also the independent-event counts"
+ },
+ "baseline": {
+  "job": "tsb-baseline-001",
+  "server_id": 171753063,
+  "elapsed_seconds": 73.7,
+  "artifact_fetched_from_staging": 420246008,
+  "accepted_artifact_version": "e75a59bb1116e39b",
+  "contract_ok": true,
+  "eval_auc_from_train_py": 0.8126,
+  "eval_auc_from_validate_py": 0.8126,
+  "runner_files_unmodified": true,
+  "dependencies": {
+   "python": "3.13.17",
+   "pandas": "2.3.3",
+   "numpy": "2.5.4",
+   "xgboost": "3.4.1",
+   "scikit-learn": "1.9.1"
+  },
+  "staging_release": 420361967,
+  "note": "Measured on the bytes being released (fetched from staging, digest-verified, gate --accept before scoring), not a rebuild. The XGBoost pass (0.8126) clears the construction-time references - persistence analogue 0.527 eval / 0.495 holdout, best single column activity_type 0.707 / 0.699 - so the task has real headroom and is not a persistence exercise. The holdout was not scored."
+ },
  "novelty_check": {
   "checked_at": "2026-10-21T08:11:04+00:00",
   "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",

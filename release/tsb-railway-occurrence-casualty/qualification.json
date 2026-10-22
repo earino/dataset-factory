@@ -1,0 +1,545 @@
+{
+ "ok": true,
+ "dataset": "/output/extract",
+ "gate_version": "1.4.0",
+ "artifact": {
+  "train": {
+   "file": "public/train.csv",
+   "sha256": "4a032f68c4ad944a0b5d6ef96a904d4d13f3c3eb8b228e2fa74c3174b8054e94",
+   "bytes": 980529
+  },
+  "eval": {
+   "file": "public/eval.csv",
+   "sha256": "2f1dcafb6cc701b1427a74d1969733f290ed6de030ed849a6988dcab31722a0d",
+   "bytes": 474335
+  },
+  "holdout": {
+   "file": "private/holdout.csv",
+   "sha256": "b00bf00bd4f918ce434b9821535669d465c9a63bab53b21f90f187f4c33c0ac4",
+   "bytes": 244586
+  },
+  "meta.json": {
+   "file": "meta.json",
+   "sha256": "5f3852f3150cd808a1f58b7aa7f77c932ef315bb857628c6eff56a4530f06381",
+   "bytes": 2606
+  },
+  "quality.json": {
+   "file": "quality.json",
+   "sha256": "a7343bd15a119c67f2ef79ba5b10f5414a6ef406fdeeb81772b22ba1bccf3789",
+   "bytes": 7131
+  },
+  "artifact_version": {
+   "digest": "e75a59bb1116e39b980c9fa2f5ea7c2b984fa6ccce4b3286f194de69d2b32309",
+   "components": [
+    "eval",
+    "holdout",
+    "meta.json",
+    "quality.json",
+    "train"
+   ]
+  }
+ },
+ "results": [
+  {
+   "check": "descriptor",
+   "ok": true,
+   "detail": "quality.json loaded for 'tsb-railway-occurrence-casualty'",
+   "evidence": {}
+  },
+  {
+   "check": "leakage.declared_columns",
+   "ok": true,
+   "detail": "every shipped column is declared",
+   "evidence": {
+    "undeclared": []
+   }
+  },
+  {
+   "check": "leakage.answer_source_absent",
+   "ok": true,
+   "detail": "no answer source or post-hoc column is shipped",
+   "evidence": {
+    "shipped_forbidden": []
+   }
+  },
+  {
+   "check": "leakage.no_single_column_determines_the_target",
+   "ok": true,
+   "detail": "no shipped column separates the classes on its own",
+   "evidence": {
+    "offenders": [],
+    "high_cardinality": [
+     "latitude@holdout",
+     "longitude@eval",
+     "longitude@holdout",
+     "near_location@eval",
+     "near_location@holdout",
+     "occ_date@eval",
+     "occ_date@holdout",
+     "occ_date@train",
+     "occ_no@eval",
+     "occ_no@holdout",
+     "occ_no@train"
+    ],
+    "missing_splits": []
+   }
+  },
+  {
+   "check": "leakage.high_cardinality_declared",
+   "ok": true,
+   "detail": "high-cardinality columns are declared as identifiers or free fields",
+   "evidence": {
+    "undeclared": [],
+    "declared": [
+     "latitude",
+     "longitude",
+     "near_location",
+     "occ_date",
+     "occ_no",
+     "subd_mileage"
+    ]
+   }
+  },
+  {
+   "check": "timing.prediction_time_declared",
+   "ok": true,
+   "detail": "prediction instant is declared",
+   "evidence": {}
+  },
+  {
+   "check": "timing.no_post_hoc_feature",
+   "ok": true,
+   "detail": "no feature is documented as post-hoc",
+   "evidence": {
+    "overlap": []
+   }
+  },
+  {
+   "check": "timing.label_source_is_not_a_feature",
+   "ok": true,
+   "detail": "the label source is not a feature",
+   "evidence": {
+    "source_features": []
+   }
+  },
+  {
+   "check": "timing.every_feature_documented",
+   "ok": true,
+   "detail": "features documented as available 'prediction_time'",
+   "evidence": {
+    "features_documented_at": "prediction_time"
+   }
+  },
+  {
+   "check": "timing.instant_declared",
+   "ok": true,
+   "detail": "prediction instant kind='event_time' citation=True",
+   "evidence": {
+    "prediction_instant": {
+     "kind": "event_time",
+     "period": "instant",
+     "days_after_period_end": 0,
+     "citation": "OccDate/OccTime at the occurrence onset, local time at the site with TimeZoneID documenting the timezone; an administrative register written at/after the event (TSB RODS; ReportedDate/ReportedTime post-date the onset and are excluded)"
+    }
+   }
+  },
+  {
+   "check": "timing.publication_lag_measured",
+   "ok": true,
+   "detail": "0 of 0 observed period_end -> published dates are usable",
+   "evidence": {
+    "observations": [],
+    "measured_lag_days": null,
+    "source_kind": "administrative_record"
+   }
+  },
+  {
+   "check": "timing.features_available_at_instant",
+   "ok": true,
+   "detail": "features publish 0d after the period, instant is 0d after it",
+   "evidence": {
+    "features_lag_days": 0,
+    "instant_lag_days": 0,
+    "measured_lag_days": null
+   }
+  },
+  {
+   "check": "timing.instant_accounts_for_publication_lag",
+   "ok": true,
+   "detail": "instant kind is 'event_time' while features publish 0d after the period",
+   "evidence": {
+    "kind": "event_time",
+    "features_lag_days": 0
+   }
+  },
+  {
+   "check": "timing.selection_uses_only_available_data",
+   "ok": true,
+   "detail": "row selection declares its latest period as 'the occurrence onset itself (each row is one occurrence; selection windows are occurrence-date ranges ending 2026-08-31)'",
+   "evidence": {
+    "latest_period_used": "the occurrence onset itself (each row is one occurrence; selection windows are occurrence-date ranges ending 2026-08-31)",
+    "fields": [
+     "occ_date",
+     "occ_no"
+    ]
+   }
+  },
+  {
+   "check": "units.measured_columns_declare_unit_and_frame",
+   "ok": true,
+   "detail": "5 measured column(s) declare unit and frame",
+   "evidence": {
+    "measurements": [
+     {
+      "column": "latitude",
+      "unit": "decimal degrees, north positive",
+      "frame": "RODS packs coordinates in three magnitude-disjoint encodings (ddmm.ff packed degrees+minutes+hundredths dominant; decimal-degrees x 10^3; x 10^6), measured 2026-10-22 over 3,088 values with zero ambiguous and zero undecodable; the build decodes, requires exactly one decode inside the Canadian envelope 41-72 N (Ottawa 452500 -> 45 deg 25.00' = 45.4167, exact)"
+     },
+     {
+      "column": "longitude",
+      "unit": "decimal degrees, east positive (West negative)",
+      "frame": "same decode as latitude, envelope 52-145 W, then negated to east-positive (1181200 -> 118 deg 12.00' -> -118.2, Revelstoke BC)"
+     },
+     {
+      "column": "occ_hour",
+      "unit": "local hour of day at the occurrence site (0-23)",
+      "frame": "parsed from OccDate's local time; the DST-aware site timezone ships in the timezone column, so the local hour needs no offset map (a hand-rolled UTC normalization could silently misplace an hour, which is what this measurement block exists to prevent)"
+     },
+     {
+      "column": "subd_mileage",
+      "unit": "miles from the start of the named subdivision",
+      "frame": "publisher's SubdMileage, shipped verbatim as the source's own scale; empty when the source records none"
+     },
+     {
+      "column": "casualty",
+      "unit": "binary indicator",
+      "frame": "1 iff InjuriesIND == 1 or fatal+serious+minor injury totals > 0; component agreement cross-checked against the separate INJURIES child table and recorded in summary.json label_checks"
+     }
+    ]
+   }
+  },
+  {
+   "check": "units.known_event_fixture_recorded",
+   "ok": true,
+   "detail": "no external threshold, so no known-event fixture is required",
+   "evidence": {}
+  },
+  {
+   "check": "splits.time_column_declared",
+   "ok": true,
+   "detail": "split overlap is checked against 'occ_date'",
+   "evidence": {}
+  },
+  {
+   "check": "splits.machine_readable_windows",
+   "ok": true,
+   "detail": "train/eval/holdout windows are declared with start/end",
+   "evidence": {
+    "split_windows": {
+     "train": {
+      "start": "2016-01-01",
+      "end": "2022-01-01"
+     },
+     "eval": {
+      "start": "2022-01-01",
+      "end": "2025-01-01"
+     },
+     "holdout": {
+      "start": "2025-01-01",
+      "end": "2026-09-01"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.files_present",
+   "ok": true,
+   "detail": "all three split files exist",
+   "evidence": {
+    "missing": []
+   }
+  },
+  {
+   "check": "splits.non_empty",
+   "ok": true,
+   "detail": "every split has rows",
+   "evidence": {
+    "train": {
+     "rows": 7925,
+     "positives": 883,
+     "negatives": 7042,
+     "positive_rate": 0.11142
+    },
+    "eval": {
+     "rows": 3831,
+     "positives": 463,
+     "negatives": 3368,
+     "positive_rate": 0.120856
+    },
+    "holdout": {
+     "rows": 1976,
+     "positives": 278,
+     "negatives": 1698,
+     "positive_rate": 0.140688
+    }
+   }
+  },
+  {
+   "check": "splits.eval_and_holdout_have_both_classes",
+   "ok": true,
+   "detail": "eval and holdout each contain positives and negatives",
+   "evidence": {
+    "train": {
+     "rows": 7925,
+     "positives": 883,
+     "negatives": 7042,
+     "positive_rate": 0.11142
+    },
+    "eval": {
+     "rows": 3831,
+     "positives": 463,
+     "negatives": 3368,
+     "positive_rate": 0.120856
+    },
+    "holdout": {
+     "rows": 1976,
+     "positives": 278,
+     "negatives": 1698,
+     "positive_rate": 0.140688
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_declared",
+   "ok": true,
+   "detail": "eval and holdout declare positives and distinct events",
+   "evidence": {
+    "declared": {
+     "eval": {
+      "positives": 463,
+      "distinct_events": 463
+     },
+     "holdout": {
+      "positives": 278,
+      "distinct_events": 278
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_match_rows",
+   "ok": true,
+   "detail": "declared positive counts match the rows",
+   "evidence": {
+    "mismatched": []
+   }
+  },
+  {
+   "check": "splits.event_key_column_declared",
+   "ok": true,
+   "detail": "clustered events are counted by 'occ_no' (date part)",
+   "evidence": {}
+  },
+  {
+   "check": "splits.distinct_events_match_rows",
+   "ok": true,
+   "detail": "declared clustered event counts match the rows",
+   "evidence": {
+    "recomputed": {
+     "train": 883,
+     "eval": 463,
+     "holdout": 278
+    },
+    "declared": {
+     "eval": {
+      "positives": 463,
+      "distinct_events": 463
+     },
+     "holdout": {
+      "positives": 278,
+      "distinct_events": 278
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.enough_clustered_positives",
+   "ok": true,
+   "detail": "eval and holdout carry enough independent positive events to score",
+   "evidence": {
+    "thin": [],
+    "recomputed_events": {
+     "train": 883,
+     "eval": 463,
+     "holdout": 278
+    },
+    "minimums": {
+     "positives": 30,
+     "distinct_events": 20
+    }
+   }
+  },
+  {
+   "check": "splits.rates_not_uniform",
+   "ok": true,
+   "detail": "positive rates are between 0 and 1",
+   "evidence": {
+    "rates": [
+     0.11142,
+     0.120856,
+     0.140688
+    ]
+   }
+  },
+  {
+   "check": "splits.actual_ranges_computed",
+   "ok": true,
+   "detail": "row timestamps found for every split",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "2016-01-01 00:00",
+      "max": "2021-12-31 15:20"
+     },
+     "eval": {
+      "min": "2022-01-01 04:35",
+      "max": "2024-12-31 08:40"
+     },
+     "holdout": {
+      "min": "2025-01-01 07:25",
+      "max": "2026-08-31 17:40"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.actual_ranges_disjoint",
+   "ok": true,
+   "detail": "the rows of the three splits occupy disjoint periods",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "2016-01-01 00:00",
+      "max": "2021-12-31 15:20"
+     },
+     "eval": {
+      "min": "2022-01-01 04:35",
+      "max": "2024-12-31 08:40"
+     },
+     "holdout": {
+      "min": "2025-01-01 07:25",
+      "max": "2026-08-31 17:40"
+     }
+    },
+    "overlaps": []
+   }
+  },
+  {
+   "check": "splits.rows_within_declared_windows",
+   "ok": true,
+   "detail": "every row falls inside its split's declared window",
+   "evidence": {
+    "windows": {
+     "train": {
+      "start": "2016-01-01",
+      "end": "2022-01-01"
+     },
+     "eval": {
+      "start": "2022-01-01",
+      "end": "2025-01-01"
+     },
+     "holdout": {
+      "start": "2025-01-01",
+      "end": "2026-09-01"
+     }
+    },
+    "ranges": {
+     "train": {
+      "min": "2016-01-01 00:00",
+      "max": "2021-12-31 15:20"
+     },
+     "eval": {
+      "min": "2022-01-01 04:35",
+      "max": "2024-12-31 08:40"
+     },
+     "holdout": {
+      "min": "2025-01-01 07:25",
+      "max": "2026-08-31 17:40"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.no_cross_split_entities",
+   "ok": true,
+   "detail": "no occ_no appears in more than one split",
+   "evidence": {
+    "shared_sample": [],
+    "shared_count": 0
+   }
+  },
+  {
+   "check": "splits.duplicate_entities_within_splits",
+   "ok": true,
+   "detail": "0 repeated-identifier rows within splits, at most the declared 13",
+   "evidence": {
+    "duplicate_rows": {},
+    "declared": 13
+   }
+  },
+  {
+   "check": "runner.layout",
+   "ok": true,
+   "detail": "holdout is private and train/eval are public",
+   "evidence": {}
+  },
+  {
+   "check": "runner.meta_json_keys",
+   "ok": true,
+   "detail": "meta.json carries the keys the runner reads",
+   "evidence": {
+    "keys": [
+     "built_at_utc",
+     "columns",
+     "description",
+     "features",
+     "id_columns",
+     "label_rule",
+     "label_source_columns",
+     "license",
+     "name",
+     "positive_label",
+     "positive_rate",
+     "prediction_time",
+     "rows",
+     "source",
+     "source_sha256",
+     "split",
+     "target",
+     "vintage_last_modified"
+    ]
+   }
+  },
+  {
+   "check": "runner.meta_matches_files",
+   "ok": true,
+   "detail": "meta.json agrees with the split files",
+   "evidence": {
+    "problems": []
+   }
+  },
+  {
+   "check": "runner.meta_counts_match_files",
+   "ok": true,
+   "detail": "meta rows and rates match the files",
+   "evidence": {}
+  },
+  {
+   "check": "runner.id_columns_are_not_features",
+   "ok": true,
+   "detail": "declared identifiers are not also listed as features",
+   "evidence": {}
+  }
+ ],
+ "failed_checks": []
+}

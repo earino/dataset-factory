@@ -1,0 +1,70 @@
+{
+  "id": "tsb-hf-001",
+  "candidate": "tsb-railway-occurrence-casualty",
+  "release": true,
+  "server_type": "cx23",
+  "location": "hel1",
+  "cpus": 2,
+  "memory_mb": 2048,
+  "timeout_minutes": 25,
+  "lifetime_minutes": 45,
+  "max_disk_mb": 2000,
+  "max_artifact_mb": 8,
+  "what": "hf_publish worker job for tsb-railway-occurrence-casualty: upload the five released data files to the private Hugging Face dataset repo earino/tsb-railway-occurrence-casualty, downloading each from the staged private GitHub release (420368897) and verifying its sha256 against the manifest before and after transfer, then run the documented load_dataset path against the uploaded bytes (split rows, positives, columns and label values checked against the accepted artifact). The bytes never pass through the coordinator; peak worker disk is one asset.",
+  "hf_publish": {
+    "repo": "earino/tsb-railway-occurrence-casualty",
+    "revision": "main",
+    "source_repo": "earino/tsb-railway-occurrence-casualty",
+    "assets": [
+      {
+        "asset_id": 664884347,
+        "dest": "meta.json",
+        "target": "meta.json",
+        "size": 2606,
+        "sha256": "5f3852f3150cd808a1f58b7aa7f77c932ef315bb857628c6eff56a4530f06381"
+      },
+      {
+        "asset_id": 664884374,
+        "dest": "private-holdout.csv",
+        "target": "data/private-holdout.csv",
+        "size": 244586,
+        "sha256": "b00bf00bd4f918ce434b9821535669d465c9a63bab53b21f90f187f4c33c0ac4"
+      },
+      {
+        "asset_id": 664884418,
+        "dest": "public-eval.csv",
+        "target": "data/public-eval.csv",
+        "size": 474335,
+        "sha256": "2f1dcafb6cc701b1427a74d1969733f290ed6de030ed849a6988dcab31722a0d"
+      },
+      {
+        "asset_id": 664884458,
+        "dest": "public-train.csv",
+        "target": "data/public-train.csv",
+        "size": 980529,
+        "sha256": "4a032f68c4ad944a0b5d6ef96a904d4d13f3c3eb8b228e2fa74c3174b8054e94"
+      },
+      {
+        "asset_id": 664884527,
+        "dest": "quality.json",
+        "target": "quality.json",
+        "size": 7131,
+        "sha256": "a7343bd15a119c67f2ef79ba5b10f5414a6ef406fdeeb81772b22ba1bccf3789"
+      }
+    ],
+    "verify_loading": {
+      "splits": {
+        "train": {"rows": 7925, "positives": 883},
+        "eval": {"rows": 3831, "positives": 463},
+        "holdout": {"rows": 1976, "positives": 278}
+      },
+      "columns": [
+        "activity_type", "casualty", "latitude", "longitude", "near_location",
+        "occ_date", "occ_day_of_week", "occ_hour", "occ_month", "occ_no", "occ_year",
+        "province", "railway", "region", "subd_mileage", "subdivision", "timezone"
+      ],
+      "label": "casualty",
+      "label_values": [0, 1]
+    }
+  }
+}
