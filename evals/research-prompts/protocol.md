@@ -15,8 +15,9 @@ is null. A no-tool answer does not prove execution correctness, higher dataset y
 production throughput or cost savings. Those need the separately observed live pass.
 
 Use actual configured primary and fallback routes, explicitly selected and recorded.
-The usage file identifies the active route at finalization, not per-call served-model
-provenance; report that limitation. A different final route stops the comparison.
+The session usage rows identify the recorded main-task model and billing provider,
+not independent provider attestation of the served model; report that limitation.
+A different recorded main-task route stops the comparison.
 Use the same model, provided evidence, output limit and runtime context for each paired
 comparison. Change the versioned instruction bundle as one treatment; do not claim
 which individual edit caused a difference. Match the eager skill sets of each bundle: baseline research loads all three project
@@ -24,8 +25,10 @@ skills and baseline watcher none; revised discovery loads discovery, while revis
 advancement/watcher load qualification and release. This is part of the bundle treatment,
 not evidence that one text edit caused an effect. Keep the tested bundle's AGENTS and operational policy
 consistent with its version. Record supplied context and its hashes; do not export
-private memory or identity content. If normal Hermes context cannot be isolated, record
-that limitation and hold it fixed across paired runs as far as supported.
+private memory or identity content. Installed chat source confirms `--ignore-rules`
+suppresses discovered project context and built-in memory; the request deliberately
+embeds the versioned public instructions. Runtime identity and skill-index context
+remain part of Hermes rather than a claim of fully isolated raw model prompts.
 
 Read-only source inspection must verify the installed no-tools path first. This Hermes
 build lacks a documented no-tools flag: an unknown toolset yields zero definitions.
@@ -113,10 +116,16 @@ prompt compliance from scientific quality and from improvement over historical r
 creates the sole evaluation ledger. Subsequent invocations pass a request plus its manifest
 SHA-256, case/arm, explicit model/provider, neutral fixture directory and the same output
 root. The helper reuses production admission/marker/process supervision, checks the installed
-zero-tool path and uses live `scout-research` accounting. It sums all session usage rows,
-including titles, and cross-checks the usage file. It records pending before launch, charges
+zero-tool path and uses live `scout-research` accounting. It requires exactly one new
+research session in the before/after ID set difference and sums all its usage rows,
+including titles and cache. The supported `chat` path has no usage-file output;
+process exit status and nonempty output check completion. There is no second usage
+copy, and no claim that the optional top-level oneshot API was used. It records pending before launch, charges
 measured failures before rejecting them, and refuses to continue after any incomplete attempt.
-Missing/corrupt ledgers never reset to zero. Preserve and explicitly reconcile an interrupted
+Missing/corrupt ledgers never reset to zero. An independently verified pre-inference
+CLI failure can be manually marked `reconciled_no_inference` with reviewer, reason,
+evidence and original failed status; it remains in the attempt count with zero tokens.
+Missing usage by itself never qualifies for that reconciliation. Preserve and explicitly reconcile an interrupted
 attempt before further calls; record the reconciliation, never discard it to restart the cap.
 
 Keep raw stdout/stderr local until checked for private context or credentials. Share only

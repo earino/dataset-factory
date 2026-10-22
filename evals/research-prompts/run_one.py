@@ -36,10 +36,20 @@ def read_ledger(path):
             raise ValueError('invalid evaluation counters')
     if data['calls'] != len(data['runs']):
         raise ValueError('invocation ledger disagrees with count')
-    if any(r.get('status') != 'ok' for r in data['runs']):
-        raise ValueError('prior failed/pending invocation needs reconciliation')
-    if any(type(r.get('tokens')) is not int or r['tokens'] <= 0 for r in data['runs']):
-        raise ValueError('invalid per-invocation tokens')
+    for run in data['runs']:
+        if run.get('status') == 'reconciled_no_inference':
+            # Manual, evidence-backed reconciliation only. Preserve the failed
+            # attempt and count it; absence of usage is never enough for this state.
+            audit = run.get('reconciliation', {})
+            if (type(run.get('tokens')) is not int or run['tokens'] != 0
+                    or audit.get('original_status') != 'failed'
+                    or not all(isinstance(audit.get(k), str) and audit[k].strip()
+                               for k in ('reviewer', 'evidence', 'reason'))):
+                raise ValueError('no-inference reconciliation lacks evidence')
+        elif run.get('status') != 'ok':
+            raise ValueError('prior failed/pending invocation needs reconciliation')
+        elif type(run.get('tokens')) is not int or run['tokens'] <= 0:
+            raise ValueError('invalid per-invocation tokens')
     if sum(r['tokens'] for r in data['runs']) != data['tokens']:
         raise ValueError('token ledger disagrees with count')
     return data
@@ -105,22 +115,30 @@ def measured_session(db, sid):
         con.close()
 
 
-def usage_file_tokens(report):
-    """Count primitive fields: Hermes's convenience auxiliary total omits cache."""
-    fields = ('input_tokens', 'output_tokens', 'cache_read_tokens', 'cache_write_tokens')
-    auxiliary = report.get('auxiliary')
-    # A completed installed-runtime usage report includes explicit zero counters
-    # when no auxiliary calls ran. Missing data is not a measured zero.
-    if not isinstance(auxiliary, dict):
-        raise ValueError('missing or invalid auxiliary usage report')
-    total = 0
-    for block in (report, auxiliary):
-        for field in fields:
-            value = block.get(field)
-            if type(value) is not int or value < 0:
-                raise ValueError('missing or invalid primitive usage field')
-            total += value
-    return total
+def research_sessions(db):
+    con = sqlite3.connect(db.resolve().as_uri()+'?mode=ro',uri=True,timeout=1)
+    try:
+        return {row[0] for row in con.execute("select id from sessions where source='scout-research'")}
+    finally:
+        con.close()
+
+
+def new_session(db, before):
+    created = research_sessions(db) - before
+    if len(created) != 1:
+        raise ValueError('expected exactly one new research session; reconcile before continuing')
+    return created.pop()
+
+
+def main_routes(db, sid):
+    con = sqlite3.connect(db.resolve().as_uri()+'?mode=ro',uri=True,timeout=1)
+    try:
+        return [{'model':model, 'provider':provider, 'calls':calls}
+                for model,provider,calls in con.execute(
+                    "select model,billing_provider,api_call_count from session_model_usage "
+                    "where session_id=? and coalesce(task,'')=''", (sid,))]
+    finally:
+        con.close()
 
 
 def wrapper(live):
@@ -179,17 +197,19 @@ def main():
         run_dir.mkdir(exist_ok=False)
         entry={'case':a.case,'arm':a.arm,'model_requested':a.model,'provider_requested':a.provider,
                'request_sha256':a.sha256,'status':'pending','directory':run_dir.name,
-               'memory_sha256':{name:sha(a.hermes_home/'memories'/name) for name in ('MEMORY.md','USER.md') if (a.hermes_home/'memories'/name).is_file()},
-               'runtime_sha256':{name:sha(a.hermes_root/name) for name in ('model_tools.py','hermes_cli/oneshot.py')},
+               'context_scope':'chat --ignore-rules suppresses discovered context and built-in memory',
+               'runtime_sha256':{name:sha(a.hermes_root/name) for name in ('model_tools.py','hermes_cli/main.py','hermes_cli/cli_agent_setup_mixin.py','hermes_cli/cli_single_query.py')},
                'started_at':time.time(),'tokens':None}
+        db=a.hermes_home/'state.db'
+        before=research_sessions(db)
+        entry['research_sessions_before']=sorted(before)
         ledger['calls']+=1; ledger['runs'].append(entry)
         save(out/'ledger.json',ledger)  # a killed/unknown-cost attempt blocks future calls
-        usage=run_dir/'usage.json'
         args=argparse.Namespace(max_turns=1,run_budget=300)
         command=[str(a.hermes_root/'.venv/bin/python3'),str(a.hermes_root/'hermes'),'chat',
                  '--oneshot','-Q','--query-file',str(req),'--source','scout-research',
                  '-m',a.model,'--provider',a.provider,'-t','__none__','--max-turns','1',
-                 '--run-budget','300','--usage-file',str(usage),'--in',str(fixture),'--ignore-rules']
+                 '--run-budget','300','--in',str(fixture),'--ignore-rules']
         started=time.monotonic()
         try:
             with w.session_marker(args):
@@ -198,20 +218,22 @@ def main():
             (run_dir/'response.txt').write_text(result.stdout)
             # Private diagnostic only; inspect/redact before exporting results.
             (run_dir/'stderr.txt').write_text(result.stderr)
-            u=json.loads(usage.read_text())
-            measurement=measured_session(a.hermes_home/'state.db',u['session_id'])
+            sid=new_session(db,before)
+            entry['session_id']=sid
+            measurement=measured_session(db,sid)
             entry.update(measurement)
             ledger['tokens']+=measurement['tokens']  # charge BEFORE judging outcome/model
             entry['dollar_spend']=None
-            entry['route_scope']='active route at finalization; not per-call served-model proof'
-            entry['session_id']=u['session_id']; entry['usage_model']=u.get('model'); entry['usage_provider']=u.get('provider')
-            if usage_file_tokens(u) != measurement['tokens']:
-                raise ValueError('usage file and research accounting disagree')
-            if result.returncode or u.get('failed') or u.get('completed') is not True or u.get('partial') or u.get('interrupted'):
+            entry['exit_code']=result.returncode
+            entry['route_scope']='session usage rows; not independent provider served-model attestation'
+            routes=main_routes(db,sid)
+            entry['main_routes']=routes
+            if result.returncode:
                 raise ValueError('provider/invocation incomplete')
             if not result.stdout.strip():
                 raise ValueError('empty decision response')
-            if u.get('model') != a.model or u.get('provider') != a.provider:
+            if not routes or any(r['model'] != a.model or r['provider'] != a.provider
+                                 or type(r['calls']) is not int or r['calls'] <= 0 for r in routes):
                 raise ValueError('usage route mismatch; preserve and inspect before continuing')
             if ledger['tokens'] > MAX_TOKENS:
                 raise ValueError('measured ceiling exceeded within invocation; stop')

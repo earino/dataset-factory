@@ -92,11 +92,25 @@ was identified and presented to Eduardo for clarification before inference proce
 and [seven-day totals](https://github.com/earino/dataset-factory/pull/11#issuecomment-6351589324).
 Cached-token totals do not establish dollar spend; pricing remains unknown.
 
-A second source review identified that Hermes's convenience combined total omits
-auxiliary cache, even though its primitive fields record it. The usage-file check
-therefore independently sums all four fields in both main and auxiliary blocks,
-then compares with the database total. A regression fixture includes cached title
-usage and an understated convenience total. [Scout's review](https://github.com/earino/dataset-factory/pull/11#issuecomment-6351741258).
+A second source review identified that Hermes's convenience total omits auxiliary
+cache. The first actual pilot invocation then exposed an interface error missed by
+source review: `chat --oneshot` does not support `--usage-file` at any argument position.
+The attempt exited at argument parsing, with no session or model call; its failure is
+preserved and explicitly reconciled, not erased. The corrected helper uses supported
+`chat` controls, exactly one new research session ID, all four database token counters
+and recorded main-task routes. Exit status checks completion; the unavailable second
+usage copy is no longer claimed. A newly introduced usage-file test was replaced by
+session-identity and route tests because that API is not available on the bounded chat
+path; this does not change any pre-project test assertion.
+[Invocation evidence](https://github.com/earino/dataset-factory/pull/11#issuecomment-6352088534)
+and [dispatch inspection](https://github.com/earino/dataset-factory/pull/11#issuecomment-6352113969).
+The actual chat path also suppresses built-in memory and discovered context files
+with `--ignore-rules`, unlike the top-level oneshot path inspected initially. Both
+arms still share runtime identity/index context and embed their public instructions.
+The source-reviewed main-task routes are `glm-5.3` / `lunaroute` and
+`deepseek/deepseek-v4.1-flash-1017` / `nous`.
+[Installed route/context/exit semantics](https://github.com/earino/dataset-factory/pull/11#issuecomment-6352157221).
+
 
 A further scan found residual tag-movement advice and quota instructions in on-demand
 profile references. Those are aligned with frozen package versions and evidence-based

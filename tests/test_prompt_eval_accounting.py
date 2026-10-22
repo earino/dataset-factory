@@ -28,15 +28,30 @@ class PromptEvalAccountingTests(unittest.TestCase):
             path.write_text(json.dumps(data))
             with self.assertRaises(ValueError): eval_run.read_ledger(path)
 
+    def test_verified_no_inference_failure_stays_in_cumulative_attempts(self):
+        path=self.root/'ledger.json'
+        run={'status':'reconciled_no_inference','tokens':0}
+        ledger={'schema':1,'calls':1,'tokens':0,'runs':[run]}
+        path.write_text(json.dumps(ledger))
+        with self.assertRaises(ValueError): eval_run.read_ledger(path)
+        run['reconciliation']={'original_status':'failed','reviewer':'operator',
+                               'evidence':'preserved CLI parse error and no created session',
+                               'reason':'parser rejected argv before inference dispatch'}
+        path.write_text(json.dumps(ledger))
+        self.assertEqual(1,eval_run.read_ledger(path)['calls'])
+        run['tokens']=None
+        path.write_text(json.dumps(ledger))
+        with self.assertRaises(ValueError): eval_run.read_ledger(path)
+
     def database(self, pin=None):
         path=self.root/'state.db'; con=sqlite3.connect(path)
         con.executescript('CREATE TABLE sessions(id TEXT, source TEXT, tool_names TEXT);'
                           'CREATE TABLE messages(session_id TEXT, role TEXT);'
                           'CREATE TABLE system_prompts(hash TEXT, prompt TEXT);'
-                          'CREATE TABLE session_model_usage(session_id TEXT, task TEXT, api_call_count INT, input_tokens INT, output_tokens INT, cache_read_tokens INT, cache_write_tokens INT);')
+                          'CREATE TABLE session_model_usage(session_id TEXT, task TEXT, api_call_count INT, input_tokens INT, output_tokens INT, cache_read_tokens INT, cache_write_tokens INT, model TEXT, billing_provider TEXT);')
         con.execute('INSERT INTO sessions VALUES (?,?,?)',('case','scout-research',pin))
-        con.executemany('INSERT INTO session_model_usage VALUES (?,?,?,?,?,?,?)',
-                        [('case','',1,1000,200,5000,200),('case','title_generation',1,100,20,50,0)])
+        con.executemany('INSERT INTO session_model_usage VALUES (?,?,?,?,?,?,?,?,?)',
+                        [('case','',1,1000,200,5000,200,'glm-5.3','lunaroute'),('case','title_generation',1,100,20,50,0,'other-title-model','nous')])
         con.commit(); con.close(); return path
 
     def test_auxiliary_tokens_count_and_unrecorded_tools_stay_unrecorded(self):
@@ -47,25 +62,22 @@ class PromptEvalAccountingTests(unittest.TestCase):
         self.assertEqual(2,result['calls'])
         self.assertEqual('unrecorded',result['recorded_tool_pin'])
 
-    def test_usage_file_cache_is_counted_even_when_convenience_total_omits_it(self):
-        report = {'input_tokens':1000, 'output_tokens':200,
-                  'cache_read_tokens':5000, 'cache_write_tokens':200,
-                  'auxiliary':{'input_tokens':100, 'output_tokens':20,
-                               'cache_read_tokens':50, 'cache_write_tokens':0,
-                               'total_tokens':120},
-                  'total_including_auxiliary':{'total_tokens':6520}}
-        measured = eval_run.measured_session(self.database(), 'case')
-        self.assertEqual(6570, eval_run.usage_file_tokens(report))
-        self.assertEqual(measured['tokens'], eval_run.usage_file_tokens(report))
-        zero = dict.fromkeys(('input_tokens','output_tokens','cache_read_tokens','cache_write_tokens'), 0)
-        report['auxiliary'] = zero
-        self.assertEqual(6400, eval_run.usage_file_tokens(report))
-        for absent in (None, {}, {'input_tokens':100, 'output_tokens':20}):
-            report['auxiliary'] = absent
-            with self.assertRaises(ValueError): eval_run.usage_file_tokens(report)
-        report['auxiliary'] = zero
-        report['cache_read_tokens'] = None
-        with self.assertRaises(ValueError): eval_run.usage_file_tokens(report)
+    def test_session_identity_requires_exactly_one_new_research_session(self):
+        db=self.database()
+        before=eval_run.research_sessions(db)
+        with self.assertRaises(ValueError): eval_run.new_session(db,before)
+        con=sqlite3.connect(db)
+        con.execute('INSERT INTO sessions VALUES (?,?,?)',('new','scout-research',None))
+        con.commit()
+        self.assertEqual('new',eval_run.new_session(db,before))
+        con.execute('INSERT INTO sessions VALUES (?,?,?)',('also-new','scout-research',None))
+        con.commit();con.close()
+        with self.assertRaises(ValueError): eval_run.new_session(db,before)
+
+    def test_route_measurement_distinguishes_main_from_auxiliary_model(self):
+        db=self.database()
+        self.assertEqual([{'model':'glm-5.3','provider':'lunaroute','calls':1}],
+                         eval_run.main_routes(db,'case'))
 
     def test_hashed_empty_tool_pin_is_resolved(self):
         pin='a'*64; db=self.database(pin); con=sqlite3.connect(db)
