@@ -258,7 +258,7 @@ def hf_hub_download(**kw):
             (root/'helper.py').write_text(RECEIPT_HELPER)
             (root/'expected.json').write_text(json.dumps([{'target': 'data.csv', 'size': len(DATA), 'sha256': DIGEST}]))
             result = subprocess.run([sys.executable, str(root/'helper.py'), 'owner/data', 'main',
-                                     str(root/'expected.json')], cwd=root, capture_output=True, text=True,
+                                     str(root/'expected.json'), str(64 * 1024 * 1024)], cwd=root, capture_output=True, text=True,
                                     env={**os.environ, 'HF_WRITE_TOKEN': 'private-test-token'})
             self.assertEqual(0, result.returncode, result.stderr)
             receipt = json.loads(result.stdout)
@@ -333,3 +333,54 @@ def hf_hub_download(**kw):
         with patch.object(worker, 'credential_status', return_value={'ready':True}):
             with self.assertRaisesRegex(FactoryError, 'verify_only must be a boolean'):
                 worker.validate(job, POLICY)
+
+    def test_worker_plain_blob_cache_is_owned_and_removed(self):
+        import tempfile
+        from workers import hf_publish as worker_hf
+        observed = []
+        def command(args, **kwargs):
+            cache = Path(args[-1]); self.assertTrue(cache.is_dir())
+            observed.append(cache); (cache/'payload').write_bytes(b'small synthetic check')
+            return NS(stdout=DIGEST+'\n', returncode=0)
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); old = root/'hf-cache'; old.mkdir(); (old/'keep').write_text('unrelated old work')
+            with patch.object(worker_hf.subprocess, 'run', side_effect=command):
+                self.assertEqual(DIGEST, worker_hf.hub_digest_by_download(root, 0, 'owner/data', SHA,
+                                                                        'data.csv', Path('python'), 'test'))
+            self.assertTrue(all(not p.exists() for p in observed))
+            self.assertEqual('unrelated old work', (old/'keep').read_text())
+
+    def test_receipt_helper_accepts_the_observed_nine_megabyte_plain_blob(self):
+        import json
+        import os
+        import subprocess
+        import sys
+        import tempfile
+        from workers.hf_publish import RECEIPT_HELPER, SMALL_BLOB_BYTES
+        size = 9421952
+        wanted = hashlib.sha256(b'x' * size).hexdigest()
+        stub = '''\
+import hashlib
+from pathlib import Path
+from types import SimpleNamespace as N
+DATA = b'x' * 9421952
+SHA = 'a' * 40
+class HfApi:
+    def __init__(self, **kw): pass
+    def repo_info(self, *a, **kw):
+        blob = hashlib.sha1(('blob ' + str(len(DATA)) + chr(0)).encode() + DATA).hexdigest()
+        return N(sha=SHA, siblings=[N(rfilename='data.csv', size=len(DATA), lfs=None, blob_id=blob)])
+def hf_hub_download(**kw):
+    assert kw['revision'] == SHA
+    path = Path(kw['cache_dir'])/'file'; path.write_bytes(DATA); return str(path)
+'''
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); (root/'huggingface_hub.py').write_text(stub)
+            (root/'helper.py').write_text(RECEIPT_HELPER)
+            (root/'expected.json').write_text(json.dumps([{'target':'data.csv','size':size,'sha256':wanted}]))
+            result = subprocess.run([sys.executable, str(root/'helper.py'), 'owner/data', 'main',
+                                     str(root/'expected.json'), str(SMALL_BLOB_BYTES)], cwd=root,
+                                    capture_output=True, text=True,
+                                    env={**os.environ,'HF_WRITE_TOKEN':'private-test-token'})
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assertEqual(wanted, json.loads(result.stdout)['files']['data.csv']['sha256'])

@@ -5674,3 +5674,11 @@ only collected successful worker evidence bound to the exact commit/blob IDs and
 assets. Workers emit that evidence and run loading against the same pinned commit. An explicit
 hf_publish.verify_only mode obtains it for an old release without Hub uploads; no worker was
 launched during development. Legacy reports remain historical, not fabricated into new evidence.
+
+The existing scheduled Scout research session independently hit a 9,421,952-byte ordinary Git
+CSV above the old worker re-hash ceiling. Integrated its captured fix (`1e53f97`) and four
+regressions without changing the active session. Both worker verification paths now share
+64 MiB per-file, with fresh owned caches cleaned after each check; added exact-size helper
+and old-cache preservation tests. The coordinator still receives only compact evidence.
+The container disk monitor does not cover host-side HF jobs; documented that remaining gap
+instead of asserting max_disk_mb already enforces it. No engineering worker was launched.

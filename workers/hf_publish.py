@@ -19,6 +19,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.error
 import urllib.request
@@ -52,7 +53,8 @@ import tempfile
 from pathlib import Path
 from huggingface_hub import HfApi, hf_hub_download
 
-repo, revision, expected_path = sys.argv[1:4]
+repo, revision, expected_path, plain_limit = sys.argv[1:5]
+plain_limit = int(plain_limit)
 api = HfApi(token=os.environ['HF_WRITE_TOKEN'])
 items = json.loads(Path(expected_path).read_text())
 info = api.repo_info(repo, repo_type='dataset', revision=revision, files_metadata=True)
@@ -73,8 +75,8 @@ for item in items:
         actual = (lfs.get('sha256') if isinstance(lfs, dict) else getattr(lfs, 'sha256', None))
         blob = getattr(sibling, 'blob_id', None)
         if not actual:
-            if not 0 <= size <= 8 * 1024 * 1024:
-                raise ValueError('plain blob exceeds existing worker verification limit')
+            if not 0 <= size <= plain_limit:
+                raise ValueError('plain blob exceeds worker verification limit')
             with tempfile.TemporaryDirectory(prefix='hf-verify-') as cache:
                 path = hf_hub_download(repo_id=repo, filename=target, repo_type='dataset',
                     revision=commit, token=os.environ['HF_WRITE_TOKEN'], cache_dir=cache)
@@ -340,20 +342,17 @@ def hub_digest_by_download(base, index, repo, revision, target, python, hf_token
         "        h.update(chunk)\n"
         "print(h.hexdigest())\n")
     path = write_helper(base, f".hf-hash-{index}.py", script)
-    cache = base / "hf-cache"
-    result = subprocess.run([str(python), str(path), repo, revision, target, str(cache)],
-                            capture_output=True, text=True, env=hub_env(hf_token), timeout=600)
+    with tempfile.TemporaryDirectory(prefix=".hf-cache-", dir=base) as cache:
+        result = subprocess.run([str(python), str(path), repo, revision, target, cache],
+                                capture_output=True, text=True, env=hub_env(hf_token), timeout=600)
     lines = [line for line in (result.stdout or "").strip().splitlines() if line]
     return lines[-1] if lines else ""
 
 
-# Digest-by-download is the only verification the Hub offers for plain git blobs:
-# it reports a sha256 for LFS objects alone. The threshold must sit ABOVE the Hub's
-# own LFS cutoff (~10 MB), because a plain blob sized between the two - eutl-hf-001
-# died on a 9,421,952-byte CSV, uploaded fine, unverifiable by this check - is the
-# one size class no other branch covers: not LFS, so no reported digest, and below
-# this fix "too big to re-hash". A re-hash downloads a single asset, bounded by the
-# job's max_disk_mb, and the resume path deletes it immediately after.
+# Worker-only, per-file bound. The 9,421,952-byte plain Git CSV from eutl-hf-001
+# demonstrated that the old 8 MiB ceiling rejected files with no LFS SHA-256.
+# Both publication checks and compact receipts use this same limit. Plain files
+# are hashed in chunks inside fresh owned caches; no dataset bytes reach the coordinator.
 SMALL_BLOB_BYTES = 64 * 1024 * 1024
 
 
@@ -495,7 +494,7 @@ def hf_publish(base, job, report, client=None, retrieve=None):
         helper = write_helper(base, '.hf-receipt.py', RECEIPT_HELPER)
         remaining = max(1, int(deadline - time.monotonic()))
         result = subprocess.run([str(python), str(helper), spec['repo'], spec['revision'],
-                                 str(receipt_plan)], capture_output=True, text=True,
+                                 str(receipt_plan), str(SMALL_BLOB_BYTES)], capture_output=True, text=True,
                                 env=hub_env(hf_token), timeout=remaining)
         try:
             receipt = json.loads(result.stdout)

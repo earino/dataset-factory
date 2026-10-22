@@ -725,3 +725,9 @@ usual worker plan/allowance/launch/collect procedure. This mode reads Hub data o
 produces its report; it performs no Hub upload or tag change. It still uses the existing worker
 budget, credentials, report collection, cleanup and expiry rules. No worker is automatically
 launched by `--verify`. No CSV download occurs on the coordinator.
+
+Worker plain-blob verification has one shared 64 MiB per-file ceiling for the upload check
+and compact receipt. Both hash in chunks and use freshly owned temporary caches that are
+removed after each check; old unrelated cache paths are preserved. This is not a claim that
+the container disk monitor covers host-side HF jobs: the executor returns before that loop
+for HF jobs. Broader host-side disk enforcement remains separate work.
