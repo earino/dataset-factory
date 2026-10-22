@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "bundle": "21b72994bc6a6ccd568c9395147ee3e6416b0e4c",
+  "partition": "development",
+  "records": [
+    {
+      "partition": "development",
+      "case": "discovery-value",
+      "arm": "baseline",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-26",
+      "session_id": "20261022_230203_e232fc",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "7711a3e8188d7080b08dad9c127fb16b1b6de289bfb487ff49c50e0a033615f9",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 240,
+        "output_tokens": 9190,
+        "cache_read_tokens": 36480,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 45910,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 197,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 188,
+          "output_tokens": 8993,
+          "cache_read_tokens": 36096,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 144.188,
+      "response": "DECISION\n\nSpend the first 2-3 of the 15 remaining minutes on the single release-calendar query for source 3, write its verdict immediately, then close out. Do not open the catalog-page source; record it as a named unopened lead.\n\nSUPPORTING EVIDENCE\n\n- The quota needs a third recorded verdict. Source 3's uncertainty is resolvable by exactly one query the case calls decisive. Source 4's rejection is only \"likely\"; a licence verdict must come from the publisher's own dataset-specific instrument, which is rarely one fetch. Bounded-and-decisive beats probable-and-open-ended at 15 minutes.\n- Source 3 is the session's only potential go (useful onset question, documented target, measured train/eval/holdout capacity). Two rejections are already banked; a third closed door adds little, while a go feeds the top of the construction queue. Coverage is already 17/24 non-US, so there is no quota pressure to grab an easy reject.\n- The wrap-up notice (80% of 90 min) has effectively fired. The query is admissible only as one bounded call whose result is written before anything else; the brief's rule at the wall is \"stop probing and write up what you already have.\"\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\n\nOpen question: is the proposed feature published before the prediction instant? The calendar query is the check. Pre-commit the verdict mapping:\n\n- Release precedes the instant: go. Record the calendar quote and retrieval date, and flag that a schedule is not an observation \u2014 construction must land at least one observed period_end->published pair in timing.observations (gate 1.4.0 requires it).\n- Release follows the instant: the feature is post-hoc there. If the onset task survives without it, go with the feature excluded; otherwise reject on timing, quoting the calendar.\n- Calendar silent or schedule-only: the lag is unmeasured. Park, with the unparking question stated exactly: obtain one observed period_end->published pair from a prior release.\n\nNo unchanged retries: on error or ambiguity, park and move to writing.\n\nORDERED ACTIONS AND STOPPING CONDITION\n\n1. Run the one release-calendar query; read the result once.\n2. Write source 3's candidates/<id>/record.json: verdict, timing evidence, jurisdiction (Canada, publisher), licence class with terms quote, and the split counts and target documentation already measured.\n3. Confirm the two rejection records are on disk; write them first if they exist only in the transcript \u2014 records are what a killed session keeps.\n4. STATE.md entry: three verdicts with one-line reasons and the commands behind each measured figure; the catalog-page lead recorded unopened (URL, expected licence question) as the next session's first probe; region Canada held, no US substitution.\n5. Run scripts/check-candidate.py --all; run the unittest suite only if the clock allows \u2014 if not run, say so plainly rather than implying a pass.\n6. Inspect the diff (no credentials, no bulk data), commit, push, and read CI for that exact commit (gh api \".../actions/runs?head_sha=$(git rev-parse HEAD)\"); report CI as pending if unfinished.\n\nStopping condition: after the single query, no probing of any source, including the catalog page; records on disk outrank an extra verdict.\n\nOPERATOR REPORT (as sent)\n\n\"Canada discovery: 3 sources opened, 3 verdicts recorded; quota met, all in-region. S1 reject \u2014 licence, clause quoted. S2 reject \u2014 split capacity, measured. S3 <go|park|reject> \u2014 release calendar <shows the feature published before the prediction instant|is silent on it|places it after the instant>. If go: next action is construction, with timing.observations carrying one observed release pair. If park: unparks when one observed period_end->published pair is obtained. Catalog page 4 recorded as an unopened lead \u2014 not probed, out of clock; next session opens it first. CI on commit <sha>: <result|pending>.\"\n",
+      "response_sha256": "e505462b57d32c4ff5481b489e1f406f6f309afa344332d3efbef07f01566e55"
+    }
+  ],
+  "ledger": {
+    "calls": 27,
+    "tokens": 881013
+  },
+  "updated_at": "2026-10-22T23:04:37Z"
+}
