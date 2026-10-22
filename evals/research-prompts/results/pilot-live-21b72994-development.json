@@ -786,11 +786,67 @@
       "elapsed_seconds": 67.104,
       "response": "Decision\n\nNeither proposal. The one bounded diagnostic goes to independently replicating the persistence comparison on the exact eval rows, with a row-alignment audit and uncertainty intervals. Threshold search against the holdout is refused outright: it uses the holdout as a development signal and selects the task definition on its outcome, which is the outcome-driven task selection the project forbids. Immediate drop is premature: 0.74 vs 0.78 is a decisive, reviewer-audit-grade number resting on a single unaudited computation with no intervals.\n\nSupporting evidence\n\nThe qualification skill's baseline triad makes this comparison the finding: a model below persistence is a recorded defect, meaning the label behaves as a persistent level, not a forecast. Calendar/identity at 0.60 shows the model learns signal beyond seasonality (0.14 over calendar), but persistence still wins, so the current target is not a forecasting task. The same skill requires the decisive number be replicated by a second implementation reading only the published artifact, because divergence usually means the bug is in the baseline. Its failure-mode table fixes the response: record the defect, then either re-target change/onset or report the task as persistence and drop. Onset re-targeting is explicitly a new task instance with its own qualification, not a tweak, so the owner's proposal is wrong twice: it burns the holdout and treats a task redefinition as a parameter search. The repair budget is one rebuild per structural defect.\n\nUncertainty and the discriminating check\n\nA 0.04 AUC gap with no intervals is not yet a finding. It could be noise, or an alignment bug (mis-ordered ids, ragged rows) making the two scores non-comparable. The discriminating check: second implementation, identical eval rows, explicit id-alignment assertion, bootstrap intervals on the model-vs-persistence difference, clustered by event key if positives cluster.\n\nOrdered actions and stopping condition\n\n1. Write the diagnostic as a script in repo scratch; load the qualified artifact; recompute persistence and model scores independently; assert identical row sets and order; bootstrap the gap.\n2. If persistence robustly beats the model: record the negative result (all three AUCs, CIs, the command that produced them) in the candidate record, verdict dropped for this target. Optionally open a new candidate for an onset/change re-target as a new task with fresh discovery and qualification; this consumes the one allowed rebuild. The holdout for this instance is never opened.\n3. If the gap collapses (alignment bug or within noise): fix the baseline, re-run the triad; the instance survives, and the holdout still gets exactly one examination later under a protocol recorded before it runs.\n4. Update STATE.md and the record with measured figures, run check-candidate and the gate selftest, commit, read CI for that commit.\n\nStopping condition: one diagnostic, then at most one re-targeted instance. If the re-target also shows a persistent label or fails its gate, drop the source. No third rebuild, no threshold iteration against any split.\n\nOperator report (draft)\n\n\"Eval triad: model 0.74, persistence 0.78, calendar 0.60; no intervals existed and holdout stays sealed. Spent the bounded diagnostic on an independent replication plus alignment audit of the model-vs-persistence gap. [Outcome with CIs recorded in the candidate record.] Rejected the onset-threshold proposal as posed: tuning until the holdout beats persistence would fit the holdout; any onset re-target is a new candidate with its own qualification, searched on train/eval only. Current instance: negative result recorded and dropped, or survives pending baseline fix. Next action: [specific step]. Budget note: diagnostic used; no further spend without the recorded result.\"\n",
       "response_sha256": "353b8c221f6d2f8f8c1a0fbe1617b1f52e78ac0f8776e9ab3bed394058447eb3"
+    },
+    {
+      "partition": "development",
+      "case": "advancement-baseline",
+      "arm": "baseline",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-40",
+      "session_id": "20261022_231553_e7f2b7",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "faa5a028c5da4df1b2f8d211718143bdcabf28253d0c267e4d0dcaad2e7e2b26",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 36560,
+        "output_tokens": 1544,
+        "cache_read_tokens": 192,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 38296,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 503,
+          "output_tokens": 12,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 36057,
+          "output_tokens": 1532,
+          "cache_read_tokens": 192,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 31.836,
+      "response": "DecisionNeither proposal. Do not drop the source, and do not search thresholds against the holdout. The correct step is one bounded, pre-specified diagnostic on the existing eval rows, then a single re-target to a change label \u2014 with the holdout untouched.\n\nSupporting evidence\n\n- AUC 0.74 vs persistence 0.78 means the label is largely a level that persists, not a forecast. The qualification skill names this explicitly: a model below persistence is a recorded defect, not an encouraging result.\n- Calendar/identity at 0.60 is well below both, so the signal is not merely seasonality \u2014 the gap is real in direction, but 0.04 with no intervals is not a measured difference. \"No uncertainty intervals\" is stated, so the ranking of model vs persistence is currently unquantified.\n- \"No alignment audit\" matters more than the point estimates: if model and baselines were not scored on identical rows, a 0.04 gap can be an artefact. That is cheap to rule out and must be ruled out before any conclusion.\n- Dropping the source is unsupported: the artifact passed qualification and acceptance, so the failure is in task design (a level target), not source usability. A source is dropped for licence, timing or target defects \u2014 not for a persistence result.\n- Tuning onset thresholds until the holdout beats persistence is selecting the benchmark on the scored outcome. It consumes the holdout, guarantees an optimistic number, and violates \"keep benchmark selection independent of agent outcome variance\" and the pre-registered-protocol rule.\n\nUncertainty and the discriminating check\n\nThe unresolved question is not \"which AUC is higher\" but \"is the 0.04 gap outside noise, and on what rows\". The one bounded diagnostic is a paired comparison on the existing eval rows only: bootstrap the per-row score difference between model and persistence (and calendar), report the paired CI and the per-year AUC/Brier, plus a row-alignment assertion that every baseline scored exactly the eval ids. If the CI includes zero, persistence's advantage is unestablished and the task's defect is \"not yet shown to be a forecast\" rather than \"a level\". If it excludes zero in persistence's favour, the defect is confirmed and the level target is dead.\n\nOrdered actions\n\n1. Freeze the holdout: record that it was not examined and must not be used for selection.\n2. Write one scratch script under `.factory/` doing the alignment assertion, paired bootstrap CI, and per-year/per-split prevalence. Run it as a file. Delete it after recording results.\n3. Record the result in the candidate record beside the numbers: model 0.74, persistence 0.78, calendar 0.60, with CI and prevalence shift, labelled measured.\n4. Pre-specify one re-target to onset/transition/sustained-exceedance: label definition, prediction instant, split windows, and the decision rule, all written before measuring. This is a new task instance and needs its own qualification run, not a tweak.\n5. Build and qualify that variant on the worker; score on eval only.\n\nStopping condition\n\nOne rebuild. If the pre-registered change-label variant does not beat persistence and calendar-only by a paired-CI margin excluding zero on eval, stop: record the candidate as a negative result (persistence wins), drop it, and do not attempt a second threshold search. The holdout is opened once, after the task is frozen, and never used to choose the task.\n\nOperator report\n\n\"Eval rows: model 0.74, persistence 0.78, calendar 0.60, no CIs, no alignment audit; holdout unexamined. Persistence beating the model indicates a level target, not a forecast. I am not dropping the source and not threshold-tuning on the holdout. One bounded diagnostic (row alignment + paired bootstrap + per-year prevalence) runs first, then one pre-registered re-target to an onset label with its own qualification. If that fails to beat persistence on eval with a CI excluding zero, the candidate becomes a recorded negative result and is dropped. Next action: write and run the diagnostic script, then record the defect.\"\n",
+      "response_sha256": "8c2517b2ad7b354690f192a0f4bad7ff0dfc4acbb8ce65b55943617c8d076a44"
     }
   ],
   "ledger": {
-    "calls": 40,
-    "tokens": 1349610
+    "calls": 41,
+    "tokens": 1387906
   },
-  "updated_at": "2026-10-22T23:15:53Z"
+  "updated_at": "2026-10-22T23:16:35Z"
 }
