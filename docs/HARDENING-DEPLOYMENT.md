@@ -12,17 +12,18 @@ change is part of this rollout.
   offline preview validation, all-ten-package conformance, 26 new tests.
 - PR #3, `4584fe2`: immutable job assembly, ownership hashes and structured refusal messages,
   13 new tests. Existing unmarked bundles are preserved; changed inputs need a new attempt ID.
-- PR #4, `16efe85` (code): pinned runtime/project skill inventory, read-only drift/shadow audit,
-  source audit in CI, 12 new tests. This document is a documentation-only follow-up.
+- PR #4, `35bb2d6` (code and inventory): pinned runtime/project skill inventory, read-only drift/shadow audit,
+  source audit in CI, 12 new tests, plus corrections to the captured publishing skill.
+- PR #6, `472cf79`: pinned Hub verification and immutable tags, 18 new tests.
 - PR #5, `63472c1`: evidence patches only. They are not approved skill changes and must not
   be applied as part of deployment.
 
 Each code head passed its exact-commit GitHub Actions runs. Independent Python 3.13.1
-clean-clone results: #2 445 tests, #3 432 tests, #4 431 tests, each OK with six existing
-host-dependent skips. The combined local integration at `82acafc` passed:
+clean-clone results: #2 445 tests, #3 432 tests, #4 431 tests, #6 463 tests, each OK with six existing
+host-dependent skips. The combined local integration at `6df4a76` passed:
 
 ```text
-Ran 470 tests in 1.947s
+Ran 488 tests in 1.986s
 
 OK (skipped=6)
 ```
@@ -70,7 +71,8 @@ Do not merely update inventory hashes to make a drift alert green.
 
 1. Fetch current `main`; check for new Scout research commits and integration conflicts.
    Merge #1, #2, #3 in that order, preserving their reviewed content. Retarget #4 from #1's
-   branch to `main`, inspect its resulting diff, then merge it. Retain both STATE entries
+   branch to `main`, inspect its resulting diff, then merge it. Retarget #6 from #2 to main,
+   inspect its diff and merge it. Retain all STATE and OPERATIONS entries
    when resolving append-only conflicts. No force push to `main`.
 2. Require checks for the resulting full commit SHA, not an earlier branch head:
    `gh api "repos/earino/dataset-factory/actions/runs?head_sha=<full-sha>"`.
@@ -116,8 +118,7 @@ unknown states and Pages-pending semantics, and stronger candidate evidence vali
 Inventory coverage is explicit: additional project-relevant custom skills must be reviewed
 and mapped before calling the handoff complete. No new worker spend is implied by this list.
 
-An additional Hub integrity increment is prepared on `hardening/hub-integrity`, stacked on #2:
+PR #6 on `hardening/hub-integrity` is stacked on #2:
 existing tags never move, creation pins the verified commit, plain metadata is hashed through a
-bounded download, and size-only/bulk-without-digest cases fail. It must pass its own CI and join
-the combined integration before inclusion in this rollout. Runtime skill corrections in #4 agree
+bounded download, and size-only/bulk-without-digest cases fail. Its exact-head push and PR CI passed, and it is included in the 488-test combined integration. Runtime skill corrections in #4 agree
 with this behavior; captured originals remain in #1.
