@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "site_revision": 1,
+  "title": "TSB railway occurrence casualty",
+  "summary": "Predict whether a Canadian railway occurrence will injure or kill someone, from the operating context known when it begins - 13,732 occurrences over eleven years of the Transportation Safety Board's RODSdb.",
+  "task_type": "binary-classification",
+  "domain": "Transport safety",
+  "release_date": "2026-10-22",
+  "post": {
+    "title": "A casualty-prediction task from Canada's rail occurrence record",
+    "paragraphs": [
+      "The Transportation Safety Board of Canada publishes every railway occurrence it records: crossings, derailments, trespasser events, fires, collisions, movements exceeding authority. Access is not the contribution. The contribution is the frozen panel of 13,732 occurrences between January 2016 and August 2026, split 7,925 train / 3,831 eval / 1,976 holdout by time, and the declaration that the prediction instant is the moment the occurrence begins - before anyone knows whether it hurt somebody.",
+      "The label is the occurrence's injury outcome: at least one casualty, 11.1% of train rows, 12.1% of eval, 14.1% of holdout. It is drawn from the injury totals and corroborated against the separate injuries table, which agreed on all 1,624 positives.",
+      "The baseline is a real signal, not a straw man. The harness's own XGBoost pass reaches 0.8126 eval AUC, reproduced identically through both scoring paths, and it clears the two references that matter: a single-column activity-type rule at 0.707 and a persistence-style reference at 0.527. A naive rule does not win here."
+    ]
+  },
+  "limitations": [
+    "A derived research dataset from the TSB's RODSdb, under the Open Government Licence - Canada 2.0; the compilation is CC0 with the source attribution carried, and it is not an official TSB product.",
+    "The panel begins in 2016 because that is where the publisher's activity taxonomy stabilises; earlier occurrences use different codes and are excluded rather than silently merged. 56,865 pre-panel records and 109 post-window records are excluded, with counts recorded.",
+    "Positives are 11-14% of rows and cluster within a small number of occurrence types, so AUC is the honest score and accuracy is not.",
+    "The holdout is labelled and ships with the release. Keep its labels outside an evaluated agent's workspace.",
+    "The source is a live register; a later rebuild will not reproduce these bytes, which is why the artifact version is pinned in the manifest."
+  ]
+}
