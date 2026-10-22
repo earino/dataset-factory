@@ -68,6 +68,30 @@ class HostSupervisorTests(unittest.TestCase):
         # Evidence remains on the worker for collection; no blanket cleanup.
         self.assertTrue((self.base / 'large').exists())
 
+    def test_completed_operation_still_fails_if_it_exceeded_disk_limit(self):
+        self.job['max_disk_mb'] = 1
+        source = (self.success_source() +
+                  f'Path({str(self.base / "large")!r}).write_bytes(b"x" * (2*1024*1024))\n')
+        result = self.run_operation(source)
+        self.assertEqual('disk-limit', result['failure'])
+        self.assertEqual('failed', result['status'])
+
+    def test_failed_child_receipt_preserves_diagnostics(self):
+        source = ('import json,sys\nfrom pathlib import Path\n'
+                  'Path(sys.argv[1]).write_text(json.dumps({"job_id":"fixture",'
+                  '"status":"failed","uploaded":False,"failure":"provider-refused"}))\n')
+        result = self.run_operation(source)
+        self.assertEqual('failed', result['status'])
+        self.assertEqual('provider-refused', result['failure'])
+
+    def test_symlink_receipt_is_refused(self):
+        target = self.base / 'unrelated'
+        target.write_text('{"job_id":"fixture","status":"succeeded","uploaded":false}')
+        self.receipt.symlink_to(target)
+        result = self.run_operation('pass\n')
+        self.assertEqual('invalid-host-receipt', result['failure'])
+        self.assertTrue(self.receipt.is_symlink())
+
     def test_existing_disk_excess_refuses_before_starting(self):
         self.job['max_disk_mb'] = 1
         (self.base / 'existing').write_bytes(b'x' * (2*1024*1024))
