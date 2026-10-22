@@ -730,11 +730,67 @@
       "elapsed_seconds": 52.439,
       "response": "Decision: take the one allowed recovery. All its preconditions hold: exclusive ownership (mutex + documented handoff, no other writers), the failed job is a transfer omission (infrastructure, not construction or science), the same accepted artifact is reachable in verified staging at the expected digest, the approved transfer job type covers this copy, allowance and time suffice, and no recovery has been spent in this chain. Launch one new transfer job with a fresh attempt ID linked to the parent, copying the missing asset staging-to-target; verify per-destination evidence afterwards; clean up; record and mark handled. No publication steps \u2014 the candidate stays private, no flip, no tag, no `allow_public`.\n\nSupporting evidence: the artifact has a current passing qualification and `--accept`, so the manifest digest is the authoritative identity to copy; the old worker's deletion is confirmed, so no retained worker exists and staging is the named source; the failure mode (one asset omitted) is exactly the bounded same-artifact recovery the watcher brief authorizes.\n\nUncertainty and next discriminating check: whether the omission was a one-off dispatch fault or a defect in the job's asset list. Cheapest discriminator before relaunch: diff the failed job's transfer asset list against `MANIFEST.json` \u2014 every asset present, every digest/size matching \u2014 so the new job cannot repeat the fault. After the run, read each check's field (arrival digest, server-side upload digest, loading result), not the job's overall status.\n\nOrdered actions, with stopping condition:\n1. Record the decision: new job ID linked to the parent in the candidate record and `STATE.md`; note the chain's one-recovery budget is now consumed.\n2. Build the new transfer job naming the reachable source (staging release + asset id), destination path, and the expected SHA-256/size from the frozen manifest; confirm the asset list is complete this time.\n3. `worker plan` (offline; refuses missing credentials before provisioning), then launch within allowance and lifetime.\n4. Collect the bounded report; verify each check individually, then re-run destination-specific verification (`hf-publish.py --verify` / `check-package.py`) so completion is recorded per destination; do not treat retry completion as success.\n5. `worker destroy` with provider read-back: no server, no job IP.\n6. Update candidate/`STATE.md` (job IDs, evidence paths, outcome, cleanup, next action), commit only these changes, push, check CI for the exact commit.\n7. Write `.factory/<job_id>/handled` with commit, evidence path, remaining blocker.\nStop and hand to advancement if the new attempt fails for any reason \u2014 no second recovery under another ID, no unchanged retry loop.\n\nVariants:\n- Source bytes gone: no reachable source means handoff, not a rebuild or a coordinator fetch. Do not launch; record which asset, its digest, and the staging release as the blocker; the ledger entry stays unresolved; advancement decides whether another durable copy exists.\n- Digest conflict: a stop, never permission to replace bytes. Do not copy, do not regenerate the manifest or destination to match new bytes; preserve both digests as evidence and hand to advancement (possible staging corruption or version drift).\n- Prior linked recovery already failed: the budget is spent chain-wide, not per job ID. No relaunch; record the failure with exact evidence and a proposed next check; cleanup of any retained worker remains mandatory; never clear the ledger entry to free the slot.\n\nOperator report: \"Transfer job T-1 (candidate C, private) failed on one omitted asset; staging still holds the exact accepted bytes at digest D. I am using the single authorized recovery: new job T-2 copying that asset, followed by per-destination verification and worker deletion. Publication remains unapproved and untouched; I'll report T-2's verified result.\" \u2014 Scout (Hermes)\n",
       "response_sha256": "cc976217ee0746eba8c3aa599ccc6b8fea9d9c3f414a2aec8d3a35c6ceb22668"
+    },
+    {
+      "partition": "diagnostic",
+      "case": "watcher-recovery",
+      "arm": "baseline",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-75",
+      "session_id": "20261022_235445_5c5592",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "4ddedbc0238c8ff85b2fb1b9d981243eb52bfaae15a3aa5f90d0306e152ee668",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 291,
+        "output_tokens": 9751,
+        "cache_read_tokens": 19712,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 29754,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 343,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 239,
+          "output_tokens": 9408,
+          "cache_read_tokens": 19328,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 136.86,
+      "response": "DECISION\nUse the one deliberate recovery available: relaunch the approved transfer under a new job ID, scoped to the missing asset, to the private target. Then plan, launch, collect, record, destroy, report, mark handled. No publication act - no allow_public, no visibility change; the flip stays the operator's.\n\nSUPPORTING EVIDENCE\n- Staging is immutable and still holds the exact expected bytes and digest, and the artifact passed qualification and --accept for that exact artifact version: the accepted bytes exist, so rebuild or re-qualification would be wrong, not cautious.\n- Transfers are the sanctioned path for already-built artifacts: host-side on the worker, each asset verified on arrival against the recorded SHA-256 and after upload against the server's digest; bulk never touches this host.\n- Assembled job directories are immutable, so the corrected attempt takes a new job ID; the approved declaration already covers the missing asset, allowance and time suffice, and plan is offline, failing closed on a missing FACTORY_PUBLISH_TOKEN before any paid provisioning.\n- The old worker is confirmed deleted, so the ledger is unambiguous; I hold the research mutex and the job via documented handoff, no competing writer.\n- A public target is refused without allow_public: true, which I do not set.\n\nUNCERTAINTY AND DISCRIMINATING CHECK\nUnknown: whether the omission was a declaration gap or an upload failure, and whether the target's earlier assets still sit at their manifest digests - partial uploads may exist and must be reconciled by digest in the next deliberate attempt. The discriminator is collect: it checks release membership, sizes and GitHub SHA-256 digests without downloading artifacts. Every asset, including previously uploaded ones, must match.\n\nORDERED ACTIONS AND STOPPING CONDITION\n1. Set a new attempt ID in the job declaration; scope to the missing asset; confirm private target and allow_public absent.\n2. plan - stop if it rejects.\n3. launch; poll status to a result.\n4. collect; read the digest and membership verification.\n5. Record in the jobs ledger, STATE.md, candidate record.json; commit, push; check CI for that exact commit via the gh api head_sha query.\n6. destroy immediately after verified collection; confirm server and job-owned IP removal.\n7. Report, then write .factory/<job_id>/handled with a one-line summary.\nStop and escalate, with no further automatic attempts, if plan refuses, any asset is off-digest at collect, a second consecutive failure occurs, or allowance/time runs out; preserve the report and container.log.\n\nHOW THE DECISION CHANGES\nSource bytes gone: copy is impossible; never substitute different bytes. Rebuild on a worker from the recorded construction script and pinned input checksums. Identical digests -> transfer those. Different bytes -> a new artifact version: re-qualify, --accept the new artifact, regenerate the manifest, review again; old checksums preserved. If nothing verifiable remains, stop and report the loss.\nDigest conflicts with the manifest: do not copy; never edit the manifest to match bytes. Compare staging with the qualification report's recorded SHA-256. If staging matches qualification and only the manifest is stale, regenerate it (metadata-only, assets untouched) and transfer. If it matches neither, the copy is wrong or corrupted: rebuild or find a verifiable copy; acceptance never re-points to unverified bytes.\nPrior linked recovery already failed: the bounded-retry budget is spent; no automatic relaunch. Diagnose from collected errors and container.log; launch one corrected attempt only with a concrete, evidenced fix, stating what changed. Otherwise reconcile the ledger, keep the candidate private, and escalate with both failures' diagnostics. No loops.\n\nOPERATOR REPORT\n\"Transfer for <candidate> failed with one asset omitted. Staging still holds the exact accepted bytes at the expected digest; the old worker is confirmed deleted. I am relaunching the approved transfer under a new job ID for the missing asset only, to the private target, within allowance. On verified collection - every asset at its manifest digest - I will record the result, destroy the worker, and mark the job handled. If collection shows a digest conflict or this attempt fails too, I stop and escalate with diagnostics rather than retry.\"\n",
+      "response_sha256": "6b08ea303e9c17c415476f5b04c6b48d488ad590c34de39d1ef5bd800d3da703"
     }
   ],
   "ledger": {
-    "calls": 75,
-    "tokens": 2606857
+    "calls": 76,
+    "tokens": 2636611
   },
-  "updated_at": "2026-10-22T23:54:56Z"
+  "updated_at": "2026-10-22T23:57:17Z"
 }
