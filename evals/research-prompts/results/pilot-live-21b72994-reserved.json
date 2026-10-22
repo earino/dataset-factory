@@ -618,11 +618,67 @@
       "elapsed_seconds": 36.527,
       "response": "Decision: Advance R only, but do not start its 35-minute worker job in this tick. Keep P private; do not start Q. Use the remaining time to reconcile R and leave a durable handoff.\n\nSupporting evidence: R is packaged and actionable, so release preemption applies and Q, a construction candidate, cannot launch while R remains actionable. P is packaged with `awaiting_operator: true` and no publication approval, so it is a human wait and must stay private; scheduler priority is not publication approval. R\u2019s missing private consumer check is required evidence and cannot be inferred, sampled, or reported as complete. The supplied facts say R needs 35 minutes of worker time plus close-out, which exceeds the 10 minutes remaining. A running worker is a valid handoff only if launch and ledger recording fit before close-out; the case does not establish that, so starting the job now would risk an unreconciled paid worker.\n\nUncertainty and next discriminating check: I do not know whether R\u2019s job bundle is already assembled, whether the missing check is one consumer job, or the exact artifact/report identity. Next session should inspect R\u2019s candidate record, package manifest, job declaration, and ledger to confirm the sole missing item is the private consumer check and whether a fresh attempt ID is required. Do not infer readiness from prose.\n\nOrdered actions:\n1. Read R\u2019s record and ledger; confirm packaged status, actionable state, no active job, exact artifact version, missing consumer check, expected report, and next acceptance condition. Run local checks such as `check-package.py` only if they are fast and their results are observed.\n2. Confirm P remains private with `awaiting_operator: true`; record that no approval is present and no flip/publication occurs.\n3. Record Q as preempted by R; do not launch it.\n4. Do not launch R\u2019s 35-minute job. Write the handoff in `STATE.md` and R\u2019s record: R is first work next session; required job is the private consumer check, budget ~35 minutes plus close-out; expected compact report; acceptance requires the passing qualification report for the exact artifact and the completed consumer check. Note that no worker was created.\n5. Commit/push the state-only handoff if time permits, inspect CI for that commit, and report CI as pending if not observed.\n\nStopping condition: stop at the wrap-up notice or when roughly two minutes remain, whichever comes first. No worker launch, no publication, no claim that R\u2019s check passed.\n\nOperator report: No worker or publication action this tick. P remains private pending your recorded approval. R is the release priority, but its consumer check needs about 35 minutes plus close-out, so I did not start it with 10 minutes left; it is handed off as first work next session. Q\u2019s construction remains preempted until R is resolved.\n\n\u2014 Scout (Hermes)\n",
       "response_sha256": "79167b42d24219a4d19659037417b5af145d9e88fc220feaba3b6330955dee4e"
+    },
+    {
+      "partition": "reserved",
+      "case": "advancement-priority",
+      "arm": "baseline",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-61",
+      "session_id": "20261022_233850_cd17ec",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "31b3cf4666029d8dbcb1ab230bfc0cc92c473014c137780ab4f4d59e4562bac1",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 34209,
+        "output_tokens": 1281,
+        "cache_read_tokens": 2560,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 38050,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 4,
+          "output_tokens": 12,
+          "cache_read_tokens": 512,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 34205,
+          "output_tokens": 1269,
+          "cache_read_tokens": 2048,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 20.128,
+      "response": "Decision\n\nDo not launch R's 35-minute worker job, and do not start Q's construction. Spend the remaining ~10 minutes on the offline, non-billable part of advancing R, then hand off a pre-assembled, ready-to-launch release job to the next session. P is left untouched: it is awaiting the operator's flip, so it neither blocks work nor is mine to advance.\n\nSupporting evidence\n\n- R is `packaged` and actionable, so release priority applies: no construction job may launch while it exists (AGENTS.md \"Ship first\"; OPERATIONS.md \"Preemption\"). Q's budgeted construction step is therefore out of scope for this tick even though it is cheap.\n- R needs a 35-minute worker job plus close-out inside a 10-minute remaining window. Launching would leave a paid Hetzner worker with no collect/destroy, contradicting \"collect-then-delete-immediately\" and the rule that expiry may discard artifacts.\n- R's private consumer check is incomplete, so its package is not yet \"ready for review\" regardless: `dataset-release` requires the executed consumer path (download, checksum, qualification re-run, baseline) recorded in `VERIFICATION.md`. I cannot honestly mark that complete without the run.\n- P's `awaiting_operator: true` means the flip is the sole remaining step; the dashboard reports the wait, and asking again would be stalling.\n\nUncertainty and next discriminating check\n\nI do not know *which* consumer step is missing \u2014 download, `sha256sum -c`, gate re-run, or baseline reproduction \u2014 and that changes the job's shape and the 35-minute estimate. First action next tick: read `candidates/R/VERIFICATION.md` and the R job record and identify the absent step by name. If only the baseline reproduction is missing, it may be shorter than 35 minutes; if qualification must be re-run on the full artifact, the estimate stands. Do not treat \"incomplete\" as \"failed\" \u2014 an unfinished check is not evidence the dataset is unsuitable.\n\nOrdered actions (this tick)\n\n1. `python3 scripts/check-package.py release/<R-dir>` \u2014 confirm manifest/hash integrity and that no doc still claims completion. Record the exact output.\n2. Read R's `VERIFICATION.md`, `MANIFEST.json` and `qualification.json`; confirm the qualification report is `--accept`-able against the packaged bytes (`qualify_dataset.py --accept`). A stale report blocks the launch, not the handoff.\n3. Assemble the release job offline with `scripts/assemble-job.py` under a **new** attempt ID in R's `source/job.json`; run `worker plan` (offline) and confirm the reservation and `release: true`, so release-budget eligibility is proven without spending.\n4. Write the handoff into R's record and `STATE.md`: the named missing check, the assembled job path, the plan output, and the launch/collect/destroy command sequence.\n5. Run `scripts/check-candidate.py R` if the record changed.\n\nExplicitly not done: no worker launch, no Q construction, no change to P, no edit to R's accepted bytes or its tag.\n\nStopping condition\n\nStop when the plan output and handoff are written, when the wrap-up notice arrives, or if any action would require a worker launch to proceed \u2014 whichever is first. If `check-package.py` or `--accept` fails, stop there, record the failure verbatim as the blocker, and hand off the diagnosis rather than attempting fixes with no time to verify them.\n\nOperator report\n\nNo release was completed this tick. R is packaged and actionable but its remaining work is a ~35-minute worker consumer check that cannot fit in 10 minutes; launching without collect/destroy would leave billable infrastructure, so I refused it. I verified the package and prepared R's release job offline for immediate launch. Q's construction is held by release preemption, not dropped. P remains awaiting your flip; nothing else needs you. Next action: next session reads R's VERIFICATION.md for the one missing consumer step, then launches the assembled release job with `release: true`, collects, verifies, and destroys the worker.\n",
+      "response_sha256": "b138a973cfb9e7494ca4e39cae792cc6ff4f1552f261b3e9c5c7a06c7dab6c05"
     }
   ],
   "ledger": {
-    "calls": 61,
-    "tokens": 2088678
+    "calls": 62,
+    "tokens": 2126728
   },
-  "updated_at": "2026-10-22T23:38:57Z"
+  "updated_at": "2026-10-22T23:39:18Z"
 }
