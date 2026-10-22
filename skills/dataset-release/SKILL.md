@@ -65,21 +65,6 @@ sh scripts/scout-factory worker plan <job.json>     # always plan first
 sh scripts/scout-factory worker run  <job.json>
 ```
 
-## A reproducible claim is not a true claim
-
-Reproducing the bytes proves the pipeline, not the story told about it. Before a release goes
-out, every performance or forecasting claim in the README, card and site page must be checked
-against a **domain baseline** computed on the *published* bytes: persistence/last-value for
-level series, seasonal-naive for seasonal series, the trivial majority class for
-classification. If the baseline matches or beats the model, the claim is unsupported and the
-number comes out of the document - not softened into "promising". A reviewer who can fetch,
-unpack and re-run the artifact but cannot find the baseline is a reproducibility check only;
-record that limit in `VERIFICATION.md` rather than presenting it as validation.
-
-State claims at the resolution the split supports. An end-of-month or horizon-level statement
-derived from daily rows is a different, harder task than the one measured; either measure that
-task or describe only the task measured.
-
 ## Required evidence
 
 - `MANIFEST.json` covering **every** file in the package, with sizes and hashes.
@@ -304,8 +289,6 @@ and run its commands.
 | `PUT .../pages` answered 404 "The certificate does not exist yet" | HTTPS enforcement precedes the first deployment, and only a deployment issues the certificate | Tolerate it before a deployment, retry after one succeeds, and read the enforced state back in `verify` |
 | Website publication refuses with "dataset is private" | Correct refusal, not a defect: a public page must not link to a private destination | Complete the approved public data release first |
 | Prose says a check passed while the job record says it failed | The job's overall status was read as the check's outcome; the result carried `ok: false` | Read the specific check's field in the job result - a job can upload every file correctly and still fail the verification written beside it |
-| A published claim no baseline supports | The metric reproduced exactly, so the audit stopped at the digest and never asked whether the number meant anything | Compute the domain baseline on the released bytes and cite both; a reproducible overstatement is still an overstatement |
-| A horizon claim the split cannot support | End-of-month wording was carried over from a daily-resolution evaluation | Measure the stated horizon or narrow the sentence to the task actually measured |
 | A card fix that was never exercised | The corrected card was uploaded and the documented path never re-run against the published revision | Re-run the documented load anonymously after any card or split change; a fix is not a verification |
 | A recorded commit hash that does not exist | The hash was transcribed by hand instead of read back | Read the pin from the API and confirm the commit resolves; a 422 is the only thing that catches a corrupted tail |
 | The card's loading example promises row counts the manifest does not have | Counts are typed into the template, so they drift silently when the build changes | Derive the `configs` block and the counts from the manifest in a test (`tests/test_hf_card.py`); show the test fails on the pre-fix card |
