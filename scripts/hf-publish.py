@@ -44,10 +44,6 @@ VENV_PYTHON = Path("/opt/data/.venvs/hf/bin/python")
 # published whichever dataset was named last, which is how --plan for one dataset printed another's
 # files. Reading it before it is set is a programming error, not a fallback.
 PACKAGE = None
-# The Hugging Face path for each artifact file, from the dataset's descriptor when it declares one.
-# Austin's published card uses flat `data/` names, so its descriptor declares nothing and the
-# original rule below still produces exactly what is already published.
-HF_PATHS = {}
 # Set per run by main(). No dataset is named here: a default is how one dataset's files were
 # published under another's card.
 CANDIDATE = None
@@ -189,9 +185,11 @@ def descriptor(candidate: str) -> dict:
 
 def asset_target(manifest_data, logical):
     """Resolve the declared Hub path, retaining flat names for historical releases."""
-    if logical in HF_PATHS:
-        return HF_PATHS[logical]
-    asset_name = as_release(manifest_data).metadata["assets"][logical]["asset_name"]
+    release = as_release(manifest_data)
+    paths = release.metadata.get("hub_paths") or {}
+    if logical in paths:
+        return paths[logical]
+    asset_name = release.metadata["assets"][logical]["asset_name"]
     return f"data/{asset_name}" if logical.endswith(".csv") else asset_name
 
 
@@ -449,11 +447,10 @@ def main(argv=None):
     # The package must be chosen before anything is read from it: reading the manifest first meant
     # this ran against whichever dataset was hardcoded, whatever --candidate said.
     candidate = resolve_candidate(args.candidate)
-    global PACKAGE, HF_PATHS, CANDIDATE
+    global PACKAGE, CANDIDATE
     CANDIDATE = candidate
     PACKAGE = REPO_ROOT / "release" / candidate
     declared = descriptor(candidate)
-    HF_PATHS = declared.get("hf_paths") or {}
     manifest_data = manifest()
     m = manifest_data.metadata
     repo_id = args.repo or declared["repository"].removeprefix("https://github.com/")

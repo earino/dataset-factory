@@ -5764,3 +5764,12 @@ per dataset, test_sites.py green, check-package exit 0 for every release dir exc
 dropped nhs-ae-four-hour-decline (documented above), check-candidate --all exit 0, suite
 OK. tsb's published hub copy of MANIFEST.json predates hub_paths - harmless for consumers,
 refresh at the next approved small-file maintenance.
+
+### Hub path authority follow-up (2026-10-22)
+
+Pinned anonymous TSB metadata confirmed the original flat Hub paths. The
+concurrent candidate descriptor's new logical-path override disagreed with both
+main and the version tag. The publisher now resolves paths from the frozen
+release record, consistently with its generated card, rather than from mutable
+candidate metadata. Two regressions cover this drift and explicit structured
+manifest paths. No network tests, bulk download or remote mutation was added.
