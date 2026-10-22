@@ -991,7 +991,62 @@
       "elapsed_seconds": 24.434,
       "response": "**Decision.** Treat hf-check-12 as failed/incomplete for acceptance. Do not tag, do not write a `published` destination, do not accept the artifact. Upload success with matching digests is not the acceptance contract: verification requires the collected successful job, a passing loading check, exact manifest assets, and matching live commit/blob metadata. `loading_check.ok=false` alone fails it, and two missing splits make the release an incomplete artifact. The stale note (\"upload success means ready to tag\") is wrong and should be marked superseded, not followed.\n\n**Supporting evidence.** Digest match proves bytes arrived; it says nothing about whether the release is the complete, loadable dataset. Two expected splits are absent, so the manifest's asset set and what the Hub commit actually holds disagree \u2014 the package cannot be checked as complete. Per OPERATIONS, an incomplete/failed verification writes a diagnostic under `.factory/hub-verification/<candidate>/latest.json`, preserves the previous receipt, exits 2, and leaves `DESTINATIONS` unverified. Failed or stale reports \"cannot be upgraded by editing JSON,\" so no edit to the report makes this taggable. Tagging is last and an existing differing tag is a refusal, so a premature tag would be the irreversible mistake.\n\n**Uncertainty and next discriminating check.** The cause of the two missing splits is not established from the supplied evidence: an upload omission, a manifest that lists splits never produced, and a loader contract expecting different paths all look identical at this level. Discriminating check: diff `MANIFEST.json`'s asset names, sizes and SHA-256 against (a) the staging/public release asset list and (b) the hub commit tree the check pinned, and print the loader's expected split list. If the files exist in the manifest but not at the commit \u2192 upload/fetch gap. If they were never built \u2192 construction/package gap, and the candidate goes back a stage rather than being re-verified.\n\n**Ordered actions and stopping condition.**\n1. Confirm collection: `sh scripts/scout-factory worker collect hf-check-12`.\n2. Read the release `manifest.json` and copy only small reports into `.factory/hf-check-12/reports/` \u2014 no bulk CSV assets to this host.\n3. Treat the result as failed: record `loading_check.ok=false`, the two absent splits by name, and \"not taggable\" in `STATE.md` and the candidate's `record.json`; annotate the stale note as superseded.\n4. Commit and push, then check CI for that exact SHA with `gh api \".../actions/runs?head_sha=$(git rev-parse HEAD)\"`; report pending/failed honestly.\n5. Destroy the still-living worker: `sh scripts/scout-factory worker destroy hf-check-12`, and confirm the server and job IP are gone.\n6. Run the diff above, fix the ordinary cause, and prepare a corrected attempt under a **new job ID** (copy the declaration; use `verify_only: true` if only re-reading Hub). Re-uploading is safe \u2014 per-file uploads skip files already at the manifest digest. If the fix is a manifest/licence/loader change, regenerate the manifest and re-run `check-package.py`.\n7. Only then write `.factory/hf-check-12/handled` with the one-line summary \u2014 last, after reporting.\n\nStopping condition: stop short of `--tag` and any `published`/verified destination until a collected job passes the loading check with exact manifest assets at an exact commit; if the missing splits trace to unpublished source data or an unreadable licence, stop and record it for the operator.\n\n**Operator report.** hf-check-12 finished as a failed verification, not a releasable one. All assets uploaded with digests matching the manifest, but the loading check failed (`ok=false`) and two expected splits are missing from the release, so the artifact is incomplete and unloadable as declared. Nothing was tagged; the destination stays unverified and the release remains private. I recorded the failure and the missing splits in `STATE.md` and the candidate record, marked the \"upload success = ready to tag\" note as superseded, committed and checked CI for that commit, and destroyed the worker so it stopped billing. Next: I am diffing the manifest against the pinned commit's tree to place the gap \u2014 upload omission versus a split that was never built \u2014 then relaunching a corrected attempt under a new job ID; tagging stays blocked until that attempt passes.\n",
       "response_sha256": "0233fe0e93ba74f28e925e1f13de4380be9ef313f041a995b024428d6029d899"
+    },
+    {
+      "case": "watcher-ownership",
+      "arm": "revised",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-22",
+      "session_id": "20261022_225408_40a5b4",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "fa5eabc4823a7ad2a44932db5c448e668ab55b743028702caa00540d941031c6",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 219,
+        "output_tokens": 5292,
+        "cache_read_tokens": 32448,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 37959,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 372,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 167,
+          "output_tokens": 4920,
+          "cache_read_tokens": 32064,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 105.539,
+      "response": "Decision: defer to the owner. The advancement coordinator is active (it holds the research mutex) with uncommitted work in the tree, and no handoff was recorded. I would report status read-only and leave the event unhandled: no collection, no verification, no cleanup, no commits, no repair launch, no handled marker.\n\nSupporting evidence:\n- The brief's ownership rule: active or uncertain ownership means report the job ID and pending follow-up, leave it unhandled, defer to the owner; never delete a lock to proceed. A documented handoff is the prerequisite for handling, and none exists.\n- docs/OPERATIONS.md: the watcher itself takes the same nonblocking research mutex around deterministic collection and the whole bounded follow-up; busy ticks are silent. So even collect is unavailable while advancement holds the lock. The section also states manual writers are outside the mutex, which is why diff inspection and explicit handoffs are required \u2014 this is exactly that case.\n- OPERATIONS.md: do not delete the mutex, kill a PID from a stale file, or interrupt remote workers merely to unblock admission; advancement owns repair launches.\n- The handled marker is written only after a durable outcome and a handoff are recorded; with ownership unresolved it must not be written.\n- Uncommitted STATE.md/candidate edits are the coordinator's; committing or regenerating them is takeover, explicitly forbidden.\n\nUncertainty and next discriminating check: the result's content is unknown and cannot be verified from here \u2014 no check-level outcomes, no qualification verdict, so no figure may be quoted. Unknown whether the coordinator has already collected or destroyed the worker. The cheapest discriminating check, for the owner (or a later idle watcher tick once the mutex is free): read the job ledger and staging record \u2014 result presence, per-check outcomes, provider read-back of server and IP \u2014 which separates \"already handled\" from \"pending follow-up,\" and infrastructure vs construction vs scientific vs verification failure if it failed.\n\nOrdered actions:\n1. Read-only inspection only: job ID, ledger state, reservation, cleanup status; answer the operator from that.\n2. Touch nothing: leave the mutex, STATE.md, the candidate record, the worker (no destroy without verified collection), and the ledger unmodified; write no handled marker.\n3. Report, then stop \u2014 no polling or waiting on the mutex.\n4. Handoff path: when the coordinator's session ends it owns collect \u2192 read each required check's result \u2192 require the passing qualification report and --accept against exact bytes \u2192 destroy with provider read-back \u2192 record, then mark handled. If the coordinator never returns, the independent no-agent expiry sweep deletes the labeled worker after its lifetime (on-host sweep scheduled hourly; GitHub path multi-hour \u2014 backstops, not deadlines), and the next idle watcher tick resumes collection. Cost exposure is bounded by the reservation's cleanup-grace arithmetic, a conservative estimate, not a billing cap.\n\nStopping condition: end after this report; the event stays pending for the owner.\n\nRemain unmodified: the research mutex and session markers; all uncommitted coordinator edits; the candidate's package and qualification state; frozen manifests, digests and existing tags; allowance and gate settings; the worker and its ledger entries.\n\nOperator report (draft):\n\"Job <id> (candidate <id>) finished while the advancement coordinator is still running and holds the research session mutex, with uncommitted STATE.md and candidate edits in the tree. No handoff was recorded, so I did not collect, verify, clean up, commit, or mark the event handled \u2014 the result is uncollected and unverified, and I quote no numbers. Billable exposure is bounded by the worker's lifetime plus the independent expiry sweeps if the coordinator never returns. Next action, owned by that coordinator on session end: collect, read each check's result, require the passing qualification and --accept on the exact bytes, then destroy and confirm cleanup; the watcher records and acknowledges after that.\"\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "84ceaa38512989461b66cfa12a1ee091aa9d51de2992b5ecd52f34a19dbf0a2a"
     }
   ],
-  "updated_at": "2026-10-22T22:54:08Z"
+  "updated_at": "2026-10-22T22:55:50Z"
 }
