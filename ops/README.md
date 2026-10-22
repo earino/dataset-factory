@@ -37,3 +37,23 @@ Regenerate the three deployment exports with:
   exported and would be lost with the host.
 - Published-artifact digests are in each `release/*/MANIFEST.json`; this handoff does not duplicate
   them.
+
+## Check drift before using this handoff to recover a host
+
+```sh
+python3 scripts/check-runtime.py --source-only
+python3 scripts/check-runtime.py --home /opt/data
+```
+
+The first command checks that `ops/runtime-files.json` covers exactly the reviewed shim and
+custom-skill files and that their hashes match. CI exercises it. The second also compares live
+copies and flags profile skills with the same name as a repository skill. It is read-only, does
+not execute the files, and reports paths/reasons without their contents. Missing/changed/unsafe
+files cause a nonzero exit. A mismatch requires inspection, never automatic replacement.
+
+The inventory records source-to-host paths; after an intentional reviewed change, update its
+SHA-256 and review both diffs together. These checks establish file identity only. They do not
+verify scheduler registration, credential availability, budget, upstream Hermes behavior or
+publication. Restore only the reviewed files, preserve live state, and validate those separate
+operational prerequisites before enabling schedules. No secret or raw scheduler/session database
+belongs in this inventory.
