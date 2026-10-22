@@ -1,0 +1,604 @@
+{
+ "ok": true,
+ "dataset": "/output/extract",
+ "gate_version": "1.4.0",
+ "artifact": {
+  "train": {
+   "file": "public/train.csv",
+   "sha256": "0077b1d05911745fbadb3f267cb0bcaaba2ad13f5ce2e62620e66bcac0d26c3e",
+   "bytes": 1595889
+  },
+  "eval": {
+   "file": "public/eval.csv",
+   "sha256": "6d92549ecba4175175f78044552af4f1da0270806db2c50d84bc8da9be1a1332",
+   "bytes": 360485
+  },
+  "holdout": {
+   "file": "private/holdout.csv",
+   "sha256": "fda47a22596f6d18198ecaab61f78b2be924d6b3d594a97985b22b643fc2c051",
+   "bytes": 334714
+  },
+  "meta.json": {
+   "file": "meta.json",
+   "sha256": "23d9d0cb5aff72f7e6d062dd37a304b4e0b3c6b651b75462600ff13b61809610",
+   "bytes": 2595
+  },
+  "quality.json": {
+   "file": "quality.json",
+   "sha256": "c9a867ab7ff58a34862063a68dac747d1833480a1c6e423e1157b00baf63ac5f",
+   "bytes": 8541
+  },
+  "artifact_version": {
+   "digest": "afb46c6b29e6c4aa7668afcbd8f14c3f02ad56066bb7fbd5af263802740ad442",
+   "components": [
+    "eval",
+    "holdout",
+    "meta.json",
+    "quality.json",
+    "train"
+   ]
+  }
+ },
+ "results": [
+  {
+   "check": "descriptor",
+   "ok": true,
+   "detail": "quality.json loaded for 'abs-visitor-arrivals-direction'",
+   "evidence": {}
+  },
+  {
+   "check": "leakage.declared_columns",
+   "ok": true,
+   "detail": "every shipped column is declared",
+   "evidence": {
+    "undeclared": []
+   }
+  },
+  {
+   "check": "leakage.answer_source_absent",
+   "ok": true,
+   "detail": "no answer source or post-hoc column is shipped",
+   "evidence": {
+    "shipped_forbidden": []
+   }
+  },
+  {
+   "check": "leakage.every_column_could_be_scored",
+   "ok": true,
+   "detail": "every column was scored for leakage",
+   "evidence": {
+    "unscorable": []
+   }
+  },
+  {
+   "check": "leakage.no_single_column_determines_the_target",
+   "ok": true,
+   "detail": "no shipped column separates the classes on its own",
+   "evidence": {
+    "offenders": [],
+    "high_cardinality": [
+     "row_id@eval",
+     "row_id@holdout",
+     "row_id@train"
+    ],
+    "missing_splits": []
+   }
+  },
+  {
+   "check": "leakage.high_cardinality_declared",
+   "ok": true,
+   "detail": "high-cardinality columns are declared as identifiers or free fields",
+   "evidence": {
+    "undeclared": [],
+    "declared": [
+     "row_id"
+    ]
+   }
+  },
+  {
+   "check": "timing.prediction_time_declared",
+   "ok": true,
+   "detail": "prediction instant is declared",
+   "evidence": {}
+  },
+  {
+   "check": "timing.no_post_hoc_feature",
+   "ok": true,
+   "detail": "no feature is documented as post-hoc",
+   "evidence": {
+    "overlap": []
+   }
+  },
+  {
+   "check": "timing.label_source_is_not_a_feature",
+   "ok": true,
+   "detail": "the label source is not a feature",
+   "evidence": {
+    "source_features": []
+   }
+  },
+  {
+   "check": "timing.every_feature_documented",
+   "ok": true,
+   "detail": "features documented as available 'prediction_time'",
+   "evidence": {
+    "features_documented_at": "prediction_time"
+   }
+  },
+  {
+   "check": "timing.instant_declared",
+   "ok": true,
+   "detail": "prediction instant kind='publication' citation=True",
+   "evidence": {
+    "prediction_instant": {
+     "kind": "publication",
+     "period": "M",
+     "days_after_period_end": 43,
+     "citation": "ABS OAD release calendar, observed 2026-10-22: Aug 2026 released 2026-10-13 (43 days), Jul 2026 released 2026-09-11 (42 days), Apr 2026 released 2026-06-12 (43 days); next-release schedule Oct 2026 due 2026-12-15, Nov 2026 due 2027-01-19"
+    }
+   }
+  },
+  {
+   "check": "timing.publication_lag_measured",
+   "ok": true,
+   "detail": "3 of 3 observed period_end -> published dates are usable (statistical release: at least one observed publication date is required)",
+   "evidence": {
+    "observations": [
+     {
+      "period": "2026-08",
+      "period_end": "2026-08-31",
+      "published": "2026-10-13"
+     },
+     {
+      "period": "2026-07",
+      "period_end": "2026-07-31",
+      "published": "2026-09-11"
+     },
+     {
+      "period": "2026-04",
+      "period_end": "2026-04-30",
+      "published": "2026-06-12"
+     }
+    ],
+    "measured_lag_days": 43,
+    "source_kind": "statistical_release"
+   }
+  },
+  {
+   "check": "timing.features_available_at_instant",
+   "ok": true,
+   "detail": "features publish 43d after the period, instant is 43d after it",
+   "evidence": {
+    "features_lag_days": 43,
+    "instant_lag_days": 43,
+    "measured_lag_days": 43
+   }
+  },
+  {
+   "check": "timing.instant_accounts_for_publication_lag",
+   "ok": true,
+   "detail": "instant is a publication instant",
+   "evidence": {
+    "kind": "publication",
+    "features_lag_days": 43
+   }
+  },
+  {
+   "check": "timing.selection_uses_only_available_data",
+   "ok": true,
+   "detail": "row selection declares its latest period as 'M'",
+   "evidence": {
+    "latest_period_used": "M",
+    "fields": [
+     "COUNTRY_RESID",
+     "target_month"
+    ]
+   }
+  },
+  {
+   "check": "units.measured_columns_declare_unit_and_frame",
+   "ok": true,
+   "detail": "13 measured column(s) declare unit and frame",
+   "evidence": {
+    "measurements": [
+     {
+      "column": "val_m",
+      "unit": "short-term visitor arrivals (persons), Original series",
+      "frame": "OBS_VALUE of the CAT_TRAVELLER=06 series at month M = target month T minus one, the last month published at the prediction instant; current vintage (ABS revises post-release, so this is stated as current-vintage with the cutoff a documented assumption)"
+     },
+     {
+      "column": "val_m1",
+      "unit": "persons (Original series)",
+      "frame": "OBS_VALUE at M-1 (two months before the target month)"
+     },
+     {
+      "column": "val_m2",
+      "unit": "persons (Original series)",
+      "frame": "OBS_VALUE at M-2 (three months before the target month)"
+     },
+     {
+      "column": "val_m3",
+      "unit": "persons (Original series)",
+      "frame": "OBS_VALUE at M-3 (four months before the target month)"
+     },
+     {
+      "column": "val_m6",
+      "unit": "persons (Original series)",
+      "frame": "OBS_VALUE at M-6 (seven months before the target month)"
+     },
+     {
+      "column": "val_m12",
+      "unit": "persons (Original series)",
+      "frame": "OBS_VALUE at M-12 (thirteen months before the target month); diff_yoy_m = val_m - val_m12 is the YoY difference observed at M, the persistence analogue - the sign the task must beat"
+     },
+     {
+      "column": "diff_mom",
+      "unit": "persons (difference)",
+      "frame": "val_m - val_m1, the month-over-month change at the prediction instant"
+     },
+     {
+      "column": "diff_quarter",
+      "unit": "persons (difference)",
+      "frame": "val_m - val_m3"
+     },
+     {
+      "column": "diff_half",
+      "unit": "persons (difference)",
+      "frame": "val_m - val_m6"
+     },
+     {
+      "column": "diff_yoy_m",
+      "unit": "persons (difference)",
+      "frame": "val_m - val_m12, the year-on-year difference at the prediction instant"
+     },
+     {
+      "column": "country_resid",
+      "unit": "CL_OAD_ARRIVALS_COUNTRY codelist code",
+      "frame": "country (or area) of residence; 78 codes in the codelist, the in-panel visitor series carries 70; names recorded in summary.json"
+     },
+     {
+      "column": "target_month",
+      "unit": "calendar month (YYYY-MM)",
+      "frame": "the target month T = M+1, the first month unpublished at the prediction instant; the time column and the conservative event key (positives cluster in calendar time through shared Australian conditions)"
+     },
+     {
+      "column": "fell_short",
+      "unit": "binary indicator",
+      "frame": "1 iff OBS_VALUE(T) < OBS_VALUE(T-12); exact ties are 0 and counted flat; both source values are excluded from the shipped columns"
+     }
+    ]
+   }
+  },
+  {
+   "check": "units.known_event_fixture_recorded",
+   "ok": true,
+   "detail": "no external threshold, so no known-event fixture is required",
+   "evidence": {}
+  },
+  {
+   "check": "splits.time_column_declared",
+   "ok": true,
+   "detail": "split overlap is checked against 'target_month'",
+   "evidence": {}
+  },
+  {
+   "check": "splits.machine_readable_windows",
+   "ok": true,
+   "detail": "train/eval/holdout windows are declared with start/end",
+   "evidence": {
+    "split_windows": {
+     "train": {
+      "start": "1992-02",
+      "end": "2015-01"
+     },
+     "eval": {
+      "start": "2015-01",
+      "end": "2020-01"
+     },
+     "holdout": {
+      "start": "2022-01",
+      "end": "2026-09"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.files_present",
+   "ok": true,
+   "detail": "all three split files exist",
+   "evidence": {
+    "missing": []
+   }
+  },
+  {
+   "check": "splits.non_empty",
+   "ok": true,
+   "detail": "every split has rows",
+   "evidence": {
+    "train": {
+     "rows": 19071,
+     "positives": 6668,
+     "negatives": 12403,
+     "positive_rate": 0.349641
+    },
+    "eval": {
+     "rows": 4140,
+     "positives": 1204,
+     "negatives": 2936,
+     "positive_rate": 0.290821
+    },
+    "holdout": {
+     "rows": 3920,
+     "positives": 768,
+     "negatives": 3152,
+     "positive_rate": 0.195918
+    }
+   }
+  },
+  {
+   "check": "splits.eval_and_holdout_have_both_classes",
+   "ok": true,
+   "detail": "eval and holdout each contain positives and negatives",
+   "evidence": {
+    "train": {
+     "rows": 19071,
+     "positives": 6668,
+     "negatives": 12403,
+     "positive_rate": 0.349641
+    },
+    "eval": {
+     "rows": 4140,
+     "positives": 1204,
+     "negatives": 2936,
+     "positive_rate": 0.290821
+    },
+    "holdout": {
+     "rows": 3920,
+     "positives": 768,
+     "negatives": 3152,
+     "positive_rate": 0.195918
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_declared",
+   "ok": true,
+   "detail": "eval and holdout declare positives and distinct events",
+   "evidence": {
+    "declared": {
+     "train": {
+      "positives": 6668,
+      "distinct_events": 275
+     },
+     "eval": {
+      "positives": 1204,
+      "distinct_events": 60
+     },
+     "holdout": {
+      "positives": 768,
+      "distinct_events": 45
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_match_rows",
+   "ok": true,
+   "detail": "declared positive counts match the rows",
+   "evidence": {
+    "mismatched": []
+   }
+  },
+  {
+   "check": "splits.event_key_column_declared",
+   "ok": true,
+   "detail": "clustered events are counted by 'target_month' (date part)",
+   "evidence": {}
+  },
+  {
+   "check": "splits.distinct_events_match_rows",
+   "ok": true,
+   "detail": "declared clustered event counts match the rows",
+   "evidence": {
+    "recomputed": {
+     "train": 275,
+     "eval": 60,
+     "holdout": 45
+    },
+    "declared": {
+     "train": {
+      "positives": 6668,
+      "distinct_events": 275
+     },
+     "eval": {
+      "positives": 1204,
+      "distinct_events": 60
+     },
+     "holdout": {
+      "positives": 768,
+      "distinct_events": 45
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.enough_clustered_positives",
+   "ok": true,
+   "detail": "eval and holdout carry enough independent positive events to score",
+   "evidence": {
+    "thin": [],
+    "recomputed_events": {
+     "train": 275,
+     "eval": 60,
+     "holdout": 45
+    },
+    "minimums": {
+     "positives": 30,
+     "distinct_events": 20
+    }
+   }
+  },
+  {
+   "check": "splits.rates_not_uniform",
+   "ok": true,
+   "detail": "positive rates are between 0 and 1",
+   "evidence": {
+    "rates": [
+     0.349641,
+     0.290821,
+     0.195918
+    ]
+   }
+  },
+  {
+   "check": "splits.actual_ranges_computed",
+   "ok": true,
+   "detail": "row timestamps found for every split",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "1992-02",
+      "max": "2014-12"
+     },
+     "eval": {
+      "min": "2015-01",
+      "max": "2019-12"
+     },
+     "holdout": {
+      "min": "2022-01",
+      "max": "2026-08"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.actual_ranges_disjoint",
+   "ok": true,
+   "detail": "the rows of the three splits occupy disjoint periods",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "1992-02",
+      "max": "2014-12"
+     },
+     "eval": {
+      "min": "2015-01",
+      "max": "2019-12"
+     },
+     "holdout": {
+      "min": "2022-01",
+      "max": "2026-08"
+     }
+    },
+    "overlaps": []
+   }
+  },
+  {
+   "check": "splits.rows_within_declared_windows",
+   "ok": true,
+   "detail": "every row falls inside its split's declared window",
+   "evidence": {
+    "windows": {
+     "train": {
+      "start": "1992-02",
+      "end": "2015-01"
+     },
+     "eval": {
+      "start": "2015-01",
+      "end": "2020-01"
+     },
+     "holdout": {
+      "start": "2022-01",
+      "end": "2026-09"
+     }
+    },
+    "ranges": {
+     "train": {
+      "min": "1992-02",
+      "max": "2014-12"
+     },
+     "eval": {
+      "min": "2015-01",
+      "max": "2019-12"
+     },
+     "holdout": {
+      "min": "2022-01",
+      "max": "2026-08"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.no_cross_split_entities",
+   "ok": true,
+   "detail": "no row_id appears in more than one split",
+   "evidence": {
+    "shared_sample": [],
+    "shared_count": 0
+   }
+  },
+  {
+   "check": "splits.duplicate_entities_within_splits",
+   "ok": true,
+   "detail": "0 repeated-identifier rows within splits, at most the declared 0",
+   "evidence": {
+    "duplicate_rows": {},
+    "declared": 0
+   }
+  },
+  {
+   "check": "runner.layout",
+   "ok": true,
+   "detail": "holdout is private and train/eval are public",
+   "evidence": {}
+  },
+  {
+   "check": "runner.meta_json_keys",
+   "ok": true,
+   "detail": "meta.json carries the keys the runner reads",
+   "evidence": {
+    "keys": [
+     "built_at_utc",
+     "columns",
+     "description",
+     "features",
+     "id_columns",
+     "label_rule",
+     "label_source_columns",
+     "license",
+     "name",
+     "positive_label",
+     "positive_rate",
+     "prediction_time",
+     "rows",
+     "source",
+     "source_sha256",
+     "split",
+     "target",
+     "vintage_last_modified"
+    ]
+   }
+  },
+  {
+   "check": "runner.meta_matches_files",
+   "ok": true,
+   "detail": "meta.json agrees with the split files",
+   "evidence": {
+    "problems": []
+   }
+  },
+  {
+   "check": "runner.meta_counts_match_files",
+   "ok": true,
+   "detail": "meta rows and rates match the files",
+   "evidence": {}
+  },
+  {
+   "check": "runner.id_columns_are_not_features",
+   "ok": true,
+   "detail": "declared identifiers are not also listed as features",
+   "evidence": {}
+  }
+ ],
+ "failed_checks": []
+}

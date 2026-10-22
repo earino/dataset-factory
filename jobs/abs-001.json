@@ -1,0 +1,549 @@
+{
+  "job": {
+    "id": "abs-001",
+    "candidate": "abs-visitor-arrivals-direction",
+    "image": "python:3.13-slim",
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 3072,
+    "timeout_minutes": 20,
+    "lifetime_minutes": 45,
+    "max_disk_mb": 4000,
+    "max_artifact_mb": 100,
+    "source_files": [
+      {
+        "bundled_as": "build.py",
+        "source": "candidates/abs-visitor-arrivals-direction/source/build.py",
+        "bytes": 42949,
+        "sha256": "a2c88f0c2ee61ed4441ee610c4211ee718789ac0e61834a6e667da3d1ee0c2fa"
+      },
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/abs-visitor-arrivals-direction/source/run.sh",
+        "bytes": 1378,
+        "sha256": "4b842caa2b22365ca1a4e32d56e1fe4eeabb5a332928891490b23875ca36d07b"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 44907,
+        "sha256": "4e51d2e9494fd66dd220517476119d7b3f2edea4ffde276caa90999a28cc0a87"
+      }
+    ]
+  },
+  "reservation_eur": "0.04",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 2,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 143360,
+  "source_sha256": "a409fa835bf1ad6a1651185d782d696d0a7075b2629f0480e285adeb05ad3064",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-10-22T10:14:40.699172+00:00",
+  "expires": 1792666780,
+  "budget_months": [
+    "2026-10"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 171801245,
+  "known_hosts": "/opt/data/dataset-factory/.factory/abs-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "65.21.158.17",
+  "result": {
+    "job_id": "abs-001",
+    "status": "succeeded",
+    "uploaded": true,
+    "image_id": "sha256:27b7c9d4f13ca20bb1170148f02095d50a5dfce1f7f2dabf5ca273727e43b7ea",
+    "image_digests": [
+      "python@sha256:27b7c9d4f13ca20bb1170148f02095d50a5dfce1f7f2dabf5ca273727e43b7ea"
+    ],
+    "exit_code": 0,
+    "oom_killed": false,
+    "elapsed_seconds": 19.3,
+    "summary": {
+      "name": "abs-visitor-arrivals-direction",
+      "built_at_utc": "2026-10-22T10:17:06Z",
+      "sources": {
+        "panel": {
+          "url": "https://data.api.abs.gov.au/rest/data/ABS,OAD_COUNTRY,1.0.0/all?format=csv&startPeriod=1991-01",
+          "bytes": 3308454,
+          "last_modified": null,
+          "seconds": 3.8,
+          "sha256": "b9674976aa381693956803aa3fc96976f586ff7f1c7ced9c50d6e6cc4c209a8b"
+        },
+        "structure": {
+          "url": "https://data.api.abs.gov.au/rest/dataflow/ABS/OAD_COUNTRY?references=all",
+          "bytes": 100939,
+          "last_modified": null,
+          "seconds": 0.8,
+          "sha256": "b4e6313c9dbef7d47670b35509dbe7588732ecd1f300f732ccb69d5ecb841272"
+        }
+      },
+      "grain": "one row per (COUNTRY_RESID, target month) on the CAT_TRAVELLER=06 short-term visitor arrivals series, TSEST=10",
+      "panel": {
+        "rows_fetched": 59452,
+        "mix": {
+          "CAT_TRAVELLER": {
+            "06": 29743,
+            "05": 29709
+          },
+          "TSEST": {
+            "10": 59452
+          },
+          "FREQ": {
+            "M": 59452
+          },
+          "OBS_STATUS": {
+            "": 59452
+          },
+          "UNIT_MEASURE": {
+            "NUM": 59452
+          }
+        },
+        "obs_comment_nonempty": 0,
+        "missing_obs_value": 0,
+        "non_integer_obs_value": 0,
+        "months": {
+          "min": "1991-01",
+          "max": "2026-08",
+          "count": 428
+        },
+        "countries_all_rows": 77,
+        "countries_by_traveller_category": {
+          "06": 70,
+          "05": 70
+        },
+        "countries_visitor_series": 70
+      },
+      "country_names": {
+        "1201": "New Zealand",
+        "1301": "New Caledonia",
+        "1302": "Papua New Guinea",
+        "1304": "Vanuatu",
+        "1502": "Fiji",
+        "21": "UK, CIs & IOM",
+        "2201": "Ireland",
+        "2301": "Austria",
+        "2302": "Belgium",
+        "2303": "France",
+        "2304": "Germany",
+        "2308": "Netherlands",
+        "2311": "Switzerland",
+        "2401": "Denmark",
+        "2403": "Finland",
+        "2406": "Norway",
+        "2407": "Sweden",
+        "3104": "Italy",
+        "3108": "Spain",
+        "3307": "Poland",
+        "3308": "Russian Federation",
+        "4203": "Iran",
+        "4205": "Israel",
+        "4213": "Saudi Arabia",
+        "4216": "United Arab Emirates",
+        "5102": "Cambodia",
+        "5104": "Thailand",
+        "5105": "Vietnam",
+        "5202": "Indonesia",
+        "5203": "Malaysia",
+        "5204": "Philippines",
+        "5205": "Singapore",
+        "6101": "China",
+        "6102": "Hong Kong",
+        "6105": "Taiwan",
+        "6201": "Japan",
+        "6203": "Korea, South",
+        "7101": "Bangladesh",
+        "7103": "India",
+        "7105": "Nepal",
+        "7106": "Pakistan",
+        "7107": "Sri Lanka",
+        "8102": "Canada",
+        "8104": "United States of America",
+        "8201": "Argentina",
+        "8203": "Brazil",
+        "8204": "Chile",
+        "8205": "Colombia",
+        "8306": "Mexico",
+        "9225": "South Africa",
+        "NI": "Not stated/Inadequately described",
+        "OT1": "Other Oceania and Antarctica",
+        "OT2": "Other North-West Europe",
+        "OT3": "Other Southern and Eastern Europe",
+        "OT4": "Other North Africa and the Middle East",
+        "OT5": "Other South-East Asia",
+        "OT6": "Other North-East Asia",
+        "OT7": "Other Southern and Central Asia",
+        "OT8": "Other Americas",
+        "OT9": "Other Sub-Saharan Africa",
+        "TO1": "Total Oceania and Antarctica",
+        "TO2": "Total North-West Europe",
+        "TO3": "Total Southern and Eastern Europe",
+        "TO4": "Total North Africa and the Middle East",
+        "TO5": "Total South-East Asia",
+        "TO6": "Total North-East Asia",
+        "TO7": "Total Southern and Central Asia",
+        "TO8": "Total Americas",
+        "TO9": "Total Sub-Saharan Africa",
+        "TOT": "Total"
+      },
+      "splits": {
+        "train": {
+          "rows": 19071,
+          "positives": 6668,
+          "flat_label_zero_rows": 310,
+          "positive_rate": 0.349641,
+          "distinct_event_months": 275
+        },
+        "eval": {
+          "rows": 4140,
+          "positives": 1204,
+          "flat_label_zero_rows": 44,
+          "positive_rate": 0.290821,
+          "distinct_event_months": 60
+        },
+        "holdout": {
+          "rows": 3920,
+          "positives": 768,
+          "flat_label_zero_rows": 72,
+          "positive_rate": 0.195918,
+          "distinct_event_months": 45
+        }
+      },
+      "eligibility": {
+        "accounting": {
+          "insufficient_history": 224,
+          "unobserved_target": 10,
+          "pandemic_excluded": 1662,
+          "outside_windows": 0,
+          "live_month_scorable_rows": 70
+        },
+        "pandemic_texture": {
+          "up": 494,
+          "down": 1085,
+          "flat": 83
+        },
+        "pandemic_per_year_texture": {
+          "2020": {
+            "up": 59,
+            "down": 766,
+            "flat": 3
+          },
+          "2021": {
+            "down": 319,
+            "up": 435,
+            "flat": 80
+          }
+        },
+        "per_year_texture": {
+          "train": {
+            "1992": {
+              "down": 249,
+              "up": 472,
+              "flat": 18
+            },
+            "1993": {
+              "up": 588,
+              "down": 201,
+              "flat": 30
+            },
+            "1994": {
+              "up": 644,
+              "down": 172,
+              "flat": 23
+            },
+            "1995": {
+              "up": 580,
+              "down": 242,
+              "flat": 18
+            },
+            "1996": {
+              "up": 611,
+              "down": 208,
+              "flat": 21
+            },
+            "1997": {
+              "up": 553,
+              "down": 269,
+              "flat": 18
+            },
+            "1998": {
+              "down": 329,
+              "up": 497,
+              "flat": 14
+            },
+            "1999": {
+              "up": 579,
+              "down": 251,
+              "flat": 10
+            },
+            "2000": {
+              "up": 609,
+              "down": 219,
+              "flat": 12
+            },
+            "2001": {
+              "up": 398,
+              "down": 431,
+              "flat": 11
+            },
+            "2002": {
+              "down": 490,
+              "up": 342,
+              "flat": 8
+            },
+            "2003": {
+              "down": 413,
+              "up": 414,
+              "flat": 13
+            },
+            "2004": {
+              "up": 557,
+              "down": 255,
+              "flat": 22
+            },
+            "2005": {
+              "up": 567,
+              "down": 253,
+              "flat": 8
+            },
+            "2006": {
+              "up": 495,
+              "down": 319,
+              "flat": 14
+            },
+            "2007": {
+              "up": 584,
+              "down": 232,
+              "flat": 12
+            },
+            "2008": {
+              "down": 292,
+              "up": 525,
+              "flat": 11
+            },
+            "2009": {
+              "up": 487,
+              "down": 339,
+              "flat": 2
+            },
+            "2010": {
+              "down": 285,
+              "up": 532,
+              "flat": 11
+            },
+            "2011": {
+              "up": 399,
+              "down": 423,
+              "flat": 6
+            },
+            "2012": {
+              "up": 550,
+              "down": 266,
+              "flat": 12
+            },
+            "2013": {
+              "up": 516,
+              "down": 304,
+              "flat": 8
+            },
+            "2014": {
+              "down": 226,
+              "up": 594,
+              "flat": 8
+            }
+          },
+          "eval": {
+            "2015": {
+              "up": 545,
+              "down": 275,
+              "flat": 8
+            },
+            "2016": {
+              "up": 649,
+              "down": 169,
+              "flat": 10
+            },
+            "2017": {
+              "down": 204,
+              "up": 613,
+              "flat": 11
+            },
+            "2018": {
+              "up": 604,
+              "down": 218,
+              "flat": 6
+            },
+            "2019": {
+              "up": 481,
+              "down": 338,
+              "flat": 9
+            }
+          },
+          "holdout": {
+            "2022": {
+              "up": 821,
+              "down": 6,
+              "flat": 13
+            },
+            "2023": {
+              "up": 788,
+              "down": 39,
+              "flat": 13
+            },
+            "2024": {
+              "up": 566,
+              "down": 258,
+              "flat": 16
+            },
+            "2025": {
+              "up": 600,
+              "down": 222,
+              "flat": 18
+            },
+            "2026": {
+              "up": 305,
+              "down": 243,
+              "flat": 12
+            }
+          }
+        }
+      },
+      "known_events": {
+        "border_closure_2020": {
+          "window": "2020 (excluded pandemic target months)",
+          "rows": 828,
+          "down_share": 0.9251,
+          "threshold": 0.75,
+          "source": "ABS OAD; candidate record known_event_fixtures (border closed March 2020; measured both-category 2020 YoY down 1,492 / up 159 at discovery)"
+        },
+        "reopening_2022": {
+          "window": "2022 (holdout target months)",
+          "rows": 840,
+          "up_share": 0.9774,
+          "threshold": 0.75,
+          "source": "ABS OAD; candidate record known_event_fixtures (reopening from November 2021; measured both-category 2022 YoY up 1,645 / down 9 at discovery)"
+        }
+      },
+      "reference_baselines": {
+        "note": "stdlib rank AUC measured at construction on the written rows; rate tables estimated on train rows only. The full-model leg of the triad is the runner-contract baseline job on the accepted artifact.",
+        "global_rate_train": 0.349641,
+        "eval": {
+          "persistence_yoy_sign_auc": 0.3647,
+          "identity_only_country_auc": 0.572,
+          "calendar_only_country_month_auc": 0.5501,
+          "persistence_sign_accuracy": 0.6655
+        },
+        "holdout": {
+          "persistence_yoy_sign_auc": 0.2256,
+          "identity_only_country_auc": 0.5317,
+          "calendar_only_country_month_auc": 0.5364,
+          "persistence_sign_accuracy": 0.8064
+        }
+      },
+      "vintage": {
+        "panel_max_month": "2026-08",
+        "last_modified": null,
+        "revision_note": "ABS revises after linked Medicare data arrives (record: March 2026 revised in the April 2026 issue); only the current vintage is downloadable, so features are current-vintage and the cutoff is a documented assumption"
+      },
+      "pandemic_window": {
+        "target_months": "2020-01..2021-12",
+        "rows_excluded_and_counted": 1662,
+        "label_texture": {
+          "up": 494,
+          "down": 1085,
+          "flat": 83
+        },
+        "per_year_label_texture": {
+          "2020": {
+            "up": 59,
+            "down": 766,
+            "flat": 3
+          },
+          "2021": {
+            "down": 319,
+            "up": 435,
+            "flat": 80
+          }
+        },
+        "note": "border closed: the YoY sign is degenerate; values remain legitimate feature history for 2022 rows (published before those rows' prediction instants)"
+      }
+    },
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 420574099,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-28589f461375678091af",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-28589f461375678091af/manifest.json",
+    "assets": [
+      {
+        "id": 665467151,
+        "size": 2595,
+        "sha256": "23d9d0cb5aff72f7e6d062dd37a304b4e0b3c6b651b75462600ff13b61809610"
+      },
+      {
+        "id": 665467236,
+        "size": 334714,
+        "sha256": "fda47a22596f6d18198ecaab61f78b2be924d6b3d594a97985b22b643fc2c051"
+      },
+      {
+        "id": 665467319,
+        "size": 360485,
+        "sha256": "6d92549ecba4175175f78044552af4f1da0270806db2c50d84bc8da9be1a1332"
+      },
+      {
+        "id": 665467379,
+        "size": 1595889,
+        "sha256": "0077b1d05911745fbadb3f267cb0bcaaba2ad13f5ce2e62620e66bcac0d26c3e"
+      },
+      {
+        "id": 665467454,
+        "size": 8541,
+        "sha256": "c9a867ab7ff58a34862063a68dac747d1833480a1c6e423e1157b00baf63ac5f"
+      },
+      {
+        "id": 665467504,
+        "size": 8613,
+        "sha256": "8ebfff2c7c5505ca40da8747ef6109b5988f8571abc0fd8e01ff55251454209d"
+      },
+      {
+        "id": 665467546,
+        "size": 14381,
+        "sha256": "3589d5e2ea75397fe0ce51c4a43fad2b95c2699593092a9f79e0629df8df865f"
+      },
+      {
+        "id": 665467605,
+        "size": 14381,
+        "sha256": "3589d5e2ea75397fe0ce51c4a43fad2b95c2699593092a9f79e0629df8df865f"
+      },
+      {
+        "id": 665467657,
+        "size": 8613,
+        "sha256": "8ebfff2c7c5505ca40da8747ef6109b5988f8571abc0fd8e01ff55251454209d"
+      },
+      {
+        "id": 665467725,
+        "size": 143360,
+        "sha256": "a409fa835bf1ad6a1651185d782d696d0a7075b2629f0480e285adeb05ad3064"
+      },
+      {
+        "id": 665467810,
+        "size": 18386,
+        "sha256": "c914f01395ee0c08f132c731c0e90bfa40f78b579d186947d9773ce4b013f25d"
+      },
+      {
+        "id": 665467874,
+        "size": 17359,
+        "sha256": "ebf8348c5bff5eacac878b304604219e62725f3c647ee332850361570fca6737"
+      }
+    ]
+  },
+  "collected_at": "2026-10-22T10:22:55.333938+00:00",
+  "deleted_at": "2026-10-22T10:26:49.501798+00:00"
+}

@@ -5404,3 +5404,62 @@ both paths; references: item prior 0.5354, momentum 0.5001, reversal 0.4974, n_o
 persistence dominance. Source CC BY 4.0, compilation CC0, code MIT. Both destinations public and digest-verified
 anonymously. Site page still pending: the site publisher raises an untyped TypeError on this package (manifest
 splits now populated, source block shaped, DESTINATIONS matched) and needs a real traceback pass.
+
+**Correction to the entry above (found and verified by this session, 2026-10-22 ~10:05Z): the my-pricecatcher
+site page IS live and complete.** The TypeError was fixed and the site published by the 09:51Z session (commits
+`1bbd61d` "PriceCatcher: website live; fix manifest splits and Hub tag reconciliation" and `01905d5`), which never
+updated STATE.md. Verified anonymously by this session before writing the correction: page
+https://earino.github.io/my-pricecatcher-weekly-increase/ = 200 (8,818 bytes), versioned page
+.../versions/v2026.10/ = 200, and the catalogue (dataset-factory-site catalog.json, 204,188 bytes) lists the
+release with the matching artifact_version 06c5cd6f8a74aef9. The candidate record's website artifact entry
+(verified=true, "No further action") was right; STATE.md was the stale surface. Nothing remains for that dataset.
+
+## 2026-10-22 (later) - advancement tick: abs-visitor-arrivals-direction constructed, gated 38/38, baselined through the runner contract
+
+Release work first: no candidate sits at `packaged` (checked with .factory/session_status.py over every
+candidates/*/record.json), and the only stale release surface - the my-pricecatcher STATE.md entry above - was
+corrected after anonymous verification. Both data destinations for every published candidate answer 200
+anonymously; nothing actionable was held, so the tick went to construction.
+
+`abs-visitor-arrivals-direction` went **ready -> qualified -> baselined inside one tick**, the queue's top
+class-A candidate (licence-rank.py) and the cheapest measured build on the bench (1 anonymous GET,
+3,308,454 bytes).
+
+- **Construction (abs-001)**, worker 171801245 (cx23, 19.3 s job elapsed, exit 0, EUR 0.04 reservation,
+  destroyed 10:26:49Z): build `candidates/abs-visitor-arrivals-direction/source/build.py` fetches the full
+  OAD_COUNTRY panel + structure, builds the (country, target month) visitor-series panel
+  (CAT_TRAVELLER=06, TSEST=10 only), features = levels at M/M-1/M-2/M-3/M-6/M-12 + four differences + country +
+  calendar, label = fell_short iff OBS_VALUE(T) < OBS_VALUE(T-12), both label source values excluded from every
+  written header. Shipped: train 19,071 / 6,668 positives (34.96%) / 275 event months (1992-02..2014-12); eval
+  4,140 / 1,204 (29.08%) / 60 months (2015-2019); holdout 3,920 / 768 (19.59%) / 45 months (2022-01..2026-08);
+  1,662 pandemic target months excluded and counted (2020 down-share 0.9251, 2021 reopening recorded), 224
+  insufficient-history and 10 unobserved-target rows accounted, 70 live-month rows scorable at the next OAD
+  release. Panel provenance asserted single-stream: TSEST=10 only, FREQ=M only, UNIT_MEASURE=NUM only,
+  OBS_STATUS empty on all 59,452 rows, 0 missing OBS_VALUE.
+- **Qualification**: gate 1.4.0 green on the worker over the full artifact - 38/38 checks, artifact
+  `afb46c6b29e6c4aa...`; staging release 420574099; the five extract files and the gate report re-downloaded on
+  the coordinator, every digest matched the release manifest, and `qualify_dataset.py --accept` re-verified the
+  collected bytes -> ACCEPTED. Record now carries the full qualification block; `check-candidate.py --all` exit 0.
+- **Baseline (abs-baseline-001)**, worker 171804060 (76.6 s, exit 0, EUR 0.06 reservation, destroyed
+  10:37:25Z), report at staging 420587459: the benchmark's own train.py/validate.sh unmodified (bundled hashes
+  match) on the re-ACCEPTed artifact. **Triad complete on identical eval rows: persistence (YoY sign at M)
+  0.3647 < calendar-only 0.5501 < identity-only 0.5720 < full model 0.6219** (validate.py independently
+  recomputes 0.6219; CONTRACT OK). Persistence is ANTI-correlated with the label (holdout 0.2256): a falling
+  YoY trend at M predicts a recovery, not another fall - this is a mean-reversion + seasonality task, the
+  opposite of the nhs-ae persistence defect, and the model clears the calendar-only reference by +0.0718 eval
+  AUC. Prevalence drift 34.96% -> 29.08% -> 19.59% across splits is recorded as the post-2022 recovery boom.
+- **The coordinator dry run earned its keep**: run on a scratch copy before any worker spend, it caught (1) a
+  baseline-lookup bug - rate-table keys are tuples, the identity lookup used bare strings, collapsing every
+  score to the global rate and printing exactly-0.5 AUC twice; full-precision recompute from the written CSVs
+  gave 0.572/0.532 - (2) a known-event fixture window error (the record's border-closure fixture is 2020-only;
+  folding 2021's reopening in diluted the down-share to 0.6528 < 0.75 and failed), and (3) a
+  use-before-definition the type checker caught. Dry-run gate 38/38 before the worker launch; abs-001 then
+  passed first try, unlike flunet-001 which burned a launch on a descriptor defect.
+- Cosmetic defect recorded (notes.md): abs-baseline-001's baseline_result.json purpose string says "TSB rail
+  occurrence casualty artifact" - report.py was copied verbatim from the tsb bundle with a hardcoded line. Every
+  artifact fact in the report is abs's; the abs copy's purpose line now derives from meta.json.
+
+Ready buffer behind this one: camara-bill-advancement, chilecompra-tender-outcome, eutl-installation-net-short,
+nz-ea-wholesale-price-exceedance, wb-ieg-project-outcome, za-municipal-audit-opinion (all class A, status
+ready). Next action for abs: packaging per the dataset-release skill; the holdout extends one month per OAD
+release (Sep 2026 due 2026-11-12), so rebuild before packaging if a fresher month is wanted.
