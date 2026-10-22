@@ -506,11 +506,67 @@
       "elapsed_seconds": 130.801,
       "response": "DECISION\n\nR is this tick's work and cannot be finished inside it. P is left untouched, Q cannot start. I spend the 10 minutes making R a one-command resume for the next session: pin the gap, plan the job, write and push the records \u2014 then, only if plan passed and roughly 4+ minutes remain, launch the 35-minute job and hand off collect plus close-out. Records before any state change, always.\n\nSUPPORTING EVIDENCE\n\n- AGENTS.md, \"Ship first\": an actionable packaged candidate blocks new construction launches and gets the tick. R is actionable, so Q's construction job is preempted and would be refused even if I tried.\n- P carries awaiting_operator=true: the private-to-public flip is the operator's single approval, standing publication authority explicitly excludes it, it blocks nothing, and I do not ask \u2014 scout-release-notify already reports the wait hourly.\n- OPERATIONS.md lifecycle: launch reserves cost and records the ledger entry before creating the worker, dispatches a systemd job, and returns; results upload to private staging without the coordinator. Tested recovery path: after losing the session post-launch, reconcile with worker status; an unresolved bootstrap resumes via worker resume ID --job-file PATH with identical source, never a new ID. Sweeps bound a stranded worker's billing.\n- Session brief: the 80% wrap-up has arrived; a session killed at the ceiling produces no report. STATE.md, records and the push therefore precede launch.\n- Release jobs may launch under preemption and may draw on release_reserve_eur; plan is offline and free.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\n\nTwo things I cannot resolve in 10 minutes: whether launch returns before the ceiling (provisioning plus Docker readiness is minutes, not guaranteed), and whether R's gap is exactly the consumer check \u2014 its record says so, but scripts/check-package.py release/<R> names any other missing piece. Discriminating check next session: worker status <R-job>. Dispatched or running \u2192 collect; unresolved bootstrap \u2192 resume identical source; no ledger entry \u2192 launch fresh. A plan failure on allowance or credentials is a blocker to record, not to work around.\n\nORDERED ACTIONS AND STOPPING CONDITION\n\n1. Run check-package.py release/<R> (local, fast) and read R's record; pin the exact missing verification.\n2. Set a new attempt ID in R's job declaration; run worker plan \u2014 confirms bundle, allowance and credentials at zero cost.\n3. Update STATE.md and R's record with the precise next action: collect \u2192 destroy \u2192 complete the consumer check \u2192 re-run check-package \u2192 set awaiting_operator=true only once the flip is the sole remaining step. Commit, push, read CI for that exact commit via the head_sha query; report pending as pending.\n4. If plan passed and \u22654 minutes remain: launch with a runtime limit just above the 35-minute job, so a stranded worker is swept soon after idling. Then send the report.\n\nStopping condition: no launch if plan fails, credentials are unreadable, or under ~4 minutes remain after the push \u2014 then the handoff is the tick's whole output, and the next session launches with room to wait, collect and close out in one slot.\n\nOPERATOR REPORT\n\n\"R (packaged, actionable) is the queue head. Gap confirmed: [check-package finding]. Its consumer-check job is planned and [launched as R-<id> / left unlaunched: session ceiling]. Ledger and STATE.md pushed at <sha>; CI pending at cutoff, not yet read as passing. P untouched \u2014 awaiting your flip; nothing needed from me. Q is ready but preempted by R; its construction job starts after R's close-out. Next session: collect R-<id>, destroy the worker, finish the consumer check and package verification, then R goes awaiting_operator for your flip.\"\n",
       "response_sha256": "38ffb03c21fddde1491cfd73b66b4e26c83051a66e1d96db18f9702ea677dedb"
+    },
+    {
+      "partition": "reserved",
+      "case": "advancement-priority",
+      "arm": "revised",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-59",
+      "session_id": "20261022_233646_aa198d",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "cfd388f44d3f93ee586cb8cb5f1a0575e9690c47f1d105f64fee6d0ab53b2162",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 228,
+        "output_tokens": 5306,
+        "cache_read_tokens": 33344,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 38878,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 384,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 176,
+          "output_tokens": 4922,
+          "cache_read_tokens": 32960,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 78.562,
+      "response": "Decision\nR is this tick's work. Ship-first preemption says a packaged, actionable candidate outranks construction, so Q's construction job must not launch, and P (awaiting_operator=true) is a human wait that neither blocks nor needs me. Ten minutes cannot fit R's 35-minute job plus close-out, but the long part runs on the worker, not in-session, and a running worker is a valid handoff. So: plan and launch R's consumer-check job now, record the handoff, stop. Do not wait for it, do not idle out the tick.\n\nSupporting evidence\n- AGENTS/OPERATIONS: packaged-and-actionable blocks new construction launches; release jobs may launch; release_reserve_eur keeps money for release work, so funding is not the blocker.\n- P: awaiting_operator means the private-to-public flip is the sole remaining step and it is the operator's single approval; leave it private and untouched.\n- Q: ready, licence-clean, no active job \u2014 but preempted by R, not blocked by any defect.\n- Brief: \"A running worker is a valid handoff: record job ID, status, expected reports and next acceptance check.\" \"Do not start a long step merely to avoid stopping\" is not violated: the in-session portion (plan+launch) is short.\n- R has no active job, so launching is not a duplicate; plan is offline and refuses cheaply if credentials or config are wrong.\n\nUncertainty and next discriminating check\nUnknown: whether R's package actually passes the full private consumer check (download, checksums, qualification re-run, baseline reproduction) in a fresh environment \u2014 exactly what the 35-minute job measures. Next session: collect the job and read the specific check fields in the result, since a job can upload every file and still carry ok:false on its own verification. Also unknown: whether launch returns before the wall clock; if interrupted, the ledger entry exists from reservation time and resume covers it.\n\nOrdered actions and stopping condition\n1. Read R's record and job ledger; confirm no active R job and that the consumer-check declaration is a release job.\n2. sh scripts/scout-factory worker plan <R job.json> \u2014 offline refusal beats a paid failure.\n3. sh scripts/scout-factory worker launch <R job.json>; note job ID, server ID, reservation.\n4. Update STATE.md and records: R launched, expected reports (consumer verification receipt), next acceptance check (collected result with each specific check ok, then destroy immediately after verified collection \u2014 a failed job is still collected and destroyed, never left billable); Q deferred by preemption, ready and next after R; P unchanged, awaiting operator flip.\n5. Commit/push only these record changes; run the documented gh api CI query for that exact commit; report pending CI as pending.\n6. Stop initiating work at the wrap-up notice (reserve ~2 minutes). Do not wait for the worker; do not launch Q; touch nothing of P's.\nStopping condition: launch either returned (handoff = running job) or was cut off (handoff = ledger entry plus \"worker resume <ID> --job-file <path>\" with identical source; never a new ID for the same attempt).\n\nOperator report\nThis tick went to R, the packaged actionable release. I planned and launched its 35-minute private consumer-check worker job; it cannot finish inside this session, so it is handed off as a running worker with job ID, expected reports and the next acceptance check recorded in STATE.md. The follow-up watcher or the next session collects it; if it passes, R is fully verified private and only the flip remains \u2014 that approval stays yours. Q (ready, clean licence) is queued behind R by ship-first preemption, not blocked. P still awaits your flip decision. Nothing was published, nothing was scored, and no figures are quoted.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "77c2d81b8b0369cb50aef02c40acf06f04e43ba779b2480ddd90ee7ac75467e7"
     }
   ],
   "ledger": {
-    "calls": 59,
-    "tokens": 2008920
+    "calls": 60,
+    "tokens": 2047798
   },
-  "updated_at": "2026-10-22T23:36:55Z"
+  "updated_at": "2026-10-22T23:38:16Z"
 }
