@@ -71,3 +71,10 @@ interval curator, verify writers have drained, and preserve live diffs with dige
 See [the prepared rollout](../docs/HARDENING-DEPLOYMENT.md) and
 [Scout's source-level evidence](https://github.com/earino/dataset-factory/pull/4#issuecomment-6347671806).
 This supersedes the earlier assertion that pausing interval curation alone stopped skill edits.
+
+Later source inspection ruled out nudge intervals as a safe substitute: cached agents keep old
+values and memory-only forks still receive skill_manage. The background-review timeout is
+per request, not a thread lifetime; a controlled supported restart is needed to prove old
+threads are gone before restoring files. The master-switch hold also pauses auxiliary memory
+edits; it does not stop ordinary research or explicit repository/memory work. See
+[the final source review](https://github.com/earino/dataset-factory/pull/4#issuecomment-6348148964).

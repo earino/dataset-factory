@@ -152,3 +152,14 @@ lists the artifact files.
 - The API's dataset view and the settings view are different surfaces: `dataset_info()` is the
   read path for name, private, gated, sha and the file list, and it is the one to quote when
   reporting what the destination currently is.
+
+## Dataset Factory verification evidence
+
+The coordinator verifier does not download CSVs or accept size-only equality. Use
+`hf-publish.py --verify --worker-job <id>` with a collected successful publishing job when
+ordinary Git blobs need worker evidence. The job must carry the exact manifest assets, a
+passing loading check and the new commit/blob-bound verification receipt. For an old release,
+a new budgeted job with `hf_publish.verify_only: true` gathers evidence without Hub uploads.
+Do not fabricate these fields in a legacy report or reuse a receipt from another commit.
+An incomplete coordinator check exits 2 and preserves prior complete evidence; a mismatch
+or error exits 1. Separate attempt diagnostics live under `.factory/hub-verification/`.

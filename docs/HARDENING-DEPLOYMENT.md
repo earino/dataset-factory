@@ -14,16 +14,20 @@ change is part of this rollout.
   13 new tests. Existing unmarked bundles are preserved; changed inputs need a new attempt ID.
 - PR #4, `35bb2d6` (code and inventory): pinned runtime/project skill inventory, read-only drift/shadow audit,
   source audit in CI, 12 new tests, plus corrections to the captured publishing skill.
-- PR #6, `472cf79`: pinned Hub verification and immutable tags, 18 new tests.
+- PR #6, `79c6af6`: pinned Hub verification, collected worker evidence, read-only Hub
+  verification jobs and immutable tags, 27 new tests.
 - PR #5, `63472c1`: evidence patches only. They are not approved skill changes and must not
   be applied as part of deployment.
 
-Each code head passed its exact-commit GitHub Actions runs. Independent Python 3.13.1
-clean-clone results: #2 445 tests, #3 432 tests, #4 431 tests, #6 463 tests, each OK with six existing
-host-dependent skips. The combined local integration at `6df4a76` passed:
+Each code head passed its exact-commit GitHub Actions runs.
+The Hub regression was also checked with Scout's installed client in an isolated checkout:
+TSB without new worker evidence exits 2/incomplete, leaves its prior receipt byte-identical,
+and writes a separate attempt diagnostic. No worker or remote mutation was used for that test. Independent Python 3.13.1
+clean-clone results: #2 445 tests, #3 432 tests, #4 431 tests, #6 472 tests, each OK with six existing
+host-dependent skips. The combined local integration at `14264e6` passed:
 
 ```text
-Ran 488 tests in 1.986s
+Ran 497 tests in 2.067s
 
 OK (skipped=6)
 ```
@@ -48,12 +52,32 @@ work. Existing PR #5 patches only capture particular timestamps, not future cura
 Scout inspected the installed Hermes source and identified two independent writers. Per-turn
 review checks only `auxiliary.background_review.enabled` (and fails open on config read errors).
 Interval curation alone respects `hermes curator pause`; `pin` protects deletion, not content.
-There is no review queue. Supported rollout controls are **both**
+There is no review queue. Before changing anything, record the effective values and source
+paths of the background-review master switch, both memory/skill nudge intervals and curator
+paused state. Config and curator state are outside Git; a code revert cannot restore them.
+
+The conservative rollout controls are **both**
 `auxiliary.background_review.enabled: false` and `hermes curator pause`. Read both effective states
 back, verify configuration loads successfully, and confirm no already-started background review
 or curator pass remains active before capturing the final patch set. Do not edit platform-managed
-`/opt/hermes`. Source-level evidence and call paths are in
-[Scout's review](https://github.com/earino/dataset-factory/pull/4#issuecomment-6347671806).
+`/opt/hermes`. The master switch pauses auxiliary automatic memory edits as well as skill edits;
+it does not disable Scout's main research conversation or explicit STATE/memory work. The
+proposed hold must disclose that cost. The narrower skill-nudge setting is insufficient: warm agents retain its old value, and even
+memory-only forks retain skill_manage. The 120-second setting is an HTTP request timeout,
+not a thread lifetime; cancellation can return without the thread acknowledging it. A quiet
+log or elapsed timeout is not proof of drain. After setting the two controls, use a supported
+controlled process restart and verify the new process/config before restoration; do not
+kill or patch platform-managed processes by guesswork. If that mechanism is unavailable,
+stop before restoration and report the exact operator action needed. Source-level evidence:
+[Scout's final source review](https://github.com/earino/dataset-factory/pull/4#issuecomment-6348148964).
+
+Scout verified the hosted restart mechanism is the supported s6 service manager: `hermes gateway
+restart` signals the supervised `gateway-default` unit and it respawns. Do not use `stop`, which
+leaves it down. A restart from a Scout tool interrupts that conversation's process and can lose
+its immediate response; persist the handoff first and verify a new gateway PID and reconnect
+before continuing. Prefer an outside shell, or the supported detached restart path confirmed by
+Scout. This is a brief messaging interruption, not a runtime upgrade. Exact source/host evidence:
+[restart mechanism](https://github.com/earino/dataset-factory/pull/4#issuecomment-6348202315).
 
 Restore only individually identified, preserved skill files to their reviewed inventory
 versions, with a precondition that each live file still matches its just-recorded digest.
@@ -83,13 +107,21 @@ Do not merely update inventory hashes to make a drift alert green.
    ten-package rows: nine public destinations include site; NHS remains private/dropped,
    with its historical baseline explicitly labelled; NOAA keeps two protocol scores.
 4. Scout updates `/opt/data/dataset-factory` by fast-forward only, after preserving and
-   resolving the known local skill differences. If there are other local edits or divergent
+   resolving the known local skill differences. Specifically: preserve the final two repository
+   skill diffs and hashes; restore only `skills/dataset-release/SKILL.md` and
+   `skills/dataset-qualification/SKILL.md` to their current HEAD bytes with digest preconditions;
+   require `git status --porcelain` to be empty, then fast-forward. Apply the reviewed profile
+   skill corrections with the same preserve/compare procedure. If there are other local edits or divergent
    commits, stop and reconcile them; do not reset the checkout. No shim replacement is
    expected: PR #1 captured the deployed shims verbatim.
 5. On the host run `python3 -m factory doctor` and
    `python3 scripts/check-runtime.py --home /opt/data`. Require a clean audit and the
-   intended checkout SHA. Run source tests in an isolated checkout, not the working ledger.
-   Do not run `--verify` publishing commands merely as read-only checks: some record evidence.
+   intended checkout SHA. Source audit should check 61 files; live audit checks 122 and is
+   expected to pass only after the known profile/project drift is resolved. Run source tests in an isolated checkout, not the working ledger.
+   Do not run `--verify` publishing commands merely as read-only checks: complete checks record
+   destination evidence. PR #6 now preserves that receipt on incomplete/error results and writes
+   a separate attempt diagnostic. Obtaining new worker evidence remains a separately budgeted
+   operation; no worker launch is part of this rollout.
 6. Build and inspect the dashboard offline, then use its existing publish procedure once.
    Verify the Pages workflow for the pushed dashboard commit and anonymously read back
    `dashboard.json` and rendered HTML. A pending Pages build remains pending; resume its
@@ -109,7 +141,9 @@ sessions through the existing scheduler controls while preserving cleanup/watch 
 all ledgers. Restore behavior through a reviewed revert commit on main and fast-forward
 that commit onto the host; never erase newer research records or rewrite published tags.
 A dashboard rollback uses the existing website repository's reviewed revert and Pages
-verification. Keep the curator paused while resolving skill integrity failures.
+verification. The recorded pre-change config values make a deliberate runtime rollback possible;
+do not silently re-enable unreviewed writers just because code was reverted. Keep the writer
+hold while resolving skill integrity failures, and disclose any continued auxiliary-memory hold.
 
 This batch does not claim to finish every hardening task. Next work should address the
 research runner's atomic session admission/failed-gate handling, runtime-audit enforcement
@@ -120,5 +154,5 @@ and mapped before calling the handoff complete. No new worker spend is implied b
 
 PR #6 on `hardening/hub-integrity` is stacked on #2:
 existing tags never move, creation pins the verified commit, plain metadata is hashed through a
-bounded download, and size-only/bulk-without-digest cases fail. Its exact-head push and PR CI passed, and it is included in the 488-test combined integration. Runtime skill corrections in #4 agree
+bounded download, and size-only/bulk-without-digest cases fail. Its exact-head push and PR CI passed, and it is included in the 497-test combined integration. Runtime skill corrections in #4 agree
 with this behavior; captured originals remain in #1.
