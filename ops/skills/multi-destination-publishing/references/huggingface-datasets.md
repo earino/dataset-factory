@@ -141,8 +141,9 @@ lists the artifact files.
 ## API and CLI notes
 
 - Client signatures vary by version: a `create_tag` may reject a `message` keyword. Check the
-  installed client rather than assuming, and make the tagging step delete-then-create so it can be
-  re-run.
+  installed client rather than assuming. Create at an explicitly verified commit. Re-running an
+  existing matching tag is a no-op; an existing different tag is a refusal. Never delete/recreate
+  a published tag. Check the post-write refs and report races without undoing another writer.
 - `whoami()` reports the authenticated account, its type and the token's role - enough to fix the
   namespace and to confirm a write role without ever printing the credential. A fine-grained token
   may report no scopes at all; the role is the usable signal.

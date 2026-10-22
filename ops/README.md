@@ -30,11 +30,12 @@ Regenerate the three deployment exports with:
 
 ## Gaps, stated rather than papered over
 
-- Scheduler **prompts and per-job overrides** live in the Hermes state DB and are summarised here;
-  their verbatim text is not exported. The shim bytes they call are hashed in the handoff.
-- The 12 cron shims live outside Git and are recorded only as name + sha256 + size.
-- The host's `state.db` (155 MB) is the only copy of scheduler definitions and history; it is not
-  exported and would be lost with the host.
+- Scheduler definitions/prompts/overrides live in `/opt/data/cron/jobs.json`; execution history
+  is `/opt/data/cron/executions.db`, and per-job output is `cron/<job_id>/`. The allowlisted export
+  deliberately omits prompts, delivery identifiers and history. `state.db` holds conversation data,
+  not scheduler definitions. Do not export these raw state files.
+- Eight schedule-entry wrappers are now preserved verbatim in `ops/shims/`. Four other host
+  helpers remain out of scope, with reasons in `ops/shims/README.md`.
 - Published-artifact digests are in each `release/*/MANIFEST.json`; this handoff does not duplicate
   them.
 
@@ -59,3 +60,14 @@ verify scheduler registration, credential availability, budget, upstream Hermes 
 publication. Restore only the reviewed files, preserve live state, and validate those separate
 operational prerequisites before enabling schedules. No secret or raw scheduler/session database
 belongs in this inventory.
+
+## Automatic skill writers are separate controls
+
+Installed-runtime inspection by Scout found two independent paths. The per-turn background
+review checks `auxiliary.background_review.enabled`; it does not check curator paused state.
+`hermes curator pause` controls only interval curation. Pinning a skill blocks deletion, not
+patches or writes. Before restoring reviewed skill bytes, disable background review, pause the
+interval curator, verify writers have drained, and preserve live diffs with digest preconditions.
+See [the prepared rollout](../docs/HARDENING-DEPLOYMENT.md) and
+[Scout's source-level evidence](https://github.com/earino/dataset-factory/pull/4#issuecomment-6347671806).
+This supersedes the earlier assertion that pausing interval curation alone stopped skill edits.

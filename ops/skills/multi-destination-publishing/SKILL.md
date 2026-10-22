@@ -1,7 +1,7 @@
 ---
 name: multi-destination-publishing
 description: "Use when publishing one artifact to several destinations."
-version: 1.2.0
+version: 1.2.1
 license: MIT
 platforms: [linux, macos]
 metadata:
@@ -65,8 +65,9 @@ artifacts, or a release reported complete while one platform is empty.
    the manifest. A file that exists but does not load is not published.
 7. **Tag or version last, and idempotently.** A version created before the content lands pins a
    commit that does not contain it, and every pinned fetch then comes back empty. Make the step
-   delete-then-create so it is re-runnable, and confirm afterwards that the tag and the branch head
-   resolve to the same commit.
+   preserve an existing tag: the same verified commit is a no-op; a different commit is a refusal
+   requiring a new reviewed version. Create a missing tag at the exact verified commit, then read
+   back the tag and branch. Never delete or move a published tag to make a repeat succeed.
 8. **Make every upload idempotent and resumable.** Per unit: skip anything already present at the
    expected digest, retry a bounded number of times with backoff, and report the skipped count. A
    sequential publish that fails halfway should re-run by sending only what is missing.
@@ -380,18 +381,13 @@ data" or a dash weeks later, and the artifact is fine the whole time.
   correct files. Join on the key the record defines, and when a comparison reports a discrepancy,
   read the matched entry in context before believing it - a wrong key and a real mismatch look
   identical from the diff.
-- **A published manifest whose metadata is wrong, and a writer that now refuses to fix it.** Once a
-  release is public, the correct instinct (never rewrite published bytes) collides with a real defect:
-  a manifest can omit its own split counts, carry a stale destination tag, or name an artifact version
-  the gate no longer produces. Decide the exit explicitly rather than leaving it to whichever tool runs
-  first. Either **re-issue** - new version, corrected manifest, tags moved on every destination, every
-  consumer re-verified - or **repair in place** and move the pins in the same commit, keeping the old
-  digests as evidence. What must not happen is a half-repair: a manifest regenerated locally while the
-  published tag still points at the old one, or a suite that silently no-ops on the correction and
-  reports success. If the manifest command has been hardened to refuse published packages, that
-  refusal is the correct behaviour and the re-issue is the documented path - write the path down, and
-  make the refusal message name it, because the operator reading it is holding a known-wrong manifest
-  and needs the next step, not the policy.
+- **A published manifest whose metadata is wrong, and a writer that refuses to rewrite it.**
+  Preserve the existing bytes, checksums and tags. If the metadata records valid legacy facts,
+  correct their shared read normalisation. For an editorial website correction, use site_revision
+  and the reviewed website plan. If the artifact or canonical manifest must change, issue a new
+  reviewed version and new tags on both destinations, retaining the old version for reproduction.
+  A no-op preserves bytes; it does not claim a known defect was corrected. The refusal must name
+  the applicable correction path. Never "repair in place" by moving old pins.
 - **Two readers of one record, each normalising it its own way.** When a builder writes a record in
   one shape and a later check reads it through a second, hand-written accessor, the two can disagree
   about a *correct* artifact - a partitioned record flattened for display and read flat again for

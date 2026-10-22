@@ -5638,3 +5638,16 @@ Next action for the tick: the queue's construction work remains with the advance
 (abs-visitor-arrivals-direction packaging, then eutl-installation-net-short packaging per its
 staging release 420810883); ea-flood-alert-escalation enters the queue behind the five ready
 candidates as a measured class-A build (whole panel fits the coordinator; ~4.9 MB of fetches).
+
+
+### 2026-10-22 — runtime hardening rollout prepared
+
+PR #4 now inventories all 14 custom skills captured by Scout at handoff `3ec0b64` (53 runtime
+files plus eight project skill files). Corrected the publishing skill's delete/recreate-tag and
+in-place published-manifest advice; original captures remain in #1. Source audit detects both
+project and profile drift. The live host is unchanged. Source inspection proved curator pause
+and pin do not block background-review patches: rollout must separately disable
+auxiliary.background_review.enabled, pause interval curation, drain writers, and preserve
+preimages before any restoration. Exact rollout/rollback and remaining work are in
+docs/HARDENING-DEPLOYMENT.md. Next: finish combined checks, resolve the operator's earlier
+no-merge instruction, then coordinate the documented rollout with Scout.

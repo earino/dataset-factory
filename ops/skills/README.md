@@ -76,3 +76,19 @@ Consequence for the hashes above: they are point-in-time. `release-packaging.md`
 
 Anyone merging this handoff should decide what to do with those uncommitted edits first. They are
 content-only, but unreviewed, and a scheduled session could commit them into an unrelated change.
+
+## Review corrections in the runtime-audit branch
+
+The frozen handoff at `3ec0b64` preserves captured operating knowledge; storing it does not
+endorse every instruction or override project invariants. The audit pins exact file identity,
+not scientific truth or operational authorization. Captured bodies are outside skills.external_dirs.
+
+A focused review found instructions to delete/recreate tags and repair published manifests by
+moving pins. `multi-destination-publishing` is corrected here to preserve existing tags and bytes;
+its reference agrees. The original captured bytes remain in the handoff commit. Deploy this
+explicit correction only with the reviewed rollout and a preserved live preimage. Other newly
+captured skills are added to drift detection without silently replacing live versions.
+
+Runtime paths for all 14 exports were measured by Scout and recorded in
+[PR #1's path inventory](https://github.com/earino/dataset-factory/pull/1#issuecomment-6347672019).
+`ops/runtime-files.json` contains complete current hashes; the earlier table is capture provenance.
