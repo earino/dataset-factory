@@ -226,11 +226,67 @@
       "elapsed_seconds": 17.523,
       "response": "Decision\n\nRun the release-calendar query on the third source first \u2014 it is the only remaining action that can convert an open, viable lead into a recorded verdict. Treat the catalog page's \"likely licence rejection\" as optional and second: a probable C is worth one page read, never a probe, and it cannot outrank a lead that is one query from `go`.\n\nSupporting evidence\n\n- Quota status: two rejections already recorded with decisive licence/capacity evidence. That is two of three verdicts, and the third source is the one that would make three, not the catalog page (which, if pursued first, leaves the session with two verdicts and an unresolved lead).\n- Cost asymmetry: the timing question is resolvable by a single release-calendar query. The catalog page is a \"likely\" rejection \u2014 an expectation, not evidence \u2014 and its value is a fourth verdict in a region already covered (17/24 non-US live), not a convertible candidate.\n- The blocker is decisive in kind. Per the qualification timing rules, \"knowable at the period is not knowable at the release\": if the proposed feature publishes after the prediction instant, the feature is an oracle and the source is a `park` (re-target) or `reject`, not a `go`. That single answer changes the verdict, so it is the highest-value query available in 15 minutes.\n- Licence is already clean (open-licensed, A/B), the target is documented, and train/eval/holdout capacity is measured \u2014 those are the expensive contracts and they are settled. Nothing else about this source is unknown.\n\nUncertainty and next discriminating check\n\nUncertainty: whether the proposed feature's publication date precedes the stated prediction instant, and by how much margin (mean lag is not a bound \u2014 read at least one observed period_end \u2192 published pair and prefer the largest plus margin).\n\nDiscriminating check: one release-calendar query for that feature's publication lag versus the declared instant. Outcome mapping, decided before the query so the result cannot be argued into a `go`:\n- publishes before the instant with margin \u2192 `go`, verdict recorded, next action = construction (timing block populated from the observed pair).\n- publishes after the instant \u2192 `park`, blocker written as the exact timing gap and the re-target needed (change/onset label or a later instant).\n- calendar unreadable or no observations \u2192 `park` on absent evidence; do not assume a lag.\n\nOrdered actions\n\n1. Query the release calendar for the one feature; capture the observed period_end \u2192 published dates verbatim.\n2. Write `candidates/<id>/record.json` immediately \u2014 verdict, `jurisdiction` (Canada), `licence_class`, measured shape, timing evidence, next action. Do not batch this with anything else.\n3. Only if that file is written and time remains: fetch the catalog page once, read its terms of use. Class C or D \u2192 record a `reject` with the absence or clause quoted; anything else \u2192 record it as opened-without-verdict and stop.\n4. Close out: one `STATE.md` entry naming sources opened and verdicts, run `scripts/check-candidate.py --all` and the unit suite, commit and push, read CI for that exact commit.\n5. Final report: honest count.\n\nStopping condition\n\nStop all probing at the earlier of the wrap-up point (leave ~4 minutes for writes, checks and push) or immediately after the third verdict is written. No new source is opened once the calendar query has been sent. If the calendar query itself stalls past ~5 minutes, abandon it, write the source as `park` on unresolved timing, and spend the remainder on the catalog rejection plus close-out.\n\nOperator report (draft)\n\nCanada discovery tick. Opened three sources; two rejected on decisive licence/capacity evidence (recorded). Third \u2014 open licence, documented target, measured split capacity \u2014 held on one question: whether its proposed feature publishes before the prediction instant. Ran the release-calendar check; verdict [go | park] recorded with the observed release dates. Catalog page: [rejected class X, clause quoted | left unopened, no verdict]. Coverage unchanged pending advancement. Nothing built, qualified or packaged this session. Next action: [construction step | re-target the label to onset, then re-check timing].\n",
       "response_sha256": "492ba7b7fa1fc1091178e510d3c16e9ed5ef81cc0e5b91942c27ca1d018769f8"
+    },
+    {
+      "partition": "development",
+      "case": "discovery-novelty",
+      "arm": "revised",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-30",
+      "session_id": "20261022_230624_354878",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "eeb10d45410b3b46470c9237811aba9bad7fcee9cfe724ee7e549212a1e0d6eb",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 223,
+        "output_tokens": 4675,
+        "cache_read_tokens": 24576,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 29474,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 837,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 171,
+          "output_tokens": 3838,
+          "cache_read_tokens": 24192,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 58.659,
+      "response": "Decision\n\nNot a mirror, and not ready. Verdict: **investigating** \u2014 the lead is differentiated, but two of the five discovery contracts (split capacity and prediction timing) lack measured evidence, so it cannot be marked `ready`.\n\nSupporting evidence\n\nA mirror requires the same task contract, not shared subject matter. This lead differs on target (recurrence after a documented intervention vs first-visit failure), prediction instant (pre-return-visit records only vs establishment attributes), population (re-inspected establishments), and regime (unrepresented in the portfolio). Two named catalog searches found no ML-ready recurrence task. That supports a `differentiated` novelty verdict; the published task remains a comparator, not a blocker. The licence is resolved per the case, but the record must still carry `licence_class`, the quoted terms, and `jurisdiction` measured from the publisher.\n\nAgainst the five contracts: redistribution \u2014 satisfied, evidence to record; target \u2014 derivable from inspection outcomes; not-a-mirror \u2014 satisfied by differentiation; split capacity \u2014 **unmeasured**; prediction timing \u2014 **unmeasured**. Two open contracts fail the `ready` completion criteria, so the honest verdict is investigating with named missing facts.\n\nUncertainty and next discriminating check\n\nSplit capacity is the cheapest hard veto most likely to change the decision: recurrence positives cluster by establishment and in time, so raw counts can look ample while independent positives fail to fill three disjoint train/eval/holdout windows with both classes. The discriminating check is a bounded aggregate query \u2014 distinct-establishment positives and class counts per window, clustered vs raw \u2014 not a bulk transfer. Reporting lag is second: qualification gate 1.4.0 refuses a dataset without a measured timing block, so record at least one observed period_end\u2192published pair and an explicit as-of policy with its coverage limits; current revised rows prove nothing about historical availability, and event dates do not establish publication.\n\nOrdered actions and stopping condition\n\n1. Write the candidate record now: source and jurisdiction (from the publisher, not the URL), licence class and quoted terms in `license_evidence`, novelty verdict `differentiated` via `check-novelty.py` recording both searches' scope and limitations, verdict `investigating`.\n2. Run the split-capacity probe: bounded aggregate counts per disjoint window \u2014 clustered/independent counts, both classes present per window.\n3. Measure reporting lag from a bounded sample; record the as-of policy; measure extraction cost (requests, bytes, wall-clock on the intended machine class).\n4. Branch: if every window carries both classes with independent positives and timing is provable \u2192 mark `ready`, naming the construction step, expected artifact, and deciding check, and hand off to advancement. If a window fails \u2192 `parked` with the computed counts (or `dropped` if decisive). If timing cannot be established \u2192 `parked` with that exact missing fact.\n5. Close out: `check-candidate.py`, `discovery-coverage.py`, a STATE.md entry with a next action specific enough for a fresh session; review the diff; commit/push; check CI for that exact commit via `gh api .../runs?head_sha=$(git rev-parse HEAD)` \u2014 never `gh run list --commit`.\n\nStop probing once split capacity resolves decisively; timing second. No construction, packaging or publication in this discovery session.\n\nOperator report\n\nOne lead opened, no reopens. Not a mirror: target, prediction instant, population and regime all differ from the published first-visit task, and two catalog searches found no ML-ready recurrence predecessor. Not ready: independent split counts and reporting lag remain unmeasured. Next action: the split-capacity probe, then a timing sample; `ready` only if both pass, otherwise parked with the computed evidence. Nothing has been executed \u2014 this was a no-tool decision exercise, so checks, commit and CI status follow execution.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "78c0dafa2a8045d0adbf3d3151a54004c7fcb1d9afc2e726981f9171a13839c0"
     }
   ],
   "ledger": {
     "calls": 30,
-    "tokens": 975170
+    "tokens": 1004644
   },
-  "updated_at": "2026-10-22T23:06:20Z"
+  "updated_at": "2026-10-22T23:07:21Z"
 }
