@@ -5638,3 +5638,13 @@ Next action for the tick: the queue's construction work remains with the advance
 (abs-visitor-arrivals-direction packaging, then eutl-installation-net-short packaging per its
 staging release 420810883); ea-flood-alert-escalation enters the queue behind the five ready
 candidates as a measured class-A build (whole panel fits the coordinator; ~4.9 MB of fetches).
+
+## Job assembly safety — 2026-10-22, engineering branch
+
+On isolated `hardening/job-assembly`, the assembler no longer recursively removes the directory
+named by a job descriptor. It validates identifiers/paths, stages and validates before exposing
+output, seals ownership plus file hashes, and treats repeated job IDs as immutable. Same bytes
+are a no-op; changed or unfamiliar work is preserved and requires a new attempt ID. Added safety
+regressions for traversal, links, collisions, interrupted assembly and preservation. No worker was
+launched and no scheduler/runtime settings were changed. See the resulting PR for clean-checkout
+validation and exact-commit CI. Runtime handoff remains in Scout's PR #1; schema work is PR #2.
