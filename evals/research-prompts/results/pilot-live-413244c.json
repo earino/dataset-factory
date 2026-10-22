@@ -139,7 +139,53 @@
       "elapsed_seconds": 104.868,
       "response": "DECISION\n\nNot a mirror \u2014 but not ready. Record the lead as `investigating` with two named missing\nfacts, and record the novelty verdict `differentiated` now, since its evidence is in\nhand. This session does not build; construction is advancement's work.\n\nSUPPORTING EVIDENCE\n\n- Mirror rule: shared subject matter is not a mirror, and a different URL alone is not\n  novelty. Compared at the task level, the lead differs from the published task on target\n  (recurrence after a documented intervention vs. first-visit failure), population\n  (post-intervention establishments vs. all), prediction instant (before the return visit\n  vs. before the first visit), features (pre-return-visit records vs. static establishment\n  attributes), and it covers an unrepresented inspection regime. That is a stated\n  contribution \u2014 formulation, population, feature window, new jurisdiction \u2014 not a\n  republication.\n- Two named catalog searches found no ML-ready recurrence task. Record their scope and\n  limitations; the claim is \"no known ML-ready recurrence task found,\" not \"none exists.\"\n- Licence is stated as clean, but durability requires recording `licence_class` with the\n  verbatim terms quote from the publisher's own instrument in `license_evidence`, plus\n  `jurisdiction` (country, region, publisher \u2014 measured, not inferred).\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\n\nTwo required contracts are unmeasured, and either is a hard veto:\n\n1. Split capacity: recurrence events cluster within establishments, so raw visit counts\n   overstate the effective sample. The discriminating number is independent positives \u2014\n   distinct establishments (or intervention episodes) with and without recurrence across\n   disjoint time windows.\n2. Timing vs. reporting lag: \"pre-return-visit records\" are valid features only if the\n   publisher had released them by the prediction instant. If reporting lag exceeds the\n   typical interval to the return visit, the feature window is hindsight and the task\n   collapses.\n\nNext check: one bounded read-only aggregate probe (distinct-key recurrence outcomes per\ndisjoint window, clustered count, both classes present in each window) plus a\ndocumentation read of the publication calendar or observed visit-date to published-date\npairs to measure the lag. Record the population the probe covers (intervention types,\nyears, jurisdiction). Keep probe counts distinct from dataset measurements.\n\nORDERED ACTIONS AND STOPPING CONDITION\n\n1. Record the novelty verdict now: `check-novelty.py` with verdict `differentiated`;\n   ours = recurrence formulation, post-intervention population, pre-return-visit window,\n   new regime; theirs = the published first-visit task; prior art = that task plus the\n   two catalog searches. Prevents the lead aging as \"interesting.\"\n2. Update the record: jurisdiction, licence class with quote, one-sentence prediction\n   instant, target source column named, status `investigating` with the two facts.\n3. Run the aggregate probe as a script file (no interpreter one-liners; no bulk transfer);\n   record commands and results in `notes.md`.\n4. Measure the lag; state whether it comes from observed pairs or the publisher's\n   calendar.\n5. If both pass with recorded evidence: set `ready`, name the handoff\n   (`assemble-job.py` to a worker build; the full-artifact `qualify_dataset.py` pass is\n   the check that decides construction), and measure extraction cost before budgeting.\n6. Stop when: both measurements are recorded (pass \u2192 `ready`, stop; decisive failure \u2192\n   `parked`/`dropped` with the blocker and reopening condition); or close-out budget\n   arrives (persist the record and a next action a fresh session can execute first).\n\nCONCISE OPERATOR REPORT\n\nOne lead advanced, none dropped. The regional inspection source is differentiated from\nthe published first-visit task on target, population, instant, features and regime;\nnovelty recorded as `differentiated` with both catalog searches as prior-art evidence.\nNot ready: independent split counts and reporting lag are unmeasured, and either can\nveto \u2014 clustered recurrence and hindsight features are the classic failures here. Next\naction: one bounded aggregate probe plus a calendar read; expected outcome is `ready`\nwith a named construction handoff, or a recorded blocker. Checks, commit and exact-commit\nCI status to be reported at close-out, with pending CI reported as pending.\n\n\u2014 Scout (Hermes)\n",
       "response_sha256": "6fa4f30a5104e9df7cc8a321388f5dc5c7b34a75a31c22340e2a9cd5eac25b31"
+    },
+    {
+      "case": "discovery-novelty",
+      "arm": "baseline",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-07",
+      "session_id": "20261022_223842_413f2f",
+      "status": "ok",
+      "exit_code": 0,
+      "tokens": {
+        "input_tokens": 33877,
+        "output_tokens": 4384,
+        "cache_read_tokens": 2816,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 41077,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 756,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 33825,
+          "output_tokens": 3628,
+          "cache_read_tokens": 2432,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 78.234,
+      "response": "DECISION\nNot a mirror, and not ready. Verdict: differentiated, needs further work. It stays in discovery scope - no construction, no qualification, no advancement; this session only records the verdict and the evidence gap. The two unmeasured items (split counts, reporting lag) are exactly the contracts that decide readiness, so \"ready\" cannot be claimed yet.\n\nSUPPORTING EVIDENCE\n- The mirror test is on the task, not the source. The published task predicts first-visit failure from establishment attributes; this lead predicts recurrence after a documented intervention, restricts features to pre-return-visit records, and targets an unrepresented inspection regime. Different target, different feature set, different regime. Two named catalog searches found no ML-ready recurrence task. That is a \"differentiated\" verdict, not \"mirror.\"\n- Licence: the source is licensed, so it clears triage, but the exact class (A or B) and the terms quote must be recorded in record.json before anything else - licence class is a required field at or beyond ready.\n- Not ready because contracts 2 and 4 lack evidence: split capacity is unmeasured, and the reporting lag behind the timing claim is unmeasured. Discovery completion criteria require computed split windows and measured timing observations, recorded from the source.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\nNovelty rests on two catalog searches; that is the standard of evidence the method sets, so record it as-is rather than hedging. The decisive unknown is split capacity: recurrence positives plausibly cluster by establishment or campaign, so row counts can look ample while independent positives are few - the clustered count is the number that decides. Second unknown is reporting lag: whether the pre-return-visit feature set is genuinely knowable at the stated instant. The next discriminating check is therefore a cheap aggregate probe: recurrence rate, distinct establishments, clustered positives, and whether three disjoint windows each carry both classes. That single check can kill an otherwise-clean candidate, so it goes first.\n\nORDERED ACTIONS\n1. Write the verdict immediately, before further probing: record.json with jurisdiction, licence class and terms quote, and the novelty verdict via check-novelty.py --verdict differentiated, recording ours (recurrence-after-intervention formulation, timing-gated pre-return-visit features, new regime), theirs (the published first-visit task and the catalog searches), and the prior art. Run scripts/check-candidate.py <id>.\n2. Aggregate probes (anonymous, bounded, no bulk transfer): interventions with return visits, recurrence rate, distinct keys, clustered recurrence count, disjoint train/eval/holdout windows with both classes present.\n3. Timing: record at least one observed period_end-to-published pair; state the prediction instant (the return visit); sort every column from the publisher's documentation into available / post-hoc / label source.\n4. Measure extraction cost: wrap the fetch, count requests, bytes, wall clock.\n5. Only in the advancement session: construction and qualification.\n\nSTOPPING CONDITION\nIf the windows cannot carry both classes, or the clustered independent-positive count is too small to support a claim, reject and record the numbers - a well-documented rejection closes the lead for good. If the lag cannot be bounded from observations, park naming the exact missing observation. Only if both pass does the record go ready/go, naming the construction step for the advancement session.\n\nOPERATOR REPORT (draft)\n\"Opened the licensed regional inspection lead. Verdict: differentiated, not ready. Not a mirror: the published task is first-visit failure from establishment attributes; this is post-intervention recurrence using only pre-return-visit records in an unrepresented regime, and two catalog searches found no ML-ready recurrence task. Licence triaged clean, class recorded. Held on two unmeasured contracts: split capacity (including clustered positives) and reporting lag. Next action: aggregate split-capacity probe first - it is the check that can kill the task - then timing observations. Construction only after those pass, in the advancement session. No worker or publication action taken.\"\n",
+      "response_sha256": "b38a9fac50c7e978451c0ebe76c9d26a0fc584ab9889b7b5d0180cd4d78ce1e5"
     }
   ],
-  "updated_at": "2026-10-22T22:39:35Z"
+  "updated_at": "2026-10-22T22:39:56Z"
 }
