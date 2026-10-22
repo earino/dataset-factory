@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "bundle": "21b72994bc6a6ccd568c9395147ee3e6416b0e4c",
+  "partition": "reserved",
+  "records": [
+    {
+      "partition": "reserved",
+      "case": "licence-exception",
+      "arm": "baseline",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-50",
+      "session_id": "20261022_232749_08892e",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "152ab1791cfea34de30aa34d3775420697b3a44b237d50e82295499616d51ca6",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 191,
+        "output_tokens": 5632,
+        "cache_read_tokens": 36480,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 42303,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 359,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 139,
+          "output_tokens": 5273,
+          "cache_read_tokens": 36096,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 76.701,
+      "response": "Decision\n\nNo. B cannot inherit A's risk acceptance, and B cannot be built on until it has its own recorded decision. The acceptance mechanism is per-candidate by construction: the recorded decision lives in `candidates/<id>/license.json`, written before construction, and the case states A's is candidate-specific. \"Sibling\" is not a scope. The discovery skill warns that a general policy can coexist with dataset-specific terms, so even a same-publisher source must be classified from its own instrument. A's CC0 also transfers nothing: it dedicates only our rights in the derived compilation and never covers the source's data. So B currently has an unread licence and no decision: class C, closed until its own terms are read.\n\nSupporting evidence\n\n- dataset-release SKILL: \"a source whose licence cannot be read is not published at all unless the operator has recorded a risk acceptance in `candidates/<id>/license.json`\" \u2014 recorded as a risk acceptance, never as a grant.\n- OPERATIONS.md (2026-10-20 authority): \"a licence that cannot be read is recorded in `candidates/<id>/license.json` before construction, and a candidate with no recorded licence decision is never published.\"\n- Standing rule 2026-10-21: only build on already-clean sources; class C is a drop in the same breath, no \"probably fine\".\n- Discovery failure-mode table: a blocked page read as absent terms must be re-read in a real browser before silence is recorded.\n- \"other-open with no deed\" is catalog metadata, not the publisher's instrument; classify from the instrument linked from the dataset itself.\n\nHow to represent both\n\nA: unchanged. Source SPDX NOASSERTION (honest \u2014 no instrument was readable); the operator risk acceptance recorded with its scope, attribution preserved, takedown route, never presented as the publisher's licence; compilation CC0-1.0 stated as covering our contribution only; code MIT; derived-data labeling intact; the manifest's licences block generated from that declaration, never hand-edited.\n\nB: `record.json` with `licence_class: \"C\"`, `license_evidence` carrying the observed blocked read plus the \"other-open, no deed\" tag noted as an unverified catalog label, verdict `reject` (dropped), and the reopen line: a readable terms instrument for this exact dataset, or an operator acceptance naming candidate B. No compilation licence is claimed for B because there is no release to licence.\n\nUncertainty and next discriminating check\n\nTwo cheap checks could change the answer. First, read `candidates/<A>/license.json` and confirm the recorded acceptance's scope: if the operator's acceptance explicitly covered a publisher or program that includes B, inheritance would be a recorded scope rather than an inference \u2014 the case says candidate-specific, so the expected reading is A alone. Second, re-read B's terms page in a real browser; the block may be client-side, not publisher silence. If neither changes anything, B stays C.\n\nOrdered actions and stopping condition\n\n1. Read A's `license.json`; confirm the acceptance names candidate A only. Change nothing if so.\n2. Re-read B's terms in a real browser, and any dataset-specific terms link on B's own page, not a general policy page.\n3. If terms become readable, classify from the instrument: class A/B proceeds to novelty and probes; C/D is dropped with the clause or absence quoted.\n4. If still unreadable, write B's verdict as class C dropped, with the probes as evidence and the reopen condition above. No permission email, no park, no acceptance drafted on the operator's behalf.\n5. Record both in `STATE.md`; run `scripts/check-candidate.py` on both records; commit and push; read CI for that commit.\n\nStop when B carries a recorded verdict with its evidence and A's acceptance scope is confirmed. Do not re-run an unchanged fetch, and do not infer an acceptance.\n\nOperator report\n\nB cannot inherit A's acceptance: acceptances are candidate-specific and B has none recorded. A remains represented as NOASSERTION source + CC0 for our contribution only + your recorded acceptance, unchanged. B is class C pending one browser re-read of its terms page; if that stays unreadable, B is dropped with the reopen condition recorded. A new acceptance for B is yours to record, not mine to infer.\n",
+      "response_sha256": "b52dda5dc72633c9504d88909bf25d4db09529a4a4ec3ee1fda707a6c56553b0"
+    }
+  ],
+  "ledger": {
+    "calls": 50,
+    "tokens": 1716105
+  },
+  "updated_at": "2026-10-22T23:29:05Z"
+}
