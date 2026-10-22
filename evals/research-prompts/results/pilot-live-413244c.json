@@ -1046,7 +1046,62 @@
       "elapsed_seconds": 105.539,
       "response": "Decision: defer to the owner. The advancement coordinator is active (it holds the research mutex) with uncommitted work in the tree, and no handoff was recorded. I would report status read-only and leave the event unhandled: no collection, no verification, no cleanup, no commits, no repair launch, no handled marker.\n\nSupporting evidence:\n- The brief's ownership rule: active or uncertain ownership means report the job ID and pending follow-up, leave it unhandled, defer to the owner; never delete a lock to proceed. A documented handoff is the prerequisite for handling, and none exists.\n- docs/OPERATIONS.md: the watcher itself takes the same nonblocking research mutex around deterministic collection and the whole bounded follow-up; busy ticks are silent. So even collect is unavailable while advancement holds the lock. The section also states manual writers are outside the mutex, which is why diff inspection and explicit handoffs are required \u2014 this is exactly that case.\n- OPERATIONS.md: do not delete the mutex, kill a PID from a stale file, or interrupt remote workers merely to unblock admission; advancement owns repair launches.\n- The handled marker is written only after a durable outcome and a handoff are recorded; with ownership unresolved it must not be written.\n- Uncommitted STATE.md/candidate edits are the coordinator's; committing or regenerating them is takeover, explicitly forbidden.\n\nUncertainty and next discriminating check: the result's content is unknown and cannot be verified from here \u2014 no check-level outcomes, no qualification verdict, so no figure may be quoted. Unknown whether the coordinator has already collected or destroyed the worker. The cheapest discriminating check, for the owner (or a later idle watcher tick once the mutex is free): read the job ledger and staging record \u2014 result presence, per-check outcomes, provider read-back of server and IP \u2014 which separates \"already handled\" from \"pending follow-up,\" and infrastructure vs construction vs scientific vs verification failure if it failed.\n\nOrdered actions:\n1. Read-only inspection only: job ID, ledger state, reservation, cleanup status; answer the operator from that.\n2. Touch nothing: leave the mutex, STATE.md, the candidate record, the worker (no destroy without verified collection), and the ledger unmodified; write no handled marker.\n3. Report, then stop \u2014 no polling or waiting on the mutex.\n4. Handoff path: when the coordinator's session ends it owns collect \u2192 read each required check's result \u2192 require the passing qualification report and --accept against exact bytes \u2192 destroy with provider read-back \u2192 record, then mark handled. If the coordinator never returns, the independent no-agent expiry sweep deletes the labeled worker after its lifetime (on-host sweep scheduled hourly; GitHub path multi-hour \u2014 backstops, not deadlines), and the next idle watcher tick resumes collection. Cost exposure is bounded by the reservation's cleanup-grace arithmetic, a conservative estimate, not a billing cap.\n\nStopping condition: end after this report; the event stays pending for the owner.\n\nRemain unmodified: the research mutex and session markers; all uncommitted coordinator edits; the candidate's package and qualification state; frozen manifests, digests and existing tags; allowance and gate settings; the worker and its ledger entries.\n\nOperator report (draft):\n\"Job <id> (candidate <id>) finished while the advancement coordinator is still running and holds the research session mutex, with uncommitted STATE.md and candidate edits in the tree. No handoff was recorded, so I did not collect, verify, clean up, commit, or mark the event handled \u2014 the result is uncollected and unverified, and I quote no numbers. Billable exposure is bounded by the worker's lifetime plus the independent expiry sweeps if the coordinator never returns. Next action, owned by that coordinator on session end: collect, read each check's result, require the passing qualification and --accept on the exact bytes, then destroy and confirm cleanup; the watcher records and acknowledges after that.\"\n\n\u2014 Scout (Hermes)\n",
       "response_sha256": "84ceaa38512989461b66cfa12a1ee091aa9d51de2992b5ecd52f34a19dbf0a2a"
+    },
+    {
+      "case": "watcher-ownership",
+      "arm": "baseline",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-23",
+      "session_id": "20261022_225557_098201",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "81ef532042d58d3eeed2771ab3ef59223c9bb8e6fa3e5312bcbfad6302e80525",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 211,
+        "output_tokens": 10658,
+        "cache_read_tokens": 19712,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 30581,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 410,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 159,
+          "output_tokens": 10248,
+          "cache_read_tokens": 19328,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 189.498,
+      "response": "DECISION\nCollect and verify now, touch nothing shared. This session runs the bounded steps \u2014 collect, small-report fetch, coverage/gate evaluation, worker destroy \u2014 and defers every shared-state write: no STATE.md or record.json edit, no commit/push, no CI claim, no relaunch, no handled marker. Those belong to the first session that can safely hold the working tree.\n\nSUPPORTING EVIDENCE\n- The brief makes the handled marker the final step, after recording. Recording is impossible here without acting on the advancement session's uncommitted STATE.md/candidate edits; AGENTS.md requires inspecting the diff first, and I cannot attest to another session's half-finished work. Committing would publish it.\n- OPERATIONS.md: the mutex \"stays in place; do not delete or replace it to clear a busy session\"; never kill a PID from a stale file; never interrupt remote workers merely to unblock admission. The coordinator is stated active, so the lock is presumed genuinely held.\n- Collect is safe and bounded: it verifies the staging release (tag, asset membership, sizes, digests) without downloading bulk data; reports are under 256 KiB within the 20 MiB cap. The operator's status update needs no shared-file writes.\n- Cleanup may run independently; deletion is part of finishing a job, and powered-off servers still bill. After verified collect, evidence is durable in staging, so destroy stops billing without losing anything. If collect shows a partial upload, run worker retry-upload and re-collect before destroying.\n- \"Only one coordinator may launch workers using a given job ledger\" \u2014 no corrected-job relaunch from this session even if the job failed.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\nIs the session actually alive, or is the lock stale? A file existing is not evidence of a held lock. Check: read .factory/research-session.lock (pid, session_id, written_at), then inspect the live process table \u2014 pid alive, command line is the research wrapper, group identity matches. Observe only. Second unknown: whether the active session intends to record this job itself; no handoff was recorded, so assume not \u2014 the unwritten handled marker keeps the watcher engaged as the backstop.\n\nORDERED ACTIONS AND STOPPING CONDITION\n1. worker collect <job_id> \u2014 verify the staging release.\n2. Fetch small reports to .factory/<job_id>/reports/ via the release manifest.json; no bulk CSVs.\n3. Evaluate: stations/station-years built vs expected (build_summary.json), gate ok flags (qualification report); read record.json read-only. State accept/reject in the report; recording the acceptance is deferred.\n4. worker destroy <job_id> \u2014 scoped cleanup after verified collection.\n5. Leave a bounded local note under .factory/<job_id>/ listing deferred steps so a fresh session can finish without conversation memory.\n6. Send the operator report, then STOP.\nResume only when the lock-holder process is gone (verified in the process table, not by the file): next tick records the outcome, commits after inspecting the diff, checks CI via gh api .../actions/runs?head_sha=$(git rev-parse HEAD) (not gh run list --commit), then writes .factory/<job_id>/handled. Failure diagnosis uses staging logs; any corrected job is launched by the ledger-owning coordinator only.\n\nOPERATOR REPORT (figures from collected reports, not invented here)\n\"Job <id> finished. Collected and verified against private staging; small reports fetched. Coverage: [stations/station-years built vs expected]; gates: [ok/failed per qualification.json]. Worker destroyed after verified collection. STATE.md/record.json recording, commit/push, CI check and the handled marker are deliberately deferred: the advancement session holds the research mutex with uncommitted edits to exactly those files; I did not commit its work or touch the mutex. Lock holder verified live as [pid/cmdline evidence]. Next action: after it exits, record, commit, check CI for that commit, mark handled.\"\n",
+      "response_sha256": "fccd352e8650068067ada29a3f37b531ca2f8c4115314f89dd3afeb4988a3f73"
     }
   ],
-  "updated_at": "2026-10-22T22:55:50Z"
+  "updated_at": "2026-10-22T22:59:12Z"
 }
