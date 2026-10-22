@@ -824,6 +824,63 @@ and compact receipt. Both hash in chunks and use freshly owned temporary caches 
 removed after each check; old unrelated cache paths are preserved. This is not a claim that
 the container disk monitor covers host-side HF jobs: the executor returns before that loop
 for HF jobs. Broader host-side disk enforcement remains separate work.
+
+### Host-only transfer and Hugging Face limits
+
+Transfer and Hugging Face jobs now run in a supervised subprocess group on the
+worker, without Docker. The parent checks `timeout_minutes` and `max_disk_mb`
+before starting and once per second while it runs, including client setup,
+downloads, uploads, verification, rate-limit sleeps and retries. These modes
+previously returned before the container resource-monitor loop. They now record
+elapsed time and bypass irrelevant Docker cleanup.
+
+The disk charge is the greater of the job directory's apparent size and its
+initial size plus observed free-space loss on that filesystem. This includes
+installation writes outside `/opt/scout`, conservatively charging unrelated
+filesystem growth on the expendable single-job host. At least 512 MiB must remain
+free. Standard temporary, pip, uv (including managed Python) and Hugging Face
+cache locations are redirected under the monitored directory. Existing caches
+are retained and charged; nothing is recursively cleared to make room.
+
+This is sampled enforcement, not a filesystem quota: a fast writer can overshoot
+between observations. The interval is the directory-walk duration plus the
+one-second sleep, not one second total; `du` has a ten-second timeout. Filesystem
+free-space/growth is checked before that walk so external writes can stop earlier. An observation error
+fails the operation closed. The supervisor kills its owned process group and
+reaps the child before accepting a compact result; child exit alone or a partial
+receipt is not success. It keeps the leader unreaped via `waitid(WNOWAIT)` until
+group cleanup so its PID cannot be reused for an unrelated group. Cleanup re-sends
+the group signal while late-arriving members remain. Linux reads process state
+from procfs; it does not add a `ps`/procps dependency. Observation capability is
+checked before starting the operation. POSIX semantics:
+https://man7.org/linux/man-pages/man2/waitid.2.html . This targets the Linux worker;
+local macOS tests also account for its zombie-only process-group EPERM behaviour,
+without ignoring permission errors when live group members remain.
+
+A limit failure records `runtime-limit` or `disk-limit`; observation, cleanup and
+receipt failures are distinct. No exception text from a credential-bearing
+helper is added to the parent diagnostic. The completed/failed execution record
+still controls upload recovery: redispatch does not silently repeat transfer or
+publication. Partial remote uploads may exist and must be reconciled by digest
+in the next deliberately planned attempt. Failed results never authorize tags
+or publication.
+
+Worker lifetime/allowance, independent cleanup, credential separation,
+qualification and collection stay unchanged. This monitor covers transfer and
+Hugging Face execution only; the existing container path, its pre-container
+fetch, staging-result upload/retry, and host memory limits remain separate
+controls and review items. Process groups are not a sandbox for intentionally
+detached descendants; worker expiry is still required. No paid worker was
+launched to validate this change. Tests run stub operations locally and in CI.
+
+A child that cannot be reaped within ten seconds of cleanup is recorded as
+`host-cleanup-incomplete`, with `host_cleanup_complete: false` and its observed
+PID. The executor writes a local compact result and refuses staging upload,
+including on automatic upload retry: changing artifacts cannot be accepted.
+Inspect actual process identity and worker state; do not trust the saved PID as
+current identity, delete the execution record, or rerun the operation. Preserve
+the local diagnostic and use the existing owned-worker expiry/cleanup and fresh
+attempt procedure. No automatic restart or verification tag follows this failure.
 ### Assembled job directories are immutable
 
 `assemble-job.py` builds in a fresh temporary directory under `.factory/jobs/`, validates the
