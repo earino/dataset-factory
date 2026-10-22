@@ -333,6 +333,7 @@ and any column shipped beyond the declared set.
 | A model AUC is quoted with no reference | Only one baseline was ever run, or the reference lives in a notes field nobody compares | Run the triad (persistence, calendar-only, full model) on identical rows; record all three beside the number |
 | The gate dies with `ValueError: labels and scores must align and be non-empty` | A split has a duplicate header or a ragged row, so one column's values no longer align with the labels | Fix the build's column list; the gate now reports `leakage.every_column_could_be_scored` naming the column and split instead of aborting - keep that behaviour, a bare traceback hides which column is malformed |
 | The model trails a one-line rule | The label is largely persistent, or the eval window shifts prevalence | Record it as a defect; re-target a change/onset label or report the task as persistence |
+| The document promises a horizon the evaluation never measured | The metric was computed on daily or weekly rows while the prose claims an end-of-month or longer-range outcome; the numbers are right and the sentence is wrong | Score the stated horizon or narrow the prose to the task measured; a reproducible number attached to the wrong horizon is still an unsupported claim |
 
 ## Completion criteria
 
