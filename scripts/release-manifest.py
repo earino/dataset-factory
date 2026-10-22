@@ -15,6 +15,10 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from factory.release_schema import (ReleaseShapeError, load_release, from_manifest,
+                                    normalise_destinations, normalise_splits,
+                                    combined_artifact_version, atomic_write)
 
 
 def load(path: Path):
@@ -81,12 +85,10 @@ def publication_state(release: Path) -> tuple[bool, str, str]:
     private_note = "Prepared for human review. Nothing here has been published."
     if not path.is_file():
         return False, private_claim, private_note
-    destinations = load(path).get("destinations", {})
-    entries = [entry for entry in destinations.values() if isinstance(entry, dict)]
-    if not entries or any(entry.get("private") is not False or entry.get("verified") is not True
-                          for entry in entries):
+    entries = list(normalise_destinations(load(path), path).values())
+    if not entries or any(entry.private is not False or not entry.verified for entry in entries):
         return False, private_claim, private_note
-    verified = sorted(str(entry.get("verified_at")) for entry in entries if entry.get("verified_at"))
+    verified = sorted(entry.verified_at for entry in entries if entry.verified_at)
     when = f", both destinations verified {verified[-1]}" if verified else ""
     return True, "public", (
         f"Published after explicit operator authorisation{when}. Data files, tag and artifact "
@@ -110,24 +112,22 @@ def descriptor(candidate: str) -> dict:
     return data
 
 
-def combined_artifact_version(levels: dict) -> str:
-    """A single label for a multi-level artifact whose levels were gated separately.
-
-    Documented as derived: the two per-level versions are the gate's own, and this only names them
-    together. Nothing here is presented as a gate output.
-    """
-    joined = "\n".join(f"{name}:{data['artifact_version']}" for name, data in sorted(levels.items()))
-    return hashlib.sha256(joined.encode()).hexdigest()
-
-
 def main() -> int:
     if len(sys.argv) < 2:
         raise SystemExit("name the dataset package to manifest, e.g. release/<id>")
-    candidate = sys.argv[1]
-    desc = descriptor(candidate)
+    argument = Path(sys.argv[1])
+    candidate = argument.name
     release = ROOT / "release" / candidate
+    if not candidate or candidate in (".", "..") or (len(argument.parts) > 1 and
+            argument.resolve() != release.resolve()):
+        raise SystemExit("name a dataset or its directory under release/")
+    if (release / "MANIFEST.json").exists():
+        existing = load_release(release)
+        if existing.published or any(d.private is False for d in existing.destinations.values()):
+            print(f"validated {release}/MANIFEST.json; published bytes preserved (no writes)")
+            return 0
+    desc = descriptor(candidate)
     published, visibility, publication_note = publication_state(release)
-    release.mkdir(parents=True, exist_ok=True)
     record = load(ROOT / "candidates" / candidate / "record.json")
     expected = load(ROOT / "candidates" / candidate / "baseline" / "expected_artifact.json")
     qualification = load(release / "qualification.json")
@@ -232,7 +232,7 @@ def main() -> int:
     sums_lines = []
     for relative, info in sorted(expected["files"].items()):
         sums_lines.append(f"{info['sha256']}  {relative}")
-    (release / "SHA256SUMS").write_text("\n".join(sums_lines) + "\n")
+    sums_text = "\n".join(sums_lines) + "\n"
 
     POST_VERIFICATION = {"DESTINATIONS.json"}
     package_files = {}
@@ -242,17 +242,19 @@ def main() -> int:
             if relative in POST_VERIFICATION:
                 continue
             package_files[relative] = sha256_of(path)
+    package_files["SHA256SUMS"] = hashlib.sha256(sums_text.encode()).hexdigest()
     manifest["package_files"] = package_files
-    # Split counts belong in the manifest: the site renderer and the release notes both read them,
-    # and a null here crashed the publisher with a TypeError instead of a message.
-    if not manifest.get("splits"):
-        quality_doc = load(release / "quality.json") or {}
-        manifest["splits"] = (quality_doc.get("split_stats")
-                              or (quality_doc.get("splits") if isinstance(quality_doc.get("splits"), dict)
-                                  and all(isinstance(v, dict) for v in quality_doc["splits"].values()) else {})
-                              or (load(release / "summary.json") or {}).get("splits")
-                              or ((record or {}).get("qualification") or {}).get("splits")
-                              or {})
+    # Every supported fallback is interpreted by the same schema as the readers.
+    split_sources = []
+    for filename, keys in (("quality.json", ("split_stats", "splits")),
+                           ("summary.json", ("splits",))):
+        source = release / filename
+        doc = load(source) or {}
+        split_sources.extend((doc.get(key), source, key) for key in keys)
+    split_sources.append((((record or {}).get("qualification") or {}).get("splits"),
+                          ROOT / "candidates" / candidate / "record.json", "qualification.splits"))
+    if baseline is None and desc.get("baseline_reason"):
+        manifest["baseline_reason"] = desc["baseline_reason"]
     manifest["licenses"] = licenses_block(candidate)
     # The Hub path for each file, when the dataset declares its own. Emitted only when it differs
     # from the flat default, so a single-level release's manifest is unchanged.
@@ -261,9 +263,26 @@ def main() -> int:
         manifest["hub_paths"] = {relative: declared_hub[relative]
                                  for relative in sorted(expected["files"])}
 
-    (release / "MANIFEST.json").write_text(json.dumps(manifest, indent=2) + "\n")
-
-    # SHA256SUMS was written above, before the package was hashed.
+    release_record = from_manifest(manifest, path=release / "MANIFEST.json",
+                                   destinations=load(release / "DESTINATIONS.json"),
+                                   split_sources=split_sources)
+    for section in ("code", "data_compilation", "source_data"):
+        if not (release_record.licences.get(section) or {}).get("spdx"):
+            raise ReleaseShapeError(release / "MANIFEST.json", "licenses." + section,
+                                    "missing explicit licence designation")
+    # Keep protocol grouping; shared pools are stored once, irrespective of config count.
+    split_doc = {}
+    for split in release_record.splits.values():
+        group = split_doc.setdefault(split.config, {}) if split.config else split_doc
+        group[split.name] = split.counts()
+        if split.positive_rate is not None:
+            group[split.name]["positive_rate"] = split.positive_rate
+    manifest.update(splits=split_doc)
+    text = json.dumps(manifest, indent=2, allow_nan=False) + "\n"
+    # All shape/licence checks precede the first write. Each replace is atomic; manifest last.
+    release.mkdir(parents=True, exist_ok=True)
+    atomic_write(release / "SHA256SUMS", sums_text)
+    atomic_write(release / "MANIFEST.json", text)
 
     print(f"wrote {release}/MANIFEST.json and SHA256SUMS")
     # A multi-level artifact has no single gate-produced version; name the per-level ones instead.
@@ -277,4 +296,7 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    try:
+        raise SystemExit(main())
+    except ReleaseShapeError as exc:
+        raise SystemExit(str(exc)) from None

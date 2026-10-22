@@ -28,6 +28,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from factory import dashboard_render as ui  # noqa: E402
+from factory.release_schema import load_release, normalise_baseline, ReleaseShapeError
 SNAPSHOT_SCHEMA = 1
 SNAPSHOT_GENERATED = ""
 PUBLISH_REPO = "earino/dataset-factory-dashboard"
@@ -86,42 +87,19 @@ def collect_candidates():
             continue
         jurisdiction = record.get("jurisdiction") or {}
         licence = read_json(path.parent / "license.json", {}) or {}
-        release_manifest = read_json(ROOT / "release" / (record.get("id") or path.parent.name)
-                                     / "MANIFEST.json", {}) or {}
-
-        def find_number(node, names, depth=0):
-            """First numeric value under a matching key, anywhere in a nested manifest."""
-            if depth > 6:
-                return None
-            if isinstance(node, dict):
-                for key, value in node.items():
-                    if key in names and isinstance(value, (int, float)):
-                        return value
-                for value in node.values():
-                    found = find_number(value, names, depth + 1)
-                    if found is not None:
-                        return found
-            elif isinstance(node, list):
-                for value in node:
-                    found = find_number(value, names, depth + 1)
-                    if found is not None:
-                        return found
-            return None
-
-        # Some records state their reference baselines as prose in measurements rather than as
-        # numbers in `baseline`. Extract the eval figure so the page cannot show "no data" while
-        # the record contains the number - that hid a model sitting below its own baseline.
-        import re as _re
-        persistence = None
-        for value in (record.get("measurements") or {}).values():
-            match = _re.search(r"persistence[^;]*?eval\s+([0-9]\.[0-9]+)", json.dumps(value))
-            if match:
-                persistence = float(match.group(1))
-                break
-        release_baseline = {"auc": find_number(release_manifest.get("baseline"), ("eval_auc",)),
-                            "reference": (find_number(release_manifest.get("baseline"),
-                                                     ("persistence_prev_target_cited_eval_auc",
-                                                      "persistence_eval_auc")) or persistence)}
+        release_path = ROOT / "release" / (record.get("id") or path.parent.name)
+        release = None
+        if (release_path / "MANIFEST.json").is_file():
+            try:
+                release = load_release(release_path, strict=False)
+                errors.extend(release.problems)
+            except ReleaseShapeError as exc:
+                errors.append(str(exc))
+        measured = release.baseline if release and release.baseline_current else None
+        release_baseline = {"auc": measured.eval_auc if measured else None,
+                            "reference": (measured.references.get("persistence_prev_target_cited_eval_auc")
+                                          if measured else None),
+                            "display": release.baseline_display if release else None}
         measurements = record.get("measurements") or {}
         qualification = record.get("qualification") or {}
         baseline = record.get("baseline") or {}
@@ -150,7 +128,7 @@ def collect_candidates():
                 "status": ((licence.get("source") or {}).get("status") or None),
             },
             "measurements": measurements if isinstance(measurements, dict) else {},
-            "release_splits": release_manifest.get("splits") or {},
+            "release_splits": release.split_counts() if release else {},
             "release_baseline": release_baseline,
             "qualification": {"result": qualification.get("result"),
                               "splits": qualification.get("splits"),
@@ -183,113 +161,42 @@ def collect_candidates():
     }
 
 
-def _split_rows(node, depth: int = 0) -> int:
-    """Sum split row counts through up to two levels of nesting.
-
-    Two shapes exist in the manifests: {"train": {"rows": n}} and, for level-structured datasets,
-    {"temporal": {"train": {"rows": n}}}. Reading only the top level printed "no data" for NOAA
-    (nested under a level) and for ABS (empty map), while both releases clearly have rows.
-    """
-    if depth > 3 or not isinstance(node, dict):
-        return 0
-    if isinstance(node.get("rows"), int):
-        return node["rows"]
-    return sum(_split_rows(value, depth + 1) for value in node.values())
-
-
-# Four key names for the same number, across the releases that exist today:
-#   eval_auc, train_py_eval_auc, auc_from_train_py, auc_eval_runner_measured, eval_auc_from_train_py
-AUC_KEYS = ("train_py_eval_auc", "eval_auc", "validate_py_eval_auc", "auc_from_train_py",
-            "auc_eval_runner_measured", "eval_auc_from_train_py", "auc_from_validate_py")
-
-
 def baseline_auc(block: dict) -> tuple[float | None, str | None]:
-    """The eval AUC from whatever shape a baseline record uses, or (None, None).
-
-    The second element is a scope label when the number is not a single model: Chicago's food
-    release is a 40-config suite, and its median must not be read as one classifier's score.
-    """
-    if not isinstance(block, dict):
-        return None, None
-    for section in (block, block.get("result") or {}, block.get("contract") or {},
-                    (block.get("artifact") or {})):
-        if not isinstance(section, dict):
-            continue
-        for key in AUC_KEYS:
-            value = section.get(key)
-            try:
-                number = float(value)
-            except (TypeError, ValueError):
-                continue
-            if 0.0 < number < 1.0:
-                return number, None
-    summary = block.get("summary") or {}
-    if isinstance(summary, dict) and isinstance(summary.get("eval_auc_median"), (int, float)):
-        configs = summary.get("configs")
-        return float(summary["eval_auc_median"]), f"median of {configs} configs" if configs else "suite median"
-    levels = block.get("levels") or (block.get("artifact") or {}).get("levels") or {}
-    for level in levels.values():
-        if isinstance(level, dict):
-            value = level.get("eval_auc")
-            if isinstance(value, (int, float)) and 0.0 < value < 1.0:
-                return float(value), None
-    return None, None
+    """Legacy API; interpretation belongs to the release schema."""
+    baseline = normalise_baseline(block)
+    return (baseline.eval_auc, baseline.scope) if baseline else (None, None)
 
 
 def collect_releases():
-    releases = []
+    releases, errors = [], []
     for manifest_path in sorted((ROOT / "release").glob("*/MANIFEST.json")):
-        manifest = read_json(manifest_path, {})
-        folder = manifest_path.parent
-        destinations = read_json(folder / "DESTINATIONS.json", {}) or {}
-        dest = destinations.get("destinations", {}) or {}
-        verified = {name: bool((body or {}).get("verified")) for name, body in dest.items()}
-        verified_at = sorted(filter(None, [(body or {}).get("verified_at") for body in dest.values()]))
-        baseline_scope = None
-        rows = _split_rows(manifest.get("splits"))
-        if not rows:
-            # Older manifests carry no split counts at all (ABS v2026.10 shipped an empty map);
-            # the gate's own split_stats beside the release is the authoritative fallback.
-            quality_doc = read_json(folder / "quality.json", {}) or {}
-            rows = _split_rows(quality_doc.get("split_stats") or quality_doc.get("splits"))
-        if not rows:
-            # ABS ships split *paths* in quality.json and the counts in summary.json, which is
-            # written by every builder that emits a summary. Third shape, same page.
-            rows = _split_rows((read_json(folder / "summary.json", {}) or {}).get("splits"))
-        baseline_block = manifest.get("baseline") or {}
-        baseline = (baseline_block.get("levels")
-                    or (baseline_block.get("artifact") or {}).get("levels") or {})
-        aucs = [v.get("eval_auc") for v in baseline.values()
-                if isinstance(v, dict) and isinstance(v.get("eval_auc"), (int, float))]
-        if not aucs:
-            value, scope = baseline_auc(baseline_block)
-            if value is None:
-                # The released manifest can predate the figure: fall back to the candidate's own
-                # baseline evidence rather than printing "—" beside a number we already hold.
-                value, scope = baseline_auc(read_json(ROOT / "candidates" / folder.name /
-                                                      "baseline" / "baseline_result.json", {}) or {})
-            if value is not None:
-                aucs.append(value)
-                baseline_scope = scope
-        persistence = ((manifest.get("baseline") or {}).get("persistence_reference") or {})
-        # A release may describe its persistence reference in prose (the key predates a fixed
-        # schema); the dashboard reads figures, never crashes on a shape it does not expect.
-        if not isinstance(persistence, dict):
-            persistence = {}
+        try:
+            release = load_release(manifest_path, strict=False)
+        except ReleaseShapeError as exc:
+            errors.append(str(exc))
+            continue
+        errors.extend(release.problems)
+        verified = {d.kind: d.verified for d in release.destinations.values()}
+        stamps = sorted(d.verified_at for d in release.destinations.values() if d.verified_at)
+        baseline = release.baseline
         releases.append({
-            "dataset": manifest.get("dataset", folder.name),
-            "release_tag": manifest.get("release_tag") or "",
-            "rows": rows or None,
-            "assets": len(manifest.get("assets") or manifest.get("package_files") or {}) or None,
-            "verified": verified,
-            "verified_all": bool(verified) and all(verified.values()),
-            "verified_at": verified_at[-1] if verified_at else None,
-            "baseline_eval_auc": max(aucs) if aucs else None,
-            "baseline_scope": baseline_scope,
-            "persistence_auc": persistence.get("persistence_prev_target_cited_eval_auc"),
-            "publication_note": (manifest.get("publication_note") or "")[:200],
+            "dataset": release.dataset, "release_tag": release.tag or "",
+            "published": release.published, "disposition": release.disposition,
+            "rows": release.rows, "splits": release.split_counts(),
+            "assets": len(release.metadata.get("assets") or release.metadata.get("package_files") or {}) or None,
+            "verified": verified, "verified_all": bool(verified) and all(verified.values()),
+            "verified_at": stamps[-1] if stamps else None,
+            "baseline_eval_auc": baseline.eval_auc if baseline and release.baseline_current else None,
+            "baseline_scope": baseline.scope if baseline else None,
+            "baseline_display": release.baseline_display,
+            "baseline_per_config": baseline.per_config if baseline else {},
+            "baseline_current": release.baseline_current,
+            "baseline_evidence": baseline.evidence if baseline else None,
+            "persistence_auc": (baseline.references.get("persistence_prev_target_cited_eval_auc") if baseline else None),
+            "publication_note": (release.metadata.get("publication_note") or "")[:200],
+            "errors": list(release.problems),
         })
-    return {"releases": releases, "errors": []}
+    return {"releases": releases, "errors": errors}
 
 
 def collect_resources(published_count=0):
@@ -602,6 +509,9 @@ def derive_alarms(snapshot):
         html_parts.append(ui.alarm(ui.esc(text), tone, icon))
         plain.append(text)
 
+    for error in (snapshot.get("releases") or {}).get("errors", []):
+        add("Release contract: " + error)
+
     for job in (snapshot.get("cron") or {}).get("jobs", []):
         if not job["enabled"]:
             continue
@@ -664,7 +574,7 @@ def collect_history(out: Path, snapshot):
     decision = (snapshot.get("budget") or {}).get("decision") or {}
     point = {
         "at": snapshot["generated_at"],
-        "published": len(snapshot["releases"]["releases"]),
+        "published": sum(r["published"] for r in snapshot["releases"]["releases"]),
         "live": len(snapshot["candidates"]["live"]),
         "tokens_7d": decision.get("research_tokens_last_7_days"),
         "sessions_7d": decision.get("runs_last_7_days"),
@@ -682,7 +592,7 @@ def build(out: Path, include_tests=True):
     global SNAPSHOT_GENERATED
     out.mkdir(parents=True, exist_ok=True)
     snapshot = collect_snapshot(include_tests=include_tests)
-    snapshot["resources"] = collect_resources(len(snapshot["releases"]["releases"]))
+    snapshot["resources"] = collect_resources(sum(r["published"] for r in snapshot["releases"]["releases"]))
     history = collect_history(out, snapshot)
     snapshot["history"] = history
     alarms_html, alarms_plain, soft = derive_alarms(snapshot)

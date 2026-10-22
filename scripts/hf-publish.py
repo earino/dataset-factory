@@ -51,6 +51,9 @@ CANDIDATE = None
 BUILD = REPO_ROOT / ".factory" / "hf-package"
 
 
+sys.path.insert(0, str(REPO_ROOT))
+from factory.release_schema import as_release, load_release, record_destination, UNKNOWN
+
 def _config_names(splits):
     """The config names a split map is grouped by, through the rule the dataset page also uses.
 
@@ -76,14 +79,16 @@ def _manifest_configs(manifest_data):
 
 def hub_path(manifest_data, config, split):
     """Where a config's split CSV lives on the Hub, from the manifest alone."""
+    release = as_release(manifest_data)
+    m = release.metadata
     prefix = "" if config in ("default", "") else config + "/"
-    for logical, artifact in (manifest_data.get("layout") or {}).items():
+    for logical, artifact in (m.get("layout") or {}).items():
         if artifact.startswith(prefix) and artifact.rsplit("/", 1)[-1] == f"{split}.csv":
-            declared = (manifest_data.get("hub_paths") or {})
+            declared = (m.get("hub_paths") or {})
             for key in (artifact, logical):
                 if declared.get(key):
                     return declared[key]
-            info = (manifest_data.get("assets") or {}).get(artifact) or {}
+            info = (m.get("assets") or {}).get(artifact) or {}
             if info.get("asset_name"):
                 return f"data/{info['asset_name']}"
     raise SystemExit(f"no Hub path for config {config!r} split {split!r}")
@@ -154,7 +159,7 @@ def load_token(args):
 def manifest():
     if PACKAGE is None:
         raise SystemExit("no candidate resolved; main() must set PACKAGE from --candidate first")
-    return json.loads((PACKAGE / "MANIFEST.json").read_text())
+    return load_release(PACKAGE)
 
 
 def resolve_candidate(name: str | None) -> str:
@@ -179,14 +184,10 @@ def descriptor(candidate: str) -> dict:
 
 
 def asset_target(manifest_data, logical):
+    """Resolve the declared Hub path, retaining flat names for historical releases."""
     if logical in HF_PATHS:
         return HF_PATHS[logical]
-    """Where an asset lands in the Hugging Face repository.
-
-    The CSVs live under `data/` (the card's `data_files` points there); `meta.json` and
-    `quality.json` stay at the root, matching the layout the runner contract expects.
-    """
-    asset_name = manifest_data["assets"][logical]["asset_name"]
+    asset_name = as_release(manifest_data).metadata["assets"][logical]["asset_name"]
     return f"data/{asset_name}" if logical.endswith(".csv") else asset_name
 
 
@@ -206,27 +207,12 @@ def render_card_template(text: str, manifest_data: dict) -> str:
     version, tag, status, row counts, loading instructions, licence - so the dataset writes the
     prose and the generator fills the facts, rather than the prose being frozen into the generator.
     """
-    splits = manifest_data.get("splits") or {}
-    published = bool(manifest_data.get("published"))
-
-    def rows_in(group):
-        """Total rows in a split map, whether the splits are flat or nested under a protocol.
-
-        NOAA's split map nests one group per protocol, and the flat-only sum rendered its card as
-        "Rows: 0 across two levels" - a published card telling every reader the dataset is empty.
-        """
-        if not isinstance(group, dict):
-            return 0
-        if "rows" in group:
-            return int(group.get("rows") or 0)
-        return sum(rows_in(entry) for entry in group.values())
-
-    total = rows_in(splits)
-    configs = _config_names(splits)
-    config_map = _manifest_configs(manifest_data)
-    if len(config_map) > 1:
-        configs = sorted(config_map)
-    licences = manifest_data.get("licenses") or {}
+    release = as_release(manifest_data)
+    m = release.metadata
+    published = release.published
+    total = release.rows
+    configs = sorted(n for n in release.configs if n != "default")
+    licences = release.licences
     values = {
         # The template's loading example has to name the repository the way the Hub does. Filling
         # this with the bare candidate name produced a card whose documented command raised
@@ -235,16 +221,17 @@ def render_card_template(text: str, manifest_data: dict) -> str:
         "CONFIGS": ", ".join(configs),
         "CONFIGS_BLOCK": configs_block(manifest_data),
         "N_CONFIGS": f"{len(configs):,}",
-        "ARTIFACT_VERSION": str(manifest_data.get("artifact_version")),
-        "RELEASE_TAG": str(manifest_data.get("release_tag")),
-        "GITHUB_REPOSITORY": str(manifest_data.get("repository")),
+        "ARTIFACT_VERSION": release.artifact_id or UNKNOWN,
+        "RELEASE_TAG": release.tag or UNKNOWN,
+        "GITHUB_REPOSITORY": str(m.get("repository")),
         "STATUS_LINE": ("public. Released after explicit operator authorisation; publication changed "
                         "no data file, tag or checksum.") if published else (
                         "private. Public visibility requires explicit human approval. Nothing here "
                         "has been published."),
         "LOADING_NOTE": ("The repository is public, so loading needs no credential:") if published else (
                         "For a private repository, pass a token that has access to it:"),
-        "ROWS_TOTAL": f"{total:,}",
+        "ROWS_TOTAL": f"{total:,}" if total is not None else UNKNOWN,
+        "BASELINE_AUC": release.baseline_display,
         "DATA_LICENSE": str((licences.get("data_compilation") or {}).get("spdx")),
         "CODE_LICENSE": str((licences.get("code") or {}).get("spdx")),
         "SOURCE_LICENSE": str((licences.get("source_data") or {}).get("spdx")),
@@ -267,18 +254,6 @@ def render_card_template(text: str, manifest_data: dict) -> str:
 
 def card(manifest_data):
     """The dataset card, generated from the manifest so both platforms describe one dataset."""
-    splits = manifest_data["splits"]
-    measurements = manifest_data.get("measurements") or {}
-    clock = measurements.get("clock_offset") or {}
-    threshold = measurements.get("threshold_search") or {}
-    extraction = measurements.get("extraction_cost") or {}
-    source = manifest_data.get("source") or {}
-    licenses = manifest_data.get("licenses") or {}
-    code_license = (licenses.get("code") or {}).get("spdx") or "not declared"
-    data_license = (licenses.get("data_compilation") or {}).get("spdx") or "not declared"
-    source_license = (licenses.get("source_data") or {})
-    # Publication state comes from the manifest, which derives it from the recorded destination
-    # state. The card asserted "private" unconditionally, so it stayed wrong after publication.
     template = REPO_ROOT / "candidates" / CANDIDATE / "card.md"
     if template.is_file():
         # A dataset that supplies its own card gets the dataset-driven path; Austin's published card
@@ -299,9 +274,9 @@ def navigation_record():
         # No destinations recorded at all: the same state as "no verified site", which is the
         # staged-package case this function exists for. A first-ever --plan must not crash on it.
         return None
-    destinations = json.loads(record_path.read_text())
-    site = (destinations.get("publication") or {}).get("site") or {}
-    if site.get("status") != "verified":
+    release = load_release(PACKAGE)
+    site = release.destinations.get("site")
+    if site is None or not site.verified:
         return None
     sys.path.insert(0, str(REPO_ROOT))
     from factory.site_model import project
@@ -318,12 +293,13 @@ def loading_text(manifest_data, repo_id):
     a bare name raises DatasetNotFoundError for an anonymous reader. Both defects shipped, so both
     are generated here from the manifest rather than written by hand.
     """
-    token_note = ("The repository is public, so no token is needed." if manifest_data.get("published")
+    release = as_release(manifest_data)
+    m = release.metadata
+    token_note = ("The repository is public, so no token is needed." if release.published
                   else "Private repository: pass a token that has access to it.")
     config_map = _manifest_configs(manifest_data)
-    configs = sorted(config_map) if len(config_map) > 1 else _config_names(
-        manifest_data.get("splits") or {})
-    tag = manifest_data["release_tag"]
+    configs = sorted(n for n in release.configs if n != "default")
+    tag = as_release(manifest_data).tag
     if configs:
         loading = "\n".join(f'ds = load_dataset("{repo_id}", "{name}", revision="{tag}")'
                             for name in configs)
@@ -340,8 +316,8 @@ def loading_text(manifest_data, repo_id):
         f"{loading}\n```\n\n"
         f"{token_note}\n\n"
         "## GitHub counterpart\n\n"
-        f"`{manifest_data.get('get_dataset_command')}` in "
-        f"{manifest_data.get('repository')}.\n\n"
+        f"`{m.get('get_dataset_command')}` in "
+        f"{m.get('repository')}.\n\n"
         "Both destinations carry the same files and the same digests; "
         "`MANIFEST.json` and `SHA256SUMS` verify either copy.\n"
     )
@@ -379,12 +355,14 @@ def build_package(manifest_data, repo_id):
 
 
 def plan(manifest_data, repo_id):
-    assets = manifest_data["assets"]
+    release = as_release(manifest_data)
+    m = release.metadata
+    assets = m["assets"]
     return {
         "repository": repo_id,
-        "private": not manifest_data.get("published", False),
-        "release_tag": manifest_data["release_tag"],
-        "artifact_version": manifest_data["artifact_version"],
+        "private": not release.published,
+        "release_tag": release.tag,
+        "artifact_version": release.artifact_id,
         "small_uploads": sorted(build_package(manifest_data, repo_id)),
         "asset_uploads": [
             {"logical": logical, "to": asset_target(manifest_data, logical),
@@ -421,6 +399,7 @@ def main(argv=None):
     declared = descriptor(candidate)
     HF_PATHS = declared.get("hf_paths") or {}
     manifest_data = manifest()
+    m = manifest_data.metadata
     repo_id = args.repo or declared["repository"].removeprefix("https://github.com/")
     result = {"repository": repo_id}
 
@@ -453,7 +432,7 @@ def main(argv=None):
         build_package(manifest_data, repo_id)
         upload_folder(repo_id=repo_id, repo_type="dataset", folder_path=str(BUILD),
                       allow_patterns=[name for name in sorted(build_package(manifest_data, repo_id))],
-                      commit_message=f"Publish {manifest_data['release_tag']} documentation and "
+                      commit_message=f"Publish {as_release(manifest_data).tag} documentation and "
                                      "small files from the release manifest",
                       token=token)
         result["small_uploaded"] = sorted(build_package(manifest_data, repo_id))
@@ -463,16 +442,16 @@ def main(argv=None):
         # lands pins a commit without the files, and the version-pinned load then fetches nothing.
         # Re-running deletes and re-creates it at the current head instead of failing.
         try:
-            api.delete_tag(repo_id, tag=manifest_data["release_tag"], repo_type="dataset",
+            api.delete_tag(repo_id, tag=as_release(manifest_data).tag, repo_type="dataset",
                            token=token)
             result["tag_replaced"] = True
         except Exception as exc:  # noqa: BLE001 - absent tag is the normal first run
             result["tag_replaced"] = f"no existing tag ({type(exc).__name__})"
-        api.create_tag(repo_id, tag=manifest_data["release_tag"], repo_type="dataset", token=token)
+        api.create_tag(repo_id, tag=as_release(manifest_data).tag, repo_type="dataset", token=token)
         refs = api.list_repo_refs(repo_id, repo_type="dataset")
-        tag_sha = next((r.target_commit for r in (refs.tags or []) if r.name == manifest_data["release_tag"]), None)
+        tag_sha = next((r.target_commit for r in (refs.tags or []) if r.name == as_release(manifest_data).tag), None)
         branch_sha = next((b.target_commit for b in (refs.branches or []) if b.name == "main"), None)
-        result["tagged"] = manifest_data["release_tag"]
+        result["tagged"] = as_release(manifest_data).tag
         result["tag_commit"] = tag_sha
         result["main_commit"] = branch_sha
         result["tag_matches_main"] = bool(tag_sha) and tag_sha == branch_sha
@@ -492,7 +471,7 @@ def main(argv=None):
             on_hub[sibling.rfilename] = (sibling.size, lfs.get("sha256"))
         result["repo_private"] = info.private
         expected = {}
-        for logical, entry in (manifest_data.get("assets") or {}).items():
+        for logical, entry in (m.get("assets") or {}).items():
             expected[asset_target(manifest_data, logical)] = (entry["bytes"], entry["sha256"])
         present, missing, mismatched, digest_checked = [], [], [], []
         for path, (size, sha256) in sorted(expected.items()):
@@ -525,19 +504,9 @@ def main(argv=None):
         # Record this destination's completion next to the package, so the release can be tracked
         # per platform and a half-published release cannot be mistaken for a finished one.
         record_path = PACKAGE / "DESTINATIONS.json"
-        try:
-            record = json.loads(record_path.read_text()) if record_path.is_file() else {}
-        except json.JSONDecodeError:
-            record = {}
-        record.setdefault("release_tag", manifest_data["release_tag"])
-        record["destinations"] = record.get("destinations") or {}
-        # Merge, never clobber: publication facts (note, published_at, licence metadata, the
-        # anonymous proof) are written by the publication step and a later verification re-run must
-        # not erase them.
-        entry = dict(record["destinations"].get("huggingface") or {})
-        entry.update({
+        fields = {
             "repo": repo_id,
-            "revision": manifest_data["release_tag"],
+            "revision": as_release(manifest_data).tag,
             "private": info.private,
             "verified": bool(result["ok"]),
             "verified_at": None if not result["ok"] else __import__("datetime").datetime.now(
@@ -547,9 +516,8 @@ def main(argv=None):
             "size_mismatch": mismatched,
             "loading_check": (result.get("loading_check") or "run by the worker job and recorded "
                               "in its report"),
-        })
-        record["destinations"]["huggingface"] = entry
-        record_path.write_text(json.dumps(record, indent=2) + "\n")
+        }
+        record_destination(record_path, "huggingface", fields, release_tag=manifest_data.tag)
         result["recorded"] = str(record_path.relative_to(REPO_ROOT))
 
     print(json.dumps(result, indent=2))

@@ -5638,3 +5638,20 @@ Next action for the tick: the queue's construction work remains with the advance
 (abs-visitor-arrivals-direction packaging, then eutl-installation-net-short packaging per its
 staging release 420810883); ea-flood-alert-escalation enters the queue behind the five ready
 candidates as a measured class-A build (whole panel fits the coordinator; ~4.9 MB of fetches).
+
+## Infrastructure hardening — 2026-10-22, engineering branch
+
+Eduardo requested broader hardening with Scout's runtime knowledge. Work is isolated on
+`refactor/release-schema`; live schedules and main remain unchanged. Scout prepared runtime
+handoff PR #1 (`ops/scout-runtime-handoff`), including sanitized scheduler/shim sources.
+`docs/HARDENING-PLAN.md` records the staged engineering work and deployment boundary.
+
+First increment: one typed release reader, scoped/current baseline interpretation, diagnostic
+errors, fail-closed manifest writes, and conformance tests over all ten packages. NHS remains a
+private dropped historical package; NOAA retains both protocol scores. No published artifact or
+gate byte was edited. Original 419 tests plus 22 new tests passed locally (six existing environment
+skips); clean-checkout and exact-push CI evidence belong in the engineering PR.
+
+Next: finish reviewer verification, open the schema PR without merging, review Scout's handoff,
+then harden reproducible runtime recovery, safe generated-directory cleanup and publication
+verification. Never launch a second coordinator on the live ledger.
