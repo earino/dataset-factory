@@ -1,0 +1,687 @@
+{
+ "ok": true,
+ "dataset": "/output/extract",
+ "gate_version": "1.4.0",
+ "artifact": {
+  "train": {
+   "file": "public/train.csv",
+   "sha256": "b911c270ee8bf8c188ac9976472bb6d79789be337d4e46d6f1521388e5ec103b",
+   "bytes": 2580934
+  },
+  "eval": {
+   "file": "public/eval.csv",
+   "sha256": "7d3a82166c9a5dbdbfe8e4abaaedc396c6a256ad2f4eb572eb785bba6b67f517",
+   "bytes": 457228
+  },
+  "holdout": {
+   "file": "private/holdout.csv",
+   "sha256": "00b945943e62703a68fad55202dde15557910d74173f40cd4fc44948c795b583",
+   "bytes": 335643
+  },
+  "meta.json": {
+   "file": "meta.json",
+   "sha256": "5188c4ae1aeca937713f933bd6a7fa3fda1e66f582bd8976a6d78577fe8d0009",
+   "bytes": 3696
+  },
+  "quality.json": {
+   "file": "quality.json",
+   "sha256": "76aa31e5919e90904374897c18fd920cf3020c3f650f6cab4d3009e5ae3010f4",
+   "bytes": 15898
+  },
+  "artifact_version": {
+   "digest": "b8345bcb5769e422c75dd0451c81854ceb8fa809b4bb60977cd781d4071abaa9",
+   "components": [
+    "eval",
+    "holdout",
+    "meta.json",
+    "quality.json",
+    "train"
+   ]
+  }
+ },
+ "results": [
+  {
+   "check": "descriptor",
+   "ok": true,
+   "detail": "quality.json loaded for 'wb-ieg-project-outcome'",
+   "evidence": {}
+  },
+  {
+   "check": "leakage.declared_columns",
+   "ok": true,
+   "detail": "every shipped column is declared",
+   "evidence": {
+    "undeclared": []
+   }
+  },
+  {
+   "check": "leakage.answer_source_absent",
+   "ok": true,
+   "detail": "no answer source or post-hoc column is shipped",
+   "evidence": {
+    "shipped_forbidden": []
+   }
+  },
+  {
+   "check": "leakage.every_column_could_be_scored",
+   "ok": true,
+   "detail": "every column was scored for leakage",
+   "evidence": {
+    "unscorable": []
+   }
+  },
+  {
+   "check": "leakage.no_single_column_determines_the_target",
+   "ok": true,
+   "detail": "no shipped column separates the classes on its own",
+   "evidence": {
+    "offenders": [],
+    "high_cardinality": [
+     "project_id@eval",
+     "project_id@holdout",
+     "project_id@train"
+    ],
+    "missing_splits": []
+   }
+  },
+  {
+   "check": "leakage.high_cardinality_declared",
+   "ok": true,
+   "detail": "high-cardinality columns are declared as identifiers or free fields",
+   "evidence": {
+    "undeclared": [],
+    "declared": [
+     "project_id"
+    ]
+   }
+  },
+  {
+   "check": "timing.prediction_time_declared",
+   "ok": true,
+   "detail": "prediction instant is declared",
+   "evidence": {}
+  },
+  {
+   "check": "timing.no_post_hoc_feature",
+   "ok": true,
+   "detail": "no feature is documented as post-hoc",
+   "evidence": {
+    "overlap": []
+   }
+  },
+  {
+   "check": "timing.label_source_is_not_a_feature",
+   "ok": true,
+   "detail": "the label source is not a feature",
+   "evidence": {
+    "source_features": []
+   }
+  },
+  {
+   "check": "timing.every_feature_documented",
+   "ok": true,
+   "detail": "features documented as available 'prediction_time'",
+   "evidence": {
+    "features_documented_at": "prediction_time"
+   }
+  },
+  {
+   "check": "timing.instant_declared",
+   "ok": true,
+   "detail": "prediction instant kind='event_time' citation=True",
+   "evidence": {
+    "prediction_instant": {
+     "kind": "event_time",
+     "period": "Board approval (the project's own event)",
+     "days_after_period_end": 0,
+     "citation": "World Bank projects API boardapprovaldate / board_approval_month on the approval record (e.g. P147864 approved 2019-03-29, board_approval_month March); the IEG CSV approval_fy is the approval fiscal year"
+    }
+   }
+  },
+  {
+   "check": "timing.publication_lag_measured",
+   "ok": true,
+   "detail": "0 of 0 observed period_end -> published dates are usable",
+   "evidence": {
+    "observations": [],
+    "measured_lag_days": null,
+    "source_kind": "administrative_record"
+   }
+  },
+  {
+   "check": "timing.features_available_at_instant",
+   "ok": true,
+   "detail": "features publish 0d after the period, instant is 0d after it",
+   "evidence": {
+    "features_lag_days": 0,
+    "instant_lag_days": 0,
+    "measured_lag_days": null
+   }
+  },
+  {
+   "check": "timing.instant_accounts_for_publication_lag",
+   "ok": true,
+   "detail": "instant kind is 'event_time' while features publish 0d after the period",
+   "evidence": {
+    "kind": "event_time",
+    "features_lag_days": 0
+   }
+  },
+  {
+   "check": "timing.selection_uses_only_available_data",
+   "ok": true,
+   "detail": "row selection declares its latest period as \"approval (the row's own boardapprovaldate / approval_fy)\"",
+   "evidence": {
+    "latest_period_used": "approval (the row's own boardapprovaldate / approval_fy)",
+    "fields": [
+     "approval_fy",
+     "approval_month_num",
+     "country",
+     "wb_region",
+     "agreement_type",
+     "lending_instrument_type",
+     "global_practice",
+     "practice_group",
+     "lending_instrument",
+     "prodline",
+     "sector1",
+     "sector2",
+     "sector3",
+     "sector1_pct",
+     "sector2_pct",
+     "sector3_pct",
+     "mjsector1",
+     "mjsector_count",
+     "mjtheme1",
+     "mjtheme_count",
+     "ibrd_commit_musd",
+     "ida_commit_musd",
+     "grant_commit_musd",
+     "project_cost_musd",
+     "amounts_missing",
+     "prior_evals_count",
+     "prior_msplus_share"
+    ]
+   }
+  },
+  {
+   "check": "units.measured_columns_declare_unit_and_frame",
+   "ok": true,
+   "detail": "28 measured column(s) declare unit and frame",
+   "evidence": {
+    "measurements": [
+     {
+      "column": "approval_fy",
+      "unit": "World Bank fiscal year (1 July - 30 June)",
+      "frame": "the approval instant's own fiscal year; IEG CSV approval_fy, corroborated by the projects API approvalfy (P008791: board approval 2004-09-16 = FY2005)"
+     },
+     {
+      "column": "approval_month_num",
+      "unit": "calendar month number (1-12; 0 = not recoverable)",
+      "frame": "month of the projects API board_approval_month, the Board approval date's month"
+     },
+     {
+      "column": "country",
+      "unit": "borrower country name (IEG CSV)",
+      "frame": "the project's country at approval; also the event key (positives cluster by borrower)"
+     },
+     {
+      "column": "wb_region",
+      "unit": "World Bank region name",
+      "frame": "the publisher's current region taxonomy applied to the approval-time country - a coarsening of country, re-bucketed through the current lens"
+     },
+     {
+      "column": "agreement_type",
+      "unit": "IEG CSV agreement type (IDA, IBRD, RETF, GEF, ...)",
+      "frame": "the financing agreement type at approval"
+     },
+     {
+      "column": "lending_instrument_type",
+      "unit": "IEG CSV instrument type (IPF / DPF)",
+      "frame": "investment vs development policy financing at approval"
+     },
+     {
+      "column": "global_practice",
+      "unit": "World Bank Global Practice name (empty = not recorded)",
+      "frame": "current-practice re-bucketing of the project's approval-time sector content; 36.1% empty (pre-reorganisation rows), measured at discovery"
+     },
+     {
+      "column": "practice_group",
+      "unit": "World Bank practice group name (empty = not recorded)",
+      "frame": "current-practice-group re-bucketing of the project's approval-time sector content"
+     },
+     {
+      "column": "lending_instrument",
+      "unit": "projects API lending instrument full name",
+      "frame": "the instrument named on the approval record (e.g. 'Specific Investment Loan'); empty when the API record carries none"
+     },
+     {
+      "column": "prodline",
+      "unit": "projects API product line code (PE = IBRD/IDA, ...)",
+      "frame": "the product line of the approval record"
+     },
+     {
+      "column": "sector1",
+      "unit": "projects API sector board name",
+      "frame": "the primary sector assigned to the project at approval; empty when absent"
+     },
+     {
+      "column": "sector2",
+      "unit": "projects API sector board name",
+      "frame": "the second sector at approval; empty when absent"
+     },
+     {
+      "column": "sector3",
+      "unit": "projects API sector board name",
+      "frame": "the third sector at approval; empty when absent"
+     },
+     {
+      "column": "sector1_pct",
+      "unit": "percent of the project in sector1 (0-100; 0 when the sector is absent)",
+      "frame": "the percentage split recorded at approval"
+     },
+     {
+      "column": "sector2_pct",
+      "unit": "percent of the project in sector2",
+      "frame": "the percentage split recorded at approval"
+     },
+     {
+      "column": "sector3_pct",
+      "unit": "percent of the project in sector3",
+      "frame": "the percentage split recorded at approval"
+     },
+     {
+      "column": "mjsector1",
+      "unit": "major (top-level) sector name or MJCODE:<code>",
+      "frame": "first major sector of the approval record"
+     },
+     {
+      "column": "mjsector_count",
+      "unit": "count of distinct major sectors (1-5)",
+      "frame": "breadth of the approval-time sector assignment"
+     },
+     {
+      "column": "mjtheme1",
+      "unit": "major theme name or MJTHEME:<code>",
+      "frame": "first major theme of the approval record"
+     },
+     {
+      "column": "mjtheme_count",
+      "unit": "count of distinct major themes",
+      "frame": "breadth of the approval-time theme assignment"
+     },
+     {
+      "column": "ibrd_commit_musd",
+      "unit": "millions of US dollars",
+      "frame": "IBRD commitment amount on the approval record (ibrdcommamt), 0.0 when absent"
+     },
+     {
+      "column": "ida_commit_musd",
+      "unit": "millions of US dollars",
+      "frame": "IDA commitment amount on the approval record (idacommamt), 0.0 when absent"
+     },
+     {
+      "column": "grant_commit_musd",
+      "unit": "millions of US dollars",
+      "frame": "grant amount on the approval record (grantamt; used by trust-fund agreement types), 0.0 when absent"
+     },
+     {
+      "column": "project_cost_musd",
+      "unit": "millions of US dollars",
+      "frame": "total estimated project cost at approval (lendprojectcost), 0.0 when absent"
+     },
+     {
+      "column": "amounts_missing",
+      "unit": "binary indicator",
+      "frame": "1 iff the API record carries none of the four amounts; a data-recoverability marker (amounts are knowable at approval but not recoverable from the current record)"
+     },
+     {
+      "column": "prior_evals_count",
+      "unit": "count of completed IEG evaluations",
+      "frame": "evaluations of other projects in the same country whose latest evaluation_fy <= this row's approval_fy - 1 - strictly complete before the approval fiscal year began"
+     },
+     {
+      "column": "prior_msplus_share",
+      "unit": "share (0-1; 0.0 when prior_evals_count is 0)",
+      "frame": "MS+ share among those strictly-prior evaluations; current-vintage so a conservative lower bound on the knowable track record (a later re-evaluation removes a project from earlier histories instead of leaking a future rating)"
+     },
+     {
+      "column": "msplus",
+      "unit": "binary indicator",
+      "frame": "1 iff the IEG outcome rating is MS+ (Highly Satisfactory / Satisfactory / Moderately Satisfactory); the rating and every other evaluation-time field are excluded from the shipped columns"
+     }
+    ]
+   }
+  },
+  {
+   "check": "units.known_event_fixture_recorded",
+   "ok": true,
+   "detail": "no external threshold, so no known-event fixture is required",
+   "evidence": {}
+  },
+  {
+   "check": "splits.time_column_declared",
+   "ok": true,
+   "detail": "split overlap is checked against 'approval_fy'",
+   "evidence": {}
+  },
+  {
+   "check": "splits.machine_readable_windows",
+   "ok": true,
+   "detail": "train/eval/holdout windows are declared with start/end",
+   "evidence": {
+    "split_windows": {
+     "train": {
+      "start": "1956",
+      "end": "2010"
+     },
+     "eval": {
+      "start": "2010",
+      "end": "2015"
+     },
+     "holdout": {
+      "start": "2015",
+      "end": "2020"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.files_present",
+   "ok": true,
+   "detail": "all three split files exist",
+   "evidence": {
+    "missing": []
+   }
+  },
+  {
+   "check": "splits.non_empty",
+   "ok": true,
+   "detail": "every split has rows",
+   "evidence": {
+    "train": {
+     "rows": 9598,
+     "positives": 6891,
+     "negatives": 2707,
+     "positive_rate": 0.717962
+    },
+    "eval": {
+     "rows": 1479,
+     "positives": 1173,
+     "negatives": 306,
+     "positive_rate": 0.793103
+    },
+    "holdout": {
+     "rows": 1097,
+     "positives": 885,
+     "negatives": 212,
+     "positive_rate": 0.806746
+    }
+   }
+  },
+  {
+   "check": "splits.eval_and_holdout_have_both_classes",
+   "ok": true,
+   "detail": "eval and holdout each contain positives and negatives",
+   "evidence": {
+    "train": {
+     "rows": 9598,
+     "positives": 6891,
+     "negatives": 2707,
+     "positive_rate": 0.717962
+    },
+    "eval": {
+     "rows": 1479,
+     "positives": 1173,
+     "negatives": 306,
+     "positive_rate": 0.793103
+    },
+    "holdout": {
+     "rows": 1097,
+     "positives": 885,
+     "negatives": 212,
+     "positive_rate": 0.806746
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_declared",
+   "ok": true,
+   "detail": "eval and holdout declare positives and distinct events",
+   "evidence": {
+    "declared": {
+     "train": {
+      "positives": 6891,
+      "distinct_events": 76
+     },
+     "eval": {
+      "positives": 1173,
+      "distinct_events": 57
+     },
+     "holdout": {
+      "positives": 885,
+      "distinct_events": 55
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_match_rows",
+   "ok": true,
+   "detail": "declared positive counts match the rows",
+   "evidence": {
+    "mismatched": []
+   }
+  },
+  {
+   "check": "splits.event_key_column_declared",
+   "ok": true,
+   "detail": "clustered events are counted by 'country' (date part)",
+   "evidence": {}
+  },
+  {
+   "check": "splits.distinct_events_match_rows",
+   "ok": true,
+   "detail": "declared clustered event counts match the rows",
+   "evidence": {
+    "recomputed": {
+     "train": 76,
+     "eval": 57,
+     "holdout": 55
+    },
+    "declared": {
+     "train": {
+      "positives": 6891,
+      "distinct_events": 76
+     },
+     "eval": {
+      "positives": 1173,
+      "distinct_events": 57
+     },
+     "holdout": {
+      "positives": 885,
+      "distinct_events": 55
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.enough_clustered_positives",
+   "ok": true,
+   "detail": "eval and holdout carry enough independent positive events to score",
+   "evidence": {
+    "thin": [],
+    "recomputed_events": {
+     "train": 76,
+     "eval": 57,
+     "holdout": 55
+    },
+    "minimums": {
+     "positives": 30,
+     "distinct_events": 20
+    }
+   }
+  },
+  {
+   "check": "splits.rates_not_uniform",
+   "ok": true,
+   "detail": "positive rates are between 0 and 1",
+   "evidence": {
+    "rates": [
+     0.717962,
+     0.793103,
+     0.806746
+    ]
+   }
+  },
+  {
+   "check": "splits.actual_ranges_computed",
+   "ok": true,
+   "detail": "row timestamps found for every split",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "1956",
+      "max": "2009"
+     },
+     "eval": {
+      "min": "2010",
+      "max": "2014"
+     },
+     "holdout": {
+      "min": "2015",
+      "max": "2019"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.actual_ranges_disjoint",
+   "ok": true,
+   "detail": "the rows of the three splits occupy disjoint periods",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "1956",
+      "max": "2009"
+     },
+     "eval": {
+      "min": "2010",
+      "max": "2014"
+     },
+     "holdout": {
+      "min": "2015",
+      "max": "2019"
+     }
+    },
+    "overlaps": []
+   }
+  },
+  {
+   "check": "splits.rows_within_declared_windows",
+   "ok": true,
+   "detail": "every row falls inside its split's declared window",
+   "evidence": {
+    "windows": {
+     "train": {
+      "start": "1956",
+      "end": "2010"
+     },
+     "eval": {
+      "start": "2010",
+      "end": "2015"
+     },
+     "holdout": {
+      "start": "2015",
+      "end": "2020"
+     }
+    },
+    "ranges": {
+     "train": {
+      "min": "1956",
+      "max": "2009"
+     },
+     "eval": {
+      "min": "2010",
+      "max": "2014"
+     },
+     "holdout": {
+      "min": "2015",
+      "max": "2019"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.no_cross_split_entities",
+   "ok": true,
+   "detail": "no project_id appears in more than one split",
+   "evidence": {
+    "shared_sample": [],
+    "shared_count": 0
+   }
+  },
+  {
+   "check": "splits.duplicate_entities_within_splits",
+   "ok": true,
+   "detail": "0 repeated-identifier rows within splits, at most the declared 0",
+   "evidence": {
+    "duplicate_rows": {},
+    "declared": 0
+   }
+  },
+  {
+   "check": "runner.layout",
+   "ok": true,
+   "detail": "holdout is private and train/eval are public",
+   "evidence": {}
+  },
+  {
+   "check": "runner.meta_json_keys",
+   "ok": true,
+   "detail": "meta.json carries the keys the runner reads",
+   "evidence": {
+    "keys": [
+     "built_at_utc",
+     "columns",
+     "description",
+     "features",
+     "id_columns",
+     "label_rule",
+     "label_source_columns",
+     "license",
+     "name",
+     "positive_label",
+     "positive_rate",
+     "prediction_time",
+     "rows",
+     "source",
+     "source_sha256",
+     "split",
+     "target"
+    ]
+   }
+  },
+  {
+   "check": "runner.meta_matches_files",
+   "ok": true,
+   "detail": "meta.json agrees with the split files",
+   "evidence": {
+    "problems": []
+   }
+  },
+  {
+   "check": "runner.meta_counts_match_files",
+   "ok": true,
+   "detail": "meta rows and rates match the files",
+   "evidence": {}
+  },
+  {
+   "check": "runner.id_columns_are_not_features",
+   "ok": true,
+   "detail": "declared identifiers are not also listed as features",
+   "evidence": {}
+  }
+ ],
+ "failed_checks": []
+}

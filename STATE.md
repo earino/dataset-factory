@@ -1,9 +1,64 @@
 # Current state
 
-Updated: 2026-10-22 06:30Z (release tick: tsb-railway-occurrence-casualty qualified -> PACKAGED and
-fully staged private on both destinations - baseline job green at 0.8126 eval AUC, GitHub + Hugging
-Face both verified, awaiting the operator's flip. Release work outranked construction; no
-construction job launched.)
+Updated: 2026-10-22 22:35Z (watcher close-out: wb-001 green - wb-ieg-project-outcome qualified,
+gate 38/38 on the full artifact, coverage reconciled against discovery; the runner-contract
+baseline job wb-baseline-001 is running on worker 171927514 and will be collected by its own
+watch tick.)
+
+## 2026-10-22 - wb-001 green (watcher close-out): wb-ieg-project-outcome QUALIFIED - gate 38/38 on the full artifact; baseline job wb-baseline-001 now running
+
+**wb-001 (server 171926570, 385.3 s, exit 0, staging release 421262457, EUR 0.04 reservation) is
+the first green build of wb-ieg-project-outcome, and the qualification gate passed over the full
+artifact: 38/38 checks (leakage, timing, units, splits, runner), 0 failed, gate 1.4.0, artifact
+digest b8345bcb5769e422c75dd0451c81854ceb8fa809b4bb60977cd781d4071abaa9.** Sources pulled on the
+worker: one anonymous IEG CSV GET (3,340,648 bytes, sha256 7080b652...) plus 24 projects-API
+requests (23 offset pages of 1,000 full records + supplementary id-lookups recovering 25 records;
+54,486,121-byte merged JSON, 22,665 records). The extract stays in staging.
+
+Coverage, measured against discovery's own window counts: built 12,174 rows = 12,629 raw IEG rows
+- 1 P122764 duplicate - 151 Not Rated (unobserved target) - 303 approved FY2020+ (outside windows,
+counted per year); train 9,598 / eval 1,479 / holdout 1,097 (approval FY 1956-2009 / 2010-2014 /
+2015-2019), positives 6,891 / 1,173 / 885. Train positives are identical to discovery's (the
+70.74% -> 71.80% rate move is the denominator dropping 143 unrated rows); eval's single positive
+delta is the deduped P122764 row (MS+ in both rows, approval FY inside the eval window); holdout
+identical. Right-censoring quantified per window, not dropped: not-yet-evaluated API projects
+approved <=FY2019 - train 1,724 / eval 719 / holdout 637. The RAP 2024 Fig O.3 cross-check asserts
+the published MS+ trend (71 -> 91 points FY2013-2023) while the panel runs 3-7 points below the
+published level under every cohort restriction - trend asserted, not level, and the reason is
+recorded (RAP's standardized cohort is not reproducible from the CSV columns).
+
+Construction-time references (stdlib, train-estimated, on the written rows): majority-class 0.718
+accuracy; identity-only (country) 0.6003 eval / 0.4909 holdout; calendar-only (country x approval_fy)
+identical (every eval/holdout cell unseen in train); agreement-type 0.5407/0.4844; practice-group
+0.5497/0.4948. No persistence leg exists at project grain - each project is evaluated once, so the
+nhs-ae persistence failure mode cannot occur here. Prevalence drift 0.718 -> 0.793 -> 0.807
+(train -> eval -> holdout) is a measured property of the phenomenon (IEG ratings improved over
+time), recorded in the record to be reported beside any score.
+
+**Close-out (this watcher).** The scheduled advancement session ran the build, collected and
+destroyed the worker (22:26:03Z / 22:26:31Z), wrote the construction measurements, the notes, the
+baseline bundle and its ledger entry, launched wb-baseline-001 at 22:27:44Z - and its turn ended
+before STATE.md, the commit and the handled marker. This run fetched the small report assets of
+release 421262457 into `.factory/wb-001/reports/` (manifest.json, meta.json, quality.json, build
+summary, gate report, container.log, source.tar - all sha256-verified against the release
+manifest; the three bulk CSVs skipped, the 335 KB labelled holdout stays in staging), re-matched
+the gate report's five artifact digests to the manifest asset digests, merged a duplicated wb-001
+jobs[] entry, and recorded: record.json ready -> **qualified** with the qualification and
+construction_output blocks (splits, windows, five file digests), jobs/wb-001.json, and the
+candidate's source/ and baseline/ bundles. check-candidate OK (status=qualified), --all exit 0
+(76 records).
+
+**wb-baseline-001 is running** (worker 171927514, EUR 0.06 reservation, launched 22:27:44Z by the
+advancement session; its launch process survived the interrupted turn and completed the dispatch -
+record re-read as running by this close-out). It fetches the five accepted files from staging
+release 421262457, re-accepts through the gate, materializes the runner workdir (private holdout
+never copied) and runs the benchmark's own train.py + validate.sh verbatim. The watcher reports it
+when it finishes; the triad then needs the full-model eval AUC against the references above. The
+Kraay & Tawara prior-art caveat stands (the World Bank's own internal model leans on post-approval
+features; strictly approval-time signal is unmeasured and may be modest): if the model does not
+beat the naive references, this is recorded as a negative result and not packaged (the nhs-ae
+pattern). October worker reservations now EUR 7.86 of the 20 EUR allowance, only the running
+baseline's 0.06 unspent.
 
 ## 2026-10-22 - Release tick: tsb-railway-occurrence-casualty PACKAGED - baseline 0.8126 beats every reference; staged private on both destinations
 

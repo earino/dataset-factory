@@ -99,3 +99,96 @@ classes in every candidate window, clean approval-instant prediction timing afte
 measured evaluation-vintage columns. Headroom risk recorded: approval-time-only signal is unmeasured
 and the Bank's own internal model leaned on post-approval features — the baseline triad decides at
 construction whether this is a benchmark or a negative result.
+
+## Construction session (2026-10-22, scheduled advancement tick)
+
+Constructed, gate-qualified and re-accepted the approval-instant panel. All
+commands from the repo root unless stated; scratch files deleted afterwards.
+
+### Pre-construction probes (coordinator, bounded)
+
+- `python3 .factory/wb_probe_fields.py` - pinned the exact outcome vocabulary
+  (`Highly Satisfactory`, `Satisfactory`, `Moderately Satisfactory`,
+  `Moderately Unsatisfactory`, `Unsatisfactory`, `Highly Unsatisfactory`,
+  `Not Rated`), the 7-stream evaluation_type mix, and the projects API's
+  full 50-field record on six spanning ids (1958/1972/1990/2005/2015/2019).
+  Old projects ARE served (P009598, Calcutta Port, FY1958, amounts present).
+- `python3 .factory/wb_probe_page2.py` - offset paging confirmed
+  (`os=1000` returns exactly 1,000 records of 22,729); closing-year MS+
+  shares computed for the RAP cross-check.
+- RAP 2024 Figure O.3 (MS+ % by closing FY) extracted from
+  `https://documents1.worldbank.org/curated/en/099845103072525633/pdf/SECBOS-e45e1b2e-4fff-4e52-8d27-c33709508fe8.pdf`:
+  71 (FY13) -> 91 (FY23). Reconciliation probes
+  (`wb_probe_rap_ipf.py`, `wb_probe_rap_cohort.py`): the panel runs 3-7
+  points below the published series under every plausible cohort
+  restriction (all-instruments / IPF-only / ICRR+EVM-only), same trend; the
+  build therefore asserts the published TREND (FY13 at least 10 points
+  below FY23; measured gap 18.5), not the level, and records the series.
+- `python3 .factory/wb_probe_paged_shape.py` - **measured API quirk**: the
+  paged query IGNORES `fl` for field selection; with `fl` it serves a
+  search-result record (id, project_name, url, project_abstract only) and
+  without `fl` it serves the full structured approval record (approvalfy,
+  board_approval_month, boardapprovaldate, amounts, lendinginstr, prodline,
+  sector dicts, mjsector/mjtheme lists) WITHOUT the fat abstract. The
+  id-lookup path serves full records either way. The first dry run joined
+  empty features for exactly this reason - caught by inspecting the written
+  rows before any worker spend.
+
+### Build (dry run then worker)
+
+- Full local dry run with live fetches:
+  `python3 -u candidates/wb-ieg-project-outcome/source/build.py --out <scratch> --work-dir <scratch>`
+  - exit 0; gate run locally: 38/38 checks green (gate 1.4.0).
+  - Inspection caught the empty-API-join bug above (all amounts missing,
+    no approval months) and the `country[:10]` event-key truncation effect
+    (83 "Republic of ..." borrowers share one prefix; 179 distinct countries
+    -> 81 distinct prefixes in train). Kept `country` as the event key: the
+    truncation is conservative (undercounts clusters), passes the gate with
+    wide margin (eval 57 / holdout 55 distinct positive clusters vs minimum
+    20), and both counts are recorded in summary.json and quality.json.
+  - GE trust-fund records carry no approval metadata in the API (measured on
+    samples: approvalfy/board_approval_month/boardapprovaldate all null) -
+    approval_month_num=0 and amounts_missing=1 are genuine source gaps, not
+    parse failures.
+- Worker: `python3 scripts/assemble-job.py wb-ieg-project-outcome` (bundle
+  declared in `source/bundle.json`), then plan (EUR 0.04 reservation),
+  launch, collect, destroy:
+  - wb-001 succeeded, exit 0, 385.3 s elapsed (worker 171926570, destroyed
+    2026-10-22T22:26:31Z). Sources: 1 IEG CSV request (3,340,648 bytes,
+    1.3 s) + 24 projects-API requests (23 pages + 2 supplementary
+    id-lookup batches, +25 records; 54,486,121-byte merged JSON,
+    22,636 records).
+  - Gate 1.4.0 on the worker: 38/38 checks green, artifact
+    b8345bcb5769e422... (full digest in the record).
+  - Uploaded to staging release 421262457 (12 assets); fetched back via the
+    asset API (octet-stream; the draft-release `browser_download_url` 404s -
+    measured), all 11 manifest digests verified, and
+    `qualify_dataset.py --accept` ACCEPTED on the coordinator.
+
+### Panel facts (from the worker's summary.json, not restated by hand)
+
+- train 9,598 rows / 6,891 positives (0.7180); eval 1,479 / 1,173 (0.7931);
+  holdout 1,097 / 885 (0.8067). Positives match discovery exactly after the
+  P122764 dedupe (discovery's eval n=1,488/pos=1,174 counted the duplicate
+  row and included 9 Not Rated rows; the build's counts are the deduped,
+  rated-only ones).
+- Unobserved accounting: 151 Not Rated; 303 approved FY2020+;
+  not-yet-evaluated (API-only, approved <=FY2019): train 1,724 / eval 719 /
+  holdout 637 - the right-censoring is material in the recent windows and is
+  now quantified; 2 ids not served by the API at all (P072979, P113625);
+  1,215 rows with no amounts (mostly GE records).
+- IEG-vs-API approval FY mismatches: 729 rows (+-1 FY convention; IEG CSV is
+  canon, counted in summary).
+- Reference baselines (stdlib, train-estimated): majority-class 0.717962;
+  identity-only (country) AUC 0.6003 eval / 0.4909 holdout; calendar-only
+  (country x approval_fy) the same (every eval/holdout cell unseen in train
+  falls back to identity); agreement-type 0.5407/0.4844; practice-group
+  0.5497/0.4948. No persistence leg exists at project grain.
+
+### Baseline (full model, runner contract)
+
+- wb-baseline-001 launched on worker 171927514 (EUR 0.06 reservation): fetch
+  the five accepted files from staging release 421262457, re-accept through
+  the gate, materialize the runner workdir, run the benchmark's own
+  train.py + validate.sh verbatim. Result recorded in the record when
+  collected.
