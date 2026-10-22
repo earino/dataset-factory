@@ -1,0 +1,235 @@
+{
+ "name": "abs-visitor-arrivals-direction",
+ "task": {
+  "question": "The OAD release for reference month M has just been published. For a country of residence, will short-term visitor arrivals to Australia in the first month not yet published (M+1) fall short of the same calendar month one year earlier?",
+  "prediction_time": "The publication instant of the ABS Overseas Arrivals and Departures (OAD) release for reference month M, observed at a maximum of 43 days after month end (Aug 2026 released 2026-10-13, Jul 2026 released 2026-09-11, Apr 2026 released 2026-06-12; all 11:30am local). At that instant every month <= M is published and month M+1 - the target month - is the first unpublished month. Features are published series values for months <= M only; the target month's value and its year-earlier level never ship."
+ },
+ "target": "fell_short",
+ "positive_label": 1,
+ "time_column": "target_month",
+ "event_key_column": "target_month",
+ "features": [
+  "country_resid",
+  "target_year",
+  "target_month_num",
+  "val_m",
+  "val_m1",
+  "val_m2",
+  "val_m3",
+  "val_m6",
+  "val_m12",
+  "diff_mom",
+  "diff_quarter",
+  "diff_half",
+  "diff_yoy_m"
+ ],
+ "features_documented_at": "prediction_time",
+ "feature_documentation": "every shipped level feature is an OBS_VALUE of the publisher's OAD_COUNTRY dataflow (SDMX 2.1, CSV column semantics documented in the ABS Data API user guide and the dataflow structure, fetched by this build): CAT_TRAVELLER=06 short-term visitors arriving, TSEST=10 Original, UNIT_MEASURE=NUM persons, TIME_PERIOD monthly. country_resid is a CL_OAD_ARRIVALS_COUNTRY codelist code (names recorded in summary.json and the release data dictionary). target_year/target_month_num are the target month's calendar. diff_* columns are differences of the shipped levels, documented in build.py's module docstring",
+ "carry_columns": [
+  "target_month"
+ ],
+ "id_columns": [
+  "row_id"
+ ],
+ "high_cardinality_columns": [
+  "row_id"
+ ],
+ "label_source_columns": [
+  "OBS_VALUE(target month M+1)",
+  "OBS_VALUE(year-earlier month M-11)"
+ ],
+ "post_hoc_columns": [
+  "OBS_VALUE(target month M+1)",
+  "OBS_VALUE(year-earlier month M-11)",
+  "OBS_STATUS",
+  "OBS_COMMENT"
+ ],
+ "measurements": [
+  {
+   "column": "val_m",
+   "unit": "short-term visitor arrivals (persons), Original series",
+   "frame": "OBS_VALUE of the CAT_TRAVELLER=06 series at month M = target month T minus one, the last month published at the prediction instant; current vintage (ABS revises post-release, so this is stated as current-vintage with the cutoff a documented assumption)"
+  },
+  {
+   "column": "val_m1",
+   "unit": "persons (Original series)",
+   "frame": "OBS_VALUE at M-1 (two months before the target month)"
+  },
+  {
+   "column": "val_m2",
+   "unit": "persons (Original series)",
+   "frame": "OBS_VALUE at M-2 (three months before the target month)"
+  },
+  {
+   "column": "val_m3",
+   "unit": "persons (Original series)",
+   "frame": "OBS_VALUE at M-3 (four months before the target month)"
+  },
+  {
+   "column": "val_m6",
+   "unit": "persons (Original series)",
+   "frame": "OBS_VALUE at M-6 (seven months before the target month)"
+  },
+  {
+   "column": "val_m12",
+   "unit": "persons (Original series)",
+   "frame": "OBS_VALUE at M-12 (thirteen months before the target month); diff_yoy_m = val_m - val_m12 is the YoY difference observed at M, the persistence analogue - the sign the task must beat"
+  },
+  {
+   "column": "diff_mom",
+   "unit": "persons (difference)",
+   "frame": "val_m - val_m1, the month-over-month change at the prediction instant"
+  },
+  {
+   "column": "diff_quarter",
+   "unit": "persons (difference)",
+   "frame": "val_m - val_m3"
+  },
+  {
+   "column": "diff_half",
+   "unit": "persons (difference)",
+   "frame": "val_m - val_m6"
+  },
+  {
+   "column": "diff_yoy_m",
+   "unit": "persons (difference)",
+   "frame": "val_m - val_m12, the year-on-year difference at the prediction instant"
+  },
+  {
+   "column": "country_resid",
+   "unit": "CL_OAD_ARRIVALS_COUNTRY codelist code",
+   "frame": "country (or area) of residence; 78 codes in the codelist, the in-panel visitor series carries 70; names recorded in summary.json"
+  },
+  {
+   "column": "target_month",
+   "unit": "calendar month (YYYY-MM)",
+   "frame": "the target month T = M+1, the first month unpublished at the prediction instant; the time column and the conservative event key (positives cluster in calendar time through shared Australian conditions)"
+  },
+  {
+   "column": "fell_short",
+   "unit": "binary indicator",
+   "frame": "1 iff OBS_VALUE(T) < OBS_VALUE(T-12); exact ties are 0 and counted flat; both source values are excluded from the shipped columns"
+  }
+ ],
+ "known_event": {
+  "event": "Australia's international border closure (March 2020) and reopening (from November 2021)",
+  "expected": "2020 target months overwhelmingly fall short (down share >= 0.75); 2022 target months overwhelmingly do not (up share >= 0.75)",
+  "source": "ABS OAD panel; candidate record known_event_fixtures, measured in-panel at discovery 2026-10-22",
+  "measured": {
+   "border_closure_2020": {
+    "window": "2020 (excluded pandemic target months)",
+    "rows": 828,
+    "down_share": 0.9251,
+    "threshold": 0.75,
+    "source": "ABS OAD; candidate record known_event_fixtures (border closed March 2020; measured both-category 2020 YoY down 1,492 / up 159 at discovery)"
+   },
+   "reopening_2022": {
+    "window": "2022 (holdout target months)",
+    "rows": 840,
+    "up_share": 0.9774,
+    "threshold": 0.75,
+    "source": "ABS OAD; candidate record known_event_fixtures (reopening from November 2021; measured both-category 2022 YoY up 1,645 / down 9 at discovery)"
+   }
+  }
+ },
+ "timing": {
+  "prediction_instant": {
+   "kind": "publication",
+   "period": "M",
+   "days_after_period_end": 43,
+   "citation": "ABS OAD release calendar, observed 2026-10-22: Aug 2026 released 2026-10-13 (43 days), Jul 2026 released 2026-09-11 (42 days), Apr 2026 released 2026-06-12 (43 days); next-release schedule Oct 2026 due 2026-12-15, Nov 2026 due 2027-01-19"
+  },
+  "features": {
+   "period": "M",
+   "published_days_after_period_end": 43,
+   "source_kind": "statistical_release"
+  },
+  "row_selection": {
+   "latest_period_used": "M",
+   "fields": [
+    "COUNTRY_RESID",
+    "target_month"
+   ],
+   "basis": "rows are (country, target month M+1) pairs on the visitor series; eligibility needs the six feature months <= M and the label inputs (M+1, M-11) - a missing outcome is counted in unobserved_target, never a membership decision on future data; the latest period any feature reads is M"
+  },
+  "observations": [
+   {
+    "period": "2026-08",
+    "period_end": "2026-08-31",
+    "published": "2026-10-13"
+   },
+   {
+    "period": "2026-07",
+    "period_end": "2026-07-31",
+    "published": "2026-09-11"
+   },
+   {
+    "period": "2026-04",
+    "period_end": "2026-04-30",
+    "published": "2026-06-12"
+   }
+  ]
+ },
+ "split_windows": {
+  "train": {
+   "start": "1992-02",
+   "end": "2015-01"
+  },
+  "eval": {
+   "start": "2015-01",
+   "end": "2020-01"
+  },
+  "holdout": {
+   "start": "2022-01",
+   "end": "2026-09"
+  }
+ },
+ "split_boundaries": {
+  "train": "target months 1992-02 .. 2014-12",
+  "eval": "2015-01 .. 2019-12",
+  "holdout": "2022-01 .. 2026-08",
+  "excluded": "2020-01 .. 2021-12 (pandemic extremes, counted with label texture)"
+ },
+ "expected_duplicate_ids": 0,
+ "id_columns_are_entity_keys": true,
+ "id_columns_note": "row_id is country@target_month, unique by construction; no identifier repeats inside a split or spans two",
+ "positive_events": {
+  "train": {
+   "positives": 6668,
+   "distinct_events": 275
+  },
+  "eval": {
+   "positives": 1204,
+   "distinct_events": 60
+  },
+  "holdout": {
+   "positives": 768,
+   "distinct_events": 45
+  }
+ },
+ "positive_events_note": "an event is one distinct target month carrying at least one positive: positives cluster in calendar time (shared Australian conditions move many countries together; the 2020 and 2022 fixtures are such months), so the month is the conservative cluster; per-country persistence is a second axis recorded as a property in the candidate record",
+ "splits": {
+  "train": "public/train.csv",
+  "eval": "public/eval.csv",
+  "holdout": "private/holdout.csv"
+ },
+ "built_at_utc": "2026-10-22T10:17:06Z",
+ "shipped_columns": [
+  "row_id",
+  "country_resid",
+  "target_year",
+  "target_month_num",
+  "val_m",
+  "val_m1",
+  "val_m2",
+  "val_m3",
+  "val_m6",
+  "val_m12",
+  "diff_mom",
+  "diff_quarter",
+  "diff_half",
+  "diff_yoy_m",
+  "target_month",
+  "fell_short"
+ ]
+}

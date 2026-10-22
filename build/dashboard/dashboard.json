@@ -1,5 +1,7 @@
 {
- "alarms": [],
+ "alarms": [
+  "Test suite is failing"
+ ],
  "budget": {
   "config": {
    "allowance_usd": 30.0,
@@ -15,44 +17,44 @@
   "decision": {
    "allowance_usd": 30.0,
    "allowed": true,
-   "moment": "2026-10-22T11:50:02.219052+00:00",
+   "moment": "2026-10-22T13:50:01.416312+00:00",
    "period_start": "2026-10-01T00:00:00+00:00",
    "reasons": [],
    "research_cost_usd": 0.233495,
-   "research_tokens_last_7_days": 7941533,
-   "runs_last_7_days": 37,
-   "runs_weighted_last_7_days": 38,
+   "research_tokens_last_7_days": 8133744,
+   "runs_last_7_days": 38,
+   "runs_weighted_last_7_days": 39,
    "session_cap_per_week": 200,
    "sessions_over_token_cap": 1,
    "usage": {
     "auxiliary": {
-     "calls": 634,
+     "calls": 637,
      "cost_status": [
       "unknown"
      ],
-     "cost_usd": 0.011357,
-     "input_tokens": 1184351,
-     "output_tokens": 643783
+     "cost_usd": 0.0115,
+     "input_tokens": 1186314,
+     "output_tokens": 643795
     },
     "interactive": {
-     "calls": 3191,
+     "calls": 3211,
      "cost_status": [
       "estimated",
       "unknown"
      ],
-     "cost_usd": 1.95496,
-     "input_tokens": 12592056,
-     "output_tokens": 1770123
+     "cost_usd": 2.0323,
+     "input_tokens": 12914497,
+     "output_tokens": 1781342
     },
     "research": {
-     "calls": 2867,
+     "calls": 2976,
      "cost_status": [
       "estimated",
       "unknown"
      ],
      "cost_usd": 0.233495,
-     "input_tokens": 6609477,
-     "output_tokens": 2580772
+     "input_tokens": 6712903,
+     "output_tokens": 2669557
     },
     "scheduled-other": {
      "calls": 1753,
@@ -70,92 +72,22 @@
  },
  "candidates": {
   "countries": {
-   "AU": 1,
    "CA": 2,
    "DE": 1,
+   "EU": 1,
    "GB": 2,
    "TW": 1,
    "US": 1
   },
   "counts": {
-   "dropped": 18,
-   "investigating": 7,
-   "parked": 24,
-   "published": 8,
-   "qualified": 1,
+   "dropped": 19,
+   "investigating": 8,
+   "parked": 25,
+   "published": 9,
    "ready": 6
   },
   "errors": [],
   "live": [
-   {
-    "awaiting_operator": false,
-    "baseline": {},
-    "country": "AU",
-    "domain": "international travel / monthly migration panel",
-    "id": "abs-visitor-arrivals-direction",
-    "jobs": [
-     {
-      "at": null,
-      "id": "abs-001",
-      "status": null
-     },
-     {
-      "at": null,
-      "id": "abs-baseline-001",
-      "status": null
-     }
-    ],
-    "licence_summary": {
-     "compilation_spdx": null,
-     "source_spdx": null,
-     "status": null
-    },
-    "measurements": {
-     "clustering_note": "Positives cluster by era/year (pandemic collapse 2020, reopening surge 2022) rather than per-country; year-level cluster counts recorded above",
-     "column_documentation": "codelists parsed from the SDMX structure: CL_OAD_CAT_TRAVEL 05='Short-term (less than one year) Residents returning', 06='Short-term (less than one year) Visitors arriving'; CL_OAD_ARRIVALS_COUNTRY 78 codes; CL_TSEST 10='Original'; DSD dimensions CAT_TRAVELLER, COUNTRY_RESID, TSEST, FREQ",
-     "construction_2026_10_22": "Worker job abs-001 (cx23, 19.3 s job elapsed, EUR 0.04 reservation): one anonymous panel GET of 3,308,454 bytes (sha256 b9674976aa381693..., 3.8 s) plus the 100,939-byte structure; panel 59,452 rows, 428 months 1991-01..2026-08, 77 countries over both traveller categories (70 with a 06 visitor series), TSEST=10 only, FREQ=M only, OBS_STATUS empty on every row, UNIT_MEASURE=NUM only, 0 missing OBS_VALUE, 0 non-integer values. Shipped visitor-series panel: train 19,071 rows / 6,668 positives (34.96%) / 310 flat / 275 distinct positive months (target months 1992-02..2014-12); eval 4,140 / 1,204 (29.08%) / 44 flat / 60 months (2015-01..2019-12); holdout 3,920 / 768 (19.59%) / 72 flat / 45 months (2022-01..2026-08). Eligibility accounted: 224 insufficient_history, 10 unobserved_target, 1,662 pandemic-excluded target months 2020-01..2021-12 (up 494 / down 1,085 / flat 83; 2020 alone: down 766 / up 59 / flat 3), 70 live-month rows scorable the day the next release lands. Known-event fixtures asserted in-build on the shipped series: 2020 border closure down-share 0.9251 (>= 0.75), 2022 reopening up-share 0.9774 (>= 0.75). Reference baselines measured on the written rows (train-estimated tables): persistence (YoY sign observed at M) eval AUC 0.3647 / holdout 0.2256 - persistence is ANTI-correlated with the label in both windows, so the task is a mean-reversion + seasonality problem, not a persistence problem (the nhs-ae defect does not apply here); identity-only (country) 0.5720 / 0.5317; calendar-only (country x calendar month) 0.5501 / 0.5364. Prevalence drift across splits (34.96% -> 29.08% -> 19.59% positives) is the documented phenomenon property (post-2022 recovery boom). Full-model leg of the triad: the runner-contract baseline job on the accepted artifact, not yet run.",
-     "direction_base_rates_measured": "MoM direction pairs 58,082 (up 30,466 / down 30,048 overall - near-balanced); YoY direction pairs 56,843; per-year YoY up/down varies from 1,218/424 (2004) to 159/1,492 (2020 pandemic) and 1,645/9 (2022 reopening)",
-     "fetch_cost_measured": "1 request, 3,308,454 bytes, 3.47 s for the full panel (https data.api.abs.gov.au, 2026-10-22); dataflow+structure metadata 100,939 bytes in 2.72 s",
-     "known_event_fixtures": "Australia's international border closure (March 2020) -> measured 2020 YoY up=159/down=1,492 (collapse); reopening (from Nov 2021) -> measured 2022 YoY up=1,645/down=9 (surge). Expected verdicts verified directly in the fetched panel.",
-     "measured_on": "2026-10-22 via scripts in .factory/ (abs_oad_probe.py, abs_structure_dump.py), commands and outputs in notes.md",
-     "panel_shape_measured": "59,452 observations, 428 months 1991-01..2026-08, 77 COUNTRY_RESID codes x 2 CAT_TRAVELLER codes (05 residents returning, 06 visitors arriving), TSEST=10 (Original) only, 0 missing OBS_VALUE",
-     "release_lag_observations": "Aug 2026 released 13/10/2026 (43 days); Jul 2026 released 11/09/2026 (42 days); Apr 2026 released 12/06/2026 (43 days); max observed lag 43 days => prediction instant = M release, target M+1",
-     "revision_note": "ABS documents post-release revision: 'March 2026 data revised' in the April 2026 issue once linked Medicare data became available (methodology History of changes) - only the current vintage is downloadable, so feature values are stated as current-vintage, with the cutoff as a documented assumption",
-     "split_window_counts_yoy_label": {
-      "eval 2015-2019": "up=5588 down=2630 flat=61 (all 5 years carry both classes)",
-      "holdout 2022-2026": "up=6167 down=1533 flat=140 (all 5 years carry both classes)",
-      "train 1991-2014": "up=24166 down=13575 flat=520 (23 of 24 years carry both classes)"
-     }
-    },
-    "next_action": "Qualified AND baselined (abs-001 gate 1.4.0 38/38, artifact afb46c6b29e6c4aa..., --accept re-verified; abs-baseline-001 runner-contract eval AUC 0.6219 vs calen",
-    "packaged_at": null,
-    "path": "candidates/abs-visitor-arrivals-direction/record.json",
-    "prediction_time": "The publication instant of the ABS Overseas Arrivals and Departures (OAD) release for reference month M, which lands about six weeks after month end (max observed lag 43 days; releases observed 13/10/2026 for Aug 2026, 11/09/2026 for Jul 2026, 12/06/2026 for Apr 2026, all 11:30am local). Features are the published series values for months <= M only; the target month M+1 is unpublished at that instant (it is released ~43 days after its own month end).",
-    "publisher": "Australian Bureau of Statistics (Commonwealth of Australia)",
-    "qualification": {
-     "artifact_version": "afb46c6b29e6c4aa7668afcbd8f14c3f02ad56066bb7fbd5af263802740ad442",
-     "result": "passed; 0 failed checks of 38 (leakage, timing, units, splits, runner)",
-     "splits": null
-    },
-    "question": "For a given country of residence, will short-term visitor arrivals to Australia in the first month not yet published (the month after the latest OAD release) fall short of the same calendar month one year earlier?",
-    "region": "Oceania",
-    "release_baseline": {
-     "auc": null,
-     "reference": null
-    },
-    "release_splits": {},
-    "review": "The MoM label is near-balanced across three decades (58,082 pairs) and the YoY label carries both classes in every candidate window, so persistence cannot win by construction on direction signs. Timing is a documented publication instant with three observed release dates. Licence is the publisher's own CC BY 4.0 statement (class A). All four discovery contracts satisfied with measured evidence.",
-    "sources": [
-     {
-      "licence": "ABS website material is CC BY 4.0 International (see license_evidence); microdata and third-party content excepted, which this dataset is not",
-      "name": "ABS Data API (SDMX 2.1), dataflow ABS,OAD_COUNTRY,1.0.0 - Visitor arrivals and resident returns, Selected Countries of Residence/Destinations",
-      "url": "https://www.abs.gov.au/statistics/industry/tourism-and-transport/overseas-arrivals-and-departures-australia/latest-release"
-     }
-    ],
-    "split_strategy": "Temporal thirds on the monthly panel of 77 countries x 2 traveller categories: candidate partition train 1991-2014 / eval 2015-2019 / holdout 2022-2026 (2020-2021 excluded as pandemic extremes or optionally folded into train; construction decides and documents). Direction labels are computed per country-series; thresholds are not needed (label is a sign, not a level).",
-    "status": "qualified",
-    "target": "Binary YoY direction: OBS_VALUE for (CAT_TRAVELLER=06 visitors arriving, COUNTRY_RESID=C, month M+1) < OBS_VALUE for (same series, month M-11). Label source columns: the target month's OBS_VALUE and the year-earlier OBS_VALUE; both excluded from shipped features."
-   },
    {
     "awaiting_operator": false,
     "baseline": {},
@@ -396,6 +328,62 @@
    {
     "awaiting_operator": false,
     "baseline": {},
+    "country": "EU",
+    "domain": "EU/EEA environmental regulation - urban waste water treatment plant (UWWTP) reported performance across the biennial UWWTD Article 15 reporting cycles (EU agency publisher, 30 EEA countries reporting)",
+    "id": "eea-uwwtd-plant-poor-performance",
+    "jobs": [],
+    "licence_summary": {
+     "compilation_spdx": null,
+     "source_spdx": null,
+     "status": null
+    },
+    "measurements": {
+     "country_mixture_2026_10_22": "30 reporters in the 2023 call (incl. EEA non-EU CH/NO/IS). Measured any-F rates by country (top of range): HR 53.5% (46/86), NO 49.6% (116/234), RO 36.3% (352/971), FR 19.0% (746/3,930), IT 13.0% (451/3,480), ES 12.0%, IE 11.1%, PL 6.3%, BE 2.8%, DE 0.4% (16/3,776). The label's meaning mixes physical performance with national assessment/reporting regimes; this is recorded as target semantics, and the reference baseline is country-stratified.",
+     "cycle_inventory_2026_10_22": "Public (measured): tabular 2011-2012 v04 (share s/awGoXzQKi6jQ.. HEAD 200), tabular 2022-2023 v10 final (downloaded), tabular 2021-2022 v10 provisional (record ee46a0fa 'Direct download'), spatial plant/agglomeration/discharge GeoPackages for 2017-2018 (v07), 2019-2020 (v08), 2021-2022 (provisional) and 2022-2023 (final). Internal-only (HTTP 401): 6 record ids probed on the series page. Named-but-unprobed tabular cycle folders: 2007-2008 v01, 2009-2010 v02/v03, 2013-2014 v05, 2015-2016 v06 (2015-2016 not even named on the page), 2017-2018 v07 r01, 2019-2020 v08/v09.",
+     "cycle_zip_2026_10_22": "GET https://sdi.eea.europa.eu/datashare/s/gjbpTbzHTZQ4Zra/download -> 200, application/zip, 108,877,653 B in 6.6 s (16.6 MB/s), filename eea_t_uwwtd-final_p_2023_v10_r00.zip; 47 entries; zip deleted from scratch after extraction of the CSV tables (only ~29 MB of CSVs kept transiently).",
+     "extraction_cost_2026_10_22": "Measured on this host: 1 anonymous GET per cycle zip; 108,877,653 bytes in 6.6 s. A full 5-8-cycle panel is estimated (labelled estimate) at 0.5-1 GB of transfers, minutes of wall clock on a worker; no bulk data needs to pass through the coordinator.",
+     "label_frame_2026_10_22": "Active plants with >=1 answered P/F performance parameter: 21,537; any-F positives 2,411 (11.2%); all-P 19,126. Per-parameter F counts: uwwBOD5Perf 1,929, uwwCODPerf 1,567, uwwTSSPerf 649, uwwNTotPerf 420, uwwPTotPerf 407, uwwOtherPerf 31. Cause-of-failure field uwwBadPerformance=Yes on 1,765 active plants (1,778 overall), uwwBadDesign=Yes 1,052, uwwAccidents=Yes 76.",
+     "plant_states_2026_10_22": "uwwState: 1 (active) 23,987; 0 (inactive) 1,972; 2 (temporary inactive) 105. Codes documented in LOV.csv.",
+     "reporting_period_2026_10_22": "ReportPeriod.csv (shipped in the zip) documents per-country repSituationAt (all 2022-12-31 in the 13th call except FR 2023-12-05) and per-country delivery versions 2023-12..2025-04 - the observed per-country publication lag evidence for the timing block.",
+     "table_shapes_2026_10_22": "CSV/UWWTPS.csv: 26,064 data rows x 69 columns; Agglomerations.csv 25,208 x 46; DischargePoints.csv 25,706 x 33; UWWTPAgglos.csv 25,768 x 10; UWWTPS_emission_load.csv 26,064 x 16."
+    },
+    "next_action": "Construction (advancement session), in order: (1) pin the public cycle inventory - probe each tabular cycle's record/share link (2007-2008 v01 ... 2019-2020 v08",
+    "packaged_at": null,
+    "path": "candidates/eea-uwwtd-plant-poor-performance/record.json",
+    "prediction_time": "The publication instant of reporting cycle N (a statistical release): all feature cycles are <= N and the target is the performance assessment published in cycle N+1. Measured anchors: the 13th data call (situation at 2022-12-31 per ReportPeriod.csv) was published as FINAL PUBLIC VERSION in Oct 2025 per the catalogue record; the per-country delivery versions (repVersion) for that call are dated 2023-12 to 2025-04 (e.g. SI 2025-04-24, most MS 2024-06). Cycle cadence is biennial (Directive 91/271/EEC Art. 15, reported on the Commission's request), so the lead time is roughly two reporting cycles. The exact publication dates of the older cycles are to be pinned at construction from their catalogue records; the per-country repSituationAt/repVersion fields are already documented in the source (ReportPeriod.csv) and ship with the data.",
+    "publisher": "European Environment Agency (EEA), an EU agency headquartered in Copenhagen, Denmark; the data are Member State and EEA-country deliveries under Directive 91/271/EEC (Urban Waste Water Treatment Directive) Article 15, validated and published by the EEA",
+    "qualification": {
+     "artifact_version": null,
+     "result": null,
+     "splits": null
+    },
+    "question": "For an urban waste water treatment plant active in UWWTD reporting cycle N, will that plant be reported as FAILING at least one treatment-performance parameter (any of uwwBOD5Perf, uwwCODPerf, uwwNTotPerf, uwwPTotPerf, uwwTSSPerf, uwwOtherPerf = 'F') in the next reporting cycle, given only features documented and reported in cycles up to and including N: country/NUTS, organic design capacity (uwwCapacity, p.e.), load entering the plant (uwwLoadEnteringUWWTP), mean annual volume treated (uwwWasteWaterTreated), treatment train flags (primary/secondary/more-stringent/N-removal/P-removal/microfiltration/UV/ozonation...), plant age from uwwBeginLife, and the plant's own performance flags reported in cycles <= N?",
+    "region": "Europe",
+    "release_baseline": {
+     "auc": null,
+     "reference": null
+    },
+    "release_splits": {},
+    "review": "",
+    "sources": [
+     {
+      "licence": "CC-BY 4.0. Quoted from the EEA SDI catalogue record (sdi.eea.europa.eu, srv/api record ab49c29f, read 2026-10-22): 'License CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Copyright holder: Directorate-General for Environment (DG ENV), European Environment Agency (EEA).' The record also states 'No limitations to public access' and 'All the tables from Waterbase can be downloaded for use by all stakeholders according to below Rights.'",
+      "name": "EEA - Urban Waste Water Treatment Directive Waterbase, per-cycle tabular datasets (series 'UWWTD: Urban Waste Water Treatment Directive - reported data')",
+      "url": "https://www.eea.europa.eu/en/datahub/datahubitem-view/6244937d-1c2c-47f5-bdf1-33ca01ff1715"
+     },
+     {
+      "licence": "Eionet/DD service content; same CC-BY-4.0 posture as the EEA catalogue records it documents.",
+      "name": "Eionet Data Dictionary - UWWTD Article 15 dataset, table UWWTPs (per-column documentation)",
+      "url": "https://dd.eionet.europa.eu/datasets/latest/UWWTDArt15/tables/UWWTPs"
+     }
+    ],
+    "split_strategy": "Temporal by reporting cycle: train on early-cycle transitions, eval on middle cycles, holdout on the newest public cycles (2021-2022 provisional / 2022-2023 final at the far end). Both classes are present in every measured cycle window (2023 call: 11.2% positives, 21,537 answered plants, 30 reporters). MEASURED CAVEAT: only the 2022-2023 cycle was downloaded and measured this session (2,411 positives); the 2011-2012, 2021-2022 and any recoverable 2007-2020 cycles are confirmed public only by catalogue/share-link HEAD probes, not by row counts - construction step 1 is to pin the public cycle inventory and measure the uwwCode join rate between at least two cycles. Positives cluster by country reporting regime (measured: any-F rate DE 0.4% vs NO 49.6%), so clustered/stratified counts per split must be reported; a split that puts a country's plants only in train and only in eval would measure regime shift, not plant performance.",
+    "status": "investigating",
+    "target": "Binary from the source row of cycle N+1: label = 1 iff the plant (uwwState=1, active) has at least one treatment-performance parameter assessed 'F' among the six uww*Perf fields, restricted to plants with at least one answered (P or F) parameter; plants with only NA/NR/blank assessments are unobserved-target rows, counted separately, never dropped silently. Measured on the full 2023 call CSV: 2,411 positives / 21,537 answered (11.2% base rate). The uww*Perf codes are P/F/NA/NR (documented in the Eionet data dictionary element pages, e.g. element 104947 'Treatment performance: BOD5'); the 'In cause of failure' fields (uwwBadPerformance 'Bad performance' 1,765 Yes among active, uwwBadDesign 'Bad design or dimensioning', uwwAccidents 'Major accidents', uwwInformation free text) describe the reported CAUSE where the plant does not meet requirements and are label-source/label-adjacent columns, excluded from features. IMPORTANT measured property recorded as part of the definition: the label is 'REPORTED as failing' - a mixture of physical performance and the national reporting regime; measured 2023-call any-F rates range from DE 0.4% (16/3,776) and BE 2.8% to NO 49.6% (116/234), HR 53.5% (46/86) and RO 36.3% (352/971). Country is therefore a legitimate feature AND the reference baseline must be country-stratified; the mixture is the task's documented semantics, not a defect to hide."
+   },
+   {
+    "awaiting_operator": false,
+    "baseline": {},
     "country": "CA",
     "domain": "industrial facility survival / environmental reporting compliance",
     "id": "npri-facility-reporting-exit",
@@ -605,9 +593,9 @@
      }
     ],
     "licence_summary": {
-     "compilation_spdx": null,
-     "source_spdx": null,
-     "status": null
+     "compilation_spdx": "CC0-1.0",
+     "source_spdx": "CC-BY-4.0",
+     "status": "CC BY 4.0 per the ABS site-wide copyright statement (read 2026-10-22)."
     },
     "measurements": {
      "clustering_note": "Positives cluster by era/year (pandemic collapse 2020, reopening surge 2022) rather than per-country; year-level cluster counts recorded above",
@@ -626,7 +614,7 @@
       "train 1991-2014": "up=24166 down=13575 flat=520 (23 of 24 years carry both classes)"
      }
     },
-    "next_action": "Qualified AND baselined (abs-001 gate 1.4.0 38/38, artifact afb46c6b29e6c4aa..., --accept re-verified; abs-baseline-001 runner-contract eval AUC 0.6219 vs calen",
+    "next_action": "PUBLISHED 2026-10-22T13:49:39Z on GitHub and Hugging Face, verified anonymously. Website page to follow.",
     "packaged_at": null,
     "path": "candidates/abs-visitor-arrivals-direction/record.json",
     "prediction_time": "The publication instant of the ABS Overseas Arrivals and Departures (OAD) release for reference month M, which lands about six weeks after month end (max observed lag 43 days; releases observed 13/10/2026 for Aug 2026, 11/09/2026 for Jul 2026, 12/06/2026 for Apr 2026, all 11:30am local). Features are the published series values for months <= M only; the target month M+1 is unpublished at that instant (it is released ~43 days after its own month end).",
@@ -652,7 +640,7 @@
      }
     ],
     "split_strategy": "Temporal thirds on the monthly panel of 77 countries x 2 traveller categories: candidate partition train 1991-2014 / eval 2015-2019 / holdout 2022-2026 (2020-2021 excluded as pandemic extremes or optionally folded into train; construction decides and documents). Direction labels are computed per country-series; thresholds are not needed (label is a sign, not a level).",
-    "status": "qualified",
+    "status": "published",
     "target": "Binary YoY direction: OBS_VALUE for (CAT_TRAVELLER=06 visitors arriving, COUNTRY_RESID=C, month M+1) < OBS_VALUE for (same series, month M-11). Label source columns: the target month's OBS_VALUE and the year-earlier OBS_VALUE; both excluded from shipped features."
    },
    {
@@ -2036,6 +2024,52 @@
    {
     "awaiting_operator": false,
     "baseline": {},
+    "country": "EU",
+    "domain": "EU trade defence instruments - European Commission (DG TRADE) anti-dumping/anti-subsidy/safeguard investigation outcomes (EU publisher)",
+    "id": "ec-tdi-case-outcome",
+    "jobs": [],
+    "licence_summary": {
+     "compilation_spdx": null,
+     "source_spdx": null,
+     "status": null
+    },
+    "measurements": {
+     "browser_probe_2026_10_22": "Real-browser load renders the register: 72 ongoing investigations (pagination 1-20 of 72, 20/page), columns case number / product / countries / type+article / initiation date, per-case 'Historical context' link; internal API endpoints observed: /investigations/api/eucase/list/ongoing, /investigations/api/eucase/lastUpdate. Most recent initiation listed: AD763 Furfuryl alcohol (China), 15 October 2026.",
+     "no_bulk_channel_2026_10_22": "No documented API, bulk export or dataset download found on tron.trade.ec.europa.eu or the policy.trade.ec.europa.eu trade-defence pages probed this session; only the register UI, an RSS feed of new initiations, and CIRCA-library-hosted statistics annexes (PDF/Excel in a library UI).",
+     "plain_http_2026_10_22": "GET /investigations/ongoing -> 200 HTML shell 56,579 B; GET main.4a82a5169ca26cff.js, runtime.js, polyfills.js, scripts bundles -> 403; GET /api/investigations -> 403 (text/html, 642 B)."
+    },
+    "next_action": "PARKED on an access blocker, not on licence or task novelty. The unpark question, exactly: does DG TRADE expose the case register through a documented anonymous",
+    "packaged_at": null,
+    "path": "candidates/ec-tdi-case-outcome/record.json",
+    "prediction_time": "Would be the publication of the Notice of Initiation in the Official Journal (the case's public start, also announced in TRON's RSS of newly initiated cases); the target is decided when the definitive regulation or termination decision publishes in the OJ, typically 13-14 months after initiation (policy.trade.ec.europa.eu states provisional measures within 7-8 months, definitive within 13-14). A genuine, well-documented timing story - one reason the source was opened.",
+    "publisher": "European Commission, Directorate-General for Trade (DG TRADE), Brussels - the TRON trade-defence register",
+    "qualification": {
+     "artifact_version": null,
+     "result": null,
+     "splits": null
+    },
+    "question": "Would-be task (formulated but NOT probed to data): for an EU trade-defence investigation at its Notice of Initiation (case number, product, exporter countries, instrument type - initial investigation Art. 5 / expiry review Art. 11(2) / interim review Art. 11(3) / re-opening), will the case conclude with definitive measures (definitive duties or a price undertaking) rather than termination without measures? Not settled this session: the register's own outcome/history fields were not reachable through a documented channel (see rejection/blocker).",
+    "region": "Europe",
+    "release_baseline": {
+     "auc": null,
+     "reference": null
+    },
+    "release_splits": {},
+    "review": "",
+    "sources": [
+     {
+      "licence": "EC standing reuse policy: Commission Decision 2011/833/EU permits reuse of Commission documents free of charge for commercial and non-commercial purposes with attribution, unless a specific instrument states otherwise. No TRON-specific terms page could be read (the site's legal-notice fetch was part of the 403-gated surface). Licence is presumed class A and is NOT the blocker - access is.",
+      "name": "European Commission - TRON 'Trade defence investigations' register (ongoing and completed investigations)",
+      "url": "https://tron.trade.ec.europa.eu/investigations/ongoing"
+     }
+    ],
+    "split_strategy": "not applicable this session - no data reached. Would-be: one row per investigation; temporal split on initiation year over the ~30-year case history; both classes naturally present (many terminations and many definitive duties).",
+    "status": "parked",
+    "target": "Would be binary from the case outcome: definitive measures imposed vs case terminated without measures, per case (one row per investigation). Not pinned to source columns this session because the structured case history was not reachable (see blocker)."
+   },
+   {
+    "awaiting_operator": false,
+    "baseline": {},
     "country": "CA",
     "domain": "hydrology - daily river flow / water level series for Canadian gauging stations",
     "id": "eccc-hydrometric-daily-flows",
@@ -2128,6 +2162,107 @@
     "split_strategy": "not applicable - rejected before construction",
     "status": "dropped",
     "target": "Not stated - no non-mirror task was selected."
+   },
+   {
+    "awaiting_operator": false,
+    "baseline": {},
+    "country": "EU",
+    "domain": "EU/EEA environmental regulation - urban waste water treatment plant (UWWTP) reported performance across the biennial UWWTD Article 15 reporting cycles (EU agency publisher, 30 EEA countries reporting)",
+    "id": "eea-uwwtd-plant-poor-performance",
+    "jobs": [],
+    "licence_summary": {
+     "compilation_spdx": null,
+     "source_spdx": null,
+     "status": null
+    },
+    "measurements": {
+     "country_mixture_2026_10_22": "30 reporters in the 2023 call (incl. EEA non-EU CH/NO/IS). Measured any-F rates by country (top of range): HR 53.5% (46/86), NO 49.6% (116/234), RO 36.3% (352/971), FR 19.0% (746/3,930), IT 13.0% (451/3,480), ES 12.0%, IE 11.1%, PL 6.3%, BE 2.8%, DE 0.4% (16/3,776). The label's meaning mixes physical performance with national assessment/reporting regimes; this is recorded as target semantics, and the reference baseline is country-stratified.",
+     "cycle_inventory_2026_10_22": "Public (measured): tabular 2011-2012 v04 (share s/awGoXzQKi6jQ.. HEAD 200), tabular 2022-2023 v10 final (downloaded), tabular 2021-2022 v10 provisional (record ee46a0fa 'Direct download'), spatial plant/agglomeration/discharge GeoPackages for 2017-2018 (v07), 2019-2020 (v08), 2021-2022 (provisional) and 2022-2023 (final). Internal-only (HTTP 401): 6 record ids probed on the series page. Named-but-unprobed tabular cycle folders: 2007-2008 v01, 2009-2010 v02/v03, 2013-2014 v05, 2015-2016 v06 (2015-2016 not even named on the page), 2017-2018 v07 r01, 2019-2020 v08/v09.",
+     "cycle_zip_2026_10_22": "GET https://sdi.eea.europa.eu/datashare/s/gjbpTbzHTZQ4Zra/download -> 200, application/zip, 108,877,653 B in 6.6 s (16.6 MB/s), filename eea_t_uwwtd-final_p_2023_v10_r00.zip; 47 entries; zip deleted from scratch after extraction of the CSV tables (only ~29 MB of CSVs kept transiently).",
+     "extraction_cost_2026_10_22": "Measured on this host: 1 anonymous GET per cycle zip; 108,877,653 bytes in 6.6 s. A full 5-8-cycle panel is estimated (labelled estimate) at 0.5-1 GB of transfers, minutes of wall clock on a worker; no bulk data needs to pass through the coordinator.",
+     "label_frame_2026_10_22": "Active plants with >=1 answered P/F performance parameter: 21,537; any-F positives 2,411 (11.2%); all-P 19,126. Per-parameter F counts: uwwBOD5Perf 1,929, uwwCODPerf 1,567, uwwTSSPerf 649, uwwNTotPerf 420, uwwPTotPerf 407, uwwOtherPerf 31. Cause-of-failure field uwwBadPerformance=Yes on 1,765 active plants (1,778 overall), uwwBadDesign=Yes 1,052, uwwAccidents=Yes 76.",
+     "plant_states_2026_10_22": "uwwState: 1 (active) 23,987; 0 (inactive) 1,972; 2 (temporary inactive) 105. Codes documented in LOV.csv.",
+     "reporting_period_2026_10_22": "ReportPeriod.csv (shipped in the zip) documents per-country repSituationAt (all 2022-12-31 in the 13th call except FR 2023-12-05) and per-country delivery versions 2023-12..2025-04 - the observed per-country publication lag evidence for the timing block.",
+     "table_shapes_2026_10_22": "CSV/UWWTPS.csv: 26,064 data rows x 69 columns; Agglomerations.csv 25,208 x 46; DischargePoints.csv 25,706 x 33; UWWTPAgglos.csv 25,768 x 10; UWWTPS_emission_load.csv 26,064 x 16."
+    },
+    "next_action": "Construction (advancement session), in order: (1) pin the public cycle inventory - probe each tabular cycle's record/share link (2007-2008 v01 ... 2019-2020 v08",
+    "packaged_at": null,
+    "path": "candidates/eea-uwwtd-plant-poor-performance/record.json",
+    "prediction_time": "The publication instant of reporting cycle N (a statistical release): all feature cycles are <= N and the target is the performance assessment published in cycle N+1. Measured anchors: the 13th data call (situation at 2022-12-31 per ReportPeriod.csv) was published as FINAL PUBLIC VERSION in Oct 2025 per the catalogue record; the per-country delivery versions (repVersion) for that call are dated 2023-12 to 2025-04 (e.g. SI 2025-04-24, most MS 2024-06). Cycle cadence is biennial (Directive 91/271/EEC Art. 15, reported on the Commission's request), so the lead time is roughly two reporting cycles. The exact publication dates of the older cycles are to be pinned at construction from their catalogue records; the per-country repSituationAt/repVersion fields are already documented in the source (ReportPeriod.csv) and ship with the data.",
+    "publisher": "European Environment Agency (EEA), an EU agency headquartered in Copenhagen, Denmark; the data are Member State and EEA-country deliveries under Directive 91/271/EEC (Urban Waste Water Treatment Directive) Article 15, validated and published by the EEA",
+    "qualification": {
+     "artifact_version": null,
+     "result": null,
+     "splits": null
+    },
+    "question": "For an urban waste water treatment plant active in UWWTD reporting cycle N, will that plant be reported as FAILING at least one treatment-performance parameter (any of uwwBOD5Perf, uwwCODPerf, uwwNTotPerf, uwwPTotPerf, uwwTSSPerf, uwwOtherPerf = 'F') in the next reporting cycle, given only features documented and reported in cycles up to and including N: country/NUTS, organic design capacity (uwwCapacity, p.e.), load entering the plant (uwwLoadEnteringUWWTP), mean annual volume treated (uwwWasteWaterTreated), treatment train flags (primary/secondary/more-stringent/N-removal/P-removal/microfiltration/UV/ozonation...), plant age from uwwBeginLife, and the plant's own performance flags reported in cycles <= N?",
+    "region": "Europe",
+    "release_baseline": {
+     "auc": null,
+     "reference": null
+    },
+    "release_splits": {},
+    "review": "",
+    "sources": [
+     {
+      "licence": "CC-BY 4.0. Quoted from the EEA SDI catalogue record (sdi.eea.europa.eu, srv/api record ab49c29f, read 2026-10-22): 'License CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Copyright holder: Directorate-General for Environment (DG ENV), European Environment Agency (EEA).' The record also states 'No limitations to public access' and 'All the tables from Waterbase can be downloaded for use by all stakeholders according to below Rights.'",
+      "name": "EEA - Urban Waste Water Treatment Directive Waterbase, per-cycle tabular datasets (series 'UWWTD: Urban Waste Water Treatment Directive - reported data')",
+      "url": "https://www.eea.europa.eu/en/datahub/datahubitem-view/6244937d-1c2c-47f5-bdf1-33ca01ff1715"
+     },
+     {
+      "licence": "Eionet/DD service content; same CC-BY-4.0 posture as the EEA catalogue records it documents.",
+      "name": "Eionet Data Dictionary - UWWTD Article 15 dataset, table UWWTPs (per-column documentation)",
+      "url": "https://dd.eionet.europa.eu/datasets/latest/UWWTDArt15/tables/UWWTPs"
+     }
+    ],
+    "split_strategy": "Temporal by reporting cycle: train on early-cycle transitions, eval on middle cycles, holdout on the newest public cycles (2021-2022 provisional / 2022-2023 final at the far end). Both classes are present in every measured cycle window (2023 call: 11.2% positives, 21,537 answered plants, 30 reporters). MEASURED CAVEAT: only the 2022-2023 cycle was downloaded and measured this session (2,411 positives); the 2011-2012, 2021-2022 and any recoverable 2007-2020 cycles are confirmed public only by catalogue/share-link HEAD probes, not by row counts - construction step 1 is to pin the public cycle inventory and measure the uwwCode join rate between at least two cycles. Positives cluster by country reporting regime (measured: any-F rate DE 0.4% vs NO 49.6%), so clustered/stratified counts per split must be reported; a split that puts a country's plants only in train and only in eval would measure regime shift, not plant performance.",
+    "status": "investigating",
+    "target": "Binary from the source row of cycle N+1: label = 1 iff the plant (uwwState=1, active) has at least one treatment-performance parameter assessed 'F' among the six uww*Perf fields, restricted to plants with at least one answered (P or F) parameter; plants with only NA/NR/blank assessments are unobserved-target rows, counted separately, never dropped silently. Measured on the full 2023 call CSV: 2,411 positives / 21,537 answered (11.2% base rate). The uww*Perf codes are P/F/NA/NR (documented in the Eionet data dictionary element pages, e.g. element 104947 'Treatment performance: BOD5'); the 'In cause of failure' fields (uwwBadPerformance 'Bad performance' 1,765 Yes among active, uwwBadDesign 'Bad design or dimensioning', uwwAccidents 'Major accidents', uwwInformation free text) describe the reported CAUSE where the plant does not meet requirements and are label-source/label-adjacent columns, excluded from features. IMPORTANT measured property recorded as part of the definition: the label is 'REPORTED as failing' - a mixture of physical performance and the national reporting regime; measured 2023-call any-F rates range from DE 0.4% (16/3,776) and BE 2.8% to NO 49.6% (116/234), HR 53.5% (46/86) and RO 36.3% (352/971). Country is therefore a legitimate feature AND the reference baseline must be country-stratified; the mixture is the task's documented semantics, not a defect to hide."
+   },
+   {
+    "awaiting_operator": false,
+    "baseline": {},
+    "country": "EU",
+    "domain": "EU food-safety zoonoses reporting - EFSA EU One Health Zoonoses Report sample-based prevalence data (EU agency publisher; per-country submissions on Zenodo)",
+    "id": "efsa-one-health-sample-prevalence",
+    "jobs": [],
+    "licence_summary": {
+     "compilation_spdx": null,
+     "source_spdx": null,
+     "status": null
+    },
+    "measurements": {
+     "coverage_note_2026_10_22": "The series is the EU-wide sample-level zoonoses stream (SSD2 format) that national programmes feed; Germany's member of this series is the same stream bvl-zoom-sample-positivity is built on (BVL ZooM open data, dl-de/by-2.0).",
+     "zenodo_series_2026_10_22": "Zenodo API title search 'Sample based prevalence data' AND zoonoses -> 36 records, per (country x reporting year), all cc-by-4.0; 2024-year records published 2025-12-09 (~1-year lag); file sizes from 25 KB (IE) to 5.9 MB (DE)."
+    },
+    "next_action": "Terminal for now. If and only if bvl-zoom-sample-positivity reaches publication and a second geographic instance is wanted, open a fresh candidate on these Zeno",
+    "packaged_at": null,
+    "path": "candidates/efsa-one-health-sample-prevalence/record.json",
+    "prediction_time": "Would be the moment the sample is taken (all features are sampling-plan/item attributes); annual publication ~1 year after the reporting year (measured: the 2024 reporting-year records published 2025-12-09). Not pinned further - rejected before probing the data.",
+    "publisher": "European Food Safety Authority (EFSA), an EU agency headquartered in Parma, Italy - the EU One Health Zoonoses Report series; the records are national submissions published on Zenodo",
+    "qualification": {
+     "artifact_version": null,
+     "result": null,
+     "splits": null
+    },
+    "question": "Would be: for a food/animal sample drawn under national zoonoses monitoring in a reporting country, will it test positive for a stated pathogen, given sampling-plan attributes - the EU-wide twin of the task this bench already carries as bvl-zoom-sample-positivity (investigating, verdict go). See rejection_reason: the task is not a discovery today.",
+    "region": "Europe",
+    "release_baseline": {
+     "auc": null,
+     "reference": null
+    },
+    "release_splits": {},
+    "review": "",
+    "sources": [
+     {
+      "licence": "CC BY 4.0 on every record probed (license id cc-by-4.0 read from the Zenodo API metadata, 2026-10-22) - class A.",
+      "name": "EFSA - 'Sample based prevalence data complementing the European Union One Health Zoonoses Report' (per-country, per-reporting-year records on Zenodo)",
+      "url": "https://zenodo.org/api/records?q=title:%22Sample%20based%20prevalence%20data%22%20AND%20zoonoses&size=10&sort=mostrecent"
+     }
+    ],
+    "split_strategy": "not applicable - rejected before construction",
+    "status": "dropped",
+    "target": "Would be the qualitative detection result per (sample, parameter) row - the same label family as bvl-zoom-sample-positivity's ErgAlphaT. Not pinned this session; see rejection_reason."
    },
    {
     "awaiting_operator": false,
@@ -5304,7 +5439,7 @@
    "CH": 3,
    "CL": 1,
    "DE": 1,
-   "EU": 2,
+   "EU": 5,
    "FR": 1,
    "GB": 6,
    "HK": 1,
@@ -5327,7 +5462,7 @@
   "by_region": {
    "Africa": 3,
    "East Asia": 5,
-   "Europe": 9,
+   "Europe": 12,
    "International organisations": 7,
    "Latin America": 3,
    "North America": 19,
@@ -5335,17 +5470,16 @@
    "South & South-East Asia": 13
   },
   "by_status": {
-   "dropped": 18,
-   "investigating": 7,
-   "parked": 24,
-   "published": 8,
-   "qualified": 1,
+   "dropped": 19,
+   "investigating": 8,
+   "parked": 25,
+   "published": 9,
    "ready": 6
   },
-  "candidates": 64,
-  "live": 22,
-  "live_non_us": 15,
-  "live_non_us_share": 0.682,
+  "candidates": 67,
+  "live": 23,
+  "live_non_us": 16,
+  "live_non_us_share": 0.696,
   "unknown_jurisdiction": []
  },
  "cron": {
@@ -5367,10 +5501,10 @@
     "failure_streak": 0,
     "id": "e80975eddd4a",
     "last_error": "",
-    "last_run_at": "2026-10-22T11:50:02.021990+00:00",
+    "last_run_at": "2026-10-22T13:40:02.316150+00:00",
     "last_status": "ok",
     "name": "scout-secondary-cleanup-sweep",
-    "next_run_at": "2026-10-22T12:00:00+00:00",
+    "next_run_at": "2026-10-22T14:00:00+00:00",
     "no_agent": true,
     "schedule": "*/10 * * * *"
    },
@@ -5415,10 +5549,10 @@
     "failure_streak": 0,
     "id": "98b45d983280",
     "last_error": "",
-    "last_run_at": "2026-10-22T11:49:19.945121+00:00",
+    "last_run_at": "2026-10-22T13:49:53.011488+00:00",
     "last_status": "ok",
     "name": "scout-worker-watch",
-    "next_run_at": "2026-10-22T11:54:19.945121+00:00",
+    "next_run_at": "2026-10-22T13:54:53.011488+00:00",
     "no_agent": false,
     "schedule": "every 5m"
    },
@@ -5427,10 +5561,10 @@
     "failure_streak": 0,
     "id": "86fe52e55ef9",
     "last_error": "",
-    "last_run_at": "2026-10-22T08:20:27.438691+00:00",
+    "last_run_at": "2026-10-22T12:27:57.580128+00:00",
     "last_status": "ok",
     "name": "scout-discovery-session",
-    "next_run_at": "2026-10-22T12:00:00+00:00",
+    "next_run_at": "2026-10-22T16:00:00+00:00",
     "no_agent": true,
     "schedule": "0 */4 * * *"
    },
@@ -5451,10 +5585,10 @@
     "failure_streak": 0,
     "id": "4d8053a69ed2",
     "last_error": "",
-    "last_run_at": "2026-10-22T10:50:18.277021+00:00",
+    "last_run_at": "2026-10-22T12:51:04.556029+00:00",
     "last_status": "ok",
     "name": "scout-dashboard-refresh",
-    "next_run_at": "2026-10-22T12:50:00+00:00",
+    "next_run_at": "2026-10-22T14:50:00+00:00",
     "no_agent": true,
     "schedule": "50 * * * *"
    },
@@ -5463,10 +5597,10 @@
     "failure_streak": 0,
     "id": "ba4c8610edf8",
     "last_error": "",
-    "last_run_at": "2026-10-22T10:55:00.812403+00:00",
+    "last_run_at": "2026-10-22T12:55:00.955075+00:00",
     "last_status": "ok",
     "name": "scout-release-notify",
-    "next_run_at": "2026-10-22T11:55:00+00:00",
+    "next_run_at": "2026-10-22T13:55:00+00:00",
     "no_agent": true,
     "schedule": "55 * * * *"
    },
@@ -5507,33 +5641,33 @@
     "schedule": "once at 2026-10-20 16:40"
    }
   ],
-  "updated_at": "2026-10-22T11:50:02.023391+00:00"
+  "updated_at": "2026-10-22T13:50:01.122561+00:00"
  },
- "generated_at": "2026-10-22T11:50:01+00:00",
+ "generated_at": "2026-10-22T13:50:00+00:00",
  "health": {
   "checks": {
    "ok": true,
-   "passing": 64
+   "passing": 67
   },
   "ci": {
    "conclusion": "success",
-   "created_at": "2026-10-22T10:48:17Z",
-   "head_sha": "e86eb2a",
+   "created_at": "2026-10-22T12:27:21Z",
+   "head_sha": "7525764",
    "status": "completed",
-   "url": "https://github.com/earino/dataset-factory/actions/runs/39765828999"
+   "url": "https://github.com/earino/dataset-factory/actions/runs/39778470597"
   },
   "coverage": {
    "ok": true,
-   "summary": "live non-US: 15/22 (68%)"
+   "summary": "live non-US: 16/23 (70%)"
   },
   "head": {
-   "at": "2026-10-22T10:48:10Z",
-   "sha": "e86eb2a",
-   "subject": "STATE.md: watcher addendum - abs-baseline-001 close-out after session exit, CI red diagnosed and fixed (9918084)"
+   "at": "2026-10-22T12:27:07Z",
+   "sha": "7525764",
+   "subject": "Discovery tick 2026-10-22 (Europe/EU-EEA): 3 verdicts - eea-uwwtd go, ec-tdi park, efsa reject"
   },
   "tests": {
    "count": "408",
-   "ok": true
+   "ok": false
   }
  },
  "history": [
@@ -5992,13 +6126,29 @@
    "qualified": 1,
    "sessions_7d": 37,
    "tokens_7d": 7941533
+  },
+  {
+   "at": "2026-10-22T12:50:01+00:00",
+   "live": 9,
+   "published": 9,
+   "qualified": 1,
+   "sessions_7d": 38,
+   "tokens_7d": 8133744
+  },
+  {
+   "at": "2026-10-22T13:50:00+00:00",
+   "live": 8,
+   "published": 10,
+   "qualified": 0,
+   "sessions_7d": 38,
+   "tokens_7d": 8133744
   }
  ],
  "notices": [],
  "panels": {
   "budget": {
    "age_minutes": 0.2,
-   "as_of": "2026-10-22T11:50:01+00:00",
+   "as_of": "2026-10-22T13:50:00+00:00",
    "expected": null,
    "note": null,
    "source": "scripts/research-budget.py --json",
@@ -6008,7 +6158,7 @@
   },
   "candidates": {
    "age_minutes": 0.2,
-   "as_of": "2026-10-22T11:50:01+00:00",
+   "as_of": "2026-10-22T13:50:00+00:00",
    "expected": null,
    "note": null,
    "source": "candidates/*/record.json",
@@ -6018,18 +6168,33 @@
   },
   "releases": {
    "age_minutes": 0.2,
-   "as_of": "2026-10-22T11:50:01+00:00",
+   "as_of": "2026-10-22T13:50:00+00:00",
    "expected": null,
    "note": null,
    "source": "release/*/MANIFEST.json",
    "stale": false,
    "status": "ok",
-   "value": 9
+   "value": 10
   }
  },
  "releases": {
   "errors": [],
   "releases": [
+   {
+    "assets": 5,
+    "baseline_eval_auc": null,
+    "dataset": "abs-visitor-arrivals-direction",
+    "persistence_auc": null,
+    "publication_note": "Prepared for human review. Nothing here has been published.",
+    "release_tag": "v2026.10",
+    "rows": null,
+    "verified": {
+     "github": true,
+     "huggingface": true
+    },
+    "verified_all": true,
+    "verified_at": "2026-10-22T13:49:39Z"
+   },
    {
     "assets": 5,
     "baseline_eval_auc": null,
@@ -6175,7 +6340,7 @@
  "resources": {
   "ceiling_eur": 20.0,
   "errors": [],
-  "eur_per_release": 0.35,
+  "eur_per_release": 0.32,
   "histogram": {
    "bins": [
     {
@@ -7216,7 +7381,7 @@
   "jobs_total": 82,
   "lifetime_eur": 3.15,
   "live": {
-   "checked_at": "2026-10-22T11:50:10+00:00",
+   "checked_at": "2026-10-22T13:50:11+00:00",
    "error": null,
    "primary_ips": 0,
    "primary_ips_total": 0,
@@ -7245,15 +7410,6 @@
  "sessions": {
   "failed_last_three": 1,
   "recent": [
-   {
-    "elapsed_seconds": 1913.9,
-    "event": "session",
-    "max_turns": 120,
-    "outcome": "completed",
-    "prompt_file": "discovery-session-prompt.md",
-    "run_budget": 5400,
-    "ts": "2026-10-22T00:31:56.960570+00:00"
-   },
    {
     "elapsed_seconds": 1827.0,
     "event": "session",
@@ -7298,6 +7454,15 @@
     "prompt_file": "research-session-prompt.md",
     "run_budget": 5400,
     "ts": "2026-10-22T10:39:51.709173+00:00"
+   },
+   {
+    "elapsed_seconds": 1676.5,
+    "event": "session",
+    "max_turns": 120,
+    "outcome": "completed",
+    "prompt_file": "discovery-session-prompt.md",
+    "run_budget": 5400,
+    "ts": "2026-10-22T12:27:57.541822+00:00"
    }
   ],
   "total": 36

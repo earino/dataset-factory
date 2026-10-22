@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "site_revision": 1,
+  "title": "Australian visitor arrivals, next month",
+  "summary": "Predict whether short-term visitor arrivals to Australia fall below last year's same month - 27,131 country-months from the ABS OAD panel.",
+  "task_type": "binary-classification",
+  "domain": "Tourism and migration statistics",
+  "release_date": "2026-10-22",
+  "post": {
+    "title": "A next-month direction task from Australia's arrivals panel",
+    "paragraphs": [
+      "The ABS publishes Overseas Arrivals and Departures monthly. The contribution here is the lag-gated panel: 27,131 country-months across 70 residence series, split 19,071 train / 4,140 eval / 3,920 holdout, where every feature for month M is published when M is released, and the target month M+1 is not.",
+      "The question is a shortfall: will arrivals in the first unpublished month fall below the same month a year earlier. Positive rates run 35% / 29% / 20%, and the pandemic window is excluded rather than allowed to dominate.",
+      "Persistence is anti-correlated - repeating last year's direction scores 0.3647 - so this is mean-reversion and seasonality, not momentum. The runner-contract baseline reaches 0.6219 eval AUC, clearing the calendar-only rule at 0.5501 by 0.0718."
+    ]
+  },
+  "limitations": [
+    "Derived from ABS OAD under CC BY 4.0 (attribution required); compilation CC0. Not an ABS product.",
+    "The pandemic window 2020-01..2021-12 is excluded by construction and counted, so crisis behaviour is not represented.",
+    "The source is revised monthly; a later rebuild will not reproduce these bytes.",
+    "The holdout is labelled and ships with the release; isolate it for blind evaluation.",
+    "Direction labels of this kind are dominated by seasonality in some series; per-series scores are not published."
+  ]
+}

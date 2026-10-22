@@ -1,0 +1,72 @@
+{
+ "name": "abs-visitor-arrivals-direction",
+ "description": "The OAD release for reference month M has just been published. For a country of residence, will short-term visitor arrivals to Australia in the first month not yet published (M+1) fall short of the same calendar month one year earlier?",
+ "source": "https://data.api.abs.gov.au/rest/data/ABS,OAD_COUNTRY,1.0.0/all?format=csv&startPeriod=1991-01",
+ "license": "ABS website material CC BY 4.0 International (source terms preserved; attribution 'Source: Australian Bureau of Statistics' required). Derived research dataset - not an ABS official product. Our derived compilation: CC0-1.0.",
+ "target": "fell_short",
+ "positive_label": 1,
+ "id_columns": [
+  "row_id"
+ ],
+ "columns": [
+  "row_id",
+  "country_resid",
+  "target_year",
+  "target_month_num",
+  "val_m",
+  "val_m1",
+  "val_m2",
+  "val_m3",
+  "val_m6",
+  "val_m12",
+  "diff_mom",
+  "diff_quarter",
+  "diff_half",
+  "diff_yoy_m",
+  "target_month",
+  "fell_short"
+ ],
+ "rows": {
+  "train": 19071,
+  "eval": 4140,
+  "holdout": 3920
+ },
+ "positive_rate": {
+  "train": 0.349641,
+  "eval": 0.290821,
+  "holdout": 0.195918
+ },
+ "split": {
+  "strategy": "temporal by target month (OAD publication instant)",
+  "boundaries": {
+   "train": "1992-02 .. 2014-12",
+   "eval": "2015-01 .. 2019-12",
+   "holdout": "2022-01 .. 2026-08",
+   "excluded": "2020-01 .. 2021-12 (pandemic extremes, counted)"
+  }
+ },
+ "label_rule": "fell_short = 1 iff visitor arrivals OBS_VALUE(T) < OBS_VALUE(T-12); exact ties are 0 and counted flat. Both label source columns are excluded from every shipped file.",
+ "label_source_columns": [
+  "OBS_VALUE(target month M+1)",
+  "OBS_VALUE(year-earlier month M-11)"
+ ],
+ "prediction_time": "The publication instant of the ABS Overseas Arrivals and Departures (OAD) release for reference month M, observed at a maximum of 43 days after month end (Aug 2026 released 2026-10-13, Jul 2026 released 2026-09-11, Apr 2026 released 2026-06-12; all 11:30am local). At that instant every month <= M is published and month M+1 - the target month - is the first unpublished month. Features are published series values for months <= M only; the target month's value and its year-earlier level never ship.",
+ "features": [
+  "country_resid",
+  "target_year",
+  "target_month_num",
+  "val_m",
+  "val_m1",
+  "val_m2",
+  "val_m3",
+  "val_m6",
+  "val_m12",
+  "diff_mom",
+  "diff_quarter",
+  "diff_half",
+  "diff_yoy_m"
+ ],
+ "built_at_utc": "2026-10-22T10:17:06Z",
+ "source_sha256": "b9674976aa381693956803aa3fc96976f586ff7f1c7ced9c50d6e6cc4c209a8b",
+ "vintage_last_modified": null
+}
