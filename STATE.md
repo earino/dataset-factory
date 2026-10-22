@@ -1,9 +1,64 @@
 # Current state
 
-Updated: 2026-10-22 06:30Z (release tick: tsb-railway-occurrence-casualty qualified -> PACKAGED and
-fully staged private on both destinations - baseline job green at 0.8126 eval AUC, GitHub + Hugging
-Face both verified, awaiting the operator's flip. Release work outranked construction; no
-construction job launched.)
+Updated: 2026-10-22 22:35Z (watcher close-out: wb-001 green - wb-ieg-project-outcome qualified,
+gate 38/38 on the full artifact, coverage reconciled against discovery; the runner-contract
+baseline job wb-baseline-001 is running on worker 171927514 and will be collected by its own
+watch tick.)
+
+## 2026-10-22 - wb-001 green (watcher close-out): wb-ieg-project-outcome QUALIFIED - gate 38/38 on the full artifact; baseline job wb-baseline-001 now running
+
+**wb-001 (server 171926570, 385.3 s, exit 0, staging release 421262457, EUR 0.04 reservation) is
+the first green build of wb-ieg-project-outcome, and the qualification gate passed over the full
+artifact: 38/38 checks (leakage, timing, units, splits, runner), 0 failed, gate 1.4.0, artifact
+digest b8345bcb5769e422c75dd0451c81854ceb8fa809b4bb60977cd781d4071abaa9.** Sources pulled on the
+worker: one anonymous IEG CSV GET (3,340,648 bytes, sha256 7080b652...) plus 24 projects-API
+requests (23 offset pages of 1,000 full records + supplementary id-lookups recovering 25 records;
+54,486,121-byte merged JSON, 22,665 records). The extract stays in staging.
+
+Coverage, measured against discovery's own window counts: built 12,174 rows = 12,629 raw IEG rows
+- 1 P122764 duplicate - 151 Not Rated (unobserved target) - 303 approved FY2020+ (outside windows,
+counted per year); train 9,598 / eval 1,479 / holdout 1,097 (approval FY 1956-2009 / 2010-2014 /
+2015-2019), positives 6,891 / 1,173 / 885. Train positives are identical to discovery's (the
+70.74% -> 71.80% rate move is the denominator dropping 143 unrated rows); eval's single positive
+delta is the deduped P122764 row (MS+ in both rows, approval FY inside the eval window); holdout
+identical. Right-censoring quantified per window, not dropped: not-yet-evaluated API projects
+approved <=FY2019 - train 1,724 / eval 719 / holdout 637. The RAP 2024 Fig O.3 cross-check asserts
+the published MS+ trend (71 -> 91 points FY2013-2023) while the panel runs 3-7 points below the
+published level under every cohort restriction - trend asserted, not level, and the reason is
+recorded (RAP's standardized cohort is not reproducible from the CSV columns).
+
+Construction-time references (stdlib, train-estimated, on the written rows): majority-class 0.718
+accuracy; identity-only (country) 0.6003 eval / 0.4909 holdout; calendar-only (country x approval_fy)
+identical (every eval/holdout cell unseen in train); agreement-type 0.5407/0.4844; practice-group
+0.5497/0.4948. No persistence leg exists at project grain - each project is evaluated once, so the
+nhs-ae persistence failure mode cannot occur here. Prevalence drift 0.718 -> 0.793 -> 0.807
+(train -> eval -> holdout) is a measured property of the phenomenon (IEG ratings improved over
+time), recorded in the record to be reported beside any score.
+
+**Close-out (this watcher).** The scheduled advancement session ran the build, collected and
+destroyed the worker (22:26:03Z / 22:26:31Z), wrote the construction measurements, the notes, the
+baseline bundle and its ledger entry, launched wb-baseline-001 at 22:27:44Z - and its turn ended
+before STATE.md, the commit and the handled marker. This run fetched the small report assets of
+release 421262457 into `.factory/wb-001/reports/` (manifest.json, meta.json, quality.json, build
+summary, gate report, container.log, source.tar - all sha256-verified against the release
+manifest; the three bulk CSVs skipped, the 335 KB labelled holdout stays in staging), re-matched
+the gate report's five artifact digests to the manifest asset digests, merged a duplicated wb-001
+jobs[] entry, and recorded: record.json ready -> **qualified** with the qualification and
+construction_output blocks (splits, windows, five file digests), jobs/wb-001.json, and the
+candidate's source/ and baseline/ bundles. check-candidate OK (status=qualified), --all exit 0
+(76 records).
+
+**wb-baseline-001 is running** (worker 171927514, EUR 0.06 reservation, launched 22:27:44Z by the
+advancement session; its launch process survived the interrupted turn and completed the dispatch -
+record re-read as running by this close-out). It fetches the five accepted files from staging
+release 421262457, re-accepts through the gate, materializes the runner workdir (private holdout
+never copied) and runs the benchmark's own train.py + validate.sh verbatim. The watcher reports it
+when it finishes; the triad then needs the full-model eval AUC against the references above. The
+Kraay & Tawara prior-art caveat stands (the World Bank's own internal model leans on post-approval
+features; strictly approval-time signal is unmeasured and may be modest): if the model does not
+beat the naive references, this is recorded as a negative result and not packaged (the nhs-ae
+pattern). October worker reservations now EUR 7.86 of the 20 EUR allowance, only the running
+baseline's 0.06 unspent.
 
 ## 2026-10-22 - Release tick: tsb-railway-occurrence-casualty PACKAGED - baseline 0.8126 beats every reference; staged private on both destinations
 
@@ -6058,3 +6113,82 @@ from common safety. A fourth adaptive diagnostic tests recovery and stop conditi
 588 tests in 6.650s, OK (six existing skips), source inventory audit green. No executable
 qualification change or deployment. Next: retain the initial responses, test this
 revised bundle explicitly and complete reserved/live validation before claiming gains.
+
+
+## Advancement — wb-ieg-project-outcome constructed, qualified, baselined (2026-10-22)
+
+Scheduled advancement tick. No actionable packaged candidate (eutl-installation-net-short
+carries awaiting_operator and waits on the operator's flip), so the tick went to construction.
+wb-ieg-project-outcome was picked from the scheduler's actionable list as the only candidate
+whose full construct->qualify->baseline cycle fits one session (measured extraction: 1 request
+for the 3.3 MB IEG CSV + 24 projects-API requests for the 54.5 MB merged index), while
+chilecompra (~100-150 GB zips) and nz-ea (~1-2 h worker) exceed a tick and stay queued.
+
+Constructed end to end on wb-001 (worker 171926570, cx23, 385.3 s, EUR 0.04 reservation,
+destroyed 22:26:31Z, exit 0): gate 1.4.0 green on the full artifact on the worker (38/38
+checks, artifact b8345bcb5769e422...), collected to staging release 421262457, all 11 manifest
+digests verified on fetch-back, and qualify_dataset.py --accept ACCEPTED on the coordinator.
+Runner-contract baseline wb-baseline-001 (worker 171927514, 66.9 s, EUR 0.06 reservation,
+destroyed 22:33:17Z, exit 0, report at staging 421265626): train.py eval AUC 0.5879,
+validate.py recompute 0.5879, CONTRACT OK. Two workers launched, two destroyed, both
+confirmed deleted; total reservation spend EUR 0.10 of the EUR 15 construction allowance.
+
+Panel (deduped to latest evaluation_fy; approval FY 1956-2009 / 2010-2014 / 2015-2019):
+train 9,598 rows / 6,891 positives (0.7180); eval 1,479 / 1,173 (0.7931); holdout 1,097 /
+885 (0.8067). Unobserved accounting recorded per window (151 Not Rated; 303 approved FY2020+;
+not-yet-evaluated API-only projects: 1,724 / 719 / 637 per window - the right-censoring is
+material and now quantified). RAP 2024 Fig O.3 cross-check: panel closing-FY MS+ 0.6875
+(FY2013) -> 0.8729 (FY2023) vs published 71% -> 91%; the build asserts the published trend
+(measured gap 18.5 pts) and records that the panel runs 3-7 pts below the series under every
+cohort restriction.
+
+Session findings worth keeping (all measured, commands in the candidate's notes.md):
+- The projects search API IGNORES `fl` on the paged path: with `fl` it returns a
+  search-result record (id, name, url, abstract), without it the full approval record sans
+  abstract; the id-lookup path honors either. The first dry run silently joined empty
+  features - caught by inspecting the written rows before any worker spend.
+- The gate's event-key truncation (value[:10]) merges 83 "Republic of ..." borrowers into
+  one prefix (179 countries -> 81 prefixes in train). Kept: conservative direction, passes
+  with wide margin, both counts recorded in summary/quality.
+- GE trust-fund records carry no approval metadata in the API; approval_month_num=0 and
+  amounts_missing=1 are genuine source gaps (1,215 rows), not parse failures.
+
+THE DECISIVE RESULT is a qualification defect, recorded plainly: the contract model (0.5879
+eval AUC) TRAILS the one-line country-identity rule (0.6003) on eval - per dataset-
+qualification, no headroom claim may be quoted from the model number alone. The identity rule
+inverts on holdout (0.4909, stale priors across the 0.718 -> 0.807 prevalence shift) while
+the model's holdout AUC was not measured by the contract job. The candidate therefore sits at
+a decision point, NOT at packaging.
+
+Next action (precise, for a fresh session): one bounded follow-up worker job scoring the
+runner-contract model AND the identity/calendar rules on the PRIVATE HOLDOUT rows of the
+accepted artifact (same fitted artifacts, no retraining choices, re-ACCEPT before scoring).
+If the model holds ~0.59 while identity sits ~0.49, record the benchmark claim and proceed to
+packaging per dataset-release; if the model collapses too, record the negative result and
+drop the candidate (one repair per the qualification budget). Do not package or quote headroom
+before that number exists. The other ready builds (camara, chilecompra, nz-ea, za, wb's queue
+siblings) are unchanged and still queued behind this decision.
+
+Checks this session: check-candidate.py OK for wb-ieg-project-outcome and --all OK (74
+candidates); suite OK (572 tests, 12.9 s). Scratch scripts under .factory/ and downloads in
+/opt/data/cache/scratch deleted after the push. Baseline staging releases 421262457 / 421265626
+remain private staging (staging-repo lifecycle as before); no publication, tag movement or
+flip was performed.
+
+
+Codex review checkpoint (2026-10-23 local): preserved Scout's ordinary advancement
+commits 31e8771 and d77213d alongside this prompt work. A bounded, read-only inspection
+of wb-001's manifest, source archive and compact reports found scoring/logging before
+the gate, a training-prevalence value mislabeled as split accuracy, a calendar control
+that falls back entirely to country identity, and unsupported historical-vintage
+claims. Evidence and scope: evals/research-prompts/results/old-prompt-build-review.json.
+The passing mechanical report does not resolve these source findings. The next review
+must address them before interpreting a favorable holdout result as permission to
+package; keep the candidate private. Prior artifacts and the original run remain intact.
+Scout received the findings; any subsequent repair responding to them is assisted,
+not an unprompted improvement attributed to the new brief.
+
+The ordinary research session has finished and released the mutex; initial frozen
+prompt-comparison calls are now proceeding. The incremental evidence publisher is
+being checked because its first results were not yet visible remotely. Do not rerun
+completed model calls to repair an exporter. PR #11 remains draft, undeployed.

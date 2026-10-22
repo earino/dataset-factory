@@ -1,6 +1,6 @@
 {
   "id": "wb-ieg-project-outcome",
-  "status": "ready",
+  "status": "qualified",
   "created_at": "2026-10-22T00:00:00+00:00",
   "domain": "development finance / project evaluation",
   "prediction_question": "For a World Bank (IBRD/IDA) lending project at the moment of Board approval, will the Independent Evaluation Group's final evaluation of the project rate its outcome Moderately Satisfactory or better (MS+) on the six-point IEG outcome scale? This is an approval-instant portfolio-risk task over IEG's rated-project universe (12,629 rated projects, approval FY 1956-2024, measured 2026-10-22).",
@@ -28,7 +28,7 @@
     "World Bank Data Catalog public-licenses page (read 2026-10-22): 'CC-BY 4.0, with the additional terms below, is the default license for all Datasets produced by the World Bank itself and distributed as open data' - the additional terms are a dispute-resolution procedure (mediation then arbitration), not a use restriction. CC BY 4.0 permits redistribution and derivatives including commercial use, with attribution carrying through unchanged to any release.",
     "The general worldbank.org site terms restrict non-dataset materials, but explicitly defer to the specific terms attached to Data Catalog datasets; this dataset's own instrument is CC BY 4.0."
   ],
-  "construction_script": null,
+  "construction_script": "candidates/wb-ieg-project-outcome/source/build.py",
   "split_strategy": "Temporal splits on approval fiscal year (measured on the full 12,629-row pull, 2026-10-22): train approval_fy <=2009 (n=9,741, MS+ 70.74%, 179 countries), eval 2010-2014 (n=1,488, MS+ 78.90%, 142 countries), holdout 2015-2019 (n=1,097, MS+ 80.67%, 133 countries). Both classes present in every window; the prevalence drift 70.7% -> 80.7% is a measured property of the source (IEG outcome ratings have improved over time) and must be reported beside any score, per the prevalence-shift rule. Right-censoring: rated counts fall for recent approvals (2013:269, 2015:277, 2018:184, 2021:93, 2022:56, 2023:29, 2024:11) - eligibility must iterate the provider's approval years and count unrated/not-yet-evaluated projects as unobserved_target (a bucket, not a membership decision), per the nhs-ae selection lesson. Identifier policy: project_id is unique except P122764, which appears twice (eval_fy 2023 and 2026, both ICRR, same MS rating) - construction dedupes keeping the latest evaluation_fy and declares the grain; country portfolios recur across splits by design (longitudinal), so country is a feature and the no-cross-split-entities check applies to project_id only, with expected_duplicate_ids declared in quality.json.",
   "measurements": {
     "access_probes_2026_10_22": "Data Catalog dataset page HTTP 200; metadata API HTTP 200 (9,048 B JSON); apiservice CSV: HTTP 200, 3,340,648 bytes, 12,629 data rows + header, in a single request (top=20000 honored). Projects API: rows=10000 returns 1,000 keys per page (page cap measured), 1,193,063 bytes and 1.14 s for one lean page from the coordinator.",
@@ -39,13 +39,39 @@
     "clustering_2026_10_22": "Positives cluster weakly by borrower: 4,695 (country, approval_fy) clusters, 4,020 with >=1 MS+ positive. Per-split clustered counts to be reported at construction; the positive class (73.65%) is not a rare-event problem.",
     "extraction_cost_2026_10_22": "Measured from the coordinator: IEG ratings CSV = 1 HTTP request, 3,340,648 bytes; Projects API = 23 requests x ~1.19 MB = ~27 MB for all 22,729 projects (request count from the measured 1,000-row page cap; bytes from one measured lean page - labelled estimate for the total). Total extraction is trivially within worker budget; the coordinator probe pulled only the IEG CSV (3.3 MB, kept in scratch, never committed) plus one projects page.",
     "publication_schedule_2026_10_22": "Finances One metadata: data_as_of 2026-10-20, last_updated 2026-10-22T05:49:57Z, update_frequency 'Quarterly', update_schedule 'Daily'. The publisher republishes on a schedule, so a monthly release cycle can snapshot honestly.",
-    "prior_art_headroom_note": "The World Bank itself built this prediction model internally (Kraay & Tawara, 'Predicting IEG ratings for active projects', Policy Research Working Paper 7001, 2,729 IPF operations 1995-2012) and reports that its most predictive features - task-team-leader track record and country CPIA during the project's life - are POST-approval facts. With strictly approval-time features the achievable signal is unmeasured and may be modest; the baseline triad (majority-class 73.65% on train-window rates, calendar-only, full model) must be measured at construction before any number is quoted, and if approval-time features carry no signal beyond the majority rule the task is recorded as a negative result, not a benchmark (the nhs-ae lesson)."
+    "prior_art_headroom_note": "The World Bank itself built this prediction model internally (Kraay & Tawara, 'Predicting IEG ratings for active projects', Policy Research Working Paper 7001, 2,729 IPF operations 1995-2012) and reports that its most predictive features - task-team-leader track record and country CPIA during the project's life - are POST-approval facts. With strictly approval-time features the achievable signal is unmeasured and may be modest; the baseline triad (majority-class 73.65% on train-window rates, calendar-only, full model) must be measured at construction before any number is quoted, and if approval-time features carry no signal beyond the majority rule the task is recorded as a negative result, not a benchmark (the nhs-ae lesson).",
+    "construction_2026_10_22": "Worker job wb-001 (cx23, 385.3 s job elapsed, EUR 0.04 reservation): one anonymous IEG CSV GET (3,340,648 bytes, sha256 7080b6522bb432f0..., 1.3 s) plus 24 projects-API requests (23 offset pages of 1,000 full records + 2 supplementary id-lookup batches recovering 25 records; 54,486,121 bytes merged JSON, 22665 records). Panel: 12,629 IEG rows, P122764 deduped to its latest evaluation_fy, rated universe 12,478 with MS+ share 0.7365 (discovery anchor 0.7365). Shipped panel: train 9598 rows / 6891 positives (0.7180) / 76 distinct positive country[:10] clusters (172 untruncated countries); eval 1479 rows / 1173 positives (0.7931) / 57 distinct positive country[:10] clusters (135 untruncated countries); holdout 1097 rows / 885 positives (0.8067) / 55 distinct positive country[:10] clusters (128 untruncated countries) (approval FY windows 1956-2009 / 2010-2014 / 2015-2019). Eligibility accounted: 151 Not Rated (unobserved), 303 approved FY2020+ (outside windows, counted per year), not-yet-evaluated API projects approved <=FY2019 with no IEG row: train 1724 / eval 719 / holdout 637 (right-censoring quantified per window); api join missing after lookups: 2 ids (P072979, P113625, not served by the API); 1215 rows carry no amounts (mostly GE trust-fund records with no approval metadata). IEG-vs-API approval FY mismatches: 729 rows (+-1 FY convention; IEG CSV is canon, mismatches counted). RAP 2024 Fig O.3 cross-check: panel closing-FY MS+ FY2013 0.6875 vs FY2023 0.8729 (gap 18.5 pts; published series 71 -> 91; panel runs 3-7 pts below under every cohort restriction, trend asserted in-build). Reference baselines (stdlib, train-estimated): majority-class 0.7180; identity-only (country) 0.6003 eval / 0.4909 holdout; calendar-only (country x approval_fy) 0.6003 / 0.4909 (all eval/holdout cells unseen in train, so it falls back to identity); agreement-type rule 0.5407 / 0.4844; practice-group rule 0.5497 / 0.4948. No persistence leg exists at project grain (each project evaluated once). Gate 1.4.0 green on the worker over the full artifact (38/38 checks, artifact b8345bcb5769e422c75dd0451c81854ceb8fa809b4bb60977cd781d4071abaa9); collected to staging release 421262457 and re-verified on the coordinator with qualify_dataset.py --accept (ACCEPTED). Full-model leg of the triad: runner-contract baseline job wb-baseline-001 on the accepted artifact.",
+    "baseline_triad_2026_10_22": "Runner-contract baseline wb-baseline-001 (66.9 s job elapsed, exit 0; the five accepted files fetched from staging 421262457, re-ACCEPTed before scoring, runner files verbatim and hash-matched): train.py eval AUC 0.5879, validate.py independent recompute 0.5879, CONTRACT OK. THE FULL TRIAD ON THE SAME EVAL ROWS: majority-class rule 0.718 accuracy (constant AUC 0.5); identity-only country rate rule 0.6003 eval / 0.4909 holdout; calendar-only (country x approval_fy, cells unseen in train so it falls back to identity) 0.6003 / 0.4909; full model 0.5879 eval. DEFECT RECORDED: the contract model TRAILS the one-line country-identity rule on eval by 0.0124 AUC - per dataset-qualification this is a recorded defect, not an encouraging result, and no headroom claim may be quoted from the model number alone. Two open facts temper the verdict and name the decisive missing number: (1) the identity rule INVERTS on holdout (0.4909, below chance - the country priors go stale across the prevalence shift 0.718 -> 0.807), while the model's HOLDOUT AUC was not measured by the contract job (the runner scores holdout via bench eval, not the baseline contract); (2) the model gap is 0.0124 on one default-contract run, not a measured ceiling. Next session must score the same runner model and the identity rule on the HOLDOUT rows before any benchmark-or-negative verdict: if the model holds ~0.59 while identity sits at 0.49, the task discriminates where it is scored and the defect is an eval-window artifact of stale priors; if the model also collapses, the candidate is a negative result and drops per the one-rebuild budget."
   },
-  "jobs": [],
-  "artifacts": [],
+  "jobs": [
+    {
+      "id": "wb-001",
+      "date": "2026-10-22",
+      "outcome": "succeeded: full build + qualification gate 1.4.0 green on the worker (38/38 checks, artifact b8345bcb5769e422c75dd0451c81854ceb8fa809b4bb60977cd781d4071abaa9); exit 0, 385.3 s job elapsed; collected to staging release 421262457 and re-verified on the coordinator with qualify_dataset.py --accept (ACCEPTED); worker 171926570 destroyed 2026-10-22T22:26:31Z",
+      "server_id": 171926570,
+      "release": 421262457,
+      "collected_at": "2026-10-22T22:26:03Z",
+      "destroyed_at": "2026-10-22T22:26:31Z",
+      "job_elapsed_seconds": 385.3
+    },
+    {
+      "id": "wb-baseline-001",
+      "date": "2026-10-22",
+      "outcome": "succeeded: runner-contract baseline on the accepted wb-001 artifact (fetched from staging 421262457, re-ACCEPTed before scoring, runner files verbatim and hash-matched); train.py eval AUC 0.5879, validate.py independent recompute 0.5879, CONTRACT OK; 66.9 s job elapsed; report at staging release 421265626; worker 171927514 destroyed 2026-10-22T22:33:17Z",
+      "server_id": 171927514
+    }
+  ],
+  "artifacts": [
+    {
+      "kind": "staging_release",
+      "repo": "earino/dataset-factory-staging",
+      "id": 421262457,
+      "note": "wb-001 build: gated extract (public/train.csv, public/eval.csv, private/holdout.csv, meta.json, quality.json), build summary (two byte-identical copies), the gate report (two byte-identical copies, sha256 c68e34c8...), source.tar and container.log; artifact digest b8345bcb5769e422c75dd0451c81854ceb8fa809b4bb60977cd781d4071abaa9"
+    }
+  ],
   "rejection_reason": null,
   "review": null,
-  "next_action": "GO to construction (advancement session owns it; this was a discovery-only session). Construction steps: (1) snapshot the IEG CSV and the Projects API pages with hashes and record the as_of_date; (2) dedupe project_id to the latest evaluation_fy (P122764) and declare the grain; (3) join approval-time features only (approval FY/month, agreement type, instrument, product line, sectors with percentages, themes, country, region, commitment amounts), excluding every evaluation-time column and the vintage-anachronistic FCS/lending-group columns; (4) build temporal splits (train <=2009, eval 2010-2014, holdout 2015-2019) with unobserved_target accounting for 'Not Rated' and not-yet-evaluated approvals; (5) quality.json timing block kind=event_time (instant = Board approval), label_source_columns = [outcome, bank_performance, quality_at_entry, quality_of_supervision, me_quality, evaluation_fy, evaluation_type, final_closing_fy, as_of_date, country_fcs_status, country_fcs_lending_group, country_lending_group]; (6) cross-check the built panel's MS+ share against the latest IEG RAP report's published share; (7) measure the baseline triad before quoting any AUC; (8) qualification gate on the worker over the full artifact.",
+  "next_action": "Constructed + gate-qualified + contract-baselined. DECISION POINT, not packaging: the contract model (0.5879 eval AUC) trails the country-identity rule (0.6003 eval), a recorded qualification defect; the identity rule inverts on holdout (0.4909) and the model's holdout AUC is the missing decisive number. Next: one bounded follow-up job scoring the runner-contract model AND the identity/calendar rules on the private holdout rows (same fitted artifacts, no retraining choices); then either record the benchmark claim (model beats the rule where the runner scores) or record the negative result and drop the candidate - at most one repair per dataset-qualification's budget. Do NOT package or quote headroom before that number exists.",
   "jurisdiction": {
     "country": "US",
     "region": "International organisations",
@@ -161,5 +187,94 @@
     "ours": "A packaged approval-instant binary task over IEG's rated-project universe (12,629 rated projects, approval FY 1956-2024, CC BY 4.0): at Board approval, predict whether IEG's final evaluation rates the outcome MS+, with strictly approval-time features (the evaluation-vintage FCS/lending-group columns measured and excluded), temporal splits by approval FY (train <=2009 n=9,741 / eval 2010-2014 n=1,488 / holdout 2015-2019 n=1,097), unobserved-target accounting for not-yet-evaluated approvals, provenance-stream declaration (ICRR/PPAR/PCR/EVM), and the runner's scored contract",
     "verdict": "differentiated",
     "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  },
+  "qualification": {
+    "qualified_at": "2026-10-22T22:40:00Z",
+    "gate_version": "1.4.0",
+    "job": "wb-001",
+    "result": "passed; 0 failed checks of 38 (leakage, timing, units, splits, runner)",
+    "artifact_version": "b8345bcb5769e422c75dd0451c81854ceb8fa809b4bb60977cd781d4071abaa9",
+    "report": "private staging release 421262457 (draft tag untagged-6dbf8f775beda31e33aa, 12 assets); the gate report is assets file-0006/file-0007 (byte-identical, sha256 c68e34c8a91aad09955f9162950b69b2302a3fd95fe3f64a12a27faa8d887e80); the close-out re-matched the report's five artifact sha256s (train/eval/holdout/meta/quality) to the release manifest asset digests; the extract stays in staging, never on the coordinator",
+    "coverage": "built panel 12,174 rows = 12,629 raw IEG rows - 1 P122764 duplicate - 151 Not Rated (unobserved target) - 303 approved FY2020+ (outside windows, counted per year) = 9,598 train (approval FY 1956-2009) / 1,479 eval (2010-2014) / 1,097 holdout (2015-2019); positives 6,891 / 1,173 / 885. Against discovery's window counts (9,741/1,488/1,097, which included the Not Rated rows and the duplicate): train positives identical at 6,891 (rate 70.74%->71.80% is the denominator dropping 143 unrated rows), eval 1,174->1,173 positives (the deduped P122764 row was MS+ with approval FY inside the eval window; 8 unrated rows dropped), holdout identical. Right-censoring quantified: not-yet-evaluated API projects approved <=FY2019 are counted per window (train 1,724 / eval 719 / holdout 637) as unobserved, not silently dropped",
+    "label_integrity": "outcome vocabulary exactly the six expected values + Not Rated (0 unexpected); every rated row carries approval_fy (0 missing); as_of_date single vintage 20-Oct-2026; IEG-vs-API approval-FY mismatches 729 rows (+-1 FY convention; IEG CSV is canon, counted in the summary)",
+    "rap_crosscheck": "IEG RAP 2024 Fig O.3 published MS+ series 71->91 points over FY2013-2023; the panel's closing-FY MS+ share runs 3-7 points below under every plausible cohort restriction (FY2013 0.6875 vs FY2023 0.8729, gap 18.5 points) - the build asserts the published trend, not the level, because RAP's standardized cohort is not reproducible from the CSV columns",
+    "reference_baselines": {
+      "note": "measured at construction on the written rows, before any model spend (summary.json reference_baselines); stdlib rank AUC, train-estimated rate tables; no persistence leg exists at project grain - each project is evaluated once, so the persistence analogue that dominated nhs-ae cannot exist here. The full-model leg of the triad is the runner-contract baseline job (wb-baseline-001)",
+      "majority_class_accuracy": 0.718,
+      "identity_only_country_auc": {
+        "eval": 0.6003,
+        "holdout": 0.4909
+      },
+      "calendar_only_country_approval_fy_auc": {
+        "eval": 0.6003,
+        "holdout": 0.4909
+      },
+      "agreement_type_rule_auc": {
+        "eval": 0.5407,
+        "holdout": 0.4844
+      },
+      "practice_group_rule_auc": {
+        "eval": 0.5497,
+        "holdout": 0.4948
+      },
+      "prevalence_shift": "positive rate rises train->eval->holdout (0.718 -> 0.793 -> 0.807), a measured property of the phenomenon (IEG ratings improved over time), not a construction fault; it must be reported beside any score"
+    }
+  },
+  "construction_output": {
+    "job": "wb-001",
+    "artifact_version": "b8345bcb5769e422c75dd0451c81854ceb8fa809b4bb60977cd781d4071abaa9",
+    "built_at_utc": "2026-10-22T22:19:07Z",
+    "rows": 12174,
+    "splits": {
+      "train": {
+        "rows": 9598,
+        "positives": 6891,
+        "positive_rate": 0.717962,
+        "distinct_positive_countries": 76,
+        "distinct_positive_countries_untruncated": 172
+      },
+      "eval": {
+        "rows": 1479,
+        "positives": 1173,
+        "positive_rate": 0.793103,
+        "distinct_positive_countries": 57,
+        "distinct_positive_countries_untruncated": 135
+      },
+      "holdout": {
+        "rows": 1097,
+        "positives": 885,
+        "positive_rate": 0.806746,
+        "distinct_positive_countries": 55,
+        "distinct_positive_countries_untruncated": 128
+      }
+    },
+    "split_windows": {
+      "train": "approval FY 1956-2009",
+      "eval": "approval FY 2010-2014",
+      "holdout": "approval FY 2015-2019"
+    },
+    "files": {
+      "public/train.csv": {
+        "bytes": 2580934,
+        "sha256": "b911c270ee8bf8c188ac9976472bb6d79789be337d4e46d6f1521388e5ec103b"
+      },
+      "public/eval.csv": {
+        "bytes": 457228,
+        "sha256": "7d3a82166c9a5dbdbfe8e4abaaedc396c6a256ad2f4eb572eb785bba6b67f517"
+      },
+      "private/holdout.csv": {
+        "bytes": 335643,
+        "sha256": "00b945943e62703a68fad55202dde15557910d74173f40cd4fc44948c795b583"
+      },
+      "meta.json": {
+        "bytes": 3696,
+        "sha256": "5188c4ae1aeca937713f933bd6a7fa3fda1e66f582bd8976a6d78577fe8d0009"
+      },
+      "quality.json": {
+        "bytes": 15898,
+        "sha256": "76aa31e5919e90904374897c18fd920cf3020c3f650f6cab4d3009e5ae3010f4"
+      }
+    },
+    "staging_release": 421262457
   }
 }
