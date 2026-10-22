@@ -9,6 +9,15 @@ size_categories:
   - 100K<n<1M
 task_categories:
   - tabular-classification
+configs:
+  - config_name: default
+    data_files:
+      - split: train
+        path: data/public-train.csv
+      - split: eval
+        path: data/public-eval.csv
+      - split: holdout
+        path: data/private-holdout.csv
 tags:
   - economics
   - prices
@@ -16,7 +25,9 @@ tags:
   - forecasting
 ---
 
-# Malaysian retail price increases, week ahead
+# Malaysian retail price increases, week ahead ({RELEASE_TAG})
+
+**Status: {STATUS_LINE}**
 
 For an item-premise pair in Malaysia's PriceCatcher daily price panel, with at least three price
 observations in ISO week W, predict whether the pair's **weekly modal price rises in week W+1**.
@@ -26,6 +37,8 @@ Derived from [PriceCatcher](https://data.gov.my/data-catalogue/pricecatcher) (KP
 official Malaysian government product.
 
 ## Contents
+
+**Rows:** 832,729 across the three splits.
 
 | Split | Rows | Positive rate | Target weeks |
 | --- | ---: | ---: | --- |

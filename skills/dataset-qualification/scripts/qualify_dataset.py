@@ -217,7 +217,7 @@ def check_leakage(dataset: Path, quality: dict, report: Report,
                else f"shipped columns that determine or postdate the label: {leaked_columns}",
                {"shipped_forbidden": leaked_columns})
 
-    offenders, high_card, missing = [], [], []
+    offenders, high_card, missing, unscorable = [], [], [], []
     for name, (fieldnames, columns) in columns_by_split.items():
         if not columns or not columns.get(target):
             missing.append(name)
@@ -226,12 +226,28 @@ def check_leakage(dataset: Path, quality: dict, report: Report,
         for column in fieldnames:
             if column == target:
                 continue
-            finding = column_leak_score(columns[column], labels)
+            try:
+                finding = column_leak_score(columns[column], labels)
+            except (ValueError, TypeError, IndexError) as exc:
+                # A malformed split (duplicate header, ragged row, everything blank) used to abort
+                # the whole run with a bare ValueError. Name the column and the split instead, so
+                # the fix is obvious and the report stays machine-readable.
+                unscorable.append({"column": column, "split": name,
+                                   "reason": f"{type(exc).__name__}: {exc}"})
+                continue
             if finding["determines_label"]:
                 offenders.append({**finding, "column": column, "split": name})
             elif finding["kind"] == "high_cardinality":
                 high_card.append({"column": column, "split": name,
                                   "levels": finding["levels"]})
+    report.add("leakage.every_column_could_be_scored",
+               not unscorable,
+               "every column was scored for leakage" if not unscorable
+               else "columns that could not be scored: "
+                    + ", ".join(f"{item['column']} ({item['split']}): {item['reason']}"
+                                for item in unscorable[:6]),
+               {"unscorable": unscorable})
+
     report.add("leakage.no_single_column_determines_the_target",
                not offenders,
                "no shipped column separates the classes on its own" if not offenders
