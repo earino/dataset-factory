@@ -61,6 +61,7 @@ DEFAULTS = {
     "catch_up_window_minutes": 120,
     "research_job_ids": [],
     "research_sources": ["scout-research"],
+    "unpriced_research_policy": "hold",
     "notes": "",
 }
 
@@ -123,7 +124,7 @@ def _rows(query, params=(), db=None):
         ) from None
 
 
-def usage_by_kind(config, start, end, *, require_research_pricing=True):
+def usage_by_kind(config, start, end):
     """Measured usage in [start, end), split by session kind and by task class."""
     epoch_start, epoch_end = start.timestamp(), end.timestamp()
     rows = _rows(
@@ -160,10 +161,6 @@ def usage_by_kind(config, start, end, *, require_research_pricing=True):
         )
         if in_research:
             kind = "research"
-            if (require_research_pricing and (calls or in_tok or out_tok)
-                    and str(cost_status or "unknown").strip().lower() in ("", "unknown")):
-                raise AccountingUnavailable(f"{STATE_DB}: research model calls have unknown "
-                                            "pricing (session_model_usage.cost_status)")
         elif task.lower() in AUXILIARY_TASKS:
             kind = "auxiliary"
         elif session_id.startswith("cron_"):
@@ -174,16 +171,20 @@ def usage_by_kind(config, start, end, *, require_research_pricing=True):
             kind = "unclassified"
         bucket = buckets.setdefault(
             kind, {"calls": 0, "input_tokens": 0, "output_tokens": 0, "cost_usd": 0.0,
-                   "cost_status": set()}
+                   "cost_status": set(), "pricing_available": True}
         )
         bucket["calls"] += calls or 0
         bucket["input_tokens"] += in_tok or 0
         bucket["output_tokens"] += out_tok or 0
         bucket["cost_usd"] += cost or 0.0
+        if ((calls or in_tok or out_tok)
+                and str(cost_status or "unknown").strip().lower() in ("", "unknown")):
+            bucket["pricing_available"] = False
         if cost_status:
             bucket["cost_status"].add(str(cost_status))
     for bucket in buckets.values():
-        bucket["cost_usd"] = round(bucket["cost_usd"], 6)
+        bucket["cost_usd"] = (round(bucket["cost_usd"], 6)
+                              if bucket["pricing_available"] else None)
         bucket["cost_status"] = sorted(bucket["cost_status"]) or ["unknown"]
     return buckets
 
@@ -329,6 +330,7 @@ def evaluate(config, moment=None, late_minutes=None):
             "sessions_over_token_cap": None,
             "session_cap_per_week": int(config.get("sessions_per_week", 3)),
             "accounting_available": False,
+            "pricing_available": False,
             "allowed": False,
             "reasons": [f"accounting unavailable: {exc}; research is held until repaired"],
         }
@@ -344,10 +346,22 @@ def _evaluate(config, moment, late_minutes):
     reserve = float(config.get("reserve_usd") or 0)
     stop_fraction = float(config.get("stop_fraction", 0.95))
     reasons = []
+    warnings = []
+    policy = config.get("unpriced_research_policy", "hold")
+    weekly_tokens = int(config.get("weekly_token_budget") or 0)
+    if policy not in ("hold", "require_token_budget"):
+        reasons.append("unpriced_research_policy is invalid; expected hold or require_token_budget")
 
     if not allowance:
         reasons.append("no allowance configured (allowance_usd is null) - refusing to wake "
                        "the model until the operator sets one")
+    elif research_cost is None:
+        if policy == "require_token_budget" and weekly_tokens > 0:
+            warnings.append("Research dollar spend and remaining allowance are unknown; "
+                            "admission uses the configured measured token ceiling")
+        else:
+            reasons.append("research pricing is unknown; admission requires priced usage or "
+                           "an operator-selected require_token_budget policy with a positive ceiling")
     else:
         used_fraction = research_cost / float(allowance)
         if used_fraction >= stop_fraction:
@@ -367,9 +381,7 @@ def _evaluate(config, moment, late_minutes):
     # The dollar figure is an estimate and reads 0.0000 with this provider, so it cannot bind.
     # Tokens are measured and are the real brake: a weekly token ceiling stops the routine when
     # the cadence outruns what the operator is willing to spend, whatever the cost column says.
-    weekly_tokens = int(config.get("weekly_token_budget") or 0)
-    week_usage = usage_by_kind(config, week_start, moment,
-                              require_research_pricing=False).get("research", {})
+    week_usage = usage_by_kind(config, week_start, moment).get("research", {})
     week_tokens = int(week_usage.get("input_tokens", 0)) + int(week_usage.get("output_tokens", 0))
     if weekly_tokens and week_tokens >= weekly_tokens:
         reasons.append(
@@ -409,7 +421,7 @@ def _evaluate(config, moment, late_minutes):
         "moment": moment.isoformat(),
         "period_start": start.isoformat(),
         "allowance_usd": allowance,
-        "research_cost_usd": round(research_cost, 6),
+        "research_cost_usd": round(research_cost, 6) if research_cost is not None else None,
         "usage": usage,
         "runs_last_7_days": used,
         "runs_weighted_last_7_days": weighted,
@@ -418,6 +430,8 @@ def _evaluate(config, moment, late_minutes):
         "sessions_over_token_cap": len(over_cap),
         "session_cap_per_week": cap,
         "accounting_available": True,
+        "pricing_available": research_cost is not None,
+        "warnings": warnings,
         "allowed": not reasons,
         "reasons": reasons,
     }
@@ -456,18 +470,20 @@ def resume_block(config, decision):
         lines.append("Research spend, tokens and session counts: UNKNOWN")
         lines.extend(decision["reasons"])
         return "\n".join(lines)
-    lines.append(
-        f"research spend so far this period: {decision['research_cost_usd']:.4f} USD "
-        f"(estimated by Hermes; no provider-reported actual exists)"
-    )
-    if allowance:
+    cost = decision['research_cost_usd']
+    lines.append("research dollar spend and remaining allowance: UNKNOWN" if cost is None else
+                 f"research spend so far this period: {cost:.4f} USD "
+                 "(estimated by Hermes; no provider-reported actual exists)")
+    lines.extend(decision.get("warnings", []))
+    if allowance and cost is not None:
         remaining = float(allowance) - decision["research_cost_usd"]
         reserve = float(config.get("reserve_usd") or 0)
         lines.append(f"remaining: {remaining:.4f} USD (reserve for the next session: "
                      f"{reserve:.2f} USD)")
     for kind, bucket in sorted(decision["usage"].items()):
+        cost_text = f"{bucket['cost_usd']:.4f} USD" if bucket['cost_usd'] is not None else "UNKNOWN USD"
         lines.append(
-            f"usage[{kind}]: {bucket['cost_usd']:.4f} USD, {bucket['calls']} calls, "
+            f"usage[{kind}]: {cost_text}, {bucket['calls']} calls, "
             f"{bucket['input_tokens']:,} in / {bucket['output_tokens']:,} out"
         )
     lines.append(f"sessions in the last 7 days: {decision['runs_last_7_days']}"
@@ -534,6 +550,10 @@ def digest(config, moment=None, root=None):
     if not decision["accounting_available"]:
         lines.append("Research spend, remaining allowance, tokens and session counts: UNKNOWN")
         lines.extend(decision["reasons"])
+    elif decision["research_cost_usd"] is None:
+        lines.append("Research dollar spend and remaining allowance: UNKNOWN")
+        lines.extend(decision.get("warnings", []))
+        lines.extend(decision["reasons"])
     elif allowance:
         used = decision["research_cost_usd"]
         lines.append(
@@ -568,7 +588,8 @@ def digest(config, moment=None, root=None):
         lines.append(f"Failed sessions: {len(failed)} - latest {failed[0]['run_id'][:12]} "
                      f"({failed[0]['error'] or 'no error text'})")
     for kind, bucket in sorted((decision["usage"] or {}).items()):
-        lines.append(f"  {kind}: {bucket['cost_usd']:.4f} USD, {bucket['calls']} calls")
+        cost_text = f"{bucket['cost_usd']:.4f} USD" if bucket['cost_usd'] is not None else "UNKNOWN USD"
+        lines.append(f"  {kind}: {cost_text}, {bucket['calls']} calls")
 
     if root:
         commits, total_commits, queue = completed_work(root, moment - timedelta(days=7))

@@ -636,6 +636,9 @@ def render_cost(snapshot, alarms, alarms_plain=()):
     admission = ("now" if decision.get('allowed') else
                  "after the current session releases" if only_lock else
                  "after the recorded hold reasons are resolved")
+    pricing_notice = ("<p>Dollar spend and remaining allowance: <b>unknown</b>. "
+                      + esc(" ".join(decision.get("warnings") or [])) + "</p>"
+                      if decision.get("pricing_available") is False else "")
 
     buckets = [("interactive", usage.get("interactive", {}), "var(--blue)"),
                ("research", usage.get("research", {}), "var(--mint)"),
@@ -653,6 +656,7 @@ def render_cost(snapshot, alarms, alarms_plain=()):
   <h1>{fmt(tokens)} tokens this week</h1>
   <p>of the weekly research ceiling used ({fmt(tokens)} of {fmt(ceiling)} tokens). The gate admits
   the next session {esc(admission)}.</p>
+  {pricing_notice}
   <div class="statusline {'ok' if decision.get('allowed') else ('ok' if only_lock else 'warn')}"><span class="dot" style="background:{'var(--mint)' if decision.get('allowed') or only_lock else 'var(--amber)'}"></span>
     <span><b>{'Gate open' if decision.get('allowed') else ('Session in flight' if only_lock else 'Gate closed')}</b> — {esc(humanize_seconds('; '.join(decision.get('reasons') or ['no blockers']))[:90])}</span>
     <time>{esc(snapshot['generated_at'][11:16])} UTC</time></div>

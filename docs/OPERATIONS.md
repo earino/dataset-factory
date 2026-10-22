@@ -768,10 +768,15 @@ tick after fixing the accounting source; do not create an empty replacement ledg
 or reset the allowance to bypass the hold.
 
 Usage counters must be nonnegative integers and cost finite and nonnegative.
-Research calls with absent/unknown pricing inside the allowance period also hold:
-Hermes stores unknown cost as `0.0`, which is not evidence of free usage. Known
-estimated zero remains valid; interactive unpriced calls do not consume or hold
-the research allowance. Weekly tokens still include every recorded research call,
+Hermes stores absent/unknown pricing as `0.0`, which is not evidence of free
+usage. The gate reports those dollar totals and remaining allowance as unknown,
+while retaining measured token/session counts. The default unpriced policy is
+`hold`. Eduardo explicitly selected `unpriced_research_policy: require_token_budget`
+for this repository: unpriced research can proceed only with a positive configured
+weekly token ceiling, and it is held when that ceiling is reached. The existing
+40,000,000-token ceiling is unchanged; no dollar price is inferred or backfilled.
+Known estimated zero remains valid; interactive unpriced calls do not consume or
+hold the research allowance. Missing/invalid token accounting always holds. Weekly tokens still include every recorded research call,
 including unpriced calls before the current allowance period. Recorded verification
 session exclusions remain unchanged.
 

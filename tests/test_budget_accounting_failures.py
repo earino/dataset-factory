@@ -126,7 +126,12 @@ class AccountingFailureTests(BudgetTestCase):
             with self.subTest(status=status):
                 make_state_db(self.state_db, [('research', 'chat', 1, 100, 10, 0.0,
                                                status, 'scout-research')])
-                self.assert_held_unknown()
+                decision = budget.evaluate(self.config(allowance_usd=30))
+                self.assertFalse(decision['allowed'])
+                self.assertTrue(decision['accounting_available'])
+                self.assertFalse(decision['pricing_available'])
+                self.assertIsNone(decision['research_cost_usd'])
+                self.assertEqual(110, decision['research_tokens_last_7_days'])
 
     def test_unknown_interactive_pricing_does_not_hold_research(self):
         make_state_db(self.state_db, [('interactive', 'chat', 1, 100, 10, 0.0,
@@ -179,3 +184,40 @@ class AccountingFailureTests(BudgetTestCase):
         overview = dashboard.ui.render_overview(data, [], [])
         self.assertIn('Usage or ceiling unknown', overview)
         self.assertNotIn('0.0% of ceiling', overview)
+
+    def unpriced_config(self, **overrides):
+        make_state_db(self.state_db, [('research', 'chat', 1, 100, 10, 0.0,
+                                       'unknown', 'scout-research')])
+        return self.config(allowance_usd=30, unpriced_research_policy='require_token_budget',
+                           **overrides)
+
+    def test_operator_selected_token_policy_preserves_measured_usage(self):
+        config = self.unpriced_config(weekly_token_budget=1000)
+        decision = budget.evaluate(config)
+        self.assertTrue(decision['allowed'], decision['reasons'])
+        self.assertEqual(110, decision['research_tokens_last_7_days'])
+        self.assertIsNone(decision['research_cost_usd'])
+        self.assertTrue(decision['warnings'])
+        for output in (budget.resume_block(config, decision), budget.digest(config)):
+            self.assertIn('UNKNOWN', output)
+            self.assertNotIn('0.0000', output)
+
+    def test_token_policy_requires_a_positive_ceiling(self):
+        for ceiling in (None, 0, -1):
+            with self.subTest(ceiling=ceiling):
+                self.assertFalse(budget.evaluate(self.unpriced_config(weekly_token_budget=ceiling))['allowed'])
+
+    def test_unpriced_calls_still_hit_the_token_ceiling(self):
+        decision = budget.evaluate(self.unpriced_config(weekly_token_budget=110))
+        self.assertFalse(decision['allowed'])
+        self.assertTrue(any('weekly budget' in reason for reason in decision['reasons']))
+
+    def test_token_policy_never_substitutes_for_missing_usage(self):
+        config = self.unpriced_config(weekly_token_budget=1000)
+        self.state_db.unlink()
+        self.assertFalse(budget.evaluate(config)['allowed'])
+
+    def test_unknown_policy_is_not_permission_to_ignore_pricing(self):
+        config = self.unpriced_config(weekly_token_budget=1000)
+        config['unpriced_research_policy'] = 'ignore'
+        self.assertFalse(budget.evaluate(config)['allowed'])
