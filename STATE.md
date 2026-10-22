@@ -5638,3 +5638,21 @@ Next action for the tick: the queue's construction work remains with the advance
 (abs-visitor-arrivals-direction packaging, then eutl-installation-net-short packaging per its
 staging release 420810883); ea-flood-alert-escalation enters the queue behind the five ready
 candidates as a measured class-A build (whole panel fits the coordinator; ~4.9 MB of fetches).
+
+## Engineering — scheduled-session admission (2026-10-22)
+
+Prepared on `hardening/session-admission`, not deployed. A gate subprocess could
+exit nonzero after printing allow; malformed wake directives could admit work;
+concurrent wrappers checked before either wrote the JSON marker; and failed agent
+processes returned scheduler success. The fix serializes gate-through-agent with
+a persistent OS mutex, requires a successful unambiguous gate decision, preserves
+the reporting marker, and returns truthful process outcomes. Local subprocess
+regressions exercise competing ticks and parent death using stubs only. Existing
+419 tests and qualification bytes are unchanged. Scout confirmed the JSON marker
+and allow/hold protocol must remain compatible and nonzero exits surface through
+the deployed scheduler. No live settings, shims, schedules, or worker state changed.
+
+Next: exact-head CI and combined integration verification; include this as a
+separate reviewable increment. The earlier five-PR rollout remains pending the
+operator's explicit revision of “do not merge.” Before any rollout, reconcile
+current research ownership and preserve fresh automatic skill-edit evidence.

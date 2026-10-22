@@ -693,3 +693,50 @@ C can never consume build time.
 
 The reason is arithmetic, not purism: 18 of 31 parked candidates had already been probed before the
 licence question was asked. A C costs the same as an A and returns nothing.
+
+### Atomic scheduled-session admission
+
+The repository wrapper now holds a nonblocking OS lock on
+`.factory/research-session.mutex` **before** evaluating the budget, until the agent
+has finished. Competing ticks exit quietly without starting a model. The mutex
+inode stays in place; do not delete or replace it to clear a busy session. A file
+existing is not evidence that a process holds the lock. Closing the last owning
+file descriptor releases it automatically, including after a crash.
+
+The separate `research-session.lock` JSON marker retains `session_id`, `pid`,
+`written_at`, and the invocation limits for the existing budget reader. It is
+written atomically and cleanup removes only the wrapper's own bytes. The wrapper
+passes its marker path and checkout's budget config explicitly to the gate.
+Standalone budget status remains advisory: it does not acquire admission, and
+manual `hermes chat` invocations do not participate in this mutex.
+
+Admission requires gate exit 0 and exactly one valid `researchBudget` decision
+with a boolean `allowed` and consistent reasons. Missing, malformed, duplicate,
+or contradictory decisions, subprocess errors and timeouts refuse model work.
+Allowances, weekly accounting, qualification, and the scientific briefs are
+unchanged. This does not make missing Hermes accounting records reliable: the
+budget reader's evidence-availability handling remains a separate review item.
+
+Exit status is now operational evidence: 0 means a successful session or an
+ordinary idle/held tick; 2 means admission/startup failed; 124 means the outer
+wall-clock timeout; an agent failure preserves its positive exit code (a signal
+becomes 128 plus its signal number). Hermes's scheduler marks nonzero exits as
+failed and includes stdout/stderr, so these failures will now alert instead of
+appearing completed. The session JSONL distinguishes holds from completed work.
+
+The agent starts in its own process group and inherits the mutex descriptor.
+The wrapper stops that group when the agent exits, times out, or the wrapper
+unwinds on an exception; it never targets the scheduler group or remote workers.
+A direct child retaining the inherited descriptor continues to exclude another
+wrapper if its parent is killed. This is POSIX process supervision, not a sandbox
+for intentionally detached descendants or a guarantee that every Hermes version
+retains arbitrary inherited descriptors. Verify the deployed runtime before
+claiming orphan protection beyond the tested local exec stub. A hard-killed
+wrapper cannot itself clean up descendants; investigate any surviving process
+rather than deleting the mutex or launching a replacement blindly.
+
+Deploy only in an idle research window: old wrappers do not use the mutex. Keep
+the existing cadence, invocation flags and budget limits. `--dry-run` and idle
+`--if-work` start no agent and write no JSON session marker; a dry run may create
+the persistent mutex file. Test subprocesses use local stubs, never live Hermes,
+paid inference, worker launches, or the production ledger.
