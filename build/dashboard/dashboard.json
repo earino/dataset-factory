@@ -1,5 +1,9 @@
 {
- "alarms": [],
+ "alarms": [
+  "CI on 8ea28ca concluded failure",
+  "Test suite is failing",
+  "check-candidate --all is failing"
+ ],
  "budget": {
   "config": {
    "allowance_usd": 30.0,
@@ -15,7 +19,7 @@
   "decision": {
    "allowance_usd": 30.0,
    "allowed": true,
-   "moment": "2026-10-22T09:06:00.409277+00:00",
+   "moment": "2026-10-22T09:50:01.700375+00:00",
    "period_start": "2026-10-01T00:00:00+00:00",
    "reasons": [],
    "research_cost_usd": 0.233495,
@@ -26,23 +30,23 @@
    "sessions_over_token_cap": 1,
    "usage": {
     "auxiliary": {
-     "calls": 625,
+     "calls": 634,
      "cost_status": [
       "unknown"
      ],
-     "cost_usd": 0.010965,
-     "input_tokens": 1179046,
-     "output_tokens": 643747
+     "cost_usd": 0.011357,
+     "input_tokens": 1184351,
+     "output_tokens": 643783
     },
     "interactive": {
-     "calls": 3067,
+     "calls": 3169,
      "cost_status": [
       "estimated",
       "unknown"
      ],
-     "cost_usd": 1.616714,
-     "input_tokens": 11999696,
-     "output_tokens": 1728603
+     "cost_usd": 1.896883,
+     "input_tokens": 12582220,
+     "output_tokens": 1764285
     },
     "research": {
      "calls": 2746,
@@ -80,8 +84,8 @@
    "dropped": 18,
    "investigating": 7,
    "parked": 24,
-   "published": 7,
-   "ready": 8
+   "published": 8,
+   "ready": 7
   },
   "errors": [],
   "live": [
@@ -3282,21 +3286,42 @@
     "id": "my-pricecatcher-weekly-increase",
     "jobs": [],
     "licence_summary": {
-     "compilation_spdx": null,
-     "source_spdx": null,
-     "status": null
+     "compilation_spdx": "CC0-1.0",
+     "source_spdx": "CC-BY-4.0",
+     "status": "CC BY 4.0, stated on the dataset page at https://data.gov.my/data-catalogue/pricecatcher (read 2026-10-21). Attribution required; redistribution and derivatives permitted."
     },
     "measurements": {
-     "access_probes_2026_10_21": "https://data.gov.my/ HTTP 200 (142,373 B); https://developer.data.gov.my/ HTTP 200 (48,218 B, documents Data Catalogue API, OpenDOSM API, Transport/GTFS, Weather APIs); https://api.data.gov.my/data-catalogue/?id=pricecatcher&limit=6 HTTP 404 'The data catalogue (pricecatcher) requested does not exist' (measured - bulk-only for this dataset); https://storage.data.gov.my/pricecatcher/pricecatcher_2026-09.csv HEAD 200 content-length 45,137,790 last-modified 2026-10-12 06:42:57 GMT; pricecatcher_2026-10.csv HEAD 200 content-length 20,407,078 last-modified 2026-10-21 12:10:13 GMT (current month, still filling); pricecatcher_2022-01.csv HEAD 200 content-length 65,359,198; pricecatcher_2026-09-01.csv HEAD 404 (filename pattern is YYYY-MM, not YYYY-MM-DD).",
-     "clustering_2026_10_21": "Positives cluster by item: 54-58 distinct items with >=1 increasing pair per transition; top-10 items carry 38-45% of positive pairs. The per-transition clustered event count (~55 items in subsample) and its interval go into the record at construction.",
-     "cross_check_plan": "Cross-check the built artifact against the publisher's own summary product at construction: item-level national modal prices from PriceCatcher vs the item's price series on KPDN's MyHarga/PriceCatcher consumer dashboard, and vs DOSM's published monthly average price tables, for a fixed item list.",
-     "extraction_cost_2026_10_21": "Measured from the coordinator: each month CSV is 45,137,790-65,359,198 B (measured for 2026-09 and 2022-01; 2026-08 measured at 50,122,871 B) and downloads in ~3.7-3.8 s (~12-13 MB/s). Full 58-edition window is therefore ~2.6-3.5 GB and ~58 HTTP requests (estimate derived from 3 measured file sizes; labelled estimate). Worker-side full extraction is trivially within budget; the coordinator probe was capped at 2 month files (95 MB, deleted after measurement, never committed).",
-     "known_event_fixtures_for_construction": "External, dated policy events to land as fixtures when the full archive is built: (1) diesel subsidy rationalisation of 2024-06-10 (pump diesel price rose from RM2.15 to RM3.30), which should show pass-through into transport-sensitive item prices in the weeks after; (2) Malaysia's retail sugar price step-changes after sugar subsidy removal (2022-11, refined white sugar items in the lookup: GULA PUTIH BERTAPIS KASAR/HALUS, item codes 1589/1590); (3) festive-season price-control schemes (Program Subsidi Harga chicken/egg ceilings with published scheme dates). Each fixture: named event, expected direction of the item's modal price around the date, publisher source for the event date. These are construction-time checks, not measured this session.",
-     "label_structure_2026_10_21": "Weekly modal-price transitions measured on a 10% premise subsample (premise_code % 10 == 0; 216 premises, 326 items, 179,707 pair-weeks from 375,665 rows), 7 transitions with both weeks >=6 covered days: increase rate 0.2217/0.1947/0.1823/0.1774/0.1809/0.1548/0.1875, decrease rate 0.1604/0.1950/0.2014/0.1621/0.1791/0.1862/0.1448, flat rate 0.61-0.67; 3,911-4,031 eligible pairs per transition in the subsample (~40,000 full panel, estimate). Both classes present in every transition. Persistence rule for this task: predicting 'no increase' scores 78-84% accuracy - the AUC-relevant base rate (~18%) is far from degenerate, and the task is a change forecast, not a level forecast, so the persistence baseline is beatable in principle; the triad (persistence, calendar-only, model) must be measured at construction before any number is quoted.",
-     "panel_shape_2026_10_21": "Measured on full 2026-08 (1,933,285 rows, 29 of 31 days, 2026-08-01..2026-08-30) and 2026-09 (1,742,320 rows, 28 of 30 days, 2026-09-01..2026-09-29) files: 2,158 distinct premises x 343 distinct items; 0 duplicate (date, premise_code, item_code) rows; schema date,premise_code,item_code,price; mean row length 25.9 B. Publisher states 'over a million price records per month' and 'collected and verified by groundstaff on a daily basis' (dataset page); a parliamentary written reply reported by The Star (2025-12-04) corroborates the panel: '2,170 premises and keeps tabs on 316 items across six categories, supported by more than 850 price monitoring officers'. Monthly files can have missing collection days (29/31 and 28/30 measured), which the >=3 observations/week threshold absorbs.",
-     "publication_schedule_2026_10_21": "Current-month file refreshed same-day (2026-10-21 rows present at 12:10 UTC refresh); a completed month's file last-modified 12 days after month end (2026-09 -> 2026-10-12). The portal's own data-request ticket log (https://data.gov.my/data-request, retrieved via search 2026-10-21) records a 2026-10-06 rejected ticket complaining the pricecatcher table had not updated in >1 week (data as of 24 Sep) - updates can stall for a week+, so construction must snapshot and hash the monthly files it uses and record their last-modified dates as the observed lag evidence in quality.json's timing block."
+     "artifact": "06c5cd6f8a74aef9d1fab048ab88f86e311385e68c0d25416b7ac5c0281a23cf",
+     "baseline_eval_auc": 0.752,
+     "gate_ok": true,
+     "gate_version": "1.4.0",
+     "references": {
+      "item_prior": 0.5354,
+      "momentum": 0.5001,
+      "n_obs": 0.4769,
+      "reversal": 0.4974
+     },
+     "splits": {
+      "eval": {
+       "positive_rate": 0.174672,
+       "positives": 48990,
+       "rows": 280468
+      },
+      "holdout": {
+       "positive_rate": 0.204299,
+       "positives": 31519,
+       "rows": 154279
+      },
+      "train": {
+       "positive_rate": 0.149376,
+       "positives": 59449,
+       "rows": 397982
+      }
+     },
+     "state": "Johor",
+     "unobserved_outcomes": 143978
     },
-    "next_action": "GO to construction (advancement session owns it; this was a discovery-only session). Construction steps: (1) enumerate all 58 monthly editions and snapshot+hash",
+    "next_action": "PUBLISHED 2026-10-22T09:47:44Z on GitHub and Hugging Face, both verified anonymously. Website page still pending: the site publisher fails with an unhelpful Typ",
     "packaged_at": null,
     "path": "candidates/my-pricecatcher-weekly-increase/record.json",
     "prediction_time": "End of week W (Sunday 23:59:59 MYT = UTC+8, i.e. 15:59:59 UTC). Features may use only price observations with date <= end of week W, from files whose data_as_of is within week W or earlier. The publisher's storage channel is measured to carry rows dated the same day (2026-10-21 rows present in the 2026-10 file, file last-modified 2026-10-21 12:10 UTC), so no publication lag is incurred for the feature instant; the label (week W+1 modal price) is computable from files available by day 2 of week W+2 at the latest (current-month file refreshes daily; a completed month's file was last modified 12 days after month end, 2026-09 file -> 2026-10-12, so construction snapshots and hashes monthly files at freeze time - see construction notes).",
@@ -3312,7 +3337,32 @@
      "auc": null,
      "reference": null
     },
-    "release_splits": {},
+    "release_splits": {
+     "eval": {
+      "distinct_events": 135,
+      "positive_rate": 0.174672,
+      "positives": 48990,
+      "rows": 280468,
+      "target_from": "2025-01-13",
+      "target_to": "2025-12-29"
+     },
+     "holdout": {
+      "distinct_events": 121,
+      "positive_rate": 0.204299,
+      "positives": 31519,
+      "rows": 154279,
+      "target_from": "2026-01-05",
+      "target_to": "2026-10-19"
+     },
+     "train": {
+      "distinct_events": 111,
+      "positive_rate": 0.149376,
+      "positives": 59449,
+      "rows": 397982,
+      "target_from": "2023-11-06",
+      "target_to": "2024-12-23"
+     }
+    },
     "review": "",
     "sources": [
      {
@@ -3327,7 +3377,7 @@
      }
     ],
     "split_strategy": "Temporal splits on ISO-week transitions, disjoint and ordered: candidate windows (to be fixed at construction from the full 58-month archive, ~250 weekly transitions 2022-01..2026-10): train on transitions up to 2024-12, eval on 2025 transitions, holdout on 2026 transitions (exact windows fixed at construction). Each weekly transition carries both classes: measured increase rate 15.5%-22.2% and decrease rate 14.5%-20.1% across all 7 measured transitions (Aug-Sep 2026, 10% premise subsample), so class balance holds window-to-window. Positives cluster by item: 54-58 distinct items show >=1 increasing pair per transition, and the top-10 items carry 38-45% of positive pairs - the clustered event count (item-level, not pair-level) must be reported per split and is ~55/week in the subsample (~170/week full panel, estimate). Cross-split identifier policy: item-premise pairs (and premises/items) recur across windows by design - the panel is longitudinal - so entity keys are NOT split-exclusive; the no-cross-split-entities check does not apply to pair panels where the same pair legitimately appears in many weekly transitions. This must be declared in quality.json (expected_duplicate_ids / documented repeats) at construction, mirroring the runner-contract handling of longitudinal panels.",
-    "status": "ready",
+    "status": "published",
     "target": "Binary: modal(price of item i at premise p over all observations in ISO week W+1) > modal(same over week W). Modal price = most frequent observed price that week (ties broken by higher price, deterministic). Pairs with <3 observations in either week are excluded from that transition's rows (exclusion is a function of data through week W+1, applied identically everywhere; it affects ~3% of subsample pairs). The label source columns are the W+1 price observations themselves: no price observation with date > end of week W may ship as a feature column; the shipped target is 0/1."
    },
    {
@@ -5193,8 +5243,8 @@
    "dropped": 18,
    "investigating": 7,
    "parked": 24,
-   "published": 7,
-   "ready": 8
+   "published": 8,
+   "ready": 7
   },
   "candidates": 64,
   "live": 22,
@@ -5221,10 +5271,10 @@
     "failure_streak": 0,
     "id": "e80975eddd4a",
     "last_error": "",
-    "last_run_at": "2026-10-22T09:00:03.755996+00:00",
+    "last_run_at": "2026-10-22T09:40:03.127964+00:00",
     "last_status": "ok",
     "name": "scout-secondary-cleanup-sweep",
-    "next_run_at": "2026-10-22T09:10:00+00:00",
+    "next_run_at": "2026-10-22T09:50:00+00:00",
     "no_agent": true,
     "schedule": "*/10 * * * *"
    },
@@ -5269,10 +5319,10 @@
     "failure_streak": 0,
     "id": "98b45d983280",
     "last_error": "",
-    "last_run_at": "2026-10-22T09:02:29.775209+00:00",
+    "last_run_at": "2026-10-22T09:47:17.700123+00:00",
     "last_status": "ok",
     "name": "scout-worker-watch",
-    "next_run_at": "2026-10-22T09:07:29.775209+00:00",
+    "next_run_at": "2026-10-22T09:52:17.700123+00:00",
     "no_agent": false,
     "schedule": "every 5m"
    },
@@ -5308,7 +5358,7 @@
     "last_run_at": "2026-10-22T08:51:02.936213+00:00",
     "last_status": "ok",
     "name": "scout-dashboard-refresh",
-    "next_run_at": "2026-10-22T09:50:00+00:00",
+    "next_run_at": "2026-10-22T10:50:00+00:00",
     "no_agent": true,
     "schedule": "50 * * * *"
    },
@@ -5361,33 +5411,33 @@
     "schedule": "once at 2026-10-20 16:40"
    }
   ],
-  "updated_at": "2026-10-22T09:02:29.776192+00:00"
+  "updated_at": "2026-10-22T09:50:00.774067+00:00"
  },
- "generated_at": "2026-10-22T09:05:59+00:00",
+ "generated_at": "2026-10-22T09:50:00+00:00",
  "health": {
   "checks": {
-   "ok": true,
-   "passing": 64
+   "ok": false,
+   "passing": 63
   },
   "ci": {
-   "conclusion": null,
-   "created_at": "2026-10-22T09:06:01Z",
-   "head_sha": "5b983be",
-   "status": "in_progress",
-   "url": "https://github.com/earino/dataset-factory/actions/runs/39752787654"
+   "conclusion": "failure",
+   "created_at": "2026-10-22T09:47:47Z",
+   "head_sha": "8ea28ca",
+   "status": "completed",
+   "url": "https://github.com/earino/dataset-factory/actions/runs/39758169802"
   },
   "coverage": {
    "ok": true,
    "summary": "live non-US: 15/22 (68%)"
   },
   "head": {
-   "at": "2026-10-22T09:05:57Z",
-   "sha": "5b983be",
-   "subject": "Publish tsb-railway-occurrence-casualty: both destinations public, site live, anonymously verified"
+   "at": "2026-10-22T09:47:44Z",
+   "sha": "8ea28ca",
+   "subject": "Publish my-pricecatcher-weekly-increase: Johor week-ahead price increases, GitHub + HF"
   },
   "tests": {
    "count": "406",
-   "ok": true
+   "ok": false
   }
  },
  "history": [
@@ -5822,13 +5872,21 @@
    "qualified": 0,
    "sessions_7d": 36,
    "tokens_7d": 7714795
+  },
+  {
+   "at": "2026-10-22T09:47:46+00:00",
+   "live": 7,
+   "published": 9,
+   "qualified": 0,
+   "sessions_7d": 36,
+   "tokens_7d": 7714795
   }
  ],
  "notices": [],
  "panels": {
   "budget": {
    "age_minutes": 0.2,
-   "as_of": "2026-10-22T09:05:59+00:00",
+   "as_of": "2026-10-22T09:50:00+00:00",
    "expected": null,
    "note": null,
    "source": "scripts/research-budget.py --json",
@@ -5838,7 +5896,7 @@
   },
   "candidates": {
    "age_minutes": 0.2,
-   "as_of": "2026-10-22T09:05:59+00:00",
+   "as_of": "2026-10-22T09:50:00+00:00",
    "expected": null,
    "note": null,
    "source": "candidates/*/record.json",
@@ -5848,13 +5906,13 @@
   },
   "releases": {
    "age_minutes": 0.2,
-   "as_of": "2026-10-22T09:05:59+00:00",
+   "as_of": "2026-10-22T09:50:00+00:00",
    "expected": null,
    "note": null,
    "source": "release/*/MANIFEST.json",
    "stale": false,
    "status": "ok",
-   "value": 8
+   "value": 9
   }
  },
  "releases": {
@@ -5925,6 +5983,21 @@
    {
     "assets": 5,
     "baseline_eval_auc": null,
+    "dataset": "my-pricecatcher-weekly-increase",
+    "persistence_auc": null,
+    "publication_note": "Published after explicit operator authorisation, both destinations verified 2026-10-22T09:46:46Z. Data files, tag and artifact version are unchanged by publication.",
+    "release_tag": "v2026.10",
+    "rows": 832729,
+    "verified": {
+     "github": true,
+     "huggingface": true
+    },
+    "verified_all": true,
+    "verified_at": "2026-10-22T09:46:46Z"
+   },
+   {
+    "assets": 5,
+    "baseline_eval_auc": null,
     "dataset": "nhs-ae-four-hour-decline",
     "persistence_auc": null,
     "publication_note": "Prepared for human review. Nothing here has been published.",
@@ -5990,7 +6063,7 @@
  "resources": {
   "ceiling_eur": 20.0,
   "errors": [],
-  "eur_per_release": 0.39,
+  "eur_per_release": 0.35,
   "histogram": {
    "bins": [
     {
@@ -7007,7 +7080,7 @@
   "jobs_total": 80,
   "lifetime_eur": 3.14,
   "live": {
-   "checked_at": "2026-10-22T09:06:08+00:00",
+   "checked_at": "2026-10-22T09:50:10+00:00",
    "error": null,
    "primary_ips": 0,
    "primary_ips_total": 0,
