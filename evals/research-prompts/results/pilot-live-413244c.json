@@ -826,7 +826,172 @@
       "elapsed_seconds": 104.885,
       "response": "DECISION\nhf-check-12 is incomplete and is not ready to tag. Digest-matched uploads do not satisfy the release contract; a passing loading check is required before Hub evidence is accepted. No tag is created, DESTINATIONS.json stays unverified, and the manifest cannot say published. The stale note (\"upload success means ready to tag\") is wrong and gets corrected.\n\nEVIDENCE\n- OPERATIONS.md: accepting Hub evidence requires a collected successful job, a passing loading check, exact manifest assets, and matching live commit/blob metadata. Here loading_check.ok=false with two expected splits missing, so the attempt fails regardless of upload digests.\n- \"Failed results never authorize tags or publication.\" --tag is last and only after --verify passes.\n- Incomplete verification preserves the previous receipt and writes a compact diagnostic to .factory/hub-verification/<candidate>/latest.json; the failed attempt overwrites nothing.\n- Session brief: never accept an artifact with a failed gate.\n\nUNCERTAINTY AND DISCRIMINATING CHECK\nAll declared assets uploaded with matching digests, yet the loading check at that commit found two expected splits missing \u2014 the gap is between what was declared/uploaded and what the loading contract expects, and I don't know which side is wrong. Discriminating check (offline, no bulk download): compare the two missing split names from the loading-check report against (a) release/<dataset>/MANIFEST.json, (b) the hf_publish job declaration's asset list, (c) the Hub commit/blob listing recorded in the report. Absent from (a)/(b) means the defect predates the worker; present there but not on the Hub means the upload skip logic or file naming is at fault.\n\nORDERED ACTIONS\n1. Collect is already done. Fetch the small reports from the staging release into .factory/hf-check-12/reports/ via its manifest.json (loading-check report, verification receipt, job logs). No bulk CSVs to this host.\n2. Run the discriminating diff; record which side omits the splits.\n3. Locate and correct the stale note; record the outcome in STATE.md and candidates/<id>/record.json: uploads digest-verified, loading_check.ok=false, two splits missing (name them), no tag, destination unverified. Commit, push, then check CI for that exact commit with the gh api head_sha query (gh run list --commit returns empty even when a run exists).\n4. Destroy the worker now (sh scripts/scout-factory worker destroy hf-check-12) and confirm the server and job-owned IP are gone; a finished failed job must not stay billable.\n5. If the cause is ordinary and confirmed (e.g., the job declaration or package omitted the two splits): fix it and relaunch under a NEW attempt ID \u2014 assembled bundles are immutable \u2014 as hf-check-13 within the allowance; release jobs may draw on the reserve. If package files changed: regenerate the manifest, re-run check-package.py, re-upload small files, worker job for bulk, hf-publish.py --verify, and --tag only after a passing report. If the small reports don't identify the cause, stop with the recorded next action; do not relaunch blind.\n\nSTOPPING CONDITION\nStop at: outcome recorded, worker destroyed, cause either fixed-and-relaunched under a new ID or explicitly unresolved. Never tag or mark a destination verified until a collected report shows loading_check.ok=true plus digest/commit evidence for that exact artifact. Never write the handled marker before the operator report.\n\nOPERATOR REPORT\n\"hf-check-12 (Hugging Face publish verification) finished. All declared assets uploaded and Hub-reported digests matched the manifest, but the loading check failed: loading_check.ok=false, two expected splits missing at the verified commit. A passing loading check is required, so hf-check-12 is recorded incomplete: no version tag, DESTINATIONS.json left unverified, previous receipt preserved, diagnostic saved to .factory/hub-verification/<candidate>/latest.json. The stale 'upload success means ready to tag' note was corrected. STATE.md and the candidate record are updated, committed, pushed; CI was checked for that exact commit. The worker was destroyed and removal confirmed. Next action: diff the two missing split names against MANIFEST.json and the job declaration; if the declaration or package omitted them, fix and relaunch as hf-check-13 (new attempt ID) within the allowance, then re-verify and tag only on a passing report. Handled marker written after this report.\"\n",
       "response_sha256": "5a2fb7f5b389768853d06d5f68f53cdac0cfd1864b2d44826c1047e90b29cf12"
+    },
+    {
+      "case": "watcher-loading",
+      "arm": "revised",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-19",
+      "session_id": "20261022_225058_2c602b",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "a1eddfe5c087c482d4443129e7ec48b8b3ad751b43d8ebdd7e8f896ad52f135a",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 1062,
+        "output_tokens": 6992,
+        "cache_read_tokens": 31616,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 39670,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 420,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 1010,
+          "output_tokens": 6572,
+          "cache_read_tokens": 31232,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 131.052,
+      "response": "DECISION\n\nOwnership is established - idle coordinator, documented handoff naming hf-check-12, no unrelated edits - so I handle only this job and its candidate. Verdict: the transfer succeeded (all digests match) but Hub verification failed (loading_check.ok=false, two expected splits missing), so the release stays incomplete and untagged. The stale note is wrong and is not followed: tagging is last, only after verification passes; a failed loading check never authorizes a tag or publication.\n\nSUPPORTING EVIDENCE\n\n- Per-asset digests match the manifest, but the loading check failed at the pinned revision: the documented incomplete-evidence case, not success. A job can upload every file correctly and still fail the verification written beside it; I read the specific check field, not the overall job status.\n- Failed results never authorize tags or publication; receipts cannot be upgraded by editing JSON; the Hub destination stays unverified in DESTINATIONS.json.\n- The worker is alive and billable (powered-off servers still bill); deletion is part of finishing the job and is not gated on the candidate's next decision.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\n\nThe cause is unknown. Unconfirmed hypotheses from known failure modes: assets uploaded under bare names while the manifest and loader expect manifest names; the card's configs/data_files disagreeing with the manifest's split names; or a loading-check defect at that revision. Cheapest discriminator, recorded for advancement rather than run here: a metadata-only listing of Hub files at the pinned revision, diffed against MANIFEST.json names and the card's configs - no bulk download, no new worker needed to plan it.\n\nORDERED ACTIONS AND STOPPING CONDITION\n\n1. Confirm collection is complete and durable; preserve the report and the compact diagnostic (.factory/hub-verification/<candidate>/latest.json); map staging assets through the manifest. No bulk CSVs on the coordinator.\n2. Record as separate facts in the candidate record and STATE.md: digests matched on upload; loading_check.ok=false with two splits missing; Hub destination unverified; release incomplete; no tag. Leave existing destination receipts untouched - failed verification must not rewrite them.\n3. Destroy the owned worker through the existing lifecycle (worker destroy hf-check-12) and confirm by provider read-back that the server and its job-owned primary IP are gone.\n4. Run the relevant record checks, inspect the diff, commit only this job's changes, push, and check CI for that exact commit via the documented gh api query (not gh run list); report pending or failed CI explicitly.\n5. Write .factory/hf-check-12/handled with the commit, evidence path and remaining blocker, and hand the repair to advancement with a fresh verify-only attempt ID and the proposed change.\n\nStop after step 5 - or leave the marker unwritten if collection, ownership or recording is unresolved. Never tag, publish, rewrite receipts, or launch repairs from this watcher.\n\nOPERATOR MESSAGE\n\n\"hf-check-12: the Hugging Face transfer finished - every asset digest matches the manifest - but the loading check failed (ok=false, two expected splits missing). The Hub destination is unverified, the release remains incomplete, and no tag was created; the note claiming upload success permits tagging was wrong and is countermanded in the record. The owned worker was destroyed; provider read-back confirms no server or job IP remains. Evidence: the collected report directory and .factory/hub-verification/<candidate>/latest.json; records committed as <sha>, CI for that commit: <status/pending>. Next action, owned by advancement: metadata-only diff of Hub file names and card configs against the manifest at the pinned revision, then a fresh verify-only attempt.\"\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "01f827ec2f2745800b81a723154f88fd86b7fc9c4694399ca2c95f79b30d30a8"
+    },
+    {
+      "case": "watcher-loading",
+      "arm": "revised",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-20",
+      "session_id": "20261022_225313_c08ea9",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "a1eddfe5c087c482d4443129e7ec48b8b3ad751b43d8ebdd7e8f896ad52f135a",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 33096,
+        "output_tokens": 1420,
+        "cache_read_tokens": 512,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 35028,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 260,
+          "output_tokens": 14,
+          "cache_read_tokens": 256,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 32836,
+          "output_tokens": 1406,
+          "cache_read_tokens": 256,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 21.431,
+      "response": "Decision: treat hf-check-12 as a **successful transfer with a failed loading check**. The release stays incomplete. Do not tag, do not publish, do not regenerate or rewrite the verification receipt, and ignore the stale note \u2014 an upload digest match proves integrity, not usability, and the documented cycle requires loading evidence before any tag.\n\nSupporting evidence:\n- Assets uploaded with matching digests (transfer-side evidence only).\n- Collected report: `loading_check.ok=false`, two expected splits missing.\n- Worker still alive \u2014 billable and must be deleted regardless of the outcome.\n- Coordinator idle, handoff names hf-check-12, no unrelated edits \u2014 so ownership is established for this job and candidate only.\n\nUncertainty and next discriminating check: the report does not say whether the two splits are absent from the uploaded assets or only from the card's `configs`/`data_files` while the manifest lists them. Cheapest discriminating check: compare the manifest's split names and row counts against the card the Hub is serving at the pinned revision, and against the release's asset names. If the files exist and only the card disagrees, the defect is document generation \u2014 a `verify_only` rerun with a fresh attempt ID suffices. If the files are absent or misnamed, it is a transfer defect and the manifest/release must be re-checked. Do not guess which; record both possibilities as open until the comparison is run.\n\nOrdered actions:\n1. Confirm ownership in the ledger and working tree; handle only hf-check-12.\n2. Collect the job if not already collected; fetch only the bounded report and map staging assets through the manifest. No bulk CSVs on the coordinator.\n3. Read overall status and each check individually: GitHub digests, Hub commit/blob digests, then loading. Record transfer success and loading failure as separate findings.\n4. Record the candidate: release incomplete, HF destination unverified, artifact version and evidence paths; leave `MANIFEST.json`, tags, digests and the existing receipt untouched.\n5. Destroy the worker; read back the server and remaining job-owned IPs to confirm deletion.\n6. Update the candidate record and `STATE.md` with job ID, artifact version, evidence path, split names, outcome, cleanup evidence, and next action. Run relevant checks, inspect the diff, commit only this job's changes, push, and query CI for that exact commit; state pending or failed explicitly.\n7. Hand the repair to advancement with a fresh attempt ID and the proposed change; do not launch a repair from this watcher.\n8. Write `.factory/hf-check-12/handled` only after the durable record and handoff exist, with a one-line summary naming the commit and remaining blocker.\n\nStopping condition: stop once cleanup is confirmed by provider read-back, the record is committed with CI status noted, and the handoff names the next check and owner. If collection, ownership or recording is unresolved, leave the event unhandled and defer mutations; independent expiry cleanup continues.\n\nOperator message:\n\"hf-check-12: all assets uploaded and digests match, but the Hub loading check failed \u2014 two expected splits are missing from what is served. Worker deleted (provider read-back confirmed). Release remains private and incomplete; no tag or publication. Documenting the failure separately from the transfer success; advancement owns the next attempt, which first determines whether the splits are missing from the assets or only from the card's generated split block. Stale 'upload success = ready to tag' note is wrong and not acted on.\"\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "0b610361a6fdf8eacef27d3137c905f5ed2fe8c412395eedf667fd28949ea901"
+    },
+    {
+      "case": "watcher-loading",
+      "arm": "baseline",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-21",
+      "session_id": "20261022_225339_85fd48",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "d288cd9bb01138e21ed7d254b9ecbe840f67c7dd165ca226932f5c0806b8770b",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 20116,
+        "output_tokens": 1699,
+        "cache_read_tokens": 384,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 22199,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 58,
+          "output_tokens": 12,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 20058,
+          "output_tokens": 1687,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 24.434,
+      "response": "**Decision.** Treat hf-check-12 as failed/incomplete for acceptance. Do not tag, do not write a `published` destination, do not accept the artifact. Upload success with matching digests is not the acceptance contract: verification requires the collected successful job, a passing loading check, exact manifest assets, and matching live commit/blob metadata. `loading_check.ok=false` alone fails it, and two missing splits make the release an incomplete artifact. The stale note (\"upload success means ready to tag\") is wrong and should be marked superseded, not followed.\n\n**Supporting evidence.** Digest match proves bytes arrived; it says nothing about whether the release is the complete, loadable dataset. Two expected splits are absent, so the manifest's asset set and what the Hub commit actually holds disagree \u2014 the package cannot be checked as complete. Per OPERATIONS, an incomplete/failed verification writes a diagnostic under `.factory/hub-verification/<candidate>/latest.json`, preserves the previous receipt, exits 2, and leaves `DESTINATIONS` unverified. Failed or stale reports \"cannot be upgraded by editing JSON,\" so no edit to the report makes this taggable. Tagging is last and an existing differing tag is a refusal, so a premature tag would be the irreversible mistake.\n\n**Uncertainty and next discriminating check.** The cause of the two missing splits is not established from the supplied evidence: an upload omission, a manifest that lists splits never produced, and a loader contract expecting different paths all look identical at this level. Discriminating check: diff `MANIFEST.json`'s asset names, sizes and SHA-256 against (a) the staging/public release asset list and (b) the hub commit tree the check pinned, and print the loader's expected split list. If the files exist in the manifest but not at the commit \u2192 upload/fetch gap. If they were never built \u2192 construction/package gap, and the candidate goes back a stage rather than being re-verified.\n\n**Ordered actions and stopping condition.**\n1. Confirm collection: `sh scripts/scout-factory worker collect hf-check-12`.\n2. Read the release `manifest.json` and copy only small reports into `.factory/hf-check-12/reports/` \u2014 no bulk CSV assets to this host.\n3. Treat the result as failed: record `loading_check.ok=false`, the two absent splits by name, and \"not taggable\" in `STATE.md` and the candidate's `record.json`; annotate the stale note as superseded.\n4. Commit and push, then check CI for that exact SHA with `gh api \".../actions/runs?head_sha=$(git rev-parse HEAD)\"`; report pending/failed honestly.\n5. Destroy the still-living worker: `sh scripts/scout-factory worker destroy hf-check-12`, and confirm the server and job IP are gone.\n6. Run the diff above, fix the ordinary cause, and prepare a corrected attempt under a **new job ID** (copy the declaration; use `verify_only: true` if only re-reading Hub). Re-uploading is safe \u2014 per-file uploads skip files already at the manifest digest. If the fix is a manifest/licence/loader change, regenerate the manifest and re-run `check-package.py`.\n7. Only then write `.factory/hf-check-12/handled` with the one-line summary \u2014 last, after reporting.\n\nStopping condition: stop short of `--tag` and any `published`/verified destination until a collected job passes the loading check with exact manifest assets at an exact commit; if the missing splits trace to unpublished source data or an unreadable licence, stop and record it for the operator.\n\n**Operator report.** hf-check-12 finished as a failed verification, not a releasable one. All assets uploaded with digests matching the manifest, but the loading check failed (`ok=false`) and two expected splits are missing from the release, so the artifact is incomplete and unloadable as declared. Nothing was tagged; the destination stays unverified and the release remains private. I recorded the failure and the missing splits in `STATE.md` and the candidate record, marked the \"upload success = ready to tag\" note as superseded, committed and checked CI for that commit, and destroyed the worker so it stopped billing. Next: I am diffing the manifest against the pinned commit's tree to place the gap \u2014 upload omission versus a split that was never built \u2014 then relaunching a corrected attempt under a new job ID; tagging stays blocked until that attempt passes.\n",
+      "response_sha256": "0233fe0e93ba74f28e925e1f13de4380be9ef313f041a995b024428d6029d899"
     }
   ],
-  "updated_at": "2026-10-22T22:52:59Z"
+  "updated_at": "2026-10-22T22:54:08Z"
 }
