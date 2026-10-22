@@ -5897,3 +5897,25 @@ Next: Scout verifies the fixture fix against its isolated live-tree copy, then
 exact-commit CI, merge/fast-forward and one fresh dashboard publication/readback.
 Record the next ordinary research session separately; no worker launch or data
 publication is authorized by these rollout checks.
+
+### Hardening rollout verified — 2026-10-22
+
+PR #9's fixture repair is merged and deployed at `8046b1b77ff0259e95675eb8ecaa78f657730404`;
+exact-main CI passed. Scout's isolated copy of the populated host passes all 572
+tests in 12.735s with no skips, preserving every assertion, historical job and
+release record. Dashboard commit `7a799aa1c1b6096008e1921df5148381d7da68ce` has a
+successful Pages run; independent anonymous JSON/HTML readback confirms source
+8046b1b, 572 tests passing, CI success, no alarms, and all eleven release records
+matching the verified build. See docs/HARDENING-DEPLOYMENT.md for exact links,
+runtime audit/restart evidence, unchanged qualification hash and preserved limits.
+
+Research and discovery schedules are restored; cleanup/watch remained enabled.
+Automatic background review and curator remain held, including auxiliary automatic
+memory edits, pending a reviewed learning workflow. Manual recordkeeping continues.
+The ordinary discovery execution `ddf1eea4eb4d4c6facb8e5b17b64525c` started once at
+20:02:53Z after maintenance; session `20261022_200258_ef9347` is real and running.
+Next: record this session's eventual outcome/usage and inspect its normal close-out;
+do not infer a completed research result from successful admission. The next research
+tick is 22:00Z, discovery 00:00Z. No added worker probe, allowance increase, dataset
+publication or tag movement was part of the rollout. Remaining infrastructure work
+is listed in the deployment report; PR #5 remains unapplied evidence.
