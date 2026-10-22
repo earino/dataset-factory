@@ -3,9 +3,10 @@
 The client is injected so refusal paths can be tested without credentials or network.
 """
 import hashlib
+import json
 import re
 from collections.abc import Mapping
-from pathlib import PurePosixPath
+from pathlib import PurePosixPath, Path
 
 SMALL_LIMIT = 256 * 1024
 TOTAL_SMALL_LIMIT = 2 * 1024 * 1024
@@ -28,7 +29,7 @@ def refs(api, repo_id):
     return main, tags
 
 
-def verify_revision(api, repo_id, expected, revision, read_small):
+def verify_revision(api, repo_id, expected, revision, read_small, worker_receipt=None):
     """LFS SHA-256 or bounded small-file bytes; size-only evidence never passes.
 
     read_small(path, commit, limit) must return at most limit bytes. CSVs and other bulk
@@ -42,6 +43,9 @@ def verify_revision(api, repo_id, expected, revision, read_small):
         raise HubIntegrityError('Hub metadata has no full commit identity')
     if re.fullmatch(r'(?:[0-9a-f]{40}|[0-9a-f]{64})', revision) and revision != commit:
         raise HubIntegrityError('Hub metadata identifies a different commit')
+    if worker_receipt is not None and (worker_receipt.get('repo') != repo_id
+            or worker_receipt.get('commit') != commit or worker_receipt.get('ok') is not True):
+        raise HubIntegrityError('worker evidence identifies a different repository or commit')
     siblings = {s.rfilename: s for s in (info.siblings or [])}
     present, missing, mismatched, unverified = [], [], [], []
     small_total = 0
@@ -62,6 +66,15 @@ def verify_revision(api, repo_id, expected, revision, read_small):
         lfs_digest = value(value(sibling, 'lfs') or {}, 'sha256')
         if lfs_digest:
             actual = lfs_digest
+        elif worker_receipt is not None:
+            evidence = worker_receipt.get('files', {}).get(path, {})
+            blob_id = value(sibling, 'blob_id')
+            if (not isinstance(blob_id, str) or not re.fullmatch(r'[0-9a-f]{40}', blob_id)
+                    or evidence.get('blob_id') != blob_id or evidence.get('bytes') != size
+                    or evidence.get('sha256') != digest):
+                mismatched.append({'path': path, 'reason': 'worker evidence differs from pinned Hub blob'})
+                continue
+            actual = evidence['sha256']
         else:
             if (PurePosixPath(path).suffix.lower() not in ('.json', '.md', '.txt')
                     or size > SMALL_LIMIT or small_total + size > TOTAL_SMALL_LIMIT):
@@ -77,7 +90,8 @@ def verify_revision(api, repo_id, expected, revision, read_small):
             mismatched.append({'path': path, 'reason': 'SHA-256 differs'})
         else:
             present.append(path)
-    return {'ok': not missing and not mismatched and not unverified,
+    status = 'failed' if missing or mismatched else ('incomplete' if unverified else 'verified')
+    return {'ok': status == 'verified', 'status': status,
             'commit': commit, 'repo_private': info.private,
             'digest_verified': present,
             'files': {'present': present, 'missing': missing, 'size_mismatch': mismatched,
@@ -103,3 +117,37 @@ def tag_verified_commit(api, repo_id, tag, verification):
         raise HubIntegrityError('tag/main changed during tagging; preserved all tags, inspect remote refs')
     return {'tagged': tag, 'tag_created': created, 'tag_commit': commit,
             'main_commit': after_main, 'tag_matches_main': True}
+
+
+def load_worker_receipt(root, job_id, repo_id, expected):
+    """Accept only a collected successful worker result whose declared assets match this release.
+
+    The existing coordinator job ledger/collection mechanism supplies provenance; arbitrary
+    supplied JSON reports are not accepted as authority. Remote commit/blob identities are
+    independently compared by verify_revision before this evidence can count.
+    """
+    if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]*', job_id or ''):
+        raise HubIntegrityError('invalid worker job identifier')
+    root = Path(root).resolve()
+    path = root / 'jobs' / (job_id + '.json')
+    if path.is_symlink() or path.parent.is_symlink() or path.stat().st_size > 1024 * 1024:
+        raise HubIntegrityError('worker ledger record is unsafe or oversized')
+    record = json.loads(path.read_text())
+    report = record.get('result') or {}
+    job = record.get('job') or {}
+    spec = job.get('hf_publish') or {}
+    if (record.get('status') not in ('collected', 'deleted') or not record.get('collected_at')
+            or job.get('id') != job_id or report.get('job_id') != job_id
+            or report.get('status') != 'succeeded' or report.get('uploaded') is not True
+            or spec.get('repo') != repo_id or (report.get('hf_loading') or {}).get('ok') is not True
+            or (report.get('hf_publish') or {}).get('failures')):
+        raise HubIntegrityError('require a collected successful publishing job with a passing loading check')
+    assets = spec.get('assets') or []
+    declared = {a['target']: (a['size'], a['sha256']) for a in assets}
+    if len(declared) != len(assets) or declared != expected:
+        raise HubIntegrityError('worker job assets differ from this release manifest')
+    receipt = report.get('hf_verification') or {}
+    if (receipt.get('schema_version') != 1 or receipt.get('ok') is not True
+            or receipt.get('repo') != repo_id or set(receipt.get('files') or {}) != set(expected)):
+        raise HubIntegrityError('worker job has no complete pinned verification receipt; preserve legacy reports')
+    return receipt

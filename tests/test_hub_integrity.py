@@ -151,6 +151,7 @@ class HubIntegrityTests(unittest.TestCase):
                 patch.object(module, 'reexec_in_venv'), \
                 patch.object(module, 'load_token', return_value='private-test-token'), \
                 patch.object(module, 'small_reader', return_value=Mock()), \
+                patch.object(module, 'record_attempt'), \
                 patch.object(module, 'record_destination') as record, redirect_stdout(io.StringIO()) as output:
             self.assertEqual(1, module.main(['--tag', '--verify', '--candidate', 'example']))
         self.assertEqual([], api.created)
@@ -166,3 +167,169 @@ class HubIntegrityTests(unittest.TestCase):
         self.assertIsNone(redirected.get_header('Authorization'))
         with self.assertRaises(HubIntegrityError):
             module._SafeHubRedirect().redirect_request(request, None, 302, 'redirect', {}, 'http://cdn.example/file')
+
+
+class WorkerEvidenceTests(unittest.TestCase):
+    def receipt(self):
+        return {'schema_version': 1, 'ok': True, 'repo': 'owner/data', 'commit': SHA,
+                'files': {'data.csv': {'bytes': len(DATA), 'sha256': DIGEST, 'blob_id': 'c' * 40}}}
+
+    def test_plain_bulk_verified_by_worker_and_remote_blob_without_download(self):
+        api = FakeHub(lfs=False); api.sibling.rfilename = 'data.csv'; api.sibling.blob_id = 'c' * 40
+        result = verify_revision(api, 'owner/data', {'data.csv': (len(DATA), DIGEST)}, SHA,
+                                 Mock(side_effect=AssertionError('no coordinator bulk')), self.receipt())
+        self.assertTrue(result['ok'])
+
+    def test_stale_worker_commit_refused(self):
+        receipt = self.receipt(); receipt['commit'] = OTHER
+        with self.assertRaises(HubIntegrityError):
+            verify_revision(FakeHub(), 'owner/data', {'data.csv': (len(DATA), DIGEST)}, SHA,
+                            Mock(), receipt)
+
+    def test_changed_remote_blob_invalidates_receipt(self):
+        api = FakeHub(lfs=False); api.sibling.rfilename = 'data.csv'; api.sibling.blob_id = 'd' * 40
+        result = verify_revision(api, 'owner/data', {'data.csv': (len(DATA), DIGEST)}, SHA,
+                                 Mock(side_effect=AssertionError('no coordinator bulk')), self.receipt())
+        self.assertFalse(result['ok'])
+
+    def ledger(self, root):
+        import json
+        record = {'status': 'deleted', 'collected_at': '2026-10-22T00:00:00Z',
+                  'job': {'id': 'publish-1', 'hf_publish': {'repo': 'owner/data', 'assets': [
+                      {'target': 'data.csv', 'size': len(DATA), 'sha256': DIGEST}]}},
+                  'result': {'job_id': 'publish-1', 'status': 'succeeded', 'uploaded': True,
+                             'hf_loading': {'ok': True}, 'hf_verification': self.receipt()}}
+        (root/'jobs').mkdir()
+        (root/'jobs/publish-1.json').write_text(json.dumps(record))
+        return record
+
+    def test_only_successful_collected_ledger_can_supply_evidence(self):
+        import json
+        import tempfile
+        from factory.hub_integrity import load_worker_receipt
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); record = self.ledger(root)
+            self.assertEqual(self.receipt(), load_worker_receipt(root, 'publish-1', 'owner/data',
+                                                               {'data.csv': (len(DATA), DIGEST)}))
+            for invalid in ('failed', 'running'):
+                record['result']['status'] = invalid
+                (root/'jobs/publish-1.json').write_text(json.dumps(record))
+                with self.assertRaises(HubIntegrityError):
+                    load_worker_receipt(root, 'publish-1', 'owner/data', {'data.csv': (len(DATA), DIGEST)})
+
+    def test_loading_failure_or_changed_manifest_cannot_be_blessed(self):
+        import json
+        import tempfile
+        from factory.hub_integrity import load_worker_receipt
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); record = self.ledger(root)
+            with self.assertRaises(HubIntegrityError):
+                load_worker_receipt(root, 'publish-1', 'owner/data', {'data.csv': (len(DATA), 'd'*64)})
+            record['result']['hf_loading']['ok'] = False
+            (root/'jobs/publish-1.json').write_text(json.dumps(record))
+            with self.assertRaises(HubIntegrityError):
+                load_worker_receipt(root, 'publish-1', 'owner/data', {'data.csv': (len(DATA), DIGEST)})
+
+    def test_worker_helper_hashes_blob_and_pins_download(self):
+        import os
+        import json
+        import tempfile
+        import subprocess
+        import sys
+        from workers.hf_publish import RECEIPT_HELPER
+        stub = '''\
+import hashlib
+from pathlib import Path
+from types import SimpleNamespace as N
+DATA = b'{"accepted":true}'
+SHA = 'a' * 40
+class HfApi:
+    def __init__(self, **kw): pass
+    def repo_info(self, *a, **kw):
+        blob = hashlib.sha1(('blob ' + str(len(DATA)) + chr(0)).encode() + DATA).hexdigest()
+        return N(sha=SHA, siblings=[N(rfilename='data.csv', size=len(DATA), lfs=None, blob_id=blob)])
+def hf_hub_download(**kw):
+    assert kw['revision'] == SHA
+    path = Path(kw['cache_dir'])/'file'; path.write_bytes(DATA); return str(path)
+'''
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root/'huggingface_hub.py').write_text(stub)
+            (root/'helper.py').write_text(RECEIPT_HELPER)
+            (root/'expected.json').write_text(json.dumps([{'target': 'data.csv', 'size': len(DATA), 'sha256': DIGEST}]))
+            result = subprocess.run([sys.executable, str(root/'helper.py'), 'owner/data', 'main',
+                                     str(root/'expected.json')], cwd=root, capture_output=True, text=True,
+                                    env={**os.environ, 'HF_WRITE_TOKEN': 'private-test-token'})
+            self.assertEqual(0, result.returncode, result.stderr)
+            receipt = json.loads(result.stdout)
+            self.assertTrue(receipt['ok'])
+            self.assertEqual(DIGEST, receipt['files']['data.csv']['sha256'])
+            self.assertNotIn('private-test-token', result.stdout)
+
+    def test_incomplete_cli_preserves_existing_receipt_and_records_separate_attempt(self):
+        import json
+        import tempfile
+        spec = importlib.util.spec_from_file_location('hf_partial_cli', ROOT/'scripts/hf-publish.py')
+        module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+        api = FakeHub(tags={'v1': SHA}, lfs=False); api.sibling.rfilename = 'data.csv'
+        sdk = NS(HfApi=lambda **kwargs: api, create_repo=Mock(), upload_folder=Mock())
+        manifest = NS(tag='v1', metadata={'assets': {'data.csv': {'bytes': len(DATA), 'sha256': DIGEST}}})
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); package = root/'release/example'; package.mkdir(parents=True)
+            prior = b'{"prior":"strong verified evidence"}\n'
+            (package/'DESTINATIONS.json').write_bytes(prior)
+            with patch.dict('sys.modules', {'huggingface_hub': sdk}), \
+                    patch.object(module, 'REPO_ROOT', root), \
+                    patch.object(module, 'resolve_candidate', return_value='example'), \
+                    patch.object(module, 'descriptor', return_value={'repository': 'https://github.com/owner/data'}), \
+                    patch.object(module, 'manifest', return_value=manifest), \
+                    patch.object(module, 'asset_target', side_effect=lambda m, name: name), \
+                    patch.object(module, 'reexec_in_venv'), \
+                    patch.object(module, 'load_token', return_value='private-test-token'), \
+                    patch.object(module, 'small_reader', return_value=Mock(side_effect=AssertionError('bulk download'))), \
+                    redirect_stdout(io.StringIO()):
+                self.assertEqual(2, module.main(['--verify', '--candidate', 'example']))
+            self.assertEqual(prior, (package/'DESTINATIONS.json').read_bytes())
+            attempt = json.loads((root/'.factory/hub-verification/example/latest.json').read_text())
+            self.assertEqual('incomplete', attempt['status'])
+            self.assertFalse(attempt['ok'])
+            self.assertEqual([], api.created)
+
+    def test_verify_only_worker_never_enters_upload_path(self):
+        import json
+        import tempfile
+        from workers import hf_publish as worker_hf
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); (root/'credentials.json').write_text(json.dumps({'hf_write_token':'test', 'token':'test'}))
+            job = {'timeout_minutes':10, 'hf_publish': {'repo':'owner/data', 'revision':'v1',
+                   'source_repo':'owner/data', 'verify_only':True,
+                   'assets':[{'target':'data.csv','size':len(DATA),'sha256':DIGEST}],
+                   'verify_loading':{'splits':{}}}}
+            calls = []
+            def command(args, **kwargs):
+                calls.append(args)
+                if '.hf-receipt.py' in ' '.join(map(str,args)):
+                    return NS(returncode=0,stdout=json.dumps(self.receipt()),stderr='')
+                return NS(returncode=0,stdout='{"ok":true}',stderr='')
+            source = Mock(); source.download.side_effect = AssertionError('verify-only fetched upload source')
+            with patch.object(worker_hf, 'ensure_client', return_value=Path('python')), \
+                    patch.object(worker_hf.subprocess, 'run', side_effect=command), \
+                    patch.object(worker_hf, 'already_published', side_effect=AssertionError('upload loop')), \
+                    patch.object(worker_hf.shutil, 'which', return_value=None):
+                report = worker_hf.hf_publish(root, job, {}, client=source)
+            self.assertEqual([], report['hf_publish']['uploads'])
+            self.assertEqual([], report['hf_publish']['failures'])
+            self.assertTrue(report['hf_verification']['ok'])
+            loading = next(c for c in calls if '.hf-verify.py' in ' '.join(map(str,c)))
+            self.assertEqual(SHA, loading[3])
+            source.download.assert_not_called()
+            self.assertFalse(any('.hf-upload-' in ' '.join(map(str,c)) for c in calls))
+
+    def test_verify_only_mode_rejects_string_boolean_before_provisioning(self):
+        from test_hf_publish_job import hf_job, POLICY
+        from factory import worker
+        from factory.common import FactoryError
+        job = hf_job(); job['hf_publish']['verify_only'] = 'true'
+        with patch.object(worker, 'credential_status', return_value={'ready':True}):
+            with self.assertRaisesRegex(FactoryError, 'verify_only must be a boolean'):
+                worker.validate(job, POLICY)

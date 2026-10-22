@@ -41,6 +41,66 @@ RATE_LIMIT_WAITS = 4
 # Written beside the job, never inside the job's input mounts.
 VENV = ".hf-venv"
 
+RECEIPT_HELPER = '''\
+"""Produce compact, commit-bound evidence on the worker; never on the coordinator."""
+import hashlib
+import json
+import os
+import re
+import sys
+import tempfile
+from pathlib import Path
+from huggingface_hub import HfApi, hf_hub_download
+
+repo, revision, expected_path = sys.argv[1:4]
+api = HfApi(token=os.environ['HF_WRITE_TOKEN'])
+items = json.loads(Path(expected_path).read_text())
+info = api.repo_info(repo, repo_type='dataset', revision=revision, files_metadata=True)
+commit = info.sha
+if not re.fullmatch(r'(?:[0-9a-f]{40}|[0-9a-f]{64})', commit or ''):
+    raise ValueError('missing full commit identity')
+remote = {s.rfilename: s for s in info.siblings or []}
+files, errors = {}, []
+for item in items:
+    target, size, wanted = item['target'], item['size'], item['sha256']
+    try:
+        if target in files:
+            raise ValueError('duplicate target')
+        sibling = remote[target]
+        if sibling.size != size:
+            raise ValueError('size mismatch')
+        lfs = getattr(sibling, 'lfs', None)
+        actual = (lfs.get('sha256') if isinstance(lfs, dict) else getattr(lfs, 'sha256', None))
+        blob = getattr(sibling, 'blob_id', None)
+        if not actual:
+            if not 0 <= size <= 8 * 1024 * 1024:
+                raise ValueError('plain blob exceeds existing worker verification limit')
+            with tempfile.TemporaryDirectory(prefix='hf-verify-') as cache:
+                path = hf_hub_download(repo_id=repo, filename=target, repo_type='dataset',
+                    revision=commit, token=os.environ['HF_WRITE_TOKEN'], cache_dir=cache)
+                sha = hashlib.sha256()
+                git = hashlib.sha1(('blob ' + str(size) + chr(0)).encode())
+                count = 0
+                with open(path, 'rb') as handle:
+                    for chunk in iter(lambda: handle.read(1 << 20), b''):
+                        count += len(chunk)
+                        if count > size:
+                            raise ValueError('download exceeds declared size')
+                        sha.update(chunk); git.update(chunk)
+                if count != size or git.hexdigest() != blob:
+                    raise ValueError('download differs from pinned Git blob identity')
+                actual = sha.hexdigest()
+        if actual != wanted:
+            raise ValueError('SHA-256 mismatch')
+        files[target] = {'bytes': size, 'sha256': actual, 'blob_id': blob}
+    except Exception as exc:
+        errors.append({'target': target, 'error': type(exc).__name__})
+result = {'schema_version': 1, 'repo': repo, 'commit': commit, 'files': files,
+          'ok': not errors and len(files) == len(items) and bool(items), 'errors': errors}
+print(json.dumps(result))
+raise SystemExit(0 if result['ok'] else 1)
+'''
+
 UPLOAD_HELPER = '''\
 """Push a batch of files to a Hugging Face dataset repo in ONE commit.
 
@@ -310,6 +370,8 @@ def already_published(base, index, repo, revision, target, sha256, size, python,
 def hf_publish(base, job, report, client=None, retrieve=None):
     """Download each named asset from the release, push it to Hugging Face, verify and delete."""
     spec = job["hf_publish"]
+    if "verify_only" in spec and type(spec["verify_only"]) is not bool:
+        raise UploadError("hf_publish.verify_only must be a boolean")
     credentials = json.loads((base / "credentials.json").read_text())
     hf_token = credentials.get("hf_write_token")
     if not hf_token:
@@ -321,9 +383,10 @@ def hf_publish(base, job, report, client=None, retrieve=None):
     uploads, skipped, failures = [], [], []
     deadline = time.monotonic() + int(job.get("timeout_minutes", 60)) * 60
     items = spec["assets"]
-    for start in range(0, len(items), BATCH_SIZE):
+    upload_items = [] if spec.get("verify_only") is True else items
+    for start in range(0, len(upload_items), BATCH_SIZE):
         prepared = []
-        for item in items[start:start + BATCH_SIZE]:
+        for item in upload_items[start:start + BATCH_SIZE]:
             target = item["target"]
             local = base / "cache" / item["dest"]
             local.parent.mkdir(parents=True, exist_ok=True)
@@ -415,8 +478,26 @@ def hf_publish(base, job, report, client=None, retrieve=None):
             plan_path.unlink()
 
     report["hf_publish"] = {"repo": spec["repo"], "revision": spec["revision"],
+                            "verify_only": spec.get("verify_only") is True,
                             "uploads": uploads, "skipped": skipped, "failures": failures,
                             "bytes": sum(entry["bytes"] for entry in uploads)}
+
+    if not failures:
+        receipt_plan = base / '.hf-receipt-plan.json'
+        receipt_plan.write_text(json.dumps(items))
+        helper = write_helper(base, '.hf-receipt.py', RECEIPT_HELPER)
+        remaining = max(1, int(deadline - time.monotonic()))
+        result = subprocess.run([str(python), str(helper), spec['repo'], spec['revision'],
+                                 str(receipt_plan)], capture_output=True, text=True,
+                                env=hub_env(hf_token), timeout=remaining)
+        try:
+            receipt = json.loads(result.stdout)
+        except (ValueError, TypeError):
+            receipt = {'ok': False, 'error': 'unreadable worker verification receipt'}
+        report['hf_verification'] = receipt
+        if result.returncode or receipt.get('ok') is not True:
+            failures.append({'target': 'verification-receipt',
+                             'error': 'pinned Hub content verification failed'})
 
     if spec.get("verify_loading") and not failures:
         expected_path = base / "expected.json"
@@ -426,8 +507,8 @@ def hf_publish(base, job, report, client=None, retrieve=None):
                    if shutil.which("uv") else
                    [str(python), "-m", "pip", "install", "--quiet", "datasets"])
         subprocess.run(install, capture_output=True, timeout=1800)
-        result = subprocess.run([str(python), str(helper), spec["repo"], spec["revision"],
-                                 str(expected_path)],
+        result = subprocess.run([str(python), str(helper), spec["repo"],
+                                 report["hf_verification"]["commit"], str(expected_path)],
                                 capture_output=True, text=True, env=hub_env(hf_token), timeout=3600)
         try:
             report["hf_loading"] = json.loads(result.stdout)

@@ -31,6 +31,7 @@ import json
 import re
 import os
 import sys
+import uuid
 from pathlib import Path
 from urllib.parse import urlsplit
 from urllib.request import Request, HTTPRedirectHandler, build_opener
@@ -54,8 +55,8 @@ BUILD = REPO_ROOT / ".factory" / "hf-package"
 
 
 sys.path.insert(0, str(REPO_ROOT))
-from factory.release_schema import as_release, load_release, record_destination, UNKNOWN
-from factory.hub_integrity import HubIntegrityError, refs, verify_revision, tag_verified_commit
+from factory.release_schema import as_release, load_release, record_destination, atomic_write, UNKNOWN
+from factory.hub_integrity import HubIntegrityError, refs, verify_revision, tag_verified_commit, load_worker_receipt
 
 def _config_names(splits):
     """The config names a split map is grouped by, through the rule the dataset page also uses.
@@ -403,6 +404,31 @@ def small_reader(repo_id, token, endpoint):
     return read
 
 
+def record_attempt(candidate, result):
+    """Keep failed/incomplete attempts distinct from the last complete release receipt."""
+    if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]*', candidate):
+        raise HubIntegrityError('invalid candidate identifier for verification attempt')
+    folder = REPO_ROOT / '.factory' / 'hub-verification' / candidate
+    for entry in (folder, *folder.parents):
+        if entry == REPO_ROOT:
+            break
+        if entry.is_symlink():
+            raise HubIntegrityError('verification attempt path contains a symlink')
+    folder.mkdir(parents=True, exist_ok=True)
+    # One current diagnostic per candidate, bounded by the release's metadata size. Historical
+    # successful evidence stays in DESTINATIONS; don't consume the compact-report allowance
+    # with an unbounded poll history.
+    path = folder / 'latest.json'
+    result['attempt_id'] = uuid.uuid4().hex
+    result['attempted_at'] = __import__('datetime').datetime.now(
+        __import__('datetime').timezone.utc).isoformat(timespec='seconds')
+    result['attempt_recorded'] = str(path.relative_to(REPO_ROOT))
+    encoded = json.dumps(result, indent=2) + '\n'
+    if len(encoded.encode()) > 256 * 1024:
+        raise HubIntegrityError('verification attempt exceeds compact-report limit')
+    atomic_write(path, encoded)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--candidate", default=None,
@@ -416,6 +442,7 @@ def main(argv=None):
     parser.add_argument("--upload-small", action="store_true", help="upload docs and small files")
     parser.add_argument("--tag", action="store_true", help="verify assets, then create an immutable version tag at the verified main commit")
     parser.add_argument("--verify", action="store_true", help="verify uploaded files and record evidence in DESTINATIONS.json (writes locally)")
+    parser.add_argument("--worker-job", help="collected successful hf_publish job supplying pinned bulk-digest evidence")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
 
@@ -480,8 +507,11 @@ def main(argv=None):
                 if target in expected:
                     raise HubIntegrityError('manifest maps more than one asset to a Hub path')
                 expected[target] = (entry["bytes"], entry["sha256"])
+            receipt = load_worker_receipt(REPO_ROOT, args.worker_job, repo_id, expected) if args.worker_job else None
             result.update(verify_revision(api, repo_id, expected, revision,
-                                          small_reader(repo_id, token, api.endpoint)))
+                                          small_reader(repo_id, token, api.endpoint), receipt))
+            if args.worker_job:
+                result["worker_job"] = args.worker_job
             if args.tag:
                 result.update(tag_verified_commit(api, repo_id, tag, result))
             _, current_tags = refs(api, repo_id)
@@ -502,20 +532,29 @@ def main(argv=None):
                     if result['release_revision_verified'] else None),
                 'files_verified': result['digest_verified'],
                 **{k: v for k, v in result['files'].items() if k != 'present'},
-                'loading_check': 'not checked by this command; require the worker loading report',
+                'loading_check': (f'verified by collected worker job {args.worker_job}' if args.worker_job
+                                  else 'not checked by this command; require the worker loading report'),
             }
+            if args.worker_job:
+                fields['worker_job'] = args.worker_job
             record_path = PACKAGE / 'DESTINATIONS.json'
-            record_destination(record_path, 'huggingface', fields, release_tag=tag)
-            result['recorded'] = str(record_path.relative_to(REPO_ROOT))
+            if result['release_revision_verified']:
+                record_destination(record_path, 'huggingface', fields, release_tag=tag)
+                result['recorded'] = str(record_path.relative_to(REPO_ROOT))
         except Exception as exc:
             # API/download exception strings can contain signed URLs or credential context.
             # Preserve the existing receipt on errors; emit only our own safe refusal messages.
             result['ok'] = False
+            if result.get('status') != 'incomplete':
+                result['status'] = 'failed'
             result['error'] = str(exc) if isinstance(exc, HubIntegrityError) else type(exc).__name__
             result['next_action'] = 'inspect the remote revision; preserve existing tags; verify again before tagging'
+        if result.get('status') == 'incomplete':
+            result['next_action'] = 'use --worker-job with a collected publishing job that produced a pinned verification receipt'
+        record_attempt(candidate, result)
 
     print(json.dumps(result, indent=2))
-    return 0 if result.get("ok", True) else 1
+    return 2 if result.get("status") == "incomplete" else (0 if result.get("ok", True) else 1)
 
 
 if __name__ == "__main__":

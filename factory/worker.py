@@ -70,6 +70,8 @@ def validate(job, config):
         if key not in job:
             continue
         spec = job[key]
+        if key == "hf_publish" and "verify_only" in spec and type(spec["verify_only"]) is not bool:
+            raise FactoryError("hf_publish.verify_only must be a boolean")
         missing = [name for name in required if name not in spec]
         if missing:
             raise FactoryError(f"{key} spec is missing {missing}")

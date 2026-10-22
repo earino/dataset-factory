@@ -5667,3 +5667,10 @@ without deletion. Verification records the exact commit and does not claim a mis
 exists. Negative tests use an injected fake Hub, with no credentials/network/worker spend.
 Next: review this PR stacked on release-schema, combine it with runtime hardening, and deploy
 only after the documented merge boundary is resolved. No remote tag or dataset byte changed.
+
+Scout's live review caught ordinary Git CSVs and receipt downgrading. The Hub increment now
+keeps incomplete attempts separate (exit 2), preserves the last complete receipt, and accepts
+only collected successful worker evidence bound to the exact commit/blob IDs and manifest
+assets. Workers emit that evidence and run loading against the same pinned commit. An explicit
+hf_publish.verify_only mode obtains it for an old release without Hub uploads; no worker was
+launched during development. Legacy reports remain historical, not fabricated into new evidence.
