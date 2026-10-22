@@ -13,7 +13,7 @@ from unittest.mock import patch
 from factory import candidates, worker
 from factory.cloud import Cloud
 from factory.common import FactoryError, read_json, write_json
-from workers import upload, executor
+from workers import executor, hf_publish, upload
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -366,6 +366,62 @@ class ArtifactTests(unittest.TestCase):
                 execute.assert_not_called()
                 stop.assert_called_once_with(base, "scout-job")
             self.assertIn("interrupted", read_json(base / "result.json")["failure"])
+
+
+
+class HfPublishVerificationTests(unittest.TestCase):
+    """The eutl-hf-001 failure: a plain git blob sized between the old re-hash threshold
+    (8 MiB) and the Hub's own LFS cutoff (~10 MB) uploaded fine but could never be
+    verified - not LFS, so the Hub reports no digest, and the check refused to re-hash
+    it. already_published must re-hash any plain blob the job could ship, so the
+    threshold has to sit above the Hub's LFS cutoff."""
+
+    def test_rehash_threshold_sits_above_the_hub_lfs_cutoff(self):
+        self.assertGreater(hf_publish.SMALL_BLOB_BYTES, 10 * 1024 * 1024)
+
+    def test_plain_blob_in_the_former_gap_is_rehashed_by_download(self):
+        size = 9421952  # the exact public-train.csv size that failed
+        calls = []
+
+        def fake_state(_base, _index, _repo, _revision, _target, _python, _token):
+            return {"found": True, "size": size, "lfs_sha256": None}
+
+        def fake_download(_base, _index, _repo, _revision, _target, _python, _token):
+            calls.append(_target)
+            return "c" * 64
+
+        with patch.object(hf_publish, "hub_state", side_effect=fake_state), \
+             patch.object(hf_publish, "hub_digest_by_download", side_effect=fake_download):
+            self.assertTrue(hf_publish.already_published(
+                Path("unused"), 0, "repo", "main", "data/public-train.csv",
+                "c" * 64, size, None, None))
+        self.assertEqual(calls, ["data/public-train.csv"])
+
+    def test_a_digest_mismatch_in_the_gap_is_refused(self):
+        size = 9421952
+
+        def fake_state(_base, _index, _repo, _revision, _target, _python, _token):
+            return {"found": True, "size": size, "lfs_sha256": None}
+
+        def fake_download(_base, _index, _repo, _revision, _target, _python, _token):
+            return "d" * 64
+
+        with patch.object(hf_publish, "hub_state", side_effect=fake_state), \
+             patch.object(hf_publish, "hub_digest_by_download", side_effect=fake_download):
+            self.assertFalse(hf_publish.already_published(
+                Path("unused"), 0, "repo", "main", "data/public-train.csv",
+                "c" * 64, size, None, None))
+
+    def test_lfs_objects_still_verify_by_reported_digest_without_a_download(self):
+        def fake_state(_base, _index, _repo, _revision, _target, _python, _token):
+            return {"found": True, "size": 20000000, "lfs_sha256": "e" * 64}
+
+        with patch.object(hf_publish, "hub_state", side_effect=fake_state), \
+             patch.object(hf_publish, "hub_digest_by_download") as download:
+            self.assertTrue(hf_publish.already_published(
+                Path("unused"), 0, "repo", "main", "data/big.parquet",
+                "e" * 64, 20000000, None, None))
+            download.assert_not_called()
 
 
 if __name__ == "__main__":
