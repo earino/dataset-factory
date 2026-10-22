@@ -1,0 +1,145 @@
+{
+  "schema": 1,
+  "batch": "development-413244c",
+  "records": [
+    {
+      "case": "discovery-value",
+      "arm": "revised",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-04",
+      "session_id": "20261022_223609_a74f50",
+      "status": "ok",
+      "exit_code": 0,
+      "tokens": {
+        "input_tokens": 24919,
+        "output_tokens": 1389,
+        "cache_read_tokens": 256,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 26564,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 442,
+          "output_tokens": 13,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 24477,
+          "output_tokens": 1376,
+          "cache_read_tokens": 256,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 19.693,
+      "response": "**Decision.** Spend the remaining budget on the one release-calendar query for the third source. Skip the catalog page that looks like an easy licence rejection.\n\n**Supporting evidence.** The third source already clears four of the five discovery contracts with recorded evidence: open licence at class A/B, a stated onset question, a documented target, and train/eval/holdout capacity with both classes. Its sole blocker is a timing fact \u2014 whether a proposed feature is published before the prediction instant \u2014 and that is exactly the class of defect that gate 1.4.0 refuses and that let `nhs-ae-four-hour-decline` reach staging with 25 late-published features. One calendar query converts an unresolved candidate into either `ready` (a buildable task in the queue, which is the buffer the routine exists to keep) or a `parked` record with a named reopening event. Both outcomes are durable value.\n\nThe catalog page offers the opposite trade: a fifth rejection is an activity count, not research value, and the brief explicitly names seeking easy rejections as a failure mode. The standing class C policy already closes unstated-licence leads without this probe; nothing is gained by confirming what the policy would close anyway.\n\n**Uncertainty and next discriminating check.** The unresolved fact is the publication lag: the number of days between the period end the feature describes and the release that first carries it, read from the publisher's own release calendar for at least one observed `period_end -> published` pair. That single pair, recorded with its URL and retrieval date, decides the verdict. It also supplies the `timing` block the qualification gate requires, so the evidence is reusable rather than throwaway.\n\n**Ordered actions and stopping condition.**\n\n1. Issue one bounded release-calendar query for the third source; record the URL, retrieval date, the observed pair, and the computed lag verbatim in `candidates/<id>/record.json` and `notes.md`.\n2. If the feature publishes before the instant: set `ready`, and name the construction step, expected artifact, and the deciding check (full-artifact qualification, timing block accepted). If it publishes after: set `parked` with the exact reopening event \u2014 a source that moves the feature earlier, or a target reformulation that drops it \u2014 and record the lag as the reason.\n3. Do not open the catalog page. Record it as unprobed this session, with no verdict and no licence claim, so a later tick can triage it from its own instrument.\n4. Update `STATE.md` with a compact entry, run `check-candidate.py` for the touched record and the test suite, inspect the diff, commit only this session's work, push, and check CI for that exact `head_sha`.\n\n**Stopping condition.** Stop probing the moment the calendar result is recorded, whatever it says. Fifteen minutes is already inside the 20% close-out reserve of a 90-minute slot; if the query does not return promptly, write `parked` with timing unverified and the query as the named next probe, and close out immediately. No second source, no additional probe.\n\n**Operator report.** Leads opened/reopened: none new; one existing unresolved source advanced. Decisions: fourth contract evidence recorded, third source moved to `ready` or `parked` on measured publication lag; two prior rejections unchanged; catalog page left unprobed deliberately. Strongest remaining uncertainty: the publication lag, now either resolved or carrying a precise handoff. Coverage: Canada focus retained, non-US live count unchanged at 17/24 pending the third source's verdict. Checks/commit/CI: candidate check plus suite, committed and pushed; CI status reported as observed, not assumed. Next action: if `ready`, construction; if `parked`, licence triage of the deferred catalog page from its own terms.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "d2cf6f2fe504fb9d829cad774c0a07a4aee35fa9519d85cc7792b1b0d56abe87"
+    },
+    {
+      "case": "discovery-value",
+      "arm": "baseline",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-05",
+      "session_id": "20261022_223633_0cf6c2",
+      "status": "ok",
+      "exit_code": 0,
+      "tokens": {
+        "input_tokens": 37313,
+        "output_tokens": 1501,
+        "cache_read_tokens": 256,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 39070,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 442,
+          "output_tokens": 12,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 36871,
+          "output_tokens": 1489,
+          "cache_read_tokens": 256,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 15.284,
+      "response": "**Decision.** Spend the remaining 15 minutes on the single release-calendar query for source #3, write its verdict immediately, and treat the fourth catalog page as optional filler only after that record exists on disk. Do not open a new probe before source #3 is durable \u2014 with 15 minutes left, a lost transcript is the only real failure mode.\n\n**Supporting evidence.** Source #3 is the only lead this session whose licence and capacity are already settled: open licence permitting redistribution and derivatives, a documented onset target, and computed train/eval/holdout capacity with both classes. Its sole blocker is the timing question, which is exactly the kind of defect gate 1.4.0 refuses (a feature stamped period M that publishes after the prediction instant is an oracle). That question costs one query against the publisher's own release calendar, and the answer decides the verdict either way. The two rejections already recorded stand on decisive evidence and need nothing further. The catalog page is a speculative second rejection; a C/D licence there is worth recording, but it is not worth risking an unrecorded third verdict.\n\n**Uncertainty and next discriminating check.** The open question is whether the proposed feature's `period_end -> published` lag places it before the stated prediction instant. Query the publisher's release calendar for the feature's actual publication date. Two outcomes:\n- Published before the instant \u2192 `go`, recording jurisdiction `{\"country\": \"CA\", \"region\": \"North America\", \"publisher\": \"<publisher>\"}` and `licence_class` A/B plus the terms quote. Note honestly that one observed release date is a single observation, not a bound: construction must record at least one observed period-end\u2192published pair and set `days_after_period_end` to the largest observation plus a week's margin, not the mean.\n- Published after the instant \u2192 `park` (not `go`), with the re-target options named: drop the feature, or move the instant to the publication date. This is a design change for the advancement session, and it must not enter the construction queue meanwhile.\n\n**Ordered actions and stopping condition.**\n1. Run the one release-calendar query. Record the command and its literal result.\n2. Write `candidates/<id>/record.json` with verdict, jurisdiction, licence class and evidence \u2014 before anything else.\n3. Only if \u22655 minutes remain after that write, read the fourth catalog page's own licence instrument (not a general policy page) and record a C/D rejection in one line, with the clause or its absence. Do not probe its schema.\n4. Write the `STATE.md` entry: sources opened, verdicts, measured figures with commands, what stayed unresolved.\n5. Run `python3 -m unittest discover -s tests` and `scripts/check-candidate.py --all`; commit and push; read CI for that exact commit.\n6. Stop probing at the 80% wrap-up notice or when the time is gone \u2014 whichever comes first \u2014 and finish with the write-up only.\n\n**Operator report.** Three new sources carried to verdict this session, all Canadian: two rejected on decisive licence/capacity evidence; a third open-licensed source with a documented onset target and split capacity resolved by a release-calendar query \u2014 result recorded as `go` or `park` in its record. A fourth catalog page was opened only if time allowed after the write; if not, no verdict, stated plainly. No existing candidate was advanced, built, or packaged. Coverage and CI result for the pushed commit are in `STATE.md`.\n",
+      "response_sha256": "e178f42fabfb9f2a951c56a41d5b20b284a2d92b99d80307bf24c81614ef045d"
+    },
+    {
+      "case": "discovery-novelty",
+      "arm": "revised",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-06",
+      "session_id": "20261022_223653_da7fa5",
+      "status": "ok",
+      "exit_code": 0,
+      "tokens": {
+        "input_tokens": 24159,
+        "output_tokens": 6227,
+        "cache_read_tokens": 384,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 30770,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 289,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 24107,
+          "output_tokens": 5938,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 104.868,
+      "response": "DECISION\n\nNot a mirror \u2014 but not ready. Record the lead as `investigating` with two named missing\nfacts, and record the novelty verdict `differentiated` now, since its evidence is in\nhand. This session does not build; construction is advancement's work.\n\nSUPPORTING EVIDENCE\n\n- Mirror rule: shared subject matter is not a mirror, and a different URL alone is not\n  novelty. Compared at the task level, the lead differs from the published task on target\n  (recurrence after a documented intervention vs. first-visit failure), population\n  (post-intervention establishments vs. all), prediction instant (before the return visit\n  vs. before the first visit), features (pre-return-visit records vs. static establishment\n  attributes), and it covers an unrepresented inspection regime. That is a stated\n  contribution \u2014 formulation, population, feature window, new jurisdiction \u2014 not a\n  republication.\n- Two named catalog searches found no ML-ready recurrence task. Record their scope and\n  limitations; the claim is \"no known ML-ready recurrence task found,\" not \"none exists.\"\n- Licence is stated as clean, but durability requires recording `licence_class` with the\n  verbatim terms quote from the publisher's own instrument in `license_evidence`, plus\n  `jurisdiction` (country, region, publisher \u2014 measured, not inferred).\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\n\nTwo required contracts are unmeasured, and either is a hard veto:\n\n1. Split capacity: recurrence events cluster within establishments, so raw visit counts\n   overstate the effective sample. The discriminating number is independent positives \u2014\n   distinct establishments (or intervention episodes) with and without recurrence across\n   disjoint time windows.\n2. Timing vs. reporting lag: \"pre-return-visit records\" are valid features only if the\n   publisher had released them by the prediction instant. If reporting lag exceeds the\n   typical interval to the return visit, the feature window is hindsight and the task\n   collapses.\n\nNext check: one bounded read-only aggregate probe (distinct-key recurrence outcomes per\ndisjoint window, clustered count, both classes present in each window) plus a\ndocumentation read of the publication calendar or observed visit-date to published-date\npairs to measure the lag. Record the population the probe covers (intervention types,\nyears, jurisdiction). Keep probe counts distinct from dataset measurements.\n\nORDERED ACTIONS AND STOPPING CONDITION\n\n1. Record the novelty verdict now: `check-novelty.py` with verdict `differentiated`;\n   ours = recurrence formulation, post-intervention population, pre-return-visit window,\n   new regime; theirs = the published first-visit task; prior art = that task plus the\n   two catalog searches. Prevents the lead aging as \"interesting.\"\n2. Update the record: jurisdiction, licence class with quote, one-sentence prediction\n   instant, target source column named, status `investigating` with the two facts.\n3. Run the aggregate probe as a script file (no interpreter one-liners; no bulk transfer);\n   record commands and results in `notes.md`.\n4. Measure the lag; state whether it comes from observed pairs or the publisher's\n   calendar.\n5. If both pass with recorded evidence: set `ready`, name the handoff\n   (`assemble-job.py` to a worker build; the full-artifact `qualify_dataset.py` pass is\n   the check that decides construction), and measure extraction cost before budgeting.\n6. Stop when: both measurements are recorded (pass \u2192 `ready`, stop; decisive failure \u2192\n   `parked`/`dropped` with the blocker and reopening condition); or close-out budget\n   arrives (persist the record and a next action a fresh session can execute first).\n\nCONCISE OPERATOR REPORT\n\nOne lead advanced, none dropped. The regional inspection source is differentiated from\nthe published first-visit task on target, population, instant, features and regime;\nnovelty recorded as `differentiated` with both catalog searches as prior-art evidence.\nNot ready: independent split counts and reporting lag are unmeasured, and either can\nveto \u2014 clustered recurrence and hindsight features are the classic failures here. Next\naction: one bounded aggregate probe plus a calendar read; expected outcome is `ready`\nwith a named construction handoff, or a recorded blocker. Checks, commit and exact-commit\nCI status to be reported at close-out, with pending CI reported as pending.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "6fa4f30a5104e9df7cc8a321388f5dc5c7b34a75a31c22340e2a9cd5eac25b31"
+    }
+  ],
+  "updated_at": "2026-10-22T22:39:14Z"
+}
