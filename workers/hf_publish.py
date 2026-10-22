@@ -347,7 +347,14 @@ def hub_digest_by_download(base, index, repo, revision, target, python, hf_token
     return lines[-1] if lines else ""
 
 
-SMALL_BLOB_BYTES = 8 * 1024 * 1024
+# Digest-by-download is the only verification the Hub offers for plain git blobs:
+# it reports a sha256 for LFS objects alone. The threshold must sit ABOVE the Hub's
+# own LFS cutoff (~10 MB), because a plain blob sized between the two - eutl-hf-001
+# died on a 9,421,952-byte CSV, uploaded fine, unverifiable by this check - is the
+# one size class no other branch covers: not LFS, so no reported digest, and below
+# this fix "too big to re-hash". A re-hash downloads a single asset, bounded by the
+# job's max_disk_mb, and the resume path deletes it immediately after.
+SMALL_BLOB_BYTES = 64 * 1024 * 1024
 
 
 def already_published(base, index, repo, revision, target, sha256, size, python, hf_token):
