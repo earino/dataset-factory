@@ -226,11 +226,67 @@
       "elapsed_seconds": 19.546,
       "response": "**Decision**\n\nNo. B cannot inherit A's risk acceptance, and B is dropped as licence class C this session. A remains a live candidate only under its own recorded, candidate-specific risk acceptance \u2014 which is an operator decision recorded for A, not a licence grant and not a policy that transfers.\n\n**Supporting evidence**\n\n- A: publisher grants nothing (SPDX `NOASSERTION`), but `candidates/A/license.json` carries an operator risk acceptance scoped to that candidate; our compilation is dedicated CC0 and that dedication covers **our contribution only** \u2014 row selection, derived label, partition, packaging \u2014 never the source's data or designation.\n- B: its terms page is blocked, its metadata says \"other-open\" with no deed attached, and there is **no recorded decision** for B.\n- The standing rule (2026-10-21): a source whose licence is not already established as permitting redistribution and derivatives is not pursued. Unclear is C: drop in the same breath, no permission email, no parked \"probably fine.\"\n- An acceptance is written as a *risk acceptance, never as a grant*. Grants are properties of a licence; acceptances are properties of a decision about one source. Nothing in A's record names B, and a blocked page plus a metadata label with no deed is precisely the ambiguity class B sits in.\n\nNote the trap: \"other-open\" plus CC0 in A's compilation field can look like a chain. It isn't. CC0 is not a blanket override of upstream terms, and B has no upstream terms we can read.\n\n**Uncertainty and next discriminating check**\n\nA's acceptance could in principle be widened by the operator to cover B, but only by an explicit new decision naming B \u2014 I cannot infer it, and B's own terms remain unread regardless. The discriminating check for B is narrow: fetch the terms page through a real browser (a 403 to a plain HTTP client is not silence), look for a deed or an SPDX identifier on the dataset itself rather than a general policy page, and record the exact quote. If that yields an explicit open licence permitting redistribution and derivatives, B reopens as class A/B on its own evidence; if it yields silence or \"contact us,\" B stays a recorded C-drop with one line stating what evidence would reopen it. A's next check is different: confirm `license.json` still names A alone and that the card, `LICENSE.md` and README carry the publisher's attribution and designation verbatim.\n\n**Ordered actions and stopping condition**\n\n1. Write `candidates/A/record.json` \u2014 jurisdiction, `licence_class`, `license_evidence` with the quoted absence, and the risk-acceptance reference, explicitly scoped to A.\n2. Write `candidates/B/record.json` \u2014 verdict `dropped`, `licence_class: C`, the blocked page as the evidence, and the reopening condition. Do not probe B's schema, volume or split capacity first.\n3. Run `scripts/check-candidate.py` on both; commit and push; read CI for that exact commit.\n4. Stop. Do not spend the tick characterising B. Count B toward the session's verdicts as a rejection \u2014 a rejection is a completed unit of work.\n\n**Operator report**\n\nA stays live under its own recorded risk acceptance, published with attribution, a takedown route and no standard licence presented as the publisher's. B has no readable terms and no decision of its own, so it is closed as class C; if you want B pursued, that requires a separate recorded acceptance naming B \u2014 and it would still ship without a licence we can quote. Two sources opened, one go, one reject.\n",
       "response_sha256": "d214f29b8ebfcd9e0f7ca3c5ff8f4b735d5b9d16a0a3dd02d2e70ce60b1c5892"
+    },
+    {
+      "partition": "reserved",
+      "case": "frozen-package",
+      "arm": "revised",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-54",
+      "session_id": "20261022_233101_3acdbf",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "a579e8b53e74e182a8e9ae4daa1d5e1aaa9b3e610d947fa9778c159fc3bc71da",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 214,
+        "output_tokens": 3984,
+        "cache_read_tokens": 33344,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 37542,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 611,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 162,
+          "output_tokens": 3373,
+          "cache_read_tokens": 32960,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 52.498,
+      "response": "Decision: do not regenerate the published MANIFEST.json and do not touch the tag. This is a reader defect, not a data defect; fix the new site consumer to normalize the legacy split shape on read via the existing `factory.release_schema` adapter, with a guard test. Note that regeneration would not even work: the tag is immutable and pinned readers fetch the tag, which would keep serving the old manifest \u2014 the only way regeneration \"helps\" is by moving or recreating the tag, which is a refusal, never a repair.\n\nSupporting evidence:\n- Published manifests, digests and version tags are immutable; the rule is explicit \u2014 never rewrite historical bytes \"to fix CI ... or bypass a consumer error.\" The sanctioned paths are fixing a reader defect or preparing a new reviewed version.\n- The failure-mode table prescribes exactly this case: a published package with a legacy shape (e.g. `splits: null` breaking `flatten_splits`) is normalized on read \"without modifying bytes\"; for the same reason the verify path reads old manifests \"through the schema adapter.\"\n- Bytes at both destinations match the recorded digests, so the artifact is intact; the crash is a schema-contract mismatch in the consumer. Regeneration would change hashed bytes under a frozen release and desync verified evidence at both destinations.\n\nUncertainty and next discriminating check: the evidence names the split shape, but I have not verified that no other legacy field also breaks the consumer. Next check: reproduce the crash locally against the pinned manifest fetched anonymously at the tag, read through the adapter. If the normalized view satisfies the consumer, the reader fix is sufficient. If it still crashes on a field the adapter cannot synthesize, stop and propose a new reviewed release version (new package, new tag) \u2014 never an in-place edit.\n\nOrdered actions:\n1. Reproduce: fetch the pinned MANIFEST.json anonymously from the public tag; run the site consumer; capture the exact traceback and offending field. Repair nothing before this.\n2. Fix the read path: normalize the legacy shape through `factory.release_schema` in the consumer; no change to `release/<dataset>/MANIFEST.json`, assets, digests, or the tag. Versioned code with tests on a reviewable branch.\n3. Guard test: add a fixture of the legacy shape; revert the fix, watch the test fail, restore, and record which defect it caught \u2014 a guard that has never failed is unproven. Verify in a clean clone with bytecode writing enabled.\n4. Verify against published bytes: consumer runs clean against the pinned revision from an anonymous client; `check-package.py` on the release package still passes (manifest unmodified); the tag still resolves to the original commit; recorded digests re-confirmed unchanged at both destinations; site `verify` shows matching live record and HTML links.\n5. Push, run the suite, and check CI for that exact commit (`gh api .../actions/runs?head_sha=...`); report the consumer's red CI as turned green only when observed.\n6. Record in STATE.md and the candidate record: defect, fix, guard, receipts, and an explicit statement that no published byte, digest, or tag changed.\n\nStopping condition: stop when the consumer is green against the unmodified pinned release, tag and digests are verified unchanged, and CI passes for the fix commit. If the adapter cannot supply what the consumer needs, record the blocker and prepare a new reviewed version for operator review.\n\nOperator report: the red consumer CI is a bug in the new site consumer \u2014 it cannot read the older split shape in an already-published manifest. The published data is intact (digests match at both destinations) and nothing published was modified; the fix is in the consumer's read path with a guard test proven to fail beforehand. Verification in flight: consumer-green against the pinned public revision, unchanged tag/digests, green CI on the fix commit. If the legacy shape proves richer than the adapter, the fallback is a new reviewed release version, not a rewrite.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "22dfbb608e1ee032778bd91ab65c47737bf7355f063c7dfd6b2d1aa2449578e0"
     }
   ],
   "ledger": {
     "calls": 54,
-    "tokens": 1809665
+    "tokens": 1847207
   },
-  "updated_at": "2026-10-22T23:31:09Z"
+  "updated_at": "2026-10-22T23:31:50Z"
 }
