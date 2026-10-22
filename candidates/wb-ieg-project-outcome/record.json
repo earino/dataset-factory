@@ -1,0 +1,165 @@
+{
+  "id": "wb-ieg-project-outcome",
+  "status": "ready",
+  "created_at": "2026-10-22T00:00:00+00:00",
+  "domain": "development finance / project evaluation",
+  "prediction_question": "For a World Bank (IBRD/IDA) lending project at the moment of Board approval, will the Independent Evaluation Group's final evaluation of the project rate its outcome Moderately Satisfactory or better (MS+) on the six-point IEG outcome scale? This is an approval-instant portfolio-risk task over IEG's rated-project universe (12,629 rated projects, approval FY 1956-2024, measured 2026-10-22).",
+  "prediction_time": "Board approval of the project (approval_fy / boardapprovaldate). Features may use only attributes documented by the publisher as existing at approval: approval fiscal year and Board month, agreement type, lending instrument, product line, sector and theme tags, country, region, commitment amounts, project name. Every IEG-recorded judgement is post-hoc and label-side: outcome (the label source), bank_performance, quality_at_entry, quality_of_supervision, me_quality, evaluation_fy, evaluation_type, final_closing_fy, as_of_date. Two more columns are measured to be evaluation-vintage, NOT approval-vintage, and must not ship as features: country_fcs_status and country_lending_group - 165 of 4,695 (country, approval_fy) cells carry more than one distinct FCS value across rows, and the value flips with evaluation_fy (e.g. Cameroon approval-FY-1995: P038801 evaluated 1997 -> non-FCS, P000216 evaluated 2008 -> FCS); 51 of 187 countries carry >1 FCS value across their rows. The label arrives at IEG evaluation: median 8 years after approval (min 1, max 31, measured over 12,629 rows).",
+  "target_definition": "Binary from the IEG outcome rating (six-point scale: Highly Satisfactory / Satisfactory / Moderately Satisfactory / Moderately Unsatisfactory / Unsatisfactory / Highly Unsatisfactory): positive = MS+ (top three levels), negative = MU or worse. Measured mix: Satisfactory 5,639; Moderately Satisfactory 3,153; Unsatisfactory 1,870; Moderately Unsatisfactory 1,224; Highly Satisfactory 398; Highly Unsatisfactory 194; plus 151 rows 'Not Rated' which are unobserved targets, never negative labels. The label source column is outcome; the correlated IEG rating columns (bank_performance, quality_at_entry, quality_of_supervision, me_quality) are label-side and must be absent from all shipped files, not merely unlisted.",
+  "sources": [
+    {
+      "name": "IEG World Bank Project Performance Ratings - World Bank Group, Independent Evaluation Group (published via the World Bank Data Catalog, dataset 0038059, and Finances One asset DS00053)",
+      "url": "https://datacatalog.worldbank.org/search/dataset/0038059/ieg-world-bank-project-performance-ratings ; Finances One page https://financesone.worldbank.org/ieg-world-bank-project-performance-ratings/DS00053 ; IEG dashboard https://ieg.worldbankgroup.org/ieg-data-world-bank-project-ratings-and-lessons",
+      "api": "Anonymous JSON/CSV bulk API measured 2026-10-22: https://datacatalogapi.worldbank.org/dexapps/fone/api/apiservice?datasetId=DS00053&resourceId=RS00055&top=20000&type=csv returns ALL 12,629 rows in ONE request (3,340,648 bytes); metadata endpoint https://datacatalogapi.worldbank.org/dexapps/fone/api/metadata?assetId=DS00053. No key, no registration, no rate wall observed.",
+      "license": "Creative Commons Attribution 4.0 International - stated in the dataset metadata API response (\"license\": \"Creative Commons Attribution 4.0 International\"), on the Data Catalog dataset page (\"License: Creative Commons Attribution 4.0\"), and on the Finances One page; Data Access and Licensing: dataset classified Public under the Access to Information Classification Policy.",
+      "access": "data_as_of 2026-10-20, last_updated 2026-10-22T05:49:57Z (refreshed daily; content updated quarterly per the IEG RAP cycle). Row label: Project ID. 12,629 rows x 21 columns, grain one row per project showing the LATEST evaluation (ICRR/PPAR supersedes)."
+    },
+    {
+      "name": "World Bank Projects API (approval-time project attributes) - World Bank Group Development Finance",
+      "url": "https://search.worldbank.org/api/v2/projects (legacy Projects API behind projects.worldbank.org)",
+      "api": "Anonymous JSON API. Measured 2026-10-22: total 22,729 projects; page cap 1,000 rows per request (rows=10000 silently returns 1,000 keys), ~1.19 MB and ~1.1 s per lean 1,000-row page on the coordinator -> full pull = 23 requests, ~27 MB (estimate from one measured page). id= lookup verified returning the 50-field record including approvalfy, board_approval_month, boardapprovaldate, lendprojectcost, ibrdcommamt, idacommamt, lendinginstr, prodline, sector1-3 with percentages, theme fields, countryname, regionname.",
+      "license": "World Bank Group open-data terms: CC BY 4.0 default for Bank-produced datasets (datacatalog.worldbank.org/public-licenses, read 2026-10-22); same publisher and terms family as the IEG dataset.",
+      "access": "No key, no registration. A bulk CSV equivalent ('Projects & Operations') is also listed in the Data Catalog; construction may use either channel, to be verified at build time."
+    }
+  ],
+  "license_evidence": [
+    "Measured 2026-10-22 from the dataset metadata API (datacatalogapi.worldbank.org/dexapps/fone/api/metadata?assetId=DS00053): \"license\": \"Creative Commons Attribution 4.0 International\", \"data_classification_name\": \"Public\", \"source\": \"World Bank Group\", \"update_frequency\": \"Quarterly\".",
+    "Measured 2026-10-22 from the Data Catalog dataset page 0038059 (page-embedded JSON-LD): license CreativeWork named 'Creative Commons Attribution 4.0'; page text 'This dataset is licensed under Creative Commons Attribution 4.0' and 'classified as Public under the Access to Information Classification Policy'.",
+    "World Bank Data Catalog public-licenses page (read 2026-10-22): 'CC-BY 4.0, with the additional terms below, is the default license for all Datasets produced by the World Bank itself and distributed as open data' - the additional terms are a dispute-resolution procedure (mediation then arbitration), not a use restriction. CC BY 4.0 permits redistribution and derivatives including commercial use, with attribution carrying through unchanged to any release.",
+    "The general worldbank.org site terms restrict non-dataset materials, but explicitly defer to the specific terms attached to Data Catalog datasets; this dataset's own instrument is CC BY 4.0."
+  ],
+  "construction_script": null,
+  "split_strategy": "Temporal splits on approval fiscal year (measured on the full 12,629-row pull, 2026-10-22): train approval_fy <=2009 (n=9,741, MS+ 70.74%, 179 countries), eval 2010-2014 (n=1,488, MS+ 78.90%, 142 countries), holdout 2015-2019 (n=1,097, MS+ 80.67%, 133 countries). Both classes present in every window; the prevalence drift 70.7% -> 80.7% is a measured property of the source (IEG outcome ratings have improved over time) and must be reported beside any score, per the prevalence-shift rule. Right-censoring: rated counts fall for recent approvals (2013:269, 2015:277, 2018:184, 2021:93, 2022:56, 2023:29, 2024:11) - eligibility must iterate the provider's approval years and count unrated/not-yet-evaluated projects as unobserved_target (a bucket, not a membership decision), per the nhs-ae selection lesson. Identifier policy: project_id is unique except P122764, which appears twice (eval_fy 2023 and 2026, both ICRR, same MS rating) - construction dedupes keeping the latest evaluation_fy and declares the grain; country portfolios recur across splits by design (longitudinal), so country is a feature and the no-cross-split-entities check applies to project_id only, with expected_duplicate_ids declared in quality.json.",
+  "measurements": {
+    "access_probes_2026_10_22": "Data Catalog dataset page HTTP 200; metadata API HTTP 200 (9,048 B JSON); apiservice CSV: HTTP 200, 3,340,648 bytes, 12,629 data rows + header, in a single request (top=20000 honored). Projects API: rows=10000 returns 1,000 keys per page (page cap measured), 1,193,063 bytes and 1.14 s for one lean page from the coordinator.",
+    "panel_shape_2026_10_22": "12,629 rows x 21 columns; approval_fy present on all rows, range 1956-2024; row grain = one row per project (latest IEG evaluation), 12,628 distinct project_ids (P122764 duplicated). Columns: agreement_type, approval_fy, as_of_date, bank_performance, country, country_fcs_lending_group, country_fcs_status, country_lending_group, evaluation_fy, evaluation_type, final_closing_fy, global_practice, lending_instrument_type, me_quality, outcome, practice_group, project_id, project_name, quality_at_entry, quality_of_supervision, wb_region. Missingness: final_closing_fy 35.8%, global_practice 36.1% (2014 practice-taxonomy reorganisation), country_lending_group 0.77%, country_fcs_status 0%.",
+    "label_structure_2026_10_22": "MS+ share over 12,478 rated rows: 0.7365. Six-level mix measured (Satisfactory 5,639 / ModSat 3,153 / ModUnsat 1,224 / Unsatisfactory 1,870 / HighlySat 398 / HighlyUnsat 194), 'Not Rated' 151. Approval-to-evaluation lag: min 1, median 8, max 31 years. Window MS+ rates: 1960-1995: 0.6999 (n=5,805); 1996-2005: 0.7199 (n=2,710); 2006-2012: 0.7465 (n=2,134); 2013-2016: 0.7980 (n=1,079); 2017-2030: 0.8009 (n=899).",
+    "provenance_mix_2026_10_22": "evaluation_type is a provenance column with seven streams: ICRR 6,909 (54.7%), PPAR 3,713 (29.4%), PCR 1,482 (11.7%), EVM 487 (3.9%), PCN 35, PCM 2, CSSR 1. MS+ rate differs by stream (measured): ICRR 0.7605, PPAR 0.7266, PCR 0.6853, EVM 0.6373 - PPAR full evaluations are known to oversample problem projects, and pre-1990 rows carry the legacy PCR stream. The mixture is part of the task definition (label = latest IEG outcome rating regardless of stream) and must be declared in quality.json; a construction-time decision to restrict or keep streams must be recorded with its measured effect.",
+    "timing_vintage_finding_2026_10_22": "country_fcs_status and country_lending_group are evaluation-vintage, not approval-vintage: 165 of 4,695 (country, approval_fy) cells carry >1 distinct FCS value across rows and the value tracks evaluation_fy (Cameroon approval-FY-1995: P038801 eval 1997 non-FCS, P000216 eval 2008 FCS); 51/187 countries carry >1 FCS value across rows. These columns must be excluded from shipped features (or rebuilt from a historical FCS vintage table) - a features-available-at-instant defect caught at discovery.",
+    "clustering_2026_10_22": "Positives cluster weakly by borrower: 4,695 (country, approval_fy) clusters, 4,020 with >=1 MS+ positive. Per-split clustered counts to be reported at construction; the positive class (73.65%) is not a rare-event problem.",
+    "extraction_cost_2026_10_22": "Measured from the coordinator: IEG ratings CSV = 1 HTTP request, 3,340,648 bytes; Projects API = 23 requests x ~1.19 MB = ~27 MB for all 22,729 projects (request count from the measured 1,000-row page cap; bytes from one measured lean page - labelled estimate for the total). Total extraction is trivially within worker budget; the coordinator probe pulled only the IEG CSV (3.3 MB, kept in scratch, never committed) plus one projects page.",
+    "publication_schedule_2026_10_22": "Finances One metadata: data_as_of 2026-10-20, last_updated 2026-10-22T05:49:57Z, update_frequency 'Quarterly', update_schedule 'Daily'. The publisher republishes on a schedule, so a monthly release cycle can snapshot honestly.",
+    "prior_art_headroom_note": "The World Bank itself built this prediction model internally (Kraay & Tawara, 'Predicting IEG ratings for active projects', Policy Research Working Paper 7001, 2,729 IPF operations 1995-2012) and reports that its most predictive features - task-team-leader track record and country CPIA during the project's life - are POST-approval facts. With strictly approval-time features the achievable signal is unmeasured and may be modest; the baseline triad (majority-class 73.65% on train-window rates, calendar-only, full model) must be measured at construction before any number is quoted, and if approval-time features carry no signal beyond the majority rule the task is recorded as a negative result, not a benchmark (the nhs-ae lesson)."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": null,
+  "next_action": "GO to construction (advancement session owns it; this was a discovery-only session). Construction steps: (1) snapshot the IEG CSV and the Projects API pages with hashes and record the as_of_date; (2) dedupe project_id to the latest evaluation_fy (P122764) and declare the grain; (3) join approval-time features only (approval FY/month, agreement type, instrument, product line, sectors with percentages, themes, country, region, commitment amounts), excluding every evaluation-time column and the vintage-anachronistic FCS/lending-group columns; (4) build temporal splits (train <=2009, eval 2010-2014, holdout 2015-2019) with unobserved_target accounting for 'Not Rated' and not-yet-evaluated approvals; (5) quality.json timing block kind=event_time (instant = Board approval), label_source_columns = [outcome, bank_performance, quality_at_entry, quality_of_supervision, me_quality, evaluation_fy, evaluation_type, final_closing_fy, as_of_date, country_fcs_status, country_fcs_lending_group, country_lending_group]; (6) cross-check the built panel's MS+ share against the latest IEG RAP report's published share; (7) measure the baseline triad before quoting any AUC; (8) qualification gate on the worker over the full artifact.",
+  "jurisdiction": {
+    "country": "US",
+    "region": "International organisations",
+    "publisher": "World Bank Group - Independent Evaluation Group (IEG) and Development Finance data, headquartered in Washington, DC, United States",
+    "convention": "The publisher's HQ country is recorded because 'international' is not a country. The World Bank is an international organisation headquartered in Washington, DC, so its publishing jurisdiction is US - recorded so the non-US coverage count is not flattered; this candidate is in the session's assigned region (international organisations) but does NOT count toward the non-US quota.",
+    "recorded_at": "2026-10-22"
+  },
+  "verdict": "go",
+  "licence_class": "A",
+  "licence_note": "CC BY 4.0 International stated on the dataset page and in the publisher's dataset metadata API; attribution carries through to any release",
+  "novelty_check": {
+    "checked_at": "2026-10-22T08:11:11+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "World Bank project outcome prediction",
+      "IEG ratings dataset",
+      "World Bank project performance machine learning"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "World Bank project outcome prediction",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "IEG ratings dataset",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "World Bank project performance machine learning",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "World Bank project outcome prediction",
+          "hits": 777797,
+          "top": [
+            "Support for the World Bank Syria Economic Monitor",
+            "Data and Code for \"Global Socio-economic Resilience to Disasters\"",
+            "Replication package for: Improving Management with Individual and Group-Based Consulting: Results from a Randomized Experiment in Colombia",
+            "worldbank/rio-safe-space: Policy Research Working Paper",
+            "Guidance Note for World Bank Staff and Consultants on Reproducible Publications"
+          ]
+        },
+        {
+          "query": "IEG ratings dataset",
+          "hits": 308616,
+          "top": [
+            "Dataset of multiple IEG images",
+            "Richtlinie zum Umgang mit Forschungsdaten am IEG",
+            "Ontology-based Modeling of Time, Places and Agents in the Project DigiKAR (Digitale Kartenwerkstatt Altes Reich /Digital Map Lab Holy Roman Empire)",
+            "Psepheninae Lacordaire 1854",
+            "Spatial distribution of Mesozoic deposits and their temperature ranges within the Weser-Wiehengebirge Syncline of the inverted Lower Saxony Basin, Minden area, Germany"
+          ]
+        },
+        {
+          "query": "World Bank project performance machine learning",
+          "hits": 1127524,
+          "top": [
+            "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
+            "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI",
+            "RGB and RGNIR Plastic Waste Database",
+            "DisMo: Disentangled Motion Representations for Open-World Motion Transfer",
+            "mushrooms"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "World Bank project outcome prediction",
+          "hits": 5,
+          "top": [
+            "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
+            "The Araucaria Project: Improving the cosmic distance scale",
+            "Chinese vs. World Bank Development Projects: Insights from Earth Observation and Computer Vision on Wealth Gains in Afri",
+            "AgiBot World Colosseo: A Large-scale Manipulation Platform for Scalable and Intelligent Embodied Systems",
+            "The ATLAS Pixel Project"
+          ]
+        },
+        {
+          "query": "IEG ratings dataset",
+          "hits": 5,
+          "top": [
+            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+            "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset",
+            "SDWPF: A Dataset for Spatial Dynamic Wind Power Forecasting Challenge at KDD Cup 2022",
+            "The Oxford Radar RobotCar Dataset: A Radar Extension to the Oxford RobotCar Dataset"
+          ]
+        },
+        {
+          "query": "World Bank project performance machine learning",
+          "hits": 5,
+          "top": [
+            "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+            "DOME: Recommendations for supervised machine learning validation in biology",
+            "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
+            "Active learning for data streams: a survey",
+            "Physics-Inspired Interpretability Of Machine Learning Models"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'World Bank project outcome prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'IEG ratings dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'World Bank project performance machine learning': 0 hit(s) - nothing notable\n- zenodo_records / 'World Bank project outcome prediction': 777797 hit(s) - Support for the World Bank Syria Economic Monitor, Data and Code for \"Global Socio-economic Resilience to Disasters\", Replication package for: Improving Management with Individual and Group-Based Consulting: Results from a Randomized Experiment in Colombia, worldbank/rio-safe-space: Policy Research Working Paper, Guidance Note for World Bank Staff and Consultants on Reproducible Publications\n- zenodo_records / 'IEG ratings dataset': 308616 hit(s) - Dataset of multiple IEG images, Richtlinie zum Umgang mit Forschungsdaten am IEG, Ontology-based Modeling of Time, Places and Agents in the Project DigiKAR (Digitale Kartenwerkstatt Altes Reich /Digital Map Lab Holy Roman Empire), Psepheninae Lacordaire 1854, Spatial distribution of Mesozoic deposits and their temperature ranges within the Weser-Wiehengebirge Syncline of the inverted Lower Saxony Basin, Minden area, Germany\n- zenodo_records / 'World Bank project performance machine learning': 1127524 hit(s) - plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database, DisMo: Disentangled Motion Representations for Open-World Motion Transfer, mushrooms\n- arxiv_preprints / 'World Bank project outcome prediction': 5 hit(s) - Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, The Araucaria Project: Improving the cosmic distance scale, Chinese vs. World Bank Development Projects: Insights from Earth Observation and Computer Vision on Wealth Gains in Afri, AgiBot World Colosseo: A Large-scale Manipulation Platform for Scalable and Intelligent Embodied Systems, The ATLAS Pixel Project\n- arxiv_preprints / 'IEG ratings dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, SDWPF: A Dataset for Spatial Dynamic Wind Power Forecasting Challenge at KDD Cup 2022, The Oxford Radar RobotCar Dataset: A Radar Extension to the Oxford RobotCar Dataset\n- arxiv_preprints / 'World Bank project performance machine learning': 5 hit(s) - Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Active learning for data streams: a survey, Physics-Inspired Interpretability Of Machine Learning Models",
+    "prior_art": [
+      "Kraay & Tawara, World Bank Policy Research Working Paper 7001 (2014), predicting IEG ratings for active IPF projects; Goldemberg, Jordan & Kenyon, WPS 10532 (2023); lukesjordan/worldbank-project-documents on Hugging Face (documents, no splits)"
+    ],
+    "theirs": "The World Bank publishes the ratings data itself (CC BY 4.0) and built an internal prediction model (Kraay & Tawara, WPS 7001: 2,729 IPF operations 1995-2012, features include post-approval TTL track record and CPIA, no public artifact); Goldemberg et al. WPS 10532 (2023) use ML on project documents to predict contribution to sector outcomes, not ratings; Hugging Face hosts World Bank project documents (lukesjordan/worldbank-project-documents, 15.7k docs) whose card says 'no leaderboard yet' and 'we have not done a train test split'; no public train/eval/holdout task with a scored contract on this source was found",
+    "ours": "A packaged approval-instant binary task over IEG's rated-project universe (12,629 rated projects, approval FY 1956-2024, CC BY 4.0): at Board approval, predict whether IEG's final evaluation rates the outcome MS+, with strictly approval-time features (the evaluation-vintage FCS/lending-group columns measured and excluded), temporal splits by approval FY (train <=2009 n=9,741 / eval 2010-2014 n=1,488 / holdout 2015-2019 n=1,097), unobserved-target accounting for not-yet-evaluated approvals, provenance-stream declaration (ICRR/PPAR/PCR/EVM), and the runner's scored contract",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
+}

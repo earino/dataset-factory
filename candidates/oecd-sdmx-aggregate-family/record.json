@@ -1,0 +1,52 @@
+{
+ "id": "oecd-sdmx-aggregate-family",
+ "status": "dropped",
+ "verdict": "reject",
+ "created_at": "2026-10-22T00:00:00+00:00",
+ "domain": "cross-country economic, social and environmental statistics",
+ "prediction_question": "The lead probed was the OECD's public statistical catalogue - the SDMX API behind the OECD Data Explorer, 1,550 dataflows measured - as a source of prediction tasks. The task family it supports is 'will indicator X for geographic unit G rise/fall in the next period' over country/city panels (annual, quarterly or monthly reference periods). The session probed the licence (class A, clean), measured the grain of the catalogue across three flagship families, and rejected the family on task shape: every sampled flow is a geographic-unit x period aggregate panel, which is persistence-dominated and mirrored by the originating national sources.",
+ "prediction_time": "Would have been the end of reference period P (year/quarter/month) with features from periods <= P. The publisher does republish on schedule (monthly/quarterly/annual per flow, plus revision policies), so publication honesty would have been workable - the failure is the task shape, not the timing.",
+ "target_definition": "Would have been a binary change target on a country/city x period indicator series (e.g. quarter-over-quarter rise in a short-term indicator), because a level target on a persistent series is the measured nhs-ae failure mode. The change target on annual country panels has few independent positives (one global recession year marks every country at once), which is why the family was rejected rather than reformulated.",
+ "sources": [
+  {
+   "name": "OECD SDMX public REST API (behind data-explorer.oecd.org), OECD, Paris",
+   "url": "https://sdmx.oecd.org/public/rest/dataflow/all ; API documentation https://www.oecd.org/en/data/insights/data-explainers/2024/09/api.html",
+   "api": "Anonymous, documented, no key, rate-limited. Dataflow inventory: GET /public/rest/dataflow/all = 8,936,572 B XML with 1,550 <structure:Dataflow> elements (measured 2026-10-22); agency mix measured: all OECD.* directorates (OECD.CTP.TPS 212, OECD.SDD.NAD 187, OECD.CFE.EDS 133, OECD.EDU.IMEP 127, OECD.SDD.TPS 117, OECD.ELS.HD 86, ...) plus 2 IAEG-SDGs and 1 ESTAT flow - the endpoint also republishes other agencies' dataflows. Data queries in SDMX-CSV measured (examples below).",
+   "license": "OECD Terms and Conditions (www.oecd.org/en/about/terms-conditions.html, read 2026-10-22): 'Except where additional restrictions apply as stated above, you can extract from, download, copy, adapt, print, distribute, share and embed Data for any purpose, even for commercial use. You must give appropriate credit to the OECD by using the citation associated with the relevant Data...' with a per-dataset third-party-ownership caveat; Open Access Policy: CC BY 4.0 default for content published since 1 July 2024. Class A - the licence is not the blocker.",
+   "access": "Fully open: anonymous bulk-capable REST with CSV output; no registration."
+  },
+  {
+   "name": "OECD flagship flows sampled for grain (not candidates themselves): Quarterly National Accounts (DSD_NAMAIN1@DF_QNA), Key short-term economic indicators (DSD_KEI@DF_KEI), Labour market - Functional Urban Areas (DSD_FUA_LAB@DF_LABOUR)",
+   "url": "https://sdmx.oecd.org/public/rest/data/OECD.SDD.NAD,DSD_NAMAIN1@DF_QNA,1.1/all?format=csvfilewithlabels&startPeriod=2024-Q3&endPeriod=2024-Q3 ; .../OECD.SDD.STES,DSD_KEI@DF_KEI,4.0/all?...startPeriod=2026-01&endPeriod=2026-01 ; .../OECD.CFE.EDS,DSD_FUA_LAB@DF_LABOUR,1.1/all?...startPeriod=2020&endPeriod=2020",
+   "api": "Measured 2026-10-22: QNA one quarter (2024-Q3) = 21,779 data rows of country x transaction x measure x quarter observations (REF_AREA values are countries; header shows FREQ/REF_AREA/TRANSACTION/UNIT_MEASURE/TIME_PERIOD/OBS_VALUE); KEI one month (2026-01) = 1,469 rows of country x measure x month; FUA labour one year (2020) = 4,759 rows of city/FUA x measure x year (sample row: Greater Sydney, Labour force, Persons, 2020).",
+   "license": "Same OECD Terms and Conditions family (class A).",
+   "access": "Anonymous single-request CSV windows; trivially cheap to pull bounded windows."
+  }
+ ],
+ "license_evidence": [
+  "Measured 2026-10-22 via search from www.oecd.org/en/about/terms-conditions.html: 'The OECD makes data (the \"Data\") available for use and consultation by the public... Except where additional restrictions apply as stated above, you can extract from, download, copy, adapt, print, distribute, share and embed Data for any purpose, even for commercial use. You must give appropriate credit to the OECD by using the citation associated with the relevant Data...' - an attribution-plus-citation grant permitting redistribution and derivatives; the page instructs verifying per-dataset third-party ownership (the 'source' tab), which construction would have had to check per flow.",
+  "OECD Open Access Policy page (read 2026-10-22): 'The default licence applied by the OECD is Creative Commons Attribution 4.0 (CC BY 4.0)' for content published since 1 July 2024. Licence class A recorded so a future session knows the access is clean and only the task shape failed."
+ ],
+ "construction_script": null,
+ "split_strategy": "Not applicable - rejected at discovery. For the record of why: three disjoint windows were never at risk on volume (60+ years of country panels), but independent positives fail - on an annual country panel the positive class of a change task clusters into a handful of global shock years (a recession year marks most countries in the same period), and on a level target persistence wins, the exact defect that killed nhs-ae-four-hour-decline (persistence 0.5758 beat the shipped baseline 0.5511, operator decision 2026-10-21).",
+ "measurements": {
+  "catalogue_inventory_2026_10_22": "GET https://sdmx.oecd.org/public/rest/dataflow/all -> HTTP 200, 8,936,572 B XML, 1,550 Dataflow elements, 53 distinct agencies (52 OECD.* directorates + IAEG-SDGs + ESTAT); flow names sampled across families: air emissions accounts, SDG country global, climate projections by scenario 2030-2060 (cities/FUAs), coastal flooding, drought, wildfires, population by age and sex, internet speed, economy - all aggregate indicator families keyed on geographic unit x period.",
+  "grain_probes_2026_10_22": "Three flagship flows pulled as one-period CSV windows: QNA 2024-Q3 = 21,779 rows (11.5 MB) all of type country x transaction x measure x quarter; KEI 2026-01 = 1,469 rows (422 KB) country x measure x month; FUA labour 2020 = 4,759 rows (1.1 MB) city x measure x year. In every case the entity is a geographic unit (~100 countries or ~1,000-2,000 cities/FUAs) observed at aggregate level - no row-level events, transactions, cases or entities beyond the geographic unit anywhere in the sample.",
+  "mirror_texture_2026_10_22": "The catalogue is a secondary aggregator for task purposes: the FUA/Cities family and national-accounts family republish indicators whose primary publishers are national statistical offices (the OECD's own metadata attributes series to national sources), the inventory itself carries non-OECD agency flows (ESTAT, IAEG-SDGs), and the World Bank WDI / Eurostat / FRED ecosystem republishes overlapping OECD series - a task built here would compete with the same numbers from many channels. The OECD's one row-level public product family, the global recalls portal (recalls.oecd.org), aggregates member-state recall datasets - the bench already holds the Health Canada recalls candidate (hc-recalls-classification) and US recall tasks, so that would be a mirror of work already represented.",
+  "cost_of_this_verdict_2026_10_22": "Four HTTP requests (inventory 8.9 MB + three bounded CSV windows ~13 MB total); no bulk pull, no candidate directory data."
+ },
+ "jobs": [],
+ "artifacts": [],
+ "rejection_reason": "Task shape, not licence (licence is class A): the OECD's public statistical catalogue is 1,550 aggregate-panel dataflows keyed on geographic unit x reference period - measured on the inventory and three flagship flows across quarterly/monthly/annual and country/city grains. A prediction task on such panels is either a level target that persistence wins (the measured nhs-ae defect) or a change target whose positives cluster into a few global shock periods, and the same numbers are mirrored by the originating national offices and the WDI/FRED/Eurostat ecosystem. The only row-level OECD product (global recalls portal) mirrors national recall datasets already on the bench. No novel leak-free prediction task exists in this family at our runner's shape; recording it removes the publisher from future sessions' consideration.",
+ "review": null,
+ "next_action": "None - closed on task-shape grounds with the probes recorded; the licence is clean (class A) so a future session need not re-check it. Re-open only if the OECD ships a row-level product that is neither an aggregate panel nor a mirror of national datasets (e.g. an event- or case-level release), at which point the SDMX access measured here is ready to use.",
+ "jurisdiction": {
+  "country": "FR",
+  "region": "International organisations",
+  "publisher": "Organisation for Economic Co-operation and Development (OECD), headquartered in Paris, France",
+  "convention": "The publisher's HQ country is recorded because 'international' is not a country; the OECD is headquartered in Paris. This candidate is in this session's assigned region (international organisations) and its jurisdiction is non-US.",
+  "recorded_at": "2026-10-22"
+ },
+ "licence_class": "A",
+ "licence_note": "OECD Terms and Conditions grant extraction/download/adaptation/distribution for any purpose with citation; CC BY 4.0 default since July 2024. Clean - the rejection is on task shape, not licence."
+}

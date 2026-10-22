@@ -5325,3 +5325,73 @@ publication lag also cannot be established point-in-time (NHS publishes no vinta
 The staged v2026.13 release stays private and unpublished; v2026.10/v2026.11/v2026.12 are already marked superseded.
 Lesson adopted: a candidate whose reference baselines beat every model that can be built on it is a negative result, not a
 benchmark - decide that at construction time, not after three audits.
+
+## 2026-10-22 - International organisations discovery tick: four verdicts, one new ready candidate
+
+Scheduled discovery session (regional focus: International organisations - World Bank, OECD, UN agencies, WHO, IMF, ITU).
+Quota met and exceeded: four new sources taken to recorded verdicts, all four from the tick's named publishers, three of
+them outside the US (OECD/FR, UNODC/AT, ITU/CH; the World Bank's HQ is Washington so its jurisdiction is US, recorded as
+such and excluded from the non-US count). No build, qualification, packaging or publication commands were run. UNHCR,
+UNICEF and WHO-FluNet were already in candidates/ (parked 2026-10-20 / published) and were not re-vetted.
+
+- `wb-ieg-project-outcome` (World Bank Group / Independent Evaluation Group, Washington DC - US jurisdiction) - **go,
+  status ready**; the bench's first development-finance project-outcome task and its sixth ready-buffer candidate. Task:
+  at Board approval, will IEG's final evaluation rate a World Bank (IBRD/IDA) project's outcome MS+? Label source: IEG
+  World Bank Project Performance Ratings (Data Catalog 0038059 / Finances One DS00053), CC BY 4.0 on the dataset page and
+  in the metadata API, public classification, 12,629 rows x 21 cols in ONE anonymous CSV request (3,340,648 B measured),
+  data as of 2026-10-20, refreshed daily/quarterly. Measured: MS+ share 0.7365 over 12,478 rated rows; approval FY
+  1956-2024 all rows present; approval->evaluation lag min 1 / median 8 / max 31 years; windows train <=2009 n=9,741
+  (MS+ 0.7074) / eval 2010-2014 n=1,488 (0.7890) / holdout 2015-2019 n=1,097 (0.8067), both classes everywhere,
+  prevalence drift recorded as a property; 4,695 country-approvalFY clusters. Two discovery-time catches recorded for
+  construction: (1) country_fcs_status/country_lending_group are evaluation-vintage not approval-vintage (165/4,695
+  country-year cells carry both values, flipping with evaluation_fy - e.g. Cameroon FY1995: eval 1997 non-FCS, eval 2008
+  FCS), so they must not ship as features; (2) project_id P122764 appears twice (eval FY 2023 and 2026) - dedupe keeping
+  latest evaluation_fy and declare the grain. Approval-time features come from the anonymous Projects API
+  (22,729 projects; 1,000-row page cap measured, rows=10000 silently returns 1,000; ~27 MB / 23 requests for a full pull,
+  estimate). Novelty differentiated (check-novelty.py, 3 queries): the Bank's own internal model exists (Kraay & Tawara
+  WPS 7001, 2,729 IPF ops 1995-2012 - models in a working paper, no public artifact; its strongest features are
+  post-approval TTL track record and CPIA); HF hosts WB project documents with "no leaderboard yet / no train test split";
+  no public train/eval/holdout task with a scored contract found. Headroom risk recorded honestly in the record: with
+  strictly approval-time features the signal is unmeasured; the baseline triad decides at construction whether this is a
+  benchmark or a negative result (the nhs-ae lesson). Next action: construction per record.json's eight-step list.
+- `oecd-sdmx-aggregate-family` (OECD, Paris - FR) - **reject, dropped** on task shape; licence measured clean (class A)
+  so a future session need not re-check it. Measured: the SDMX API behind Data Explorer serves 1,550 dataflows (8.9 MB
+  inventory XML; 53 agencies incl. republished ESTAT and IAEG-SDGs flows); grain probes on three flagship families all
+  returned geographic-unit x period aggregates (QNA 2024-Q3: 21,779 country x transaction x quarter rows; KEI 2026-01:
+  1,469 country x measure x month rows; FUA labour 2020: 4,759 city x measure x year rows). Level target = the measured
+  nhs-ae persistence defect; change target's positives cluster into a few global shock years; the OECD's one row-level
+  product (global recalls portal) mirrors national recall datasets already on the bench (hc-recalls-classification).
+  Four HTTP requests; no bulk pull.
+- `unodc-data-portal` (UNODC, Vienna - AT) - **reject, dropped on licence, class D, at the first step**. The publisher's
+  own instrument (the portal's "Terms and Conditions" href, measured on both the home and datasearch pages) is the UN
+  legal notice: download and copy "for the User's personal, non-commercial use, without any right to resell or
+  redistribute them or to compile or create derivative works therefrom" - a published dataset of derived rows is both.
+  No open-licence string on any probed channel (home, datasearch; /api /about /help /documentation /faq all 404;
+  dataunodc.un.org 302). Consistent posture on UNODC's EWA terms ("data ... cannot be published without prior written
+  authorization"). Total cost: six HTTP fetches - the licence-first triage closed this door before any schema or volume
+  work, which is the policy working as designed.
+- `itu-datahub-ict-panels` (ITU, Geneva - CH) - **reject, dropped** on aggregate-panel shape + an existing mirror;
+  licence recorded as class B. The DataHub is annual country panels (~200 economies, questionnaire-collected ICT
+  indicators) and the World Bank already redistributes the identical DataHub bulk-downloadable (Data 360 dataset ITU_DH
+  with per-indicator CC BY-NC-SA 3.0 IGO labels; Data Catalog 0067055 claiming CC BY 4.0 for its copy - conflicting
+  republisher labels, the publisher's NC-SA instrument governs, read in a real browser after the host answered 403 to
+  plain clients, per the skill's 403-is-not-silence rule). The ITU Radiocommunication sector's satellite-filings registry
+  is the one unprobed row-level candidate family, named in the record for a future tick.
+
+Region texture for the next international-organisations tick: the named publishers split cleanly into the aggregate-panel
+family (OECD, ITU, IMF would land the same way - annual country panels republished by WDI) and the licence-locked family
+(UNODC class D; UNHCR/UNICEF parked 2026-10-20; WHO-FluNet carried a class C risk acceptance). The productive seam is the
+World Bank's project/evaluation microdata (this session's go) and similar entity-level operational products (IAEA PRIS
+reactor operations, WOAH WAHIS outbreak events were identified but not opened this session) - event/entity-level data
+with a documented label process, not indicator panels.
+
+Coverage after this session (discovery-coverage.py): 64 candidates, 22 live; International organisations 7 (CH 3, US 2,
+FR 1, AT 1); live non-US 15/22 (68%); ready buffer behind construction: tsb-railway-occurrence-casualty (packaged, awaiting
+operator), chilecompra-tender-outcome, camara-bill-advancement, za-municipal-audit-opinion, my-pricecatcher-weekly-increase,
+wb-ieg-project-outcome.
+
+Session hygiene: `python3 -m unittest discover -s tests` = 406 tests OK; `check-candidate.py --all` exit 0 (all four new
+records OK); probe scripts kept per convention (probe_ieg_stats.py, probe_join.py in the WB candidate); all session
+scratch (3.3 MB IEG CSV, 8.9 MB OECD inventory, three OECD CSV windows, fetched HTML - deleted from scratch by exact
+filename after the gate refused the recursive form). No US source substituted for the regional quota.
+
