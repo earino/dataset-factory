@@ -9,6 +9,7 @@ from pathlib import Path
 from urllib.parse import quote
 
 from .common import FactoryError
+from .release_schema import (Release, load_release, from_manifest, normalise_splits)
 
 SCHEMA = 1
 SLUG = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,99}$")
@@ -81,11 +82,7 @@ def flatten_splits(raw):
     correct release - which is exactly what happened: `project` flattened by level and
     `check_manifest` did not.
     """
-    if raw and all(isinstance(v, dict) and "rows" not in v for v in raw.values()):
-        return {f"{level}-{split}": entry
-                for level, per_level in sorted(raw.items())
-                for split, entry in sorted(per_level.items())}
-    return dict(raw)
+    return {name: split.counts() for name, split in normalise_splits(raw).items()}
 
 
 def config_names(raw):
@@ -95,9 +92,7 @@ def config_names(raw):
     a config it does not have. Both the Hub card and the dataset page print that command, so both
     derive the names through this one rule rather than each guessing.
     """
-    if raw and all(isinstance(v, dict) and "rows" not in v for v in raw.values()):
-        return sorted(raw)
-    return []
+    return sorted({split.config for split in normalise_splits(raw).values() if split.config})
 
 
 def dataset_config_names(manifest_data):
@@ -108,48 +103,38 @@ def dataset_config_names(manifest_data):
     its configs under `levels`. Reading only `splits` reported "no configs" for the second shape, so
     a Hub card and a dataset page would both print a command that loads the wrong thing.
     """
-    if manifest_data.get("levels"):
-        return sorted(manifest_data["levels"])
-    return config_names(manifest_data.get("splits") or {})
+    configs = dataset_config_splits(manifest_data)
+    return sorted(configs) if list(configs) != ["default"] else []
 
 
 def dataset_config_splits(manifest_data):
     """{config: [split names]} for every config the manifest declares."""
-    levels = manifest_data.get("levels") or {}
-    if levels:
-        split_map = manifest_data.get("splits") or {}
-        nested = bool(split_map) and all(isinstance(v, dict) and "rows" not in v
-                                         for v in split_map.values())
-        if nested:
-            return {name: sorted(split_map.get(name) or {}) for name in sorted(levels)}
-        return {name: sorted(split_map) for name in sorted(levels)}
-    nested = (manifest_data.get("splits") or {})
-    if nested and all(isinstance(v, dict) and "rows" not in v for v in nested.values()):
-        return {name: sorted(group) for name, group in sorted(nested.items())}
-    return {"default": sorted(nested)}
+    release = manifest_data if isinstance(manifest_data, Release) else from_manifest(manifest_data, strict=False)
+    return {name: list(splits) for name, splits in release.configs.items()}
 
 
 def project(package, editorial, config):
     """Construct a renderer-independent record. Never export whole manifests or job records."""
     package = Path(package)
-    m, d = read(package / "MANIFEST.json"), read(package / "DESTINATIONS.json")
+    release = load_release(package, strict=False)
+    require(not release.published or not release.problems, "; ".join(release.problems))
+    m, d = release.metadata, read(package / "DESTINATIONS.json")
     require(config.get("schema_version") == SCHEMA and editorial.get("schema_version") == SCHEMA,
             "Unsupported site configuration or editorial schema")
     require(config.get("hosting") == "github-project-pages", "Only project Pages hosting is configured")
     catalog = repository(config["catalog_repository"])
     gh = repository(m["repository"])
     require(catalog != gh, "Catalogue and dataset need separate repositories")
-    name, tag, artifact = slug(m["dataset"]), slug(m["release_tag"]), m["artifact_version"]
+    name, tag, artifact = slug(release.dataset), slug(release.tag), release.artifact_id
     require(bool(SHA.fullmatch(str(artifact))), "Invalid artifact version")
     require(d.get("release_tag") == tag and d.get("artifact_version") == artifact,
             "Destination evidence describes a different release or artifact")
-    dest = d["destinations"]
     for platform, key in (("github", "release_tag"), ("huggingface", "revision")):
-        entry = dest[platform]
-        require(entry.get("verified") is True and entry.get(key) == tag,
+        entry = release.destination(platform)
+        require(entry.verified and entry.revision == tag,
                 f"{platform}: this release has not been verified")
-    require(repository(dest["github"]["repo"]) == gh, "GitHub destination differs from manifest")
-    hf = repository(dest["huggingface"]["repo"])
+    require(repository(release.destination("github").locator) == gh, "GitHub destination differs from manifest")
+    hf = repository(release.destination("huggingface").locator)
     qualification = m["qualification"]
     require(qualification.get("artifact_version") == artifact and
             str(qualification.get("result", "")).startswith("PASSED"),
@@ -176,19 +161,19 @@ def project(package, editorial, config):
                 "Asset needs a SHA-256 digest and non-negative byte count")
         require(m["files"].get(logical) == {"bytes": item["bytes"], "sha256": item["sha256"]},
                 "Manifest file and asset digests disagree")
-        require(logical in dest["github"].get("files_verified", []), "GitHub verification omits an asset")
+        require(logical in release.destination("github").files_verified, "GitHub verification omits an asset")
         # The Hub path comes from the manifest when the dataset declares one. A level-structured
         # dataset does not follow the flat data/<asset>.csv rule, and assuming it did meant the
         # website could never be built for such a release. The flat rule remains the default.
         hf_path = (m.get("hub_paths") or {}).get(logical) or (
             f"data/{filename}" if filename.endswith(".csv") else filename)
-        require(hf_path in dest["huggingface"].get("files_verified", []), "Hub verification omits an asset")
+        require(hf_path in release.destination("huggingface").files_verified, "Hub verification omits an asset")
         assets[filename] = {"bytes": item["bytes"], "sha256": item["sha256"], "hf_path": hf_path,
                             "download": f"https://github.com/{gh}/releases/download/{encoded(tag)}/{encoded(filename)}"}
     require(bool(assets), "No release assets")
     # A dataset with levels carries its splits per level; the page shows every split of every level
     # rather than silently rendering only the first, and a flat manifest is untouched.
-    raw_splits = flatten_splits(m["splits"])
+    raw_splits = release.split_counts()
     splits = {}
     for key, entry in raw_splits.items():
         slug(key)
@@ -200,7 +185,7 @@ def project(package, editorial, config):
             splits[key]["positives"] = positives
     source = m["source"]
     require(source["landing_page"].startswith("https://"), "Source link must be HTTPS")
-    terms = m["licenses"]
+    terms = release.licences
     licenses = {key: text_field(terms[key]["spdx"], key, 100)
                 for key in ("code", "data_compilation", "source_data")}
     licenses.update({key: text_field(terms["source_data"][key], key)
@@ -213,20 +198,14 @@ def project(package, editorial, config):
     date.fromisoformat(editorial["release_date"])
     revision = editorial.get("site_revision", 1)
     require(type(revision) is int and revision >= 1, "site_revision must be a positive integer")
-    baseline = m.get("baseline") or {}
-    # A single-level release records one contract; a dataset with levels records one per level. The
-    # page reports whichever shape the manifest actually has instead of assuming the first's.
-    contract = baseline.get("contract") or {}
-    level_metrics = {}
-    for level, data in sorted((baseline.get("artifact") or {}).get("levels", {}).items()):
-        if isinstance(data.get("eval_auc"), (int, float)):
-            level_metrics[level] = {"eval_auc": float(data["eval_auc"]),
-                                    "contract_ok": data.get("contract_ok") is True}
+    baseline = release.baseline
     metrics = {}
-    if contract.get("contract_ok") is True and "eval_auc_from_validate_py" in contract:
-        auc = float(contract["eval_auc_from_validate_py"])
-        require(0 <= auc <= 1, "Invalid baseline AUC")
-        metrics["Evaluation ROC AUC"] = auc
+    if baseline and release.baseline_current:
+        if baseline.eval_auc is not None:
+            label = "Evaluation ROC AUC" + (f" ({baseline.scope})" if baseline.scope else "")
+            metrics[label] = baseline.eval_auc
+        else:
+            metrics.update({f"Evaluation ROC AUC ({name})": auc for name, auc in baseline.per_config.items()})
     record = {
         "schema_version": SCHEMA, "site_revision": revision, "dataset": name, "release_tag": tag, "artifact_version": artifact,
         "github_repository": gh, "hf_repository": hf, "urls": urls,
@@ -240,10 +219,11 @@ def project(package, editorial, config):
         "assets": assets, "splits": splits, "licenses": licenses,
         # Named so the page can print a loading command that runs: a config-less call against a
         # multi-config dataset raises, and the page is where most readers copy the command from.
-        "configs": dataset_config_names(m),
+        "configs": dataset_config_names(release),
         "source": {"name": source["name"], "url": source["landing_page"]},
         "qualification": {"gate_version": qualification["gate_version"], "result": qualification["result"]},
-        "baseline": {"metrics": metrics, "scope": baseline.get("scope", m.get("scope", ""))},
+        "baseline": {"metrics": metrics, "scope": (baseline.narrative if baseline else release.baseline_reason)
+                     or release.baseline_display},
     }
     record["record_sha256"] = digest(dump(record))
     return record
@@ -254,10 +234,11 @@ START, END = "<!-- dataset-factory:links -->", "<!-- /dataset-factory:links -->"
 
 def check_manifest(record, manifest):
     """Check what a remote pinned manifest says, as well as the provider's asset digests."""
-    require(manifest.get("release_tag") == record["release_tag"] and
-            manifest.get("artifact_version") == record["artifact_version"], "Pinned manifest identifies another release")
-    splits = {k: {field: v[field] for field in ("rows", "positives") if field in v}
-              for k, v in flatten_splits(manifest["splits"]).items()}
+    release = manifest if isinstance(manifest, Release) else from_manifest(manifest, strict=False)
+    require(release.tag == record["release_tag"] and
+            release.artifact_id == record["artifact_version"], "Pinned manifest identifies another release")
+    manifest = release.metadata
+    splits = release.split_counts()
     require(splits == record["splits"], "Pinned manifest split counts differ")
     require(dataset_config_names(manifest) == record.get("configs", []),
             "Pinned manifest config names differ")
