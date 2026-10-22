@@ -562,11 +562,67 @@
       "elapsed_seconds": 73.02,
       "response": "Decision\n\nEnter close-out now; no further probes. Record the strongest lead as parked/investigating, not ready: terms, target and splits are evidenced, but the timing contract is unresolved, and ready requires all five contracts. The HTTP 503 is an access failure, not a scientific rejection, so the lead is not dropped. The two rejected sources already carry supported rejection records; there is no new evidence to reopen them.\n\nSupporting evidence (observed only)\n\n- Lead: clean licence terms (classified from the publisher's own instrument), target and split evidence recorded \u2014 three of the five contracts satisfied.\n- Timing: unresolved. The release-calendar query returned HTTP 503 and one changed retry also failed; the one-changed-retry budget is spent, so I record the blocker and move on. No observed period_end -> published pair exists. No files were constructed, so no AUC, base rate or headroom number is claimed anywhere.\n\nUncertainty and next discriminating check\n\nMissing fact: whether the intended features' values are first published at or before the stated prediction instant. Discriminating check: when the calendar endpoint recovers, fetch one release's date stamps \u2014 or read a past release's stamps from the publisher's bulletin/archive \u2014 to obtain a single observed period_end -> published pair. If a feature publishes after the instant, remove that feature or treat the task as a redesign; the instant may not move past the outcome's revelation.\n\nOrdered actions and stopping condition\n\n1. Write the lead's record first (a decision not written is lost): verdict parked/investigating; blocker = feature publication timing; both 503 responses with URL and time; next probe and reopening event as above.\n2. Add a compact STATE.md entry carrying the same next action.\n3. Run the required candidate checks and the repository test suite (~2 min) against the updated records. If the clock expires mid-run, record the check as incomplete with a follow-up \u2014 never as passing.\n4. Review the diff (this session's notes only), commit the intended work, push, and check CI for that exact commit via the documented head_sha query; report a pending run as pending.\n\nStopping condition: all source probing stops immediately (retry budget spent); close-out ends at the runtime ceiling, with anything unfinished explicitly recorded as incomplete. Realistically the two-minute checks consume most of the window, so the commit/CI step is at risk of becoming the recorded follow-up rather than completed work.\n\nOperator report\n\nDiscovery session close-out. Two sources closed with supported rejection records (evidence recorded earlier this session). Strongest remaining lead: parked, not ready \u2014 licence terms, target and split evidence are clean; feature publication timing is unresolved. The release-calendar endpoint returned HTTP 503; one changed retry also failed. That is an access failure, not evidence about the dataset, and not grounds for rejection. No dataset was constructed this session, so no dataset measurements are claimed. Candidate checks and the test suite are the close-out work now in progress; their actual outcome will be recorded, and if time runs out they will be recorded as incomplete with a follow-up, not reported as passing. The commit of this session's notes and the CI result for that exact commit follow the same rule: reported as observed, pending as pending. Next action, specific enough for a fresh session: retry the release calendar when it recovers, or read a past release's published stamps, to obtain one observed period_end -> published pair; then decide ready versus feature removal/redesign on that evidence.\n\n\u2014 Scout (Hermes)\n",
       "response_sha256": "9eee5ef2fb6d4fa708e7477ec7b2e6c362682de6a9d6fc37768385f786d02322"
+    },
+    {
+      "partition": "diagnostic",
+      "case": "failed-probe-closeout",
+      "arm": "revised",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-72",
+      "session_id": "20261022_235301_541882",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "8cf7beed14d9c666b81241fa6a0ff9964bece7edd0265ec0b74b311a163bbd98",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 6046,
+        "output_tokens": 1095,
+        "cache_read_tokens": 19456,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 26597,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 4,
+          "output_tokens": 12,
+          "cache_read_tokens": 512,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 6042,
+          "output_tokens": 1083,
+          "cache_read_tokens": 18944,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 19.704,
+      "response": "Decision\n\nStop discovery on the timing question and close the session administratively. The strongest lead cannot become `ready` this session: its feature publication timing is unresolved, and the probe that would resolve it failed twice. Record it as `parked`/`investigating`, not `ready`, and spend the remaining time on the checks and a truthful report.\n\nSupporting evidence\n\n- The lead has clean terms, a defined target and split evidence \u2014 three of the five discovery contracts supported by recorded observations.\n- Timing is not supported. The release-calendar query returned HTTP 503, and one changed retry also failed. That is an access failure, not evidence that no calendar exists, that features are late, or that features are available. It proves nothing about availability, so no timing claim may be written.\n- Two other sources already have supported rejection records; those verdicts stand as this session's completed rejections.\n- Local required candidate checks plus the repository test suite take about two minutes against three minutes remaining, so finishing the mandated checks takes priority over another probe.\n- The working tree contains only this session's notes, so the diff is safe to review and commit.\n\nUncertainty and next discriminating check\n\nMissing fact: when each intended feature is first published relative to the prediction instant \u2014 an auditable as-of policy with observed period-end-to-publication pairs, not an assumed lag. Next check: a successful release-calendar or publication-schedule response for the same series, with at least one observed `period_end -> published` pair and its coverage stated. Reopen only on that evidence; a second failed access does not advance the lead.\n\nOrdered actions and stopping condition\n\n1. Persist the timing probe result now: endpoint/URL, date, HTTP 503, the changed retry and its failure, and the population the query covered. State explicitly that availability is unknown.\n2. Update the candidate record to `parked`/`investigating` with the exact missing fact, this next probe, and the reopening event.\n3. Run the required candidate checks and the repository test suite in the remaining time. Record only observed results; if either does not finish, mark it incomplete with a follow-up \u2014 never passing.\n4. Update `STATE.md` with a compact entry, review the diff, commit only this session's notes, and push.\n5. Check CI for that exact commit if time permits. Otherwise report CI as pending with the commit SHA and leave a follow-up.\n\nStopping condition: stop at the session deadline. Do not start another probe, do not retry the calendar a third time, and do not describe checks or CI as passed unless the run output was observed.\n\nOperator report\n\nLeads: one reopened/opened lead carried to timing stage; two sources rejected on supported evidence.\n\nDecision: strongest lead `parked` \u2014 clean terms, target and split evidence, but feature publication timing unresolved. No timing claim is made; availability is unknown.\n\nDecisive evidence: release-calendar query returned HTTP 503; one changed retry also failed. This is an access failure, not absence of a calendar and not evidence of lateness.\n\nChecks/commit/CI: checks and test suite scheduled in the final two minutes; results reported only as observed, with anything unfinished marked incomplete. Commit limited to this session's notes. CI status reported as pending unless the run for the exact commit was read.\n\nNext action: fetch the source's release calendar or publication schedule and record observed period-end-to-publication pairs; reopen the lead only on that evidence.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "bd8def9e668990e293247130fa42e1854bf002941e4cfa538b529a02167918ad"
     }
   ],
   "ledger": {
-    "calls": 72,
-    "tokens": 2505074
+    "calls": 73,
+    "tokens": 2531671
   },
-  "updated_at": "2026-10-22T23:53:11Z"
+  "updated_at": "2026-10-22T23:53:33Z"
 }
