@@ -5765,6 +5765,8 @@ with explicit unknown totals; invalid counters, unpriced research calls in-perio
 and positive session counters lacking usage rows also hold. Scout verified the
 installed schema/writer read-only in comment 6349573480. An empty valid ledger is
 still allowed, and the configured limits/exclusions have not changed. New offline
-cases exercise SQLite failures and the real gate-to-wrapper refusal path. Original
-tests and qualification code are untouched. No live gate, runtime or schedule was
-changed. Next: clean-clone suite, exact-commit CI and Scout review before rollout.
+cases exercise SQLite failures and the real gate-to-wrapper refusal path. Eduardo
+explicitly approved supplying a valid empty database in the two existing lock-test
+fixtures; their assertions are unchanged. Qualification code is untouched. Clean
+Python 3.13 clone: 462 tests passed, six environment skips; doctor passed. No live
+gate, runtime or schedule changed. Next: exact-commit CI and Scout review before rollout.
