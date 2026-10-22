@@ -1290,11 +1290,67 @@
       "elapsed_seconds": 20.481,
       "response": "Decision\n\nDo not write the shared research state. Collect the finished job, preserve its evidence in job-scoped paths, and hand the state update to the session that holds the mutex. Concurrently editing `STATE.md` and `candidates/<id>/record.json` from a second, non-admitted path risks clobbering the coordinator's uncommitted edits, and committing there would snapshot a half-finished session as project state. The evidence survives; the shared files wait.\n\nSupporting evidence (from supplied material only)\n\n- The mutex is an admission control for research sessions; the watcher is not an admitted session. Nothing in the repository grants it write authority over another session's in-flight state.\n- \"Only one coordinator may launch workers using a given job ledger.\" A second path launching a corrected job or rewriting the ledger while a coordinator is active violates that.\n- The session brief's own ordering puts collection and reporting before state mutation; state mutation is step 4, which requires a clean, uncontested file.\n- Uncommitted edits plus no handoff means there is no record of intent to merge against \u2014 a blind rewrite loses work, and `git add -A` would commit it.\n\nWhat remains unmodified\n\n`STATE.md`, `candidates/<id>/record.json`, any other dirty tracked file, the mutex inode and `research-session.lock` marker, the job ledger, `candidates/<id>/source/job.json`, and dataset artifacts. No commit, no push, no CI claim.\n\nUncertainty and next discriminating check\n\nUnknown: whether the mutex holder is alive or stale, and whether it already collected this job (double-handling). Check the process table for the lock's recorded PID and parent/group identity, and read the job record's collection state plus `git status` for which paths are dirty. If the PID is gone, the mutex is stale and the edits are orphaned \u2014 then a normal reconcile applies, but still to the exact paths, never by deleting the mutex to \"clear\" it.\n\nOrdered actions\n\n1. `worker collect <job_id>`; distinguish `running` from a result.\n2. Read the staging `manifest.json`, fetch only small reports into `.factory/<job_id>/reports/`. No bulk CSV to this host.\n3. Evaluate properly: build job \u2192 coverage (stations, station-years built vs expected from `build_summary.json`) then the gate `ok` flags; baseline/other \u2192 its own result file. Any incomplete coverage or failed gate is a rejection, and no AUC, base rate, or headroom figure is quoted without a passing qualification covering this exact artifact version (`--accept`).\n4. Write the outcome and diagnosis to job-scoped files only: `.factory/<job_id>/reports/`, plus a pending-handoff note naming exactly the `STATE.md` and `record.json` changes the coordinator should make at session end.\n5. Destroy the worker only if collection is verified and the ledger shows no other session mid-collection; otherwise leave it, record its expiry/reservation, and let the coordinator finish or the sweeper collect it. Never destroy on ambiguity.\n6. Operator report, then the handled marker last: `.factory/<job_id>/handled` with the one-line summary.\n\nStopping condition\n\nStop when the job's evidence is preserved, its verdict and the deferred state edits are written down, the worker's disposition is recorded, and the operator report is delivered. Do not wait for the coordinator, do not hold the session open, do not retry state writes.\n\nOperator report\n\n\"Job <id> finished: <status, numbers from its own result file / coverage counts and gate flags>. Reports saved to .factory/<id>/reports/. I did not touch STATE.md or the candidate record \u2014 session <id> holds the research mutex with uncommitted edits to both, and no handoff was recorded. Those updates, the commit, the CI check for that commit, and any corrected-job launch are queued for that session; the exact edits are in .factory/<id>/pending-handoff.md. Worker: <destroyed, with confirmation / left running, expires <time>, reason>. State and CI are therefore unverified right now.\"\n",
       "response_sha256": "efe039d5f04f5d545a9d3a517039e295db61570ed4993fb01a13d0699c879345"
+    },
+    {
+      "partition": "development",
+      "case": "watcher-ownership",
+      "arm": "revised",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-49",
+      "session_id": "20261022_232611_66a7b6",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "0af6f5112507ad823166432c9a4eafa41d53886964e29030916b17b65b8ad0b6",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 14204,
+        "output_tokens": 1078,
+        "cache_read_tokens": 19968,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 35250,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 4,
+          "output_tokens": 12,
+          "cache_read_tokens": 512,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 14200,
+          "output_tokens": 1066,
+          "cache_read_tokens": 19456,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 94.415,
+      "response": "Decision\n\nDefer. Do not process, collect, clean up, commit or mark the finished job as handled. The advancement coordinator owns the mutex and the candidate; with no recorded handoff, ownership is active and the follow-up is unowned. Report only what the ledger and watcher already show.\n\nSupporting evidence\n\n- The watcher brief requires an idle coordinator with a documented handoff before mutations: \"Check whether a research coordinator is active and the working tree contains its unfinished work... If ownership is active or uncertain, report the job ID and pending follow-up, leave it unhandled, and defer to the owner.\"\n- Here ownership is not merely uncertain \u2014 it is active. The coordinator holds the shared research mutex, and the same condition is called out in OPERATIONS.md (\"Worker follow-up shares research admission\"): the watcher holds that nonblocking mutex around collection and follow-up, so a busy mutex means another session is in flight.\n- \"No handoff was recorded\" removes the only route to handling the named job. The brief allows mutations only \"for an idle coordinator with a documented handoff.\"\n- Uncommitted edits in STATE.md and the candidate record are evidence of that session's in-progress work. The brief forbids taking over its candidate, launching replacements, committing its edits or regenerating its package; the release skill likewise says a concurrent session's package or unfinished changes are not ours to commit.\n- A stale JSON marker alone would not prove ownership either way, but this case does not rest on a marker: the OS mutex is held, which is the signal the brief says to trust.\n\nUncertainty and next discriminating check\n\nWe do not know the job's outcome, whether the artifact is durable in staging, whether qualification passed, or how long the coordinator will remain active. We also cannot tell whether the mutex holder is the advancement session itself or a descendant retaining the inherited descriptor \u2014 the brief warns that only the actual process table, command line, parent/group identity and ledger can settle that, not a lock file. Cheapest discriminating check once the mutex is free and recorded work is committed or handed off: read the job ledger entry for the worker ID and its status/result fields, then compare the watcher's event timestamp against the coordinator's session marker and the candidate's last write. That determines whether the worker event was already absorbed. If the mutex remains held past the session's agent run budget, the next step is the documented orphan inspection \u2014 process table plus ledger \u2014 not deleting the mutex or killing a PID from a stale file.\n\nOrdered actions\n\n1. Record the event in the watcher/ledger bookkeeping only (no candidate, STATE.md or package edits): job ID, watcher timestamp, \"deferred \u2014 coordinator holds research mutex, no handoff recorded.\"\n2. Leave the job unhandled: no `worker collect`, no qualification acceptance, no cleanup, no commit, no push, no CI claim, and no `.factory/<job_id>/handled` marker.\n3. Do not touch the mutex, the lock JSON, the coordinator's uncommitted STATE.md/candidate edits, or the staged/package bytes.\n4. When the mutex is free and the coordinator's work is committed or explicitly handed off, resume the normal follow-up: collect the named job, read overall status and each check's result, require a current passing qualification plus `--accept` on exact bytes, confirm worker/IP deletion by provider read-back, then commit and mark handled.\n5. If the coordinator is confirmed gone and left no handoff, record that as an ownership gap and escalate for a fresh handoff rather than inferring ownership.\n\nStopping condition\n\nStop after step 4 is either completed and verified (or explicitly proven unnecessary because the coordinator already absorbed the job). Stop immediately if the mutex stays held, if a digest conflict appears, or if evidence is missing \u2014 report incomplete rather than closing the event.\n\nOperator report\n\nWorker job finished; the advancement coordinator is still active and holds the shared research mutex, with uncommitted edits to STATE.md and the candidate record and no recorded handoff. I have not collected, scored, cleaned up, committed or marked the job handled, and I have not touched the lock, the coordinator's edits, or any package/manifest/tag. Status is therefore \"result pending owner\" \u2014 no qualified numbers are available and none are quoted. Cleanup of the billable worker is deferred to the owning session under the normal lifecycle; expiry sweeping continues independently. Next action: on mutex release, collect and verify the named job (status plus each check, qualification on exact bytes, provider read-back for deletion), then commit and mark handled. Owner: advancement coordinator; watcher re-checks when admission is free.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "34545d04e353e0535c9ac732d82ab257093c697b61bfe265c1e92242e8ea548b"
     }
   ],
   "ledger": {
     "calls": 49,
-    "tokens": 1638552
+    "tokens": 1673802
   },
-  "updated_at": "2026-10-22T23:26:22Z"
+  "updated_at": "2026-10-22T23:27:44Z"
 }
