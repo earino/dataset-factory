@@ -5748,3 +5748,11 @@ cleanup after that review: once normal completion reaps the child, its old group
 ID may be recycled, so the wrapper must not signal it. Timeout cleanup signals
 only while the leader remains unreaped. A new real-process regression checks
 normal completion sends no group signal. No live fault injection or deployment.
+**Observed, recorded, not fully attributed:** austin-911-response's site-destination verified_at
+advanced twice during the close-out window (18:12:18 -> 18:45:41, captured in fd29c3e, ->
+18:51:05, committed here) in the site pipeline's own record_site_destination format - a write
+the code makes only after a live anonymous verification. prepare/release-manifest/check-package/
+the test suite were each ruled out by reproduction, and no cron or session schedule matches the
+moments; the live site re-verified anonymously from here (200, cross-links present), so the
+recorded claim is true and the value is kept. If a stray site-verification automation exists on
+this host, the builder should make it commit its own writes or stop leaving them in the tree.
