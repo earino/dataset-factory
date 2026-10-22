@@ -1,10 +1,57 @@
 # Current state
 
-Updated: 2026-10-21 14:55Z (worker watcher closed the v2026.11 staging arc: the 14:00 research session
-rebuilt nhs-ae as v2026.11 and staged it private on both destinations but hit its 120-turn limit before
-recording anything; this run verified both destinations from the coordinator, diagnosed and corrected the
-nhsae-hf-004 loading-check spec defect (nhsae-hf-005 green), tagged the Hub last, and pushed the recording
-commit).
+Updated: 2026-10-22 00:30Z (scheduled discovery tick, East Asia focus: four new candidates opened and
+verdicted - tw-typhoon-day-closure GO, tw-reservoir-drought-storage PARK, hk-datagov-portal PARK,
+kr-kosis-kma-access PARK; all four recorded with evidence and pushed).
+
+## 2026-10-22 - East Asia discovery tick: one GO (Taiwan typhoon-day closures), three parks, all recorded
+
+Regional focus East Asia; four sources opened, each taken to a recorded verdict before the next. All four
+are class B (attribution) on licence - the tick probed no class C source, per the standing triage rule.
+
+- **tw-typhoon-day-closure - GO (status investigating).** Predict, at the statutory announcement instant
+  (previous evening 19:00-22:00, quoted from the DGPA's own operating-rule text on the daily page), whether
+  a Taiwan county fully stops work and school on the next date, during typhoon warning periods. Label source:
+  DGPA 歷次天然災害停止上班上課訊息 archive - measured 500 announcements 2001-present (oldest 民國90.07.30),
+  anonymous plain GET, per-county status attachments (Big5 era and 2024 samples parsed as static tables;
+  detail page 34,360 B, attachments 3-21 KB). Features: CWA 颱風資料庫 warning bulletins 1958-present plus
+  prior-day closure status, all before the instant. Novelty check recorded (verdict differentiated): 0 HF
+  hits on all five queries; Zenodo/arXiv hits are TC-track and unrelated papers; the only prior art is civil
+  typhoon-day predictor apps, which ship no dataset or splits. One unproven step pinned as the first
+  construction task: some modern-era DGPA attachments are shell-only, so per-county statuses for 2015-2026
+  must come from the nds.html daily-view parameterisation or the county-portal CSVs (data.taipei verified;
+  fallback: re-target to announcement-day grain). Gotchas recorded: DGPA HTTPS fails strict SSL validation
+  (Missing Subject Key Identifier) - unverified context needed; data.taipei is IPv6-only from this host.
+- **tw-reservoir-drought-storage - PARK.** The drought-onset task is well-posed and ODDL 1.0, but no
+  anonymous historical daily storage series exists: data.gov.tw 45501/41568 publish current-day snapshots
+  only, the publisher routes history to the fhyv2 viewer whose /Api/v2/* endpoints answer HTTP 401 to plain
+  clients (measured), /disaster/Reservoir/Comparison is an AngularJS HTML shell, and opendata.wra.gov.tw is
+  unreachable from this host (same SSL failure + intermittent DNS). Unpark: a standing snapshot collector
+  seeded by the routine, or an authenticated WRA history endpoint.
+- **hk-datagov-portal - PARK.** Licence clean (terms: redistribute and reproduce, commercial and
+  non-commercial, with attribution) and the anonymous CKAN API works - but the catalogue (3,831 packages,
+  enumerated: Censtatd 935 of them) supports no task family the bench does not already carry or has not
+  already parked: aggregate statistical series (parked twice: statcan, ons), WSD weekly reservoir storage
+  (same family as tw-reservoir), HKO TC best track (the TCRISI/TCBench mirror precedent that dropped
+  jma-typhoon), and incident/prosecution series that are annual/quarterly aggregates (EMSD "reported lift
+  incidents" CSV measured: 43 rows, Year x Cause x Count). The one per-case dataset (WSD burst mains, CSDI
+  geoportal) is positives-only with no network covariates on the portal. Unpark: operator decision, same
+  shape as the Singapore catalog park.
+- **kr-kosis-kma-access - PARK.** South Korea's two national sources have no anonymous programmatic path:
+  KOSIS OpenAPI requires personal signup + 인증키 (kosis.kr/openapi page evidence recorded), KMA's portal
+  requires membership with PII (their own guide PDF: e-mail, name, phone). Licences themselves are clean
+  (KOSIS explicitly permits redistribution with attribution for domestic statistics). Unpark: an
+  operator-registered KOSIS key stored under /opt/data/.secrets, then open a candidate on a named series.
+
+Japan (e-Stat/JMA) was not opened this tick: the four verdicts above satisfied the quota within budget, and
+JMA's TC task is already dropped on the mirror precedent; e-Stat remains the first probe for the next tick.
+
+Coverage after this session (scripts/discovery-coverage.py): 56 candidates, 19 live; East Asia 5 (TW 2,
+HK 1, KR 1, JP 1; live East Asia 1 - tw-typhoon-day-closure); live non-US 13/19 (68%). No US source was
+substituted for the regional quota. Session hygiene: check-candidate.py OK on all four new records,
+check-novelty.py verdict recorded for the GO, full unittest suite green, probe scripts kept per convention
+(probe_*.py in each candidate directory), scratch probes deleted.
+
 who-flunet-activity-exceedance stays PUBLISHED (2026-10-21 10:24Z, the operator's "ship it").
 nhs-ae-four-hour-decline v2026.11 is PACKAGED AND FULLY STAGED PRIVATE ON BOTH DESTINATIONS, awaiting the
 independent re-audit BEFORE any flip: GitHub release v2026.11 (419642457, tag == main == 98139919, 5/5

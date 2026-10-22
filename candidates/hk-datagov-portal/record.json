@@ -1,0 +1,40 @@
+{
+  "id": "hk-datagov-portal",
+  "created_at": "2026-10-22",
+  "status": "parked",
+  "verdict": "park",
+  "domain": "government open-data catalog",
+  "prediction_question": "No task: the portal was enumerated and every candidate task family it can carry duplicates a family already on the bench or parked on it (aggregate statistical series; own-history environmental exceedance; TC best-track mirrors).",
+  "prediction_time": "N/A - no task identified.",
+  "target_definition": "N/A - no task identified.",
+  "sources": [
+    {
+      "name": "DATA.GOV.HK (Hong Kong government open data portal)",
+      "url": "https://data.gov.hk/",
+      "api": "https://data.gov.hk/en-data/api/3/action/package_search|package_show|package_list (CKAN v3, anonymous)",
+      "licence": "DATA.GOV.HK Terms and Conditions of Use",
+      "notes": "3,831 packages counted via package_list; provider counts by prefix measured; terms allow redistribution with attribution"
+    }
+  ],
+  "license_evidence": [
+    "https://data.gov.hk/en/terms-and-conditions (read 2026-10-22): 'You are allowed to browse, download, distribute, reproduce, hyperlink to, and print the Data for both commercial and non-commercial purposes on a free-of-charge basis on condition that: you shall comply with the Terms of Use; you shall identify clearly the source of the Data and acknowledge the Government and the Relevant Organisations' ownership of the intellectual property rights in the Data and in all copies thereof...'. Class B (attribution)."
+  ],
+  "licence_class": "B",
+  "licence_note": "Portal terms permit redistribution and reproduction, commercial and non-commercial, with source attribution; individual departments may add their own terms per dataset (checked datasets carried none at package level).",
+  "jurisdiction": {
+    "country": "HK",
+    "region": "East Asia",
+    "publisher": "Office of the Government Chief Information Officer, HKSAR Government (DATA.GOV.HK)",
+    "recorded_at": "2026-10-22"
+  },
+  "measurements": {
+    "package_list_2026_10_22": "package_list: 3,831 packages. Provider prefix counts: censtatd 935, hkma 198, swd 167, lcsd 124, landsd 119, emsd 100, immd 88, dh 81, wsd 72, edb 71, dpo 65, td 60, epd 59, hko 57, afcd 56 - dominated by aggregate statistical tables.",
+    "event_grain_sweep_2026_10_22": "Keyword sweep over package names: 'accident' -> Transport Dept annual road traffic accident tables 2018-2024 (aggregate XLSX/CSV) and Marine Dept marine accident statistics; 'incident' -> EMSD lift/escalator/gas incident STATISTICS (the 'Reported Lift Incident Records' CSV measured at 43 rows: Year x Main Cause x Count, annual aggregate); 'burst' -> WSD annual water main burst CSV + one CSDI geoportal layer of individual burst cases; 'prosecut' -> ICAC/Customs quarterly-by-sector aggregates.",
+    "wsd_burst_case_2026_10_22": "The only per-case dataset found: WSD 'Report of Main Burst Case' (hk-wsd-wsd9-report-of-main-burst-case), served as a CSDI geoportal layer (wsd_rcd_...). Positives-only (burst cases with location, pipe size, date); no pipe-network inventory covariates are exposed on the portal, so a supervised population cannot be defined from the portal alone."
+  },
+  "rejection_reason": "Parked on task-family grounds, with access and licence settled: the anonymous CKAN API works (3,831 packages enumerated) and the portal terms permit redistribution with attribution (class B), but the catalogue is dominated by aggregate statistical series (Censtatd 935/3,831) in families the bench has already built or parked twice (statcan-wds-aggregate-series, ons-la-claimant-count-direction), and the event-grain leads each map onto an existing bench family or a known mirror: WSD weekly reservoir storage (= the tw-reservoir-drought family), HKO tropical-cyclone best track (= the TCRISI/TCBench mirror precedent that dropped jma-typhoon-rapid-intensification), EMSD/WSD/ICAC incident and prosecution series (annual/quarterly aggregates), Censtatd hospital tables (NHS A&E family, dropped there as a negative result). No dataset supports a task the bench does not already carry.",
+  "next_action": "Unpark only by operator decision, same shape as the Singapore catalog park: (a) accept a second own-history environmental-exceedance family member (cleanest candidate: WSD Storage Position of Impounding Reservoirs, weekly CSVs, anonymous), or (b) accept an aggregate-statistics family member (ICAC corruption complaints/prosecutions by sector, quarterly), or (c) name a specific event-grain dataset and fund the off-portal join (WSD burst cases + pipe network covariates) as a construction.",
+  "review": null,
+  "jobs": [],
+  "artifacts": []
+}

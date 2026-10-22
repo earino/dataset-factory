@@ -1,0 +1,203 @@
+{
+  "id": "tw-typhoon-day-closure",
+  "created_at": "2026-10-22",
+  "status": "investigating",
+  "verdict": "go",
+  "domain": "emergency management / government decision prediction",
+  "prediction_question": "For a Taiwan county on a date D for which a typhoon land warning (陸上颱風警報) is active or being considered, will offices and schools be fully closed (全日停止辦公及上課) on D, predicted at the statutory announcement instant on the evening before D?",
+  "prediction_time": "The announcement instant is fixed by regulation, quoted from the DGPA daily closure page (2026-10-22) and repeated verbatim in the announcement attachments: full-day or morning closures must be announced between 19:00 and 22:00 the previous evening (前一日晚間7時至10時前發布); same-morning reinforced closures are announced by 04:30 and broadcast by 05:00. Features may therefore use only data published before 19:00 Taipei time on D-1 (CWA warning bulletins issued through 17:10/20:10 are the boundary cases and must be pinned per-bulletin by issuance timestamp).",
+  "target_definition": "Binary per (county, date): the county's status for date D is a full-day stop of both work and school, as published by the Directorate-General of Personnel Administration (DGPA). Label sources (excluded from shipped features): the DGPA 歷次天然災害停止上班上課訊息 archive (500 announcements, 2001-present, per-county status attachments) and, for the modern era, county-portal historical CSVs (e.g. data.taipei 臺北市歷次天然災害停止上班上課訊息, fields 民國年/月/日/天然災害名稱/停止上班上課情形).",
+  "sources": [
+    {
+      "name": "DGPA 歷次天然災害停止上班上課訊息 (historical closure announcements)",
+      "url": "https://www.dgpa.gov.tw/informationlist?uid=374",
+      "api": "https://www.dgpa.gov.tw/informationlist?uid=374&pgnum=50&page={1..50}; detail: /information?uid=374&pid={id}; attachments: /FileConversion?filename=...",
+      "licence": "Government website open declaration (政府網站資料開放宣告, linked in the site footer); same agency's mirror of this data on data.gov.tw is Open Government Data License 1.0",
+      "notes": "500 records, 50 pages, oldest 民國90 (CE 2001-07-30); announcement pages carry 公告時間; per-county status attachments static in older/typhoon-event records (Big5 era and 2024 sample), shell-only in some modern records"
+    },
+    {
+      "name": "data.gov.tw dataset 20457 - Natural disaster stop working, stop attending class situation (DGPA, CAP feed)",
+      "url": "https://data.gov.tw/dataset/20457",
+      "licence": "Open Government Data License 1.0 (授權方式: 政府資料開放授權條款-第1版; 計費方式: 免費; authorization site: http://data.gov.tw/license)",
+      "notes": "RSS + KMZ CAP-format resources (current alerts), publish date 2015-08-20, updated 2026-06-01"
+    },
+    {
+      "name": "CWA 颱風資料庫 typhoon database (warning bulletins 1958-present)",
+      "url": "https://rdc28.cwa.gov.tw/TDB/public/warning_typhoon_list",
+      "api": "server-rendered per-typhoon pages, e.g. https://rdc28.cwa.gov.tw/TDB/public/typhoon_detail?typhoon_id=197823 (issuance/release times, bulletin counts)",
+      "licence": "CWA Government Website Open Information Declaration: all website data provided free of charge, non-exclusive, sublicensable, irrevocable, users may reproduce/adapt/compile/publicly transmit for any purpose with attribution (https://www.cwa.gov.tw/V8/C/information.html)",
+      "notes": "feature source: per-typhoon warning bulletins (position, intensity, radius, forecast), 1958-present; CWA's opendata.cwa.gov.tw platform needs a free member key, but the website/TDB archive does not"
+    },
+    {
+      "name": "data.taipei - 臺北市歷次天然災害停止上班上課訊息 (cross-check label source)",
+      "url": "https://data.taipei/dataset/detail?id=83b013c2-35f3-4470-98d7-03dd68a372cb",
+      "licence": "data.taipei open data licence (資料授權: 公開), free",
+      "notes": "CSV 9.49 KB, fields 民國年、月、日、天然災害名稱、臺北市停止上班上課情形, updated yearly; template for the per-county label fallback; DNS resolves to IPv6 only - fetch needs a browser or IPv6-capable client from this host"
+    }
+  ],
+  "license_evidence": [
+    "data.gov.tw dataset 20457 page read in a real browser 2026-10-22: 'License: Open Government Data License, version 1.0 / Charge: free / Note: Authorization description website: http://data.gov.tw/license'. The same ODDL text governs dataset 45501 and the platform-wide licence page.",
+    "CWA website declaration (https://www.cwa.gov.tw/V8/C/information.html, read 2026-10-22 via search-engine cache of the live page): '以無償、非專屬、得由使用者再授權之方式提供公眾使用，使用者得不限時間及地域，重複、改作、編輯、公開傳輸或為其他方式之利用...然使用時應註明出處' - free, non-exclusive, sublicensable, any purpose, attribution required.",
+    "DGPA announcement attachments (2026-10-22 fetch of pid=13097 attachment) carry the operating rules with the statutory announcement windows quoted in prediction_time; the DGPA site footer links 政府網站資料開放宣告 (the standard Taiwan government open declaration)."
+  ],
+  "licence_class": "B",
+  "licence_note": "Open Government Data License 1.0 (data.gov.tw, DGPA-mirrored dataset) and the government-website open declarations (CWA, DGPA): free use, redistribution and derivatives with attribution; attribution and non-misrepresentation conditions carried through.",
+  "jurisdiction": {
+    "country": "TW",
+    "region": "East Asia",
+    "publisher": "Directorate-General of Personnel Administration, Executive Yuan (行政院人事行政總處); features: Central Weather Administration (交通部中央氣象署)",
+    "recorded_at": "2026-10-22"
+  },
+  "measurements": {
+    "dgpa_archive_span_2026_10_22": "DGPA archive: 500 announcements over 50 pages (10/page), oldest record 民國90.07.30 (CE 2001-07-30), newest 民國115.09.03 (CE 2026-09-02) - measured from informationlist pages 1 and 50, fetched anonymously 2026-10-22.",
+    "dgpa_fetch_sizes_2026_10_22": "Detail page pid=13097 = 34,360 bytes; attachments 3,058-21,661 bytes; full harvest is about 50 list pages + 500 detail pages + 500-1000 attachments, on the order of 1,050-1,550 requests and 20-30 MB total (estimate labelled as such; not yet measured end-to-end). DGPA HTTPS fails strict SSL validation (chain missing Subject Key Identifier), so probes used an unverified context; the browser accepts the chain.",
+    "dgpa_attachment_formats_2026_10_22": "Sampled first record of list pages 1/6/12/20/30/40/45: static per-county status table found for 2002 (Big5), 2009-era, and 2024-10-04 (UTF-8 typhoon-event table, 21,661 bytes); shell-only files (no county rows, only the statutory disclaimer block) observed for 2023-06-01, 2025-09-30 and 2026-09-02 - per-county extraction for the modern era is the one unproven step and is pinned as the first construction task."
+  },
+  "next_action": "Construction (coordinator-side scripts first, then worker): (1) PIN THE MODERN-ERA LABEL EXTRACTION - try DGPA daily-view query variants (the server-rendered /typh/daily/nds.html answers per-county statuses for the current day; find its historical-date parameterisation if any) and, in parallel, harvest the county-portal CSVs (data.taipei verified; Taichung and Taoyuan equivalents are listed as related datasets on data.gov.tw 20457); decision gate: if neither yields machine-readable per-county statuses for 2015-2026, re-target the label to announcement-day grain (which counties closed anywhere on date D, derivable from the archive alone). (2) Build the event panel: county-days within typhoon warning periods 2001-2026 from the DGPA archive plus CWA TDB bulletin issuance times. (3) Feature set strictly before 19:00 TPE D-1: CWA warning bulletins (position, central pressure, radius, forecast track distance to county centroid), previous-day closure status, county identity; assert no post-instant field enters shipped columns. (4) Report clustered positives at typhoon level, not row level. (5) Run the baseline triad (persistence = previous-day closure status, calendar-only, full model) before quoting any AUC.",
+  "rejection_reason": null,
+  "review": null,
+  "jobs": [],
+  "artifacts": [],
+  "novelty_check": {
+    "checked_at": "2026-10-22T00:21:04+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "typhoon day prediction",
+      "Taiwan typhoon school closure prediction",
+      "颱風假 預測 機器學習",
+      "school closure prediction machine learning dataset",
+      "work suspension natural disaster prediction"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "typhoon day prediction",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "Taiwan typhoon school closure prediction",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "颱風假 預測 機器學習",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "school closure prediction machine learning dataset",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "work suspension natural disaster prediction",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "typhoon day prediction",
+          "hits": 151651,
+          "top": [
+            "A Study on Typhoon Eye Extraction from Cloud Imagery using Flat Maxima Enhancement",
+            "D7.1 Validation plan",
+            "Statistics of the Subgrid Cloud of an Idealized Tropical Cyclone at Convection-Permitting Resolution",
+            "H-gradient",
+            "Urban Flood Warning Dataset"
+          ]
+        },
+        {
+          "query": "Taiwan typhoon school closure prediction",
+          "hits": 396140,
+          "top": [
+            "Fig. 4 in Barn Swallow Nest Predation by a Recent Urban Invader, the Taiwan Whistling Thrush - Implications for the Evolution of Urban Avian Communities",
+            "A Study on Typhoon Eye Extraction from Cloud Imagery using Flat Maxima Enhancement",
+            "Lebbeus quadratus Chan & Komai, 2017, n. sp.",
+            "D7.1 Validation plan",
+            "Statistics of the Subgrid Cloud of an Idealized Tropical Cyclone at Convection-Permitting Resolution"
+          ]
+        },
+        {
+          "query": "颱風假 預測 機器學習",
+          "hits": 11358,
+          "top": [
+            "Repairing Engagement Failure in Modern Learning Systems through Motivational Narrative Engineering",
+            "Reconstructing Learning Sovereignty in the Post-Education Era through Knowledge Narrative Reconfiguration",
+            "意識染—The Portrait of Consciousness",
+            "From Learning Spirit Energy (LSE) to Social Spirit Energy (SSE): The Practice of Electronic-based Learning Theory in Personal Learning and Cooperative Learning",
+            "Robotic Narrative System: Next-Generation Syntax for Narrative Reasoning, Tonal Input, and Interactive Meaning Construction"
+          ]
+        },
+        {
+          "query": "school closure prediction machine learning dataset",
+          "hits": 856697,
+          "top": [
+            "Campus Placement Prediction System using  Machine Learning",
+            "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
+            "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI",
+            "RGB and RGNIR Plastic Waste Database",
+            "Global hotspots of shark interactions with industrial longline fisheries"
+          ]
+        },
+        {
+          "query": "work suspension natural disaster prediction",
+          "hits": 1006886,
+          "top": [
+            "Transformers for aerial images semantic segmentation of natural disaster-impacted areas in natural disaster assessment",
+            "Python For Natural Disaster Prediction And Response",
+            "AI in Climate Studies and Disaster Management",
+            "Investigation on the Existing Geometry of Pathein Suspension Bridge",
+            "Weather Prediction Model using Random Forest Algorithm and Apache Spark"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "typhoon day prediction",
+          "hits": 5,
+          "top": [
+            "Prediction of typhoon tracks using a generative adversarial network with observational and meteorological data",
+            "Strong enhancement of chlorophyll a concentration by a weak typhoon",
+            "Typhoon ASR Real-time: FastConformer-Transducer for Thai Automatic Speech Recognition",
+            "Typhoon-S: Minimal Open Post-Training for Sovereign Large Language Models",
+            "Typhoon track prediction using satellite images in a Generative Adversarial Network"
+          ]
+        },
+        {
+          "query": "Taiwan typhoon school closure prediction",
+          "error": "TimeoutError",
+          "hits": null,
+          "top": []
+        },
+        {
+          "query": "颱風假 預測 機器學習",
+          "error": "TimeoutError",
+          "hits": null,
+          "top": []
+        },
+        {
+          "query": "school closure prediction machine learning dataset",
+          "error": "TimeoutError",
+          "hits": null,
+          "top": []
+        },
+        {
+          "query": "work suspension natural disaster prediction",
+          "error": "TimeoutError",
+          "hits": null,
+          "top": []
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'typhoon day prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'Taiwan typhoon school closure prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / '颱風假 預測 機器學習': 0 hit(s) - nothing notable\n- huggingface_datasets / 'school closure prediction machine learning dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'work suspension natural disaster prediction': 0 hit(s) - nothing notable\n- zenodo_records / 'typhoon day prediction': 151651 hit(s) - A Study on Typhoon Eye Extraction from Cloud Imagery using Flat Maxima Enhancement, D7.1 Validation plan, Statistics of the Subgrid Cloud of an Idealized Tropical Cyclone at Convection-Permitting Resolution, H-gradient, Urban Flood Warning Dataset\n- zenodo_records / 'Taiwan typhoon school closure prediction': 396140 hit(s) - Fig. 4 in Barn Swallow Nest Predation by a Recent Urban Invader, the Taiwan Whistling Thrush - Implications for the Evolution of Urban Avian Communities, A Study on Typhoon Eye Extraction from Cloud Imagery using Flat Maxima Enhancement, Lebbeus quadratus Chan & Komai, 2017, n. sp., D7.1 Validation plan, Statistics of the Subgrid Cloud of an Idealized Tropical Cyclone at Convection-Permitting Resolution\n- zenodo_records / '颱風假 預測 機器學習': 11358 hit(s) - Repairing Engagement Failure in Modern Learning Systems through Motivational Narrative Engineering, Reconstructing Learning Sovereignty in the Post-Education Era through Knowledge Narrative Reconfiguration, 意識染—The Portrait of Consciousness, From Learning Spirit Energy (LSE) to Social Spirit Energy (SSE): The Practice of Electronic-based Learning Theory in Personal Learning and Cooperative Learning, Robotic Narrative System: Next-Generation Syntax for Narrative Reasoning, Tonal Input, and Interactive Meaning Construction\n- zenodo_records / 'school closure prediction machine learning dataset': 856697 hit(s) - Campus Placement Prediction System using  Machine Learning, plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database, Global hotspots of shark interactions with industrial longline fisheries\n- zenodo_records / 'work suspension natural disaster prediction': 1006886 hit(s) - Transformers for aerial images semantic segmentation of natural disaster-impacted areas in natural disaster assessment, Python For Natural Disaster Prediction And Response, AI in Climate Studies and Disaster Management, Investigation on the Existing Geometry of Pathein Suspension Bridge, Weather Prediction Model using Random Forest Algorithm and Apache Spark\n- arxiv_preprints / 'typhoon day prediction': 5 hit(s) - Prediction of typhoon tracks using a generative adversarial network with observational and meteorological data, Strong enhancement of chlorophyll a concentration by a weak typhoon, Typhoon ASR Real-time: FastConformer-Transducer for Thai Automatic Speech Recognition, Typhoon-S: Minimal Open Post-Training for Sovereign Large Language Models, Typhoon track prediction using satellite images in a Generative Adversarial Network\n- arxiv_preprints / 'Taiwan typhoon school closure prediction': unavailable (TimeoutError)\n- arxiv_preprints / '颱風假 預測 機器學習': unavailable (TimeoutError)\n- arxiv_preprints / 'school closure prediction machine learning dataset': unavailable (TimeoutError)\n- arxiv_preprints / 'work suspension natural disaster prediction': unavailable (TimeoutError)",
+    "prior_art": [
+      "Taiwan civil typhoon-day predictor apps and hackathon projects (predict whether tomorrow is a typhoon day); no public benchmark dataset of the closure decision was found in any catalog"
+    ],
+    "theirs": "DGPA publishes the closure record (labels only, as human-readable announcement pages); CWA publishes forecasts and the typhoon database (features only); consumer apps and hackathon demos predict typhoon days but ship no dataset, no splits and no scored contract",
+    "ours": "First ML-ready benchmark of the Taiwan county-day typhoon-closure decision: 2001-2026 panel built from the DGPA statutory announcement archive (the only public per-county closure record) with the prediction instant fixed by regulation at 19:00-22:00 the prior evening, features limited to CWA typhoon warning bulletins and prior-day closure status available before that instant, year-based splits with clustered positives reported per typhoon, and persistence/calendar baselines shipped beside any model",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
+}

@@ -1,6 +1,6 @@
 {
  "alarms": [
-  "CI on 9bd4f62 concluded failure"
+  "2 of the last 3 scheduled sessions failed (wall clock or provider) and produced no usable report"
  ],
  "budget": {
   "config": {
@@ -17,13 +17,13 @@
   "decision": {
    "allowance_usd": 30.0,
    "allowed": true,
-   "moment": "2026-10-21T21:38:15.269409+00:00",
+   "moment": "2026-10-21T23:50:02.519021+00:00",
    "period_start": "2026-10-01T00:00:00+00:00",
    "reasons": [],
    "research_cost_usd": 0.233495,
-   "research_tokens_last_7_days": 6368361,
-   "runs_last_7_days": 30,
-   "runs_weighted_last_7_days": 31,
+   "research_tokens_last_7_days": 6430954,
+   "runs_last_7_days": 31,
+   "runs_weighted_last_7_days": 32,
    "session_cap_per_week": 200,
    "sessions_over_token_cap": 1,
    "usage": {
@@ -37,24 +37,24 @@
      "output_tokens": 643747
     },
     "interactive": {
-     "calls": 3013,
+     "calls": 3059,
      "cost_status": [
       "estimated",
       "unknown"
      ],
-     "cost_usd": 1.562068,
-     "input_tokens": 11739181,
-     "output_tokens": 1692501
+     "cost_usd": 1.584073,
+     "input_tokens": 11755583,
+     "output_tokens": 1725023
     },
     "research": {
-     "calls": 2322,
+     "calls": 2332,
      "cost_status": [
       "estimated",
       "unknown"
      ],
      "cost_usd": 0.233495,
-     "input_tokens": 5567305,
-     "output_tokens": 2049772
+     "input_tokens": 5624606,
+     "output_tokens": 2055064
     },
     "scheduled-other": {
      "calls": 1499,
@@ -78,9 +78,8 @@
    "US": 1
   },
   "counts": {
-   "dropped": 12,
+   "dropped": 13,
    "investigating": 6,
-   "packaged": 1,
    "parked": 21,
    "published": 6,
    "ready": 6
@@ -2968,8 +2967,7 @@
     "target": "Binary: modal(price of item i at premise p over all observations in ISO week W+1) > modal(same over week W). Modal price = most frequent observed price that week (ties broken by higher price, deterministic). Pairs with <3 observations in either week are excluded from that transition's rows (exclusion is a function of data through week W+1, applied identically everywhere; it affects ~3% of subsample pairs). The label source columns are the W+1 price observations themselves: no price observation with date > end of week W may ship as a feature column; the shipped target is 0/1."
    },
    {
-    "age_hours": 0.2,
-    "awaiting_operator": true,
+    "awaiting_operator": false,
     "baseline": {
      "accepted_artifact_version": "d871b45b667448a123bad9762cf066fd5d31c08700761b27ca8ff57a8a0690f9",
      "contract_ok": true,
@@ -3065,14 +3063,14 @@
      "revision_policy_measured": "Re-measured 2026-10-21 at construction: across the 102 monthly CSVs there are NO duplicate (org, month) keys - each calendar month is published in exactly one file (originals are replaced on the year page by their '...revised...' successor, e.g. April-2020-revised-260421), so the recorded 'keep max Type 1 attendances' dedup never operated on anything. The build still implements prefer-latest-upload (ordered by the revision datestamp in the filename, then revised flag) and reports the dedup count, which measured 0.",
      "schema_evolution_2026_10_21": "Measured at construction across all 102 files: 16 data columns 2018-04..2020-07 (the 2018-04..2020-03 files prefix counts with 'Number of'); booked-appointment columns appear from 2020-08 (22 columns); files from 2024-09 carry 28 header fields of which the last six are unnamed/zero padding. Booked-appointment columns are parsed but NOT shipped: they are absent for train feature months 2018-12..2020-07, so their availability would be split-dependent - a prediction-timing defect wearing a feature-list costume. The 12 core columns are published across the whole window and are the only shipped source columns."
     },
-    "next_action": "Staged private on GitHub (v2026.12 draft release 420072089) and Hugging Face (16 files, digests verified). Held from the flip pending the third audit pass: the ",
-    "packaged_at": "2026-10-21T21:27:10Z",
+    "next_action": "None - dropped. Re-open only if a task is found on this source whose label is not dominated by persistence or seasonality, and only with a publication-date arch",
+    "packaged_at": "2026-10-21T21:43:43Z",
     "path": "candidates/nhs-ae-four-hour-decline/record.json",
     "prediction_time": "End of month M, when month M's monthly CSV is published (measured: the September 2026 monthly CSV was already downloadable on 2026-10-21, i.e. a ~3 week publication lag). Every feature is derived from provider months <= M; the label is month M+1's within-4-hour rate versus month M's, and month M+1's row is published about a month after the prediction is made.",
     "publisher": "NHS England (United Kingdom)",
     "qualification": {
-     "artifact_version": "d871b45b667448a123bad9762cf066fd5d31c08700761b27ca8ff57a8a0690f9",
-     "result": "PASSED - gate 1.4.0 on the v2026.12 rebuild c artifact (2026-10-21T18:06:51Z; 13-day maximum publication lag; eligibility decided at M only), and qualify_dataset.py --accept re-verified the package bytes against the bundled report (ACCEPTED, artifact d871b45b667448a1)",
+     "artifact_version": "5784f80a29df04f4c115a680341eb026945cd3d8c5beec121eefd0c2bcbadfb9",
+     "result": "PASSED - gate 1.4.0 on v2026.13 (21-day publication bound)",
      "splits": {
       "eval": {
        "distinct_events": 124,
@@ -3134,7 +3132,7 @@
      }
     ],
     "split_strategy": "Temporal, on the target month M+1, windows recomputed 2026-10-21 on the corrected panel (102 months 2018-04..2026-09, 134 providers; see probe_defect_correction_2026_10_21): train targets 2019-01..2022-12 = 6,116 provider-months (3,285 positives, 53.7%); eval targets 2023-01..2024-12 = 2,937 (1,478 positives, 50.3%); holdout targets 2025-01..2026-09 = 2,538 (1,233 positives, 48.6%). Both classes present in every window. Positives cluster within providers (a declining provider tends to keep declining), so the conservative independent-unit count is the distinct positive providers per window: 133 (train) / 124 (eval) / 121 (holdout) of 134 providers. Features for the earliest train rows draw on 2018-04..2018-12 history. Rows are keyed (Org Code, target month) - shipped as the composite row_id '<ORG>-<YYYY-MM>'; providers with <100 Type 1 attendances in either month are excluded by the volume gate.",
-    "status": "packaged",
+    "status": "dropped",
     "target": "Binary, computed from the source row of month M+1: within4h_rate(M+1) < within4h_rate(M), where within4h_rate(Y) = 1 - Attendances over 4hrs Type 1 / A&E attendances Type 1 for the provider in month Y. Unit: proportion of Type 1 attendances within 4 hours. Label source columns: month M+1's 'A&E attendances Type 1' and 'Attendances over 4hrs Type 1' (recorded in label_source_columns; excluded from shipped columns). Volume gate: provider-month excluded unless Type 1 attendances >= 100 in both M and M+1 (measured: leaves 124 providers with >= 24 such months)."
    },
    {
@@ -4374,350 +4372,8 @@
    }
   ],
   "release": {
-   "awaiting": [
-    {
-     "age_hours": 0.2,
-     "awaiting_operator": true,
-     "baseline": {
-      "accepted_artifact_version": "d871b45b667448a123bad9762cf066fd5d31c08700761b27ca8ff57a8a0690f9",
-      "contract_ok": true,
-      "dependencies": {
-       "numpy": "2.5.4",
-       "pandas": "2.3.3",
-       "python": "3.14",
-       "scikit-learn": "1.9.1",
-       "xgboost": "3.4.1"
-      },
-      "eval_auc_from_train_py": 0.5511,
-      "eval_auc_from_validate_py": 0.5511,
-      "job": "coordinator-rebuild-2026-10-21c",
-      "note": "The runner-contract baseline re-run on exactly the v2026.12 rebuild c bytes: 0.5511 eval AUC through both independent paths, CONTRACT OK (python 3.14.7; the v2026.11 run under python 3.13.16 measured the identical 0.5511 on the byte-identical CSVs) - below every eval reference (target-month prior 0.6027, reversal 0.5839, persistence 0.5758, mean reversion 0.5659): recorded as measured headroom. The superseded v2026.10 worker baseline nhsae-baseline-001 (server 171525370, 56.8 s, eval AUC 0.5526 on artifact 9903df974f233dfa, reports in staging release 419227918) is preserved in jobs[] and in the audit block.",
-      "references_eval": {
-       "mean_reversion_auc": 0.5659,
-       "momentum_auc": 0.4161,
-       "month_prior_auc": 0.6027,
-       "persistence_auc": 0.5758,
-       "reversal_auc": 0.5839,
-       "winter_auc": 0.5473
-      },
-      "references_holdout": {
-       "mean_reversion_auc": 0.6562,
-       "momentum_auc": 0.3993,
-       "month_prior_auc": 0.5294,
-       "persistence_auc": 0.6046,
-       "reversal_auc": 0.6007,
-       "winter_auc": 0.509
-      },
-      "runner_files_unmodified": true,
-      "where": "coordinator, baseline/reproduce_baseline.sh re-run on the v2026.12 rebuild c public splits (the runner files unmodified, bundled sha256 == expected)"
-     },
-     "country": "GB",
-     "domain": "health-system operations - NHS emergency care four-hour performance prediction (UK public-service performance panel)",
-     "id": "nhs-ae-four-hour-decline",
-     "jobs": [
-      {
-       "at": null,
-       "id": "nhsae-002",
-       "status": "succeeded"
-      },
-      {
-       "at": null,
-       "id": "nhsae-baseline-001",
-       "status": "succeeded"
-      },
-      {
-       "at": null,
-       "id": "nhsae-publish-001",
-       "status": "succeeded"
-      },
-      {
-       "at": null,
-       "id": "nhsae-hf-001",
-       "status": "succeeded"
-      },
-      {
-       "at": null,
-       "id": "nhsae-hf-002",
-       "status": "succeeded"
-      },
-      {
-       "at": null,
-       "id": "nhsae-hf-003",
-       "status": "succeeded"
-      },
-      {
-       "at": null,
-       "id": "nhsae-hf-004",
-       "status": "succeeded"
-      },
-      {
-       "at": null,
-       "id": "nhsae-hf-005",
-       "status": "succeeded"
-      }
-     ],
-     "licence_summary": {
-      "compilation_spdx": "CC0-1.0",
-      "source_spdx": "OGL-3.0",
-      "status": "Open Government Licence v3.0, stated by NHS England in the A&E Attendances and Emergency Admissions statistical work-area page footer, linking to https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/ (Crown copyright). OGL v3 permits use and redistribution, including commercial use, with attribution. NHS England publishes under the standing NHS/DOH position that its statistical work-area materials are OGL v3 unless stated otherwise."
-     },
-     "measurements": {
-      "cost_measured": "102 CSV GETs, 3,115,779 bytes, 1.2 s wall clock on the coordinator (1.9 GiB class host) + 11 year-page GETs (~80 KB each) to enumerate URLs. Full-history extension to 2015-06 requires the cumulative Monthly-AE-Time-Series .xls (440 KB) parsed on a worker (xlrd), or per-month XLS for 2015-16..2017-18.",
-      "known_event_note": "December 2021 (Omicron) moves the national aggregate only slightly (65.6% vs 66.2% in Nov 2021, quick un-deduped national check) - winter pressure shows at provider grain, so it is not a usable national known-event fixture; the publisher-commentary cross-check above anchors the rate computation instead. The m/m-decline label has no external threshold, so the qualification known-event fixture requirement does not apply; seasonal structure (winter declines) is the headroom signal a competent model must capture.",
-      "label_base_rates_measured": "Corrected 2026-10-21 on the full panel: m/m decline label train(2019-01..2022-12 targets) 6,116 rows / 3,285 positives = 53.7%; eval(2023-01..2024-12) 2,937 / 1,478 = 50.3%; holdout(2025-01..2026-09) 2,538 / 1,233 = 48.6% (holdout unchanged - its months were intact in the damaged panel). Fixed-threshold labels RE-COMPUTED on the corrected panel and still REFUSED: within4h < 95% gives train 87.2% / eval 97.5% / holdout 99.9% positive (uniform-class red flag); < 80% gives holdout 95.8%; < 74% gives holdout 90.8%. The refusal conclusion and the base-rate non-stationarity property stand unchanged.",
-      "national_within4h_type1_by_year": "Corrected 2026-10-21 on the full 102-month panel (volume-gated providers): 2018 83.0%, 2019 78.1%, 2020 82.6%, 2021 72.9%, 2022 62.4%, 2023 59.8%, 2024 58.6%, 2025 60.2%, 2026 YTD 61.0%. The recorded series (2020 85.1%, 2021 73.2%, 2023 60.1%) covered only the months the damaged panel retained (no qualifying month before 2020-04; 2023-07/08/09 dropped). August 2026 national Type 1 within-4h recomputed on the corrected panel: 60.86% vs the publisher commentary's 61.1% - the cross-check still holds (revised-vs-provisional publication states). NAO HC 588 fiscal-year anchors remain consistent within calendar-year offsets.",
-      "no_cross_split_entities": "org codes repeat across splits by design (same providers tracked over time) - the entity is the provider-month, not the provider; the gate's expected_duplicate_ids must not claim org codes as entity keys, and id columns for the runner are (Org Code, target month).",
-      "panel_2026_10_21": "Corrected 2026-10-21 (see probe_defect_correction_2026_10_21): 102 monthly CSVs 2018-04..2026-09 (every month the year pages carry), 21,649 rows read, 101 non-monthly Period rows (TOTAL artefacts, excluded), 21,548 (org, month) keys - NO duplicate keys exist across the 102 files (each month is published in exactly one file, so the recorded 'revision dedup' never had anything to dedup; the build still implements prefer-latest-upload). 134 providers with Type 1 attendances >= 100 in >= 24 months -> 12,765 qualifying provider-months; 12,631 consecutive qualifying pairs (1,040 with target months before 2019-01, outside the split windows). The discovery session's recorded panel (20,497 keys / 97 months / 124 providers / 9,071 provider-months) was computed with the two probe defects described in probe_defect_correction_2026_10_21 and is superseded.",
-      "probe_defect_correction_2026_10_21": "CORRECTION 2026-10-21 (construction session): the discovery panel probe (probe_panel.py) had two defects that silently shrank its panel, and every figure below was recomputed on the corrected load (build.py --source-dir over the same 102 CSVs; script .factory/nhsae_recompute.py, command and output in notes.md). Defect 1: the probe opened files with encoding=\"utf-8\", so the five BOM-prefixed files (July 2019, August 2021, July/August/September 2023) keyed Period as \"\\ufeffPeriod\", d.get(\"Period\") returned \"\" and five whole months were dropped (probe printed '1,152 non-monthly rows' where the true count is 101 TOTAL rows; 1,051 were BOM-file rows). Defect 2: the probe looked up \"A&E attendances Type 1\", but the 2018-04..2020-03 files name the column \"Number of A&E attendances Type 1\", so att1 parsed as 0 for 24 months and no provider-month before 2020-04 ever passed the volume gate - the recorded '97 months' panel in fact had no qualifying month before 2020-04. The corrected build reads utf-8-sig and normalises the 'Number of' prefix: 102 months 2018-04..2026-09 (every month the year pages carry), 21,548 provider-months, 134 providers with >= 24 qualifying months, 12,765 qualifying provider-months.",
-      "publisher_cdn_datacenter_block": "Measured 2026-10-21: www.england.nhs.uk (CloudFront) serves HTTP 202 with an empty body to the Hetzner worker IP (65.21.158.17, from both servers tried), for every year page; the same URLs serve 200/82,127 B with 12 CSV links to the coordinator under three User-Agent variants. Consequence: construction jobs cannot fetch this publisher from a worker; the 102 CSVs are fetched on the coordinator (measured 3.1 MB total) and staged in the private staging repo, and the job consumes them with per-file sha256 verification. The build's default HTTP path remains for reproducing from an unblocked network.",
-      "revision_policy_measured": "Re-measured 2026-10-21 at construction: across the 102 monthly CSVs there are NO duplicate (org, month) keys - each calendar month is published in exactly one file (originals are replaced on the year page by their '...revised...' successor, e.g. April-2020-revised-260421), so the recorded 'keep max Type 1 attendances' dedup never operated on anything. The build still implements prefer-latest-upload (ordered by the revision datestamp in the filename, then revised flag) and reports the dedup count, which measured 0.",
-      "schema_evolution_2026_10_21": "Measured at construction across all 102 files: 16 data columns 2018-04..2020-07 (the 2018-04..2020-03 files prefix counts with 'Number of'); booked-appointment columns appear from 2020-08 (22 columns); files from 2024-09 carry 28 header fields of which the last six are unnamed/zero padding. Booked-appointment columns are parsed but NOT shipped: they are absent for train feature months 2018-12..2020-07, so their availability would be split-dependent - a prediction-timing defect wearing a feature-list costume. The 12 core columns are published across the whole window and are the only shipped source columns."
-     },
-     "next_action": "Staged private on GitHub (v2026.12 draft release 420072089) and Hugging Face (16 files, digests verified). Held from the flip pending the third audit pass: the ",
-     "packaged_at": "2026-10-21T21:27:10Z",
-     "path": "candidates/nhs-ae-four-hour-decline/record.json",
-     "prediction_time": "End of month M, when month M's monthly CSV is published (measured: the September 2026 monthly CSV was already downloadable on 2026-10-21, i.e. a ~3 week publication lag). Every feature is derived from provider months <= M; the label is month M+1's within-4-hour rate versus month M's, and month M+1's row is published about a month after the prediction is made.",
-     "publisher": "NHS England (United Kingdom)",
-     "qualification": {
-      "artifact_version": "d871b45b667448a123bad9762cf066fd5d31c08700761b27ca8ff57a8a0690f9",
-      "result": "PASSED - gate 1.4.0 on the v2026.12 rebuild c artifact (2026-10-21T18:06:51Z; 13-day maximum publication lag; eligibility decided at M only), and qualify_dataset.py --accept re-verified the package bytes against the bundled report (ACCEPTED, artifact d871b45b667448a1)",
-      "splits": {
-       "eval": {
-        "distinct_events": 124,
-        "positive_rate": 0.503235,
-        "positives": 1478,
-        "rows": 2937
-       },
-       "holdout": {
-        "distinct_events": 121,
-        "positive_rate": 0.485816,
-        "positives": 1233,
-        "rows": 2538
-       },
-       "train": {
-        "distinct_events": 114,
-        "positive_rate": 0.554737,
-        "positives": 2260,
-        "rows": 4074
-       }
-      }
-     },
-     "question": "For an NHS England provider operating a consultant-led (Type 1) A&E department, will the percentage of its Type 1 attendances admitted, transferred or discharged within 4 hours of arrival decline in month M+1 relative to month M, given that provider's monthly A&E series (attendances by department type and booked-appointment status, over-4-hour counts, waits from decision-to-admit, emergency admissions) for all months through M, plus calendar month? A relative month-over-month change is used instead of a fixed standard threshold because the fixed thresholds measured near-uniform positive rates in recent years (see measurements).",
-     "region": "Europe",
-     "release_baseline": {
-      "auc": null,
-      "reference": null
-     },
-     "release_splits": {
-      "eval": {
-       "distinct_events": 124,
-       "positive_rate": 0.503235,
-       "positives": 1478,
-       "rows": 2937
-      },
-      "holdout": {
-       "distinct_events": 121,
-       "positive_rate": 0.485816,
-       "positives": 1233,
-       "rows": 2538
-      },
-      "train": {
-       "distinct_events": 114,
-       "positive_rate": 0.554737,
-       "positives": 2260,
-       "rows": 4074
-      }
-     },
-     "review": "",
-     "sources": [
-      {
-       "licence": "Open Government Licence v3.0 - stated in the work-area page footer, linking to https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/ (Crown copyright)",
-       "name": "NHS England - A&E Attendances and Emergency Admissions, statistical work area (monthly provider-level CSVs)",
-       "url": "https://www.england.nhs.uk/statistics/statistical-work-areas/ae-waiting-times-and-activity/"
-      },
-      {
-       "licence": "Open Government Licence v3.0 (same standing terms as the statistics pages)",
-       "name": "NHS England - monthly statistical commentary PDF (publisher's own summary product, used as cross-check)",
-       "url": "https://www.england.nhs.uk/statistics/wp-content/uploads/sites/2/2026/09/Statistical-commentary-August-2026-WE76sa.pdf"
-      }
-     ],
-     "split_strategy": "Temporal, on the target month M+1, windows recomputed 2026-10-21 on the corrected panel (102 months 2018-04..2026-09, 134 providers; see probe_defect_correction_2026_10_21): train targets 2019-01..2022-12 = 6,116 provider-months (3,285 positives, 53.7%); eval targets 2023-01..2024-12 = 2,937 (1,478 positives, 50.3%); holdout targets 2025-01..2026-09 = 2,538 (1,233 positives, 48.6%). Both classes present in every window. Positives cluster within providers (a declining provider tends to keep declining), so the conservative independent-unit count is the distinct positive providers per window: 133 (train) / 124 (eval) / 121 (holdout) of 134 providers. Features for the earliest train rows draw on 2018-04..2018-12 history. Rows are keyed (Org Code, target month) - shipped as the composite row_id '<ORG>-<YYYY-MM>'; providers with <100 Type 1 attendances in either month are excluded by the volume gate.",
-     "status": "packaged",
-     "target": "Binary, computed from the source row of month M+1: within4h_rate(M+1) < within4h_rate(M), where within4h_rate(Y) = 1 - Attendances over 4hrs Type 1 / A&E attendances Type 1 for the provider in month Y. Unit: proportion of Type 1 attendances within 4 hours. Label source columns: month M+1's 'A&E attendances Type 1' and 'Attendances over 4hrs Type 1' (recorded in label_source_columns; excluded from shipped columns). Volume gate: provider-month excluded unless Type 1 attendances >= 100 in both M and M+1 (measured: leaves 124 providers with >= 24 such months)."
-    }
-   ],
-   "packaged": [
-    {
-     "age_hours": 0.2,
-     "awaiting_operator": true,
-     "baseline": {
-      "accepted_artifact_version": "d871b45b667448a123bad9762cf066fd5d31c08700761b27ca8ff57a8a0690f9",
-      "contract_ok": true,
-      "dependencies": {
-       "numpy": "2.5.4",
-       "pandas": "2.3.3",
-       "python": "3.14",
-       "scikit-learn": "1.9.1",
-       "xgboost": "3.4.1"
-      },
-      "eval_auc_from_train_py": 0.5511,
-      "eval_auc_from_validate_py": 0.5511,
-      "job": "coordinator-rebuild-2026-10-21c",
-      "note": "The runner-contract baseline re-run on exactly the v2026.12 rebuild c bytes: 0.5511 eval AUC through both independent paths, CONTRACT OK (python 3.14.7; the v2026.11 run under python 3.13.16 measured the identical 0.5511 on the byte-identical CSVs) - below every eval reference (target-month prior 0.6027, reversal 0.5839, persistence 0.5758, mean reversion 0.5659): recorded as measured headroom. The superseded v2026.10 worker baseline nhsae-baseline-001 (server 171525370, 56.8 s, eval AUC 0.5526 on artifact 9903df974f233dfa, reports in staging release 419227918) is preserved in jobs[] and in the audit block.",
-      "references_eval": {
-       "mean_reversion_auc": 0.5659,
-       "momentum_auc": 0.4161,
-       "month_prior_auc": 0.6027,
-       "persistence_auc": 0.5758,
-       "reversal_auc": 0.5839,
-       "winter_auc": 0.5473
-      },
-      "references_holdout": {
-       "mean_reversion_auc": 0.6562,
-       "momentum_auc": 0.3993,
-       "month_prior_auc": 0.5294,
-       "persistence_auc": 0.6046,
-       "reversal_auc": 0.6007,
-       "winter_auc": 0.509
-      },
-      "runner_files_unmodified": true,
-      "where": "coordinator, baseline/reproduce_baseline.sh re-run on the v2026.12 rebuild c public splits (the runner files unmodified, bundled sha256 == expected)"
-     },
-     "country": "GB",
-     "domain": "health-system operations - NHS emergency care four-hour performance prediction (UK public-service performance panel)",
-     "id": "nhs-ae-four-hour-decline",
-     "jobs": [
-      {
-       "at": null,
-       "id": "nhsae-002",
-       "status": "succeeded"
-      },
-      {
-       "at": null,
-       "id": "nhsae-baseline-001",
-       "status": "succeeded"
-      },
-      {
-       "at": null,
-       "id": "nhsae-publish-001",
-       "status": "succeeded"
-      },
-      {
-       "at": null,
-       "id": "nhsae-hf-001",
-       "status": "succeeded"
-      },
-      {
-       "at": null,
-       "id": "nhsae-hf-002",
-       "status": "succeeded"
-      },
-      {
-       "at": null,
-       "id": "nhsae-hf-003",
-       "status": "succeeded"
-      },
-      {
-       "at": null,
-       "id": "nhsae-hf-004",
-       "status": "succeeded"
-      },
-      {
-       "at": null,
-       "id": "nhsae-hf-005",
-       "status": "succeeded"
-      }
-     ],
-     "licence_summary": {
-      "compilation_spdx": "CC0-1.0",
-      "source_spdx": "OGL-3.0",
-      "status": "Open Government Licence v3.0, stated by NHS England in the A&E Attendances and Emergency Admissions statistical work-area page footer, linking to https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/ (Crown copyright). OGL v3 permits use and redistribution, including commercial use, with attribution. NHS England publishes under the standing NHS/DOH position that its statistical work-area materials are OGL v3 unless stated otherwise."
-     },
-     "measurements": {
-      "cost_measured": "102 CSV GETs, 3,115,779 bytes, 1.2 s wall clock on the coordinator (1.9 GiB class host) + 11 year-page GETs (~80 KB each) to enumerate URLs. Full-history extension to 2015-06 requires the cumulative Monthly-AE-Time-Series .xls (440 KB) parsed on a worker (xlrd), or per-month XLS for 2015-16..2017-18.",
-      "known_event_note": "December 2021 (Omicron) moves the national aggregate only slightly (65.6% vs 66.2% in Nov 2021, quick un-deduped national check) - winter pressure shows at provider grain, so it is not a usable national known-event fixture; the publisher-commentary cross-check above anchors the rate computation instead. The m/m-decline label has no external threshold, so the qualification known-event fixture requirement does not apply; seasonal structure (winter declines) is the headroom signal a competent model must capture.",
-      "label_base_rates_measured": "Corrected 2026-10-21 on the full panel: m/m decline label train(2019-01..2022-12 targets) 6,116 rows / 3,285 positives = 53.7%; eval(2023-01..2024-12) 2,937 / 1,478 = 50.3%; holdout(2025-01..2026-09) 2,538 / 1,233 = 48.6% (holdout unchanged - its months were intact in the damaged panel). Fixed-threshold labels RE-COMPUTED on the corrected panel and still REFUSED: within4h < 95% gives train 87.2% / eval 97.5% / holdout 99.9% positive (uniform-class red flag); < 80% gives holdout 95.8%; < 74% gives holdout 90.8%. The refusal conclusion and the base-rate non-stationarity property stand unchanged.",
-      "national_within4h_type1_by_year": "Corrected 2026-10-21 on the full 102-month panel (volume-gated providers): 2018 83.0%, 2019 78.1%, 2020 82.6%, 2021 72.9%, 2022 62.4%, 2023 59.8%, 2024 58.6%, 2025 60.2%, 2026 YTD 61.0%. The recorded series (2020 85.1%, 2021 73.2%, 2023 60.1%) covered only the months the damaged panel retained (no qualifying month before 2020-04; 2023-07/08/09 dropped). August 2026 national Type 1 within-4h recomputed on the corrected panel: 60.86% vs the publisher commentary's 61.1% - the cross-check still holds (revised-vs-provisional publication states). NAO HC 588 fiscal-year anchors remain consistent within calendar-year offsets.",
-      "no_cross_split_entities": "org codes repeat across splits by design (same providers tracked over time) - the entity is the provider-month, not the provider; the gate's expected_duplicate_ids must not claim org codes as entity keys, and id columns for the runner are (Org Code, target month).",
-      "panel_2026_10_21": "Corrected 2026-10-21 (see probe_defect_correction_2026_10_21): 102 monthly CSVs 2018-04..2026-09 (every month the year pages carry), 21,649 rows read, 101 non-monthly Period rows (TOTAL artefacts, excluded), 21,548 (org, month) keys - NO duplicate keys exist across the 102 files (each month is published in exactly one file, so the recorded 'revision dedup' never had anything to dedup; the build still implements prefer-latest-upload). 134 providers with Type 1 attendances >= 100 in >= 24 months -> 12,765 qualifying provider-months; 12,631 consecutive qualifying pairs (1,040 with target months before 2019-01, outside the split windows). The discovery session's recorded panel (20,497 keys / 97 months / 124 providers / 9,071 provider-months) was computed with the two probe defects described in probe_defect_correction_2026_10_21 and is superseded.",
-      "probe_defect_correction_2026_10_21": "CORRECTION 2026-10-21 (construction session): the discovery panel probe (probe_panel.py) had two defects that silently shrank its panel, and every figure below was recomputed on the corrected load (build.py --source-dir over the same 102 CSVs; script .factory/nhsae_recompute.py, command and output in notes.md). Defect 1: the probe opened files with encoding=\"utf-8\", so the five BOM-prefixed files (July 2019, August 2021, July/August/September 2023) keyed Period as \"\\ufeffPeriod\", d.get(\"Period\") returned \"\" and five whole months were dropped (probe printed '1,152 non-monthly rows' where the true count is 101 TOTAL rows; 1,051 were BOM-file rows). Defect 2: the probe looked up \"A&E attendances Type 1\", but the 2018-04..2020-03 files name the column \"Number of A&E attendances Type 1\", so att1 parsed as 0 for 24 months and no provider-month before 2020-04 ever passed the volume gate - the recorded '97 months' panel in fact had no qualifying month before 2020-04. The corrected build reads utf-8-sig and normalises the 'Number of' prefix: 102 months 2018-04..2026-09 (every month the year pages carry), 21,548 provider-months, 134 providers with >= 24 qualifying months, 12,765 qualifying provider-months.",
-      "publisher_cdn_datacenter_block": "Measured 2026-10-21: www.england.nhs.uk (CloudFront) serves HTTP 202 with an empty body to the Hetzner worker IP (65.21.158.17, from both servers tried), for every year page; the same URLs serve 200/82,127 B with 12 CSV links to the coordinator under three User-Agent variants. Consequence: construction jobs cannot fetch this publisher from a worker; the 102 CSVs are fetched on the coordinator (measured 3.1 MB total) and staged in the private staging repo, and the job consumes them with per-file sha256 verification. The build's default HTTP path remains for reproducing from an unblocked network.",
-      "revision_policy_measured": "Re-measured 2026-10-21 at construction: across the 102 monthly CSVs there are NO duplicate (org, month) keys - each calendar month is published in exactly one file (originals are replaced on the year page by their '...revised...' successor, e.g. April-2020-revised-260421), so the recorded 'keep max Type 1 attendances' dedup never operated on anything. The build still implements prefer-latest-upload (ordered by the revision datestamp in the filename, then revised flag) and reports the dedup count, which measured 0.",
-      "schema_evolution_2026_10_21": "Measured at construction across all 102 files: 16 data columns 2018-04..2020-07 (the 2018-04..2020-03 files prefix counts with 'Number of'); booked-appointment columns appear from 2020-08 (22 columns); files from 2024-09 carry 28 header fields of which the last six are unnamed/zero padding. Booked-appointment columns are parsed but NOT shipped: they are absent for train feature months 2018-12..2020-07, so their availability would be split-dependent - a prediction-timing defect wearing a feature-list costume. The 12 core columns are published across the whole window and are the only shipped source columns."
-     },
-     "next_action": "Staged private on GitHub (v2026.12 draft release 420072089) and Hugging Face (16 files, digests verified). Held from the flip pending the third audit pass: the ",
-     "packaged_at": "2026-10-21T21:27:10Z",
-     "path": "candidates/nhs-ae-four-hour-decline/record.json",
-     "prediction_time": "End of month M, when month M's monthly CSV is published (measured: the September 2026 monthly CSV was already downloadable on 2026-10-21, i.e. a ~3 week publication lag). Every feature is derived from provider months <= M; the label is month M+1's within-4-hour rate versus month M's, and month M+1's row is published about a month after the prediction is made.",
-     "publisher": "NHS England (United Kingdom)",
-     "qualification": {
-      "artifact_version": "d871b45b667448a123bad9762cf066fd5d31c08700761b27ca8ff57a8a0690f9",
-      "result": "PASSED - gate 1.4.0 on the v2026.12 rebuild c artifact (2026-10-21T18:06:51Z; 13-day maximum publication lag; eligibility decided at M only), and qualify_dataset.py --accept re-verified the package bytes against the bundled report (ACCEPTED, artifact d871b45b667448a1)",
-      "splits": {
-       "eval": {
-        "distinct_events": 124,
-        "positive_rate": 0.503235,
-        "positives": 1478,
-        "rows": 2937
-       },
-       "holdout": {
-        "distinct_events": 121,
-        "positive_rate": 0.485816,
-        "positives": 1233,
-        "rows": 2538
-       },
-       "train": {
-        "distinct_events": 114,
-        "positive_rate": 0.554737,
-        "positives": 2260,
-        "rows": 4074
-       }
-      }
-     },
-     "question": "For an NHS England provider operating a consultant-led (Type 1) A&E department, will the percentage of its Type 1 attendances admitted, transferred or discharged within 4 hours of arrival decline in month M+1 relative to month M, given that provider's monthly A&E series (attendances by department type and booked-appointment status, over-4-hour counts, waits from decision-to-admit, emergency admissions) for all months through M, plus calendar month? A relative month-over-month change is used instead of a fixed standard threshold because the fixed thresholds measured near-uniform positive rates in recent years (see measurements).",
-     "region": "Europe",
-     "release_baseline": {
-      "auc": null,
-      "reference": null
-     },
-     "release_splits": {
-      "eval": {
-       "distinct_events": 124,
-       "positive_rate": 0.503235,
-       "positives": 1478,
-       "rows": 2937
-      },
-      "holdout": {
-       "distinct_events": 121,
-       "positive_rate": 0.485816,
-       "positives": 1233,
-       "rows": 2538
-      },
-      "train": {
-       "distinct_events": 114,
-       "positive_rate": 0.554737,
-       "positives": 2260,
-       "rows": 4074
-      }
-     },
-     "review": "",
-     "sources": [
-      {
-       "licence": "Open Government Licence v3.0 - stated in the work-area page footer, linking to https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/ (Crown copyright)",
-       "name": "NHS England - A&E Attendances and Emergency Admissions, statistical work area (monthly provider-level CSVs)",
-       "url": "https://www.england.nhs.uk/statistics/statistical-work-areas/ae-waiting-times-and-activity/"
-      },
-      {
-       "licence": "Open Government Licence v3.0 (same standing terms as the statistics pages)",
-       "name": "NHS England - monthly statistical commentary PDF (publisher's own summary product, used as cross-check)",
-       "url": "https://www.england.nhs.uk/statistics/wp-content/uploads/sites/2/2026/09/Statistical-commentary-August-2026-WE76sa.pdf"
-      }
-     ],
-     "split_strategy": "Temporal, on the target month M+1, windows recomputed 2026-10-21 on the corrected panel (102 months 2018-04..2026-09, 134 providers; see probe_defect_correction_2026_10_21): train targets 2019-01..2022-12 = 6,116 provider-months (3,285 positives, 53.7%); eval targets 2023-01..2024-12 = 2,937 (1,478 positives, 50.3%); holdout targets 2025-01..2026-09 = 2,538 (1,233 positives, 48.6%). Both classes present in every window. Positives cluster within providers (a declining provider tends to keep declining), so the conservative independent-unit count is the distinct positive providers per window: 133 (train) / 124 (eval) / 121 (holdout) of 134 providers. Features for the earliest train rows draw on 2018-04..2018-12 history. Rows are keyed (Org Code, target month) - shipped as the composite row_id '<ORG>-<YYYY-MM>'; providers with <100 Type 1 attendances in either month are excluded by the volume gate.",
-     "status": "packaged",
-     "target": "Binary, computed from the source row of month M+1: within4h_rate(M+1) < within4h_rate(M), where within4h_rate(Y) = 1 - Attendances over 4hrs Type 1 / A&E attendances Type 1 for the provider in month Y. Unit: proportion of Type 1 attendances within 4 hours. Label source columns: month M+1's 'A&E attendances Type 1' and 'Attendances over 4hrs Type 1' (recorded in label_source_columns; excluded from shipped columns). Volume gate: provider-month excluded unless Type 1 attendances >= 100 in both M and M+1 (measured: leaves 124 providers with >= 24 such months)."
-    }
-   ],
+   "awaiting": [],
+   "packaged": [],
    "pending": []
   }
  },
@@ -4755,17 +4411,16 @@
    "South & South-East Asia": 13
   },
   "by_status": {
-   "dropped": 12,
+   "dropped": 13,
    "investigating": 6,
-   "packaged": 1,
    "parked": 21,
    "published": 6,
    "ready": 6
   },
   "candidates": 52,
-  "live": 19,
-  "live_non_us": 13,
-  "live_non_us_share": 0.684,
+  "live": 18,
+  "live_non_us": 12,
+  "live_non_us_share": 0.667,
   "unknown_jurisdiction": []
  },
  "cron": {
@@ -4787,10 +4442,10 @@
     "failure_streak": 0,
     "id": "e80975eddd4a",
     "last_error": "",
-    "last_run_at": "2026-10-21T21:30:01.742433+00:00",
+    "last_run_at": "2026-10-21T23:50:01.755970+00:00",
     "last_status": "ok",
     "name": "scout-secondary-cleanup-sweep",
-    "next_run_at": "2026-10-21T21:40:00+00:00",
+    "next_run_at": "2026-10-22T00:00:00+00:00",
     "no_agent": true,
     "schedule": "*/10 * * * *"
    },
@@ -4814,7 +4469,7 @@
     "last_run_at": "2026-10-21T18:16:08.386724+00:00",
     "last_status": "ok",
     "name": "scout-research-session",
-    "next_run_at": "2026-10-21T22:00:00+00:00",
+    "next_run_at": "2026-10-22T02:00:00+00:00",
     "no_agent": true,
     "schedule": "0 2-22/4 * * *"
    },
@@ -4835,10 +4490,10 @@
     "failure_streak": 0,
     "id": "98b45d983280",
     "last_error": "",
-    "last_run_at": "2026-10-21T21:36:36.472624+00:00",
+    "last_run_at": "2026-10-21T23:49:21.065844+00:00",
     "last_status": "ok",
     "name": "scout-worker-watch",
-    "next_run_at": "2026-10-21T21:41:36.472624+00:00",
+    "next_run_at": "2026-10-21T23:54:21.065844+00:00",
     "no_agent": false,
     "schedule": "every 5m"
    },
@@ -4871,10 +4526,10 @@
     "failure_streak": 0,
     "id": "4d8053a69ed2",
     "last_error": "",
-    "last_run_at": "2026-10-21T20:51:52.077853+00:00",
+    "last_run_at": "2026-10-21T22:50:23.153367+00:00",
     "last_status": "ok",
     "name": "scout-dashboard-refresh",
-    "next_run_at": "2026-10-21T21:50:00+00:00",
+    "next_run_at": "2026-10-22T00:50:00+00:00",
     "no_agent": true,
     "schedule": "50 * * * *"
    },
@@ -4883,10 +4538,10 @@
     "failure_streak": 0,
     "id": "ba4c8610edf8",
     "last_error": "",
-    "last_run_at": "2026-10-21T20:55:00.856030+00:00",
+    "last_run_at": "2026-10-21T22:55:00.601113+00:00",
     "last_status": "ok",
     "name": "scout-release-notify",
-    "next_run_at": "2026-10-21T21:55:00+00:00",
+    "next_run_at": "2026-10-21T23:55:00+00:00",
     "no_agent": true,
     "schedule": "55 * * * *"
    },
@@ -4927,29 +4582,29 @@
     "schedule": "once at 2026-10-20 16:40"
    }
   ],
-  "updated_at": "2026-10-21T21:36:36.473351+00:00"
+  "updated_at": "2026-10-21T23:50:01.756939+00:00"
  },
- "generated_at": "2026-10-21T21:38:14+00:00",
+ "generated_at": "2026-10-21T23:50:01+00:00",
  "health": {
   "checks": {
    "ok": true,
    "passing": 52
   },
   "ci": {
-   "conclusion": "failure",
-   "created_at": "2026-10-21T21:37:39Z",
-   "head_sha": "9bd4f62",
+   "conclusion": "success",
+   "created_at": "2026-10-21T22:26:42Z",
+   "head_sha": "c6a1405",
    "status": "completed",
-   "url": "https://github.com/earino/dataset-factory/actions/runs/39680317310"
+   "url": "https://github.com/earino/dataset-factory/actions/runs/39686529349"
   },
   "coverage": {
    "ok": true,
-   "summary": "live non-US: 13/19 (68%)"
+   "summary": "live non-US: 12/18 (67%)"
   },
   "head": {
-   "at": "2026-10-21T21:37:36Z",
-   "sha": "9bd4f62",
-   "subject": "Only build on clean licences: an unclear licence is a drop, not a park"
+   "at": "2026-10-21T21:48:14Z",
+   "sha": "c6a1405",
+   "subject": "Drop nhs-ae: correct artifact, task not worth shipping"
   },
   "tests": {
    "count": "406",
@@ -5284,13 +4939,37 @@
    "qualified": 0,
    "sessions_7d": 30,
    "tokens_7d": 6368361
+  },
+  {
+   "at": "2026-10-21T21:50:02+00:00",
+   "live": 6,
+   "published": 7,
+   "qualified": 0,
+   "sessions_7d": 30,
+   "tokens_7d": 6368361
+  },
+  {
+   "at": "2026-10-21T22:50:01+00:00",
+   "live": 6,
+   "published": 7,
+   "qualified": 0,
+   "sessions_7d": 31,
+   "tokens_7d": 6430954
+  },
+  {
+   "at": "2026-10-21T23:50:01+00:00",
+   "live": 6,
+   "published": 7,
+   "qualified": 0,
+   "sessions_7d": 31,
+   "tokens_7d": 6430954
   }
  ],
  "notices": [],
  "panels": {
   "budget": {
-   "age_minutes": 0.2,
-   "as_of": "2026-10-21T21:38:14+00:00",
+   "age_minutes": 0.3,
+   "as_of": "2026-10-21T23:50:01+00:00",
    "expected": null,
    "note": null,
    "source": "scripts/research-budget.py --json",
@@ -5299,8 +4978,8 @@
    "value": null
   },
   "candidates": {
-   "age_minutes": 0.2,
-   "as_of": "2026-10-21T21:38:14+00:00",
+   "age_minutes": 0.3,
+   "as_of": "2026-10-21T23:50:01+00:00",
    "expected": null,
    "note": null,
    "source": "candidates/*/record.json",
@@ -5309,8 +4988,8 @@
    "value": 6
   },
   "releases": {
-   "age_minutes": 0.2,
-   "as_of": "2026-10-21T21:38:14+00:00",
+   "age_minutes": 0.3,
+   "as_of": "2026-10-21T23:50:01+00:00",
    "expected": null,
    "note": null,
    "source": "release/*/MANIFEST.json",
@@ -5390,14 +5069,14 @@
     "dataset": "nhs-ae-four-hour-decline",
     "persistence_auc": null,
     "publication_note": "Prepared for human review. Nothing here has been published.",
-    "release_tag": "v2026.12",
+    "release_tag": "v2026.13",
     "rows": 9549,
     "verified": {
      "github": true,
      "huggingface": true
     },
     "verified_all": true,
-    "verified_at": "2026-10-21T21:27:10Z"
+    "verified_at": "2026-10-21T21:43:43Z"
    },
    {
     "assets": 10,
@@ -6370,7 +6049,7 @@
   "jobs_total": 73,
   "lifetime_eur": 3.13,
   "live": {
-   "checked_at": "2026-10-21T21:38:28+00:00",
+   "checked_at": "2026-10-21T23:50:16+00:00",
    "error": null,
    "primary_ips": 0,
    "primary_ips_total": 0,
@@ -6397,17 +6076,8 @@
  },
  "schema": 1,
  "sessions": {
-  "failed_last_three": 1,
+  "failed_last_three": 2,
   "recent": [
-   {
-    "elapsed_seconds": 1151.6,
-    "event": "session",
-    "max_turns": 120,
-    "outcome": "exit 1",
-    "prompt_file": "research-session-prompt.md",
-    "run_budget": 5400,
-    "ts": "2026-10-21T10:19:14.174457+00:00"
-   },
    {
     "elapsed_seconds": 1651.6,
     "event": "session",
@@ -6452,6 +6122,15 @@
     "prompt_file": "discovery-session-prompt.md",
     "run_budget": 5400,
     "ts": "2026-10-21T20:24:32.306778+00:00"
+   },
+   {
+    "elapsed_seconds": 2461.0,
+    "event": "session",
+    "max_turns": 120,
+    "outcome": "exit 130",
+    "prompt_file": "research-session-prompt.md",
+    "run_budget": 5400,
+    "ts": "2026-10-21T22:41:02.800346+00:00"
    }
   ],
   "total": 34

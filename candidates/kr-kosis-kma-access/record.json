@@ -1,0 +1,49 @@
+{
+  "id": "kr-kosis-kma-access",
+  "created_at": "2026-10-22",
+  "status": "parked",
+  "verdict": "park",
+  "domain": "national statistics / meteorology (South Korea)",
+  "prediction_question": "No task opened: both national sources are behind personal-account walls for programmatic access, so no candidate task was probed past the access triage.",
+  "prediction_time": "N/A - parked at access triage.",
+  "target_definition": "N/A - parked at access triage.",
+  "sources": [
+    {
+      "name": "KOSIS 국가통계포털 (National Statistical Portal, Statistics Korea data platform)",
+      "url": "https://kosis.kr/",
+      "api": "https://kosis.kr/openapi/ (OpenAPI; requires 인증키 - personal signup and key application)",
+      "licence": "KOSIS 통계정보 이용지침: free use, reuse AND redistribution (commercial and non-commercial) with mandatory source attribution (출처명시); exceptions: international/North Korea statistics are non-commercial-only and redistribution-prohibited; publications follow KOGL type rules",
+      "notes": "web-table downloads are anonymous, but there is no anonymous documented API - scripts would scrape the web UI"
+    },
+    {
+      "name": "기상자료개방포털 data.kma.go.kr (KMA weather data open portal)",
+      "url": "https://data.kma.go.kr/",
+      "api": "none anonymous for data downloads",
+      "licence": "KMA guide PDF: 이용허락 조건 출처 표시 ('기상청 제공') - attribution",
+      "notes": "data download requires 회원가입 (member ID = personal e-mail, password, name, phone number, per their own membership guide PDF); the portal is a JS app that returns a 1,872-byte shell to plain clients"
+    }
+  ],
+  "license_evidence": [
+    "kosis.kr/serviceInfo/useGuide.do (read 2026-10-22 via search-engine cache of the live page): '이용자는 KOSIS 통계정보를 자유롭게 사용, 재사용 및 재배포할 수 있으며 통계정보의 비상업적 또는 상업적 활용이 모두 가능합니다' + '통계정보를 이용할 때는 반드시 출처를 명시해야 합니다' - redistribution permitted with attribution; '국제통계 및 북한통계는 비상업적 목적으로만 사용하여야 하며 이 경우에도 재배포는 금지됩니다'.",
+    "kosis.kr/openapi/ (fetched 2026-10-22): the Open API page's primary affordances are 'OPEN API 인증키 신청' (apply for an API key) and 활용신청/회원가입 (use application / sign up) - no anonymous API path.",
+    "KMA membership guide PDF (data.kma.go.kr/resources/contents/main/201704_member_join_process.pdf, surfaced 2026-10-22): membership requires 회원ID(E-mail), 비밀번호, 이름, 전화번호 (name and phone number = PII); 이용허락 조건: 출처 표시 ('기상청 제공')."
+  ],
+  "licence_class": "B",
+  "licence_note": "Licences are clean (KOSIS: redistribution with attribution for domestic statistics; KMA: attribution). The blocker is access, not licence.",
+  "jurisdiction": {
+    "country": "KR",
+    "region": "East Asia",
+    "publisher": "국가데이터처 / Statistics Korea data platform (KOSIS); Korea Meteorological Administration (기상청) data portal",
+    "recorded_at": "2026-10-22"
+  },
+  "measurements": {
+    "kosis_openapi_page_2026_10_22": "GET https://kosis.kr/openapi/: HTTP 200, contains 'OPEN API 인증키 신청 바로가기' (direct API-key application link), 활용신청 menu, 회원가입 menu - programmatic access is gated on a personal key.",
+    "kma_portal_shell_2026_10_22": "GET https://data.kma.go.kr/{data,member,cmmn} pages: all return the same 1,872-byte JS shell to plain clients; the portal's own PDF guide states downloads happen after 회원가입 with PII (e-mail, name, phone number).",
+    "no_task_probed_2026_10_22": "No candidate task was opened: under the session rule 'a source that needs an authorisation we do not hold' and the anonymous-API preference, both portals were triaged out before any task probing."
+  },
+  "rejection_reason": "Parked on access: South Korea's two main national sources have no anonymous programmatic path. KOSIS's OpenAPI requires a personal signup + API key (인증키 신청), and KMA's data portal requires membership with PII (e-mail, name, phone number). Anonymous web-table downloads exist on KOSIS but scraping the web UI is not a documented API - a fragile construction path the pipeline does not take. No task was probed; the licence itself is clean (KOSIS explicitly permits redistribution with attribution for domestic statistics).",
+  "next_action": "Unpark by operator decision: register a KOSIS account, obtain an OpenAPI key, and store it as a mode-0600 credential file under /opt/data/.secrets (the existing convention); then open a candidate on a named KOSIS series (the national statistics releases are otherwise ideal: scheduled monthly releases, documented processes). KMA stays parked unless a specific station observation series is needed and an account is provisioned the same way.",
+  "review": null,
+  "jobs": [],
+  "artifacts": []
+}

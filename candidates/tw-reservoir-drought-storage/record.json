@@ -1,0 +1,53 @@
+{
+  "id": "tw-reservoir-drought-storage",
+  "created_at": "2026-10-22",
+  "status": "parked",
+  "verdict": "park",
+  "domain": "water resources / drought indicators",
+  "prediction_question": "Will a major Taiwan reservoir's effective storage ratio fall below a drought threshold (e.g. 20-30%) within the next 30 days, conditioned on it being above the threshold now (onset formulation)?",
+  "prediction_time": "Daily at the 07:00 observation instant (the dataset states 水位、有效蓄水量及蓄水百分比 are the current day's 07:00 values), using only snapshots up to that instant.",
+  "target_definition": "Binary onset: storage percentage (蓄水百分比) of reservoir R crosses below the threshold on some day within (t, t+30] while above it at t. Label source column is the same series' future values; excluded from features by the window construction.",
+  "sources": [
+    {
+      "name": "data.gov.tw 45501 水庫水情資料 (reservoir water situation, real-time)",
+      "url": "https://data.gov.tw/dataset/45501",
+      "api": "CSV/JSON/XML via opendata.wra.gov.tw (Swagger: https://opendata.wra.gov.tw/openapi/swagger/index.html)",
+      "licence": "Open Government Data License 1.0",
+      "notes": "current-day snapshot only; fields documented: accumulaterainfallincatchment, inflowdischarge, waterlevel, effectivewaterstoragecapacity, statustype, etc.; note 3 on the dataset page: historical data must be queried at the fhyv2 disaster-info site"
+    },
+    {
+      "name": "data.gov.tw 41568 水庫每日營運狀況 (daily reservoir operation)",
+      "url": "https://data.gov.tw/dataset/41568",
+      "licence": "Open Government Data License 1.0",
+      "notes": "daily operation table, entered by 09:30 by reservoir managers"
+    },
+    {
+      "name": "WRA 防災資訊服務網 fhyv2 reservoir viewer",
+      "url": "https://fhy.wra.gov.tw/fhyv2/monitor/reservoir",
+      "licence": "WRA site terms (經濟部水利署©2015 版權所有 footer); open-data portal datasets carry ODDL 1.0",
+      "notes": "interactive SPA; its JSON APIs answer 401 to plain HTTP clients"
+    }
+  ],
+  "license_evidence": [
+    "Dataset 45501 page read in a real browser 2026-10-22: '授權方式: 政府資料開放授權條款-第1版; 計費方式: 免費', and the note '3.水庫水情歷史資料，可至水利署防災資訊服務網查詢，網址：https://fhy.wra.gov.tw/fhyv2/monitor/reservoir' - i.e. the publisher itself routes history to the interactive viewer."
+  ],
+  "licence_class": "B",
+  "licence_note": "ODDL 1.0 on the open-data datasets (attribution); the history blocker is access, not licence.",
+  "jurisdiction": {
+    "country": "TW",
+    "region": "East Asia",
+    "publisher": "Water Resources Agency, Ministry of Economic Affairs (經濟部水利署)",
+    "recorded_at": "2026-10-22"
+  },
+  "measurements": {
+    "fhy_api_probes_2026_10_22": "fhyv2 SPA network capture (browser): API family https://fhy.wra.gov.tw/Api/v2/... (Rainfall/Station, Event/Year/{y}, Event/Active, Basic/City) plus /disaster/Reservoir/Comparison.",
+    "fhy_api_status_2026_10_22": "Plain-client GET of https://fhy.wra.gov.tw/Api/v2/Event/Year/2025 and /Api/v2/Event/Active -> HTTP 401 (91 bytes each); /disaster/Reservoir/Comparison -> 4,252-byte AngularJS HTML shell, not JSON.",
+    "opendata_wra_unreachable_2026_10_22": "opendata.wra.gov.tw unreachable from the coordinator: SSL certificate fails strict verification (same Missing Subject Key Identifier failure as dgpa.gov.tw) and DNS resolution for the host failed intermittently; the Swagger UI could not be read from either client.",
+    "no_history_conclusion_2026_10_22": "No anonymously retrievable historical daily storage series found: data.gov.tw 45501/41568 publish current-day snapshots only (45501 '更新頻率 每1時', resources CSV/JSON/XML)."
+  },
+  "rejection_reason": "Parked on access/history, not licence and not task: a drought-onset task needs ~10+ years of daily storage, and no anonymous historical bulk source exists. data.gov.tw 45501/41568 publish only current-day snapshots; the publisher routes history queries to the fhyv2 interactive viewer, whose JSON APIs answer 401 to plain clients and whose comparison view is an Angular page; the WRA opendata Swagger is unreachable from this host (SSL chain fails strict verification, DNS intermittent). Without history, splits cannot be computed; the only route is collecting daily snapshots over months, which is a standing collector, not a discovery probe.",
+  "next_action": "Unpark only if (a) the routine seeds a standing snapshot collector (fetch 45501/41568 daily, one row per major reservoir, into the private staging; splits become usable after ~2-3 typhoon/drought cycles), or (b) an authenticated WRA opendata endpoint with history is found and the operator provisions a credential. The task itself is well-posed and licences clean (ODDL 1.0).",
+  "review": null,
+  "jobs": [],
+  "artifacts": []
+}
