@@ -24,7 +24,8 @@ release guidance with the scientific contract and the deployed integrity guards.
 - New unresolved class C leads remain closed. Existing candidate-specific operator
   risk acceptances remain distinct from grants and cannot transfer to sibling sources.
   `NOASSERTION` and compilation/source scope remain explicit.
-- The watcher records a job's outcome and hands repairs to advancement. A small wrapper
+- The watcher records a job's outcome, permits one bounded same-artifact recovery and
+  hands construction/scientific changes to advancement. A small wrapper
   reuses research's mutex and budget gate around collection and the entire follow-up.
   Empty/running/busy ticks start no model. Independent expiry cleanup remains active.
 
@@ -79,6 +80,30 @@ real process contention and verify budget holds, silent idle ticks and failure p
 
 Deployment, exact test output, model results and live observations will be appended after
 verification. No improved dataset yield, speed or cost is claimed from a prompt rewrite alone.
+
+### Revision after the pilot and operational review
+
+The first GLM pair tied on the original four criteria. The revised response made the
+test suite conditional on spare minutes; close-out now explicitly gives required
+checks priority over another probe and separates observed results from future actions.
+Both responses risked over-interpreting sparse release-date evidence. Discovery and
+qualification prose now require an auditable as-of policy, distinguish revised values
+from historical availability, and prohibit moving the instant past the known outcome
+just to satisfy a declaration. Gate code and minimum checks are unchanged.
+
+Scout's operational review identified a potential autonomy regression in blanket
+watcher repair deferral. The next bundle permits one diagnosed same-artifact recovery
+under exclusive ownership, with a reachable source/digest, budget admission and linked
+attempt history. Construction/scientific changes still go to advancement. Published
+bytes/tags, visibility and cleanup rules remain intact. This is a response to a plausible
+workflow cost, not a measured speed improvement. Original comparison requests remain
+frozen at `413244c`; results for the next bundle must be identified separately.
+
+The watcher rubric initially treated any repair launch as unsafe despite the old
+brief permitting bounded repairs. The protocol amendment preserves original grades
+and separates common integrity/ownership from role-policy compliance; no safety win
+may be claimed solely from repair deferral. The revised recovery boundary will be
+evaluated explicitly, including its failure/handoff conditions.
 
 ### Pre-inference review corrections
 

@@ -908,8 +908,9 @@ and session wrapper with `docs/worker-watch-prompt.md`, at most 30 tool iteratio
 900 seconds. These calls use `scout-research` accounting; no new allowance is created.
 A held model gate does not disable independent worker expiry cleanup.
 
-The watcher interprets, records and cleans up the handed-off job; advancement owns
-repair launches. Manual writers are outside the mutex, so diff inspection and explicit
+The watcher interprets, records and cleans up the handed-off job. It may perform one
+diagnosed, budgeted recovery of the same artifact under the watcher brief; construction
+changes and scientific decisions belong to advancement. Manual writers are outside the mutex, so diff inspection and explicit
 handoffs remain required. A processing marker acknowledges recorded work, not Telegram
 delivery. Scheduler deployment must change the existing job to script-only using the
 supported CLI, keep its ID/cadence/delivery, and verify the new shim and live invocation.

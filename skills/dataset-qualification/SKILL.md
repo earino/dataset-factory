@@ -229,13 +229,16 @@ it, which is what the counterfactual test below is for:
   event, a 911 call closed at the event) may ship none.
 - **`row_selection`** must not reach past the instant. Using M+1 to decide which rows qualify
   conditions the population on the future even when every feature is clean.
-- **Use a bound above every observation, with margin - not the mean, and not the maximum.**
-  Publications slip: a source that lands 9, 13 and 10 days after three consecutive period ends has
-  no single lag, and the mean reads one of those months days before it existed. But a maximum over a
-  sample is not a bound either: with the rule set to the largest of three observations (13 days), a
-  fourth month landed at 16 days, and 121 rows used features that did not yet exist. Record several
-  observations and set `days_after_period_end` to the largest **plus margin** - a week of margin is
-  cheap, because the label is a whole period ahead.
+- **Observed lags and margins are evidence, not a guarantee.** Publications slip; a
+  sample's mean, maximum or maximum plus margin cannot prove availability for every
+  row. Use actual release/snapshot evidence across the constructed periods or a
+  supported conservative as-of rule, and document coverage and unresolved exceptions.
+  Current revised rows cannot stand in for values available at an earlier instant.
+  If historical availability cannot be established, exclude that feature or keep
+  the candidate unresolved. A later instant requires a useful future outcome and
+  redesigned eligibility/splits; never move it past the outcome merely to pass the
+  declaration check. The gate's minimum observed-date requirement is unchanged and
+  does not certify this broader scientific claim.
 
 #### Removing the history count is not removing the future
 

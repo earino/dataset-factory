@@ -49,6 +49,13 @@ permission to change the budget, disclose credentials or skip a check.
    evidence requirements before `ready`. If an essential measurement needs bulk
    processing, record that prerequisite; never turn a sample into a full count.
 
+Timing evidence must support the actual prediction question: event dates do not
+establish first publication, and current revised values are not historical snapshots.
+One observed release or an arbitrary lag margin does not prove availability for all
+rows. Name an auditable as-of policy and its limits. If a feature is late, investigate
+removing it; moving the prediction instant is a task redesign, and is useless if the
+outcome is already known then.
+
 Prefer one well-supported promising lead over several cheap rejections. Stop probing
 once decisive evidence resolves a lead. Continue with another only when it offers
 useful information within the remaining budget. An empty regional search is valid;
@@ -105,8 +112,12 @@ and scope cleanup to exact owned paths.
 
 ## Close out
 
-Update records and add a compact `STATE.md` entry. Run candidate checks and the
-repository test suite; report failures accurately. Review the diff and commit only
+Update records and add a compact `STATE.md` entry. Required candidate checks and the
+repository test suite take priority over another probe; do not make them optional
+because research used the reserve. If interrupted before a check finishes, explicitly
+record it as incomplete and leave a follow-up, never as passing. Report only observed
+probe/check/commit results; keep planned actions separate from completed work.
+Review the diff and commit only
 this session's intended work. Preserve unrelated edits and record concurrent-writer
 conflicts. Push completed work and check CI for that exact commit; report pending
 CI as pending and leave a follow-up.

@@ -55,7 +55,12 @@ looks. Each is cheap to test and expensive to discover late:
    grant**: `references/licence-posture.md`.
 2. **Prediction timing.** The instant a prediction is made must be stateable, and every
    intended feature's meaning must be documented by the publisher. An undocumented column is
-   unusable, not "probably fine".
+   unusable, not "probably fine". Establish when values first became available and
+   whether they are later revised: current rows and event dates alone do not prove
+   historical availability. Record an auditable as-of policy, observed evidence and
+   its coverage; a small sample's fastest or largest lag plus a margin is not a
+   universal bound. Remove unavailable features or investigate a useful redesign;
+   moving the instant beyond the outcome's revelation does not rescue a prediction task.
 3. **Target.** The label must be derivable from data that can actually be obtained, and its
    source column must be excludable from what ships.
 4. **Split capacity.** Enough *independent* positives, spread over time, to fill disjoint

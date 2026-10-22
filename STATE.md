@@ -6043,3 +6043,18 @@ and measured usage as a live baseline. Next: poll this exact handle, inspect all
 development responses, revise documented weaknesses, then reserved/adaptive diagnostics,
 merge/deploy reviewed files and observe real new-prompt discovery/advancement. No deployment
 has happened. Three added diagnostic cases are explicitly adaptive, not hidden holdout.
+
+Prompt revision checkpoint (Codex, 2026-10-23 local): the original development batch
+still uses frozen 413244c requests and helper 89dc99b; do not replace files under it.
+At 22:18Z Scout confirmed both that batch and the ordinary wb-ieg advancement were
+alive, with evaluation waiting for the research mutex. No process was restarted.
+
+The next candidate bundle addresses the pilot's conditional close-out, overstrong
+lag-margin guidance, and Scout's concern that blanket watcher repair deferral loses
+useful autonomy. One diagnosed same-artifact recovery is allowed with source/digest,
+linked attempts, exclusive ownership and normal budget/cleanup; no construction,
+published-byte/tag or visibility changes. The grading protocol separates role policy
+from common safety. A fourth adaptive diagnostic tests recovery and stop conditions.
+588 tests in 6.650s, OK (six existing skips), source inventory audit green. No executable
+qualification change or deployment. Next: retain the initial responses, test this
+revised bundle explicitly and complete reserved/live validation before claiming gains.
