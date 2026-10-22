@@ -47,6 +47,12 @@ No profile copies of the `dataset-*` skills exist, so nothing shadows them. The 
 `GATE_VERSION` is `1.4.0` and `skills/dataset-qualification/scripts/qualify_dataset.py` still hashes
 `4e51d2e9494fd66d`.
 
+## Later profile-skill drift (17:48Z)
+
+The curator made three further edits to profile skills after this capture; their diffs are preserved
+in `profile-2026-10-22T1748/` with before/after hashes and mtimes. They are file diffs, not a Git
+patch, because those skills have no Git baseline.
+
 ## How to use this branch
 
 Review the patch on its own. To replay it on a checkout of `beab726`:
