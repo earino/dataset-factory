@@ -136,3 +136,44 @@ it and the digest matches.
   rather than surfacing as a blank dashboard cell.
 - Treat the dashboard cron's non-zero exit as a first-class alert with the page name, instead of a
   bare `verified=False`.
+
+## 8. Two identities: qualified bytes vs package documents
+
+These are different questions and must not be conflated.
+
+| Identity | What it hashes | Changes when | Consequence |
+| --- | --- | --- | --- |
+| **Artifact (qualified bytes)** | the five artifact files in the gate's canonical order — `public/train.csv`, `public/eval.csv`, `private/holdout.csv`, `meta.json`, `quality.json` | a row changes, a split boundary moves, or `meta.json`/`quality.json` is edited | the gate must run again before anything quotes a result; staging, publication and audits all address this digest |
+| **Package documents** | `MANIFEST.package_files`: `README.md`, `LICENSE.md`, `RELEASE_NOTES.md` and the rest | prose is corrected | package integrity changed, **the dataset was not requalified** |
+
+So: fixing a sentence in `README.md`, `VERIFICATION.md` or `RELEASE_NOTES.md` does **not** mean the
+dataset rows were requalified, and must not be described as if it did. Fixing `quality.json` (for
+example the timing declaration) **does** change the artifact digest, because the gate hashes it —
+that is a real requalification and needs a new artifact version.
+
+Practical rules that follow:
+
+- Published packages are immutable. The manifest command refuses to rewrite an already-public
+  package; a correction to a live release is a new version, or a repository-only document change
+  that is explicitly labelled as such.
+- Never describe a documentation edit as "re-verified bytes". Say which identity changed.
+- The dashboard and the site read the manifest; a document hash mismatch is a package-integrity
+  failure, not a data failure.
+
+## 9. NHS A&E: what the number is, and is not
+
+`nhs-ae-four-hour-decline` is **dropped**, sits at **private**, and has **no website**. The baseline
+figure **0.5511 eval AUC** is preserved as a *historical* measurement of the v2026.13 artifact that
+existed when the task was closed. It is not a result for any current artifact, it is not a claim
+about the dataset being usable, and it must not be shown beside the live releases as comparable
+headroom.
+
+The reason it was dropped stands: persistence (0.5758), a train-only month prior (0.6027) and
+reversal (0.5839) all beat it on identical rows, so the headline finding was that a one-line rule
+wins. Keeping the number documented is useful for exactly that reason — it records a task that
+failed on merit, not a result to publish.
+
+Related semantics being fixed in the schema refactor: **an aggregate must carry its scope.** NOAA's
+`max(aucs)` over levels and Chicago food's median over 40 configs are the same bug I patched in the
+dashboard — one number standing in for a structured result. A release record should say
+`{eval_auc, scope}` or nothing, never a bare maximum.
