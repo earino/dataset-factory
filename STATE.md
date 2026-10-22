@@ -5792,3 +5792,11 @@ Sampling latency is documented as walk duration plus sleep; filesystem growth
 is checked before the directory walk. New regressions cover those failure paths
 without changing original tests or using worker resources. Source review:
 https://github.com/earino/dataset-factory/pull/8#issuecomment-6349176803 .
+### Hub path authority follow-up (2026-10-22)
+
+Pinned anonymous TSB metadata confirmed the original flat Hub paths. The
+concurrent candidate descriptor's new logical-path override disagreed with both
+main and the version tag. The publisher now resolves paths from the frozen
+release record, consistently with its generated card, rather than from mutable
+candidate metadata. Two regressions cover this drift and explicit structured
+manifest paths. No network tests, bulk download or remote mutation was added.

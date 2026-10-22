@@ -384,3 +384,36 @@ def hf_hub_download(**kw):
                                     env={**os.environ,'HF_WRITE_TOKEN':'private-test-token'})
             self.assertEqual(0, result.returncode, result.stderr)
             self.assertEqual(wanted, json.loads(result.stdout)['files']['data.csv']['sha256'])
+
+
+class ManifestPathAuthorityTests(unittest.TestCase):
+    def module(self):
+        spec = importlib.util.spec_from_file_location('hf_manifest_paths', ROOT/'scripts/hf-publish.py')
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    def test_candidate_edit_cannot_redirect_a_frozen_release(self):
+        from factory.release_schema import load_release
+        module = self.module()
+        release = load_release(ROOT/'release/tsb-railway-occurrence-casualty')
+        changed_descriptor = {'repository':'https://github.com/owner/data',
+                              'hf_paths':{'public/train.csv':'public/train.csv'}}
+        targets = {}
+        def inspect_plan(record, repo):
+            targets['train'] = module.asset_target(record, 'public/train.csv')
+            return {}
+        with patch.object(module, 'resolve_candidate', return_value=release.dataset), \
+                patch.object(module, 'descriptor', return_value=changed_descriptor), \
+                patch.object(module, 'manifest', return_value=release), \
+                patch.object(module, 'plan', side_effect=inspect_plan), \
+                redirect_stdout(io.StringIO()):
+            self.assertEqual(0, module.main(['--plan']))
+        self.assertEqual('data/public-train.csv', targets['train'])
+
+    def test_explicit_manifest_paths_preserve_structured_release_layout(self):
+        from factory.release_schema import load_release
+        module = self.module()
+        release = load_release(ROOT/'release/noaa-tide-flooding')
+        for logical, target in release.metadata['hub_paths'].items():
+            self.assertEqual(target, module.asset_target(release, logical))
