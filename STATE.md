@@ -5639,6 +5639,23 @@ Next action for the tick: the queue's construction work remains with the advance
 staging release 420810883); ea-flood-alert-escalation enters the queue behind the five ready
 candidates as a measured class-A build (whole panel fits the coordinator; ~4.9 MB of fetches).
 
+## Engineering — scheduled-session admission (2026-10-22)
+
+Prepared on `hardening/session-admission`, not deployed. A gate subprocess could
+exit nonzero after printing allow; malformed wake directives could admit work;
+concurrent wrappers checked before either wrote the JSON marker; and failed agent
+processes returned scheduler success. The fix serializes gate-through-agent with
+a persistent OS mutex, requires a successful unambiguous gate decision, preserves
+the reporting marker, and returns truthful process outcomes. Local subprocess
+regressions exercise competing ticks and parent death using stubs only. Existing
+419 tests and qualification bytes are unchanged. Scout confirmed the JSON marker
+and allow/hold protocol must remain compatible and nonzero exits surface through
+the deployed scheduler. No live settings, shims, schedules, or worker state changed.
+
+Next: exact-head CI and combined integration verification; include this as a
+separate reviewable increment. The earlier five-PR rollout remains pending the
+operator's explicit revision of “do not merge.” Before any rollout, reconcile
+current research ownership and preserve fresh automatic skill-edit evidence.
 
 ### 2026-10-22 — runtime hardening rollout prepared
 
@@ -5786,6 +5803,15 @@ dropped nhs-ae-four-hour-decline (documented above), check-candidate --all exit 
 OK. tsb's published hub copy of MANIFEST.json predates hub_paths - harmless for consumers,
 refresh at the next approved small-file maintenance.
 
+
+### Session-admission source review follow-up
+
+Scout verified the installed one-shot Hermes path retains the inherited admission
+fd until process exit (PR #7 source-review comment). Corrected the process-group
+cleanup after that review: once normal completion reaps the child, its old group
+ID may be recycled, so the wrapper must not signal it. Timeout cleanup signals
+only while the leader remains unreaped. A new real-process regression checks
+normal completion sends no group signal. No live fault injection or deployment.
 ### Hub path authority follow-up (2026-10-22)
 
 Pinned anonymous TSB metadata confirmed the original flat Hub paths. The
@@ -5802,3 +5828,20 @@ the test suite were each ruled out by reproduction, and no cron or session sched
 moments; the live site re-verified anonymously from here (200, cross-links present), so the
 recorded claim is true and the value is kept. If a stray site-verification automation exists on
 this host, the builder should make it commit its own writes or stop leaving them in the tree.
+
+### Research accounting admission — engineering follow-up, 2026-10-22
+
+PR #7 now distinguishes accounting query failure from measured zero. Missing,
+corrupt, inaccessible, locked and incompatible state databases hold the session
+with explicit unknown totals; invalid counters and positive session counters
+lacking usage rows also hold. Eduardo chose admission under the existing measured
+token ceiling when dollar pricing is unknown, with dollar totals explicitly null.
+The configured unpriced policy requires a positive token ceiling; default policy
+for unconfigured installations remains hold. Scout verified the
+installed schema/writer read-only in comment 6349573480. An empty valid ledger is
+still allowed, and the configured limits/exclusions have not changed. New offline
+cases exercise SQLite failures and the real gate-to-wrapper refusal path. Eduardo
+explicitly approved supplying a valid empty database in the two existing lock-test
+fixtures; their assertions are unchanged. Qualification code is untouched. Clean
+Python 3.13 suite/doctor and exact-commit CI evidence are recorded in PR #7. No live
+gate, runtime or schedule changed. Next: exact-commit CI and Scout review before rollout.
