@@ -1,8 +1,11 @@
-# First hardening rollout — prepared, not deployed
+# First hardening rollout — deployed, verification follow-up
 
-Prepared 2026-10-22. The operator requested broad hardening and deployment after an
-original instruction to open a PR without merging. Resolve that remaining merge boundary
-before executing this rollout. No worker launch, allowance increase, credential, dataset tag or public-destination
+Prepared 2026-10-22; the operator subsequently explicitly authorized merge/deployment.
+PRs #1–4 and #6–8 are merged. Scout deployed `50135b2ec0e81a4779076724287c629c8fdbdf8e`
+by fast-forward, with doctor and the 122-file live audit passing. See the
+[deployment evidence](https://github.com/earino/dataset-factory/pull/4#issuecomment-6350157615)
+and the verification follow-up below. The following procedure records the reviewed rollout.
+No worker launch, allowance increase, credential, dataset tag or public-destination
 artifact change is part of this rollout. The operator selected an explicit token-ceiling
 policy for unpriced research in PR #7; the existing numerical limits stay fixed. PR #2 restores original factory manifest bytes after
 concurrent repairs; see `docs/HARDENING-INCIDENTS.md` in that PR.
@@ -164,6 +167,51 @@ Dataset websites and data publication remain under their existing reviewed-plan 
 No dataset release tag is moved to deploy framework or dashboard code.
 
 ## Rollback and remaining work
+
+### Deployed verification and fixture repair, 2026-10-22
+
+Exact-main [CI passed](https://github.com/earino/dataset-factory/actions/runs/39844619533).
+A clean Python 3.13.1 clone of `50135b2` ran 572 tests in 6.722s, OK (skipped=6),
+plus doctor, source audit, dashboard and the published-manifest no-op. Every release
+file hash stayed unchanged; the original ten manifests match their original `beab726`
+bytes. No qualification code changed.
+
+Scout verified the supported restart from PID 22628 to 7867, then reconciled the
+preserved skill drift with digest preconditions. Both automatic writers remain held
+(`background_review.enabled=false`, curator paused), including auxiliary automatic
+memory editing. Research/discovery admissions were briefly held 19:58:39–20:02:56 UTC
+and restored; cleanup and worker watch remained enabled. Manual research and explicit
+recordkeeping remain available.
+
+Dashboard commit `5c9324a96ff3102be819b89b386098f2f67ae39c` has a
+[successful Pages deployment](https://github.com/earino/dataset-factory-dashboard/actions/runs/39845163707).
+Independent Chrome and anonymous JSON inspection confirmed the release fixes. All eleven
+live records match the verified build's split, baseline, destination and publication
+fields. Nine public records have site destinations; EUTL stays private/packaged and NHS
+private/dropped. The budget decision reports 8,718,221 weekly tokens against the unchanged
+40,000,000 ceiling, with dollar spend null and pricing unavailable.
+
+The initial dashboard truthfully reported a failed local test run: eight existing
+`AssembledBundle` tests attempted assembly in the live `.factory/jobs/austin-003`.
+That historical directory has no ownership marker, so the new assembler correctly
+refused to overwrite it. Scout reproduced this in a copy of the live checkout;
+the clean hosted clone passed. The fixture repair copies the exact canonical inputs
+to a temporary root and passes its generated absolute job path to the offline planner.
+Every assertion is unchanged (verified by AST comparison), the test count is unchanged,
+and the production ownership refusal is unchanged. An independent Python 3.13.1 clone
+containing an unowned historical-job sentinel produced:
+
+```text
+Ran 572 tests in 6.781s
+
+OK (skipped=6)
+```
+
+The sentinel remains byte-identical and unowned. Next: verify this fixture repair in
+Scout's isolated live-tree copy, merge after exact-head CI, fast-forward the host and
+republish/verify dashboard health. Do not erase or mark old job directories as owned
+to make tests pass. A fresh dashboard and ordinary scheduled-session observation are
+still required before claiming operational verification complete.
 
 If preflight fails, do not deploy. If the host checks fail after updating, hold new research
 sessions through the existing scheduler controls while preserving cleanup/watch duties and

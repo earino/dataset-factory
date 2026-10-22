@@ -12,9 +12,12 @@ import importlib.util
 import json
 import math
 from decimal import Decimal
+import shutil
 import subprocess
 import sys
+import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -45,10 +48,21 @@ class AssembledBundle(unittest.TestCase):
     def setUp(self):
         import contextlib
         import io
-        with contextlib.redirect_stdout(io.StringIO()) as captured:
+        # Exercise the real canonical bundle without writing into the coordinator's
+        # job ledger. Historical, unowned job directories must remain untouched.
+        temporary = tempfile.TemporaryDirectory(prefix="qualification-job-test-")
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name).resolve()
+        spec = assemble_job.BUNDLES["austin-911-response"]
+        for relative in [spec["job_file"], *(source for _, source in spec["files"])]:
+            destination = self.root / relative
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(ROOT / relative, destination)
+        with patch.object(assemble_job, "ROOT", self.root), \
+                contextlib.redirect_stdout(io.StringIO()) as captured:
             self.assertEqual(assemble_job.main(["austin-911-response"]), 0)
         self.report = json.loads(captured.getvalue())
-        self.directory = ROOT / self.report["job_directory"]
+        self.directory = self.root / self.report["job_directory"]
         self.job = json.loads((self.directory / "job.json").read_text())
 
     def test_the_job_id_comes_from_the_candidate_job_file(self):
@@ -148,7 +162,7 @@ class AssembledBundle(unittest.TestCase):
         result = subprocess.run(
             ["sh", "scripts/scout-factory", "worker",
              "--config", str(CI_POLICY.relative_to(ROOT)),
-             "plan", f"{self.report['job_directory']}/job.json"],
+             "plan", str(self.directory / "job.json")],
             cwd=ROOT, capture_output=True, text=True, timeout=120)
         self.assertEqual(result.returncode, 0, result.stderr)
         plan = json.loads(result.stdout)

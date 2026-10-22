@@ -5872,3 +5872,28 @@ explicitly approved supplying a valid empty database in the two existing lock-te
 fixtures; their assertions are unchanged. Qualification code is untouched. Clean
 Python 3.13 suite/doctor and exact-commit CI evidence are recorded in PR #7. No live
 gate, runtime or schedule changed. Next: exact-commit CI and Scout review before rollout.
+
+### Authorized hardening deployment and fixture follow-up — 2026-10-22
+
+Eduardo explicitly authorized merge/deployment. PRs #1–4 and #6–8 are merged;
+source `50135b2ec0e81a4779076724287c629c8fdbdf8e` passed exact-main CI and an
+independent Python 3.13 clean clone (572 tests, OK, six existing skips). Doctor,
+61-file source audit, dashboard and published-manifest no-op pass, with unchanged
+release hashes. Scout fast-forwarded the hosted checkout after the supported
+restart and preserved skill reconciliation: doctor and all 122 live audit checks
+pass. Automatic background review and curator remain held; the two research
+admissions were restored after the brief maintenance window. Limits are unchanged;
+unknown dollar spend uses the operator-selected 40M-token policy. PR #5 remains
+unapplied evidence. See docs/HARDENING-DEPLOYMENT.md for linked evidence.
+
+The dashboard is deployed and its eleven release records independently match the
+reviewed build. Its local test-health alarm exposed a real test-isolation bug:
+eight worker qualification tests tried to overwrite a historical unowned job in
+the live ledger. The ownership guard correctly refused. Their setup now uses a
+temporary root with exact canonical source copies; every assertion and the test
+count remain unchanged. A clean Python 3.13 clone with an unowned historical-job
+sentinel passes all 572 tests in 6.781s (six skips), leaving the sentinel untouched.
+Next: Scout verifies the fixture fix against its isolated live-tree copy, then
+exact-commit CI, merge/fast-forward and one fresh dashboard publication/readback.
+Record the next ordinary research session separately; no worker launch or data
+publication is authorized by these rollout checks.
