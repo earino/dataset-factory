@@ -115,6 +115,14 @@ limits are in `results/old-prompt-build-review.json` under the evaluation direct
 The ordinary run was preserved; any repair following these supplied findings is
 assisted and cannot count as an unprompted prompt-quality gain.
 
+The initial baseline-comparison responses also confused an inconclusive difference
+with parity and treated a weak calendar reference as ruling out seasonality. Before
+follow-up inference, the bundle now distinguishes observed gaps, paired uncertainty
+and equivalence; references test their stated information set, not every possible
+explanation. Prevalence shift is investigated rather than asserted to explain AUC.
+This is a documented development-driven revision, not a held-out discovery. The
+52-call follow-up uses its successor hash instead of the untested `286db01` bundle.
+
 ### Pre-inference review corrections
 
 Scout independently checked the isolated checkout and installed Hermes interfaces.

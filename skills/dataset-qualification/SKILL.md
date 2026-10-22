@@ -84,7 +84,8 @@ Before any AUC is quoted as evidence that the task teaches something, measure th
 a reference the model must improve on to support a headroom claim. If the model trails it,
 inspect alignment, availability, uncertainty and split shift before interpreting the task.
 2. **Calendar-only** - country/entity identity plus cyclical week-of-year plus a seasonal prior
-   estimated only from training-era rows. This separates learned signal from seasonality.
+   estimated only from training-era rows. This tests that particular seasonal/identity
+   reference; beating it does not rule out all seasonality or prove a causal source of signal.
 3. **The full model**, on the same rows and the same fit/eval boundary.
 
 Verify each reference implements its claimed information set and evaluates predictions
@@ -92,6 +93,13 @@ against that split's labels. Training prevalence is not held-out accuracy; a sup
 different control that always falls back to the same predictor is not independent
 evidence. Record degenerate or inapplicable controls explicitly instead of relying on
 the names of fields in a result dictionary.
+
+Separate the observed difference from its uncertainty. A lower measured AUC is an
+observed result even without intervals; its generality and precision remain uncertain.
+Use paired differences on the same rows with an appropriate dependence-aware interval,
+not overlap of two marginal intervals as the comparison test. An interval containing
+zero does not establish equality or parity: report an inconclusive difference unless
+a pre-specified equivalence margin and analysis support an equivalence claim.
 
 Report the gap, not just the top-line AUC. A model below persistence is a **recorded defect**, not
 an encouraging result: on a four-week-ahead exceedance task a baseline reached 0.870 while week-W
@@ -106,8 +114,9 @@ Two structural checks belong with it:
   Brier by target year as well.
 - **Prevalence shift between splits.** Compare positive rates per split and per year. A training
   split at ~59% positives scored against an evaluation window at ~24% is an out-of-distribution
-  test as much as a temporal one, and it explains a model that trails a trivial rule. Say which
-  it is rather than letting the pooled AUC imply a clean temporal split.
+  test as much as a temporal one. Investigate whether conditional distributions or
+  calibration changed; prevalence alone does not mathematically determine AUC. Say what
+  was measured rather than letting a pooled AUC imply a clean temporal split or a cause.
 
 When persistence dominates, a substantively useful **change** target (onset, transition or
 sustained exceedance) may warrant a new task instance. It does not guarantee headroom:

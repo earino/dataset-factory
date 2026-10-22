@@ -52,7 +52,9 @@ For the selected candidate, follow the applicable sequence:
 5. Interpret the comparison before packaging. One weak model does not establish
    that no useful prediction is possible. Diagnose a bounded, testable cause. If
    evidence supports no useful headroom, preserve the negative finding and stop or
-   propose a new task instance. Unknown measurements stay unknown.
+   propose a new task instance. A statistically inconclusive difference does not
+   establish parity; report the observed gap and uncertainty separately. Unknown
+   measurements stay unknown.
 6. Package and privately stage the accepted version with `dataset-release`. Record
    baseline scope or an explicit reason it is unavailable, without implying a missing
    required acceptance check passed. Public visibility requires recorded operator
@@ -113,4 +115,5 @@ CI for that exact commit; report pending CI as pending.
 
 Final response: what advanced, evidence and scope of measured results, held/running
 work, checks/commit/CI, and next action. Acknowledge blocked or partial outcomes
-directly. Sign `— Scout (Hermes)`.
+directly. Completed-action claims require observed results; label proposed checks,
+worker deletion, commits and future outcomes as pending until verified. Sign `— Scout (Hermes)`.

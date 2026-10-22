@@ -87,4 +87,5 @@ This marker acknowledges processing; it does not prove Telegram delivery.
 
 Final response: job/candidate, verified result (only qualified numbers), recorded
 commit/check status, cleanup evidence, next action/owner. No empty or one-word
-response for a finished job. Sign `— Scout (Hermes)`.
+response for a finished job. Report only observed completion; planned recovery,
+deletion, commits and checks remain pending until verified. Sign `— Scout (Hermes)`.
