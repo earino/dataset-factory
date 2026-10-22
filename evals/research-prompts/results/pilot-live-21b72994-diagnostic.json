@@ -226,11 +226,67 @@
       "elapsed_seconds": 44.919,
       "response": "Decision: Advance the original task with the late daily aggregate dropped. Do not move the prediction instant and rewrite the timing declaration. A packaged release does not exist here, since no construction has passed qualification, so construction/qualification is the work.\n\nSupporting evidence: At the original midnight instant, the aggregate is not published; it appears two days later, after the outage label is public. That makes it post-hoc for this task, not a usable covariate. The gate\u2019s timing rule is explicit: features must be published by the instant, row selection must not reach past it, and \u201cknowable at the period\u201d is not \u201cknowable at the release.\u201d Merely moving the instant forward while retaining the original target would either use a label already public or present hindsight as a feature. Moving both instant and target is not a declaration repair; it changes the prediction question and must be treated as a new task. The documented pre-midnight covariates give the original decision a legitimate feature set, but they are only candidates until qualification and baselines measure them.\n\nUncertainty and next discriminating check: The main uncertainty is whether the remaining pre-midnight covariates carry usable signal. The next check is not another timing argument; it is the gate on the full artifact after the aggregate is removed, asserting the late column is absent from every shipped CSV, not merely unlisted. If the gate passes, run the baseline triad on identical rows: persistence, calendar-only, and the full model. If persistence or a calendar rule wins, record a negative result rather than packaging.\n\nOrdered actions:\n1. Freeze the original task definition: prediction at midnight before day D; target is whether an outage starts during D; label source excluded from shipped columns.\n2. Remove the late aggregate from features and shipped files. Update quality.json\u2019s timing block to describe only features published before midnight; do not extend the instant to accommodate a late field.\n3. Build or revise on the worker; run dataset-qualification over the full artifact; collect qualification.json; run --accept against the exact collected bytes.\n4. If qualification passes, measure the baseline triad and record any headroom. Only then package for review.\n5. If the aggregate is considered essential, open a new candidate/task: prediction instant at or after its publication, target a later day whose label is not yet public at that instant, features published by that instant, selection stopped at the instant, new temporal splits, new novelty/licence review, and fresh qualification. Do not reuse rows whose outcomes were already public.\n\nStopping condition: Stop at a gate failure not caused by the excluded column, an unreadable licence, a missing operator flip, or a baseline showing persistence/calendar dominance. Do not score, quote AUC/headroom, package, or publish without a passing report for that artifact.\n\nOperator report: Original outage task advances with the late aggregate removed; no figures are quoted yet. The proposed two-day instant shift is rejected as a fix for this task because it either leaks the already-public label or changes the question. If pursued, it is a separate task instance requiring new construction, splits, timing evidence, and qualification. Next action: construct/qualify the original task without the late field, then run the baseline triad.\n",
       "response_sha256": "4f51a942d1ab7a41fa488424a7730e578ab4ac949d96c4bd8324f69a6dde3db6"
+    },
+    {
+      "partition": "diagnostic",
+      "case": "variable-release-evidence",
+      "arm": "revised",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-66",
+      "session_id": "20261022_234331_db229e",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "7c271b494dd32b09aacaba15d0bda1b57bca9ae47095ad520acbbd38bf092367",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 247,
+        "output_tokens": 7344,
+        "cache_read_tokens": 24576,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 32167,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 858,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 195,
+          "output_tokens": 6486,
+          "cache_read_tokens": 24192,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 100.445,
+      "response": "DECISION\n\nNot ready. Record the lead as investigating/parked, with the timing contract as the named blocker. Reject the colleague's declaration (fastest observed delay, 2 days, +1 = 3 days): it is contradicted by the case's own evidence and would be an invented bound, not a measurement.\n\nSUPPORTING EVIDENCE\n\n- Observed release delays are 2, 4, and 11 days. Two of three observations exceed the proposed 3-day bound, and the 11-day observation exceeds the 5-day prediction instant itself: in at least one observed release, month-M rows were not yet published when the prediction would be made \u2014 a post-hoc feature under the intended contract. The skill states plainly that a small sample's fastest (or largest) lag plus a margin is not a universal bound; gate 1.4.0 refuses features that publish after the instant.\n- Records may be revised, no historical snapshots exist, and API rows carry event dates but no per-row first-publication time. Current values therefore cannot establish what was available at the instant, and an auditable as-of policy cannot yet be written from API data. Declaring 3 days would hide that, not resolve it. Note: even the conservative bound (max observed) does not rescue day 5 \u2014 it forces a redesign.\n- The other contracts are not the blocker: licence open (still record the publisher's own terms quote and class A/B), target documented, independent split capacity documented. Hence parked, not dropped.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\n\nDoes the publisher's release calendar bound publication at or before day 5, and what is the revision policy? Cheapest probe: read the release schedule / previous-releases page for this series and extract period_end -> published dates for every listed release, plus any revision-policy note (read-only, no bulk data). This distinguishes \"the 11-day case is a rule, so the instant must move\" from \"it is an exception, so the instant can stand on a documented rule plus observed pairs.\"\n\nORDERED ACTIONS AND STOPPING CONDITION\n\n1. Record the candidate as investigating: all three lag observations, the revision note, absent snapshots, the rejected 3-day proposal, and the blocker as one fact \u2014 no defensible availability bound at day 5.\n2. Probe the release calendar and revision policy; record URLs, dates, and commands.\n3. Branch:\n   - Calendar bounds releases at day 5 or earlier (11-day case explained as a revision, not first publication): write the as-of policy from the documented rule plus observed pairs, re-run check-candidate, and mark ready only if all five contracts pass, naming the construction step.\n   - Calendar shows releases can land after day 5: the instant must move past the worst scheduled/observed delay. That is a redesign, viable only if the outcome (realized in month M+1) is not revealed before the new instant \u2014 check outcome revelation timing next.\n   - No calendar, only three observations: keep parked with a prospective observation plan (record the next few release dates) as the reopening event, and evaluate the moved instant against outcome revelation.\n4. Stop when a defensible instant with publisher-documented evidence exists (ready), or the outcome is revealed before every feasible instant (dropped, evidence recorded), or bounded probes are exhausted \u2014 then leave a precise handoff, not an open question. Never record the 3-day figure as a bound; never declare ready on current evidence.\n\nOPERATOR REPORT\n\nOne lead examined; verdict investigating (parked), not ready. Decisive evidence: an observed 11-day release delay postdates the intended day-5 instant, and two of three observed delays already exceed the proposed 3-day availability declaration; with possible revisions and no snapshots, availability at the instant is unproven. Licence, target, and splits appear satisfied; timing is the sole blocker. Next action: release-calendar and revision-policy probe, then either confirm the instant or evaluate moving it against the outcome's revelation time. This was a no-tool decision exercise: no records changed, no probes run, no construction launched; the actions above are what a live session would take.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "cfba6450f33c4c382472927ab08583b9efbe134a49d429aabcff94434c812f03"
     }
   ],
   "ledger": {
-    "calls": 65,
-    "tokens": 2284386
+    "calls": 67,
+    "tokens": 2316553
   },
-  "updated_at": "2026-10-22T23:43:23Z"
+  "updated_at": "2026-10-22T23:45:24Z"
 }
