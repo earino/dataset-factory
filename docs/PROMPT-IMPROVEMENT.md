@@ -92,6 +92,12 @@ was identified and presented to Eduardo for clarification before inference proce
 and [seven-day totals](https://github.com/earino/dataset-factory/pull/11#issuecomment-6351589324).
 Cached-token totals do not establish dollar spend; pricing remains unknown.
 
+A second source review identified that Hermes's convenience combined total omits
+auxiliary cache, even though its primitive fields record it. The usage-file check
+therefore independently sums all four fields in both main and auxiliary blocks,
+then compares with the database total. A regression fixture includes cached title
+usage and an understated convenience total. [Scout's review](https://github.com/earino/dataset-factory/pull/11#issuecomment-6351741258).
+
 A further scan found residual tag-movement advice and quota instructions in on-demand
 profile references. Those are aligned with frozen package versions and evidence-based
 decisions; the original captured bytes remain in history. Profile source hashes are

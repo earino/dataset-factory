@@ -105,6 +105,24 @@ def measured_session(db, sid):
         con.close()
 
 
+def usage_file_tokens(report):
+    """Count primitive fields: Hermes's convenience auxiliary total omits cache."""
+    fields = ('input_tokens', 'output_tokens', 'cache_read_tokens', 'cache_write_tokens')
+    auxiliary = report.get('auxiliary')
+    # A completed installed-runtime usage report includes explicit zero counters
+    # when no auxiliary calls ran. Missing data is not a measured zero.
+    if not isinstance(auxiliary, dict):
+        raise ValueError('missing or invalid auxiliary usage report')
+    total = 0
+    for block in (report, auxiliary):
+        for field in fields:
+            value = block.get(field)
+            if type(value) is not int or value < 0:
+                raise ValueError('missing or invalid primitive usage field')
+            total += value
+    return total
+
+
 def wrapper(live):
     path=ROOT/'scripts/scout_research_session.py'
     spec=importlib.util.spec_from_file_location('eval_admission',path)
@@ -187,8 +205,7 @@ def main():
             entry['dollar_spend']=None
             entry['route_scope']='active route at finalization; not per-call served-model proof'
             entry['session_id']=u['session_id']; entry['usage_model']=u.get('model'); entry['usage_provider']=u.get('provider')
-            reported_tokens=(u.get('total_including_auxiliary') or {}).get('total_tokens',u.get('total_tokens'))
-            if type(reported_tokens) is not int or reported_tokens != measurement['tokens']:
+            if usage_file_tokens(u) != measurement['tokens']:
                 raise ValueError('usage file and research accounting disagree')
             if result.returncode or u.get('failed') or u.get('completed') is not True or u.get('partial') or u.get('interrupted'):
                 raise ValueError('provider/invocation incomplete')

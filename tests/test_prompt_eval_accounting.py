@@ -47,6 +47,26 @@ class PromptEvalAccountingTests(unittest.TestCase):
         self.assertEqual(2,result['calls'])
         self.assertEqual('unrecorded',result['recorded_tool_pin'])
 
+    def test_usage_file_cache_is_counted_even_when_convenience_total_omits_it(self):
+        report = {'input_tokens':1000, 'output_tokens':200,
+                  'cache_read_tokens':5000, 'cache_write_tokens':200,
+                  'auxiliary':{'input_tokens':100, 'output_tokens':20,
+                               'cache_read_tokens':50, 'cache_write_tokens':0,
+                               'total_tokens':120},
+                  'total_including_auxiliary':{'total_tokens':6520}}
+        measured = eval_run.measured_session(self.database(), 'case')
+        self.assertEqual(6570, eval_run.usage_file_tokens(report))
+        self.assertEqual(measured['tokens'], eval_run.usage_file_tokens(report))
+        zero = dict.fromkeys(('input_tokens','output_tokens','cache_read_tokens','cache_write_tokens'), 0)
+        report['auxiliary'] = zero
+        self.assertEqual(6400, eval_run.usage_file_tokens(report))
+        for absent in (None, {}, {'input_tokens':100, 'output_tokens':20}):
+            report['auxiliary'] = absent
+            with self.assertRaises(ValueError): eval_run.usage_file_tokens(report)
+        report['auxiliary'] = zero
+        report['cache_read_tokens'] = None
+        with self.assertRaises(ValueError): eval_run.usage_file_tokens(report)
+
     def test_hashed_empty_tool_pin_is_resolved(self):
         pin='a'*64; db=self.database(pin); con=sqlite3.connect(db)
         con.execute('INSERT INTO system_prompts VALUES (?,?)',(pin,json.dumps({'tools':[]})))
