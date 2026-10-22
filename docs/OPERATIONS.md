@@ -756,3 +756,29 @@ Do not delete the mutex, kill a PID based only on a stale file, or interrupt rem
 workers merely to unblock admission. A forced stop loses in-progress agent work;
 record and reconcile that work before resuming. The supported agent run budget
 normally bounds an orphan, but a wedged runtime may require this intervention.
+
+### Accounting failures hold research
+
+The session admission gate distinguishes a valid empty Hermes usage table from an
+unavailable ledger. Missing, unreadable, corrupt, locked or incompatible `state.db`
+queries hold research; spend, tokens and counts are `null` in JSON and `UNKNOWN`
+in status/digest output. Partial successful reads never become a complete total.
+The read-only SQLite connection waits at most one second for a lock. Retry a later
+tick after fixing the accounting source; do not create an empty replacement ledger
+or reset the allowance to bypass the hold.
+
+Usage counters must be nonnegative integers and cost finite and nonnegative.
+Research calls with absent/unknown pricing inside the allowance period also hold:
+Hermes stores unknown cost as `0.0`, which is not evidence of free usage. Known
+estimated zero remains valid; interactive unpriced calls do not consume or hold
+the research allowance. Weekly tokens still include every recorded research call,
+including unpriced calls before the current allowance period. Recorded verification
+session exclusions remain unchanged.
+
+Where the Hermes `sessions.api_call_count` column exists, a positive research call
+counter without any usage rows is an accounting failure. Older supported schemas
+without that counter cannot supply this cross-check; query/schema failures still
+hold. A zero-call session and a valid empty first-run database remain normal.
+These checks validate recorded evidence, not provider billing completeness or
+subscription limits. The cron execution ledger is digest context, not the research
+spend or admission authority; `usage_audit.jsonl` is not currently read by this gate.

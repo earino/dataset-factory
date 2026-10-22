@@ -570,7 +570,9 @@ def render_overview(snapshot, alarms, alarms_plain=()):
         kpi("Active bench", coverage.get("live"),
             note=f"{coverage.get('live_non_us', 0)} non-US · {round(100 * (coverage.get('live_non_us_share') or 0))}%"),
         kpi("Tokens 7d", decision.get("research_tokens_last_7_days"),
-            note=f"{(decision.get('research_tokens_last_7_days') or 0) / (decision.get('weekly_token_budget') or 1) * 100:.1f}% of ceiling"),
+            note=(f"{decision['research_tokens_last_7_days'] / decision['weekly_token_budget'] * 100:.1f}% of ceiling"
+                  if decision.get('research_tokens_last_7_days') is not None
+                  and decision.get('weekly_token_budget') else "Usage or ceiling unknown")),
     ])
 
     body = f"""
@@ -627,15 +629,22 @@ def render_cost(snapshot, alarms, alarms_plain=()):
     reasons = decision.get("reasons") or []
     only_lock = (decision.get("allowed") is False and reasons
                  and all("lock held" in r for r in reasons))
-    tpct = 100 * (tokens or 0) / (ceiling or 1)
-    spct = 100 * (sessions or 0) / (cap or 1)
+    token_gauge = (gauge(100 * tokens / ceiling, "weekly tokens", f"{fmt(tokens)} of {fmt(ceiling)} tokens")
+                   if tokens is not None and ceiling else "Usage or ceiling unknown")
+    session_gauge = (gauge(100 * sessions / cap, "sessions", f"{sessions} of {cap} sessions")
+                     if sessions is not None and cap else "Session count or cap unknown")
+    admission = ("now" if decision.get('allowed') else
+                 "after the current session releases" if only_lock else
+                 "after the recorded hold reasons are resolved")
 
     buckets = [("interactive", usage.get("interactive", {}), "var(--blue)"),
                ("research", usage.get("research", {}), "var(--mint)"),
                ("auxiliary", usage.get("auxiliary", {}), "var(--violet)"),
                ("scheduled", usage.get("scheduled-other", {}), "var(--faint)")]
-    rows = [(f'<b>{esc(name)}</b>', fmt(b.get("calls") or 0),
-             fmt(b.get("input_tokens") or 0), fmt(b.get("output_tokens") or 0))
+    measured_usage = decision.get("usage") is not None
+    rows = [(f'<b>{esc(name)}</b>', fmt(b.get("calls", 0) if measured_usage else None),
+             fmt(b.get("input_tokens", 0) if measured_usage else None),
+             fmt(b.get("output_tokens", 0) if measured_usage else None))
             for name, b, _ in buckets]
 
     body = f"""
@@ -643,21 +652,21 @@ def render_cost(snapshot, alarms, alarms_plain=()):
   <div class="eyebrow">Cost &amp; capacity</div>
   <h1>{fmt(tokens)} tokens this week</h1>
   <p>of the weekly research ceiling used ({fmt(tokens)} of {fmt(ceiling)} tokens). The gate admits
-  the next session {esc('now' if decision.get('allowed') else 'only after the current one releases')}.</p>
+  the next session {esc(admission)}.</p>
   <div class="statusline {'ok' if decision.get('allowed') else ('ok' if only_lock else 'warn')}"><span class="dot" style="background:{'var(--mint)' if decision.get('allowed') or only_lock else 'var(--amber)'}"></span>
     <span><b>{'Gate open' if decision.get('allowed') else ('Session in flight' if only_lock else 'Gate closed')}</b> — {esc(humanize_seconds('; '.join(decision.get('reasons') or ['no blockers']))[:90])}</span>
     <time>{esc(snapshot['generated_at'][11:16])} UTC</time></div>
 </section>
 
 <div class="grid">
-  <div class="col-6">{card("Weekly tokens", gauge(tpct, "weekly tokens", f"{fmt(tokens)} of {fmt(ceiling)} tokens"),
+  <div class="col-6">{card("Weekly tokens", token_gauge,
         sub="measured, not estimated")}</div>
-  <div class="col-6">{card("Sessions", gauge(spct, "sessions", f"{sessions or 0} of {cap or 0} sessions"),
+  <div class="col-6">{card("Sessions", session_gauge,
         sub="scheduled runs this week")}</div>
 
   <div class="col-12">{card("Spend by source", table(
         ["Source", "Calls", "Input tokens", "Output tokens"], rows, num_cols=(1, 2, 3)),
-        sub="all-time counters from the session ledger")}</div>
+        sub="allowance-period counters from the session ledger")}</div>
 
   <div class="col-12">{card("Unit economics", '<p class="sub" style="line-height:1.7">'
         'Worker euros and cost per published dataset appear once the per-job ledger is recorded. '

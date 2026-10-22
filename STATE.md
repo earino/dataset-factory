@@ -5756,3 +5756,15 @@ the test suite were each ruled out by reproduction, and no cron or session sched
 moments; the live site re-verified anonymously from here (200, cross-links present), so the
 recorded claim is true and the value is kept. If a stray site-verification automation exists on
 this host, the builder should make it commit its own writes or stop leaving them in the tree.
+
+### Research accounting admission — engineering follow-up, 2026-10-22
+
+PR #7 now distinguishes accounting query failure from measured zero. Missing,
+corrupt, inaccessible, locked and incompatible state databases hold the session
+with explicit unknown totals; invalid counters, unpriced research calls in-period,
+and positive session counters lacking usage rows also hold. Scout verified the
+installed schema/writer read-only in comment 6349573480. An empty valid ledger is
+still allowed, and the configured limits/exclusions have not changed. New offline
+cases exercise SQLite failures and the real gate-to-wrapper refusal path. Original
+tests and qualification code are untouched. No live gate, runtime or schedule was
+changed. Next: clean-clone suite, exact-commit CI and Scout review before rollout.
