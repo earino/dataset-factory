@@ -70,3 +70,22 @@ TSB's Hub verification list names logical artifact paths rather than remote Hub 
 translates only entries named in the manifest's asset map, using declared Hub paths or the existing
 flat-asset rule. The anonymously inspected Hub tree confirmed the actual `data/public-train.csv`
 layout. No verification evidence was rewritten. All nine editorial previews are now tested offline.
+
+## Operator review resolutions
+
+For an already-public package, repairing display interpretation belongs in this normaliser or a
+new `site_revision` with an operator-reviewed website plan. A correction to the published package
+itself requires separately staged/reviewed release-version work: keep the old artifacts and tags,
+create a new version/tag, and complete the ordinary qualification/package/publication procedure.
+Never repoint an existing dataset tag as a metadata-repair shortcut. The no-op message now points
+operators here. This refactor does not authorise publication of a replacement release.
+
+NOAA's existing README and site editorial already name both 0.8633 (temporal) and 0.8690
+(station-disjoint); the typed `per_config` result agrees with that prose. There is no unnamed
+headline aggregate. MSHA retains the precise measured config name. NHS remains parseable for
+historical observation, but its old Hub verification revision is still a package-check failure;
+it must not be silently accepted as publication-ready by an all-package sweep.
+
+`hf-publish.py --verify` records evidence in the local `DESTINATIONS.json`; the help now explicitly
+states that write. Use an isolated checkout when reviewing it. This remains a publication operation,
+not a read-only observer. The schema change does not claim to replace remote verification.

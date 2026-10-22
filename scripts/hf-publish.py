@@ -386,7 +386,7 @@ def main(argv=None):
     parser.add_argument("--create", action="store_true", help="create the private dataset repo")
     parser.add_argument("--upload-small", action="store_true", help="upload docs and small files")
     parser.add_argument("--tag", action="store_true", help="create the version tag")
-    parser.add_argument("--verify", action="store_true", help="verify uploaded files vs the manifest")
+    parser.add_argument("--verify", action="store_true", help="verify uploaded files and record evidence in DESTINATIONS.json (writes locally)")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
 

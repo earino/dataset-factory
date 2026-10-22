@@ -125,6 +125,9 @@ def main() -> int:
         existing = load_release(release)
         if existing.published or any(d.private is False for d in existing.destinations.values()):
             print(f"validated {release}/MANIFEST.json; published bytes preserved (no writes)")
+            print("For display corrections, update the normaliser or a new site_revision. "
+                  "Package corrections require a separately staged, reviewed release version; "
+                  "retain the old artifacts and tags. See docs/REFACTOR-NOTES.md.")
             return 0
     desc = descriptor(candidate)
     published, visibility, publication_note = publication_state(release)
