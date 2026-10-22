@@ -842,11 +842,67 @@
       "elapsed_seconds": 31.836,
       "response": "DecisionNeither proposal. Do not drop the source, and do not search thresholds against the holdout. The correct step is one bounded, pre-specified diagnostic on the existing eval rows, then a single re-target to a change label \u2014 with the holdout untouched.\n\nSupporting evidence\n\n- AUC 0.74 vs persistence 0.78 means the label is largely a level that persists, not a forecast. The qualification skill names this explicitly: a model below persistence is a recorded defect, not an encouraging result.\n- Calendar/identity at 0.60 is well below both, so the signal is not merely seasonality \u2014 the gap is real in direction, but 0.04 with no intervals is not a measured difference. \"No uncertainty intervals\" is stated, so the ranking of model vs persistence is currently unquantified.\n- \"No alignment audit\" matters more than the point estimates: if model and baselines were not scored on identical rows, a 0.04 gap can be an artefact. That is cheap to rule out and must be ruled out before any conclusion.\n- Dropping the source is unsupported: the artifact passed qualification and acceptance, so the failure is in task design (a level target), not source usability. A source is dropped for licence, timing or target defects \u2014 not for a persistence result.\n- Tuning onset thresholds until the holdout beats persistence is selecting the benchmark on the scored outcome. It consumes the holdout, guarantees an optimistic number, and violates \"keep benchmark selection independent of agent outcome variance\" and the pre-registered-protocol rule.\n\nUncertainty and the discriminating check\n\nThe unresolved question is not \"which AUC is higher\" but \"is the 0.04 gap outside noise, and on what rows\". The one bounded diagnostic is a paired comparison on the existing eval rows only: bootstrap the per-row score difference between model and persistence (and calendar), report the paired CI and the per-year AUC/Brier, plus a row-alignment assertion that every baseline scored exactly the eval ids. If the CI includes zero, persistence's advantage is unestablished and the task's defect is \"not yet shown to be a forecast\" rather than \"a level\". If it excludes zero in persistence's favour, the defect is confirmed and the level target is dead.\n\nOrdered actions\n\n1. Freeze the holdout: record that it was not examined and must not be used for selection.\n2. Write one scratch script under `.factory/` doing the alignment assertion, paired bootstrap CI, and per-year/per-split prevalence. Run it as a file. Delete it after recording results.\n3. Record the result in the candidate record beside the numbers: model 0.74, persistence 0.78, calendar 0.60, with CI and prevalence shift, labelled measured.\n4. Pre-specify one re-target to onset/transition/sustained-exceedance: label definition, prediction instant, split windows, and the decision rule, all written before measuring. This is a new task instance and needs its own qualification run, not a tweak.\n5. Build and qualify that variant on the worker; score on eval only.\n\nStopping condition\n\nOne rebuild. If the pre-registered change-label variant does not beat persistence and calendar-only by a paired-CI margin excluding zero on eval, stop: record the candidate as a negative result (persistence wins), drop it, and do not attempt a second threshold search. The holdout is opened once, after the task is frozen, and never used to choose the task.\n\nOperator report\n\n\"Eval rows: model 0.74, persistence 0.78, calendar 0.60, no CIs, no alignment audit; holdout unexamined. Persistence beating the model indicates a level target, not a forecast. I am not dropping the source and not threshold-tuning on the holdout. One bounded diagnostic (row alignment + paired bootstrap + per-year prevalence) runs first, then one pre-registered re-target to an onset label with its own qualification. If that fails to beat persistence on eval with a CI excluding zero, the candidate becomes a recorded negative result and is dropped. Next action: write and run the diagnostic script, then record the defect.\"\n",
       "response_sha256": "8c2517b2ad7b354690f192a0f4bad7ff0dfc4acbb8ce65b55943617c8d076a44"
+    },
+    {
+      "partition": "development",
+      "case": "advancement-baseline",
+      "arm": "revised",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-41",
+      "session_id": "20261022_231629_42ac90",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "de01b57a3003ad3931322ca2fa7505417cb4d4362c50aeafa93b5a77cffc623a",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 33780,
+        "output_tokens": 1476,
+        "cache_read_tokens": 640,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 35896,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 58,
+          "output_tokens": 12,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 33722,
+          "output_tokens": 1464,
+          "cache_read_tokens": 256,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 20.702,
+      "response": "**Decision:** Neither drop nor threshold-tune. Keep the holdout sealed and spend the one bounded diagnostic on the model-vs-persistence gap on eval rows. Do not attempt onset-threshold variants against the holdout; that is label/threshold tuning to improve a reported holdout score, explicitly forbidden, and it would also burn the only clean evaluation surface on a post-hoc target choice.\n\n**Supporting evidence.** The artifact passed current qualification and `--accept` on this exact version, so the files are usable evidence; the AUC comparison is therefore a scientific result, not a construction artifact. On identical eval rows: fitted model 0.74, persistence 0.78, calendar/identity 0.60. The observed ordering is model < persistence, which `dataset-qualification` records as a defect, not an encouraging result. But the gap is 0.04 with no intervals and no alignment audit \u2014 too small to interpret and too small to declare parity either. Calendar-only at 0.60 is above chance and well below persistence, consistent with a largely persistent label plus some seasonal/identity signal. Nothing here yet distinguishes \"persistence legitimately dominates\" from \"the persistence reference or the model's rows are misaligned.\"\n\n**Uncertainty and next discriminating check.** The 0.04 gap is unquantified; its sign is observed, its precision is unknown. The cheapest discriminating measurement is a paired comparison on identical rows: per-row alignment audit (join model scores and persistence scores by row key and prediction instant, confirm no duplicate ids, confirm the timestamp sort), then a paired dependence-aware interval on the AUC difference (bootstrap over rows, or DeLong), plus per-year and per-split AUC, Brier and prevalence. Also verify the persistence score actually uses only the most recent value *available at the instant* \u2014 an off-by-one or same-row label carry would manufacture a strong persistence reference. Replicate the persistence AUC with a second small independent implementation; the skill requires the decisive number be replicated, not re-run.\n\n**Ordered actions.**\n1. Record in the candidate record: holdout unexamined and sealed; no threshold or label variant will be tested on it.\n2. Re-run all three references from the accepted artifact version with the command recorded beside each number; assert identical eval row sets.\n3. Alignment audit + paired difference with interval + per-year/per-split table + prevalence comparison.\n4. Independent second implementation of persistence AUC on the same rows.\n5. Diagnose exactly one named cause. If a concrete implementation or alignment defect is found, do **at most one** rebuild addressing it, then re-qualify as a fresh job ID and re-run the triad; never edit the timing or split declaration to pass.\n6. If no defect is found, write \"no demonstrated headroom under this protocol\" with both scores on identical rows, and drop the candidate from this release.\n\n**Stopping condition.** Stop after the diagnostic and at most one defect-driven rebuild. If persistence still meets or beats the model, preserve the negative finding and stop \u2014 no packaging, no publication, no holdout use. A change/onset target is permissible only as a **new task instance** with a pre-specified user need, protocol and fresh qualification; it is not this session's decision and it cannot be validated against the sealed holdout.\n\n**Operator report.** The candidate is qualified but shows no demonstrated headroom; the model trails a one-line reference by 0.04 AUC with unknown precision. One bounded diagnostic is running to separate a real persistence-dominated label from a reference/alignment defect. No release action, holdout untouched. If the diagnostic finds no defect I will record the negative result and drop it; the owner's proposal to drop immediately is premature by one check, and the proposal to tune onset thresholds until holdout wins is rejected as holdout-tuning.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "0d7dd5a806691844f9d52b3a55021589a036ef0cfcfad54bfe08b725030dafd8"
     }
   ],
   "ledger": {
-    "calls": 41,
-    "tokens": 1387906
+    "calls": 42,
+    "tokens": 1423802
   },
-  "updated_at": "2026-10-22T23:16:35Z"
+  "updated_at": "2026-10-22T23:16:56Z"
 }
