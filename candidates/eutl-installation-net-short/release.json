@@ -1,0 +1,30 @@
+{
+ "release_version": "2026.10",
+ "release_tag": "v2026.10",
+ "repository": "https://github.com/earino/eutl-installation-net-short",
+ "construction_commit": "1e9c118",
+ "construction_commit_note": "1e9c118 is the eutl-001 close-out commit carrying candidates/eutl-installation-net-short/source/build.py at sha256 72ad5626c72673c4626be27ff3adf6616a2eb6a004a5f0c792d37cc2e80ad0b0 and source/run.sh at 9bf7136e37301a8a0bed5060a456da21bf2bac608df9a648bc1a0ab9f7cd5a68 - the exact bytes worker job eutl-001 executed (its staging manifest records the same bundled digests), which produced the gated artifact 3540ad2180d8df8a9ff39f5f6c1326c5e487ed20e28f189b9528eeb71f799f66 from the 2026-10-22 daily vintage of the operators_yearly_activity extract (5,965,780 B, last-modified Thu 22 Oct 2026 10:08:26 GMT) plus the EEA aggregate zip for the in-build cross-check (10,794,107 B).",
+ "source": {
+  "name": "European Commission, Directorate-General for Climate Action - Union Registry Public Website, EUTL public extracts (Data Download section), operators_yearly_activity daily extract",
+  "landing_page": "https://union-registry-data.ec.europa.eu/report/eu-registry-data-download",
+  "api": "https://dlsclimabi.blob.core.windows.net/public-data/eutlpublic_prod/extracts/_all_extracts/operators_yearly_activity/operators_yearly_activity_daily.csv.gz - anonymous bulk daily extract, no key, stable URL; refreshes daily (SNAPSHOT_DATE column)",
+  "accessed": "2026-10-22",
+  "licence": "Commission reuse policy CC BY 4.0 (legal notice read 2026-10-21; EEA metadata for the Union Registry-derived product independently states CC-BY 4.0, copyright holder European Commission / EEA). Attribution carries through; changes are indicated. Derived research dataset - not a Commission official product."
+ },
+ "commands": {
+  "gate": "python3 code/qualify_dataset.py ./task",
+  "baseline": "sh baseline/reproduce_baseline.sh ./task",
+  "get_dataset": "python3 get_dataset.py --dest ./task"
+ },
+ "layout": {
+  "public/train.csv": "public/train.csv",
+  "public/eval.csv": "public/eval.csv",
+  "private/holdout.csv": "private/holdout.csv",
+  "meta.json": "meta.json",
+  "quality.json": "quality.json"
+ },
+ "required_docs": [
+  "code/materialize.py"
+ ],
+ "note": "One task instance, one artifact. The five shipped files are the eutl-001 worker artifact 3540ad2180d8df8a9ff39f5f6c1326c5e487ed20e28f189b9528eeb71f799f66 (gate 1.4.0, 38/38 checks on the full artifact); the package's code/ carries the construction script, the runner-workdir materializer and the gate, baseline/ the runner-contract baseline. The holdout ships as an asset like the other splits; it is not copied into any runner workdir."
+}
