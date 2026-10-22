@@ -47,3 +47,26 @@ package a handoff, with worked examples that carry no live identifiers.
 `open-data-source-vetting` is the procedure behind the licence classes, the novelty check and the
 artifact-qualification gate; `agent-handoff-packaging` is the procedure behind this very directory,
 including the rule that a writer must refuse secrets rather than warn about them.
+
+## Provenance and drift (important)
+
+These copies were taken at **2026-10-22T17:30Z**. Hermes' curator was active in the same window:
+
+| Time | Target | What happened |
+| --- | --- | --- |
+| 17:20Z | profile skill `agent-handoff-packaging` | curator wrote `templates/refactor-brief.md` and patched `SKILL.md` — **before** this copy, so the vendored version includes it |
+| 17:31Z | repo skill `dataset-release` (external) | curator patched `skills/dataset-release/SKILL.md` **in place** in the working tree, uncommitted (+17 lines: "A reproducible claim is not a true claim") |
+| 17:32Z | repo skill `dataset-qualification` (external) | same, +1 line (a horizon-claim failure row) |
+
+So: the curator **does** edit live external repository skills, it did **not** create profile copies
+of the `dataset-*` skills (there are none in `/opt/data/skills`, so nothing shadows them), and it
+left those edits **uncommitted on `main`**.
+
+The hashes in `ops/HANDOFF-2026-10-22.md` for `dataset-release` (`204be38a…`) and
+`dataset-qualification` (`b66da17e…`) are the **pre-curator** versions — accurate for this branch's
+base commit, stale for the live working tree by minutes. The gate itself is untouched:
+`GATE_VERSION` is still `1.4.0` and `qualify_dataset.py` still hashes `4e51d2e9494fd66d`.
+
+Anyone merging this handoff should first decide what to do with those two uncommitted skill edits.
+They are content-only, but they are unreviewed, and a scheduled session could commit them into an
+unrelated change.
