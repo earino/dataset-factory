@@ -525,7 +525,9 @@ def render_overview(snapshot, alarms, alarms_plain=()):
     release_cards = '<div class="list">' + "".join(
         f'<div class="item"><div class="meta"><div class="name">{esc(r["dataset"])}</div>'
         f'<div class="desc">{esc(r["release_tag"])} · {fmt(r["rows"])} rows · baseline '
-        f'{"—" if r["baseline_eval_auc"] is None else f"{r['baseline_eval_auc']:.3f}"}</div></div>'
+        f'{"—" if r["baseline_eval_auc"] is None else f"{r['baseline_eval_auc']:.3f}"}'
+        + (f'<span class="sub"> · {r["baseline_scope"]}</span>' if r.get("baseline_scope") else '')
+        + '</div></div>'
         f'<div class="side">{"".join(pill(k, "ok" if v else "bad") for k, v in (r["verified"] or {}).items())}</div></div>'
         for r in releases) + '</div>'
     release_ready = (c.get("release") or {}).get("packaged") or []
@@ -554,7 +556,8 @@ def render_overview(snapshot, alarms, alarms_plain=()):
     release_rows = [(
         f'<a class="name" href="candidate-{esc(r["dataset"])}.html"><b>{esc(r["dataset"])}</b></a>',
         esc(r["release_tag"]),
-        fmt(r["rows"]), "—" if r["baseline_eval_auc"] is None else f'{r["baseline_eval_auc"]:.3f}',
+        fmt(r["rows"]), "—" if r["baseline_eval_auc"] is None else (
+            f'{r["baseline_eval_auc"]:.3f}' + (' *' if r.get("baseline_scope") else '')),
         "".join(pill(k, "ok" if v else "bad") for k, v in (r["verified"] or {}).items()) or pill("—"),
     ) for r in releases]
 

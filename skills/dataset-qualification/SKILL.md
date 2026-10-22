@@ -99,6 +99,20 @@ When the label is persistent, the usual fix is to re-target **change**: onset, t
 sustained-exceedance rather than a single future week's level, because persistence cannot win that
 by construction. Treat that as a new task instance with its own qualification, not a tweak.
 
+### When the task itself is the finding
+
+Audits make artifacts correct; they cannot make a task interesting. If persistence, a calendar-only
+rule or a train-only identity prior beats every model the task can carry, the dataset is a **negative
+result, not a benchmark**: record the comparison, state it plainly, and drop the candidate rather
+than rebuilding to publish a number that a one-line rule already beats. The purpose is datasets where
+the prediction problem works out, not the maximum count of releases.
+
+Budget the repair, too: **one rebuild per structural defect**. A second and third rebuild of the same
+construction usually means the defect is in the task design (a period-end instant that cannot be
+verified, a population chosen with hindsight), not in the code. When the third audit returns a fourth
+timing problem, the honest move is to stop and re-target or drop - the cost of continuing is paid in
+audits that keep finding real defects in a task nobody should ship.
+
 **Replicate the decisive number independently.** The comparison above is the one a reviewer will
 audit, so have a second implementation compute it from the published artifact with its own code -
 not a re-run of yours. Give it the same rows and forbid reading your implementation; if its
@@ -204,10 +218,13 @@ it, which is what the counterfactual test below is for:
   event, a 911 call closed at the event) may ship none.
 - **`row_selection`** must not reach past the instant. Using M+1 to decide which rows qualify
   conditions the population on the future even when every feature is clean.
-- **Use the maximum observed lag, not the mean or the mode.** Publications slip: a source that
-  lands 9, 13 and 10 days after three consecutive period ends has no single lag, and the mean
-  reads one of those months three days before it existed. Record at least three observations and
-  set `days_after_period_end` to the largest.
+- **Use a bound above every observation, with margin - not the mean, and not the maximum.**
+  Publications slip: a source that lands 9, 13 and 10 days after three consecutive period ends has
+  no single lag, and the mean reads one of those months days before it existed. But a maximum over a
+  sample is not a bound either: with the rule set to the largest of three observations (13 days), a
+  fourth month landed at 16 days, and 121 rows used features that did not yet exist. Record several
+  observations and set `days_after_period_end` to the largest **plus margin** - a week of margin is
+  cheap, because the label is a whole period ahead.
 
 #### Removing the history count is not removing the future
 
@@ -310,7 +327,7 @@ and any column shipped beyond the declared set.
 | Selftest passes but detects nothing | Fixtures drifted out of the defect they encode | Regenerate with `fixtures/build_fixtures.py`; re-run `--selftest` |
 | Gate rejects a source's own grain | Descriptor is silent where the gate needs a claim | Declare `expected_duplicate_ids`, or drop a claim the source never made |
 | Checker very slow / memory-heavy at scale | Per-level statistics built inside the row loop; a dict per row | Build the level table once, score in a second pass, read splits column-wise |
-| Test contaminates the artifact | Loading code under test by path writes `__pycache__` into a bundled dir | `exec(compile(...))`, or assert no bytecode is written |
+| Test contaminates the artifact | Loading code under test by path writes `__pycache__` into a bundled dir; a host that sets `PYTHONDONTWRITEBYTECODE` hides it, so CI's fresh checkout fails the no-cache check | Load by `exec(compile(...))`, and confirm in a clean clone with bytecode writing *enabled* - the local pass proves nothing if the shell disables it |
 | Passes under UTC, fails elsewhere | Timezone-free timestamp parsed with `astimezone` under host TZ | Treat timestamps as UTC explicitly; run the suite under a TZ ahead of UTC too |
 | A whole directory disappeared | `rmtree` on a user-supplied path | Clear generated paths through an ownership marker; name exact owned paths |
 | A model AUC is quoted with no reference | Only one baseline was ever run, or the reference lives in a notes field nobody compares | Run the triad (persistence, calendar-only, full model) on identical rows; record all three beside the number |

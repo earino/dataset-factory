@@ -331,5 +331,30 @@ class ReleaseRowsTests(unittest.TestCase):
         self.assertIsNone(self._rows(root))
 
 
+class BaselineAucShapeTests(unittest.TestCase):
+    """The eval AUC lives under five different key names across the releases.
+
+    Every published dataset had a number, and a handful rendered "—" because the collector only
+    understood `eval_auc` and `train_py_eval_auc`. A suite's median must also carry its scope, and
+    one release's scope must never leak into the next.
+    """
+
+    def test_contract_string_form(self):
+        self.assertEqual((0.6915, None), dashboard.baseline_auc(
+            {"contract": {"eval_auc_from_train_py": "0.6915"}}))
+
+    def test_runner_measured_form(self):
+        self.assertEqual((0.7691, None), dashboard.baseline_auc(
+            {"result": {"auc_eval_runner_measured": 0.7691}}))
+
+    def test_suite_median_carries_its_scope(self):
+        value, scope = dashboard.baseline_auc({"summary": {"configs": 40, "eval_auc_median": 0.7208}})
+        self.assertEqual(0.7208, value)
+        self.assertIn("40", scope)
+
+    def test_missing_everywhere_is_none(self):
+        self.assertEqual((None, None), dashboard.baseline_auc({"job": "x"}))
+
+
 if __name__ == "__main__":
     unittest.main()

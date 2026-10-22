@@ -58,7 +58,7 @@ measured. That order is the waste. Classify first, in minutes, and record it on 
 | --- | --- | --- |
 | **A** | Explicit open licence permitting redistribution *and* derivatives (OGL, CC BY, CC0, US federal public domain) | Probe the task |
 | **B** | Open but conditional - attribution-plus-sharealike, or a compilation licence over a source with its own terms | Probe, and plan to state the conditions in `LICENSE.md` |
-| **C** | Unstated, ambiguous, or "contact us" | Park at once with a dated path out; a written enquiry may be drafted, the candidate does not proceed until an answer exists or the operator accepts the risk |
+| **C** | Unstated, ambiguous, or "contact us" | **Drop it in the same breath.** An unclear licence is a closed door, not a queue: no permission email, no dated expiry, no "probably fine". Record the class, the absence, and what evidence would reopen it |
 | **D** | Prohibits redistribution or derivatives, or requires an authorisation not held | Reject on the spot with the clause quoted |
 
 - **Classify from the publisher's own instrument**, not from a general policy page. A general
@@ -70,7 +70,9 @@ measured. That order is the waste. Classify first, in minutes, and record it on 
 - **Sort the construction queue by class**, not by novelty or volume: `python3 scripts/licence-rank.py`
   prints it A -> D and flags buildable-looking candidates stuck at triage. Work down from the top.
 - A session that ends with three C verdicts has done its job: it closed three doors cheaply. What it
-  must not do is spend the session characterising a source that was never shippable.
+  must not do is spend the session characterising a source that was never shippable, or keep it
+  alive on the hope of a reply. The standing rule is that **we only build on sources that are
+  already clean**; anything requiring a written answer is closed, not parked.
 
 ## Geographic coverage is a measured property
 
@@ -184,8 +186,9 @@ A candidate is **ready** - the buffer state, before construction - when:
 - [ ] `jurisdiction` recorded as country, region and publisher — measured from the publisher, not
       inferred from the URL.
 - [ ] The licence question is either settled or explicitly escalated as a decision.
-- [ ] `licence_class` recorded (A or B for anything heading to construction; C only with a dated
-      path out; D rejected), and the quoted evidence stored in `license_evidence`.
+- [ ] `licence_class` recorded (A or B for anything heading to construction; C and D closed and
+      recorded as dropped, with the clause or the absence that decided it), and the quoted evidence
+      stored in `license_evidence`.
 - [ ] `check-candidate.py` reports no missing required field, including a **novelty check** with
       a verdict of `no_precedent` or `differentiated` - never `mirror`.
 - [ ] Split windows and their computed counts are recorded, with clustered counts where they differ.

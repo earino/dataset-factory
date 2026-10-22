@@ -197,6 +197,45 @@ def _split_rows(node, depth: int = 0) -> int:
     return sum(_split_rows(value, depth + 1) for value in node.values())
 
 
+# Four key names for the same number, across the releases that exist today:
+#   eval_auc, train_py_eval_auc, auc_from_train_py, auc_eval_runner_measured, eval_auc_from_train_py
+AUC_KEYS = ("train_py_eval_auc", "eval_auc", "validate_py_eval_auc", "auc_from_train_py",
+            "auc_eval_runner_measured", "eval_auc_from_train_py", "auc_from_validate_py")
+
+
+def baseline_auc(block: dict) -> tuple[float | None, str | None]:
+    """The eval AUC from whatever shape a baseline record uses, or (None, None).
+
+    The second element is a scope label when the number is not a single model: Chicago's food
+    release is a 40-config suite, and its median must not be read as one classifier's score.
+    """
+    if not isinstance(block, dict):
+        return None, None
+    for section in (block, block.get("result") or {}, block.get("contract") or {},
+                    (block.get("artifact") or {})):
+        if not isinstance(section, dict):
+            continue
+        for key in AUC_KEYS:
+            value = section.get(key)
+            try:
+                number = float(value)
+            except (TypeError, ValueError):
+                continue
+            if 0.0 < number < 1.0:
+                return number, None
+    summary = block.get("summary") or {}
+    if isinstance(summary, dict) and isinstance(summary.get("eval_auc_median"), (int, float)):
+        configs = summary.get("configs")
+        return float(summary["eval_auc_median"]), f"median of {configs} configs" if configs else "suite median"
+    levels = block.get("levels") or (block.get("artifact") or {}).get("levels") or {}
+    for level in levels.values():
+        if isinstance(level, dict):
+            value = level.get("eval_auc")
+            if isinstance(value, (int, float)) and 0.0 < value < 1.0:
+                return float(value), None
+    return None, None
+
+
 def collect_releases():
     releases = []
     for manifest_path in sorted((ROOT / "release").glob("*/MANIFEST.json")):
@@ -206,6 +245,7 @@ def collect_releases():
         dest = destinations.get("destinations", {}) or {}
         verified = {name: bool((body or {}).get("verified")) for name, body in dest.items()}
         verified_at = sorted(filter(None, [(body or {}).get("verified_at") for body in dest.values()]))
+        baseline_scope = None
         rows = _split_rows(manifest.get("splits"))
         if not rows:
             # Older manifests carry no split counts at all (ABS v2026.10 shipped an empty map);
@@ -222,14 +262,15 @@ def collect_releases():
         aucs = [v.get("eval_auc") for v in baseline.values()
                 if isinstance(v, dict) and isinstance(v.get("eval_auc"), (int, float))]
         if not aucs:
-            # A flat baseline writes its single figure under result.* rather than levels.*; the
-            # page showed "—" for TSB (0.8126) and ABS (0.6219) while both numbers were in the file.
-            result_block = baseline_block.get("result") or {}
-            for key in ("train_py_eval_auc", "eval_auc", "validate_py_eval_auc"):
-                value = result_block.get(key)
-                if isinstance(value, (int, float)):
-                    aucs.append(value)
-                    break
+            value, scope = baseline_auc(baseline_block)
+            if value is None:
+                # The released manifest can predate the figure: fall back to the candidate's own
+                # baseline evidence rather than printing "—" beside a number we already hold.
+                value, scope = baseline_auc(read_json(ROOT / "candidates" / folder.name /
+                                                      "baseline" / "baseline_result.json", {}) or {})
+            if value is not None:
+                aucs.append(value)
+                baseline_scope = scope
         persistence = ((manifest.get("baseline") or {}).get("persistence_reference") or {})
         # A release may describe its persistence reference in prose (the key predates a fixed
         # schema); the dashboard reads figures, never crashes on a shape it does not expect.
@@ -244,6 +285,7 @@ def collect_releases():
             "verified_all": bool(verified) and all(verified.values()),
             "verified_at": verified_at[-1] if verified_at else None,
             "baseline_eval_auc": max(aucs) if aucs else None,
+            "baseline_scope": baseline_scope,
             "persistence_auc": persistence.get("persistence_prev_target_cited_eval_auc"),
             "publication_note": (manifest.get("publication_note") or "")[:200],
         })
