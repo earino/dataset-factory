@@ -16,7 +16,9 @@ GATE_PATH = ROOT / "skills" / "dataset-qualification" / "scripts" / "qualify_dat
 
 spec = importlib.util.spec_from_file_location("qualify_dataset_timing", GATE_PATH)
 gate = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(gate)
+# Compile from bytes so no bytecode cache is written inside the skill directory
+# (see test_gate_unscorable.py for the reasoning).
+exec(compile(GATE_PATH.read_bytes(), str(GATE_PATH), "exec"), gate.__dict__)
 
 
 def quality(lag=10, instant_kind="period_end", instant_lag=0, selection="M",

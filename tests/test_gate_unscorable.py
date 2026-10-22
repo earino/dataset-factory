@@ -14,11 +14,16 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
-spec = importlib.util.spec_from_file_location(
-    "qualify_dataset_unscorable", ROOT / "skills" / "dataset-qualification" / "scripts" / "qualify_dataset.py")
+GATE = ROOT / "skills" / "dataset-qualification" / "scripts" / "qualify_dataset.py"
+spec = importlib.util.spec_from_file_location("qualify_dataset_unscorable", GATE)
 gate = importlib.util.module_from_spec(spec)
 sys.modules["qualify_dataset_unscorable"] = gate
-spec.loader.exec_module(gate)
+# Compile from bytes so no bytecode cache is written inside the skill directory,
+# matching test_qualification_gate.py: a normal exec_module writes
+# __pycache__/qualify_dataset.cpython-*.pyc under skills/, which fails the
+# repo-hygiene gate. CI does not set PYTHONDONTWRITEBYTECODE, so the writing
+# path is what the runner sees.
+exec(compile(GATE.read_bytes(), str(GATE), "exec"), gate.__dict__)
 
 
 def build(directory: Path, header: str, rows: list[str]) -> Path:
