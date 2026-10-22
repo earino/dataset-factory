@@ -5476,3 +5476,50 @@ does, which is why local runs passed). Fixed in 9918084 by switching both gate-l
 (test_gate_unscorable.py, test_timing_gate.py) to the repo's compile-from-bytes convention; verified in a clean
 clone with bytecode writing enabled (408 OK, no caches under skills/ or candidates/) and CI is green on 9918084.
 Next action unchanged: abs-visitor-arrivals-direction packaging per the dataset-release skill.
+
+## 2026-10-22 (later) - discovery tick: Europe/EU-EEA focus - 3 verdicts (1 go, 1 park, 1 reject), all EU publishers
+
+Regional focus Europe per the tick. Coverage before: 0 of 6 live candidates were EU-publisher (discovery-coverage.py);
+after: EU candidates 5 total (eutl ready, bvl investigating, plus the three below), live non-US 16/23 (70%).
+No construction, packaging or advancement was touched.
+
+1. **eea-uwwtd-plant-poor-performance - GO (investigating, licence A, novelty differentiated).** EEA's
+   UWWTD Waterbase (biennial Art.15 reporting, ~24k active treatment plants x 30 EEA reporters). Task: for an
+   active plant in cycle N, will it be reported failing >=1 treatment-performance parameter (any uww*Perf='F')
+   in the next cycle. Licence CC-BY 4.0 quoted from the EEA SDI catalogue record (DG ENV + EEA copyright
+   holders). Measured on the full 13th-call zip (1 anonymous GET, 108,877,653 B, 6.6 s, deleted after
+   extraction): UWWTPS.csv 26,064 rows x 69 documented columns; active 23,987; label base rate 2,411/21,537 =
+   11.2% any-F; cause-of-failure fields (uwwBadPerformance Yes 1,765) recorded as label-source. Measured
+   caveat recorded as target semantics: reported-failure rates mix plant performance with national reporting
+   regime (DE 0.4%, BE 2.8% vs NO 49.6%, HR 53.5%) - country-stratified baseline required. Cycle inventory:
+   2 tabular cycles public-measured (2011-2012 v04, 2022-2023 v10 final) + 2021-2022 provisional + spatial
+   plant GeoPackages for 2017-18/2019-20/2021-22/2022-23; six internal-only records 401. Next action
+   (advancement): pin the public cycle inventory, MEASURE the uwwCode join across two cycles before any
+   build job, then build.py -> gate with the country-stratified reference in the baseline triad.
+2. **ec-tdi-case-outcome - PARK (access blocker).** DG TRADE's TRON register is a WAF-protected Angular
+   app: shell 200 but all bundles/API 403 to non-browser clients (measured); a real-browser probe rendered
+   72 ongoing cases (case no., product, countries, type+article, initiation date, per-case history) via
+   undocumented internal endpoints (/investigations/api/eucase/list/ongoing). Would-be task (definitive
+   measures vs termination) is promising and unmirrored, but no documented anonymous channel exists - same
+   shape as the ECDC Atlas access blocker. Unpark question exact: a documented API/bulk export or
+   machine-readable TDI annexes, or a declared data client past the WAF; worth one cheap re-probe/quarter.
+3. **efsa-one-health-sample-prevalence - REJECT (task-shape duplicate).** The EU-wide twin of bvl-zoom:
+   36 Zenodo records "Sample based prevalence data complementing the EU One Health Zoonoses Report", per
+   (country x reporting year), all CC BY 4.0, anonymous (2024-year files measured: FI 1.7 MB, DE 5.9 MB,
+   HR 2.4 MB; ~1-year publication lag). Rejected because the sample-positivity task on this exact reporting
+   stream is already open as bvl-zoom-sample-positivity (investigating, go); the EU-wide files and record
+   ids are pinned in the record for a fresh candidate ONLY after bvl-zoom ships and a second instance is
+   wanted.
+
+Also opened, not settled (recorded here so the probes are not re-run): **Frontex** migratory statistics -
+frontex.europa.eu 403s non-browser clients (legal notice unread without a browser; data.europa.eu carries
+only 2010-11 FRAN quarterly PDFs). Deferring: needs a browser session to even classify the licence; do not
+open without one.
+
+Checks: scripts/check-candidate.py --all exit 0 (67 records); discovery-coverage.py exit 0. The discovery
+probes ran as scratch scripts in .factory/ (deleted afterwards; scratch UWWTD extracts and the 109 MB zip
+removed). A recursive-delete cleanup was correctly refused by the single-query approval gate; cleanup was
+redone with explicit per-file deletions and rmdir on exact owned paths.
+Next action for the tick: none beyond the per-candidate next_actions above - the queue's next construction
+work remains abs-visitor-arrivals-direction packaging (advancement session), with eea-uwwtd needing its
+cycle-inventory + join measurement before it can enter the build queue.

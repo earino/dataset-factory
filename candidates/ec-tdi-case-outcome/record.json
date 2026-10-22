@@ -1,0 +1,47 @@
+{
+ "id": "ec-tdi-case-outcome",
+ "status": "parked",
+ "created_at": "2026-10-22T12:25:25.779591+00:00",
+ "domain": "EU trade defence instruments - European Commission (DG TRADE) anti-dumping/anti-subsidy/safeguard investigation outcomes (EU publisher)",
+ "prediction_question": "Would-be task (formulated but NOT probed to data): for an EU trade-defence investigation at its Notice of Initiation (case number, product, exporter countries, instrument type - initial investigation Art. 5 / expiry review Art. 11(2) / interim review Art. 11(3) / re-opening), will the case conclude with definitive measures (definitive duties or a price undertaking) rather than termination without measures? Not settled this session: the register's own outcome/history fields were not reachable through a documented channel (see rejection/blocker).",
+ "prediction_time": "Would be the publication of the Notice of Initiation in the Official Journal (the case's public start, also announced in TRON's RSS of newly initiated cases); the target is decided when the definitive regulation or termination decision publishes in the OJ, typically 13-14 months after initiation (policy.trade.ec.europa.eu states provisional measures within 7-8 months, definitive within 13-14). A genuine, well-documented timing story - one reason the source was opened.",
+ "target_definition": "Would be binary from the case outcome: definitive measures imposed vs case terminated without measures, per case (one row per investigation). Not pinned to source columns this session because the structured case history was not reachable (see blocker).",
+ "sources": [
+  {
+   "name": "European Commission - TRON 'Trade defence investigations' register (ongoing and completed investigations)",
+   "url": "https://tron.trade.ec.europa.eu/investigations/ongoing",
+   "api": "measured 2026-10-22, three ways: (1) plain HTTP client: the HTML shell answers 200 (56,579 B Angular app) but EVERY asset and API path answers 403 (main.4a82a5169ca26cff.js, runtime.js, polyfills.js, /api/investigations -> 403 text/html 642 B) - a WAF gating non-browser clients; (2) real-browser probe (this session): the app loads and calls two internal JSON endpoints observed in performance entries: /investigations/api/eucase/list/ongoing and /investigations/api/eucase/lastUpdate; the ongoing list renders 72 cases (1-20 of 72) as a table with columns Case number (e.g. AD763, R877, R873), Product (Furfuryl alcohol, Wire rod, Stainless steel cold-rolled products), Countries (China, India...), Type + legal article (Initial Investigation Art. 5, Expiry Review Art. 11(2), Re-opening, Partial interim review Art. 11(3)), Initiation date (most recent: 15 October 2026), and a per-case 'Historical context' link; an RSS feed of newly initiated cases is offered; (3) navigation entry points: Ongoing Investigations / Search Investigations / Refund Investigations / Notices (linked from policy.trade.ec.europa.eu 'Trade defence' page). The endpoints are NOT documented anywhere the publisher offers - they are the app's internal API.",
+   "license": "EC standing reuse policy: Commission Decision 2011/833/EU permits reuse of Commission documents free of charge for commercial and non-commercial purposes with attribution, unless a specific instrument states otherwise. No TRON-specific terms page could be read (the site's legal-notice fetch was part of the 403-gated surface). Licence is presumed class A and is NOT the blocker - access is.",
+   "access": "BLOCKER: no documented anonymous data channel. The case register is a WAF-protected single-page app; the JSON endpoints are undocumented and refused to non-browser clients; no bulk download or export is offered anywhere on the register or the policy pages probed. Building the case panel would require a browser-automation loop over the search UI plus per-case history pages, and outcome dates would still need OJ/EUR-Lex cross-referencing - a fragile construction the publisher has not offered an anonymous channel for. Same failure shape as the ECDC Atlas access blocker (candidates/ecdc-atlas-surveillance, 2026-10-21)."
+  }
+ ],
+ "license_evidence": [
+  {
+   "note": "Presumed class A under Commission Decision 2011/833/EU (reuse of Commission documents permitted with attribution); NOT pinned to a TRON-specific instrument because the site's legal pages sit behind the WAF that 403s non-browser clients. Moot while the access blocker stands: no licence question reaches a build.",
+   "url": "https://ec.europa.eu/dpo-register/detail/DPR-EC-00260.3"
+  }
+ ],
+ "construction_script": "none - parked before construction on the access blocker",
+ "split_strategy": "not applicable this session - no data reached. Would-be: one row per investigation; temporal split on initiation year over the ~30-year case history; both classes naturally present (many terminations and many definitive duties).",
+ "measurements": {
+  "plain_http_2026_10_22": "GET /investigations/ongoing -> 200 HTML shell 56,579 B; GET main.4a82a5169ca26cff.js, runtime.js, polyfills.js, scripts bundles -> 403; GET /api/investigations -> 403 (text/html, 642 B).",
+  "browser_probe_2026_10_22": "Real-browser load renders the register: 72 ongoing investigations (pagination 1-20 of 72, 20/page), columns case number / product / countries / type+article / initiation date, per-case 'Historical context' link; internal API endpoints observed: /investigations/api/eucase/list/ongoing, /investigations/api/eucase/lastUpdate. Most recent initiation listed: AD763 Furfuryl alcohol (China), 15 October 2026.",
+  "no_bulk_channel_2026_10_22": "No documented API, bulk export or dataset download found on tron.trade.ec.europa.eu or the policy.trade.ec.europa.eu trade-defence pages probed this session; only the register UI, an RSS feed of new initiations, and CIRCA-library-hosted statistics annexes (PDF/Excel in a library UI)."
+ },
+ "jobs": [],
+ "artifacts": [],
+ "rejection_reason": "Parked on an ACCESS blocker (licence presumed class A, task shape promising and - on inspection - unmirrored, so this is a park, not a drop). The TRON trade-defence case register is a WAF-protected Angular application: the HTML shell loads for any client, but every JS bundle and API path answers 403 to non-browser clients (measured 2026-10-22), and the JSON endpoints the app itself calls (/investigations/api/eucase/list/ongoing, /api/eucase/lastUpdate) are undocumented - they are the app's internals, not an offered channel. No bulk export or documented API exists anywhere on the register or the DG TRADE policy pages probed. Constructing the would-be task (predict definitive measures vs termination from initiation-time case metadata) would require browser-automation scraping over an undocumented internal API plus OJ cross-referencing for outcomes - the same construction the ECDC Atlas rejection refused on 2026-10-21. The unpark condition is exact and named in next_action: a documented anonymous channel (API, bulk export, machine-readable TDI annual-report annexes) or a declared data client admitted past the WAF.",
+ "review": null,
+ "next_action": "PARKED on an access blocker, not on licence or task novelty. The unpark question, exactly: does DG TRADE expose the case register through a documented anonymous channel (public API, bulk export, or machine-readable TDI annual-report annexes), or admit a declared data client past the WAF? If any of those appears, re-open as a fresh probe and check the case-history fields for the definitive-measures outcome - the task shape itself looks differentiated (no known ML-ready trade-defence outcome dataset in public catalogs), so this source is worth one cheap re-probe per quarter, not a construction effort.",
+ "verdict": "park",
+ "label_source_columns": [],
+ "jurisdiction": {
+  "country": "EU",
+  "region": "Europe",
+  "publisher": "European Commission, Directorate-General for Trade (DG TRADE), Brussels - the TRON trade-defence register",
+  "convention": "EU institution; 'EU' recorded as the country per the same convention as ecdc-atlas-surveillance and eutl-installation-net-short.",
+  "recorded_at": "2026-10-22"
+ },
+ "licence_class": "A",
+ "licence_note": "presumed A under Commission Decision 2011/833/EU; not pinned to a TRON-specific instrument (site WAF blocked the legal-pages probe); moot while access is blocked"
+}

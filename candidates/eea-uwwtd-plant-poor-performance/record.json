@@ -1,0 +1,180 @@
+{
+ "id": "eea-uwwtd-plant-poor-performance",
+ "status": "investigating",
+ "created_at": "2026-10-22T12:20:26.661061+00:00",
+ "domain": "EU/EEA environmental regulation - urban waste water treatment plant (UWWTP) reported performance across the biennial UWWTD Article 15 reporting cycles (EU agency publisher, 30 EEA countries reporting)",
+ "prediction_question": "For an urban waste water treatment plant active in UWWTD reporting cycle N, will that plant be reported as FAILING at least one treatment-performance parameter (any of uwwBOD5Perf, uwwCODPerf, uwwNTotPerf, uwwPTotPerf, uwwTSSPerf, uwwOtherPerf = 'F') in the next reporting cycle, given only features documented and reported in cycles up to and including N: country/NUTS, organic design capacity (uwwCapacity, p.e.), load entering the plant (uwwLoadEnteringUWWTP), mean annual volume treated (uwwWasteWaterTreated), treatment train flags (primary/secondary/more-stringent/N-removal/P-removal/microfiltration/UV/ozonation...), plant age from uwwBeginLife, and the plant's own performance flags reported in cycles <= N?",
+ "prediction_time": "The publication instant of reporting cycle N (a statistical release): all feature cycles are <= N and the target is the performance assessment published in cycle N+1. Measured anchors: the 13th data call (situation at 2022-12-31 per ReportPeriod.csv) was published as FINAL PUBLIC VERSION in Oct 2025 per the catalogue record; the per-country delivery versions (repVersion) for that call are dated 2023-12 to 2025-04 (e.g. SI 2025-04-24, most MS 2024-06). Cycle cadence is biennial (Directive 91/271/EEC Art. 15, reported on the Commission's request), so the lead time is roughly two reporting cycles. The exact publication dates of the older cycles are to be pinned at construction from their catalogue records; the per-country repSituationAt/repVersion fields are already documented in the source (ReportPeriod.csv) and ship with the data.",
+ "target_definition": "Binary from the source row of cycle N+1: label = 1 iff the plant (uwwState=1, active) has at least one treatment-performance parameter assessed 'F' among the six uww*Perf fields, restricted to plants with at least one answered (P or F) parameter; plants with only NA/NR/blank assessments are unobserved-target rows, counted separately, never dropped silently. Measured on the full 2023 call CSV: 2,411 positives / 21,537 answered (11.2% base rate). The uww*Perf codes are P/F/NA/NR (documented in the Eionet data dictionary element pages, e.g. element 104947 'Treatment performance: BOD5'); the 'In cause of failure' fields (uwwBadPerformance 'Bad performance' 1,765 Yes among active, uwwBadDesign 'Bad design or dimensioning', uwwAccidents 'Major accidents', uwwInformation free text) describe the reported CAUSE where the plant does not meet requirements and are label-source/label-adjacent columns, excluded from features. IMPORTANT measured property recorded as part of the definition: the label is 'REPORTED as failing' - a mixture of physical performance and the national reporting regime; measured 2023-call any-F rates range from DE 0.4% (16/3,776) and BE 2.8% to NO 49.6% (116/234), HR 53.5% (46/86) and RO 36.3% (352/971). Country is therefore a legitimate feature AND the reference baseline must be country-stratified; the mixture is the task's documented semantics, not a defect to hide.",
+ "sources": [
+  {
+   "name": "EEA - Urban Waste Water Treatment Directive Waterbase, per-cycle tabular datasets (series 'UWWTD: Urban Waste Water Treatment Directive - reported data')",
+   "url": "https://www.eea.europa.eu/en/datahub/datahubitem-view/6244937d-1c2c-47f5-bdf1-33ca01ff1715",
+   "api": "anonymous, tokenless direct downloads through per-record share links (measured 2026-10-22): record 52b2e779-a146-414f-bf00-d63dfbf9c4f1 (13th call, 2022-2023, FINAL PUBLIC VERSION Oct 2025) -> https://sdi.eea.europa.eu/datashare/s/gjbpTbzHTZQ4Zra/download = eea_t_uwwtd-final_p_2023_v10_r00.zip, 108,877,653 B, 47 entries, downloaded and measured; record ab49c29f-eff3-4320-ac96-4ed91152f2b4 (2011-2012 cycle v04) -> share s/awGoXzQKi6jQ.. = eea_t_uwwtd-waterbase_p_2011-2012_v04_r00.zip (HEAD 200, not downloaded this session); record ee46a0fa-1a1e-4b46-aad4-0ea381c0d7a9 (2021-2022 provisional tabular, Nov 2024, 'Direct download' eea_t_uwwtd-provisional_p_2021-2022_v10_r00). The zip carries CSV/ per-table exports (UWWTPS.csv 6,733,777 B; Agglomerations.csv 8,533,854 B; DischargePoints.csv 4,992,819 B; UWWTPAgglos links; LOV codelists; ReportPeriod; TableScheme PDFs; Access .accdb 61 MB and .xlsx 19 MB mirrors). Six of the per-cycle records probed on the series page answer 401 (Eionet-authenticated internal versions, '_i_' suffix); the '_p_' (public) variants answer 200. Tabular cycle folders named on the series page: 2007-2008 v01, 2009-2010 v02/v03, 2011-2012 v04, 2013-2014 v05, 2017-2018 v07 r01, 2021-2022 provisional v10, 2023 final v10; the 2019-2020 (v08/v09) and 2015-2016 (v06) tabular cycles' public availability is NOT confirmed this session - spatial plant GeoPackages (eea_v_4258_100_m_uwwtd-tp_p_*) exist publicly for 2017-2018, 2019-2020, 2021-2022 and 2022-2023 and carry the same plant attributes per their catalogue records. Pinning the full public cycle inventory is construction step 1.",
+   "license": "CC-BY 4.0. Quoted from the EEA SDI catalogue record (sdi.eea.europa.eu, srv/api record ab49c29f, read 2026-10-22): 'License CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Copyright holder: Directorate-General for Environment (DG ENV), European Environment Agency (EEA).' The record also states 'No limitations to public access' and 'All the tables from Waterbase can be downloaded for use by all stakeholders according to below Rights.'",
+   "access": "measured 2026-10-22 from this host: GET of the 13th-call share link -> HTTP 200 application/zip, attachment filename eea_t_uwwtd-final_p_2023_v10_r00.zip; full download 108,877,653 bytes in 6.6 s (16.6 MB/s). No auth, no token, no rate limit encountered. Range requests are not honoured (ranged GET answered 200 with the full stream), and per-file downloads are not exposed, so construction fetches whole cycle zips (about 5-8 of them, ~100-600 MB total on a worker)."
+  },
+  {
+   "name": "Eionet Data Dictionary - UWWTD Article 15 dataset, table UWWTPs (per-column documentation)",
+   "url": "https://dd.eionet.europa.eu/datasets/latest/UWWTDArt15/tables/UWWTPs",
+   "api": "HTML pages, anonymous. Measured 2026-10-22: the table page documents 67 elements with titles (id + documented meaning per element, e.g. uwwBOD5Perf [104947] 'Treatment performance: BOD5', uwwCapacity [104971] 'Organic design capacity (p.e.) of the waste water treatment plant', uwwLoadEnteringUWWTP [105011] 'Load entering UWWTP (p.e.)', uwwWasteWaterTreated [104993] 'Mean annual volume of waste water treated (m3/year)', uwwState [105039] 'Status of the UWWTP', uwwBeginLife 'begin Lifespan Version', uwwDateClosing 'Date of closing of the UWWTP', uwwHistorie 'Reasons for closing of the UWWTP and the successor'. Codes for uwwState from the shipped LOV.csv: 0=inactive, 1=active, 2=temporary inactive. Equivalent pages exist for Agglomerations and DischargePoints tables.",
+   "license": "Eionet/DD service content; same CC-BY-4.0 posture as the EEA catalogue records it documents.",
+   "access": "measured 2026-10-22: HTTP 200, 140,975 B for the UWWTPs table page; element pages fetched anonymously."
+  }
+ ],
+ "license_evidence": [
+  {
+   "note": "EEA SDI catalogue record ab49c29f (read 2026-10-22 via https://sdi.eea.europa.eu/catalogue/srv/api/records/ab49c29f-eff3-4320-ac96-4ed91152f2b4): 'License CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Copyright holder: Directorate-General for Environment (DG ENV), European Environment Agency (EEA).'",
+   "url": "https://sdi.eea.europa.eu/catalogue/srv/api/records/ab49c29f-eff3-4320-ac96-4ed91152f2b4"
+  },
+  {
+   "note": "Same record: 'No limitations to public access' and 'All the tables from Waterbase can be downloaded for use by all stakeholders according to below Rights.' CC BY 4.0 permits sharing and adapting (including commercially) with attribution; derived-row publication is permitted.",
+   "url": "https://sdi.eea.europa.eu/catalogue/srv/api/records/ab49c29f-eff3-4320-ac96-4ed91152f2b4"
+  }
+ ],
+ "construction_script": "planned: candidates/eea-uwwtd-plant-poor-performance/source/build.py (stdlib only; download the public cycle zips, normalise the per-cycle UWWTPS tables, join plants across cycles on uwwCode (join measured at construction), emit one row per (plant, cycle transition) with features from cycles <= N and the any-F label from cycle N+1; unobserved targets counted; runner layout + qualification gate on a worker)",
+ "split_strategy": "Temporal by reporting cycle: train on early-cycle transitions, eval on middle cycles, holdout on the newest public cycles (2021-2022 provisional / 2022-2023 final at the far end). Both classes are present in every measured cycle window (2023 call: 11.2% positives, 21,537 answered plants, 30 reporters). MEASURED CAVEAT: only the 2022-2023 cycle was downloaded and measured this session (2,411 positives); the 2011-2012, 2021-2022 and any recoverable 2007-2020 cycles are confirmed public only by catalogue/share-link HEAD probes, not by row counts - construction step 1 is to pin the public cycle inventory and measure the uwwCode join rate between at least two cycles. Positives cluster by country reporting regime (measured: any-F rate DE 0.4% vs NO 49.6%), so clustered/stratified counts per split must be reported; a split that puts a country's plants only in train and only in eval would measure regime shift, not plant performance.",
+ "measurements": {
+  "cycle_zip_2026_10_22": "GET https://sdi.eea.europa.eu/datashare/s/gjbpTbzHTZQ4Zra/download -> 200, application/zip, 108,877,653 B in 6.6 s (16.6 MB/s), filename eea_t_uwwtd-final_p_2023_v10_r00.zip; 47 entries; zip deleted from scratch after extraction of the CSV tables (only ~29 MB of CSVs kept transiently).",
+  "table_shapes_2026_10_22": "CSV/UWWTPS.csv: 26,064 data rows x 69 columns; Agglomerations.csv 25,208 x 46; DischargePoints.csv 25,706 x 33; UWWTPAgglos.csv 25,768 x 10; UWWTPS_emission_load.csv 26,064 x 16.",
+  "plant_states_2026_10_22": "uwwState: 1 (active) 23,987; 0 (inactive) 1,972; 2 (temporary inactive) 105. Codes documented in LOV.csv.",
+  "label_frame_2026_10_22": "Active plants with >=1 answered P/F performance parameter: 21,537; any-F positives 2,411 (11.2%); all-P 19,126. Per-parameter F counts: uwwBOD5Perf 1,929, uwwCODPerf 1,567, uwwTSSPerf 649, uwwNTotPerf 420, uwwPTotPerf 407, uwwOtherPerf 31. Cause-of-failure field uwwBadPerformance=Yes on 1,765 active plants (1,778 overall), uwwBadDesign=Yes 1,052, uwwAccidents=Yes 76.",
+  "country_mixture_2026_10_22": "30 reporters in the 2023 call (incl. EEA non-EU CH/NO/IS). Measured any-F rates by country (top of range): HR 53.5% (46/86), NO 49.6% (116/234), RO 36.3% (352/971), FR 19.0% (746/3,930), IT 13.0% (451/3,480), ES 12.0%, IE 11.1%, PL 6.3%, BE 2.8%, DE 0.4% (16/3,776). The label's meaning mixes physical performance with national assessment/reporting regimes; this is recorded as target semantics, and the reference baseline is country-stratified.",
+  "cycle_inventory_2026_10_22": "Public (measured): tabular 2011-2012 v04 (share s/awGoXzQKi6jQ.. HEAD 200), tabular 2022-2023 v10 final (downloaded), tabular 2021-2022 v10 provisional (record ee46a0fa 'Direct download'), spatial plant/agglomeration/discharge GeoPackages for 2017-2018 (v07), 2019-2020 (v08), 2021-2022 (provisional) and 2022-2023 (final). Internal-only (HTTP 401): 6 record ids probed on the series page. Named-but-unprobed tabular cycle folders: 2007-2008 v01, 2009-2010 v02/v03, 2013-2014 v05, 2015-2016 v06 (2015-2016 not even named on the page), 2017-2018 v07 r01, 2019-2020 v08/v09.",
+  "reporting_period_2026_10_22": "ReportPeriod.csv (shipped in the zip) documents per-country repSituationAt (all 2022-12-31 in the 13th call except FR 2023-12-05) and per-country delivery versions 2023-12..2025-04 - the observed per-country publication lag evidence for the timing block.",
+  "extraction_cost_2026_10_22": "Measured on this host: 1 anonymous GET per cycle zip; 108,877,653 bytes in 6.6 s. A full 5-8-cycle panel is estimated (labelled estimate) at 0.5-1 GB of transfers, minutes of wall clock on a worker; no bulk data needs to pass through the coordinator."
+ },
+ "jobs": [],
+ "artifacts": [],
+ "rejection_reason": null,
+ "review": null,
+ "next_action": "Construction (advancement session), in order: (1) pin the public cycle inventory - probe each tabular cycle's record/share link (2007-2008 v01 ... 2019-2020 v08/v09) and fall back to the spatial plant GeoPackages where the tabular record is Eionet-only; (2) download the two extreme cycles (2011-2012 v04 and 2022-2023 v10) and MEASURE the uwwCode join rate across cycles plus per-cycle label base rates - if the join collapses or early cycles lack the uww*Perf fields, the panel narrows to the spatial-GPKG cycles and the split design must be re-measured before any build job; (3) write source/build.py emitting the (plant, cycle-transition) panel with features from cycles <= N, the any-F label from N+1, unobserved targets counted; (4) cross-check aggregate fail rates against the Commission's UWWTD implementation report / EEA UWWTD viewer (publisher's summary product); (5) baseline triad with a country-stratified prior as the reference a solver must beat (measured 2023-call any-F 11.2%, DE 0.4% .. NO 49.6%).",
+ "novelty_check": {
+  "checked_at": "2026-10-22T12:20:45+00:00",
+  "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+  "queries": [
+   "wastewater treatment plant compliance prediction",
+   "UWWTD machine learning dataset",
+   "urban waste water treatment plant performance prediction Europe"
+  ],
+  "evidence": {
+   "huggingface_datasets": [
+    {
+     "query": "wastewater treatment plant compliance prediction",
+     "hits": 0,
+     "top": []
+    },
+    {
+     "query": "UWWTD machine learning dataset",
+     "hits": 0,
+     "top": []
+    },
+    {
+     "query": "urban waste water treatment plant performance prediction Europe",
+     "hits": 0,
+     "top": []
+    }
+   ],
+   "zenodo_records": [
+    {
+     "query": "wastewater treatment plant compliance prediction",
+     "hits": 498802,
+     "top": [
+      "Artificial Neural Network Modeling in Treatment Plants: A Critical Review",
+      "Optimization of Coagulation\u2013Flocculation Dosing for TSS, BOD and COD Removal from Textile Wastewater: A Case Study of Arbaminch Textile Share Company",
+      "Performance comparison of SVM and ANN for aerobic granular sludge",
+      "Prediction of Wastewater Treatment Plant Using Genetic Algorithm",
+      "SustainableMini ETP for Small Industries: ACase Study of Powder Coating Industry"
+     ]
+    },
+    {
+     "query": "UWWTD machine learning dataset",
+     "hits": 589119,
+     "top": [
+      "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
+      "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI",
+      "RGB and RGNIR Plastic Waste Database",
+      "DisMo: Disentangled Motion Representations for Open-World Motion Transfer",
+      "mushrooms"
+     ]
+    },
+    {
+     "query": "urban waste water treatment plant performance prediction Europe",
+     "hits": 1044831,
+     "top": [
+      "Study and Verify the Performance Evaluation and Percentage Removal Efficiency of the Plant",
+      "Prediction of Wastewater Treatment Plant Using Genetic Algorithm",
+      "Poultry slaughter waste water treatment",
+      "Artificial Neural Network Modeling in Treatment Plants: A Critical Review",
+      "Dataset: Multi-barrier treatments integrating constructed wetlands for the reuse of stormwater, greywater and wastewater"
+     ]
+    }
+   ],
+   "arxiv_preprints": [
+    {
+     "query": "wastewater treatment plant compliance prediction",
+     "hits": 5,
+     "top": [
+      "A Hybrid Approach of Transfer Learning and Physics-Informed Modeling: Improving Dissolved Oxygen Concentration Predictio",
+      "Predictive control of wastewater treatment plants as energy-autonomous water resource recovery facilities",
+      "Wastewater Treatment Plant Data for Nutrient Removal System",
+      "Solving the Wastewater Treatment Plant Problem with SMT",
+      "Simulator-Grounded Large Language Models for Industrial Causal Reasoning: Tool-Use, Structured Injection, and Plant-Port"
+     ]
+    },
+    {
+     "query": "UWWTD machine learning dataset",
+     "hits": 5,
+     "top": [
+      "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+      "DOME: Recommendations for supervised machine learning validation in biology",
+      "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
+      "Active learning for data streams: a survey",
+      "A Benchmark Study of Machine Learning Models for Online Fake News Detection"
+     ]
+    },
+    {
+     "query": "urban waste water treatment plant performance prediction Europe",
+     "hits": 5,
+     "top": [
+      "Waste detection in Pomerania: non-profit project for detecting waste in environment",
+      "Optimization of waste collection through the sequencing of micro-routes and transfer station convenience analysis: an Ar",
+      "Urban Mobility",
+      "Urban Water Consumption Forecasting Using Deep Learning and Correlated District Metered Areas",
+      "A biomarker based on gene expression indicates plant water status in controlled and natural environments"
+     ]
+    }
+   ]
+  },
+  "evidence_summary": "- huggingface_datasets / 'wastewater treatment plant compliance prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'UWWTD machine learning dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'urban waste water treatment plant performance prediction Europe': 0 hit(s) - nothing notable\n- zenodo_records / 'wastewater treatment plant compliance prediction': 498802 hit(s) - Artificial Neural Network Modeling in Treatment Plants: A Critical Review, Optimization of Coagulation\u2013Flocculation Dosing for TSS, BOD and COD Removal from Textile Wastewater: A Case Study of Arbaminch Textile Share Company, Performance comparison of SVM and ANN for aerobic granular sludge, Prediction of Wastewater Treatment Plant Using Genetic Algorithm, SustainableMini ETP for Small Industries: ACase Study of Powder Coating Industry\n- zenodo_records / 'UWWTD machine learning dataset': 589119 hit(s) - plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database, DisMo: Disentangled Motion Representations for Open-World Motion Transfer, mushrooms\n- zenodo_records / 'urban waste water treatment plant performance prediction Europe': 1044831 hit(s) - Study and Verify the Performance Evaluation and Percentage Removal Efficiency of the Plant, Prediction of Wastewater Treatment Plant Using Genetic Algorithm, Poultry slaughter waste water treatment, Artificial Neural Network Modeling in Treatment Plants: A Critical Review, Dataset: Multi-barrier treatments integrating constructed wetlands for the reuse of stormwater, greywater and wastewater\n- arxiv_preprints / 'wastewater treatment plant compliance prediction': 5 hit(s) - A Hybrid Approach of Transfer Learning and Physics-Informed Modeling: Improving Dissolved Oxygen Concentration Predictio, Predictive control of wastewater treatment plants as energy-autonomous water resource recovery facilities, Wastewater Treatment Plant Data for Nutrient Removal System, Solving the Wastewater Treatment Plant Problem with SMT, Simulator-Grounded Large Language Models for Industrial Causal Reasoning: Tool-Use, Structured Injection, and Plant-Port\n- arxiv_preprints / 'UWWTD machine learning dataset': 5 hit(s) - Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Active learning for data streams: a survey, A Benchmark Study of Machine Learning Models for Online Fake News Detection\n- arxiv_preprints / 'urban waste water treatment plant performance prediction Europe': 5 hit(s) - Waste detection in Pomerania: non-profit project for detecting waste in environment, Optimization of waste collection through the sequencing of micro-routes and transfer station convenience analysis: an Ar, Urban Mobility, Urban Water Consumption Forecasting Using Deep Learning and Correlated District Metered Areas, A biomarker based on gene expression indicates plant water status in controlled and natural environments",
+  "prior_art": [
+   "Process-level WWTP effluent-ML literature (sensor/time-series); JRC European WWTP database (descriptive, 2015 vintage); EEA UWWTD viewer and Commission implementation reports (aggregate compliance statistics)."
+  ],
+  "theirs": "The EEA publishes the raw per-cycle Waterbase tables and spatial GeoPackages, compliance statistics in Commission UWWTD implementation reports, and an interactive viewer; process-control ML literature predicts effluent quality from plant sensor time series (a different formulation, different data); the JRC maintains a descriptive European WWTP infrastructure database. No public prediction task with splits and a scored contract exists on this source.",
+  "ours": "Per-plant, per-reporting-cycle panel built from the EEA's published UWWTD Waterbase cycles (2007-2023 biennial Art.15 reporting, ~24k active plants x 30 reporters): predict whether an active urban wastewater treatment plant will be reported as failing at least one treatment-performance parameter (uwwBOD5Perf..uwwOtherPerf = F) in the NEXT reporting cycle, from features documented in the Eionet data dictionary and reported in earlier cycles (capacity, load, treatment train, NUTS, country, age, previous-cycle flags). Temporal cross-cycle splits, a scored binary contract, and the national reporting-mixture property measured and documented.",
+  "verdict": "differentiated",
+  "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+ },
+ "verdict": "go",
+ "label_source_columns": [
+  "uwwBOD5Perf",
+  "uwwCODPerf",
+  "uwwNTotPerf",
+  "uwwPTotPerf",
+  "uwwTSSPerf",
+  "uwwOtherPerf",
+  "uwwBadPerformance",
+  "uwwBadDesign",
+  "uwwAccidents",
+  "uwwInformation"
+ ],
+ "jurisdiction": {
+  "country": "EU",
+  "region": "Europe",
+  "publisher": "European Environment Agency (EEA), an EU agency headquartered in Copenhagen, Denmark; the data are Member State and EEA-country deliveries under Directive 91/271/EEC (Urban Waste Water Treatment Directive) Article 15, validated and published by the EEA",
+  "convention": "Supranational EU agency; 'EU' recorded as the country because an agency of the Union has the Union's jurisdiction, per the same convention as ecdc-atlas-surveillance and eutl-installation-net-short. The reporting population includes EEA non-EU countries (CH, NO, IS) - the publisher's jurisdiction is the EU.",
+  "recorded_at": "2026-10-22"
+ },
+ "licence_class": "A",
+ "licence_note": "CC BY 4.0 (EEA/DG ENV copyright holders; attribution required, derivatives and redistribution permitted)"
+}
