@@ -10,6 +10,8 @@ Two documents, captured 2026-10-22T17:15Z on branch `ops/scout-runtime-handoff` 
 | `../deployment/scout/versions.json` | Hermes version, upstream revision, install method, local customisations (regenerated 2026-10-22 by `scripts/scout-snapshot.py`) |
 | `../deployment/scout/config-export.json` | allowlisted non-secret configuration fields |
 | `../deployment/scout/STATE-SNAPSHOT.md` | schedules, budgets, destinations, queue, recovery notes — each with its source |
+| `schedule-export.json` | allowlisted machine-readable scheduler state: 13 jobs with schedule, enabled/state, kind, script, per-job overrides and delivery *kind* (no prompts, no chat ids, no history) |
+| `shims/` | the eight schedule-entry wrappers, verbatim from `/opt/data/scripts/`, with sha256 and the omission list |
 
 ## Sanitisation
 
