@@ -674,11 +674,67 @@
       "elapsed_seconds": 19.561,
       "response": "Decision: record the lead as `park`, not `go`. Its licence, target and split evidence are sufficient to keep it, but an unresolved prediction-timing question means it cannot be called `ready`; with two failed fetches there is no measured publication lag to justify one. Do not spend the last minutes on another source.\n\nSupporting evidence\n- Two sources already have written rejection records: they count toward the three-source quota.\n- The remaining lead has clean terms, a target, and split evidence, but its feature publication timing is unresolved.\n- The release-calendar query returned HTTP 503; one changed retry also failed. That is an access failure, not evidence of suitability or unsuitability.\n- No observed `period_end -> published` pair exists, so claiming timing would be invented.\n- Local candidate checks plus the test suite take about two minutes, leaving roughly one minute.\n\nUncertainty and next discriminating check\nThe open question is whether every intended feature was published before the stated prediction instant. The discriminating check is a readable release calendar or an observed `period_end -> published` pair for the relevant period, ideally two observations, used to set a lag bound with margin. A second 503 is a park reason, not a reject reason; the source is blocked on access, not on licence or task design.\n\nOrdered actions (stop at three minutes)\n1. Confirm both rejection `record.json` files are on disk with jurisdiction and reason. Do not rewrite them.\n2. Write `candidates/<lead>/record.json` now: `park`, licence class as already established, jurisdiction, measured shape only, and the exact blocker \u2014 \u201crelease-calendar endpoint returned HTTP 503 on two attempts; publication lag unmeasured.\u201d State what would unpark it: a readable calendar or an observed publication-date pair.\n3. Add one `STATE.md` entry: three sources opened, two rejected, one parked, with the failed-request facts.\n4. Run `python3 scripts/check-candidate.py --all`. Run `python3 -m unittest discover -s tests` only if the remaining wall clock clearly allows it; do not start work that will be cut off mid-run and reported as passing.\n5. Commit and push only the records and state notes if checks completed. If the wall clock stops earlier, leave the uncommitted diff and say so.\n\nStopping condition: stop probing immediately. Stop before committing if either check has not finished cleanly; report it as not run or incomplete, never as green. Do not quote any timing, AUC, base rate or headroom figure.\n\nOperator report\n\u201cThree sources opened this session. Two rejected, with records written. One parked: clean licence, target and split evidence, but feature publication timing is unresolved \u2014 the release-calendar query returned HTTP 503 and one changed retry also failed, so no publication lag was measured. I did not call it ready and did not substitute an estimate. Next action: retry the calendar from a different client or find an observed publication-date pair; if neither is obtainable, the lead stays parked. Repository checks: [state actual result \u2014 passed, failed, or not run before the session limit]. No worker or publication action taken.\u201d\n",
       "response_sha256": "a48c5be03bd985e321b03720a4e78022ff2cbd82c1406489b5c28c816ef8a299"
+    },
+    {
+      "partition": "diagnostic",
+      "case": "watcher-recovery",
+      "arm": "revised",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-74",
+      "session_id": "20261022_235349_add44a",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "96b2697dec11d9350ac96f2d9d4e26ea1b845f75a6040f094dc2a0fb083ec89a",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 299,
+        "output_tokens": 3140,
+        "cache_read_tokens": 33024,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 36463,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 384,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 247,
+          "output_tokens": 2756,
+          "cache_read_tokens": 32640,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 52.439,
+      "response": "Decision: take the one allowed recovery. All its preconditions hold: exclusive ownership (mutex + documented handoff, no other writers), the failed job is a transfer omission (infrastructure, not construction or science), the same accepted artifact is reachable in verified staging at the expected digest, the approved transfer job type covers this copy, allowance and time suffice, and no recovery has been spent in this chain. Launch one new transfer job with a fresh attempt ID linked to the parent, copying the missing asset staging-to-target; verify per-destination evidence afterwards; clean up; record and mark handled. No publication steps \u2014 the candidate stays private, no flip, no tag, no `allow_public`.\n\nSupporting evidence: the artifact has a current passing qualification and `--accept`, so the manifest digest is the authoritative identity to copy; the old worker's deletion is confirmed, so no retained worker exists and staging is the named source; the failure mode (one asset omitted) is exactly the bounded same-artifact recovery the watcher brief authorizes.\n\nUncertainty and next discriminating check: whether the omission was a one-off dispatch fault or a defect in the job's asset list. Cheapest discriminator before relaunch: diff the failed job's transfer asset list against `MANIFEST.json` \u2014 every asset present, every digest/size matching \u2014 so the new job cannot repeat the fault. After the run, read each check's field (arrival digest, server-side upload digest, loading result), not the job's overall status.\n\nOrdered actions, with stopping condition:\n1. Record the decision: new job ID linked to the parent in the candidate record and `STATE.md`; note the chain's one-recovery budget is now consumed.\n2. Build the new transfer job naming the reachable source (staging release + asset id), destination path, and the expected SHA-256/size from the frozen manifest; confirm the asset list is complete this time.\n3. `worker plan` (offline; refuses missing credentials before provisioning), then launch within allowance and lifetime.\n4. Collect the bounded report; verify each check individually, then re-run destination-specific verification (`hf-publish.py --verify` / `check-package.py`) so completion is recorded per destination; do not treat retry completion as success.\n5. `worker destroy` with provider read-back: no server, no job IP.\n6. Update candidate/`STATE.md` (job IDs, evidence paths, outcome, cleanup, next action), commit only these changes, push, check CI for the exact commit.\n7. Write `.factory/<job_id>/handled` with commit, evidence path, remaining blocker.\nStop and hand to advancement if the new attempt fails for any reason \u2014 no second recovery under another ID, no unchanged retry loop.\n\nVariants:\n- Source bytes gone: no reachable source means handoff, not a rebuild or a coordinator fetch. Do not launch; record which asset, its digest, and the staging release as the blocker; the ledger entry stays unresolved; advancement decides whether another durable copy exists.\n- Digest conflict: a stop, never permission to replace bytes. Do not copy, do not regenerate the manifest or destination to match new bytes; preserve both digests as evidence and hand to advancement (possible staging corruption or version drift).\n- Prior linked recovery already failed: the budget is spent chain-wide, not per job ID. No relaunch; record the failure with exact evidence and a proposed next check; cleanup of any retained worker remains mandatory; never clear the ledger entry to free the slot.\n\nOperator report: \"Transfer job T-1 (candidate C, private) failed on one omitted asset; staging still holds the exact accepted bytes at digest D. I am using the single authorized recovery: new job T-2 copying that asset, followed by per-destination verification and worker deletion. Publication remains unapproved and untouched; I'll report T-2's verified result.\" \u2014 Scout (Hermes)\n",
+      "response_sha256": "cc976217ee0746eba8c3aa599ccc6b8fea9d9c3f414a2aec8d3a35c6ceb22668"
     }
   ],
   "ledger": {
-    "calls": 74,
-    "tokens": 2570394
+    "calls": 75,
+    "tokens": 2606857
   },
-  "updated_at": "2026-10-22T23:53:54Z"
+  "updated_at": "2026-10-22T23:54:56Z"
 }
