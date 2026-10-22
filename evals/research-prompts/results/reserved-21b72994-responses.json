@@ -1,0 +1,689 @@
+{
+  "schema": 1,
+  "bundle": "21b72994bc6a6ccd568c9395147ee3e6416b0e4c",
+  "partition": "reserved",
+  "records": [
+    {
+      "partition": "reserved",
+      "case": "licence-exception",
+      "arm": "baseline",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-50",
+      "session_id": "20261022_232749_08892e",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "152ab1791cfea34de30aa34d3775420697b3a44b237d50e82295499616d51ca6",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 191,
+        "output_tokens": 5632,
+        "cache_read_tokens": 36480,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 42303,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 359,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 139,
+          "output_tokens": 5273,
+          "cache_read_tokens": 36096,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 76.701,
+      "response": "Decision\n\nNo. B cannot inherit A's risk acceptance, and B cannot be built on until it has its own recorded decision. The acceptance mechanism is per-candidate by construction: the recorded decision lives in `candidates/<id>/license.json`, written before construction, and the case states A's is candidate-specific. \"Sibling\" is not a scope. The discovery skill warns that a general policy can coexist with dataset-specific terms, so even a same-publisher source must be classified from its own instrument. A's CC0 also transfers nothing: it dedicates only our rights in the derived compilation and never covers the source's data. So B currently has an unread licence and no decision: class C, closed until its own terms are read.\n\nSupporting evidence\n\n- dataset-release SKILL: \"a source whose licence cannot be read is not published at all unless the operator has recorded a risk acceptance in `candidates/<id>/license.json`\" \u2014 recorded as a risk acceptance, never as a grant.\n- OPERATIONS.md (2026-10-20 authority): \"a licence that cannot be read is recorded in `candidates/<id>/license.json` before construction, and a candidate with no recorded licence decision is never published.\"\n- Standing rule 2026-10-21: only build on already-clean sources; class C is a drop in the same breath, no \"probably fine\".\n- Discovery failure-mode table: a blocked page read as absent terms must be re-read in a real browser before silence is recorded.\n- \"other-open with no deed\" is catalog metadata, not the publisher's instrument; classify from the instrument linked from the dataset itself.\n\nHow to represent both\n\nA: unchanged. Source SPDX NOASSERTION (honest \u2014 no instrument was readable); the operator risk acceptance recorded with its scope, attribution preserved, takedown route, never presented as the publisher's licence; compilation CC0-1.0 stated as covering our contribution only; code MIT; derived-data labeling intact; the manifest's licences block generated from that declaration, never hand-edited.\n\nB: `record.json` with `licence_class: \"C\"`, `license_evidence` carrying the observed blocked read plus the \"other-open, no deed\" tag noted as an unverified catalog label, verdict `reject` (dropped), and the reopen line: a readable terms instrument for this exact dataset, or an operator acceptance naming candidate B. No compilation licence is claimed for B because there is no release to licence.\n\nUncertainty and next discriminating check\n\nTwo cheap checks could change the answer. First, read `candidates/<A>/license.json` and confirm the recorded acceptance's scope: if the operator's acceptance explicitly covered a publisher or program that includes B, inheritance would be a recorded scope rather than an inference \u2014 the case says candidate-specific, so the expected reading is A alone. Second, re-read B's terms page in a real browser; the block may be client-side, not publisher silence. If neither changes anything, B stays C.\n\nOrdered actions and stopping condition\n\n1. Read A's `license.json`; confirm the acceptance names candidate A only. Change nothing if so.\n2. Re-read B's terms in a real browser, and any dataset-specific terms link on B's own page, not a general policy page.\n3. If terms become readable, classify from the instrument: class A/B proceeds to novelty and probes; C/D is dropped with the clause or absence quoted.\n4. If still unreadable, write B's verdict as class C dropped, with the probes as evidence and the reopen condition above. No permission email, no park, no acceptance drafted on the operator's behalf.\n5. Record both in `STATE.md`; run `scripts/check-candidate.py` on both records; commit and push; read CI for that commit.\n\nStop when B carries a recorded verdict with its evidence and A's acceptance scope is confirmed. Do not re-run an unchanged fetch, and do not infer an acceptance.\n\nOperator report\n\nB cannot inherit A's acceptance: acceptances are candidate-specific and B has none recorded. A remains represented as NOASSERTION source + CC0 for our contribution only + your recorded acceptance, unchanged. B is class C pending one browser re-read of its terms page; if that stays unreadable, B is dropped with the reopen condition recorded. A new acceptance for B is yours to record, not mine to infer.\n",
+      "response_sha256": "b52dda5dc72633c9504d88909bf25d4db09529a4a4ec3ee1fda707a6c56553b0"
+    },
+    {
+      "partition": "reserved",
+      "case": "licence-exception",
+      "arm": "revised",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-51",
+      "session_id": "20261022_232910_c55a92",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "4073d2f2b1fe9ec3b032d0ebc60516e687cc089e0e790d5c9a9d09ab9c76776c",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 201,
+        "output_tokens": 3413,
+        "cache_read_tokens": 24576,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 28190,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 385,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 149,
+          "output_tokens": 3028,
+          "cache_read_tokens": 24192,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 59.419,
+      "response": "Decision\n\nNo. B cannot inherit A's acceptance. A's operator decision is candidate-specific: the discovery skill and session brief both say to preserve such decisions without extending them to sibling sources, and never to invent a grant. Metadata reading \"other-open, no deed\" is a catalog tag, not the publisher's instrument, so it cannot upgrade B to class A/B either. B is a new, unclassified lead \u2014 but not yet a proven class C: a blocked page is inaccessible evidence, not absent terms. B gets its own bounded attempt to read the publisher's actual terms before any verdict.\n\nSupporting evidence\n\n- Skill, licence triage: \"Preserve existing candidate-specific operator decisions without extending them to sibling sources; unknown source grants remain NOASSERTION.\"\n- Class C row and standing 2026-10-21 policy: new unresolved leads are closed, not parked; an operator risk acceptance is an exception recorded explicitly, never a publisher grant.\n- \"Classify from the publisher's own instrument, not from a general policy page\" \u2014 and a fortiori not from repository metadata.\n- Failure-mode table: a blocked page must be re-read in the supported browser before silence is recorded.\n\nRepresentation\n\n- A: unchanged. Its record keeps the acceptance documented as a risk acceptance (licence-posture style), source SPDX NOASSERTION, compilation CC0 scoped to \"our contribution only,\" derived-work labeling with the source's designation and attribution preserved.\n- B: its own record, never merged into A's. Source SPDX stays NOASSERTION regardless of the metadata tag. Evidence records what was actually obtained: the blocked URL, the retry method, dates, and what the browser returned. If closed, the verdict names the reopening event (an explicit operator acceptance for B, or a readable licence instrument).\n\nUncertainty and next discriminating check\n\nThe single fact that changes the verdict is whether B's dataset-level terms instrument is readable and what it says. The check: read the terms via the supported browser within the bounded retry, and prefer the terms linked from B's own dataset page over the general policy page. Readable and permissive \u2192 class A/B, probe the task. Readable and restrictive \u2192 class D, drop with the clause quoted. Still blocked or ambiguous \u2192 class C, close.\n\nOrdered actions and stopping condition\n\n1. Open B as a separate lead record; mark classification pending; do not touch A's record.\n2. Run the bounded browser retry of B's terms page and any dataset-linked terms.\n3. On a readable instrument: record the quote in license_evidence, set licence_class, then proceed to ordinary discovery (contribution vs. mirror, five contracts).\n4. On failure or ambiguity: close B as class C with the reopening condition recorded. No permission email, no indefinite park.\n5. Commit the records, run check-candidate on whatever record persists, add the STATE.md entry.\nStop probing B the moment the terms read resolves or the bounded retry exhausts; no task probing before classification. Do not assume the operator will extend the acceptance \u2014 flag it as their choice.\n\nOperator report\n\nSource A stands as accepted: NOASSERTION source terms, CC0 over our compilation contribution only, risk acceptance recorded as risk, not grant. Source B does not inherit that acceptance; its \"other-open, no deed\" metadata is not a licence. One bounded browser attempt to read B's own terms remains; if it fails, B is closed as class C, reopenable only by your explicit B-specific decision or a readable instrument. If you want B built despite unreadable terms, that is a new risk acceptance to record on B's record \u2014 say so and I will record it as such. Next action: the terms-page retry, then the verdict and commit.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "04dabbab553e8dd2cf6922ac4b0d638e8dfe07b27fc51eee34ecb8cb211d2f42"
+    },
+    {
+      "partition": "reserved",
+      "case": "licence-exception",
+      "arm": "revised",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-52",
+      "session_id": "20261022_233014_a9b656",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "4073d2f2b1fe9ec3b032d0ebc60516e687cc089e0e790d5c9a9d09ab9c76776c",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 5676,
+        "output_tokens": 1553,
+        "cache_read_tokens": 19712,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 26941,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 442,
+          "output_tokens": 13,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 5234,
+          "output_tokens": 1540,
+          "cache_read_tokens": 19712,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 19.39,
+      "response": "**Decision.** No. B cannot inherit A's risk acceptance. A candidate-specific operator risk acceptance is scoped to that candidate and recorded as a *risk acceptance, not a grant*; standing policy (2026-10-21, OPERATIONS.md and discovery skill) forbids extending it to sibling sources, and new unresolved class C leads are closed, not parked.\n\n**Evidence.** A: no publisher grant; source SPDX `NOASSERTION`; compilation CC0-1.0 covers only our contribution; the operator decision is recorded candidate-specifically on A. B: its terms page is blocked \u2014 that is *inaccessible evidence*, not proof terms are absent, and the skill requires a supported-browser re-read before recording silence. B's metadata \"other-open\" with no deed is not a publisher instrument and cannot be classified from a general policy page; classifying from the publisher's own terms yields class C. Licences are read from the dataset's own terms, and a source whose licence cannot be read is not published.\n\n**Representation \u2014 two different objects, never one.**\n- A keeps its own record: `licence_class` C *exception* carried by the explicit candidate-specific operator decision; `license_evidence` quotes that decision and the publisher's silence; `license.json` states source terms `NOASSERTION`, our code/docs MIT, our rights in the derived compilation CC0-1.0, with an explicit scope sentence (we dedicate our contribution, not the source's data). `LICENSE.md`/card/README generated from the same decision so they cannot disagree.\n- B gets its own record with `licence_class: C`, `jurisdiction` stated (not inferred from URL), `license_evidence` holding the observed block (URL, date, response) plus the verbatim \"other-open\" metadata quote, and status closed/dropped with a named reopening event. No `license.json` grant, no CC0 claim over source data, no borrowed acceptance. If B later reaches a build, it would need its own candidate-specific operator decision, and A's is not precedent.\n\n**Uncertainty and next discriminating check.** The unresolved fact is whether B publishes any licence instrument at all: a blocked page could hide either explicit terms or none. Next check, bounded to one attempt: re-read B's terms URL in the supported browser; if it renders, quote the instrument and reclassify (A/B \u2192 proceed to task probing; D \u2192 reject quoting the clause). If still blocked, stop \u2014 the response proves neither emptiness nor permission.\n\n**Ordered actions, with stopping condition.**\n1. Re-read B's terms page in the browser (one retry). Record URL, timestamp, outcome.\n2. Classify B as C unless the retry produced readable terms.\n3. Write B's record via the candidate commands with licence evidence, jurisdiction, blocker and reopening event; write nothing into A's licence decision.\n4. Run `check-candidate.py <B>`, `discovery-coverage.py`; commit only these records; push; read CI for that exact commit.\n5. Stop. No permission email, no further B probing, no construction, no advance of A (advancement owns it). Stopping condition: one browser attempt plus recorded decision and passing checks \u2014 or, on readable terms, the record updated with the quoted instrument and a named next probe.\n\n**Operator report.** Opened B; closed/dropped as class C \u2014 terms unreadable after one browser attempt, metadata \"other-open\" is not an instrument. A's existing candidate-specific risk acceptance was not extended and remains recorded as a risk acceptance, `NOASSERTION` source with CC0 scoped to our contribution only. Checks/commit results reported as observed; CI status as found. Next: nothing on B unless it publishes a licence instrument or the operator grants B its own decision.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "197ebae35fb3dc3e76f9529ef9bee8b107badfcc1ed1a1c4664a53240f9380f0"
+    },
+    {
+      "partition": "reserved",
+      "case": "licence-exception",
+      "arm": "baseline",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-53",
+      "session_id": "20261022_233037_d62515",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "152ab1791cfea34de30aa34d3775420697b3a44b237d50e82295499616d51ca6",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 34780,
+        "output_tokens": 833,
+        "cache_read_tokens": 2816,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 38429,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 132,
+          "output_tokens": 11,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 34648,
+          "output_tokens": 822,
+          "cache_read_tokens": 2432,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 19.546,
+      "response": "**Decision**\n\nNo. B cannot inherit A's risk acceptance, and B is dropped as licence class C this session. A remains a live candidate only under its own recorded, candidate-specific risk acceptance \u2014 which is an operator decision recorded for A, not a licence grant and not a policy that transfers.\n\n**Supporting evidence**\n\n- A: publisher grants nothing (SPDX `NOASSERTION`), but `candidates/A/license.json` carries an operator risk acceptance scoped to that candidate; our compilation is dedicated CC0 and that dedication covers **our contribution only** \u2014 row selection, derived label, partition, packaging \u2014 never the source's data or designation.\n- B: its terms page is blocked, its metadata says \"other-open\" with no deed attached, and there is **no recorded decision** for B.\n- The standing rule (2026-10-21): a source whose licence is not already established as permitting redistribution and derivatives is not pursued. Unclear is C: drop in the same breath, no permission email, no parked \"probably fine.\"\n- An acceptance is written as a *risk acceptance, never as a grant*. Grants are properties of a licence; acceptances are properties of a decision about one source. Nothing in A's record names B, and a blocked page plus a metadata label with no deed is precisely the ambiguity class B sits in.\n\nNote the trap: \"other-open\" plus CC0 in A's compilation field can look like a chain. It isn't. CC0 is not a blanket override of upstream terms, and B has no upstream terms we can read.\n\n**Uncertainty and next discriminating check**\n\nA's acceptance could in principle be widened by the operator to cover B, but only by an explicit new decision naming B \u2014 I cannot infer it, and B's own terms remain unread regardless. The discriminating check for B is narrow: fetch the terms page through a real browser (a 403 to a plain HTTP client is not silence), look for a deed or an SPDX identifier on the dataset itself rather than a general policy page, and record the exact quote. If that yields an explicit open licence permitting redistribution and derivatives, B reopens as class A/B on its own evidence; if it yields silence or \"contact us,\" B stays a recorded C-drop with one line stating what evidence would reopen it. A's next check is different: confirm `license.json` still names A alone and that the card, `LICENSE.md` and README carry the publisher's attribution and designation verbatim.\n\n**Ordered actions and stopping condition**\n\n1. Write `candidates/A/record.json` \u2014 jurisdiction, `licence_class`, `license_evidence` with the quoted absence, and the risk-acceptance reference, explicitly scoped to A.\n2. Write `candidates/B/record.json` \u2014 verdict `dropped`, `licence_class: C`, the blocked page as the evidence, and the reopening condition. Do not probe B's schema, volume or split capacity first.\n3. Run `scripts/check-candidate.py` on both; commit and push; read CI for that exact commit.\n4. Stop. Do not spend the tick characterising B. Count B toward the session's verdicts as a rejection \u2014 a rejection is a completed unit of work.\n\n**Operator report**\n\nA stays live under its own recorded risk acceptance, published with attribution, a takedown route and no standard licence presented as the publisher's. B has no readable terms and no decision of its own, so it is closed as class C; if you want B pursued, that requires a separate recorded acceptance naming B \u2014 and it would still ship without a licence we can quote. Two sources opened, one go, one reject.\n",
+      "response_sha256": "d214f29b8ebfcd9e0f7ca3c5ff8f4b735d5b9d16a0a3dd02d2e70ce60b1c5892"
+    },
+    {
+      "partition": "reserved",
+      "case": "frozen-package",
+      "arm": "revised",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-54",
+      "session_id": "20261022_233101_3acdbf",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "a579e8b53e74e182a8e9ae4daa1d5e1aaa9b3e610d947fa9778c159fc3bc71da",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 214,
+        "output_tokens": 3984,
+        "cache_read_tokens": 33344,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 37542,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 611,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 162,
+          "output_tokens": 3373,
+          "cache_read_tokens": 32960,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 52.498,
+      "response": "Decision: do not regenerate the published MANIFEST.json and do not touch the tag. This is a reader defect, not a data defect; fix the new site consumer to normalize the legacy split shape on read via the existing `factory.release_schema` adapter, with a guard test. Note that regeneration would not even work: the tag is immutable and pinned readers fetch the tag, which would keep serving the old manifest \u2014 the only way regeneration \"helps\" is by moving or recreating the tag, which is a refusal, never a repair.\n\nSupporting evidence:\n- Published manifests, digests and version tags are immutable; the rule is explicit \u2014 never rewrite historical bytes \"to fix CI ... or bypass a consumer error.\" The sanctioned paths are fixing a reader defect or preparing a new reviewed version.\n- The failure-mode table prescribes exactly this case: a published package with a legacy shape (e.g. `splits: null` breaking `flatten_splits`) is normalized on read \"without modifying bytes\"; for the same reason the verify path reads old manifests \"through the schema adapter.\"\n- Bytes at both destinations match the recorded digests, so the artifact is intact; the crash is a schema-contract mismatch in the consumer. Regeneration would change hashed bytes under a frozen release and desync verified evidence at both destinations.\n\nUncertainty and next discriminating check: the evidence names the split shape, but I have not verified that no other legacy field also breaks the consumer. Next check: reproduce the crash locally against the pinned manifest fetched anonymously at the tag, read through the adapter. If the normalized view satisfies the consumer, the reader fix is sufficient. If it still crashes on a field the adapter cannot synthesize, stop and propose a new reviewed release version (new package, new tag) \u2014 never an in-place edit.\n\nOrdered actions:\n1. Reproduce: fetch the pinned MANIFEST.json anonymously from the public tag; run the site consumer; capture the exact traceback and offending field. Repair nothing before this.\n2. Fix the read path: normalize the legacy shape through `factory.release_schema` in the consumer; no change to `release/<dataset>/MANIFEST.json`, assets, digests, or the tag. Versioned code with tests on a reviewable branch.\n3. Guard test: add a fixture of the legacy shape; revert the fix, watch the test fail, restore, and record which defect it caught \u2014 a guard that has never failed is unproven. Verify in a clean clone with bytecode writing enabled.\n4. Verify against published bytes: consumer runs clean against the pinned revision from an anonymous client; `check-package.py` on the release package still passes (manifest unmodified); the tag still resolves to the original commit; recorded digests re-confirmed unchanged at both destinations; site `verify` shows matching live record and HTML links.\n5. Push, run the suite, and check CI for that exact commit (`gh api .../actions/runs?head_sha=...`); report the consumer's red CI as turned green only when observed.\n6. Record in STATE.md and the candidate record: defect, fix, guard, receipts, and an explicit statement that no published byte, digest, or tag changed.\n\nStopping condition: stop when the consumer is green against the unmodified pinned release, tag and digests are verified unchanged, and CI passes for the fix commit. If the adapter cannot supply what the consumer needs, record the blocker and prepare a new reviewed version for operator review.\n\nOperator report: the red consumer CI is a bug in the new site consumer \u2014 it cannot read the older split shape in an already-published manifest. The published data is intact (digests match at both destinations) and nothing published was modified; the fix is in the consumer's read path with a guard test proven to fail beforehand. Verification in flight: consumer-green against the pinned public revision, unchanged tag/digests, green CI on the fix commit. If the legacy shape proves richer than the adapter, the fallback is a new reviewed release version, not a rewrite.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "22dfbb608e1ee032778bd91ab65c47737bf7355f063c7dfd6b2d1aa2449578e0"
+    },
+    {
+      "partition": "reserved",
+      "case": "frozen-package",
+      "arm": "baseline",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-55",
+      "session_id": "20261022_233158_e947d6",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "92730c42f5db0bccd9d7abcd75414d0abd97b7939e22b92fe4c6572410125e74",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 183,
+        "output_tokens": 6911,
+        "cache_read_tokens": 35648,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 42742,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 167,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 131,
+          "output_tokens": 6744,
+          "cache_read_tokens": 35264,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 102.781,
+      "response": "DECISION\nDocuments-only correction on the same version: regenerate MANIFEST.json so it carries the current\nsplit shape, change no data byte, push, then move the existing version tag onto that documentation\ncommit as the last action. Not a new data version (no asset digest changes), and not a local-only\nregeneration (the consumer reads the manifest at the pin, so the tag must serve the corrected file).\n\nSUPPORTING EVIDENCE\n- Bytes at both destinations already match the recorded digests, so the pin still fetches the bytes\n  it was verified with; only a document is stale.\n- dataset-release: \"A correction to documents only ... leaves every digest identical, so it is\n  applied to the same version and the tag is moved onto that documentation commit as the last\n  action; say in the record what moved and that no data changed.\"\n- The crash class is documented: a legacy manifest shape kills the site planner/consumer, and\n  \"the planner reads the manifest at the pin, not the local file\" - regenerating without moving\n  the tag fixes nothing.\n- Tag mechanics: \"create_tag(..., exist_ok=True) keeps an existing tag pointing at its old commit\";\n  the documented repair is delete, recreate on the refreshed commit, read back. (hf-publish.py\n  --tag itself refuses a differing tag; this move is the skill's documented manual path, recorded.)\n- MANIFEST.json is a Git-side document by layout, not a release asset, so editing it is not an\n  asset-byte change.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\nWhether the regenerated manifest is truly data-identical and evidence-consistent. Diff the at-tag\nmanifest (read via the contents API, not the raw CDN, which serves stale copies) against the\nregenerated one: every data-asset digest identical; splits derived from the gate report and\nmatching it; artifact_version equal to the gate digest taken from the qualification report file,\nnever the candidate record; visibility still derived from DESTINATIONS.json. If any asset digest\ndiffers, this stops being documents-only and requires a new reviewed version.\n\nORDERED ACTIONS\n1. Save the pinned manifest; regenerate with scripts/release-manifest.py, splits from the gate\n   report/quality.json, artifact_version from the qualification report.\n2. Overlay the public tree so website file entries survive (the package manifest must not drop\n   site scaffolding); run check-package.py release/<dataset>.\n3. Record: documents-only, same version, no data changed. git pull --rebase; on MANIFEST.json\n   conflict keep the freshly generated copy (it is derived, never hand-merged). Push, then read\n   CI for that exact commit: gh api \".../actions/runs?head_sha=$(git rev-parse HEAD)\" (gh run\n   list --commit returns empty even when a run exists).\n4. Move the tag last: delete and recreate at the refreshed commit; read back that the tag and\n   main resolve to the same commit, through the contents API.\n5. Correct the DESTINATIONS.json evidence after the refresh so the recorded revision/tag claim\n   names what the destination now serves.\n6. Verify anonymously: repo page 200, release assets ranged GET at the tag, Hub reports\n   private:false, data digests match the record; re-run the consumer until its CI is green at\n   that commit.\n7. Pin with a regression test on the new manifest shape; watch it fail against the old manifest\n   before recording the guard.\n\nSTOPPING CONDITION\nAbandon this path and prepare a new reviewed version (identical data bytes, new tag) if any\ndata-asset digest changes, artifact_version mismatches the gate report, check-package fails,\ntooling refuses the tag move, or the moved tag cannot be read back. If consumer CI stays red\nafter all of that, report an honest blocker, not invented progress.\n\nOPERATOR REPORT\n\"<dataset>: the site crash was a stale manifest shape, not bad data - both destinations match\nevery recorded digest. I regenerated MANIFEST.json as a documents-only correction on the same\nversion, moved the tag, and verified both destinations anonymously; consumer CI is green at\ncommit <sha>. No data bytes changed; next action is the regression test confirming it fails on\nthe legacy shape.\"\n",
+      "response_sha256": "eabee3df7204c26875e3b44516d0f3883bd142bf775944960a095fb64e96f7a2"
+    },
+    {
+      "partition": "reserved",
+      "case": "frozen-package",
+      "arm": "baseline",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-56",
+      "session_id": "20261022_233345_0af746",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "92730c42f5db0bccd9d7abcd75414d0abd97b7939e22b92fe4c6572410125e74",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 36681,
+        "output_tokens": 2076,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 38757,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 442,
+          "output_tokens": 12,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 36239,
+          "output_tokens": 2064,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 18.449,
+      "response": "Decision\nTreat this as a documents-only defect in the manifest generator, not a new data version. The bytes are unchanged and match recorded digests, so no data asset may be re-cut. Fix `scripts/release-manifest.py` so the `splits` block is derived from the qualification report / `quality.json` split stats in the *shape the consumer reads*, regenerate `MANIFEST.json` from that generator, re-hash the small files, and move the existing version tag onto the documentation commit **last**. Never hand-edit `MANIFEST.json`: a hand-edited block is lost the next time it is regenerated and is exactly how the manifest and qualification drifted apart.\n\nWhy not a new version: the release skill's rule is that a byte change requires a new version, while a documentation-only correction leaves every digest identical and is applied to the same version with the tag moved as the final action. The tag exists at the original commit; moving it is admissible *only* because no data digest changes.\n\nSupporting evidence\n- Stated in the case: bytes at both destinations match recorded digests. So the failure is the manifest's split shape, not content.\n- The skill's recorded failure mode is this exact shape: `MANIFEST.json` carries a legacy/`null` `splits`, the site planner iterates it and dies with a bare `TypeError`; fix is to derive `splits` from the gate report/`quality.json` and rebuild the manifest before pushing. It also warns the planner reads the manifest *at the pin*, not the local file \u2014 hence the tag move.\n- \"State is derived from recorded evidence, never asserted in a generator,\" and \"one rule shared\" \u2014 the consumer shape must come from one derivation, not a template literal.\n\nUncertainty and next discriminating check\nUnknown whether the consumer needs only a shape fix or also counts recomputable from rows, and whether any other consumer pins the tag *commit hash* rather than the tag. Discriminating check: reproduce the crash with the manifest fetched at the tag, and diff every data-asset digest (from `SHA256SUMS` and `DESTINATIONS.json` `files_verified`) before and after regeneration. If any data digest moves, stop \u2014 that is a new data version and needs review, not this repair.\n\nOrdered actions\n1. Reproduce the consumer crash against the manifest at the pinned tag; capture the traceback and the exact expected split field shape.\n2. Snapshot all data digests.\n3. Fix `release-manifest.py`; add a test that `splits` is derived from the qualification report in the consumer shape. Revert the fix and watch the test fail (a guard never seen to fail is not a guard).\n4. Regenerate `MANIFEST.json` and `SHA256SUMS`; assert every data digest is identical; run `check-package.py`.\n5. Commit/push docs; read CI for **that exact commit** via the `head_sha` API query.\n6. Move the version tag onto the documentation commit, last; delete-and-recreate on the Hub if it refuses a moved tag; read back through the contents API that tag and `main` resolve to the same commit and the pinned manifest carries the splits.\n7. Re-upload small HF files/card if they display splits; re-run anonymous verification at the tag (repo 200, ranged GETs on assets, `private: false`, data files at the tag revision).\n8. Update `DESTINATIONS.json` (`artifact_version` unchanged, `files_verified` lists), release notes, `STATE.md`; re-run site `prepare` (plan digest should be unchanged) then `verify`.\n\nStopping condition\nStop when: consumer runs at the pinned manifest; `check-package.py` passes; anonymous verification at the tag passes; CI green for the exact commit. Abort to a new version only if a data digest changed.\n\nOperator report\n\"Fixed a legacy `splits` shape in the public release's manifest by correcting the generator, not the bytes; moved the version tag to the documentation commit last. Data digests unchanged, manifest verified at the pin anonymously, CI green. No data re-release.\"\n",
+      "response_sha256": "5100d8690855a8801ed36cc991b61be5bc2335de0dd638530152e894ac8209f5"
+    },
+    {
+      "partition": "reserved",
+      "case": "frozen-package",
+      "arm": "revised",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-57",
+      "session_id": "20261022_233408_a922f8",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "a579e8b53e74e182a8e9ae4daa1d5e1aaa9b3e610d947fa9778c159fc3bc71da",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 34410,
+        "output_tokens": 986,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 35396,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 442,
+          "output_tokens": 13,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 33968,
+          "output_tokens": 973,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 19.558,
+      "response": "Decision: preserve the published manifest and tag. Repair the consumer by normalizing the legacy split shape on read, in the reader path, with tests \u2014 not by regenerating `MANIFEST.json` and not by touching the existing tag.\n\nSupporting evidence: the case states bytes at both destinations match the recorded digests, so the artifact is intact; the failure is a reader compatibility defect over a legacy split shape, not data corruption. Project and skill rules are explicit: published `release/*/MANIFEST.json`, CSVs, digests and version tags are immutable; \"normalize legacy shapes through `factory.release_schema`\"; and a public manifest failing a new consumer means \"preserve it, reproduce the reader failure, and fix compatibility or record a new-version proposal.\" Regenerating would change package bytes for a display defect, break the frozen manifest's identity with the recorded digests and tag, and mask the reader bug for the next legacy release. The tagged commit also predates the data; rewriting it is exactly the \"tag created before/after content\" failure mode.\n\nUncertainty: I have not seen the actual failure trace or confirmed that the legacy difference is *only* the split shape (e.g. `splits: null` / flat vs nested) rather than a missing canonical field the adapter cannot reconstruct without loss. Without that, \"adapter fixes it\" is unreproduced. Nor is it established that the consumer is the site planner's `flatten_splits` path versus another reader.\n\nNext discriminating check: run the failing consumer against the manifest read at the pinned tag in a clean checkout and capture the exact exception and field path; then confirm the adapter maps that shape to the canonical structure the consumer expects, with no field silently defaulted.\n\nOrdered actions:\n1. Reproduce the crash from the pinned tag/manifest bytes; record trace and offending field.\n2. Extend/verify `factory.release_schema` normalization on read so legacy splits become the canonical shape; add a regression test using the historical manifest fixture, and show it fails before the fix.\n3. Assert the adapter leaves the file untouched: hash manifest before/after; confirm the tag still resolves to the original commit and that destination digests still match recorded values.\n4. Run the full test suite and the consumer; push, then read CI for that exact `head_sha` (not `gh run list --commit`).\n5. Re-verify anonymously: repository page 200, ranged GETs on assets and at the tag revision, Hub `private: false`, digests unchanged.\n\nStopping condition: stop when the consumer passes on the pinned manifest with unchanged bytes/digests/tag and CI is green for that commit. If the adapter cannot faithfully reconstruct the legacy semantics, stop repair and record a new-version proposal \u2014 do not edit historical bytes or move the tag.\n\nOperator report: a public release is crashing its new site consumer due to a legacy split shape. I am preserving the frozen manifest, digests and existing tag, and fixing the schema-adapter read path with a regression test; verification will show unchanged manifest hash, unchanged tag commit, unchanged destination digests, and anonymous re-verification. If normalization proves lossy, I will propose a new reviewed version instead. No publication action is taken.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "1085dea99bf7feb44b9a29847ef545cbd003101d7e0573d6925f81e587faf8d2"
+    },
+    {
+      "partition": "reserved",
+      "case": "advancement-priority",
+      "arm": "baseline",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-58",
+      "session_id": "20261022_233431_3571e1",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "31b3cf4666029d8dbcb1ab230bfc0cc92c473014c137780ab4f4d59e4562bac1",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 197,
+        "output_tokens": 8973,
+        "cache_read_tokens": 35648,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 44818,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 320,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 145,
+          "output_tokens": 8653,
+          "cache_read_tokens": 35264,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 130.801,
+      "response": "DECISION\n\nR is this tick's work and cannot be finished inside it. P is left untouched, Q cannot start. I spend the 10 minutes making R a one-command resume for the next session: pin the gap, plan the job, write and push the records \u2014 then, only if plan passed and roughly 4+ minutes remain, launch the 35-minute job and hand off collect plus close-out. Records before any state change, always.\n\nSUPPORTING EVIDENCE\n\n- AGENTS.md, \"Ship first\": an actionable packaged candidate blocks new construction launches and gets the tick. R is actionable, so Q's construction job is preempted and would be refused even if I tried.\n- P carries awaiting_operator=true: the private-to-public flip is the operator's single approval, standing publication authority explicitly excludes it, it blocks nothing, and I do not ask \u2014 scout-release-notify already reports the wait hourly.\n- OPERATIONS.md lifecycle: launch reserves cost and records the ledger entry before creating the worker, dispatches a systemd job, and returns; results upload to private staging without the coordinator. Tested recovery path: after losing the session post-launch, reconcile with worker status; an unresolved bootstrap resumes via worker resume ID --job-file PATH with identical source, never a new ID. Sweeps bound a stranded worker's billing.\n- Session brief: the 80% wrap-up has arrived; a session killed at the ceiling produces no report. STATE.md, records and the push therefore precede launch.\n- Release jobs may launch under preemption and may draw on release_reserve_eur; plan is offline and free.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\n\nTwo things I cannot resolve in 10 minutes: whether launch returns before the ceiling (provisioning plus Docker readiness is minutes, not guaranteed), and whether R's gap is exactly the consumer check \u2014 its record says so, but scripts/check-package.py release/<R> names any other missing piece. Discriminating check next session: worker status <R-job>. Dispatched or running \u2192 collect; unresolved bootstrap \u2192 resume identical source; no ledger entry \u2192 launch fresh. A plan failure on allowance or credentials is a blocker to record, not to work around.\n\nORDERED ACTIONS AND STOPPING CONDITION\n\n1. Run check-package.py release/<R> (local, fast) and read R's record; pin the exact missing verification.\n2. Set a new attempt ID in R's job declaration; run worker plan \u2014 confirms bundle, allowance and credentials at zero cost.\n3. Update STATE.md and R's record with the precise next action: collect \u2192 destroy \u2192 complete the consumer check \u2192 re-run check-package \u2192 set awaiting_operator=true only once the flip is the sole remaining step. Commit, push, read CI for that exact commit via the head_sha query; report pending as pending.\n4. If plan passed and \u22654 minutes remain: launch with a runtime limit just above the 35-minute job, so a stranded worker is swept soon after idling. Then send the report.\n\nStopping condition: no launch if plan fails, credentials are unreadable, or under ~4 minutes remain after the push \u2014 then the handoff is the tick's whole output, and the next session launches with room to wait, collect and close out in one slot.\n\nOPERATOR REPORT\n\n\"R (packaged, actionable) is the queue head. Gap confirmed: [check-package finding]. Its consumer-check job is planned and [launched as R-<id> / left unlaunched: session ceiling]. Ledger and STATE.md pushed at <sha>; CI pending at cutoff, not yet read as passing. P untouched \u2014 awaiting your flip; nothing needed from me. Q is ready but preempted by R; its construction job starts after R's close-out. Next session: collect R-<id>, destroy the worker, finish the consumer check and package verification, then R goes awaiting_operator for your flip.\"\n",
+      "response_sha256": "38ffb03c21fddde1491cfd73b66b4e26c83051a66e1d96db18f9702ea677dedb"
+    },
+    {
+      "partition": "reserved",
+      "case": "advancement-priority",
+      "arm": "revised",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-59",
+      "session_id": "20261022_233646_aa198d",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "cfd388f44d3f93ee586cb8cb5f1a0575e9690c47f1d105f64fee6d0ab53b2162",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 228,
+        "output_tokens": 5306,
+        "cache_read_tokens": 33344,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 38878,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 384,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 176,
+          "output_tokens": 4922,
+          "cache_read_tokens": 32960,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 78.562,
+      "response": "Decision\nR is this tick's work. Ship-first preemption says a packaged, actionable candidate outranks construction, so Q's construction job must not launch, and P (awaiting_operator=true) is a human wait that neither blocks nor needs me. Ten minutes cannot fit R's 35-minute job plus close-out, but the long part runs on the worker, not in-session, and a running worker is a valid handoff. So: plan and launch R's consumer-check job now, record the handoff, stop. Do not wait for it, do not idle out the tick.\n\nSupporting evidence\n- AGENTS/OPERATIONS: packaged-and-actionable blocks new construction launches; release jobs may launch; release_reserve_eur keeps money for release work, so funding is not the blocker.\n- P: awaiting_operator means the private-to-public flip is the sole remaining step and it is the operator's single approval; leave it private and untouched.\n- Q: ready, licence-clean, no active job \u2014 but preempted by R, not blocked by any defect.\n- Brief: \"A running worker is a valid handoff: record job ID, status, expected reports and next acceptance check.\" \"Do not start a long step merely to avoid stopping\" is not violated: the in-session portion (plan+launch) is short.\n- R has no active job, so launching is not a duplicate; plan is offline and refuses cheaply if credentials or config are wrong.\n\nUncertainty and next discriminating check\nUnknown: whether R's package actually passes the full private consumer check (download, checksums, qualification re-run, baseline reproduction) in a fresh environment \u2014 exactly what the 35-minute job measures. Next session: collect the job and read the specific check fields in the result, since a job can upload every file and still carry ok:false on its own verification. Also unknown: whether launch returns before the wall clock; if interrupted, the ledger entry exists from reservation time and resume covers it.\n\nOrdered actions and stopping condition\n1. Read R's record and job ledger; confirm no active R job and that the consumer-check declaration is a release job.\n2. sh scripts/scout-factory worker plan <R job.json> \u2014 offline refusal beats a paid failure.\n3. sh scripts/scout-factory worker launch <R job.json>; note job ID, server ID, reservation.\n4. Update STATE.md and records: R launched, expected reports (consumer verification receipt), next acceptance check (collected result with each specific check ok, then destroy immediately after verified collection \u2014 a failed job is still collected and destroyed, never left billable); Q deferred by preemption, ready and next after R; P unchanged, awaiting operator flip.\n5. Commit/push only these record changes; run the documented gh api CI query for that exact commit; report pending CI as pending.\n6. Stop initiating work at the wrap-up notice (reserve ~2 minutes). Do not wait for the worker; do not launch Q; touch nothing of P's.\nStopping condition: launch either returned (handoff = running job) or was cut off (handoff = ledger entry plus \"worker resume <ID> --job-file <path>\" with identical source; never a new ID for the same attempt).\n\nOperator report\nThis tick went to R, the packaged actionable release. I planned and launched its 35-minute private consumer-check worker job; it cannot finish inside this session, so it is handed off as a running worker with job ID, expected reports and the next acceptance check recorded in STATE.md. The follow-up watcher or the next session collects it; if it passes, R is fully verified private and only the flip remains \u2014 that approval stays yours. Q (ready, clean licence) is queued behind R by ship-first preemption, not blocked. P still awaits your flip decision. Nothing was published, nothing was scored, and no figures are quoted.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "77c2d81b8b0369cb50aef02c40acf06f04e43ba779b2480ddd90ee7ac75467e7"
+    },
+    {
+      "partition": "reserved",
+      "case": "advancement-priority",
+      "arm": "revised",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-60",
+      "session_id": "20261022_233809_4c4811",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "cfd388f44d3f93ee586cb8cb5f1a0575e9690c47f1d105f64fee6d0ab53b2162",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 194,
+        "output_tokens": 6382,
+        "cache_read_tokens": 34304,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 40880,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 4,
+          "output_tokens": 11,
+          "cache_read_tokens": 512,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 190,
+          "output_tokens": 6371,
+          "cache_read_tokens": 33792,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 36.527,
+      "response": "Decision: Advance R only, but do not start its 35-minute worker job in this tick. Keep P private; do not start Q. Use the remaining time to reconcile R and leave a durable handoff.\n\nSupporting evidence: R is packaged and actionable, so release preemption applies and Q, a construction candidate, cannot launch while R remains actionable. P is packaged with `awaiting_operator: true` and no publication approval, so it is a human wait and must stay private; scheduler priority is not publication approval. R\u2019s missing private consumer check is required evidence and cannot be inferred, sampled, or reported as complete. The supplied facts say R needs 35 minutes of worker time plus close-out, which exceeds the 10 minutes remaining. A running worker is a valid handoff only if launch and ledger recording fit before close-out; the case does not establish that, so starting the job now would risk an unreconciled paid worker.\n\nUncertainty and next discriminating check: I do not know whether R\u2019s job bundle is already assembled, whether the missing check is one consumer job, or the exact artifact/report identity. Next session should inspect R\u2019s candidate record, package manifest, job declaration, and ledger to confirm the sole missing item is the private consumer check and whether a fresh attempt ID is required. Do not infer readiness from prose.\n\nOrdered actions:\n1. Read R\u2019s record and ledger; confirm packaged status, actionable state, no active job, exact artifact version, missing consumer check, expected report, and next acceptance condition. Run local checks such as `check-package.py` only if they are fast and their results are observed.\n2. Confirm P remains private with `awaiting_operator: true`; record that no approval is present and no flip/publication occurs.\n3. Record Q as preempted by R; do not launch it.\n4. Do not launch R\u2019s 35-minute job. Write the handoff in `STATE.md` and R\u2019s record: R is first work next session; required job is the private consumer check, budget ~35 minutes plus close-out; expected compact report; acceptance requires the passing qualification report for the exact artifact and the completed consumer check. Note that no worker was created.\n5. Commit/push the state-only handoff if time permits, inspect CI for that commit, and report CI as pending if not observed.\n\nStopping condition: stop at the wrap-up notice or when roughly two minutes remain, whichever comes first. No worker launch, no publication, no claim that R\u2019s check passed.\n\nOperator report: No worker or publication action this tick. P remains private pending your recorded approval. R is the release priority, but its consumer check needs about 35 minutes plus close-out, so I did not start it with 10 minutes left; it is handed off as first work next session. Q\u2019s construction remains preempted until R is resolved.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "79167b42d24219a4d19659037417b5af145d9e88fc220feaba3b6330955dee4e"
+    },
+    {
+      "partition": "reserved",
+      "case": "advancement-priority",
+      "arm": "baseline",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-61",
+      "session_id": "20261022_233850_cd17ec",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "31b3cf4666029d8dbcb1ab230bfc0cc92c473014c137780ab4f4d59e4562bac1",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 34209,
+        "output_tokens": 1281,
+        "cache_read_tokens": 2560,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 38050,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 4,
+          "output_tokens": 12,
+          "cache_read_tokens": 512,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 34205,
+          "output_tokens": 1269,
+          "cache_read_tokens": 2048,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 20.128,
+      "response": "Decision\n\nDo not launch R's 35-minute worker job, and do not start Q's construction. Spend the remaining ~10 minutes on the offline, non-billable part of advancing R, then hand off a pre-assembled, ready-to-launch release job to the next session. P is left untouched: it is awaiting the operator's flip, so it neither blocks work nor is mine to advance.\n\nSupporting evidence\n\n- R is `packaged` and actionable, so release priority applies: no construction job may launch while it exists (AGENTS.md \"Ship first\"; OPERATIONS.md \"Preemption\"). Q's budgeted construction step is therefore out of scope for this tick even though it is cheap.\n- R needs a 35-minute worker job plus close-out inside a 10-minute remaining window. Launching would leave a paid Hetzner worker with no collect/destroy, contradicting \"collect-then-delete-immediately\" and the rule that expiry may discard artifacts.\n- R's private consumer check is incomplete, so its package is not yet \"ready for review\" regardless: `dataset-release` requires the executed consumer path (download, checksum, qualification re-run, baseline) recorded in `VERIFICATION.md`. I cannot honestly mark that complete without the run.\n- P's `awaiting_operator: true` means the flip is the sole remaining step; the dashboard reports the wait, and asking again would be stalling.\n\nUncertainty and next discriminating check\n\nI do not know *which* consumer step is missing \u2014 download, `sha256sum -c`, gate re-run, or baseline reproduction \u2014 and that changes the job's shape and the 35-minute estimate. First action next tick: read `candidates/R/VERIFICATION.md` and the R job record and identify the absent step by name. If only the baseline reproduction is missing, it may be shorter than 35 minutes; if qualification must be re-run on the full artifact, the estimate stands. Do not treat \"incomplete\" as \"failed\" \u2014 an unfinished check is not evidence the dataset is unsuitable.\n\nOrdered actions (this tick)\n\n1. `python3 scripts/check-package.py release/<R-dir>` \u2014 confirm manifest/hash integrity and that no doc still claims completion. Record the exact output.\n2. Read R's `VERIFICATION.md`, `MANIFEST.json` and `qualification.json`; confirm the qualification report is `--accept`-able against the packaged bytes (`qualify_dataset.py --accept`). A stale report blocks the launch, not the handoff.\n3. Assemble the release job offline with `scripts/assemble-job.py` under a **new** attempt ID in R's `source/job.json`; run `worker plan` (offline) and confirm the reservation and `release: true`, so release-budget eligibility is proven without spending.\n4. Write the handoff into R's record and `STATE.md`: the named missing check, the assembled job path, the plan output, and the launch/collect/destroy command sequence.\n5. Run `scripts/check-candidate.py R` if the record changed.\n\nExplicitly not done: no worker launch, no Q construction, no change to P, no edit to R's accepted bytes or its tag.\n\nStopping condition\n\nStop when the plan output and handoff are written, when the wrap-up notice arrives, or if any action would require a worker launch to proceed \u2014 whichever is first. If `check-package.py` or `--accept` fails, stop there, record the failure verbatim as the blocker, and hand off the diagnosis rather than attempting fixes with no time to verify them.\n\nOperator report\n\nNo release was completed this tick. R is packaged and actionable but its remaining work is a ~35-minute worker consumer check that cannot fit in 10 minutes; launching without collect/destroy would leave billable infrastructure, so I refused it. I verified the package and prepared R's release job offline for immediate launch. Q's construction is held by release preemption, not dropped. P remains awaiting your flip; nothing else needs you. Next action: next session reads R's VERIFICATION.md for the one missing consumer step, then launches the assembled release job with `release: true`, collects, verifies, and destroys the worker.\n",
+      "response_sha256": "b138a973cfb9e7494ca4e39cae792cc6ff4f1552f261b3e9c5c7a06c7dab6c05"
+    }
+  ],
+  "ledger": {
+    "calls": 62,
+    "tokens": 2126728
+  },
+  "updated_at": "2026-10-22T23:39:18Z",
+  "provenance": {
+    "source_commit": "1eebb60f702458eb282521550c0722ccc47df265",
+    "source_path": "evals/research-prompts/results/pilot-live-21b72994-reserved.json",
+    "verification": "Request/response SHA-256, runtime/context identities, main routes, four counters and auxiliary totals independently verified by Codex."
+  }
+}

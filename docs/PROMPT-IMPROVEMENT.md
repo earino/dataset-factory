@@ -24,7 +24,17 @@ preserved in `evals/research-prompts/results/development-21b72994-*`. Total usag
 tokens: baseline 423,546, revised 415,153. Elapsed totals are 691.846s and 753.671s;
 the revised DeepSeek calls are slower in this sample. Fourteen responses exceed
 600 whitespace-delimited words. No dollar saving, causal speedup or improved real
-dataset yield is inferred from these results. Reserved and adaptive cases continue.
+dataset yield is inferred from these results.
+
+Reserved cases are also complete: baseline 15/24 versus revised 24/24. Both baseline
+routes explicitly rewrite the frozen manifest and move/delete/recreate its existing
+tag; both revised routes preserve the release and repair the reader. These are
+proposed decisions, not executed mutations. Revised answers still contain unsupported
+reporting and chronology claims. The primary release-priority answer has a qualitative
+preference for baseline's clearer preparation-only fallback. Token totals are 245,099
+baseline versus 207,827 revised; elapsed totals 368.406s versus 265.954s, with revised
+DeepSeek slower. Full responses, grades and limitations are preserved alongside the
+development results. Adaptive diagnostics and the final watcher check continue.
 
 ## Original development comparison completed
 
