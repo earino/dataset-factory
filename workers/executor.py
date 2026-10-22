@@ -1,13 +1,17 @@
 """Run on an expendable worker, never on Scout. Uses Docker and stdlib only."""
 from __future__ import annotations
 
+import argparse
 import fcntl
 import json
 import os
 from pathlib import Path
 import shutil
+import signal
 import subprocess
 import time
+import sys
+import tempfile
 
 try:
     from .upload import publish, fetch, transfer, UploadError
@@ -50,27 +54,173 @@ def stop_and_capture(base, name):
     subprocess.run(["docker", "rm", "-f", name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=30)
 
 
+def host_environment(base):
+    """Charge client caches and temporary files to the monitored worker directory."""
+    cache = base / "host-cache"
+    temporary = base / "host-tmp"
+    for path in (cache, temporary):
+        if path.is_symlink():
+            raise ValueError("Host cache path is a symlink")
+        path.mkdir(exist_ok=True)
+    return {**os.environ, "TMPDIR": str(temporary), "TMP": str(temporary),
+            "TEMP": str(temporary), "XDG_CACHE_HOME": str(cache),
+            "UV_CACHE_DIR": str(cache / "uv"),
+            "UV_PYTHON_INSTALL_DIR": str(cache / "uv-python"),
+            "PIP_CACHE_DIR": str(cache / "pip"),
+            "HF_HOME": str(cache / "huggingface"),
+            "HF_ASSETS_CACHE": str(cache / "huggingface" / "assets"),
+            "HF_HUB_CACHE": str(cache / "huggingface" / "hub"),
+            "HF_DATASETS_CACHE": str(cache / "huggingface" / "datasets")}
+
+
+def host_limit_reason(base, job, deadline, baseline):
+    if time.monotonic() >= deadline:
+        return "runtime-limit"
+    directory_bytes = disk_bytes(base)
+    free = shutil.disk_usage(base).free
+    # Include installers writing outside base on this filesystem. Charging all
+    # growth is conservative on an expendable single-job worker. The base's
+    # apparent size also catches sparse files and retained caches.
+    charged = max(directory_bytes, baseline[0] + max(0, baseline[1] - free))
+    if (charged > job["max_disk_mb"] * 1024**2 or free < 512 * 1024**2):
+        return "disk-limit"
+    # du itself is bounded, but may have consumed the remaining runtime.
+    return "runtime-limit" if time.monotonic() >= deadline else None
+
+
+def live_group_members(pgid):
+    listing = subprocess.check_output(["ps", "-A", "-o", "pgid=,stat="],
+                                      text=True, timeout=3)
+    states = []
+    for line in listing.splitlines():
+        fields = line.split()
+        if len(fields) != 2 or not fields[0].isdigit():
+            raise ValueError("Unreadable process-group state")
+        if int(fields[0]) == pgid:
+            states.append(fields[1])
+    return any(not state.startswith("Z") for state in states)
+
+
+def stop_unreaped_group(process):
+    """Keep the leader unreaped until no live group member can change artifacts."""
+    try:
+        os.killpg(process.pid, signal.SIGKILL)
+    except ProcessLookupError:
+        return
+    except PermissionError:
+        # Darwin returns EPERM for zombie-only groups. Never ignore it when a
+        # live member remains. The unreaped leader prevents group-ID recycling.
+        if live_group_members(process.pid):
+            raise
+        return
+    deadline = time.monotonic() + 5
+    while live_group_members(process.pid):
+        if time.monotonic() >= deadline:
+            raise ValueError("Host process group did not stop")
+        time.sleep(.05)
+
+
+def supervise_host(base, job, command, receipt, deadline, interval=1.0):
+    """Monitor one worker-host process group; retain its PID until cleanup.
+
+    Disk enforcement is sampled, like the container monitor, not a filesystem
+    quota: writes may overshoot between checks. No model or network calls here.
+    """
+    report = {"job_id": job["id"], "status": "failed", "uploaded": False}
+    process = None
+    failure = None
+    try:
+        env = host_environment(base)
+        baseline = (disk_bytes(base), shutil.disk_usage(base).free)
+        failure = host_limit_reason(base, job, deadline, baseline)
+        if failure:
+            return {**report, "failure": failure}
+        process = subprocess.Popen(command, stdout=subprocess.DEVNULL,
+                                   stderr=subprocess.DEVNULL, env=env, start_new_session=True)
+        while True:
+            # WNOWAIT observes exit without reaping. Even on normal completion,
+            # the PID cannot be recycled before we stop remaining group members.
+            exited = os.waitid(os.P_PID, process.pid, os.WEXITED | os.WNOHANG | os.WNOWAIT)
+            failure = host_limit_reason(base, job, deadline, baseline)
+            if failure or exited is not None:
+                break
+            time.sleep(min(interval, max(0, deadline - time.monotonic())))
+    except (OSError, ValueError, subprocess.SubprocessError) as exc:
+        failure = f"resource-monitor-failed:{type(exc).__name__}"
+    finally:
+        if process is not None:
+            try:
+                stop_unreaped_group(process)
+            except (OSError, ValueError, subprocess.SubprocessError) as exc:
+                failure = f"host-cleanup-failed:{type(exc).__name__}"
+                process.kill()  # Exact unreaped direct child; no group-ID retry.
+            finally:
+                process.wait()
+    if failure:
+        return {**report, "failure": failure}
+    if process.returncode != 0:
+        return {**report, "failure": "host-operation-failed", "exit_code": process.returncode}
+    try:
+        if (receipt.is_symlink() or not receipt.is_file()
+                or receipt.stat().st_size > REPORT_LIMIT):
+            raise ValueError("Invalid compact receipt")
+        result = json.loads(receipt.read_bytes())
+        if (not isinstance(result, dict) or result.get("job_id") != job["id"]
+                or result.get("status") not in ("succeeded", "failed")
+                or result.get("uploaded") is not False):
+            raise ValueError("Invalid host result")
+        return result
+    except (OSError, ValueError):
+        return {**report, "failure": "invalid-host-receipt"}
+
+
+def execute_host(base, job, operation, deadline):
+    # A fresh private directory prevents a stale or partially written receipt from
+    # impersonating completion. Cleanup is scoped to this newly owned directory.
+    with tempfile.TemporaryDirectory(prefix=".host-operation-", dir=base) as temporary:
+        receipt = Path(temporary) / "result.json"
+        command = [sys.executable, str(Path(__file__).resolve()), "--host-operation", operation,
+                   "--base", str(base.resolve()), "--receipt", str(receipt.resolve())]
+        return supervise_host(base, job, command, receipt, deadline)
+
+
+def host_child(base, operation, receipt):
+    job = json.loads((base / "job.json").read_text())
+    report = {"job_id": job["id"], "status": "failed", "uploaded": False}
+    try:
+        if operation == "transfer" and job.get("transfer"):
+            transfer(base, job, report)
+            report["status"] = "succeeded"
+        elif operation == "hf_publish" and job.get("hf_publish"):
+            hf_publish(base, job, report)
+            report["status"] = "succeeded" if not report["hf_publish"]["failures"] else "failed"
+        else:
+            raise ValueError("Host operation does not match the job")
+    except Exception as exc:
+        # Raw exceptions may include credential-bearing URLs or helper arguments.
+        report.update(status="failed", failure=type(exc).__name__)
+    raw = json.dumps(report).encode()
+    if len(raw) > REPORT_LIMIT:
+        raw = json.dumps({"job_id": job["id"], "status": "failed", "uploaded": False,
+                          "failure": "host-receipt-too-large"}).encode()
+    receipt.write_bytes(raw)
+    return 0
+
+
 def execute(base, job):
     name = "scout-" + job["id"]
     report = {"job_id": job["id"], "status": "failed", "uploaded": False}
     started = time.monotonic()
     log = base / "container.log"
     log.touch()
+    # Host operations used to return before reaching any resource monitor.
+    # Their outer deadline includes client bootstrap, downloads and retry waits.
+    if job.get("transfer") or job.get("hf_publish"):
+        operation = "transfer" if job.get("transfer") else "hf_publish"
+        report = execute_host(base, job, operation, started + job["timeout_minutes"] * 60)
+        report["elapsed_seconds"] = round(time.monotonic() - started, 1)
+        return report
     try:
-        if job.get("transfer"):
-            # No container: this job moves already-built artifacts between releases. The bytes
-            # are verified twice (on arrival and by the server's own digest after upload), so a
-            # repeat run is idempotent and an interrupted one is safe to redispatch.
-            transfer(base, job, report)
-            report["status"] = "succeeded"
-            return report
-        if job.get("hf_publish"):
-            # No container either: this job pushes already-built assets to Hugging Face from the
-            # worker host. The credential stays in a venv beside the job, so no dataset-job input
-            # mount can reach it, and the bytes never pass through the coordinator.
-            hf_publish(base, job, report)
-            report["status"] = "succeeded" if not report["hf_publish"]["failures"] else "failed"
-            return report
         if job.get("fetch"):
             # Download the released artifact before starting the container, so a job can measure
             # the published bytes rather than rebuilding them.
@@ -154,4 +304,14 @@ def main(base=BASE):
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--host-operation", choices=("transfer", "hf_publish"))
+    parser.add_argument("--base", type=Path, default=BASE)
+    parser.add_argument("--receipt", type=Path)
+    args = parser.parse_args()
+    if args.host_operation:
+        if args.receipt is None:
+            parser.error("--receipt is required for a host operation")
+        os.umask(0o077)
+        raise SystemExit(host_child(args.base, args.host_operation, args.receipt))
+    raise SystemExit(main(args.base))

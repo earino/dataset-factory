@@ -5764,3 +5764,19 @@ per dataset, test_sites.py green, check-package exit 0 for every release dir exc
 dropped nhs-ae-four-hour-decline (documented above), check-candidate --all exit 0, suite
 OK. tsb's published hub copy of MANIFEST.json predates hub_paths - harmless for consumers,
 refresh at the next approved small-file maintenance.
+
+## Engineering — worker host-operation limits (2026-10-22)
+
+Prepared on `hardening/host-job-limits`, stacked on the reviewed Hub integrity
+branch. Transfer and Hugging Face jobs previously returned before the executor's
+resource monitor and could exceed their declared runtime during bootstrap,
+retry sleeps or client calls. A parent supervisor now monitors the whole host
+operation, charges job-directory plus filesystem growth, stops the owned process
+group before reaping, and accepts only a bounded terminal receipt. Paid workers,
+coordinator bulk data and credentials were not used in tests. The new tests use
+actual local subprocesses and stub providers, preserving all existing tests.
+
+Next: clean-clone suite and exact-head CI, Scout source review, combined integration;
+then include the reviewed increment in the pending rollout. Do not infer a strict
+filesystem quota or host memory isolation from this sampled disk/time guard.
+No merge or deployment is authorized while the earlier no-merge boundary remains.
