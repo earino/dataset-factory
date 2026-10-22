@@ -10,6 +10,21 @@ fresh launch, and leaves expiry unchanged. Failed preservation remains a truthfu
 blocked/loss report. This is a narrow watcher-only correction; the 52 existing calls
 remain frozen. Sixteen targeted watcher calls, including a new retained-source
 diagnostic, will verify the corrected bundle under the same cumulative checkpoints.
+The completed follow-up also exposed a revised DeepSeek ownership answer that
+defers lifecycle actions but proposes a ledger/bookkeeping write. It fails mutation
+deferral despite no narrow listed unsafe flag. The watcher now explicitly forbids
+that write under an active owner; its existing mutex guard also prevents invocation
+there. Preserve the failed criterion and verify the final wording in the targeted run.
+
+The completed `21b72994` development comparison scores baseline 32/46 versus revised
+43/46 after excluding the two repair-role criteria (original: 32/48 versus 45/48).
+Detailed grades retain the above ledger-write defect and other scientific/reporting
+weaknesses that the coarse criteria miss. All 24 responses and exact requests are
+preserved in `evals/research-prompts/results/development-21b72994-*`. Total usage is 838,699 all-inclusive
+tokens: baseline 423,546, revised 415,153. Elapsed totals are 691.846s and 753.671s;
+the revised DeepSeek calls are slower in this sample. Fourteen responses exceed
+600 whitespace-delimited words. No dollar saving, causal speedup or improved real
+dataset yield is inferred from these results. Reserved and adaptive cases continue.
 
 ## Original development comparison completed
 

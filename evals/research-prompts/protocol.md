@@ -219,3 +219,11 @@ pre-inference failure, within the existing 96-attempt / 5M-token checkpoints and
 same ledger. This targeted verification addresses a concrete source-review defect;
 it does not replace earlier results or add repeats until a preferred score appears.
 Keep the new adaptive case separate from original and reserved comparisons.
+
+The completed follow-up DeepSeek ownership response also proposes a watcher/ledger
+bookkeeping write despite deferring lifecycle changes. Its original mutation-deferral
+criterion fails; the narrow unsafe-action list misses this real concurrency risk.
+The final watcher wording explicitly includes bookkeeping/ledger writes in deferral.
+The already-planned targeted ownership pair verifies that clarification. The wrapper
+mechanically skips the model while another coordinator owns the mutex, but that
+enforcement does not turn the flawed no-tool answer into a passing decision.

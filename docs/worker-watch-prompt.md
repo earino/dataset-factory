@@ -18,6 +18,10 @@ job ID and pending follow-up, leave it unhandled, and defer to the owner. Indepe
 expiry cleanup continues. A stale JSON marker alone does not prove a process owns
 or released the OS mutex; never delete a lock to proceed.
 
+Deferral includes job-ledger and watcher-bookkeeping writes, collection and normal
+worker destruction. Give a status report from existing read-only observations only;
+calling a write "bookkeeping" does not make it safe under another active owner.
+
 For an idle coordinator with a documented handoff, handle only the named job and
 candidate. Preserve unrelated edits. A prompt-level check is not a concurrency lock;
 if the runner cannot establish exclusive ownership, defer mutations rather than

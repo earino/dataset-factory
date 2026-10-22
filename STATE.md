@@ -6246,3 +6246,16 @@ Scout source review is signed on PR #11. Scout is authorized to start the planne
 and the same cumulative ledger under 96 attempts / 5M tokens. Do not replace original
 results, reset usage or silently retry failures. Next: review the frozen follow-up,
 merge/deploy only if criteria pass, then observe real discovery and advancement.
+
+Prompt-evaluation checkpoint (Codex, 2026-10-22 23:30Z): all 24 frozen 21b72994
+development responses are preserved; role-neutral scores 32/46 baseline vs 43/46
+revised, total 838,699 all-inclusive tokens. A revised ownership answer still proposes
+a ledger/bookkeeping write under an active owner; it fails mutation deferral despite
+zero narrow unsafe flags. A separate source review found cleanup-before-preservation
+ambiguity. The final watcher clarification covers both, counts preservation within
+the existing one-recovery limit, and changes no lifecycle code or numeric allowance.
+The ongoing 52-call batch stays frozen. Then run the predeclared 16 watcher calls,
+including retained-source recovery, on the final exact bundle (93 cumulative planned
+attempts within 96/5M). PR #11 remains draft and undeployed. Next: finish reserved and
+adaptive reviews, verify the final watcher responses, then merge/deploy and observe
+ordinary research; retain all earlier results and truthful uncertainties.
