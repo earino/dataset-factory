@@ -77,7 +77,7 @@ def contract(root):
     return entries
 
 
-def audit(root, home=None):
+def audit(root, home=None, project=None):
     root = Path(root).resolve()
     problems, checked = [], 0
     try:
@@ -105,7 +105,23 @@ def audit(root, home=None):
             for path in profiles.rglob('*'):
                 if path.name in external and (path / 'SKILL.md').is_file():
                     problems.append(f'deployed:skills: profile copy shadows project skill {path.name}')
+    if project is not None:
+        # Compare the live external skill procedures and code with this reviewed checkout.
+        # Uncommitted curator edits otherwise bypass a clean branch's test results.
+        live_project = Path(project).resolve()
+        for source in sorted((root / 'skills').rglob('*')):
+            if source.is_file() and source.suffix in ('.md', '.py'):
+                relative = source.relative_to(root).as_posix()
+                try:
+                    expected = digest(contained(root, relative))
+                    actual = digest(contained(live_project, relative))
+                    checked += 1
+                    if actual != expected:
+                        problems.append(f'project:{relative}: differs from reviewed checkout')
+                except (RuntimeContractError, OSError):
+                    problems.append(f'project:{relative}: missing, unsafe or oversized file')
     return {'ok': not problems, 'scope': 'source+deployed' if home is not None else 'source',
+            'project_skills_checked': project is not None,
             'checked_files': checked, 'problems': problems,
             'next_action': 'inspect differences; do not overwrite live files automatically' if problems else
                            'reviewed file copies agree; schedules, credentials and runtime behavior are separate checks'}
@@ -116,8 +132,13 @@ def main(argv=None):
     modes = parser.add_mutually_exclusive_group(required=True)
     modes.add_argument('--source-only', action='store_true')
     modes.add_argument('--home', type=Path)
+    parser.add_argument('--project', type=Path,
+                        help='live project checkout (default: <home>/dataset-factory)')
     args = parser.parse_args(argv)
-    result = audit(ROOT, args.home)
+    if args.source_only and args.project:
+        parser.error('--project requires --home')
+    project = args.project or (args.home / 'dataset-factory' if args.home else None)
+    result = audit(ROOT, args.home, project)
     print(json.dumps(result, indent=2))
     return 0 if result['ok'] else 1
 

@@ -40,6 +40,18 @@ class RuntimeAuditTests(unittest.TestCase):
         (self.source.parent/'extra.py').write_text('new code')
         self.assertFalse(checker.audit(self.root)['ok'])
 
+    def test_uncommitted_project_skill_edit_is_detected(self):
+        project = self.home/'dataset-factory'
+        skill = project/'skills/dataset-qualification/SKILL.md'
+        skill.parent.mkdir(parents=True)
+        skill.write_text('unreviewed curator edit')
+        result = checker.audit(self.root,self.home,project)
+        self.assertFalse(result['ok'])
+        self.assertTrue(result['project_skills_checked'])
+        self.assertTrue(any('project:skills/dataset-qualification/SKILL.md' in p
+                            for p in result['problems']))
+        self.assertEqual('unreviewed curator edit',skill.read_text())
+
     def test_identical_copies_pass_without_mutation(self):
         stamp = self.target.stat().st_mtime_ns
         self.assertTrue(checker.audit(self.root,self.home)['ok'])
