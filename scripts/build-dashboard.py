@@ -221,6 +221,15 @@ def collect_releases():
                     or (baseline_block.get("artifact") or {}).get("levels") or {})
         aucs = [v.get("eval_auc") for v in baseline.values()
                 if isinstance(v, dict) and isinstance(v.get("eval_auc"), (int, float))]
+        if not aucs:
+            # A flat baseline writes its single figure under result.* rather than levels.*; the
+            # page showed "—" for TSB (0.8126) and ABS (0.6219) while both numbers were in the file.
+            result_block = baseline_block.get("result") or {}
+            for key in ("train_py_eval_auc", "eval_auc", "validate_py_eval_auc"):
+                value = result_block.get(key)
+                if isinstance(value, (int, float)):
+                    aucs.append(value)
+                    break
         persistence = ((manifest.get("baseline") or {}).get("persistence_reference") or {})
         # A release may describe its persistence reference in prose (the key predates a fixed
         # schema); the dashboard reads figures, never crashes on a shape it does not expect.
