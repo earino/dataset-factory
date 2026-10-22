@@ -1,0 +1,96 @@
+{
+ "name": "eutl-installation-net-short",
+ "built_at_utc": "2026-10-22T14:14:32Z",
+ "source": {
+  "publisher": "European Commission, Directorate-General for Climate Action (DG CLIMA) - Union Registry Public Website, EUTL public extracts",
+  "landing_page": "https://union-registry-data.ec.europa.eu/report/eu-registry-data-download",
+  "mode": "http",
+  "files": 2,
+  "vintage_last_modified": "Thu, 22 Oct 2026 10:08:26 GMT (SNAPSHOT_DATE 2026-10-22; the extract refreshes daily)",
+  "bytes": 16759887,
+  "requests": 2,
+  "seconds": 10.3,
+  "requests_note": "one anonymous GET of the daily operators_yearly_activity extract (5,965,780 B / 1.0 s, sha256 1c7db552...) plus the EEA aggregate zip (10,794,107 B / 9.3 s, sha256 9005e05f...) used only for the in-build publisher cross-check; both stable tokenless URLs, no key",
+  "fetch_provenance": "worker job eutl-001 (server 171845011, cx23/hel1) fetched the publisher directly; the bytes never passed through the coordinator. The panel fetch was first measured at discovery on the coordinator (5,959,551 B compressed, 2026-10-20 snapshot) and re-measured on the worker (5,965,780 B, 2026-10-22 snapshot - the daily extract grows as live-year rows arrive)"
+ },
+ "grain": "one row per (REGISTRY_CODE, INSTALLATION_IDENTIFIER, PERIOD_YEAR) on the operators_yearly_activity extract, in-frame (label computable: both VERIFIED_EMISSIONS(t) and ALLOCATION(t) numeric) and with a numeric t-1 year",
+ "panel": {
+  "rows": 617448,
+  "keys": 23748,
+  "registries": 32,
+  "years": {"min": 2005, "max": 2030, "count": 26},
+  "excluded_mix": {"NO": 596028, "YES": 21420},
+  "registry_mix_top": {"DE": 98956, "ES": 64194, "IT": 62036, "FR": 56186, "GB": 47892, "NL": 31694, "PL": 30108}
+ },
+ "label": {
+  "definition": "net_short = 1 iff VERIFIED_EMISSIONS(t) > ALLOCATION(t); exact ties are 0 and counted",
+  "label_source_columns": ["VERIFIED_EMISSIONS(period t)", "ALLOCATION(period t)"],
+  "ties_label_zero": 4224,
+  "excluded_flag_in_frame": {"NO": 204833, "YES": 81, "label_by_excluded": {"NO": {"0": 99991, "1": 104842}, "YES": {"0": 53, "1": 28}}}
+ },
+ "splits": {
+  "train": {"rows": 141732, "positives": 64528, "positive_rate": 0.455282, "years": "2006-2019", "distinct_positive_installations": 11357},
+  "eval": {"rows": 24322, "positives": 18002, "positive_rate": 0.740153, "years": "2020-2022", "distinct_positive_installations": 7810},
+  "holdout": {"rows": 22151, "positives": 15993, "positive_rate": 0.721999, "years": "2023-2025", "distinct_positive_installations": 6283}
+ },
+ "eligibility": {
+  "insufficient_history": 16709,
+  "insufficient_history_note": "all of 2005 (no t-1 exists) plus each installation's first active year",
+  "live_year_rows": 6449,
+  "live_year_note": "2026 rows: allocation already published, verified emissions due 31 March 2027 - scorable the day the next annual compliance data lands",
+  "dropped_feature": "SURR_ALL(t-1) was probed as a surrender-history feature and dropped: missing on 10,647 of 188,205 eligible rows (measured), and a partially-defined column cannot ship"
+ },
+ "reference_baselines": {
+  "note": "stdlib rank AUC measured at construction on the written rows; rate tables estimated on train rows only. The label is persistent (P(short|short) = 0.8571, P(short|long) = 0.1759) but persistence does not win by construction: the announced-allocation margin_t alone beats the persistence margin.",
+  "eval": {
+   "calendar_only_registry_phase_auc": 0.527,
+   "identity_only_registry_auc": 0.5719,
+   "persistence_status_l1_auc": 0.8197,
+   "persistence_status_accuracy": 0.8587,
+   "persistence_margin_l1_auc": 0.8671,
+   "margin_t_single_column_auc": 0.8988
+  },
+  "holdout": {
+   "calendar_only_registry_phase_auc": 0.5708,
+   "identity_only_registry_auc": 0.5708,
+   "persistence_status_l1_auc": 0.8289,
+   "persistence_status_accuracy": 0.8686,
+   "persistence_margin_l1_auc": 0.8789,
+   "margin_t_single_column_auc": 0.8881
+  }
+ },
+ "baseline_full_model": {
+  "job": "eutl-baseline-001",
+  "runner": "the benchmark's own train.py + validate.sh, unmodified (bundled sha256 equal the benchmark's declared hashes)",
+  "eval_auc_train_py": 0.9199,
+  "eval_auc_validate_py_independent_recompute": 0.9199,
+  "gap_over_persistence_margin": 0.0532,
+  "dependencies": {"python": "3.13.17", "pandas": "2.3.3", "numpy": "2.5.4", "xgboost": "3.4.1", "scikit-learn": "1.9.1"},
+  "note": "0.9199 vs persistence 0.8671 on identical eval rows; no holdout AUC is quoted (the holdout never enters a workdir)"
+ },
+ "per_year_eval_texture": {
+  "2020": {"positive_rate": 0.6713, "persistence_margin_auc": 0.9046},
+  "2021": {"positive_rate": 0.8075, "persistence_margin_auc": 0.8269},
+  "2022": {"positive_rate": 0.7582, "persistence_margin_auc": 0.8723}
+ },
+ "known_event_fixtures": {
+  "at_installation_1_2005": "net-long: VE 41,399 < ALLOCATION 44,894 (verified in-panel)",
+  "at_installation_1_2007": "net-short: VE 51,041 > ALLOCATION 44,894 (verified in-panel)",
+  "at_installation_1_2030": "advance allocation 30,485 with no verified emissions (verified in-panel)",
+  "phase3_allocation_cut_2013": "eligible-row net-short rate 0.2472 (2012) -> 0.5783 (2013), gap 0.3311 >= 0.25 (verified in-build)"
+ },
+ "publisher_crosscheck": {
+  "method": "sum the shipped panel by registry/year/activity over exactly EEA activity codes {10, 20-99} (the EEA sheet carries per-activity detail AND aggregate rows) and compare against the EEA's own EU ETS summary product",
+  "DE_2022_verified_emissions": {"eea": 361145695, "panel": 361145695, "rel_diff": 0.0},
+  "DE_2023_verified_emissions": {"eea": 296989209, "panel": 296989213, "rel_diff": 1.3e-08},
+  "DE_2022_free_allocation": {"eea": 129134142, "panel": 129078621, "rel_diff": 4.3e-04},
+  "DE_2023_free_allocation": {"eea": 127958123, "panel": 127923163, "rel_diff": 2.7e-04}
+ },
+ "timing": {
+  "prediction_instant": "30 April of compliance year t - the surrender deadline closing year t-1's compliance cycle",
+  "publication_lag_observations": "verified emissions for year t-1 are reported by 31 March of year t and settled at the instant; surrendered allowances are due by 30 April; year-t free allocation is fixed in advance by the phase-4 national implementation measures (the extract carries allocation rows through 2030, measured)",
+  "no_early_target_knowledge": "year-t verified emissions are reported by 31 March t+1 and are absent from the registry at the instant (measured: no numeric verified emissions for years after 2025 in the daily extract)",
+  "vintage_caveat": "features are current-snapshot values: the registry can correct entries after the fact and only the current daily extract is available, so the timing claim is stated as current-vintage with the cutoff a documented assumption"
+ },
+ "phase_drift_note": "the net-short base rate rises with the ETS phase (45.53% train -> 74.02% eval -> 72.20% holdout) because the free-allocation share fell while the cap declined; reported per split and per year, not smoothed"
+}

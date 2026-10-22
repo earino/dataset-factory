@@ -1,0 +1,236 @@
+{
+ "name": "eutl-installation-net-short",
+ "task": {
+  "question": "At the close of compliance year t-1's surrender cycle (30 April of year t), will a stationary EU ETS installation's verified emissions for year t exceed the free allocation it holds for year t (a net-short year), given its verified-emissions and free-allocation history through t-1, its already-published year-t allocation, its registry and its identifier?",
+  "prediction_time": "30 April of compliance year t, the surrender deadline that closes year t-1's compliance cycle: by then the installation's verified emissions for t-1 (reported by 31 March) and its surrendered allowances for t-1 are settled in the Union Registry, and its year-t free allocation is already fixed and published (the extract carries allocation rows through 2030, measured). Year t's verified emissions are reported by 31 March t+1 and are absent from the registry at the instant (measured: no numeric verified emissions for years after 2025 in the daily extract). The extract refreshes daily, so a monthly refresh of this task is honest."
+ },
+ "target": "net_short",
+ "positive_label": 1,
+ "time_column": "period_year",
+ "event_key_column": "installation_key",
+ "features": [
+  "registry_code",
+  "period_year",
+  "ve_l1",
+  "alloc_l1",
+  "alloc_t",
+  "alloc_change",
+  "margin_l1",
+  "margin_t",
+  "net_short_l1",
+  "age_years"
+ ],
+ "features_documented_at": "prediction_time",
+ "feature_documentation": "every shipped quantity is a Union Registry operators_yearly activity value (column semantics documented on the Union Registry Public Website data-download page, fetched by this build): VERIFIED_EMISSIONS and ALLOCATION are in tonnes CO2-equivalent (1 allowance = 1 tCO2e). ve_l1/alloc_l1 read year t-1; alloc_t reads the year-t free allocation fixed in advance by the phase-4 national implementation measures; margin/difference columns are derived in build.py's module docstring",
+ "carry_columns": [
+  "installation_key"
+ ],
+ "id_columns": [
+  "row_id"
+ ],
+ "high_cardinality_columns": [
+  "row_id",
+  "installation_key"
+ ],
+ "label_source_columns": [
+  "VERIFIED_EMISSIONS(period t)",
+  "ALLOCATION(period t)"
+ ],
+ "post_hoc_columns": [
+  "VERIFIED_EMISSIONS(period t)",
+  "CH_VERIFIED_EMISSIONS(period t)",
+  "SURR_ALL(period t)",
+  "EXCLUDED(period t)",
+  "SNAPSHOT_DATE"
+ ],
+ "measurements": [
+  {
+   "column": "registry_code",
+   "unit": "Union Registry country code (EU Member State, EEA-EFTA member or XI = Northern Ireland electricity)",
+   "frame": "the installation's registry (country) identity; 32 registries measured on the 2026-10-22 snapshot"
+  },
+  {
+   "column": "period_year",
+   "unit": "calendar year (integer)",
+   "frame": "compliance year t, the year whose net-short status is predicted; the split time column"
+  },
+  {
+   "column": "ve_l1",
+   "unit": "verified emissions, tonnes CO2-equivalent",
+   "frame": "VERIFIED_EMISSIONS of year t-1, reported to the registry by 31 March of year t and settled at the instant; current-snapshot vintage (the registry can correct entries after the fact; only the current daily extract is available, so this is stated as current-vintage with the cutoff a documented assumption)"
+  },
+  {
+   "column": "alloc_l1",
+   "unit": "free allocation, allowances (1 allowance = 1 tCO2e)",
+   "frame": "ALLOCATION of year t-1, as recorded in the registry at the instant"
+  },
+  {
+   "column": "alloc_t",
+   "unit": "free allocation, allowances",
+   "frame": "ALLOCATION of year t, fixed in advance by the phase-4 national implementation measures and published before the instant (measured: the extract carries allocation rows through 2030); one side of the label comparison but fully known at the instant and does not determine the label on its own"
+  },
+  {
+   "column": "alloc_change",
+   "unit": "allowances (difference)",
+   "frame": "alloc_t - alloc_l1, the announced allocation change between the last settled year and the target year"
+  },
+  {
+   "column": "margin_l1",
+   "unit": "allowances (net position)",
+   "frame": "ve_l1 - alloc_l1, the installation's net position at t-1; the persistence analogue the task must beat"
+  },
+  {
+   "column": "margin_t",
+   "unit": "allowances (net position)",
+   "frame": "ve_l1 - alloc_t, last verified emissions against the announced year-t allocation; the natural one-line solver rule"
+  },
+  {
+   "column": "net_short_l1",
+   "unit": "binary indicator",
+   "frame": "1 iff ve_l1 > alloc_l1, the status persistence rule (measured P(short t | short t-1) = 0.857, P(short t | long t-1) = 0.176 on eligible rows)"
+  },
+  {
+   "column": "age_years",
+   "unit": "years",
+   "frame": "(t-1) minus the first year with numeric verified emissions in the extract; installations operating before 2005 have the age understated by the 2005 left edge - a documented left-truncation property"
+  },
+  {
+   "column": "installation_key",
+   "unit": "composite identifier REGISTRY_CODE@INSTALLATION_IDENTIFIER",
+   "frame": "the installation identity across years; the event key because an installation's net-short status is autocorrelated year to year"
+  },
+  {
+   "column": "row_id",
+   "unit": "composite identifier registry@installation@year",
+   "frame": "unique per row; installations recur across split windows by construction of a panel - a declared property, not split leakage (the composite id is unique across all splits)"
+  },
+  {
+   "column": "net_short",
+   "unit": "binary indicator",
+   "frame": "1 iff VERIFIED_EMISSIONS(t) > ALLOCATION(t); exact ties are 0 and counted (4,224 measured); both source values are excluded from the shipped columns"
+  }
+ ],
+ "known_event": {
+  "name": "record sample rows and the phase-3 allocation cut",
+  "expected": "(AT, installation 1, 2005) is net-long, (2007) is net-short, (2030) carries advance allocation with no emissions; the eligible-row net-short rate jumps from 2012 to 2013 by at least 0.25",
+  "source": "Union Registry extract; candidate record sample_rows / discovery measurements, verified in-panel at discovery 2026-10-20/21",
+  "measured": {
+   "at_installation_1_2005": {
+    "expected": "net-long: VE 41,399 < ALLOCATION 44,894",
+    "measured": [
+     41399.0,
+     44894.0,
+     "NO"
+    ],
+    "ok": true
+   },
+   "at_installation_1_2007": {
+    "expected": "net-short: VE 51,041 > ALLOCATION 44,894",
+    "measured": [
+     51041.0,
+     44894.0,
+     "NO"
+    ],
+    "ok": true
+   },
+   "at_installation_1_2030": {
+    "expected": "advance allocation 30,485 with no verified emissions",
+    "measured": [
+     null,
+     30485.0,
+     "NO"
+    ],
+    "ok": true
+   },
+   "phase3_allocation_cut_2013": {
+    "expected": "eligible-row net-short rate jumps by at least 0.25 (measured gap 0.331 at discovery)",
+    "rate_2012": 0.24717948717948718,
+    "rate_2013": 0.5782540745702166,
+    "gap": 0.3310745873907294,
+    "ok": true
+   }
+  }
+ },
+ "timing": {
+  "prediction_instant": {
+   "kind": "publication",
+   "period": "Y",
+   "days_after_period_end": 120,
+   "citation": "Union Registry compliance calendar: verified emissions for year t-1 are reported by 31 March (Monitoring and Reporting Regulation (EU) 2018/2066 Art. 7) and allowances surrendered by 30 April (Directive 2003/87/EC Art. 12(3)) - 120 days after the t-1 period end. The instant is the close of year t-1's compliance cycle, when every shipped t-1 feature is settled in the registry and the year-t allocation is in force. The extract is an administrative record refreshed daily (SNAPSHOT_DATE 2026-10-22 measured; HTTP Last-Modified 2026-10-22 measured), so no separate statistical-release lag exists to observe; the statutory deadlines are the publisher's own calendar."
+  },
+  "features": {
+   "period": "Y",
+   "published_days_after_period_end": 120,
+   "source_kind": "administrative_record"
+  },
+  "row_selection": {
+   "latest_period_used": "t-1",
+   "fields": [
+    "REGISTRY_CODE",
+    "INSTALLATION_IDENTIFIER",
+    "PERIOD_YEAR"
+   ],
+   "basis": "rows are (installation, year t) pairs whose label inputs VERIFIED_EMISSIONS(t) and ALLOCATION(t) are both numeric; a row without them is out of frame (counted per year in the frame mix, never silently dropped) - its own outcome is unobserved, and no other year's data affects membership. The latest period any feature reads is t-1 (ve_l1, alloc_l1) plus the pre-announced year-t allocation."
+  },
+  "observations": []
+ },
+ "split_windows": {
+  "train": {
+   "start": "2006",
+   "end": "2020"
+  },
+  "eval": {
+   "start": "2020",
+   "end": "2023"
+  },
+  "holdout": {
+   "start": "2023",
+   "end": "2026"
+  }
+ },
+ "split_boundaries": {
+  "train": "compliance years 2006 .. 2019",
+  "eval": "2020 .. 2022",
+  "holdout": "2023 .. 2025",
+  "excluded": "2005 (no t-1 history in the extract: 16709 installation-years insufficient_history, counted); 2026+ are live prediction years (6449 rows measured, scorable when verified emissions are reported)"
+ },
+ "expected_duplicate_ids": 0,
+ "id_columns_are_entity_keys": true,
+ "id_columns_note": "row_id is registry@installation@year, unique by construction; no identifier repeats inside a split or spans two. Installations recur across windows (a panel); that is a declared source property, and the composite row id keeps the identity checks meaningful.",
+ "positive_events": {
+  "train": {
+   "positives": 64528,
+   "distinct_events": 11347
+  },
+  "eval": {
+   "positives": 18002,
+   "distinct_events": 7802
+  },
+  "holdout": {
+   "positives": 15993,
+   "distinct_events": 6278
+  }
+ },
+ "positive_events_note": "an event is one distinct installation carrying at least one net-short year in the window (the declared event key; the gate counts distinct 10-character prefixes of the key among positives, which merges long identifiers - both counts are recorded in summary.json). Positives also share year-level regime effects (the phase drift), documented as the per-year prevalence drift in the candidate record.",
+ "splits": {
+  "train": "public/train.csv",
+  "eval": "public/eval.csv",
+  "holdout": "private/holdout.csv"
+ },
+ "built_at_utc": "2026-10-22T14:14:32Z",
+ "shipped_columns": [
+  "row_id",
+  "registry_code",
+  "period_year",
+  "ve_l1",
+  "alloc_l1",
+  "alloc_t",
+  "alloc_change",
+  "margin_l1",
+  "margin_t",
+  "net_short_l1",
+  "age_years",
+  "installation_key",
+  "net_short"
+ ]
+}
