@@ -725,13 +725,20 @@ failed and includes stdout/stderr, so these failures will now alert instead of
 appearing completed. The session JSONL distinguishes holds from completed work.
 
 The agent starts in its own process group and inherits the mutex descriptor.
-The wrapper stops that group when the agent exits, times out, or the wrapper
-unwinds on an exception; it never targets the scheduler group or remote workers.
+The wrapper stops that group on timeout or an exception while the child remains
+unreaped; it never signals a group after normal completion has reaped its leader.
+That prevents a recycled PID from targeting an unrelated group. A `killpg(pid, 0)`
+probe would not close that race. Normal session completion relies on Hermes to
+finish its tools; this wrapper does not kill a recycled group to chase them.
 A direct child retaining the inherited descriptor continues to exclude another
 wrapper if its parent is killed. This is POSIX process supervision, not a sandbox
 for intentionally detached descendants or a guarantee that every Hermes version
-retains arbitrary inherited descriptors. Verify the deployed runtime before
-claiming orphan protection beyond the tested local exec stub. A hard-killed
+retains arbitrary inherited descriptors. Scout's installed-source review confirms
+that the deployed one-shot CLI runs in-process, does not sweep descriptors, and
+closes the inherited descriptor only at process exit:
+https://github.com/earino/dataset-factory/pull/7#issuecomment-6348898506 . This is
+source evidence for that image and command, not a runtime fault-injection test;
+recheck if the launch path changes to a TUI or spawned backend. A hard-killed
 wrapper cannot itself clean up descendants; investigate any surviving process
 rather than deleting the mutex or launching a replacement blindly.
 
@@ -740,3 +747,12 @@ the existing cadence, invocation flags and budget limits. `--dry-run` and idle
 `--if-work` start no agent and write no JSON session marker; a dry run may create
 the persistent mutex file. Test subprocesses use local stubs, never live Hermes,
 paid inference, worker launches, or the production ledger.
+
+For a stuck orphan, inspect the actual process table, command line, parent/group
+identity and job ledger. A JSON PID or old lock timestamp alone is insufficient.
+After confirming the surviving process belongs to this research session, arrange
+an orderly stop of that exact process and verify it is gone before another tick.
+Do not delete the mutex, kill a PID based only on a stale file, or interrupt remote
+workers merely to unblock admission. A forced stop loses in-progress agent work;
+record and reconcile that work before resuming. The supported agent run budget
+normally bounds an orphan, but a wedged runtime may require this intervention.

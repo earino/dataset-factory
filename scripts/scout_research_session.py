@@ -238,12 +238,14 @@ def run_agent(command, timeout, lock_fd):
         output, error = process.communicate(timeout=timeout)
         return subprocess.CompletedProcess(command, process.returncode, output, error)
     finally:
-        # Hermes may leave tool children after exiting or being interrupted. They
-        # belong to this new process group, never the scheduler or an SSH worker.
-        try:
-            os.killpg(process.pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
+        # Signal only while this child has not been reaped. Its PID then cannot
+        # have been recycled as an unrelated process-group ID. communicate()
+        # reaps on normal completion; killpg(..., 0) after that would still race.
+        if process.returncode is None:
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
         process.wait()
         process.stdout.close()
         process.stderr.close()

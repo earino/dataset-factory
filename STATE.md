@@ -5738,3 +5738,13 @@ per dataset, test_sites.py green, check-package exit 0 for every release dir exc
 dropped nhs-ae-four-hour-decline (documented above), check-candidate --all exit 0, suite
 OK. tsb's published hub copy of MANIFEST.json predates hub_paths - harmless for consumers,
 refresh at the next approved small-file maintenance.
+
+
+### Session-admission source review follow-up
+
+Scout verified the installed one-shot Hermes path retains the inherited admission
+fd until process exit (PR #7 source-review comment). Corrected the process-group
+cleanup after that review: once normal completion reaps the child, its old group
+ID may be recycled, so the wrapper must not signal it. Timeout cleanup signals
+only while the leader remains unreaped. A new real-process regression checks
+normal completion sends no group signal. No live fault injection or deployment.

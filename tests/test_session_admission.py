@@ -245,6 +245,17 @@ class ProcessAdmissionTests(unittest.TestCase):
         self.assertIn('admission lock', (self.root / 'state/log').read_text())
         (self.root / 'agent-release').touch()
 
+    def test_completed_agent_does_not_signal_a_recyclable_group_id(self):
+        script = self.root / 'complete.py'
+        script.write_text('print("finished")\n')
+        with patch.object(wrapper, 'FACTORY_DIR', self.root / 'state'):
+            with wrapper.admission_lock() as fd:
+                with patch.object(wrapper.os, 'killpg') as kill:
+                    result = wrapper.run_agent([sys.executable, str(script)], 5, fd)
+        self.assertEqual(0, result.returncode)
+        self.assertEqual('finished\n', result.stdout)
+        kill.assert_not_called()
+
     def test_outer_timeout_terminates_agent_process_group(self):
         script = self.root / 'hang.py'
         script.write_text('import time\ntime.sleep(60)\n')
