@@ -1,8 +1,29 @@
 # Current state
 
-Updated: 2026-10-22 02:22Z (worker watcher closed both failed TSB construction attempts; the live research
-session resolved the measured-panel-start decision - band re-pinned to [2014, 2018], measured start 2016 -
-and tsb-003 is running with the corrected build).
+Updated: 2026-10-22 02:25Z (tsb-003 cleared the re-pinned panel-start guard and measured the full-panel splits
+- train 7,925 / eval 3,831 / holdout 1,976 - then exited 2 on 5 corrupt source coordinates (4 occurrences,
+Gulf-of-Guinea lat/longs). Recorded; the live construction session owns the coordinate fix and tsb-004.)
+
+## 2026-10-22 - tsb-003: past the panel-start guard, first full-panel splits measured; exited 2 on 5 corrupt source coordinates
+
+**The re-pinned band worked, and the build reached the split stage on full data for the first time.**
+tsb-003 (server 171729523, release 420242998, 28.5 s) measured the panel start at 2016-01-01 - inside the
+re-pinned [2014, 2018] band - then computed **train 7,925 / eval 3,831 / holdout 1,976** (pre-window 56,865,
+post-window 109; 7 non-identical OccNo collisions handled, 0 empty OccNo; totals reconcile with the 70,706
+parsed occurrences). It then failed a new guard: 5 coordinate values on 4 occurrences (R21V0255, R21V0233,
+R21Q0053, R21V0160) sit outside the asserted Canadian envelope - lat 4.9033/4.8598, lon -12.2598/-12.2150
+(east-positive) is the Gulf of Guinea. The x10^4 integer frame and West->east conversion validate the other
+~70k rows, so these are corrupt source values, not a frame-conversion defect; the guard that fired exists
+precisely for this failure class. No artifact, no gate run.
+
+**Close-out.** Reports fetched to `.factory/tsb-003/reports/` (diagnostics.json 5,263 B, container.log
+3,835 B, manifest.json 2,699 B, source.tar 153,600 B); worker destroyed by this watcher after collection;
+the attempt, the split measurement and the coordinate evidence are in the candidate's record.json
+(jobs[], measurements.panel_split_and_coordinate_guard_2026_10_22, next_action). The coordinate fix
+(missing-value handling with a recorded count, or repair from source evidence) and the tsb-004 relaunch
+belong to the live construction session, which was mid-loop on this candidate when this was written.
+
+
 
 ## 2026-10-22 - tsb-001 and tsb-002 both exited 2 on the measured-panel-start guard; the full panel measures 2016; the session re-pinned the band and tsb-003 is running
 
