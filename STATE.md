@@ -5995,3 +5995,19 @@ predeclared cases in evals/research-prompts within 2M tokens and 48 main invocat
 including auxiliary usage in spend, then revise, clean-clone checks, exact-commit CI,
 reviewed deployment and ordinary-run observation. Record actual responses and
 uncertainties; do not claim improved dataset yield from instruction edits alone.
+
+Prompt-evaluation checkpoint (Codex, 2026-10-22): PR #11 remains draft and undeployed.
+The sequential helper uses the existing research mutex/gate, no tools, a neutral
+fixture directory and a single strict ledger. Scout's installed-source review caught
+cached tokens missing from the experiment total before any inference ran; the helper
+now counts input/output/cache read/cache write plus auxiliary work. Local Python 3.13
+suite: 585 tests in 6.605s, OK (six existing skips). On-demand profile references are
+also aligned with evidence-based discovery and immutable package versions.
+
+Next action is explicit: await Eduardo's pending budget-definition answer. The existing
+40M weekly gate counts uncached input plus output; Scout measured 8,932,464 of those
+versus 370,352,432 including cache in the checked seven-day window. Dollar price is
+unknown. Keep the evaluation pilot held and existing production configuration unchanged
+pending the answer; then give Scout the reviewed exact commit and run only the first
+baseline/revised pair before authorizing the rest. No evaluation calls have run, and
+no improved research outcome or deployment is claimed.

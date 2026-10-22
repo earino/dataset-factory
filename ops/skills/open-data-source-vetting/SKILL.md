@@ -40,9 +40,11 @@ diagnostics to the collected output, so a failure preserves evidence instead of 
 it recorded, so re-verify the report and the file digests together before scoring or accepting
 anything, and refuse a report that failed, is stale, or came from a different checker version.
 
-## Discovery needs a measured bench, not a quota alone
+## Discovery needs useful decisions and measured coverage
 
-A recurring discovery slot decays in two ways, and a count-based quota only fixes the first.
+A recurring discovery slot can drift into other work or repeatedly investigate the easiest
+sources. Separate its purpose and measure coverage; a fixed verdict quota can reward cheap
+rejections. Prefer probes that resolve important uncertainty in a promising task.
 
 - **Separate discovery from advancement.** One brief per mode, one job per mode, and a sentence in
 discovery's brief that explicitly forbids building, qualifying, packaging or publishing any

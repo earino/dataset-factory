@@ -33,15 +33,17 @@ class PromptEvalAccountingTests(unittest.TestCase):
         con.executescript('CREATE TABLE sessions(id TEXT, source TEXT, tool_names TEXT);'
                           'CREATE TABLE messages(session_id TEXT, role TEXT);'
                           'CREATE TABLE system_prompts(hash TEXT, prompt TEXT);'
-                          'CREATE TABLE session_model_usage(session_id TEXT, task TEXT, api_call_count INT, input_tokens INT, output_tokens INT);')
+                          'CREATE TABLE session_model_usage(session_id TEXT, task TEXT, api_call_count INT, input_tokens INT, output_tokens INT, cache_read_tokens INT, cache_write_tokens INT);')
         con.execute('INSERT INTO sessions VALUES (?,?,?)',('case','scout-research',pin))
-        con.executemany('INSERT INTO session_model_usage VALUES (?,?,?,?,?)',
-                        [('case','',1,1000,200),('case','title_generation',1,100,20)])
+        con.executemany('INSERT INTO session_model_usage VALUES (?,?,?,?,?,?,?)',
+                        [('case','',1,1000,200,5000,200),('case','title_generation',1,100,20,50,0)])
         con.commit(); con.close(); return path
 
     def test_auxiliary_tokens_count_and_unrecorded_tools_stay_unrecorded(self):
         result=eval_run.measured_session(self.database(),'case')
-        self.assertEqual(1320,result['tokens'])
+        self.assertEqual(6570,result['tokens'])
+        self.assertEqual(5050,result['cache_read_tokens'])
+        self.assertEqual(200,result['cache_write_tokens'])
         self.assertEqual(2,result['calls'])
         self.assertEqual('unrecorded',result['recorded_tool_pin'])
 

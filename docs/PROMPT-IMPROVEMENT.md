@@ -79,3 +79,21 @@ real process contention and verify budget holds, silent idle ticks and failure p
 
 Deployment, exact test output, model results and live observations will be appended after
 verification. No improved dataset yield, speed or cost is claimed from a prompt rewrite alone.
+
+### Pre-inference review corrections
+
+Scout independently checked the isolated checkout and installed Hermes interfaces.
+The experiment runner was corrected before any model call: canonical total tokens
+include input, output, cache reads and cache writes; a two-field sum disagrees with
+Hermes's usage file. The experiment now charges all four fields, including auxiliary
+usage, with a breakdown. The standing weekly gate's different two-field definition
+was identified and presented to Eduardo for clarification before inference proceeds.
+[Source evidence](https://github.com/earino/dataset-factory/pull/11#issuecomment-6351527845)
+and [seven-day totals](https://github.com/earino/dataset-factory/pull/11#issuecomment-6351589324).
+Cached-token totals do not establish dollar spend; pricing remains unknown.
+
+A further scan found residual tag-movement advice and quota instructions in on-demand
+profile references. Those are aligned with frozen package versions and evidence-based
+decisions; the original captured bytes remain in history. Profile source hashes are
+updated for explicit deployment review. These references are source-reviewed, not
+silently included in the no-tool experiment's eager instruction bundle.

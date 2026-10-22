@@ -85,17 +85,19 @@ def measured_session(db, sid):
             raise ValueError('tool definitions were present')
         if con.execute("select count(*) from messages where session_id=? and role='tool'",(sid,)).fetchone()[0]:
             raise ValueError('tool execution was recorded')
-        rows = con.execute('select task,api_call_count,input_tokens,output_tokens from session_model_usage where session_id=?',(sid,)).fetchall()
+        rows = con.execute('select task,api_call_count,input_tokens,output_tokens,cache_read_tokens,cache_write_tokens from session_model_usage where session_id=?',(sid,)).fetchall()
         if not rows:
             raise ValueError('missing model usage')
-        totals={'calls':0,'input_tokens':0,'output_tokens':0,'tasks':[],
+        totals={'calls':0,'input_tokens':0,'output_tokens':0,'cache_read_tokens':0,'cache_write_tokens':0,'tasks':[],
                 'recorded_tool_pin':'unrecorded' if pin is None else 'verified_empty'}
-        for task,calls,inputs,outputs in rows:
-            if any(type(n) is not int or n < 0 for n in (calls,inputs,outputs)):
+        for task,calls,inputs,outputs,cache_read,cache_write in rows:
+            if any(type(n) is not int or n < 0 for n in (calls,inputs,outputs,cache_read,cache_write)):
                 raise ValueError('invalid model usage')
             totals['calls']+=calls; totals['input_tokens']+=inputs; totals['output_tokens']+=outputs
-            totals['tasks'].append({'task':task,'calls':calls,'input_tokens':inputs,'output_tokens':outputs})
-        totals['tokens']=totals['input_tokens']+totals['output_tokens']
+            totals['cache_read_tokens']+=cache_read; totals['cache_write_tokens']+=cache_write
+            totals['tasks'].append({'task':task,'calls':calls,'input_tokens':inputs,'output_tokens':outputs,
+                                    'cache_read_tokens':cache_read,'cache_write_tokens':cache_write})
+        totals['tokens']=sum(totals[k] for k in ('input_tokens','output_tokens','cache_read_tokens','cache_write_tokens'))
         if totals['tokens'] <= 0:
             raise ValueError('no measured tokens')
         return totals

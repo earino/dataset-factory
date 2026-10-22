@@ -194,7 +194,7 @@ Wiring, including the change-detector source and the local-result-first order:
 
 A brief that says "advance one step" will pick the nearest step every time, so a routine can run
 green for weeks while one of its modes silently stops. Splitting modes into separate briefs and
-jobs, making the quota countable, and reporting the mode mix:
+jobs, recording decision quality and coverage, and reporting the mode mix:
 `references/routine-cadence-design.md`.
 
 ## When a scheduled run produces nothing: is it us or the provider?
@@ -342,7 +342,7 @@ part of the scheduled path and needs the same evidence as the rest of it.
 ## Related
 
 - `references/routine-cadence-design.md` - keeping a recurring routine on purpose: symptoms of a
-  single-brief drift, per-mode briefs and jobs, countable quotas, and how to verify the mix changed. - a worker, container or VM that
+  single-brief drift, per-mode briefs and jobs, evidence-based decisions, and how to verify the mix changed. - a worker, container or VM that
 exists to run one job and must be proven gone afterwards - is covered by
 `ephemeral-worker-lifecycle`.
 

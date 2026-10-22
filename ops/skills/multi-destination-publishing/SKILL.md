@@ -348,14 +348,11 @@ data" or a dash weeks later, and the artifact is fine the whole time.
   with the manifest entry describing it** - the tools that own that record recompute it, and until
   they do, the next run refuses with "the README already disagrees with its manifest". Build the tree
   and the commit together rather than pushing the document alone.
-- **A documents-only licence change still has to move every pin, and the refusal reads like a licence
-  dispute.** A downstream publisher that reads the manifest **at the pinned tag** compares terms
-  there, not in the working tree, so after editing the licence notice and the manifest it refuses
-  with "pinned manifest licence terms differ" while both current copies are correct. Move the tag
-  onto the documentation commit on **every** destination - a registry tag and a git tag are separate
-  refs, and a site builder may check both - read each tag back, then re-run the planner and expect
-  the plan digest to be unchanged, because only documents moved. Read that message as a stale-pin
-  signal before reading it as a licensing problem.
+- **A documents-only licence change is a new package version when terms are pinned.**
+  A downstream consumer reads the manifest at the existing tag, not the working tree. If
+  terms differ, preserve the old tag and inspect both records. Prepare a new reviewed version
+  for changed package bytes; never move each destination's pin to suppress the refusal. Re-read
+  every new pin and review the resulting plan. Document changes can change its digest too.
 - **Changing the licence in the manifest does not change a card whose frontmatter is a literal.**
   `license:` and `license_name:` usually live in a hand-written card template, so the manifest, the
   licence file and the notice can all say "no licence asserted" while the destination still
