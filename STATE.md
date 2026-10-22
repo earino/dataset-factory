@@ -1,9 +1,38 @@
 # Current state
 
-Updated: 2026-10-22 22:35Z (watcher close-out: wb-001 green - wb-ieg-project-outcome qualified,
-gate 38/38 on the full artifact, coverage reconciled against discovery; the runner-contract
-baseline job wb-baseline-001 is running on worker 171927514 and will be collected by its own
-watch tick.)
+Updated: 2026-10-22 22:47Z (watcher close-out: wb-baseline-001 green and closed out - the nine
+small report assets of staging 421265626 fetched and sha256-verified, eval AUC 0.5879 confirmed
+from the worker's own logs; the triad and the pre-packaging decision point were recorded by the
+advancement tick (d77213d6); next action is the bounded holdout-leg scoring job.)
+
+## 2026-10-22 - wb-baseline-001 close-out (watcher): runner-contract baseline green; every recorded number verified against the fetched reports
+
+wb-baseline-001 (worker 171927514, 66.9 s, exit 0, staging release 421265626) is closed out. The
+advancement tick had already recorded the triad and the decision point (commit d77213d6,
+"Advancement" entry at the bottom) from the collected result; this watcher run fetched the
+release's nine small report assets into .factory/wb-baseline-001/reports/ - manifest.json,
+accept.log, baseline_result.json, dependency-versions.txt, materialize.log, pip-install.log,
+train.log, validate.log, container.log, source.tar (163 KiB total; no bulk CSV exists in this
+release, and the private holdout never left staging) - every file sha256-verified against the
+release manifest. The fetched logs confirm the recorded result end to end: the gate re-ACCEPTed
+the fetched artifact before any scoring ("ACCEPTED: /data/extract matches the qualified artifact
+b8345bcb5769e422", the qualified version), train.py eval AUC 0.5879, validate.py independent
+recompute 0.5879, "[validate] CONTRACT OK", runner files hash-identical to the benchmark's
+declared digests (python 3.13.17 / pandas 2.3.3 / numpy 2.5.4 / xgboost 3.4.1 / scikit-learn
+1.9.1), and materialize.log shows the private holdout was NOT copied into the runner workdir.
+baseline_result.json's rows and positive rates (9,598 / 1,479 / 1,097; 0.717962 / 0.793103 /
+0.806746) equal record.json's construction_output splits exactly.
+
+The decisive finding stands as recorded: the contract model (0.5879 eval AUC) trails the
+one-line country-identity rule (0.6003 eval) - a qualification defect, so no headroom claim is
+quotable from the model number; the candidate is at the decision point, not at packaging.
+Ledger: collect reconciled worker 171927514 as provider-confirmed deleted (deleted_at re-stamped
+22:43:01Z at reconcile; the actual destruction was 22:33:17Z, which is what record.json carries),
+and jobs/wb-baseline-001.json is committed with this close-out. Next action unchanged: the
+bounded holdout-leg scoring job (contract model AND identity/calendar rules on the private
+holdout rows of the accepted artifact, same fitted artifacts, no retraining choices, re-ACCEPT
+before scoring), then either record the benchmark claim and package, or record the negative
+result and drop.
 
 ## 2026-10-22 - wb-001 green (watcher close-out): wb-ieg-project-outcome QUALIFIED - gate 38/38 on the full artifact; baseline job wb-baseline-001 now running
 
