@@ -25,7 +25,7 @@ PREFIX = ".dataset-site"
 
 
 def prepare(package, editorial, config, out):
-    problems, _ = runpy.run_path(str(ROOT / "scripts/check-package.py"))["check_package"](package)
+    problems, _ = runpy.run_path(str(ROOT / "scripts/check-package.py"))["check_package"](package, external_assets=True)
     require(not problems, "Package check failed: " + "; ".join(problems))
     record = project(package, editorial, config)
     renderer = (ROOT / "sites/runtime.py").read_text()

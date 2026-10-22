@@ -5,7 +5,7 @@ row-level gate remains the only acceptance check for a constructed artifact.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime
 import hashlib
 import json
@@ -382,6 +382,21 @@ def from_manifest(data, *, path="<manifest>", destinations=None, split_sources=(
         problem("licenses", "missing licence declarations")
         terms = {}
     dest = normalise_destinations(destinations or {}, str(Path(path).with_name("DESTINATIONS.json")))
+    # Some historical Hub verification records name logical artifact paths. Translate only
+    # paths explicitly present in this manifest's asset map; remote checks still hash the bytes.
+    if "huggingface" in dest:
+        assets = _object(data.get("assets"), path, "assets")
+        hub_paths = _object(data.get("hub_paths"), path, "hub_paths")
+        verified = []
+        for logical in dest["huggingface"].files_verified:
+            asset = assets.get(logical)
+            if isinstance(asset, dict) and asset.get("asset_name"):
+                target = hub_paths.get(logical) or (
+                    "data/" + asset["asset_name"] if logical.endswith(".csv") else asset["asset_name"])
+                verified.append(target)
+            else:
+                verified.append(logical)
+        dest["huggingface"] = replace(dest["huggingface"], files_verified=tuple(verified))
     levels = _object(data.get("levels"), path, "levels")
     if data.get("artifact_version") and qualification.get("artifact_version") and data["artifact_version"] != identity:
         problem("qualification.artifact_version", "differs from manifest artifact_version")

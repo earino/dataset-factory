@@ -53,6 +53,11 @@ class ReleaseConformanceTests(unittest.TestCase):
                         self.assertTrue(release.baseline_reason)
         self.assertEqual(before, hashes(ROOT / 'release'))
 
+    def test_logical_hub_verification_paths_follow_the_manifest_asset_mapping(self):
+        release = load_release(ROOT / 'release/tsb-railway-occurrence-casualty')
+        self.assertIn('data/public-train.csv', release.destination('huggingface').files_verified)
+        self.assertNotIn('public/train.csv', release.destination('huggingface').files_verified)
+
     def test_suite_median_retains_its_scope(self):
         r = load_release(ROOT / 'release/chicago-food-inspections')
         self.assertEqual(.7208, r.baseline.eval_auc)
@@ -193,6 +198,45 @@ class ShapeFailuresTests(unittest.TestCase):
             data = json.loads(path.read_text())
             self.assertEqual('retain', data['destinations']['site']['operator_note'])
             self.assertEqual({'private': False}, data['destinations']['github'])
+
+
+class OfflineSitePackageTests(unittest.TestCase):
+    def test_every_editorial_prepares_offline_without_dataset_downloads(self):
+        from factory.site_pipeline import prepare
+        config = json.loads((ROOT / 'config/sites.json').read_text())
+        before = hashes(ROOT / 'release')
+        with tempfile.TemporaryDirectory() as tmp:
+            for editorial in (ROOT / 'sites').glob('*.json'):
+                package = ROOT / 'release' / editorial.stem
+                if package.is_dir():
+                    with self.subTest(dataset=editorial.stem):
+                        prepare(package, json.loads(editorial.read_text()), config,
+                                Path(tmp).resolve() / editorial.stem)
+        self.assertEqual(before, hashes(ROOT / 'release'))
+
+    def test_declared_external_csvs_are_metadata_only_not_local_verification(self):
+        check = script('check-package').check_package
+        path = ROOT / 'release/abs-visitor-arrivals-direction'
+        problems, _ = check(path)
+        self.assertTrue(any('public/train.csv' in p for p in problems))
+        problems, notes = check(path, external_assets=True)
+        self.assertEqual([], problems)
+        self.assertTrue(any('remote bytes must verify' in n for n in notes))
+
+    def test_external_mode_rejects_missing_metadata_and_inconsistent_asset_digests(self):
+        import shutil
+        check = script('check-package').check_package
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'package'
+            shutil.copytree(ROOT / 'release/abs-visitor-arrivals-direction', path)
+            mpath = path / 'MANIFEST.json'
+            manifest = json.loads(mpath.read_text())
+            manifest['assets']['public/train.csv']['sha256'] = 'f'*64
+            mpath.write_text(json.dumps(manifest))
+            (path / 'README.md').unlink()
+            problems, _ = check(path, external_assets=True)
+            self.assertTrue(any('public/train.csv' in p for p in problems))
+            self.assertTrue(any('README.md' in p for p in problems))
 
 
 class ManifestWriterTests(unittest.TestCase):

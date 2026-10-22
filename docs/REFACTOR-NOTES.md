@@ -58,3 +58,15 @@ so fake-client unit tests cannot update a real package's verification timestamp.
 The adapter referred to as `factory/site_hf.py` in the brief is actually `scripts/site-hf.py`.
 CI discovers the new conformance tests with the normal suite, now explicitly on Python 3.13.
 All existing tests and the qualification implementation remain unchanged.
+
+CI also exposed two existing clean-checkout preview failures. ABS and PriceCatcher list bulk CSVs
+in `package_files`, although those bytes live in release assets and are intentionally absent here.
+The default package check still requires local files. Offline site preparation now explicitly
+requests external-asset metadata validation: a missing CSV must have the same valid SHA-256 and
+size in the asset/file/package records. Missing metadata, conflicting digests and present-but-
+tampered files still fail. Remote byte verification remains mandatory during publication.
+
+TSB's Hub verification list names logical artifact paths rather than remote Hub paths. The schema
+translates only entries named in the manifest's asset map, using declared Hub paths or the existing
+flat-asset rule. The anonymously inspected Hub tree confirmed the actual `data/public-train.csv`
+layout. No verification evidence was rewritten. All nine editorial previews are now tested offline.
