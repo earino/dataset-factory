@@ -5577,3 +5577,64 @@ za-municipal-audit-opinion (all class A, ready). Next action for eutl: packaging
 dataset-release skill (staging release 420810883, artifact 3540ad2180d8df8a...); no rebuild
 needed first - the daily snapshot only grows live 2026 rows until the 2026 emissions are
 reported (due 31 March 2027).
+
+## 2026-10-22 (later still) - discovery tick: United Kingdom focus - 4 verdicts (1 go, 3 reject), all UK publishers
+
+Regional focus for this tick: United Kingdom (ONS, NHS Digital, Defra, Environment Agency,
+Companies House, data.gov.uk). Coverage before: GB 6 candidates; after: GB 10 (live non-US
+17/24, 71%). All four verdicts are UK publishers; two from the tick's named list (Environment
+Agency, Defra). Existing GB doors were respected: companies-house (parked permanently),
+defra-recycling, ons-claimant and nhs-ae all stayed closed with their recorded unpark questions.
+
+1. **ea-flood-alert-escalation - GO (investigating).** Environment Agency Historic Flood Warnings
+   (AfA435): 85,982 warning messages 2006-01-26 to 2026-06-25, delivered as an ODS inside a
+   3,628,573-byte ZIP (1 anonymous GET), quarterly schedule, OGL v3.0 on the dataset's own page.
+   The load-bearing discovery: the Flood Warning Areas register (WFS, properties-only, 9 requests/
+   1.32 MB/3.8 s) publishes a **parent** attribute naming each warning area's containing alert
+   area - escalation is a dict lookup, not polygon overlay. Task: for an eligible Flood Alert
+   (53,048 events, code with >=1 child), will any child area receive a Flood Warning in
+   [D+1, D+7] (window starts D+1 because 46.9% of same-window positives were same-day and dates
+   are day-grain: 0 of 85,982 rows carry a time)? Measured base rate 14.34% (7,606 positives);
+   splits train 2006-19: 28,864/3,638 (12.60%), eval 2020-22: 9,623/1,560 (16.21%), holdout
+   2023-26H1: 14,561/2,408 (16.54%); positives every year; 458 distinct positive year-weeks;
+   566/694 areas ever escalate. Persistence single-rule probe (child warning in previous 7d):
+   P(esc|prev) 45.11% vs P(esc|no prev) 18.91%, 2x2 AUC 0.559 - a weak rule, not a dominant
+   level, unlike nhs-ae. Novelty verdict **differentiated** (check-novelty.py): prior art is
+   sensor-side forecasting (Iowa river-stage DNN, GFF inundation, HaorFloodAlert, Wupper QML);
+   nobody predicts an agency's warning-escalation decision from its own warning history.
+   Data quirks recorded: case-variant TYPE values, pre-2010 Flood Watch naming, April-2017
+   system migration (per-year reporting will need it), 11% of message codes retired from the
+   current register vintage. next_action: construction via build_panel.py (history features
+   knowable by day D), gate on the worker, persistence+calendar triad before any model number;
+   optional extension: EA Hydrology API (OGL 3) gauge join.
+2. **fsa-fhrs-next-rating - REJECT (dropped).** FHRS API v2 + 385 per-authority XML extracts
+   (FSA, England/Wales/NI + Scottish FHIS): anonymous, OGL v3.0 on ratings.food.gov.uk terms.
+   Measured: the API schema and the XML extracts carry exactly ONE current rating per
+   establishment (0 history elements in a 2,222-item extract sample); no dated historical
+   vintages are published. Every prospective next-rating task needs >=2 inspections per
+   establishment from obtainable data - only self-collection could produce it and self-collected
+   labels cannot be verified. Secondary note: with history it would still be a shape sibling of
+   the published chicago-food-inspections task.
+3. **defra-aurn-pm25-exceedance - REJECT (dropped).** Defra UK AIR / AURN: day-ahead station
+   concentration/exceedance from hourly history is the canonical air-quality forecasting task,
+   the family eccc-hydrometric records as rejected and this bench has already declined twice
+   (cpcb closed, air4thai parked with "a second air-quality task must argue why it is
+   differentiated"). AURN publishes hourly gas/particulate concentrations only, so it carries
+   no other task shape. Measured context, not the verdict reason: the whole uk-air.defra.gov.uk
+   site is in a WSP maintenance outage (CVE-2026-109618/109619 PHP updates; identical 2,038-byte
+   placeholder on every path, plain and browser UA), so the publisher's licence was not read
+   this session and no licence claim is made (OpenAQ check: v2 retired 410, v3 needs a key).
+4. **nrw-historic-flood-warnings - REJECT (dropped, task-shape duplicate).** The Welsh twin of
+   the EA escalation stream (all Wales river/sea messages since 2006, quarterly, OGL with
+   attribution per the CKAN record): pinned per the efsa precedent for a fresh candidate ONLY
+   after ea-flood-alert-escalation ships; unverified whether NRW publishes an equivalent
+   warning-area->alert-area linkage (first thing a second instance must check).
+
+Checks: scripts/check-candidate.py --all exit 0 (71 records); scripts/discovery-coverage.py
+exit 0; python3 -m unittest discover -s tests 419 tests OK. Probes ran as scratch scripts in
+.factory/ (probe_ea_flood1-14, probe_fsa_fhrs1-2, probe_fsa_defra3-4, probe_nrw_flood1),
+deleted afterwards along with the scratch ZIP and register snapshot.
+Next action for the tick: the queue's construction work remains with the advancement session
+(abs-visitor-arrivals-direction packaging, then eutl-installation-net-short packaging per its
+staging release 420810883); ea-flood-alert-escalation enters the queue behind the five ready
+candidates as a measured class-A build (whole panel fits the coordinator; ~4.9 MB of fetches).

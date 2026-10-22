@@ -1,0 +1,60 @@
+{
+  "id": "fsa-fhrs-next-rating",
+  "status": "dropped",
+  "verdict": "reject",
+  "created_at": "2026-10-22T16:40:00+00:00",
+  "domain": "food business hygiene inspection ratings / recurrent inspection outcomes",
+  "prediction_question": "Hypothetical task this source would support (rejected before construction): for a food business establishment in the Food Hygiene Rating Scheme (England/Wales/NI; Scotland runs the parallel FHIS), will its next inspection change its rating band, given its prior rating history, scores and establishment attributes?",
+  "prediction_time": "The task would need the establishment's prior ratings knowable at a stated instant before the next inspection. The publisher exposes no prior ratings at all (measured), so no such instant can be evidenced from publisher data.",
+  "target_definition": "Binary: the establishment's next inspection produces a different rating band than its last recorded one. Not derivable from the publisher's data (see rejection_reason).",
+  "sources": [
+    {
+      "name": "Food Hygiene Rating Scheme API v2, Food Standards Agency",
+      "url": "https://api.ratings.food.gov.uk/Establishments?name=cafe&pageSize=5",
+      "landing_page": "https://api.ratings.food.gov.uk/Help",
+      "format": "JSON API, versioned via x-api-version header",
+      "access": "anonymous - API help states 'no sign-up process, API keys, or login details are required'",
+      "measured": "363 authorities (Authorities totalCount); establishment schema has exactly one current rating (RatingValue, RatingDate, NewRatingPending, scores) and no history fields",
+      "license": "Open Government Licence v3.0 via ratings.food.gov.uk terms page"
+    },
+    {
+      "name": "FHRS open data XML extracts (per local authority)",
+      "url": "https://ratings.food.gov.uk/OpenDataFiles/FHRS760en-GB.xml",
+      "landing_page": "https://ratings.food.gov.uk/open-data",
+      "format": "XML, one file per local authority (385 files listed)",
+      "access": "anonymous download",
+      "measured": "sample FHRS760en-GB.xml: 2,062,982 bytes, Header ExtractDate 2026-10-21, ItemCount 2,222; zero occurrences of PreviousRating / RatingHistory / History / Previous elements; current-state snapshot only",
+      "license": "Open Government Licence v3.0 via ratings.food.gov.uk terms page"
+    }
+  ],
+  "license_evidence": [
+    {
+      "quote": "Terms page (ratings.food.gov.uk/terms-and-conditions, HTTP 200 2026-10-22): FHRS data is made available 'under the terms of the Open Government Licence (OGL)', linking to https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/; food.gov.uk terms state 'under the Open Government Licence v3.0, except where otherwise stated.'",
+      "url": "https://ratings.food.gov.uk/terms-and-conditions",
+      "read": "2026-10-22"
+    }
+  ],
+  "licence_class": "A",
+  "licence_note": "OGL v3.0 on the publisher's own terms pages. The reject is on target derivability, not licence: the licence is clean and access is anonymous.",
+  "jurisdiction": {
+    "country": "GB",
+    "region": "Europe",
+    "publisher": "Food Standards Agency (FSA), a UK non-ministerial government department"
+  },
+  "measurements": {
+    "api_authorities_total": 363,
+    "open_data_xml_files_listed": 385,
+    "establishment_schema_keys": ["FHRSID", "LocalAuthorityBusinessID", "BusinessName", "BusinessType", "BusinessTypeID", "AddressLine1-4", "PostCode", "RatingValue", "RatingKey", "RatingDate", "NewRatingPending", "RightToReply", "SchemeType", "geocode", "scores", "LocalAuthority*", "ChangesByServerID", "Distance", "Phone"],
+    "history_elements_in_xml_sample": 0,
+    "history_fields_in_api_schema": 0,
+    "xml_sample": "FHRS760en-GB.xml (Aberdeen City, FHIS): 2,062,982 bytes, ExtractDate 2026-10-21, ItemCount 2,222",
+    "note": "API schema and XML extract both carry exactly ONE rating per establishment; no dated historical vintages of the extracts are published anywhere on the publisher's instruments probed"
+  },
+  "construction_script": "",
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "Target underivable from obtainable data: the publisher exposes exactly one current rating per establishment. The FHRS API v2 establishment schema (measured) carries only the current RatingValue/RatingDate plus NewRatingPending and the three scores - no rating history; the per-authority XML open-data extracts (measured) contain zero history elements and are refreshed current-state snapshots (Header ExtractDate); no dated historical vintages of the extracts are published. Every prospective task on this stream (next-rating change, re-inspection outcome, rating-band duration) needs at least two inspections per establishment from data we can obtain; only self-collection over years could produce that, and self-collected labels can never be verified against the publisher's own record - the same reason the ONS aggregate-grain door is closed. Secondary, not the deciding reason: a next-rating task would also be a task-shape sibling of the published chicago-food-inspections dataset (predict hygiene-inspection outcome from prior inspections), so even with history the novelty case would need arguing against an existing usable form.",
+  "review": "",
+  "novelty_check": {},
+  "next_action": "None. Re-open only if the FSA begins publishing per-establishment rating history or dated snapshot vintages of the FHRS/FHIS extracts (check ratings.food.gov.uk/open-data and the API schema for history fields). A self-collected panel is not a re-open path: its labels are unverifiable."
+}

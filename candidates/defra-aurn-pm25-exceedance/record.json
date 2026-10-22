@@ -1,0 +1,44 @@
+{
+  "id": "defra-aurn-pm25-exceedance",
+  "status": "dropped",
+  "verdict": "reject",
+  "created_at": "2026-10-22T16:45:00+00:00",
+  "domain": "ambient air quality monitoring / day-ahead pollutant exceedance",
+  "prediction_question": "Hypothetical task this source would support (rejected before construction): for an Automatic Urban and Rural Network (AURN) monitoring station, will the next-day (D+1) 24-hour mean PM2.5 concentration exceed the relevant UK air-quality objective threshold, given only that station's own hourly history through the end of day D?",
+  "prediction_time": "Would be end of day D (station-day grain). Not evidenced further: the task is rejected on shape, which is independent of the instant.",
+  "target_definition": "Station-day exceedance of a UK air-quality objective for a pollutant carried by the AURN (PM2.5 annual/daily objectives, ozone, NO2). Not built.",
+  "sources": [
+    {
+      "name": "UK AIR / AURN open data, Department for Environment, Food and Rural Affairs",
+      "url": "https://uk-air.defra.gov.uk/data/open-data",
+      "landing_page": "https://uk-air.defra.gov.uk/",
+      "format": "hourly automatic-monitoring concentration data, published through the UK AIR portal (currently unreachable, see measurements)",
+      "access": "anonymous in normal operation; on 2026-10-22 every uk-air.defra.gov.uk path answered with the same 2,038-byte WSP maintenance placeholder to both plain and browser user agents",
+      "license": "unreadable this session - the entire publisher site is in a measured maintenance outage; UK Crown-copyright OGL v3.0 is the standard Defra posture but is NOT asserted without reading it"
+    }
+  ],
+  "license_evidence": [
+    {
+      "quote": "Measured absence, not a grant: on 2026-10-22 every uk-air.defra.gov.uk path (including /data/open-data and /data/automated-monitoring) returned the same 2,038-byte 'Website Temporarily Unavailable' WSP page ('security updates are applied in response to recently disclosed PHP vulnerabilities CVE-2026-109618 and CVE-2026-109619'), to both plain and browser user agents, so the publisher's own licence text could not be read. The reject below does not depend on the licence.",
+      "url": "https://uk-air.defra.gov.uk/data/open-data",
+      "read": "2026-10-22, HTTP 200 with maintenance placeholder body"
+    }
+  ],
+  "jurisdiction": {
+    "country": "GB",
+    "region": "Europe",
+    "publisher": "Department for Environment, Food and Rural Affairs (Defra), UK AIR / AURN"
+  },
+  "measurements": {
+    "site_outage_2026_10_22": "uk-air.defra.gov.uk returns a 2,038-byte WSP 'Website Temporarily Unavailable' page on every path probed (/data/open-data, /data/automated-monitoring, /data/site-info?site_id=ABD, /), identical for plain and browser user agents; reason given on the page: PHP CVE-2026-109618/109619 security updates",
+    "openaq_probe": "OpenAQ v2 API retired (HTTP 410) and v3 requires an API key (HTTP 401), so third-party redistribution of UK AURN data could not be verified anonymously this session and is not claimed",
+    "note": "the outage is an infrastructure condition, not a property of the dataset; it is recorded because it blocked reading the licence, not as the reason for the verdict"
+  },
+  "construction_script": "",
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "Canonical task shape, already declined twice on this bench: day-ahead station-level pollutant concentration/exceedance from the station's own hourly history is the canonical air-quality forecasting task, the same family eccc-hydrometric-daily-flows records as 'the canonical streamflow-forecasting task' (rejected before construction). The bench has been through this family twice already - cpcb-aqi-exceedance (closed) and air4thai-pm25-exceedance (parked, whose next_action states 'a second air-quality task must argue why it is differentiated') - and AURN offers no feature or label that differentiates a third instance: it publishes hourly gas and particulate concentrations at automatic stations, so the only prediction tasks it carries are day-ahead concentration/exceedance forecasting. Adding a UK instance would be a geographic mirror of a declined shape, not a new task. Access/licence note: the publisher site is in a measured maintenance outage (2026-10-22) so its licence was not read; that did not decide this verdict and the door stays closed regardless of what the licence turns out to say.",
+  "review": "",
+  "novelty_check": {},
+  "next_action": "None. Re-opened only by a genuinely different task formulation on AURN data (not day-ahead concentration or exceedance forecasting), with the site back online and its licence read from the publisher's own instrument."
+}

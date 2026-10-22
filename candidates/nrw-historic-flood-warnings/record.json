@@ -1,0 +1,47 @@
+{
+  "id": "nrw-historic-flood-warnings",
+  "status": "dropped",
+  "verdict": "reject",
+  "created_at": "2026-10-22T17:00:00+00:00",
+  "domain": "flood warning operations / agency hazard-warning escalation (Wales)",
+  "prediction_question": "Hypothetical task this source would support (rejected as a duplicate, not probed): the Welsh instance of the flood alert escalation task - for a Flood Alert issued by Natural Resources Wales for a Welsh target area on day D, will a Flood Warning follow within K days for a warning area inside it, given history and register features through D?",
+  "prediction_time": "Same day-grain instant as the England task on this stream. Not probed further: rejected as a task-shape duplicate of the open ea-flood-alert-escalation candidate.",
+  "target_definition": "Binary escalation label, Wales, analogous to the England task. Not built; the Welsh parent-linkage (the register attribute that carries the England join) is unverified for Wales.",
+  "sources": [
+    {
+      "name": "Historic Flood Warnings and Flood Alerts, Natural Resources Wales",
+      "url": "https://datamap.gov.wales/documents/2644",
+      "landing_page": "https://data.gov.uk/dataset/historic-flood-warnings-and-flood-alerts2",
+      "format": "download + web service via Data Map Wales (single resource record)",
+      "access": "anonymous CKAN record; resource probed only at the record level this session",
+      "measured": "publisher description: 'all messages issued for flooding from rivers or the sea in Wales since 2006', quarterly update frequency, EA Wales provided data until 1 April (2013 creation of NRW)",
+      "license": "Open Government Licence with attribution of source and NRW copyright, per the record's access_constraints"
+    }
+  ],
+  "license_evidence": [
+    {
+      "quote": "CKAN access_constraints: 'There are no access restrictions on this data. NRW may release, publish or disseminate it freely.' and '© CNC/NRW. Data may be re-used under the terms of the Open Government Licence providing it is done so, acknowledging both the source and NRW's copyright.'",
+      "url": "https://data.gov.uk/dataset/historic-flood-warnings-and-flood-alerts2",
+      "read": "2026-10-22"
+    }
+  ],
+  "licence_class": "A",
+  "licence_note": "OGL with attribution of source and NRW copyright - open, class A. The reject below is on task-shape duplication, not licence.",
+  "jurisdiction": {
+    "country": "GB",
+    "region": "Europe",
+    "publisher": "Natural Resources Wales (NRW / Llywodraeth Cymru agency)"
+  },
+  "measurements": {
+    "record_level_only": "probed at the CKAN record level only (one package_show); the message file itself was not downloaded this session because the task was rejected as a duplicate before any data spend",
+    "coverage_per_publisher": "all Welsh river/sea flood messages since 2006; quarterly updates; single resource (Data Map Wales document 2644)",
+    "unverified_for_wales": "whether NRW publishes an equivalent of the EA Flood Warning Areas register 'parent' attribute (the linkage that makes the England escalation join a dict lookup) - a second-instance build must verify this first"
+  },
+  "construction_script": "",
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "Task-shape duplicate: this is the Welsh twin of the flood alert escalation task recorded the same day as ea-flood-alert-escalation (investigating, go) on the same reporting stream family - all EA/NRW flood warning messages since 2006, the same three warning codes, quarterly updates. The efsa-one-health-sample-prevalence precedent applies exactly: the EU-wide twin of an open candidate was rejected with its file ids pinned for a fresh candidate ONLY after the original ships and a second instance is wanted. Probing the Welsh instance now would measure the same task twice at full cost.",
+  "review": "",
+  "novelty_check": {},
+  "next_action": "None now. If a second instance of the escalation task is wanted after ea-flood-alert-escalation ships: (1) verify NRW publishes a warning-area -> alert-area linkage equivalent to the EA register 'parent' attribute (check the Data Map Wales flood warning areas layers); (2) download the message history via datamap.gov.wales/documents/2644; (3) measure the Welsh base rate and clusters; (4) open as a fresh candidate with its own novelty check at that point."
+}

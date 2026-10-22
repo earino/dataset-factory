@@ -1,0 +1,264 @@
+{
+  "id": "ea-flood-alert-escalation",
+  "status": "investigating",
+  "verdict": "go",
+  "created_at": "2026-10-22T16:05:00+00:00",
+  "domain": "flood warning operations / agency hazard-warning escalation",
+  "prediction_question": "For a Flood Alert (or pre-2010 Flood Watch) issued by the Environment Agency for a target alert area P on day D, will any of the Flood Warning Areas whose register 'parent' is P receive a Flood Warning or Severe Flood Warning message during days D+1 through D+7, given only the warning-message history for P and its child areas through day D, the register attributes of P and its children, and the calendar?",
+  "prediction_time": "Day-grain: the day D on which the alert message was issued. The dataset's DATE column carries no time-of-day (measured: 0 of 85,982 dated rows), so the prediction instant is the alert's issue day and the label window starts at D+1 because a same-day child warning cannot be ordered against the alert (46.9% of [D,D+7]-window positives were same-day). Features must be knowable by end of day D: message history through D (inclusive), register attributes (current-vintage snapshot, measured static in practice), and calendar.",
+  "target_definition": "Binary label: 1 if any warning-level message (TYPE 'flood warning', 'severe flood warning', or their 'update' variants, case-normalised) for any warning area W with register parent(W) == P has issue date in [D+1, D+7]; else 0. Source columns: DATE, CODE, TYPE in the Historic Flood Warnings ODS joined to fws_tacode->parent in the Flood Warning Areas register (WFS, properties-only). Alert events eligible only when P has at least one child warning area (53,048 of 62,897 alert-level messages).",
+  "sources": [
+    {
+      "name": "Historic Flood Warnings (AfA435), Environment Agency for England",
+      "url": "https://environment.data.gov.uk/api/file/download?fileDataSetId=766cb094-b392-4bd6-a02e-f60e143f3213&fileName=Historic_Flood_Warnings.zip",
+      "landing_page": "https://data.gov.uk/dataset/historic-flood-warnings2",
+      "format": "ZIP containing ODS (data) + ODT (documentation)",
+      "access": "single anonymous GET, 3,628,573 bytes",
+      "update_schedule": "quarterly (April, July, October, January), per the bundled documentation",
+      "coverage": "all Severe Flood Warnings, Flood Warnings and Flood Alerts issued 2006-01-26 to end of June 2026 (202607 edition)",
+      "license": "Open Government Licence v3.0 (stated on the dataset's own data.gov.uk page and in the CKAN record extras)"
+    },
+    {
+      "name": "Flood Warning Areas register (AfA054), Environment Agency",
+      "url": "https://environment.data.gov.uk/spatialdata/flood-warning-areas/wfs",
+      "landing_page": "https://data.gov.uk/dataset/flood-warning-areas3",
+      "format": "WFS/OGC Features; properties-only fetch via propertyName (fws_tacode,parent,ta_name,area,la_name,river_sea)",
+      "access": "anonymous; 7 paged GetFeature requests for 3,426 areas",
+      "key_attribute": "parent = the Flood Alert Area code that contains the warning area (the escalation join is a dict lookup, not polygon overlay)",
+      "license": "Open Government Licence (CKAN record extras: licence [\"Open Government Licence\"])"
+    },
+    {
+      "name": "Flood Alert Areas register, Environment Agency",
+      "url": "https://environment.data.gov.uk/spatialdata/flood-alert-areas/wfs",
+      "landing_page": "https://data.gov.uk/dataset/flood-alert-areas2",
+      "format": "WFS/OGC Features; properties-only fetch (no parent attribute on this layer)",
+      "access": "anonymous; 2 paged GetFeature requests for 782 areas",
+      "license": "Open Government Licence (CKAN record extras: licence [\"Open Government Licence\"])"
+    },
+    {
+      "name": "EA Hydrology API (optional feature extension, not required for the base task)",
+      "url": "https://environment.data.gov.uk/hydrology/id/stations",
+      "format": "JSON API for sub-daily river level/rainfall data, version 2.1.1",
+      "access": "anonymous; API meta states license http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/ (licenseName 'OGL 3')",
+      "license": "Open Government Licence v3.0 (API meta license URL, read 2026-10-22)",
+      "note": "would supply level/rain telemetry features via a gauge-to-area join; recorded as an optional construction extension, base task uses message history + register attributes only"
+    }
+  ],
+  "license_evidence": [
+    {
+      "quote": "Licence information: Open Government Licence (page links rel=license to https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)",
+      "url": "https://data.gov.uk/dataset/historic-flood-warnings2",
+      "read": "2026-10-22, HTTP 200"
+    },
+    {
+      "quote": "CKAN extras: licence [\"Open Government Licence\"]; access_constraints: \"There are no public access constraints to this data. Use of this data is subject to the licence identified.\"",
+      "url": "https://data.gov.uk/api/3/action/package_show?id=historic-flood-warnings2",
+      "read": "2026-10-22"
+    },
+    {
+      "quote": "Hydrology API meta: license http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/, licenseName OGL 3",
+      "url": "https://environment.data.gov.uk/hydrology/id/stations",
+      "read": "2026-10-22, HTTP 200"
+    }
+  ],
+  "licence_class": "A",
+  "licence_note": "OGL v3.0 permits commercial and non-commercial reuse including derivatives, with attribution; EA is the publisher. Both registers carry the same OGL designation in their CKAN extras.",
+  "jurisdiction": {
+    "country": "GB",
+    "region": "Europe",
+    "publisher": "Environment Agency (England), an executive agency of Defra"
+  },
+  "split_strategy": "Temporal, one row per eligible alert event: train 2006-2019, eval 2020-2022, holdout 2023-2026 Q2 (file ends 2026-06-30). Measured at label window [D+1,D+7]: train 28,864 events / 3,638 positives (12.60%); eval 9,623 / 1,560 (16.21%); holdout 14,561 / 2,408 (16.54%). Positives occur in every year 2006-2026. Positives cluster by storm: 458 distinct year-weeks carry at least one positive (top week 2020-W7, Storms Ciara/Dennis, 324 same-window positives at the [D,D+7] definition). Report per-year metrics: a reporting-system migration in April 2017 (Floodline Warnings Direct -> Flood Warning System, per the EA's dataset description) is a candidate structural break.",
+  "measurements": {
+    "source_rows": "85,982 dated message rows (85,993 data rows incl. 11 repeated header rows in the ODS), 2006-01-26 to 2026-06-25",
+    "type_mix_case_normalised": {
+      "flood alert": 46335,
+      "flood warning": 20516,
+      "flood watch": 11027,
+      "severe flood warning": 488,
+      "update flood alert": 5535,
+      "update flood warning": 2070,
+      "update severe flood warning": 11
+    },
+    "registers": {
+      "warning_areas": 3426,
+      "with_parent_set": 3424,
+      "distinct_parents": 694,
+      "orphan_parents_not_in_alert_register": 2,
+      "alert_areas": 782,
+      "children_per_parent_median": 3,
+      "children_per_parent_max": 47
+    },
+    "code_coverage": {
+      "alert_msgs_in_alert_register_pct": 89.0,
+      "warning_msgs_in_warning_register_pct": 84.5,
+      "note": "unmatched codes are retired/renamed historic target areas; the register is a current-vintage snapshot and the EA does not publish historical register vintages, so historic parent linkage is unverifiable - a recorded assumption, not a reconstruction"
+    },
+    "eligible_alert_events": 53048,
+    "base_rates": {
+      "window_D_to_D7": {
+        "positives": 11173,
+        "rate_pct": 21.06
+      },
+      "window_D1_to_D7": {
+        "positives": 7606,
+        "rate_pct": 14.34
+      }
+    },
+    "same_day_share_of_D0_D7_positives_pct": 46.9,
+    "splits_D1_D7": {
+      "train_2006_2019": {
+        "events": 28864,
+        "positives": 3638,
+        "rate_pct": 12.6
+      },
+      "eval_2020_2022": {
+        "events": 9623,
+        "positives": 1560,
+        "rate_pct": 16.21
+      },
+      "holdout_2023_2026H1": {
+        "events": 14561,
+        "positives": 2408,
+        "rate_pct": 16.54
+      }
+    },
+    "per_year_positives_D1_D7": {
+      "2006": 12,
+      "2007": 44,
+      "2008": 65,
+      "2009": 60,
+      "2010": 37,
+      "2011": 61,
+      "2012": 613,
+      "2013": 408,
+      "2014": 568,
+      "2015": 416,
+      "2016": 315,
+      "2017": 185,
+      "2018": 228,
+      "2019": 626,
+      "2020": 876,
+      "2021": 373,
+      "2022": 311,
+      "2023": 752,
+      "2024": 1045,
+      "2025": 389,
+      "2026": 222
+    },
+    "clustering_D1_D7": {
+      "distinct_positive_year_weeks": 458,
+      "note": "storm clustering is real (top weeks: 2020-W7, 2024-W1, 2012-W47, 2020-W6, 2023-W52, 2014-W1); cluster-robust intervals required at qualification"
+    },
+    "persistence_probe": {
+      "definition": "single-rule baseline: a child warning occurred in the previous 7 days before D",
+      "p_escalate_given_prev": 0.4511,
+      "p_escalate_given_no_prev": 0.1891,
+      "rule_coverage_pct": 8.2,
+      "two_by_two_auc": 0.559,
+      "note": "persistence is a weak single rule, not a dominant level - unlike nhs-ae-four-hour-decline; the full persistence/calendar/model triad is measured at qualification"
+    },
+    "breadth": {
+      "alert_areas_ever_escalating": 566,
+      "of_eligible": 694
+    },
+    "extraction_cost": {
+      "zip_get": "1 request, 3,628,573 bytes",
+      "registers_wfs": "9 requests, 1,320,726 bytes, 3.8 s wall clock (coordinator-class machine, properties-only)",
+      "parse_and_measure": "in-memory parse of 85,993-row ODS plus full parent-linked label measurement: seconds on the coordinator",
+      "note": "the whole panel fits on the coordinator; construction needs no bulk worker download"
+    }
+  },
+  "data_quirks": [
+    "TYPE values are case-inconsistent ('Flood alert' 3,011 / 'flood alert' 43,335 variants etc.); normalise before use",
+    "pre-2010 alert-level messages are named 'Flood Watch'",
+    "DATE column is day-grain despite documentation saying 'date and time' (measured: 0 of 85,982 rows carry a time)",
+    "removals ('warning no longer in force') are NOT in this dataset, so warning durations are unobservable; the label avoids durations by construction",
+    "the file is delivered as an ODS spreadsheet inside a ZIP, not CSV - parsing requires ODS content.xml handling",
+    "same-code alert->warning escalation is almost nonexistent (29 events in 20 years): escalation is a parent->child relation across two registers, not a same-code sequence - this is why the 'parent' attribute is the load-bearing discovery"
+  ],
+  "construction_script": "",
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "",
+  "review": "",
+  "novelty_check": {
+    "checked_at": "2026-10-22T16:14:28+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "flood warning issuance prediction machine learning dataset Environment Agency England",
+      "predict flood alert escalation benchmark huggingface kaggle"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "flood warning issuance prediction machine learning dataset Environment Agency England",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "predict flood alert escalation benchmark huggingface kaggle",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "flood warning issuance prediction machine learning dataset Environment Agency England",
+          "hits": 895963,
+          "top": [
+            "F.LO.O.D.S.A.F.E: Flood Localization and Observation for  Optimal Detection and Strategic Alert Forecasting Engine",
+            "Urban Flood Management using Geospatial Technology and AI (GeoAI)",
+            "Development of an Early Prediction System for Flood Disasters Based on the Internet of Things (IoT) with the Application of Deep Learning",
+            "Innovative Flood Forecasting and Early Warning Systems: Integrating IOT, SAR and Numerical Models",
+            "Machine learning approach for flood risks prediction"
+          ]
+        },
+        {
+          "query": "predict flood alert escalation benchmark huggingface kaggle",
+          "hits": 110798,
+          "top": [
+            "AI-Driven LoRaWAN-Enabled Solar-Powered Multi-Sensor Framework for Proactive Flood Prediction and Early Warning",
+            "White Volta Flood Early Warning System: Code and Data",
+            "Deep-learning severity segmentation of coffee leaf rust (Hemileia vastatrix) and American leaf spot (Mycena citricolor) on Coffea arabica var. Esperanza L4A5: dataset, models and code (PG 26038)",
+            "Innovative Flood Forecasting and Early Warning Systems: Integrating IOT, SAR and Numerical Models",
+            "COMPARING UZBEK GRAPHEME-TO-PHONEME CONVERTERS: EPITRAN, ESPEAK NG, AND UZG2P ON SHARED EVALUATION CRITERIA"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "flood warning issuance prediction machine learning dataset Environment Agency England",
+          "hits": 5,
+          "top": [
+            "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+            "DOME: Recommendations for supervised machine learning validation in biology",
+            "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
+            "Active learning for data streams: a survey",
+            "Privacy-preserving machine learning for healthcare: open challenges and future perspectives"
+          ]
+        },
+        {
+          "query": "predict flood alert escalation benchmark huggingface kaggle",
+          "hits": 5,
+          "top": [
+            "Robust blue-green urban flood risk management optimised with a genetic algorithm for multiple rainstorm return periods",
+            "Kaggle LSHTC4 Winning Solution",
+            "Predicting Tail-Risk Escalation in IDS Alert Time Series",
+            "Is Escalation Worth It? On the Depth of LLM Cascades",
+            "Token-Budgeted Escalation for Financial Document Question Answering: Cost Is Predictable, Benefit Is the Bottleneck"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'flood warning issuance prediction machine learning dataset Environment Agency England': 0 hit(s) - nothing notable\n- huggingface_datasets / 'predict flood alert escalation benchmark huggingface kaggle': 0 hit(s) - nothing notable\n- zenodo_records / 'flood warning issuance prediction machine learning dataset Environment Agency England': 895963 hit(s) - F.LO.O.D.S.A.F.E: Flood Localization and Observation for  Optimal Detection and Strategic Alert Forecasting Engine, Urban Flood Management using Geospatial Technology and AI (GeoAI), Development of an Early Prediction System for Flood Disasters Based on the Internet of Things (IoT) with the Application of Deep Learning, Innovative Flood Forecasting and Early Warning Systems: Integrating IOT, SAR and Numerical Models, Machine learning approach for flood risks prediction\n- zenodo_records / 'predict flood alert escalation benchmark huggingface kaggle': 110798 hit(s) - AI-Driven LoRaWAN-Enabled Solar-Powered Multi-Sensor Framework for Proactive Flood Prediction and Early Warning, White Volta Flood Early Warning System: Code and Data, Deep-learning severity segmentation of coffee leaf rust (Hemileia vastatrix) and American leaf spot (Mycena citricolor) on Coffea arabica var. Esperanza L4A5: dataset, models and code (PG 26038), Innovative Flood Forecasting and Early Warning Systems: Integrating IOT, SAR and Numerical Models, COMPARING UZBEK GRAPHEME-TO-PHONEME CONVERTERS: EPITRAN, ESPEAK NG, AND UZG2P ON SHARED EVALUATION CRITERIA\n- arxiv_preprints / 'flood warning issuance prediction machine learning dataset Environment Agency England': 5 hit(s) - Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Active learning for data streams: a survey, Privacy-preserving machine learning for healthcare: open challenges and future perspectives\n- arxiv_preprints / 'predict flood alert escalation benchmark huggingface kaggle': 5 hit(s) - Robust blue-green urban flood risk management optimised with a genetic algorithm for multiple rainstorm return periods, Kaggle LSHTC4 Winning Solution, Predicting Tail-Risk Escalation in IDS Alert Time Series, Is Escalation Worth It? On the Depth of LLM Cascades, Token-Budgeted Escalation for Financial Document Question Answering: Cost Is Predictable, Benefit Is the Bottleneck",
+    "prior_art": [
+      "GFF coastal inundation benchmark (arXiv:2409.18591); Iowa flood-forecast DNN dataset (arXiv:1902.02308); HaorFloodAlert (arXiv:2605.20167); flood-related 112-call ML (NHESS 26:3943, 2026)"
+    ],
+    "theirs": "The publisher ships the raw event log (quarterly ODS), the two area registers (WFS), a live 3-day flood-risk forecast in the flood-monitoring API, and river-level telemetry (hydrology API). Research prior art is sensor-side: river-stage/inundation forecasting benchmarks (Iowa DNN arXiv:1902.02308, GFF arXiv:2409.18591, HaorFloodAlert arXiv:2605.20167, Wupper QML arXiv:2407.01001) and flood-related emergency-call prediction (NHESS 26:3943).",
+    "ours": "First ML-ready dataset of an agency warning-escalation decision: parent-linked Flood Alert -> child Flood Warning within 7 days, on 53k real events over 20 years, with history-only features and temporal splits. Neither the label (a human operational decision, not a sensor value) nor the join (register 'parent' attribute) existed in any prior dataset.",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  },
+  "next_action": "Construction (worker build, class A): write candidates/ea-flood-alert-escalation/build_panel.py - (1) fetch Historic_Flood_Warnings.zip (3.6 MB, 1 GET) and both registers via WFS properties-only (9 requests); (2) parse ODS tblAllData with case-normalised TYPE levels; (3) join child warning areas per parent; (4) emit one row per eligible alert event with history features knowable by day D (trailing counts/recency of alerts and child warnings for P, national same-day context, register attrs, calendar) and label = child warning in [D+1, D+7]; (5) temporal splits 2006-2019 / 2020-2022 / 2023-2026H1; (6) run the qualification gate on the full artifact on the worker, with the persistence and calendar-only baselines on identical eval rows before any model number is quoted. Optional feature extension if history-only headroom is thin: join EA Hydrology API daily levels at gauges inside P (adds a spatial join; decide after the history-only triad)."
+}
