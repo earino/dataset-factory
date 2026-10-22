@@ -265,6 +265,7 @@ def reconcile(plan, folder, gh, hub, fetch=public_json):
         hf = hub.run("read", record, public=True)
         require(hf.get("links_present") is True, "Hub navigation was not applied")
         done("cross_links", {"verified": True})
+        record_site_destination(record, datetime.now(timezone.utc).isoformat(timespec="seconds"))
         receipt["status"] = "complete"
     except Exception as exc:
         receipt["status"] = "failed"
@@ -274,6 +275,25 @@ def reconcile(plan, folder, gh, hub, fetch=public_json):
         raise
     save_receipt(folder, receipt)
     return receipt
+
+
+def record_site_destination(record: dict, verified_at: str) -> None:
+    """Write the website into the release's DESTINATIONS.json.
+
+    The dashboard reads destination pills from that file, so a site that exists but is not recorded
+    renders as if it did not: nine datasets had live pages and only two showed the pill. Recording
+    here keeps the evidence next to the other destinations instead of in a receipt nobody reads.
+    """
+    package = ROOT / "release" / str(record["dataset"]) / "DESTINATIONS.json"
+    if not package.is_file():
+        return
+    destinations = json.loads(package.read_text())
+    entry = destinations.setdefault("destinations", {}).setdefault("site", {})
+    entry.update({"type": "github-pages", "url": record["urls"]["version"], "private": False,
+                  "verified": True, "verified_at": verified_at,
+                  "checks": [f"anonymous GET {record['urls']['version']} -> 200; navigation and "
+                             f"release record verified by the publisher"]})
+    package.write_text(json.dumps(destinations, indent=1) + "\n")
 
 
 def verify(plan, gh, hub, fetch=public_json):
