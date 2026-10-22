@@ -97,3 +97,63 @@ data.europa.eu catalogue API (`.factory/eu_catalog_search.py`, `.factory/eu_prob
 - Entities recur across windows by construction (panel); the composite row id
   (registry, installation, year) keeps the qualification gate's identity checks meaningful, and
   the recurring-entity property must be declared rather than read as split leakage.
+
+## Construction (2026-10-22 advancement tick)
+
+Pre-build probes (scratch scripts `.factory/eutl_probe.py`, `.factory/eutl_crosscheck*.py`,
+deleted after use; extract cached in session scratch, removed afterwards):
+
+- Today's snapshot (2026-10-22, Last-Modified 10:08 GMT): 617,448 rows, 23,748 keys,
+  32 registries, years 2005-2030, gz sha256 1c7db5527c7c9b9a... (5,965,780 B).
+- All three record sample-row fixtures verified in-panel: (AT,1) 2005 VE 41,399 < ALLOC
+  44,894 (net-long); 2007 VE 51,041 > 44,894 (net-short); 2030 ALLOC 30,485, VE n/a.
+- `SURR_ALL(t-1)` missing on 10,647 of 188,205 eligible rows -> the surrender-history
+  feature is dropped rather than shipped partially defined (the gate scores a column with
+  empty cells as a categorical, so a partially-defined numeric column cannot ship; and
+  train.py would drop it anyway at >1000 string levels). Decision recorded in
+  summary.json `dropped_feature_note`.
+- `EXCLUDED(t)=YES` among in-frame rows: 81 / 204,914 (0.04%), label mix 53 long / 28
+  short -> kept, mix recorded; the flag is a year-t property and cannot condition
+  membership at the instant.
+- Status persistence: P(short t | short t-1) = 0.8571, P(short t | long t-1) = 0.1759.
+- EEA cross-check subset pinned by measurement: the EEA sheet carries BOTH per-activity
+  detail rows (20, 21, 22, ...) AND aggregate rows ('10', '20-99'); summing all codes
+  double-counts (184% off). With exactly {10, 20-99}, all entities, all sizes:
+  DE 2022 VE = 361,145,695 = panel sum exactly; DE 2023 VE diff 4 t (1.3e-8);
+  free allocation diff 55,521 (4.3e-4) / 34,960 (2.7e-4). These four cells are asserted
+  in-build with tolerances 1e-5 (VE) and 1e-3 (alloc).
+- Pre-launch dry run on the coordinator (full extract + full assertions + gate 1.4.0
+  over the full artifact): 38/38 PASS, 11 s. The three CSVs came out byte-identical to
+  the later worker build (train c7f23c55..., eval 0d9f35d5..., holdout 1c694e5e...),
+  so the worker build passed first try with no descriptor defect (the abs session's
+  dry-run discipline, applied).
+
+Build (eutl-001, worker 171845011, cx23): 40.7 s job elapsed, exit 0. Fetch cost
+measured on the worker: panel 5,965,780 B in 1.0 s + EEA zip 10,794,107 B in 9.3 s.
+Shipped: train 141,732 rows / 64,528 positives (45.53%) 2006-2019; eval 24,322 /
+18,002 (74.02%) 2020-2022; holdout 22,151 / 15,993 (72.20%) 2023-2025;
+16,709 insufficient_history (all of 2005: the extract starts 2005, so t-1 does not
+exist, plus each installation's first active year); 4,224 ties -> label 0;
+6,449 live 2026 rows (alloc published, VE due 31 March 2027).
+
+Gate 1.4.0 on the worker: 38/38 (artifact 3540ad2180d8df8a...), staging release
+420810883 (tag job-eutl-001). Coordinator re-verification: all six assets re-downloaded,
+digests matched the manifest, `qualify_dataset.py --accept` -> ACCEPTED. Worker
+destroyed and confirmed deleted 2026-10-22T14:18:34Z.
+
+Reference baselines (train-estimated tables, measured on the written rows):
+persistence margin_l1 0.8671 eval / 0.8789 holdout; status rule 0.8197 / 0.8289
+(accuracy 0.8587 / 0.8686); identity-only registry 0.5719 / 0.5708; calendar-only
+registry x phase 0.527 / 0.5708. margin_t (ve_l1 - alloc_t) alone: 0.8988 / 0.8881 -
+the announced-allocation rule beats persistence, so the level target stands; every
+model number must still be quoted beside persistence.
+
+Baseline (eutl-baseline-001, worker 171847046): runner files bundled verbatim
+(hash-matched), artifact re-ACCEPTed before scoring. **Eval AUC 0.9199**
+(train.py) = **0.9199** (validate.py independent recompute), CONTRACT OK.
+Triad on identical eval rows: calendar-only 0.527 < identity-only 0.5719 <
+persistence margin 0.8671 < full model 0.9199 (+0.0532 over persistence - the
+level target stands). Per-year eval texture (written rows): 2020 rate 0.6713 /
+persistence 0.9046; 2021 rate 0.8075 / 0.8269; 2022 rate 0.7582 / 0.8723. No
+holdout AUC quoted (never enters a workdir). Report at staging 420818845;
+worker destroyed and confirmed deleted 2026-10-22T14:24:17Z.

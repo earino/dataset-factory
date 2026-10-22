@@ -5523,3 +5523,57 @@ redone with explicit per-file deletions and rmdir on exact owned paths.
 Next action for the tick: none beyond the per-candidate next_actions above - the queue's next construction
 work remains abs-visitor-arrivals-direction packaging (advancement session), with eea-uwwtd needing its
 cycle-inventory + join measurement before it can enter the build queue.
+
+## 2026-10-22 (later) - advancement tick: eutl-installation-net-short ready -> qualified -> baselined inside one tick
+
+Release work first: no candidate sits at `packaged` (checked with .factory/session_status.py;
+status counts parked 25 / dropped 19 / published 9 / investigating 8 / ready 6 at tick start),
+and every published candidate's destinations answer 200 anonymously - nothing actionable was
+held. The tick went to construction and picked `eutl-installation-net-short`: the queue's
+cheapest fully-measured class-A build (one anonymous 5.96 MB GET) and an EU publisher, which
+also nudges the bench's Europe coverage (EU candidates now 5; live non-US 16/23, 70%).
+
+Pre-build probes (scratch scripts, deleted): today's snapshot 2026-10-22 carries 617,448 rows /
+23,748 keys / 32 registries; all three record sample fixtures verified in-panel (AT,1 2005
+net-long, 2007 net-short, 2030 advance allocation); SURR_ALL(t-1) missing on 10,647/188,205
+eligible rows -> surrender-history feature dropped rather than shipped partially defined;
+EXCLUDED(t)=YES is 81/204,914 in-frame rows (kept, mix recorded); status persistence measured
+P(short|short)=0.857, P(short|long)=0.176. The EEA cross-check subset was pinned by
+measurement: the EEA sheet carries per-activity detail rows AND aggregate rows, so the sum must
+use exactly activity codes {10, 20-99} - DE 2022 verified emissions then match the panel sum
+exactly (361,145,695), 2023 differs by 4 t (1.3e-8), free allocation within 4.3e-4.
+
+- **Construction (eutl-001)**, worker 171845011 (cx23, 40.7 s job elapsed, exit 0, EUR 0.04
+  reservation, destroyed and confirmed deleted 14:18:34Z): panel fetch 5,965,780 B in 1.0 s +
+  EEA zip 10,794,107 B in 9.3 s. Shipped: train 141,732 rows / 64,528 positives (45.53%) /
+  2006-2019; eval 24,322 / 18,002 (74.02%) / 2020-2022; holdout 22,151 / 15,993 (72.20%) /
+  2023-2025; 16,709 insufficient_history (all of 2005 plus each installation's first active
+  year), 4,224 exact ties -> 0, 6,449 live 2026 rows (allocation published, emissions due
+  31 March 2027). Coordinator dry run BEFORE worker spend: full build + gate 1.4.0 38/38 in
+  11 s, and the worker's three CSVs came out byte-identical to the dry run
+  (c7f23c55.../0d9f35d5.../1c694e5e...) - second tick in a row the dry run paid for itself
+  with zero worker waste.
+- **Qualification**: gate 1.4.0 green on the worker over the full artifact - 38/38, artifact
+  `3540ad2180d8df8a...`; staging release 420810883; all six assets re-downloaded on the
+  coordinator, every digest matched the release manifest, `qualify_dataset.py --accept`
+  re-verified the collected bytes -> ACCEPTED. Record carries the full qualification block;
+  `check-candidate.py --all` exit 0 (67 records).
+- **Baseline (eutl-baseline-001)**, worker 171847046 (41.3 s, exit 0, EUR 0.06 reservation,
+  destroyed and confirmed deleted 14:24:17Z), report at staging 420818845: benchmark's own
+  train.py/validate.sh unmodified (hash-matched), artifact re-ACCEPTed before scoring.
+  **Triad on identical eval rows: calendar-only 0.527 < identity-only 0.5719 < persistence
+  (t-1 net-position margin) 0.8671 < full model 0.9199** (validate.py independent recompute
+  0.9199; CONTRACT OK). The full model beats persistence by +0.0532 eval AUC - not the nhs-ae
+  persistence defect; most of the edge is the announced-allocation margin rule (margin_t alone
+  measured 0.8988 at construction), and persistence is recorded beside every model number.
+  Per-year eval texture measured on the written rows: 2020 rate 0.6713 / persistence 0.9046;
+  2021 0.8075 / 0.8269; 2022 0.7582 / 0.8723. Prevalence drift 45.5% -> 74.0% -> 72.2% is
+  the documented ETS phase property. No holdout AUC quoted (never enters a workdir).
+
+Worker spend this tick: two cx23 jobs, EUR 0.10 reservations, both workers confirmed deleted
+by hcloud read-back. Ready buffer behind this one: camara-bill-advancement,
+chilecompra-tender-outcome, nz-ea-wholesale-price-exceedance, wb-ieg-project-outcome,
+za-municipal-audit-opinion (all class A, ready). Next action for eutl: packaging per the
+dataset-release skill (staging release 420810883, artifact 3540ad2180d8df8a...); no rebuild
+needed first - the daily snapshot only grows live 2026 rows until the 2026 emissions are
+reported (due 31 March 2027).

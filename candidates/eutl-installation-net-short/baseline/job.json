@@ -1,0 +1,50 @@
+{
+  "id": "eutl-baseline-001",
+  "candidate": "eutl-installation-net-short",
+  "image": "python:3.13-slim",
+  "server_type": "cx23",
+  "location": "hel1",
+  "cpus": 2,
+  "memory_mb": 3072,
+  "timeout_minutes": 45,
+  "lifetime_minutes": 90,
+  "max_disk_mb": 4096,
+  "max_artifact_mb": 16,
+  "what": "runner-contract baseline on the accepted eutl-001 artifact (3540ad2180d8df8a9ff39f5f6c1326c5e487ed20e28f189b9528eeb71f799f66), fetched from staging release 420810883 (not rebuilt): re-accept the five fetched files through the qualification gate against the gate's own collected report, materialize the runner workdir (public train+eval only; the private holdout is never copied into the workdir), then run the benchmark's own train.py and validate.sh unmodified and record both AUCs. This is the contract only, not the agent harness loop. Construction-time references: persistence (t-1 net position margin_l1) 0.8671 eval / 0.8789 holdout (status rule accuracy 0.8587 / 0.8686); identity-only (registry) 0.5719 / 0.5708; calendar-only (registry x ETS phase) 0.527 / 0.5708. The margin_t feature alone measured 0.8988 / 0.8881 at construction; the full model must beat persistence or the persistence defect is recorded.",
+  "fetch": {
+    "repo": "earino/dataset-factory-staging",
+    "release": 420810883,
+    "assets": [
+      {
+        "asset_id": 666077520,
+        "dest": "extract/meta.json",
+        "size": 2810,
+        "sha256": "b0e54387f5a5348dc381989a61f017248412c2c5f8220ad9f8a8f032735aa152"
+      },
+      {
+        "asset_id": 666077732,
+        "dest": "extract/public/train.csv",
+        "size": 9421952,
+        "sha256": "c7f23c557d9605c92ba787d199922a1978f712f9b1069926ac5d63236331e903"
+      },
+      {
+        "asset_id": 666077623,
+        "dest": "extract/public/eval.csv",
+        "size": 1660374,
+        "sha256": "0d9f35d5393734a9a63457890a9c4177418199b2cae458b36a8687fdbd4253ab"
+      },
+      {
+        "asset_id": 666077568,
+        "dest": "extract/private/holdout.csv",
+        "size": 1507248,
+        "sha256": "1c694e5e6b0bc0b329c5934e24037fb7229326ffac1806db6e0655fe0439de9b"
+      },
+      {
+        "asset_id": 666077853,
+        "dest": "extract/quality.json",
+        "size": 10270,
+        "sha256": "88222d66bfd02aa5f768791e5d8d8803822b3b63f21d4d2e6397c9b638bef87b"
+      }
+    ]
+  }
+}
