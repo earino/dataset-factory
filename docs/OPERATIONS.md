@@ -694,6 +694,99 @@ C can never consume build time.
 The reason is arithmetic, not purism: 18 of 31 parked candidates had already been probed before the
 licence question was asked. A C costs the same as an A and returns nothing.
 
+### Atomic scheduled-session admission
+
+The repository wrapper now holds a nonblocking OS lock on
+`.factory/research-session.mutex` **before** evaluating the budget, until the agent
+has finished. Competing ticks exit quietly without starting a model. The mutex
+inode stays in place; do not delete or replace it to clear a busy session. A file
+existing is not evidence that a process holds the lock. Closing the last owning
+file descriptor releases it automatically, including after a crash.
+
+The separate `research-session.lock` JSON marker retains `session_id`, `pid`,
+`written_at`, and the invocation limits for the existing budget reader. It is
+written atomically and cleanup removes only the wrapper's own bytes. The wrapper
+passes its marker path and checkout's budget config explicitly to the gate.
+Standalone budget status remains advisory: it does not acquire admission, and
+manual `hermes chat` invocations do not participate in this mutex.
+
+Admission requires gate exit 0 and exactly one valid `researchBudget` decision
+with a boolean `allowed` and consistent reasons. Missing, malformed, duplicate,
+or contradictory decisions, subprocess errors and timeouts refuse model work.
+Allowances, weekly accounting, qualification, and the scientific briefs are
+unchanged. This does not make missing Hermes accounting records reliable: the
+budget reader's evidence-availability handling remains a separate review item.
+
+Exit status is now operational evidence: 0 means a successful session or an
+ordinary idle/held tick; 2 means admission/startup failed; 124 means the outer
+wall-clock timeout; an agent failure preserves its positive exit code (a signal
+becomes 128 plus its signal number). Hermes's scheduler marks nonzero exits as
+failed and includes stdout/stderr, so these failures will now alert instead of
+appearing completed. The session JSONL distinguishes holds from completed work.
+
+The agent starts in its own process group and inherits the mutex descriptor.
+The wrapper stops that group on timeout or an exception while the child remains
+unreaped; it never signals a group after normal completion has reaped its leader.
+That prevents a recycled PID from targeting an unrelated group. A `killpg(pid, 0)`
+probe would not close that race. Normal session completion relies on Hermes to
+finish its tools; this wrapper does not kill a recycled group to chase them.
+A direct child retaining the inherited descriptor continues to exclude another
+wrapper if its parent is killed. This is POSIX process supervision, not a sandbox
+for intentionally detached descendants or a guarantee that every Hermes version
+retains arbitrary inherited descriptors. Scout's installed-source review confirms
+that the deployed one-shot CLI runs in-process, does not sweep descriptors, and
+closes the inherited descriptor only at process exit:
+https://github.com/earino/dataset-factory/pull/7#issuecomment-6348898506 . This is
+source evidence for that image and command, not a runtime fault-injection test;
+recheck if the launch path changes to a TUI or spawned backend. A hard-killed
+wrapper cannot itself clean up descendants; investigate any surviving process
+rather than deleting the mutex or launching a replacement blindly.
+
+Deploy only in an idle research window: old wrappers do not use the mutex. Keep
+the existing cadence, invocation flags and budget limits. `--dry-run` and idle
+`--if-work` start no agent and write no JSON session marker; a dry run may create
+the persistent mutex file. Test subprocesses use local stubs, never live Hermes,
+paid inference, worker launches, or the production ledger.
+
+For a stuck orphan, inspect the actual process table, command line, parent/group
+identity and job ledger. A JSON PID or old lock timestamp alone is insufficient.
+After confirming the surviving process belongs to this research session, arrange
+an orderly stop of that exact process and verify it is gone before another tick.
+Do not delete the mutex, kill a PID based only on a stale file, or interrupt remote
+workers merely to unblock admission. A forced stop loses in-progress agent work;
+record and reconcile that work before resuming. The supported agent run budget
+normally bounds an orphan, but a wedged runtime may require this intervention.
+
+### Accounting failures hold research
+
+The session admission gate distinguishes a valid empty Hermes usage table from an
+unavailable ledger. Missing, unreadable, corrupt, locked or incompatible `state.db`
+queries hold research; spend, tokens and counts are `null` in JSON and `UNKNOWN`
+in status/digest output. Partial successful reads never become a complete total.
+The read-only SQLite connection waits at most one second for a lock. Retry a later
+tick after fixing the accounting source; do not create an empty replacement ledger
+or reset the allowance to bypass the hold.
+
+Usage counters must be nonnegative integers and cost finite and nonnegative.
+Hermes stores absent/unknown pricing as `0.0`, which is not evidence of free
+usage. The gate reports those dollar totals and remaining allowance as unknown,
+while retaining measured token/session counts. The default unpriced policy is
+`hold`. Eduardo explicitly selected `unpriced_research_policy: require_token_budget`
+for this repository: unpriced research can proceed only with a positive configured
+weekly token ceiling, and it is held when that ceiling is reached. The existing
+40,000,000-token ceiling is unchanged; no dollar price is inferred or backfilled.
+Known estimated zero remains valid; interactive unpriced calls do not consume or
+hold the research allowance. Missing/invalid token accounting always holds. Weekly tokens still include every recorded research call,
+including unpriced calls before the current allowance period. Recorded verification
+session exclusions remain unchanged.
+
+Where the Hermes `sessions.api_call_count` column exists, a positive research call
+counter without any usage rows is an accounting failure. Older supported schemas
+without that counter cannot supply this cross-check; query/schema failures still
+hold. A zero-call session and a valid empty first-run database remain normal.
+These checks validate recorded evidence, not provider billing completeness or
+subscription limits. The cron execution ledger is digest context, not the research
+spend or admission authority; `usage_audit.jsonl` is not currently read by this gate.
 
 ### Hub verification and immutable tags
 
@@ -788,3 +881,18 @@ Inspect actual process identity and worker state; do not trust the saved PID as
 current identity, delete the execution record, or rerun the operation. Preserve
 the local diagnostic and use the existing owned-worker expiry/cleanup and fresh
 attempt procedure. No automatic restart or verification tag follows this failure.
+### Assembled job directories are immutable
+
+`assemble-job.py` builds in a fresh temporary directory under `.factory/jobs/`, validates the
+whole bundle, then exposes it with one rename. It writes `bundle-owner.json` with the job ID
+and hashes of the generated files. Repeating the same assembly is a no-op. Changed source,
+manual edits, unexpected files or a different ownership record require a **new job ID**.
+An existing unmarked directory is preserved, including bundles created by older assemblers;
+use a new attempt ID rather than deleting it to make the assembler proceed.
+
+Descriptor paths must remain within their declared source/output roots. Absolute paths,
+traversal, symlinks and duplicate/reserved destinations are refused before installation.
+A failed assembly cannot replace an existing bundle or leave a launchable partial target.
+Only the fresh temporary staging directory is automatically cleaned up. Qualification and
+runner files are still copied verbatim and the existing qualification-before-scoring sequence
+is unchanged. No cloud action is performed by assembly.

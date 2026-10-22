@@ -22,6 +22,7 @@ unconfigured budget is not an unlimited budget.
 
 import argparse
 import json
+import math
 import os
 import sqlite3
 import subprocess
@@ -60,6 +61,7 @@ DEFAULTS = {
     "catch_up_window_minutes": 120,
     "research_job_ids": [],
     "research_sources": ["scout-research"],
+    "unpriced_research_policy": "hold",
     "notes": "",
 }
 
@@ -99,20 +101,27 @@ def period_start(config, moment):
     return previous.replace(day=reset_day, hour=0, minute=0, second=0, microsecond=0)
 
 
+class AccountingUnavailable(RuntimeError):
+    """A required ledger could not be read; this is not a zero-spend observation."""
+
+
 def _rows(query, params=(), db=None):
     path = Path(db or STATE_DB)
     if not path.is_file():
-        return []
+        raise AccountingUnavailable(f"{path}: accounting database is missing or not a file")
     try:
-        con = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
-    except sqlite3.Error:
-        return []
-    try:
-        return con.execute(query, params).fetchall()
-    except sqlite3.Error:
-        return []
-    finally:
-        con.close()
+        # URI escaping matters for literal '?' and '#' in a configured filesystem path.
+        con = sqlite3.connect(path.resolve().as_uri() + "?mode=ro", uri=True, timeout=1)
+        try:
+            return con.execute(query, params).fetchall()
+        finally:
+            con.close()
+    except (OSError, sqlite3.Error) as exc:
+        # Do not echo raw database errors or row contents into Telegram/scheduler logs.
+        raise AccountingUnavailable(
+            f"{path}: accounting query failed ({type(exc).__name__}); "
+            "check database access, integrity and Hermes schema"
+        ) from None
 
 
 def usage_by_kind(config, start, end):
@@ -132,6 +141,12 @@ def usage_by_kind(config, start, end):
     for session_id, task, calls, in_tok, out_tok, cost, cost_status, source in rows:
         if session_id in excluded:
             continue
+        for field, value in (("api_call_count", calls), ("input_tokens", in_tok),
+                             ("output_tokens", out_tok), ("estimated_cost_usd", cost)):
+            valid_type = type(value) in (int, float) if field == "estimated_cost_usd" else type(value) is int
+            if not valid_type or not math.isfinite(value) or value < 0:
+                raise AccountingUnavailable(f"{STATE_DB}: session_model_usage.{field} "
+                                            "must contain finite nonnegative measurements")
         task = (task or "").strip()
         session_id = session_id or ""
         source = (source or "").strip()
@@ -156,16 +171,20 @@ def usage_by_kind(config, start, end):
             kind = "unclassified"
         bucket = buckets.setdefault(
             kind, {"calls": 0, "input_tokens": 0, "output_tokens": 0, "cost_usd": 0.0,
-                   "cost_status": set()}
+                   "cost_status": set(), "pricing_available": True}
         )
         bucket["calls"] += calls or 0
         bucket["input_tokens"] += in_tok or 0
         bucket["output_tokens"] += out_tok or 0
         bucket["cost_usd"] += cost or 0.0
+        if ((calls or in_tok or out_tok)
+                and str(cost_status or "unknown").strip().lower() in ("", "unknown")):
+            bucket["pricing_available"] = False
         if cost_status:
             bucket["cost_status"].add(str(cost_status))
     for bucket in buckets.values():
-        bucket["cost_usd"] = round(bucket["cost_usd"], 6)
+        bucket["cost_usd"] = (round(bucket["cost_usd"], 6)
+                              if bucket["pricing_available"] else None)
         bucket["cost_status"] = sorted(bucket["cost_status"]) or ["unknown"]
     return buckets
 
@@ -294,18 +313,55 @@ def research_sessions(config, since):
 def evaluate(config, moment=None, late_minutes=None):
     """Decide whether a research session may run now, with the reasons either way."""
     moment = moment or now_utc()
+    try:
+        return _evaluate(config, moment, late_minutes)
+    except AccountingUnavailable as exc:
+        # Discard partial totals: one successful query cannot establish a complete budget.
+        return {
+            "moment": moment.isoformat(),
+            "period_start": period_start(config, moment).isoformat(),
+            "allowance_usd": config.get("allowance_usd"),
+            "research_cost_usd": None,
+            "usage": None,
+            "runs_last_7_days": None,
+            "runs_weighted_last_7_days": None,
+            "research_tokens_last_7_days": None,
+            "weekly_token_budget": int(config.get("weekly_token_budget") or 0),
+            "sessions_over_token_cap": None,
+            "session_cap_per_week": int(config.get("sessions_per_week", 3)),
+            "accounting_available": False,
+            "pricing_available": False,
+            "allowed": False,
+            "reasons": [f"accounting unavailable: {exc}; research is held until repaired"],
+        }
+
+
+def _evaluate(config, moment, late_minutes):
     start = period_start(config, moment)
+    week_start = moment - timedelta(days=7)
+    check_missing_usage(config, min(start, week_start))
     usage = usage_by_kind(config, start, moment)
     research_cost = usage.get("research", {}).get("cost_usd", 0.0)
     allowance = config.get("allowance_usd")
     reserve = float(config.get("reserve_usd") or 0)
     stop_fraction = float(config.get("stop_fraction", 0.95))
     reasons = []
-    week_start = moment - timedelta(days=7)
+    warnings = []
+    policy = config.get("unpriced_research_policy", "hold")
+    weekly_tokens = int(config.get("weekly_token_budget") or 0)
+    if policy not in ("hold", "require_token_budget"):
+        reasons.append("unpriced_research_policy is invalid; expected hold or require_token_budget")
 
     if not allowance:
         reasons.append("no allowance configured (allowance_usd is null) - refusing to wake "
                        "the model until the operator sets one")
+    elif research_cost is None:
+        if policy == "require_token_budget" and weekly_tokens > 0:
+            warnings.append("Research dollar spend and remaining allowance are unknown; "
+                            "admission uses the configured measured token ceiling")
+        else:
+            reasons.append("research pricing is unknown; admission requires priced usage or "
+                           "an operator-selected require_token_budget policy with a positive ceiling")
     else:
         used_fraction = research_cost / float(allowance)
         if used_fraction >= stop_fraction:
@@ -325,7 +381,6 @@ def evaluate(config, moment=None, late_minutes=None):
     # The dollar figure is an estimate and reads 0.0000 with this provider, so it cannot bind.
     # Tokens are measured and are the real brake: a weekly token ceiling stops the routine when
     # the cadence outruns what the operator is willing to spend, whatever the cost column says.
-    weekly_tokens = int(config.get("weekly_token_budget") or 0)
     week_usage = usage_by_kind(config, week_start, moment).get("research", {})
     week_tokens = int(week_usage.get("input_tokens", 0)) + int(week_usage.get("output_tokens", 0))
     if weekly_tokens and week_tokens >= weekly_tokens:
@@ -343,8 +398,6 @@ def evaluate(config, moment=None, late_minutes=None):
             f"lock held for {lock['age_seconds']:.0f}s by {lock.get('session_id', 'unknown')}"
         )
 
-    weeks_runs = cron_runs(config, week_start)
-    completed = [run for run in weeks_runs if str(run["status"]) in ("completed", "failed")]
     cap = int(config.get("sessions_per_week", 3))
     sessions = research_sessions(config, week_start)
     over_cap = [entry for entry in sessions if entry["over_cap"]]
@@ -368,7 +421,7 @@ def evaluate(config, moment=None, late_minutes=None):
         "moment": moment.isoformat(),
         "period_start": start.isoformat(),
         "allowance_usd": allowance,
-        "research_cost_usd": round(research_cost, 6),
+        "research_cost_usd": round(research_cost, 6) if research_cost is not None else None,
         "usage": usage,
         "runs_last_7_days": used,
         "runs_weighted_last_7_days": weighted,
@@ -376,9 +429,33 @@ def evaluate(config, moment=None, late_minutes=None):
         "weekly_token_budget": weekly_tokens,
         "sessions_over_token_cap": len(over_cap),
         "session_cap_per_week": cap,
+        "accounting_available": True,
+        "pricing_available": research_cost is not None,
+        "warnings": warnings,
         "allowed": not reasons,
         "reasons": reasons,
     }
+
+
+def check_missing_usage(config, since):
+    """Current Hermes exposes a session call counter; older ledgers may not."""
+    columns = {row[1] for row in _rows("pragma table_info(sessions)")}
+    if "api_call_count" not in columns:
+        return
+    sources = config.get("research_sources") or []
+    prefixes = [f"cron_{job}_" for job in (config.get("research_job_ids") or [])]
+    conditions = ["s.source = ?" for _ in sources] + ["instr(s.id, ?) = 1" for _ in prefixes]
+    if not conditions:
+        return
+    rows = _rows(
+        "select s.id from sessions s where s.started_at >= ? and s.api_call_count > 0 "
+        "and (" + " or ".join(conditions) + ") "
+        "and not exists (select 1 from session_model_usage u where u.session_id = s.id)",
+        (since.timestamp(), *sources, *prefixes),
+    )
+    if any(row[0] not in excluded_set(config) for row in rows):
+        raise AccountingUnavailable(f"{STATE_DB}: a research session reports model calls "
+                                    "but has no session_model_usage rows")
 
 
 def resume_block(config, decision):
@@ -389,18 +466,24 @@ def resume_block(config, decision):
         f"allowance: {allowance} USD per {config.get('period', {}).get('kind', 'monthly')} "
         f"period starting {decision['period_start'][:10]}"
     )
-    lines.append(
-        f"research spend so far this period: {decision['research_cost_usd']:.4f} USD "
-        f"(estimated by Hermes; no provider-reported actual exists)"
-    )
-    if allowance:
+    if not decision["accounting_available"]:
+        lines.append("Research spend, tokens and session counts: UNKNOWN")
+        lines.extend(decision["reasons"])
+        return "\n".join(lines)
+    cost = decision['research_cost_usd']
+    lines.append("research dollar spend and remaining allowance: UNKNOWN" if cost is None else
+                 f"research spend so far this period: {cost:.4f} USD "
+                 "(estimated by Hermes; no provider-reported actual exists)")
+    lines.extend(decision.get("warnings", []))
+    if allowance and cost is not None:
         remaining = float(allowance) - decision["research_cost_usd"]
         reserve = float(config.get("reserve_usd") or 0)
         lines.append(f"remaining: {remaining:.4f} USD (reserve for the next session: "
                      f"{reserve:.2f} USD)")
     for kind, bucket in sorted(decision["usage"].items()):
+        cost_text = f"{bucket['cost_usd']:.4f} USD" if bucket['cost_usd'] is not None else "UNKNOWN USD"
         lines.append(
-            f"usage[{kind}]: {bucket['cost_usd']:.4f} USD, {bucket['calls']} calls, "
+            f"usage[{kind}]: {cost_text}, {bucket['calls']} calls, "
             f"{bucket['input_tokens']:,} in / {bucket['output_tokens']:,} out"
         )
     lines.append(f"sessions in the last 7 days: {decision['runs_last_7_days']}"
@@ -464,7 +547,14 @@ def digest(config, moment=None, root=None):
     runs = cron_runs(config, start)
     lines = [f"Scout research digest - {moment.date().isoformat()}", ""]
     allowance = decision["allowance_usd"]
-    if allowance:
+    if not decision["accounting_available"]:
+        lines.append("Research spend, remaining allowance, tokens and session counts: UNKNOWN")
+        lines.extend(decision["reasons"])
+    elif decision["research_cost_usd"] is None:
+        lines.append("Research dollar spend and remaining allowance: UNKNOWN")
+        lines.extend(decision.get("warnings", []))
+        lines.extend(decision["reasons"])
+    elif allowance:
         used = decision["research_cost_usd"]
         lines.append(
             f"Research allowance: {used:.4f} / {allowance} USD used "
@@ -480,11 +570,12 @@ def digest(config, moment=None, root=None):
     # Sessions and ticks are different units and were previously both shown as "sessions": a
     # held tick is an execution row that started no session at all. Report them separately, and
     # count the same way the cap counts.
-    lines.append(
-        f"Sessions this week: {decision['runs_last_7_days']}"
-        f"/{decision['session_cap_per_week']}"
-        f" (weighted {decision['runs_weighted_last_7_days']})"
-    )
+    if decision["accounting_available"]:
+        lines.append(
+            f"Sessions this week: {decision['runs_last_7_days']}"
+            f"/{decision['session_cap_per_week']}"
+            f" (weighted {decision['runs_weighted_last_7_days']})"
+        )
     lines.append(f"Scheduler ticks this period: {len(runs)} (includes held ticks that ran no "
                  "session)")
     if decision.get("sessions_over_token_cap"):
@@ -496,8 +587,9 @@ def digest(config, moment=None, root=None):
     if failed:
         lines.append(f"Failed sessions: {len(failed)} - latest {failed[0]['run_id'][:12]} "
                      f"({failed[0]['error'] or 'no error text'})")
-    for kind, bucket in sorted(decision["usage"].items()):
-        lines.append(f"  {kind}: {bucket['cost_usd']:.4f} USD, {bucket['calls']} calls")
+    for kind, bucket in sorted((decision["usage"] or {}).items()):
+        cost_text = f"{bucket['cost_usd']:.4f} USD" if bucket['cost_usd'] is not None else "UNKNOWN USD"
+        lines.append(f"  {kind}: {cost_text}, {bucket['calls']} calls")
 
     if root:
         commits, total_commits, queue = completed_work(root, moment - timedelta(days=7))

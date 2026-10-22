@@ -197,6 +197,9 @@ class LedgerTests(unittest.TestCase):
         budget.EXECUTIONS_DB = self.tmp / "executions.db"
         budget.STATE_DB = self.tmp / "state.db"
         budget.LOCK_PATH = self.tmp / "lock"
+        # Lock tests need valid zero-use accounting, not an unavailable database.
+        from tests.test_research_budget import make_state_db
+        make_state_db(budget.STATE_DB, [])
 
     def tearDown(self):
         (budget.EXECUTIONS_DB, budget.STATE_DB, budget.LOCK_PATH) = self._saved

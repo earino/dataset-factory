@@ -13,17 +13,21 @@ Reuses supported controls instead of adding infrastructure:
   agent process is started at all**, so a held tick costs nothing.
 
 Both ceilings are per-invocation flags, so they bound this session without changing global
-config or the operator's interactive sessions. The gate writes the session lock so two
-sessions cannot overlap, and the lock is removed when the run ends.
+config or the operator's interactive sessions. An OS mutex covers gate evaluation and
+the agent run; a separate JSON marker feeds budget reporting and is removed when the run ends.
 
     python3 scripts/scout_research_session.py --max-turns 60 --run-budget 2400
     python3 scripts/scout_research_session.py --dry-run          # gate only, no agent
 """
 
 import argparse
+import contextlib
+import fcntl
 import json
 import os
 import re
+import signal
+import stat
 import subprocess
 import sys
 import tempfile
@@ -104,39 +108,147 @@ def note(entry):
         handle.write(json.dumps(entry) + "\n")
 
 
+class AdmissionError(RuntimeError):
+    """The preflight could not establish permission to start model work."""
+
+
+class SessionBusy(AdmissionError):
+    """Another wrapper or its agent owns the admission mutex."""
+
+
+@contextlib.contextmanager
+def admission_lock():
+    """Serialize gate evaluation and execution, without a stale-time takeover.
+
+    Keep this inode permanently: unlinking a flock file lets two processes lock
+    different inodes. The JSON session marker remains separate for budget reports.
+    """
+    FACTORY_DIR.mkdir(parents=True, exist_ok=True)
+    if FACTORY_DIR.is_symlink():
+        raise AdmissionError("session state directory must not be a symlink")
+    path = FACTORY_DIR / "research-session.mutex"
+    fd = os.open(path, os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW | os.O_NONBLOCK, 0o600)
+    try:
+        info = os.fstat(fd)
+        if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1:
+            raise AdmissionError("session mutex must be a regular file with a single hard link")
+        try:
+            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            raise SessionBusy("another research session owns the admission lock") from None
+        yield fd
+    finally:
+        # Close, rather than LOCK_UN: an inherited descriptor keeps the lock if
+        # this wrapper dies while its direct Hermes child is still running.
+        os.close(fd)
+
+
+@contextlib.contextmanager
+def session_marker(args):
+    """Publish the legacy reporting marker atomically; remove only our bytes."""
+    if LOCK.is_symlink() or (LOCK.exists() and not LOCK.is_file()):
+        raise AdmissionError("session marker must be a regular file")
+    payload = json.dumps({"session_id": SOURCE_TAG_ACTIVE, "pid": os.getpid(),
+                          "written_at": now().isoformat(),
+                          "max_turns": args.max_turns, "run_budget": args.run_budget})
+    fd, temporary = tempfile.mkstemp(dir=LOCK.parent, prefix=".session-marker-")
+    try:
+        with os.fdopen(fd, "w") as handle:
+            handle.write(payload)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, LOCK)
+        yield
+    finally:
+        Path(temporary).unlink(missing_ok=True)
+        # Preserve another writer's replacement for inspection, not cleanup.
+        if (not LOCK.is_symlink() and LOCK.is_file()
+                and LOCK.stat().st_size == len(payload.encode())
+                and LOCK.read_text() == payload):
+            LOCK.unlink()
+
+
+def _unique_json(pairs):
+    value = {}
+    for key, item in pairs:
+        if key in value:
+            raise ValueError("duplicate decision key")
+        value[key] = item
+    return value
+
+
 def run_gate(late_minutes=None):
-    """Run the budget gate; return (allowed, resume_block, reason)."""
-    command = [sys.executable, str(BUDGET), "--gate"]
+    """Require a successful gate and exactly one explicit, well-formed decision."""
+    command = [sys.executable, str(BUDGET), "--gate", "--config",
+               str(REPO / "config" / "research-budget.json")]
     if late_minutes is not None:
         command += ["--late-minutes", str(late_minutes)]
-    result = subprocess.run(command, capture_output=True, text=True, timeout=120,
-                            cwd=str(REPO))
-    allowed, reason = False, "gate produced no decision"
-    block_lines = []
-    for line in result.stdout.splitlines():
-        stripped = line.strip()
-        if stripped.startswith('{"wakeAgent"'):
+    env = {**os.environ, "SCOUT_BUDGET_LOCK": str(LOCK)}
+    try:
+        result = subprocess.run(command, capture_output=True, text=True, timeout=120,
+                                cwd=str(REPO), env=env)
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise AdmissionError(f"budget gate unavailable ({type(exc).__name__})") from None
+    if result.returncode != 0:
+        raise AdmissionError(f"budget gate exited {result.returncode}")
+    decision, wake, block_lines = None, None, []
+    try:
+        for line in result.stdout.splitlines():
+            stripped = line.strip()
+            if stripped.startswith("{"):
+                item = json.loads(stripped, object_pairs_hook=_unique_json)
+                if not isinstance(item, dict):
+                    raise ValueError("expected decision object")
+                if "researchBudget" in item:
+                    if decision is not None or set(item) != {"researchBudget"}:
+                        raise ValueError("duplicate or ambiguous budget decision")
+                    decision = item["researchBudget"]
+                    if (not isinstance(decision, dict)
+                            or type(decision.get("allowed")) is not bool
+                            or not isinstance(decision.get("reasons"), list)
+                            or any(not isinstance(r, str) or not r.strip()
+                                   for r in decision["reasons"])):
+                        raise ValueError("malformed budget decision")
+                    if decision["allowed"] == bool(decision["reasons"]):
+                        raise ValueError("budget decision contradicts its reasons")
+                elif "wakeAgent" in item:
+                    if wake is not None or type(item["wakeAgent"]) is not bool:
+                        raise ValueError("duplicate or malformed wake directive")
+                    wake = item["wakeAgent"]
+                else:
+                    raise ValueError("unknown gate directive")
+            elif not stripped.startswith("SKIPPING THIS TICK"):
+                block_lines.append(line)
+        if decision is None:
+            raise ValueError("gate produced no budget decision")
+        if wake is not None and wake != decision["allowed"]:
+            raise ValueError("conflicting gate decisions")
+    except (ValueError, TypeError) as exc:
+        raise AdmissionError(f"invalid budget gate response ({exc})") from None
+    return (decision["allowed"], "\n".join(block_lines).strip(),
+            "; ".join(decision["reasons"]) or "clear")
+
+
+def run_agent(command, timeout, lock_fd):
+    """Retain admission across exec; stop the process group at the outer ceiling."""
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                               text=True, cwd=str(REPO), start_new_session=True,
+                               pass_fds=(lock_fd,))
+    try:
+        output, error = process.communicate(timeout=timeout)
+        return subprocess.CompletedProcess(command, process.returncode, output, error)
+    finally:
+        # Signal only while this child has not been reaped. Its PID then cannot
+        # have been recycled as an unrelated process-group ID. communicate()
+        # reaps on normal completion; killpg(..., 0) after that would still race.
+        if process.returncode is None:
             try:
-                allowed = json.loads(stripped).get("wakeAgent") is not False
-            except json.JSONDecodeError:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
                 pass
-            continue
-        if stripped.startswith('{"researchBudget"'):
-            try:
-                payload = json.loads(stripped).get("researchBudget") or {}
-                allowed = payload.get("allowed") is True
-                reasons = payload.get("reasons") or []
-                reason = "; ".join(reasons) if reasons else "clear"
-            except json.JSONDecodeError:
-                pass
-            continue
-        if stripped.startswith("SKIPPING THIS TICK"):
-            reason = stripped
-            continue
-        block_lines.append(line)
-    if not result.stdout.strip():
-        reason = f"gate failed: {result.stderr.strip()[:300] or 'no output'}"
-    return allowed, "\n".join(block_lines).strip(), reason
+        process.wait()
+        process.stdout.close()
+        process.stderr.close()
 
 
 def build_prompt(resume_block, extra="", template_path=None):
@@ -200,6 +312,28 @@ def main(argv=None):
     global SOURCE_TAG_ACTIVE
     SOURCE_TAG_ACTIVE = args.source_tag
 
+    if args.max_turns <= 0 or args.run_budget <= 0:
+        parser.error("--max-turns and --run-budget must be positive")
+    try:
+        with admission_lock() as lock_fd:
+            return run_session(args, lock_fd)
+    except SessionBusy as exc:
+        note({"event": "skipped", "reason": str(exc)})
+        if args.fallback_report:
+            subprocess.run([sys.executable, str(BUDGET), "--digest", "--config",
+                            str(REPO / "config" / "research-budget.json")], cwd=str(REPO))
+        if args.dry_run or args.fallback_report:
+            print(f"Held, so no model work ran: {exc}")
+        return 0
+    except (AdmissionError, OSError) as exc:
+        # Never include raw child stderr or environment values in this diagnostic.
+        reason = str(exc) if isinstance(exc, AdmissionError) else type(exc).__name__
+        note({"event": "admission_failed", "reason": reason})
+        print(f"Scout research session refused: {reason}", file=sys.stderr)
+        return 2
+
+
+def run_session(args, lock_fd):
     if args.if_work:
         work = actionable_work()
         if not work:
@@ -236,46 +370,42 @@ def main(argv=None):
         return 0
 
     prompt = build_prompt(resume_block, args.extra, args.prompt_file)
-    FACTORY_DIR.mkdir(parents=True, exist_ok=True)
-    LOCK.write_text(json.dumps({"session_id": SOURCE_TAG_ACTIVE, "pid": os.getpid(),
-                                "written_at": now().isoformat(),
-                                "max_turns": args.max_turns, "run_budget": args.run_budget}))
-
-    started = time.time()
-    with tempfile.NamedTemporaryFile("w", suffix=".md", delete=False) as handle:
+    started = time.monotonic()
+    outcome, output, error, exit_code = "completed", "", "", 0
+    with tempfile.NamedTemporaryFile("w", suffix=".md") as handle:
         handle.write(prompt)
-        prompt_path = handle.name
+        handle.flush()
+        command = [
+            HERMES_PYTHON, HERMES_CLI, "chat",
+            "--query-file", handle.name,
+            "--oneshot", "-Q",
+            "--source", SOURCE_TAG_ACTIVE,
+            "--max-turns", str(args.max_turns),
+            "--run-budget", str(args.run_budget),
+            "-s", "dataset-discovery,dataset-qualification,dataset-release",
+        ]
+        with session_marker(args):
+            try:
+                result = run_agent(command, args.run_budget + 300, lock_fd)
+                output, error = result.stdout, result.stderr
+                if result.returncode != 0:
+                    outcome = f"exit {result.returncode}"
+                    exit_code = result.returncode if result.returncode > 0 else 128 - result.returncode
+            except subprocess.TimeoutExpired:
+                outcome = "killed by the wrapper after the run budget elapsed"
+                exit_code = 124
+            except OSError as exc:
+                outcome = f"agent could not start ({type(exc).__name__})"
+                exit_code = 2
 
-    command = [
-        HERMES_PYTHON, HERMES_CLI, "chat",
-        "--query-file", prompt_path,
-        "--oneshot", "-Q",
-        "--source", SOURCE_TAG_ACTIVE,
-        "--max-turns", str(args.max_turns),
-        "--run-budget", str(args.run_budget),
-        "-s", "dataset-discovery,dataset-qualification,dataset-release",
-    ]
-    outcome, output, error = "completed", "", ""
-    try:
-        result = subprocess.run(command, capture_output=True, text=True, cwd=str(REPO),
-                                timeout=args.run_budget + 300)
-        output, error = result.stdout, result.stderr
-        if result.returncode != 0:
-            outcome = f"exit {result.returncode}"
-    except subprocess.TimeoutExpired:
-        outcome = "killed by the wrapper after the run budget elapsed"
-    finally:
-        LOCK.unlink(missing_ok=True)
-        Path(prompt_path).unlink(missing_ok=True)
-
-    elapsed = round(time.time() - started, 1)
+    elapsed = round(time.monotonic() - started, 1)
     note({"event": "session", "outcome": outcome, "elapsed_seconds": elapsed,
           "prompt_file": Path(args.prompt_file).name,
           "max_turns": args.max_turns, "run_budget": args.run_budget})
     print(strip_footer(output) or f"Scout research session {outcome} after {elapsed}s")
     if error.strip():
         print(f"(stderr: {error.strip()[:400]})")
-    return 0
+    return exit_code
 
 
 if __name__ == "__main__":

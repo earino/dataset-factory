@@ -27,7 +27,8 @@ their hashes so the report can prove the runner was not modified. If the clone i
 assembler fails rather than substituting a stand-in.
 
 Nothing here touches the network or the cloud, and the staging directory is regenerated from
-scratch on every run.
+scratch in an owned temporary directory. Existing job IDs are immutable: an identical repeat
+is a no-op, and changed content requires a new job ID.
 """
 from __future__ import annotations
 
@@ -37,9 +38,13 @@ import json
 import os
 import shutil
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from factory.common import FactoryError, identifier, locked
+OWNER_FILE = "bundle-owner.json"
 ALLOWED_SUFFIXES = (".py", ".sh", ".json", ".txt", ".toml", ".yaml", ".yml", ".md")
 # Standard checksum files have no suffix; mirrors factory.worker.BARE_ALLOWED_NAMES.
 BARE_ALLOWED_NAMES = {"SHA256SUMS", "SHA256SUMS.txt"}
@@ -85,14 +90,63 @@ def sha256_of(path: Path) -> str:
     return digest.hexdigest()
 
 
+def safe_path(base: Path, relative: str) -> Path:
+    """Contain descriptor paths before reading or copying; never follow source/output links."""
+    if (not isinstance(relative, str) or not relative or relative.startswith("/")
+            or any(part in ("", ".", "..") for part in relative.split("/"))):
+        raise SystemExit(f"unsafe bundle path: {relative!r}")
+    path = base / relative
+    for entry in (path, *path.parents):
+        if entry.is_symlink():
+            raise SystemExit(f"bundle path is a symlink: {entry}")
+        if entry == base:
+            break
+    return path
+
+
+def inventory(directory: Path) -> dict:
+    check_bundle(directory)
+    return {p.relative_to(directory).as_posix(): sha256_of(p)
+            for p in sorted(directory.rglob("*")) if p.is_file() and p.name != OWNER_FILE}
+
+
+def seal(directory: Path, job_id: str) -> None:
+    (directory / OWNER_FILE).write_text(json.dumps({"schema_version": 1,
+        "owner": "dataset-factory/assemble-job", "job_id": job_id,
+        "files": inventory(directory)}, sort_keys=True, indent=1) + "\n")
+
+
+def install(staged: Path, target: Path, job_id: str) -> None:
+    """Never remove or replace a job directory: existing bytes are a recovery record."""
+    if target.is_symlink():
+        raise SystemExit("refusing a symlink job directory")
+    if target.exists():
+        if not target.is_dir() or not (target / OWNER_FILE).is_file():
+            raise SystemExit("existing job directory is not owned; preserve it and use a new job ID")
+        actual = inventory(target)
+        try:
+            owner = json.loads((target / OWNER_FILE).read_text())
+        except (ValueError, OSError):
+            raise SystemExit("invalid bundle ownership record; preserve it and use a new job ID") from None
+        if (not isinstance(owner, dict) or owner.get("owner") != "dataset-factory/assemble-job" or owner.get("schema_version") != 1
+                or owner.get("job_id") != job_id or owner.get("files") != actual):
+            raise SystemExit("existing job directory changed; preserve it and use a new job ID")
+        if (target / OWNER_FILE).read_bytes() != (staged / OWNER_FILE).read_bytes():
+            raise SystemExit("job ID already names different source bytes; use a new job ID")
+        return
+    staged.rename(target)
+
+
 def load_job(spec: dict) -> dict:
     """The candidate's own job.json is the source of truth for identity and sizing."""
-    path = ROOT / spec["job_file"]
+    path = safe_path(ROOT, spec["job_file"])
     if not path.is_file():
         raise SystemExit(f"candidate job file is missing: {spec['job_file']}")
     job = json.loads(path.read_text())
     job.update(spec["overrides"])
-    if not (ROOT / "candidates" / str(job.get("candidate"))).is_dir():
+    identifier(job.get("id"))
+    identifier(job.get("candidate"))
+    if not safe_path(ROOT, "candidates/" + job["candidate"]).is_dir():
         raise SystemExit(f"job candidate {job.get('candidate')!r} has no candidate directory")
     return job
 
@@ -116,6 +170,77 @@ def check_bundle(directory: Path) -> int:
     return total
 
 
+def assemble(spec: dict, job: dict, target: Path):
+    written = {"job.json", "job_id.txt", "runner_files.json", OWNER_FILE}
+    copied_bytes = 0
+
+    def copy(source, relative):
+        nonlocal copied_bytes
+        destination = safe_path(target, relative)
+        if relative in written:
+            raise SystemExit(f"duplicate or reserved bundle destination: {relative}")
+        written.add(relative)
+        copied_bytes += source.stat().st_size
+        if copied_bytes > BUNDLE_LIMIT:
+            raise SystemExit("bundle source exceeds the 2 MiB limit")
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source, destination)
+
+    recorded = []
+    for name, relative in spec["files"]:
+        source = safe_path(ROOT, relative)
+        if not source.is_file():
+            raise SystemExit(f"canonical source is missing: {relative}")
+        copy(source, name)
+        recorded.append({"bundled_as": name, "source": relative,
+                         "bytes": source.stat().st_size, "sha256": sha256_of(source)})
+
+    for destination, source_dir in spec.get("trees", []):
+        # A whole directory, laid out under a subdirectory of the bundle - used to give a job the
+        # published package exactly as a consumer would see it after cloning.
+        tree_root = safe_path(ROOT, source_dir)
+        if not tree_root.is_dir():
+            raise SystemExit(f"canonical tree is missing: {source_dir}")
+        for path in sorted(tree_root.rglob("*")):
+            if path.is_symlink():
+                raise SystemExit(f"canonical tree contains a symlink: {path}")
+            if not path.is_file() or ".git" in path.parts:
+                continue
+            inside = path.relative_to(tree_root)
+            copy(safe_path(tree_root, inside.as_posix()), f"{destination}/{inside.as_posix()}")
+            recorded.append({"bundled_as": f"{destination}/{inside.as_posix()}",
+                             "source": f"{source_dir}/{inside.as_posix()}",
+                             "bytes": path.stat().st_size, "sha256": sha256_of(path)})
+
+    runner = {}
+    if spec.get("runner_files"):
+        # Taken from the benchmark clone itself. Never vendored, never re-implemented: if the
+        # clone is missing the bundle cannot be assembled, because a substitute would not be the
+        # runner whose contract this job claims to exercise.
+        if not BENCHMARK.is_dir():
+            raise SystemExit(f"the harness benchmark clone is missing at {BENCHMARK}; "
+                             f"set FACTORY_BENCHMARK_ROOT or skip this bundle")
+        for name in spec["runner_files"]:
+            source = safe_path(BENCHMARK.resolve(), RUNNER_TEMPLATE + "/" + name)
+            if not source.is_file():
+                raise SystemExit(f"runner file is missing from the benchmark clone: {source}")
+            copy(source, name)
+            digest = sha256_of(source)
+            record = {"bundled_as": name, "source": str(source),
+                      "bytes": source.stat().st_size, "sha256": digest}
+            recorded.append(record)
+            runner[name] = digest
+        (target / "runner_files.json").write_text(json.dumps(runner, indent=1) + "\n")
+
+    job["source_files"] = recorded
+    (target / "job.json").write_text(json.dumps(job, indent=1) + "\n")
+    # One source of truth for the id, readable inside the container, so no script has to pin it.
+    (target / "job_id.txt").write_text(job["id"] + "\n")
+
+    seal(target, job["id"])
+    total = check_bundle(target)
+    return recorded, runner, total
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description="Assemble a worker job directory")
     parser.add_argument("--list", action="store_true", help="show every declared bundle")
@@ -131,63 +256,15 @@ def main(argv=None) -> int:
         raise SystemExit("name a bundle, or pass --list to see every declared one")
     spec = BUNDLES[args.bundle]
     job = load_job(spec)
-    target = ROOT / ".factory" / "jobs" / job["id"]
-    if target.exists():
-        shutil.rmtree(target)
-    target.mkdir(parents=True)
+    parent = safe_path(ROOT, ".factory/jobs")
+    parent.mkdir(parents=True, exist_ok=True)
+    target = safe_path(parent, job["id"])
+    # Serialize with worker operations; rename exposes only a completely validated bundle.
+    with locked(ROOT), tempfile.TemporaryDirectory(prefix=".assembling-", dir=parent) as temporary:
+        staged = Path(temporary)
+        recorded, runner, total = assemble(spec, job, staged)
+        install(staged, target, job["id"])
 
-    recorded = []
-    for name, relative in spec["files"]:
-        source = ROOT / relative
-        if not source.is_file():
-            raise SystemExit(f"canonical source is missing: {relative}")
-        shutil.copyfile(source, target / name)
-        recorded.append({"bundled_as": name, "source": relative,
-                         "bytes": source.stat().st_size, "sha256": sha256_of(source)})
-
-    for destination, source_dir in spec.get("trees", []):
-        # A whole directory, laid out under a subdirectory of the bundle - used to give a job the
-        # published package exactly as a consumer would see it after cloning.
-        tree_root = ROOT / source_dir
-        if not tree_root.is_dir():
-            raise SystemExit(f"canonical tree is missing: {source_dir}")
-        for path in sorted(tree_root.rglob("*")):
-            if not path.is_file() or ".git" in path.parts:
-                continue
-            inside = path.relative_to(tree_root)
-            out = target / destination / inside
-            out.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(path, out)
-            recorded.append({"bundled_as": f"{destination}/{inside.as_posix()}",
-                             "source": f"{source_dir}/{inside.as_posix()}",
-                             "bytes": path.stat().st_size, "sha256": sha256_of(path)})
-
-    runner = {}
-    if spec.get("runner_files"):
-        # Taken from the benchmark clone itself. Never vendored, never re-implemented: if the
-        # clone is missing the bundle cannot be assembled, because a substitute would not be the
-        # runner whose contract this job claims to exercise.
-        if not BENCHMARK.is_dir():
-            raise SystemExit(f"the harness benchmark clone is missing at {BENCHMARK}; "
-                             f"set FACTORY_BENCHMARK_ROOT or skip this bundle")
-        for name in spec["runner_files"]:
-            source = BENCHMARK / RUNNER_TEMPLATE / name
-            if not source.is_file():
-                raise SystemExit(f"runner file is missing from the benchmark clone: {source}")
-            shutil.copyfile(source, target / name)
-            digest = sha256_of(source)
-            record = {"bundled_as": name, "source": str(source),
-                      "bytes": source.stat().st_size, "sha256": digest}
-            recorded.append(record)
-            runner[name] = digest
-        (target / "runner_files.json").write_text(json.dumps(runner, indent=1) + "\n")
-
-    job["source_files"] = recorded
-    (target / "job.json").write_text(json.dumps(job, indent=1) + "\n")
-    # One source of truth for the id, readable inside the container, so no script has to pin it.
-    (target / "job_id.txt").write_text(job["id"] + "\n")
-
-    total = check_bundle(target)
     print(json.dumps({
         "job_directory": str(target.relative_to(ROOT)),
         "job_id": job["id"],
@@ -208,5 +285,21 @@ def main(argv=None) -> int:
     return 0
 
 
+def cli(argv=None):
+    try:
+        return main(argv)
+    except (FactoryError, SystemExit, OSError) as exc:
+        if isinstance(exc, SystemExit) and exc.code in (None, 0):
+            return 0
+        arguments = list(sys.argv[1:] if argv is None else argv)
+        declaration = BUNDLES.get(arguments[0], {}) if arguments else {}
+        job_file = declaration.get("job_file", "candidates/<candidate>/source/job.json")
+        message = str(exc) if not isinstance(exc, OSError) else type(exc).__name__
+        print(json.dumps({"ok": False, "code": "assembly_refused", "error": message,
+                          "next_action": f"Correct the named input. If the job ID already exists, "
+                          f"set a new unique id in {job_file} and rerun assembly; preserve the old directory."}))
+        return 1
+
+
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(cli())
