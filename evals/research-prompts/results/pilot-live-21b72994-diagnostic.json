@@ -506,11 +506,67 @@
       "elapsed_seconds": 162.284,
       "response": "DECISION\n\nPark the third source now, with the timing blocker recorded as unresolved. Spend the remaining minutes writing the record and STATE.md entry, committing, and running the candidate check if the clock allows. No third calendar retry this session; no success language about timing; CI reported as pending, not passed.\n\nSUPPORTING EVIDENCE\n\n- \"Ready\" requires all four discovery contracts with recorded evidence. This source has terms, target and splits evidenced; timing (contract 2) has none \u2014 the release-calendar query returned HTTP 503, and one changed retry also returned 503.\n- AGENTS.md: an infrastructure failure does not prove a dataset unsuitable, so a 503 is not a rejection ground. The licence is clean, so the \"class C is a drop, never a park\" rule does not apply either \u2014 it covers licence ambiguity, not endpoint outages.\n- Retry policy: a second, changed attempt already failed; the rule is record the diagnosis and move on, not a third attempt inside three minutes.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\n\nOpen question: does the feature series' publication lag admit the stated prediction instant? One observation settles it \u2014 a single period_end \u2192 published pair for the feature series, from the calendar endpoint once it recovers, or from the publisher's release listing or a past release's own publication date. If the lag places features before the instant, unpark to ready and name the construction step; if features publish after the instant, reject or re-target to a change/onset label per the qualification skill. The record must state \"unresolved: endpoint unavailable\", never \"verified\" \u2014 and never read as evidence that features publish late.\n\nORDERED ACTIONS AND STOPPING CONDITION\n\n1. Write candidates/<id>/record.json: verdict park; licence class with quoted terms; target and split evidence; timing blocker naming both 503 attempts (endpoint, timestamps, that the retry was changed), labelled infrastructure failure; jurisdiction; next_action naming the discriminating check above.\n2. Add the STATE.md entry: three sources opened, verdicts (two reject, one park), the 503 evidence, next actions.\n3. Commit and push now. The diff is only this session's notes; the wall clock is binding, and an unpushed commit cannot be recovered by an honest report \u2014 a check result can be reported either way. If a check later fails, record it as the next action rather than fixing under time pressure.\n4. Run scripts/check-candidate.py --all (covers what I touched \u2014 the records), then python3 -m unittest discover -s tests only if time remains (I changed no code).\n5. Stopping condition: on the wrap-up notice or wall clock, stop and report exactly which checks completed; one that did not finish is reported as not run, never as passed. CI for the pushed commit will be pending at session end \u2014 report it as pending, with the documented gh api head_sha query left as the next session's first read.\n\nOPERATOR REPORT\n\n\"Discovery session: three sources opened, three verdicts recorded \u2014 two rejects (reasons and evidence in their records), one park. The parked source has clean terms, target and split evidence, but its feature publication timing is unresolved: the release-calendar query returned HTTP 503 and one changed retry also failed. That is endpoint unavailability, not evidence about the data, so it was neither advanced to ready nor rejected. Unparking question: one observed release date (period_end \u2192 published) for the feature series. check-candidate.py --all: <actual result>. Test suite: <actual result, or 'not run \u2014 wall clock'>. Commit <sha> pushed; CI not concluded before session end and must be read next tick. Non-US share: as carried in the three records \u2014 discovery-coverage.py is the authority; not asserted here.\"\n",
       "response_sha256": "0097be9a875be619c3b211de8629e401684b70de8c938ffcbf89985f1a8e6292"
+    },
+    {
+      "partition": "diagnostic",
+      "case": "failed-probe-closeout",
+      "arm": "revised",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-71",
+      "session_id": "20261022_235144_4ed2d0",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "8cf7beed14d9c666b81241fa6a0ff9964bece7edd0265ec0b74b311a163bbd98",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 241,
+        "output_tokens": 5225,
+        "cache_read_tokens": 24576,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 30042,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 536,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 189,
+          "output_tokens": 4689,
+          "cache_read_tokens": 24192,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 73.02,
+      "response": "Decision\n\nEnter close-out now; no further probes. Record the strongest lead as parked/investigating, not ready: terms, target and splits are evidenced, but the timing contract is unresolved, and ready requires all five contracts. The HTTP 503 is an access failure, not a scientific rejection, so the lead is not dropped. The two rejected sources already carry supported rejection records; there is no new evidence to reopen them.\n\nSupporting evidence (observed only)\n\n- Lead: clean licence terms (classified from the publisher's own instrument), target and split evidence recorded \u2014 three of the five contracts satisfied.\n- Timing: unresolved. The release-calendar query returned HTTP 503 and one changed retry also failed; the one-changed-retry budget is spent, so I record the blocker and move on. No observed period_end -> published pair exists. No files were constructed, so no AUC, base rate or headroom number is claimed anywhere.\n\nUncertainty and next discriminating check\n\nMissing fact: whether the intended features' values are first published at or before the stated prediction instant. Discriminating check: when the calendar endpoint recovers, fetch one release's date stamps \u2014 or read a past release's stamps from the publisher's bulletin/archive \u2014 to obtain a single observed period_end -> published pair. If a feature publishes after the instant, remove that feature or treat the task as a redesign; the instant may not move past the outcome's revelation.\n\nOrdered actions and stopping condition\n\n1. Write the lead's record first (a decision not written is lost): verdict parked/investigating; blocker = feature publication timing; both 503 responses with URL and time; next probe and reopening event as above.\n2. Add a compact STATE.md entry carrying the same next action.\n3. Run the required candidate checks and the repository test suite (~2 min) against the updated records. If the clock expires mid-run, record the check as incomplete with a follow-up \u2014 never as passing.\n4. Review the diff (this session's notes only), commit the intended work, push, and check CI for that exact commit via the documented head_sha query; report a pending run as pending.\n\nStopping condition: all source probing stops immediately (retry budget spent); close-out ends at the runtime ceiling, with anything unfinished explicitly recorded as incomplete. Realistically the two-minute checks consume most of the window, so the commit/CI step is at risk of becoming the recorded follow-up rather than completed work.\n\nOperator report\n\nDiscovery session close-out. Two sources closed with supported rejection records (evidence recorded earlier this session). Strongest remaining lead: parked, not ready \u2014 licence terms, target and split evidence are clean; feature publication timing is unresolved. The release-calendar endpoint returned HTTP 503; one changed retry also failed. That is an access failure, not evidence about the dataset, and not grounds for rejection. No dataset was constructed this session, so no dataset measurements are claimed. Candidate checks and the test suite are the close-out work now in progress; their actual outcome will be recorded, and if time runs out they will be recorded as incomplete with a follow-up, not reported as passing. The commit of this session's notes and the CI result for that exact commit follow the same rule: reported as observed, pending as pending. Next action, specific enough for a fresh session: retry the release calendar when it recovers, or read a past release's published stamps, to obtain one observed period_end -> published pair; then decide ready versus feature removal/redesign on that evidence.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "9eee5ef2fb6d4fa708e7477ec7b2e6c362682de6a9d6fc37768385f786d02322"
     }
   ],
   "ledger": {
-    "calls": 71,
-    "tokens": 2475032
+    "calls": 72,
+    "tokens": 2505074
   },
-  "updated_at": "2026-10-22T23:51:49Z"
+  "updated_at": "2026-10-22T23:53:11Z"
 }
