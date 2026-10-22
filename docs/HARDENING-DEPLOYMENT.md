@@ -1,8 +1,9 @@
-# First hardening rollout — deployed, verification follow-up
+# First hardening rollout — deployed and verified
 
 Prepared 2026-10-22; the operator subsequently explicitly authorized merge/deployment.
-PRs #1–4 and #6–8 are merged. Scout deployed `50135b2ec0e81a4779076724287c629c8fdbdf8e`
-by fast-forward, with doctor and the 122-file live audit passing. See the
+PRs #1–4 and #6–9 are merged. Scout deployed the hardening stack and fixture follow-up
+by fast-forward; final tested code is `8046b1b77ff0259e95675eb8ecaa78f657730404`.
+Doctor and the 122-file live audit passed. See the
 [deployment evidence](https://github.com/earino/dataset-factory/pull/4#issuecomment-6350157615)
 and the verification follow-up below. The following procedure records the reviewed rollout.
 No worker launch, allowance increase, credential, dataset tag or public-destination
@@ -207,11 +208,53 @@ Ran 572 tests in 6.781s
 OK (skipped=6)
 ```
 
-The sentinel remains byte-identical and unowned. Next: verify this fixture repair in
-Scout's isolated live-tree copy, merge after exact-head CI, fast-forward the host and
-republish/verify dashboard health. Do not erase or mark old job directories as owned
-to make tests pass. A fresh dashboard and ordinary scheduled-session observation are
-still required before claiming operational verification complete.
+The sentinel remains byte-identical and unowned. Scout independently verified the
+repair in a copy of the live tree, including all historical job directories:
+
+```text
+Ran 572 tests in 12.735s
+OK
+exit 0
+```
+
+All 34 assertion ASTs match; the Austin destination receipt, historical job digest
+and absence of its ownership marker remain unchanged. The hosted checkout stays
+clean. [Scout's signed review](https://github.com/earino/dataset-factory/pull/9#issuecomment-6350248422)
+records the method and evidence. PR #9 merged after both branch checks passed;
+[exact-main CI](https://github.com/earino/dataset-factory/actions/runs/39846677244)
+also passed at `8046b1b`. No old job was erased or marked owned to make tests pass.
+
+### Final public readback and ordinary research admission
+
+Dashboard commit `7a799aa1c1b6096008e1921df5148381d7da68ce` passed its exact-commit
+[Pages workflow](https://github.com/earino/dataset-factory-dashboard/actions/runs/39846876826).
+Independent anonymous JSON and HTML readback reports snapshot `2026-10-22T20:12:35+00:00`,
+source `8046b1b`, `tests={count: "572", ok: true}`, successful CI, 71 candidate checks
+passing, and no alarms. All eleven release rows still match the independently
+verified split/baseline/destination/publication fields. The live cost page explicitly
+renders dollar spend and remaining allowance as unknown; the 40M token ceiling is
+unchanged. The deployed host's 263 tracked release files match Git with no missing
+files or mismatches. Qualification remains 1.4.0, executable SHA-256
+`4e51d2e9494fd66dd220517476119d7b3f2edea4ffde276caa90999a28cc0a87`.
+[Scout's final deployment evidence](https://github.com/earino/dataset-factory/pull/9#issuecomment-6350323879)
+confirms doctor and the 61/122-file audits at `8046b1b`. The later budget read showed
+8,808,258 weekly tokens and correctly refused overlap because the real discovery
+session held the lock; this was not an accounting/pricing failure.
+
+Both research admissions are enabled again. Next scheduled times in the verified
+snapshot are research `2026-10-22T22:00:00Z` and discovery `2026-10-23T00:00:00Z`.
+The ordinary 20:00 discovery tick ran once on resume at 20:02:53Z, with execution
+`ddf1eea4eb4d4c6facb8e5b17b64525c` and real `scout-research` session
+`20261022_200258_ef9347` (started 20:03:03Z). This verifies normal admission and agent
+startup; its research outcome was still pending at rollout close-out. Scout must
+record the eventual outcome and usage in the normal session records. No extra
+research tick or paid worker probe was launched for engineering verification.
+
+Both automatic skill writers remain held until a review-before-apply workflow exists;
+this also holds auxiliary automatic memory editing. Explicit research recordkeeping
+continues. PR #5 is preserved evidence only. Dataset visibility, publication and tags
+were not changed by this rollout. The remaining hardening work below is separate
+from this completed deployment.
 
 If preflight fails, do not deploy. If the host checks fail after updating, hold new research
 sessions through the existing scheduler controls while preserving cleanup/watch duties and
