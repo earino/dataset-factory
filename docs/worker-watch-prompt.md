@@ -41,7 +41,8 @@ assuming session boundaries protect them.
    copy. A collected report verifies only its listed assets; it does not prove a
    missing asset survived elsewhere. If the live worker holds the only accepted
    bytes, preserve them through supported same-artifact transfer before deletion,
-   or leave a precise blocked handoff within the worker's existing expiry. Never
+   or leave a precise blocked handoff within the worker's existing expiry. That
+   transfer counts as the single recovery in step 5, not an extra attempt. Never
    extend expiry or claim an unverified backup exists. If preservation cannot finish
    before expiry, record the threatened/lost artifact; independent cleanup continues.
 5. For failure/incompleteness, distinguish infrastructure, construction, scientific
