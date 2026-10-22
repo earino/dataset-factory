@@ -5708,3 +5708,16 @@ manifest tag v2026.13) - no editorial, no CI path, left for whoever re-opens tha
 three published datasets' Hugging Face copies of MANIFEST.json still describe the old
 package_files layout; harmless for consumers (the hub serves `files` digests), to be refreshed
 at the next approved small-file maintenance.
+
+**Second layer of the same repair:** once the CSV manifests were fixed, the site-preview loop
+reached tsb-railway-occurrence-casualty and failed there too - "Hub verification omits an
+asset": tsb's Hugging Face layout mirrors the logical paths (public/train.csv), not the flat
+data/<asset>.csv default the site model assumes, and its release descriptor never declared
+hf_paths (the level-structured datasets like noaa do). Declared the five hf_paths in
+candidates/tsb-railway-occurrence-casualty/release.json and regenerated its manifest
+(hub_paths added; publication_note re-derived to cite the 15:51:21Z site verification, same
+as abs/my-pricecatcher). The full strict loop over all eight editorial packages now exits 0
+per dataset, test_sites.py green, check-package exit 0 for every release dir except the
+dropped nhs-ae-four-hour-decline (documented above), check-candidate --all exit 0, suite
+OK. tsb's published hub copy of MANIFEST.json predates hub_paths - harmless for consumers,
+refresh at the next approved small-file maintenance.
