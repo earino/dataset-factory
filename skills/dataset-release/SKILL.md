@@ -15,8 +15,9 @@ metadata:
 
 
 **Before packaging, re-read the `timing` block against the release.** Gate 1.4.0 refuses a dataset
-without one, but the numbers are your claim: the instant must be the publication instant, the lag must
-come from an observed release date, and the row selection must not reach past it. A packaged artifact
+without one, but the numbers are your claim: the instant must match the source (publication for delayed statistical
+releases, documented event time where justified); feature availability must be evidenced
+and row selection must not reach past it. A packaged artifact
 with a wrong timing claim is worse than an unpackaged one - it looks done.
 
 ## When to use
@@ -30,6 +31,23 @@ Once a dataset is qualified and someone else must be able to get it, verify it, 
 
 Second to qualification: no number from the package may be published that the gate has not
 passed on the exact artifact version.
+
+## Decide what can change
+
+Read the candidate's current evidence, frozen release record and destination receipts.
+Separate preparation, verification, editorial maintenance and public visibility. A successful
+command is not a successful release: require the relevant check result at the pinned revision.
+
+Published `release/*/MANIFEST.json`, CSVs and recorded digests are immutable. Existing version
+tags are immutable too, including for documentation-only changes. Never regenerate a historical
+manifest or delete/recreate a tag to fix CI, add missing fields, refresh status or bypass a
+consumer error. Normalize legacy shapes through `factory.release_schema`; prepare a new reviewed
+version for package changes. Website editorial revisions use their own procedure and may advance
+default-branch documentation without moving the dataset tag.
+
+Check the diff and ownership before writes. A concurrent session's package or unfinished changes
+are not yours to commit. Preserve them and arrange a documented handoff. Keep reports bounded and
+bulk reconstruction, consumer execution and transfers on workers.
 
 ## Layout: what goes where
 
@@ -74,7 +92,8 @@ sh scripts/scout-factory worker run  <job.json>
 - Measured figures with the command that produced each one, and estimates labelled as estimates.
 - For any baseline: the exact command, the expected value, and the value actually obtained on
   the *published* bytes.
-- Cleanup confirmed: no worker, IP or staging release left behind.
+- Worker/IP cleanup confirmed. Preserve staging artifacts until verified durable copies
+  exist; do not delete staging merely to make a checklist look complete.
 
 ## Two destinations, one manifest
 
@@ -87,12 +106,9 @@ Completion is tracked **per destination** in `DESTINATIONS.json`, written after 
 verified. GitHub can be done while Hugging Face is pending; a release is reported complete only
 when both verify, and the package check refuses a manifest that claims `published` while any
 destination is unverified. Corrections are published as a **new version**; prior versions are
-preserved, never edited in place. That rule is about the data: a correction that changes any asset
-byte requires a new version, because the pinned tag must keep fetching the bytes it was verified
-with. A correction to *documents only* - a record that overstated a check, a stale commit, a
-licence note - leaves every digest identical, so it is applied to the same version and the tag is
-moved onto that documentation commit as the last action; say in the record what moved and that no
-data changed.
+preserved, never edited in place. This includes package documents: changing a hashed document changes package bytes.
+Keep existing tags pinned and issue a new reviewed version where package contents change.
+Editorial updates outside the frozen package follow the website revision procedure.
 
 Order matters in two places:
 
@@ -160,11 +176,11 @@ Rules that are not negotiable:
 - Terms are recorded in the manifest, **generated from the declaration** rather than edited in
   afterwards - a hand-edited block is lost the next time the manifest is regenerated.
 
-## Publication: the flip is the operator's, everything else is yours
+## Publication: recorded approval, then verified completion
 
 Everything above produces a **private** release. The boundary is one event: **making a private
-repository or Hub repo public** (the flip). Up to it you act freely - build, qualify, package,
-verify, write the docs, and leave the repository one call away from public. The flip itself is the
+repository or Hub repo public** (the flip). Before it, prepare within the existing budgets, qualification and integrity rules.
+Complete baseline comparisons before claiming release readiness, then privately stage and verify. The flip itself is the
 operator's single approval; nothing about packaging, checks or planning is theirs to grant.
 
 A dropped session, a gateway restart or a background-process notification is **not** a decision
@@ -208,30 +224,25 @@ When it is approved:
    page answers 200, every release asset answers a ranged GET, the Hub API reports `private: false`,
    and the data files answer ranged GETs at the **tag** revision. A successful PATCH is not
    verification.
-2. **Record it before regenerating.** Set `private: false`, the note and the timestamp in
-   `DESTINATIONS.json` first. The manifest derives its `visibility`, `published` and
-   `publication_note` from that file, so regenerating before recording re-asserts "private".
+2. **Record visibility separately from frozen package bytes.** Record verified visibility, note and timestamp in
+   `DESTINATIONS.json`. Preserve the historical manifest; do not regenerate it to update status.
    The website planner reads two more fields from the same file and refuses without them: a
    top-level `artifact_version` equal to the manifest's, and `files_verified` as **lists**, not
    counts - every logical manifest path for GitHub, and the Hub target path for each asset
    (`data/<name>.csv` for CSVs, the basename otherwise). A count or a missing field fails with
    "Destination evidence describes a different release or artifact" / "verification omits an
    asset" after the flip, when the release is already public.
-3. **Regenerate, then re-verify.** `python3 scripts/release-manifest.py <candidate>`, then
-   `check-package.py`, then the website pipeline `publish`/`verify`. Re-run `prepare` and confirm the
-   plan digest is unchanged: publication is not supposed to alter the plan, and a changed digest
-   means an input moved.
+3. **Re-verify the pinned package and reviewed site plan.** Run `check-package.py`,
+   then the approved website pipeline `publish`/`verify`. If inputs or plan digest changed,
+   inspect and review the new plan; never assert an old approval covers changed contents.
 4. **Refresh what ships with the status.** The card, `LOADING.md`, the repository README and the
    release notes are generated or written while the release is private and will keep claiming
    "private, prepared for review" and instruct readers to pass a token. Re-upload the small files
    (`hf-publish.py --upload-small` changes no visibility) and update the public copies.
-5. **Point the tag at the refresh commit, last of all.** Publication changes the documents, so the
-   tag cut during staging now pins a tree that still says `private` and carries no split counts - and
-   the website pipeline reads the manifest *at the pin* and refuses. Move the tag onto the commit that
-   holds the refreshed documents on every destination and read back that tag and the default branch
-   resolve to the same commit. Read the pinned file through the **contents API**: a CDN copy of
-   `raw.githubusercontent.com` kept serving the pre-move manifest minutes after the ref had moved,
-   which makes a correct pin look broken.
+5. **Verify the existing tag without moving it.** New tags are created only after content
+   verification, and initially resolve to the verified main commit. Later editorial main commits
+   may differ. Verify the pinned files and destination receipts, not an assumed current branch.
+   An existing conflicting tag is a refusal: prepare a new reviewed version.
 
 **Documents generated after publication must re-derive the managed navigation.** The pipeline writes a
 navigation block (links to the dataset's page, the catalog, both destinations) into the repository
@@ -268,11 +279,11 @@ and run its commands.
 | A worker dies with no report | An exception escapes the handler | Validate before dispatch so it fails at plan time, not mid-run |
 | Worker dies seconds in: `can't open file '/workspace/qualify_dataset.py'` | The job was launched straight from the candidate's `baseline/job.json`, so the bundle was that one directory and the gate script plus runner files were never packed | Assemble first (`scripts/assemble-job.py`), confirm the bundle carries `qualify_dataset.py`, `train.py`, `validate.py`, `validate.sh` and `runner_files.json`, then launch the assembled job |
 | Every digest matches but the shipped code is wrong | Hashing proves integrity, not correctness: a wrong file that was hashed into the manifest is consistently wrong everywhere | The fresh-environment consumer must **execute** the artifact (materialise, gate, train), not only `sha256sum -c`; that is how a foreign `materialize.py` with the wrong arity is caught before publication |
-| Package reviewed against the wrong bytes | Manifest built before the last edit | Rebuild the manifest last, then re-tag |
+| Package reviewed against the wrong bytes | Manifest built before the last edit | For a new untagged package build the manifest last; preserve all existing tags |
 | Reviewer cannot reproduce | Instructions depend on the private repo | Ship the code, pin to the package's own tag, verify from a clean clone |
 | Version-pinned load returns nothing | Tag created before the data landed | Tag last, and confirm the tag and `main` point at the same commit |
 | `verify`: "Destination navigation is missing" | A document refresh overwrote the README and card the pipeline had linked | Derive the navigation block where documents are generated, then re-hash the manifest |
-| Pinned manifest still says `private` and lists no splits | Tag cut before the publication refresh; the pipeline reads the manifest at the pin | Move the tag onto the refresh commit as the last action, and read the pin through the contents API |
+| Pinned manifest still says `private` and lists no splits | Tag cut before the publication refresh; the pipeline reads the manifest at the pin | Preserve the tag; read the frozen manifest through the schema adapter or prepare a new reviewed version |
 | Hub copy is missing a licence file | The small-file list hardcoded licence names | Ship every `LICENSE*` file the package carries |
 | Re-verifying erased publication history | The verify path replaced the destination record wholesale | Merge into the record; verification must not delete what publishing recorded |
 | `load_dataset` works but the splits are wrong | Card `data_files` disagree with the manifest's split names | Generate the `configs` block from the manifest; verify split names, rows, schema and label values against it |
@@ -293,16 +304,16 @@ and run its commands.
 | A recorded commit hash that does not exist | The hash was transcribed by hand instead of read back | Read the pin from the API and confirm the commit resolves; a 422 is the only thing that catches a corrupted tail |
 | The card's loading example promises row counts the manifest does not have | Counts are typed into the template, so they drift silently when the build changes | Derive the `configs` block and the counts from the manifest in a test (`tests/test_hf_card.py`); show the test fails on the pre-fix card |
 | The dataset page prints a command that raises "Config name is missing" | The page's "Use this version" snippet was hardcoded into the template instead of generated from the record | Derive it from one rule (`factory.site_model.config_names`) shared with the Hub card, and assert both; a page is a documentation surface too |
-| A documents-only Hub refresh makes a recorded revision or tag claim false | The refresh moves the Hub revision, and re-tagging moves the tag, but the `DESTINATIONS.json` claim was written before it | Re-read the revision and tag after the refresh and correct the claim; the evidence block must name what the destination now serves |
-| Re-syncing the public tree drops the website's file entries from `MANIFEST.json` | The release package's manifest overwrote the public one, which also declares the site scaffolding | Overlay, then restore the entries for the files the website step placed, reading them back from disk so the step is idempotent |
+| A documents-only Hub refresh makes a recorded revision or tag claim false | The refresh moves the Hub revision, and re-tagging moves the tag, but the `DESTINATIONS.json` claim was written before it | Keep the tag fixed; record editorial main separately from verification of pinned data |
+| Re-syncing the public tree drops the website's file entries from `MANIFEST.json` | The release package's manifest overwrote the public one, which also declares the site scaffolding | Use the website pipeline and its separate site revision; do not overwrite or extend a frozen dataset manifest |
 | A guard that has never been seen to fail | The test was written against the fixed input only | Revert the code or data path (`git stash push -- <file>`, or check out the pre-fix document), watch the guard fail, restore, and record which defect it caught |
 | An older staged release can still be flipped by a later session | A rebuild creates a new tag but the superseded staged release keeps its private artifacts and its record | Rename the superseded releases as `SUPERSEDED - DO NOT PUBLISH` at the destination, list them under `superseded` in `DESTINATIONS.json`, and point the record's `next_action` at the current tag |
 | The Hub card carries no licence metadata | The card was uploaded without YAML front matter - the upload succeeds and the licence field simply disappears | Keep the front matter in the card source, upload the card as `README.md`, and read `cardData.license` back from the API; a release README is not a dataset card |
 | The documented loader cannot find a released file | Assets were uploaded under bare names (`train.csv`) while the manifest and loader expect `public-train.csv` | Read the asset names back after upload and rename them (`PATCH /releases/assets/<id>`), then re-check sizes and digests; never assume the uploader used the manifest's names |
-| The website planner dies with a bare `TypeError` (`'NoneType' object is not iterable`) | `MANIFEST.json` has `splits: null`; the planner's `flatten_splits` iterates it | Derive `splits` in the manifest from the gate report or `quality.json`'s split stats, and rebuild the manifest **before** pushing the package to the repository - the planner reads the manifest at the pin, not the local file |
+| The website planner dies with a bare `TypeError` (`'NoneType' object is not iterable`) | `MANIFEST.json` has `splits: null`; the planner's `flatten_splits` iterates it | For new packages require canonical fields; for a published package normalize its legacy shape on read without modifying bytes |
 | Manifest and qualification name different artifact versions | The manifest computed its own packaging hash while `qualification.artifact_version` came from the gate, and the candidate record can lag a rebuild | One identity: `artifact_version` is the gate digest, taken from the qualification report beside the artifact; record the packaging hash separately as `package_digest`. Never read qualification from the candidate record when a report file exists |
-**A re-tagged Hub release still serves the old manifest** | `create_tag(..., exist_ok=True)` keeps an existing tag pointing at its old commit instead of moving it | Delete the tag, then recreate it on the current `main` sha and read the revision back; verify the manifest *at the tag* lists the splits and licence block you just regenerated |
-| A document refresh cannot be pushed to the dataset repo | The website pipeline commits navigation and edition files into that same repo, so the local clone is behind | `git pull --rebase` before pushing; a conflict in `MANIFEST.json` is resolved by keeping the freshly generated manifest (it is derived, never hand-merged), then move the tag onto the rebased commit |
+**A re-tagged Hub release still serves the old manifest** | `create_tag(..., exist_ok=True)` keeps an existing tag pointing at its old commit instead of moving it | Preserve the existing tag. A different commit requires a new reviewed version; verify the pinned content before creating any missing tag |
+| A document refresh cannot be pushed to the dataset repo | The website pipeline commits navigation and edition files into that same repo, so the local clone is behind | Inspect and reconcile the remote changes; preserve frozen manifests and tags. Resolve new-package conflicts from authoritative inputs in a separate reviewed version |
 | The artifact exists only as opaque staged parts (`file-0003-part-0000`) | The build job uploaded its output as numbered parts, so there is no local extract to package | Read `manifest.json` from the staging release: each entry names the logical `file` path, its `name`, `size` and `sha256`. Rebuild the tree by writing each part to its logical path and checking every digest - never guess the mapping from part order or size |
 
 ## Completion criteria
@@ -342,9 +353,10 @@ A package is **ready for review** when:
 - [ ] Private by default. Public visibility, and any licence choice, are decisions for the
       reviewer, never a step in the procedure.
 - [ ] If publication was approved: both destinations verified from an **anonymous** client, the
-      recorded state updated before the manifest was regenerated, and no shipped document still
-      claims the release is private.
-- [ ] Worker, IP and staging resources confirmed deleted, with provider-side evidence.
+      current destination visibility recorded separately, existing manifest/tag preserved, and
+      current editorial documents accurately distinguish historical staging from live visibility.
+- [ ] Worker/IP cleanup confirmed with provider-side evidence; durable artifacts retained
+      and staging removed only when its preservation obligation is satisfied.
 
 ## References
 

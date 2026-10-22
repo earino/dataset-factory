@@ -74,7 +74,8 @@ Before any AUC is quoted as evidence that the task teaches something, measure th
 **exactly the same evaluation rows**:
 
 1. **Persistence** - the most recent observed value (or last observed label) as the score. This is
-the rule the task has to beat; if it does not, the label is a level that persists, not a forecast.
+a reference the model must improve on to support a headroom claim. If the model trails it,
+inspect alignment, availability, uncertainty and split shift before interpreting the task.
 2. **Calendar-only** - country/entity identity plus cyclical week-of-year plus a seasonal prior
    estimated only from training-era rows. This separates learned signal from seasonality.
 3. **The full model**, on the same rows and the same fit/eval boundary.
@@ -95,17 +96,27 @@ Two structural checks belong with it:
   test as much as a temporal one, and it explains a model that trails a trivial rule. Say which
   it is rather than letting the pooled AUC imply a clean temporal split.
 
-When the label is persistent, the usual fix is to re-target **change**: onset, transition or
-sustained-exceedance rather than a single future week's level, because persistence cannot win that
-by construction. Treat that as a new task instance with its own qualification, not a tweak.
+When persistence dominates, a substantively useful **change** target (onset, transition or
+sustained exceedance) may warrant a new task instance. It does not guarantee headroom:
+persistence or another simple rule can still win. Specify the user need and protocol first,
+then qualify and compare anew; do not choose a target because it improves a held-out score.
 
 ### When the task itself is the finding
 
-Audits make artifacts correct; they cannot make a task interesting. If persistence, a calendar-only
-rule or a train-only identity prior beats every model the task can carry, the dataset is a **negative
-result, not a benchmark**: record the comparison, state it plainly, and drop the candidate rather
-than rebuilding to publish a number that a one-line rule already beats. The purpose is datasets where
-the prediction problem works out, not the maximum count of releases.
+Audits make artifacts correct; they do not establish task usefulness. If a simple reference
+beats the tested full model, record **no demonstrated headroom under this protocol**, with both
+scores on identical rows. That finding does not prove that every competent model must lose.
+Check a concrete diagnosis (misaligned rows, a post-hoc reference, prevalence shift, or an
+implementation defect) within a bounded repair. If validated comparisons still show no useful
+headroom, preserve the negative finding and drop or explicitly re-scope the candidate. Do not
+publish a benchmark claim unsupported by the comparison, or keep fitting until a score wins.
+
+Specify metrics, split boundaries, target/threshold and comparisons before evaluation. Fit
+priors and data-derived thresholds on training data only unless a fixed external domain standard
+supplies the threshold. Keep holdout out of target/feature/split selection and model tuning.
+For clustered data, use independent-event counts and appropriate uncertainty; label missing
+intervals as a limitation. Missing historical vintages remain a limitation, never a claim of
+point-in-time reconstruction. Select tasks for utility and headroom, not agent outcome variance.
 
 Budget the repair, too: **one rebuild per structural defect**. A second and third rebuild of the same
 construction usually means the defect is in the task design (a period-end instant that cannot be
@@ -122,11 +133,11 @@ quoted rather than independently rerun.
 
 ### Answering an external review with measurements
 
-A review is a list of hypotheses, not a verdict. Convert each claim into the cheapest measurement
-that can confirm or refute it, and lead the reply with numbers:
+A review supplies hypotheses to test. First ensure full-artifact qualification and acceptance;
+then use the cheapest discriminating measurement and report its scope and uncertainty:
 
-- **Seasonality** -> calendar-only AUC on identical rows (above). If it lands near the model, the
-  task is a calendar exercise; a 0.24 gap is evidence of real signal.
+- **Seasonality** -> calendar-only AUC on identical rows (above). A small or large observed gap needs its rows, uncertainty and scope;
+  no universal AUC difference proves usefulness.
 - **Mixed populations** -> count eligible rows per provenance stream from the source itself, and
   say what fraction of the panel survives the stricter definition.
 - **Leakage through the timing claim** -> check whether the publisher exposes historical vintages.

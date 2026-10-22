@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Deployed shim for the advancement tick.
 
-Forwards to the versioned runner with `--if-work`, so the tick runs often (every two
-hours) but starts no agent when every candidate is parked, published, or waiting on the
+Forwards to the versioned runner with `--if-work`, so the tick runs often (every four
+hours, offset from discovery) but starts no agent when every candidate is parked, published, or waiting on the
 operator's flip. The gate still runs first and holds overlapping sessions.
 """
 import runpy

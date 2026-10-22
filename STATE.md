@@ -5977,3 +5977,21 @@ The construction queue behind the eutl flip is unchanged (five ready class-A bui
 then ea-flood-alert-escalation). This session's outcome is the record above, for the
 close-out inspection noted in the hardening-rollout entry.
 
+
+### Prompt improvement goal — draft and evaluation protocol (2026-10-22)
+
+Eduardo authorized Codex and Scout to improve the actual research prompts/skills,
+compare behavior, merge/deploy reviewed changes and evaluate live behavior within
+existing budgets. Branch `improve/research-prompts` rewrites discovery/advancement,
+versions worker-watch, corrects tag-mutation instructions and scientific overclaims,
+and reuses research admission for watcher collection/follow-up. Qualification code,
+published artifacts and numeric allowances remain unchanged; automatic writer holds
+remain in place. The old quota-wording assertion changes with the intentional brief
+change; all other existing assertions are preserved. Local Python 3.13: 578 tests,
+6.790s, OK (six existing skips). Live deployment has not happened.
+
+Next: Scout reviews the source and isolated no-tool evaluation setup; compare the
+predeclared cases in evals/research-prompts within 2M tokens and 48 main invocations
+including auxiliary usage in spend, then revise, clean-clone checks, exact-commit CI,
+reviewed deployment and ordinary-run observation. Record actual responses and
+uncertainties; do not claim improved dataset yield from instruction edits alone.

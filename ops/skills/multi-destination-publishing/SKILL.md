@@ -184,9 +184,9 @@ destination from one source.
 - **Refuse at the gate.** A package with no declared terms, or one naming a licence file it does not
   ship, should fail the check rather than be assumed permissive.
 - **A licence change is a package change.** Editing a licence document changes its hash, so
-  regenerate the manifest, re-verify, re-upload the small files and re-point the version - while the
-  artifact's data digests stay identical. That is what "the accepted bytes are unchanged" means, and
-  it is worth stating explicitly, because a licence edit looks like a content change to a reader.
+  prepare a new reviewed package version, regenerate its manifest and re-verify. Data digests
+  may stay identical, but package bytes changed. Preserve existing version tags and published
+  manifests; do not re-point a historical version for a licence or documentation correction.
 
 Depth, including the declaration shape and how one source renders on each destination:
 `references/licensing-and-attribution.md`.
@@ -423,9 +423,9 @@ data" or a dash weeks later, and the artifact is fine the whole time.
   says a check passed while the record says otherwise is a false claim in published documentation.
   Repair it in two parts, in this order: fix what the check objected to, then **run the documented
   path again against the published revision** - a correction is not a verification, and the earlier
-  failure is recorded as it happened beside the later pass rather than overwritten by it. Re-pointing
-  the version pin onto that documentation commit is the **last** action, and the record says what
-  moved and that every data digest is unchanged. Read the pinned revision, tag and commit ids back
+  failure is recorded as it happened beside the later pass rather than overwritten by it.
+  Keep existing version pins fixed. If the package changes, prepare a new reviewed version;
+  distinguish its package digest from unchanged data digests. Read the pinned revision, tag and commit ids back
   from the service; a hash transcribed by hand can carry a corrupted tail that nothing resolves until
   a consumer tries to fetch it.
  - **Answering "what is still unpublished?" from an artifact's own record.** A published artifact's

@@ -47,13 +47,11 @@ def regional_focus(moment=None):
 if __name__ == "__main__":
     region, detail = regional_focus()
     extra = (
-        f"REGIONAL FOCUS FOR THIS TICK: {region}. Probe this region first and take at least two "
-        f"of this session's three verdicts from it: {detail} "
-        "If the region yields nothing viable after real probing, report that with the probes you "
-        "ran - do not substitute a US source to fill the quota."
+        f"REGIONAL FOCUS FOR THIS TICK: {region}. Prioritize this region: {detail} "
+        "Choose probes for decision value, not a verdict quota. If the region yields nothing "
+        "viable, report the coverage and evidence; do not pad it with familiar US sources."
     )
-    # 50 minutes and 80 turns: the brief asks for three sourced verdicts, and the 40-minute
-    # default was being hit every tick, so the wrapper killed the session before it wrote a report.
+    # Existing 90-minute / 120-iteration ceiling; the brief reserves time for close-out.
     sys.argv = ([TARGET, "--prompt-file", "docs/discovery-session-prompt.md", "--extra", extra,
                  "--run-budget", "5400", "--max-turns", "120"]
                 + sys.argv[1:])

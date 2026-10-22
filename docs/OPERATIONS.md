@@ -483,14 +483,15 @@ Two jobs share the routine and both are gated by `scripts/research-budget.py`:
 
 - `scout-discovery-session` (86fe52e55ef9) - **every four hours at :00**, discovery only, one 2-hour
   slot. Its brief
-  (`docs/discovery-session-prompt.md`) forbids advancing an existing candidate and requires three
-  new sources to a verdict, at least two of them published outside the US.
+  (`docs/discovery-session-prompt.md`) reserves the session for discovery, prioritizes the
+  assigned region, and selects probes by decision value instead of a fixed verdict quota.
 - `scout-research-session` (69a5bc676d10) - **every four hours at :00, offset to 02/06/10/14/18/22**,
   advancement and packaging, one 2-hour slot.
   The shim passes `--if-work`: the tick exits without starting an agent when no candidate is
   `ready`, `qualified`, `packaged`-and-actionable, or carrying a GO verdict, so an empty queue costs
-  nothing. A session is told not to stop at a step boundary and to finish inside its budget: 90
-  minutes and 120 tool calls, with a wrap-up notice at 80% that must be obeyed. Measured sessions used
+  nothing. A session chooses one primary candidate and continues through authorized, unblocked steps
+  only while it can leave verified evidence or a safe handoff. The ceiling remains 90 minutes
+  and 120 tool-calling iterations, with close-out at the 80% wrap-up notice or earlier. Measured sessions used
   110k-370k tokens while dying at the old 40-minute ceiling, so the binding constraint was time, not
   tokens.
 - `scout-release-notify` (ba4c8610edf8) - **hourly at :55**, script only. Prints one message when a
@@ -660,11 +661,10 @@ Attribution and citation come from the source's own documentation and are reprod
 
 ### A licensing change is a package change
 
-Licence documents are package files, so editing one changes its hash. Regenerate the manifest
-(`scripts/release-manifest.py <candidate>`), re-run `check-package.py`, re-upload the small files
-to Hugging Face (`scripts/hf-publish.py --upload-small --verify`) and re-point the version tag
-(`--tag`, idempotent, last). The **dataset assets themselves are untouched**: their digests are
-unchanged, which is what "preserving the accepted bytes" means in practice.
+Licence documents are package files, so editing one changes its hash even when data digests
+stay identical. Prepare a new reviewed package version, regenerate its manifest and re-run
+verification. Preserve published manifests and existing tags. `--tag` creates a missing tag
+only after verification; an existing conflicting tag is a refusal, never a reason to move it.
 
 ## Knowable at the period is not knowable at the release
 
@@ -896,3 +896,20 @@ A failed assembly cannot replace an existing bundle or leave a launchable partia
 Only the fresh temporary staging directory is automatically cleaned up. Qualification and
 runner files are still copied verbatim and the existing qualification-before-scoring sequence
 is unchanged. No cloud action is performed by assembly.
+
+### Worker follow-up shares research admission
+
+The script-only watcher entrypoint is `ops/shims/scout_worker_followup.sh`, forwarding
+into `scripts/scout_worker_followup.py`. It holds the same nonblocking research mutex
+around deterministic collection and the entire bounded follow-up. Busy, empty and
+all-running ticks are silent. Terminal or unresolved states invoke the existing budget
+and session wrapper with `docs/worker-watch-prompt.md`, at most 30 tool iterations and
+900 seconds. These calls use `scout-research` accounting; no new allowance is created.
+A held model gate does not disable independent worker expiry cleanup.
+
+The watcher interprets, records and cleans up the handed-off job; advancement owns
+repair launches. Manual writers are outside the mutex, so diff inspection and explicit
+handoffs remain required. A processing marker acknowledges recorded work, not Telegram
+delivery. Scheduler deployment must change the existing job to script-only using the
+supported CLI, keep its ID/cadence/delivery, and verify the new shim and live invocation.
+The previous unguarded watcher must not remain enabled alongside this path.

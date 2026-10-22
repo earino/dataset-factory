@@ -112,7 +112,7 @@ class PromptFileTests(unittest.TestCase):
             finally:
                 os.chdir(cwd)
         self.assertIn("discovery only", prompt)
-        self.assertIn("at least three new sources", prompt)
+        self.assertIn("The number of verdicts is an activity count, not a quality target.", prompt)
         self.assertIn("Do not build, qualify, package, publish", prompt)
 
     def test_a_missing_brief_still_raises(self):
