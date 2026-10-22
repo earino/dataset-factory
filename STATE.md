@@ -6023,3 +6023,23 @@ The initial batch checkpoints may be extended with a reason under this new autho
 worker spending and scientific/publication gates remain intact. Source review is clear,
 586 clean-checkout tests and exact-commit CI pass, but behavioral improvement and
 deployment remain unproven until the evaluation and live pass finish.
+
+
+Prompt comparison checkpoint (Codex, 2026-10-23 local): pilot pair completed through
+supported bounded chat with database accounting. The earlier usage-file parser error
+was verified pre-inference and retained in the same ledger as a reconciled zero-token
+failed attempt. GLM discovery-value: both arms 4/4 original utility criteria, no listed
+unsafe actions; total tokens 44,836 baseline / 28,930 revised, 109.1s / 85.4s. Cache warmth
+differs, so no causal speed/dollar claim. Label-blinded second review agrees on the tie
+and narrowly prefers revised scientific branch handling. Revised conditional suite
+execution remains a concern. Sanitized source/grades: evals/research-prompts/results/pilot.json.
+
+Hosted remaining-development batch handle proc_5c5f359dda7e (PID 20410), script
+/opt/data/eval-pilot/run_batch.py, progress /opt/data/eval-pilot/progress.jsonl, same
+ledger /opt/data/eval-pilot/run/ledger.json. It waits behind live ordinary old-prompt
+research session 20261022_220005_615452 (Hermes PID 19812, wrapper 19810); do not kill or
+replace either on an observation timeout. Scout is retaining that run's public outcome
+and measured usage as a live baseline. Next: poll this exact handle, inspect all 24
+development responses, revise documented weaknesses, then reserved/adaptive diagnostics,
+merge/deploy reviewed files and observe real new-prompt discovery/advancement. No deployment
+has happened. Three added diagnostic cases are explicitly adaptive, not hidden holdout.

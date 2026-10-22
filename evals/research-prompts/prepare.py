@@ -33,14 +33,15 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--revision', required=True, help='exact revised commit')
     parser.add_argument('--out',type=Path,required=True,help='new directory; existing paths refused')
-    parser.add_argument('--partition',choices=('development','reserved'),default='development')
+    parser.add_argument('--partition',choices=('development','reserved','diagnostic'),default='development')
     args=parser.parse_args()
     revision=subprocess.check_output(['git','rev-parse',f'{args.revision}^{{commit}}'],cwd=ROOT,text=True).strip()
     baseline=subprocess.check_output(['git','rev-parse',f'{BASELINE}^{{commit}}'],cwd=ROOT,text=True).strip()
-    cases=json.loads((ROOT/'evals/research-prompts/cases.json').read_text())['cases']
+    case_source=source(revision,'evals/research-prompts/cases.json')
+    cases=json.loads(case_source)['cases']
     args.out.mkdir(parents=True, exist_ok=False)
     manifest={'schema_version':1,'baseline':baseline,'revised':revision,
-              'partition':args.partition,'requests':[]}
+              'partition':args.partition,'case_source_sha256':digest(case_source),'requests':[]}
     for case in cases:
         if case['partition']!=args.partition: continue
         for arm,commit in (('baseline',baseline),('revised',revision)):
@@ -59,7 +60,7 @@ def main():
                 sections.append(f'--- BEGIN {name} ---\n{text}\n--- END {name} ---')
             name=BRIEFS[case['role']]
             if case['role']=='watcher' and arm=='baseline':
-                brief=(ROOT/'evals/research-prompts/baseline-worker-watch.md').read_text()
+                brief=source(revision,'evals/research-prompts/baseline-worker-watch.md')
                 origin='scheduler snapshot, PR #10 comment 6350828810'
             else:
                 brief=source(commit,name); origin=name

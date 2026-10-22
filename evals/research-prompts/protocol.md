@@ -133,3 +133,22 @@ sanitized responses/usage and recorded evidence. Do not export memory text. No p
 schedule invokes this optional experiment helper. Token ceilings are admission plus measured
 post-call stops; Hermes has no hard per-session token interrupt. Keep the 100k reserve and
 stop before further work if a call exceeds it. Do not describe this as provider billing control.
+
+
+## Supplemental diagnostics after the pilot
+
+The first primary-route pair tied on all four criteria. A label-blinded second review
+agreed and found the stated case too direct to distinguish prioritization reliably.
+It narrowly preferred the revised handling of a late feature, while the author review
+flagged conditional test-suite execution. Both responses exceeded 600 whitespace-delimited
+words (619 and 612). These are findings, not a reason to change the original scoring.
+
+Three `diagnostic` cases are added before their responses exist: a late feature whose
+shifted instant would expose the target, irregular/revised publication timing, and
+truthful close-out after failed probes. They test scientific decision quality and
+execution planning beyond simply echoing an example. They are **adaptive diagnostics**,
+not an independent hidden holdout, and remain separate from the original development
+and reserved results. Run paired arms on both routes after reviewing the initial
+comparison, with the same accounting and explicit batch extension if needed. Repeats
+or revisions must preserve previous responses; do not spend until a preferred result
+appears. Actual research execution remains a separate required observation.
