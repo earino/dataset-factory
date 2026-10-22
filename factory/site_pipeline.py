@@ -15,6 +15,7 @@ import time
 import urllib.request
 
 from .common import FactoryError
+from .release_schema import record_destination
 from .site_model import MAX_BUNDLE, digest, dump, project, read, require, links, pages_url
 from .site_github import GitHub
 
@@ -24,7 +25,7 @@ PREFIX = ".dataset-site"
 
 
 def prepare(package, editorial, config, out):
-    problems, _ = runpy.run_path(str(ROOT / "scripts/check-package.py"))["check_package"](package)
+    problems, _ = runpy.run_path(str(ROOT / "scripts/check-package.py"))["check_package"](package, external_assets=True)
     require(not problems, "Package check failed: " + "; ".join(problems))
     record = project(package, editorial, config)
     renderer = (ROOT / "sites/runtime.py").read_text()
@@ -265,7 +266,6 @@ def reconcile(plan, folder, gh, hub, fetch=public_json):
         hf = hub.run("read", record, public=True)
         require(hf.get("links_present") is True, "Hub navigation was not applied")
         done("cross_links", {"verified": True})
-        record_site_destination(record, datetime.now(timezone.utc).isoformat(timespec="seconds"))
         receipt["status"] = "complete"
     except Exception as exc:
         receipt["status"] = "failed"
@@ -287,13 +287,12 @@ def record_site_destination(record: dict, verified_at: str) -> None:
     package = ROOT / "release" / str(record["dataset"]) / "DESTINATIONS.json"
     if not package.is_file():
         return
-    destinations = json.loads(package.read_text())
-    entry = destinations.setdefault("destinations", {}).setdefault("site", {})
-    entry.update({"type": "github-pages", "url": record["urls"]["version"], "private": False,
-                  "verified": True, "verified_at": verified_at,
-                  "checks": [f"anonymous GET {record['urls']['version']} -> 200; navigation and "
-                             f"release record verified by the publisher"]})
-    package.write_text(json.dumps(destinations, indent=1) + "\n")
+    record_destination(package, "site", {
+        "type": "github-pages", "url": record["urls"]["version"], "private": False,
+        "verified": True, "verified_at": verified_at,
+        "checks": [f"anonymous GET {record['urls']['version']} -> 200; navigation and "
+                   "release record verified by the publisher"],
+    })
 
 
 def verify(plan, gh, hub, fetch=public_json):
@@ -367,6 +366,8 @@ def main(argv=None):
                             if result["status"] != "pending" or time.monotonic() + 30 > deadline:
                                 break
                             time.sleep(30)
+                        if result["status"] == "complete":
+                            record_site_destination(plan["record"], datetime.now(timezone.utc).isoformat(timespec="seconds"))
                 elif args.action == "inspect":
                     result = inspect(plan, gh, hub)
                 else:

@@ -484,7 +484,7 @@ def render_overview(snapshot, alarms, alarms_plain=()):
     kept = counts.get("investigating", 0) + counts.get("qualified", 0) + counts.get("published", 0)
     advanced = counts.get("qualified", 0) + counts.get("published", 0)
     published = counts.get("published", 0)
-    verified = sum(1 for r in releases if r["verified_all"])
+    verified = sum(1 for r in releases if r.get("published") and r["verified_all"])
 
     series_tokens = [p.get("tokens_7d") for p in history][-14:]
     series_pub = [p.get("published") for p in history][-14:]
@@ -525,8 +525,8 @@ def render_overview(snapshot, alarms, alarms_plain=()):
     release_cards = '<div class="list">' + "".join(
         f'<div class="item"><div class="meta"><div class="name">{esc(r["dataset"])}</div>'
         f'<div class="desc">{esc(r["release_tag"])} · {fmt(r["rows"])} rows · baseline '
-        f'{"—" if r["baseline_eval_auc"] is None else f"{r['baseline_eval_auc']:.3f}"}'
-        + (f'<span class="sub"> · {r["baseline_scope"]}</span>' if r.get("baseline_scope") else '')
+        f'{esc(r.get("baseline_display") or "not recorded")}'
+        + f' · {esc("published" if r.get("published") else r.get("disposition") or "private")}'
         + '</div></div>'
         f'<div class="side">{"".join(pill(k, "ok" if v else "bad") for k, v in (r["verified"] or {}).items())}</div></div>'
         for r in releases) + '</div>'
@@ -555,9 +555,8 @@ def render_overview(snapshot, alarms, alarms_plain=()):
 
     release_rows = [(
         f'<a class="name" href="candidate-{esc(r["dataset"])}.html"><b>{esc(r["dataset"])}</b></a>',
-        esc(r["release_tag"]),
-        fmt(r["rows"]), "—" if r["baseline_eval_auc"] is None else (
-            f'{r["baseline_eval_auc"]:.3f}' + (' *' if r.get("baseline_scope") else '')),
+        esc(r["release_tag"]) + " · " + esc("published" if r.get("published") else r.get("disposition") or "private"),
+        fmt(r["rows"]), esc(r.get("baseline_display") or "not recorded"),
         "".join(pill(k, "ok" if v else "bad") for k, v in (r["verified"] or {}).items()) or pill("—"),
     ) for r in releases]
 
@@ -613,7 +612,7 @@ def render_overview(snapshot, alarms, alarms_plain=()):
 
   <div class="col-12">{card("Releases", f'<div class="only-mobile">{release_cards}</div><div class="only-wide">' +
         table(["Dataset", "Version", "Rows", "Baseline AUC", "Destinations"],
-              release_rows, num_cols=(2, 3)) + '</div>', sub="published artifacts",
+              release_rows, num_cols=(2, 3)) + '</div>', sub="release packages · publication status shown separately",
         foot="Destination pills are read from each release's DESTINATIONS.json, not from a deploy log.")}</div>
 </div>"""
     return body
@@ -776,8 +775,8 @@ def render_candidate(record, snapshot):
     timing = record.get("prediction_time") or ""
     sources = record.get("sources") or []
     licence = record.get("licence_summary") or {}
-    splits = ((record.get("qualification") or {}).get("splits")
-              or (record.get("release_splits") or {})
+    splits = (record.get("release_splits")
+              or (record.get("qualification") or {}).get("splits")
               or (record.get("measurements") or {}).get("splits")
               or (record.get("baseline") or {}).get("splits") or {})
     baseline = record.get("baseline") or {}
@@ -799,7 +798,7 @@ def render_candidate(record, snapshot):
     split_rows = "".join(
         f'<tr><td>{esc(name)}</td><td class="num">'
         f'{format(value["rows"], ",") if isinstance(value.get("rows"), int) else "—"}</td>'
-        f'<td class="num">{fmt(round(100 * value["positives"] / value["rows"], 1)) + "%" if value.get("positives") and value.get("rows") else "—"}</td></tr>'
+        f'<td class="num">{fmt(round(100 * value["positives"] / value["rows"], 1)) + "%" if value.get("positives") is not None and value.get("rows") else "—"}</td></tr>'
         for name, value in splits.items() if isinstance(value, dict)) or (
         '<tr><td colspan=3>splits not recorded yet</td></tr>')
 
@@ -810,10 +809,14 @@ def render_candidate(record, snapshot):
         f'<div class="side">{pill(job.get("status") or "—", "ok" if job.get("status") in ("succeeded", "deleted") else "warn")}</div></div>'
         for job in reversed(jobs)) or '<p class="sub">no jobs recorded</p>'
 
-    from_release = not baseline and isinstance(auc, (int, float))
+    release_baseline = record.get("release_baseline") or {}
+    if release_baseline.get("display"):
+        auc = release_baseline.get("auc")
+        reference = release_baseline.get("reference")
+    from_release = bool(release_baseline.get("display"))
     measured = (f'<div class="kpis"><div class="kpi"><span class="sub">baseline AUC</span>'
                 f'<span class="v">{auc:.4f}</span><span class="n">'
-                f'{"one representative config; the release carries the rest" if from_release else "on eval"}</span></div>'
+                f'{esc(release_baseline.get("display")) if from_release else "on eval"}</span></div>'
                 f'<div class="kpi"><span class="sub">reference</span><span class="v">'
                 f'{f"{reference:.4f}" if isinstance(reference, (int, float)) else "no data"}</span>'
                 f'<span class="n">'
@@ -821,6 +824,9 @@ def render_candidate(record, snapshot):
                 f'</span></div></div>'
                 if isinstance(auc, (int, float)) else
                 '<p class="sub">Not measured yet. A baseline runs on the released bytes before packaging.</p>')
+
+    if from_release and not isinstance(auc, (int, float)):
+        measured = '<p class="sub">' + esc(release_baseline["display"]) + '</p>'
 
     body = f"""
 <section class="hero compact">

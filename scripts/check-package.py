@@ -58,7 +58,7 @@ def parse_sums(path):
     return entries
 
 
-def check_package(package_dir):
+def check_package(package_dir, *, external_assets=False):
     package_dir = Path(package_dir)
     problems = []
     notes = []
@@ -135,6 +135,17 @@ def check_package(package_dir):
     for name, digest in sorted(recorded.items()):
         target = package_dir / name
         if not target.is_file():
+            # Offline site preparation has no dataset rows. Accept only an explicitly declared
+            # external CSV with the SAME valid digest in all three manifest records. This is a
+            # metadata consistency check; publication still verifies remote bytes independently.
+            asset = (manifest.get("assets") or {}).get(name) or {}
+            artifact = (manifest.get("files") or {}).get(name) or {}
+            if (external_assets and name.endswith(".csv") and SHA256_RE.fullmatch(str(digest))
+                    and asset.get("sha256") == artifact.get("sha256") == digest
+                    and type(asset.get("bytes")) is int and asset["bytes"] >= 0
+                    and artifact.get("bytes") == asset["bytes"]):
+                notes.append(f"{name}: external release asset; metadata only, remote bytes must verify")
+                continue
             problems.append(f"{name}: recorded in the manifest, not present in the package")
             continue
         if not SHA256_RE.match(str(digest)):

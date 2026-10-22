@@ -11,6 +11,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from factory.http import secret
+from factory.release_schema import from_manifest
 from factory.site_model import linked_readme, require, check_manifest
 
 
@@ -58,12 +59,13 @@ def execute(payload):
     item = entries.get("MANIFEST.json")
     require(item is not None, "Hub release has no manifest")
     manifest = json.loads(small_file("MANIFEST.json", info.sha, item.size))
-    check_manifest(record, manifest)
+    check_manifest(record, from_manifest(manifest, strict=False))
     main = api.dataset_info(repo, revision="main", files_metadata=True)
     main_manifest = next((s for s in main.siblings if s.rfilename == "MANIFEST.json"), None)
     require(main_manifest is not None, "Hub default branch has no manifest")
     current = json.loads(small_file("MANIFEST.json", main.sha, main_manifest.size))
-    require(current.get("release_tag") == tag and current.get("artifact_version") == record["artifact_version"],
+    current = from_manifest(current, strict=False)
+    require(current.tag == tag and current.artifact_id == record["artifact_version"],
             "Hub default branch is a different release; reconcile that release instead")
     item = next((s for s in main.siblings if s.rfilename == "README.md"), None)
     require(item is not None, "Hub card is missing")

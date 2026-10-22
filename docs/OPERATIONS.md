@@ -787,3 +787,55 @@ hold. A zero-call session and a valid empty first-run database remain normal.
 These checks validate recorded evidence, not provider billing completeness or
 subscription limits. The cron execution ledger is digest context, not the research
 spend or admission authority; `usage_audit.jsonl` is not currently read by this gate.
+
+### Hub verification and immutable tags
+
+`hf-publish.py --tag` verifies the assets at an exact main commit before creating a missing
+tag at that commit. An existing identical tag is a no-op; an existing different tag is a
+refusal, never delete/recreate. A race changing main or the tag is reported as failure and
+all existing tags are preserved. A new artifact needs a new reviewed release version.
+
+`--verify` checks an existing release tag when present, so later editorial commits on main
+do not rewrite historical release evidence. Before first tagging it can verify main's files,
+but DESTINATIONS stays unverified until the promised tag resolves to the checked commit.
+Successful, complete verification records local destination evidence; neither option changes
+repository visibility. Incomplete/failed attempts preserve the previous receipt and write a
+separate compact diagnostic to `.factory/hub-verification/<candidate>/latest.json`. Exit 2
+means incomplete evidence; exit 1 means mismatch/error; exit 0 means the requested checks passed.
+
+LFS assets require matching SHA-256 and size. Plain JSON/Markdown/text metadata is streamed
+from the pinned commit with a 256 KiB per-file and 2 MiB aggregate limit. File size alone never
+passes. For plain bulk blobs, pass `--worker-job <id>` from the existing collected worker ledger.
+New `hf_publish` jobs produce compact evidence binding every expected SHA-256 and size to an
+exact Hub commit and Git blob identity; the loading check runs at that same commit. The
+coordinator requires a collected successful job, a passing loading check, exact manifest assets,
+and matching live commit/blob metadata before accepting that evidence. Failed, stale or legacy
+reports without these fields cannot be upgraded by editing JSON.
+
+For an existing release needing fresh evidence, copy its existing job declaration to a new
+attempt ID, set `hf_publish.verify_only: true`, preserve its assets/loading contract, and run the
+usual worker plan/allowance/launch/collect procedure. This mode reads Hub data on the worker and
+produces its report; it performs no Hub upload or tag change. It still uses the existing worker
+budget, credentials, report collection, cleanup and expiry rules. No worker is automatically
+launched by `--verify`. No CSV download occurs on the coordinator.
+
+Worker plain-blob verification has one shared 64 MiB per-file ceiling for the upload check
+and compact receipt. Both hash in chunks and use freshly owned temporary caches that are
+removed after each check; old unrelated cache paths are preserved. This is not a claim that
+the container disk monitor covers host-side HF jobs: the executor returns before that loop
+for HF jobs. Broader host-side disk enforcement remains separate work.
+### Assembled job directories are immutable
+
+`assemble-job.py` builds in a fresh temporary directory under `.factory/jobs/`, validates the
+whole bundle, then exposes it with one rename. It writes `bundle-owner.json` with the job ID
+and hashes of the generated files. Repeating the same assembly is a no-op. Changed source,
+manual edits, unexpected files or a different ownership record require a **new job ID**.
+An existing unmarked directory is preserved, including bundles created by older assemblers;
+use a new attempt ID rather than deleting it to make the assembler proceed.
+
+Descriptor paths must remain within their declared source/output roots. Absolute paths,
+traversal, symlinks and duplicate/reserved destinations are refused before installation.
+A failed assembly cannot replace an existing bundle or leave a launchable partial target.
+Only the fresh temporary staging directory is automatically cleaned up. Qualification and
+runner files are still copied verbatim and the existing qualification-before-scoring sequence
+is unchanged. No cloud action is performed by assembly.

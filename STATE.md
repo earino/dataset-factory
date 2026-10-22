@@ -5656,6 +5656,70 @@ Next: exact-head CI and combined integration verification; include this as a
 separate reviewable increment. The earlier five-PR rollout remains pending the
 operator's explicit revision of “do not merge.” Before any rollout, reconcile
 current research ownership and preserve fresh automatic skill-edit evidence.
+
+### 2026-10-22 — runtime hardening rollout prepared
+
+PR #4 now inventories all 14 custom skills captured by Scout at handoff `3ec0b64` (53 runtime
+files plus eight project skill files). Corrected the publishing skill's delete/recreate-tag and
+in-place published-manifest advice; original captures remain in #1. Source audit detects both
+project and profile drift. The live host is unchanged. Source inspection proved curator pause
+and pin do not block background-review patches: rollout must separately disable
+auxiliary.background_review.enabled, pause interval curation, drain writers, and preserve
+preimages before any restoration. Exact rollout/rollback and remaining work are in
+docs/HARDENING-DEPLOYMENT.md. Next: finish combined checks, resolve the operator's earlier
+no-merge instruction, then coordinate the documented rollout with Scout.
+## Job assembly safety — 2026-10-22, engineering branch
+
+On isolated `hardening/job-assembly`, the assembler no longer recursively removes the directory
+named by a job descriptor. It validates identifiers/paths, stages and validates before exposing
+output, seals ownership plus file hashes, and treats repeated job IDs as immutable. Same bytes
+are a no-op; changed or unfamiliar work is preserved and requires a new attempt ID. Added safety
+regressions for traversal, links, collisions, interrupted assembly and preservation. No worker was
+launched and no scheduler/runtime settings were changed. See the resulting PR for clean-checkout
+validation and exact-commit CI. Runtime handoff remains in Scout's PR #1; schema work is PR #2.
+## Infrastructure hardening — 2026-10-22, engineering branch
+
+Eduardo requested broader hardening with Scout's runtime knowledge. Work is isolated on
+`refactor/release-schema`; live schedules and main remain unchanged. Scout prepared runtime
+handoff PR #1 (`ops/scout-runtime-handoff`), including sanitized scheduler/shim sources.
+`docs/HARDENING-PLAN.md` records the staged engineering work and deployment boundary.
+
+First increment: one typed release reader, scoped/current baseline interpretation, diagnostic
+errors, fail-closed manifest writes, and conformance tests over all ten packages. NHS remains a
+private dropped historical package; NOAA retains both protocol scores. No published artifact or
+gate byte was edited. Original 419 tests plus 22 new tests passed locally (six existing environment
+skips); clean-checkout and exact-push CI evidence belong in the engineering PR.
+
+Next: finish reviewer verification, open the schema PR without merging, review Scout's handoff,
+then harden reproducible runtime recovery, safe generated-directory cleanup and publication
+verification. Never launch a second coordinator on the live ledger.
+
+
+### 2026-10-22 — Hub integrity hardening prepared
+
+The Hub publisher previously deleted/recreated a version tag before verification, and treated
+same-size plain Git files as verified. `hardening/hub-integrity` now verifies pinned content
+first, hashes bounded metadata, refuses unverified bulk blobs, and creates immutable tags
+with before/after revision checks. Existing matching tags are no-ops; conflicts/races fail
+without deletion. Verification records the exact commit and does not claim a missing tag
+exists. Negative tests use an injected fake Hub, with no credentials/network/worker spend.
+Next: review this PR stacked on release-schema, combine it with runtime hardening, and deploy
+only after the documented merge boundary is resolved. No remote tag or dataset byte changed.
+
+Scout's live review caught ordinary Git CSVs and receipt downgrading. The Hub increment now
+keeps incomplete attempts separate (exit 2), preserves the last complete receipt, and accepts
+only collected successful worker evidence bound to the exact commit/blob IDs and manifest
+assets. Workers emit that evidence and run loading against the same pinned commit. An explicit
+hf_publish.verify_only mode obtains it for an old release without Hub uploads; no worker was
+launched during development. Legacy reports remain historical, not fabricated into new evidence.
+
+The existing scheduled Scout research session independently hit a 9,421,952-byte ordinary Git
+CSV above the old worker re-hash ceiling. Integrated its captured fix (`1e53f97`) and four
+regressions without changing the active session. Both worker verification paths now share
+64 MiB per-file, with fresh owned caches cleaned after each check; added exact-size helper
+and old-cache preservation tests. The coordinator still receives only compact evidence.
+The container disk monitor does not cover host-side HF jobs; documented that remaining gap
+instead of asserting max_disk_mb already enforces it. No engineering worker was launched.
 ## 2026-10-22 (evening) - eutl-installation-net-short PACKAGED: staged private on both destinations, awaiting the operator's flip
 
 The advancement session packaged eutl-installation-net-short end to end but hit its 120-turn
@@ -5748,6 +5812,14 @@ cleanup after that review: once normal completion reaps the child, its old group
 ID may be recycled, so the wrapper must not signal it. Timeout cleanup signals
 only while the leader remains unreaped. A new real-process regression checks
 normal completion sends no group signal. No live fault injection or deployment.
+### Hub path authority follow-up (2026-10-22)
+
+Pinned anonymous TSB metadata confirmed the original flat Hub paths. The
+concurrent candidate descriptor's new logical-path override disagreed with both
+main and the version tag. The publisher now resolves paths from the frozen
+release record, consistently with its generated card, rather than from mutable
+candidate metadata. Two regressions cover this drift and explicit structured
+manifest paths. No network tests, bulk download or remote mutation was added.
 **Observed, recorded, not fully attributed:** austin-911-response's site-destination verified_at
 advanced twice during the close-out window (18:12:18 -> 18:45:41, captured in fd29c3e, ->
 18:51:05, committed here) in the site pipeline's own record_site_destination format - a write
