@@ -674,11 +674,67 @@
       "elapsed_seconds": 16.278,
       "response": "DecisionDo not edit `quality.json`, do not send the AUC, and record the candidate as unqualified. The build exiting 0 means the job ran; it does not mean the extract is usable. The gate is reporting two real defects on the current artifact version:\n\n- `timing.features_available_at_instant=false` \u2014 features stamped M were published M+10 days, while the prediction instant is stated as month-end. At month-end those features did not exist; the model would be reading the future. That makes any AUC an oracle score, not a forecast.\n- `timing.selection_uses_only_available_data=false` \u2014 eligibility depends on target-month volume, so the population is conditioned on the month being forecast. Even clean features cannot rescue a row set chosen with hindsight.\n\nChanging the descriptor to assert availability would not fix either defect; it would make the gate agree with a false claim, which is exactly the failure mode the timing block exists to catch (`nhs-ae-four-hour-decline`, gate 1.3.0).\n\nSupporting evidence\n\nThe failing report for this exact `artifact_version`, and `--accept` re-verification of it against the collected extract. Both are retained; the extract stays in private staging. Nothing in the record will carry an AUC, base rate or headroom figure from this version.\n\nUncertainty and next discriminating check\n\nTwo things are not yet established: (a) the true publication lag bound \u2014 one observation of M+10 is not a margin, and I have not seen several observed period_end \u2192 published pairs; (b) whether the target-month volume dependence is in the row-membership loop or only in a helper, which determines whether it is a small fix or a task-design defect. The cheapest discriminator is a counterfactual build: full history plus one target month below the volume gate, asserting the M row is still emitted (pre-fix it vanishes); and the reverse, lowering a history month, asserting the row disappears. The lag gets set from several observed release dates, at the largest plus a week of margin, not the mean and not a single maximum.\n\nOrdered actions\n\n1. Write the failing report path, artifact version and both failing checks into the candidate record; set status back from constructed/qualified to a recorded defect. No number is quoted from this artifact.\n2. Run `--accept` on the report against the extract; record that it refuses. That is the evidence the hand-off is blocked.\n3. Collect the failure diagnostics and destroy the worker; confirm server and IP are gone. A failed gate is still a job that must not stay billable.\n4. Tell the colleague plainly: the AUC is not reportable because the features post-date the stated prediction instant and the population is selected on the target month. Not a formatting disagreement.\n5. One rebuild, not three: switch the instant to `kind: publication` with lag = max observed + margin; make eligibility iterate the provider's months using only data \u2264 M, with the target month looked up afterward solely to compute the label and thin months counted as `unobserved_target`. Re-run the gate on the worker over the full artifact.\n6. Only if it passes and `--accept` verifies against the new artifact version do I run the baseline triad and quote anything.\n\nStopping condition\n\nGate exit 0 plus `--accept` pass on the new artifact version \u2014 then baselines, and nothing before. If the rebuild fails on timing again, that is the second structural defect on the same construction: stop rebuilding, re-target or drop the candidate, and record it as a negative result rather than publish a number.\n\nOperator report\n\nHeld: build `austin`-class worker run exited 0 but failed the timing gate \u2014 features publish ~10 days after period end at a month-end instant, and eligibility uses target-month volume. AUC withheld; descriptor not edited. Worker to be destroyed, extract preserved. One rebuild planned (publication instant with measured lag + margin, target month only for the label); if it fails again the candidate is dropped. No publication action taken.\n",
       "response_sha256": "241703dffecc4ed375bab95085b0a16704452e4946f1aee7d8ed2c3ee549ba18"
+    },
+    {
+      "partition": "development",
+      "case": "advancement-baseline",
+      "arm": "revised",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-38",
+      "session_id": "20261022_231312_be05dc",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "de01b57a3003ad3931322ca2fa7505417cb4d4362c50aeafa93b5a77cffc623a",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 227,
+        "output_tokens": 7401,
+        "cache_read_tokens": 33344,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 40972,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 275,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 175,
+          "output_tokens": 7126,
+          "cache_read_tokens": 32960,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 85.632,
+      "response": "DECISION\n\nReject both proposals. Spend the one bounded diagnostic validating the comparison itself: an alignment/availability audit of the persistence reference, a paired dependence-aware interval on the persistence-minus-model gap, and an independent recomputation of the persistence score, all on the identical eval rows. Holdout stays sealed; no threshold search; no drop yet.\n\nSUPPORTING EVIDENCE\n\n- The artifact passed full-artifact qualification and --accept, so gate-visible defects are not the live question. The gate is necessary, not sufficient: usefulness is exactly what it cannot establish.\n- Model 0.74 vs persistence 0.78 on identical rows is a recorded defect by policy; the skill's own worked example (0.870 vs 0.893) turned a \"promising\" dataset into \"not yet a forecast.\" Calendar/identity at 0.60 shows the model beats the seasonal reference, so this is \"trails persistence,\" not \"no signal.\"\n- Policy requires inspecting alignment, availability, uncertainty and split shift before interpreting a trailing model. None exist, so neither \"persistence dominates\" nor \"task useless\" is validated. Dropping the source now discards it on an unvalidated comparison; one weak model does not establish impossibility.\n- Onset thresholds \"until holdout beats persistence\" is prohibited twice over: tuning a label or threshold against the reported holdout score, and fitting until a score wins. It also spends the holdout, which must stay outside target and threshold selection. A change-target re-scope is legitimate only as a new task instance specified from user need first, then qualified and compared anew - never chosen because it improves a score.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\n\nThe -0.04 gap has no interval and unknown clustered structure; its significance is unknown. One script on the worker, eval rows only:\n\n1. Audit the persistence reference: computable at the declared prediction instant (not post-hoc)? Row-aligned with the model's scores?\n2. Recompute persistence AUC with independent code from the same artifact - divergence implicates our baseline, convergence strengthens the finding.\n3. Paired difference (persistence minus model) with a dependence-aware interval clustered on the declared event key.\n4. Per-year AUC/Brier and per-split positive rates, to expose a structural break or prevalence shift.\n\nReadings: gap confirmed with no named defect = validated negative; interval spans zero = inconclusive, report the gap and its uncertainty separately and claim neither dominance nor parity; a named defect = an implementation problem, not a scientific verdict.\n\nORDERED ACTIONS AND STOPPING CONDITION\n\n1. Record the triad in the candidate record now (0.74 / 0.78 / 0.60, identical eval rows, no intervals yet), with the trailing-persistence defect written beside the model AUC so nobody quotes 0.74 alone.\n2. Run the diagnostic; compact report back to the coordinator, bulk data stays on the worker.\n3. Named defect: one rebuild only, per the one-rebuild-per-structural-defect budget - fresh attempt ID, full gate plus --accept on the worker, triad re-measured. Hand off the prepared attempt if session budget runs out.\n4. Validated dominance: record \"no demonstrated headroom under this protocol\" with both scores on identical rows, preserve the negative finding, and propose drop-or-re-scope to the operator as a fresh decision.\n5. Inconclusive: record the observed gap and uncertainty; stop.\n\nStop after 3, 4 or 5. No second rebuild for the same defect class, no threshold iteration, no holdout evaluation this session.\n\nOPERATOR REPORT\n\nQualified artifact; baseline triad on identical eval rows: fitted model 0.74, persistence 0.78, calendar/identity 0.60. The model trails persistence, which policy records as a defect in the comparison, not a verdict on the source. Both proposals were declined: dropping now rests on a comparison with no uncertainty estimate or diagnosis, and tuning onset thresholds against the holdout is forbidden and would invalidate it. The one bounded diagnostic will decide among: implementation defect (one bounded rebuild), validated no-headroom (negative finding preserved, drop or re-scope proposed), or an inconclusive gap (recorded as such). The holdout remains sealed and unexamined. The figures are measured; their significance is not yet known.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "752156c4dc182880d8debe92342ea4f35f9445a8452226520c226704b0971c28"
     }
   ],
   "ledger": {
-    "calls": 38,
-    "tokens": 1268032
+    "calls": 39,
+    "tokens": 1309004
   },
-  "updated_at": "2026-10-22T23:13:10Z"
+  "updated_at": "2026-10-22T23:14:52Z"
 }
