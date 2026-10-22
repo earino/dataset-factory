@@ -170,11 +170,67 @@
       "elapsed_seconds": 31.165,
       "response": "**Decision.** Drop the late aggregate and keep the original prediction instant and target. Reject the \"move the instant two days and update the declaration\" proposal: editing a timing declaration so the gate passes is exactly the failure mode `nhs-ae-four-hour-decline` recorded \u2014 the declaration becomes true of the paperwork and false of the data. Moving the instant does not fix availability; it either leaves the label observed before the instant (leakage) or silently changes the target day. Either way it is a new task, not a declaration edit.\n\n**Supporting evidence.** Prediction is midnight before day D; the label is whether an outage starts during D. A daily aggregate covering D, released at D+2, is post-hoc by construction \u2014 it postdates both the instant and the outcome. Removing it from `FEATURES` is not enough: the runner scores every shipped column, so the column must leave the written CSVs and its absence asserted in the build, not merely un-listed. Nothing has passed qualification, so no AUC, base rate, or headroom figure exists to preserve and no number is currently quotable. Several covariates with documented pre-midnight availability exist, which is what makes the reduced task testable rather than empty.\n\n**Uncertainty.** Unknown and not to be assumed: whether the remaining covariates retain headroom without the aggregate; whether a lagged vintage of the same aggregate (value as of D-2, released before D) exists. If only the current vintage is published, that variant is not reconstructible and must be recorded as a limitation, not a guess. Exclusion may cost the task its signal \u2014 that is an empirical question for the gate and baselines, not a reason to keep a leaking column.\n\n**Genuinely different valid task.** One where the target day is strictly after the instant and the aggregate's period closes at or before it: e.g. at D+2, using the D aggregate as a feature (if documented available then), predict outage onset during D+3. That requires a redesigned eligibility rule, new split windows, re-read column documentation, and fresh qualification \u2014 a new task instance with its own user need and protocol stated first. It is not automatically better; headroom must be measured anew, and a change to the naive target for convenience is not permitted.\n\n**Ordered actions.** (1) Record the decision, the column classification, and the refusal of the declaration edit in the candidate record. (2) Rebuild on a worker under a fresh attempt ID, dropping the column from the shipped column list and asserting its absence; preserve the old bundle. (3) Run the unchanged gate on the full artifact on the worker, then `--accept` against the exact bytes; `--selftest` unchanged. (4) If it passes, run persistence, calendar-only and full model on identical eval rows, per-year and with prevalence shift reported. (5) Package only on supported headroom; otherwise preserve the negative finding and re-scope.\n\n**Stopping condition.** Stop and report if the gate fails twice on timing or population selection, if the model does not beat persistence on identical rows, or if no documented pre-midnight covariate can carry a score. No worker launched and no gate result is claimed here; both are proposed.\n\n\u2014 Scout (Hermes)\n",
       "response_sha256": "9eed1948bb4f68a318363f0952cb78968e11c2c14bd24ec9efa5cccebd803322"
+    },
+    {
+      "partition": "diagnostic",
+      "case": "late-feature-redesign",
+      "arm": "baseline",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-65",
+      "session_id": "20261022_234242_39fb1b",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "9ca2b3ee61e9f260008ddc3ceb6d18f47aa359274870e153bed318d4b63dc980",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 33766,
+        "output_tokens": 3439,
+        "cache_read_tokens": 2944,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 40149,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 58,
+          "output_tokens": 12,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 33708,
+          "output_tokens": 3427,
+          "cache_read_tokens": 2560,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 44.919,
+      "response": "Decision: Advance the original task with the late daily aggregate dropped. Do not move the prediction instant and rewrite the timing declaration. A packaged release does not exist here, since no construction has passed qualification, so construction/qualification is the work.\n\nSupporting evidence: At the original midnight instant, the aggregate is not published; it appears two days later, after the outage label is public. That makes it post-hoc for this task, not a usable covariate. The gate\u2019s timing rule is explicit: features must be published by the instant, row selection must not reach past it, and \u201cknowable at the period\u201d is not \u201cknowable at the release.\u201d Merely moving the instant forward while retaining the original target would either use a label already public or present hindsight as a feature. Moving both instant and target is not a declaration repair; it changes the prediction question and must be treated as a new task. The documented pre-midnight covariates give the original decision a legitimate feature set, but they are only candidates until qualification and baselines measure them.\n\nUncertainty and next discriminating check: The main uncertainty is whether the remaining pre-midnight covariates carry usable signal. The next check is not another timing argument; it is the gate on the full artifact after the aggregate is removed, asserting the late column is absent from every shipped CSV, not merely unlisted. If the gate passes, run the baseline triad on identical rows: persistence, calendar-only, and the full model. If persistence or a calendar rule wins, record a negative result rather than packaging.\n\nOrdered actions:\n1. Freeze the original task definition: prediction at midnight before day D; target is whether an outage starts during D; label source excluded from shipped columns.\n2. Remove the late aggregate from features and shipped files. Update quality.json\u2019s timing block to describe only features published before midnight; do not extend the instant to accommodate a late field.\n3. Build or revise on the worker; run dataset-qualification over the full artifact; collect qualification.json; run --accept against the exact collected bytes.\n4. If qualification passes, measure the baseline triad and record any headroom. Only then package for review.\n5. If the aggregate is considered essential, open a new candidate/task: prediction instant at or after its publication, target a later day whose label is not yet public at that instant, features published by that instant, selection stopped at the instant, new temporal splits, new novelty/licence review, and fresh qualification. Do not reuse rows whose outcomes were already public.\n\nStopping condition: Stop at a gate failure not caused by the excluded column, an unreadable licence, a missing operator flip, or a baseline showing persistence/calendar dominance. Do not score, quote AUC/headroom, package, or publish without a passing report for that artifact.\n\nOperator report: Original outage task advances with the late aggregate removed; no figures are quoted yet. The proposed two-day instant shift is rejected as a fix for this task because it either leaks the already-public label or changes the question. If pursued, it is a separate task instance requiring new construction, splits, timing evidence, and qualification. Next action: construct/qualify the original task without the late field, then run the baseline triad.\n",
+      "response_sha256": "4f51a942d1ab7a41fa488424a7730e578ab4ac949d96c4bd8324f69a6dde3db6"
     }
   ],
   "ledger": {
     "calls": 65,
-    "tokens": 2244237
+    "tokens": 2284386
   },
-  "updated_at": "2026-10-22T23:42:42Z"
+  "updated_at": "2026-10-22T23:43:23Z"
 }
