@@ -1,49 +1,78 @@
 # Custom skills — vendored
 
-Two profile skills carry most of the operating knowledge for this project. They are **not in the
-factory repository**: they live in the Hermes profile skills directory and would be lost with the
-host. Copied verbatim on 2026-10-22T17:30Z.
+The profile skills that carry this project's operating knowledge. They live in the Hermes profile
+directory (`/opt/data/skills/<category>/<name>/`), **not in the factory repository**, so this export
+is their only Git copy. Copied 2026-10-22T17:50Z; use counts from `hermes curator usage`.
 
-| Skill | Path on the host | Files | sha256[:16] |
-| --- | --- | --- | --- |
-| `open-data-source-vetting` (v1.2.0) | `/opt/data/skills/research/open-data-source-vetting` | `SKILL.md` (45,388 B) + 5 references | `ef66694f788d4ba7` |
-| `agent-handoff-packaging` (v1.1.0) | `/opt/data/skills/devops/agent-handoff-packaging` | `SKILL.md` (15,376 B) + 1 template | `9b9c8d101293aba5` |
+| Skill | Uses | SKILL.md sha256[:16] | Files |
+| --- | ---: | --- | ---: |
+| `open-data-source-vetting` | 38 | `ef66694f788d4ba7` | 6 |
+| `scheduled-job-verification` | 36 | `2cde10e808ab939b` | 3 |
+| `multi-destination-publishing` | 33 | `728bd4f33a08f848` | 4 |
+| `ephemeral-worker-lifecycle` | 32 | `1d553d29d130156e` | 4 |
+| `validation-gate-design` | 27 | `f7842832bcc046b1` | 5 |
+| `status-dashboard` | 23 | `06bfb22434038596` | 3 |
+| `post-push-verification` | 19 | `0892a5ddb0b585bf` | 1 |
+| `hosted-agent-capability-audit` | 18 | `7d806ffe52953d33` | 7 |
+| `agent-spend-budgeting` | 18 | `e0c9bf41aff403cb` | 4 |
+| `agent-handoff-packaging` | 4 | `9b9c8d101293aba5` | 2 |
+| `provider-endpoint-verification` | 4 | `63bd8b1f96304859` | 2 |
+| `large-dataset-builds` | 3 | `8bbe4a9ac25937bb` | 1 |
+| `project-skill-authoring` | 2 | `f0145effa0293f37` | 1 |
+| `single-tenant-pipeline-generalisation` | 2 | `800d97628ebaea79` | 2 |
 
-Supporting files: `open-data-source-vetting/references/{api-recipes,artifact-qualification,
-discovery-coverage,novelty-check,release-packaging}.md`;
-`agent-handoff-packaging/templates/refactor-brief.md`.
+Not vendored: `multi-instance-generalization` (0 uses) — a judgement, not a safety decision.
+
+Earlier captures of the first two skills were at 17:30Z and are still present inside their
+directories where unchanged; the table above is the state at 17:50Z.
 
 ## How skills load, and in what order
 
 | Source | Path | Editable how | In Git? |
 | --- | --- | --- | --- |
-| Profile ("local") | `/opt/data/skills/<category>/<name>/` | `skill_manage`, or edit the files | no — this export is their only Git copy |
+| Profile ("agent"/"local") | `/opt/data/skills/<category>/<name>/` | `skill_manage`, or edit the files | no — this export is their only Git copy |
 | Project ("external") | `dataset-factory/skills/` via `skills.external_dirs` | edit the repo files and commit | yes |
 | Bundled ("upstream") | shipped with the `/opt/hermes` image | not editable; replaced on image update | no |
 
 Observed with `hermes skills list`: the three dataset skills report `source=external`, the profile
-skills report `source=local`, and the bundled catalogue reports as installed. There are **no name
+skills report `source=local`, the bundled catalogue reports as installed. There are **no name
 collisions** between the three sources today, so precedence has no practical effect yet; when a
-collision does occur Hermes resolves by configured search order, so treat a duplicate name as a
-reason to rename rather than as an override.
+collision occurs Hermes resolves by configured search order, so treat a duplicate name as a reason
+to rename rather than as an override.
 
-The distinction matters for editing: `skill_manage` can modify profile skills but refuses
-external-dir skills (they must be edited as repository files), and cannot touch bundled skills.
+`skill_manage` can modify profile skills but refuses external-dir skills (they must be edited as
+repository files), and cannot touch bundled skills.
 
 ## Sanitisation review
 
-Each file was read before copying, and the whole tree was grepped for:
+Every file was read, and the tree was grepped for credential-shaped strings (`ghp_`,
+`github_pat_`, `hf_`, `BEGIN … PRIVATE KEY`), chat identifiers and private hostnames. One match was
+inspected and cleared: `hosted-agent-capability-audit/references/github-token-scopes.md` mentions
+token *prefixes* as a shape check, not a value. Everything else is method, not live state.
 
-- credential-shaped strings (`ghp_`, `github_pat_`, `hf_`, `BEGIN … PRIVATE KEY`): none;
-- host paths, personal names, e-mail addresses, IP addresses, private repository names: none — the
-  text is generic method, not project state;
-- chat identifiers or delivery targets: none.
+## Provenance and drift (important)
 
-Nothing was excluded from these two skills. Both are method-only: how to vet a source, how to
-package a handoff, with worked examples that carry no live identifiers.
+These copies were taken at **17:50Z**. The curator was active throughout the review and edits in
+place:
 
-## Why these two
+| Time | Target | What happened |
+| --- | --- | --- |
+| 17:20Z | profile `agent-handoff-packaging` | curator wrote the refactor-brief template and patched SKILL.md |
+| 17:31Z | repo `dataset-release` (external) | patched in the working tree, **uncommitted** (+17 lines) |
+| 17:32Z | repo `dataset-qualification` (external) | same (+1 line) |
+| 17:41Z | profile `open-data-source-vetting/references/release-packaging.md` | patched |
+| 17:47Z | profile `agent-handoff-packaging/SKILL.md` | patched again |
+| 17:48Z | profile `open-data-source-vetting/references/artifact-qualification.md` | patched |
+| 17:48Z | profile `multi-destination-publishing/SKILL.md` | patched |
 
-`open-data-source-vetting` is the procedure behind the licence classes, the novelty check and the
-artifact-qualification gate; `agent-handoff-packaging` is the procedure behind this very directory,
-including the rule that a writer must refuse secrets rather than warn about them.
+So: the curator **does** edit live external repository skills, it did **not** create profile copies
+of the `dataset-*` skills (nothing shadows them), and it leaves repo edits uncommitted on `main`.
+
+Consequence for the hashes above: they are point-in-time. `release-packaging.md`,
+`artifact-qualification.md` and `agent-handoff-packaging/SKILL.md` were already newer than the
+17:30Z capture when this table was written; their diffs are preserved in
+`../curator-drift/profile-2026-10-22T1748/`. The gate itself is untouched: `GATE_VERSION` `1.4.0`,
+`qualify_dataset.py` `4e51d2e9494fd66d`.
+
+Anyone merging this handoff should decide what to do with those uncommitted edits first. They are
+content-only, but unreviewed, and a scheduled session could commit them into an unrelated change.
