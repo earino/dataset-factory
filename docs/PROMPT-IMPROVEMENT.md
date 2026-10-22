@@ -2,6 +2,15 @@
 
 Status: draft under evaluation; no deployment claimed.
 
+Source review during the frozen `21b72994` follow-up identified a watcher ordering
+hazard: a collected report can omit the asset whose only copy remains on the worker,
+yet normal deletion is allowed. The follow-up brief now explicitly preserves and
+verifies that source before normal teardown, confirms old-worker deletion before a
+fresh launch, and leaves expiry unchanged. Failed preservation remains a truthful
+blocked/loss report. This is a narrow watcher-only correction; the 52 existing calls
+remain frozen. Sixteen targeted watcher calls, including a new retained-source
+diagnostic, will verify the corrected bundle under the same cumulative checkpoints.
+
 ## Original development comparison completed
 
 The frozen `413244c` bundle and baseline each answered six cases on two recorded

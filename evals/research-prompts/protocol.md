@@ -199,3 +199,23 @@ reference metrics. Its successor clarifies entrypoint order, worker-only accepta
 and control semantics. Record that exact successor commit in the next request manifest;
 do not run both versions merely to multiply comparisons. The initial `413244c` batch
 remains unchanged and all its results remain part of the evidence.
+
+### Watcher recovery-order correction
+
+During the frozen `21b72994` follow-up, source review with Scout found an ordering
+hazard: normal teardown preceded checking whether a missing asset's only copy was
+still on the worker. `collect` verifies listed assets, while `destroy` permits a
+collected job's deletion; neither establishes preservation of an omitted asset.
+The single-worker admission also refuses a replacement until the old worker is gone.
+Clarify preservation before normal teardown, verified deletion before relaunch, and
+unchanged expiry with a truthful loss/blocked handoff if preservation fails. This
+changes only the watcher brief, not discovery/advancement or lifecycle enforcement.
+
+Finish and retain all 52 frozen follow-up calls. Then test the corrected exact bundle
+on `watcher-loading`, `watcher-ownership`, `watcher-recovery` and the new adaptive
+`watcher-retained-source` case, paired with the original baseline on both routes:
+16 additional calls. Total planned attempts become 93, including the preserved
+pre-inference failure, within the existing 96-attempt / 5M-token checkpoints and
+same ledger. This targeted verification addresses a concrete source-review defect;
+it does not replace earlier results or add repeats until a preferred score appears.
+Keep the new adaptive case separate from original and reserved comparisons.

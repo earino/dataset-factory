@@ -36,9 +36,14 @@ assuming session boundaries protect them.
 3. Baselines need matching artifact identity, accepted inputs, comparison and scope.
    Transfer/Hub jobs need destination-specific digest/revision/loading evidence.
    Missing or stale evidence is incomplete, not OK.
-4. Preserve compact diagnostics and durable artifact locations. Confirm the owned
-   worker's cleanup through the existing lifecycle and provider read-back. Do not
-   leave a billable worker just because the candidate needs another decision.
+4. Preserve compact diagnostics and locate the recovery source **before normal
+   teardown**: record the worker path and expected digest, or verify the staged
+   copy. A collected report verifies only its listed assets; it does not prove a
+   missing asset survived elsewhere. If the live worker holds the only accepted
+   bytes, preserve them through supported same-artifact transfer before deletion,
+   or leave a precise blocked handoff within the worker's existing expiry. Never
+   extend expiry or claim an unverified backup exists. If preservation cannot finish
+   before expiry, record the threatened/lost artifact; independent cleanup continues.
 5. For failure/incompleteness, distinguish infrastructure, construction, scientific
    and verification failures. Record the cheapest discriminating next check. With
    exclusive ownership and a documented handoff, allow one diagnosed recovery of
@@ -51,7 +56,10 @@ assuming session boundaries protect them.
    parent job in the candidate/STATE record, budget admission and enough time to leave
    a durable handoff. One recovery applies across that attempt chain, not once per new
    job ID. Verify the result rather than treating retry completion as success. No
-   unchanged retry loop.
+   unchanged retry loop. Before launching a fresh worker, confirm deletion of the
+   old worker and its owned IP through the provider. Do not delete the only recovery
+   source merely to free that slot; preserve and verify it first. A blocked launch
+   needs a handoff, not a cleared ledger or an increased worker limit.
 6. Hand construction changes, scientific decisions and unresolved recovery to
    advancement with the exact evidence and proposed next check. Never clear a ledger
    entry or invent a lifecycle status to hide unresolved state or free the worker slot.
