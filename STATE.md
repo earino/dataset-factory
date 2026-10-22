@@ -1,8 +1,58 @@
 # Current state
 
-Updated: 2026-10-22 00:30Z (scheduled discovery tick, East Asia focus: four new candidates opened and
-verdicted - tw-typhoon-day-closure GO, tw-reservoir-drought-storage PARK, hk-datagov-portal PARK,
-kr-kosis-kma-access PARK; all four recorded with evidence and pushed).
+Updated: 2026-10-22 02:22Z (worker watcher closed both failed TSB construction attempts; the live research
+session resolved the measured-panel-start decision - band re-pinned to [2014, 2018], measured start 2016 -
+and tsb-003 is running with the corrected build).
+
+## 2026-10-22 - tsb-001 and tsb-002 both exited 2 on the measured-panel-start guard; the full panel measures 2016; the session re-pinned the band and tsb-003 is running
+
+**Both construction attempts for `tsb-railway-occurrence-casualty` failed on the same guard, and neither
+produced an artifact - no gate ran, and nothing from either run counts as a measurement of the dataset.**
+What the runs did prove on the full panel, twice, on the worker: all five RODSdb public CSVs download cleanly
+with the browser-like header set (OCCURRENCE 97,894,047 B; TRAIN 21,775,681 B; ROLLING_STOCK 34,758,209 B;
+INJURIES 2,713,169 B; COMPONENTS 42,523 B - sha256 and last-modified logged each time), and the occurrence
+panel parses to 70,706 rows (139 exact duplicates dropped, 0 unparseable OccDate).
+
+**tsb-001 (exit 2 in 33 s, server 171728396, release 420237693): the era rule was wrong.** It counted a row
+as early-signatured when AccIncType was HISTORICAL/DG LEAKER *or* TimeZone was empty/N-A. Sporadic N/A
+timezones persist into the 2010s, so the folded rule measured the panel start at 2016, outside the asserted
+[1995, 2010] band, and the build exited by design. The live research session collected the failure at 02:13,
+made the same diagnosis, fixed build.py (era signal = taxonomy alone; tz-missingness recorded per year as a
+separate property; per-year diagnostics written before the assertion so a failed run still uploads
+evidence), smoke-tested against a 1990s-signature fixture (panel start 1996 on the fixture, inside the band),
+destroyed the worker at 02:14:17Z and relaunched as tsb-002 at 02:14:50Z.
+
+**tsb-002 (exit 2 in 28 s, server 171728935, release 420240534): the corrected measurement, and the real
+finding.** With the taxonomy-only era signal the per-year table is now uploaded
+(output/extract/diagnostics.json) and it shows the era share decays *gradually*: 25-38% through 1991,
+8-17% in 1993-2000, 4-9% in 2001-2013, 2.3% at 2015, 0.58% at 2016, 0% from 2017. The 2%-every-later-year
+rule therefore still measures the panel start at **2016**, outside [1995, 2010] - the record's proposed 2004
+sits inside a measured 6.8% early-taxonomy tail, and reaching it would mean loosening the threshold to
+~10%, i.e. choosing the threshold to hit the proposed answer. Timezone-missingness is a different, abrupter
+boundary: ~99% through 1991, 29.9% at 1992, 0% 1993-2000, a sporadic 5-17% bump 2001-2007, 0% from 2008.
+
+**Resolution, taken by the live construction session within a minute of the second failure - this watcher
+launched nothing.** The session chose to trust the measurement rather than tune the threshold: the band is
+re-pinned to [2014, 2018] with the measured decay documented in source/build.py ("the band pins the
+measurement without freezing it"), so the panel becomes 2016-2026 (~13,441 occurrences; train through 2023,
+eval 2024, holdout 2025-26 remains feasible). It re-assembled and launched **tsb-003** at 02:19:43Z (server
+171729523, cx23/hel1; bundle build.py sha 942ac03cb925214f... equals the committed source, verified by this
+watcher); status: running when this was written. The decision, the per-year table and both failure diagnoses
+are recorded in the candidate's record.json (jobs[], measurements.full_panel_era_diagnostics_2026_10_22,
+next_action).
+
+**Records and cleanup.** tsb-001's worker was destroyed by the session at 02:14:17Z and tsb-002's by this
+watcher after collection (ledger deleted_at 02:20:40Z; server 171728935 gone). All small assets of both
+staging releases were fetched and sha256-verified into `.factory/tsb-001/reports/` (container.log 862 B,
+manifest.json 2,320 B, source.tar 143,360 B) and `.factory/tsb-002/reports/` (diagnostics.json 5,263 B,
+container.log 3,517 B, manifest.json 2,699 B, source.tar 153,600 B); no bulk asset touched this host. The
+candidate's record.json carries both failed-attempt entries, the full-panel measurement and the tsb-003
+launch snapshot; `check-candidate.py` OK (status ready). Committed with this entry: all three job ledger
+records, the candidate's source/ (the re-pinned build.py tsb-003 is running; the exact bytes tsb-002 ran stay
+pinned by its ledger sha ee3a8777771732d9a... and release 420240534's source.tar), and the build-decision
+notes.
+
+
 
 ## 2026-10-22 - East Asia discovery tick: one GO (Taiwan typhoon-day closures), three parks, all recorded
 

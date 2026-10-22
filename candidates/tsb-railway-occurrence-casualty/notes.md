@@ -134,3 +134,78 @@ from January 1983"). open.canada.ca record: 4f8d9b0d-c4af-4be2-b751-3f5a403993ff
 - Construction must measure naive baselines (global / per-railway /
   per-subdivision / per-activity / time-of-day) before spending the rest of the
   build; headroom over per-subdivision persistence is the go/no-go for release.
+
+## 2026-10-22 - construction probes (bounded, coordinator-side)
+
+Construction prep for job tsb-001. Two bounded ranged GETs (2 MB + 64 KB) plus
+the data dictionary (109,771 B) answered the remaining design questions; every
+claim below is from a probe, with the command recorded.
+
+- `python3 .factory/tsb/probe_head_values.py` (2 MB ranged GET of
+  RODSdb_MDOTW_VW_OCCURRENCE_PUBLIC.csv, 1,495 rows, HTTP 206):
+  - The file decodes cleanly as UTF-8; cp1252 fails (byte 0x9d). Earlier
+    session scripts that read it as cp1252 printed mojibake ("QUÃ‰BEC");
+    the shipped CSVs are written UTF-8.
+  - **OccID is empty in every one of the 1,495 newest rows.** The row key must
+    be OccNo. (The INJURIES child table still carries a populated OccID, so
+    the internal id exists - the OCCURRENCE export just does not carry it now.)
+  - **OccDate is a full local timestamp** ('2026-10-06 04:55:00.0000000',
+    7-digit fraction) that already embeds OccTime; the build parses date+hour
+    from it.
+  - TimeZoneID_DisplayEng values are DST-aware abbreviations (EDT/EST/MDT/
+    MST/CST/CDT/PST/PDT/ADT/AST), so the site timezone is fully documented by
+    the shipped string; no hand-rolled UTC offset map is needed (occ_hour
+    ships as the LOCAL hour with the timezone label beside it).
+  - Latitude/Longitude are degrees x 10^4 unsigned (505900 -> 50.59 N;
+    1181200 -> 118.12 W), of the nearest city/town; the build negates the
+    West longitude and asserts the Canadian envelope 41-72 N / 52-145 W.
+    10/1,495 newest rows have empty coordinates.
+  - Label components agree perfectly in the newest sample: InjuriesIND=1 on
+    224 rows, fatal+serious+minor totals > 0 on the same 224, 0 disagreements
+    either way.
+  - OccClassID_DisplayEng carries TSB occurrence classes ('5', '4', '3',
+    'BEING ASSESSED') - post-onset taxonomy, excluded like AccIncType and
+    OccurrenceType (ACCIDENT/INCIDENT is used only for the publisher
+    cross-check, never shipped).
+- `python3 .factory/tsb/probe_keys.py` (same 2 MB sample + 64 KB of the
+  INJURIES table): OccNo distinct on 1,494/1,495 rows; the one collision
+  (R26D0003) is a **byte-identical exported row** (all 345 columns equal -
+  `python3 .factory/tsb/probe_dup.py`), so exact duplicates are dropped and
+  counted at build time, and OccNo remains the row key. INJURIES joins on
+  OccNo and carries per-person severity counts (Offtrain_*Fatal/Serious/Minor
+  and more), used only as the label cross-check.
+- Current vintage measured at fetch time (2026-10-22): contains occurrences
+  dated as late as 2026-10-10 - newer than the record's 2026-09-15 vintage
+  and past the "month preceding release" convention. The build therefore
+  holds the holdout window at 2025-01-01..2026-08-31 (one full settling month
+  behind the data) and counts occurrences after the window as excluded
+  (post-window accounting in summary.json), and asserts the vintage covers
+  the window end.
+- The data dictionary (fetched 2026-10-22) documents 353 OCCURRENCE columns;
+  the CSV header carries 345. The build ships only documented fields; the
+  count difference is recorded, not a defect.
+
+### Build decisions pinned at construction (job tsb-001)
+
+- Row key: occ_no (OccNo), suffixed only for measured non-identical
+  collisions; exact duplicates deduplicated with the count recorded.
+- Modern-era panel start is MEASURED, not assumed: first year from which
+  the early-signature share (AccIncType HISTORICAL/DG LEAKER, or TimeZone
+  empty/N-A) stays under 2% in every later year; asserted within
+  [1995, 2010]. The record proposed 2004; the full panel decides.
+- Label: casualty = InjuriesIND == 1 OR TotalFatal+TotalSerious+TotalMinor
+  > 0, cross-checked against the INJURIES child table; all four source
+  columns are asserted absent from every shipped file.
+- Shipped features (14, context-only): occ_year, occ_month,
+  occ_day_of_week, occ_hour, timezone, activity_type, subdivision,
+  subd_mileage, railway, near_location, province, region, latitude,
+  longitude - plus occ_date (carry) and occ_no (id).
+- UTC normalization deliberately NOT applied: the publisher documents the
+  site timezone as a DST-aware label, which ships beside the local hour; a
+  hand-rolled offset map could silently misplace an hour (the exact
+  unit/frame failure class the gate exists to catch). Recorded in
+  quality.json measurements[occ_hour].
+- Baselines measured inside the build before any model spend: per-column
+  conditional-rate AUCs (activity, railway, subdivision, province, month;
+  train-estimated, eval/holdout-scored) and a trailing-12-month-rate
+  persistence analogue.
