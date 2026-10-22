@@ -30,10 +30,51 @@ Regenerate the three deployment exports with:
 
 ## Gaps, stated rather than papered over
 
-- Scheduler **prompts and per-job overrides** live in the Hermes state DB and are summarised here;
-  their verbatim text is not exported. The shim bytes they call are hashed in the handoff.
-- The 12 cron shims live outside Git and are recorded only as name + sha256 + size.
-- The host's `state.db` (155 MB) is the only copy of scheduler definitions and history; it is not
-  exported and would be lost with the host.
+- Scheduler definitions/prompts/overrides live in `/opt/data/cron/jobs.json`; execution history
+  is `/opt/data/cron/executions.db`, and per-job output is `cron/<job_id>/`. The allowlisted export
+  deliberately omits prompts, delivery identifiers and history. `state.db` holds conversation data,
+  not scheduler definitions. Do not export these raw state files.
+- Eight schedule-entry wrappers are now preserved verbatim in `ops/shims/`. Four other host
+  helpers remain out of scope, with reasons in `ops/shims/README.md`.
 - Published-artifact digests are in each `release/*/MANIFEST.json`; this handoff does not duplicate
   them.
+
+## Check drift before using this handoff to recover a host
+
+```sh
+python3 scripts/check-runtime.py --source-only
+python3 scripts/check-runtime.py --home /opt/data
+```
+
+The first command checks that `ops/runtime-files.json` covers exactly the reviewed shim and
+custom-skill files and that their hashes match. CI exercises it. The second also compares live
+copies and flags profile skills with the same name as a repository skill. It also compares the
+live project skill Markdown/Python files with the committed inventory fingerprints, so uncommitted curator edits
+are visible even when the audit runs from that same live checkout. The live project defaults to `<home>/dataset-factory`; `--project` overrides it. It is read-only, does
+not execute the files, and reports paths/reasons without their contents. Missing/changed/unsafe
+files cause a nonzero exit. A mismatch requires inspection, never automatic replacement.
+
+The inventory records source-to-host paths; after an intentional reviewed change, update its
+SHA-256 and review both diffs together. These checks establish file identity only. They do not
+verify scheduler registration, credential availability, budget, upstream Hermes behavior or
+publication. Restore only the reviewed files, preserve live state, and validate those separate
+operational prerequisites before enabling schedules. No secret or raw scheduler/session database
+belongs in this inventory.
+
+## Automatic skill writers are separate controls
+
+Installed-runtime inspection by Scout found two independent paths. The per-turn background
+review checks `auxiliary.background_review.enabled`; it does not check curator paused state.
+`hermes curator pause` controls only interval curation. Pinning a skill blocks deletion, not
+patches or writes. Before restoring reviewed skill bytes, disable background review, pause the
+interval curator, verify writers have drained, and preserve live diffs with digest preconditions.
+See [the prepared rollout](../docs/HARDENING-DEPLOYMENT.md) and
+[Scout's source-level evidence](https://github.com/earino/dataset-factory/pull/4#issuecomment-6347671806).
+This supersedes the earlier assertion that pausing interval curation alone stopped skill edits.
+
+Later source inspection ruled out nudge intervals as a safe substitute: cached agents keep old
+values and memory-only forks still receive skill_manage. The background-review timeout is
+per request, not a thread lifetime; a controlled supported restart is needed to prove old
+threads are gone before restoring files. The master-switch hold also pauses auxiliary memory
+edits; it does not stop ordinary research or explicit repository/memory work. See
+[the final source review](https://github.com/earino/dataset-factory/pull/4#issuecomment-6348148964).

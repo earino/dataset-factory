@@ -141,8 +141,9 @@ lists the artifact files.
 ## API and CLI notes
 
 - Client signatures vary by version: a `create_tag` may reject a `message` keyword. Check the
-  installed client rather than assuming, and make the tagging step delete-then-create so it can be
-  re-run.
+  installed client rather than assuming. Create at an explicitly verified commit. Re-running an
+  existing matching tag is a no-op; an existing different tag is a refusal. Never delete/recreate
+  a published tag. Check the post-write refs and report races without undoing another writer.
 - `whoami()` reports the authenticated account, its type and the token's role - enough to fix the
   namespace and to confirm a write role without ever printing the credential. A fine-grained token
   may report no scopes at all; the role is the usable signal.
@@ -151,3 +152,14 @@ lists the artifact files.
 - The API's dataset view and the settings view are different surfaces: `dataset_info()` is the
   read path for name, private, gated, sha and the file list, and it is the one to quote when
   reporting what the destination currently is.
+
+## Dataset Factory verification evidence
+
+The coordinator verifier does not download CSVs or accept size-only equality. Use
+`hf-publish.py --verify --worker-job <id>` with a collected successful publishing job when
+ordinary Git blobs need worker evidence. The job must carry the exact manifest assets, a
+passing loading check and the new commit/blob-bound verification receipt. For an old release,
+a new budgeted job with `hf_publish.verify_only: true` gathers evidence without Hub uploads.
+Do not fabricate these fields in a legacy report or reuse a receipt from another commit.
+An incomplete coordinator check exits 2 and preserves prior complete evidence; a mismatch
+or error exits 1. Separate attempt diagnostics live under `.factory/hub-verification/`.
