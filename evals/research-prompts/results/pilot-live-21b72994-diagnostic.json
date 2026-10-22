@@ -338,11 +338,67 @@
       "elapsed_seconds": 156.716,
       "response": "DECISION\n\nPark, not ready. Refuse the colleague's \"fastest delay + 1 day\" declaration. The source stays live - open licence, target and split capacity documented - so this is a park with a named question, not a reject.\n\nEVIDENCE\n\n1. The bound rule points the other way. Qualification policy: set days_after_period_end to the largest observed delay plus margin - \"not the mean, and not the maximum\". Observed delays: 2, 4, 11. Fastest + 1 = 3 days sits below two of three observations. At the day-5 instant, the month that published at day 11 ships features that did not exist at the instant: one oracle month in three, from the source's own record. The skill's worked example had a max-of-three bound (13) broken by a fourth month at 16, oracling 121 rows - three observations is a thin sample, and 3 days is not a bound at all.\n\n2. \"The gate would pass\" is not evidence. The gate checks the timing block's coherence, not the future's obedience; nhs-ae-four-hour-decline reached packaged with 25 late-published features because \"documented at the period\" was false at the release. The honest bound is 11 + about a week, roughly 18 days - which exceeds the day-5 instant, so the current design (month-M features, day-5 instant) fails timing as stated.\n\n3. Revisions with no snapshots and no per-row first-publication time make the vintage audit not performable. Policy is explicit: say so and carry the cutoff as a stated assumption with justification, never dress a guess as a reconstruction. Even correctly-lagged features cannot be proven identical to what was visible at the instant.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\n\nDecisive question: does the task survive on month M-1 features? M-1's release lands days 2-11 of month M, safely before a day-5-of-M+1 instant, with weeks of margin - no bound games needed. If yes, timing is clean by construction. If the target needs month-M features, the instant must pass roughly day 18 of M+1 - inside the outcome month - which contaminates the outcome definition and likely kills the design (drop or re-target as a new task; budget is one rebuild per structural defect, not a third audit).\n\nORDERED ACTIONS AND STOPPING CONDITION\n\n1. Write candidates/<id>/record.json now: verdict park, licence class, jurisdiction, the three delays with their source, the revision note, and one line recording why the 3-day declaration was refused.\n2. Sort intended features against the publisher's column docs: which exist only for month M? Docs plus one ranged API read.\n3. Gather more release observations from the release calendar or dated announcements; reset the bound to largest observed + ~7 days.\n4. Probe revision materiality: any last-revised metadata on rows; how the publisher describes revision frequency. Label the vintage assumption from what this shows.\n5. STATE.md entry naming the source and verdict; check-candidate.py; commit.\n\nLift to ready only when the record carries: every feature published by the instant per the publisher's own docs, a multi-observation lag bound at largest-plus-margin, and the vintage assumption stated with justification. If the target needs M-month features and the outcome cannot tolerate a later instant: drop, recording that the task design failed, not the source.\n\nOPERATOR REPORT\n\nOpened one source (monthly event rows, open licence). Verdict: park. The proposed 3-day availability declaration contradicts the source's own release observations (2, 4, 11 days); at the day-5 instant at least one observed month would ship oracle features. Not ready; no construction started. Revision audit is not performable (no snapshots, no per-row publication time) and will be recorded as an assumption, not a reconstruction. Unparking question: can the task run on prior-month features with a largest-plus-margin bound and a stated vintage assumption? Next action: feature-availability sort against publisher docs, then more release observations.\n",
       "response_sha256": "df647cef40c0198474f685abe3de05d0f5b43cd74ff20eca59fa46a978ac29e3"
+    },
+    {
+      "partition": "diagnostic",
+      "case": "variable-release-evidence",
+      "arm": "baseline",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-68",
+      "session_id": "20261022_234757_0f8fcb",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "98467fdd309313868a17cf5b3382cfa2701649d4f3e2bd2c686e527c84987424",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 37567,
+        "output_tokens": 1779,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 39346,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 442,
+          "output_tokens": 12,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 37125,
+          "output_tokens": 1767,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 23.074,
+      "response": "Decision: park \u2014 do not call it ready, do not construct. The source is not unusable; the *declared prediction instant* is. The colleague's proposal is the exact anti-pattern the qualification skill names (\"a bound above every observation, with margin \u2014 not the mean, and not the maximum\"), and here it is below two of the three observations.\n\nSupporting evidence (from the supplied facts only)\n\n- Prediction instant: month-end + 5 days. Observed publication lags: 2, 4, 11 days. Two of three observations land *after* the instant, so features stamped month M would not exist when the prediction is made. The mean (\u22485.7 days) also exceeds the instant; picking the fastest observation (2+1=3) certifies fields that provably did not exist in 2 of 3 observed months.\n- The 11-day case is not an outlier to be trimmed \u2014 it is the only observation that bounds what the source has actually done.\n- Revisions: no historical snapshots and no per-row first-publication time. Revised values cannot be distinguished from as-published values, so availability can only be argued at release level, as a recorded assumption \u2014 not measured per row. Per the skill, an unavailable vintage archive makes the reconstruction audit \"not performable\"; say so rather than presenting a reconstruction.\n- Not blocking: licence is open (class A/B on the supplied terms), and target plus independent split capacity are documented. Those contracts are satisfied; timing is the single defect, which is why this is a park and not a reject.\n\nUncertainty and the next discriminating check\n\n- Three observations cannot bound a lag; the skill records a fourth month landing 16 days after a 13-day maximum. So even \"11 + margin\" is an estimate, not a measurement.\n- Cheapest discriminating check (no bulk transfer, no worker): read the publisher's release calendar/archive for \u22656 prior period_end \u2192 published pairs for this product, and for each, whether the specific fields the task needs were present in the first publication or added later. Second, check for a vintage/versioned endpoint or an archived-CSV series. Both are metadata reads.\n\nOrdered actions, with stopping condition\n\n1. Write candidates/<id>/record.json now: verdict park; jurisdiction (country/region/publisher, from the publisher); licence_class with the quoted terms; measured shape observed so far; the three lags with their dates and where each came from; the explicit statement that the 5-day instant is refused and why.\n2. Probe the release calendar for historical publication dates (target 6\u201312 pairs). Record each pair verbatim in notes.md with the command that produced it.\n3. Probe for vintages / archived releases. Record presence or absence; absence is a finding, not a failure.\n4. Recompute the admissible instant as max(all observations) + a week of margin, and check whether the task survives at that instant (outcome still one month ahead, features still meaningful). Note: moving the instant is a local design change and needs no permission; the source does not.\n5. Stop when either \u22656 observed lags establish a bound with margin and step 4 leaves a viable task (then this becomes a go, recorded in a later session, not built now), or ~10 metadata requests return nothing usable \u2192 park stands with \"instant cannot be re-based on evidence; reopen only with a vintage archive or a published lag calendar\".\n\nDo not: launch a worker, write quality.json, construct, or accept any AUC.\n\nOperator report\n\nOne source opened. Verdict: park \u2014 open licence, documented target and splits, but the 5-day-after-month-end instant is contradicted by 2 of 3 observed publication lags (2/4/11 days). Proposed \"fastest observed + 1\" would declare unavailable features available. No build, no spend. Held pending: \u22656 release-date observations and a check for vintages; the likely fix is moving the instant to ~month-end + 18 days, which is ours to decide, not the publisher's.\n",
+      "response_sha256": "4f825e9e86e1483fdc4d101e6bfb0f29ac379c408599f4e695dbe9ff32ae5b12"
     }
   ],
   "ledger": {
-    "calls": 68,
-    "tokens": 2362014
+    "calls": 69,
+    "tokens": 2401360
   },
-  "updated_at": "2026-10-22T23:48:06Z"
+  "updated_at": "2026-10-22T23:48:27Z"
 }
