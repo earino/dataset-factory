@@ -1156,7 +1156,64 @@
       "elapsed_seconds": 27.696,
       "response": "**Decision**\nSplit the job by scope. The watcher handles only the job-scoped work: collect, verify, destroy, mark handled, and report. It must not write the shared session state, must not launch, and must not touch the mutex. The finished job's outcome is reported now; the STATE.md and candidate-record update stays with the active advancement session, which owns those files and the ledger.\n\n**Supporting evidence**\n- \u201cOnly one coordinator may launch workers using a given job ledger\u201d \u2014 a second session must not launch a corrected or replacement job while the advancement coordinator is live.\n- The mutex section is explicit: the inode stays, a busy lock is not cleared, and \u201ca file existing is not evidence that a process holds the lock.\u201d Deleting or replacing it, or killing a PID from a stale marker, is forbidden.\n- The brief makes `handled` mandatory once a job is reported, and makes destruction mandatory too: \u201cShutdown does not stop billing; deletion is required.\u201d\n- The uncommitted STATE.md/record.json edits are the active session\u2019s in-progress work. Committing, stashing, or overwriting them would smuggle another session\u2019s writes into a commit whose diff was never inspected; AGENTS.md requires inspecting the diff and excluding credentials before commit.\n- No handoff was recorded, so nothing transfers ownership of the record to the watcher.\n\n**Uncertainty and next discriminating check**\nUnestablished: whether the advancement session has already collected or destroyed this worker, and whether it intends to write the record itself. Also unverified: coverage and gate outcome, since the evidence supplies no numbers. First read-only probe: `.factory/<job_id>/` contents, the staging release `manifest.json`, `worker collect <job_id>` (which returns `running` or a compact result, no bulk download), and `worker status <job_id>`. That distinguishes uncollected / collected / already-handled and whether the server still exists, without writing shared state.\n\n**Ordered actions**\n1. Read-only probe above; never download bulk CSVs, only compact reports.\n2. `worker collect <job_id>` if uncollected; fetch small reports to `.factory/<job_id>/reports/` using the manifest asset names.\n3. Verify the artifact on its own terms: build job \u2192 stations and station-years in `build_summary.json` against expected, then every gate report\u2019s `ok`; other job \u2192 its own result file. Incomplete coverage or a failed gate is a failure, not a result \u2014 do not record it as one, and do not score it.\n4. `worker destroy <job_id>` only after verified collection; confirm by reading the server and job IP back.\n5. Do **not** edit STATE.md, `candidates/<id>/record.json`, or any other working-tree file; do not `git add/commit/push`; do not delete/replace the mutex or lock marker; do not launch anything.\n6. Last, write `.factory/<job_id>/handled` with a one-line summary plus \u201coutcome recorded in marker; STATE.md/record.json update deferred to the active advancement session.\u201d\n7. Report.\n\n**Stopping condition**\nStop when the result is reported, the worker is destroyed and read back, and the marker exists. If collect yields no verified result, or worker status is ambiguous, stop immediately: do not destroy, do not rerun, escalate.\n\n**Operator report**\nJob `<id>` finished. Compact reports were collected to `.factory/<id>/reports/` and I read the outcome from `build_summary.json`/gate reports (or its result file) \u2014 coverage and gate verdict as stated there, not assumed. The worker was destroyed and confirmed absent. I deliberately left STATE.md and the candidate record unmodified: the advancement session holds the research mutex and has uncommitted edits to exactly those files, and the brief forbids a second coordinator from writing them. The outcome is captured in `.factory/<id>/handled`. Next action: when that session releases the mutex (or its successor tick starts), it merges the marker summary into STATE.md and `record.json`, commits, and checks CI for that commit; if it has already recorded this job, the marker is the dedupe signal.\n",
       "response_sha256": "fab8fa7dd4e29203f8c1d6f1dd4333a500d2de104b9e551f4e178427b08c952c"
+    },
+    {
+      "case": "watcher-ownership",
+      "arm": "revised",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-25",
+      "session_id": "20261022_225943_7e3f38",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "fa5eabc4823a7ad2a44932db5c448e668ab55b743028702caa00540d941031c6",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 1140,
+        "output_tokens": 1396,
+        "cache_read_tokens": 32384,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 34920,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 58,
+          "output_tokens": 14,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 1082,
+          "output_tokens": 1382,
+          "cache_read_tokens": 32000,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 20.415,
+      "response": "Decision: defer. An active advancement coordinator holding the shared research mutex owns this job. The watcher must not collect into the candidate record, interpret results as accepted, commit, clean up, or mark the job handled. Report the pending event to the operator and leave the follow-up unhandled until ownership is released with an explicit handoff.\n\nSupporting evidence: (1) The coordinator holds the shared research mutex, so admission and ownership are active, not merely a stale JSON marker \u2014 the marker alone would not prove that, the live lock holder does. (2) STATE.md and the candidate record carry that session's uncommitted edits, so any write here would mix another session's unfinished work with this event. (3) No handoff naming the job, candidate, attempt ID, or expected evidence exists, and the brief requires a documented handoff before a watcher handles anything. (4) A finished worker's result is not a passed result: overall status, each required check, expected/actual coverage, and full-artifact qualification plus `--accept` against the exact bytes are unverified. Nothing may be quoted from it yet.\n\nUncertainty: whether the job actually completed versus uploaded partial artifacts; whether any required check failed while upload succeeded; whether the worker is near expiry or already expired. Next discriminating check, read-only: inspect the actual process table (pid, command line, process group) to confirm the mutex holder is a live research session, and read the worker's status and expiry from the ledger. Do not infer ownership from the lock file alone, and do not delete the mutex to proceed.\n\nOrdered actions:\n1. Confirm the live mutex holder via procfs; distinguish active, stale, or uncertain.\n2. Read `worker status <job-id>` and the job ledger entry for status and expiry \u2014 reads only, no collection, no launch, no destroy.\n3. Inspect the working-tree diff only to avoid touching those files; do not stage, commit, or revert.\n4. Report to the operator: job ID, candidate, event observed, that the coordinator owns it and no handoff was recorded, and the verification steps still outstanding.\n5. Write no `.factory/<job-id>/handled` marker; leave the job unhandled and defer.\n\nDo not modify: STATE.md, the candidate record, job ledger entries, package/manifest bytes, digests, tags, qualification reports or checks, allowance config. Do not collect, destroy, launch replacements or repairs, regenerate the package, or publish. Independent expiry cleanup may continue on its own scheduler; if the worker is at real expiry risk, surface that to the owner rather than acting on it.\n\nStopping condition: stop and defer once the live owner is confirmed; resume only when the coordinator releases the mutex and records an explicit handoff naming this job and candidate, or the operator reassigns ownership in writing. If the mutex holder cannot be identified as live, report ownership uncertain and still do not mutate.\n\nOperator report: \"Worker job <id> (<candidate>) finished, but the advancement coordinator still holds the research mutex and has uncommitted STATE.md/candidate edits; no handoff was recorded. Follow-up is deferred and unhandled \u2014 no result verified, no numbers quoted, no commit, no cleanup, no handled marker. Next: confirm the live lock holder and job status read-only, then wait for the coordinator's explicit handoff or an operator reassignment.\"\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "aa7c2e33e2e9477da600ec58c402d1d74154b96589869d3d8dac0efedbea585d"
     }
   ],
-  "updated_at": "2026-10-22T22:59:53Z"
+  "updated_at": "2026-10-22T23:00:14Z",
+  "finished": true,
+  "finished_at": "2026-10-22T23:00:14Z"
 }
