@@ -750,11 +750,16 @@ cache locations are redirected under the monitored directory. Existing caches
 are retained and charged; nothing is recursively cleared to make room.
 
 This is sampled enforcement, not a filesystem quota: a fast writer can overshoot
-between observations, and `du` has a ten-second timeout. An observation error
+between observations. The interval is the directory-walk duration plus the
+one-second sleep, not one second total; `du` has a ten-second timeout. Filesystem
+free-space/growth is checked before that walk so external writes can stop earlier. An observation error
 fails the operation closed. The supervisor kills its owned process group and
 reaps the child before accepting a compact result; child exit alone or a partial
 receipt is not success. It keeps the leader unreaped via `waitid(WNOWAIT)` until
-group cleanup so its PID cannot be reused for an unrelated group. POSIX semantics:
+group cleanup so its PID cannot be reused for an unrelated group. Cleanup re-sends
+the group signal while late-arriving members remain. Linux reads process state
+from procfs; it does not add a `ps`/procps dependency. Observation capability is
+checked before starting the operation. POSIX semantics:
 https://man7.org/linux/man-pages/man2/waitid.2.html . This targets the Linux worker;
 local macOS tests also account for its zombie-only process-group EPERM behaviour,
 without ignoring permission errors when live group members remain.
@@ -774,3 +779,12 @@ fetch, staging-result upload/retry, and host memory limits remain separate
 controls and review items. Process groups are not a sandbox for intentionally
 detached descendants; worker expiry is still required. No paid worker was
 launched to validate this change. Tests run stub operations locally and in CI.
+
+A child that cannot be reaped within ten seconds of cleanup is recorded as
+`host-cleanup-incomplete`, with `host_cleanup_complete: false` and its observed
+PID. The executor writes a local compact result and refuses staging upload,
+including on automatic upload retry: changing artifacts cannot be accepted.
+Inspect actual process identity and worker state; do not trust the saved PID as
+current identity, delete the execution record, or rerun the operation. Preserve
+the local diagnostic and use the existing owned-worker expiry/cleanup and fresh
+attempt procedure. No automatic restart or verification tag follows this failure.

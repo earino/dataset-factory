@@ -183,7 +183,7 @@ class HostSupervisorTests(unittest.TestCase):
     def test_permission_error_with_live_group_member_is_not_ignored(self):
         from types import SimpleNamespace
         with patch.object(executor.os, 'killpg', side_effect=PermissionError()), \
-                patch.object(executor.subprocess, 'check_output', return_value='123 Z\n123 S\n'):
+                patch.object(executor, 'live_group_members', return_value=True):
             with self.assertRaises(PermissionError):
                 executor.stop_unreaped_group(SimpleNamespace(pid=123))
 
@@ -211,6 +211,58 @@ class HostSupervisorTests(unittest.TestCase):
                 self.assertEqual([], result[mode]['failures'])
                 self.assertFalse(result['uploaded'])
                 self.assertFalse(list(self.base.glob('.host-operation-*')))
+
+    def test_procfs_handles_parentheses_in_comm_and_ignores_zombies(self):
+        root = self.base / 'proc'
+        (root / '100').mkdir(parents=True)
+        (root / '100/stat').write_text('100 (name ) with () parens) Z 1 123 123 0')
+        self.assertFalse(executor.live_group_members(123, root))
+        (root / '101').mkdir()
+        (root / '101/stat').write_text('101 (worker) S 1 123 123 0')
+        self.assertTrue(executor.live_group_members(123, root))
+        self.assertFalse(executor.live_group_members(124, root))
+
+    def test_missing_process_observation_refuses_before_spawn(self):
+        with patch.object(executor, 'live_group_members', side_effect=FileNotFoundError()), \
+                patch.object(executor.subprocess, 'Popen') as spawn:
+            result = self.run_operation(self.success_source())
+        spawn.assert_not_called()
+        self.assertEqual('resource-monitor-failed:FileNotFoundError', result['failure'])
+
+    def test_group_cleanup_resignals_late_arrivals(self):
+        from types import SimpleNamespace
+        with patch.object(executor.os, 'killpg') as kill, \
+                patch.object(executor, 'live_group_members', side_effect=[True, False]), \
+                patch.object(executor.time, 'sleep'):
+            executor.stop_unreaped_group(SimpleNamespace(pid=123))
+        self.assertEqual(2, kill.call_count)
+
+    def test_uninterruptible_child_has_bounded_wait_and_unverified_cleanup(self):
+        from unittest.mock import MagicMock
+        process = MagicMock(pid=123, returncode=None)
+        process.wait.side_effect = subprocess.TimeoutExpired([], 10)
+        with patch.object(executor.subprocess, 'Popen', return_value=process), \
+                patch.object(executor.os, 'waitid', return_value=object()), \
+                patch.object(executor, 'live_group_members', return_value=False), \
+                patch.object(executor, 'stop_unreaped_group', side_effect=ValueError()):
+            result = self.run_operation(self.success_source())
+        process.wait.assert_called_once_with(timeout=10)
+        self.assertEqual('host-cleanup-incomplete', result['failure'])
+        self.assertFalse(result['host_cleanup_complete'])
+
+    def test_unverified_cleanup_cannot_publish_or_repeat_the_operation(self):
+        (self.base / 'job.json').write_text(json.dumps(self.job))
+        report = {'job_id':'fixture', 'status':'failed', 'uploaded':False,
+                  'host_cleanup_complete':False, 'failure':'host-cleanup-incomplete'}
+        (self.base / 'execution.json').write_text(json.dumps(report))
+        with patch.object(executor, 'execute') as execute, \
+                patch.object(executor, 'publish') as publish:
+            self.assertEqual(1, executor.main(self.base))
+        execute.assert_not_called()
+        publish.assert_not_called()
+        result = json.loads((self.base / 'result.json').read_text())
+        self.assertFalse(result['uploaded'])
+        self.assertIn('cleanup incomplete', result['upload_error'])
 
     def test_child_exception_has_no_raw_secret_in_report(self):
         (self.base / 'job.json').write_text(json.dumps({**self.job, 'transfer': {'fixture': True}}))

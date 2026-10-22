@@ -68,6 +68,7 @@ def host_environment(base):
             "UV_PYTHON_INSTALL_DIR": str(cache / "uv-python"),
             "PIP_CACHE_DIR": str(cache / "pip"),
             "HF_HOME": str(cache / "huggingface"),
+            "HF_XET_CACHE": str(cache / "huggingface" / "xet"),
             "HF_ASSETS_CACHE": str(cache / "huggingface" / "assets"),
             "HF_HUB_CACHE": str(cache / "huggingface" / "hub"),
             "HF_DATASETS_CACHE": str(cache / "huggingface" / "datasets")}
@@ -76,47 +77,69 @@ def host_environment(base):
 def host_limit_reason(base, job, deadline, baseline):
     if time.monotonic() >= deadline:
         return "runtime-limit"
-    directory_bytes = disk_bytes(base)
     free = shutil.disk_usage(base).free
-    # Include installers writing outside base on this filesystem. Charging all
-    # growth is conservative on an expendable single-job worker. The base's
-    # apparent size also catches sparse files and retained caches.
-    charged = max(directory_bytes, baseline[0] + max(0, baseline[1] - free))
-    if (charged > job["max_disk_mb"] * 1024**2 or free < 512 * 1024**2):
+    # Check external writes before the directory walk; installers and low free
+    # space can trip the guard without waiting for a potentially slow du.
+    filesystem_charge = baseline[0] + max(0, baseline[1] - free)
+    if free < 512 * 1024**2 or filesystem_charge > job["max_disk_mb"] * 1024**2:
+        return "disk-limit"
+    if disk_bytes(base) > job["max_disk_mb"] * 1024**2:
         return "disk-limit"
     # du itself is bounded, but may have consumed the remaining runtime.
     return "runtime-limit" if time.monotonic() >= deadline else None
 
 
-def live_group_members(pgid):
+def live_group_members(pgid, proc_root=None):
+    if proc_root is not None or sys.platform == "linux":
+        # Linux workers already require procfs. Avoid adding procps/ps as an
+        # unverified package prerequisite. comm may itself contain parentheses.
+        root = Path(proc_root) if proc_root is not None else Path("/proc")
+        for path in root.iterdir():
+            if not path.name.isdigit():
+                continue
+            try:
+                with (path / "stat").open() as handle:
+                    raw = handle.read(4097)
+            except (FileNotFoundError, ProcessLookupError):
+                continue  # A process exited during the scan.
+            fields = raw.rsplit(")", 1)[-1].split()
+            if (len(raw) > 4096 or not raw.startswith(f"{path.name} (") or ")" not in raw
+                    or len(fields) < 3 or not fields[2].isdigit()):
+                raise ValueError("Unreadable procfs process state")
+            if int(fields[2]) == pgid and fields[0] != "Z":
+                return True
+        return False
+    # Portable development-host fallback, not used on the Linux workers.
     listing = subprocess.check_output(["ps", "-A", "-o", "pgid=,stat="],
                                       text=True, timeout=3)
-    states = []
     for line in listing.splitlines():
         fields = line.split()
         if len(fields) != 2 or not fields[0].isdigit():
             raise ValueError("Unreadable process-group state")
-        if int(fields[0]) == pgid:
-            states.append(fields[1])
-    return any(not state.startswith("Z") for state in states)
+        if int(fields[0]) == pgid and not fields[1].startswith("Z"):
+            return True
+    return False
 
 
 def stop_unreaped_group(process):
     """Keep the leader unreaped until no live group member can change artifacts."""
-    try:
-        os.killpg(process.pid, signal.SIGKILL)
-    except ProcessLookupError:
-        return
-    except PermissionError:
-        # Darwin returns EPERM for zombie-only groups. Never ignore it when a
-        # live member remains. The unreaped leader prevents group-ID recycling.
-        if live_group_members(process.pid):
-            raise
-        return
     deadline = time.monotonic() + 5
-    while live_group_members(process.pid):
+    while True:
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            return
+        except PermissionError:
+            # Darwin returns EPERM for zombie-only groups. Never ignore it
+            # when a live member remains. PID is still reserved by the leader.
+            if live_group_members(process.pid):
+                raise
+            return
+        if not live_group_members(process.pid):
+            return
         if time.monotonic() >= deadline:
             raise ValueError("Host process group did not stop")
+        # Re-signal a child forked during the previous signal-delivery window.
         time.sleep(.05)
 
 
@@ -127,6 +150,7 @@ def supervise_host(base, job, command, receipt, deadline, interval=1.0):
     quota: writes may overshoot between checks. No model or network calls here.
     """
     report = {"job_id": job["id"], "status": "failed", "uploaded": False}
+    report["host_cleanup_complete"] = True
     process = None
     failure = None
     try:
@@ -135,8 +159,10 @@ def supervise_host(base, job, command, receipt, deadline, interval=1.0):
         failure = host_limit_reason(base, job, deadline, baseline)
         if failure:
             return {**report, "failure": failure}
+        live_group_members(-1)  # Validate observation capability before starting.
         process = subprocess.Popen(command, stdout=subprocess.DEVNULL,
                                    stderr=subprocess.DEVNULL, env=env, start_new_session=True)
+        report["host_process_pid"] = process.pid
         while True:
             # WNOWAIT observes exit without reaping. Even on normal completion,
             # the PID cannot be recycled before we stop remaining group members.
@@ -153,9 +179,14 @@ def supervise_host(base, job, command, receipt, deadline, interval=1.0):
                 stop_unreaped_group(process)
             except (OSError, ValueError, subprocess.SubprocessError) as exc:
                 failure = f"host-cleanup-failed:{type(exc).__name__}"
+                report["host_cleanup_complete"] = False
                 process.kill()  # Exact unreaped direct child; no group-ID retry.
             finally:
-                process.wait()
+                try:
+                    process.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    failure = "host-cleanup-incomplete"
+                    report["host_cleanup_complete"] = False
     if failure:
         return {**report, "failure": failure}
     if process.returncode != 0:
@@ -169,6 +200,7 @@ def supervise_host(base, job, command, receipt, deadline, interval=1.0):
                 or result.get("status") not in ("succeeded", "failed")
                 or result.get("uploaded") is not False):
             raise ValueError("Invalid host result")
+        result.update(host_cleanup_complete=True, host_process_pid=process.pid)
         return result
     except (OSError, ValueError):
         return {**report, "failure": "invalid-host-receipt"}
@@ -198,7 +230,9 @@ def host_child(base, operation, receipt):
             raise ValueError("Host operation does not match the job")
     except Exception as exc:
         # Raw exceptions may include credential-bearing URLs or helper arguments.
-        report.update(status="failed", failure=type(exc).__name__)
+        report.update(status="failed", failure=type(exc).__name__, failure_stage=operation)
+        if type(getattr(exc, "errno", None)) is int:
+            report["failure_errno"] = exc.errno
     raw = json.dumps(report).encode()
     if len(raw) > REPORT_LIMIT:
         raw = json.dumps({"job_id": job["id"], "status": "failed", "uploaded": False,
@@ -295,6 +329,12 @@ def main(base=BASE):
             (base / "started").touch()
             report = execute(base, job)
             execution.write_text(json.dumps(report))
+        if report.get("host_cleanup_complete") is False:
+            # No upload can establish stable artifact digests while a host
+            # process may still be changing files. Keep bounded evidence local.
+            report.update(uploaded=False, upload_error="host cleanup incomplete; inspect worker")
+            write_report(base, report)
+            return 1
         try:
             report.update(publish(base, job, report))
         except Exception as exc:
