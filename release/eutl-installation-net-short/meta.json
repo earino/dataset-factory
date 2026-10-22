@@ -1,0 +1,65 @@
+{
+ "name": "eutl-installation-net-short",
+ "description": "At the close of compliance year t-1's surrender cycle (30 April of year t), will a stationary EU ETS installation's verified emissions for year t exceed the free allocation it holds for year t (a net-short year), given its verified-emissions and free-allocation history through t-1, its already-published year-t allocation, its registry and its identifier?",
+ "source": "https://dlsclimabi.blob.core.windows.net/public-data/eutlpublic_prod/extracts/_all_extracts/operators_yearly_activity/operators_yearly_activity_daily.csv.gz",
+ "license": "Union Registry public extracts: Commission reuse policy CC BY 4.0 (source terms preserved; attribution 'European Commission, DG CLIMA - Union Registry public extracts'). Derived research dataset - not the Commission's official product. Our derived compilation: CC0-1.0.",
+ "target": "net_short",
+ "positive_label": 1,
+ "id_columns": [
+  "row_id"
+ ],
+ "columns": [
+  "row_id",
+  "registry_code",
+  "period_year",
+  "ve_l1",
+  "alloc_l1",
+  "alloc_t",
+  "alloc_change",
+  "margin_l1",
+  "margin_t",
+  "net_short_l1",
+  "age_years",
+  "installation_key",
+  "net_short"
+ ],
+ "rows": {
+  "train": 141732,
+  "eval": 24322,
+  "holdout": 22151
+ },
+ "positive_rate": {
+  "train": 0.455282,
+  "eval": 0.740153,
+  "holdout": 0.721999
+ },
+ "split": {
+  "strategy": "temporal by compliance year (30 April surrender deadline of year t)",
+  "boundaries": {
+   "train": "2006 .. 2019",
+   "eval": "2020 .. 2022",
+   "holdout": "2023 .. 2025"
+  }
+ },
+ "label_rule": "net_short = 1 iff VERIFIED_EMISSIONS(t) > ALLOCATION(t); exact ties are 0 and counted. Both label source values are excluded from every shipped file.",
+ "label_source_columns": [
+  "VERIFIED_EMISSIONS(period t)",
+  "ALLOCATION(period t)"
+ ],
+ "prediction_time": "30 April of compliance year t, the surrender deadline that closes year t-1's compliance cycle: by then the installation's verified emissions for t-1 (reported by 31 March) and its surrendered allowances for t-1 are settled in the Union Registry, and its year-t free allocation is already fixed and published (the extract carries allocation rows through 2030, measured). Year t's verified emissions are reported by 31 March t+1 and are absent from the registry at the instant (measured: no numeric verified emissions for years after 2025 in the daily extract). The extract refreshes daily, so a monthly refresh of this task is honest.",
+ "features": [
+  "registry_code",
+  "period_year",
+  "ve_l1",
+  "alloc_l1",
+  "alloc_t",
+  "alloc_change",
+  "margin_l1",
+  "margin_t",
+  "net_short_l1",
+  "age_years"
+ ],
+ "built_at_utc": "2026-10-22T14:14:32Z",
+ "source_sha256": "1c7db5527c7c9b9a9e97080250fb915c18ad7cb32420499d24d6efc69937b153",
+ "vintage_last_modified": "Thu, 22 Oct 2026 10:08:26 GMT"
+}

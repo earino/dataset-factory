@@ -1,0 +1,592 @@
+{
+ "ok": true,
+ "dataset": "/output/extract",
+ "gate_version": "1.4.0",
+ "artifact": {
+  "train": {
+   "file": "public/train.csv",
+   "sha256": "c7f23c557d9605c92ba787d199922a1978f712f9b1069926ac5d63236331e903",
+   "bytes": 9421952
+  },
+  "eval": {
+   "file": "public/eval.csv",
+   "sha256": "0d9f35d5393734a9a63457890a9c4177418199b2cae458b36a8687fdbd4253ab",
+   "bytes": 1660374
+  },
+  "holdout": {
+   "file": "private/holdout.csv",
+   "sha256": "1c694e5e6b0bc0b329c5934e24037fb7229326ffac1806db6e0655fe0439de9b",
+   "bytes": 1507248
+  },
+  "meta.json": {
+   "file": "meta.json",
+   "sha256": "b0e54387f5a5348dc381989a61f017248412c2c5f8220ad9f8a8f032735aa152",
+   "bytes": 2810
+  },
+  "quality.json": {
+   "file": "quality.json",
+   "sha256": "88222d66bfd02aa5f768791e5d8d8803822b3b63f21d4d2e6397c9b638bef87b",
+   "bytes": 10270
+  },
+  "artifact_version": {
+   "digest": "3540ad2180d8df8a9ff39f5f6c1326c5e487ed20e28f189b9528eeb71f799f66",
+   "components": [
+    "eval",
+    "holdout",
+    "meta.json",
+    "quality.json",
+    "train"
+   ]
+  }
+ },
+ "results": [
+  {
+   "check": "descriptor",
+   "ok": true,
+   "detail": "quality.json loaded for 'eutl-installation-net-short'",
+   "evidence": {}
+  },
+  {
+   "check": "leakage.declared_columns",
+   "ok": true,
+   "detail": "every shipped column is declared",
+   "evidence": {
+    "undeclared": []
+   }
+  },
+  {
+   "check": "leakage.answer_source_absent",
+   "ok": true,
+   "detail": "no answer source or post-hoc column is shipped",
+   "evidence": {
+    "shipped_forbidden": []
+   }
+  },
+  {
+   "check": "leakage.every_column_could_be_scored",
+   "ok": true,
+   "detail": "every column was scored for leakage",
+   "evidence": {
+    "unscorable": []
+   }
+  },
+  {
+   "check": "leakage.no_single_column_determines_the_target",
+   "ok": true,
+   "detail": "no shipped column separates the classes on its own",
+   "evidence": {
+    "offenders": [],
+    "high_cardinality": [
+     "installation_key@eval",
+     "installation_key@holdout",
+     "row_id@eval",
+     "row_id@holdout",
+     "row_id@train"
+    ],
+    "missing_splits": []
+   }
+  },
+  {
+   "check": "leakage.high_cardinality_declared",
+   "ok": true,
+   "detail": "high-cardinality columns are declared as identifiers or free fields",
+   "evidence": {
+    "undeclared": [],
+    "declared": [
+     "installation_key",
+     "row_id"
+    ]
+   }
+  },
+  {
+   "check": "timing.prediction_time_declared",
+   "ok": true,
+   "detail": "prediction instant is declared",
+   "evidence": {}
+  },
+  {
+   "check": "timing.no_post_hoc_feature",
+   "ok": true,
+   "detail": "no feature is documented as post-hoc",
+   "evidence": {
+    "overlap": []
+   }
+  },
+  {
+   "check": "timing.label_source_is_not_a_feature",
+   "ok": true,
+   "detail": "the label source is not a feature",
+   "evidence": {
+    "source_features": []
+   }
+  },
+  {
+   "check": "timing.every_feature_documented",
+   "ok": true,
+   "detail": "features documented as available 'prediction_time'",
+   "evidence": {
+    "features_documented_at": "prediction_time"
+   }
+  },
+  {
+   "check": "timing.instant_declared",
+   "ok": true,
+   "detail": "prediction instant kind='publication' citation=True",
+   "evidence": {
+    "prediction_instant": {
+     "kind": "publication",
+     "period": "Y",
+     "days_after_period_end": 120,
+     "citation": "Union Registry compliance calendar: verified emissions for year t-1 are reported by 31 March (Monitoring and Reporting Regulation (EU) 2018/2066 Art. 7) and allowances surrendered by 30 April (Directive 2003/87/EC Art. 12(3)) - 120 days after the t-1 period end. The instant is the close of year t-1's compliance cycle, when every shipped t-1 feature is settled in the registry and the year-t allocation is in force. The extract is an administrative record refreshed daily (SNAPSHOT_DATE 2026-10-22 measured; HTTP Last-Modified 2026-10-22 measured), so no separate statistical-release lag exists to observe; the statutory deadlines are the publisher's own calendar."
+    }
+   }
+  },
+  {
+   "check": "timing.publication_lag_measured",
+   "ok": true,
+   "detail": "0 of 0 observed period_end -> published dates are usable",
+   "evidence": {
+    "observations": [],
+    "measured_lag_days": null,
+    "source_kind": "administrative_record"
+   }
+  },
+  {
+   "check": "timing.features_available_at_instant",
+   "ok": true,
+   "detail": "features publish 120d after the period, instant is 120d after it",
+   "evidence": {
+    "features_lag_days": 120,
+    "instant_lag_days": 120,
+    "measured_lag_days": null
+   }
+  },
+  {
+   "check": "timing.instant_accounts_for_publication_lag",
+   "ok": true,
+   "detail": "instant is a publication instant",
+   "evidence": {
+    "kind": "publication",
+    "features_lag_days": 120
+   }
+  },
+  {
+   "check": "timing.selection_uses_only_available_data",
+   "ok": true,
+   "detail": "row selection declares its latest period as 't-1'",
+   "evidence": {
+    "latest_period_used": "t-1",
+    "fields": [
+     "REGISTRY_CODE",
+     "INSTALLATION_IDENTIFIER",
+     "PERIOD_YEAR"
+    ]
+   }
+  },
+  {
+   "check": "units.measured_columns_declare_unit_and_frame",
+   "ok": true,
+   "detail": "13 measured column(s) declare unit and frame",
+   "evidence": {
+    "measurements": [
+     {
+      "column": "registry_code",
+      "unit": "Union Registry country code (EU Member State, EEA-EFTA member or XI = Northern Ireland electricity)",
+      "frame": "the installation's registry (country) identity; 32 registries measured on the 2026-10-22 snapshot"
+     },
+     {
+      "column": "period_year",
+      "unit": "calendar year (integer)",
+      "frame": "compliance year t, the year whose net-short status is predicted; the split time column"
+     },
+     {
+      "column": "ve_l1",
+      "unit": "verified emissions, tonnes CO2-equivalent",
+      "frame": "VERIFIED_EMISSIONS of year t-1, reported to the registry by 31 March of year t and settled at the instant; current-snapshot vintage (the registry can correct entries after the fact; only the current daily extract is available, so this is stated as current-vintage with the cutoff a documented assumption)"
+     },
+     {
+      "column": "alloc_l1",
+      "unit": "free allocation, allowances (1 allowance = 1 tCO2e)",
+      "frame": "ALLOCATION of year t-1, as recorded in the registry at the instant"
+     },
+     {
+      "column": "alloc_t",
+      "unit": "free allocation, allowances",
+      "frame": "ALLOCATION of year t, fixed in advance by the phase-4 national implementation measures and published before the instant (measured: the extract carries allocation rows through 2030); one side of the label comparison but fully known at the instant and does not determine the label on its own"
+     },
+     {
+      "column": "alloc_change",
+      "unit": "allowances (difference)",
+      "frame": "alloc_t - alloc_l1, the announced allocation change between the last settled year and the target year"
+     },
+     {
+      "column": "margin_l1",
+      "unit": "allowances (net position)",
+      "frame": "ve_l1 - alloc_l1, the installation's net position at t-1; the persistence analogue the task must beat"
+     },
+     {
+      "column": "margin_t",
+      "unit": "allowances (net position)",
+      "frame": "ve_l1 - alloc_t, last verified emissions against the announced year-t allocation; the natural one-line solver rule"
+     },
+     {
+      "column": "net_short_l1",
+      "unit": "binary indicator",
+      "frame": "1 iff ve_l1 > alloc_l1, the status persistence rule (measured P(short t | short t-1) = 0.857, P(short t | long t-1) = 0.176 on eligible rows)"
+     },
+     {
+      "column": "age_years",
+      "unit": "years",
+      "frame": "(t-1) minus the first year with numeric verified emissions in the extract; installations operating before 2005 have the age understated by the 2005 left edge - a documented left-truncation property"
+     },
+     {
+      "column": "installation_key",
+      "unit": "composite identifier REGISTRY_CODE@INSTALLATION_IDENTIFIER",
+      "frame": "the installation identity across years; the event key because an installation's net-short status is autocorrelated year to year"
+     },
+     {
+      "column": "row_id",
+      "unit": "composite identifier registry@installation@year",
+      "frame": "unique per row; installations recur across split windows by construction of a panel - a declared property, not split leakage (the composite id is unique across all splits)"
+     },
+     {
+      "column": "net_short",
+      "unit": "binary indicator",
+      "frame": "1 iff VERIFIED_EMISSIONS(t) > ALLOCATION(t); exact ties are 0 and counted (4,224 measured); both source values are excluded from the shipped columns"
+     }
+    ]
+   }
+  },
+  {
+   "check": "units.known_event_fixture_recorded",
+   "ok": true,
+   "detail": "no external threshold, so no known-event fixture is required",
+   "evidence": {}
+  },
+  {
+   "check": "splits.time_column_declared",
+   "ok": true,
+   "detail": "split overlap is checked against 'period_year'",
+   "evidence": {}
+  },
+  {
+   "check": "splits.machine_readable_windows",
+   "ok": true,
+   "detail": "train/eval/holdout windows are declared with start/end",
+   "evidence": {
+    "split_windows": {
+     "train": {
+      "start": "2006",
+      "end": "2020"
+     },
+     "eval": {
+      "start": "2020",
+      "end": "2023"
+     },
+     "holdout": {
+      "start": "2023",
+      "end": "2026"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.files_present",
+   "ok": true,
+   "detail": "all three split files exist",
+   "evidence": {
+    "missing": []
+   }
+  },
+  {
+   "check": "splits.non_empty",
+   "ok": true,
+   "detail": "every split has rows",
+   "evidence": {
+    "train": {
+     "rows": 141732,
+     "positives": 64528,
+     "negatives": 77204,
+     "positive_rate": 0.455282
+    },
+    "eval": {
+     "rows": 24322,
+     "positives": 18002,
+     "negatives": 6320,
+     "positive_rate": 0.740153
+    },
+    "holdout": {
+     "rows": 22151,
+     "positives": 15993,
+     "negatives": 6158,
+     "positive_rate": 0.721999
+    }
+   }
+  },
+  {
+   "check": "splits.eval_and_holdout_have_both_classes",
+   "ok": true,
+   "detail": "eval and holdout each contain positives and negatives",
+   "evidence": {
+    "train": {
+     "rows": 141732,
+     "positives": 64528,
+     "negatives": 77204,
+     "positive_rate": 0.455282
+    },
+    "eval": {
+     "rows": 24322,
+     "positives": 18002,
+     "negatives": 6320,
+     "positive_rate": 0.740153
+    },
+    "holdout": {
+     "rows": 22151,
+     "positives": 15993,
+     "negatives": 6158,
+     "positive_rate": 0.721999
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_declared",
+   "ok": true,
+   "detail": "eval and holdout declare positives and distinct events",
+   "evidence": {
+    "declared": {
+     "train": {
+      "positives": 64528,
+      "distinct_events": 11347
+     },
+     "eval": {
+      "positives": 18002,
+      "distinct_events": 7802
+     },
+     "holdout": {
+      "positives": 15993,
+      "distinct_events": 6278
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_match_rows",
+   "ok": true,
+   "detail": "declared positive counts match the rows",
+   "evidence": {
+    "mismatched": []
+   }
+  },
+  {
+   "check": "splits.event_key_column_declared",
+   "ok": true,
+   "detail": "clustered events are counted by 'installation_key' (date part)",
+   "evidence": {}
+  },
+  {
+   "check": "splits.distinct_events_match_rows",
+   "ok": true,
+   "detail": "declared clustered event counts match the rows",
+   "evidence": {
+    "recomputed": {
+     "train": 11347,
+     "eval": 7802,
+     "holdout": 6278
+    },
+    "declared": {
+     "train": {
+      "positives": 64528,
+      "distinct_events": 11347
+     },
+     "eval": {
+      "positives": 18002,
+      "distinct_events": 7802
+     },
+     "holdout": {
+      "positives": 15993,
+      "distinct_events": 6278
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.enough_clustered_positives",
+   "ok": true,
+   "detail": "eval and holdout carry enough independent positive events to score",
+   "evidence": {
+    "thin": [],
+    "recomputed_events": {
+     "train": 11347,
+     "eval": 7802,
+     "holdout": 6278
+    },
+    "minimums": {
+     "positives": 30,
+     "distinct_events": 20
+    }
+   }
+  },
+  {
+   "check": "splits.rates_not_uniform",
+   "ok": true,
+   "detail": "positive rates are between 0 and 1",
+   "evidence": {
+    "rates": [
+     0.455282,
+     0.740153,
+     0.721999
+    ]
+   }
+  },
+  {
+   "check": "splits.actual_ranges_computed",
+   "ok": true,
+   "detail": "row timestamps found for every split",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "2006",
+      "max": "2019"
+     },
+     "eval": {
+      "min": "2020",
+      "max": "2022"
+     },
+     "holdout": {
+      "min": "2023",
+      "max": "2025"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.actual_ranges_disjoint",
+   "ok": true,
+   "detail": "the rows of the three splits occupy disjoint periods",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "2006",
+      "max": "2019"
+     },
+     "eval": {
+      "min": "2020",
+      "max": "2022"
+     },
+     "holdout": {
+      "min": "2023",
+      "max": "2025"
+     }
+    },
+    "overlaps": []
+   }
+  },
+  {
+   "check": "splits.rows_within_declared_windows",
+   "ok": true,
+   "detail": "every row falls inside its split's declared window",
+   "evidence": {
+    "windows": {
+     "train": {
+      "start": "2006",
+      "end": "2020"
+     },
+     "eval": {
+      "start": "2020",
+      "end": "2023"
+     },
+     "holdout": {
+      "start": "2023",
+      "end": "2026"
+     }
+    },
+    "ranges": {
+     "train": {
+      "min": "2006",
+      "max": "2019"
+     },
+     "eval": {
+      "min": "2020",
+      "max": "2022"
+     },
+     "holdout": {
+      "min": "2023",
+      "max": "2025"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.no_cross_split_entities",
+   "ok": true,
+   "detail": "no row_id appears in more than one split",
+   "evidence": {
+    "shared_sample": [],
+    "shared_count": 0
+   }
+  },
+  {
+   "check": "splits.duplicate_entities_within_splits",
+   "ok": true,
+   "detail": "0 repeated-identifier rows within splits, at most the declared 0",
+   "evidence": {
+    "duplicate_rows": {},
+    "declared": 0
+   }
+  },
+  {
+   "check": "runner.layout",
+   "ok": true,
+   "detail": "holdout is private and train/eval are public",
+   "evidence": {}
+  },
+  {
+   "check": "runner.meta_json_keys",
+   "ok": true,
+   "detail": "meta.json carries the keys the runner reads",
+   "evidence": {
+    "keys": [
+     "built_at_utc",
+     "columns",
+     "description",
+     "features",
+     "id_columns",
+     "label_rule",
+     "label_source_columns",
+     "license",
+     "name",
+     "positive_label",
+     "positive_rate",
+     "prediction_time",
+     "rows",
+     "source",
+     "source_sha256",
+     "split",
+     "target",
+     "vintage_last_modified"
+    ]
+   }
+  },
+  {
+   "check": "runner.meta_matches_files",
+   "ok": true,
+   "detail": "meta.json agrees with the split files",
+   "evidence": {
+    "problems": []
+   }
+  },
+  {
+   "check": "runner.meta_counts_match_files",
+   "ok": true,
+   "detail": "meta rows and rates match the files",
+   "evidence": {}
+  },
+  {
+   "check": "runner.id_columns_are_not_features",
+   "ok": true,
+   "detail": "declared identifiers are not also listed as features",
+   "evidence": {}
+  }
+ ],
+ "failed_checks": []
+}
