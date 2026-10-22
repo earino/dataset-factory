@@ -170,11 +170,67 @@
       "elapsed_seconds": 22.259,
       "response": "Decision: resolve the one timing question on the third source with a single release-calendar query, then close out. Skip the catalog page that \"appears likely\" to yield an easy licence rejection.\n\nSupporting evidence (as supplied, nothing added)\n\n- Region is Canada; coverage is 17/24 non-US live, so a Canadian lead that can pass all five contracts is worth more to the queue than another rejection.\n- Two new sources are already closed on decisive licence/capacity evidence. That is sufficient rejection evidence for this tick; a third easy kill is an activity count, and the discovery brief explicitly forbids seeking one to reach a verdict quota.\n- The third source has open licence, a useful onset question, a documented target, and train/eval/holdout capacity with both classes. Four of five contracts have evidence; the gap is prediction timing for one proposed feature. That is exactly the \"cheapest unresolved fact that could change the verdict.\"\n- The remaining cost of leaving it unresolved is a parked candidate whose next probe is the same query, i.e. no information gained by deferring.\n\nUncertainty and the discriminating check\n\nThe open question is whether the proposed feature is published before the prediction instant, not whether it exists. One release-calendar query answers whether a period-end-to-publication pair exists, but one observed lag is not a universal bound and revised values are not historical snapshots. So the check is: fetch the publisher's release calendar for the feature's series, record one observed period_end -> published pair with dates, the latest period covered, and state an as-of policy plus its limits. If the feature publishes after the instant, the answer is to remove the feature, not to move the instant.\n\nOrdered actions, within the ~15 minutes (final 20% reserved for close-out)\n\n1. Write and run one small script file in an owned scratch path (scheduled approvals refuse interpreter one-liners) that queries the release calendar and prints the observed publication dates. No bulk download; coordinator stays clean.\n2. Record the result in the candidate's record: the command, URL, date, the observed pair, and the population the probe covers. No invented lag.\n3. Decide from that single result:\n   - all five contracts evidenced -> verdict ready, naming the construction step, expected artifact, and the check that decides success;\n   - query inconclusive, absent, or feature late -> parked, naming the exact missing fact and the reopening event (a published release calendar entry) \u2014 access failure is not a scientific rejection.\n4. Run python3 scripts/check-candidate.py <id>, python3 scripts/discovery-coverage.py, and the repository test suite; record any incomplete check as incomplete, never as passing.\n5. Add a compact STATE.md entry, inspect the diff, commit only this session's work, push, and check CI for that exact commit; report pending CI as pending.\n\nStopping condition: one query, one decision. No second probe of the same source, no probing the catalog page, no construction, qualification or packaging, no worker launch. If the query fails or is ambiguous, park and stop \u2014 do not spend the reserve on another attempt.\n\nNo AUC, base rate or headroom figures are reported: nothing has been constructed or qualified.\n\nOperator report: Lead of three remains open \u2014 Canadian, open-licensed, onset question with documented target and split capacity; four of five contracts evidenced. Two other new sources closed on decisive licence/capacity evidence. Coverage 17/24 non-US live, unchanged. One release-calendar query was made to settle timing; verdict is ready or parked per that single result, with the reasoning recorded. Checks, commit and CI status are as recorded in STATE.md. Next action: for a ready candidate, construction and full-artifact qualification; for a parked one, reopen only when the release calendar publishes the case's feature window.\n\n\u2014 Scout (Hermes)\n",
       "response_sha256": "cad8147b14aeee7ae3f1f06b662edf5c97f45f325f981ebd75b99ac3c943354d"
+    },
+    {
+      "partition": "development",
+      "case": "discovery-value",
+      "arm": "baseline",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-29",
+      "session_id": "20261022_230602_523212",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "7711a3e8188d7080b08dad9c127fb16b1b6de289bfb487ff49c50e0a033615f9",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 449,
+        "output_tokens": 1194,
+        "cache_read_tokens": 37120,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 38763,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 186,
+          "output_tokens": 12,
+          "cache_read_tokens": 256,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 263,
+          "output_tokens": 1182,
+          "cache_read_tokens": 36864,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 17.523,
+      "response": "Decision\n\nRun the release-calendar query on the third source first \u2014 it is the only remaining action that can convert an open, viable lead into a recorded verdict. Treat the catalog page's \"likely licence rejection\" as optional and second: a probable C is worth one page read, never a probe, and it cannot outrank a lead that is one query from `go`.\n\nSupporting evidence\n\n- Quota status: two rejections already recorded with decisive licence/capacity evidence. That is two of three verdicts, and the third source is the one that would make three, not the catalog page (which, if pursued first, leaves the session with two verdicts and an unresolved lead).\n- Cost asymmetry: the timing question is resolvable by a single release-calendar query. The catalog page is a \"likely\" rejection \u2014 an expectation, not evidence \u2014 and its value is a fourth verdict in a region already covered (17/24 non-US live), not a convertible candidate.\n- The blocker is decisive in kind. Per the qualification timing rules, \"knowable at the period is not knowable at the release\": if the proposed feature publishes after the prediction instant, the feature is an oracle and the source is a `park` (re-target) or `reject`, not a `go`. That single answer changes the verdict, so it is the highest-value query available in 15 minutes.\n- Licence is already clean (open-licensed, A/B), the target is documented, and train/eval/holdout capacity is measured \u2014 those are the expensive contracts and they are settled. Nothing else about this source is unknown.\n\nUncertainty and next discriminating check\n\nUncertainty: whether the proposed feature's publication date precedes the stated prediction instant, and by how much margin (mean lag is not a bound \u2014 read at least one observed period_end \u2192 published pair and prefer the largest plus margin).\n\nDiscriminating check: one release-calendar query for that feature's publication lag versus the declared instant. Outcome mapping, decided before the query so the result cannot be argued into a `go`:\n- publishes before the instant with margin \u2192 `go`, verdict recorded, next action = construction (timing block populated from the observed pair).\n- publishes after the instant \u2192 `park`, blocker written as the exact timing gap and the re-target needed (change/onset label or a later instant).\n- calendar unreadable or no observations \u2192 `park` on absent evidence; do not assume a lag.\n\nOrdered actions\n\n1. Query the release calendar for the one feature; capture the observed period_end \u2192 published dates verbatim.\n2. Write `candidates/<id>/record.json` immediately \u2014 verdict, `jurisdiction` (Canada), `licence_class`, measured shape, timing evidence, next action. Do not batch this with anything else.\n3. Only if that file is written and time remains: fetch the catalog page once, read its terms of use. Class C or D \u2192 record a `reject` with the absence or clause quoted; anything else \u2192 record it as opened-without-verdict and stop.\n4. Close out: one `STATE.md` entry naming sources opened and verdicts, run `scripts/check-candidate.py --all` and the unit suite, commit and push, read CI for that exact commit.\n5. Final report: honest count.\n\nStopping condition\n\nStop all probing at the earlier of the wrap-up point (leave ~4 minutes for writes, checks and push) or immediately after the third verdict is written. No new source is opened once the calendar query has been sent. If the calendar query itself stalls past ~5 minutes, abandon it, write the source as `park` on unresolved timing, and spend the remainder on the catalog rejection plus close-out.\n\nOperator report (draft)\n\nCanada discovery tick. Opened three sources; two rejected on decisive licence/capacity evidence (recorded). Third \u2014 open licence, documented target, measured split capacity \u2014 held on one question: whether its proposed feature publishes before the prediction instant. Ran the release-calendar check; verdict [go | park] recorded with the observed release dates. Catalog page: [rejected class X, clause quoted | left unopened, no verdict]. Coverage unchanged pending advancement. Nothing built, qualified or packaged this session. Next action: [construction step | re-target the label to onset, then re-check timing].\n",
+      "response_sha256": "492ba7b7fa1fc1091178e510d3c16e9ed5ef81cc0e5b91942c27ca1d018769f8"
     }
   ],
   "ledger": {
-    "calls": 29,
-    "tokens": 936407
+    "calls": 30,
+    "tokens": 975170
   },
-  "updated_at": "2026-10-22T23:05:59Z"
+  "updated_at": "2026-10-22T23:06:20Z"
 }
