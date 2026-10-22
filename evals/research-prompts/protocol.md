@@ -175,3 +175,20 @@ digest-conflict and exhausted-attempt stopping conditions. It is an explicit pol
 and utility test, not independent evidence that the revised policy is optimal. The
 next bundle changes the watcher boundary and timing/close-out prose; preserve the
 original 24-cell comparison and label follow-up runs by their new exact bundle hash.
+
+### Revised-bundle batch extension
+
+After reviewing the original development results, evaluate the frozen `2a3ceb9`
+bundle on all six development cases (24 calls), then the three reserved cases (12)
+and four adaptive diagnostics (16), on both recorded routes and paired arms. This
+replaces the optional repeat allocation rather than adding repetitions to seek a win.
+Together with the original 24 calls and the retained parser failure, the plan needs
+77 cumulative attempts. The operator's additional-token authority therefore extends
+the helper checkpoints to **96 attempts / 5,000,000 all-inclusive tokens**, retaining
+the 100k next-call reserve and the same ledger. This is an experiment checkpoint
+change, not a production weekly-policy change or a claim of hard billing control.
+The latest verified pilot total was 3 attempts / 73,766 tokens; additional completed
+development calls must be included, never reset. Apply the updated helper only after
+the current batch releases it, and stop on unreconciled failure as before. If the
+original development results require another substantive revision, document that
+revision and adjust the remaining plan before calls, preserving all earlier results.
