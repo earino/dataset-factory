@@ -43,6 +43,17 @@ class AssemblySafetyTests(unittest.TestCase):
         return {p.relative_to(self.target).as_posix(): p.read_bytes()
                 for p in self.target.rglob('*') if p.is_file()}
 
+    def test_cli_refusal_has_nonzero_status_and_machine_readable_recovery(self):
+        self.target.mkdir(parents=True)
+        with contextlib.redirect_stdout(io.StringIO()) as output:
+            status = assembler.cli(['example'])
+        self.assertEqual(1, status)
+        response = json.loads(output.getvalue())
+        self.assertFalse(response['ok'])
+        self.assertEqual('assembly_refused', response['code'])
+        self.assertIn('candidates/example/source/job.json', response['next_action'])
+        self.assertTrue(self.target.is_dir())
+
     def test_identical_repeat_is_noop_and_owned(self):
         self.assertEqual(0, self.run_assembly())
         before = self.snapshot()

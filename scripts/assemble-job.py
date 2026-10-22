@@ -285,8 +285,21 @@ def main(argv=None) -> int:
     return 0
 
 
-if __name__ == "__main__":
+def cli(argv=None):
     try:
-        sys.exit(main())
-    except FactoryError as exc:
-        raise SystemExit(str(exc)) from None
+        return main(argv)
+    except (FactoryError, SystemExit, OSError) as exc:
+        if isinstance(exc, SystemExit) and exc.code in (None, 0):
+            return 0
+        arguments = list(sys.argv[1:] if argv is None else argv)
+        declaration = BUNDLES.get(arguments[0], {}) if arguments else {}
+        job_file = declaration.get("job_file", "candidates/<candidate>/source/job.json")
+        message = str(exc) if not isinstance(exc, OSError) else type(exc).__name__
+        print(json.dumps({"ok": False, "code": "assembly_refused", "error": message,
+                          "next_action": f"Correct the named input. If the job ID already exists, "
+                          f"set a new unique id in {job_file} and rerun assembly; preserve the old directory."}))
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(cli())
