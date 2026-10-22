@@ -3,15 +3,15 @@
   "batch": "development-413244c",
   "records": [
     {
-      "case": "discovery-value",
-      "arm": "revised",
+      "case": "advancement-baseline",
+      "arm": "baseline",
       "requested_model": "deepseek/deepseek-v4.1-flash-1017",
       "requested_provider": "nous",
-      "run": "run-04",
-      "session_id": "20261022_223609_a74f50",
+      "run": "run-16",
+      "session_id": "20261022_224812_f04f8d",
       "status": "ok",
       "exit_code": 0,
-      "request_sha256": "d951e843fe249e68e0503ca198121d27150395419c91b721c222ac217b1be4aa",
+      "request_sha256": "faa5a028c5da4df1b2f8d211718143bdcabf28253d0c267e4d0dcaad2e7e2b26",
       "runtime_sha256": {
         "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
         "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
@@ -21,27 +21,27 @@
       "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
       "dollar_spend": null,
       "tokens": {
-        "input_tokens": 24919,
-        "output_tokens": 1389,
+        "input_tokens": 36481,
+        "output_tokens": 1633,
         "cache_read_tokens": 256,
         "cache_write_tokens": 0
       },
-      "total_tokens": 26564,
+      "total_tokens": 38370,
       "tasks": [
         {
           "task": "title_generation",
           "calls": 1,
-          "input_tokens": 442,
-          "output_tokens": 13,
-          "cache_read_tokens": 0,
+          "input_tokens": 232,
+          "output_tokens": 11,
+          "cache_read_tokens": 256,
           "cache_write_tokens": 0
         },
         {
           "task": "",
           "calls": 1,
-          "input_tokens": 24477,
-          "output_tokens": 1376,
-          "cache_read_tokens": 256,
+          "input_tokens": 36249,
+          "output_tokens": 1622,
+          "cache_read_tokens": 0,
           "cache_write_tokens": 0
         }
       ],
@@ -53,20 +53,20 @@
         }
       ],
       "tool_pin": "unrecorded",
-      "elapsed_seconds": 19.693,
-      "response": "**Decision.** Spend the remaining budget on the one release-calendar query for the third source. Skip the catalog page that looks like an easy licence rejection.\n\n**Supporting evidence.** The third source already clears four of the five discovery contracts with recorded evidence: open licence at class A/B, a stated onset question, a documented target, and train/eval/holdout capacity with both classes. Its sole blocker is a timing fact \u2014 whether a proposed feature is published before the prediction instant \u2014 and that is exactly the class of defect that gate 1.4.0 refuses and that let `nhs-ae-four-hour-decline` reach staging with 25 late-published features. One calendar query converts an unresolved candidate into either `ready` (a buildable task in the queue, which is the buffer the routine exists to keep) or a `parked` record with a named reopening event. Both outcomes are durable value.\n\nThe catalog page offers the opposite trade: a fifth rejection is an activity count, not research value, and the brief explicitly names seeking easy rejections as a failure mode. The standing class C policy already closes unstated-licence leads without this probe; nothing is gained by confirming what the policy would close anyway.\n\n**Uncertainty and next discriminating check.** The unresolved fact is the publication lag: the number of days between the period end the feature describes and the release that first carries it, read from the publisher's own release calendar for at least one observed `period_end -> published` pair. That single pair, recorded with its URL and retrieval date, decides the verdict. It also supplies the `timing` block the qualification gate requires, so the evidence is reusable rather than throwaway.\n\n**Ordered actions and stopping condition.**\n\n1. Issue one bounded release-calendar query for the third source; record the URL, retrieval date, the observed pair, and the computed lag verbatim in `candidates/<id>/record.json` and `notes.md`.\n2. If the feature publishes before the instant: set `ready`, and name the construction step, expected artifact, and the deciding check (full-artifact qualification, timing block accepted). If it publishes after: set `parked` with the exact reopening event \u2014 a source that moves the feature earlier, or a target reformulation that drops it \u2014 and record the lag as the reason.\n3. Do not open the catalog page. Record it as unprobed this session, with no verdict and no licence claim, so a later tick can triage it from its own instrument.\n4. Update `STATE.md` with a compact entry, run `check-candidate.py` for the touched record and the test suite, inspect the diff, commit only this session's work, push, and check CI for that exact `head_sha`.\n\n**Stopping condition.** Stop probing the moment the calendar result is recorded, whatever it says. Fifteen minutes is already inside the 20% close-out reserve of a 90-minute slot; if the query does not return promptly, write `parked` with timing unverified and the query as the named next probe, and close out immediately. No second source, no additional probe.\n\n**Operator report.** Leads opened/reopened: none new; one existing unresolved source advanced. Decisions: fourth contract evidence recorded, third source moved to `ready` or `parked` on measured publication lag; two prior rejections unchanged; catalog page left unprobed deliberately. Strongest remaining uncertainty: the publication lag, now either resolved or carrying a precise handoff. Coverage: Canada focus retained, non-US live count unchanged at 17/24 pending the third source's verdict. Checks/commit/CI: candidate check plus suite, committed and pushed; CI status reported as observed, not assumed. Next action: if `ready`, construction; if `parked`, licence triage of the deferred catalog page from its own terms.\n\n\u2014 Scout (Hermes)\n",
-      "response_sha256": "d2cf6f2fe504fb9d829cad774c0a07a4aee35fa9519d85cc7792b1b0d56abe87"
+      "elapsed_seconds": 27.531,
+      "response": "**Decision**\n\nNeither owner option. Do not drop the source on this evidence alone, and do not tune onset thresholds until the holdout beats persistence. Tuning against the holdout is evaluation-on-the-test: it destroys the only clean confirmation data and turns a real defect into a fabricated win. Holdout stays unread until the protocol is frozen.\n\nThe defensible next step is one bounded, eval-only diagnostic that decides between *drop* and *one retarget*: quantify whether the persistence gap is real, and check whether a change/onset label is even constructible from shipped columns.\n\n**Supporting evidence (supplied)**\n\n- Model 0.74, persistence 0.78, calendar/identity 0.60 on identical eval rows. A model below persistence is a recorded defect in the task definition, not an encouraging result \u2014 the label is largely a persistent level, and persistence is a one-line rule.\n- No uncertainty intervals and no alignment audit exist, so 0.78 vs 0.74 is a point comparison of unknown precision; I cannot call the gap real or noise.\n- Qualification and acceptance passed \u2014 the artifact is sound. Passing the gate says the files lack detectable defects; it says nothing about whether the task is a forecast. This is exactly the \"gate passes, task is still a negative result\" case.\n- Standing method: when the label is persistent, retarget change/onset, and treat that as a **new task instance with its own qualification**, not a tweak. Budget one rebuild per structural defect.\n\n**Uncertainty and the next discriminating check**\n\nTwo unknowns, one script answers both:\n\n1. Is the gap real? Positives likely cluster (event/day), so row counts overstate the effective sample. Compute a cluster bootstrap CI on the model-minus-persistence AUC gap, clustered on the event key, plus per-window and per-year AUC to expose any pooled structural break or prevalence shift between splits.\n2. Is onset constructible? From shipped columns only, count rows where a prior-period value exists and the label flips \u2014 i.e. whether disjoint train/eval/holdout windows can each carry both classes of an onset label with adequate independent positive counts.\n\nDiscriminating outcome: if the decomp gap is within interval and onset counts are adequate \u2192 retarget, don't drop. If the gap is real and persistence dominates and onset is thin or unconstructible \u2192 this is a negative result; drop and record it.\n\n**Ordered actions**\n\n1. Freeze holdout; note explicitly it was not read. No threshold scanning.\n2. Write one script in `.factory/` (no `python3 -c` in this session) that, on eval/train rows only: clips to the declared cluster key, bootstraps the decomp gap CI, reports per-year/per-window AUC and per-split prevalence, and counts onset-eligible rows per window. Emit compact JSON; delete the scratch script.\n3. Decide from that JSON: one retarget build (new task instance \u2192 construction \u2192 `dataset-qualification`) or drop with the negative finding recorded next to the number.\n4. Update `STATE.md` and the candidate record: defect, commands, results, verdict.\n\n**Stopping condition**\n\nStop after the single diagnostic plus at most one rebuild. Do not run a second or third rebuild \u2014 a third audit that keeps finding defects is Task-design failure, not code. Stop immediately if onset is not constructible, or if the gap proves real with persistence dominating and no onset path: drop.\n\n**Operator report**\n\nArtifact qualified; the level target is beaten by persistence (0.74 vs 0.78; calendar 0.60), so the task as defined is not a forecast. I did not drop it, and I did not touch the holdout \u2014 tuning thresholds against it would manufacture a result. Ran one eval-only diagnostic: clustered CI on the gap, per-year/prevalence breakdown, and onset-constructibility counts. Outcome decides between one retarget to an onset label (with fresh qualification) or a recorded drop. No publication action; holdout unexamined.\n",
+      "response_sha256": "ed4dbd0b2c21cc02834bdfb782cbb3de067ee3254707a02d12446342e2d5b436"
     },
     {
-      "case": "discovery-value",
+      "case": "advancement-baseline",
       "arm": "baseline",
-      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
-      "requested_provider": "nous",
-      "run": "run-05",
-      "session_id": "20261022_223633_0cf6c2",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-15",
+      "session_id": "20261022_224619_5116ac",
       "status": "ok",
       "exit_code": 0,
-      "request_sha256": "7711a3e8188d7080b08dad9c127fb16b1b6de289bfb487ff49c50e0a033615f9",
+      "request_sha256": "faa5a028c5da4df1b2f8d211718143bdcabf28253d0c267e4d0dcaad2e7e2b26",
       "runtime_sha256": {
         "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
         "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
@@ -76,12 +76,177 @@
       "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
       "dollar_spend": null,
       "tokens": {
-        "input_tokens": 37313,
-        "output_tokens": 1501,
+        "input_tokens": 196,
+        "output_tokens": 7119,
+        "cache_read_tokens": 35648,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 42963,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 294,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 144,
+          "output_tokens": 6825,
+          "cache_read_tokens": 35264,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 108.541,
+      "response": "Decision\n\nReject both proposals. Spend the one bounded diagnostic on the eval-row triad itself: cluster-aware confidence intervals for the model-minus-persistence AUC difference, plus an independent recomputation of both scores to audit row alignment. The holdout stays untouched \u2014 it is the final scoring set, not a tuning set \u2014 and the source is not dropped on the strength of an unquantified 0.04 gap.\n\nSupporting evidence\n\nThe triad is measured on identical eval rows: model 0.74, persistence 0.78, calendar/identity 0.60. Calendar at 0.60 rules out seasonality; the label behaves as a persistent level, and a model below persistence is a recorded defect, not an encouraging result. But 0.04 is a point difference with no intervals and no alignment audit, and positives may cluster, so the effective sample size is unknown: \"persistence beats the model\" is currently unmeasured, not established. The artifact passed qualification and --accept on its exact version, so any real defect lies in the target definition, not the source \u2014 dropping the entire source now discards a qualified, licence-cleared source over a gap that may be noise. The counter-proposal \u2014 iterate onset thresholds until the holdout beats persistence \u2014 selects thresholds on the final scoring set, which destroys the holdout as evidence; measurement protocols are fixed before they are applied. Re-targeting to onset/change is the doctrine's sanctioned fix for a persistent label, but only as a new task instance with its own qualification, measured on eval, holdout scored once at the end.\n\nUncertainty and the next discriminating check\n\nOne diagnostic decides the fork: a block bootstrap (blocks by event key or time cluster, not rows) giving a CI for the AUC difference on the pinned eval rows, plus a second implementation \u2014 forbidden from reading the first \u2014 recomputing the persistence and model scores to confirm alignment. Record which figure is quoted and which replicated. If persistence's lead survives the interval, the current target is a negative result. If the intervals overlap heavily, the target at best ties a one-line rule \u2014 the same conclusion for shipping, recorded honestly. Examining the holdout now answers nothing: it cannot settle the design question and spends the resource before the target is fixed.\n\nOrdered actions and stopping condition\n\n1. Freeze the artifact and its passing report; write the triad into the candidate record with the commands that produced it, labelled a measured defect.\n2. Run the one diagnostic above. No holdout access, no threshold search.\n3. Apply a rule fixed now: if persistence's lead is robust, either drop the candidate with the negative result recorded, or \u2014 only if the source's semantics support a change label \u2014 open exactly one re-targeted task (onset or sustained change) as a new instance: new quality.json, full qualification, triad on eval, thresholds fixed before any measurement.\n4. Stopping condition: one re-target attempt. If it also fails to beat its own persistence baseline on eval, the candidate is dropped permanently \u2014 one rebuild per structural defect, no further attempts.\n5. Update STATE.md and the record; publish nothing from these numbers.\n\nOperator report\n\nEval triad on the accepted artifact: model 0.74, persistence 0.78, calendar 0.60 \u2014 the task currently loses to a one-line rule, but the gap carries no uncertainty estimate and the decisive comparison is unreplicated. Holdout untouched. Next tick spends the bounded diagnostic on clustered bootstrap intervals plus independent replication, then applies the recorded rule: negative result, or one pre-registered onset re-target measured on eval only. The proposal to tune thresholds until the holdout wins is refused: it spends the holdout on selection and makes any resulting number meaningless.\n",
+      "response_sha256": "d83187e29b80d779303c75d26850f179cbc9a973c72e6edc6de0660de79ad690"
+    },
+    {
+      "case": "advancement-baseline",
+      "arm": "revised",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-17",
+      "session_id": "20261022_224844_644791",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "d38d2c501032e78f3ab5c810ddd572ceac29e11e48af816bb04406756c36320e",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 33793,
+        "output_tokens": 1329,
         "cache_read_tokens": 256,
         "cache_write_tokens": 0
       },
-      "total_tokens": 39070,
+      "total_tokens": 35378,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 314,
+          "output_tokens": 12,
+          "cache_read_tokens": 128,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 33479,
+          "output_tokens": 1317,
+          "cache_read_tokens": 128,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 20.747,
+      "response": "Decision: Neither proposal. Do not drop the source yet, and do not touch holdout to search onset thresholds \u2014 that is tuning the target against the scoring set, which the brief and `dataset-qualification` explicitly forbid. Spend the one bounded diagnostic on whether the 0.74 < 0.78 gap is a *measured* result or a defect.\n\nSupporting evidence: model 0.74, persistence 0.78, calendar/identity 0.60 on identical eval rows. That ordering says the label is largely persistent and the model has not demonstrated headroom \u2014 a recorded finding, not proof the source is unusable. But there are no uncertainty intervals and no alignment audit, so we cannot currently distinguish three cases: (a) persistence genuinely dominates; (b) the gap is inside sampling noise on clustered positives; (c) the persistence reference is misaligned or post-hoc (wrong instant, mismatched row pairing, or a \"most recent observed value\" that was not available at prediction time). Quoting 0.78 as decisive without intervals or an alignment check would repeat the exact failure the skill documents (0.870 vs 0.893 persistence example).\n\nUncertainty and next discriminating check: the decisive discriminator is a paired, cluster-aware bootstrap over the same eval rows \u2014 resample by `event_key`/entity, not by row \u2014 giving intervals on all three AUCs and on the persistence-minus-model difference, plus per-year and per-split AUC/Brier and a prevalence-shift table. In parallel, a bounded alignment audit: re-derive persistence from source using only data available at the declared prediction instant, confirm model and references scored on byte-identical rows, and confirm the model's feature set contains nothing post-hoc. That single pass separates noise, misalignment, and genuine dominance.\n\nOrdered actions:\n1. Freeze the protocol and record it before running anything: metric, split boundaries, target, and the three-reference triad on identical rows.\n2. Run the cluster-aware bootstrap and the alignment audit as one bounded diagnostic; write command, rows, and intervals into the candidate record. Holdout stays sealed.\n3. Branch on the result:\n   - If intervals overlap and the audit is clean \u2192 record \"no demonstrated headroom under this protocol\" with all three scores and intervals, and drop or explicitly re-scope (do not publish a benchmark claim).\n   - If the audit finds misalignment or a post-hoc persistence reference \u2192 one rebuild per structural defect, then re-qualify and re-compare.\n   - Only if dominance is real and alignment clean may a *change/onset* task instance be pre-specified as a new task \u2014 with its user need and protocol fixed before any evaluation, and holdout used once.\n4. Never select a threshold against holdout; a new instance gets fresh qualification and its own acceptance.\n\nStopping condition: one diagnostic pass, documented with intervals and audit scope. Stop at the branch outcome \u2014 no second rebuild, no threshold sweep, no holdout peek.\n\nOperator report: qualified artifact has model AUC 0.74 behind persistence 0.78 (calendar 0.60) on identical eval rows; no intervals or alignment audit exist and holdout is unexamined. I would not drop the source on one unreferenced comparison, and I would not tune onset thresholds against holdout. One bounded diagnostic (cluster-aware intervals on the three references, per-year prevalence, persistence alignment/instant audit) decides between \"no headroom, record and drop/re-scope\" and \"reference defect, one rebuild.\" Holdout remains sealed; any onset task would be a new, pre-specified instance.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "c303367690a4ef8839be600acb010a530c6a043b72b88395af8552227bbd2998"
+    },
+    {
+      "case": "advancement-baseline",
+      "arm": "revised",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-14",
+      "session_id": "20261022_224524_90a682",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "d38d2c501032e78f3ab5c810ddd572ceac29e11e48af816bb04406756c36320e",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 232,
+        "output_tokens": 3378,
+        "cache_read_tokens": 32960,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 36570,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 363,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 180,
+          "output_tokens": 3015,
+          "cache_read_tokens": 32576,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 50.659,
+      "response": "DECISION\n\nReject both proposals. Do not drop the source now, and do not touch onset thresholds against the holdout \u2014 that is tuning a label to beat a held-out score, which the protocol forbids and which would burn the only untouched evaluation surface. Spend the one bounded diagnostic on the unmeasured half of the comparison: uncertainty intervals plus an alignment/prevalence audit on the eval rows.\n\nSUPPORTING EVIDENCE\n\nQualification and --accept passed on this exact artifact, so integrity is not the open question \u2014 usefulness is. The triad on identical rows: model 0.74, persistence 0.78, calendar/identity 0.60. The model beats calendar-only, so learned signal beyond seasonality exists; it trails persistence by 0.04. Per the qualification skill, a model below persistence is a recorded defect requiring diagnosis, not a verdict. A 0.04 gap with no intervals is not established: positives likely arrive in clusters, so the effective sample is far smaller than the row count, and no alignment audit exists \u2014 the gap may be noise, misaligned rows, or prevalence shift between splits. One weak model does not prove no useful prediction is possible, so immediate drop is premature; but the current honest finding is \"no demonstrated headroom under this protocol,\" which is preservable either way.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\n\nUnknown: whether 0.74 vs 0.78 is real. Unmeasured: clustered confidence intervals on both AUCs, row alignment, per-year AUC/Brier, positive rate per split and year. The check: bootstrap intervals clustered on the event key over model and persistence scores on the same eval rows, an alignment audit, and per-year/prevalence breakdown. It discriminates three outcomes: (a) gap within noise \u2014 finding is parity, not headroom; (b) a repairable defect (misalignment, prevalence shift, implementation) \u2014 one rebuild; (c) genuine persistence dominance \u2014 negative finding stands.\n\nORDERED ACTIONS AND STOPPING CONDITION\n\n1. Record the triad and both rejected proposals, with reasons, in the candidate record.\n2. Run the diagnostic as a small script on the worker, eval rows only; holdout stays sealed. Write results beside the measured AUCs.\n3. Branch:\n   a. Defect found: one rebuild per structural defect, fresh attempt ID, full-artifact re-qualification and --accept, then re-run the triad on identical rows.\n   b. No defect, gap real: record \"no demonstrated headroom under this protocol\" with both scores and intervals; preserve the negative finding. Re-scoping to a change/onset instance is legitimate only if the user need and protocol are specified first, then qualified and compared anew \u2014 the target is chosen before any holdout look, never because a score wins. Otherwise drop with the recorded reason.\n   c. Gap within noise: report parity honestly; no headroom claim; same options as (b).\n4. Holdout: examined once, after design freeze, never during selection.\n5. Stop after the diagnostic plus at most one justified repair. If the second validated comparison still shows persistence dominant, stop \u2014 record, then re-scope or drop. A third tune means the defect is in the task design; audits that keep finding real defects are the cost of shipping a task nobody should.\n\nOPERATOR REPORT\n\nThe candidate passed full-artifact qualification and acceptance. Baseline triad on identical eval rows: model 0.74, persistence 0.78, calendar 0.60 \u2014 the model trails the trivial reference by 0.04 with no uncertainty intervals, so no verdict yet. The owner's immediate drop is premature; the proposal to tune onset thresholds until the holdout wins is refused \u2014 it contaminates the holdout. Next: one bounded diagnostic (clustered intervals, alignment, prevalence). Outcome: either one repair and re-qualification, or a recorded negative finding with a re-scope/drop decision. Holdout untouched.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "ab8d7af613958ceff24f5538910454417e33f803d2502e54d875e69d5a3d5d69"
+    },
+    {
+      "case": "advancement-timing",
+      "arm": "baseline",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-13",
+      "session_id": "20261022_224458_03aa90",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "9af4e32a57a99f19480723e8da4cdd55b05e228bb7f1d798fd31baa0866415c3",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 36442,
+        "output_tokens": 1533,
+        "cache_read_tokens": 256,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 38231,
       "tasks": [
         {
           "task": "title_generation",
@@ -94,8 +259,8 @@
         {
           "task": "",
           "calls": 1,
-          "input_tokens": 36871,
-          "output_tokens": 1489,
+          "input_tokens": 36000,
+          "output_tokens": 1521,
           "cache_read_tokens": 256,
           "cache_write_tokens": 0
         }
@@ -108,229 +273,9 @@
         }
       ],
       "tool_pin": "unrecorded",
-      "elapsed_seconds": 15.284,
-      "response": "**Decision.** Spend the remaining 15 minutes on the single release-calendar query for source #3, write its verdict immediately, and treat the fourth catalog page as optional filler only after that record exists on disk. Do not open a new probe before source #3 is durable \u2014 with 15 minutes left, a lost transcript is the only real failure mode.\n\n**Supporting evidence.** Source #3 is the only lead this session whose licence and capacity are already settled: open licence permitting redistribution and derivatives, a documented onset target, and computed train/eval/holdout capacity with both classes. Its sole blocker is the timing question, which is exactly the kind of defect gate 1.4.0 refuses (a feature stamped period M that publishes after the prediction instant is an oracle). That question costs one query against the publisher's own release calendar, and the answer decides the verdict either way. The two rejections already recorded stand on decisive evidence and need nothing further. The catalog page is a speculative second rejection; a C/D licence there is worth recording, but it is not worth risking an unrecorded third verdict.\n\n**Uncertainty and next discriminating check.** The open question is whether the proposed feature's `period_end -> published` lag places it before the stated prediction instant. Query the publisher's release calendar for the feature's actual publication date. Two outcomes:\n- Published before the instant \u2192 `go`, recording jurisdiction `{\"country\": \"CA\", \"region\": \"North America\", \"publisher\": \"<publisher>\"}` and `licence_class` A/B plus the terms quote. Note honestly that one observed release date is a single observation, not a bound: construction must record at least one observed period-end\u2192published pair and set `days_after_period_end` to the largest observation plus a week's margin, not the mean.\n- Published after the instant \u2192 `park` (not `go`), with the re-target options named: drop the feature, or move the instant to the publication date. This is a design change for the advancement session, and it must not enter the construction queue meanwhile.\n\n**Ordered actions and stopping condition.**\n1. Run the one release-calendar query. Record the command and its literal result.\n2. Write `candidates/<id>/record.json` with verdict, jurisdiction, licence class and evidence \u2014 before anything else.\n3. Only if \u22655 minutes remain after that write, read the fourth catalog page's own licence instrument (not a general policy page) and record a C/D rejection in one line, with the clause or its absence. Do not probe its schema.\n4. Write the `STATE.md` entry: sources opened, verdicts, measured figures with commands, what stayed unresolved.\n5. Run `python3 -m unittest discover -s tests` and `scripts/check-candidate.py --all`; commit and push; read CI for that exact commit.\n6. Stop probing at the 80% wrap-up notice or when the time is gone \u2014 whichever comes first \u2014 and finish with the write-up only.\n\n**Operator report.** Three new sources carried to verdict this session, all Canadian: two rejected on decisive licence/capacity evidence; a third open-licensed source with a documented onset target and split capacity resolved by a release-calendar query \u2014 result recorded as `go` or `park` in its record. A fourth catalog page was opened only if time allowed after the write; if not, no verdict, stated plainly. No existing candidate was advanced, built, or packaged. Coverage and CI result for the pushed commit are in `STATE.md`.\n",
-      "response_sha256": "e178f42fabfb9f2a951c56a41d5b20b284a2d92b99d80307bf24c81614ef045d"
-    },
-    {
-      "case": "discovery-novelty",
-      "arm": "revised",
-      "requested_model": "glm-5.3",
-      "requested_provider": "lunaroute",
-      "run": "run-06",
-      "session_id": "20261022_223653_da7fa5",
-      "status": "ok",
-      "exit_code": 0,
-      "request_sha256": "29b1792c19d79a89e23db8236d85ba1349d873b96b899b77e2b440c247ccd7c4",
-      "runtime_sha256": {
-        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
-        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
-        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
-        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
-      },
-      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
-      "dollar_spend": null,
-      "tokens": {
-        "input_tokens": 24159,
-        "output_tokens": 6227,
-        "cache_read_tokens": 384,
-        "cache_write_tokens": 0
-      },
-      "total_tokens": 30770,
-      "tasks": [
-        {
-          "task": "title_generation",
-          "calls": 1,
-          "input_tokens": 52,
-          "output_tokens": 289,
-          "cache_read_tokens": 384,
-          "cache_write_tokens": 0
-        },
-        {
-          "task": "",
-          "calls": 1,
-          "input_tokens": 24107,
-          "output_tokens": 5938,
-          "cache_read_tokens": 0,
-          "cache_write_tokens": 0
-        }
-      ],
-      "main_routes": [
-        {
-          "model": "glm-5.3",
-          "provider": "lunaroute",
-          "calls": 1
-        }
-      ],
-      "tool_pin": "unrecorded",
-      "elapsed_seconds": 104.868,
-      "response": "DECISION\n\nNot a mirror \u2014 but not ready. Record the lead as `investigating` with two named missing\nfacts, and record the novelty verdict `differentiated` now, since its evidence is in\nhand. This session does not build; construction is advancement's work.\n\nSUPPORTING EVIDENCE\n\n- Mirror rule: shared subject matter is not a mirror, and a different URL alone is not\n  novelty. Compared at the task level, the lead differs from the published task on target\n  (recurrence after a documented intervention vs. first-visit failure), population\n  (post-intervention establishments vs. all), prediction instant (before the return visit\n  vs. before the first visit), features (pre-return-visit records vs. static establishment\n  attributes), and it covers an unrepresented inspection regime. That is a stated\n  contribution \u2014 formulation, population, feature window, new jurisdiction \u2014 not a\n  republication.\n- Two named catalog searches found no ML-ready recurrence task. Record their scope and\n  limitations; the claim is \"no known ML-ready recurrence task found,\" not \"none exists.\"\n- Licence is stated as clean, but durability requires recording `licence_class` with the\n  verbatim terms quote from the publisher's own instrument in `license_evidence`, plus\n  `jurisdiction` (country, region, publisher \u2014 measured, not inferred).\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\n\nTwo required contracts are unmeasured, and either is a hard veto:\n\n1. Split capacity: recurrence events cluster within establishments, so raw visit counts\n   overstate the effective sample. The discriminating number is independent positives \u2014\n   distinct establishments (or intervention episodes) with and without recurrence across\n   disjoint time windows.\n2. Timing vs. reporting lag: \"pre-return-visit records\" are valid features only if the\n   publisher had released them by the prediction instant. If reporting lag exceeds the\n   typical interval to the return visit, the feature window is hindsight and the task\n   collapses.\n\nNext check: one bounded read-only aggregate probe (distinct-key recurrence outcomes per\ndisjoint window, clustered count, both classes present in each window) plus a\ndocumentation read of the publication calendar or observed visit-date to published-date\npairs to measure the lag. Record the population the probe covers (intervention types,\nyears, jurisdiction). Keep probe counts distinct from dataset measurements.\n\nORDERED ACTIONS AND STOPPING CONDITION\n\n1. Record the novelty verdict now: `check-novelty.py` with verdict `differentiated`;\n   ours = recurrence formulation, post-intervention population, pre-return-visit window,\n   new regime; theirs = the published first-visit task; prior art = that task plus the\n   two catalog searches. Prevents the lead aging as \"interesting.\"\n2. Update the record: jurisdiction, licence class with quote, one-sentence prediction\n   instant, target source column named, status `investigating` with the two facts.\n3. Run the aggregate probe as a script file (no interpreter one-liners; no bulk transfer);\n   record commands and results in `notes.md`.\n4. Measure the lag; state whether it comes from observed pairs or the publisher's\n   calendar.\n5. If both pass with recorded evidence: set `ready`, name the handoff\n   (`assemble-job.py` to a worker build; the full-artifact `qualify_dataset.py` pass is\n   the check that decides construction), and measure extraction cost before budgeting.\n6. Stop when: both measurements are recorded (pass \u2192 `ready`, stop; decisive failure \u2192\n   `parked`/`dropped` with the blocker and reopening condition); or close-out budget\n   arrives (persist the record and a next action a fresh session can execute first).\n\nCONCISE OPERATOR REPORT\n\nOne lead advanced, none dropped. The regional inspection source is differentiated from\nthe published first-visit task on target, population, instant, features and regime;\nnovelty recorded as `differentiated` with both catalog searches as prior-art evidence.\nNot ready: independent split counts and reporting lag are unmeasured, and either can\nveto \u2014 clustered recurrence and hindsight features are the classic failures here. Next\naction: one bounded aggregate probe plus a calendar read; expected outcome is `ready`\nwith a named construction handoff, or a recorded blocker. Checks, commit and exact-commit\nCI status to be reported at close-out, with pending CI reported as pending.\n\n\u2014 Scout (Hermes)\n",
-      "response_sha256": "6fa4f30a5104e9df7cc8a321388f5dc5c7b34a75a31c22340e2a9cd5eac25b31"
-    },
-    {
-      "case": "discovery-novelty",
-      "arm": "baseline",
-      "requested_model": "glm-5.3",
-      "requested_provider": "lunaroute",
-      "run": "run-07",
-      "session_id": "20261022_223842_413f2f",
-      "status": "ok",
-      "exit_code": 0,
-      "request_sha256": "af0b56adce007f17ee35eb7df336fda5c86f70d228265d6360717ee93f86eb13",
-      "runtime_sha256": {
-        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
-        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
-        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
-        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
-      },
-      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
-      "dollar_spend": null,
-      "tokens": {
-        "input_tokens": 33877,
-        "output_tokens": 4384,
-        "cache_read_tokens": 2816,
-        "cache_write_tokens": 0
-      },
-      "total_tokens": 41077,
-      "tasks": [
-        {
-          "task": "title_generation",
-          "calls": 1,
-          "input_tokens": 52,
-          "output_tokens": 756,
-          "cache_read_tokens": 384,
-          "cache_write_tokens": 0
-        },
-        {
-          "task": "",
-          "calls": 1,
-          "input_tokens": 33825,
-          "output_tokens": 3628,
-          "cache_read_tokens": 2432,
-          "cache_write_tokens": 0
-        }
-      ],
-      "main_routes": [
-        {
-          "model": "glm-5.3",
-          "provider": "lunaroute",
-          "calls": 1
-        }
-      ],
-      "tool_pin": "unrecorded",
-      "elapsed_seconds": 78.234,
-      "response": "DECISION\nNot a mirror, and not ready. Verdict: differentiated, needs further work. It stays in discovery scope - no construction, no qualification, no advancement; this session only records the verdict and the evidence gap. The two unmeasured items (split counts, reporting lag) are exactly the contracts that decide readiness, so \"ready\" cannot be claimed yet.\n\nSUPPORTING EVIDENCE\n- The mirror test is on the task, not the source. The published task predicts first-visit failure from establishment attributes; this lead predicts recurrence after a documented intervention, restricts features to pre-return-visit records, and targets an unrepresented inspection regime. Different target, different feature set, different regime. Two named catalog searches found no ML-ready recurrence task. That is a \"differentiated\" verdict, not \"mirror.\"\n- Licence: the source is licensed, so it clears triage, but the exact class (A or B) and the terms quote must be recorded in record.json before anything else - licence class is a required field at or beyond ready.\n- Not ready because contracts 2 and 4 lack evidence: split capacity is unmeasured, and the reporting lag behind the timing claim is unmeasured. Discovery completion criteria require computed split windows and measured timing observations, recorded from the source.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\nNovelty rests on two catalog searches; that is the standard of evidence the method sets, so record it as-is rather than hedging. The decisive unknown is split capacity: recurrence positives plausibly cluster by establishment or campaign, so row counts can look ample while independent positives are few - the clustered count is the number that decides. Second unknown is reporting lag: whether the pre-return-visit feature set is genuinely knowable at the stated instant. The next discriminating check is therefore a cheap aggregate probe: recurrence rate, distinct establishments, clustered positives, and whether three disjoint windows each carry both classes. That single check can kill an otherwise-clean candidate, so it goes first.\n\nORDERED ACTIONS\n1. Write the verdict immediately, before further probing: record.json with jurisdiction, licence class and terms quote, and the novelty verdict via check-novelty.py --verdict differentiated, recording ours (recurrence-after-intervention formulation, timing-gated pre-return-visit features, new regime), theirs (the published first-visit task and the catalog searches), and the prior art. Run scripts/check-candidate.py <id>.\n2. Aggregate probes (anonymous, bounded, no bulk transfer): interventions with return visits, recurrence rate, distinct keys, clustered recurrence count, disjoint train/eval/holdout windows with both classes present.\n3. Timing: record at least one observed period_end-to-published pair; state the prediction instant (the return visit); sort every column from the publisher's documentation into available / post-hoc / label source.\n4. Measure extraction cost: wrap the fetch, count requests, bytes, wall clock.\n5. Only in the advancement session: construction and qualification.\n\nSTOPPING CONDITION\nIf the windows cannot carry both classes, or the clustered independent-positive count is too small to support a claim, reject and record the numbers - a well-documented rejection closes the lead for good. If the lag cannot be bounded from observations, park naming the exact missing observation. Only if both pass does the record go ready/go, naming the construction step for the advancement session.\n\nOPERATOR REPORT (draft)\n\"Opened the licensed regional inspection lead. Verdict: differentiated, not ready. Not a mirror: the published task is first-visit failure from establishment attributes; this is post-intervention recurrence using only pre-return-visit records in an unrepresented regime, and two catalog searches found no ML-ready recurrence task. Licence triaged clean, class recorded. Held on two unmeasured contracts: split capacity (including clustered positives) and reporting lag. Next action: aggregate split-capacity probe first - it is the check that can kill the task - then timing observations. Construction only after those pass, in the advancement session. No worker or publication action taken.\"\n",
-      "response_sha256": "b38a9fac50c7e978451c0ebe76c9d26a0fc584ab9889b7b5d0180cd4d78ce1e5"
-    },
-    {
-      "case": "discovery-novelty",
-      "arm": "baseline",
-      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
-      "requested_provider": "nous",
-      "run": "run-08",
-      "session_id": "20261022_224004_ad771b",
-      "status": "ok",
-      "exit_code": 0,
-      "request_sha256": "af0b56adce007f17ee35eb7df336fda5c86f70d228265d6360717ee93f86eb13",
-      "runtime_sha256": {
-        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
-        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
-        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
-        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
-      },
-      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
-      "dollar_spend": null,
-      "tokens": {
-        "input_tokens": 37286,
-        "output_tokens": 1396,
-        "cache_read_tokens": 256,
-        "cache_write_tokens": 0
-      },
-      "total_tokens": 38938,
-      "tasks": [
-        {
-          "task": "title_generation",
-          "calls": 1,
-          "input_tokens": 442,
-          "output_tokens": 11,
-          "cache_read_tokens": 0,
-          "cache_write_tokens": 0
-        },
-        {
-          "task": "",
-          "calls": 1,
-          "input_tokens": 36844,
-          "output_tokens": 1385,
-          "cache_read_tokens": 256,
-          "cache_write_tokens": 0
-        }
-      ],
-      "main_routes": [
-        {
-          "model": "deepseek/deepseek-v4.1-flash-1017",
-          "provider": "nous",
-          "calls": 1
-        }
-      ],
-      "tool_pin": "unrecorded",
-      "elapsed_seconds": 24.869,
-      "response": "Decision: not a mirror, not ready. Record it as a differentiated lead that needs two cheap measurements before it can carry a `go`. Do not start construction.\n\nSupporting evidence (as supplied, nothing more)\n- The published task predicts first-visit failure from establishment attributes. This lead predicts recurrence after a documented intervention, restricts features to pre-return-visit records, and covers an inspection regime the published task does not represent. Those are three separate differences in target, feature window and population, so the \"mirror\" test fails: it is not the same task shipped in ML-ready form.\n- Two named catalog searches found no other ML-ready recurrence task. That satisfies `no_precedent`/`differentiated` in substance, but it must be recorded through `check-novelty.py` with the verdict, the two queries and the \"theirs\" statement \u2014 an unrecorded search does not count.\n- \"Licensed\" is not a licence class. That is the cheapest veto and it is still unclassified.\n\nUncertainty, and the next discriminating check\nTwo contracts are unmeasured, and either can kill the lead:\n1. Split capacity. Need independent positives per temporal window, computed from the source, with the clustered count by establishment \u2014 recurrence almost certainly clusters within inspection cycles, so a row count will flatter it.\n2. Prediction timing. A recurrence label and the visit records are published after the period closes. Without observed `period_end -> published` pairs the prediction instant is unfalsifiable, and a period-end instant would make every feature an oracle.\n\nThe single most discriminating check is split capacity, because a licence-clean source with too few independent positives per window is unpublishable regardless of timing. Do it first.\n\nOrdered actions\n1. Classify the licence from the publisher's own instrument (not a general policy page). Record `licence_class`, the quoted evidence and `license_evidence`. A or B only; C or D closes it in this session.\n2. Aggregate count on the source: total establishments, interventions, returns, recurrences; then per candidate train/eval/holdout window, both classes present, clustered positives. Record the request count, bytes and wall clock as measured extraction cost.\n3. Pull as many observed `period_end -> published` pairs as the source exposes; set the lag bound to the largest plus a week of margin, and write the `timing` block accordingly. If no observed pair exists, the timing claim is not establishable \u2014 park it on that exact question.\n4. Record `jurisdiction` (country, region, publisher) explicitly and the novelty verdict via `check-novelty.py`.\n5. Run `python3 scripts/check-candidate.py <id>`; write `record.json` with `go`, `park` or `reject` and the evidence behind it.\n\nStopping condition\nStop probing and write the verdict when any of these is true: licence is C or D; any one split window cannot carry both classes with a defensible independent-positive count; no observed publication date exists to bound the lag; two attempts at the same probe have failed (record the diagnosis, do not re-run); or the 80% wrap-up notice arrives. In the last case write what is measured and leave the unmeasured field named as the next action \u2014 never record a passing-looking field you did not measure.\n\nOperator report (draft)\nOpened one lead: a licensed regional inspection source. Verdict so far: not a mirror \u2014 recurrence-after-intervention on pre-return-visit features is a different task from the published first-visit-failure one, and two catalog searches found no ML-ready equivalent. Not ready: licence class, split capacity and publication lag are unmeasured, so the candidate is held at triage with no construction started. Next action is the aggregate recurrence count per split window, then the lag bound; a licence class of C or D closes it.\n",
-      "response_sha256": "8bbd63305e5c0048a79fbcb46b94c733fe6b89e7b0c435a595341be1c77a41c9"
-    },
-    {
-      "case": "discovery-novelty",
-      "arm": "revised",
-      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
-      "requested_provider": "nous",
-      "run": "run-09",
-      "session_id": "20261022_224033_d426de",
-      "status": "ok",
-      "exit_code": 0,
-      "request_sha256": "29b1792c19d79a89e23db8236d85ba1349d873b96b899b77e2b440c247ccd7c4",
-      "runtime_sha256": {
-        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
-        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
-        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
-        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
-      },
-      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
-      "dollar_spend": null,
-      "tokens": {
-        "input_tokens": 25222,
-        "output_tokens": 1029,
-        "cache_read_tokens": 0,
-        "cache_write_tokens": 0
-      },
-      "total_tokens": 26251,
-      "tasks": [
-        {
-          "task": "title_generation",
-          "calls": 1,
-          "input_tokens": 516,
-          "output_tokens": 11,
-          "cache_read_tokens": 0,
-          "cache_write_tokens": 0
-        },
-        {
-          "task": "",
-          "calls": 1,
-          "input_tokens": 24706,
-          "output_tokens": 1018,
-          "cache_read_tokens": 0,
-          "cache_write_tokens": 0
-        }
-      ],
-      "main_routes": [
-        {
-          "model": "deepseek/deepseek-v4.1-flash-1017",
-          "provider": "nous",
-          "calls": 1
-        }
-      ],
-      "tool_pin": "unrecorded",
-      "elapsed_seconds": 24.706,
-      "response": "Decision: neither mirror nor ready. Keep it as `investigating` \u2014 a promising lead with a substantive task definition and two unresolved contractual measurements. It cannot be `ready` until split capacity and prediction timing have evidence, and it should not be marked `parked` unless a probe produces a blocker; nothing supplied here does.\n\nSupporting evidence (from the case only)\n- Licence: described as a licensed regional inspection source. Record the publisher's own terms, quote, retrieval date and a `licence_class` of A or B; certification is incomplete until `license_evidence` is stored. If a read of the dataset-specific terms (not a general portal policy) turns up class C, the standing rule closes it \u2014 do not extend another candidate's risk acceptance.\n- Contribution: differentiated, not a mirror. Target differs (recurrence after a documented intervention vs first-visit failure), population/prediction instant differ (only pre-return-visit records), and the regime is unrepresented. Two named catalog searches found no ML-ready recurrence task. Shared subject matter and a similar schema are comparators, not a duplicate \u2014 which is exactly the judgment the discovery skill calls for.\n- Unknown and must stay explicit: independent split counts, clustered-positive counts, and reporting lag. No base rate, AUC or headroom may be quoted from them.\n\nUncertainty and next discriminating check\nThe single fact most likely to reverse the verdict is whether three disjoint time windows each carry both classes with enough independent positives. Repeat-visit recurrence arrives in clusters (same establishment, same inspector, same sweep), so raw positives can overstate the effective sample badly. The paired check is timing: does the recurrence outcome publish long after the period closes, and is the intended prediction instant consistent with every feature's publication date? An instant placed at period end using late-published fields would silently use the future.\n\nOrdered actions\n1. Write the candidate record now: publisher, endpoints, jurisdiction (country/region/publisher), schema with documented meanings and availability (prediction-time / post-hoc / label source), the one-sentence prediction instant, target definition and its source column, licence terms quote.\n2. Run the novelty check to a recorded verdict of `differentiated`, with prior art and what is ours vs theirs.\n3. Probe aggregates only: recurrence counts per year, distinct establishments, return visits per establishment, positives per candidate window, and observed `period_end -> published` pairs from the publisher's release calendar or archive.\n4. If the counts fill three disjoint windows with both classes in each (and a defensible clustered count), and at least one observed publication lag supports a stated instant, mark `ready` with the construction step, expected artifact and the check that decides success. Otherwise record the exact blocker as `parked`.\n5. Do not build, qualify or publish in this session.\n\nStopping condition\nStop on decisive evidence in either direction: three viable windows plus a timing basis (ready), or a measured shortfall/cluster or licence class C/D (parked/dropped with the numbers and the reopening event). Do not keep probing after that.\n\nOperator report\nOne lead reopened/pursued. Not a mirror: different target (post-intervention recurrence), different instant, unrepresented regime, two catalog searches clean. Not ready: independent split counts and reporting lag are unmeasured, and those are the two things that decide it. No scores or base rates are claimed. No credentials, worker or publication action taken. Next action: aggregate count and publication-lag probe, then `ready` or `parked` with the measurement recorded.\n\n\u2014 Scout (Hermes)\n",
-      "response_sha256": "611ce3c9281d81880a9cbe82f9feb9a95f7a4c87d7bbd0930ed9d57a2ce127f4"
+      "elapsed_seconds": 22.155,
+      "response": "DecisionDo not supply an AUC and do not edit `quality.json`. The artifact is **not qualified**. The report's own check fields \u2014 `timing.features_available_at_instant=false` and `timing.selection_uses_only_available_data=false` \u2014 are the outcome, regardless of the job exiting 0 and uploading every file. Unblocking scores by rewriting the declaration would convert a measured defect into a false claim, and the honesty rules here are explicit: knowable at the period is not knowable at the release.\n\nSupporting evidence\n\n- Features for month M publish at M+10 days; the stated instant is month-end. Every such feature is an oracle at the declared instant, and `instant_accounts_for_publication_lag` is false for a real measured reason, not a formatting one.\n- Eligibility depending on target-month volume is the second, independent defect: it conditions the population on the future. A quiet target month deletes the forecast that preceded it (`docs/OPERATIONS.md`; `dataset-qualification` \u00a72, \"Removing the history count is not removing the future\"). Fixing only the lag leaves this one in place.\n- An edited `quality.json` also breaks evidence binding: `--accept` re-verifies that the report passed *and* that files still hash to the artifact version the report was written for, so a post-hoc edit fails acceptance rather than laundering the result. This is the same failure class as the packaged `nhs-ae-four-hour-decline`, caught only after staging.\n- Precedent for what happens next is already recorded: one rebuild per structural defect; a model AUC is never quoted without the triad on identical rows.\n\nUncertainty and next discriminating check\n\nUnknown: whether the publisher exposes historical vintages. If only the current vintage exists, a true reconstruction is not performable \u2014 the cutoff must then be stated as an assumption with its justification, not dressed as a reconstruction. The next check is the counterfactual, not an argument: build a panel with full history and one target month below the volume gate and assert the M row is still emitted (pre-fix code loses it); then lower a *history* month and assert the row disappears, proving the gate still bites.\n\nOrdered actions\n\n1. Record `qualification: failed` on the candidate with the report path, its `artifact_version`, and the two check names verbatim; note the job exit status does not override them.\n2. Record the declined `quality.json` edit and why, so no later session \"fixes\" it that way.\n3. Re-target the instant to the publication instant \u2014 M plus an observed lag bound with margin (largest observed + ~1 week), with several `observations` entries \u2014 and rewrite row selection to iterate provider months with eligibility reading only \u2264 M, target month looked up afterwards solely for the label, thin targets counted as `unobserved_target`.\n4. Rebuild once; re-qualify on the worker over the full artifact; collect; `--accept` the passing report against the collected extract.\n5. Only then run persistence / calendar-only / full-model on identical rows, and quote the gap, not the top-line AUC.\n\nStopping condition\n\nStop and record a negative result if the rebuild still fails a timing check, or if a second audit finds the same class of timing defect \u2014 that means the task design, not the code, is at fault. Drop it; do not spend a third build.\n\nOperator report\n\nBuild uploaded successfully but its qualification report fails two timing checks; no AUC will be quoted and the descriptor will not be edited to claim availability. Re-targeting the instant to publication and rebuilding once, then re-qualifying; if that fails again the candidate is dropped as a design defect. Held pending that rebuild \u2014 no approval needed from you.\n",
+      "response_sha256": "7c9833b31db22e7d26a41d8c50b08d2c7f4b45ac1716aeb443e2f8e7852a57e1"
     },
     {
       "case": "advancement-timing",
@@ -390,61 +335,6 @@
     {
       "case": "advancement-timing",
       "arm": "revised",
-      "requested_model": "glm-5.3",
-      "requested_provider": "lunaroute",
-      "run": "run-11",
-      "session_id": "20261022_224318_7a9613",
-      "status": "ok",
-      "exit_code": 0,
-      "request_sha256": "35ccb361d47b3cf002725035b629be22c114758f115d904e3c8542468d5c741f",
-      "runtime_sha256": {
-        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
-        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
-        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
-        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
-      },
-      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
-      "dollar_spend": null,
-      "tokens": {
-        "input_tokens": 13609,
-        "output_tokens": 3924,
-        "cache_read_tokens": 19584,
-        "cache_write_tokens": 0
-      },
-      "total_tokens": 37117,
-      "tasks": [
-        {
-          "task": "title_generation",
-          "calls": 1,
-          "input_tokens": 52,
-          "output_tokens": 573,
-          "cache_read_tokens": 384,
-          "cache_write_tokens": 0
-        },
-        {
-          "task": "",
-          "calls": 1,
-          "input_tokens": 13557,
-          "output_tokens": 3351,
-          "cache_read_tokens": 19200,
-          "cache_write_tokens": 0
-        }
-      ],
-      "main_routes": [
-        {
-          "model": "glm-5.3",
-          "provider": "lunaroute",
-          "calls": 1
-        }
-      ],
-      "tool_pin": "unrecorded",
-      "elapsed_seconds": 62.731,
-      "response": "Decision\nRecord a failed qualification for this artifact version. Do not quote, share, or accept the already-generated AUC; refuse the quality.json edit. Prepare one bounded rebuild attempt (new attempt/job ID) fixing both timing defects; score only after a passing current-gate report plus `--accept` on the exact bytes.\n\nSupporting evidence\nBoth gate failures are defects the skill names explicitly. Features stamped month M publish M+10 days after period end, so a period_end instant makes every such feature an oracle - knowable at the period is not knowable at the release (the nhs-ae-four-hour-decline precedent). Eligibility depending on target-month volume conditions the population on the future: row selection reaches past the instant, and a thinly-attended target month silently deletes the forecast that precedes it. Editing quality.json to claim availability would falsify the declaration rather than fix the data; the declaration must mirror the publisher's release calendar, and the brief forbids weakening timing checks to get a result. The report is current-version and full-artifact, so no number from these files may be quoted; `--accept` would fail on a non-passing report regardless. Also note the anomaly: the entrypoint should exit non-zero when the gate fails, so a 0-exit job with a failed gate means either scoring ran post-hoc or the failure path did not propagate - check the job record, and log that a score was generated before qualification as a process defect, without entering the AUC as a candidate result.\n\nUncertainty and next discriminating check\nUnknown: whether a publication instant (kind=publication, days_after_period_end set to the largest observed release lag plus about a week of margin, backed by several observed period_end-to-published pairs) is a defensible prediction question for the downstream use. That is decided on task utility, never to rescue the features. The population impact of the selection fix is unknown until measured. Smallest discriminating test: the counterfactual fixture - a full-history panel with one target month below the volume gate must still emit the M row (pre-fix code drops it), and lowering a history month must remove it - plus before/after row counts and an unobserved_target bucket for missing target months.\n\nOrdered actions and stopping condition\n1. Record failed qualification in the candidate record with the report identity; log the withheld score and the refused declaration edit.\n2. Collect the preserved gate report and diagnostics from the staging release; destroy the worker and confirm deletion - a failed job is still a job and must not stay billable.\n3. Fix construction: iterate the provider's months with eligibility reading only months up to M; look up the target month solely to compute the label; count a missing or thin target month as unobserved_target, never as a membership decision. Re-declare the instant as publication with a measured lag bound and margin - or re-scope/drop if the use case does not support that instant.\n4. New attempt ID (assembled bundles are immutable), assemble, plan, launch; re-run the unchanged gate on the full artifact on the worker.\n5. Require the passing report and `--accept`; only then run the baseline triad (persistence, calendar-only, full model) on identical eval rows and record the comparison beside any number.\nStop condition: one rebuild per structural defect - this rebuild covers both. If the next audit returns a further timing problem, stop, preserve the negative finding, and re-target or drop the candidate.\n\nOperator report\nThe build completed but failed qualification on two timing checks: month-M features publish about ten days after the stated month-end instant, and row eligibility depends on the target month's volume. No AUC from this artifact is quotable; I declined to report it and declined to mark the features as available, since the declaration must reflect the publisher's actual calendar. Diagnostics are collected, the worker is deleted, and I will run one bounded rebuild fixing the selection loop and re-declaring the instant as publication-time with a measured lag bound. Scoring happens only if the gate passes on the rebuilt artifact; a further timing failure means the candidate is dropped or re-scoped.\n\n\u2014 Scout (Hermes)\n",
-      "response_sha256": "137ee2b0b2613796cb63353cb9b8b700d460c7537889303b975f31735bf48008"
-    },
-    {
-      "case": "advancement-timing",
-      "arm": "revised",
       "requested_model": "deepseek/deepseek-v4.1-flash-1017",
       "requested_provider": "nous",
       "run": "run-12",
@@ -499,14 +389,14 @@
     },
     {
       "case": "advancement-timing",
-      "arm": "baseline",
-      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
-      "requested_provider": "nous",
-      "run": "run-13",
-      "session_id": "20261022_224458_03aa90",
+      "arm": "revised",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-11",
+      "session_id": "20261022_224318_7a9613",
       "status": "ok",
       "exit_code": 0,
-      "request_sha256": "9af4e32a57a99f19480723e8da4cdd55b05e228bb7f1d798fd31baa0866415c3",
+      "request_sha256": "35ccb361d47b3cf002725035b629be22c114758f115d904e3c8542468d5c741f",
       "runtime_sha256": {
         "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
         "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
@@ -516,12 +406,287 @@
       "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
       "dollar_spend": null,
       "tokens": {
-        "input_tokens": 36442,
-        "output_tokens": 1533,
+        "input_tokens": 13609,
+        "output_tokens": 3924,
+        "cache_read_tokens": 19584,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 37117,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 573,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 13557,
+          "output_tokens": 3351,
+          "cache_read_tokens": 19200,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 62.731,
+      "response": "Decision\nRecord a failed qualification for this artifact version. Do not quote, share, or accept the already-generated AUC; refuse the quality.json edit. Prepare one bounded rebuild attempt (new attempt/job ID) fixing both timing defects; score only after a passing current-gate report plus `--accept` on the exact bytes.\n\nSupporting evidence\nBoth gate failures are defects the skill names explicitly. Features stamped month M publish M+10 days after period end, so a period_end instant makes every such feature an oracle - knowable at the period is not knowable at the release (the nhs-ae-four-hour-decline precedent). Eligibility depending on target-month volume conditions the population on the future: row selection reaches past the instant, and a thinly-attended target month silently deletes the forecast that precedes it. Editing quality.json to claim availability would falsify the declaration rather than fix the data; the declaration must mirror the publisher's release calendar, and the brief forbids weakening timing checks to get a result. The report is current-version and full-artifact, so no number from these files may be quoted; `--accept` would fail on a non-passing report regardless. Also note the anomaly: the entrypoint should exit non-zero when the gate fails, so a 0-exit job with a failed gate means either scoring ran post-hoc or the failure path did not propagate - check the job record, and log that a score was generated before qualification as a process defect, without entering the AUC as a candidate result.\n\nUncertainty and next discriminating check\nUnknown: whether a publication instant (kind=publication, days_after_period_end set to the largest observed release lag plus about a week of margin, backed by several observed period_end-to-published pairs) is a defensible prediction question for the downstream use. That is decided on task utility, never to rescue the features. The population impact of the selection fix is unknown until measured. Smallest discriminating test: the counterfactual fixture - a full-history panel with one target month below the volume gate must still emit the M row (pre-fix code drops it), and lowering a history month must remove it - plus before/after row counts and an unobserved_target bucket for missing target months.\n\nOrdered actions and stopping condition\n1. Record failed qualification in the candidate record with the report identity; log the withheld score and the refused declaration edit.\n2. Collect the preserved gate report and diagnostics from the staging release; destroy the worker and confirm deletion - a failed job is still a job and must not stay billable.\n3. Fix construction: iterate the provider's months with eligibility reading only months up to M; look up the target month solely to compute the label; count a missing or thin target month as unobserved_target, never as a membership decision. Re-declare the instant as publication with a measured lag bound and margin - or re-scope/drop if the use case does not support that instant.\n4. New attempt ID (assembled bundles are immutable), assemble, plan, launch; re-run the unchanged gate on the full artifact on the worker.\n5. Require the passing report and `--accept`; only then run the baseline triad (persistence, calendar-only, full model) on identical eval rows and record the comparison beside any number.\nStop condition: one rebuild per structural defect - this rebuild covers both. If the next audit returns a further timing problem, stop, preserve the negative finding, and re-target or drop the candidate.\n\nOperator report\nThe build completed but failed qualification on two timing checks: month-M features publish about ten days after the stated month-end instant, and row eligibility depends on the target month's volume. No AUC from this artifact is quotable; I declined to report it and declined to mark the features as available, since the declaration must reflect the publisher's actual calendar. Diagnostics are collected, the worker is deleted, and I will run one bounded rebuild fixing the selection loop and re-declaring the instant as publication-time with a measured lag bound. Scoring happens only if the gate passes on the rebuilt artifact; a further timing failure means the candidate is dropped or re-scoped.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "137ee2b0b2613796cb63353cb9b8b700d460c7537889303b975f31735bf48008"
+    },
+    {
+      "case": "discovery-novelty",
+      "arm": "baseline",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-08",
+      "session_id": "20261022_224004_ad771b",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "af0b56adce007f17ee35eb7df336fda5c86f70d228265d6360717ee93f86eb13",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 37286,
+        "output_tokens": 1396,
         "cache_read_tokens": 256,
         "cache_write_tokens": 0
       },
-      "total_tokens": 38231,
+      "total_tokens": 38938,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 442,
+          "output_tokens": 11,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 36844,
+          "output_tokens": 1385,
+          "cache_read_tokens": 256,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 24.869,
+      "response": "Decision: not a mirror, not ready. Record it as a differentiated lead that needs two cheap measurements before it can carry a `go`. Do not start construction.\n\nSupporting evidence (as supplied, nothing more)\n- The published task predicts first-visit failure from establishment attributes. This lead predicts recurrence after a documented intervention, restricts features to pre-return-visit records, and covers an inspection regime the published task does not represent. Those are three separate differences in target, feature window and population, so the \"mirror\" test fails: it is not the same task shipped in ML-ready form.\n- Two named catalog searches found no other ML-ready recurrence task. That satisfies `no_precedent`/`differentiated` in substance, but it must be recorded through `check-novelty.py` with the verdict, the two queries and the \"theirs\" statement \u2014 an unrecorded search does not count.\n- \"Licensed\" is not a licence class. That is the cheapest veto and it is still unclassified.\n\nUncertainty, and the next discriminating check\nTwo contracts are unmeasured, and either can kill the lead:\n1. Split capacity. Need independent positives per temporal window, computed from the source, with the clustered count by establishment \u2014 recurrence almost certainly clusters within inspection cycles, so a row count will flatter it.\n2. Prediction timing. A recurrence label and the visit records are published after the period closes. Without observed `period_end -> published` pairs the prediction instant is unfalsifiable, and a period-end instant would make every feature an oracle.\n\nThe single most discriminating check is split capacity, because a licence-clean source with too few independent positives per window is unpublishable regardless of timing. Do it first.\n\nOrdered actions\n1. Classify the licence from the publisher's own instrument (not a general policy page). Record `licence_class`, the quoted evidence and `license_evidence`. A or B only; C or D closes it in this session.\n2. Aggregate count on the source: total establishments, interventions, returns, recurrences; then per candidate train/eval/holdout window, both classes present, clustered positives. Record the request count, bytes and wall clock as measured extraction cost.\n3. Pull as many observed `period_end -> published` pairs as the source exposes; set the lag bound to the largest plus a week of margin, and write the `timing` block accordingly. If no observed pair exists, the timing claim is not establishable \u2014 park it on that exact question.\n4. Record `jurisdiction` (country, region, publisher) explicitly and the novelty verdict via `check-novelty.py`.\n5. Run `python3 scripts/check-candidate.py <id>`; write `record.json` with `go`, `park` or `reject` and the evidence behind it.\n\nStopping condition\nStop probing and write the verdict when any of these is true: licence is C or D; any one split window cannot carry both classes with a defensible independent-positive count; no observed publication date exists to bound the lag; two attempts at the same probe have failed (record the diagnosis, do not re-run); or the 80% wrap-up notice arrives. In the last case write what is measured and leave the unmeasured field named as the next action \u2014 never record a passing-looking field you did not measure.\n\nOperator report (draft)\nOpened one lead: a licensed regional inspection source. Verdict so far: not a mirror \u2014 recurrence-after-intervention on pre-return-visit features is a different task from the published first-visit-failure one, and two catalog searches found no ML-ready equivalent. Not ready: licence class, split capacity and publication lag are unmeasured, so the candidate is held at triage with no construction started. Next action is the aggregate recurrence count per split window, then the lag bound; a licence class of C or D closes it.\n",
+      "response_sha256": "8bbd63305e5c0048a79fbcb46b94c733fe6b89e7b0c435a595341be1c77a41c9"
+    },
+    {
+      "case": "discovery-novelty",
+      "arm": "baseline",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-07",
+      "session_id": "20261022_223842_413f2f",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "af0b56adce007f17ee35eb7df336fda5c86f70d228265d6360717ee93f86eb13",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 33877,
+        "output_tokens": 4384,
+        "cache_read_tokens": 2816,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 41077,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 756,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 33825,
+          "output_tokens": 3628,
+          "cache_read_tokens": 2432,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 78.234,
+      "response": "DECISION\nNot a mirror, and not ready. Verdict: differentiated, needs further work. It stays in discovery scope - no construction, no qualification, no advancement; this session only records the verdict and the evidence gap. The two unmeasured items (split counts, reporting lag) are exactly the contracts that decide readiness, so \"ready\" cannot be claimed yet.\n\nSUPPORTING EVIDENCE\n- The mirror test is on the task, not the source. The published task predicts first-visit failure from establishment attributes; this lead predicts recurrence after a documented intervention, restricts features to pre-return-visit records, and targets an unrepresented inspection regime. Different target, different feature set, different regime. Two named catalog searches found no ML-ready recurrence task. That is a \"differentiated\" verdict, not \"mirror.\"\n- Licence: the source is licensed, so it clears triage, but the exact class (A or B) and the terms quote must be recorded in record.json before anything else - licence class is a required field at or beyond ready.\n- Not ready because contracts 2 and 4 lack evidence: split capacity is unmeasured, and the reporting lag behind the timing claim is unmeasured. Discovery completion criteria require computed split windows and measured timing observations, recorded from the source.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\nNovelty rests on two catalog searches; that is the standard of evidence the method sets, so record it as-is rather than hedging. The decisive unknown is split capacity: recurrence positives plausibly cluster by establishment or campaign, so row counts can look ample while independent positives are few - the clustered count is the number that decides. Second unknown is reporting lag: whether the pre-return-visit feature set is genuinely knowable at the stated instant. The next discriminating check is therefore a cheap aggregate probe: recurrence rate, distinct establishments, clustered positives, and whether three disjoint windows each carry both classes. That single check can kill an otherwise-clean candidate, so it goes first.\n\nORDERED ACTIONS\n1. Write the verdict immediately, before further probing: record.json with jurisdiction, licence class and terms quote, and the novelty verdict via check-novelty.py --verdict differentiated, recording ours (recurrence-after-intervention formulation, timing-gated pre-return-visit features, new regime), theirs (the published first-visit task and the catalog searches), and the prior art. Run scripts/check-candidate.py <id>.\n2. Aggregate probes (anonymous, bounded, no bulk transfer): interventions with return visits, recurrence rate, distinct keys, clustered recurrence count, disjoint train/eval/holdout windows with both classes present.\n3. Timing: record at least one observed period_end-to-published pair; state the prediction instant (the return visit); sort every column from the publisher's documentation into available / post-hoc / label source.\n4. Measure extraction cost: wrap the fetch, count requests, bytes, wall clock.\n5. Only in the advancement session: construction and qualification.\n\nSTOPPING CONDITION\nIf the windows cannot carry both classes, or the clustered independent-positive count is too small to support a claim, reject and record the numbers - a well-documented rejection closes the lead for good. If the lag cannot be bounded from observations, park naming the exact missing observation. Only if both pass does the record go ready/go, naming the construction step for the advancement session.\n\nOPERATOR REPORT (draft)\n\"Opened the licensed regional inspection lead. Verdict: differentiated, not ready. Not a mirror: the published task is first-visit failure from establishment attributes; this is post-intervention recurrence using only pre-return-visit records in an unrepresented regime, and two catalog searches found no ML-ready recurrence task. Licence triaged clean, class recorded. Held on two unmeasured contracts: split capacity (including clustered positives) and reporting lag. Next action: aggregate split-capacity probe first - it is the check that can kill the task - then timing observations. Construction only after those pass, in the advancement session. No worker or publication action taken.\"\n",
+      "response_sha256": "b38a9fac50c7e978451c0ebe76c9d26a0fc584ab9889b7b5d0180cd4d78ce1e5"
+    },
+    {
+      "case": "discovery-novelty",
+      "arm": "revised",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-09",
+      "session_id": "20261022_224033_d426de",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "29b1792c19d79a89e23db8236d85ba1349d873b96b899b77e2b440c247ccd7c4",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 25222,
+        "output_tokens": 1029,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 26251,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 516,
+          "output_tokens": 11,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 24706,
+          "output_tokens": 1018,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 24.706,
+      "response": "Decision: neither mirror nor ready. Keep it as `investigating` \u2014 a promising lead with a substantive task definition and two unresolved contractual measurements. It cannot be `ready` until split capacity and prediction timing have evidence, and it should not be marked `parked` unless a probe produces a blocker; nothing supplied here does.\n\nSupporting evidence (from the case only)\n- Licence: described as a licensed regional inspection source. Record the publisher's own terms, quote, retrieval date and a `licence_class` of A or B; certification is incomplete until `license_evidence` is stored. If a read of the dataset-specific terms (not a general portal policy) turns up class C, the standing rule closes it \u2014 do not extend another candidate's risk acceptance.\n- Contribution: differentiated, not a mirror. Target differs (recurrence after a documented intervention vs first-visit failure), population/prediction instant differ (only pre-return-visit records), and the regime is unrepresented. Two named catalog searches found no ML-ready recurrence task. Shared subject matter and a similar schema are comparators, not a duplicate \u2014 which is exactly the judgment the discovery skill calls for.\n- Unknown and must stay explicit: independent split counts, clustered-positive counts, and reporting lag. No base rate, AUC or headroom may be quoted from them.\n\nUncertainty and next discriminating check\nThe single fact most likely to reverse the verdict is whether three disjoint time windows each carry both classes with enough independent positives. Repeat-visit recurrence arrives in clusters (same establishment, same inspector, same sweep), so raw positives can overstate the effective sample badly. The paired check is timing: does the recurrence outcome publish long after the period closes, and is the intended prediction instant consistent with every feature's publication date? An instant placed at period end using late-published fields would silently use the future.\n\nOrdered actions\n1. Write the candidate record now: publisher, endpoints, jurisdiction (country/region/publisher), schema with documented meanings and availability (prediction-time / post-hoc / label source), the one-sentence prediction instant, target definition and its source column, licence terms quote.\n2. Run the novelty check to a recorded verdict of `differentiated`, with prior art and what is ours vs theirs.\n3. Probe aggregates only: recurrence counts per year, distinct establishments, return visits per establishment, positives per candidate window, and observed `period_end -> published` pairs from the publisher's release calendar or archive.\n4. If the counts fill three disjoint windows with both classes in each (and a defensible clustered count), and at least one observed publication lag supports a stated instant, mark `ready` with the construction step, expected artifact and the check that decides success. Otherwise record the exact blocker as `parked`.\n5. Do not build, qualify or publish in this session.\n\nStopping condition\nStop on decisive evidence in either direction: three viable windows plus a timing basis (ready), or a measured shortfall/cluster or licence class C/D (parked/dropped with the numbers and the reopening event). Do not keep probing after that.\n\nOperator report\nOne lead reopened/pursued. Not a mirror: different target (post-intervention recurrence), different instant, unrepresented regime, two catalog searches clean. Not ready: independent split counts and reporting lag are unmeasured, and those are the two things that decide it. No scores or base rates are claimed. No credentials, worker or publication action taken. Next action: aggregate count and publication-lag probe, then `ready` or `parked` with the measurement recorded.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "611ce3c9281d81880a9cbe82f9feb9a95f7a4c87d7bbd0930ed9d57a2ce127f4"
+    },
+    {
+      "case": "discovery-novelty",
+      "arm": "revised",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-06",
+      "session_id": "20261022_223653_da7fa5",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "29b1792c19d79a89e23db8236d85ba1349d873b96b899b77e2b440c247ccd7c4",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 24159,
+        "output_tokens": 6227,
+        "cache_read_tokens": 384,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 30770,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 289,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 24107,
+          "output_tokens": 5938,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 104.868,
+      "response": "DECISION\n\nNot a mirror \u2014 but not ready. Record the lead as `investigating` with two named missing\nfacts, and record the novelty verdict `differentiated` now, since its evidence is in\nhand. This session does not build; construction is advancement's work.\n\nSUPPORTING EVIDENCE\n\n- Mirror rule: shared subject matter is not a mirror, and a different URL alone is not\n  novelty. Compared at the task level, the lead differs from the published task on target\n  (recurrence after a documented intervention vs. first-visit failure), population\n  (post-intervention establishments vs. all), prediction instant (before the return visit\n  vs. before the first visit), features (pre-return-visit records vs. static establishment\n  attributes), and it covers an unrepresented inspection regime. That is a stated\n  contribution \u2014 formulation, population, feature window, new jurisdiction \u2014 not a\n  republication.\n- Two named catalog searches found no ML-ready recurrence task. Record their scope and\n  limitations; the claim is \"no known ML-ready recurrence task found,\" not \"none exists.\"\n- Licence is stated as clean, but durability requires recording `licence_class` with the\n  verbatim terms quote from the publisher's own instrument in `license_evidence`, plus\n  `jurisdiction` (country, region, publisher \u2014 measured, not inferred).\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\n\nTwo required contracts are unmeasured, and either is a hard veto:\n\n1. Split capacity: recurrence events cluster within establishments, so raw visit counts\n   overstate the effective sample. The discriminating number is independent positives \u2014\n   distinct establishments (or intervention episodes) with and without recurrence across\n   disjoint time windows.\n2. Timing vs. reporting lag: \"pre-return-visit records\" are valid features only if the\n   publisher had released them by the prediction instant. If reporting lag exceeds the\n   typical interval to the return visit, the feature window is hindsight and the task\n   collapses.\n\nNext check: one bounded read-only aggregate probe (distinct-key recurrence outcomes per\ndisjoint window, clustered count, both classes present in each window) plus a\ndocumentation read of the publication calendar or observed visit-date to published-date\npairs to measure the lag. Record the population the probe covers (intervention types,\nyears, jurisdiction). Keep probe counts distinct from dataset measurements.\n\nORDERED ACTIONS AND STOPPING CONDITION\n\n1. Record the novelty verdict now: `check-novelty.py` with verdict `differentiated`;\n   ours = recurrence formulation, post-intervention population, pre-return-visit window,\n   new regime; theirs = the published first-visit task; prior art = that task plus the\n   two catalog searches. Prevents the lead aging as \"interesting.\"\n2. Update the record: jurisdiction, licence class with quote, one-sentence prediction\n   instant, target source column named, status `investigating` with the two facts.\n3. Run the aggregate probe as a script file (no interpreter one-liners; no bulk transfer);\n   record commands and results in `notes.md`.\n4. Measure the lag; state whether it comes from observed pairs or the publisher's\n   calendar.\n5. If both pass with recorded evidence: set `ready`, name the handoff\n   (`assemble-job.py` to a worker build; the full-artifact `qualify_dataset.py` pass is\n   the check that decides construction), and measure extraction cost before budgeting.\n6. Stop when: both measurements are recorded (pass \u2192 `ready`, stop; decisive failure \u2192\n   `parked`/`dropped` with the blocker and reopening condition); or close-out budget\n   arrives (persist the record and a next action a fresh session can execute first).\n\nCONCISE OPERATOR REPORT\n\nOne lead advanced, none dropped. The regional inspection source is differentiated from\nthe published first-visit task on target, population, instant, features and regime;\nnovelty recorded as `differentiated` with both catalog searches as prior-art evidence.\nNot ready: independent split counts and reporting lag are unmeasured, and either can\nveto \u2014 clustered recurrence and hindsight features are the classic failures here. Next\naction: one bounded aggregate probe plus a calendar read; expected outcome is `ready`\nwith a named construction handoff, or a recorded blocker. Checks, commit and exact-commit\nCI status to be reported at close-out, with pending CI reported as pending.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "6fa4f30a5104e9df7cc8a321388f5dc5c7b34a75a31c22340e2a9cd5eac25b31"
+    },
+    {
+      "case": "discovery-value",
+      "arm": "baseline",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-05",
+      "session_id": "20261022_223633_0cf6c2",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "7711a3e8188d7080b08dad9c127fb16b1b6de289bfb487ff49c50e0a033615f9",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 37313,
+        "output_tokens": 1501,
+        "cache_read_tokens": 256,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 39070,
       "tasks": [
         {
           "task": "title_generation",
@@ -534,8 +699,8 @@
         {
           "task": "",
           "calls": 1,
-          "input_tokens": 36000,
-          "output_tokens": 1521,
+          "input_tokens": 36871,
+          "output_tokens": 1489,
           "cache_read_tokens": 256,
           "cache_write_tokens": 0
         }
@@ -548,130 +713,78 @@
         }
       ],
       "tool_pin": "unrecorded",
-      "elapsed_seconds": 22.155,
-      "response": "DecisionDo not supply an AUC and do not edit `quality.json`. The artifact is **not qualified**. The report's own check fields \u2014 `timing.features_available_at_instant=false` and `timing.selection_uses_only_available_data=false` \u2014 are the outcome, regardless of the job exiting 0 and uploading every file. Unblocking scores by rewriting the declaration would convert a measured defect into a false claim, and the honesty rules here are explicit: knowable at the period is not knowable at the release.\n\nSupporting evidence\n\n- Features for month M publish at M+10 days; the stated instant is month-end. Every such feature is an oracle at the declared instant, and `instant_accounts_for_publication_lag` is false for a real measured reason, not a formatting one.\n- Eligibility depending on target-month volume is the second, independent defect: it conditions the population on the future. A quiet target month deletes the forecast that preceded it (`docs/OPERATIONS.md`; `dataset-qualification` \u00a72, \"Removing the history count is not removing the future\"). Fixing only the lag leaves this one in place.\n- An edited `quality.json` also breaks evidence binding: `--accept` re-verifies that the report passed *and* that files still hash to the artifact version the report was written for, so a post-hoc edit fails acceptance rather than laundering the result. This is the same failure class as the packaged `nhs-ae-four-hour-decline`, caught only after staging.\n- Precedent for what happens next is already recorded: one rebuild per structural defect; a model AUC is never quoted without the triad on identical rows.\n\nUncertainty and next discriminating check\n\nUnknown: whether the publisher exposes historical vintages. If only the current vintage exists, a true reconstruction is not performable \u2014 the cutoff must then be stated as an assumption with its justification, not dressed as a reconstruction. The next check is the counterfactual, not an argument: build a panel with full history and one target month below the volume gate and assert the M row is still emitted (pre-fix code loses it); then lower a *history* month and assert the row disappears, proving the gate still bites.\n\nOrdered actions\n\n1. Record `qualification: failed` on the candidate with the report path, its `artifact_version`, and the two check names verbatim; note the job exit status does not override them.\n2. Record the declined `quality.json` edit and why, so no later session \"fixes\" it that way.\n3. Re-target the instant to the publication instant \u2014 M plus an observed lag bound with margin (largest observed + ~1 week), with several `observations` entries \u2014 and rewrite row selection to iterate provider months with eligibility reading only \u2264 M, target month looked up afterwards solely for the label, thin targets counted as `unobserved_target`.\n4. Rebuild once; re-qualify on the worker over the full artifact; collect; `--accept` the passing report against the collected extract.\n5. Only then run persistence / calendar-only / full-model on identical rows, and quote the gap, not the top-line AUC.\n\nStopping condition\n\nStop and record a negative result if the rebuild still fails a timing check, or if a second audit finds the same class of timing defect \u2014 that means the task design, not the code, is at fault. Drop it; do not spend a third build.\n\nOperator report\n\nBuild uploaded successfully but its qualification report fails two timing checks; no AUC will be quoted and the descriptor will not be edited to claim availability. Re-targeting the instant to publication and rebuilding once, then re-qualifying; if that fails again the candidate is dropped as a design defect. Held pending that rebuild \u2014 no approval needed from you.\n",
-      "response_sha256": "7c9833b31db22e7d26a41d8c50b08d2c7f4b45ac1716aeb443e2f8e7852a57e1"
+      "elapsed_seconds": 15.284,
+      "response": "**Decision.** Spend the remaining 15 minutes on the single release-calendar query for source #3, write its verdict immediately, and treat the fourth catalog page as optional filler only after that record exists on disk. Do not open a new probe before source #3 is durable \u2014 with 15 minutes left, a lost transcript is the only real failure mode.\n\n**Supporting evidence.** Source #3 is the only lead this session whose licence and capacity are already settled: open licence permitting redistribution and derivatives, a documented onset target, and computed train/eval/holdout capacity with both classes. Its sole blocker is the timing question, which is exactly the kind of defect gate 1.4.0 refuses (a feature stamped period M that publishes after the prediction instant is an oracle). That question costs one query against the publisher's own release calendar, and the answer decides the verdict either way. The two rejections already recorded stand on decisive evidence and need nothing further. The catalog page is a speculative second rejection; a C/D licence there is worth recording, but it is not worth risking an unrecorded third verdict.\n\n**Uncertainty and next discriminating check.** The open question is whether the proposed feature's `period_end -> published` lag places it before the stated prediction instant. Query the publisher's release calendar for the feature's actual publication date. Two outcomes:\n- Published before the instant \u2192 `go`, recording jurisdiction `{\"country\": \"CA\", \"region\": \"North America\", \"publisher\": \"<publisher>\"}` and `licence_class` A/B plus the terms quote. Note honestly that one observed release date is a single observation, not a bound: construction must record at least one observed period-end\u2192published pair and set `days_after_period_end` to the largest observation plus a week's margin, not the mean.\n- Published after the instant \u2192 `park` (not `go`), with the re-target options named: drop the feature, or move the instant to the publication date. This is a design change for the advancement session, and it must not enter the construction queue meanwhile.\n\n**Ordered actions and stopping condition.**\n1. Run the one release-calendar query. Record the command and its literal result.\n2. Write `candidates/<id>/record.json` with verdict, jurisdiction, licence class and evidence \u2014 before anything else.\n3. Only if \u22655 minutes remain after that write, read the fourth catalog page's own licence instrument (not a general policy page) and record a C/D rejection in one line, with the clause or its absence. Do not probe its schema.\n4. Write the `STATE.md` entry: sources opened, verdicts, measured figures with commands, what stayed unresolved.\n5. Run `python3 -m unittest discover -s tests` and `scripts/check-candidate.py --all`; commit and push; read CI for that exact commit.\n6. Stop probing at the 80% wrap-up notice or when the time is gone \u2014 whichever comes first \u2014 and finish with the write-up only.\n\n**Operator report.** Three new sources carried to verdict this session, all Canadian: two rejected on decisive licence/capacity evidence; a third open-licensed source with a documented onset target and split capacity resolved by a release-calendar query \u2014 result recorded as `go` or `park` in its record. A fourth catalog page was opened only if time allowed after the write; if not, no verdict, stated plainly. No existing candidate was advanced, built, or packaged. Coverage and CI result for the pushed commit are in `STATE.md`.\n",
+      "response_sha256": "e178f42fabfb9f2a951c56a41d5b20b284a2d92b99d80307bf24c81614ef045d"
     },
     {
-      "case": "advancement-baseline",
+      "case": "discovery-value",
+      "arm": "baseline",
+      "model_requested": "glm-5.3",
+      "provider_requested": "lunaroute",
+      "request_sha256": "7711a3e8188d7080b08dad9c127fb16b1b6de289bfb487ff49c50e0a033615f9",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "session_id": "20261022_215616_62c35f",
+      "status": "ok",
+      "exit_code": 0,
+      "recorded_tool_pin": "unrecorded",
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 436,
+          "output_tokens": 412,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 36284,
+          "output_tokens": 7704,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "elapsed_seconds": 109.072,
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-02",
+      "tool_pin": "unrecorded",
+      "tokens": {
+        "input_tokens": 36720,
+        "output_tokens": 8116,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 44836,
+      "response": "DECISION\n\nSpend the remaining time on the third source, not the fourth. Run the single release-calendar query, write its verdict into its candidate record immediately, then run the mandated close-out. The catalog page stays unopened and is left as a named lead in STATE.md.\n\nSUPPORTING EVIDENCE\n\n- Quota arithmetic. Two rejects are already decided with decisive licence/capacity evidence; a recorded verdict for the third source makes three, all Canadian publishers, so \"three sources, at least two non-US\" is met without the fourth. Coverage is already 17/24 non-US, so no geography gap needs padding.\n- The open question is the one that has already burned this project once. nhs-ae-four-hour-decline reached packaged with 25 features \"documented at prediction time\" that were late-published at the release; gate 1.4.0 now requires an observed period_end -> published pair. Recording the third source as ready without the calendar observation would repeat that documented failure mode; one bounded call converts a park into a likely go, since the onset target, documented label and split capacity are already evidenced.\n- Wrap-up economics. 15 of 90 minutes remain and the 80% notice has fired; the brief says stop probing and write up. The close-out (STATE.md, unittest, check-candidate --all, commit/push, CI read for the exact commit) needs most of what is left. The fourth page is \"likely\" easy, not measured; chasing it risks the close-out to add a redundant rejection to an already-met quota.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\n\nDoes the proposed feature publish before the stated prediction instant? Check: the one release-calendar query, capturing an observed release date for a past period (an observation, not the assumed schedule). Outcomes: (a) publishes before the instant -> go, with construction later setting days_after_period_end to the observed bound plus margin; (b) publishes after -> park, blocker \"instant must be restated at the feature's publication and splits re-derived\", a redesign the advancement session owns; (c) query fails -> one diagnosed retry, then park recording the attempt and the missing observation.\n\nORDERED ACTIONS AND STOPPING CONDITION\n\n1. Run the release-calendar query once; capture the period_end -> published pair.\n2. Write candidates/<id>/record.json immediately: verdict, timing observation, jurisdiction {country: CA, region: Americas, publisher}, licence class with the quoted instrument, plus the target/split/cost evidence already measured. No construction or advancement commands in this session.\n3. Confirm the two earlier rejects exist as records (write-as-you-go rule); run scripts/check-candidate.py on the three touched records.\n4. Add one STATE.md entry: sources opened, verdicts, commands with their real results; the catalog lead left unopened with its cheap first probe named; next action specific.\n5. Run python3 -m unittest discover -s tests and scripts/check-candidate.py --all.\n6. Commit and push; read CI for that exact commit via the gh api head_sha query; report pending as pending.\n\nStopping condition: the wall clock. If the query runs past about five minutes or fails twice, park with the attempt recorded and go straight to steps 4-6. No new sources, no unchanged retries, no re-vetting of existing candidates.\n\nOPERATOR REPORT (draft)\n\nCanada discovery: 3 sources opened, 3 verdicts recorded; count and non-US quota both met.\n- <id-1>: reject - decisive licence evidence, as recorded.\n- <id-2>: reject - decisive capacity evidence, as recorded.\n- <id-3>: go or park - open licence, onset target documented, split capacity computed; timing settled by one release-calendar query, observed period_end -> published pair recorded. If go: ready for the advancement session to construct via assemble-job.py with a new job ID. If park: the exact restatement question is in the record.\n- Fourth lead (catalog page) not opened; left in STATE.md as the next session's first licence triage.\nChecks: unittest and check-candidate --all results with the commit sha; CI status for that exact commit. Next action: named per the third source's verdict.\n",
+      "response_sha256": "d3ba694bc71944439f8af8f635f7663f3a523fe52e677c9c3c3155706592c2b7"
+    },
+    {
+      "case": "discovery-value",
       "arm": "revised",
-      "requested_model": "glm-5.3",
-      "requested_provider": "lunaroute",
-      "run": "run-14",
-      "session_id": "20261022_224524_90a682",
-      "status": "ok",
-      "exit_code": 0,
-      "request_sha256": "d38d2c501032e78f3ab5c810ddd572ceac29e11e48af816bb04406756c36320e",
-      "runtime_sha256": {
-        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
-        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
-        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
-        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
-      },
-      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
-      "dollar_spend": null,
-      "tokens": {
-        "input_tokens": 232,
-        "output_tokens": 3378,
-        "cache_read_tokens": 32960,
-        "cache_write_tokens": 0
-      },
-      "total_tokens": 36570,
-      "tasks": [
-        {
-          "task": "title_generation",
-          "calls": 1,
-          "input_tokens": 52,
-          "output_tokens": 363,
-          "cache_read_tokens": 384,
-          "cache_write_tokens": 0
-        },
-        {
-          "task": "",
-          "calls": 1,
-          "input_tokens": 180,
-          "output_tokens": 3015,
-          "cache_read_tokens": 32576,
-          "cache_write_tokens": 0
-        }
-      ],
-      "main_routes": [
-        {
-          "model": "glm-5.3",
-          "provider": "lunaroute",
-          "calls": 1
-        }
-      ],
-      "tool_pin": "unrecorded",
-      "elapsed_seconds": 50.659,
-      "response": "DECISION\n\nReject both proposals. Do not drop the source now, and do not touch onset thresholds against the holdout \u2014 that is tuning a label to beat a held-out score, which the protocol forbids and which would burn the only untouched evaluation surface. Spend the one bounded diagnostic on the unmeasured half of the comparison: uncertainty intervals plus an alignment/prevalence audit on the eval rows.\n\nSUPPORTING EVIDENCE\n\nQualification and --accept passed on this exact artifact, so integrity is not the open question \u2014 usefulness is. The triad on identical rows: model 0.74, persistence 0.78, calendar/identity 0.60. The model beats calendar-only, so learned signal beyond seasonality exists; it trails persistence by 0.04. Per the qualification skill, a model below persistence is a recorded defect requiring diagnosis, not a verdict. A 0.04 gap with no intervals is not established: positives likely arrive in clusters, so the effective sample is far smaller than the row count, and no alignment audit exists \u2014 the gap may be noise, misaligned rows, or prevalence shift between splits. One weak model does not prove no useful prediction is possible, so immediate drop is premature; but the current honest finding is \"no demonstrated headroom under this protocol,\" which is preservable either way.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\n\nUnknown: whether 0.74 vs 0.78 is real. Unmeasured: clustered confidence intervals on both AUCs, row alignment, per-year AUC/Brier, positive rate per split and year. The check: bootstrap intervals clustered on the event key over model and persistence scores on the same eval rows, an alignment audit, and per-year/prevalence breakdown. It discriminates three outcomes: (a) gap within noise \u2014 finding is parity, not headroom; (b) a repairable defect (misalignment, prevalence shift, implementation) \u2014 one rebuild; (c) genuine persistence dominance \u2014 negative finding stands.\n\nORDERED ACTIONS AND STOPPING CONDITION\n\n1. Record the triad and both rejected proposals, with reasons, in the candidate record.\n2. Run the diagnostic as a small script on the worker, eval rows only; holdout stays sealed. Write results beside the measured AUCs.\n3. Branch:\n   a. Defect found: one rebuild per structural defect, fresh attempt ID, full-artifact re-qualification and --accept, then re-run the triad on identical rows.\n   b. No defect, gap real: record \"no demonstrated headroom under this protocol\" with both scores and intervals; preserve the negative finding. Re-scoping to a change/onset instance is legitimate only if the user need and protocol are specified first, then qualified and compared anew \u2014 the target is chosen before any holdout look, never because a score wins. Otherwise drop with the recorded reason.\n   c. Gap within noise: report parity honestly; no headroom claim; same options as (b).\n4. Holdout: examined once, after design freeze, never during selection.\n5. Stop after the diagnostic plus at most one justified repair. If the second validated comparison still shows persistence dominant, stop \u2014 record, then re-scope or drop. A third tune means the defect is in the task design; audits that keep finding real defects are the cost of shipping a task nobody should.\n\nOPERATOR REPORT\n\nThe candidate passed full-artifact qualification and acceptance. Baseline triad on identical eval rows: model 0.74, persistence 0.78, calendar 0.60 \u2014 the model trails the trivial reference by 0.04 with no uncertainty intervals, so no verdict yet. The owner's immediate drop is premature; the proposal to tune onset thresholds until the holdout wins is refused \u2014 it contaminates the holdout. Next: one bounded diagnostic (clustered intervals, alignment, prevalence). Outcome: either one repair and re-qualification, or a recorded negative finding with a re-scope/drop decision. Holdout untouched.\n\n\u2014 Scout (Hermes)\n",
-      "response_sha256": "ab8d7af613958ceff24f5538910454417e33f803d2502e54d875e69d5a3d5d69"
-    },
-    {
-      "case": "advancement-baseline",
-      "arm": "baseline",
-      "requested_model": "glm-5.3",
-      "requested_provider": "lunaroute",
-      "run": "run-15",
-      "session_id": "20261022_224619_5116ac",
-      "status": "ok",
-      "exit_code": 0,
-      "request_sha256": "faa5a028c5da4df1b2f8d211718143bdcabf28253d0c267e4d0dcaad2e7e2b26",
-      "runtime_sha256": {
-        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
-        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
-        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
-        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
-      },
-      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
-      "dollar_spend": null,
-      "tokens": {
-        "input_tokens": 196,
-        "output_tokens": 7119,
-        "cache_read_tokens": 35648,
-        "cache_write_tokens": 0
-      },
-      "total_tokens": 42963,
-      "tasks": [
-        {
-          "task": "title_generation",
-          "calls": 1,
-          "input_tokens": 52,
-          "output_tokens": 294,
-          "cache_read_tokens": 384,
-          "cache_write_tokens": 0
-        },
-        {
-          "task": "",
-          "calls": 1,
-          "input_tokens": 144,
-          "output_tokens": 6825,
-          "cache_read_tokens": 35264,
-          "cache_write_tokens": 0
-        }
-      ],
-      "main_routes": [
-        {
-          "model": "glm-5.3",
-          "provider": "lunaroute",
-          "calls": 1
-        }
-      ],
-      "tool_pin": "unrecorded",
-      "elapsed_seconds": 108.541,
-      "response": "Decision\n\nReject both proposals. Spend the one bounded diagnostic on the eval-row triad itself: cluster-aware confidence intervals for the model-minus-persistence AUC difference, plus an independent recomputation of both scores to audit row alignment. The holdout stays untouched \u2014 it is the final scoring set, not a tuning set \u2014 and the source is not dropped on the strength of an unquantified 0.04 gap.\n\nSupporting evidence\n\nThe triad is measured on identical eval rows: model 0.74, persistence 0.78, calendar/identity 0.60. Calendar at 0.60 rules out seasonality; the label behaves as a persistent level, and a model below persistence is a recorded defect, not an encouraging result. But 0.04 is a point difference with no intervals and no alignment audit, and positives may cluster, so the effective sample size is unknown: \"persistence beats the model\" is currently unmeasured, not established. The artifact passed qualification and --accept on its exact version, so any real defect lies in the target definition, not the source \u2014 dropping the entire source now discards a qualified, licence-cleared source over a gap that may be noise. The counter-proposal \u2014 iterate onset thresholds until the holdout beats persistence \u2014 selects thresholds on the final scoring set, which destroys the holdout as evidence; measurement protocols are fixed before they are applied. Re-targeting to onset/change is the doctrine's sanctioned fix for a persistent label, but only as a new task instance with its own qualification, measured on eval, holdout scored once at the end.\n\nUncertainty and the next discriminating check\n\nOne diagnostic decides the fork: a block bootstrap (blocks by event key or time cluster, not rows) giving a CI for the AUC difference on the pinned eval rows, plus a second implementation \u2014 forbidden from reading the first \u2014 recomputing the persistence and model scores to confirm alignment. Record which figure is quoted and which replicated. If persistence's lead survives the interval, the current target is a negative result. If the intervals overlap heavily, the target at best ties a one-line rule \u2014 the same conclusion for shipping, recorded honestly. Examining the holdout now answers nothing: it cannot settle the design question and spends the resource before the target is fixed.\n\nOrdered actions and stopping condition\n\n1. Freeze the artifact and its passing report; write the triad into the candidate record with the commands that produced it, labelled a measured defect.\n2. Run the one diagnostic above. No holdout access, no threshold search.\n3. Apply a rule fixed now: if persistence's lead is robust, either drop the candidate with the negative result recorded, or \u2014 only if the source's semantics support a change label \u2014 open exactly one re-targeted task (onset or sustained change) as a new instance: new quality.json, full qualification, triad on eval, thresholds fixed before any measurement.\n4. Stopping condition: one re-target attempt. If it also fails to beat its own persistence baseline on eval, the candidate is dropped permanently \u2014 one rebuild per structural defect, no further attempts.\n5. Update STATE.md and the record; publish nothing from these numbers.\n\nOperator report\n\nEval triad on the accepted artifact: model 0.74, persistence 0.78, calendar 0.60 \u2014 the task currently loses to a one-line rule, but the gap carries no uncertainty estimate and the decisive comparison is unreplicated. Holdout untouched. Next tick spends the bounded diagnostic on clustered bootstrap intervals plus independent replication, then applies the recorded rule: negative result, or one pre-registered onset re-target measured on eval only. The proposal to tune thresholds until the holdout wins is refused: it spends the holdout on selection and makes any resulting number meaningless.\n",
-      "response_sha256": "d83187e29b80d779303c75d26850f179cbc9a973c72e6edc6de0660de79ad690"
-    },
-    {
-      "case": "advancement-baseline",
-      "arm": "baseline",
       "requested_model": "deepseek/deepseek-v4.1-flash-1017",
       "requested_provider": "nous",
-      "run": "run-16",
-      "session_id": "20261022_224812_f04f8d",
+      "run": "run-04",
+      "session_id": "20261022_223609_a74f50",
       "status": "ok",
       "exit_code": 0,
-      "request_sha256": "faa5a028c5da4df1b2f8d211718143bdcabf28253d0c267e4d0dcaad2e7e2b26",
+      "request_sha256": "d951e843fe249e68e0503ca198121d27150395419c91b721c222ac217b1be4aa",
       "runtime_sha256": {
         "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
         "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
@@ -681,26 +794,139 @@
       "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
       "dollar_spend": null,
       "tokens": {
-        "input_tokens": 36481,
-        "output_tokens": 1633,
+        "input_tokens": 24919,
+        "output_tokens": 1389,
         "cache_read_tokens": 256,
         "cache_write_tokens": 0
       },
-      "total_tokens": 38370,
+      "total_tokens": 26564,
       "tasks": [
         {
           "task": "title_generation",
           "calls": 1,
-          "input_tokens": 232,
-          "output_tokens": 11,
-          "cache_read_tokens": 256,
+          "input_tokens": 442,
+          "output_tokens": 13,
+          "cache_read_tokens": 0,
           "cache_write_tokens": 0
         },
         {
           "task": "",
           "calls": 1,
-          "input_tokens": 36249,
-          "output_tokens": 1622,
+          "input_tokens": 24477,
+          "output_tokens": 1376,
+          "cache_read_tokens": 256,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 19.693,
+      "response": "**Decision.** Spend the remaining budget on the one release-calendar query for the third source. Skip the catalog page that looks like an easy licence rejection.\n\n**Supporting evidence.** The third source already clears four of the five discovery contracts with recorded evidence: open licence at class A/B, a stated onset question, a documented target, and train/eval/holdout capacity with both classes. Its sole blocker is a timing fact \u2014 whether a proposed feature is published before the prediction instant \u2014 and that is exactly the class of defect that gate 1.4.0 refuses and that let `nhs-ae-four-hour-decline` reach staging with 25 late-published features. One calendar query converts an unresolved candidate into either `ready` (a buildable task in the queue, which is the buffer the routine exists to keep) or a `parked` record with a named reopening event. Both outcomes are durable value.\n\nThe catalog page offers the opposite trade: a fifth rejection is an activity count, not research value, and the brief explicitly names seeking easy rejections as a failure mode. The standing class C policy already closes unstated-licence leads without this probe; nothing is gained by confirming what the policy would close anyway.\n\n**Uncertainty and next discriminating check.** The unresolved fact is the publication lag: the number of days between the period end the feature describes and the release that first carries it, read from the publisher's own release calendar for at least one observed `period_end -> published` pair. That single pair, recorded with its URL and retrieval date, decides the verdict. It also supplies the `timing` block the qualification gate requires, so the evidence is reusable rather than throwaway.\n\n**Ordered actions and stopping condition.**\n\n1. Issue one bounded release-calendar query for the third source; record the URL, retrieval date, the observed pair, and the computed lag verbatim in `candidates/<id>/record.json` and `notes.md`.\n2. If the feature publishes before the instant: set `ready`, and name the construction step, expected artifact, and the deciding check (full-artifact qualification, timing block accepted). If it publishes after: set `parked` with the exact reopening event \u2014 a source that moves the feature earlier, or a target reformulation that drops it \u2014 and record the lag as the reason.\n3. Do not open the catalog page. Record it as unprobed this session, with no verdict and no licence claim, so a later tick can triage it from its own instrument.\n4. Update `STATE.md` with a compact entry, run `check-candidate.py` for the touched record and the test suite, inspect the diff, commit only this session's work, push, and check CI for that exact `head_sha`.\n\n**Stopping condition.** Stop probing the moment the calendar result is recorded, whatever it says. Fifteen minutes is already inside the 20% close-out reserve of a 90-minute slot; if the query does not return promptly, write `parked` with timing unverified and the query as the named next probe, and close out immediately. No second source, no additional probe.\n\n**Operator report.** Leads opened/reopened: none new; one existing unresolved source advanced. Decisions: fourth contract evidence recorded, third source moved to `ready` or `parked` on measured publication lag; two prior rejections unchanged; catalog page left unprobed deliberately. Strongest remaining uncertainty: the publication lag, now either resolved or carrying a precise handoff. Coverage: Canada focus retained, non-US live count unchanged at 17/24 pending the third source's verdict. Checks/commit/CI: candidate check plus suite, committed and pushed; CI status reported as observed, not assumed. Next action: if `ready`, construction; if `parked`, licence triage of the deferred catalog page from its own terms.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "d2cf6f2fe504fb9d829cad774c0a07a4aee35fa9519d85cc7792b1b0d56abe87"
+    },
+    {
+      "case": "discovery-value",
+      "arm": "revised",
+      "model_requested": "glm-5.3",
+      "provider_requested": "lunaroute",
+      "request_sha256": "d951e843fe249e68e0503ca198121d27150395419c91b721c222ac217b1be4aa",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "session_id": "20261022_215819_76e6d9",
+      "status": "ok",
+      "exit_code": 0,
+      "recorded_tool_pin": "unrecorded",
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 482,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 6,
+          "output_tokens": 3878,
+          "cache_read_tokens": 24128,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "elapsed_seconds": 85.432,
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-03",
+      "tool_pin": "unrecorded",
+      "tokens": {
+        "input_tokens": 58,
+        "output_tokens": 4360,
+        "cache_read_tokens": 24512,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 28930,
+      "response": "DECISION\n\nSpend the remaining 15 minutes on the single release-calendar query for the open-licensed Canadian source, resolving whether the proposed feature is published before the prediction instant. Do not open the catalog page for the likely-easy licence rejection. Then close out.\n\nSUPPORTING EVIDENCE\n\n- The brief prefers one well-supported promising lead over several cheap rejections, and verdict count is an activity count, not a quality target. Two decisive rejections are already recorded, so the \"prevents wasted construction\" value is banked; a third adds little.\n- The open-licensed source already satisfies four of five contracts with evidence (onset question, documented target, split capacity, clean licence). The timing question is the cheapest unresolved fact that changes the verdict, and it is decisive: gate 1.4.0 refuses features published after the prediction instant, so a late-published feature cannot ship no matter what else is true.\n- Geography is healthy (17/24 non-US live); there is no coverage gap pressuring a padded verdict.\n- The catalog lead is \"likely\" an easy rejection \u2014 an estimate, not evidence \u2014 and unresolved class C sources are closed under standing policy anyway, so probing it mainly fills a quota.\n- Fifteen minutes fits one bounded read-only query plus the reserved close-out; a second lead cannot be probed and recorded safely.\n\nUNCERTAINTY AND DISCRIMINATING CHECK\n\nUncertainty: the feature's publication lag versus the prediction instant. Check: one release-calendar query recording the schedule and at least one observed period_end -> published pair. Branches:\n\n- Published before the instant: record the timing block (instant kind, measured lag in days, observed pair, latest period used) and mark the candidate ready, naming the construction step (assemble-job.py, worker build plus qualification) and the deciding check (a passing qualification report for the exact artifact).\n- Published after: the feature is unusable, not the source. Remove it from the intended feature list; park/investigating with the exact missing fact \u2014 whether the remaining documented features still carry the task \u2014 as the next probe.\n- Calendar unreachable or ambiguous: record access failure as access failure, not a scientific rejection; park with the same question.\n\nORDERED ACTIONS AND STOPPING CONDITION\n\n1. Run the one release-calendar query; record the command, URL, retrieval date and observed schedule in the candidate's notes, keeping raw probe output distinct from qualified measurements. No AUC, base rate or headroom claims.\n2. Write the decision into record.json (ready or parked per branch) before opening anything else.\n3. Run scripts/check-candidate.py on the touched record and python3 scripts/discovery-coverage.py; run the repository test suite only if minutes remain, otherwise record it as not run.\n4. Add a compact STATE.md entry: the two rejections with decisive evidence, the third source's verdict and its evidence, the strongest remaining uncertainty, and a next action a fresh session can execute.\n5. Review the diff (no credentials, no bulk data), commit and push this session's work; check CI for that exact commit via the gh api head_sha query; report pending CI as pending with a follow-up.\n6. Stopping condition: stop after the single query \u2014 no second probe, no catalog page. If the query cannot finish safely, park with the recorded question and go straight to close-out.\n\nOPERATOR REPORT (draft)\n\nCanada discovery session, closing with 15 min remaining.\n- Three leads: two rejected on decisive licence/capacity evidence (recorded); one open-licensed source advanced to a single timing uncertainty, then resolved by one release-calendar query: [result].\n- Verdict on the third source: [ready \u2014 construction next via assemble-job.py and worker qualification / parked \u2014 missing fact: ...].\n- Strongest remaining uncertainty: [per branch].\n- Checks: check-candidate.py [status]; coverage [status, non-US share]; suite [status]; commit [sha] pushed; CI for that commit [status].\n- Next action: [specific handoff].\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "1d4719afb6c98cc3ed7e25f7b8094776dcfb111ab0007e3dcd1f8958dfbe54d3"
+    },
+    {
+      "case": "watcher-loading",
+      "arm": "baseline",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-21",
+      "session_id": "20261022_225339_85fd48",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "d288cd9bb01138e21ed7d254b9ecbe840f67c7dd165ca226932f5c0806b8770b",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 20116,
+        "output_tokens": 1699,
+        "cache_read_tokens": 384,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 22199,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 58,
+          "output_tokens": 12,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 20058,
+          "output_tokens": 1687,
           "cache_read_tokens": 0,
           "cache_write_tokens": 0
         }
@@ -713,64 +939,9 @@
         }
       ],
       "tool_pin": "unrecorded",
-      "elapsed_seconds": 27.531,
-      "response": "**Decision**\n\nNeither owner option. Do not drop the source on this evidence alone, and do not tune onset thresholds until the holdout beats persistence. Tuning against the holdout is evaluation-on-the-test: it destroys the only clean confirmation data and turns a real defect into a fabricated win. Holdout stays unread until the protocol is frozen.\n\nThe defensible next step is one bounded, eval-only diagnostic that decides between *drop* and *one retarget*: quantify whether the persistence gap is real, and check whether a change/onset label is even constructible from shipped columns.\n\n**Supporting evidence (supplied)**\n\n- Model 0.74, persistence 0.78, calendar/identity 0.60 on identical eval rows. A model below persistence is a recorded defect in the task definition, not an encouraging result \u2014 the label is largely a persistent level, and persistence is a one-line rule.\n- No uncertainty intervals and no alignment audit exist, so 0.78 vs 0.74 is a point comparison of unknown precision; I cannot call the gap real or noise.\n- Qualification and acceptance passed \u2014 the artifact is sound. Passing the gate says the files lack detectable defects; it says nothing about whether the task is a forecast. This is exactly the \"gate passes, task is still a negative result\" case.\n- Standing method: when the label is persistent, retarget change/onset, and treat that as a **new task instance with its own qualification**, not a tweak. Budget one rebuild per structural defect.\n\n**Uncertainty and the next discriminating check**\n\nTwo unknowns, one script answers both:\n\n1. Is the gap real? Positives likely cluster (event/day), so row counts overstate the effective sample. Compute a cluster bootstrap CI on the model-minus-persistence AUC gap, clustered on the event key, plus per-window and per-year AUC to expose any pooled structural break or prevalence shift between splits.\n2. Is onset constructible? From shipped columns only, count rows where a prior-period value exists and the label flips \u2014 i.e. whether disjoint train/eval/holdout windows can each carry both classes of an onset label with adequate independent positive counts.\n\nDiscriminating outcome: if the decomp gap is within interval and onset counts are adequate \u2192 retarget, don't drop. If the gap is real and persistence dominates and onset is thin or unconstructible \u2192 this is a negative result; drop and record it.\n\n**Ordered actions**\n\n1. Freeze holdout; note explicitly it was not read. No threshold scanning.\n2. Write one script in `.factory/` (no `python3 -c` in this session) that, on eval/train rows only: clips to the declared cluster key, bootstraps the decomp gap CI, reports per-year/per-window AUC and per-split prevalence, and counts onset-eligible rows per window. Emit compact JSON; delete the scratch script.\n3. Decide from that JSON: one retarget build (new task instance \u2192 construction \u2192 `dataset-qualification`) or drop with the negative finding recorded next to the number.\n4. Update `STATE.md` and the candidate record: defect, commands, results, verdict.\n\n**Stopping condition**\n\nStop after the single diagnostic plus at most one rebuild. Do not run a second or third rebuild \u2014 a third audit that keeps finding defects is Task-design failure, not code. Stop immediately if onset is not constructible, or if the gap proves real with persistence dominating and no onset path: drop.\n\n**Operator report**\n\nArtifact qualified; the level target is beaten by persistence (0.74 vs 0.78; calendar 0.60), so the task as defined is not a forecast. I did not drop it, and I did not touch the holdout \u2014 tuning thresholds against it would manufacture a result. Ran one eval-only diagnostic: clustered CI on the gap, per-year/prevalence breakdown, and onset-constructibility counts. Outcome decides between one retarget to an onset label (with fresh qualification) or a recorded drop. No publication action; holdout unexamined.\n",
-      "response_sha256": "ed4dbd0b2c21cc02834bdfb782cbb3de067ee3254707a02d12446342e2d5b436"
-    },
-    {
-      "case": "advancement-baseline",
-      "arm": "revised",
-      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
-      "requested_provider": "nous",
-      "run": "run-17",
-      "session_id": "20261022_224844_644791",
-      "status": "ok",
-      "exit_code": 0,
-      "request_sha256": "d38d2c501032e78f3ab5c810ddd572ceac29e11e48af816bb04406756c36320e",
-      "runtime_sha256": {
-        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
-        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
-        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
-        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
-      },
-      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
-      "dollar_spend": null,
-      "tokens": {
-        "input_tokens": 33793,
-        "output_tokens": 1329,
-        "cache_read_tokens": 256,
-        "cache_write_tokens": 0
-      },
-      "total_tokens": 35378,
-      "tasks": [
-        {
-          "task": "title_generation",
-          "calls": 1,
-          "input_tokens": 314,
-          "output_tokens": 12,
-          "cache_read_tokens": 128,
-          "cache_write_tokens": 0
-        },
-        {
-          "task": "",
-          "calls": 1,
-          "input_tokens": 33479,
-          "output_tokens": 1317,
-          "cache_read_tokens": 128,
-          "cache_write_tokens": 0
-        }
-      ],
-      "main_routes": [
-        {
-          "model": "deepseek/deepseek-v4.1-flash-1017",
-          "provider": "nous",
-          "calls": 1
-        }
-      ],
-      "tool_pin": "unrecorded",
-      "elapsed_seconds": 20.747,
-      "response": "Decision: Neither proposal. Do not drop the source yet, and do not touch holdout to search onset thresholds \u2014 that is tuning the target against the scoring set, which the brief and `dataset-qualification` explicitly forbid. Spend the one bounded diagnostic on whether the 0.74 < 0.78 gap is a *measured* result or a defect.\n\nSupporting evidence: model 0.74, persistence 0.78, calendar/identity 0.60 on identical eval rows. That ordering says the label is largely persistent and the model has not demonstrated headroom \u2014 a recorded finding, not proof the source is unusable. But there are no uncertainty intervals and no alignment audit, so we cannot currently distinguish three cases: (a) persistence genuinely dominates; (b) the gap is inside sampling noise on clustered positives; (c) the persistence reference is misaligned or post-hoc (wrong instant, mismatched row pairing, or a \"most recent observed value\" that was not available at prediction time). Quoting 0.78 as decisive without intervals or an alignment check would repeat the exact failure the skill documents (0.870 vs 0.893 persistence example).\n\nUncertainty and next discriminating check: the decisive discriminator is a paired, cluster-aware bootstrap over the same eval rows \u2014 resample by `event_key`/entity, not by row \u2014 giving intervals on all three AUCs and on the persistence-minus-model difference, plus per-year and per-split AUC/Brier and a prevalence-shift table. In parallel, a bounded alignment audit: re-derive persistence from source using only data available at the declared prediction instant, confirm model and references scored on byte-identical rows, and confirm the model's feature set contains nothing post-hoc. That single pass separates noise, misalignment, and genuine dominance.\n\nOrdered actions:\n1. Freeze the protocol and record it before running anything: metric, split boundaries, target, and the three-reference triad on identical rows.\n2. Run the cluster-aware bootstrap and the alignment audit as one bounded diagnostic; write command, rows, and intervals into the candidate record. Holdout stays sealed.\n3. Branch on the result:\n   - If intervals overlap and the audit is clean \u2192 record \"no demonstrated headroom under this protocol\" with all three scores and intervals, and drop or explicitly re-scope (do not publish a benchmark claim).\n   - If the audit finds misalignment or a post-hoc persistence reference \u2192 one rebuild per structural defect, then re-qualify and re-compare.\n   - Only if dominance is real and alignment clean may a *change/onset* task instance be pre-specified as a new task \u2014 with its user need and protocol fixed before any evaluation, and holdout used once.\n4. Never select a threshold against holdout; a new instance gets fresh qualification and its own acceptance.\n\nStopping condition: one diagnostic pass, documented with intervals and audit scope. Stop at the branch outcome \u2014 no second rebuild, no threshold sweep, no holdout peek.\n\nOperator report: qualified artifact has model AUC 0.74 behind persistence 0.78 (calendar 0.60) on identical eval rows; no intervals or alignment audit exist and holdout is unexamined. I would not drop the source on one unreferenced comparison, and I would not tune onset thresholds against holdout. One bounded diagnostic (cluster-aware intervals on the three references, per-year prevalence, persistence alignment/instant audit) decides between \"no headroom, record and drop/re-scope\" and \"reference defect, one rebuild.\" Holdout remains sealed; any onset task would be a new, pre-specified instance.\n\n\u2014 Scout (Hermes)\n",
-      "response_sha256": "c303367690a4ef8839be600acb010a530c6a043b72b88395af8552227bbd2998"
+      "elapsed_seconds": 24.434,
+      "response": "**Decision.** Treat hf-check-12 as failed/incomplete for acceptance. Do not tag, do not write a `published` destination, do not accept the artifact. Upload success with matching digests is not the acceptance contract: verification requires the collected successful job, a passing loading check, exact manifest assets, and matching live commit/blob metadata. `loading_check.ok=false` alone fails it, and two missing splits make the release an incomplete artifact. The stale note (\"upload success means ready to tag\") is wrong and should be marked superseded, not followed.\n\n**Supporting evidence.** Digest match proves bytes arrived; it says nothing about whether the release is the complete, loadable dataset. Two expected splits are absent, so the manifest's asset set and what the Hub commit actually holds disagree \u2014 the package cannot be checked as complete. Per OPERATIONS, an incomplete/failed verification writes a diagnostic under `.factory/hub-verification/<candidate>/latest.json`, preserves the previous receipt, exits 2, and leaves `DESTINATIONS` unverified. Failed or stale reports \"cannot be upgraded by editing JSON,\" so no edit to the report makes this taggable. Tagging is last and an existing differing tag is a refusal, so a premature tag would be the irreversible mistake.\n\n**Uncertainty and next discriminating check.** The cause of the two missing splits is not established from the supplied evidence: an upload omission, a manifest that lists splits never produced, and a loader contract expecting different paths all look identical at this level. Discriminating check: diff `MANIFEST.json`'s asset names, sizes and SHA-256 against (a) the staging/public release asset list and (b) the hub commit tree the check pinned, and print the loader's expected split list. If the files exist in the manifest but not at the commit \u2192 upload/fetch gap. If they were never built \u2192 construction/package gap, and the candidate goes back a stage rather than being re-verified.\n\n**Ordered actions and stopping condition.**\n1. Confirm collection: `sh scripts/scout-factory worker collect hf-check-12`.\n2. Read the release `manifest.json` and copy only small reports into `.factory/hf-check-12/reports/` \u2014 no bulk CSV assets to this host.\n3. Treat the result as failed: record `loading_check.ok=false`, the two absent splits by name, and \"not taggable\" in `STATE.md` and the candidate's `record.json`; annotate the stale note as superseded.\n4. Commit and push, then check CI for that exact SHA with `gh api \".../actions/runs?head_sha=$(git rev-parse HEAD)\"`; report pending/failed honestly.\n5. Destroy the still-living worker: `sh scripts/scout-factory worker destroy hf-check-12`, and confirm the server and job IP are gone.\n6. Run the diff above, fix the ordinary cause, and prepare a corrected attempt under a **new job ID** (copy the declaration; use `verify_only: true` if only re-reading Hub). Re-uploading is safe \u2014 per-file uploads skip files already at the manifest digest. If the fix is a manifest/licence/loader change, regenerate the manifest and re-run `check-package.py`.\n7. Only then write `.factory/hf-check-12/handled` with the one-line summary \u2014 last, after reporting.\n\nStopping condition: stop short of `--tag` and any `published`/verified destination until a collected job passes the loading check with exact manifest assets at an exact commit; if the missing splits trace to unpublished source data or an unreadable licence, stop and record it for the operator.\n\n**Operator report.** hf-check-12 finished as a failed verification, not a releasable one. All assets uploaded with digests matching the manifest, but the loading check failed (`ok=false`) and two expected splits are missing from the release, so the artifact is incomplete and unloadable as declared. Nothing was tagged; the destination stays unverified and the release remains private. I recorded the failure and the missing splits in `STATE.md` and the candidate record, marked the \"upload success = ready to tag\" note as superseded, committed and checked CI for that commit, and destroyed the worker so it stopped billing. Next: I am diffing the manifest against the pinned commit's tree to place the gap \u2014 upload omission versus a split that was never built \u2014 then relaunching a corrected attempt under a new job ID; tagging stays blocked until that attempt passes.\n",
+      "response_sha256": "0233fe0e93ba74f28e925e1f13de4380be9ef313f041a995b024428d6029d899"
     },
     {
       "case": "watcher-loading",
@@ -830,61 +1001,6 @@
     {
       "case": "watcher-loading",
       "arm": "revised",
-      "requested_model": "glm-5.3",
-      "requested_provider": "lunaroute",
-      "run": "run-19",
-      "session_id": "20261022_225058_2c602b",
-      "status": "ok",
-      "exit_code": 0,
-      "request_sha256": "a1eddfe5c087c482d4443129e7ec48b8b3ad751b43d8ebdd7e8f896ad52f135a",
-      "runtime_sha256": {
-        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
-        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
-        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
-        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
-      },
-      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
-      "dollar_spend": null,
-      "tokens": {
-        "input_tokens": 1062,
-        "output_tokens": 6992,
-        "cache_read_tokens": 31616,
-        "cache_write_tokens": 0
-      },
-      "total_tokens": 39670,
-      "tasks": [
-        {
-          "task": "title_generation",
-          "calls": 1,
-          "input_tokens": 52,
-          "output_tokens": 420,
-          "cache_read_tokens": 384,
-          "cache_write_tokens": 0
-        },
-        {
-          "task": "",
-          "calls": 1,
-          "input_tokens": 1010,
-          "output_tokens": 6572,
-          "cache_read_tokens": 31232,
-          "cache_write_tokens": 0
-        }
-      ],
-      "main_routes": [
-        {
-          "model": "glm-5.3",
-          "provider": "lunaroute",
-          "calls": 1
-        }
-      ],
-      "tool_pin": "unrecorded",
-      "elapsed_seconds": 131.052,
-      "response": "DECISION\n\nOwnership is established - idle coordinator, documented handoff naming hf-check-12, no unrelated edits - so I handle only this job and its candidate. Verdict: the transfer succeeded (all digests match) but Hub verification failed (loading_check.ok=false, two expected splits missing), so the release stays incomplete and untagged. The stale note is wrong and is not followed: tagging is last, only after verification passes; a failed loading check never authorizes a tag or publication.\n\nSUPPORTING EVIDENCE\n\n- Per-asset digests match the manifest, but the loading check failed at the pinned revision: the documented incomplete-evidence case, not success. A job can upload every file correctly and still fail the verification written beside it; I read the specific check field, not the overall job status.\n- Failed results never authorize tags or publication; receipts cannot be upgraded by editing JSON; the Hub destination stays unverified in DESTINATIONS.json.\n- The worker is alive and billable (powered-off servers still bill); deletion is part of finishing the job and is not gated on the candidate's next decision.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\n\nThe cause is unknown. Unconfirmed hypotheses from known failure modes: assets uploaded under bare names while the manifest and loader expect manifest names; the card's configs/data_files disagreeing with the manifest's split names; or a loading-check defect at that revision. Cheapest discriminator, recorded for advancement rather than run here: a metadata-only listing of Hub files at the pinned revision, diffed against MANIFEST.json names and the card's configs - no bulk download, no new worker needed to plan it.\n\nORDERED ACTIONS AND STOPPING CONDITION\n\n1. Confirm collection is complete and durable; preserve the report and the compact diagnostic (.factory/hub-verification/<candidate>/latest.json); map staging assets through the manifest. No bulk CSVs on the coordinator.\n2. Record as separate facts in the candidate record and STATE.md: digests matched on upload; loading_check.ok=false with two splits missing; Hub destination unverified; release incomplete; no tag. Leave existing destination receipts untouched - failed verification must not rewrite them.\n3. Destroy the owned worker through the existing lifecycle (worker destroy hf-check-12) and confirm by provider read-back that the server and its job-owned primary IP are gone.\n4. Run the relevant record checks, inspect the diff, commit only this job's changes, push, and check CI for that exact commit via the documented gh api query (not gh run list); report pending or failed CI explicitly.\n5. Write .factory/hf-check-12/handled with the commit, evidence path and remaining blocker, and hand the repair to advancement with a fresh verify-only attempt ID and the proposed change.\n\nStop after step 5 - or leave the marker unwritten if collection, ownership or recording is unresolved. Never tag, publish, rewrite receipts, or launch repairs from this watcher.\n\nOPERATOR MESSAGE\n\n\"hf-check-12: the Hugging Face transfer finished - every asset digest matches the manifest - but the loading check failed (ok=false, two expected splits missing). The Hub destination is unverified, the release remains incomplete, and no tag was created; the note claiming upload success permits tagging was wrong and is countermanded in the record. The owned worker was destroyed; provider read-back confirms no server or job IP remains. Evidence: the collected report directory and .factory/hub-verification/<candidate>/latest.json; records committed as <sha>, CI for that commit: <status/pending>. Next action, owned by advancement: metadata-only diff of Hub file names and card configs against the manifest at the pinned revision, then a fresh verify-only attempt.\"\n\n\u2014 Scout (Hermes)\n",
-      "response_sha256": "01f827ec2f2745800b81a723154f88fd86b7fc9c4694399ca2c95f79b30d30a8"
-    },
-    {
-      "case": "watcher-loading",
-      "arm": "revised",
       "requested_model": "deepseek/deepseek-v4.1-flash-1017",
       "requested_provider": "nous",
       "run": "run-20",
@@ -939,69 +1055,14 @@
     },
     {
       "case": "watcher-loading",
-      "arm": "baseline",
-      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
-      "requested_provider": "nous",
-      "run": "run-21",
-      "session_id": "20261022_225339_85fd48",
-      "status": "ok",
-      "exit_code": 0,
-      "request_sha256": "d288cd9bb01138e21ed7d254b9ecbe840f67c7dd165ca226932f5c0806b8770b",
-      "runtime_sha256": {
-        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
-        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
-        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
-        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
-      },
-      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
-      "dollar_spend": null,
-      "tokens": {
-        "input_tokens": 20116,
-        "output_tokens": 1699,
-        "cache_read_tokens": 384,
-        "cache_write_tokens": 0
-      },
-      "total_tokens": 22199,
-      "tasks": [
-        {
-          "task": "title_generation",
-          "calls": 1,
-          "input_tokens": 58,
-          "output_tokens": 12,
-          "cache_read_tokens": 384,
-          "cache_write_tokens": 0
-        },
-        {
-          "task": "",
-          "calls": 1,
-          "input_tokens": 20058,
-          "output_tokens": 1687,
-          "cache_read_tokens": 0,
-          "cache_write_tokens": 0
-        }
-      ],
-      "main_routes": [
-        {
-          "model": "deepseek/deepseek-v4.1-flash-1017",
-          "provider": "nous",
-          "calls": 1
-        }
-      ],
-      "tool_pin": "unrecorded",
-      "elapsed_seconds": 24.434,
-      "response": "**Decision.** Treat hf-check-12 as failed/incomplete for acceptance. Do not tag, do not write a `published` destination, do not accept the artifact. Upload success with matching digests is not the acceptance contract: verification requires the collected successful job, a passing loading check, exact manifest assets, and matching live commit/blob metadata. `loading_check.ok=false` alone fails it, and two missing splits make the release an incomplete artifact. The stale note (\"upload success means ready to tag\") is wrong and should be marked superseded, not followed.\n\n**Supporting evidence.** Digest match proves bytes arrived; it says nothing about whether the release is the complete, loadable dataset. Two expected splits are absent, so the manifest's asset set and what the Hub commit actually holds disagree \u2014 the package cannot be checked as complete. Per OPERATIONS, an incomplete/failed verification writes a diagnostic under `.factory/hub-verification/<candidate>/latest.json`, preserves the previous receipt, exits 2, and leaves `DESTINATIONS` unverified. Failed or stale reports \"cannot be upgraded by editing JSON,\" so no edit to the report makes this taggable. Tagging is last and an existing differing tag is a refusal, so a premature tag would be the irreversible mistake.\n\n**Uncertainty and next discriminating check.** The cause of the two missing splits is not established from the supplied evidence: an upload omission, a manifest that lists splits never produced, and a loader contract expecting different paths all look identical at this level. Discriminating check: diff `MANIFEST.json`'s asset names, sizes and SHA-256 against (a) the staging/public release asset list and (b) the hub commit tree the check pinned, and print the loader's expected split list. If the files exist in the manifest but not at the commit \u2192 upload/fetch gap. If they were never built \u2192 construction/package gap, and the candidate goes back a stage rather than being re-verified.\n\n**Ordered actions and stopping condition.**\n1. Confirm collection: `sh scripts/scout-factory worker collect hf-check-12`.\n2. Read the release `manifest.json` and copy only small reports into `.factory/hf-check-12/reports/` \u2014 no bulk CSV assets to this host.\n3. Treat the result as failed: record `loading_check.ok=false`, the two absent splits by name, and \"not taggable\" in `STATE.md` and the candidate's `record.json`; annotate the stale note as superseded.\n4. Commit and push, then check CI for that exact SHA with `gh api \".../actions/runs?head_sha=$(git rev-parse HEAD)\"`; report pending/failed honestly.\n5. Destroy the still-living worker: `sh scripts/scout-factory worker destroy hf-check-12`, and confirm the server and job IP are gone.\n6. Run the diff above, fix the ordinary cause, and prepare a corrected attempt under a **new job ID** (copy the declaration; use `verify_only: true` if only re-reading Hub). Re-uploading is safe \u2014 per-file uploads skip files already at the manifest digest. If the fix is a manifest/licence/loader change, regenerate the manifest and re-run `check-package.py`.\n7. Only then write `.factory/hf-check-12/handled` with the one-line summary \u2014 last, after reporting.\n\nStopping condition: stop short of `--tag` and any `published`/verified destination until a collected job passes the loading check with exact manifest assets at an exact commit; if the missing splits trace to unpublished source data or an unreadable licence, stop and record it for the operator.\n\n**Operator report.** hf-check-12 finished as a failed verification, not a releasable one. All assets uploaded with digests matching the manifest, but the loading check failed (`ok=false`) and two expected splits are missing from the release, so the artifact is incomplete and unloadable as declared. Nothing was tagged; the destination stays unverified and the release remains private. I recorded the failure and the missing splits in `STATE.md` and the candidate record, marked the \"upload success = ready to tag\" note as superseded, committed and checked CI for that commit, and destroyed the worker so it stopped billing. Next: I am diffing the manifest against the pinned commit's tree to place the gap \u2014 upload omission versus a split that was never built \u2014 then relaunching a corrected attempt under a new job ID; tagging stays blocked until that attempt passes.\n",
-      "response_sha256": "0233fe0e93ba74f28e925e1f13de4380be9ef313f041a995b024428d6029d899"
-    },
-    {
-      "case": "watcher-ownership",
       "arm": "revised",
       "requested_model": "glm-5.3",
       "requested_provider": "lunaroute",
-      "run": "run-22",
-      "session_id": "20261022_225408_40a5b4",
+      "run": "run-19",
+      "session_id": "20261022_225058_2c602b",
       "status": "ok",
       "exit_code": 0,
-      "request_sha256": "fa5eabc4823a7ad2a44932db5c448e668ab55b743028702caa00540d941031c6",
+      "request_sha256": "a1eddfe5c087c482d4443129e7ec48b8b3ad751b43d8ebdd7e8f896ad52f135a",
       "runtime_sha256": {
         "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
         "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
@@ -1011,27 +1072,27 @@
       "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
       "dollar_spend": null,
       "tokens": {
-        "input_tokens": 219,
-        "output_tokens": 5292,
-        "cache_read_tokens": 32448,
+        "input_tokens": 1062,
+        "output_tokens": 6992,
+        "cache_read_tokens": 31616,
         "cache_write_tokens": 0
       },
-      "total_tokens": 37959,
+      "total_tokens": 39670,
       "tasks": [
         {
           "task": "title_generation",
           "calls": 1,
           "input_tokens": 52,
-          "output_tokens": 372,
+          "output_tokens": 420,
           "cache_read_tokens": 384,
           "cache_write_tokens": 0
         },
         {
           "task": "",
           "calls": 1,
-          "input_tokens": 167,
-          "output_tokens": 4920,
-          "cache_read_tokens": 32064,
+          "input_tokens": 1010,
+          "output_tokens": 6572,
+          "cache_read_tokens": 31232,
           "cache_write_tokens": 0
         }
       ],
@@ -1043,64 +1104,9 @@
         }
       ],
       "tool_pin": "unrecorded",
-      "elapsed_seconds": 105.539,
-      "response": "Decision: defer to the owner. The advancement coordinator is active (it holds the research mutex) with uncommitted work in the tree, and no handoff was recorded. I would report status read-only and leave the event unhandled: no collection, no verification, no cleanup, no commits, no repair launch, no handled marker.\n\nSupporting evidence:\n- The brief's ownership rule: active or uncertain ownership means report the job ID and pending follow-up, leave it unhandled, defer to the owner; never delete a lock to proceed. A documented handoff is the prerequisite for handling, and none exists.\n- docs/OPERATIONS.md: the watcher itself takes the same nonblocking research mutex around deterministic collection and the whole bounded follow-up; busy ticks are silent. So even collect is unavailable while advancement holds the lock. The section also states manual writers are outside the mutex, which is why diff inspection and explicit handoffs are required \u2014 this is exactly that case.\n- OPERATIONS.md: do not delete the mutex, kill a PID from a stale file, or interrupt remote workers merely to unblock admission; advancement owns repair launches.\n- The handled marker is written only after a durable outcome and a handoff are recorded; with ownership unresolved it must not be written.\n- Uncommitted STATE.md/candidate edits are the coordinator's; committing or regenerating them is takeover, explicitly forbidden.\n\nUncertainty and next discriminating check: the result's content is unknown and cannot be verified from here \u2014 no check-level outcomes, no qualification verdict, so no figure may be quoted. Unknown whether the coordinator has already collected or destroyed the worker. The cheapest discriminating check, for the owner (or a later idle watcher tick once the mutex is free): read the job ledger and staging record \u2014 result presence, per-check outcomes, provider read-back of server and IP \u2014 which separates \"already handled\" from \"pending follow-up,\" and infrastructure vs construction vs scientific vs verification failure if it failed.\n\nOrdered actions:\n1. Read-only inspection only: job ID, ledger state, reservation, cleanup status; answer the operator from that.\n2. Touch nothing: leave the mutex, STATE.md, the candidate record, the worker (no destroy without verified collection), and the ledger unmodified; write no handled marker.\n3. Report, then stop \u2014 no polling or waiting on the mutex.\n4. Handoff path: when the coordinator's session ends it owns collect \u2192 read each required check's result \u2192 require the passing qualification report and --accept against exact bytes \u2192 destroy with provider read-back \u2192 record, then mark handled. If the coordinator never returns, the independent no-agent expiry sweep deletes the labeled worker after its lifetime (on-host sweep scheduled hourly; GitHub path multi-hour \u2014 backstops, not deadlines), and the next idle watcher tick resumes collection. Cost exposure is bounded by the reservation's cleanup-grace arithmetic, a conservative estimate, not a billing cap.\n\nStopping condition: end after this report; the event stays pending for the owner.\n\nRemain unmodified: the research mutex and session markers; all uncommitted coordinator edits; the candidate's package and qualification state; frozen manifests, digests and existing tags; allowance and gate settings; the worker and its ledger entries.\n\nOperator report (draft):\n\"Job <id> (candidate <id>) finished while the advancement coordinator is still running and holds the research session mutex, with uncommitted STATE.md and candidate edits in the tree. No handoff was recorded, so I did not collect, verify, clean up, commit, or mark the event handled \u2014 the result is uncollected and unverified, and I quote no numbers. Billable exposure is bounded by the worker's lifetime plus the independent expiry sweeps if the coordinator never returns. Next action, owned by that coordinator on session end: collect, read each check's result, require the passing qualification and --accept on the exact bytes, then destroy and confirm cleanup; the watcher records and acknowledges after that.\"\n\n\u2014 Scout (Hermes)\n",
-      "response_sha256": "84ceaa38512989461b66cfa12a1ee091aa9d51de2992b5ecd52f34a19dbf0a2a"
-    },
-    {
-      "case": "watcher-ownership",
-      "arm": "baseline",
-      "requested_model": "glm-5.3",
-      "requested_provider": "lunaroute",
-      "run": "run-23",
-      "session_id": "20261022_225557_098201",
-      "status": "ok",
-      "exit_code": 0,
-      "request_sha256": "81ef532042d58d3eeed2771ab3ef59223c9bb8e6fa3e5312bcbfad6302e80525",
-      "runtime_sha256": {
-        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
-        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
-        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
-        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
-      },
-      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
-      "dollar_spend": null,
-      "tokens": {
-        "input_tokens": 211,
-        "output_tokens": 10658,
-        "cache_read_tokens": 19712,
-        "cache_write_tokens": 0
-      },
-      "total_tokens": 30581,
-      "tasks": [
-        {
-          "task": "title_generation",
-          "calls": 1,
-          "input_tokens": 52,
-          "output_tokens": 410,
-          "cache_read_tokens": 384,
-          "cache_write_tokens": 0
-        },
-        {
-          "task": "",
-          "calls": 1,
-          "input_tokens": 159,
-          "output_tokens": 10248,
-          "cache_read_tokens": 19328,
-          "cache_write_tokens": 0
-        }
-      ],
-      "main_routes": [
-        {
-          "model": "glm-5.3",
-          "provider": "lunaroute",
-          "calls": 1
-        }
-      ],
-      "tool_pin": "unrecorded",
-      "elapsed_seconds": 189.498,
-      "response": "DECISION\nCollect and verify now, touch nothing shared. This session runs the bounded steps \u2014 collect, small-report fetch, coverage/gate evaluation, worker destroy \u2014 and defers every shared-state write: no STATE.md or record.json edit, no commit/push, no CI claim, no relaunch, no handled marker. Those belong to the first session that can safely hold the working tree.\n\nSUPPORTING EVIDENCE\n- The brief makes the handled marker the final step, after recording. Recording is impossible here without acting on the advancement session's uncommitted STATE.md/candidate edits; AGENTS.md requires inspecting the diff first, and I cannot attest to another session's half-finished work. Committing would publish it.\n- OPERATIONS.md: the mutex \"stays in place; do not delete or replace it to clear a busy session\"; never kill a PID from a stale file; never interrupt remote workers merely to unblock admission. The coordinator is stated active, so the lock is presumed genuinely held.\n- Collect is safe and bounded: it verifies the staging release (tag, asset membership, sizes, digests) without downloading bulk data; reports are under 256 KiB within the 20 MiB cap. The operator's status update needs no shared-file writes.\n- Cleanup may run independently; deletion is part of finishing a job, and powered-off servers still bill. After verified collect, evidence is durable in staging, so destroy stops billing without losing anything. If collect shows a partial upload, run worker retry-upload and re-collect before destroying.\n- \"Only one coordinator may launch workers using a given job ledger\" \u2014 no corrected-job relaunch from this session even if the job failed.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\nIs the session actually alive, or is the lock stale? A file existing is not evidence of a held lock. Check: read .factory/research-session.lock (pid, session_id, written_at), then inspect the live process table \u2014 pid alive, command line is the research wrapper, group identity matches. Observe only. Second unknown: whether the active session intends to record this job itself; no handoff was recorded, so assume not \u2014 the unwritten handled marker keeps the watcher engaged as the backstop.\n\nORDERED ACTIONS AND STOPPING CONDITION\n1. worker collect <job_id> \u2014 verify the staging release.\n2. Fetch small reports to .factory/<job_id>/reports/ via the release manifest.json; no bulk CSVs.\n3. Evaluate: stations/station-years built vs expected (build_summary.json), gate ok flags (qualification report); read record.json read-only. State accept/reject in the report; recording the acceptance is deferred.\n4. worker destroy <job_id> \u2014 scoped cleanup after verified collection.\n5. Leave a bounded local note under .factory/<job_id>/ listing deferred steps so a fresh session can finish without conversation memory.\n6. Send the operator report, then STOP.\nResume only when the lock-holder process is gone (verified in the process table, not by the file): next tick records the outcome, commits after inspecting the diff, checks CI via gh api .../actions/runs?head_sha=$(git rev-parse HEAD) (not gh run list --commit), then writes .factory/<job_id>/handled. Failure diagnosis uses staging logs; any corrected job is launched by the ledger-owning coordinator only.\n\nOPERATOR REPORT (figures from collected reports, not invented here)\n\"Job <id> finished. Collected and verified against private staging; small reports fetched. Coverage: [stations/station-years built vs expected]; gates: [ok/failed per qualification.json]. Worker destroyed after verified collection. STATE.md/record.json recording, commit/push, CI check and the handled marker are deliberately deferred: the advancement session holds the research mutex with uncommitted edits to exactly those files; I did not commit its work or touch the mutex. Lock holder verified live as [pid/cmdline evidence]. Next action: after it exits, record, commit, check CI for that commit, mark handled.\"\n",
-      "response_sha256": "fccd352e8650068067ada29a3f37b531ca2f8c4115314f89dd3afeb4988a3f73"
+      "elapsed_seconds": 131.052,
+      "response": "DECISION\n\nOwnership is established - idle coordinator, documented handoff naming hf-check-12, no unrelated edits - so I handle only this job and its candidate. Verdict: the transfer succeeded (all digests match) but Hub verification failed (loading_check.ok=false, two expected splits missing), so the release stays incomplete and untagged. The stale note is wrong and is not followed: tagging is last, only after verification passes; a failed loading check never authorizes a tag or publication.\n\nSUPPORTING EVIDENCE\n\n- Per-asset digests match the manifest, but the loading check failed at the pinned revision: the documented incomplete-evidence case, not success. A job can upload every file correctly and still fail the verification written beside it; I read the specific check field, not the overall job status.\n- Failed results never authorize tags or publication; receipts cannot be upgraded by editing JSON; the Hub destination stays unverified in DESTINATIONS.json.\n- The worker is alive and billable (powered-off servers still bill); deletion is part of finishing the job and is not gated on the candidate's next decision.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\n\nThe cause is unknown. Unconfirmed hypotheses from known failure modes: assets uploaded under bare names while the manifest and loader expect manifest names; the card's configs/data_files disagreeing with the manifest's split names; or a loading-check defect at that revision. Cheapest discriminator, recorded for advancement rather than run here: a metadata-only listing of Hub files at the pinned revision, diffed against MANIFEST.json names and the card's configs - no bulk download, no new worker needed to plan it.\n\nORDERED ACTIONS AND STOPPING CONDITION\n\n1. Confirm collection is complete and durable; preserve the report and the compact diagnostic (.factory/hub-verification/<candidate>/latest.json); map staging assets through the manifest. No bulk CSVs on the coordinator.\n2. Record as separate facts in the candidate record and STATE.md: digests matched on upload; loading_check.ok=false with two splits missing; Hub destination unverified; release incomplete; no tag. Leave existing destination receipts untouched - failed verification must not rewrite them.\n3. Destroy the owned worker through the existing lifecycle (worker destroy hf-check-12) and confirm by provider read-back that the server and its job-owned primary IP are gone.\n4. Run the relevant record checks, inspect the diff, commit only this job's changes, push, and check CI for that exact commit via the documented gh api query (not gh run list); report pending or failed CI explicitly.\n5. Write .factory/hf-check-12/handled with the commit, evidence path and remaining blocker, and hand the repair to advancement with a fresh verify-only attempt ID and the proposed change.\n\nStop after step 5 - or leave the marker unwritten if collection, ownership or recording is unresolved. Never tag, publish, rewrite receipts, or launch repairs from this watcher.\n\nOPERATOR MESSAGE\n\n\"hf-check-12: the Hugging Face transfer finished - every asset digest matches the manifest - but the loading check failed (ok=false, two expected splits missing). The Hub destination is unverified, the release remains incomplete, and no tag was created; the note claiming upload success permits tagging was wrong and is countermanded in the record. The owned worker was destroyed; provider read-back confirms no server or job IP remains. Evidence: the collected report directory and .factory/hub-verification/<candidate>/latest.json; records committed as <sha>, CI for that commit: <status/pending>. Next action, owned by advancement: metadata-only diff of Hub file names and card configs against the manifest at the pinned revision, then a fresh verify-only attempt.\"\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "01f827ec2f2745800b81a723154f88fd86b7fc9c4694399ca2c95f79b30d30a8"
     },
     {
       "case": "watcher-ownership",
@@ -1159,6 +1165,61 @@
     },
     {
       "case": "watcher-ownership",
+      "arm": "baseline",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-23",
+      "session_id": "20261022_225557_098201",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "81ef532042d58d3eeed2771ab3ef59223c9bb8e6fa3e5312bcbfad6302e80525",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 211,
+        "output_tokens": 10658,
+        "cache_read_tokens": 19712,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 30581,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 410,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 159,
+          "output_tokens": 10248,
+          "cache_read_tokens": 19328,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 189.498,
+      "response": "DECISION\nCollect and verify now, touch nothing shared. This session runs the bounded steps \u2014 collect, small-report fetch, coverage/gate evaluation, worker destroy \u2014 and defers every shared-state write: no STATE.md or record.json edit, no commit/push, no CI claim, no relaunch, no handled marker. Those belong to the first session that can safely hold the working tree.\n\nSUPPORTING EVIDENCE\n- The brief makes the handled marker the final step, after recording. Recording is impossible here without acting on the advancement session's uncommitted STATE.md/candidate edits; AGENTS.md requires inspecting the diff first, and I cannot attest to another session's half-finished work. Committing would publish it.\n- OPERATIONS.md: the mutex \"stays in place; do not delete or replace it to clear a busy session\"; never kill a PID from a stale file; never interrupt remote workers merely to unblock admission. The coordinator is stated active, so the lock is presumed genuinely held.\n- Collect is safe and bounded: it verifies the staging release (tag, asset membership, sizes, digests) without downloading bulk data; reports are under 256 KiB within the 20 MiB cap. The operator's status update needs no shared-file writes.\n- Cleanup may run independently; deletion is part of finishing a job, and powered-off servers still bill. After verified collect, evidence is durable in staging, so destroy stops billing without losing anything. If collect shows a partial upload, run worker retry-upload and re-collect before destroying.\n- \"Only one coordinator may launch workers using a given job ledger\" \u2014 no corrected-job relaunch from this session even if the job failed.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\nIs the session actually alive, or is the lock stale? A file existing is not evidence of a held lock. Check: read .factory/research-session.lock (pid, session_id, written_at), then inspect the live process table \u2014 pid alive, command line is the research wrapper, group identity matches. Observe only. Second unknown: whether the active session intends to record this job itself; no handoff was recorded, so assume not \u2014 the unwritten handled marker keeps the watcher engaged as the backstop.\n\nORDERED ACTIONS AND STOPPING CONDITION\n1. worker collect <job_id> \u2014 verify the staging release.\n2. Fetch small reports to .factory/<job_id>/reports/ via the release manifest.json; no bulk CSVs.\n3. Evaluate: stations/station-years built vs expected (build_summary.json), gate ok flags (qualification report); read record.json read-only. State accept/reject in the report; recording the acceptance is deferred.\n4. worker destroy <job_id> \u2014 scoped cleanup after verified collection.\n5. Leave a bounded local note under .factory/<job_id>/ listing deferred steps so a fresh session can finish without conversation memory.\n6. Send the operator report, then STOP.\nResume only when the lock-holder process is gone (verified in the process table, not by the file): next tick records the outcome, commits after inspecting the diff, checks CI via gh api .../actions/runs?head_sha=$(git rev-parse HEAD) (not gh run list --commit), then writes .factory/<job_id>/handled. Failure diagnosis uses staging logs; any corrected job is launched by the ledger-owning coordinator only.\n\nOPERATOR REPORT (figures from collected reports, not invented here)\n\"Job <id> finished. Collected and verified against private staging; small reports fetched. Coverage: [stations/station-years built vs expected]; gates: [ok/failed per qualification.json]. Worker destroyed after verified collection. STATE.md/record.json recording, commit/push, CI check and the handled marker are deliberately deferred: the advancement session holds the research mutex with uncommitted edits to exactly those files; I did not commit its work or touch the mutex. Lock holder verified live as [pid/cmdline evidence]. Next action: after it exits, record, commit, check CI for that commit, mark handled.\"\n",
+      "response_sha256": "fccd352e8650068067ada29a3f37b531ca2f8c4115314f89dd3afeb4988a3f73"
+    },
+    {
+      "case": "watcher-ownership",
       "arm": "revised",
       "requested_model": "deepseek/deepseek-v4.1-flash-1017",
       "requested_provider": "nous",
@@ -1211,9 +1272,64 @@
       "elapsed_seconds": 20.415,
       "response": "Decision: defer. An active advancement coordinator holding the shared research mutex owns this job. The watcher must not collect into the candidate record, interpret results as accepted, commit, clean up, or mark the job handled. Report the pending event to the operator and leave the follow-up unhandled until ownership is released with an explicit handoff.\n\nSupporting evidence: (1) The coordinator holds the shared research mutex, so admission and ownership are active, not merely a stale JSON marker \u2014 the marker alone would not prove that, the live lock holder does. (2) STATE.md and the candidate record carry that session's uncommitted edits, so any write here would mix another session's unfinished work with this event. (3) No handoff naming the job, candidate, attempt ID, or expected evidence exists, and the brief requires a documented handoff before a watcher handles anything. (4) A finished worker's result is not a passed result: overall status, each required check, expected/actual coverage, and full-artifact qualification plus `--accept` against the exact bytes are unverified. Nothing may be quoted from it yet.\n\nUncertainty: whether the job actually completed versus uploaded partial artifacts; whether any required check failed while upload succeeded; whether the worker is near expiry or already expired. Next discriminating check, read-only: inspect the actual process table (pid, command line, process group) to confirm the mutex holder is a live research session, and read the worker's status and expiry from the ledger. Do not infer ownership from the lock file alone, and do not delete the mutex to proceed.\n\nOrdered actions:\n1. Confirm the live mutex holder via procfs; distinguish active, stale, or uncertain.\n2. Read `worker status <job-id>` and the job ledger entry for status and expiry \u2014 reads only, no collection, no launch, no destroy.\n3. Inspect the working-tree diff only to avoid touching those files; do not stage, commit, or revert.\n4. Report to the operator: job ID, candidate, event observed, that the coordinator owns it and no handoff was recorded, and the verification steps still outstanding.\n5. Write no `.factory/<job-id>/handled` marker; leave the job unhandled and defer.\n\nDo not modify: STATE.md, the candidate record, job ledger entries, package/manifest bytes, digests, tags, qualification reports or checks, allowance config. Do not collect, destroy, launch replacements or repairs, regenerate the package, or publish. Independent expiry cleanup may continue on its own scheduler; if the worker is at real expiry risk, surface that to the owner rather than acting on it.\n\nStopping condition: stop and defer once the live owner is confirmed; resume only when the coordinator releases the mutex and records an explicit handoff naming this job and candidate, or the operator reassigns ownership in writing. If the mutex holder cannot be identified as live, report ownership uncertain and still do not mutate.\n\nOperator report: \"Worker job <id> (<candidate>) finished, but the advancement coordinator still holds the research mutex and has uncommitted STATE.md/candidate edits; no handoff was recorded. Follow-up is deferred and unhandled \u2014 no result verified, no numbers quoted, no commit, no cleanup, no handled marker. Next: confirm the live lock holder and job status read-only, then wait for the coordinator's explicit handoff or an operator reassignment.\"\n\n\u2014 Scout (Hermes)\n",
       "response_sha256": "aa7c2e33e2e9477da600ec58c402d1d74154b96589869d3d8dac0efedbea585d"
+    },
+    {
+      "case": "watcher-ownership",
+      "arm": "revised",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-22",
+      "session_id": "20261022_225408_40a5b4",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "fa5eabc4823a7ad2a44932db5c448e668ab55b743028702caa00540d941031c6",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 219,
+        "output_tokens": 5292,
+        "cache_read_tokens": 32448,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 37959,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 372,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 167,
+          "output_tokens": 4920,
+          "cache_read_tokens": 32064,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 105.539,
+      "response": "Decision: defer to the owner. The advancement coordinator is active (it holds the research mutex) with uncommitted work in the tree, and no handoff was recorded. I would report status read-only and leave the event unhandled: no collection, no verification, no cleanup, no commits, no repair launch, no handled marker.\n\nSupporting evidence:\n- The brief's ownership rule: active or uncertain ownership means report the job ID and pending follow-up, leave it unhandled, defer to the owner; never delete a lock to proceed. A documented handoff is the prerequisite for handling, and none exists.\n- docs/OPERATIONS.md: the watcher itself takes the same nonblocking research mutex around deterministic collection and the whole bounded follow-up; busy ticks are silent. So even collect is unavailable while advancement holds the lock. The section also states manual writers are outside the mutex, which is why diff inspection and explicit handoffs are required \u2014 this is exactly that case.\n- OPERATIONS.md: do not delete the mutex, kill a PID from a stale file, or interrupt remote workers merely to unblock admission; advancement owns repair launches.\n- The handled marker is written only after a durable outcome and a handoff are recorded; with ownership unresolved it must not be written.\n- Uncommitted STATE.md/candidate edits are the coordinator's; committing or regenerating them is takeover, explicitly forbidden.\n\nUncertainty and next discriminating check: the result's content is unknown and cannot be verified from here \u2014 no check-level outcomes, no qualification verdict, so no figure may be quoted. Unknown whether the coordinator has already collected or destroyed the worker. The cheapest discriminating check, for the owner (or a later idle watcher tick once the mutex is free): read the job ledger and staging record \u2014 result presence, per-check outcomes, provider read-back of server and IP \u2014 which separates \"already handled\" from \"pending follow-up,\" and infrastructure vs construction vs scientific vs verification failure if it failed.\n\nOrdered actions:\n1. Read-only inspection only: job ID, ledger state, reservation, cleanup status; answer the operator from that.\n2. Touch nothing: leave the mutex, STATE.md, the candidate record, the worker (no destroy without verified collection), and the ledger unmodified; write no handled marker.\n3. Report, then stop \u2014 no polling or waiting on the mutex.\n4. Handoff path: when the coordinator's session ends it owns collect \u2192 read each required check's result \u2192 require the passing qualification report and --accept against exact bytes \u2192 destroy with provider read-back \u2192 record, then mark handled. If the coordinator never returns, the independent no-agent expiry sweep deletes the labeled worker after its lifetime (on-host sweep scheduled hourly; GitHub path multi-hour \u2014 backstops, not deadlines), and the next idle watcher tick resumes collection. Cost exposure is bounded by the reservation's cleanup-grace arithmetic, a conservative estimate, not a billing cap.\n\nStopping condition: end after this report; the event stays pending for the owner.\n\nRemain unmodified: the research mutex and session markers; all uncommitted coordinator edits; the candidate's package and qualification state; frozen manifests, digests and existing tags; allowance and gate settings; the worker and its ledger entries.\n\nOperator report (draft):\n\"Job <id> (candidate <id>) finished while the advancement coordinator is still running and holds the research session mutex, with uncommitted STATE.md and candidate edits in the tree. No handoff was recorded, so I did not collect, verify, clean up, commit, or mark the event handled \u2014 the result is uncollected and unverified, and I quote no numbers. Billable exposure is bounded by the worker's lifetime plus the independent expiry sweeps if the coordinator never returns. Next action, owned by that coordinator on session end: collect, read each check's result, require the passing qualification and --accept on the exact bytes, then destroy and confirm cleanup; the watcher records and acknowledges after that.\"\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "84ceaa38512989461b66cfa12a1ee091aa9d51de2992b5ecd52f34a19dbf0a2a"
     }
   ],
-  "updated_at": "2026-10-22T23:00:14Z",
+  "updated_at": "2026-10-22T23:00:58Z",
   "finished": true,
   "finished_at": "2026-10-22T23:00:14Z"
 }
