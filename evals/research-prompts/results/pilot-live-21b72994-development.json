@@ -282,11 +282,67 @@
       "elapsed_seconds": 58.659,
       "response": "Decision\n\nNot a mirror, and not ready. Verdict: **investigating** \u2014 the lead is differentiated, but two of the five discovery contracts (split capacity and prediction timing) lack measured evidence, so it cannot be marked `ready`.\n\nSupporting evidence\n\nA mirror requires the same task contract, not shared subject matter. This lead differs on target (recurrence after a documented intervention vs first-visit failure), prediction instant (pre-return-visit records only vs establishment attributes), population (re-inspected establishments), and regime (unrepresented in the portfolio). Two named catalog searches found no ML-ready recurrence task. That supports a `differentiated` novelty verdict; the published task remains a comparator, not a blocker. The licence is resolved per the case, but the record must still carry `licence_class`, the quoted terms, and `jurisdiction` measured from the publisher.\n\nAgainst the five contracts: redistribution \u2014 satisfied, evidence to record; target \u2014 derivable from inspection outcomes; not-a-mirror \u2014 satisfied by differentiation; split capacity \u2014 **unmeasured**; prediction timing \u2014 **unmeasured**. Two open contracts fail the `ready` completion criteria, so the honest verdict is investigating with named missing facts.\n\nUncertainty and next discriminating check\n\nSplit capacity is the cheapest hard veto most likely to change the decision: recurrence positives cluster by establishment and in time, so raw counts can look ample while independent positives fail to fill three disjoint train/eval/holdout windows with both classes. The discriminating check is a bounded aggregate query \u2014 distinct-establishment positives and class counts per window, clustered vs raw \u2014 not a bulk transfer. Reporting lag is second: qualification gate 1.4.0 refuses a dataset without a measured timing block, so record at least one observed period_end\u2192published pair and an explicit as-of policy with its coverage limits; current revised rows prove nothing about historical availability, and event dates do not establish publication.\n\nOrdered actions and stopping condition\n\n1. Write the candidate record now: source and jurisdiction (from the publisher, not the URL), licence class and quoted terms in `license_evidence`, novelty verdict `differentiated` via `check-novelty.py` recording both searches' scope and limitations, verdict `investigating`.\n2. Run the split-capacity probe: bounded aggregate counts per disjoint window \u2014 clustered/independent counts, both classes present per window.\n3. Measure reporting lag from a bounded sample; record the as-of policy; measure extraction cost (requests, bytes, wall-clock on the intended machine class).\n4. Branch: if every window carries both classes with independent positives and timing is provable \u2192 mark `ready`, naming the construction step, expected artifact, and deciding check, and hand off to advancement. If a window fails \u2192 `parked` with the computed counts (or `dropped` if decisive). If timing cannot be established \u2192 `parked` with that exact missing fact.\n5. Close out: `check-candidate.py`, `discovery-coverage.py`, a STATE.md entry with a next action specific enough for a fresh session; review the diff; commit/push; check CI for that exact commit via `gh api .../runs?head_sha=$(git rev-parse HEAD)` \u2014 never `gh run list --commit`.\n\nStop probing once split capacity resolves decisively; timing second. No construction, packaging or publication in this discovery session.\n\nOperator report\n\nOne lead opened, no reopens. Not a mirror: target, prediction instant, population and regime all differ from the published first-visit task, and two catalog searches found no ML-ready recurrence predecessor. Not ready: independent split counts and reporting lag remain unmeasured. Next action: the split-capacity probe, then a timing sample; `ready` only if both pass, otherwise parked with the computed evidence. Nothing has been executed \u2014 this was a no-tool decision exercise, so checks, commit and CI status follow execution.\n\n\u2014 Scout (Hermes)\n",
       "response_sha256": "78c0dafa2a8045d0adbf3d3151a54004c7fcb1d9afc2e726981f9171a13839c0"
+    },
+    {
+      "partition": "development",
+      "case": "discovery-novelty",
+      "arm": "baseline",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-31",
+      "session_id": "20261022_230726_e66cba",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "af0b56adce007f17ee35eb7df336fda5c86f70d228265d6360717ee93f86eb13",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 85,
+        "output_tokens": 6801,
+        "cache_read_tokens": 36608,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 43494,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 693,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 33,
+          "output_tokens": 6108,
+          "cache_read_tokens": 36224,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 79.205,
+      "response": "Decision\nNot a mirror, and not ready: it needs further discovery work. The novelty question is settled enough to record as `differentiated`; the readiness question is not, because two required measurements are missing. If the clock forces a verdict before the probes run, record `parked` naming the exact blockers (split capacity, publication lag), never `ready`.\n\nSupporting evidence\n- The mirror test is on the task, not the source. The published task predicts first-visit failure from establishment attributes; this lead predicts recurrence after a documented intervention, restricted to pre-return-visit records, in an unrepresented regime: different label, different feature-timing contract, different population. Two named catalog searches found no ML-ready recurrence task. That supports a `differentiated` verdict, to be recorded mechanically via check-novelty.py with ours/theirs/prior-art \u2014 ours: the recurrence formulation and pre-return-visit feature contract; theirs: the first-visit task and the raw source.\n- `ready` requires recorded evidence for every contract. Still missing: split windows with counts computed from the source (clustered counts where positives cluster by establishment or campaign); the timing block's observed lag; measured extraction cost; jurisdiction recorded from the publisher (\"regional\" is not a country); and licence recorded as class A or B with the terms quote \u2014 \"licensed\" is not a class. If the licence is actually C or D, drop it in the same breath (standing rule, 2026-10-21).\n\nUncertainty and next discriminating check\nSplit capacity decides it: enough independent recurrence positives, spread over time, to fill disjoint train/eval/holdout windows with both classes present. The cheap discriminating probe is a read-only aggregate query \u2014 recurrence positives per candidate window and per establishment cluster, plus the provenance mix if the source carries more than one inspection stream. If the windows cannot carry both classes, the task is dead regardless of novelty. Timing is second: determine the record kind; a statistical release needs at least one observed period_end-to-published pair with the lag set above every observation plus margin, while an administrative record written at the event ships none but needs its kind declared with a citation.\n\nOrdered actions and stopping condition\n1. Record licence_class (A/B), the terms quote and jurisdiction in candidates/<id>/record.json. C or D means dropped immediately.\n2. Record the novelty verdict with check-novelty.py.\n3. Aggregate probes only, no bulk transfer: positives per window, clustered count, class balance per window, provenance mix, a total-order key.\n4. Timing probe as above, plus reading the column documentation for every field to confirm the pre-return-visit claim.\n5. Cost probe: wrap the fetch, count requests, bytes and wall-clock on the intended machine class.\n6. Write the verdict: `ready` only if the licence is A/B and the measured windows carry both classes; otherwise `parked` with the exact unparking question or `dropped` with the reason. Update STATE.md, run check-candidate.py and the tests, commit, read CI for that exact commit.\n\nStop when the record carries a verdict backed by those measurements, or at the wrap-up notice \u2014 then write what is settled and name what is not. Construction, qualification and packaging stay with the advancement session; this session runs no commands toward them.\n\nOperator report\nOne source opened: a regional inspection registry. Verdict: differentiated, not a mirror \u2014 recurrence after intervention versus the published first-visit-failure task; no ML-ready recurrence task found in two catalog searches. Not ready: split counts and reporting lag unmeasured. Next: cheap aggregate probes for split capacity, then ready/parked. Licence class and jurisdiction to be recorded before anything builds. No construction started.\n",
+      "response_sha256": "49e896d3ad6251f035be0e3168b05a5600a2d3d7ccc63d308f22a2ba251c36e1"
     }
   ],
   "ledger": {
-    "calls": 30,
-    "tokens": 1004644
+    "calls": 31,
+    "tokens": 1048138
   },
-  "updated_at": "2026-10-22T23:07:21Z"
+  "updated_at": "2026-10-22T23:08:42Z"
 }
