@@ -2,8 +2,9 @@
 
 Prepared 2026-10-22. The operator requested broad hardening and deployment after an
 original instruction to open a PR without merging. Resolve that remaining merge boundary
-before executing this rollout. No worker launch, budget, credential, dataset tag or public-destination artifact
-change is part of this rollout. PR #2 restores original factory manifest bytes after
+before executing this rollout. No worker launch, allowance increase, credential, dataset tag or public-destination
+artifact change is part of this rollout. The operator selected an explicit token-ceiling
+policy for unpriced research in PR #7; the existing numerical limits stay fixed. PR #2 restores original factory manifest bytes after
 concurrent repairs; see `docs/HARDENING-INCIDENTS.md` in that PR.
 
 ## Reviewed scope and evidence
@@ -17,8 +18,10 @@ concurrent repairs; see `docs/HARDENING-INCIDENTS.md` in that PR.
   source audit in CI, 12 new tests, plus corrections to the captured publishing skill.
 - PR #6, `4a1cb30`: pinned Hub verification, collected worker evidence, read-only Hub
   verification jobs, manifest-owned target paths and immutable tags, 35 new tests (including four preserved from Scout's active-session repair).
-- PR #7, `07ecc51`: atomic session admission, strict gate decisions, truthful scheduler
-  exit codes and process-group supervision; 21 new tests using local stubs.
+- PR #7, `40d33df`: atomic session admission, strict gate decisions, truthful scheduler
+  exit codes, process-group supervision and fail-closed accounting; 44 new tests.
+  Unavailable/invalid ledgers hold research. Unknown dollar pricing stays unknown;
+  the operator-selected policy requires the existing positive weekly token ceiling.
 - PR #8, `ec31e52` (supervisor code `256bd79`): supervised worker-host transfer/HF disk and
   runtime limits, 23 new regressions. Source review addressed procfs observation,
   late child cleanup and bounded reaping; incomplete cleanup refuses artifact upload.
@@ -31,19 +34,21 @@ GitHub Actions before deployment. Earlier green heads are not current-state evid
 The Hub regression was also checked with Scout's installed client in an isolated checkout:
 TSB without new worker evidence exits 2/incomplete, leaves its prior receipt byte-identical,
 and writes a separate attempt diagnostic. No worker or remote mutation was used for that test. Independent Python 3.13.1
-clean-clone results: #2 449 tests, #3 432 tests, #4 431 tests, #6 480 tests, #7 444 tests,
+clean-clone results: #2 449 tests, #3 432 tests, #4 431 tests, #6 480 tests, #7 467 tests,
 #8 503 tests, each OK
 with six existing host-dependent skips (see each PR for its exact tested revision).
-The combined integration at `e0f864a`, reconciled with main `0f853fa`, passed:
+The combined integration at `c122064`, reconciled with main `0f853fa`, passed:
 
 ```text
-Ran 549 tests in 5.384s
+Ran 572 tests in 6.540s
 
 OK (skipped=6)
 ```
 
-All 419 original tests are unchanged. The combined test checkout stays clean; PR #2 fixes
-an existing fake-client test that changed a real Austin destination timestamp. The #2 clean
+Original assertions and test-count semantics are preserved. Eduardo explicitly approved
+a valid empty accounting database fixture for two existing lock tests in #7, which
+otherwise relied on the missing-ledger fallback. The combined checkout stays clean;
+PR #2 isolates an existing fake-client test that changed a real Austin destination timestamp. The #2 clean
 clone also passed doctor, dashboard generation and the published Austin manifest command;
 every file under `release/` had identical before/after SHA-256. Gate 1.4.0 and its code are
 unchanged. No CI result substitutes for the post-merge exact-commit checks below.
@@ -146,6 +151,11 @@ Do not merely update inventory hashes to make a drift alert green.
    `dashboard.json` and rendered HTML. A pending Pages build remains pending; resume its
    verification instead of repeatedly generating new commits. Check row counts, baseline
    scopes, destination pills and public/private status in the live response.
+   Run the deployed budget script with `--json` only (never `--write-lock` for this check).
+   Confirm the selected unpriced policy, 40,000,000-token ceiling, measured token counts
+   and null dollar spend when pricing is absent. Do not backfill rates, delete ledger rows
+   or loosen limits to make admission green. A legitimate limit/lock hold is not a deployment
+   failure; an accounting read failure needs investigation before resuming research.
 7. Record the source SHA, dashboard commit/deployment URL, curator status, runtime-audit
    result, doctor result and artifact-hash comparison in STATE and the deployment report.
    Re-check schedules/allowances were preserved and leave one specific next action.
@@ -164,21 +174,11 @@ verification. The recorded pre-change config values make a deliberate runtime ro
 do not silently re-enable unreviewed writers just because code was reverted. Keep the writer
 hold while resolving skill integrity failures, and disclose any continued auxiliary-memory hold.
 
-This batch does not claim to finish every hardening task. Next work should address the
-research runner's atomic session admission/failed-gate handling, runtime-audit enforcement
-before scheduled research, dashboard health/CI
-unknown states and Pages-pending semantics, stronger candidate evidence validation, and host-side worker disk enforcement (HF jobs return
-before the container disk-monitor loop).
-Inventory coverage is explicit: additional project-relevant custom skills must be reviewed
-and mapped before calling the handoff complete. No new worker spend is implied by this list.
-
-PR #6 on `hardening/hub-integrity` is stacked on #2:
-existing tags never move, creation pins the verified commit, plain metadata is hashed through a
-bounded download, and size-only/bulk-without-digest cases fail. Its exact-head push and PR CI passed, and it is included in the 503-test combined integration. Runtime skill corrections in #4 agree
-with this behavior; captured originals remain in #1.
-
-
-The late worker repair covers the observed 9,421,952-byte ordinary Git CSV. Upload verification
-and compact receipts now share a 64 MiB worker-only per-file limit, hash in chunks and use fresh
-owned temporary caches. No coordinator bulk exception was added. The existing container disk
-monitor is not presented as coverage for host-side HF jobs.
+This batch does not claim to finish every hardening task. Remaining work includes
+runtime-audit enforcement before scheduled research, a review queue for proposed skill
+changes, dashboard health/CI unknown states and Pages-pending semantics, stronger candidate
+evidence validation, and worker pre-container fetch/staging-upload bounds. Host-side HF
+and transfer runtime/disk supervision is included in #8; it is sampled enforcement, not
+an OS quota or complete memory isolation. Inventory coverage is explicit: additional
+project-relevant custom skills must be reviewed and mapped before calling the handoff
+complete. No new worker spend is implied by this list.
