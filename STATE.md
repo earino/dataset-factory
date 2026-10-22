@@ -5638,3 +5638,55 @@ Next action for the tick: the queue's construction work remains with the advance
 (abs-visitor-arrivals-direction packaging, then eutl-installation-net-short packaging per its
 staging release 420810883); ea-flood-alert-escalation enters the queue behind the five ready
 candidates as a measured class-A build (whole panel fits the coordinator; ~4.9 MB of fetches).
+
+## 2026-10-22 (evening) - eutl-installation-net-short PACKAGED: staged private on both destinations, awaiting the operator's flip
+
+The advancement session packaged eutl-installation-net-short end to end but hit its 120-turn
+limit at 18:37:54Z mid-close-out (it had just collected eutl-hf-003 and destroyed eutl-hf-002's
+server); the worker-watch run completed the held remainder the same minute, per its recorded
+handoff. All four worker servers of the evening are confirmed destroyed by read-back
+(171893178 18:21:19Z, 171894191 18:29:55Z, 171894985 18:37:07Z, 171896019 18:40:37Z); spend was
+four cx23 reservations at EUR 0.04 = EUR 0.16, inside the allowance.
+
+**Package** (release/eutl-installation-net-short/, 26 tracked files + 3 git-ignored CSVs kept
+off disk like tsb): artifact 3540ad2180d8df8a, gate 1.4.0 PASSED 38/38, baseline 0.9199 eval
+AUC (persistence 0.8671, calendar 0.527, identity 0.5719 recorded beside it), splits train
+141,732 / eval 24,322 / holdout 22,151 rows. check-package OK; the local qualification gate
+re-ACCEPTed the package bytes. A real defect was caught by *executing* the generated
+get_dataset.py against its own release: it still carried tsb's hardcoded EXPECTED digests,
+refusing the release's own meta.json - fixed from MANIFEST.json and the tag moved onto the
+fix commit.
+
+**GitHub destination (private):** earino/eutl-installation-net-short release v2026.10 (421047536),
+5/5 assets at the manifest digests (authenticated API read-back: meta.json b0e54387...,
+private-holdout.csv 1c694e5e..., public-eval.csv 0d9f35d5..., public-train.csv c7f23c55...,
+quality.json 88222d66...), tag == main == cba922f4, get_dataset.py run end-to-end against the
+private release with --accept ACCEPTED. The session's summary claimed the release non-draft but
+the API still answered draft=true - the takeover un-drafted it at 18:43Z and read draft:false
+back. Anonymous repo API GET -> 404: private, the flip is the operator's.
+
+**Hugging Face destination (private):** earino/eutl-installation-net-short, 16 files (5 data +
+11 small: card/README, LOADING.md, MANIFEST, SHA256SUMS, licences, docs). hf-publish --verify at
+18:41:57Z: ok, 0 missing, 0 size-mismatched. The eutl-hf-001/002 failures were a *verification*
+defect, not a data defect: public-train.csv (9,421,952 B) stores as a plain git blob between the
+worker's old 8 MiB re-hash ceiling and the Hub's ~10 MB LFS cutoff, so correct bytes could never
+be confirmed. Fix (from the 18:21 watcher run, reviewed and used by the session): SMALL_BLOB_BYTES
+8 -> 64 MiB in workers/hf_publish.py + 4 pinning regression tests (tests.test_workers 30/30).
+eutl-hf-003 ran the fixed bundle: all 5 files already at the manifest digest (0 uploads, 5
+skipped, 0 failures; public-train confirmed by download+re-hash), loading check green - train
+141,732/64,528 positives, eval 24,322/18,002, holdout 22,151/15,993, 13 columns, label ['0','1'],
+ok: true, problems: []. Tag v2026.10 created LAST: tag == main == 2501c26b (re-created on the regenerated-manifest
+commit after the CSV off-disk cleanup). Anonymous API GET -> 401: private.
+
+**Record flip:** candidates/eutl-installation-net-short/record.json now status=packaged,
+awaiting_operator=true (packaged_at 18:43:19Z), artifacts = staging 420810883 + GitHub 421047536
++ HF repo, jobs extended with publish-001 and hf-001/002/003 (failures recorded with their root
+cause, not smoothed away), next_action = the flip-waiting instruction with the full post-approval
+publication sequence. DESTINATIONS.json now carries both destinations with artifact_version
+3540ad2180d8df8a. Scratch cleaned: .factory/eutl-pack, eutl-consumer, eutl-consumer2 and the
+probe/fetch scripts removed; the release CSVs deleted off disk (git-ignored, recoverable via
+get_dataset.py and both private releases).
+
+Next action: the operator's private-to-public flip for eutl-installation-net-short; nothing
+blocks it. The queue behind it is unchanged (five ready class-A builds, then
+ea-flood-alert-escalation).
