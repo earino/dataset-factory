@@ -338,11 +338,67 @@
       "elapsed_seconds": 102.781,
       "response": "DECISION\nDocuments-only correction on the same version: regenerate MANIFEST.json so it carries the current\nsplit shape, change no data byte, push, then move the existing version tag onto that documentation\ncommit as the last action. Not a new data version (no asset digest changes), and not a local-only\nregeneration (the consumer reads the manifest at the pin, so the tag must serve the corrected file).\n\nSUPPORTING EVIDENCE\n- Bytes at both destinations already match the recorded digests, so the pin still fetches the bytes\n  it was verified with; only a document is stale.\n- dataset-release: \"A correction to documents only ... leaves every digest identical, so it is\n  applied to the same version and the tag is moved onto that documentation commit as the last\n  action; say in the record what moved and that no data changed.\"\n- The crash class is documented: a legacy manifest shape kills the site planner/consumer, and\n  \"the planner reads the manifest at the pin, not the local file\" - regenerating without moving\n  the tag fixes nothing.\n- Tag mechanics: \"create_tag(..., exist_ok=True) keeps an existing tag pointing at its old commit\";\n  the documented repair is delete, recreate on the refreshed commit, read back. (hf-publish.py\n  --tag itself refuses a differing tag; this move is the skill's documented manual path, recorded.)\n- MANIFEST.json is a Git-side document by layout, not a release asset, so editing it is not an\n  asset-byte change.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\nWhether the regenerated manifest is truly data-identical and evidence-consistent. Diff the at-tag\nmanifest (read via the contents API, not the raw CDN, which serves stale copies) against the\nregenerated one: every data-asset digest identical; splits derived from the gate report and\nmatching it; artifact_version equal to the gate digest taken from the qualification report file,\nnever the candidate record; visibility still derived from DESTINATIONS.json. If any asset digest\ndiffers, this stops being documents-only and requires a new reviewed version.\n\nORDERED ACTIONS\n1. Save the pinned manifest; regenerate with scripts/release-manifest.py, splits from the gate\n   report/quality.json, artifact_version from the qualification report.\n2. Overlay the public tree so website file entries survive (the package manifest must not drop\n   site scaffolding); run check-package.py release/<dataset>.\n3. Record: documents-only, same version, no data changed. git pull --rebase; on MANIFEST.json\n   conflict keep the freshly generated copy (it is derived, never hand-merged). Push, then read\n   CI for that exact commit: gh api \".../actions/runs?head_sha=$(git rev-parse HEAD)\" (gh run\n   list --commit returns empty even when a run exists).\n4. Move the tag last: delete and recreate at the refreshed commit; read back that the tag and\n   main resolve to the same commit, through the contents API.\n5. Correct the DESTINATIONS.json evidence after the refresh so the recorded revision/tag claim\n   names what the destination now serves.\n6. Verify anonymously: repo page 200, release assets ranged GET at the tag, Hub reports\n   private:false, data digests match the record; re-run the consumer until its CI is green at\n   that commit.\n7. Pin with a regression test on the new manifest shape; watch it fail against the old manifest\n   before recording the guard.\n\nSTOPPING CONDITION\nAbandon this path and prepare a new reviewed version (identical data bytes, new tag) if any\ndata-asset digest changes, artifact_version mismatches the gate report, check-package fails,\ntooling refuses the tag move, or the moved tag cannot be read back. If consumer CI stays red\nafter all of that, report an honest blocker, not invented progress.\n\nOPERATOR REPORT\n\"<dataset>: the site crash was a stale manifest shape, not bad data - both destinations match\nevery recorded digest. I regenerated MANIFEST.json as a documents-only correction on the same\nversion, moved the tag, and verified both destinations anonymously; consumer CI is green at\ncommit <sha>. No data bytes changed; next action is the regression test confirming it fails on\nthe legacy shape.\"\n",
       "response_sha256": "eabee3df7204c26875e3b44516d0f3883bd142bf775944960a095fb64e96f7a2"
+    },
+    {
+      "partition": "reserved",
+      "case": "frozen-package",
+      "arm": "baseline",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-56",
+      "session_id": "20261022_233345_0af746",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "92730c42f5db0bccd9d7abcd75414d0abd97b7939e22b92fe4c6572410125e74",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 36681,
+        "output_tokens": 2076,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 38757,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 442,
+          "output_tokens": 12,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 36239,
+          "output_tokens": 2064,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 18.449,
+      "response": "Decision\nTreat this as a documents-only defect in the manifest generator, not a new data version. The bytes are unchanged and match recorded digests, so no data asset may be re-cut. Fix `scripts/release-manifest.py` so the `splits` block is derived from the qualification report / `quality.json` split stats in the *shape the consumer reads*, regenerate `MANIFEST.json` from that generator, re-hash the small files, and move the existing version tag onto the documentation commit **last**. Never hand-edit `MANIFEST.json`: a hand-edited block is lost the next time it is regenerated and is exactly how the manifest and qualification drifted apart.\n\nWhy not a new version: the release skill's rule is that a byte change requires a new version, while a documentation-only correction leaves every digest identical and is applied to the same version with the tag moved as the final action. The tag exists at the original commit; moving it is admissible *only* because no data digest changes.\n\nSupporting evidence\n- Stated in the case: bytes at both destinations match recorded digests. So the failure is the manifest's split shape, not content.\n- The skill's recorded failure mode is this exact shape: `MANIFEST.json` carries a legacy/`null` `splits`, the site planner iterates it and dies with a bare `TypeError`; fix is to derive `splits` from the gate report/`quality.json` and rebuild the manifest before pushing. It also warns the planner reads the manifest *at the pin*, not the local file \u2014 hence the tag move.\n- \"State is derived from recorded evidence, never asserted in a generator,\" and \"one rule shared\" \u2014 the consumer shape must come from one derivation, not a template literal.\n\nUncertainty and next discriminating check\nUnknown whether the consumer needs only a shape fix or also counts recomputable from rows, and whether any other consumer pins the tag *commit hash* rather than the tag. Discriminating check: reproduce the crash with the manifest fetched at the tag, and diff every data-asset digest (from `SHA256SUMS` and `DESTINATIONS.json` `files_verified`) before and after regeneration. If any data digest moves, stop \u2014 that is a new data version and needs review, not this repair.\n\nOrdered actions\n1. Reproduce the consumer crash against the manifest at the pinned tag; capture the traceback and the exact expected split field shape.\n2. Snapshot all data digests.\n3. Fix `release-manifest.py`; add a test that `splits` is derived from the qualification report in the consumer shape. Revert the fix and watch the test fail (a guard never seen to fail is not a guard).\n4. Regenerate `MANIFEST.json` and `SHA256SUMS`; assert every data digest is identical; run `check-package.py`.\n5. Commit/push docs; read CI for **that exact commit** via the `head_sha` API query.\n6. Move the version tag onto the documentation commit, last; delete-and-recreate on the Hub if it refuses a moved tag; read back through the contents API that tag and `main` resolve to the same commit and the pinned manifest carries the splits.\n7. Re-upload small HF files/card if they display splits; re-run anonymous verification at the tag (repo 200, ranged GETs on assets, `private: false`, data files at the tag revision).\n8. Update `DESTINATIONS.json` (`artifact_version` unchanged, `files_verified` lists), release notes, `STATE.md`; re-run site `prepare` (plan digest should be unchanged) then `verify`.\n\nStopping condition\nStop when: consumer runs at the pinned manifest; `check-package.py` passes; anonymous verification at the tag passes; CI green for the exact commit. Abort to a new version only if a data digest changed.\n\nOperator report\n\"Fixed a legacy `splits` shape in the public release's manifest by correcting the generator, not the bytes; moved the version tag to the documentation commit last. Data digests unchanged, manifest verified at the pin anonymously, CI green. No data re-release.\"\n",
+      "response_sha256": "5100d8690855a8801ed36cc991b61be5bc2335de0dd638530152e894ac8209f5"
     }
   ],
   "ledger": {
-    "calls": 56,
-    "tokens": 1889949
+    "calls": 57,
+    "tokens": 1928706
   },
-  "updated_at": "2026-10-22T23:33:51Z"
+  "updated_at": "2026-10-22T23:34:12Z"
 }
