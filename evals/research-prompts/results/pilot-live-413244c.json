@@ -185,7 +185,53 @@
       "elapsed_seconds": 78.234,
       "response": "DECISION\nNot a mirror, and not ready. Verdict: differentiated, needs further work. It stays in discovery scope - no construction, no qualification, no advancement; this session only records the verdict and the evidence gap. The two unmeasured items (split counts, reporting lag) are exactly the contracts that decide readiness, so \"ready\" cannot be claimed yet.\n\nSUPPORTING EVIDENCE\n- The mirror test is on the task, not the source. The published task predicts first-visit failure from establishment attributes; this lead predicts recurrence after a documented intervention, restricts features to pre-return-visit records, and targets an unrepresented inspection regime. Different target, different feature set, different regime. Two named catalog searches found no ML-ready recurrence task. That is a \"differentiated\" verdict, not \"mirror.\"\n- Licence: the source is licensed, so it clears triage, but the exact class (A or B) and the terms quote must be recorded in record.json before anything else - licence class is a required field at or beyond ready.\n- Not ready because contracts 2 and 4 lack evidence: split capacity is unmeasured, and the reporting lag behind the timing claim is unmeasured. Discovery completion criteria require computed split windows and measured timing observations, recorded from the source.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\nNovelty rests on two catalog searches; that is the standard of evidence the method sets, so record it as-is rather than hedging. The decisive unknown is split capacity: recurrence positives plausibly cluster by establishment or campaign, so row counts can look ample while independent positives are few - the clustered count is the number that decides. Second unknown is reporting lag: whether the pre-return-visit feature set is genuinely knowable at the stated instant. The next discriminating check is therefore a cheap aggregate probe: recurrence rate, distinct establishments, clustered positives, and whether three disjoint windows each carry both classes. That single check can kill an otherwise-clean candidate, so it goes first.\n\nORDERED ACTIONS\n1. Write the verdict immediately, before further probing: record.json with jurisdiction, licence class and terms quote, and the novelty verdict via check-novelty.py --verdict differentiated, recording ours (recurrence-after-intervention formulation, timing-gated pre-return-visit features, new regime), theirs (the published first-visit task and the catalog searches), and the prior art. Run scripts/check-candidate.py <id>.\n2. Aggregate probes (anonymous, bounded, no bulk transfer): interventions with return visits, recurrence rate, distinct keys, clustered recurrence count, disjoint train/eval/holdout windows with both classes present.\n3. Timing: record at least one observed period_end-to-published pair; state the prediction instant (the return visit); sort every column from the publisher's documentation into available / post-hoc / label source.\n4. Measure extraction cost: wrap the fetch, count requests, bytes, wall clock.\n5. Only in the advancement session: construction and qualification.\n\nSTOPPING CONDITION\nIf the windows cannot carry both classes, or the clustered independent-positive count is too small to support a claim, reject and record the numbers - a well-documented rejection closes the lead for good. If the lag cannot be bounded from observations, park naming the exact missing observation. Only if both pass does the record go ready/go, naming the construction step for the advancement session.\n\nOPERATOR REPORT (draft)\n\"Opened the licensed regional inspection lead. Verdict: differentiated, not ready. Not a mirror: the published task is first-visit failure from establishment attributes; this is post-intervention recurrence using only pre-return-visit records in an unrepresented regime, and two catalog searches found no ML-ready recurrence task. Licence triaged clean, class recorded. Held on two unmeasured contracts: split capacity (including clustered positives) and reporting lag. Next action: aggregate split-capacity probe first - it is the check that can kill the task - then timing observations. Construction only after those pass, in the advancement session. No worker or publication action taken.\"\n",
       "response_sha256": "b38a9fac50c7e978451c0ebe76c9d26a0fc584ab9889b7b5d0180cd4d78ce1e5"
+    },
+    {
+      "case": "discovery-novelty",
+      "arm": "baseline",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-08",
+      "session_id": "20261022_224004_ad771b",
+      "status": "ok",
+      "exit_code": 0,
+      "tokens": {
+        "input_tokens": 37286,
+        "output_tokens": 1396,
+        "cache_read_tokens": 256,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 38938,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 442,
+          "output_tokens": 11,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 36844,
+          "output_tokens": 1385,
+          "cache_read_tokens": 256,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 24.869,
+      "response": "Decision: not a mirror, not ready. Record it as a differentiated lead that needs two cheap measurements before it can carry a `go`. Do not start construction.\n\nSupporting evidence (as supplied, nothing more)\n- The published task predicts first-visit failure from establishment attributes. This lead predicts recurrence after a documented intervention, restricts features to pre-return-visit records, and covers an inspection regime the published task does not represent. Those are three separate differences in target, feature window and population, so the \"mirror\" test fails: it is not the same task shipped in ML-ready form.\n- Two named catalog searches found no other ML-ready recurrence task. That satisfies `no_precedent`/`differentiated` in substance, but it must be recorded through `check-novelty.py` with the verdict, the two queries and the \"theirs\" statement \u2014 an unrecorded search does not count.\n- \"Licensed\" is not a licence class. That is the cheapest veto and it is still unclassified.\n\nUncertainty, and the next discriminating check\nTwo contracts are unmeasured, and either can kill the lead:\n1. Split capacity. Need independent positives per temporal window, computed from the source, with the clustered count by establishment \u2014 recurrence almost certainly clusters within inspection cycles, so a row count will flatter it.\n2. Prediction timing. A recurrence label and the visit records are published after the period closes. Without observed `period_end -> published` pairs the prediction instant is unfalsifiable, and a period-end instant would make every feature an oracle.\n\nThe single most discriminating check is split capacity, because a licence-clean source with too few independent positives per window is unpublishable regardless of timing. Do it first.\n\nOrdered actions\n1. Classify the licence from the publisher's own instrument (not a general policy page). Record `licence_class`, the quoted evidence and `license_evidence`. A or B only; C or D closes it in this session.\n2. Aggregate count on the source: total establishments, interventions, returns, recurrences; then per candidate train/eval/holdout window, both classes present, clustered positives. Record the request count, bytes and wall clock as measured extraction cost.\n3. Pull as many observed `period_end -> published` pairs as the source exposes; set the lag bound to the largest plus a week of margin, and write the `timing` block accordingly. If no observed pair exists, the timing claim is not establishable \u2014 park it on that exact question.\n4. Record `jurisdiction` (country, region, publisher) explicitly and the novelty verdict via `check-novelty.py`.\n5. Run `python3 scripts/check-candidate.py <id>`; write `record.json` with `go`, `park` or `reject` and the evidence behind it.\n\nStopping condition\nStop probing and write the verdict when any of these is true: licence is C or D; any one split window cannot carry both classes with a defensible independent-positive count; no observed publication date exists to bound the lag; two attempts at the same probe have failed (record the diagnosis, do not re-run); or the 80% wrap-up notice arrives. In the last case write what is measured and leave the unmeasured field named as the next action \u2014 never record a passing-looking field you did not measure.\n\nOperator report (draft)\nOpened one lead: a licensed regional inspection source. Verdict so far: not a mirror \u2014 recurrence-after-intervention on pre-return-visit features is a different task from the published first-visit-failure one, and two catalog searches found no ML-ready equivalent. Not ready: licence class, split capacity and publication lag are unmeasured, so the candidate is held at triage with no construction started. Next action is the aggregate recurrence count per split window, then the lag bound; a licence class of C or D closes it.\n",
+      "response_sha256": "8bbd63305e5c0048a79fbcb46b94c733fe6b89e7b0c435a595341be1c77a41c9"
     }
   ],
-  "updated_at": "2026-10-22T22:40:17Z"
+  "updated_at": "2026-10-22T22:40:39Z"
 }
