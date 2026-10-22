@@ -661,7 +661,62 @@
       "elapsed_seconds": 108.541,
       "response": "Decision\n\nReject both proposals. Spend the one bounded diagnostic on the eval-row triad itself: cluster-aware confidence intervals for the model-minus-persistence AUC difference, plus an independent recomputation of both scores to audit row alignment. The holdout stays untouched \u2014 it is the final scoring set, not a tuning set \u2014 and the source is not dropped on the strength of an unquantified 0.04 gap.\n\nSupporting evidence\n\nThe triad is measured on identical eval rows: model 0.74, persistence 0.78, calendar/identity 0.60. Calendar at 0.60 rules out seasonality; the label behaves as a persistent level, and a model below persistence is a recorded defect, not an encouraging result. But 0.04 is a point difference with no intervals and no alignment audit, and positives may cluster, so the effective sample size is unknown: \"persistence beats the model\" is currently unmeasured, not established. The artifact passed qualification and --accept on its exact version, so any real defect lies in the target definition, not the source \u2014 dropping the entire source now discards a qualified, licence-cleared source over a gap that may be noise. The counter-proposal \u2014 iterate onset thresholds until the holdout beats persistence \u2014 selects thresholds on the final scoring set, which destroys the holdout as evidence; measurement protocols are fixed before they are applied. Re-targeting to onset/change is the doctrine's sanctioned fix for a persistent label, but only as a new task instance with its own qualification, measured on eval, holdout scored once at the end.\n\nUncertainty and the next discriminating check\n\nOne diagnostic decides the fork: a block bootstrap (blocks by event key or time cluster, not rows) giving a CI for the AUC difference on the pinned eval rows, plus a second implementation \u2014 forbidden from reading the first \u2014 recomputing the persistence and model scores to confirm alignment. Record which figure is quoted and which replicated. If persistence's lead survives the interval, the current target is a negative result. If the intervals overlap heavily, the target at best ties a one-line rule \u2014 the same conclusion for shipping, recorded honestly. Examining the holdout now answers nothing: it cannot settle the design question and spends the resource before the target is fixed.\n\nOrdered actions and stopping condition\n\n1. Freeze the artifact and its passing report; write the triad into the candidate record with the commands that produced it, labelled a measured defect.\n2. Run the one diagnostic above. No holdout access, no threshold search.\n3. Apply a rule fixed now: if persistence's lead is robust, either drop the candidate with the negative result recorded, or \u2014 only if the source's semantics support a change label \u2014 open exactly one re-targeted task (onset or sustained change) as a new instance: new quality.json, full qualification, triad on eval, thresholds fixed before any measurement.\n4. Stopping condition: one re-target attempt. If it also fails to beat its own persistence baseline on eval, the candidate is dropped permanently \u2014 one rebuild per structural defect, no further attempts.\n5. Update STATE.md and the record; publish nothing from these numbers.\n\nOperator report\n\nEval triad on the accepted artifact: model 0.74, persistence 0.78, calendar 0.60 \u2014 the task currently loses to a one-line rule, but the gap carries no uncertainty estimate and the decisive comparison is unreplicated. Holdout untouched. Next tick spends the bounded diagnostic on clustered bootstrap intervals plus independent replication, then applies the recorded rule: negative result, or one pre-registered onset re-target measured on eval only. The proposal to tune thresholds until the holdout wins is refused: it spends the holdout on selection and makes any resulting number meaningless.\n",
       "response_sha256": "d83187e29b80d779303c75d26850f179cbc9a973c72e6edc6de0660de79ad690"
+    },
+    {
+      "case": "advancement-baseline",
+      "arm": "baseline",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-16",
+      "session_id": "20261022_224812_f04f8d",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "faa5a028c5da4df1b2f8d211718143bdcabf28253d0c267e4d0dcaad2e7e2b26",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 36481,
+        "output_tokens": 1633,
+        "cache_read_tokens": 256,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 38370,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 232,
+          "output_tokens": 11,
+          "cache_read_tokens": 256,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 36249,
+          "output_tokens": 1622,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 27.531,
+      "response": "**Decision**\n\nNeither owner option. Do not drop the source on this evidence alone, and do not tune onset thresholds until the holdout beats persistence. Tuning against the holdout is evaluation-on-the-test: it destroys the only clean confirmation data and turns a real defect into a fabricated win. Holdout stays unread until the protocol is frozen.\n\nThe defensible next step is one bounded, eval-only diagnostic that decides between *drop* and *one retarget*: quantify whether the persistence gap is real, and check whether a change/onset label is even constructible from shipped columns.\n\n**Supporting evidence (supplied)**\n\n- Model 0.74, persistence 0.78, calendar/identity 0.60 on identical eval rows. A model below persistence is a recorded defect in the task definition, not an encouraging result \u2014 the label is largely a persistent level, and persistence is a one-line rule.\n- No uncertainty intervals and no alignment audit exist, so 0.78 vs 0.74 is a point comparison of unknown precision; I cannot call the gap real or noise.\n- Qualification and acceptance passed \u2014 the artifact is sound. Passing the gate says the files lack detectable defects; it says nothing about whether the task is a forecast. This is exactly the \"gate passes, task is still a negative result\" case.\n- Standing method: when the label is persistent, retarget change/onset, and treat that as a **new task instance with its own qualification**, not a tweak. Budget one rebuild per structural defect.\n\n**Uncertainty and the next discriminating check**\n\nTwo unknowns, one script answers both:\n\n1. Is the gap real? Positives likely cluster (event/day), so row counts overstate the effective sample. Compute a cluster bootstrap CI on the model-minus-persistence AUC gap, clustered on the event key, plus per-window and per-year AUC to expose any pooled structural break or prevalence shift between splits.\n2. Is onset constructible? From shipped columns only, count rows where a prior-period value exists and the label flips \u2014 i.e. whether disjoint train/eval/holdout windows can each carry both classes of an onset label with adequate independent positive counts.\n\nDiscriminating outcome: if the decomp gap is within interval and onset counts are adequate \u2192 retarget, don't drop. If the gap is real and persistence dominates and onset is thin or unconstructible \u2192 this is a negative result; drop and record it.\n\n**Ordered actions**\n\n1. Freeze holdout; note explicitly it was not read. No threshold scanning.\n2. Write one script in `.factory/` (no `python3 -c` in this session) that, on eval/train rows only: clips to the declared cluster key, bootstraps the decomp gap CI, reports per-year/per-window AUC and per-split prevalence, and counts onset-eligible rows per window. Emit compact JSON; delete the scratch script.\n3. Decide from that JSON: one retarget build (new task instance \u2192 construction \u2192 `dataset-qualification`) or drop with the negative finding recorded next to the number.\n4. Update `STATE.md` and the candidate record: defect, commands, results, verdict.\n\n**Stopping condition**\n\nStop after the single diagnostic plus at most one rebuild. Do not run a second or third rebuild \u2014 a third audit that keeps finding defects is Task-design failure, not code. Stop immediately if onset is not constructible, or if the gap proves real with persistence dominating and no onset path: drop.\n\n**Operator report**\n\nArtifact qualified; the level target is beaten by persistence (0.74 vs 0.78; calendar 0.60), so the task as defined is not a forecast. I did not drop it, and I did not touch the holdout \u2014 tuning thresholds against it would manufacture a result. Ran one eval-only diagnostic: clustered CI on the gap, per-year/prevalence breakdown, and onset-constructibility counts. Outcome decides between one retarget to an onset label (with fresh qualification) or a recorded drop. No publication action; holdout unexamined.\n",
+      "response_sha256": "ed4dbd0b2c21cc02834bdfb782cbb3de067ee3254707a02d12446342e2d5b436"
     }
   ],
-  "updated_at": "2026-10-22T22:48:21Z"
+  "updated_at": "2026-10-22T22:48:42Z"
 }
