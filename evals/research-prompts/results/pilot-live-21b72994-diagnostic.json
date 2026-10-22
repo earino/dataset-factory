@@ -786,11 +786,67 @@
       "elapsed_seconds": 136.86,
       "response": "DECISION\nUse the one deliberate recovery available: relaunch the approved transfer under a new job ID, scoped to the missing asset, to the private target. Then plan, launch, collect, record, destroy, report, mark handled. No publication act - no allow_public, no visibility change; the flip stays the operator's.\n\nSUPPORTING EVIDENCE\n- Staging is immutable and still holds the exact expected bytes and digest, and the artifact passed qualification and --accept for that exact artifact version: the accepted bytes exist, so rebuild or re-qualification would be wrong, not cautious.\n- Transfers are the sanctioned path for already-built artifacts: host-side on the worker, each asset verified on arrival against the recorded SHA-256 and after upload against the server's digest; bulk never touches this host.\n- Assembled job directories are immutable, so the corrected attempt takes a new job ID; the approved declaration already covers the missing asset, allowance and time suffice, and plan is offline, failing closed on a missing FACTORY_PUBLISH_TOKEN before any paid provisioning.\n- The old worker is confirmed deleted, so the ledger is unambiguous; I hold the research mutex and the job via documented handoff, no competing writer.\n- A public target is refused without allow_public: true, which I do not set.\n\nUNCERTAINTY AND DISCRIMINATING CHECK\nUnknown: whether the omission was a declaration gap or an upload failure, and whether the target's earlier assets still sit at their manifest digests - partial uploads may exist and must be reconciled by digest in the next deliberate attempt. The discriminator is collect: it checks release membership, sizes and GitHub SHA-256 digests without downloading artifacts. Every asset, including previously uploaded ones, must match.\n\nORDERED ACTIONS AND STOPPING CONDITION\n1. Set a new attempt ID in the job declaration; scope to the missing asset; confirm private target and allow_public absent.\n2. plan - stop if it rejects.\n3. launch; poll status to a result.\n4. collect; read the digest and membership verification.\n5. Record in the jobs ledger, STATE.md, candidate record.json; commit, push; check CI for that exact commit via the gh api head_sha query.\n6. destroy immediately after verified collection; confirm server and job-owned IP removal.\n7. Report, then write .factory/<job_id>/handled with a one-line summary.\nStop and escalate, with no further automatic attempts, if plan refuses, any asset is off-digest at collect, a second consecutive failure occurs, or allowance/time runs out; preserve the report and container.log.\n\nHOW THE DECISION CHANGES\nSource bytes gone: copy is impossible; never substitute different bytes. Rebuild on a worker from the recorded construction script and pinned input checksums. Identical digests -> transfer those. Different bytes -> a new artifact version: re-qualify, --accept the new artifact, regenerate the manifest, review again; old checksums preserved. If nothing verifiable remains, stop and report the loss.\nDigest conflicts with the manifest: do not copy; never edit the manifest to match bytes. Compare staging with the qualification report's recorded SHA-256. If staging matches qualification and only the manifest is stale, regenerate it (metadata-only, assets untouched) and transfer. If it matches neither, the copy is wrong or corrupted: rebuild or find a verifiable copy; acceptance never re-points to unverified bytes.\nPrior linked recovery already failed: the bounded-retry budget is spent; no automatic relaunch. Diagnose from collected errors and container.log; launch one corrected attempt only with a concrete, evidenced fix, stating what changed. Otherwise reconcile the ledger, keep the candidate private, and escalate with both failures' diagnostics. No loops.\n\nOPERATOR REPORT\n\"Transfer for <candidate> failed with one asset omitted. Staging still holds the exact accepted bytes at the expected digest; the old worker is confirmed deleted. I am relaunching the approved transfer under a new job ID for the missing asset only, to the private target, within allowance. On verified collection - every asset at its manifest digest - I will record the result, destroy the worker, and mark the job handled. If collection shows a digest conflict or this attempt fails too, I stop and escalate with diagnostics rather than retry.\"\n",
       "response_sha256": "6b08ea303e9c17c415476f5b04c6b48d488ad590c34de39d1ef5bd800d3da703"
+    },
+    {
+      "partition": "diagnostic",
+      "case": "watcher-recovery",
+      "arm": "baseline",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-76",
+      "session_id": "20261022_235707_d6451a",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "4ddedbc0238c8ff85b2fb1b9d981243eb52bfaae15a3aa5f90d0306e152ee668",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 728,
+        "output_tokens": 3761,
+        "cache_read_tokens": 19840,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 24329,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 58,
+          "output_tokens": 12,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 670,
+          "output_tokens": 3749,
+          "cache_read_tokens": 19456,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 50.045,
+      "response": "Decision: Recover only the omitted asset with a new, narrowly scoped transfer job ID. Do not rerun the failed job ID, alter the immutable staging source, accept a partial transfer, or publish anything. The candidate remains private and unapproved for publication.\n\nSupporting evidence: The source release is immutable and still contains exactly the expected bytes and SHA-256; the old worker is confirmed deleted; the existing approved transfer declaration covers this asset; allowance and time remain; no recovery has been attempted. The artifact already passed current qualification/acceptance, and transfer alone does not create a new artifact version.\n\nUncertainty and next discriminating check: The main unknown is whether the target release is private and whether the transfer tool can still read the source asset and target credential. Run `worker plan` first; it checks the declaration, allowance, credential presence, and public-target guard without spending compute. Also compare the source asset\u2019s size and digest to the manifest and acceptance report before launching.\n\nOrdered actions:\n1. Collect or preserve the failed job\u2019s compact result and diagnostics; do not download bulk CSVs to this host.\n2. Confirm the source asset\u2019s advertised size/SHA-256 matches the manifest and the accepted artifact version; confirm the target is private.\n3. Copy the approved transfer declaration to a new job ID, limited to the one missing asset, preserving `source_repo`, `source_release`, `source_asset_id`, `target_name`, size, and SHA-256. Set `allow_public` false. Use the documented source-staging and target-publish credential split; never put credentials in the bundle or logs.\n4. `worker plan` the new job. Launch only if plan passes and allowance/time remain. Then `status`, `collect`, and verify the report shows source-arrival digest and target digest both matching the manifest, with the target asset present at the expected size. Do not collect bulk data locally.\n5. On verified success, record the recovery and target evidence in the candidate record and `STATE.md`, commit/push, and check CI for that exact commit. Destroy the new worker immediately and verify no leftover server/IP. No tag, flip, manifest \u201cpublished\u201d state, or publication.\n6. Only after recording and reporting, write `.factory/<old-job-id>/handled` with a one-line summary. Do not mark the new job handled until it finishes.\n\nStopping condition: Stop successfully only when the target asset\u2019s size and SHA-256 match the manifest and source, the collected report is verified, and the worker is destroyed. Stop and escalate on source absence, digest conflict, public target without approval, missing credentials/allowance, or unexplained prior recovery failure.\n\nChanged conditions: If source bytes are gone, do not launch a transfer; record the artifact as unrecoverable from staging, search only for a verified same-digest copy, otherwise rebuild from the construction record and requalify before any transfer. If the source digest conflicts with the manifest, hard-stop: do not upload or overwrite, preserve evidence, reconcile which bytes changed, and treat acceptance as invalid for those bytes. If a prior linked recovery already failed, do not automatically chain another blind attempt; inspect that failure and target state by digest, then permit at most one corrected new-ID attempt for a clear ordinary cause, otherwise escalate.\n\nOperator report: The transfer failed only because one asset was omitted. The staging source still matches the expected digest, the old worker is gone, and the candidate remains private with no publication approval. I will plan and run a new single-asset transfer to the private target, verify both source and target digests, collect compact evidence, destroy the worker, update the records, push, and check CI. No publication occurs. If the source is missing or mismatched, or a prior recovery failed without a clear cause, I will stop and report rather than repeat the transfer.\n",
+      "response_sha256": "fbbc87548fd12af9975bbcc7fc36acb2b882a82322180eaec9435d1c7c1cbcce"
     }
   ],
   "ledger": {
-    "calls": 76,
-    "tokens": 2636611
+    "calls": 77,
+    "tokens": 2660940
   },
-  "updated_at": "2026-10-22T23:57:17Z"
+  "updated_at": "2026-10-22T23:57:58Z"
 }
