@@ -128,6 +128,8 @@ copies are never edited independently by a model on a schedule.
 
 ## Licensing: two grants, two scopes
 
+**Only build on sources whose licence is already clean.** Classify every candidate before construction: explicit open (redistribution *and* derivatives), open-with-conditions, unresolved, or prohibited. Unresolved is a **drop, not a park** - no permission emails, no dated expiry to wait on, no "probably fine"; a source that needs a written answer is a source we do not use. The reason is arithmetic: a source probed before its licence is read costs exactly as much as a usable one and returns nothing.
+
 Every release declares its terms. The standing policy is `config/licensing-policy.json`; the
 per-dataset decision is `candidates/<id>/license.json`, and the release manifest carries both, so
 the manifest cannot drift from the decision.
@@ -164,6 +166,10 @@ Everything above produces a **private** release. The boundary is one event: **ma
 repository or Hub repo public** (the flip). Up to it you act freely - build, qualify, package,
 verify, write the docs, and leave the repository one call away from public. The flip itself is the
 operator's single approval; nothing about packaging, checks or planning is theirs to grant.
+
+A dropped session, a gateway restart or a background-process notification is **not** a decision
+point. If the task was already authorised, resume it and report the outcome; asking again for work
+the operator has already scoped reads as stalling and costs a whole cycle.
 
 After the flip, publication is automatic: GitHub and Hugging Face, the site page, and the anonymous
 verification all run without another yes, and the operator is told the link. Do not re-ask for a
@@ -293,6 +299,9 @@ and run its commands.
 | An older staged release can still be flipped by a later session | A rebuild creates a new tag but the superseded staged release keeps its private artifacts and its record | Rename the superseded releases as `SUPERSEDED - DO NOT PUBLISH` at the destination, list them under `superseded` in `DESTINATIONS.json`, and point the record's `next_action` at the current tag |
 | The Hub card carries no licence metadata | The card was uploaded without YAML front matter - the upload succeeds and the licence field simply disappears | Keep the front matter in the card source, upload the card as `README.md`, and read `cardData.license` back from the API; a release README is not a dataset card |
 | The documented loader cannot find a released file | Assets were uploaded under bare names (`train.csv`) while the manifest and loader expect `public-train.csv` | Read the asset names back after upload and rename them (`PATCH /releases/assets/<id>`), then re-check sizes and digests; never assume the uploader used the manifest's names |
+| The website planner dies with a bare `TypeError` (`'NoneType' object is not iterable`) | `MANIFEST.json` has `splits: null`; the planner's `flatten_splits` iterates it | Derive `splits` in the manifest from the gate report or `quality.json`'s split stats, and rebuild the manifest **before** pushing the package to the repository - the planner reads the manifest at the pin, not the local file |
+| Manifest and qualification name different artifact versions | The manifest computed its own packaging hash while `qualification.artifact_version` came from the gate, and the candidate record can lag a rebuild | One identity: `artifact_version` is the gate digest, taken from the qualification report beside the artifact; record the packaging hash separately as `package_digest`. Never read qualification from the candidate record when a report file exists |
+| A re-tagged Hub release still serves the old manifest | `create_tag(..., exist_ok=True)` keeps an existing tag pointing at its old commit instead of moving it | Delete the tag, then recreate it on the current `main` sha and read the revision back; verify the manifest *at the tag* lists the splits and licence block you just regenerated |
 
 ## Completion criteria
 

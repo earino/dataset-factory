@@ -183,6 +183,20 @@ def collect_candidates():
     }
 
 
+def _split_rows(node, depth: int = 0) -> int:
+    """Sum split row counts through up to two levels of nesting.
+
+    Two shapes exist in the manifests: {"train": {"rows": n}} and, for level-structured datasets,
+    {"temporal": {"train": {"rows": n}}}. Reading only the top level printed "no data" for NOAA
+    (nested under a level) and for ABS (empty map), while both releases clearly have rows.
+    """
+    if depth > 3 or not isinstance(node, dict):
+        return 0
+    if isinstance(node.get("rows"), int):
+        return node["rows"]
+    return sum(_split_rows(value, depth + 1) for value in node.values())
+
+
 def collect_releases():
     releases = []
     for manifest_path in sorted((ROOT / "release").glob("*/MANIFEST.json")):
@@ -192,10 +206,16 @@ def collect_releases():
         dest = destinations.get("destinations", {}) or {}
         verified = {name: bool((body or {}).get("verified")) for name, body in dest.items()}
         verified_at = sorted(filter(None, [(body or {}).get("verified_at") for body in dest.values()]))
-        rows = 0
-        for split in (manifest.get("splits") or {}).values():
-            if isinstance(split, dict) and isinstance(split.get("rows"), int):
-                rows += split["rows"]
+        rows = _split_rows(manifest.get("splits"))
+        if not rows:
+            # Older manifests carry no split counts at all (ABS v2026.10 shipped an empty map);
+            # the gate's own split_stats beside the release is the authoritative fallback.
+            quality_doc = read_json(folder / "quality.json", {}) or {}
+            rows = _split_rows(quality_doc.get("split_stats") or quality_doc.get("splits"))
+        if not rows:
+            # ABS ships split *paths* in quality.json and the counts in summary.json, which is
+            # written by every builder that emits a summary. Third shape, same page.
+            rows = _split_rows((read_json(folder / "summary.json", {}) or {}).get("splits"))
         baseline_block = manifest.get("baseline") or {}
         baseline = (baseline_block.get("levels")
                     or (baseline_block.get("artifact") or {}).get("levels") or {})

@@ -250,6 +250,7 @@ def main() -> int:
         manifest["splits"] = (quality_doc.get("split_stats")
                               or (quality_doc.get("splits") if isinstance(quality_doc.get("splits"), dict)
                                   and all(isinstance(v, dict) for v in quality_doc["splits"].values()) else {})
+                              or (load(release / "summary.json") or {}).get("splits")
                               or ((record or {}).get("qualification") or {}).get("splits")
                               or {})
     manifest["licenses"] = licenses_block(candidate)

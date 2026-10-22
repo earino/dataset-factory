@@ -6,6 +6,7 @@ as a trend, and a credential can never reach a published page.
 """
 import html as html_lib
 import importlib.util
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -281,6 +282,53 @@ class BuildTests(unittest.TestCase):
             first = len(dashboard.read_json(out / "history.json"))
             dashboard.build(out, include_tests=False)
             self.assertEqual(first, len(dashboard.read_json(out / "history.json")))
+
+
+class ReleaseRowsTests(unittest.TestCase):
+    """Every shipped manifest shape must render a row count, not "no data".
+
+    Three shapes exist in the repo and all three were live when this was written: ABS shipped an
+    empty split map (counts only in summary.json), NOAA nested its splits under a level name, and
+    the rest use {"train": {"rows": n}}. The page said "no data" for two published datasets.
+    """
+
+    def _root(self, manifest, quality=None, summary=None):
+        root = Path(tempfile.mkdtemp(prefix="dash-rows-"))
+        folder = root / "release" / "fixture"
+        folder.mkdir(parents=True)
+        (folder / "MANIFEST.json").write_text(json.dumps(manifest))
+        if quality is not None:
+            (folder / "quality.json").write_text(json.dumps(quality))
+        if summary is not None:
+            (folder / "summary.json").write_text(json.dumps(summary))
+        return root
+
+    def _rows(self, root):
+        original = dashboard.ROOT
+        dashboard.ROOT = root
+        try:
+            return dashboard.collect_releases()["releases"][0]["rows"]
+        finally:
+            dashboard.ROOT = original
+
+    def test_flat_splits(self):
+        root = self._root({"dataset": "fixture", "splits": {"train": {"rows": 10}, "eval": {"rows": 5}}})
+        self.assertEqual(15, self._rows(root))
+
+    def test_level_nested_splits(self):
+        root = self._root({"dataset": "fixture",
+                           "splits": {"temporal": {"train": {"rows": 7}, "eval": {"rows": 3}}}})
+        self.assertEqual(10, self._rows(root))
+
+    def test_path_only_quality_falls_back_to_summary(self):
+        root = self._root({"dataset": "fixture", "splits": {}},
+                          quality={"splits": {"train": "public/train.csv"}},
+                          summary={"splits": {"train": {"rows": 4}, "eval": {"rows": 6}}})
+        self.assertEqual(10, self._rows(root))
+
+    def test_no_counts_anywhere_still_reads_no_data(self):
+        root = self._root({"dataset": "fixture", "splits": {}}, quality={"splits": {}})
+        self.assertIsNone(self._rows(root))
 
 
 if __name__ == "__main__":

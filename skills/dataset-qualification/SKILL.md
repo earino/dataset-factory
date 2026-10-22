@@ -123,6 +123,32 @@ What cannot be measured must be labelled, not argued away. The output of this pa
 block (the numbers, the rows they came from, and the conclusion) so a later reader cannot quote the
 top-line figure without the comparison that qualifies it.
 
+## Building a panel that does not fit in memory
+
+A multi-year daily panel is tens of millions of rows before filtering, and the coordinator has a
+couple of gigabytes. Construction must stream, not accumulate:
+
+- **Write each batch to disk; never hold `to_dict("records")`.** A dict per row costs about a
+  kilobyte, so seven million rows is several gigabytes of overhead before the values themselves.
+  Emit per week (or per source file) straight into the split files, with the header written once.
+  Memory then stays flat regardless of panel size.
+- **Reduce each source file as it lands.** Aggregate a 45 MB monthly CSV to a weekly parquet in a
+  prep pass and delete the CSV; thirty-six months of raw files will exhaust a small scratch disk
+  even though the aggregate is under 100 MB.
+- **Filter through the dimension table, and fail if the filter matches nothing.** A state or
+  category filter silently matched zero rows because the aggregation step had dropped that column,
+  so the build processed the entire country and looked merely slow. Assert the filtered row count
+  is non-zero and log the before/after counts.
+- **De-duplicate weeks that straddle source files.** A week appearing in two consecutive monthly
+  files is emitted twice; the gate catches it as duplicate ids, which is late and confusing.
+  Keep a set of processed periods.
+- **One column list, in one place.** Building `ordered` from `["id", *FEATURES, TARGET]` where
+  `FEATURES` already contains the identifiers writes duplicate headers, doubles those columns'
+  values and breaks every per-column check downstream. A duplicate header is a construction bug,
+  not a formatting quirk.
+- **Unbuffered output.** Pipe-buffered logs make a running build indistinguishable from a hung one;
+  run with `python3 -u` and print progress per source file.
+
 ## The five checks
 
 ### 1. Leakage - no shipped column may determine the target
@@ -288,6 +314,7 @@ and any column shipped beyond the declared set.
 | Passes under UTC, fails elsewhere | Timezone-free timestamp parsed with `astimezone` under host TZ | Treat timestamps as UTC explicitly; run the suite under a TZ ahead of UTC too |
 | A whole directory disappeared | `rmtree` on a user-supplied path | Clear generated paths through an ownership marker; name exact owned paths |
 | A model AUC is quoted with no reference | Only one baseline was ever run, or the reference lives in a notes field nobody compares | Run the triad (persistence, calendar-only, full model) on identical rows; record all three beside the number |
+| The gate dies with `ValueError: labels and scores must align and be non-empty` | A split has a duplicate header or a ragged row, so one column's values no longer align with the labels | Fix the build's column list; the gate now reports `leakage.every_column_could_be_scored` naming the column and split instead of aborting - keep that behaviour, a bare traceback hides which column is malformed |
 | The model trails a one-line rule | The label is largely persistent, or the eval window shifts prevalence | Record it as a defect; re-target a change/onset label or report the task as persistence |
 
 ## Completion criteria
