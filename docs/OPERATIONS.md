@@ -731,3 +731,18 @@ and compact receipt. Both hash in chunks and use freshly owned temporary caches 
 removed after each check; old unrelated cache paths are preserved. This is not a claim that
 the container disk monitor covers host-side HF jobs: the executor returns before that loop
 for HF jobs. Broader host-side disk enforcement remains separate work.
+### Assembled job directories are immutable
+
+`assemble-job.py` builds in a fresh temporary directory under `.factory/jobs/`, validates the
+whole bundle, then exposes it with one rename. It writes `bundle-owner.json` with the job ID
+and hashes of the generated files. Repeating the same assembly is a no-op. Changed source,
+manual edits, unexpected files or a different ownership record require a **new job ID**.
+An existing unmarked directory is preserved, including bundles created by older assemblers;
+use a new attempt ID rather than deleting it to make the assembler proceed.
+
+Descriptor paths must remain within their declared source/output roots. Absolute paths,
+traversal, symlinks and duplicate/reserved destinations are refused before installation.
+A failed assembly cannot replace an existing bundle or leave a launchable partial target.
+Only the fresh temporary staging directory is automatically cleaned up. Qualification and
+runner files are still copied verbatim and the existing qualification-before-scoring sequence
+is unchanged. No cloud action is performed by assembly.

@@ -5639,6 +5639,27 @@ Next action for the tick: the queue's construction work remains with the advance
 staging release 420810883); ea-flood-alert-escalation enters the queue behind the five ready
 candidates as a measured class-A build (whole panel fits the coordinator; ~4.9 MB of fetches).
 
+
+### 2026-10-22 — runtime hardening rollout prepared
+
+PR #4 now inventories all 14 custom skills captured by Scout at handoff `3ec0b64` (53 runtime
+files plus eight project skill files). Corrected the publishing skill's delete/recreate-tag and
+in-place published-manifest advice; original captures remain in #1. Source audit detects both
+project and profile drift. The live host is unchanged. Source inspection proved curator pause
+and pin do not block background-review patches: rollout must separately disable
+auxiliary.background_review.enabled, pause interval curation, drain writers, and preserve
+preimages before any restoration. Exact rollout/rollback and remaining work are in
+docs/HARDENING-DEPLOYMENT.md. Next: finish combined checks, resolve the operator's earlier
+no-merge instruction, then coordinate the documented rollout with Scout.
+## Job assembly safety — 2026-10-22, engineering branch
+
+On isolated `hardening/job-assembly`, the assembler no longer recursively removes the directory
+named by a job descriptor. It validates identifiers/paths, stages and validates before exposing
+output, seals ownership plus file hashes, and treats repeated job IDs as immutable. Same bytes
+are a no-op; changed or unfamiliar work is preserved and requires a new attempt ID. Added safety
+regressions for traversal, links, collisions, interrupted assembly and preservation. No worker was
+launched and no scheduler/runtime settings were changed. See the resulting PR for clean-checkout
+validation and exact-commit CI. Runtime handoff remains in Scout's PR #1; schema work is PR #2.
 ## Infrastructure hardening — 2026-10-22, engineering branch
 
 Eduardo requested broader hardening with Scout's runtime knowledge. Work is isolated on
@@ -5773,3 +5794,11 @@ main and the version tag. The publisher now resolves paths from the frozen
 release record, consistently with its generated card, rather than from mutable
 candidate metadata. Two regressions cover this drift and explicit structured
 manifest paths. No network tests, bulk download or remote mutation was added.
+**Observed, recorded, not fully attributed:** austin-911-response's site-destination verified_at
+advanced twice during the close-out window (18:12:18 -> 18:45:41, captured in fd29c3e, ->
+18:51:05, committed here) in the site pipeline's own record_site_destination format - a write
+the code makes only after a live anonymous verification. prepare/release-manifest/check-package/
+the test suite were each ruled out by reproduction, and no cron or session schedule matches the
+moments; the live site re-verified anonymously from here (200, cross-links present), so the
+recorded claim is true and the value is kept. If a stray site-verification automation exists on
+this host, the builder should make it commit its own writes or stop leaving them in the tree.
