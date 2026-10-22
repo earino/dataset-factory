@@ -17,8 +17,10 @@ concurrent repairs; see `docs/HARDENING-INCIDENTS.md` in that PR.
   source audit in CI, 12 new tests, plus corrections to the captured publishing skill.
 - PR #6, `e22b8a2`: pinned Hub verification, collected worker evidence, read-only Hub
   verification jobs and immutable tags, 33 new tests (including four preserved from Scout's active-session repair).
-- PR #7, `be68251`: atomic session admission, strict gate decisions, truthful scheduler
-  exit codes and process-group supervision; 20 new tests using local stubs.
+- PR #7, `07ecc51`: atomic session admission, strict gate decisions, truthful scheduler
+  exit codes and process-group supervision; 21 new tests using local stubs.
+- PR #8, `1231594` (code at `f911591`): supervised worker-host transfer/HF disk and
+  runtime limits, 18 new subprocess regressions. No paid worker probe.
 - PR #5, `63472c1`: evidence patches only. They are not approved skill changes and must not
   be applied as part of deployment.
 
@@ -27,12 +29,13 @@ GitHub Actions before deployment. Earlier green heads are not current-state evid
 The Hub regression was also checked with Scout's installed client in an isolated checkout:
 TSB without new worker evidence exits 2/incomplete, leaves its prior receipt byte-identical,
 and writes a separate attempt diagnostic. No worker or remote mutation was used for that test. Independent Python 3.13.1
-clean-clone results: #2 449 tests, #3 432 tests, #4 431 tests, #6 478 tests, #7 443 tests, each OK
+clean-clone results: #2 449 tests, #3 432 tests, #4 431 tests, #6 478 tests, #7 444 tests,
+#8 493 tests at its first code head (three further tests added), each OK
 with six existing host-dependent skips (see each PR for its exact tested revision).
-The combined integration at `6cffd13`, reconciled with main `f42e5b0`, passed:
+The combined integration at `3536d57`, reconciled with main `0f853fa`, passed:
 
 ```text
-Ran 523 tests in 2.578s
+Ran 542 tests in 5.153s
 
 OK (skipped=6)
 ```
@@ -107,6 +110,8 @@ Do not merely update inventory hashes to make a drift alert green.
    Merge #1, #2, #3 in that order, preserving their reviewed content. Retarget #4 from #1's
    branch to `main`, inspect its resulting diff, then merge it. Retarget #6 from #2 to main,
    inspect its diff and merge it. Merge #7 after reviewing its diff against current main.
+   Retarget #8 from #6 to main, inspect its supervisor-only diff and merge it after
+   resolving any source-review findings; it changes future worker bundles only.
    Retain all STATE and OPERATIONS entries
    when resolving append-only conflicts. No force push to `main`.
 2. Require checks for the resulting full commit SHA, not an earlier branch head:
