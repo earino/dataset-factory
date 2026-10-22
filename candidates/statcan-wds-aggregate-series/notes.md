@@ -47,3 +47,28 @@ this class analysis; the park is at class level, before table selection.
 PARK (source class). Unpark condition recorded in the record's next_action: an
 open case/event-grain StatCan release, checkable via the WDS getChangedCubeList
 endpoint or the open.canada.ca StatCan feed on a future Canada tick.
+
+## 2026-10-22 discovery session (tick region: Canada) - the unpark checks, run
+
+The record's next_action asked a future Canada tick to check two channels. Both were
+checked this tick; the park stands.
+
+- WDS getChangedCubeList (the endpoint named in the unpark condition):
+    curl -s -o /dev/null -w "%{http_code}" https://www150.statcan.gc.ca/t1/wds/rest/getChangedCubeList
+    -> 404; with ?lang=eng and ?lang=en -> 404 both. The method listed in the WDS
+  docs no longer resolves at the documented path (405 from getCubeMetadata for GET
+  shows the REST family itself is still mounted, so this is a missing/renamed method,
+  not a dead service).
+- open.canada.ca StatCan feed: pulled the 100 most-recently-modified OGL packages
+  (CKAN package_search?sort=metadata_modified+desc&rows=100 -> HTTP 200, 1,166,356
+  bytes). StatCan entries in that window are all aggregate tables of the parked
+  class: industrial product price index variants, new housing price index, EI
+  beneficiaries by geography, international travellers by mode, FX rates, GoC debt
+  securities. No case/event-grain release appeared.
+- Also relevant: the 2026-10-22 ISC probe found StatCan tables 34-10-0204..209
+  (drinking water advisories by public-owner type) - aggregate counts, same parked
+  class, recorded in candidates/isc-ltdwa-advisory-lift-timing.
+
+Conclusion: no event-grain channel appeared on either named path; the park remains
+correct and this check need not be repeated before the next Canada tick.
+

@@ -1,0 +1,46 @@
+{
+  "id": "hc-health-product-shortage-onset",
+  "status": "dropped",
+  "verdict": "reject",
+  "created_at": "2026-10-22T20:20:30.783336+00:00",
+  "domain": "drug supply: shortage onset for marketed drugs (Health Canada mandatory shortage and discontinuation reporting)",
+  "prediction_question": "Hypothetical task this source would support (closed at triage before any task probing): for a DIN marketed in Canada, will it enter an actual-shortage state within the following N months - an onset/transition task, a type currently unrepresented on the bench. Reports under the Food and Drug Regulations mandate date back to 2017-03-10 (per the PMPRB/HC analytical study citing the database).",
+  "prediction_time": "Would be the report-publication instant per DIN; never probed beyond access and licence, which closed the source at triage.",
+  "target_definition": "Would be a shortage-status transition per DIN (reported actual-shortage states, e.g. resolved -> actual shortage), from the portal's report database. Not derivable here: the only machine-readable channel is registration-gated.",
+  "sources": [
+    {
+      "name": "Drug Shortages Canada (Health Canada mandatory reporting portal; relaunched as healthproductshortages.ca)",
+      "url": "https://drugshortagescanada.ca/ (redirects to https://healthproductshortages.ca/)",
+      "api": "A public web API exists and is documented in HC's own example code (drugshortagescanada.ca/blog/61, 'Public web API examples'): POST /api/v1/login with account email+password to obtain an auth-token, then GET /api/v1/search with that header; the docs recommend 'the monthly data extract' for whole-database analysis instead of paging the API. Both channels are ACCOUNT-GATED, not anonymous.",
+      "license": "No licence instrument on any anonymously readable channel (measured; see license_evidence) - licence_class C",
+      "access": "Measured 2026-10-22: plain HTTP GET -> 403 on both https://drugshortagescanada.ca/ (5,277 bytes) and /api (5,286 bytes); a real-browser load (browser session) redirected to https://healthproductshortages.ca/ and served a Cloudflare 'Performing security verification' challenge ('Just a moment...', Ray ID a4eb304a9dcd2fef) rather than site content. Registration wall + bot wall."
+    },
+    {
+      "name": "open.canada.ca portal search for an anonymous extract of the shortage database",
+      "url": "https://open.canada.ca/data/en/api/3/action/package_search?q=drug+shortage",
+      "api": "CKAN package_search, anonymous, HTTP 200 (56,297 bytes, measured 2026-10-22): 29 packages, ALL Health Canada informational HTML pages ('Information on Drug Shortages', 'Causes of Drug Shortages in Canada', reporting guidance, etc.). No CSV, JSON or API resource for the report database exists on the federal portal.",
+      "license": "n/a (no data resource to license)",
+      "access": "anonymous and clean - but it returns no machine-readable data"
+    }
+  ],
+  "license_evidence": [
+    "Measured 2026-10-22: the portal sits behind a Cloudflare challenge for plain clients (curl 403 x2) AND presented the same verification challenge to a real browser session, so the site's own terms/licence page was not readable anonymously; the API requires account registration before anything is reachable. open.canada.ca carries no extract of this data (29 HTML-only packages, measured). No licence statement could be read from the publisher for this data. Per the standing rule of 2026-10-21 (a source whose licence cannot be established is closed, not parked; precedents cpcb-aqi-exceedance, melbourne-pedestrian-counts) this is licence_class C: an unclear/unreadable licence is a closed door. What would reopen it: a licence statement readable WITHOUT an account, appearing alongside an anonymous machine-readable channel."
+  ],
+  "construction_script": null,
+  "split_strategy": null,
+  "measurements": {
+    "probes_2026_10_22": "See notes.md for exact commands. curl https://drugshortagescanada.ca/ -> 403, 5,277 bytes; curl https://drugshortagescanada.ca/api -> 403, 5,286 bytes. Real-browser load of drugshortagescanada.ca: redirect to healthproductshortages.ca, Cloudflare 'Performing security verification' / 'Just a moment...' page (title captured; Ray ID a4eb304a9dcd2fef). CKAN package_search q='drug shortage' -> HTTP 200, 29 packages, all HTML resources, zero machine-readable. No request was made to the gated API (we hold no account; the vault holds none for this publisher).",
+    "prior_art_note_unprobed": "Drug-shortage PREDICTION literature exists (mostly US multi-source studies); it was not evaluated because the source closed at licence/access triage - the standing order is licence first, and this door was closed there."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "REJECTED at triage, in the first minutes, per the standing order: licence_class C (no licence instrument readable on any anonymous channel; Cloudflare challenge measured in a real browser as well as curl, so this is a measured unreadability, not an assumed one) plus a registration-gated API (HC's own docs require an account email+password for every data call; we hold no account and the standing rule is to build only on clean, already-open sources). No permission email is drafted and no waiting is recorded - a source we must register with or ask is a source we do not use. The task TYPE (shortage onset for marketed drugs) is unrepresented on the bench and is recorded here so a future Canada tick recognizes it if Health Canada ever publishes an anonymous machine-readable extract under a stated licence.",
+  "review": null,
+  "next_action": "None - dropped, closed at triage. Reopen evidence: Health Canada publishing an anonymous bulk/extract channel for shortage and discontinuation reports (their own docs mention a monthly data extract; the question is whether it can ever be fetched without an account) together with a licence statement readable without registration. Do not register an account or send an enquiry to chase it.",
+  "jurisdiction": {
+    "country": "CA",
+    "region": "North America",
+    "publisher": "Health Canada - Drug Shortages Canada / healthproductshortages.ca (mandatory shortage and discontinuation reporting portal)",
+    "recorded_at": "2026-10-22"
+  }
+}

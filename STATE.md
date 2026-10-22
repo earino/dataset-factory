@@ -5919,3 +5919,61 @@ do not infer a completed research result from successful admission. The next res
 tick is 22:00Z, discovery 00:00Z. No added worker probe, allowance increase, dataset
 publication or tag movement was part of the rollout. Remaining infrastructure work
 is listed in the deployment report; PR #5 remains unapplied evidence.
+
+## Discovery — Canada tick (2026-10-22)
+
+Scheduled discovery session, region focus Canada (all three verdicts from the tick's
+region; no US substitution). Three NEW sources opened and closed, each with measured
+evidence in its record and notes. The honest outcome for this region: its open-data
+event-grain space is either already on the bench (CA now 12 candidates) or maps onto
+task families the bench has already settled. Rejecting is the session's product.
+
+- `isc-ltdwa-advisory-lift-timing` — REJECT on measured split capacity + absent label
+  source. The map's own "Download map data" export (fetched: HTTP 200, 2,715,200 bytes,
+  GenerateDate 2026-10-20) holds 197 advisory events (158 lifted + 39 active since the
+  Nov 2015 baseline; ~14 lift events/year, clustered by one federal program's funding
+  pipeline; ON 110/197) and carries NO lift date — the label column the task needs is
+  absent from the machine-readable product (display labels include 'Date Advisory
+  Lifted', data does not). Bench anchor: npri-facility-spill-year was dropped at
+  110-149 positives PER YEAR. Licence clean (OGL-Canada via the ECCC CESI republish,
+  class A). Task TYPE (duration-to-resolution of an infrastructure advisory) recorded
+  as unrepresented — needs a different publisher with per-advisory lift dates.
+- `hc-health-product-shortage-onset` — REJECT at triage, licence_class C + registration
+  wall. Portal moved to healthproductshortages.ca and served a Cloudflare challenge to
+  BOTH a plain client (403 twice) and a real browser session; HC's own API examples
+  require an account (POST /api/v1/login, email+password); open.canada.ca carries no
+  machine-readable extract (29 packages, all HTML — measured). Per the 2026-10-21
+  standing rule: closed, not parked; no enquiry drafted. Shortage-ONSET task type
+  recorded as unrepresented — reopens only on a publisher-side anonymous channel.
+- `hc-cannabis-inspection-rating` — REJECT on family + capacity. Establishment →
+  next-inspection-rating is the live fsa-fhrs-next-rating task re-issued; measured:
+  4 published half-year vintages (oldest resource created 2025-01-22), 1,358
+  inspection rows, 66 non-compliant positives (4.9%), 278 repeat holders — no
+  three-window split possible. Licence clean (OGL-Canada, class A). Sibling vaping
+  retail-inspections package closed by the same note without opening.
+
+Parked-record follow-ups this tick was asked to run, both recorded in the records'
+notes: statcan-wds-aggregate-series — getChangedCubeList 404s at the documented path
+(getCubeMetadata still mounts, 405 on GET), and the open.canada.ca recent-modified
+window shows StatCan publishing only the parked aggregate class; park stands.
+hc-canada-vigilance — the watch for a machine-readable resource: none appeared in the
+100-most-recent window or 13 keyword package_searches; direct package re-probe failed
+twice with the portal's own 504 (infrastructure failure recorded as such); park stands.
+
+Registry evidence for future Canada ticks: the open.canada.ca event-grain products
+that do exist map onto settled families — TSB monthly occurrence statistics, CER
+pipeline incident data (cer-pipeline-incident-significant), CFIA/HC inspection
+outcomes (cannabis, vaping), consumer complaint outcomes. Checked and not opened:
+ECCC "Notices of Defect" (thin, no future outcome), SSC "Critical Incidents".
+
+Checks: check-candidate.py OK for all three new records and --all OK (74 candidates);
+suite OK (572 tests, 12.5s); coverage after: 74 candidates, CA 12, live 24, live
+non-US 17/24 (71%). Scratch scripts under .factory/ deleted; downloads stayed in
+/opt/data/cache/scratch.
+
+Next action: next discovery tick follows the region rotation; on a Canada tick do not
+re-open any of the three sources without the reopen evidence recorded in each record.
+The construction queue behind the eutl flip is unchanged (five ready class-A builds,
+then ea-flood-alert-escalation). This session's outcome is the record above, for the
+close-out inspection noted in the hardening-rollout entry.
+

@@ -44,3 +44,29 @@ not treat as acceptable provenance (same posture as the UNHCR park,
 unhcr-refugee-data-finder). Unpark condition in the record's next_action: watch
 the two Vigilance packages for a CSV/API resource appearing (next Canada tick),
 or an operator risk-acceptance for a browser-captured export.
+
+## 2026-10-22 discovery session (tick region: Canada) - the watch, performed
+
+The next_action asked this tick's Canada rotation to watch the Vigilance packages
+for a machine-readable resource. Three channels were checked:
+
+- open.canada.ca 100 most-recently-modified packages (package_search?sort=metadata_
+  modified+desc&rows=100 -> HTTP 200, 1,166,356 bytes, 2026-10-22): the newest
+  Health Canada data package in that window is Cannabis Inspection Data (already
+  opened as its own candidate this tick, hc-cannabis-inspection-rating); no
+  Vigilance resource appeared.
+- 13 keyword package_searches (occurrence, incident, inspection, enforcement,
+  violation, conviction, complaint investigation, investigation report,
+  enforcement notification, audit finding, test results sample, advisory lifted,
+  warnings verification) all returned HTTP 200: no Canada Vigilance CSV/API
+  resource appeared in any result set.
+- Direct re-probe of the Vigilance packages via package_search 'Canada Vigilance'
+  failed twice with the PORTAL's own 504 Gateway Time-out (rows=10, then
+  rows=5 with a different query; nginx 504 body captured). Recorded as an
+  open.canada.ca infrastructure failure on this date, not as evidence of absence
+  (AGENTS.md: infrastructure failures do not prove unsuitability). The two
+  successful channels above are the load-bearing ones for the watch.
+
+Conclusion: the watch was performed; no machine-readable Vigilance resource
+appeared. The park stands, with the same unpark condition as before.
+

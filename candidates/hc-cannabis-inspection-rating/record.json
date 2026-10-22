@@ -1,0 +1,51 @@
+{
+  "id": "hc-cannabis-inspection-rating",
+  "status": "dropped",
+  "verdict": "reject",
+  "created_at": "2026-10-22T20:20:30.894827+00:00",
+  "domain": "regulatory inspections of cannabis licence holders (Cannabis Act compliance program)",
+  "prediction_question": "Hypothetical task this source supports (rejected on family and capacity): for a cannabis licence holder with at least one completed Health Canada inspection, will its NEXT inspection be rated Non-compliant rather than Compliant, given only what is knowable before the next inspection starts (holder identity, province, prior inspection types, time since last inspection)?",
+  "prediction_time": "Would be the next inspection's start date (the rows carry 'Inspection start date'), with prior-inspection history as features - a clean event-time formulation in principle.",
+  "target_definition": "'Inspection rating' column (measured values: Compliant / Non-compliant / Rating not assigned), assigned by Health Canada inspectors under the Cannabis Act compliance and enforcement program - a documented process. The label is fine; the panel is not (see split_strategy).",
+  "sources": [
+    {
+      "name": "Cannabis Inspection Data (Health Canada) - CKAN package e04d55cd-74dd-4167-a9ea-c6eb9e9ab287",
+      "url": "https://open.canada.ca/data/en/dataset/e04d55cd-74dd-4167-a9ea-c6eb9e9ab287",
+      "api": "Anonymous CKAN; four English half-year CSVs published to date: 'Cannabis Inspection Data: April 2025 - September 2025' (45,250 bytes, resource created 2026-02-11), 'October 2025 - March 2026' (resource created 2026-09-08), 'October 2024 - March 2025' (51,318 bytes after redirect, created 2025-09-02), 'April 2024 - September 2024' (30,716 bytes, created 2025-01-22). Each CSV follows a redirect (HTTP 302) to the CDN but is fetched anonymously with one GET per file.",
+      "license": "Open Government Licence - Canada (CKAN license_title, measured 2026-10-22)",
+      "access": "anonymous; 4 GETs, ~166 KB total - access and licence are both clean and neither is the blocker"
+    },
+    {
+      "name": "Glossary (companion resource, DOCX) defining inspection types and ratings",
+      "url": "https://open.canada.ca/data/dataset/e04d55cd-74dd-4167-a9ea-c6eb9e9ab287/resource/83a8dfe4-2c37-44b3-9194-683245ee2204/download/glossary-en.docx",
+      "api": "anonymous DOCX, created 2026-02-11",
+      "license": "Open Government Licence - Canada",
+      "access": "anonymous"
+    }
+  ],
+  "license_evidence": [
+    "Measured 2026-10-22 via CKAN package_search: package e04d55cd-74dd-4167-a9ea-c6eb9e9ab287, license_title 'Open Government Licence - Canada', organization 'Health Canada | Sante Canada'. licence_class A: redistribution and derivatives permitted with attribution and no-endorsement conditions, to be stated in LICENSE.md if ever built. The licence was NOT the blocker."
+  ],
+  "construction_script": null,
+  "split_strategy": "Measured, and it fails twice over. (1) Depth: the package publishes per-inspection CSVs semi-annually and its oldest resource was created 2025-01-22; the published universe is 4 half-year vintages covering inspection start years 2023(6 rows)/2024(498)/2025(728)/2026(126 through September) = 1,358 inspection rows. Three disjoint train/eval/holdout windows with both classes cannot be drawn from 4 periods of a 2.5-year register. (2) Positives and panel grain: 66 Non-compliant rows in total (base rate 4.9% of 1,358; 1,291 Compliant, 1 'Rating not assigned'), and a next-outcome panel needs repeat inspections - 278 holders have >=2 inspections (815 rows, max 15 for one holder), so the transition panel carries at most a few hundred rows and at most 66 positives, clustered in time.",
+  "measurements": {
+    "probes_2026_10_22": "See notes.md for exact commands. All four English CSVs fetched anonymously (302 -> 200 via redirect, sizes 30,716-51,318 bytes), parsed locally.",
+    "shape": "8 columns: Licence holder name, Province or territory, Inspection start date, Inspection type, Sampling Conducted, Observations, Inspection rating, Measures initiated by Health Canada. 1,358 data rows across the 4 vintages.",
+    "rating_mix": "Compliant 1,291; Non-compliant 66 (4.9%); 'Rating not assigned' 1.",
+    "inspection_type_mix": "Regular 916, Targeted 209, CV 128, Compliance Verification 88, Compliance Monitoring Projects 17 (130 rows in the first pass were blank-liners, resolved in the second pass).",
+    "holder_grain": "821 distinct licence holders; 278 with >=2 inspections (815 rows); maximum 15 inspections for a single holder.",
+    "file_hygiene_note": "Measured inconsistency across vintages: the 2025-04/09 file uses lowercase headers and is not valid UTF-8 (a Latin-1 fallback is needed), the other three use capitalized headers with a UTF-8 BOM - a construction would need per-file header/encoding normalization. Recorded as a cost note, not the rejection reason.",
+    "start_year_mix": "2023: 6, 2024: 498, 2025: 728, 2026: 126 (through September)."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "REJECTED on two independent grounds, either of which closes it. (1) Task-family mirror: the natural task on this source is establishment -> next-inspection-rating prediction, the exact task already live on this bench as fsa-fhrs-next-rating (UK FSA food-hygiene next rating, GO to construction) and present in the chicago-food-inspections family; a Canadian re-issue changes the jurisdiction and publisher, not the task - the same comparison that rejected hc-recalls-classification against openFDA prior art and jma-typhoon-rapid-intensification against TCRISI. (2) Measured capacity: 4 published half-year vintages (2.5 years), 1,358 inspections, 66 positives (4.9%), 278 repeat holders - three disjoint windows with both classes are not possible. Licence and access are both clean (OGL-Canada, anonymous CSVs); neither was the blocker.",
+  "review": null,
+  "next_action": "None - dropped. Do not reopen for next-inspection-rating or current-inspection-outcome formulations while fsa-fhrs-next-rating is live; a genuinely different task on this source (one that is not about the inspection rating) would need a fresh novelty check first. Sibling observation recorded in the same pass: the 'Vaping Compliance and Enforcement Data Summary (retail inspections)' package (c7c556dc-a4c2-4259-9f74-a1cde5e42c4b, OGL-Canada) has the same inspection-outcome shape on an annual cadence with a single 2024-25 vintage online - closed by the same family and capacity reasoning.",
+  "jurisdiction": {
+    "country": "CA",
+    "region": "North America",
+    "publisher": "Health Canada - Cannabis Regulatory Operations (compliance and enforcement inspections)",
+    "recorded_at": "2026-10-22"
+  }
+}
