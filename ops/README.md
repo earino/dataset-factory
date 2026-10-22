@@ -48,8 +48,8 @@ python3 scripts/check-runtime.py --home /opt/data
 The first command checks that `ops/runtime-files.json` covers exactly the reviewed shim and
 custom-skill files and that their hashes match. CI exercises it. The second also compares live
 copies and flags profile skills with the same name as a repository skill. It also compares the
-live project skill Markdown/Python files with the reviewed checkout, so uncommitted curator edits
-are visible. The live project defaults to `<home>/dataset-factory`; `--project` overrides it. It is read-only, does
+live project skill Markdown/Python files with the committed inventory fingerprints, so uncommitted curator edits
+are visible even when the audit runs from that same live checkout. The live project defaults to `<home>/dataset-factory`; `--project` overrides it. It is read-only, does
 not execute the files, and reports paths/reasons without their contents. Missing/changed/unsafe
 files cause a nonzero exit. A mismatch requires inspection, never automatic replacement.
 

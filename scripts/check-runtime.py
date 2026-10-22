@@ -74,14 +74,30 @@ def contract(root):
                 reviewed.add(candidate.relative_to(root).as_posix())
     if sources != reviewed:
         raise RuntimeContractError('runtime inventory does not cover exactly the reviewed files')
-    return entries
+    project_files = data.get('project_skills')
+    if not isinstance(project_files, list) or not project_files:
+        raise RuntimeContractError('runtime inventory has no reviewed project skills')
+    project_sources = set()
+    for row in project_files:
+        if not isinstance(row, dict) or set(row) != {'source', 'sha256'}:
+            raise RuntimeContractError('invalid project skill entry')
+        contained(root, row['source'])
+        if (not row['source'].startswith('skills/') or row['source'] in project_sources
+                or not isinstance(row['sha256'], str) or not re.fullmatch('[0-9a-f]{64}', row['sha256'])):
+            raise RuntimeContractError('invalid or duplicate project skill identity')
+        project_sources.add(row['source'])
+    expected_sources = {p.relative_to(root).as_posix() for p in (root/'skills').rglob('*')
+                        if p.is_file() and p.suffix in ('.md', '.py')}
+    if expected_sources != project_sources:
+        raise RuntimeContractError('inventory does not cover exactly the project skill procedures/code')
+    return entries, project_files
 
 
 def audit(root, home=None, project=None):
     root = Path(root).resolve()
     problems, checked = [], 0
     try:
-        rows = contract(root)
+        rows, project_files = contract(root)
     except RuntimeContractError as exc:
         return {'ok': False, 'scope': 'source', 'checked_files': 0, 'problems': [str(exc)]}
     for row in rows:
@@ -94,6 +110,15 @@ def audit(root, home=None, project=None):
                     problems.append(f'{scope}:{relative}: digest differs from reviewed inventory')
             except (RuntimeContractError, OSError):
                 problems.append(f'{scope}:{relative}: missing, unsafe or oversized file')
+    for row in project_files:
+        for scope, base in [('source', root)] + ([('project', Path(project).resolve())] if project is not None else []):
+            try:
+                actual = digest(contained(base, row['source']))
+                checked += 1
+                if actual != row['sha256']:
+                    problems.append(f"{scope}:{row['source']}: differs from reviewed inventory")
+            except (RuntimeContractError, OSError):
+                problems.append(f"{scope}:{row['source']}: missing, unsafe or oversized file")
     if home is not None:
         # A duplicate profile skill can make a model load a different gate procedure even when
         # the repository itself is unchanged. No precedence assumptions or automatic repair.
@@ -105,21 +130,6 @@ def audit(root, home=None, project=None):
             for path in profiles.rglob('*'):
                 if path.name in external and (path / 'SKILL.md').is_file():
                     problems.append(f'deployed:skills: profile copy shadows project skill {path.name}')
-    if project is not None:
-        # Compare the live external skill procedures and code with this reviewed checkout.
-        # Uncommitted curator edits otherwise bypass a clean branch's test results.
-        live_project = Path(project).resolve()
-        for source in sorted((root / 'skills').rglob('*')):
-            if source.is_file() and source.suffix in ('.md', '.py'):
-                relative = source.relative_to(root).as_posix()
-                try:
-                    expected = digest(contained(root, relative))
-                    actual = digest(contained(live_project, relative))
-                    checked += 1
-                    if actual != expected:
-                        problems.append(f'project:{relative}: differs from reviewed checkout')
-                except (RuntimeContractError, OSError):
-                    problems.append(f'project:{relative}: missing, unsafe or oversized file')
     return {'ok': not problems, 'scope': 'source+deployed' if home is not None else 'source',
             'project_skills_checked': project is not None,
             'checked_files': checked, 'problems': problems,

@@ -31,7 +31,9 @@ class RuntimeAuditTests(unittest.TestCase):
         self.write_contract()
 
     def write_contract(self):
-        (self.root/'ops/runtime-files.json').write_text(json.dumps({'schema_version':1,'files':self.rows}))
+        (self.root/'ops/runtime-files.json').write_text(json.dumps({'schema_version':1,'files':self.rows,
+            'project_skills':[{'source':'skills/dataset-qualification/SKILL.md',
+                               'sha256':hashlib.sha256(b'canonical').hexdigest()}]}))
 
     def test_committed_recovery_inventory_matches_all_sources(self):
         self.assertTrue(checker.audit(ROOT)['ok'])
@@ -51,6 +53,12 @@ class RuntimeAuditTests(unittest.TestCase):
         self.assertTrue(any('project:skills/dataset-qualification/SKILL.md' in p
                             for p in result['problems']))
         self.assertEqual('unreviewed curator edit',skill.read_text())
+
+    def test_audit_from_live_checkout_cannot_bless_its_own_uncommitted_skill_edit(self):
+        (self.root/'skills/dataset-qualification/SKILL.md').write_text('unreviewed edit')
+        result = checker.audit(self.root,self.home,self.root)
+        self.assertFalse(result['ok'])
+        self.assertTrue(any('project:skills/dataset-qualification/SKILL.md' in p for p in result['problems']))
 
     def test_identical_copies_pass_without_mutation(self):
         stamp = self.target.stat().st_mtime_ns
