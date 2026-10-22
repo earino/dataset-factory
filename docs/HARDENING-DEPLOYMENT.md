@@ -14,8 +14,8 @@ change is part of this rollout.
   13 new tests. Existing unmarked bundles are preserved; changed inputs need a new attempt ID.
 - PR #4, `35bb2d6` (code and inventory): pinned runtime/project skill inventory, read-only drift/shadow audit,
   source audit in CI, 12 new tests, plus corrections to the captured publishing skill.
-- PR #6, `79c6af6`: pinned Hub verification, collected worker evidence, read-only Hub
-  verification jobs and immutable tags, 27 new tests.
+- PR #6, `436e3e6`: pinned Hub verification, collected worker evidence, read-only Hub
+  verification jobs and immutable tags, 33 new tests (including four preserved from Scout's active-session repair).
 - PR #5, `63472c1`: evidence patches only. They are not approved skill changes and must not
   be applied as part of deployment.
 
@@ -23,11 +23,11 @@ Each code head passed its exact-commit GitHub Actions runs.
 The Hub regression was also checked with Scout's installed client in an isolated checkout:
 TSB without new worker evidence exits 2/incomplete, leaves its prior receipt byte-identical,
 and writes a separate attempt diagnostic. No worker or remote mutation was used for that test. Independent Python 3.13.1
-clean-clone results: #2 445 tests, #3 432 tests, #4 431 tests, #6 472 tests, each OK with six existing
-host-dependent skips. The combined local integration at `14264e6` passed:
+clean-clone results: #2 445 tests, #3 432 tests, #4 431 tests, #6 478 tests, each OK with six existing
+host-dependent skips. The combined local integration at `5e02b9e` passed:
 
 ```text
-Ran 497 tests in 2.067s
+Ran 503 tests in 2.228s
 
 OK (skipped=6)
 ```
@@ -40,7 +40,10 @@ unchanged. No CI result substitutes for the post-merge exact-commit checks below
 
 ## Establish a stable runtime before updating
 
-Scout is the only coordinator. Ask Scout to identify an idle research window and existing
+Scout is the only coordinator. Its existing 18:00 research session was still active during final
+review and independently produced the worker plain-blob repair now included in #6. That
+engineering integration did not authorize or launch any extra worker. Wait for the session
+to finish and reconcile any new commits before merging/deploying. Ask Scout to identify an idle research window and existing
 worker activity using the supported ledgers. Do not launch from an engineering checkout,
 kill a running research session, or delete its lock. Retain worker cleanup/watch functions.
 
@@ -148,11 +151,18 @@ hold while resolving skill integrity failures, and disclose any continued auxili
 This batch does not claim to finish every hardening task. Next work should address the
 research runner's atomic session admission/failed-gate handling, runtime-audit enforcement
 before scheduled research, dashboard health/CI
-unknown states and Pages-pending semantics, and stronger candidate evidence validation.
+unknown states and Pages-pending semantics, stronger candidate evidence validation, and host-side worker disk enforcement (HF jobs return
+before the container disk-monitor loop).
 Inventory coverage is explicit: additional project-relevant custom skills must be reviewed
 and mapped before calling the handoff complete. No new worker spend is implied by this list.
 
 PR #6 on `hardening/hub-integrity` is stacked on #2:
 existing tags never move, creation pins the verified commit, plain metadata is hashed through a
-bounded download, and size-only/bulk-without-digest cases fail. Its exact-head push and PR CI passed, and it is included in the 497-test combined integration. Runtime skill corrections in #4 agree
+bounded download, and size-only/bulk-without-digest cases fail. Its exact-head push and PR CI passed, and it is included in the 503-test combined integration. Runtime skill corrections in #4 agree
 with this behavior; captured originals remain in #1.
+
+
+The late worker repair covers the observed 9,421,952-byte ordinary Git CSV. Upload verification
+and compact receipts now share a 64 MiB worker-only per-file limit, hash in chunks and use fresh
+owned temporary caches. No coordinator bulk exception was added. The existing container disk
+monitor is not presented as coverage for host-side HF jobs.
