@@ -338,11 +338,67 @@
       "elapsed_seconds": 79.205,
       "response": "Decision\nNot a mirror, and not ready: it needs further discovery work. The novelty question is settled enough to record as `differentiated`; the readiness question is not, because two required measurements are missing. If the clock forces a verdict before the probes run, record `parked` naming the exact blockers (split capacity, publication lag), never `ready`.\n\nSupporting evidence\n- The mirror test is on the task, not the source. The published task predicts first-visit failure from establishment attributes; this lead predicts recurrence after a documented intervention, restricted to pre-return-visit records, in an unrepresented regime: different label, different feature-timing contract, different population. Two named catalog searches found no ML-ready recurrence task. That supports a `differentiated` verdict, to be recorded mechanically via check-novelty.py with ours/theirs/prior-art \u2014 ours: the recurrence formulation and pre-return-visit feature contract; theirs: the first-visit task and the raw source.\n- `ready` requires recorded evidence for every contract. Still missing: split windows with counts computed from the source (clustered counts where positives cluster by establishment or campaign); the timing block's observed lag; measured extraction cost; jurisdiction recorded from the publisher (\"regional\" is not a country); and licence recorded as class A or B with the terms quote \u2014 \"licensed\" is not a class. If the licence is actually C or D, drop it in the same breath (standing rule, 2026-10-21).\n\nUncertainty and next discriminating check\nSplit capacity decides it: enough independent recurrence positives, spread over time, to fill disjoint train/eval/holdout windows with both classes present. The cheap discriminating probe is a read-only aggregate query \u2014 recurrence positives per candidate window and per establishment cluster, plus the provenance mix if the source carries more than one inspection stream. If the windows cannot carry both classes, the task is dead regardless of novelty. Timing is second: determine the record kind; a statistical release needs at least one observed period_end-to-published pair with the lag set above every observation plus margin, while an administrative record written at the event ships none but needs its kind declared with a citation.\n\nOrdered actions and stopping condition\n1. Record licence_class (A/B), the terms quote and jurisdiction in candidates/<id>/record.json. C or D means dropped immediately.\n2. Record the novelty verdict with check-novelty.py.\n3. Aggregate probes only, no bulk transfer: positives per window, clustered count, class balance per window, provenance mix, a total-order key.\n4. Timing probe as above, plus reading the column documentation for every field to confirm the pre-return-visit claim.\n5. Cost probe: wrap the fetch, count requests, bytes and wall-clock on the intended machine class.\n6. Write the verdict: `ready` only if the licence is A/B and the measured windows carry both classes; otherwise `parked` with the exact unparking question or `dropped` with the reason. Update STATE.md, run check-candidate.py and the tests, commit, read CI for that exact commit.\n\nStop when the record carries a verdict backed by those measurements, or at the wrap-up notice \u2014 then write what is settled and name what is not. Construction, qualification and packaging stay with the advancement session; this session runs no commands toward them.\n\nOperator report\nOne source opened: a regional inspection registry. Verdict: differentiated, not a mirror \u2014 recurrence after intervention versus the published first-visit-failure task; no ML-ready recurrence task found in two catalog searches. Not ready: split counts and reporting lag unmeasured. Next: cheap aggregate probes for split capacity, then ready/parked. Licence class and jurisdiction to be recorded before anything builds. No construction started.\n",
       "response_sha256": "49e896d3ad6251f035be0e3168b05a5600a2d3d7ccc63d308f22a2ba251c36e1"
+    },
+    {
+      "partition": "development",
+      "case": "discovery-novelty",
+      "arm": "baseline",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-32",
+      "session_id": "20261022_230850_450992",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "af0b56adce007f17ee35eb7df336fda5c86f70d228265d6360717ee93f86eb13",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 166,
+        "output_tokens": 1560,
+        "cache_read_tokens": 37376,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 39102,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 58,
+          "output_tokens": 13,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 108,
+          "output_tokens": 1547,
+          "cache_read_tokens": 36992,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 18.784,
+      "response": "Decision: needs further work. Not a mirror on the evidence given, and not ready.\n\nWhy not a mirror\nThe published task and this lead differ in the two things that define a task, not just its packaging: the target (recurrence after a documented intervention vs first-visit failure) and the population/regime (a different inspection regime, previously unrepresented). A mirror is the same task already shipped with splits and a scored contract; a shared source and similar columns do not make one. The two named catalog searches returning no ML-ready recurrence task supports `differentiated`, but catalog search is not literature search, and the case supplies neither the queries nor the verdict fields the record needs. So: record novelty as `differentiated` with an explicit \"ours / theirs\" statement naming what our contribution is (the recurrence formulation, the pre-return-visit feature cut, the partition), and treat it as provisional until one literature/scholarly search for the same task is recorded.\n\nWhy not ready\nReady is a measured state, and two of its required inputs are unmeasured here: split capacity (counts computed from the source, including the clustered independent count, since repeat inspections cluster by establishment) and the reporting lag that fixes the prediction instant. Also unrecorded: `licence_class` with quoted evidence, jurisdiction, and measured extraction cost. \"Licensed\" is not a class \u2014 A/B/C/D must come from the instrument linked at the source itself, and a C is a drop in the same breath.\n\nUncertainty, and the one check that discriminates most\nThe decisive uncertainty is timing, not novelty. If a return visit's outcome is only knowable after the next data publication, the \"features available at prediction time\" claim collapses into an oracle, and that is the defect class that reached `packaged` once already. The discriminating check: take at least three observed `period_end -> published` pairs and the documented record date of the return visit, and compute whether the prediction instant can sit at publication with the label still unobserved. If the lag cannot be bounded above every observation with margin, the lead parks regardless of how novel it is.\n\nSecond discriminator, cheap and independent: the recurrence base rate and its clustering. A task whose independent positives per window cannot fill three disjoint splits is a park even with a clean licence.\n\nOrdered actions\n1. Licence class from the publisher's own terms; quote it into `license_evidence`. C or D: write reject and stop.\n2. Record `jurisdiction` (country, region, publisher) as measured, not inferred.\n3. Write `candidates/<id>/record.json` now with status `investigate`, licence class if settled, and the novelty verdict \u2014 durable before more probing.\n4. Aggregate-only probes: return-visit count, recurrence rate per window, clustered count by establishment, provenance/categorical mix of the inspection-type column, prose on whether two streams are being summed.\n5. Timing: observed publication lags plus the return-visit record date; state the prediction instant in one sentence.\n6. Only then measure extraction cost (requests, bytes, wall-clock on the intended machine class) and set the verdict `ready` or `park`.\n\nStopping condition\nStop and record `park` after the licence check if class is C/D; after probe 4 if recurrence cannot fill three disjoint windows with both classes; after probe 5 if the lag cannot be bounded above observations. Do not build, and do not touch any existing candidate.\n\nOperator report\nOpened one new lead: a regional inspection source supporting recurrence-after-intervention rather than first-visit failure. Verdict: differentiated, not a mirror; parked short of `ready` because split counts and reporting lag are unmeasured, and licence class is not yet recorded. No construction spent. Next action: licence classification, then recurrence counts and three observed publication lags. Held: two catalog searches are not literature coverage.\n",
+      "response_sha256": "8c61ff528330ab236b29a242ea32eb24628e22f37e55fa6428d35cde2a4cf032"
     }
   ],
   "ledger": {
-    "calls": 31,
-    "tokens": 1048138
+    "calls": 33,
+    "tokens": 1087240
   },
-  "updated_at": "2026-10-22T23:08:42Z"
+  "updated_at": "2026-10-22T23:09:24Z"
 }
