@@ -1,0 +1,52 @@
+{
+ "id": "bom-cyclone-best-track",
+ "status": "dropped",
+ "created_at": "2026-10-22T04:07:47+00:00",
+ "domain": "severe weather / tropical cyclone track climatology",
+ "prediction_question": "For a tropical cyclone in the Australian region, given its best-track position, intensity and motion at time t, will it make a defined coastal crossing (landfall) or intensify above a category threshold within 48 hours?",
+ "prediction_time": "Each 6-hourly best-track fix; features would be the storm's own track history up to time t only. (Never reached: the source failed licence triage before task probing.)",
+ "target_definition": "Binary landfall within 48h of a track fix, defined by the track intersecting the Australian coastline. Label source column: lat/lon track positions after time t.",
+ "sources": [
+  {
+   "name": "Bureau of Meteorology - Australian Tropical Cyclone Database (best tracks)",
+   "url": "https://www.bom.gov.au/cyclone/tropical-cyclone-knowledge-centre/databases/",
+   "api": "https://www.bom.gov.au/clim_data/IDCKMSTM0S.csv (linked CSV; HTTP access blocked to scripted clients, measured 403)",
+   "access": "plain HTTPS link; anonymous FTP channel exists (http://www.bom.gov.au/catalogue/anon-ftp.shtml); charged Registered User service for uses outside the default terms (http://reg.bom.gov.au/other/charges.shtml)",
+   "licence": "none stated on the dataset page; BoM site default applies (no redistribution)"
+  },
+  {
+   "name": "TC Database specification (column documentation)",
+   "url": "https://www.bom.gov.au/cyclone/history/database/TC_Database_Structure_Oct2011.pdf",
+   "access": "PDF specification for the best-track columns"
+  }
+ ],
+ "license_evidence": [
+  "Dataset page https://www.bom.gov.au/cyclone/tropical-cyclone-knowledge-centre/databases/ (read 2026-10-22) states NO licence or terms for the best-track database - it links the CSV, the specification PDF and the Objective Tropical Cyclone Reanalysis files with no licence text anywhere on the page.",
+  "BoM copyright page http://www.bom.gov.au/other/copyright.shtml (read 2026-10-22), section 'If there are no stated terms of use': 'Unless we state otherwise, you can download, copy and use our content for personal use, or use within your organisation. You must not supply it to any other person or use it for any commercial purpose.' - i.e. the default for content with no stated terms prohibits redistribution outright.",
+  "Same page, 'Unauthorised use': 'we do not allow you to use automated or manual techniques to hack, scrape or otherwise extract material from our site.'",
+  "Measured 2026-10-22 04:07 UTC: curl HEAD and ranged GET on https://www.bom.gov.au/clim_data/IDCKMSTM0S.csv return HTTP 403 with an anti-scraping notice ('Your access is blocked due to the detection of a potential automated access request'), which itself states the anonymous FTP channel is 'free to access, but use is subject to the default terms of the Bureau's copyright notice' and points to a charged Registered User service 'if your activity does not comply with the default terms'.",
+  "CC BY is named on the copyright page only as one of several permission channels the Bureau uses ('Some of the ways we give permission is through licences, including: data licence agreement, creative commons attribution licence (CC BY)'), with the instruction to check each page's stated terms; the cyclone database page states none, so the redistribution-prohibiting default governs it.",
+  "Alternative instrument noted, unverified: NSF NCAR RDA republishes Southern Hemisphere best-track data (ds824.1, https://data.ucar.edu/dataset/global-tropical-cyclone-best-track-position-and-intensity-data) with a declared CC BY 4.0 legal constraint. Whether that grant covers BoM-derived rows from the rights holder would need its own verification from the RDA/BoM; it is a different source with its own licence posture, not a licence for BoM's own copy."
+ ],
+ "construction_script": null,
+ "split_strategy": "Not designed - source failed licence triage. (Would have required storm-clustered splits: train/eval/holdout over disjoint cyclone seasons with both classes present.)",
+ "measurements": {
+  "csv_http_access": "HTTP 403 anti-scraping block on ranged GET and HEAD of the linked CSV, measured 2026-10-22 04:07 UTC from this host; no file bytes retrieved via HTTP.",
+  "anon_ftp_channel": "exists per the block notice and http://www.bom.gov.au/catalogue/anon-ftp.shtml; subject to the same default copyright terms (no redistribution).",
+  "measured_on": "2026-10-22 via HTTP from the coordinator"
+ },
+ "jobs": [],
+ "artifacts": [],
+ "rejection_reason": "Licence class D: the best-track database page states no licence, so BoM's default terms govern, and those terms prohibit redistribution ('You must not supply it to any other person'). A derived benchmark would republish the rows, so the source cannot ship under the standing policy that we only build on already-clean sources. The website additionally blocks scripted access to the data file outright (403 anti-scraping), so even bounded probing would need the FTP channel under the same non-redistributable default terms.",
+ "review": "Triage-first order worked as intended: the licence veto cost two page reads and one blocked HTTP request, and no schema or volume probing was spent on an unshippable source.",
+ "next_action": "None - closed. Reopens only if (a) BoM puts a CC BY (or other redistribution-permitting) statement on the cyclone database's own page, or (b) a redistributor with a verifiable rights-holder grant (e.g. NCAR RDA's CC BY 4.0 declaration for ds824.1, from the rights holder's side) is confirmed - then re-vet as a new source with its own licence evidence.",
+ "jurisdiction": {
+  "country": "AU",
+  "region": "Oceania",
+  "publisher": "Bureau of Meteorology, Commonwealth of Australia",
+  "recorded_at": "2026-10-22"
+ },
+ "licence_class": "D",
+ "licence_note": "no licence stated on the dataset page; BoM default terms prohibit supplying content to any other person, and scripted HTTP access is blocked (403 anti-scraping). Paid Registered User service exists for uses outside the default terms - not a grant we hold.",
+ "verdict": "reject"
+}

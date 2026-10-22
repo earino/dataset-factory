@@ -1,0 +1,47 @@
+{
+ "id": "atsb-aviation-occurrence-triage",
+ "status": "dropped",
+ "created_at": "2026-10-22T04:30:00+00:00",
+ "domain": "transport safety / aviation occurrence triage",
+ "prediction_question": "For an aviation occurrence reported to the ATSB, given what was known at notification (occurrence date/time, occurrence type, aircraft category/make, operation type, location), will the ATSB classify it as an accident or serious incident rather than an incident?",
+ "prediction_time": "At occurrence notification to the ATSB, using only fields documented as recorded at or before notification. Investigation findings and post-hoc classifications would have been excluded as label sources.",
+ "target_definition": "Binary severity class (accident/serious incident vs incident) from the ATSB occurrence category taxonomy. Label source column: the occurrence severity/classification field, excluded from features.",
+ "sources": [
+  {
+   "name": "ATSB National Aviation Occurrence Database (searchable dashboard)",
+   "url": "https://www.atsb.gov.au/national-aviation-occurrence-database",
+   "api": "https://dashboards.atsb.gov.au/ (Power BI dashboard; export capped at 200 rows)",
+   "access": "dashboard search + 200-row manual export only; the ATSB states the whole database cannot be downloaded",
+   "licence": "no open licence read; ATSB states the database is made available for general statistical purposes only and does not endorse commercial use of its occurrence data"
+  }
+ ],
+ "license_evidence": [
+  "https://www.atsb.gov.au/national-aviation-occurrence-database (read 2026-10-22), 'Can I download the whole database?': 'No, unfortunately you cannot download the entire database. The ATSB limits the full export of the National Aviation Occurrence Database, which has been made available for general statistical purposes only.'",
+  "Same page: 'The ATSB dashboard allows for up to 200 rows of data to be downloaded from the database.' (single-download cap)",
+  "Same page: 'The ATSB also does not endorse the use of its aviation occurrence data for any commercial purposes.'",
+  "Same page: 'The ATSB does not endorse, and disclaims any responsibility for, use of the data beyond general statistical purposes.'",
+  "Site copyright/licence page not separately read: direct HTTP GET of the occurrence database page from this host failed (HTTP/2 INTERNAL_ERROR on first attempt; page was read successfully via a clean-client fetch). The access and purpose-limitation quotes above are from the publisher's own page, first-hand."
+ ],
+ "construction_script": null,
+ "split_strategy": "Not designed - source failed access/terms triage. (Would have needed temporal splits with occurrence-class mix measured per year; aviation occurrences cluster by year and reporting regime, e.g. the Oct-2014 taxonomy change the ATSB documents.)",
+ "measurements": {
+  "coverage_claimed_by_publisher": "occurrences reported to the ATSB since 1 July 2003",
+  "bulk_access": "refused by publisher - no whole-database export channel exists; dashboard exports capped at 200 rows per export (read 2026-10-22)",
+  "schema_probe": "not performed - blocked at access triage",
+  "measured_on": "2026-10-22 via publisher page reads"
+ },
+ "jobs": [],
+ "artifacts": [],
+ "rejection_reason": "Access-blocked under the publisher's own terms: the ATSB refuses whole-database export (200-row cap per dashboard export) and states the database is 'made available for general statistical purposes only', disclaiming use beyond that and declining to endorse commercial use. Constructing a benchmark panel of tens of thousands of occurrences is not possible through the public channel, and a published derived dataset would both exceed the stated purpose limitation and constitute the bulk redistribution the export cap is designed to prevent. No open licence instrument was read because access already vetoes.",
+ "review": "Triage-first order worked: two page reads (search snippets, then first-hand page fetch) closed the lead with no schema or volume probing spent. The ATSB's own limitation notes ('data may be missing, incomplete', weeks of ingestion lag) would also have complicated any timing claim.",
+ "next_action": "None - closed. Reopens only if the ATSB publishes a bulk occurrence extract under an open licence (e.g. on data.gov.au with CC BY), which would re-vet as a new source.",
+ "jurisdiction": {
+  "country": "AU",
+  "region": "Oceania",
+  "publisher": "Australian Transport Safety Bureau (Commonwealth)",
+  "recorded_at": "2026-10-22"
+ },
+ "licence_class": "C",
+ "licence_note": "no open licence instrument found/read; access channel itself refuses bulk export and the publisher limits use to 'general statistical purposes'. Closed under the standing policy without an enquiry.",
+ "verdict": "reject"
+}

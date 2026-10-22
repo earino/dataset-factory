@@ -1,9 +1,83 @@
 # Current state
 
-Updated: 2026-10-22 02:34Z (tsb-004 GREEN: the qualification gate passed on the full artifact -
-37/37 checks, gate 1.4.0 - and tsb-railway-occurrence-casualty is status qualified, the first
-candidate through the gate this cycle. The tsb-003 "corrupt coordinates" were a wrong-frame
-misreading, not a data defect - proven by re-probe. Next: the full-model baseline job, then packaging.)
+Updated: 2026-10-22 04:35Z (Oceania discovery tick: four new sources to recorded verdicts -
+abs-visitor-arrivals-direction and nz-ea-wholesale-price-exceedance are **go (ready)**,
+both licence class A; bom-cyclone-best-track and atsb-aviation-occurrence-triage
+**rejected on terms** before any task probing was spent. Oceania 1 -> 5 candidates,
+ready buffer 5 -> 7, live non-US 15/21.)
+
+## 2026-10-22 - Oceania discovery tick: four verdicts (2 go / 2 reject), all four non-US
+
+**Regional focus Oceania; quota was three verdicts with at least two in-region - four
+delivered, 4/4 non-US, no US substitution. Every source was licence-triaged first; the
+two rejections cost two page reads and one blocked HTTP request each, with zero schema
+or volume probing spent on unshippable sources.**
+
+- `abs-visitor-arrivals-direction` (ABS, AU) - **go, ready, class A** (CC BY 4.0, ABS
+  site-wide statement read first-hand). Task: will short-term visitor arrivals from a
+  country in the first-unpublished month fall short of the same month a year earlier?
+  Measured (candidates/abs-visitor-arrivals-direction/probe_oad_country.py, executed
+  twice with identical results): full panel 59,452 obs / 428 months 1991-01..2026-08 /
+  77 countries x 2 traveller categories, one 3.3 MB API request in 3.5 s; MoM direction
+  near coin-flip (58,082 pairs); YoY split windows train 1991-2014 up=24,166/down=13,575,
+  eval 2015-2019 5,588/2,630, holdout 2022-2026 6,167/1,533 - both classes in every
+  window and every year. Release lag observed 43/42/43 days (Aug/Jul/Apr 2026 issues);
+  a documented revision event (March 2026 re-released in the April 2026 issue) recorded
+  as the current-vintage caveat. Novelty: differentiated (mechanical search in the
+  record; tourism-forecasting literature and TRA forecasts exist, no ML-ready
+  publication-gated arrivals benchmark). Note: ABS Retail Trade was checked first and
+  is CEASED (final issue June 2025) - do not revisit it as a recurring source.
+- `nz-ea-wholesale-price-exceedance` (Electricity Authority, NZ) - **go, ready, class
+  A** (CC BY 4.0 on EMI LegalInformation *and* on the successor hub's copyright page;
+  EMI is being decommissioned onto the ea.govt.nz Data & insights hub - recorded as a
+  source-migration risk, not a licence risk; construction must pin blob URLs + digests).
+  Task: will a region's daily mean final wholesale price exceed a training-frozen
+  threshold about a week ahead? Measured
+  (candidates/nz-ea-wholesale-price-exceedance/probe_final_prices.py, executed twice):
+  30 years of nodal final prices - 360 monthly files 199610..202609 (median 10.0 MB) +
+  368 daily files since 20251021, 3,714 MB total, anonymous Azure blob listing; era
+  sample: Jan 1997 max $50 (quiet), Jul 2008 9/31 days >$200, Jun 2020 5/30 days >$200,
+  Aug 2024 25/31 days >$200 with daily means to $884, recent-era sampled median $32 -
+  clustered dry-year episodes give both classes in every candidate window. Publication
+  instant documented ("final prices by 2pm the following business day"), measured file
+  lag p50 1.80 d / max 5.80 d; POC->Island/region mapping publisher-published with POC
+  start/end dates; regime break 2022-11-01 (real-time pricing) documented for splits.
+  Novelty: differentiated vs the EPF benchmark (five northern markets, level
+  regression, no NZ), an AUT level-forecasting study and a single-node GitHub project.
+- `bom-cyclone-best-track` (BoM, AU) - **reject, class D.** The cyclone-database page
+  states no licence, so BoM's default governs: "You must not supply it to any other
+  person or use it for any commercial purpose" (copyright page, quoted in the record).
+  Scripted HTTP to the best-track CSV is blocked outright (measured 403 anti-scraping);
+  the offered FTP channel carries the same non-redistributable default. Closed. Reopen
+  condition recorded: a CC BY statement on the dataset's own page, or a redistributor
+  with a verifiable rights-holder grant (NCAR RDA ds824.1 declares CC BY 4.0 for SH
+  best tracks - a separate source to re-vet if ever used).
+- `atsb-aviation-occurrence-triage` (ATSB, AU) - **reject: access-blocked + purpose
+  limitation.** Publisher's own page: "you cannot download the entire database", export
+  capped at 200 rows, database "made available for general statistical purposes only",
+  commercial use not endorsed. No open licence instrument was read because access
+  vetoes first. Closed; reopens only if ATSB publishes a bulk extract under an open
+  licence.
+
+State-licence texture (the tick brief asked for states separately): the two federal
+channels above closed on terms; state portals were **not** separately probed this tick
+- the four verdicts consumed the quota first, and Victoria's only probed channel so far
+reported licence_id 'other-open' with no URL (melbourne-pedestrian-counts). The next
+Oceania tick should triage a state portal licence (DataVic, then NSW/QLD) and the
+data.govt.nz catalogue before looking at task fit.
+
+Coverage after this session (discovery-coverage.py): 60 candidates, 21 live; Oceania 5
+(AU 4, NZ 1); live non-US 15/21 (71%); ready buffer 7 - the two new candidates plus
+chilecompra-tender-outcome, camara-bill-advancement, za-municipal-audit-opinion,
+my-pricecatcher-weekly-increase, eutl-installation-net-short (tsb-railway-occurrence-
+casualty sits above them at qualified). licence-rank.py sorts both new candidates at
+the top of the class-A construction queue.
+
+Session hygiene: check-candidate.py --all exit 0 (60 records); probe scripts kept per
+convention in the two new candidate directories and each executed end-to-end once;
+session scratch deleted (45.6 MB NZ price sample, 3.3 MB ABS panel, listing XMLs - never
+committed). No US source substituted for the regional quota.
+
 
 ## 2026-10-22 - tsb-004: gate PASSED on the full artifact - tsb-railway-occurrence-casualty qualified; the tsb-003 "corrupt coordinates" were a wrong-frame misreading
 

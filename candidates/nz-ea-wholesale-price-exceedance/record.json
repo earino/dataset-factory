@@ -1,0 +1,162 @@
+{
+  "id": "nz-ea-wholesale-price-exceedance",
+  "status": "ready",
+  "created_at": "2026-10-22T04:24:56+00:00",
+  "domain": "energy markets / wholesale electricity spot prices",
+  "prediction_question": "For a New Zealand pricing region (island-level aggregate of published nodal final prices), will the daily mean final wholesale energy price on a trading day about a week ahead exceed a threshold fixed from the training window?",
+  "prediction_time": "The publication instant of final prices: the Electricity Authority states interim prices 'will be declared to be final prices by 2pm the following business day' (Real-time dispatch and pricing page + Code Part 13); measured on the actual files, Last-Modified minus trade date is p50 1.80 days, max 5.80 days (368 daily files, measured 2026-10-22). Features are final prices for trading dates already published at the instant; the label day is not.",
+  "target_definition": "Binary: market/island daily mean of DollarsPerMegawattHour over all trading periods of day D+k exceeds a threshold frozen from the training window (candidate fixed thresholds measured at 100/150/200/300 $/MWh; a per-region training-quantile threshold is the alternative). Label source columns: the target day's per-POC prices, excluded from shipped features.",
+  "sources": [
+    {
+      "name": "Electricity Authority (Te Mana Hiko) - EMI dataset 'Final energy prices' (Real-time dispatch and pricing)",
+      "url": "https://www.ea.govt.nz/data-and-insights/datasets/wholesale/dispatch-and-pricing/final-energy-prices/",
+      "api": "https://emidatasets.blob.core.windows.net/publicdata?restype=container&comp=list&prefix=Datasets/Wholesale/DispatchAndPricing/FinalEnergyPrices/",
+      "access": "anonymous Azure blob container listing (no key, no SAS; documented forum thread 'New access arrangements to EMI datasets'); 728 files: 360 monthly files 199610..202609 (~8.2-10.9 MB each) and 368 daily files since 2025-10-21 (~0.31-0.35 MB each); measured 3,714.3 MB total",
+      "licence": "CC BY 4.0 per EMI LegalInformation and the successor hub's copyright statement (see license_evidence)"
+    },
+    {
+      "name": "NetworkSupplyPointsTable (POC -> Island / Network reporting region mapping, with POC start/end dates)",
+      "url": "https://www.ea.govt.nz/data-and-insights/datasets/wholesale/mapping-and-geospatial/",
+      "api": "https://emidatasets.blob.core.windows.net/publicdata/Datasets/Wholesale/MappingsAndGeospatial/NetworkSupplyPointsTable/20261021_NetworkSupplyPointsTable.csv",
+      "access": "424,502 bytes, anonymous; 2,633 rows; columns include POC code, Network reporting region ID, Network reporting region, Island, Start date, End date"
+    }
+  ],
+  "license_evidence": [
+    "EMI Legal information (https://www.emi.ea.govt.nz/LegalInformation, read 2026-10-22): 'Unless indicated otherwise for specific items or collections of content (either below or within specific items or collections), this copyright material is licensed for re-use under the Creative Commons Attribution (CC-BY) 4.0 international licence. In essence, you are free to copy, store, distribute and adapt the material, as long as you attribute it to the Electricity Authority... and abide by the other licence terms.' Restricted material carve-outs are emblems/trademarks, EMI tools and models, third-party works and section-46 request responses - the FinalEnergyPrices CSV datasets are Authority content and none of the carve-outs.",
+    "Successor hub copyright statement (https://www.ea.govt.nz/copyright-disclaimer-transparency/, read 2026-10-22): 'Unless indicated otherwise for specific items or collections of content (either below or within specific items or collections), this copyright material is licensed for re-use under the Creative Commons Attribution (CC-BY) 4.0 international licence... Copyright material on this website is protected by copyright owned by the Electricity Authority on behalf of the Crown.' - the same licence posture carries across the EMI retirement onto the Data & insights hub.",
+    "EMI retirement is announced ('The Electricity Authority will soon begin to decommission the EMI platform... A new Data & insights hub... will replace EMI', read on https://www.emi.ea.govt.nz/ 2026-10-22): a source-migration risk, not a licence risk - the same datasets are already catalogued on the hub at https://www.ea.govt.nz/data-and-insights/datasets/wholesale/dispatch-and-pricing/ and the licence statement covers both. Construction must pin exact URLs and record digests."
+  ],
+  "construction_script": null,
+  "split_strategy": "Temporal windows on the 1996-10..2026-10 daily panel, e.g. train 1996-10..2015-12 / eval 2016-01..2020-12 / holdout 2021-01..2026-10; each window contains at least one measured high-price episode (train: 2008-07 measured 9/31 days >$200; eval: 2020-06 measured 5/30 days >$200 with mid-month means to $287; holdout: 2024-08 measured 25/31 days >$200). Positives cluster into multi-day weather/storage episodes, so split capacity is counted per episode-week, not per day; sampled episode weeks measured, exact counts computed at construction over the full files. The 2022-11-01 real-time-pricing regime change (ex-post -> real-time pricing, documented by the publisher) is a structural break: either bound all windows inside one regime or ship a regime indicator; decided and documented at construction.",
+  "measurements": {
+    "inventory_measured": "container listing (1 request, 2.80 s, 460,102 bytes): 728 files, 360 monthly (199610..202609, size min 8,245,783 / median 10,012,278 / max 10,894,850 bytes; total 3,594.6 MB) + 368 daily (20251021..20261021, ~312,808-348,002 bytes; total 119.7 MB); monthly naming has no gaps",
+    "publication_lag_measured": "daily files: Last-Modified minus trade date over all 368 files: min 0.75 d, p50 1.80 d, p90 3.80 d, max 5.80 d; documented instrument says final by 2pm the following business day",
+    "schema_measured": "FinalEnergyPrices CSV columns: TradingDate, TradingPeriod, PointOfConnection, DollarsPerMegawattHour; 48 trading periods per day; per-file rows 346,392-370,512 (monthly) and POCs 238 (1997) / 249 (2008) / 241 (2020, 2024) - node set evolves, the NSP table carries POC start/end dates",
+    "era_and_event_samples_measured": "market daily-mean $/MWh (mean over POCs x periods): 1997-01 min 26 / median 42 / max 50, 0 days >$100; 2008-07 median 135 / max 306, 13 days >$150, 9 >$200; 2020-06 median 145 / max 287, 12 days >$150 (mid-month event); 2024-08 median 436 / max 884, 27 days >$150, 25 >$200, 22 >$300; recent era (12 sampled days 2025-10..2026-10) median 32 / max 165, 1 day >$100",
+    "known_event_fixtures": "August 2024 dry-year price episode: measured daily means 2024-08-05..08-08 of 815-884 $/MWh - must exceed any training-frozen threshold; 2008 winter dry-year: 2008-07-01 mean 306 - must exceed $200; quiet-era control: 1997-01 max 50 - must not exceed $100. Fixtures to be pinned from the publisher's own market commentary at construction.",
+    "extraction_cost_measured": "probe: 19 requests, 45,112,531 bytes, 75.1 s (4 whole monthly files + 12 daily files + mapping + listings) on this coordinator; full construction estimated (not measured) at 728 files / 3,714.3 MB / ~1-2 h sequential on a worker - labelled an estimate from the measured per-file sizes",
+    "measured_on": "2026-10-22 via .factory/nz_ea_probe.py (v1, listing crashed on the monthly-file name shape, diagnosed), .factory/nz_listing_stats.py, .factory/nz_ea_probe2.py; commands and outputs in notes.md"
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": "Class A licence read first-hand on both the current platform and its announced successor; 30 years of daily-grain labels; a documented publication instant with measured file lags; publisher-published regional mapping; strong clustered event structure (dry-year episodes) and quiet eras giving both classes in every candidate window. Prior art is level-regression forecasting (EPF benchmark, an AUT study, a single-node GitHub project) - no published exceedance task with splits and a scored contract.",
+  "next_action": "Construction on the worker: (1) enumerate the 728 files via the container listing, download all monthly+daily price files (or stream and aggregate), join POC->Island/Network-reporting-region via the NSP table with point-in-time POC validity; (2) build the daily region x day panel; (3) define the D+k exceedance label with a threshold frozen on the training window (fixed $/MWh or training quantile - decide and document, with the measured 100/150/200/300 rates as the decision basis); (4) decide and document the 2022-11-01 regime-break treatment; (5) baseline triad (persistence: last-published day/week mean above threshold; calendar-only; model) before any headroom claim; (6) pin known-event fixtures (Aug 2024, Jul 2008, quiet-era control) from the publisher's own commentary; (7) qualification gate per the dataset-qualification skill. Pin exact blob URLs + digests because EMI is being decommissioned onto the Data & insights hub.",
+  "jurisdiction": {
+    "country": "NZ",
+    "region": "Oceania",
+    "publisher": "Electricity Authority Te Mana Hiko (New Zealand)",
+    "recorded_at": "2026-10-22"
+  },
+  "licence_class": "A",
+  "licence_note": "CC BY 4.0 International (attribution: 'www.emi.ea.govt.nz provided by the Electricity Authority (New Zealand)'); confirmed identically on the successor hub's copyright statement, so the announced EMI decommissioning does not change licence posture.",
+  "verdict": "go",
+  "novelty_check": {
+    "checked_at": "2026-10-22T04:26:55+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "New Zealand electricity price forecasting",
+      "electricity price spike prediction benchmark",
+      "spot price exceedance dataset"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "New Zealand electricity price forecasting",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "electricity price spike prediction benchmark",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "spot price exceedance dataset",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "New Zealand electricity price forecasting",
+          "hits": 1507923,
+          "top": [
+            "DEEP LEARNING APPROACH TO FORECASTING ELECTRICITY PRICE  FROM LOAD DATA",
+            "A hybrid extreme learning machine and sine cosine algorithm  model for accurate electricity price forecasting",
+            "Machine Learning-Based Electricity Price Forecasting Using Support Vector Machine",
+            "Forecasting day-ahead electricity prices for the electricity market with dynamic time period",
+            "Electricity price forecast for futures contracts with artificial neural network and spearman data correlation"
+          ]
+        },
+        {
+          "query": "electricity price spike prediction benchmark",
+          "hits": 183924,
+          "top": [
+            "Machine Learning-Based Electricity Price Forecasting Using Support Vector Machine",
+            "Analysis of Features of Power Market Price: Lithuanian Case",
+            "DEEP LEARNING APPROACH TO FORECASTING ELECTRICITY PRICE  FROM LOAD DATA",
+            "Correlation Analysis Electricity Price and Solar Energy in Germany 2018-2023",
+            "BQEB-Data: An Open Benchmark Dataset for Autonomous Energy Intelligence and Smart Grid Analytics"
+          ]
+        },
+        {
+          "query": "spot price exceedance dataset",
+          "hits": 378553,
+          "top": [
+            "Amazon EC2 Spot Price History: 2014--2015, 2017--2023",
+            "Rediscovering global hotspots of monthly freshwater boundary exceedances by integrating water storage capacity",
+            "Forecasting Day-Ahead Electricity Price with Artificial Neural Networks: a Comparison of Architectures",
+            "Statistical data collected in the case studies of the SPOT report - dataset",
+            "Results of SPOT surveys for tourists, residents and entrepreneurs in the case studies - dataset"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "New Zealand electricity price forecasting",
+          "hits": 5,
+          "top": [
+            "Current New Zealand Activities in Radio Astronomy: Building Capacity in Engineering &amp; Science for the Square Kilomet",
+            "Probabilistic Forecasting in Day-Ahead Electricity Markets: Simulating Peak and Off-Peak Prices",
+            "A Study of the New Zealand Mathematics Curriculum",
+            "Lasso estimation for GEFCom2014 probabilistic electric load forecasting",
+            "Explainable Artificial Intelligence for Assault Sentence Prediction in New Zealand"
+          ]
+        },
+        {
+          "query": "electricity price spike prediction benchmark",
+          "hits": 5,
+          "top": [
+            "Investigating the effect of competitiveness power in estimating the average weighted price in electricity market",
+            "Econometric Modeling of Regional Electricity Spot Prices in the Australian Market",
+            "Prediction Interval Construction Method for Electricity Prices",
+            "Adaptive Online Learning with LSTM Networks for Energy Price Prediction",
+            "Do VLMs Truly \"Read\" Candlesticks? A Multi-Scale Benchmark for Visual Stock Price Forecasting"
+          ]
+        },
+        {
+          "query": "spot price exceedance dataset",
+          "hits": 5,
+          "top": [
+            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+            "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset",
+            "Location, Location, Location: Exploring Amazon EC2 Spot Instance Pricing Across Geographical Regions - Extended Version",
+            "Understanding the Impacts of Dark Pools on Price Discovery"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'New Zealand electricity price forecasting': 0 hit(s) - nothing notable\n- huggingface_datasets / 'electricity price spike prediction benchmark': 0 hit(s) - nothing notable\n- huggingface_datasets / 'spot price exceedance dataset': 0 hit(s) - nothing notable\n- zenodo_records / 'New Zealand electricity price forecasting': 1507923 hit(s) - DEEP LEARNING APPROACH TO FORECASTING ELECTRICITY PRICE  FROM LOAD DATA, A hybrid extreme learning machine and sine cosine algorithm  model for accurate electricity price forecasting, Machine Learning-Based Electricity Price Forecasting Using Support Vector Machine, Forecasting day-ahead electricity prices for the electricity market with dynamic time period, Electricity price forecast for futures contracts with artificial neural network and spearman data correlation\n- zenodo_records / 'electricity price spike prediction benchmark': 183924 hit(s) - Machine Learning-Based Electricity Price Forecasting Using Support Vector Machine, Analysis of Features of Power Market Price: Lithuanian Case, DEEP LEARNING APPROACH TO FORECASTING ELECTRICITY PRICE  FROM LOAD DATA, Correlation Analysis Electricity Price and Solar Energy in Germany 2018-2023, BQEB-Data: An Open Benchmark Dataset for Autonomous Energy Intelligence and Smart Grid Analytics\n- zenodo_records / 'spot price exceedance dataset': 378553 hit(s) - Amazon EC2 Spot Price History: 2014--2015, 2017--2023, Rediscovering global hotspots of monthly freshwater boundary exceedances by integrating water storage capacity, Forecasting Day-Ahead Electricity Price with Artificial Neural Networks: a Comparison of Architectures, Statistical data collected in the case studies of the SPOT report - dataset, Results of SPOT surveys for tourists, residents and entrepreneurs in the case studies - dataset\n- arxiv_preprints / 'New Zealand electricity price forecasting': 5 hit(s) - Current New Zealand Activities in Radio Astronomy: Building Capacity in Engineering &amp; Science for the Square Kilomet, Probabilistic Forecasting in Day-Ahead Electricity Markets: Simulating Peak and Off-Peak Prices, A Study of the New Zealand Mathematics Curriculum, Lasso estimation for GEFCom2014 probabilistic electric load forecasting, Explainable Artificial Intelligence for Assault Sentence Prediction in New Zealand\n- arxiv_preprints / 'electricity price spike prediction benchmark': 5 hit(s) - Investigating the effect of competitiveness power in estimating the average weighted price in electricity market, Econometric Modeling of Regional Electricity Spot Prices in the Australian Market, Prediction Interval Construction Method for Electricity Prices, Adaptive Online Learning with LSTM Networks for Energy Price Prediction, Do VLMs Truly \"Read\" Candlesticks? A Multi-Scale Benchmark for Visual Stock Price Forecasting\n- arxiv_preprints / 'spot price exceedance dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, Location, Location, Location: Exploring Amazon EC2 Spot Instance Pricing Across Geographical Regions - Extended Version, Understanding the Impacts of Dark Pools on Price Discovery",
+    "prior_art": [
+      "Lago, Marcjasz, De Schutter, Wierzbicki, EPF benchmark, Applied Energy 293 (2021)",
+      "Electricity price forecasting in New Zealand, AUT study (GARCH/SV vs ML, daily prices 2014-2022)",
+      "github.com/SoyeonIm/nz-electricity-market-analytics"
+    ],
+    "theirs": "Electricity Authority publishes raw nodal final prices; the EPF benchmark (Lago et al. 2021) is day-ahead level regression on five Northern-Hemisphere markets with no NZ; an AUT study forecast NZ daily price levels 2014-2022 with no published artifact; a GitHub project forecasts one node (OTA2201) as level regression with no task contract",
+    "ours": "30-year island/region-level panel of NZ final wholesale prices (1996-2026) with a daily exceedance label at a documented publication instant (final by 2pm next business day; measured file lag p50 1.8d max 5.8d), benchmark splits and a scored binary contract",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
+}

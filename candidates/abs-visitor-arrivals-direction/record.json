@@ -1,0 +1,162 @@
+{
+  "id": "abs-visitor-arrivals-direction",
+  "status": "ready",
+  "created_at": "2026-10-22T04:16:41+00:00",
+  "domain": "international travel / monthly migration panel",
+  "prediction_question": "For a given country of residence, will short-term visitor arrivals to Australia in the first month not yet published (the month after the latest OAD release) fall short of the same calendar month one year earlier?",
+  "prediction_time": "The publication instant of the ABS Overseas Arrivals and Departures (OAD) release for reference month M, which lands about six weeks after month end (max observed lag 43 days; releases observed 13/10/2026 for Aug 2026, 11/09/2026 for Jul 2026, 12/06/2026 for Apr 2026, all 11:30am local). Features are the published series values for months <= M only; the target month M+1 is unpublished at that instant (it is released ~43 days after its own month end).",
+  "target_definition": "Binary YoY direction: OBS_VALUE for (CAT_TRAVELLER=06 visitors arriving, COUNTRY_RESID=C, month M+1) < OBS_VALUE for (same series, month M-11). Label source columns: the target month's OBS_VALUE and the year-earlier OBS_VALUE; both excluded from shipped features.",
+  "sources": [
+    {
+      "name": "ABS Data API (SDMX 2.1), dataflow ABS,OAD_COUNTRY,1.0.0 - Visitor arrivals and resident returns, Selected Countries of Residence/Destinations",
+      "url": "https://www.abs.gov.au/statistics/industry/tourism-and-transport/overseas-arrivals-and-departures-australia/latest-release",
+      "api": "https://data.api.abs.gov.au/rest/data/ABS,OAD_COUNTRY,1.0.0/all?format=csv&startPeriod=1991-01",
+      "access": "anonymous REST, documented in the Data API user guide; measured 200 OK, full panel 3,308,454 bytes in 3.47 s (2026-10-22)",
+      "licence": "ABS website material is CC BY 4.0 International (see license_evidence); microdata and third-party content excepted, which this dataset is not"
+    }
+  ],
+  "license_evidence": [
+    "ABS 'Privacy and legals' page (https://www.abs.gov.au/privacy-and-legals, read 2026-10-22): 'All material presented on this website is provided under a Creative Commons Attribution 4.0 International licence, with the exception of: the Commonwealth Coat of Arms, the ABS logo, material protected by a trade mark, unit record data (microdata), content supplied by third parties.'",
+    "Same page: 'Where no indication of licensing is provided within the product, full copyright terms will apply.' - the OAD dataflow is standard ABS website material, downloaded from the documented ABS Data API; the API user guide is published under the same site terms.",
+    "ABS conditions of sale (https://www.abs.gov.au/about/legislation-and-policy/purchasing-data/abs-conditions-sale, read 2026-10-22) confirms the general posture: 'Most ABS material is licensed under Creative Commons Attribution'; charged/customised products are the exception."
+  ],
+  "construction_script": null,
+  "split_strategy": "Temporal thirds on the monthly panel of 77 countries x 2 traveller categories: candidate partition train 1991-2014 / eval 2015-2019 / holdout 2022-2026 (2020-2021 excluded as pandemic extremes or optionally folded into train; construction decides and documents). Direction labels are computed per country-series; thresholds are not needed (label is a sign, not a level).",
+  "measurements": {
+    "panel_shape_measured": "59,452 observations, 428 months 1991-01..2026-08, 77 COUNTRY_RESID codes x 2 CAT_TRAVELLER codes (05 residents returning, 06 visitors arriving), TSEST=10 (Original) only, 0 missing OBS_VALUE",
+    "fetch_cost_measured": "1 request, 3,308,454 bytes, 3.47 s for the full panel (https data.api.abs.gov.au, 2026-10-22); dataflow+structure metadata 100,939 bytes in 2.72 s",
+    "direction_base_rates_measured": "MoM direction pairs 58,082 (up 30,466 / down 30,048 overall - near-balanced); YoY direction pairs 56,843; per-year YoY up/down varies from 1,218/424 (2004) to 159/1,492 (2020 pandemic) and 1,645/9 (2022 reopening)",
+    "split_window_counts_yoy_label": {
+      "train 1991-2014": "up=24166 down=13575 flat=520 (23 of 24 years carry both classes)",
+      "eval 2015-2019": "up=5588 down=2630 flat=61 (all 5 years carry both classes)",
+      "holdout 2022-2026": "up=6167 down=1533 flat=140 (all 5 years carry both classes)"
+    },
+    "clustering_note": "Positives cluster by era/year (pandemic collapse 2020, reopening surge 2022) rather than per-country; year-level cluster counts recorded above",
+    "release_lag_observations": "Aug 2026 released 13/10/2026 (43 days); Jul 2026 released 11/09/2026 (42 days); Apr 2026 released 12/06/2026 (43 days); max observed lag 43 days => prediction instant = M release, target M+1",
+    "revision_note": "ABS documents post-release revision: 'March 2026 data revised' in the April 2026 issue once linked Medicare data became available (methodology History of changes) - only the current vintage is downloadable, so feature values are stated as current-vintage, with the cutoff as a documented assumption",
+    "column_documentation": "codelists parsed from the SDMX structure: CL_OAD_CAT_TRAVEL 05='Short-term (less than one year) Residents returning', 06='Short-term (less than one year) Visitors arriving'; CL_OAD_ARRIVALS_COUNTRY 78 codes; CL_TSEST 10='Original'; DSD dimensions CAT_TRAVELLER, COUNTRY_RESID, TSEST, FREQ",
+    "known_event_fixtures": "Australia's international border closure (March 2020) -> measured 2020 YoY up=159/down=1,492 (collapse); reopening (from Nov 2021) -> measured 2022 YoY up=1,645/down=9 (surge). Expected verdicts verified directly in the fetched panel.",
+    "measured_on": "2026-10-22 via scripts in .factory/ (abs_oad_probe.py, abs_structure_dump.py), commands and outputs in notes.md"
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": "The MoM label is near-balanced across three decades (58,082 pairs) and the YoY label carries both classes in every candidate window, so persistence cannot win by construction on direction signs. Timing is a documented publication instant with three observed release dates. Licence is the publisher's own CC BY 4.0 statement (class A). All four discovery contracts satisfied with measured evidence.",
+  "next_action": "Construction on the worker: (1) fetch the full OAD_COUNTRY panel via the SDMX API; (2) build the (CAT_TRAVELLER=06, country) x month panel with published-lag-gated features (values <= M, calendar, country identity); (3) label = YoY direction of M+1; (4) split 1991-2014 / 2015-2019 / 2022-2026 with the 2020-2021 treatment decided and documented; (5) baseline triad (persistence of YoY sign, calendar-only, model) before any headroom claim; (6) qualification gate per the dataset-qualification skill.",
+  "jurisdiction": {
+    "country": "AU",
+    "region": "Oceania",
+    "publisher": "Australian Bureau of Statistics (Commonwealth of Australia)",
+    "recorded_at": "2026-10-22"
+  },
+  "licence_class": "A",
+  "licence_note": "CC BY 4.0 International per the ABS site-wide copyright statement; attribution 'Source: Australian Bureau of Statistics' / 'Based on ABS data' for derived work. Conditions carried into LICENSE.md at release.",
+  "verdict": "go",
+  "novelty_check": {
+    "checked_at": "2026-10-22T04:26:49+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "visitor arrivals forecasting",
+      "tourism arrivals prediction benchmark",
+      "overseas arrivals Australia dataset"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "visitor arrivals forecasting",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "tourism arrivals prediction benchmark",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "overseas arrivals Australia dataset",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "visitor arrivals forecasting",
+          "hits": 33773,
+          "top": [
+            "MARKETING INVESTMENT AND ECONOMIC RETURN IN DESTINATION PROMOTION: LINKING DIGITAL BRANDING STRATEGIES TO VISITOR SPENDING AND REGIONAL ECONOMIC IMPACT IN UZBEKISTAN",
+            "HYBRID MODEL, NEURAL NETWORKS, SUPPORT VECTOR MACHINE, K-NEAREST NEIGHBOR, AND ARIMA MODELS FOR FORECASTING TOURIST ARRIVALS",
+            "Modeling and predicting foreign tourist arrivals to Sri Lanka: A comparison of three different methods",
+            "GEOPOLITICAL RISKS AND INTERNATIONAL TOURIST ARRIVALS TO TURKEY: A CAUSALITY STUDY",
+            "A Strategic Framework for Branding Kannur District as  an Emerging Tourism Destination"
+          ]
+        },
+        {
+          "query": "tourism arrivals prediction benchmark",
+          "hits": 148890,
+          "top": [
+            "REMODEL/PD/WP3/Travel and Tourism Development Index: The Impact of Travel and Tourism Sustainability on Tourism Receipts and Tourist Arrivals  Creators",
+            "REMODEL/PD/WP3/Travel and Tourism Development Index: The Impact of Travel and Tourism Sustainability on Tourism Receipts and Tourist Arrivals",
+            "THE ROLE OF TOURISM IN ECONOMIC GROWTH: EVIDENCE FROM UZBEKISTAN",
+            "Forecasting tourism arrival in Panama using ARIMA models",
+            "A novel hybrid deep learning approach for tourism demand forecasting"
+          ]
+        },
+        {
+          "query": "overseas arrivals Australia dataset",
+          "hits": 423695,
+          "top": [
+            "Ecotourism in Australia: Destinations and tourist arrivals",
+            "Journal of International Students",
+            "Earthquake Catalogs of the LArge-n Seismic Survey in Oklahoma dataset",
+            "Settler arrivals by country of birth, Australia, 1959 to 1996",
+            "Chinese Australians and the Immigration Restriction Act in New South Wales: A Guide to Finding Records"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "visitor arrivals forecasting",
+          "hits": 5,
+          "top": [
+            "Forecasting intermittent time series with Gaussian Processes and Tweedie likelihood",
+            "Quantile Regression for Qualifying Match of GEFCom2017 Probabilistic Load Forecasting",
+            "Lasso estimation for GEFCom2014 probabilistic electric load forecasting",
+            "Probabilistic Hierarchical Forecasting with Deep Poisson Mixtures",
+            "LASSO Principal Component Averaging -- a fully automated approach for point forecast pooling"
+          ]
+        },
+        {
+          "query": "tourism arrivals prediction benchmark",
+          "hits": 5,
+          "top": [
+            "Defining Tourism Domains for Semantic Annotation of Web Content",
+            "Symptoms of complexity in a tourism system",
+            "Hospitality Students' Perceptions towards Working in Hotels: a case study of the faculty of tourism and hotels in Alexan",
+            "Tourism destinations as digital business ecosystems",
+            "Organizational support for work-family life balance as an antecedent to the well-being of tourism employees in Spain"
+          ]
+        },
+        {
+          "query": "overseas arrivals Australia dataset",
+          "hits": 5,
+          "top": [
+            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+            "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset",
+            "The use of the Long Baseline Array in Australia for precise geodesy and absolute astrometry",
+            "Proactive Road Safety Intervention in Australia: Predicting Risky Driving Hotspots from Connected Vehicle Data"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'visitor arrivals forecasting': 0 hit(s) - nothing notable\n- huggingface_datasets / 'tourism arrivals prediction benchmark': 0 hit(s) - nothing notable\n- huggingface_datasets / 'overseas arrivals Australia dataset': 0 hit(s) - nothing notable\n- zenodo_records / 'visitor arrivals forecasting': 33773 hit(s) - MARKETING INVESTMENT AND ECONOMIC RETURN IN DESTINATION PROMOTION: LINKING DIGITAL BRANDING STRATEGIES TO VISITOR SPENDING AND REGIONAL ECONOMIC IMPACT IN UZBEKISTAN, HYBRID MODEL, NEURAL NETWORKS, SUPPORT VECTOR MACHINE, K-NEAREST NEIGHBOR, AND ARIMA MODELS FOR FORECASTING TOURIST ARRIVALS, Modeling and predicting foreign tourist arrivals to Sri Lanka: A comparison of three different methods, GEOPOLITICAL RISKS AND INTERNATIONAL TOURIST ARRIVALS TO TURKEY: A CAUSALITY STUDY, A Strategic Framework for Branding Kannur District as  an Emerging Tourism Destination\n- zenodo_records / 'tourism arrivals prediction benchmark': 148890 hit(s) - REMODEL/PD/WP3/Travel and Tourism Development Index: The Impact of Travel and Tourism Sustainability on Tourism Receipts and Tourist Arrivals  Creators, REMODEL/PD/WP3/Travel and Tourism Development Index: The Impact of Travel and Tourism Sustainability on Tourism Receipts and Tourist Arrivals, THE ROLE OF TOURISM IN ECONOMIC GROWTH: EVIDENCE FROM UZBEKISTAN, Forecasting tourism arrival in Panama using ARIMA models, A novel hybrid deep learning approach for tourism demand forecasting\n- zenodo_records / 'overseas arrivals Australia dataset': 423695 hit(s) - Ecotourism in Australia: Destinations and tourist arrivals, Journal of International Students, Earthquake Catalogs of the LArge-n Seismic Survey in Oklahoma dataset, Settler arrivals by country of birth, Australia, 1959 to 1996, Chinese Australians and the Immigration Restriction Act in New South Wales: A Guide to Finding Records\n- arxiv_preprints / 'visitor arrivals forecasting': 5 hit(s) - Forecasting intermittent time series with Gaussian Processes and Tweedie likelihood, Quantile Regression for Qualifying Match of GEFCom2017 Probabilistic Load Forecasting, Lasso estimation for GEFCom2014 probabilistic electric load forecasting, Probabilistic Hierarchical Forecasting with Deep Poisson Mixtures, LASSO Principal Component Averaging -- a fully automated approach for point forecast pooling\n- arxiv_preprints / 'tourism arrivals prediction benchmark': 5 hit(s) - Defining Tourism Domains for Semantic Annotation of Web Content, Symptoms of complexity in a tourism system, Hospitality Students' Perceptions towards Working in Hotels: a case study of the faculty of tourism and hotels in Alexan, Tourism destinations as digital business ecosystems, Organizational support for work-family life balance as an antecedent to the well-being of tourism employees in Spain\n- arxiv_preprints / 'overseas arrivals Australia dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, The use of the Long Baseline Array in Australia for precise geodesy and absolute astrometry, Proactive Road Safety Intervention in Australia: Predicting Risky Driving Hotspots from Connected Vehicle Data",
+    "prior_art": [
+      "Tourism Research Australia international visitor forecasts (tra.gov.au)",
+      "Hyndman & Athanasopoulos tourism forecasting literature"
+    ],
+    "theirs": "ABS publishes the raw OAD monthly time series (SDMX API); tourism-forecasting literature and Tourism Research Australia's own forecast publications exist; no ML-ready arrivals-direction benchmark with publication-gated timing for Australia was found",
+    "ours": "77-country monthly panel of visitor arrivals to Australia with a YoY-direction label gated at the ABS publication instant (43-day release lag observed), benchmark splits and a scored binary contract; the publisher provides only the raw monthly series",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
+}
