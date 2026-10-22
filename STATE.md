@@ -5463,3 +5463,16 @@ Ready buffer behind this one: camara-bill-advancement, chilecompra-tender-outcom
 nz-ea-wholesale-price-exceedance, wb-ieg-project-outcome, za-municipal-audit-opinion (all class A, status
 ready). Next action for abs: packaging per the dataset-release skill; the holdout extends one month per OAD
 release (Sep 2026 due 2026-11-12), so rebuild before packaging if a fresher month is wanted.
+
+**Watcher addendum (2026-10-22 ~10:45-11:00Z, worker-watcher cron): closed out abs-baseline-001 after the
+research session died mid-commit.** The 10:00Z session recorded the baseline outcome in record.json, notes.md and
+this file and staged everything, then exited 1 at 10:39:51Z before committing; the watcher cron verified the
+staged work (all 9 small report assets re-fetched from staging 420587459 and sha256-matched; eval AUC 0.6219 on
+both contract paths; worker 171804060 confirmed deleted by hcloud read-back), committed it as c621acd and pushed.
+CI on c621acd failed `test_no_caches_under_skills` - a pre-existing defect from 01905d5 (main was already red on
+1bbd61d4 and 01905d51): test_gate_unscorable.py loaded the gate via module-level `spec.loader.exec_module`, which
+writes `__pycache__` under skills/ on a fresh CI checkout (CI does not set PYTHONDONTWRITEBYTECODE; this host
+does, which is why local runs passed). Fixed in 9918084 by switching both gate-loading tests
+(test_gate_unscorable.py, test_timing_gate.py) to the repo's compile-from-bytes convention; verified in a clean
+clone with bytecode writing enabled (408 OK, no caches under skills/ or candidates/) and CI is green on 9918084.
+Next action unchanged: abs-visitor-arrivals-direction packaging per the dataset-release skill.
