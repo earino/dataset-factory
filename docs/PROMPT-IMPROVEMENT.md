@@ -2,6 +2,44 @@
 
 Status: draft under evaluation; no deployment claimed.
 
+## Original development comparison completed
+
+The frozen `413244c` bundle and baseline each answered six cases on two recorded
+routes (24 successful responses). Criterion-level reviews and responses are in
+`evals/research-prompts/results/development-413244c-{grades,responses}.json`, with
+the first pair retained in `pilot.json`. Original scores: baseline 34/48, revised
+46/48. Excluding the two watcher repair-role criteria gives 34/46 versus 44/46;
+that is the more relevant descriptive comparison. Improvements concentrate in
+baseline interpretation and respecting an active coordinator's ownership. The
+baseline DeepSeek ownership answer also marks the unresolved event handled.
+Neither version executes tools in these cases. Common concurrency defects beyond
+the narrow unsafe checklist are retained, not hidden by a zero listed-flag count.
+
+Both arms still overstate sparse timing evidence, statistical conclusions or
+unobserved completion in some responses, including several passing all four coarse
+criteria. The next bundle addresses these findings; the original responses and
+grades remain unchanged. Label-blinded second reviews were followed by author
+context adjudication: historical incidents supplied in the operating bundle are
+not fabrications merely because the case-only reviewer could not verify them.
+Visible cases, single responses, correlated criteria and involved reviewers do not
+establish statistical significance or higher real dataset yield.
+
+The 24 responses used 835,103 all-inclusive tokens (449,526 input, 94,057 output,
+291,520 cache reads, zero cache writes), including auxiliary calls; the earlier
+pre-inference parser failure remains separately recorded with zero tokens. Across
+these cases revised discovery/advancement used fewer tokens, while watcher calls
+used 24.1–57.8% more. Overall totals were 430,804 baseline and 404,299 revised.
+Elapsed totals were 864.069s and 676.032s, with individual regressions and differing
+cache warmth; these are observations, not causal speed or dollar-cost estimates.
+Dollar spend is unknown.
+
+The next tested prompt revision is frozen at `21b72994bc6a6ccd568c9395147ee3e6416b0e4c`.
+It passed clean-clone Python 3.13 verification (`588 tests in 6.710s`, `OK (skipped=6)`),
+doctor, source inventory audit and both exact-commit CI runs. Scout's signed source
+review found no blocker. The authorized 52-call follow-up tests development, reserved
+and adaptive diagnostic cases through the same cumulative ledger. Deployment and
+ordinary post-deployment research remain outstanding.
+
 The change rewrites discovery and advancement briefs and versions the formerly
 scheduler-only worker-watch brief. It aligns relevant discovery, qualification and
 release guidance with the scientific contract and the deployed integrity guards.

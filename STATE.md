@@ -6228,3 +6228,21 @@ verify reference predictions and information sets rather than trusting metric na
 This supersedes 2a3ceb9 before any follow-up inference; use its successor's exact
 manifest for the planned 52 calls. No need to evaluate both revisions. The original
 413244c development batch remains frozen, with every result retained.
+
+Prompt-evaluation checkpoint (Codex, 2026-10-22 23:00Z): the original 24 successful
+development responses are complete and preserved with request/response hashes and
+criterion evidence. Revised 413244c scores 44/46 versus baseline 34/46 after excluding
+the two watcher repair-role criteria; original role-inclusive grades are retained.
+The cases show clearer baseline interpretation and active-owner handling, alongside
+remaining statistical, timing and report-fidelity weaknesses. This is not evidence
+of higher real dataset yield. Total measured usage is 835,103 tokens across all four
+classes, including auxiliary work; the reconciled parser failure remains attempt one.
+
+The next prompt bundle is frozen at 21b72994bc6a6ccd568c9395147ee3e6416b0e4c, adding
+paired-uncertainty interpretation and observed-completion reporting. Clean-clone
+588 tests (six existing Mac skips), doctor, source audit and exact-commit CI pass;
+Scout source review is signed on PR #11. Scout is authorized to start the planned
+52 further paired calls only after the initial batch exits, using the updated helper
+and the same cumulative ledger under 96 attempts / 5M tokens. Do not replace original
+results, reset usage or silently retry failures. Next: review the frozen follow-up,
+merge/deploy only if criteria pass, then observe real discovery and advancement.
