@@ -5690,3 +5690,21 @@ get_dataset.py and both private releases).
 Next action: the operator's private-to-public flip for eutl-installation-net-short; nothing
 blocks it. The queue behind it is unchanged (five ready class-A builds, then
 ea-flood-alert-escalation).
+
+**Post-push CI repair (same evening, watcher takeover run):** the `Website pipeline preview`
+workflow had been failing on every `release/**` push since the abs publication (bf79053,
+13:51Z - seven consecutive red runs, last green was tsb's packaging): abs, my-pricecatcher and
+nhs-ae carried committed manifests whose `package_files` listed the bulk CSVs, which are
+git-ignored and can never exist in a clean checkout - the same defect class the eutl
+regeneration fixed that evening, masked on this host by local CSV copies. Fixed the tsb way:
+the three packages' local CSVs came off the coordinator disk and their manifests were
+regenerated (only `package_files` changed, plus the abs/my-pricecatcher `publication_note`
+re-derived to cite the site destination's 15:51:21Z verification from the f657cd9 backfill);
+`check-package` exit 0 for abs and my-pricecatcher, the full site-preview loop (8 editorial
+packages) and test_sites.py run green locally. Known remaining debt, recorded not repaired:
+nhs-ae-four-hour-decline is a DROPPED candidate and its frozen release dir still fails
+check-package on a pre-existing tag mismatch (DESTINATIONS huggingface verified at v2026.11,
+manifest tag v2026.13) - no editorial, no CI path, left for whoever re-opens that source. The
+three published datasets' Hugging Face copies of MANIFEST.json still describe the old
+package_files layout; harmless for consumers (the hub serves `files` digests), to be refreshed
+at the next approved small-file maintenance.
