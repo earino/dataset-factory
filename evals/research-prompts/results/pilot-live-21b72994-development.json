@@ -730,11 +730,67 @@
       "elapsed_seconds": 85.632,
       "response": "DECISION\n\nReject both proposals. Spend the one bounded diagnostic validating the comparison itself: an alignment/availability audit of the persistence reference, a paired dependence-aware interval on the persistence-minus-model gap, and an independent recomputation of the persistence score, all on the identical eval rows. Holdout stays sealed; no threshold search; no drop yet.\n\nSUPPORTING EVIDENCE\n\n- The artifact passed full-artifact qualification and --accept, so gate-visible defects are not the live question. The gate is necessary, not sufficient: usefulness is exactly what it cannot establish.\n- Model 0.74 vs persistence 0.78 on identical rows is a recorded defect by policy; the skill's own worked example (0.870 vs 0.893) turned a \"promising\" dataset into \"not yet a forecast.\" Calendar/identity at 0.60 shows the model beats the seasonal reference, so this is \"trails persistence,\" not \"no signal.\"\n- Policy requires inspecting alignment, availability, uncertainty and split shift before interpreting a trailing model. None exist, so neither \"persistence dominates\" nor \"task useless\" is validated. Dropping the source now discards it on an unvalidated comparison; one weak model does not establish impossibility.\n- Onset thresholds \"until holdout beats persistence\" is prohibited twice over: tuning a label or threshold against the reported holdout score, and fitting until a score wins. It also spends the holdout, which must stay outside target and threshold selection. A change-target re-scope is legitimate only as a new task instance specified from user need first, then qualified and compared anew - never chosen because it improves a score.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\n\nThe -0.04 gap has no interval and unknown clustered structure; its significance is unknown. One script on the worker, eval rows only:\n\n1. Audit the persistence reference: computable at the declared prediction instant (not post-hoc)? Row-aligned with the model's scores?\n2. Recompute persistence AUC with independent code from the same artifact - divergence implicates our baseline, convergence strengthens the finding.\n3. Paired difference (persistence minus model) with a dependence-aware interval clustered on the declared event key.\n4. Per-year AUC/Brier and per-split positive rates, to expose a structural break or prevalence shift.\n\nReadings: gap confirmed with no named defect = validated negative; interval spans zero = inconclusive, report the gap and its uncertainty separately and claim neither dominance nor parity; a named defect = an implementation problem, not a scientific verdict.\n\nORDERED ACTIONS AND STOPPING CONDITION\n\n1. Record the triad in the candidate record now (0.74 / 0.78 / 0.60, identical eval rows, no intervals yet), with the trailing-persistence defect written beside the model AUC so nobody quotes 0.74 alone.\n2. Run the diagnostic; compact report back to the coordinator, bulk data stays on the worker.\n3. Named defect: one rebuild only, per the one-rebuild-per-structural-defect budget - fresh attempt ID, full gate plus --accept on the worker, triad re-measured. Hand off the prepared attempt if session budget runs out.\n4. Validated dominance: record \"no demonstrated headroom under this protocol\" with both scores on identical rows, preserve the negative finding, and propose drop-or-re-scope to the operator as a fresh decision.\n5. Inconclusive: record the observed gap and uncertainty; stop.\n\nStop after 3, 4 or 5. No second rebuild for the same defect class, no threshold iteration, no holdout evaluation this session.\n\nOPERATOR REPORT\n\nQualified artifact; baseline triad on identical eval rows: fitted model 0.74, persistence 0.78, calendar/identity 0.60. The model trails persistence, which policy records as a defect in the comparison, not a verdict on the source. Both proposals were declined: dropping now rests on a comparison with no uncertainty estimate or diagnosis, and tuning onset thresholds against the holdout is forbidden and would invalidate it. The one bounded diagnostic will decide among: implementation defect (one bounded rebuild), validated no-headroom (negative finding preserved, drop or re-scope proposed), or an inconclusive gap (recorded as such). The holdout remains sealed and unexamined. The figures are measured; their significance is not yet known.\n\n\u2014 Scout (Hermes)\n",
       "response_sha256": "752156c4dc182880d8debe92342ea4f35f9445a8452226520c226704b0971c28"
+    },
+    {
+      "partition": "development",
+      "case": "advancement-baseline",
+      "arm": "baseline",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-39",
+      "session_id": "20261022_231442_09bb26",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "faa5a028c5da4df1b2f8d211718143bdcabf28253d0c267e4d0dcaad2e7e2b26",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 196,
+        "output_tokens": 4762,
+        "cache_read_tokens": 35648,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 40606,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 437,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 144,
+          "output_tokens": 4325,
+          "cache_read_tokens": 35264,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 67.104,
+      "response": "Decision\n\nNeither proposal. The one bounded diagnostic goes to independently replicating the persistence comparison on the exact eval rows, with a row-alignment audit and uncertainty intervals. Threshold search against the holdout is refused outright: it uses the holdout as a development signal and selects the task definition on its outcome, which is the outcome-driven task selection the project forbids. Immediate drop is premature: 0.74 vs 0.78 is a decisive, reviewer-audit-grade number resting on a single unaudited computation with no intervals.\n\nSupporting evidence\n\nThe qualification skill's baseline triad makes this comparison the finding: a model below persistence is a recorded defect, meaning the label behaves as a persistent level, not a forecast. Calendar/identity at 0.60 shows the model learns signal beyond seasonality (0.14 over calendar), but persistence still wins, so the current target is not a forecasting task. The same skill requires the decisive number be replicated by a second implementation reading only the published artifact, because divergence usually means the bug is in the baseline. Its failure-mode table fixes the response: record the defect, then either re-target change/onset or report the task as persistence and drop. Onset re-targeting is explicitly a new task instance with its own qualification, not a tweak, so the owner's proposal is wrong twice: it burns the holdout and treats a task redefinition as a parameter search. The repair budget is one rebuild per structural defect.\n\nUncertainty and the discriminating check\n\nA 0.04 AUC gap with no intervals is not yet a finding. It could be noise, or an alignment bug (mis-ordered ids, ragged rows) making the two scores non-comparable. The discriminating check: second implementation, identical eval rows, explicit id-alignment assertion, bootstrap intervals on the model-vs-persistence difference, clustered by event key if positives cluster.\n\nOrdered actions and stopping condition\n\n1. Write the diagnostic as a script in repo scratch; load the qualified artifact; recompute persistence and model scores independently; assert identical row sets and order; bootstrap the gap.\n2. If persistence robustly beats the model: record the negative result (all three AUCs, CIs, the command that produced them) in the candidate record, verdict dropped for this target. Optionally open a new candidate for an onset/change re-target as a new task with fresh discovery and qualification; this consumes the one allowed rebuild. The holdout for this instance is never opened.\n3. If the gap collapses (alignment bug or within noise): fix the baseline, re-run the triad; the instance survives, and the holdout still gets exactly one examination later under a protocol recorded before it runs.\n4. Update STATE.md and the record with measured figures, run check-candidate and the gate selftest, commit, read CI for that commit.\n\nStopping condition: one diagnostic, then at most one re-targeted instance. If the re-target also shows a persistent label or fails its gate, drop the source. No third rebuild, no threshold iteration against any split.\n\nOperator report (draft)\n\n\"Eval triad: model 0.74, persistence 0.78, calendar 0.60; no intervals existed and holdout stays sealed. Spent the bounded diagnostic on an independent replication plus alignment audit of the model-vs-persistence gap. [Outcome with CIs recorded in the candidate record.] Rejected the onset-threshold proposal as posed: tuning until the holdout beats persistence would fit the holdout; any onset re-target is a new candidate with its own qualification, searched on train/eval only. Current instance: negative result recorded and dropped, or survives pending baseline fix. Next action: [specific step]. Budget note: diagnostic used; no further spend without the recorded result.\"\n",
+      "response_sha256": "353b8c221f6d2f8f8c1a0fbe1617b1f52e78ac0f8776e9ab3bed394058447eb3"
     }
   ],
   "ledger": {
-    "calls": 39,
-    "tokens": 1309004
+    "calls": 40,
+    "tokens": 1349610
   },
-  "updated_at": "2026-10-22T23:14:52Z"
+  "updated_at": "2026-10-22T23:15:53Z"
 }
