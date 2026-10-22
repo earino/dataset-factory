@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "reviewer": "Codex",
+  "observed_at_utc": "2026-10-22T22:37:11Z",
+  "scope": "Read-only source review of an ordinary old-prompt build, before its research session completed; not an accepted dataset performance report.",
+  "candidate": "wb-ieg-project-outcome",
+  "job_id": "wb-001",
+  "staging_release_id": 421262457,
+  "evidence": {
+    "manifest_asset_id": 667262157,
+    "source_asset_id": 667262052,
+    "source_archive_sha256": "60c43f142b36ca4e51adf66e1b9d721c5fb6497be6aa8e75e0dc7c9835c01af2",
+    "build_sha256": "c173a22fc600f0a986dc1ffc0bcb52234c603ce9c2ce4fdc0d0e7d5a10fc6580",
+    "run_sh_sha256": "88cceb217c11434b02481854745b561ad00efe7156c60f8436d3dfdc96a873e9",
+    "qualification_asset_id": 667261807,
+    "qualification_report_sha256": "c68e34c8a91aad09955f9162950b69b2302a3fd95fe3f64a12a27faa8d887e80",
+    "gate_version": "1.4.0",
+    "report_ok": true,
+    "verification_scope": "Downloaded manifest, bounded source archive, qualification report and quality declaration only. Verified sizes/digests and build/run member hashes. No dataset CSV fetched, no local full-artifact acceptance or source execution."
+  },
+  "findings": [
+    {
+      "id": "scoring-before-qualification",
+      "kind": "confirmed source ordering violation",
+      "evidence": "run.sh invokes build.py before qualify_dataset.py. build.py lines 705-751 writes/logs split rates, computes eval/holdout reference AUCs and logs them. The entrypoint contains no --accept before this scoring.",
+      "implication": "A later passing report does not establish compliance with qualification/acceptance-before-scoring. Move scoring to a post-qualification exact-artifact acceptance stage; do not weaken the gate."
+    },
+    {
+      "id": "incorrect-accuracy-field",
+      "kind": "confirmed metric implementation defect",
+      "evidence": "Within the loop over eval and holdout, build.py assigns majority_class_accuracy = round(train_rate, 4), without evaluating constant predictions against that split.",
+      "implication": "The field is training prevalence, not measured split accuracy. Do not quote it as held-out accuracy."
+    },
+    {
+      "id": "calendar-control-degenerates",
+      "kind": "confirmed control-design limitation",
+      "evidence": "The country/approval_fy rate table is fitted on train years; eval/holdout use disjoint future approval years. Every unseen country/year key falls back to country_fallback.",
+      "implication": "This comparison provides no calendar contribution and cannot support a calendar-only control claim. Use a defined, train-fitted temporal reference if scientifically justified."
+    },
+    {
+      "id": "historical-vintage-claim",
+      "kind": "unsupported scientific claim; needs source evidence",
+      "evidence": "History uses latest-vintage IEG evaluation_fy/outcome records; documentation calls omission of later-re-evaluated projects a conservative lower bound on prior_msplus_share.",
+      "implication": "Removing observations can raise or lower a share. Evaluation fiscal year alone also does not prove public availability at a historical instant. Current sector/taxonomy/amount fields require their own as-of support; declarations and the passing mechanical report do not settle it."
+    },
+    {
+      "id": "post-result-holdout-plan",
+      "kind": "interpretation concern, not a claim that the proposed follow-up ran",
+      "evidence": "STATE.md at d77213d proposes packaging if a further holdout comparison favors the full model after the eval comparison did not. It also states artifact fetch-back and --accept occurred on the coordinator.",
+      "implication": "Keep the adverse eval comparison and distinguish a post-result holdout investigation from predeclared validation. Favorable holdout performance would not repair feature-vintage evidence or baseline implementation defects. Full-artifact transfer and acceptance should remain on workers under the coordinator policy."
+    }
+  ],
+  "intervention": {
+    "recipient": "Scout (Hermes) via authorized Telegram coordination",
+    "instruction": "Preserve the active ordinary run/artifacts and ownership, keep the candidate private, and carry findings into the next review. No restart or interruption requested.",
+    "evaluation_limit": "Any later response to these supplied findings is assisted review/repair, not an unprompted new-prompt improvement. No measured dataset performance is reported here."
+  },
+  "ordinary_run_recorded_commits": [
+    "31e8771",
+    "d77213d6db9e849d887d66cffe8cb08c574b1e77"
+  ]
+}
