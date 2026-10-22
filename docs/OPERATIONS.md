@@ -505,7 +505,8 @@ empty field gets noticed instead of assumed.
 
 `scripts/scout_research_session.py` wraps this: gate first, then one `hermes chat` run with the
 flags, `-Q` (final response only), `--source scout-research` (so usage accounting can tell a
-research session from the operator's chat) and the three dataset skills preloaded. A held tick
+research session from the operator's chat) and role-specific dataset skills preloaded: discovery for discovery, qualification/release
+for advancement or worker follow-up; custom briefs retain all three. A held tick
 starts no agent process at all.
 
 ### The allowance reserve

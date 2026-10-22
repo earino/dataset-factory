@@ -287,6 +287,20 @@ def strip_footer(text):
     return "\n".join(lines).strip()
 
 
+def preloaded_skills(template_path):
+    """Load the methods needed for this role; custom briefs keep the prior set."""
+    path = Path(template_path)
+    if not path.is_absolute():
+        path = REPO / path
+    role = path.resolve()
+    if role == (REPO / "docs/discovery-session-prompt.md").resolve():
+        return "dataset-discovery"
+    if role in {(REPO / "docs/research-session-prompt.md").resolve(),
+                (REPO / "docs/worker-watch-prompt.md").resolve()}:
+        return "dataset-qualification,dataset-release"
+    return "dataset-discovery,dataset-qualification,dataset-release"
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--max-turns", type=int, default=60,
@@ -388,7 +402,7 @@ def run_session(args, lock_fd):
             "--source", SOURCE_TAG_ACTIVE,
             "--max-turns", str(args.max_turns),
             "--run-budget", str(args.run_budget),
-            "-s", "dataset-discovery,dataset-qualification,dataset-release",
+            "-s", preloaded_skills(args.prompt_file),
         ]
         with session_marker(args):
             try:
@@ -408,6 +422,7 @@ def run_session(args, lock_fd):
     note({"event": "session", "outcome": outcome, "elapsed_seconds": elapsed,
           "prompt_file": Path(args.prompt_file).name,
           "submitted_brief_sha256": prompt_sha256,
+          "preloaded_skills": preloaded_skills(args.prompt_file).split(","),
           "max_turns": args.max_turns, "run_budget": args.run_budget})
     print(strip_footer(output) or f"Scout research session {outcome} after {elapsed}s")
     if error.strip():

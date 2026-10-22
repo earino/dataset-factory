@@ -39,9 +39,11 @@ log; this is not a claim to capture private Hermes system context.
 Active repository briefs: `docs/discovery-session-prompt.md`,
 `docs/research-session-prompt.md`, `docs/worker-watch-prompt.md`. Standing instructions:
 `AGENTS.md`, `PROJECT.md`, `docs/OPERATIONS.md`; live state/candidates are evidence.
-Three project skills are eagerly preloaded by the research wrapper; relevant profile
-skills are loaded on demand. This change does not remove scientific skill content to
-claim a token saving, or rebuild Hermes's prompt assembler.
+Eager skill loading now follows the role: discovery loads discovery; advancement and
+watcher load qualification/release. Custom briefs retain the former three-skill default.
+Other project/profile skills remain available on demand. Scientific guidance is retained;
+the change removes irrelevant methods from a role's initial context without rebuilding
+Hermes's prompt assembler. Measure token effects rather than inferring cost savings.
 
 Scout's installed-source findings and corrections:
 - [Prompt assembly and runtime inventory](https://github.com/earino/dataset-factory/pull/10#issuecomment-6350802906)

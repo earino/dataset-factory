@@ -45,9 +45,14 @@ def main():
         if case['partition']!=args.partition: continue
         for arm,commit in (('baseline',baseline),('revised',revision)):
             paths=COMMON.copy()
-            # The original agent watcher did not preload the three project skills;
-            # the revised bounded wrapper does. This is part of the bundle treatment.
-            if case['role']!='watcher' or arm=='revised': paths+=SKILLS
+            # Match role-specific eager loading. This is part of the bundle treatment,
+            # not an isolated estimate of the effect of rewriting one brief.
+            if arm == 'baseline':
+                if case['role'] != 'watcher': paths += SKILLS
+            elif case['role'] == 'discovery':
+                paths += SKILLS[:1]
+            else:
+                paths += SKILLS[1:]
             sections=[]; identities={}
             for name in paths:
                 text=source(commit,name); identities[name]=digest(text)

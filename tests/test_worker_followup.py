@@ -104,6 +104,30 @@ class WorkerFollowupTests(unittest.TestCase):
             self.assertIn('missing ledger', error.getvalue())
             agent.assert_not_called()
 
+    def test_invocations_preload_only_their_role_methods_and_record_the_brief(self):
+        import hashlib
+        import json
+        expected = {
+            'docs/discovery-session-prompt.md': 'dataset-discovery',
+            'docs/research-session-prompt.md': 'dataset-qualification,dataset-release',
+            'docs/worker-watch-prompt.md': 'dataset-qualification,dataset-release',
+        }
+        for brief, skills in expected.items():
+            submitted = {}
+            def run(command, timeout, lock_fd):
+                submitted['text'] = Path(command[command.index('--query-file') + 1]).read_text()
+                self.assertEqual(skills, command[command.index('-s') + 1])
+                return subprocess.CompletedProcess(command, 0, 'done', '')
+            with self.subTest(brief=brief), \
+                    patch.object(followup.session, 'run_gate', return_value=(True, 'budget', 'clear')), \
+                    patch.object(followup.session, 'run_agent', side_effect=run), \
+                    contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(0, followup.session.main(['--prompt-file', brief]))
+            record = json.loads(followup.session.LOG.read_text().splitlines()[-1])
+            self.assertEqual(hashlib.sha256(submitted['text'].encode()).hexdigest(),
+                             record['submitted_brief_sha256'])
+            self.assertEqual(skills.split(','), record['preloaded_skills'])
+
     def test_unknown_collection_is_not_silently_treated_as_running(self):
         with patch.object(followup.watch, 'watchlist', return_value=['job-one']), \
                 patch.object(followup.watch, 'state_of', return_value={'job':'job-one','state':'unknown','detail':'timeout'}), \
