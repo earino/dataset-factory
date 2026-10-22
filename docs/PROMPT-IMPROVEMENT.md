@@ -97,3 +97,32 @@ profile references. Those are aligned with frozen package versions and evidence-
 decisions; the original captured bytes remain in history. Profile source hashes are
 updated for explicit deployment review. These references are source-reviewed, not
 silently included in the no-tool experiment's eager instruction bundle.
+
+
+## Deployment plan (prepared; not executed)
+
+After the comparison satisfies its predeclared criteria, merge the reviewed PR and
+record the merge commit. Scout deploys at an idle boundary:
+
+1. Capture the current checkout, relevant live file digests and supported scheduler
+   readback privately. Preserve uncommitted research and any unexpected skill drift;
+   do not overwrite it. Verify both automatic skill-writer holds remain effective.
+2. Fast-forward the coordinator to the reviewed commit. Install only changed shim
+   and profile files named by the reviewed inventory delta, checking each live
+   preimage immediately before replacement. The new follow-up shim is an addition.
+   Leave credentials, research records, accounting and published artifacts intact.
+3. Through the installed supported scheduler interface, edit existing watcher job
+   `98b45d983280` to script-only `scout_worker_followup.sh`. Preserve its ID, five-minute
+   cadence and delivery destination. Confirm its old agent prompt is not invoked
+   separately. Do not create a second watcher job. Independent expiry cleanup stays on.
+4. Read back scheduler mode/entry and effective holds; run the live runtime audit,
+   doctor and admission check. Record commit, brief/skill/shim digests and results.
+   Observe discovery and advancement on their ordinary routes, and report whether
+   a genuine watcher event was available. An idle tick is not event-handling proof.
+
+If checks fail, hold the affected research/follow-up entry and preserve diagnostics;
+independent expiry cleanup continues. Restore only the captured changed code/files
+with digest checks and the captured scheduler definition through the supported
+interface. Verify the restored identities and state before resuming. Do not roll
+back research records, accounting, published artifacts or unrelated concurrent work.
+A code revert alone does not restore the scheduler or external profile skills.
