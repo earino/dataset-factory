@@ -1178,11 +1178,67 @@
       "elapsed_seconds": 99.364,
       "response": "Decision\nDefer, change nothing. The advancement coordinator is active, holds the shared research mutex, and has uncommitted work in STATE.md and the candidate record, so it owns this job's follow-up. The watcher reports the job ID and pending follow-up, leaves the event unhandled, and stops. No collection, no result interpretation, no commit, no recovery or replacement launch, no ledger change, no handled marker. Independent expiry cleanup continues on its own schedules.\n\nSupporting evidence\n- Session brief: with ownership active or uncertain, \"report the job ID and pending follow-up, leave it unhandled, and defer to the owner.\" The one allowed diagnosed recovery requires exclusive ownership plus a documented handoff; no handoff was recorded.\n- docs/OPERATIONS.md: the watcher holds the same nonblocking research mutex around deterministic collection and the entire bounded follow-up, and busy ticks are silent. Collection is mechanically unavailable while the coordinator holds the mutex, not merely discouraged.\n- The uncommitted edits are the coordinator's unfinished work; committing, regenerating or overwriting them would be taking over its candidate, which the brief forbids.\n- Waiting is safe: at job end the worker host uploads results to the private staging draft release tagged job-ID, and the launch reservation already covers lifetime plus cleanup grace, so no evidence is lost and cost is bounded before expiry.\n\nUncertainty and next discriminating check\n- Unknown: the result's content \u2014 overall status and each required check, above all full-artifact qualification \u2014 cannot be known or quoted until the owner collects. \"A result exists\" is not a verified result; no figures may be quoted.\n- Unknown: whether the coordinator already began collecting; a read-only ledger look answers that without mutation.\n- Ownership is given as fact here; if ever doubted, confirm from the live process and lock holder, never by deleting the mutex or trusting the JSON marker alone.\n- Next discriminating check (owner's): collect the job, read each check's own result field, and require a passing qualification report plus --accept on exact bytes before any number is used.\n\nOrdered actions and stopping condition\n1. Read-only: confirm the coordinator process is alive and holds the mutex; capture job ID and candidate name.\n2. Read-only: check the ledger for whether collection already began; no bulk downloads.\n3. Deliver the status report below; make no other writes.\n4. Leave the event unhandled; subsequent busy watcher ticks stay silent \u2014 no model polling.\n5. Stop. Follow-up resumes only when the coordinator records a handoff, or a later session verifies it is gone and reconciles via status and the staging release. If the coordinator never returns, the expiry sweep deletes the worker and a fresh session collects the preserved staging artifacts.\n\nRemains unmodified\nThe coordinator's uncommitted STATE.md and candidate edits (not committed, reverted or overwritten); the research mutex and session marker; the job ledger entry (no cleared or invented lifecycle status); the worker itself (destroyed only after verified collection, never interrupted merely to unblock admission); staged artifacts and any published manifests, tags or destination records; no new job IDs.\n\nOperator report\nJob <id> (<candidate>) has a finished result per the watcher's deterministic observation. The active advancement coordinator owns the follow-up (mutex held, uncommitted edits present, no handoff recorded), so this event is deferred to it: nothing was collected, interpreted, committed or cleaned up, no numbers are quoted, and nothing is marked handled. Results and diagnostics are preserved in the private staging draft release; the worker remains billable only until the owner collects and destroys it, with the on-host and Actions sweepers as independent backstops. Next action and owner: the advancement coordinator \u2014 collect, verify each check's result (qualification first), then destroy with provider read-back and record the outcome and handoff. \u2014 Scout (Hermes)\n",
       "response_sha256": "816845800d5e277833a6fd52e0722fe76df290acc8349f703d61a68813602d55"
+    },
+    {
+      "partition": "development",
+      "case": "watcher-ownership",
+      "arm": "baseline",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-47",
+      "session_id": "20261022_232352_d8d8b3",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "81ef532042d58d3eeed2771ab3ef59223c9bb8e6fa3e5312bcbfad6302e80525",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 83,
+        "output_tokens": 8437,
+        "cache_read_tokens": 19840,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 28360,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 540,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 31,
+          "output_tokens": 7897,
+          "cache_read_tokens": 19456,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 109.175,
+      "response": "DECISION\nDo the money- and evidence-critical steps now: collect the job, fetch only the small reports, verify coverage and gate flags, destroy the worker. Make no edits to shared project files, no commit/push, no relaunch, no handled marker. Bookkeeping transfers to the advancement session or the next tick once the mutex releases.\n\nEVIDENCE\n- OPERATIONS.md (atomic admission): the wrapper holds `.factory/research-session.mutex` until the agent finishes; do not delete or replace the mutex or the lock marker; a file's existence is not proof of liveness.\n- The session brief's step 4 requires editing STATE.md and the candidate's record.json \u2014 exactly the files carrying the active session's uncommitted edits. Committing from here would either publish its half-finished work or clobber it, and no handoff was recorded, so its intent is unknown. AGENTS.md: inspect the diff before any push.\n- \"Only one coordinator may launch workers using a given job ledger\" \u2014 no corrected-job launch from this session while another is active.\n- \"Scout deletes each worker as part of finishing the job, immediately after collecting its results\"; Hetzner bills servers even powered off. Destroy requires verified collection, so collect first, then destroy \u2014 independent of the mutex and too costly to defer.\n\nUNCERTAINTY AND DISCRIMINATING CHECK\nThe case states the session is active, but the docs require process-table proof: read `research-session.lock` (pid, session_id) and confirm that live process belongs to the research wrapper. If the holder is dead, the path changes \u2014 the lock is stale and the uncommitted edits become orphaned work to reconcile (inspect, salvage, then record and commit). If alive, defer as decided. Report only figures actually read from the collected reports; do not estimate coverage or gate outcomes.\n\nORDERED ACTIONS AND STOPPING CONDITION\n1. `sh scripts/scout-factory worker collect <job_id>` \u2014 verified collection from the staging release.\n2. Fetch small reports to `.factory/<job_id>/reports/` per the release manifest.json. No bulk CSVs. Check build_summary.json coverage (stations/station-years vs expected) and gate ok flags; a failed gate still yields diagnostics \u2014 collect them.\n3. `worker destroy <job_id>`; confirm server and job-owned primary IP gone by reading them back. Do this even for a failed job.\n4. Confirm mutex-holder liveness via the process table.\n5. Write an outcome note under `.factory/<job_id>/` (job-scoped, additive): coverage numbers, gate flags, destroy confirmation, and why STATE.md recording is deferred.\n6. Report to the operator (below). Stop.\n\nRemain unmodified: the mutex and lock files; STATE.md and candidates/<id>/record.json including all uncommitted tree edits (no stash/checkout/commit); no CI check (nothing pushed); no corrected-job launch; no interruption of the active session; no handled marker \u2014 the marker summarizes completed recording, and recording is deliberately incomplete, so the job correctly stays visible for the next tick to finish.\n\nStopping condition: worker billing stopped, evidence durable in job-scoped paths, operator informed. Everything else waits for mutex release; the next research/watcher tick records the outcome in STATE.md/record.json, commits, checks CI for that exact commit, launches a corrected job under a new ID if this one failed (after fixing ordinary causes, within allowance, respecting release preemption), and only then writes `.factory/<job_id>/handled`.\n\nOPERATOR REPORT (numbers to be filled from the collected reports)\n\"Worker job <id> for candidate <c> finished. Collected and verified from private staging: coverage <stations>/<station-years> built vs <expected> (build_summary.json), qualification gate <pass/fail per report>. Worker and its job-owned IP destroyed and confirmed gone at <UTC time>; billing stopped. The advancement session still holds the research mutex with uncommitted STATE.md/candidate edits, so I made no changes to those files and nothing was committed or pushed; the outcome is preserved in `.factory/<id>/reports/` and the job ledger. Next: when that session ends, the next tick records the result, commits, checks CI, and \u2014 if the job failed \u2014 launches the corrected job under a new ID; the handled marker follows that, not before.\"\n",
+      "response_sha256": "eb390a020a9e2b7332f08691fd8a6a54fc97fc4cfb95b82bfe30c9f298d00b01"
     }
   ],
   "ledger": {
     "calls": 47,
-    "tokens": 1587513
+    "tokens": 1615873
   },
-  "updated_at": "2026-10-22T23:23:59Z"
+  "updated_at": "2026-10-22T23:25:41Z"
 }
