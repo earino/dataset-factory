@@ -19,8 +19,10 @@ concurrent repairs; see `docs/HARDENING-INCIDENTS.md` in that PR.
   verification jobs and immutable tags, 33 new tests (including four preserved from Scout's active-session repair).
 - PR #7, `07ecc51`: atomic session admission, strict gate decisions, truthful scheduler
   exit codes and process-group supervision; 21 new tests using local stubs.
-- PR #8, `1231594` (code at `f911591`): supervised worker-host transfer/HF disk and
-  runtime limits, 18 new subprocess regressions. No paid worker probe.
+- PR #8, `256bd79`: supervised worker-host transfer/HF disk and
+  runtime limits, 23 new regressions. Source review addressed procfs observation,
+  late child cleanup and bounded reaping; incomplete cleanup refuses artifact upload.
+  No paid worker probe.
 - PR #5, `63472c1`: evidence patches only. They are not approved skill changes and must not
   be applied as part of deployment.
 
@@ -30,12 +32,12 @@ The Hub regression was also checked with Scout's installed client in an isolated
 TSB without new worker evidence exits 2/incomplete, leaves its prior receipt byte-identical,
 and writes a separate attempt diagnostic. No worker or remote mutation was used for that test. Independent Python 3.13.1
 clean-clone results: #2 449 tests, #3 432 tests, #4 431 tests, #6 478 tests, #7 444 tests,
-#8 493 tests at its first code head (three further tests added), each OK
+#8 501 tests, each OK
 with six existing host-dependent skips (see each PR for its exact tested revision).
-The combined integration at `3536d57`, reconciled with main `0f853fa`, passed:
+The combined integration at `55b7834`, reconciled with main `0f853fa`, passed:
 
 ```text
-Ran 542 tests in 5.153s
+Ran 547 tests in 5.262s
 
 OK (skipped=6)
 ```
