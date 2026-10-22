@@ -1,0 +1,19 @@
+{
+ "release_version": "2026.10",
+ "release_tag": "v2026.10",
+ "repository": "https://github.com/earino/my-pricecatcher-weekly-increase",
+ "construction_commit": "local",
+ "visibility": "public",
+ "source": {
+  "name": "PriceCatcher: transactional records (KPDN and DOSM, data.gov.my)",
+  "landing_page": "https://data.gov.my/data-catalogue/pricecatcher",
+  "api": "anonymous monthly bulk CSV/parquet at https://storage.data.gov.my/pricecatcher/pricecatcher_YYYY-MM.csv",
+  "license": "CC BY 4.0"
+ },
+ "commands": {
+  "build": "python3 code/build.py --source-dir <dir> --lookup lookup_premise.csv --state Johor --out <extract>",
+  "baseline": "sh baseline/reproduce_baseline.sh ./task",
+  "gate": "python3 code/qualify_dataset.py <extract> --json --report qualification.json",
+  "get_dataset": "python3 get_dataset.py --dest ./task"
+ }
+}

@@ -5395,3 +5395,12 @@ records OK); probe scripts kept per convention (probe_ieg_stats.py, probe_join.p
 scratch (3.3 MB IEG CSV, 8.9 MB OECD inventory, three OECD CSV windows, fetched HTML - deleted from scratch by exact
 filename after the gate refused the recursive form). No US source substituted for the regional quota.
 
+
+**my-pricecatcher-weekly-increase PUBLISHED 2026-10-22 (GitHub + Hugging Face).**
+Built from 36 monthly PriceCatcher files (2023-11..2026-10), state of Johor: 397,982 train / 280,468 eval /
+154,279 holdout item-premise-weeks (14.9% / 17.5% / 20.4% positives, 143,978 unobserved outcomes counted not
+dropped). Gate 1.4.0 PASSED, artifact 06c5cd6f8a74aef9. Runner-contract baseline 0.7520 eval AUC, reproduced on
+both paths; references: item prior 0.5354, momentum 0.5001, reversal 0.4974, n_obs 0.4769 - a real signal, no
+persistence dominance. Source CC BY 4.0, compilation CC0, code MIT. Both destinations public and digest-verified
+anonymously. Site page still pending: the site publisher raises an untyped TypeError on this package (manifest
+splits now populated, source block shaped, DESTINATIONS matched) and needs a real traceback pass.

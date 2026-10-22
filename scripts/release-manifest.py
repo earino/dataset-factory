@@ -243,6 +243,15 @@ def main() -> int:
                 continue
             package_files[relative] = sha256_of(path)
     manifest["package_files"] = package_files
+    # Split counts belong in the manifest: the site renderer and the release notes both read them,
+    # and a null here crashed the publisher with a TypeError instead of a message.
+    if not manifest.get("splits"):
+        quality_doc = load(release / "quality.json") or {}
+        manifest["splits"] = (quality_doc.get("split_stats")
+                              or (quality_doc.get("splits") if isinstance(quality_doc.get("splits"), dict)
+                                  and all(isinstance(v, dict) for v in quality_doc["splits"].values()) else {})
+                              or ((record or {}).get("qualification") or {}).get("splits")
+                              or {})
     manifest["licenses"] = licenses_block(candidate)
     # The Hub path for each file, when the dataset declares its own. Emitted only when it differs
     # from the flat default, so a single-level release's manifest is unchanged.

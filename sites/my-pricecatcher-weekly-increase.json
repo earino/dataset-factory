@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "site_revision": 1,
+  "title": "Malaysian retail price increases",
+  "summary": "Predict whether an item's price at a Malaysian premise rises next week - 832,729 item-premise-weeks from the PriceCatcher daily price panel, state of Johor.",
+  "task_type": "binary-classification",
+  "domain": "Retail prices and consumer economics",
+  "release_date": "2026-10-22",
+  "post": {
+    "title": "A week-ahead price-increase task from Malaysia's daily price panel",
+    "paragraphs": [
+      "Malaysia's PriceCatcher programme publishes daily retail prices for hundreds of items across thousands of premises. Access is not the contribution. The contribution is the weekly panel - 397,982 train / 280,468 eval / 154,279 holdout item-premise-weeks in the state of Johor, from November 2023 to October 2026 - and the declaration that the prediction instant is the end of week W: a forecast made on Sunday night about next week's shelf price.",
+      "The label is a direction call, not a level: will the weekly modal price be higher in week W+1 than in week W. Positive rates run 14.9% / 17.5% / 20.4%, and the rise of the rate across the windows is itself a signal about the period.",
+      "The baseline is strong enough to be interesting: the harness's XGBoost pass reaches 0.7520 eval AUC, twenty-one points above the best naive reference (an item-level prior at 0.5354, with momentum and mean-reversion near 0.50). Unlike tasks where persistence wins, this one rewards learning something about the item and the week."
+    ]
+  },
+  "limitations": [
+    "Derived from PriceCatcher (KPDN and DOSM, data.gov.my) under CC BY 4.0; the compilation is CC0. Not an official Malaysian government product.",
+    "State-scoped to Johor. Other states are not represented in this release.",
+    "Pairs with fewer than three observations in a week are excluded at the prediction instant; a following week that is too sparse is counted as an unobserved outcome (143,978) rather than dropped silently.",
+    "Missing lags are sentinel-coded -1.0, which is unambiguous only because prices are strictly positive.",
+    "The holdout is labelled and ships with the release; keep its labels outside an evaluated agent's workspace.",
+    "The source feed revises monthly; a later rebuild will not reproduce these bytes."
+  ]
+}

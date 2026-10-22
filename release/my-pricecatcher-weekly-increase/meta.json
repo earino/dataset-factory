@@ -1,0 +1,52 @@
+{
+ "name": "my-pricecatcher-weekly-increase",
+ "description": "For an item-premise pair in Malaysia's PriceCatcher panel with at least 3 price observations in ISO week W, will the pair's weekly modal price be higher in week W+1 than in week W?",
+ "source": "https://data.gov.my/data-catalogue/pricecatcher (bulk: https://storage.data.gov.my/pricecatcher/pricecatcher_YYYY-MM.csv)",
+ "license": "CC BY 4.0 (data.gov.my / OpenDOSM; KPDN and DOSM)",
+ "target": "increases",
+ "positive_label": 1,
+ "id_columns": [
+  "row_id"
+ ],
+ "split": {
+  "strategy": "temporal on the target week",
+  "boundaries": {
+   "train": "target weeks <= 2024-12-31",
+   "eval": "2024-12-31 < target weeks <= 2025-12-31",
+   "holdout": "target weeks > 2025-12-31"
+  }
+ },
+ "columns": [
+  "row_id",
+  "target_week",
+  "price",
+  "n_obs",
+  "price_lag1",
+  "price_lag2",
+  "price_lag4",
+  "delta_1w",
+  "delta_4w",
+  "mean4",
+  "std4",
+  "min4",
+  "max4",
+  "price_vs_mean4",
+  "week_of_year",
+  "month",
+  "item_code",
+  "premise_code",
+  "state",
+  "increases"
+ ],
+ "rows": {
+  "train": 397982,
+  "eval": 280468,
+  "holdout": 154279
+ },
+ "positive_rate": {
+  "train": 0.149376,
+  "eval": 0.174672,
+  "holdout": 0.204299
+ },
+ "built_at_utc": "2026-10-22T09:40:44Z"
+}

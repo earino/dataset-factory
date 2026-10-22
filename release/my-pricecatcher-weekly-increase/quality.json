@@ -1,0 +1,265 @@
+{
+ "name": "my-pricecatcher-weekly-increase",
+ "built_at_utc": "2026-10-22T09:40:44Z",
+ "task": {
+  "question": "For an item-premise pair in Malaysia's PriceCatcher panel with at least 3 price observations in ISO week W, will the pair's weekly modal price be higher in week W+1 than in week W?",
+  "prediction_time": "End of ISO week W (Sunday 23:59:59 MYT). Features use price observations dated at or before the end of week W. The publisher's bulk storage carries same-day rows (2026-10 rows were present in the 2026-10 file, last modified the same day), so no publication lag is modelled."
+ },
+ "features": [
+  "price",
+  "n_obs",
+  "price_lag1",
+  "price_lag2",
+  "price_lag4",
+  "delta_1w",
+  "delta_4w",
+  "mean4",
+  "std4",
+  "min4",
+  "max4",
+  "price_vs_mean4",
+  "week_of_year",
+  "month",
+  "item_code",
+  "premise_code",
+  "state"
+ ],
+ "feature_documentation": [
+  {
+   "column": "price",
+   "note": "modal price in week W, computed from observations dated <= Sunday of W",
+   "available_at": "week W or earlier"
+  },
+  {
+   "column": "n_obs",
+   "note": "number of observations for this pair in week W",
+   "available_at": "week W or earlier"
+  },
+  {
+   "column": "price_lag1",
+   "note": "modal price in week W-1 (NaN when absent)",
+   "available_at": "week W or earlier"
+  },
+  {
+   "column": "price_lag2",
+   "note": "modal price in week W-2",
+   "available_at": "week W or earlier"
+  },
+  {
+   "column": "price_lag4",
+   "note": "modal price in week W-4",
+   "available_at": "week W or earlier"
+  },
+  {
+   "column": "delta_1w",
+   "note": "price - price_lag1",
+   "available_at": "week W or earlier"
+  },
+  {
+   "column": "delta_4w",
+   "note": "price - price_lag4",
+   "available_at": "week W or earlier"
+  },
+  {
+   "column": "mean4",
+   "note": "mean of the last four weekly modal prices including W",
+   "available_at": "week W or earlier"
+  },
+  {
+   "column": "std4",
+   "note": "standard deviation of those four prices",
+   "available_at": "week W or earlier"
+  },
+  {
+   "column": "min4",
+   "note": "minimum of those four prices",
+   "available_at": "week W or earlier"
+  },
+  {
+   "column": "max4",
+   "note": "maximum of those four prices",
+   "available_at": "week W or earlier"
+  },
+  {
+   "column": "price_vs_mean4",
+   "note": "price - mean4",
+   "available_at": "week W or earlier"
+  },
+  {
+   "column": "week_of_year",
+   "note": "ISO week number of W (known at the instant)",
+   "available_at": "week W or earlier"
+  },
+  {
+   "column": "month",
+   "note": "calendar month of W",
+   "available_at": "week W or earlier"
+  },
+  {
+   "column": "item_code",
+   "note": "publisher item code (categorical)",
+   "available_at": "week W or earlier"
+  },
+  {
+   "column": "premise_code",
+   "note": "publisher premise code (categorical; the entity key)",
+   "available_at": "week W or earlier"
+  },
+  {
+   "column": "state",
+   "note": "premise state from the publisher's premise lookup (categorical, static)",
+   "available_at": "week W or earlier"
+  }
+ ],
+ "features_documented_at": "prediction_time",
+ "post_hoc_columns": [],
+ "label_source_columns": [
+  "next_price",
+  "next_obs"
+ ],
+ "carry_columns": [
+  "row_id",
+  "target_week",
+  "premise_code",
+  "item_code",
+  "state"
+ ],
+ "target": "increases",
+ "positive_label": 1,
+ "time_column": "target_week",
+ "event_key_column": "premise_code",
+ "id_columns": [
+  "row_id"
+ ],
+ "id_columns_are_entity_keys": false,
+ "expected_duplicate_ids": 0,
+ "high_cardinality_columns": [
+  "premise_code",
+  "item_code"
+ ],
+ "high_cardinality_note": "premise_code is the entity key and repeats across weeks by design; item_code is the other half of the pair identity.",
+ "external_threshold": null,
+ "splits": {
+  "train": "public/train.csv",
+  "eval": "public/eval.csv",
+  "holdout": "private/holdout.csv"
+ },
+ "positive_events": {
+  "train": {
+   "positives": 59449,
+   "distinct_events": 111
+  },
+  "eval": {
+   "positives": 48990,
+   "distinct_events": 135
+  },
+  "holdout": {
+   "positives": 31519,
+   "distinct_events": 121
+  }
+ },
+ "split_stats": {
+  "train": {
+   "rows": 397982,
+   "positives": 59449,
+   "target_from": "2023-11-06",
+   "target_to": "2024-12-23",
+   "positive_rate": 0.149376,
+   "distinct_events": 111
+  },
+  "eval": {
+   "rows": 280468,
+   "positives": 48990,
+   "target_from": "2025-01-13",
+   "target_to": "2025-12-29",
+   "positive_rate": 0.174672,
+   "distinct_events": 135
+  },
+  "holdout": {
+   "rows": 154279,
+   "positives": 31519,
+   "target_from": "2026-01-05",
+   "target_to": "2026-10-19",
+   "positive_rate": 0.204299,
+   "distinct_events": 121
+  }
+ },
+ "split_windows": {
+  "train": {
+   "from": "2023-11-06",
+   "to": "2024-12-23"
+  },
+  "eval": {
+   "from": "2025-01-13",
+   "to": "2025-12-29"
+  },
+  "holdout": {
+   "from": "2026-01-05",
+   "to": "2026-10-19"
+  }
+ },
+ "measurements": [
+  {
+   "column": "price",
+   "unit": "Malaysian ringgit (MYR) per item unit",
+   "frame": "modal price in ISO week W, from observations dated on or before Sunday of W"
+  },
+  {
+   "column": "n_obs",
+   "unit": "count of price observations",
+   "frame": "week W"
+  },
+  {
+   "column": "delta_1w",
+   "unit": "MYR difference",
+   "frame": "price(W) minus price(W-1)"
+  },
+  {
+   "column": "delta_4w",
+   "unit": "MYR difference",
+   "frame": "price(W) minus price(W-4)"
+  },
+  {
+   "column": "week_of_year",
+   "unit": "ISO week number (1-53)",
+   "frame": "week W"
+  },
+  {
+   "column": "target_week",
+   "unit": "ISO week (date of Monday)",
+   "frame": "week W+1, the outcome week"
+  }
+ ],
+ "measurement_notes": {
+  "min_obs_per_week": 3,
+  "unobserved_outcomes": 143978,
+  "candidate_rows": 832729,
+  "note": "Eligibility requires >= 3 observations in week W only. A pair whose week W+1 has fewer than 3 observations has an unobserved outcome and is counted separately; the target week never decides whether a row exists."
+ },
+ "timing_selfcheck": {
+  "checked": 0,
+  "mismatches": 0,
+  "note": "every feature is a merge on week-7k keys; no forward reference"
+ },
+ "timing": {
+  "prediction_instant": {
+   "kind": "period_end",
+   "period": "W",
+   "days_after_period_end": 0,
+   "citation": "https://storage.data.gov.my/pricecatcher/ (same-day rows measured 2026-10-21)"
+  },
+  "features": {
+   "period": "W",
+   "published_days_after_period_end": 0,
+   "source_kind": "administrative_record"
+  },
+  "row_selection": {
+   "latest_period_used": "W",
+   "fields": [
+    "n_obs"
+   ],
+   "basis": "the pair needs >= 3 observations in week W; week W+1 supplies the outcome only and a missing outcome is counted, not treated as exclusion"
+  },
+  "observations": []
+ }
+}
