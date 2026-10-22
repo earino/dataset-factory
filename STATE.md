@@ -5655,3 +5655,15 @@ skips); clean-checkout and exact-push CI evidence belong in the engineering PR.
 Next: finish reviewer verification, open the schema PR without merging, review Scout's handoff,
 then harden reproducible runtime recovery, safe generated-directory cleanup and publication
 verification. Never launch a second coordinator on the live ledger.
+
+
+### 2026-10-22 — Hub integrity hardening prepared
+
+The Hub publisher previously deleted/recreated a version tag before verification, and treated
+same-size plain Git files as verified. `hardening/hub-integrity` now verifies pinned content
+first, hashes bounded metadata, refuses unverified bulk blobs, and creates immutable tags
+with before/after revision checks. Existing matching tags are no-ops; conflicts/races fail
+without deletion. Verification records the exact commit and does not claim a missing tag
+exists. Negative tests use an injected fake Hub, with no credentials/network/worker spend.
+Next: review this PR stacked on release-schema, combine it with runtime hardening, and deploy
+only after the documented merge boundary is resolved. No remote tag or dataset byte changed.

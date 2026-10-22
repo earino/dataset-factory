@@ -693,3 +693,22 @@ C can never consume build time.
 
 The reason is arithmetic, not purism: 18 of 31 parked candidates had already been probed before the
 licence question was asked. A C costs the same as an A and returns nothing.
+
+
+### Hub verification and immutable tags
+
+`hf-publish.py --tag` verifies the assets at an exact main commit before creating a missing
+tag at that commit. An existing identical tag is a no-op; an existing different tag is a
+refusal, never delete/recreate. A race changing main or the tag is reported as failure and
+all existing tags are preserved. A new artifact needs a new reviewed release version.
+
+`--verify` checks an existing release tag when present, so later editorial commits on main
+do not rewrite historical release evidence. Before first tagging it can verify main's files,
+but DESTINATIONS stays unverified until the promised tag resolves to the checked commit.
+Both options record local destination evidence; neither changes repository visibility.
+
+LFS assets require matching SHA-256 and size. Plain JSON/Markdown/text metadata is streamed
+from the pinned commit with a 256 KiB per-file and 2 MiB aggregate limit. File size alone never
+passes. Plain bulk formats without a remote digest are refused; use the existing worker
+publication path and LFS storage. This command does not prove dataset loading: the worker's
+loading check is still required. No CSV download occurs on the coordinator.
