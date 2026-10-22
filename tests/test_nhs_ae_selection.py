@@ -20,7 +20,12 @@ BUILD = ROOT / "candidates" / "nhs-ae-four-hour-decline" / "source" / "build.py"
 spec = importlib.util.spec_from_file_location("nhs_ae_build", BUILD)
 build = importlib.util.module_from_spec(spec)
 sys.modules["nhs_ae_build"] = build
-spec.loader.exec_module(build)
+# Compile from bytes so no bytecode cache is written inside the candidate source
+# directory, matching test_austin_build.py: a normal exec_module writes
+# __pycache__/build.cpython-*.pyc under candidates/, which fails the repo-hygiene
+# gate and would contaminate a worker source bundle. CI does not set
+# PYTHONDONTWRITEBYTECODE, so the writing path is what the runner sees.
+exec(compile(BUILD.read_bytes(), str(BUILD), "exec"), build.__dict__)
 
 
 def month(offset: int, base=(2021, 12)) -> tuple[int, int]:
