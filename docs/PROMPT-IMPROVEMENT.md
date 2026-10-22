@@ -132,3 +132,14 @@ with digest checks and the captured scheduler definition through the supported
 interface. Verify the restored identities and state before resuming. Do not roll
 back research records, accounting, published artifacts or unrelated concurrent work.
 A code revert alone does not restore the scheduler or external profile skills.
+
+
+## Token authorization resolved (2026-10-22)
+
+Eduardo explicitly authorized as many tokens as needed to complete evaluation,
+revision, deployment and observed research. The pilot hold is lifted. The existing
+production token definition and limits remain unchanged; the initial experiment
+still uses its conservative 2M all-inclusive-token / 48-invocation checkpoints,
+which may be extended with recorded reasons and cumulative usage when needed.
+Missing/corrupt accounting still stops execution. Worker spending and scientific,
+licensing and publication constraints are not relaxed by this token authorization.

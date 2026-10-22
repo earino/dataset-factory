@@ -39,10 +39,15 @@ gets filesystem, shell, network-data, delegation, memory-write or scheduler tool
 only network use is model inference. Fixtures contain all decision evidence. Do not
 claim file/skills toolsets are read-only. Do not create an unaccounted direct API path.
 
-All calls use existing admission and `scout-research` accounting, no exclusions or
-allowance changes. Run sequentially in an isolated checkout. Ceilings across the entire
-comparison: **48 main invocations (plus counted title calls), 2,000,000 measured tokens**, and the standing gate may
-stop earlier. Reserve enough headroom for the next call; if usage is missing, stop.
+All calls use existing admission and `scout-research` accounting, with no exclusions.
+Run sequentially in an isolated checkout. The initial measured batch has checkpoints
+of **48 main invocations (plus counted title calls), 2,000,000 all-inclusive tokens**.
+Eduardo subsequently authorized as many evaluation tokens as needed to complete the
+comparison, revision, deployment and live evaluation. These initial checkpoints may
+be extended with a recorded reason and preserved cumulative accounting; they are no
+longer the total project ceiling. Production limits and worker/publication safeguards
+remain unchanged. The existing weekly gate continues to count uncached input plus
+output; the experiment reports all four token classes separately. Reserve enough headroom for the next call; if usage is missing, stop.
 Use bounded wall-clock/output limits supported by the installed runtime. Account for
 auxiliary calls; stop on provider errors rather than repeatedly retrying. Save partial
 failures as failures/incomplete coverage, never silently replace them.
@@ -58,8 +63,9 @@ Run six development cases in both arms on both models (24 invocations), alternat
 order. Grade and revise only if needed; keep all outputs. Freeze the candidate before
 running the three reserved cases (12 invocations). Use up to 12 remaining invocations for
 paired repeats of three preselected cases (`discovery-value`, `advancement-baseline`,
-`watcher-ownership`) if headroom permits. A revision consumes the same overall ceiling;
-reduce coverage and say so rather than raise the ceiling. Reserved cases are visible
+`watcher-ownership`) if headroom permits. A revision consumes the same cumulative accounting. If another batch is needed,
+record the weakness being tested and extension before running it; never reset usage
+or silently replace failed attempts. Do not spend further calls merely to seek a win. Reserved cases are visible
 protocol tests, not a claim of cryptographically hidden or contamination-free holdout.
 
 Ask for at most 600 words: decision; evidence supporting it; uncertainty/next discriminating

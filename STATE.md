@@ -6011,3 +6011,15 @@ unknown. Keep the evaluation pilot held and existing production configuration un
 pending the answer; then give Scout the reviewed exact commit and run only the first
 baseline/revised pair before authorizing the rest. No evaluation calls have run, and
 no improved research outcome or deployment is claimed.
+
+
+Prompt-evaluation resumed (Codex, 2026-10-22): Eduardo explicitly authorized the
+inference tokens needed to finish and ship. Budget-definition hold is resolved;
+production settings remain unchanged. Scout is authorized to run the first paired
+`discovery-value` comparison on the primary route using reviewed `413244c`, then
+return sanitized responses and measured usage before the remaining development
+cases. All accounting, failed attempts and all four token classes remain recorded.
+The initial batch checkpoints may be extended with a reason under this new authority;
+worker spending and scientific/publication gates remain intact. Source review is clear,
+586 clean-checkout tests and exact-commit CI pass, but behavioral improvement and
+deployment remain unproven until the evaluation and live pass finish.
