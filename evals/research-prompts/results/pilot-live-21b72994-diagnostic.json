@@ -842,11 +842,69 @@
       "elapsed_seconds": 50.045,
       "response": "Decision: Recover only the omitted asset with a new, narrowly scoped transfer job ID. Do not rerun the failed job ID, alter the immutable staging source, accept a partial transfer, or publish anything. The candidate remains private and unapproved for publication.\n\nSupporting evidence: The source release is immutable and still contains exactly the expected bytes and SHA-256; the old worker is confirmed deleted; the existing approved transfer declaration covers this asset; allowance and time remain; no recovery has been attempted. The artifact already passed current qualification/acceptance, and transfer alone does not create a new artifact version.\n\nUncertainty and next discriminating check: The main unknown is whether the target release is private and whether the transfer tool can still read the source asset and target credential. Run `worker plan` first; it checks the declaration, allowance, credential presence, and public-target guard without spending compute. Also compare the source asset\u2019s size and digest to the manifest and acceptance report before launching.\n\nOrdered actions:\n1. Collect or preserve the failed job\u2019s compact result and diagnostics; do not download bulk CSVs to this host.\n2. Confirm the source asset\u2019s advertised size/SHA-256 matches the manifest and the accepted artifact version; confirm the target is private.\n3. Copy the approved transfer declaration to a new job ID, limited to the one missing asset, preserving `source_repo`, `source_release`, `source_asset_id`, `target_name`, size, and SHA-256. Set `allow_public` false. Use the documented source-staging and target-publish credential split; never put credentials in the bundle or logs.\n4. `worker plan` the new job. Launch only if plan passes and allowance/time remain. Then `status`, `collect`, and verify the report shows source-arrival digest and target digest both matching the manifest, with the target asset present at the expected size. Do not collect bulk data locally.\n5. On verified success, record the recovery and target evidence in the candidate record and `STATE.md`, commit/push, and check CI for that exact commit. Destroy the new worker immediately and verify no leftover server/IP. No tag, flip, manifest \u201cpublished\u201d state, or publication.\n6. Only after recording and reporting, write `.factory/<old-job-id>/handled` with a one-line summary. Do not mark the new job handled until it finishes.\n\nStopping condition: Stop successfully only when the target asset\u2019s size and SHA-256 match the manifest and source, the collected report is verified, and the worker is destroyed. Stop and escalate on source absence, digest conflict, public target without approval, missing credentials/allowance, or unexplained prior recovery failure.\n\nChanged conditions: If source bytes are gone, do not launch a transfer; record the artifact as unrecoverable from staging, search only for a verified same-digest copy, otherwise rebuild from the construction record and requalify before any transfer. If the source digest conflicts with the manifest, hard-stop: do not upload or overwrite, preserve evidence, reconcile which bytes changed, and treat acceptance as invalid for those bytes. If a prior linked recovery already failed, do not automatically chain another blind attempt; inspect that failure and target state by digest, then permit at most one corrected new-ID attempt for a clear ordinary cause, otherwise escalate.\n\nOperator report: The transfer failed only because one asset was omitted. The staging source still matches the expected digest, the old worker is gone, and the candidate remains private with no publication approval. I will plan and run a new single-asset transfer to the private target, verify both source and target digests, collect compact evidence, destroy the worker, update the records, push, and check CI. No publication occurs. If the source is missing or mismatched, or a prior recovery failed without a clear cause, I will stop and report rather than repeat the transfer.\n",
       "response_sha256": "fbbc87548fd12af9975bbcc7fc36acb2b882a82322180eaec9435d1c7c1cbcce"
+    },
+    {
+      "partition": "diagnostic",
+      "case": "watcher-recovery",
+      "arm": "revised",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-77",
+      "session_id": "20261022_235801_da0ad2",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "96b2697dec11d9350ac96f2d9d4e26ea1b845f75a6040f094dc2a0fb083ec89a",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 33920,
+        "output_tokens": 1119,
+        "cache_read_tokens": 256,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 35295,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 314,
+          "output_tokens": 13,
+          "cache_read_tokens": 128,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 33606,
+          "output_tokens": 1106,
+          "cache_read_tokens": 128,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 20.384,
+      "response": "Decision: Perform the single allowed same-artifact recovery. Create a new transfer attempt ID linked to the failed parent, using the approved transfer job to copy only the omitted asset from the immutable staging release, then verify the destination digest and clean up. Do not rebuild, re-tag, publish, or alter the package while doing so.\n\nSupporting evidence: I hold the research mutex and the documented handoff; no other writer has edits. The candidate is private, qualification and acceptance passed for this exact artifact, and the source still holds the expected bytes and digest. The old worker is confirmed deleted, so no billable resource is stranded. The failure is a transfer omission, not a construction or scientific defect. No recovery has yet been used in this chain, so one diagnosed recovery remains within allowance and time.\n\nUncertainty: I have not observed the destination's post-upload digest, the staging asset's availability at transfer time, or whether the missing asset is the only gap. The cheapest discriminating check is a digest-and-size comparison of the source asset against the manifest, then the same comparison at the target after upload. A successful job upload alone is not success.\n\nOrdered actions:\n1. Re-read the job ledger, candidate record and manifest; confirm the missing asset's expected name, size and SHA-256, and that staging still exposes exactly those bytes.\n2. Create a fresh attempt ID with `transfer` limited to that asset, `release: true`, linked to the parent job; record the parent and attempt IDs in the candidate and STATE.\n3. Run `worker plan` (offline) and confirm the publish credential is present and budget/reserve admission passes; then launch.\n4. Collect the bounded report; require per-asset source-digest verification, target-digest verification, and destination evidence for the exact artifact version. No bulk CSV download to the coordinator.\n5. Destroy the owned worker and confirm provider-side deletion of server and IPs.\n6. Update candidate, STATE, and evidence paths; run `check-package.py`; commit only this job's intended changes; push and inspect CI for that exact commit.\n7. Write `.factory/<job_id>/handled` only after a durable outcome and handoff are recorded.\n\nStopping condition: stop and report success only when the missing asset is present at the destination with matching size and SHA-256, the transfer report is collected, the release is still correctly marked incomplete pending its normal publication state, and deletion is confirmed. Any mismatch stops the recovery; do not retry unchanged.\n\nChanged conditions:\n- Source bytes gone: no valid recovery source exists. Do not rebuild or fetch to the coordinator. Record the missing source and leave the release incomplete; hand off to advancement.\n- Digest conflicts with the manifest: stop immediately. Never replace published bytes or \u201cfix\u201d the manifest to match. Preserve prior evidence, record the conflict, and hand off for a provenance decision.\n- Prior linked recovery already failed: the one recovery for this chain is spent. Do not launch another. Preserve diagnostics, confirm cleanup, leave the job unresolved, and hand off to advancement with the exact failure and proposed next check. Never clear the ledger entry or extend worker expiry to mask the state.\n\nOperator report: Transfer job for candidate <id> failed by omitting one asset. Staging has the expected bytes/digest; old worker deleted. I will use the one permitted same-artifact recovery under a new linked job ID, verify source and destination digests, and destroy the worker. Release remains private and incomplete; no publication approval exists and none is implied. If bytes are missing, digests conflict, or a linked recovery already failed, I will stop and hand off rather than rebuild or retry.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "8142b106360cc581f05783b2d2d3a0262d2ebdb39e5a6b8fdafed18103857460"
     }
   ],
   "ledger": {
     "calls": 77,
-    "tokens": 2660940
+    "tokens": 2696235
   },
-  "updated_at": "2026-10-22T23:57:58Z"
+  "updated_at": "2026-10-22T23:58:22Z",
+  "finished": true,
+  "finished_reason": "complete"
 }
