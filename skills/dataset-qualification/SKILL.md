@@ -45,8 +45,15 @@ python3 skills/dataset-qualification/scripts/qualify_dataset.py --selftest
 when every check passes; each failure names the column, split or declaration responsible.
 
 **Run it on the full artifact, where the rows are.** The gate reads rows, so a bounded local
-sample cannot stand in for it; run it on the worker as part of the build job. Exceeding the
-coordinator's disk or RAM budget to run it locally is not a trade worth making.
+sample cannot stand in for it; run it and exact-byte `--accept` on the worker. Keep the
+full dataset off the coordinator even when it happens to fit; collect compact evidence.
+
+Make the worker entrypoint's order explicit: **construct → qualify → accept exact
+bytes → score → report**. Stop before scoring on any failed stage. Construction may
+write the diagnostics the gate needs, but must not compute/log baseline performance
+or present its rates as qualified findings before acceptance. A later passing report
+does not retroactively make earlier scoring comply. Inspect the invoked build script,
+not just the shell wrapper, for hidden early scoring.
 
 ## Required evidence
 
@@ -79,6 +86,12 @@ inspect alignment, availability, uncertainty and split shift before interpreting
 2. **Calendar-only** - country/entity identity plus cyclical week-of-year plus a seasonal prior
    estimated only from training-era rows. This separates learned signal from seasonality.
 3. **The full model**, on the same rows and the same fit/eval boundary.
+
+Verify each reference implements its claimed information set and evaluates predictions
+against that split's labels. Training prevalence is not held-out accuracy; a supposedly
+different control that always falls back to the same predictor is not independent
+evidence. Record degenerate or inapplicable controls explicitly instead of relying on
+the names of fields in a result dictionary.
 
 Report the gap, not just the top-line AUC. A model below persistence is a **recorded defect**, not
 an encouraging result: on a four-week-ahead exceedance task a baseline reached 0.870 while week-W

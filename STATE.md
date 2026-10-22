@@ -6192,3 +6192,10 @@ The ordinary research session has finished and released the mutex; initial froze
 prompt-comparison calls are now proceeding. The incremental evidence publisher is
 being checked because its first results were not yet visible remotely. Do not rerun
 completed model calls to repair an exporter. PR #11 remains draft, undeployed.
+
+The next prompt bundle also addresses those source findings: inspect construction
+for early scoring, enforce construct/qualify/accept/score/report on workers, and
+verify reference predictions and information sets rather than trusting metric names.
+This supersedes 2a3ceb9 before any follow-up inference; use its successor's exact
+manifest for the planned 52 calls. No need to evaluate both revisions. The original
+413244c development batch remains frozen, with every result retained.

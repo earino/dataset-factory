@@ -178,8 +178,8 @@ original 24-cell comparison and label follow-up runs by their new exact bundle h
 
 ### Revised-bundle batch extension
 
-After reviewing the original development results, evaluate the frozen `2a3ceb9`
-bundle on all six development cases (24 calls), then the three reserved cases (12)
+After reviewing the original development results, evaluate the revised bundle
+on all six development cases (24 calls), then the three reserved cases (12)
 and four adaptive diagnostics (16), on both recorded routes and paired arms. This
 replaces the optional repeat allocation rather than adding repetitions to seek a win.
 Together with the original 24 calls and the retained parser failure, the plan needs
@@ -192,3 +192,10 @@ development calls must be included, never reset. Apply the updated helper only a
 the current batch releases it, and stop on unreconciled failure as before. If the
 original development results require another substantive revision, document that
 revision and adjust the remaining plan before calls, preserving all earlier results.
+
+The source-reviewed `2a3ceb9` bundle was superseded before any follow-up inference:
+the ordinary old-prompt build audit exposed scoring inside construction and mislabeled
+reference metrics. Its successor clarifies entrypoint order, worker-only acceptance
+and control semantics. Record that exact successor commit in the next request manifest;
+do not run both versions merely to multiply comparisons. The initial `413244c` batch
+remains unchanged and all its results remain part of the evidence.

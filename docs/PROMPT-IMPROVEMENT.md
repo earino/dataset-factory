@@ -105,6 +105,16 @@ and separates common integrity/ownership from role-policy compliance; no safety 
 may be claimed solely from repair deferral. The revised recovery boundary will be
 evaluated explicitly, including its failure/handoff conditions.
 
+A read-only audit of the ordinary old-prompt World Bank build then found reference
+scoring inside construction before the gate, an accuracy field assigned training
+prevalence, and a calendar control that always backed off to identity on future years.
+The next bundle therefore makes the entrypoint sequence explicit, includes the build
+script in that inspection, and requires controls to match their claimed information
+sets. Full-artifact acceptance stays on workers. Source evidence and intervention
+limits are in `results/old-prompt-build-review.json` under the evaluation directory.
+The ordinary run was preserved; any repair following these supplied findings is
+assisted and cannot count as an unprompted prompt-quality gain.
+
 ### Pre-inference review corrections
 
 Scout independently checked the isolated checkout and installed Hermes interfaces.

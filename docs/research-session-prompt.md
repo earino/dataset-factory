@@ -41,7 +41,9 @@ For the selected candidate, follow the applicable sequence:
 3. Run the unchanged qualification gate on the **full artifact on the worker**.
    Require a passing current-version report and `--accept` against the exact bytes
    before scoring, quoting figures or acceptance. A sample or old report cannot
-   substitute. Never weaken timing checks to get a result.
+   substitute. Inspect the build entrypoint too: reference scoring hidden inside
+   construction still runs too early. Keep full-artifact acceptance on the worker.
+   Never weaken timing checks to get a result.
 4. Evaluate the qualified artifact with the existing runner and valid simple
    references on identical eval rows. Follow `dataset-qualification` for persistence,
    calendar/identity, uncertainty and structural-break checks. Keep holdout outside
