@@ -192,3 +192,15 @@ commands from the repo root unless stated; scratch files deleted afterwards.
   the gate, materialize the runner workdir, run the benchmark's own
   train.py + validate.sh verbatim. Result recorded in the record when
   collected.
+
+### Baseline result (wb-baseline-001, collected)
+
+- train.py eval AUC 0.5879; validate.py independent recompute 0.5879;
+  CONTRACT OK. Runner files verbatim (hash-matched), artifact re-ACCEPTed
+  before scoring (b8345bcb5769e422).
+- Triad on eval rows: majority-class 0.718 accuracy; identity-only (country)
+  0.6003; calendar-only 0.6003; full model 0.5879. The model trails the
+  one-line rule on eval - recorded as a qualification defect.
+- Identity rule on holdout: 0.4909 (below chance; stale priors across the
+  prevalence shift). The model's holdout AUC was not measured by the
+  contract job - that is the decisive missing number and the next action.

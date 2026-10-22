@@ -6032,3 +6032,63 @@ The construction queue behind the eutl flip is unchanged (five ready class-A bui
 then ea-flood-alert-escalation). This session's outcome is the record above, for the
 close-out inspection noted in the hardening-rollout entry.
 
+
+## Advancement — wb-ieg-project-outcome constructed, qualified, baselined (2026-10-22)
+
+Scheduled advancement tick. No actionable packaged candidate (eutl-installation-net-short
+carries awaiting_operator and waits on the operator's flip), so the tick went to construction.
+wb-ieg-project-outcome was picked from the scheduler's actionable list as the only candidate
+whose full construct->qualify->baseline cycle fits one session (measured extraction: 1 request
+for the 3.3 MB IEG CSV + 24 projects-API requests for the 54.5 MB merged index), while
+chilecompra (~100-150 GB zips) and nz-ea (~1-2 h worker) exceed a tick and stay queued.
+
+Constructed end to end on wb-001 (worker 171926570, cx23, 385.3 s, EUR 0.04 reservation,
+destroyed 22:26:31Z, exit 0): gate 1.4.0 green on the full artifact on the worker (38/38
+checks, artifact b8345bcb5769e422...), collected to staging release 421262457, all 11 manifest
+digests verified on fetch-back, and qualify_dataset.py --accept ACCEPTED on the coordinator.
+Runner-contract baseline wb-baseline-001 (worker 171927514, 66.9 s, EUR 0.06 reservation,
+destroyed 22:33:17Z, exit 0, report at staging 421265626): train.py eval AUC 0.5879,
+validate.py recompute 0.5879, CONTRACT OK. Two workers launched, two destroyed, both
+confirmed deleted; total reservation spend EUR 0.10 of the EUR 15 construction allowance.
+
+Panel (deduped to latest evaluation_fy; approval FY 1956-2009 / 2010-2014 / 2015-2019):
+train 9,598 rows / 6,891 positives (0.7180); eval 1,479 / 1,173 (0.7931); holdout 1,097 /
+885 (0.8067). Unobserved accounting recorded per window (151 Not Rated; 303 approved FY2020+;
+not-yet-evaluated API-only projects: 1,724 / 719 / 637 per window - the right-censoring is
+material and now quantified). RAP 2024 Fig O.3 cross-check: panel closing-FY MS+ 0.6875
+(FY2013) -> 0.8729 (FY2023) vs published 71% -> 91%; the build asserts the published trend
+(measured gap 18.5 pts) and records that the panel runs 3-7 pts below the series under every
+cohort restriction.
+
+Session findings worth keeping (all measured, commands in the candidate's notes.md):
+- The projects search API IGNORES `fl` on the paged path: with `fl` it returns a
+  search-result record (id, name, url, abstract), without it the full approval record sans
+  abstract; the id-lookup path honors either. The first dry run silently joined empty
+  features - caught by inspecting the written rows before any worker spend.
+- The gate's event-key truncation (value[:10]) merges 83 "Republic of ..." borrowers into
+  one prefix (179 countries -> 81 prefixes in train). Kept: conservative direction, passes
+  with wide margin, both counts recorded in summary/quality.
+- GE trust-fund records carry no approval metadata in the API; approval_month_num=0 and
+  amounts_missing=1 are genuine source gaps (1,215 rows), not parse failures.
+
+THE DECISIVE RESULT is a qualification defect, recorded plainly: the contract model (0.5879
+eval AUC) TRAILS the one-line country-identity rule (0.6003) on eval - per dataset-
+qualification, no headroom claim may be quoted from the model number alone. The identity rule
+inverts on holdout (0.4909, stale priors across the 0.718 -> 0.807 prevalence shift) while
+the model's holdout AUC was not measured by the contract job. The candidate therefore sits at
+a decision point, NOT at packaging.
+
+Next action (precise, for a fresh session): one bounded follow-up worker job scoring the
+runner-contract model AND the identity/calendar rules on the PRIVATE HOLDOUT rows of the
+accepted artifact (same fitted artifacts, no retraining choices, re-ACCEPT before scoring).
+If the model holds ~0.59 while identity sits ~0.49, record the benchmark claim and proceed to
+packaging per dataset-release; if the model collapses too, record the negative result and
+drop the candidate (one repair per the qualification budget). Do not package or quote headroom
+before that number exists. The other ready builds (camara, chilecompra, nz-ea, za, wb's queue
+siblings) are unchanged and still queued behind this decision.
+
+Checks this session: check-candidate.py OK for wb-ieg-project-outcome and --all OK (74
+candidates); suite OK (572 tests, 12.9 s). Scratch scripts under .factory/ and downloads in
+/opt/data/cache/scratch deleted after the push. Baseline staging releases 421262457 / 421265626
+remain private staging (staging-repo lifecycle as before); no publication, tag movement or
+flip was performed.
