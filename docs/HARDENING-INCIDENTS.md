@@ -59,3 +59,17 @@ No assertions or pins were weakened to accommodate those failures. Deployment
 must use fresh source/live drift checks after holding the automatic writers,
 and must preserve new drift before any restoration on the host. All engineering
 work remains on branches pending the operator's revision of “do not merge.”
+
+### Follow-up: candidate paths cannot override the frozen release
+
+The newly added TSB candidate `hf_paths` mapped CSVs to logical paths such as
+`public/train.csv`. Anonymous bounded Hub metadata reads on 2026-10-22 showed
+both `v2026.10` (`e6fe2a2c9d629b8a9a6f1efa6c5e7158b2e4a050`) and then-current
+`main` (`cc1ed9c120c405cd9da0b8ded8100d217dae18ed`) contain the original flat
+`data/public-train.csv`, `data/public-eval.csv`, and `data/private-holdout.csv`.
+The publication CLI had still taken target paths from the mutable candidate,
+while its card used the manifest. It now takes both from the release record:
+explicit manifest `hub_paths`, otherwise the original flat asset convention.
+A candidate edit cannot redirect verification or publication of an existing
+release. New regressions cover candidate drift and NOAA's explicit structured
+layout. No artifact, destination record or remote tag is rewritten.

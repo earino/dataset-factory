@@ -31,7 +31,10 @@ import json
 import re
 import os
 import sys
+import uuid
 from pathlib import Path
+from urllib.parse import urlsplit
+from urllib.request import Request, HTTPRedirectHandler, build_opener
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 VENV_PYTHON = Path("/opt/data/.venvs/hf/bin/python")
@@ -41,10 +44,6 @@ VENV_PYTHON = Path("/opt/data/.venvs/hf/bin/python")
 # published whichever dataset was named last, which is how --plan for one dataset printed another's
 # files. Reading it before it is set is a programming error, not a fallback.
 PACKAGE = None
-# The Hugging Face path for each artifact file, from the dataset's descriptor when it declares one.
-# Austin's published card uses flat `data/` names, so its descriptor declares nothing and the
-# original rule below still produces exactly what is already published.
-HF_PATHS = {}
 # Set per run by main(). No dataset is named here: a default is how one dataset's files were
 # published under another's card.
 CANDIDATE = None
@@ -52,7 +51,8 @@ BUILD = REPO_ROOT / ".factory" / "hf-package"
 
 
 sys.path.insert(0, str(REPO_ROOT))
-from factory.release_schema import as_release, load_release, record_destination, UNKNOWN
+from factory.release_schema import as_release, load_release, record_destination, atomic_write, UNKNOWN
+from factory.hub_integrity import HubIntegrityError, refs, verify_revision, tag_verified_commit, load_worker_receipt
 
 def _config_names(splits):
     """The config names a split map is grouped by, through the rule the dataset page also uses.
@@ -185,9 +185,11 @@ def descriptor(candidate: str) -> dict:
 
 def asset_target(manifest_data, logical):
     """Resolve the declared Hub path, retaining flat names for historical releases."""
-    if logical in HF_PATHS:
-        return HF_PATHS[logical]
-    asset_name = as_release(manifest_data).metadata["assets"][logical]["asset_name"]
+    release = as_release(manifest_data)
+    paths = release.metadata.get("hub_paths") or {}
+    if logical in paths:
+        return paths[logical]
+    asset_name = release.metadata["assets"][logical]["asset_name"]
     return f"data/{asset_name}" if logical.endswith(".csv") else asset_name
 
 
@@ -374,6 +376,57 @@ def plan(manifest_data, repo_id):
     }
 
 
+class _SafeHubRedirect(HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        target = urlsplit(newurl)
+        if target.scheme != 'https':
+            raise HubIntegrityError('refusing non-HTTPS Hub redirect')
+        redirected = super().redirect_request(req, fp, code, msg, headers, newurl)
+        if redirected and target.netloc != urlsplit(req.full_url).netloc:
+            redirected.remove_header('Authorization')
+        return redirected
+
+
+def small_reader(repo_id, token, endpoint):
+    """Stream only declared small metadata, pinned to a commit; no persistent cache."""
+    from huggingface_hub import hf_hub_url
+    opener = build_opener(_SafeHubRedirect())
+
+    def read(path, commit, limit):
+        url = hf_hub_url(repo_id, path, repo_type='dataset', revision=commit, endpoint=endpoint)
+        if urlsplit(url).scheme != 'https':
+            raise HubIntegrityError('refusing non-HTTPS Hub download')
+        request = Request(url, headers={'Authorization': f'Bearer {token}'})
+        with opener.open(request, timeout=30) as response:
+            return response.read(limit + 1)
+    return read
+
+
+def record_attempt(candidate, result):
+    """Keep failed/incomplete attempts distinct from the last complete release receipt."""
+    if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]*', candidate):
+        raise HubIntegrityError('invalid candidate identifier for verification attempt')
+    folder = REPO_ROOT / '.factory' / 'hub-verification' / candidate
+    for entry in (folder, *folder.parents):
+        if entry == REPO_ROOT:
+            break
+        if entry.is_symlink():
+            raise HubIntegrityError('verification attempt path contains a symlink')
+    folder.mkdir(parents=True, exist_ok=True)
+    # One current diagnostic per candidate, bounded by the release's metadata size. Historical
+    # successful evidence stays in DESTINATIONS; don't consume the compact-report allowance
+    # with an unbounded poll history.
+    path = folder / 'latest.json'
+    result['attempt_id'] = uuid.uuid4().hex
+    result['attempted_at'] = __import__('datetime').datetime.now(
+        __import__('datetime').timezone.utc).isoformat(timespec='seconds')
+    result['attempt_recorded'] = str(path.relative_to(REPO_ROOT))
+    encoded = json.dumps(result, indent=2) + '\n'
+    if len(encoded.encode()) > 256 * 1024:
+        raise HubIntegrityError('verification attempt exceeds compact-report limit')
+    atomic_write(path, encoded)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--candidate", default=None,
@@ -385,19 +438,19 @@ def main(argv=None):
     parser.add_argument("--plan", action="store_true", help="build the package and print the plan")
     parser.add_argument("--create", action="store_true", help="create the private dataset repo")
     parser.add_argument("--upload-small", action="store_true", help="upload docs and small files")
-    parser.add_argument("--tag", action="store_true", help="create the version tag")
+    parser.add_argument("--tag", action="store_true", help="verify assets, then create an immutable version tag at the verified main commit")
     parser.add_argument("--verify", action="store_true", help="verify uploaded files and record evidence in DESTINATIONS.json (writes locally)")
+    parser.add_argument("--worker-job", help="collected successful hf_publish job supplying pinned bulk-digest evidence")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
 
     # The package must be chosen before anything is read from it: reading the manifest first meant
     # this ran against whichever dataset was hardcoded, whatever --candidate said.
     candidate = resolve_candidate(args.candidate)
-    global PACKAGE, HF_PATHS, CANDIDATE
+    global PACKAGE, CANDIDATE
     CANDIDATE = candidate
     PACKAGE = REPO_ROOT / "release" / candidate
     declared = descriptor(candidate)
-    HF_PATHS = declared.get("hf_paths") or {}
     manifest_data = manifest()
     m = manifest_data.metadata
     repo_id = args.repo or declared["repository"].removeprefix("https://github.com/")
@@ -411,7 +464,6 @@ def main(argv=None):
     reexec_in_venv()
     token = load_token(args)
     from huggingface_hub import HfApi, create_repo, upload_folder
-    from huggingface_hub.utils import HfHubHTTPError
 
     api = HfApi(token=token)
     who = api.whoami()
@@ -437,91 +489,69 @@ def main(argv=None):
                       token=token)
         result["small_uploaded"] = sorted(build_package(manifest_data, repo_id))
 
-    if args.tag:
-        # Idempotent, and deliberately the LAST step of a release: a tag created before the data
-        # lands pins a commit without the files, and the version-pinned load then fetches nothing.
-        # Re-running deletes and re-creates it at the current head instead of failing.
+    if args.tag or args.verify:
         try:
-            api.delete_tag(repo_id, tag=as_release(manifest_data).tag, repo_type="dataset",
-                           token=token)
-            result["tag_replaced"] = True
-        except Exception as exc:  # noqa: BLE001 - absent tag is the normal first run
-            result["tag_replaced"] = f"no existing tag ({type(exc).__name__})"
-        api.create_tag(repo_id, tag=as_release(manifest_data).tag, repo_type="dataset", token=token)
-        refs = api.list_repo_refs(repo_id, repo_type="dataset")
-        tag_sha = next((r.target_commit for r in (refs.tags or []) if r.name == as_release(manifest_data).tag), None)
-        branch_sha = next((b.target_commit for b in (refs.branches or []) if b.name == "main"), None)
-        result["tagged"] = as_release(manifest_data).tag
-        result["tag_commit"] = tag_sha
-        result["main_commit"] = branch_sha
-        result["tag_matches_main"] = bool(tag_sha) and tag_sha == branch_sha
-
-    if args.verify:
-        try:
-            info = api.repo_info(repo_id, repo_type="dataset", files_metadata=True)
-        except HfHubHTTPError as exc:
-            print(json.dumps({**result, "ok": False, "error": f"repo_info failed: {exc}"}, indent=2))
-            return 1
-        # Size alone is not verification: the Hub exposes a sha256 only for LFS objects, so a
-        # match on that digest is checked where present, and size is a weaker fallback for files
-        # stored as plain git blobs (which hf-publish.py re-hashes by download).
-        on_hub = {}
-        for sibling in (info.siblings or []):
-            lfs = getattr(sibling, "lfs", None) or {}
-            on_hub[sibling.rfilename] = (sibling.size, lfs.get("sha256"))
-        result["repo_private"] = info.private
-        expected = {}
-        for logical, entry in (m.get("assets") or {}).items():
-            expected[asset_target(manifest_data, logical)] = (entry["bytes"], entry["sha256"])
-        present, missing, mismatched, digest_checked = [], [], [], []
-        for path, (size, sha256) in sorted(expected.items()):
-            if path not in on_hub:
-                missing.append(path)
-                continue
-            hub_size, hub_digest = on_hub[path]
-            if hub_size is not None and hub_size != size:
-                mismatched.append({"path": path, "expected_bytes": size, "hub_bytes": hub_size})
-                continue
-            if hub_digest:
-                if hub_digest != sha256:
-                    mismatched.append({"path": path, "expected_sha256": sha256,
-                                       "hub_sha256": hub_digest})
-                    continue
-                digest_checked.append(path)
-            present.append(path)
-        result["digest_verified"] = sorted(digest_checked)
-        result["digest_note"] = ("paths not listed under digest_verified are stored as plain git "
-                                 "blobs, where the Hub reports no sha256; the worker re-hashes "
-                                 "those by download instead")
-        result["files"] = {"present": present, "missing": missing, "size_mismatch": mismatched}
-        result["small_files"] = sorted(name for name in SMALL_FILES.values() if name in on_hub)
-        try:
-            refs = api.list_repo_refs(repo_id, repo_type="dataset")
-            result["tags"] = sorted(r.name for r in (refs.tags or []))
-        except HfHubHTTPError:
-            result["tags"] = None
-        result["ok"] = not missing and not mismatched
-        # Record this destination's completion next to the package, so the release can be tracked
-        # per platform and a half-published release cannot be mistaken for a finished one.
-        record_path = PACKAGE / "DESTINATIONS.json"
-        fields = {
-            "repo": repo_id,
-            "revision": as_release(manifest_data).tag,
-            "private": info.private,
-            "verified": bool(result["ok"]),
-            "verified_at": None if not result["ok"] else __import__("datetime").datetime.now(
-                __import__("datetime").timezone.utc).isoformat(timespec="seconds"),
-            "files_verified": sorted(present),
-            "missing": missing,
-            "size_mismatch": mismatched,
-            "loading_check": (result.get("loading_check") or "run by the worker job and recorded "
-                              "in its report"),
-        }
-        record_destination(record_path, "huggingface", fields, release_tag=manifest_data.tag)
-        result["recorded"] = str(record_path.relative_to(REPO_ROOT))
+            main_commit, tags = refs(api, repo_id)
+            tag = manifest_data.tag
+            if args.tag and tag in tags and tags[tag] != main_commit:
+                raise HubIntegrityError('existing release tag names another commit; preserve it and use a new reviewed version')
+            # A verification-only repeat checks the immutable release tag, even after editorial
+            # commits advance main. Before first tagging, verify main without claiming a tag exists.
+            revision = main_commit if args.tag else tags.get(tag, main_commit)
+            expected = {}
+            for logical, entry in (m.get("assets") or {}).items():
+                target = asset_target(manifest_data, logical)
+                if target in expected:
+                    raise HubIntegrityError('manifest maps more than one asset to a Hub path')
+                expected[target] = (entry["bytes"], entry["sha256"])
+            receipt = load_worker_receipt(REPO_ROOT, args.worker_job, repo_id, expected) if args.worker_job else None
+            result.update(verify_revision(api, repo_id, expected, revision,
+                                          small_reader(repo_id, token, api.endpoint), receipt))
+            if args.worker_job:
+                result["worker_job"] = args.worker_job
+            if args.tag:
+                result.update(tag_verified_commit(api, repo_id, tag, result))
+            _, current_tags = refs(api, repo_id)
+            tag_matches = current_tags.get(tag) == result['commit']
+            if (args.tag or tag in tags) and not tag_matches:
+                raise HubIntegrityError('release tag changed during verification; preserve remote state and inspect')
+            # Files can pass before tagging, but the destination is not complete until its
+            # promised revision resolves to those exact verified bytes.
+            result['release_revision_verified'] = result['ok'] and tag_matches
+            result['tags'] = sorted(current_tags)
+            result['digest_note'] = 'All accepted assets have SHA-256 evidence at the recorded commit.'
+            fields = {
+                'repo': repo_id, 'revision': tag, 'commit': result['commit'],
+                'private': result['repo_private'],
+                'verified': result['release_revision_verified'],
+                'verified_at': (__import__('datetime').datetime.now(
+                    __import__('datetime').timezone.utc).isoformat(timespec='seconds')
+                    if result['release_revision_verified'] else None),
+                'files_verified': result['digest_verified'],
+                **{k: v for k, v in result['files'].items() if k != 'present'},
+                'loading_check': (f'verified by collected worker job {args.worker_job}' if args.worker_job
+                                  else 'not checked by this command; require the worker loading report'),
+            }
+            if args.worker_job:
+                fields['worker_job'] = args.worker_job
+            record_path = PACKAGE / 'DESTINATIONS.json'
+            if result['release_revision_verified']:
+                record_destination(record_path, 'huggingface', fields, release_tag=tag)
+                result['recorded'] = str(record_path.relative_to(REPO_ROOT))
+        except Exception as exc:
+            # API/download exception strings can contain signed URLs or credential context.
+            # Preserve the existing receipt on errors; emit only our own safe refusal messages.
+            result['ok'] = False
+            if result.get('status') != 'incomplete':
+                result['status'] = 'failed'
+            result['error'] = str(exc) if isinstance(exc, HubIntegrityError) else type(exc).__name__
+            result['next_action'] = 'inspect the remote revision; preserve existing tags; verify again before tagging'
+        if result.get('status') == 'incomplete':
+            result['next_action'] = 'use --worker-job with a collected publishing job that produced a pinned verification receipt'
+        record_attempt(candidate, result)
 
     print(json.dumps(result, indent=2))
-    return 0 if result.get("ok", True) else 1
+    return 2 if result.get("status") == "incomplete" else (0 if result.get("ok", True) else 1)
 
 
 if __name__ == "__main__":
