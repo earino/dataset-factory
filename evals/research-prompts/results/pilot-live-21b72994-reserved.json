@@ -58,11 +58,67 @@
       "elapsed_seconds": 76.701,
       "response": "Decision\n\nNo. B cannot inherit A's risk acceptance, and B cannot be built on until it has its own recorded decision. The acceptance mechanism is per-candidate by construction: the recorded decision lives in `candidates/<id>/license.json`, written before construction, and the case states A's is candidate-specific. \"Sibling\" is not a scope. The discovery skill warns that a general policy can coexist with dataset-specific terms, so even a same-publisher source must be classified from its own instrument. A's CC0 also transfers nothing: it dedicates only our rights in the derived compilation and never covers the source's data. So B currently has an unread licence and no decision: class C, closed until its own terms are read.\n\nSupporting evidence\n\n- dataset-release SKILL: \"a source whose licence cannot be read is not published at all unless the operator has recorded a risk acceptance in `candidates/<id>/license.json`\" \u2014 recorded as a risk acceptance, never as a grant.\n- OPERATIONS.md (2026-10-20 authority): \"a licence that cannot be read is recorded in `candidates/<id>/license.json` before construction, and a candidate with no recorded licence decision is never published.\"\n- Standing rule 2026-10-21: only build on already-clean sources; class C is a drop in the same breath, no \"probably fine\".\n- Discovery failure-mode table: a blocked page read as absent terms must be re-read in a real browser before silence is recorded.\n- \"other-open with no deed\" is catalog metadata, not the publisher's instrument; classify from the instrument linked from the dataset itself.\n\nHow to represent both\n\nA: unchanged. Source SPDX NOASSERTION (honest \u2014 no instrument was readable); the operator risk acceptance recorded with its scope, attribution preserved, takedown route, never presented as the publisher's licence; compilation CC0-1.0 stated as covering our contribution only; code MIT; derived-data labeling intact; the manifest's licences block generated from that declaration, never hand-edited.\n\nB: `record.json` with `licence_class: \"C\"`, `license_evidence` carrying the observed blocked read plus the \"other-open, no deed\" tag noted as an unverified catalog label, verdict `reject` (dropped), and the reopen line: a readable terms instrument for this exact dataset, or an operator acceptance naming candidate B. No compilation licence is claimed for B because there is no release to licence.\n\nUncertainty and next discriminating check\n\nTwo cheap checks could change the answer. First, read `candidates/<A>/license.json` and confirm the recorded acceptance's scope: if the operator's acceptance explicitly covered a publisher or program that includes B, inheritance would be a recorded scope rather than an inference \u2014 the case says candidate-specific, so the expected reading is A alone. Second, re-read B's terms page in a real browser; the block may be client-side, not publisher silence. If neither changes anything, B stays C.\n\nOrdered actions and stopping condition\n\n1. Read A's `license.json`; confirm the acceptance names candidate A only. Change nothing if so.\n2. Re-read B's terms in a real browser, and any dataset-specific terms link on B's own page, not a general policy page.\n3. If terms become readable, classify from the instrument: class A/B proceeds to novelty and probes; C/D is dropped with the clause or absence quoted.\n4. If still unreadable, write B's verdict as class C dropped, with the probes as evidence and the reopen condition above. No permission email, no park, no acceptance drafted on the operator's behalf.\n5. Record both in `STATE.md`; run `scripts/check-candidate.py` on both records; commit and push; read CI for that commit.\n\nStop when B carries a recorded verdict with its evidence and A's acceptance scope is confirmed. Do not re-run an unchanged fetch, and do not infer an acceptance.\n\nOperator report\n\nB cannot inherit A's acceptance: acceptances are candidate-specific and B has none recorded. A remains represented as NOASSERTION source + CC0 for our contribution only + your recorded acceptance, unchanged. B is class C pending one browser re-read of its terms page; if that stays unreadable, B is dropped with the reopen condition recorded. A new acceptance for B is yours to record, not mine to infer.\n",
       "response_sha256": "b52dda5dc72633c9504d88909bf25d4db09529a4a4ec3ee1fda707a6c56553b0"
+    },
+    {
+      "partition": "reserved",
+      "case": "licence-exception",
+      "arm": "revised",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-51",
+      "session_id": "20261022_232910_c55a92",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "4073d2f2b1fe9ec3b032d0ebc60516e687cc089e0e790d5c9a9d09ab9c76776c",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 201,
+        "output_tokens": 3413,
+        "cache_read_tokens": 24576,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 28190,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 385,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 149,
+          "output_tokens": 3028,
+          "cache_read_tokens": 24192,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 59.419,
+      "response": "Decision\n\nNo. B cannot inherit A's acceptance. A's operator decision is candidate-specific: the discovery skill and session brief both say to preserve such decisions without extending them to sibling sources, and never to invent a grant. Metadata reading \"other-open, no deed\" is a catalog tag, not the publisher's instrument, so it cannot upgrade B to class A/B either. B is a new, unclassified lead \u2014 but not yet a proven class C: a blocked page is inaccessible evidence, not absent terms. B gets its own bounded attempt to read the publisher's actual terms before any verdict.\n\nSupporting evidence\n\n- Skill, licence triage: \"Preserve existing candidate-specific operator decisions without extending them to sibling sources; unknown source grants remain NOASSERTION.\"\n- Class C row and standing 2026-10-21 policy: new unresolved leads are closed, not parked; an operator risk acceptance is an exception recorded explicitly, never a publisher grant.\n- \"Classify from the publisher's own instrument, not from a general policy page\" \u2014 and a fortiori not from repository metadata.\n- Failure-mode table: a blocked page must be re-read in the supported browser before silence is recorded.\n\nRepresentation\n\n- A: unchanged. Its record keeps the acceptance documented as a risk acceptance (licence-posture style), source SPDX NOASSERTION, compilation CC0 scoped to \"our contribution only,\" derived-work labeling with the source's designation and attribution preserved.\n- B: its own record, never merged into A's. Source SPDX stays NOASSERTION regardless of the metadata tag. Evidence records what was actually obtained: the blocked URL, the retry method, dates, and what the browser returned. If closed, the verdict names the reopening event (an explicit operator acceptance for B, or a readable licence instrument).\n\nUncertainty and next discriminating check\n\nThe single fact that changes the verdict is whether B's dataset-level terms instrument is readable and what it says. The check: read the terms via the supported browser within the bounded retry, and prefer the terms linked from B's own dataset page over the general policy page. Readable and permissive \u2192 class A/B, probe the task. Readable and restrictive \u2192 class D, drop with the clause quoted. Still blocked or ambiguous \u2192 class C, close.\n\nOrdered actions and stopping condition\n\n1. Open B as a separate lead record; mark classification pending; do not touch A's record.\n2. Run the bounded browser retry of B's terms page and any dataset-linked terms.\n3. On a readable instrument: record the quote in license_evidence, set licence_class, then proceed to ordinary discovery (contribution vs. mirror, five contracts).\n4. On failure or ambiguity: close B as class C with the reopening condition recorded. No permission email, no indefinite park.\n5. Commit the records, run check-candidate on whatever record persists, add the STATE.md entry.\nStop probing B the moment the terms read resolves or the bounded retry exhausts; no task probing before classification. Do not assume the operator will extend the acceptance \u2014 flag it as their choice.\n\nOperator report\n\nSource A stands as accepted: NOASSERTION source terms, CC0 over our compilation contribution only, risk acceptance recorded as risk, not grant. Source B does not inherit that acceptance; its \"other-open, no deed\" metadata is not a licence. One bounded browser attempt to read B's own terms remains; if it fails, B is closed as class C, reopenable only by your explicit B-specific decision or a readable instrument. If you want B built despite unreadable terms, that is a new risk acceptance to record on B's record \u2014 say so and I will record it as such. Next action: the terms-page retry, then the verdict and commit.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "04dabbab553e8dd2cf6922ac4b0d638e8dfe07b27fc51eee34ecb8cb211d2f42"
     }
   ],
   "ledger": {
-    "calls": 50,
-    "tokens": 1716105
+    "calls": 51,
+    "tokens": 1744295
   },
-  "updated_at": "2026-10-22T23:29:05Z"
+  "updated_at": "2026-10-22T23:30:06Z"
 }
