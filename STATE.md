@@ -1,22 +1,29 @@
 # Current state
 
-Updated: 2026-10-23 08:46Z (Codex prompt outcome review).
+Updated: 2026-10-23 09:13Z (Codex prompt project close-out).
 
-PR #14's reviewed source `fa90684` clarifies that in-memory prediction panels and
-fixed-reference scoring require the existing worker qualification/acceptance order.
-The paired adaptive DeepSeek responses both score 3/4, revised qualitatively preferred;
-both omit explicit failed-report preservation and retain reasoning weaknesses. Full
-responses, blind/author reviews and reconciled counters are retained. No execution
-reliability claim follows. Controlled ledger: 127 attempts / 4,326,764 inclusive tokens,
-within unchanged 128/5M checkpoint; no more controlled calls planned.
+Prompt PRs #11–#14 are merged/deployed, latest `6613f72`; hashes, runtime audits,
+doctor, admission and exact merge CI pass. Clean Python 3.13 suite: 588 tests OK
+(6 skips). Prompt experiments are closed at 127 attempts / 4,326,764 inclusive
+tokens; no additional experiment or revision loop is planned. See
+`docs/PROMPT-IMPROVEMENT.md` for measured gains, regressions and limitations.
 
-Clean Python 3.13 checkout: 588 tests OK (6 skips), doctor and source audit pass.
-No executable gate, assertions, budgets or published artifacts changed. EA remains
-investigating under assisted hold `4f77649` after the preserved local scoring violation;
-Camara/INPE and publication holds remain. Next: merge reviewed PR after exact CI,
-install at idle with hash readback, then audit one ordinary advancement without
-candidate-specific coaching under existing admission. Keep useful work and failures
-separate; do not reopen held candidates merely to make the evaluation succeed.
+Ordinary Scout session `20261023_084809_2ac85e` is still running at this snapshot.
+It owns ChileCompra worker `cl-tender-002`, server 172010382, reservation EUR 0.06,
+expiry 2026-10-23 10:41:07Z. Existing watcher and independent cleanup retain normal
+collection, preservation and provider-confirmed destruction responsibilities. No
+completion or qualified result is claimed. Do not start another evaluation session.
+
+Codex audited source snapshot `e4982e59`: scoring is separated and the wrapper checks each gate stage, but cancelled/unknown
+outcomes are still excluded while timing declares publication-only membership; award
+aggregation lacks a defined terminal state/horizon and prose cohorts are stale. The
+review was sent to Scout after observation. Keep ChileCompra unaccepted/private
+pending scientific review; preserve original evidence and do not launch a repair job
+for this evaluation. Existing EA/Camara/INPE and publication holds remain.
+
+Next ordinary owner action: close out the current session/job through existing
+commands, preserve reports, confirm cleanup and post the final receipt on PR #14.
+Prompt changes and test-case gains do not establish autonomous scientific reliability.
 
 ## Historical update (superseded)
 

@@ -1,12 +1,24 @@
 # Research prompt improvement
 
-Status: PRs #11–#13 are deployed at `c9d479c`. The next ordinary advancement
-completed and exposed another scoring violation: an in-memory prediction panel
-was treated as an exempt pre-launch probe. PR #14 retains the full failure and
-clarifies that boundary at reviewed `fa90684`; paired DeepSeek responses both score
-3/4, with revised qualitatively preferred. Deployment and ordinary observation remain
-pending. The useful timing hold and the invalid scoring are reported separately.
-Prompt decision improvements still do not establish reliable autonomous execution.
+Status: PRs #11–#14 are merged and deployed at `6613f72`. The three actual role
+briefs and relevant skills have been rewritten; the qualification executable is
+unchanged. Source/home audits, doctor, admission and exact merge CI pass. A normal
+advancement observation remains in progress at project close. Its read-only source
+snapshot was audited; ordinary collection/cleanup remains with Scout. No further
+prompt experiment or revision cycle is planned.
+
+Measured controlled decisions improved in the first deployed comparison (80/120
+to 112/120 original criteria across discovery, advancement and watcher). This is a
+descriptive result from visible/adaptive cases and correlated criteria, not a causal
+scientific-quality estimate. Later focused comparisons were 10/16 → 14/16, 5/8 → 7/8,
+and 3/4 → 3/4. Whole-response reviews retain failures missed by the coarse scores.
+
+Live work has produced useful source/timing blockers and a verified terminal-job
+handoff, but also false source-date claims, future-outcome selection and early
+scoring. Assisted corrections remain identified as assistance. Better dataset yield,
+lower dollar cost and reliable autonomous scientific execution are **not established**.
+Watcher controlled token use increased about 55%; dollar spend is unknown. Full
+responses, failed attempts, four-field accounting and source audits are retained.
 
 ## Final live audit and copied-code follow-up
 
@@ -679,3 +691,35 @@ execution guarantee. Source review and clean-checkout CI support deployment of t
 small clarification; the tied score does not erase the earlier live violation.
 An ordinary advancement using the installed bytes remains to be source-audited.
 Full evidence: `results/prelaunch-fa90684-{requests,responses,grades,author-review}.json`.
+
+### Close-out: partial ordinary run, source-audited handoff
+
+The user challenged the expanding evaluation on 2026-10-23. Close this prompt project
+with the measured results and limitations above; do not keep revising until a run
+looks successful. PR #14 deployed at `6613f72`, with exact hashes, source/home audits,
+doctor, admission and merge CI verified. Controlled experiments end at 127 attempts
+and 4,326,764 inclusive tokens. No budgets, qualification checks or public artifacts
+were relaxed.
+
+Ordinary session `20261023_084809_2ac85e` retried an unavailable primary provider and
+fell back normally to DeepSeek. At the closing snapshot it had launched `cl-tender-002`
+on server 172010382, with a EUR 0.06 reservation and 10:41:07Z expiry. It remains under
+its ordinary session/watcher owner and independent cleanup. Its final usage, result
+and cleanup receipt are not yet available; this is explicitly a partial observation.
+
+Codex verified the hashes of read-only source exported at `e4982e59`. The builder now
+keeps AUC/reference scoring in a separate script, checks each pre-scoring stage in
+`run.sh`, retains failed-report files and correctly evaluates a train-fitted majority
+constant. These are verified source changes, not successful worker execution. It also attempts to use first tender releases rather than compiled
+latest-value fields. However, it still excludes cancelled/unknown future outcomes while
+claiming publication-only membership, aggregates award history without a fixed terminal
+state/horizon, and retains stale cohort declarations. This is not evidence of reliable
+autonomous scientific judgment. Complete source findings, identities and limits are in
+`results/deployed-observation-6613f72.json`; no dataset figure is endorsed.
+
+Scout received the post-snapshot review with instructions to keep the candidate
+unaccepted/private, preserve evidence, avoid a repair job for this evaluation, and
+finish normal collection/cleanup. This is assisted review, not a prompt success.
+The original autonomous source is preserved. The project delivers deployed prompt
+improvements and an honest evaluation; higher-quality dataset yield, lower dollar
+cost and reliable autonomous execution remain unproven.
