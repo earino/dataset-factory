@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Deployed shim for the discovery tick. Source of truth is the repository
-(`scripts/scout_research_session.py`); this shim supplies the discovery brief plus a rotating
+(`scripts/scout_research_schedule.py`); this shim supplies the discovery brief plus a rotating
 regional focus, so the scheduler path stays argument-free.
+
+The five-minute check resumes a due four-hour slot; it does not discover every five minutes.
 
 The rotation is deterministic on the wall clock rather than random: the same tick always carries
 the same region, so a report can be reproduced from its timestamp. Cron requires the job's script
@@ -11,7 +13,7 @@ import runpy
 import sys
 from datetime import datetime, timezone
 
-TARGET = "/opt/data/dataset-factory/scripts/scout_research_session.py"
+TARGET = "/opt/data/dataset-factory/scripts/scout_research_schedule.py"
 
 # Regions the routine must cover to be genuinely international. Ordered so that two consecutive
 # ticks never share a region.
@@ -52,7 +54,7 @@ if __name__ == "__main__":
         "viable, report the coverage and evidence; do not pad it with familiar US sources."
     )
     # Existing 90-minute / 120-iteration ceiling; the brief reserves time for close-out.
-    sys.argv = ([TARGET, "--prompt-file", "docs/discovery-session-prompt.md", "--extra", extra,
+    sys.argv = ([TARGET, "--role", "discovery", "--prompt-file", "docs/discovery-session-prompt.md", "--extra", extra,
                  "--run-budget", "5400", "--max-turns", "120"]
                 + sys.argv[1:])
     runpy.run_path(TARGET, run_name="__main__")
