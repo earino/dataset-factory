@@ -7149,3 +7149,60 @@ fresh attempt id (nz-ea-002) and relaunch with the same construct -> qualify -> 
 references order. The gate never ran, so the gate-failure rebuild budget is intact and no
 threshold/split decision reopens. Evidence: staging release 421764285 and
 `.factory/nz-ea-001/reports/`.
+
+## 2026-10-23 discovery (East Asia tick): hk-red-tide-sighting opened and parked on the timing contract; regional scan coverage recorded
+
+East Asia was the assigned region. No existing candidate was advanced or rebuilt. One new lead was
+opened after the prior records were read: `hk-datagov-portal` (parked, licence B),
+`singapore-datagov-catalog` (parked), `kr-kosis-kma-access` (parked on account key),
+`tw-reservoir-drought-storage` (parked on history), `tw-typhoon-day-closure` (investigating,
+construction next action) and the dropped `jma-typhoon-rapid-intensification` were checked first;
+none was reopened because nothing found here addresses its recorded family-duplication or access
+blocker.
+
+**`hk-red-tide-sighting` created and set to `parked`.** The lead is the AFCD "Update of Red Tide
+Situation" event list: anonymous CSV, 266,991 bytes, 1,931 rows / 1,757 distinct sighting numbers /
+594 locations, 1975-08-06 to 2026-09-08 with all 52 years non-zero. Licence settled first from the
+DATA.GOV.HK terms (browse, download, distribute, reproduce, commercial and non-commercial, with
+attribution; the dataset record carries no separate terms) -> class B. Novelty check recorded
+`differentiated` (HF 0 hits on three queries; Zenodo/arXiv hits are cell-count HAB studies and
+operational bulletins, not a packaged occurrence-onset benchmark with splits). Split capacity was
+computed from the source: train 1975-2010 = 1,108 rows / 987 sightings; eval 2011-2018 = 488 / 446;
+holdout 2019-2026 = 335 / 324; clustered unit is the sighting number (1,615 of 1,757 are one row).
+Feature source probed: EPD historical marine water quality 1986-2025, 2024 file = 1 anonymous GET,
+618,074 bytes, 2,923 lines, 28 documented columns. Known-event fixture cross-checked: the
+AFCD 2022-03-14 press release sightings (2022-03-12/13) match CSV rows 2022S0001-2022S0010.
+
+**The blocker is timing, not licence/target/novelty.** AFCD's own data specification defines the
+label column only as "Date: Date." and predates the current schema. Observed publication lag runs
+from ~1-2 days (press release, 2022) to 8 days (2025-04-02 Wayback vintage) to 155 days
+(2019-11-02 vintage), with only 4 Wayback captures in total, so no as-of bound can be supported and
+the weekly instant plus future-only 7-day target window cannot be stated honestly. The archive is
+effectively append-only over 2018-2026 (2019 vintage vs live: 2 of 1,647 rows absent; 2025 vintage vs
+live: 0 removed, 44 added, 2 dissipation dates changed), so the label history itself is usable; the
+missing fact is when each row became public. Secondary design issue: the negative population is
+censored (sampling schedule documented: 6 FCZs weekly, 5 FCZs + 5 offshore stations fortnightly,
+15 FCZs quarterly; no per-day monitoring log). Reopening events are recorded in the record:
+(a) an AFCD statement/dictionary defining "Date of Report" and the weekly update day/time;
+(b) a lag distribution from >=12 consecutive captures, which requires seeding a weekly standing
+collector now (Wayback has only 4); or (c) an operator decision to accept a clearly labelled
+retrospective benchmark. Do not construct until one of those lands.
+
+**Regional coverage measured this tick** (documented in the candidate's `notes.md`): Hong Kong's
+CKAN API enumerated 3,831 package names anonymously; no landslip/tree-failure incident dataset was
+present, `hospital-hadata-ae-waiting-time` resolves to a current-snapshot JSON (3,812 bytes, no
+history), `hk-epd-beachteam-beach-water-quality-grading` is a current RSS grade and duplicates
+`ea-bathing-water-classification`, fire/road-accident files are annual aggregates. Taiwan's
+`data.gov.tw` API answered HTTP 405 to GET on several path variants and 404 on export paths; its
+existing candidates already cover reservoir storage and typhoon day closure. JMA's licence is clean
+(site complies with 公共データ利用規約 第1.0版) and access anonymous, but the JSON status endpoints are
+current-only (桜島 `warning/506.json` single latest report 2022-07-27; `info/506.json` latest
+2026-10-23T16:00+09:00), the PULL page states the long feed carries only "several days" and blocks
+IPs above 10 GB/day, and `/data/` is 403 - so a volcanic alert-level task would be blocked on
+history for the same structural reason as the Taiwan reservoir candidate. No new lead in Japan,
+Korea or Taiwan survived the duplicate/history checks within this session's probes.
+
+Checks this tick: `check-candidate.py hk-red-tide-sighting` OK (status=parked); `check-candidate.py
+--all` run at close-out; no worker launched, nothing constructed, qualified or published; no
+reservation changed. Probe script retained at `candidates/hk-red-tide-sighting/probe_red_tide.py`
+(reproduces every aggregate quoted in the record; `--vintages` reproduces the Wayback comparison).

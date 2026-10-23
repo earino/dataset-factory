@@ -1,0 +1,179 @@
+{
+  "id": "hk-red-tide-sighting",
+  "status": "parked",
+  "created_at": "2026-10-23T16:06:20.748977+00:00",
+  "domain": "marine environment / harmful algal bloom (red tide) reporting",
+  "prediction_question": "Will at least one red tide sighting be reported in Hong Kong waters within the next 7 days after a stated weekly publication instant, for a monitored fish culture zone or marine station? Formulated as an occurrence onset at location-week grain (not cell-count forecasting).",
+  "prediction_time": "Weekly. Candidate instant: the publication of the red tide update containing all reports dated <= D, conservatively placed at D+8 23:59 HKT, with features restricted to data published by that instant and the target window starting strictly after it. NOT SUPPORTED AS WRITTEN: the publication lag is not bounded by observed evidence - the 2025-04-02 Wayback vintage carried its latest record at 2025-03-25 (8 days), while the 2019-11-02 vintage carried its latest record at 2019-05-31 (155 days).",
+  "target_definition": "Binary: at least one red tide sighting report whose 'Date of Report' falls in (instant, instant+7] at a location within the monitored network. Label source columns 'Date of Report' and 'Location' in the AFCD red tide CSV, excluded from features by the window construction. Censoring is material: 'no report' conflates absence of a bloom with absence of observation. AFCD documents a monitoring programme (weekly sampling at 6 core fish culture zones, fortnightly at 5 more plus 5 offshore stations, quarterly at the remaining 15 fish culture zones) but publishes no per-day monitoring log, so the eligible negative population cannot be enumerated from the source.",
+  "sources": [
+    {
+      "name": "AFCD Update of Red Tide Situation (CSV, English)",
+      "url": "https://redtide.afcd.gov.hk/data/RTMS_ob_RTLE.csv",
+      "portal_record": "https://data.gov.hk/en-data/dataset/hk-afcd-afcdlist-red-tide-location",
+      "licence": "DATA.GOV.HK Terms and Conditions of Use (free re-use, commercial and non-commercial, with attribution); no dataset-specific terms shown on the portal record",
+      "notes": "Event list 1975-08-06 to 2026-09-08; 1,931 rows / 1,757 distinct sighting numbers / 594 distinct locations; columns Red Tide Sighting No., Date of Report, Date of Dissipation, Group, Species, Location, Latitude, Longitude, Coordinate System. Live file 266,991 bytes in one anonymous GET (2026-10-23)."
+    },
+    {
+      "name": "AFCD data specification PDF ('Data Dictionary of Update of Red Tide Situation')",
+      "url": "https://www.afcd.gov.hk/data/Update_of_Red_Tide_Situation.pdf",
+      "licence": "AFCD site document; no separate terms stated",
+      "notes": "623,230 bytes. Describes every field only as its own name ('Date: Date.'), i.e. it does NOT document what 'Date of Report' means. Schema in the PDF is the older one (Date, Species Group, Species, Location, Latitude, Longitude, Coordinate System) and omits the newer 'Red Tide Sighting No.' and 'Date of Dissipation' columns."
+    },
+    {
+      "name": "EPD Historical Marine Water Quality Data 1986-2025 (annual CSVs)",
+      "url": "https://cd.epic.epd.gov.hk/marinepsi/en/marinehistorical/marine-historical-2024-en.csv",
+      "portal_record": "https://data.gov.hk/en-data/dataset/hk-epd-marineteam-marine-water-quality-historical-data-en",
+      "licence": "DATA.GOV.HK Terms and Conditions of Use",
+      "notes": "Candidate feature source, probed for 2024 only: 1 anonymous GET, 618,074 bytes, 2,923 lines; columns include Water Control Zone, Station, Dates, Depth, BOD, ammonia, chlorophyll-a, dissolved oxygen, E. coli, nitrate, orthophosphate, pH, salinity, temperature, turbidity. 40 annual files would be ~40 requests for 1986-2025; total bytes not yet measured."
+    },
+    {
+      "name": "AFCD aquaculture environment / red tide management page",
+      "url": "https://www.afcd.gov.hk/english/fisheries/fish_aqu/fish_aqu_env/fish_aqu_env.html",
+      "licence": "AFCD site; no separate terms stated",
+      "notes": "Documents the sampling design (6 core FCZs weekly, 5 FCZs + 5 offshore stations fortnightly, 15 FCZs quarterly) and that the red tide situation is updated weekly on the Hong Kong Red Tide Information Network. The network page itself is a JavaScript app that returned 0 bytes to a plain HTTP client."
+    },
+    {
+      "name": "AFCD press releases (known-event cross-check)",
+      "url": "https://www.afcd.gov.hk/english/publications/publications_press/pr2568.html",
+      "licence": "AFCD site; no separate terms stated",
+      "notes": "2022-03-14 release describes sightings on 2022-03-12/13 at Big Wave Bay, Rocky Bay, Middle Bay, South Bay, Repulse Bay, Deep Water Bay, Stanley Main, Chung Hom Kok, Tathong Channel to Lei Yue Mun incl. Tung Lung Chau FCZ, Victoria Harbour near Hung Hom, Southern waters incl. East Lamma Channel and Sheung Sze Mun. The CSV carries matching records 2022S0001-2022S0010 dated 2022-03-12/13 with those locations and Noctiluca scintillans, so the CSV date tracks the sighting date and the row was public by the 2022-03-14 release."
+    }
+  ],
+  "license_evidence": [
+    "DATA.GOV.HK Terms and Conditions of Use read 2026-10-23 (https://data.gov.hk/en/terms-and-conditions): 'You are allowed to browse, download, distribute, reproduce, hyperlink to, and print the Data for both commercial and non-commercial purposes on a free-of-charge basis on condition that:- ... you shall also give proper attribution to the Government, the Relevant Organisations and ...'.",
+    "The dataset's portal record (package_show id=hk-afcd-afcdlist-red-tide-location) carries license_title=None and license_id=None; the dataset page shows no separate licence field, so the portal terms are the governing instrument.",
+    "The red tide CSV resource has no per-file terms page; the AFCD data specification PDF states no licence. The HK portal precedent (candidate hk-datagov-portal) recorded the same portal terms as class B with attribution and no share-alike; no candidate-specific risk acceptance is being extended here."
+  ],
+  "construction_script": null,
+  "split_strategy": "Time-based by report year, computed from the source (rows / distinct sighting numbers / distinct locations): train 1975-2010 = 1,108 / 987 / 329; eval 2011-2018 = 488 / 446 / 236; holdout 2019-2026 = 335 / 324 / 166. Yearly report counts 1975-2026 never fall to zero (recent range 12-114), so every window carries both classes. Positives cluster: 1,615 of 1,757 sighting numbers occupy one row, 111 occupy two, 30 occupy three and 1 occupies four, so the clustered unit is the sighting number, not the row.",
+  "measurements": {
+    "red_tide_csv_2026_10_23": "1 anonymous GET https://redtide.afcd.gov.hk/data/RTMS_ob_RTLE.csv -> HTTP 200, 266,991 bytes, 1,933 newline-terminated lines (header + 1,931 data rows plus a BOM/trailing artefact). 1,931 data rows, 1,757 distinct sighting numbers, 594 distinct locations; Date of Report 1975-08-06..2026-09-08; years covered 1975-2026 (52 years, all non-zero); Group mix Dinoflagellates 1,324 / Others 368 / Diatom 239; top species Noctiluca scintillans 680.",
+    "dissipation_lag_2026_10_23": "Computed over 1,930 rows with a dissipation date: min 0, median 3, max 65 days; zero negative values, so 'Date of Report' precedes 'Date of Dissipation' consistently.",
+    "wayback_vintages_2026_10_23": "CDX API (http://web.archive.org/cdx/search/cdx?url=redtide.afcd.gov.hk/data/RTMS_ob_RTLE.csv&output=json&fl=timestamp,digest,length&filter=statuscode:200) returns exactly 4 captures: 2018-06-13, 2018-09-08, 2019-11-02, 2025-04-02. 2019 vintage: 1,647 rows, schema Date/Species Group/Species/Location/Latitude/Longitude/Coordinate System, max date 2019-05-31. 2025 vintage: 1,887 rows, modern schema, max date 2025-03-25. Live: 1,931 rows, max date 2026-09-08.",
+    "revision_evidence_2026_10_23": "2019 vintage vs live: 1,647 rows dated <=2019-05-31 in the vintage, only 2 absent from live (1988-01-22 Ma Wan FCZ; 1999-08-17 West Lamma Channel); live has 1,646 rows dated <=2019-05-31. 2025 vintage vs live on (sighting no., location): 1,713 common, 0 removed, 44 added (32 dated 2025, 12 dated 2026 - no backfill of earlier years), and 2 common rows changed 'Date of Dissipation'. Archive is effectively append-only with light revision over 2018-2026.",
+    "publication_lag_evidence_2026_10_23": "Latest record is 8 days before the 2025-04-02 capture but 155 days before the 2019-11-02 capture; the 2022-03-14 press release carried sightings dated 2022-03-12/13. Lag therefore ranges from ~1 day to ~5 months in observed evidence; no upper bound is established.",
+    "epd_feature_probe_2026_10_23": "1 anonymous GET of marine-historical-2024-en.csv -> HTTP 200, 618,074 bytes, 2,923 lines, 28 documented columns; not yet measured for the full 1986-2025 series.",
+    "web_probe_notes_2026_10_23": "data.gov.hk package_list enumerates 3,831 package names and package_show returns full resource lists anonymously. The red tide network page (redtide.afcd.gov.hk) is a JS app returning a 0-byte body to a plain client. The Wayback capture count is 4, so a lag distribution cannot be built from archive vintages alone."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "Parked on the timing contract, not on licence, target or novelty. The source is anonymous and licences clean (class B), the event archive is long and effectively append-only (1,931 rows, 1,757 sightings, 1975-2026), and the novelty check recorded 'differentiated'. But the label timestamp is undocumented: AFCD's own data specification describes 'Date of Report' only as 'Date.', and the observed publication lag ranges from 8 days (2025 vintage) to 155 days (2019 vintage) with just 4 Wayback captures in total. A weekly prediction instant and a future-only target window therefore cannot be stated with evidence, and the negative population is censored because no per-day monitoring log is published (only a sampling schedule). Building an as-of panel now would assume a lag bound the evidence does not support.",
+  "review": null,
+  "next_action": "Do not construct until the timing contract is resolved. Reopen only when one of these is obtained: (a) an AFCD statement or updated data dictionary defining 'Date of Report' and the weekly update day/time (the current PDF defines the field only as 'Date.'); (b) a publication-lag distribution from >=12 consecutive captures of the CSV - NOT obtainable from Wayback (only 4 captures, 2018/2019/2025), so it requires seeding a weekly standing collector into private staging now and revisiting after 6-12 months (the tw-reservoir standing-collector pattern); (c) an operator decision to accept a clearly labelled RETROSPECTIVE benchmark (no historical operational-availability claim), using the 1975-2026 event list with same-era features and time-based splits - the split counts in this record already show that design is feasible. Secondary design issue for whoever reopens: the negative class needs an eligible population; either restrict to the 6 weekly-sampled core fish culture zones and state the censoring, or obtain the per-site monitoring schedule.",
+  "novelty_check": {
+    "checked_at": "2026-10-23T16:06:38+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "red tide prediction",
+      "harmful algal bloom forecast",
+      "red tide occurrence dataset"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "red tide prediction",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "harmful algal bloom forecast",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "red tide occurrence dataset",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "red tide prediction",
+          "hits": 230497,
+          "top": [
+            "Harmfull algae bloom monitoring program dataset; ERDDAP, ERA5 and ONI datasets; and R script for multicriteria analisys in Santa Catarina coastal zone, Brazil.",
+            "Multi-task learning using non-linear autoregressive models and recurrent neural networks for tide level forecasting",
+            "Figure 1 in Simple and complex burrow morphology in two Macrophthalmus species on the intertidal mudflats of Barr Al Hikman, Sultanate of Oman",
+            "An historic analysis of tide prediction machines using an adapted prosopographic approach and digital humanities tools",
+            "Predicting Vessel Tracks in Waterways Using Bi-LSTM and Transformer Models"
+          ]
+        },
+        {
+          "query": "harmful algal bloom forecast",
+          "hits": 36666,
+          "top": [
+            "SCCWRP Harmful Algal Bloom Response Standard Operating Procedures",
+            "Passive sampling for grazer cues incorporates top-down effects in harmful algal bloom monitoring and toxin prediction",
+            "HAB Imaging Data Management Summary Report",
+            "Western Lake Erie Monitoring Program Dataset",
+            "Bloom Events Detection - WQeMS Raster Products"
+          ]
+        },
+        {
+          "query": "red tide occurrence dataset",
+          "hits": 507532,
+          "top": [
+            "Harmfull algae bloom monitoring program dataset; ERDDAP, ERA5 and ONI datasets; and R script for multicriteria analisys in Santa Catarina coastal zone, Brazil.",
+            "Green tides select for fast expanding Ulva strains",
+            "Figure 1 in Simple and complex burrow morphology in two Macrophthalmus species on the intertidal mudflats of Barr Al Hikman, Sultanate of Oman",
+            "Wirewalker data collected during the 2020 Southern California red tide",
+            "Extreme Total Water Level values for different possible combinations along the Southern Veneto, Emilia-Romagna and Northern Marche coastlines"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "red tide prediction",
+          "hits": 5,
+          "top": [
+            "TIDE: Token-Informed Depth Execution for Per-Token Early Exit in LLM Inference",
+            "Tide: A Customisable Dataset Generator for Anti-Money Laundering Research",
+            "Using Localized Twitter Activity for Red Tide Impact Assessment",
+            "TIDE: A Physically Diverse 3D Turbulence Benchmark Dataset for Advancing Scientific Machine Learning",
+            "Turning the TIDE: Cross-Architecture Distillation for Diffusion Large Language Models"
+          ]
+        },
+        {
+          "query": "harmful algal bloom forecast",
+          "hits": 5,
+          "top": [
+            "Predicting Pseudo-nitzschia harmful algal blooms along the Portuguese Coast using satellite-derived predictors",
+            "Harmful algal bloom forecasting. A comparison between stream and batch learning",
+            "Cooperative decentralized circumnavigation with application to algal bloom tracking",
+            "Hybrid Machine Learning techniques in the management of harmful algal blooms impact",
+            "Characterizing Algal blooms in a shallow and a deep channel over a decade (2008-2018)"
+          ]
+        },
+        {
+          "query": "red tide occurrence dataset",
+          "hits": 5,
+          "top": [
+            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+            "Tide: A Customisable Dataset Generator for Anti-Money Laundering Research",
+            "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset",
+            "TIDE: A Physically Diverse 3D Turbulence Benchmark Dataset for Advancing Scientific Machine Learning"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'red tide prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'harmful algal bloom forecast': 0 hit(s) - nothing notable\n- huggingface_datasets / 'red tide occurrence dataset': 0 hit(s) - nothing notable\n- zenodo_records / 'red tide prediction': 230497 hit(s) - Harmfull algae bloom monitoring program dataset; ERDDAP, ERA5 and ONI datasets; and R script for multicriteria analisys in Santa Catarina coastal zone, Brazil., Multi-task learning using non-linear autoregressive models and recurrent neural networks for tide level forecasting, Figure 1 in Simple and complex burrow morphology in two Macrophthalmus species on the intertidal mudflats of Barr Al Hikman, Sultanate of Oman, An historic analysis of tide prediction machines using an adapted prosopographic approach and digital humanities tools, Predicting Vessel Tracks in Waterways Using Bi-LSTM and Transformer Models\n- zenodo_records / 'harmful algal bloom forecast': 36666 hit(s) - SCCWRP Harmful Algal Bloom Response Standard Operating Procedures, Passive sampling for grazer cues incorporates top-down effects in harmful algal bloom monitoring and toxin prediction, HAB Imaging Data Management Summary Report, Western Lake Erie Monitoring Program Dataset, Bloom Events Detection - WQeMS Raster Products\n- zenodo_records / 'red tide occurrence dataset': 507532 hit(s) - Harmfull algae bloom monitoring program dataset; ERDDAP, ERA5 and ONI datasets; and R script for multicriteria analisys in Santa Catarina coastal zone, Brazil., Green tides select for fast expanding Ulva strains, Figure 1 in Simple and complex burrow morphology in two Macrophthalmus species on the intertidal mudflats of Barr Al Hikman, Sultanate of Oman, Wirewalker data collected during the 2020 Southern California red tide, Extreme Total Water Level values for different possible combinations along the Southern Veneto, Emilia-Romagna and Northern Marche coastlines\n- arxiv_preprints / 'red tide prediction': 5 hit(s) - TIDE: Token-Informed Depth Execution for Per-Token Early Exit in LLM Inference, Tide: A Customisable Dataset Generator for Anti-Money Laundering Research, Using Localized Twitter Activity for Red Tide Impact Assessment, TIDE: A Physically Diverse 3D Turbulence Benchmark Dataset for Advancing Scientific Machine Learning, Turning the TIDE: Cross-Architecture Distillation for Diffusion Large Language Models\n- arxiv_preprints / 'harmful algal bloom forecast': 5 hit(s) - Predicting Pseudo-nitzschia harmful algal blooms along the Portuguese Coast using satellite-derived predictors, Harmful algal bloom forecasting. A comparison between stream and batch learning, Cooperative decentralized circumnavigation with application to algal bloom tracking, Hybrid Machine Learning techniques in the management of harmful algal blooms impact, Characterizing Algal blooms in a shallow and a deep channel over a decade (2008-2018)\n- arxiv_preprints / 'red tide occurrence dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, Tide: A Customisable Dataset Generator for Anti-Money Laundering Research, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, TIDE: A Physically Diverse 3D Turbulence Benchmark Dataset for Advancing Scientific Machine Learning",
+    "prior_art": [
+      "NOAA HAB forecast bulletins (Gulf of Maine, Florida)"
+    ],
+    "theirs": "AFCD publishes the raw sighting list; NOAA and Florida FWC publish Karenia brevis cell-count monitoring and operational HAB bulletins; published HAB ML studies use cell concentrations, not a packaged occurrence-onset benchmark with splits",
+    "ours": "Hong Kong event-level red tide sighting archive 1975-2026 (1,757 sightings, species+coordinates) formulated as an as-of, next-7-day occurrence onset task at fish-culture-zone/marine-station grain, with documented reporting coverage, temporal splits and persistence/climatology baselines",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  },
+  "verdict": "park",
+  "licence_class": "B",
+  "licence_note": "DATA.GOV.HK terms permit redistribution and reproduction, commercial and non-commercial, with source attribution (class B, attribution only). No dataset-specific terms found; the blocking uncertainty is timing, not licence.",
+  "jurisdiction": {
+    "country": "HK",
+    "region": "East Asia",
+    "publisher": "Agriculture, Fisheries and Conservation Department (AFCD), Government of the Hong Kong SAR; feature source: Environmental Protection Department (EPD) marine water quality monitoring",
+    "recorded_at": "2026-10-23"
+  }
+}
