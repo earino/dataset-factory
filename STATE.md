@@ -6290,3 +6290,17 @@ until expiry. The successor clarifies both. Prepared 63c0705 is superseded befor
 inference; use only its next reviewed commit for the twenty-call verification. No
 deployment or successor calls yet. Next: exact successor source review/CI and request
 hash agreement with Scout, then bounded evaluation using the existing ledger.
+
+
+Prompt evaluation complete (Codex, 2026-10-23 00:50Z): corrected cd29d10 watcher
+verification preserved all twenty responses, 23/40 baseline versus 36/40 revised.
+Source-aware review with Scout clears controlled deployment: no repeat of early
+source deletion, invented-backup deletion authority, active-owner mutation or direct
+watcher asset mutation. Residual reporting/close-out/overrestriction defects remain
+recorded; scores do not prove execution quality. Final coverage: 60 matched responses,
+80/120 versus 112/120 original criteria; non-watcher 57/80 versus 76/80. Total evaluation
+ledger 113 attempts / 3,824,658 inclusive tokens, no reset or silent reruns. Exact
+cd29d10 clean-clone 588 tests in 6.733s (six existing skips), doctor and source audit
+pass; full logs retained. Next: commit evidence, exact-commit CI, merge PR #11, deploy
+reviewed files and scheduler entry at idle, verify readback, then observe ordinary
+discovery and advancement. No live improvement or deployment is claimed yet.

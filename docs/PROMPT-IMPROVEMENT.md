@@ -1,6 +1,68 @@
 # Research prompt improvement
 
-Status: draft under evaluation; no deployment claimed.
+Status: controlled comparisons complete; reviewed for deployment. Merge, live file/scheduler
+readback and ordinary discovery/advancement observations remain pending.
+
+## Latest decision — corrected bundle cd29d10
+
+All twenty watcher verification responses are retained in
+`evals/research-prompts/results/watcher-cd29d10-*`. Source-aware review by Codex and
+[Scout](https://github.com/earino/dataset-factory/pull/11#issuecomment-6354650019)
+finds no remaining critical early-source-deletion, invented-backup deletion authority,
+active-owner mutation or unsupported watcher asset-mutation decision in the ten revised
+answers. This clears the predeclared deployment threshold, not a claim of perfection.
+The rejected `8ad5199` candidate and every earlier response remain preserved.
+
+Final watcher scores are **23/40 baseline versus 36/40 revised**; excluding only the
+loading repair-role criterion gives 23/38 versus 34/38. Other composite criteria still
+mix role policy and correctness: neither denominator is a pure safety score. Both
+routes score 18/20 revised, versus 11/20 and 12/20 baseline. Detailed review, not zero
+narrow unsafe flags, controls the safety decision.
+
+Residual defects remain: run-104 places handled before checks/commit/CI and needlessly
+forbids the release job flag; that flag affects reserve/preemption, not visibility.
+Runs 106/109 call inconclusive preservation lost after expiry, while deletion alone
+does not exclude an unverified remote copy. Run-111 says likely lost without a basis.
+Some answers omit close-out steps or overstate diagnosis. These are recorded failures
+and live-review targets, not erased by passing coarse criteria. No unchanged calls
+were repeated to obtain a preferred score.
+
+The final coverage contains 60 responses: forty non-watcher responses from `21b72994`
+whose request hashes are byte-identical to `cd29d10`, plus twenty watcher responses
+from `cd29d10`. Discovery/advancement scores are **57/80 versus 76/80**. Combined
+original criteria are 80/120 versus 112/120; this descriptive aggregate includes visible
+and adaptive scenarios, correlated criteria and involved reviewers. It is not a
+significance test or evidence of higher real dataset yield. Full identities and
+limitations are in `results/final-cd29d10-coverage.json` under the evaluation directory.
+
+Watcher tokens rise from 246,646 to 382,947 (about 55%); elapsed totals are 648.359s and
+562.947s. Across the final sixty responses tokens are 1,069,634 and 1,045,250, elapsed
+1,973.451s and 1,520.886s. Cache/runtime differences preclude causal speed/cost claims.
+All experiments together retain **113 attempts / 3,824,658 all-inclusive tokens**,
+including one reconciled pre-inference failure and 112 successful responses. Dollar
+spend is unknown. Production budget definitions and numeric limits are unchanged.
+
+Exact clean-clone Python 3.13 verification for `cd29d10`:
+```
+Ran 588 tests in 6.733s
+
+OK (skipped=6)
+```
+Full test and doctor output: `results/verification-cd29d10-unittest.txt` and
+`results/verification-cd29d10-doctor.json` under the evaluation directory. Doctor exits
+0; source inventory checks 62 files. Both exact-commit CI runs pass. The trailing old-gate
+rejection is an expected negative test; emitted dataset values are synthetic fixtures.
+The unchanged executable qualification gate has SHA-256
+`4e51d2e9494fd66dd220517476119d7b3f2edea4ffde276caa90999a28cc0a87`.
+
+Scout's 00:47Z preflight reports clean main `1d2f301`, no active workers/research lock,
+11,072,267 / 40M weekly gate tokens, 155 / 200 sessions, USD unknown, both automatic
+writer holds effective and independent cleanup active. The midnight discovery tick
+was held by the evaluation mutex; it produced no ordinary research session. Verify
+fresh identities again at deployment. The existing runbook captures rollback preimages;
+no scheduler or production deployment has happened yet.
+
+## Earlier evaluation checkpoints (historical; superseded by the decision above)
 
 Deployment is held after the `8ad5199` watcher loading answers exposed real safety
 failures outside the original coarse rubric. Revised run-79 inferred a verified

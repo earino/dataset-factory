@@ -1,0 +1,1139 @@
+{
+  "schema": 1,
+  "bundle": "cd29d104f8b3ded6afce74d39e9a41aac25de737",
+  "partition": "watcher-verification",
+  "records": [
+    {
+      "partition": "watcher-verification",
+      "case": "watcher-loading",
+      "arm": "baseline",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-94",
+      "session_id": "20261023_002421_86e2dc",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "d288cd9bb01138e21ed7d254b9ecbe840f67c7dd165ca226932f5c0806b8770b",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 222,
+        "output_tokens": 5754,
+        "cache_read_tokens": 19712,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 25688,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 396,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 170,
+          "output_tokens": 5358,
+          "cache_read_tokens": 19328,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 69.876,
+      "response": "DECISION\nhf-check-12's verification failed. Matching upload digests are necessary but not sufficient: loading_check.ok=false with two expected splits missing means the Hub destination is unverified, so nothing may be tagged, DESTINATIONS.json cannot record HF as published, and the artifact is not accepted. The stale note (\"upload success means ready to tag\") is wrong and gets corrected in the records, not followed. The worker is destroyed after collection \u2014 a failed job must not stay billable.\n\nSUPPORTING EVIDENCE\nCollected report: all uploaded asset digests matched, loading_check.ok=false, two expected splits missing. OPERATIONS.md: acceptance requires a collected successful job, a passing loading check, exact manifest assets, and matching live commit/blob metadata; failed results never authorize tags or publication; tag is LAST and only after destinations verify. Upload integrity (digests) is a different property from completeness (loading check at the pinned commit); the stale note conflates them. No unrelated edits, so the failure lives in the job's own evidence.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\nWhy the two splits are missing is undetermined. Candidate causes: (a) race \u2014 files uploaded after the pinned commit the loading check read; (b) Hub-upload gap \u2014 files exist in the source GitHub release and manifest but were never uploaded; (c) packaging gap \u2014 the splits are absent from the source package itself. Discriminating check: read the two missing paths from the loading-check detail and compare each against MANIFEST.json's asset list, the source release assets, and the Hub tree at both the pinned commit and current main. The result picks the fix; I will not guess before this.\n\nORDERED ACTIONS AND STOPPING CONDITION\n1. Confirm collection; fetch small reports from the staging release into .factory/hf-check-12/reports/ using its manifest.json mapping; no bulk CSV assets to this host.\n2. Read the job's result file and loading-check detail; enumerate the two missing split paths.\n3. Run the discriminating check.\n4. Record the outcome in STATE.md and the candidate's record.json: verification failed, not taggable, stale note corrected. Commit, push, check CI for that exact commit via gh api with head_sha; fix any failure before reporting done.\n5. Destroy the worker; confirm server and job-owned IP are gone.\n6. Fix per diagnosis: (a) race \u2014 new verify attempt at the current commit; (b) Hub gap \u2014 new hf_publish upload attempt (new attempt ID, same asset/loading contract; per-file idempotence uploads only the missing files); (c) packaging gap \u2014 new package version via release-manifest.py, check-package.py, re-upload small files, tag last, and re-qualification of the changed artifact before acceptance. Launch within the standing allowance and release reserve. No tag, no visibility change, no destination marked published.\n7. Only after recording and cleanup, write .factory/hf-check-12/handled with a one-line summary.\nStop and report after steps 1-6 this tick. If the discriminating check is inconclusive from the report and logs, say so explicitly rather than implying readiness. The flip is not implicated; no operator approval is needed for the fix path.\n\nOPERATOR REPORT\n\"hf-check-12 (Hugging Face verification) finished: all uploaded asset digests matched, but the loading check failed \u2014 two expected splits are missing at the checked Hub commit. Verification is incomplete and the release is NOT ready to tag; the stale note that upload success alone permits tagging has been corrected in STATE.md. Reports are collected under .factory/hf-check-12/reports/, the outcome is recorded in STATE.md and the candidate's record.json, changes are pushed, CI is checked for the exact commit, and the worker is destroyed with server and IP confirmed deleted. Next action: diff the two missing split paths against the manifest, the source GitHub release, and the Hub tree to distinguish a commit race, a Hub-upload gap, or a packaging gap, then apply the corresponding fix (re-verify, targeted per-file hf_publish upload, or a new package version) and re-verify before any tag. No destination is marked published.\"\n",
+      "response_sha256": "0ce1332dc29cba329b82a701a9444acd1356db326bb9d0c0edb533e18f9e455d"
+    },
+    {
+      "partition": "watcher-verification",
+      "case": "watcher-loading",
+      "arm": "revised",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-95",
+      "session_id": "20261023_002536_7a436a",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "5fb17d5619d41a75b0667b2194e0c773adcedb3af7963f43b911d8361e737dda",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 1682,
+        "output_tokens": 5727,
+        "cache_read_tokens": 32192,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 39601,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 331,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 1630,
+          "output_tokens": 5396,
+          "cache_read_tokens": 31808,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 81.44,
+      "response": "Decision\nTreat hf-check-12 as an incomplete release, not a success. Upload verification and the loading check are separate results: record the transfer success and the loading failure separately, leave the release untagged, hand the loading-contract defect to advancement, and destroy the worker only after the accepted bytes are proven durable at the Hub. The stale \"upload success means ready to tag\" note is wrong and gets marked wrong in the record. All actions below are proposed; nothing has been executed.\n\nSupporting evidence\n- Ownership: coordinator idle, documented handoff names this job, no unrelated edits \u2014 exclusive ownership, proceed.\n- The decisive field is loading_check.ok=false with two expected splits missing, while all assets uploaded with matching digests. The documented failure mode is exactly this: a job can upload every file correctly and still fail the verification written beside it; upload success is not the check's outcome.\n- Tags come last and only after verification; failed results never authorize tags or publication. No Hub destination receipt is written without a passing loading check, so DESTINATIONS.json stays unverified.\n- Since every asset sits on the Hub at a server-verified digest, the two \"missing\" splits are missing from the loading contract's view, not lost bytes. This is a naming/mapping defect, not a preservation problem.\n\nUncertainty and next discriminating check\nUnknown: whether the Hub assets sit under bare names the loader does not expect, or the card's data_files disagree with the manifest's split names. Cheapest check, read-only, no worker: diff the Hub-reported file names at the pinned revision against MANIFEST.json paths and the card data_files, from the collected report plus a Hub API read. The result selects advancement's fix (asset rename/PATCH vs regenerated configs block) \u2014 both are advancement's; a naming mismatch is a diagnosis, not authority for me to rename, PATCH, or rewrite a manifest, card or loading contract.\n\nOrdered actions and stopping condition (proposed)\n1. Collection is already done; read the full report per-check. Extract the two expected split names and the exact paths the loader looked for.\n2. Run the read-only name/path diff; classify the defect.\n3. Record in the candidate record and STATE.md: upload receipt (digests verified) separate from loading_check.ok=false; mark the stale note wrong; release stays incomplete, untagged, no destination receipt.\n4. Preservation before teardown: confirm from the report that the two split files are among the digest-verified uploads. If confirmed (the evidence says all assets uploaded), destroy the worker and confirm provider deletion of the server and its owned IP. If not confirmed, do not delete; leave a blocked handoff within the existing expiry.\n5. No recovery attempt: an unchanged loading re-run is a prohibited unchanged retry; renames and card/manifest edits belong to advancement; nothing needs re-transfer.\n6. Commit only this job's changes, push, read CI for that exact commit via the gh api head_sha query; report an unread result as unknown with a follow-up owner.\n7. Only after the durable record and confirmed cleanup, write .factory/hf-check-12/handled naming the commit, the defect and its owner.\nStop once the handoff is recorded and deletion is provider-confirmed. Advancement owns the fix; any new job needs a fresh attempt ID linked to hf-check-12, and the one-recovery budget covers that whole chain.\n\nOperator report (draft)\nhf-check-12 (candidate <id>): all release assets uploaded to the Hub with server-verified matching digests. The loading check failed \u2014 two expected splits missing (loading_check.ok=false). The release is therefore incomplete and untagged; the note equating upload success with ready-to-tag was wrong and is marked so. Read-only diagnosis points to <naming mismatch / card data_files disagreement \u2014 pending the name/path diff>. Worker deletion is <confirmed by provider / pending>. Evidence paths and the discriminating check are handed to advancement. No tag, no publication, no asset changes. CI for commit <sha>: <observed / pending / unknown>.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "1fab47c6e10b06da0a876b60ac9acfe9e6a37c3fc552b998f1bc6161db984710"
+    },
+    {
+      "partition": "watcher-verification",
+      "case": "watcher-loading",
+      "arm": "revised",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-96",
+      "session_id": "20261023_002701_bf07d3",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "5fb17d5619d41a75b0667b2194e0c773adcedb3af7963f43b911d8361e737dda",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 3070,
+        "output_tokens": 2047,
+        "cache_read_tokens": 31744,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 36861,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 516,
+          "output_tokens": 11,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 2554,
+          "output_tokens": 2036,
+          "cache_read_tokens": 31744,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 22.597,
+      "response": "Decision\n\nhf-check-12 is **not** ready to tag. Transfer succeeded; loading verification failed. All uploaded assets match their manifest digests, but `loading_check.ok=false` with two expected splits missing. The stale note \u2014 \"upload success means ready to tag\" \u2014 is wrong: tag last, only after content verification, and only after both destinations verify. Nothing here authorises a tag, a rename, a PATCH or a manifest/card rewrite.\n\nOwnership is established: coordinator idle, documented handoff names this job, no unrelated edits. Scope is hf-check-12 and its candidate only.\n\nSupporting evidence\n\n- Digests match per asset; that proves integrity of what was sent, not that the loading contract describes the dataset.\n- `loading_check.ok=false`, two expected splits absent.\n- Runner layout is fixed: `public/train.csv`, `public/eval.csv`, `private/holdout.csv`, plus `meta.json`/`task.json`; the card's `configs`/`data_files` must be generated from the manifest. Missing splits with matching digests is the signature of a split-name/config mismatch or a construction gap \u2014 not of a corrupt upload.\n\nUncertainty and the discriminating check\n\nUnknown: are the two splits (a) present in the artifact but named differently on the Hub, (b) declared in the manifest but absent from the card/configs, or (c) never built? Cheapest test, bounded, no CSV download:\n\n1. Manifest split/config names.\n2. Asset names read back from the Hub at the pinned commit.\n3. Bounded file listing of the worker extract (paths, sizes only).\n\nThree-way reconciliation decides naming/contract defect versus missing-construction defect. That distinction is the whole decision.\n\nOrdered actions\n\n1. Read existing candidate/job records and the collected report read-only; do not call mutating `worker status` before reading.\n2. Record the split explicitly: transfer digests OK; loading FAILED; release state incomplete. Preserve the report.\n3. Run the three-way reconciliation above; record the result with the evidence path.\n4. Do not rename, PATCH or delete assets; do not edit manifest, card, config or loading contract; do not tag or publish. If it is a name/layout mismatch, hand to advancement with the exact names and digests.\n5. Preservation, before any teardown: enumerate every expected accepted asset \u2014 declared name/path, durable destination and revision, expected vs observed digest. Matching assets are preserved (staging). If the two splits exist only on the live worker, do not normally delete: record a blocked handoff within the existing expiry, or transfer identical bytes to the existing declared name. A naming mismatch is a diagnosis, not authority to rename.\n6. Cleanup: only once every expected byte is durably accounted for, destroy the worker and confirm provider-side deletion of the server and its owned IP. Otherwise leave the blocked handoff; independent expiry cleanup continues and expiry is never extended.\n7. Update candidate and STATE.md (job ID, evidence paths, outcome, cleanup, next action = advancement diagnosis), run `check-package.py` without claiming `published`, inspect the diff, commit only this job's changes, push, and read CI for that exact sha. Write `.factory/hf-check-12/handled` only after that.\n\nStopping condition\n\nStop when the diagnosis (contract/naming vs missing construction) and the preservation accounting are recorded, and cleanup is either provider-confirmed or a precise blocked handoff is filed. No second recovery, no retry loop, no tag.\n\nOperator report\n\nhf-check-12: assets uploaded with matching digests, but loading verification failed \u2014 two expected splits are missing. Release remains incomplete and untagged. Worker still alive; preservation accounting in progress before deletion. Next: three-way split-name reconciliation, then advancement owns the fix. No recovery attempted, no publication.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "9d86fe225d239e06db0b1438be98902d84a818166bc28633308c46921d0f4d7a"
+    },
+    {
+      "partition": "watcher-verification",
+      "case": "watcher-loading",
+      "arm": "baseline",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-97",
+      "session_id": "20261023_002728_5297ce",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "d288cd9bb01138e21ed7d254b9ecbe840f67c7dd165ca226932f5c0806b8770b",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 19806,
+        "output_tokens": 1631,
+        "cache_read_tokens": 768,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 22205,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 132,
+          "output_tokens": 11,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 19674,
+          "output_tokens": 1620,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 28.434,
+      "response": "Decision\n\nDo not tag, do not mark verified, do not record the destination as published. hf-check-12 is an incomplete verification, not a successful release. Treat it as a failed job: preserve its evidence, record the failure, destroy the worker, and re-plan a corrective attempt under a new job ID.\n\nSupporting evidence\n\n- Digests match only for the files that were uploaded; matching digests prove integrity of those bytes, not completeness of the set. Two expected splits are missing.\n- loading_check.ok=false is a hard failure. Under the release rules, DESTINATIONS.json may not record a destination as verified, and hf-publish.py --tag must not run, until verification passes on the exact artifact. Tag is last and never follows a failed result.\n- The stale note (\"upload success means ready to tag\") is wrong on its face and contradicts the rules: upload, loading check, manifest completeness and verification are separate gates. Discard the note rather than acting on it.\n- The worker is still billable; it must be destroyed once its evidence is retrieved, regardless of the failure.\n\nUncertainty and next discriminating check\n\nThe supplied evidence does not say whether the two splits were never uploaded or were never in the manifest. That distinction decides the fix:\n- Compare the collected hf_publish report's expected asset list (name, size, SHA-256, commit/blob identity) and the release's manifest.json against MANIFEST.json's declared splits.\n- Run check-package.py on release/<dataset> and read the loading_check diagnostic for which files/paths it attempted at which commit.\nIf MANIFEST.json declares both splits, the artifact is incomplete \u2192 the upload/build attempt is at fault. If MANIFEST.json omits them while the package check expects a different set, it is a manifest/package defect \u2192 correct and regenerate the manifest, then re-verify. Do not guess between these.\n\nOrdered actions\n\n1. worker collect hf-check-12 if collection is not already confirmed; confirm the result and diagnostics are present.\n2. Fetch only the small reports (qualification/gate evidence, hf_publish report, manifest.json, loading-check output, log excerpt) into .factory/hf-check-12/reports/. No bulk CSV transfer to this host.\n3. Read the report and manifest as above; no scoring, no acceptance, no tag.\n4. Record in STATE.md and candidates/<id>/record.json: job ID, attempt status failed/incomplete, loading_check false, the two missing split names, digests matched for uploaded assets, and \"not verified \u2014 tag withheld\". Keep awaiting_operator unchanged; nothing here is a flip or publication.\n5. Commit and push; check CI for that exact commit via the head_sha query and report pending/failing honestly.\n6. worker destroy hf-check-12; confirm the server and job-owned primary IP are gone.\n7. Prepare a corrected hf_publish attempt with a new job ID (new attempt, never reuse the ledger entry): either re-upload the missing splits from the built artifact, or, if the bytes already exist and only evidence is missing, verify_only:true with the same assets/loading contract. Plan against the allowance, launch, collect.\n8. Only if that attempt yields loading_check.ok=true, every expected split present, matching SHA-256/size bound to an exact Hub commit, and check-package.py passes, does verification get recorded \u2014 then tag, and only then.\n9. Write .factory/hf-check-12/handled with a one-line summary, after the report and records above exist.\n\nStopping condition\n\nStop this attempt at step 6 and again after step 7's new job returns. Do not proceed to tagging unless every gate passes on the exact artifact; if the corrective attempt also fails the loading check, record it and escalate with the diagnostics rather than retrying blindly.\n\nOperator report\n\nhf-check-12 finished but did not pass verification: uploaded assets matched their expected digests, however loading_check.ok=false and two expected splits are missing. No tag was created and no destination is recorded as verified. I am fetching the small diagnostics, determining whether the splits were never uploaded or are absent from the manifest, recording the failed attempt in STATE.md and record.json, committing, checking CI, and destroying the worker. Next: a new-ID corrective hf_publish attempt (re-upload the splits, or verify_only if the bytes are correct and only evidence is missing); tagging stays blocked until a full passing verification.\n",
+      "response_sha256": "347ed013331fa77e8ea6acd53962341c1f2114479c595fed227c0489239a9c58"
+    },
+    {
+      "partition": "watcher-verification",
+      "case": "watcher-ownership",
+      "arm": "revised",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-98",
+      "session_id": "20261023_002801_ab3fef",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "04f251f9a04b383410201c8a993a34344a4ee9cdf486423f554c9543076bf2f3",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 199,
+        "output_tokens": 6408,
+        "cache_read_tokens": 33664,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 40271,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 387,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 147,
+          "output_tokens": 6021,
+          "cache_read_tokens": 33280,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 94.507,
+      "response": "Decision\n\nDefer to the active advancement coordinator. The watcher performs no writes of any kind: no collection, no `worker status`, no job-ledger or watcher-bookkeeping writes, no `handled` marker, no commits, no worker destruction. It delivers a read-only status report and stops. The job stays unhandled.\n\nSupporting evidence\n\n- The brief: with ownership active or uncertain, \"report the job ID and pending follow-up, leave it unhandled, and defer to the owner.\" The idle-with-documented-handoff exception does not apply: the coordinator is active, holds the research mutex, has uncommitted edits in STATE.md and the candidate record, and no handoff was recorded.\n- Deferral explicitly includes ledger and bookkeeping writes, collection and normal worker destruction; `worker status` reconciles, writes the job record and can clean owned IPs, so it is not read-only and is not invoked. Existing records are read instead.\n- The `handled` marker requires a durable outcome plus recorded handoff; with ownership unresolved, it is left unwritten.\n- Nothing is verified: a result existing is not qualification passing. No qualified figures may be quoted; report only observed completion.\n\nUncertainty and next discriminating check\n\n- Is the coordinator genuinely live? Confirm read-only via the process table (marker pid, command line, parent/group). A stale JSON marker alone proves nothing; the lock must never be deleted or replaced to proceed. Case evidence says the mutex is held, so treat ownership as active.\n- The job's real outcome is unknown until collection: whether the staging upload is complete and durable, whether qualification passed on the exact artifact, whether any asset exists only on the worker. Discriminating check for the owner: collect, then read each required check's own result field (not overall job status), with gate `--accept` against exact bytes before any scoring or acceptance.\n- Expiry risk: the independent sweepers continue by design and will delete the worker at expiry, discarding un-uploaded artifacts. Surface the recorded expiry so the owner can collect first.\n\nOrdered actions (proposed only; nothing executed)\n\n1. Read-only ownership confirmation via the process table; no lock or marker deletion.\n2. Read-only status assembly from the existing job ledger record, STATE.md and candidate record: job/candidate IDs, worker ID, expiry, reservation, and the watcher's observation that a result exists.\n3. Deliver the operator report below; make no file changes and no commits.\n4. Leave unmodified: the coordinator's uncommitted edits, the mutex and lock marker, the job ledger and watcher bookkeeping, the worker and its artifacts, and all release/approval boundaries (no tags, no publication, no manifest, receipt or check changes).\n5. Stop after reporting; no polling loop. Handling (collect, verify each check including full-artifact qualification, account for every accepted asset's durable copy, destroy, record, then the `handled` marker) resumes only when the coordinator is idle with a documented handoff naming this job \u2014 or the coordinator handles it itself.\n\nStopping condition: report delivered while ownership remains active or uncertain. Any mutation is out of scope for this event.\n\nConcise operator report\n\nJob <id> (candidate <id>): the worker finished and a result is visible to the watcher, but nothing is verified \u2014 no collection, no check-level results, no qualified numbers. Cleanup: not requested, not performed, not provider-confirmed; the worker remains billable until the owning coordinator collects and destroys it, and independent expiry cleanup may sweep it at its recorded deadline, discarding any un-uploaded artifacts. The advancement coordinator holds the research mutex with uncommitted STATE.md/candidate edits and no handoff, so follow-up is deferred to it: collect before expiry, verify each check including qualification on the exact artifact, confirm durable preservation of every accepted asset, then delete and confirm provider deletion. Commit and CI status from this watcher: none; unknown, not pending. Next action: collect-and-verify, owned by the active advancement coordinator; the watcher re-engages on a documented handoff or an idle coordinator.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "7b8d4abbe23d2be9acf15c03db9cdf3d9ff4b796cf316664347788938f6aa317"
+    },
+    {
+      "partition": "watcher-verification",
+      "case": "watcher-ownership",
+      "arm": "baseline",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-99",
+      "session_id": "20261023_002940_68454e",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "81ef532042d58d3eeed2771ab3ef59223c9bb8e6fa3e5312bcbfad6302e80525",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 83,
+        "output_tokens": 6387,
+        "cache_read_tokens": 19840,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 26310,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 166,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 31,
+          "output_tokens": 6221,
+          "cache_read_tokens": 19456,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 93.57,
+      "response": "DECISION\n\nRun the worker-side lifecycle now \u2014 collect, fetch bounded reports, assess, destroy \u2014 but freeze repository bookkeeping: no edits to STATE.md or the candidate record, no commit/push, no new launch, no handled marker, until the advancement session ends and its uncommitted edits are reconciled. Report the substance to the operator immediately. The mutex and the other session's work are the thing not to break; the finished worker is the thing not to leave billable.\n\nSUPPORTING EVIDENCE\n\n- OPERATIONS.md: the mutex inode must not be deleted or replaced to clear a busy session; a file existing is not evidence a lock is held; a forced stop loses in-progress agent work \u2014 \"record and reconcile that work before resuming.\"\n- \"Inspect the diff first\" before committing: the tree contains another session's uncommitted edits I cannot vouch for, so any commit now would publish half-finished work or clobber it.\n- \"Only one coordinator may launch workers using a given job ledger\": no launch while the advancement coordinator is active.\n- Hetzner bills powered-off servers; deletion is part of finishing a job. Verified collection (release, tag, digests) means the worker holds nothing unique, so destroy cannot lose data.\n- The handled marker is written last, never before reporting; a job that looks idle from outside is a known failure mode, so the watcher must stay on this job while bookkeeping is deferred.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\n\nUnknown: whether the advancement session is live or wedged, and whether its uncommitted edits already concern this job's candidate. Checks, all read-only: inspect the actual process table for the lock's pid (parent/group identity), watch whether its session JSONL is still growing, read `git diff` to see what it changed, and compare the job's ledger candidate against the edited record. Never act on a lock file's existence or timestamp alone.\n\nORDERED ACTIONS AND STOPPING CONDITION\n\n1. Read-only recon: worker status, jobs/ ledger, uncommitted diff, lock pid liveness.\n2. `worker collect <job_id>` \u2014 verified collection.\n3. Fetch small reports per manifest.json into `.factory/<job_id>/reports/`; no bulk CSVs.\n4. Assess: build job \u2192 coverage from build_summary.json first, then gate ok flags (a failed gate still uploads diagnostics \u2014 collect them; nothing is scored or accepted without a passing report for the exact artifact). Baseline \u2192 its own result file.\n5. `worker destroy <job_id>`; confirm server and job IP gone.\n6. If failed: diagnose from errors/container.log, prepare the corrected attempt offline under a new attempt ID; hold the launch.\n7. Write a short deferral note in `.factory/<job_id>/` listing the exact pending steps; do not write the handled marker.\n\nStop after step 7 and report. Resume recording when the session has demonstrably ended: reconcile its edits, append the outcome to STATE.md and record.json, commit, push, check CI for that exact SHA (`gh api ...runs?head_sha=...`), then write the marker. If the lock looks wedged with no live process, follow the orphan procedure \u2014 verify identity, orderly stop of that exact process \u2014 never delete the mutex.\n\nREMAINS UNMODIFIED\n\nThe mutex and lock files; the advancement session's process; STATE.md and candidates/<id>/record.json (no edits, no revert, no committing them); the git branch (no commits); the shared ledger (no launches); the handled marker.\n\nOPERATOR REPORT\n\n\"Job <id> (<candidate>, build/baseline) finished. Collected and verified against staging digests; reports in .factory/<id>/reports/: coverage <built/expected stations, station-years>, gate <ok/failed>, baseline <figure>. Worker and its IP destroyed at <time> \u2014 nothing billable remains. The advancement session still holds the research mutex with uncommitted edits to STATE.md and the record, so I did not touch those files and did not commit; the watcher stays on the job so it cannot be forgotten. Pending: reconcile, record, commit, push, verify CI. <If failed: cause, fix prepared as attempt <new id>, launch held until one coordinator owns the ledger.>\"\n",
+      "response_sha256": "1da49b350679bf4edfada2c91e0647444ae3525ad6918e331a88cb8b6c7d3423"
+    },
+    {
+      "partition": "watcher-verification",
+      "case": "watcher-ownership",
+      "arm": "baseline",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-100",
+      "session_id": "20261023_003117_5258d1",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "81ef532042d58d3eeed2771ab3ef59223c9bb8e6fa3e5312bcbfad6302e80525",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 19978,
+        "output_tokens": 1948,
+        "cache_read_tokens": 512,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 22438,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 58,
+          "output_tokens": 12,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 19920,
+          "output_tokens": 1936,
+          "cache_read_tokens": 128,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 30.11,
+      "response": "**Decision**\n\nThe watcher may finish the job-side work, but it must not write shared repository state or commit while another coordinator holds the research mutex with uncommitted edits in `STATE.md` and the candidate `record.json`. Treat those edits as live, owned by that session. Defer step 4 (record/commit/push/CI) and step 7 (handled marker) until the lock-owner's work is committed; report the job result to the operator now from collected evidence.\n\n**Supporting evidence**\n\n- OPERATIONS: the wrapper holds a nonblocking OS lock on `.factory/research-session.mutex` until the agent finishes; competing ticks exit without starting a model; \"do not delete or replace it to clear a busy session.\" A file existing is not proof a process holds it \u2014 the lock JSON has `pid`, `written_at`, limits.\n- Same section: \"Only one coordinator may launch workers using a given job ledger.\" So no relaunch of a failed job while another coordinator is active.\n- AGENTS/OPERATIONS: an unmarked or unfamiliar path is preserved, not cleaned; destructive ops are scoped to exact owned paths. Overwriting `STATE.md`/`record.json` would either clobber the other session's uncommitted work or smuggle it into our commit under our authorship.\n- `.factory/<job_id>/` is job-owned and safe to write; `collect`, report fetch, and `destroy` are job-scoped and do not require the research mutex.\n\n**Uncertainty and next discriminating check**\n\nWhether the mutex holder is genuinely alive (stale JSON PID vs live lock). Check with `fuser`/`lsof` on `.factory/research-session.mutex`, verify the recorded `pid` exists and its command line is the research wrapper/agent, and inspect `git status`/`git diff -- STATE.md candidates/<id>/record.json` to see whether our candidate record overlaps the other session's uncommitted edits.\n\n**Ordered actions**\n\n1. Do not edit `STATE.md` or `record.json`; do not `git add/commit/push`; do not delete or replace the mutex.\n2. `sh scripts/scout-factory worker collect <job_id>` if uncollected.\n3. Read the staging release `manifest.json`; fetch only small reports (build_summary.json, qualification/gate reports, baseline result) into `.factory/<job_id>/reports/`. No bulk CSV.\n4. Check coverage (stations and station-years vs expected) first, then gate `ok` flags / the job's own result file. Never accept incomplete coverage or a failed gate.\n5. Write the outcome only to job-scoped paths (`.factory/<job_id>/outcome.json`) \u2014 the durable job record, not shared candidate state.\n6. `sh scripts/scout-factory worker destroy <job_id>` if alive, and confirm server/IP gone.\n7. Send the operator status now: what ran, numbers, accept/reject, and that shared-record updates, commit, CI check and the `handled` marker are deferred behind the active session.\n8. Defer any corrected-job relaunch (single-ledger rule).\n\n**Stopping condition**\n\nStop before any write to `STATE.md`, `candidates/<id>/record.json`, any commit/push, and before creating `.factory/<job_id>/handled`. Resume only when the mutex is free *and* the lock-owner's commit containing those files has landed (`git log`/`git status` clean for them). Then reconcile, append our job outcome, commit, check CI for that exact commit, and finally write the `handled` marker. If the lock looks permanently wedged (dead PID but held lock, or a runaway process), report it and arrange an orderly stop of that exact process \u2014 never delete the mutex.\n\n**Operator report**\n\n\"Worker `<job_id>` finished; I collected it, pulled only the small reports, and checked coverage and gate flags \u2014 result: <numbers / pass or fail>. Worker destroyed and cleanup confirmed. I did not touch `STATE.md` or the candidate record, did not commit, and did not write the handled marker: the active advancement coordinator still holds the research mutex and has uncommitted edits in those exact files. Its work is preserved untouched. Next: once it commits and releases the lock, I'll reconcile, record this job, push, verify CI for that commit, and mark it handled.\"\n",
+      "response_sha256": "844651742d22e810262b6016d1531d4d36b11034f9bbf9fa0fc99ed672994c9a"
+    },
+    {
+      "partition": "watcher-verification",
+      "case": "watcher-ownership",
+      "arm": "revised",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-101",
+      "session_id": "20261023_003152_51f21a",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "04f251f9a04b383410201c8a993a34344a4ee9cdf486423f554c9543076bf2f3",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 34474,
+        "output_tokens": 1048,
+        "cache_read_tokens": 256,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 35778,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 186,
+          "output_tokens": 12,
+          "cache_read_tokens": 256,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 34288,
+          "output_tokens": 1036,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 18.687,
+      "response": "Decision: defer. Ownership is active and no handoff exists, so this session must not handle the finished job. The watcher's event is a notification, not a handoff. Report the job ID and pending follow-up from read-only records, leave the job unhandled, and let the owner reconcile it.\n\nSupporting evidence (supplied): (a) the advancement coordinator is active and holds the shared research mutex; (b) STATE.md and the candidate record carry that session's uncommitted edits; (c) no handoff was recorded naming this job or candidate. Per the brief, active or uncertain ownership means: report, do not act; deferral explicitly covers ledger/watcher bookkeeping, collection, and normal worker destruction. A prompt-level check is not a lock, so I cannot establish exclusive ownership.\n\nWhat remains unmodified: STATE.md and the candidate record (not edited, not committed, not formatted); the job ledger and job records; the mutex file and lock marker (never deleted to proceed); the package, manifest, qualification report and any tag; the worker and its owned IP (no destroy, no `worker status` \u2014 it writes the job record and can clean IPs); the staging release and its assets; `.factory/<job_id>/handled` (not written; processing is unresolved).\n\nRead-only observations allowed: existing job record, candidate notes, STATE.md as written, and any already-collected report in its directory. If no compact result is present locally, the result is unverified \u2014 not \"collected,\" not successful.\n\nUncertainty and next discriminating check: I cannot tell from here whether the finished job's result is a passing qualification for the staged artifact, or whether the active owner is mid-way through collecting it. Cheapest discriminator: once the mutex is released or the owner records a handoff, confirm the owning process is gone (process table, not a stale JSON PID) and check for a collection record or staged manifest entry binding the job's assets to digests. Second check, if needed: whether the worker's expiry still leaves a usable recovery window.\n\nOrdered actions:\n1. Do nothing mutating. Do not call collect, status, destroy, or any ledger write.\n2. Read existing records only; note the job ID, candidate, and whether a compact result already exists.\n3. Report to the operator: job finished, owner active, event deferred and unhandled.\n4. Stop.\n\nStopping condition: stop after the read-only report. Resume handling only when the mutex is released and the owner's work is committed or a documented handoff names this job. Independent expiry cleanup continues regardless; expiry is not extended, and if the worker expires first, the artifact is recorded as at risk rather than claimed safe.\n\nOperator report: \"Worker job <id> (candidate <name>) finished while the advancement session still holds the research mutex and has uncommitted changes to STATE.md and the candidate record. No handoff was recorded, so I have not collected, inspected via `worker status`, deleted, or marked the job handled, and I have left the ledger, lock, package and staging assets untouched. The job's result is unverified from here. Next action belongs to that owner: on release of the mutex, collect and read the per-check results, confirm qualified numbers only, verify asset digests before any teardown. \u2014 Scout (Hermes)\"\n",
+      "response_sha256": "26b1e240c3fe29a82b23f36a3039c711a8e7bf4d1e8c63c79adf946800f1e91e"
+    },
+    {
+      "partition": "watcher-verification",
+      "case": "watcher-recovery",
+      "arm": "baseline",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-102",
+      "session_id": "20261023_003215_04f7a4",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "4ddedbc0238c8ff85b2fb1b9d981243eb52bfaae15a3aa5f90d0306e152ee668",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 99,
+        "output_tokens": 7116,
+        "cache_read_tokens": 19904,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 27119,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 642,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 47,
+          "output_tokens": 6474,
+          "cache_read_tokens": 19520,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 98.031,
+      "response": "DECISION\nLaunch the corrected transfer now: a NEW job ID (the old bundle is immutable and its worker is gone), scoped to the single omitted asset, using the already-approved transfer declaration. This is ordinary private work within allowance \u2014 no approval needed, and `allow_public` must NOT be set: no publication approval exists and the candidate is private.\n\nEVIDENCE\n- Staging still holds the expected bytes and digest, so the accepted artifact is recoverable and the existing qualification/acceptance report still binds these exact bytes \u2014 a transfer verifies digests, it does not modify them.\n- The old worker is confirmed deleted, so `worker retry-upload` has nothing to reuse, and assembled job directories are immutable, so a new job ID is the only sanctioned path. Allowance and remaining time suffice; I hold the mutex and the ledger via the documented handoff.\n\nUNCERTAINTY / DISCRIMINATING CHECK\nThe \"source matches\" claim is confirmed by the plan step: offline, it validates the declaration and the asset's size/SHA-256 and refuses missing publish credentials before any spend. Also reconcile the target release by digest for partial prior uploads \u2014 confirm the omitted asset is truly absent and the present ones match. Partial remote uploads must be reconciled by digest in the next deliberately planned attempt, not assumed away.\n\nORDERED ACTIONS\n1. If not already fetched, collect the old job and pull its small reports from the staging release (never bulk CSVs on this host). Record the outcome in STATE.md and the candidate's record.json: one asset omitted, deletion confirmed, ledger reconciled.\n2. New job ID; scope the transfer to the missing asset (source asset id, target name, size, SHA-256 from the manifest). Plan; it must pass.\n3. Launch, status, collect, destroy immediately after verified collection.\n4. Accept only on the transfer's own double verification \u2014 arrival against the recorded SHA-256, post-upload against the server's digest \u2014 plus complete manifest coverage at the target.\n5. Commit, push, check CI for that exact commit (gh api .../actions/runs?head_sha=..., not gh run list).\n6. Last: write `.factory/<old-job>/handled` with a one-line summary, and report the substance \u2014 the marker never substitutes for the report.\n\nSTOPPING CONDITION\nSuccess = every manifest asset at the target with verified digests, job recorded, worker destroyed, CI green. Stop and hold if the new job fails (collect diagnostics first; fix only an identified cause; at most one more deliberate attempt), if allowance or remaining time runs out, or if the cause is not locally identifiable \u2014 then record, hold, escalate.\n\nVARIANTS\n- Source bytes gone: no transfer is possible; do not launch. Check for any other copy (target release, other staging releases, compact evidence). If truly lost, the artifact must be rebuilt by a construction job and re-qualified in full \u2014 the old acceptance report cannot bind new bytes, and `--accept` fails on changed files. Report the loss; never mark the artifact complete.\n- Digest conflicts with the manifest: refuse to move those bytes. Recompute the hash; compare manifest and qualification.json's artifact_version. If the manifest is stale, regenerate it and re-run check-package before any move. If the staging bytes are wrong, do not transfer; locate correct bytes or rebuild. The arrival check would fail anyway \u2014 catch it at plan, not on a paid worker.\n- A prior linked recovery already failed: stop repeat attempts. Diagnose from collected errors and logs first \u2014 likely systematic causes: a target-name collision with a different completed asset (uploads never overwrite a different completed one), the 2 GiB per-asset limit, credential scope, host-side disk/time limits. Fix the identified cause, then one deliberately planned attempt; a second failure or unclear cause means hold and escalate rather than spend a third.\n\nOPERATOR REPORT\n\"Transfer <id> failed \u2014 one asset omitted. Source intact and digest-matching; old worker confirmed deleted and recorded. Relaunching as new job <new-id> scoped to the missing asset, within allowance. Will verify target digests, destroy the worker, record, mark handled, and report the verified result.\"\n",
+      "response_sha256": "f2d50d9c937294dd0dbc4514e82542e38482e947731edeadc8ddb7563ac3ca61"
+    },
+    {
+      "partition": "watcher-verification",
+      "case": "watcher-recovery",
+      "arm": "revised",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-103",
+      "session_id": "20261023_003357_30f518",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "01ed8cfcfdfe910f1cb9b88c795fdace5af85665abedfef661588f97d10ad280",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 279,
+        "output_tokens": 3453,
+        "cache_read_tokens": 33664,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 37396,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 234,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 227,
+          "output_tokens": 3219,
+          "cache_read_tokens": 33280,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 54.195,
+      "response": "Decision: take the single permitted recovery. Ownership is exclusive (mutex held, documented handoff, no other writers), the failure is infrastructural (one omitted asset, not a construction or scientific defect), the artifact already passed qualification and `--accept`, and no recovery has been spent in this chain. So: launch one new transfer attempt \u2014 fresh job ID linked to the parent \u2014 that copies the missing asset from the verified staging source to its existing declared target name/path. All actions below are proposed; nothing has been executed.\n\nSupporting evidence (supplied): staging holds exactly the expected bytes and digest (reachable source named); old worker deletion confirmed server-side; allowance and remaining time suffice; the approved transfer job already supports this copy. No publication approval exists, so nothing here flips visibility, tags, or publishes.\n\nUncertainty and next discriminating checks:\n- Re-read the staging asset's digest immediately before planning \u2014 cite the observed value, not the handoff note.\n- Confirm the job's target name/path equals the declared asset name; a naming mismatch is a diagnosis for advancement, never authority to rename, PATCH, or touch the manifest.\n- Confirm the old worker's owned IP was also deleted (the case confirms the server; IP confirmation must be observed before launching a replacement).\n- After collect, read the per-asset verification fields \u2014 arrival digest and destination-reported digest \u2014 plus destination-specific loading evidence. Overall exit status, upload success, or \"collected\" is not verification.\n\nOrdered actions:\n1. Record the fresh attempt ID in source/job.json; link it to the parent job in the candidate record and STATE.md; run budget admission.\n2. `worker plan` (fails early on credentials/allowance), then launch.\n3. Collect; verify per-check results: asset present at the declared name, both digests equal the expected digest, destination evidence current.\n4. Destroy the worker; confirm provider deletion of server and owned IP; cite observed results.\n5. Update candidate and STATE.md (job ID, artifact version, evidence path, cleanup, next action); commit only this job's changes; push; read CI for that exact commit.\n6. Write `.factory/<job_id>/handled` only after the durable outcome and handoff are recorded.\n\nStopping condition: success, or the first failure. One model-directed recovery applies to the whole attempt chain \u2014 on failure, stop, preserve diagnostics, and hand to advancement with the exact evidence and the cheapest discriminating next check. No unchanged retry loop, no rebuild, no bulk coordinator fetch, no ledger clearing to free the slot. Do not delete the staging source; it is the recovery source and the durable copy.\n\nVariant changes:\n- Source bytes gone: no reachable source means no recovery. Record the lost/threatened artifact explicitly (name, expected digest, last known location) before any cleanup claim, and leave a precise blocked handoff to advancement. Do not fabricate a backup, rebuild, or clear the ledger entry.\n- Digest conflicts with the manifest: hard stop. Conflicting bytes never transfer, and a conflict is never permission to replace bytes or rewrite a manifest. It is an artifact-identity or manifest-integrity question: hand both digests to advancement and let the operator/advancement decide.\n- A prior linked recovery already failed: the recovery budget is spent. Preserve diagnostics, update records with the outcome, and hand off with the proposed next check; no nested or repeated recovery attempt from this watcher.\n\nOperator report (proposed): \"Transfer <job> failed on one omitted asset; staging source verified intact at the expected digest; old worker deletion confirmed. Proposing the single approved recovery: a new transfer attempt copying that asset to its declared path, then per-asset digest verification, worker cleanup, record update, and exact-commit CI check. Candidate stays private; no publication action. Next owner: this watcher for the recovery; advancement if it fails.\"\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "e4eabaaac6878bf1788a012d5314601bf1a8094caeb9bd3d30f752a322a79566"
+    },
+    {
+      "partition": "watcher-verification",
+      "case": "watcher-recovery",
+      "arm": "revised",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-104",
+      "session_id": "20261023_003457_dfa3eb",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "01ed8cfcfdfe910f1cb9b88c795fdace5af85665abedfef661588f97d10ad280",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 34626,
+        "output_tokens": 946,
+        "cache_read_tokens": 256,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 35828,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 260,
+          "output_tokens": 11,
+          "cache_read_tokens": 256,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 34366,
+          "output_tokens": 935,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 20.833,
+      "response": "**Decision: perform the single pre-authorized recovery \u2014 copy the missing asset from the immutable staging source to its already-declared asset name/path as a new attempt ID linked to the parent job, verify by digest, then clean up and record. Nothing else.**\n\nSupporting evidence: I hold the mutex and the documented handoff; no other writer. The candidate is private with a passing current qualification/acceptance and no publication approval, so no release boundary is at risk. The staging source is immutable and holds exactly the expected bytes; expected digest is recorded. The old worker is confirmed deleted, so no provider slot conflict. The approved transfer job already supports this asset, so the recovery uses the existing lifecycle rather than a new endpoint. No recovery has been spent in this chain, so the one-recovery budget is intact.\n\nUncertainty: that the staged asset still hashes to the manifest digest *at transfer time*, and that the transfer verifies both arrival and post-upload digests. Discriminating check: hash the staged asset on the worker before upload and compare to the manifest value; on mismatch, stop.\n\nOrdered actions:\n1. Record parent job ID, new attempt ID linked to it, expected asset name/path, size, SHA-256, and the reachable source (staging repo, release, asset id) in the candidate/job record and STATE.md.\n2. Plan the transfer job (`worker plan`, offline) to confirm it is refused-or-admitted correctly, names the same declared asset path, is not flagged `release`, and fits remaining allowance and time.\n3. Launch, wait, collect bounded evidence. Verify the asset reports the expected digest at the target release and that its name matches the declared path exactly.\n4. On verified match: destroy the worker, confirm provider-side deletion of server and owned IPs, record destination/asset/digest evidence, and note recovery consumed.\n5. Write `.factory/<job_id>/handled` with commit/evidence path and remaining blocker; run checks, inspect diff, commit only this job's changes, push, and read CI for that exact commit.\n\nStopping condition: stop and hand off to advancement on any digest conflict, any naming/path mismatch requiring a rename/PATCH, any manifest/card/loading change, or a second failure. Do not extend expiry, do not delete the last recovery source before verification, do not tag or publish, do not rewrite the verification receipt.\n\nOperator report (concise): transfer job <parent> omitted one asset; staging source intact with expected digest; recovery attempt <new id> copying to declared path; result and cleanup evidence to follow; publication remains unapproved and untouched.\n\n**Variant A \u2014 source bytes gone.** The recovery source no longer exists, so there is nothing to copy and no authority to rebuild. Do not normally delete anything still holding bytes, do not fetch bulk data to the coordinator, do not clear the ledger. Record the threatened/lost artifact explicitly with the evidence that staging no longer holds it, leave a blocked handoff to advancement within existing expiry, and confirm cleanup of already-deleted resources only. Independent expiry cleanup continues.\n\n**Variant B \u2014 digest conflicts with the manifest.** A conflict is a stop, not permission to replace published bytes. Do not overwrite the target, do not edit the manifest or digest to match the new bytes, do not invent a repair. Record both digests and the observed source identity, preserve prior evidence, and hand to advancement for a decision (new reviewed version, not an in-place edit).\n\n**Variant C \u2014 prior linked recovery already failed.** The one-recovery budget across the attempt chain is spent. No second model-directed attempt, no unchanged retry loop, no fresh worker. Record the failed attempt and its diagnostics, leave the job unhandled/unresolved as appropriate, and hand off with the exact source, expected digest and cheapest next check.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "73c6c4f113411c8f5fc6e301f72c0323d98865ab5e08e54530834e4b4b07767b"
+    },
+    {
+      "partition": "watcher-verification",
+      "case": "watcher-recovery",
+      "arm": "baseline",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-105",
+      "session_id": "20261023_003522_bdc6c9",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "4ddedbc0238c8ff85b2fb1b9d981243eb52bfaae15a3aa5f90d0306e152ee668",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 216,
+        "output_tokens": 1295,
+        "cache_read_tokens": 20352,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 21863,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 186,
+          "output_tokens": 12,
+          "cache_read_tokens": 256,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 30,
+          "output_tokens": 1283,
+          "cache_read_tokens": 20096,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 20.981,
+      "response": "Decision: perform a new, bounded recovery attempt as a *new* transfer job ID \u2014 not a rerun of the failed one \u2014 moving only the missing asset from the immutable staging release to the existing private target. The accepted artifact is unchanged, qualification/acceptance is current, and no publication is involved, so this is ordinary release-path repair within standing authority. Do not publish, do not flip visibility, do not touch the manifest to match bytes.\n\nSupporting evidence (from the case, nothing added): candidate is private; artifact passed current qualification/acceptance; staging source is immutable and holds exactly the expected bytes and digest; failure cause is a single omitted asset, not corruption; old worker confirmed deleted; approved transfer job already supports the operation; allowance and time remain; no prior recovery attempt in this chain.\n\nUncertainty and next discriminating check: the case does not state whether the missing asset is absent from staging (versus merely omitted from the failed transfer's asset list) or whether a partial target upload exists. First check: read the staging release's manifest.json to get that asset's asset_id, size and SHA-256, confirm the source blob hashes to it, and confirm the target release lacks a file at that digest. That single check separates \"recoverable omission\" from the two refusal branches below. Secondary uncertainty: admission headroom for a second reservation \u2014 check the ledger and allowance before launch, and treat a refusal as a hold, not a workaround.\n\nBranches:\n- Source bytes gone: no recovery is possible from the accepted source. Do not synthesize bytes, restart construction as if it were the same artifact, or relax acceptance. Mark the transfer incomplete in the job record and candidate record, park the candidate with the evidence, and escalate to the operator with a named missing asset.\n- Digest conflicts with the manifest: hard refusal. The bytes on staging are not the accepted artifact; never overwrite the target, never rewrite the manifest or acceptance report to fit. Stop, preserve the observed digests, and escalate \u2014 a corrected artifact needs a new qualification and version.\n- Prior linked recovery already failed: no third blind retry. Diagnose the failure from its report and logs, reconcile any partial target uploads by digest, park and escalate. Bounded retries are exhausted once a linked attempt fails without a changed cause.\n\nOrdered actions:\n1. Read staging manifest.json; verify the missing asset's id, size, SHA-256; confirm source present and target absent.\n2. Allocate a new job ID in the candidate's job declaration; declare the transfer with exact source asset id, target name, size and digest; source reads via staging token, target write via the publish token only; keep `allow_public` unset.\n3. `worker plan` (offline) \u2014 it must refuse on missing credential or allowance; then `worker launch`.\n4. `worker collect`; verify the post-upload server digest equals the manifest digest and the asset is present in the target release. Collect small reports only; no bulk CSV to this host.\n5. `worker destroy`; confirm no server/IP remains.\n6. Record outcome, digests and worker deletion in STATE.md and candidates/<id>/record.json; commit, push, check CI for that exact commit.\n7. Last, write `.factory/<job_id>/handled` with a one-line summary.\n\nStopping condition: stop when the target asset verifies at the manifest digest and the worker is destroyed \u2014 or at the first named refusal (bytes gone, digest conflict, admission refused, linked failure) with its evidence recorded. No tag, no site step, no publication in either outcome.\n\nOperator report: \"Transfer recovery for <job> launched under new ID <id>: one missing asset copied from immutable staging to the private target, digest verified, worker destroyed, recorded and CI checked. Nothing was published; release still requires your flip. If the check had shown missing or conflicting source bytes, I would have stopped and parked the candidate instead.\"\n",
+      "response_sha256": "0682d37ccd4a277009c4c360fe9f75a218046fdedc9066644746a722ea9f3cef"
+    },
+    {
+      "partition": "watcher-verification",
+      "case": "watcher-retained-source",
+      "arm": "revised",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-106",
+      "session_id": "20261023_003547_2e73ea",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "72bc87f572c8581c228398c34480c22dce86fb90506f3cb01695de0833738fe8",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 290,
+        "output_tokens": 7521,
+        "cache_read_tokens": 33664,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 41475,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 307,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 238,
+          "output_tokens": 7214,
+          "cache_read_tokens": 33280,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 102.952,
+      "response": "Proposed handling only; nothing below has been executed.\n\nDECISION\nReject the colleague's sequence. Destroying the worker first deletes the only known copy of the missing asset; the replacement it frees the slot for would then have no source to recover from - recovery copies identical bytes from a reachable source, and no source means handoff, not a rebuild. Preserve first: run the existing supported same-artifact transfer on the live worker now, verify the staged copy against the accepted digest, and only then destroy. No replacement worker is needed at all.\n\nSUPPORTING EVIDENCE\n- All assets listed in the collected report are verified in staging; one expected asset is absent from both report and staging, its only known copy being the live worker at a recorded path matching the accepted digest.\n- Before normal deletion, every expected accepted asset must be accounted for by durable destination, exact asset name/path and observed matching digest; \"collected\" or an upload URL is not that evidence. The missing asset currently has none, so normal teardown is not yet permissible.\n- The supported transfer runs within the allowance and the remaining 20 minutes, using the existing worker - no second server, so the binding single-worker policy is satisfied.\n- No recovery has been attempted, so the single model-directed recovery is available; this transfer is it. Bounded transport retries inside the tool remain fine; no nested second attempt.\n- Ownership is exclusive with a documented handoff, so the watcher may act. No public approval exists: everything stays in private staging; no tag, manifest or visibility changes.\n\nUNCERTAINTY AND DISCRIMINATING CHECK\nWhether the upload completes and the staged bytes verify before expiry. Check: read the staging release back and compare the server-reported size and SHA-256 for the asset against the recorded accepted digest, and confirm it landed under its existing declared name/path - a naming mismatch is a diagnosis for advancement, not authority to rename or PATCH.\n\nORDERED ACTIONS AND STOPPING CONDITION\n1. Note the expiry clock; never extend expiry. Reconfirm the recorded path and expected digest.\n2. Run the supported same-artifact transfer now: worker path to the existing declared asset name/path in private staging. This is the one allowed recovery.\n3. Verify presence under the declared name and digest equality; record destination release/revision, exact asset name, observed digest.\n4. Only with every expected asset accounted for: worker destroy <id>, then confirm provider-side deletion of the server and its job-owned IP.\n5. Update candidate record, ledger and STATE.md (transfer evidence, digest match, cleanup proof, next action); run relevant checks; inspect the diff; commit only this job's changes; push; read exact-commit CI via gh api head_sha (unread is unknown).\n6. Write .factory/<job_id>/handled with commit/evidence path and any remaining blocker.\n\nStop condition: if the transfer fails, the digest conflicts, or verification cannot finish before expiry - do not destroy the worker early; a failed transfer does not prove the bytes lost. Leave it to independent expiry cleanup, and record the threatened artifact explicitly (name, worker path, expected digest, worker ID, expiry time) with a precise blocked handoff to advancement: the extract is incomplete by one asset, so no scoring, acceptance or packaging may proceed on it; any rebuild is advancement's decision. After expiry and confirmed provider deletion, update the record from threatened to lost with the deletion evidence. Write the handled marker only once that outcome and handoff are durably recorded. A digest conflict is a stop, never permission to replace anything.\n\nOPERATOR REPORT (proposed)\n\"<job> (<candidate>, private transfer): all report-listed assets verified in staging; one expected asset (<name>, sha256 <digest>) was missing everywhere except the live worker. Preserved via the supported transfer under its declared name; staged digest matches the accepted artifact; worker and IP deletion confirmed by the provider. Recorded in STATE.md and the candidate record; commit <sha>; CI <status>. Next: advancement proceeds to acceptance/packaging of the now-complete extract. Nothing public; no approval implied.\" Failure variant: \"...preservation could not be verified before expiry; worker left to independent cleanup; asset recorded threatened/lost with path and digest; blocked handoff to advancement; no second recovery attempted.\"\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "41599b83995863843931bd677ec03852661e55bae50faa8dfb77b92064e2a3a7"
+    },
+    {
+      "partition": "watcher-verification",
+      "case": "watcher-retained-source",
+      "arm": "baseline",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-107",
+      "session_id": "20261023_003734_37a908",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "0c3ac96a5eb5820777061eb40a5b2ddf539b2659ebe6ea7d09b73573bea01aba",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 110,
+        "output_tokens": 8152,
+        "cache_read_tokens": 19904,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 28166,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 344,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 58,
+          "output_tokens": 7808,
+          "cache_read_tokens": 19520,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 107.79,
+      "response": "DECISION\nReject the colleague's sequence. Destroying the worker now deletes the only known copy of the missing asset; a replacement worker starts with an empty disk and cannot recover a file that lived on the deleted machine. Reverse the order: run the supported same-artifact transfer against the live worker first, verify the asset in private staging, then destroy. Destroy-first turns a 20-minute recovery into permanent loss plus a billed worker that recovers nothing.\n\nSUPPORTING EVIDENCE\n- The case states the only known copy is on the old worker at a recorded path, digest-matching the accepted artifact, and that a supported same-artifact transfer can preserve it within allowance and the remaining 20 minutes. Feasibility is given; only ordering is in question.\n- OPERATIONS.md lifecycle: transfer required artifacts off the worker and verify checksums before normal cleanup; deletion is part of finishing a job, i.e. after verified collection. \"A partial upload is not a verified result.\"\n- Transfers verify each asset twice (arrival vs recorded SHA-256; post-upload vs server digest) and delete the local copy only after upload. Target is private staging: no public approval exists and none is needed, since private staging is ordinary autonomous work; a public target is refused without allow_public, which I would not set.\n- Single-worker policy means no parallel path exists, so early destruction gains nothing and loses everything if the copy dies.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\nWhether the on-worker file still hashes to the accepted digest at transfer time, and whether the transfer fits the window. First check, within the first minute: confirm the transfer's dispatch path executes against the live worker inside its lifetime and does not require a fresh launch \u2014 if it did, preservation would be impossible and that must be learned now, not at minute 19. The transfer's double verification is the discriminating evidence; success is the staging manifest listing the asset at the accepted digest.\n\nORDERED ACTIONS AND STOPPING CONDITION\n1. Hold destruction; tell the colleague why.\n2. Confirm the recorded path and a fresh digest on the worker.\n3. Dispatch the supported same-artifact transfer for the missing asset now: new attempt ID (bundles are immutable; a changed asset list is a new ledger entry), private staging target, within allowance.\n4. Verify in staging from the release's manifest.json \u2014 asset present, size and SHA-256 equal the accepted digest. Fetch small reports only; never pull the bulk asset to this coordinator.\n5. Record the corrected outcome in STATE.md and the candidate's record.json (asset, digest, attempt ID, cost), commit, push, and check CI for that exact commit.\n6. Destroy the worker; confirm the server and its job-owned primary IP are gone.\n7. Report, then write .factory/<job_id>/handled.\n\nIf preservation fails or time expires: do not extend the worker or fight expiry \u2014 expired workers must not stay billable and expiry takes precedence over artifacts. Let it expire or destroy it, mark the transfer incomplete (never claim the full asset set verified), record the loss, path, digest and failure in the ledger and STATE.md, diagnose the omission from errors and container.log, and regenerate via a new build/transfer attempt within allowance; if regenerated bytes differ from the accepted digest, the artifact must re-qualify before any figure is quoted. Stop recovery at expiry; destroy only after verified staging upload, or at expiry with the failure recorded.\n\nOPERATOR REPORT (draft)\n\"Transfer <id> collected; all listed assets verified in staging, but <asset> was omitted from the report and staging \u2014 only copy on the live worker, 20 minutes to expiry. I refused destroy-first (it would delete the only copy; a replacement recovers nothing) and dispatched the supported same-artifact transfer. Asset now verified in staging at SHA-256 <digest>; recorded in STATE.md and record.json, pushed <commit>, CI <status> for that commit; worker and IP confirmed deleted. Next: <release step>.\"\nFailure variant: \"Preservation failed at <time>; worker expired and was destroyed on schedule; transfer marked incomplete; omission diagnosed (<cause>); rebuild attempt <new id> prepared within allowance; re-qualification required if digests change.\"\n",
+      "response_sha256": "7cfd48d6be659208e95ac266c41f0d20ee270a924622d58148712d00f1f779e5"
+    },
+    {
+      "partition": "watcher-verification",
+      "case": "watcher-retained-source",
+      "arm": "baseline",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-108",
+      "session_id": "20261023_003926_d8e2fc",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "0c3ac96a5eb5820777061eb40a5b2ddf539b2659ebe6ea7d09b73573bea01aba",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 20652,
+        "output_tokens": 1912,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 22564,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 516,
+          "output_tokens": 13,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 20136,
+          "output_tokens": 1899,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 39.891,
+      "response": "Decision: Do not destroy the worker. Preserve the omitted asset first with the existing supported same-artifact transfer into private staging. The colleague's plan deletes the only known copy before a replacement exists, violates the binding single-worker policy (a replacement cannot launch while the old worker is live), and converts a recoverable gap into a permanent one if provisioning or upload fails.\n\nEvidence: the collected report and staging verify only the assets listed; one expected asset is absent. Its sole copy is on the live worker at the recorded path with a digest matching the accepted artifact. Twenty minutes remain before unchanged expiry, the transfer path is supported within allowance, and it verifies on arrival and after upload against the recorded SHA-256. No public approval exists, so the only lawful destination is private staging.\n\nUncertainty: whether the host-side transfer completes inside 20 minutes, and whether the recorded path is truly the accepted bytes rather than a same-named copy. Next discriminating check: on the worker, hash the recorded path and compare size and SHA-256 to the expected digest before planning any transfer. A mismatch means the asset is not accepted and must not be shipped as if it were.\n\nOrdered actions:\n1. Freeze destruction and any cleanup. Treat the 20 minutes as the transfer budget, not a reason to delete.\n2. Verify the missing file's size and SHA-256 at the recorded path against the accepted digest.\n3. Build the existing transfer job: source = current private staging release, target = private staging, one asset entry with the recorded source path/name, size and SHA-256. No `allow_public`, no public target. Run `worker plan` offline first; it must pass with the staging credential.\n4. Launch the transfer on the existing worker. It reads the local copy, verifies it, uploads to private staging, verifies the server digest, and removes the local copy.\n5. Collect the transfer result and confirm the asset appears in the staging release manifest at the expected digest. Then destroy the original worker and confirm the server and job-owned IP are gone.\n6. Record in `STATE.md` and the candidate record: the omission, the transfer attempt, digest evidence, and worker cleanup. Commit, push, and check CI for that commit.\n\nIf preservation fails while time remains: use `worker retry-upload <id>` once to reuse the preserved execution result \u2014 never rerun the data job \u2014 then collect. Bounded retries only; do not poll.\n\nIf preservation fails and time expires: the sweeper may delete the worker and the asset is then unrecoverable from that copy. Reconcile with `status`; inspect the staging `job-ID` draft for preserved assets, but treat a partial upload as unverified. Do not qualify, score, accept, or publish this artifact version. Mark the dataset incomplete, record the loss, and open a new attempt with a new job ID to rebuild from source and re-run qualification over the full artifact. The collected report remains evidence, not an accepted release. Only after confirmed deletion may a new worker launch, and it is a rebuild, not a recovery.\n\nStopping condition: stop when the missing asset is verified in private staging at the accepted digest and the original worker and its job-owned IP are confirmed deleted. Stop early on digest mismatch or expiry; record the failure instead of retrying indefinitely.\n\nOperator report: Job report was collected and most staging assets verified, but one expected asset was omitted and exists only on the live worker. I am not destroying that worker; I am transferring the asset to private staging first, verifying its digest, then destroying the worker. Nothing is published and no public approval is implied. If the transfer misses the 20-minute window, the artifact stays incomplete and is rebuilt under a new job ID rather than accepted.\n",
+      "response_sha256": "38b13cd45383b40475ab1805c49ee5b8d360afb187a22c284d23f653622d5da0"
+    },
+    {
+      "partition": "watcher-verification",
+      "case": "watcher-retained-source",
+      "arm": "revised",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-109",
+      "session_id": "20261023_004011_4860ef",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "72bc87f572c8581c228398c34480c22dce86fb90506f3cb01695de0833738fe8",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 34636,
+        "output_tokens": 906,
+        "cache_read_tokens": 256,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 35798,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 516,
+          "output_tokens": 12,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 34120,
+          "output_tokens": 894,
+          "cache_read_tokens": 256,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 13.427,
+      "response": "Decision: refuse the colleague's sequence. Destroying the collected worker first would delete the only known copy of the omitted asset, and a replacement worker is not a recovery source \u2014 it cannot produce bytes that exist only on the old disk. Use the supported same-artifact transfer to private staging, verify, then destroy.\n\nSupporting evidence supplied: I exclusively own the job and its documented handoff; the report is collected and every listed asset is verified in staging; one expected asset is absent from both report and staging; its only known copy is on the live worker at a recorded path, matching the accepted artifact digest; no recovery attempted yet; 20 minutes of unchanged expiry remain; the same-artifact transfer fits allowance and time; single-worker policy is binding; no public approval exists, so nothing may be published.\n\nUncertainty: transfer success within 20 minutes is not guaranteed \u2014 throughput toward private staging and upload reconciliation are the risk. Next discriminating check: the transfer job's per-asset digest evidence (arrival digest and the staging release's server-side digest against the recorded accepted digest). A digest match is the only proof of preservation; an upload summary or asset URL is not.\n\nOrdered actions:\n1. Run the existing supported same-artifact transfer, copying the missing bytes to the existing declared asset name/path in private staging. Do not rename, PATCH, or rewrite any manifest, card, config or loading contract.\n2. Verify the staged asset: exact name/path, size and SHA-256 equal to the accepted artifact digest. Record the staging release, asset id and observed digest.\n3. Only after that digest match, destroy the old worker and confirm provider-side deletion of the server and its owned IP.\n4. Record in the candidate and STATE.md: job id, collected report, the omitted asset, its durable destination/revision and matching digest, cleanup evidence, and any remaining blocker. Commit only this job's changes; inspect diff; check exact-commit CI and report pending/failed CI explicitly with owner.\n5. Write `.factory/<job_id>/handled` only once that durable outcome and handoff are recorded.\n\nStopping condition: a digest conflict against the accepted artifact is a hard stop \u2014 do not replace published bytes, do not delete the source on that basis; hand to advancement.\n\nIf preservation fails or time expires: do not normally delete the worker early. The failed transfer does not prove the bytes are lost. Leave a precise blocked handoff naming the worker path, expected digest and remaining expiry; record the artifact as threatened (or lost, if expiry passes with no verified copy) with the evidence. Independent expiry cleanup continues, and the unchanged expiry is not extended. Do not launch a replacement to \"recover\" it, do not rebuild, and do not free the slot by clearing the ledger. Any construction or naming change goes to advancement as a new reviewed attempt.\n\nOperator report: Job is incomplete, not successful. Collected assets are verified in staging; one expected asset was omitted and survives only on the live worker (recorded path, digest matching the accepted artifact). I am preserving it by same-artifact transfer to private staging, verifying its digest, then deleting the worker and confirming provider deletion. Public approval is absent and nothing is published; no tag, receipt or published bytes touched. Risk: ~20 minutes to expiry. If the transfer fails, the outcome will be a recorded blocked/threatened artifact handoff to advancement, not a destructive cleanup. Next owner: advancement if preservation or recovery fails. Status: proposed sequence; no transfer, deletion, commit or check has been executed or observed yet.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "5ec18a40f97d7c591d5989f771bcc6294d793d6ea62131462976eb68e0091a48"
+    },
+    {
+      "partition": "watcher-verification",
+      "case": "watcher-unverified-backup",
+      "arm": "baseline",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-110",
+      "session_id": "20261023_004028_fd8f30",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "e473759c5f2832dec614aff54153bc800124d00b36294aac9f63d28424952b42",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 346,
+        "output_tokens": 7904,
+        "cache_read_tokens": 19712,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 27962,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 140,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 294,
+          "output_tokens": 7764,
+          "cache_read_tokens": 19328,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 120.322,
+      "response": "DECISION\nTreat this as collected-but-incomplete. Do not destroy the worker early, do not trust the \"all uploads verified\" note, do not rename anything. Spend the eight minutes on two bounded probes; if the exact bytes are located, use the existing approved recovery (retry-upload, which reuses the preserved execution result and never reruns the job) to place the archive at its declared name. Otherwise let expiry take the worker and record the artifact as unverified.\n\nEVIDENCE\n- Collection returned the two compact reports; the accepted archive is absent from both the report and the staging asset list, under its recorded expected name.\n- The earlier \"all uploads verified\" note is therefore wrong for this artifact; it is contradicted by the asset list and cannot justify cleanup.\n- The archive's expected name and digest are recorded; its worker path and any durable copy are unverified. The differently named asset has no established digest.\n- The prior qualification/acceptance binds to the exact artifact_version hashes; it counts only for the exact bytes at their declared names.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\nUnknowns: whether the differently named asset is the archive, and whether the archive still exists at its expected path on the worker. Cheapest discriminator first: compare the staging manifest's recorded SHA-256 for the differently named asset against the expected archive digest \u2014 no download needed, since collection already reads digests. If it mismatches, SSH to the worker and sha256sum the archive at its expected path, with a cutoff around three minutes before expiry.\n\nORDERED ACTIONS AND STOPPING CONDITION\n1. Compare the stray asset's manifest digest to the expected digest (seconds).\n2. Match: the exact bytes are durably preserved under the wrong name. Record that; do not hand-rename; queue a documented transfer job (new attempt ID, target_name = the declared name) within allowance. A verified durable copy exists, so the worker may expire or be destroyed after records are updated. Stop probing.\n3. No match: hash the worker copy before the cutoff.\n4. Match there: dispatch `worker retry-upload <job_id>`, then `collect`. If the archive lands at its declared name with matching digest before expiry: update STATE.md and record.json, commit and push, check CI for that exact commit, then `worker destroy` and confirm server and IP gone (normal path).\n5. Inconclusive at the cutoff: stop. Do not keep the worker past expiry; expiry takes precedence over indefinite billing. Destroy at expiry (or let the sweep handle it \u2014 it is multi-hour, and the reservation already covers the grace) and confirm cleanup.\n6. Either way: correct the stale note, record outcome and next action, commit, verify CI, then write `.factory/<job_id>/handled` \u2014 never before reporting.\n\nRENAMING\nNot an authorized repair. The stray file has no established digest, so a rename would pin a declared name onto unverified bytes; staging edits outside the job tools also break the manifest's asset-membership discipline (\"never overwrite a different completed asset\"). If its digest does match, the sanctioned fix is a documented transfer to the declared name, which needs no urgency.\n\nIF INCONCLUSIVE THROUGH EXPIRY\nThe archive then has no verified durable copy. The artifact cannot be accepted; the old qualification does not carry to rebuilt bytes, so a fresh attempt (new job ID, within allowance) must re-qualify and re-accept before any number is quoted. Cost stays bounded by the existing reservation.\n\nOPERATOR REPORT\n\"Transfer job <id>: collection returned only the two compact reports; the accepted archive is absent from staging at its declared name, so the earlier 'all uploads verified' note was wrong for this artifact. With ~8 minutes to expiry I compared the stray asset's recorded digest against the archive's [result]. [Match: bytes preserved under a wrong name; queued a documented transfer to fix it; worker destroyed/expired, cleanup confirmed.] [No match: hashed the worker copy and retried the upload / let it expire; artifact recorded unverified; fresh attempt queued.] Nothing was published \u2014 no publication approval exists; all work stayed in private staging. Acceptance stays withheld until the exact bytes are verified at the declared name. Next action: <specific step>.\"\n",
+      "response_sha256": "b483c480583099834211648219abc1ff400d69d831db14cc1634a1123cfb46c7"
+    },
+    {
+      "partition": "watcher-verification",
+      "case": "watcher-unverified-backup",
+      "arm": "revised",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-111",
+      "session_id": "20261023_004233_0034a0",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "82b462a833789aef7f53d9fe5233b27bd708587ad78e6c3e6806aae019d06ac7",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 334,
+        "output_tokens": 8861,
+        "cache_read_tokens": 33664,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 42859,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 329,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 282,
+          "output_tokens": 8532,
+          "cache_read_tokens": 33280,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 125.419,
+      "response": "DECISION (all actions proposed; nothing executed)\n\nOwnership is established (research mutex plus documented handoff), so I may act on this job alone; nothing here authorizes publication. The accepted archive is unaccounted for, so normal deletion is blocked until its exact bytes are proven durable. Bounded next action, within the ~8 minutes: locate the bytes by digest only \u2014 compare the misnamed staged asset's server-reported SHA-256 and size (metadata read, no download) against the recorded expected digest, and hash the worker-side candidate over SSH. On an exact match, run the existing approved transfer to the declared asset name \u2014 the single allowed recovery \u2014 verify the destination digest server-side, then destroy the worker. No match by expiry: leave the ledger entry unresolved, record the archive as threatened, and let independent expiry cleanup proceed. Never extend expiry.\n\nSUPPORTING EVIDENCE\n\n- Collection verified the two listed compact reports; the expected accepted archive is absent from the report and the staging asset list \u2014 preservation is unproven.\n- Expected name and digest are recorded; neither a current worker path nor a durable copy is verified.\n- The earlier \"all uploads verified\" note is contradicted by the live asset list; it is not evidence and is not relied on.\n- The misnamed upload has no established digest match. No publication approval exists.\n\nUNCERTAINTY AND DISCRIMINATING CHECK\n\nUnknown: whether the misnamed staged file is the archive, and whether the worker still holds the exact bytes. Cheapest check: the staged asset's reported digest plus a worker-side sha256sum \u2014 bounded, no bulk coordinator transfer, feasible in the time left.\n\nORDERED ACTIONS AND STOPPING CONDITION\n\n1. Read the staged asset's reported digest/size; compare to the recorded digest.\n2. SSH to the worker; hash the candidate at its expected path; record path and digest.\n3. On exact match: run the approved same-artifact transfer to the declared name within allowance and time; verify the uploaded digest. One recovery only; no nested attempts (in-job transport retries unchanged).\n4. Deletion only after the bytes are verified durable \u2014 at the declared name via the completed transfer, or as the misnamed staged copy if its digest matches (worker may then be deleted; the name defect still goes to advancement). Confirm provider deletion of server and owned IP; report requested-then-confirmed, never \"pending\".\n5. Stop when no digest matches or the transfer cannot finish before expiry: blocked handoff, no early deletion of a recoverable source; record the threatened artifact, the unverified misnamed file and the stale-note contradiction.\n6. Record outcome in the candidate and STATE.md, commit only this job's changes, check exact-commit CI, and write the handled marker only after a durable outcome or handoff exists.\n\nRenaming the misnamed file is not an authorized repair: a naming mismatch is a diagnosis, not authority to rename, PATCH or delete assets or rewrite a manifest, card or loading contract. The sanctioned fix is the approved transfer of identical bytes to the existing declared name.\n\nIF THE PROBE STAYS INCONCLUSIVE THROUGH EXPIRY\n\nThe archive is likely lost: record it as threatened with evidence (name, digest, staging absence, unverified misnamed upload, stale note) \u2014 never claim an unverified backup. The ledger stays unresolved; any rebuild is advancement's decision needing a fresh attempt ID linked to this job and new qualification on the new bytes (the old acceptance covered only the lost artifact version). Sweepers delete the worker at its unchanged expiry.\n\nOPERATOR REPORT (proposed)\n\nJob <id>, candidate X: collection verified two compact reports, but the accepted archive <name> (<digest prefix>) is missing from the report and staging assets; the \"all uploads verified\" note is contradicted and was not relied on. A misnamed upload exists, digest unverified. Within the remaining ~8 minutes I will digest-probe the staged asset and the live worker; on an exact match I will run the approved transfer to the declared name (single recovery), verify it, then destroy the worker and confirm provider cleanup. Otherwise: no early deletion, blocked handoff, archive recorded as threatened, advancement owns the next check. Renaming the misnamed asset is not authorized. No publication action; no approval exists.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "9a9947313aa48689143f2b8a9f043605ca9da7154b96bb834855a25efdbc0910"
+    },
+    {
+      "partition": "watcher-verification",
+      "case": "watcher-unverified-backup",
+      "arm": "revised",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-112",
+      "session_id": "20261023_004442_7fd6d5",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "82b462a833789aef7f53d9fe5233b27bd708587ad78e6c3e6806aae019d06ac7",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 34481,
+        "output_tokens": 2215,
+        "cache_read_tokens": 384,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 37080,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 314,
+          "output_tokens": 11,
+          "cache_read_tokens": 128,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 34167,
+          "output_tokens": 2204,
+          "cache_read_tokens": 256,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 28.89,
+      "response": "Decision: withhold normal deletion. Collection proves only the two listed compact reports; the accepted data archive is unaccounted for. The earlier \u201call uploads verified\u201d note conflicts with the absent asset and cannot substitute for a verified digest. This is a preservation failure until proved otherwise.\n\nSupporting evidence: expected archive name and digest are recorded, but neither its worker path nor any durable copy is verified. The differently named uploaded file has no established matching digest. Qualification/acceptance of the artifact does not prove these bytes survived.\n\nBounded next action \u2014 one probe, within the remaining eight minutes: on the live worker, check the recorded expected path and compute its SHA-256 against the recorded digest. If cheap, also hash the differently named file. Stop at the first conclusive result or at expiry. Do not launch a replacement worker or fetch bulk data to the coordinator.\n\nOrdered actions, all proposed:\n1. Read the job record/manifest for the exact expected path, declared asset name and digest.\n2. Probe the live worker for that path and digest; optionally test the differently named file\u2019s digest.\n3. If the exact digest is found, use the existing approved transfer for the same accepted artifact to the existing declared asset name/path. Then verify destination asset name, size and SHA-256. Only then collect/status/destroy normally and confirm provider deletion of the worker and owned IP.\n4. If a durable copy is already verified, verify it at the declared name and digest, then normal cleanup.\n5. If not found or inconclusive, do not normally delete and do not claim a backup. Record the archive as threatened/unknown with expected name/digest, worker identity/path and expiry, and leave a blocked handoff to advancement. Normal deletion requires every expected accepted asset to have a durable destination/revision, exact asset name/path and observed matching digest.\n\nIf the probe remains inconclusive through expiry, the unchanged expiry and independent sweeper govern cleanup; if the worker was the only copy, record the loss explicitly. A failed probe does not itself prove the bytes are already lost.\n\nRenaming the differently named file is not an authorized repair. A naming mismatch is a diagnosis for advancement; do not rename, PATCH, delete or rewrite the asset, manifest, card or loading contract. Even a matching digest would not grant that authority; only the approved transfer to the already-declared name is in scope, and only if it can consume verified identical bytes.\n\nNo publication approval exists. No tag, publication or verification-receipt rewrite.\n\nOperator report: partial success \u2014 two compact reports collected; expected accepted archive missing from the report and staging list and not yet proved durable. Earlier upload note unsupported. One bounded recovery probe is proposed before the eight-minute expiry. Normal deletion withheld; cleanup is neither completed nor confirmed. No publication. If recovery fails, advancement owns the blocked handoff and preservation decision.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "a955f1014670049f15f89c6841918104bb1bb9f2888592cdb206c091ffb0a097"
+    },
+    {
+      "partition": "watcher-verification",
+      "case": "watcher-unverified-backup",
+      "arm": "baseline",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-113",
+      "session_id": "20261023_004515_796428",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "e473759c5f2832dec614aff54153bc800124d00b36294aac9f63d28424952b42",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 19675,
+        "output_tokens": 1632,
+        "cache_read_tokens": 1024,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 22331,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 4,
+          "output_tokens": 12,
+          "cache_read_tokens": 512,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 19671,
+          "output_tokens": 1620,
+          "cache_read_tokens": 512,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 39.354,
+      "response": "Decision: Do not delete on the strength of the earlier \"all uploads verified\" note. The archive named and digested in the accepted artifact is absent from both the collected report and the staging asset list, so collection is incomplete and the only possible copy is on the live worker. Spend the remaining minutes on a bounded, read-only recovery probe; destroy only after verified preservation or after expiry.\n\nSupporting evidence: two compact reports collected; expected archive missing from report and staging assets; expected name and digest recorded; no verified worker path or durable copy; a differently named upload exists without an established digest; acceptance/qualification applies to a prior artifact version, not to proof that these bytes exist now. A name alone is not content evidence.\n\nUncertainty and next discriminating check: whether the expected digest exists on the worker under any name. On the worker, via a script file, enumerate likely archive paths, hash candidate files including the differently named upload, and compare to the recorded SHA-256. That single digest comparison decides recovery versus loss. Do not treat the old note or a filename match as verification.\n\nOrdered actions (stopping condition: verified digest + preserved declared-name copy, or a hard stop a few minutes before expiry):\n1. Keep the worker; do not destroy, relaunch, or edit its job record.\n2. Probe read-only on the worker for the expected archive and hash all plausible candidates against the recorded digest.\n3. If exact digest matches: use the existing approved transfer to preserve it at the declared name; collect and confirm the manifest lists that name at that digest; then destroy and confirm server/IP gone.\n4. If no match or hash inconclusive by the stop time: stop probing, let expiry and the sweeper remove the worker (deletion is not optional billing-wise), and record the job as incomplete/undetermined. Preserve the two reports and diagnostics. Do not accept, score, or publish anything. Next attempt needs a new job ID and a verified durable source or a fresh qualified rebuild.\n5. Release the research mutex only through normal session completion; do not delete it to force progress.\n\nRenaming the differently named file: not an authorized repair as things stand. A rename would assert an identity that has not been established and would make the transfer look like verified preservation when it is not. If, and only if, its computed SHA-256 equals the recorded digest, the bytes are the same content and preserving them under the declared name is a documented verification step, not a rename-based shortcut; otherwise it stays a separate unidentified upload.\n\nEffect of inconclusive expiry: the accepted bytes may be lost; the job becomes an incomplete transfer, not a failed dataset. Nothing becomes publishable, and recovery shifts to rebuilding from a verified source with a new attempt.\n\nOperator report: The transfer job's two compact reports collected successfully, but the expected qualified data archive is missing from the report and staging release. An earlier note claiming all uploads verified is contradicted and was not relied on. A differently named asset exists but its digest is unmatched. A time-boxed worker probe was the next action; unless the exact recorded digest is found and preserved under its declared name, the worker expires and the artifact is recorded incomplete. No publication approval exists and nothing was published or accepted.\n",
+      "response_sha256": "a7924d067e3bea20bca2adb2dabc172b6089f61b69ca499de61c592529f6c820"
+    }
+  ],
+  "ledger": {
+    "calls": 113,
+    "tokens": 3824658
+  },
+  "updated_at": "2026-10-23T00:45:59Z",
+  "finished": true,
+  "evidence_source": {
+    "repository": "earino/dataset-factory",
+    "branch": "evidence/prompt-eval-413244c",
+    "commit": "b632047d8eabc560bf946ab74c601c8f59f5b311",
+    "path": "evals/research-prompts/results/pilot-live-cd29d10-watcher.json"
+  }
+}
