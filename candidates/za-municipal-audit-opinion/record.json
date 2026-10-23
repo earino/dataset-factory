@@ -43,7 +43,18 @@
   "persistence_2026_10_21": "Last-opinion persistence accuracy on eval years 2018-2020: 619/738 = 83.88%; transitions prev->next: clean->bad 69, bad->clean 50. Onset (clean-prev) base rate in eval window: 69/381 = 18.1%.",
   "feature_cube_2026_10_21": "incexp_facts_v2 year_end 2025 file: 76,734,977 B, 396,080 rows, 257 municipalities, 17 columns (demarcation, name, function code/label, category, subcategory, mSCOA item code/label, position, return form structure, composition, year end, length, period, amount type code/label, amount); amount types AUDA/PAUD/ORGB/TABB/IBY1/IBY2/ITY1/ITY2 as counted above; all rows length='year'. Function dimension sample: 1110 Mayor and Council (Municipal governance and administration / Executive and council); item sample: 1600 Operational Revenue, 3100 Employee related costs. incexp_facts_v2 'All' file = 834,044,751 B (would be a worker-side fetch); per-year files 2018: 12,134,397 B ... 2025: 76,734,977 B; cflow_facts_v2 'All' = 25,119,450 B.",
   "release_dates_2026_10_21": "AGSA general-report tabling (observed): FY2022-23 -> media release 27 Aug 2024 (14 months after the 30 June 2023 year end); FY2024-25 -> tabled 24 June 2026 (12 months after 30 June 2025); FY2023-24 -> inclusion cut-off 31 Jan 2025, exact tabling date still to pin at construction. The cube regenerated 2026-07-30 does not yet carry year_end 2025 opinions (measured: max year_end in file = 2024) even though the FY2024-25 report was tabled 24 June 2026 - Treasury ingestion lags tabling; construction must snapshot which label years the pinned artifact carries.",
-  "extraction_cost_measured_2026_10_21": "Coordinator probes: 8 S3/portal GETs totalling ~82 MB (audit_opinions 0.73 MB; incexp 2025 76.7 MB; cflow 2025+2026 4.87 MB; portal/docs/terms HTML 0.2 MB), wall clock ~90 s of the probe script. Construction estimate (labelled estimate): all needed cubes are per-year bulk files listed in each cube's index.json with checksums; ~20-30 requests, 0.3-1.0 GB total, minutes on a worker - incexp 'All' (834 MB) is the largest single file and can be replaced by per-year fetches."
+  "extraction_cost_measured_2026_10_21": "Coordinator probes: 8 S3/portal GETs totalling ~82 MB (audit_opinions 0.73 MB; incexp 2025 76.7 MB; cflow 2025+2026 4.87 MB; portal/docs/terms HTML 0.2 MB), wall clock ~90 s of the probe script. Construction estimate (labelled estimate): all needed cubes are per-year bulk files listed in each cube's index.json with checksums; ~20-30 requests, 0.3-1.0 GB total, minutes on a worker - incexp 'All' (834 MB) is the largest single file and can be replaced by per-year fetches.",
+  "timing_evidence_2026_10_23": {
+   "submission_deadline": "MFMA s126: annual financial statements must be completed within two months after the financial year end and submitted to the Auditor-General for auditing - 31 August (30 September for consolidated statements). Confirmed on the publisher's own 2023-24 consolidated-report page ('by the legislated date of 31 August (and 30 September in the case of consolidated financial statements)'), read 2026-10-23.",
+   "audit_report_deadline": "MFMA s126(3)(b): the Auditor-General submits the audit report within three months of receiving the statements - i.e. end-November, seen in municipal annual-report items read 2026-10-23 (secondary; the statute text is the authority, not the municipal circulars).",
+   "consolidated_publication_observed": "AGSA tabled the Consolidated Report on Local Government Audit Outcomes 2024-25 on 24 June 2026 (agsa.co.za MFMA reports page, read 2026-10-23) - the per-municipality audit outcomes for FY ending 30 June 2025 are published ~12 months after the FY end.",
+   "consequence_for_the_instant": "The prediction instant can be the AFS submission/availability date (~31 August Y+1) with the label (the FY Y audit opinion) published ~June Y+2. That gap is >9 months, so no shipped FY-Y financial-statement feature is post-hoc with respect to the opinion. Still to pin before construction: an observed publication date per label year in the scored window (only 2024-25 is pinned here), from the archived mfma-YYYY.agsa.co.za sites, plus the per-municipality statement-availability date the bulk CSVs actually support (the AFS figures in the bulk data are the audited figures, so a build that reads audited statements must say so and may need the unaudited submission as the feature source).",
+   "unresolved": "Whether the bulk CSVs carry unaudited (submission-time) figures or audited year-end figures. If only audited figures exist, the feature set contains information created during the audit and the instant must move after publication, which would put it close to the label - resolve before any construction launch.",
+   "sources": [
+    "https://mfma-2024.agsareports.co.za/pages/financial-statements (read 2026-10-23)",
+    "https://www.agsa.co.za/Reporting/MFMAReports.aspx (read 2026-10-23)"
+   ]
+  }
  },
  "novelty_check": {
   "checked_at": "2026-10-21T16:19:48+00:00",
@@ -155,7 +166,7 @@
  "artifacts": [],
  "rejection_reason": null,
  "review": null,
- "next_action": "Construction (worker): (1) verify the exact MFMA statutory AFS-submission deadline wording (s127 area) and pin observed AGSA release dates per label year, including the FY2023-24 tabling date; (2) snapshot bulk CSVs by checksum (audit_opinions, incexp per-year, bsheet, capital_v2, grants_v2, uifwexp, repmaint_v2, aged_debtor_v2, aged_creditor_v2) plus the demographics API for static covariates; (3) build onset-conditioned rows at the 31 Aug k instant: FY k PAUD features + audited/budget phases through k-1 + opinions through k-2 (widen to k-1 only where an observed tabling date precedes the instant), excluding every post-instant field (FY k audit results, IBY/ITY forecast vintages tabled after the instant); (4) run the baseline triad FIRST and report gaps (persistence, calendar-only province/category/year, full model) - the level formulation must be reported beside persistence, and if the model trails it, record that as a defect and re-target; (5) assert the label CSV never enters shipped columns.",
+ "next_action": "Construction is NOT yet launchable: the timing evidence is partly pinned (31 Aug submission deadline; 2024-25 consolidated report tabled 24 June 2026) but the feature-vintage question is unresolved - the AGSA bulk CSVs must be checked for whether they carry audited year-end figures (created during the audit) or the unaudited submission. If only audited figures exist, move the instant after publication and re-check every feature for post-hoc status, or re-target. Next session: (1) pin observed publication dates per label year from the archived mfma-YYYY sites; (2) inspect the bulk CSVs' vintage and schema; (3) only then author the build with train/eval/holdout label years and a timing block matching the evidence.",
  "jurisdiction": {
   "country": "ZA",
   "region": "Africa",
@@ -163,5 +174,6 @@
   "recorded_at": "2026-10-21"
  },
  "licence_class": "A",
- "licence_note": "National Treasury terms: free to use, adapt and distribute, commercial and non-commercial, with acknowledgement"
+ "licence_note": "National Treasury terms: free to use, adapt and distribute, commercial and non-commercial, with acknowledgement",
+ "updated_at": "2026-10-23T08:24:52.247959+00:00"
 }
