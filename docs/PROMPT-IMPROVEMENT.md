@@ -3,7 +3,8 @@
 Status: PRs #11–#13 are deployed at `c9d479c`. The next ordinary advancement
 completed and exposed another scoring violation: an in-memory prediction panel
 was treated as an exempt pre-launch probe. PR #14 retains the full failure and
-clarifies that boundary at reviewed `fa90684`; two paired DeepSeek responses are
+clarifies that boundary at reviewed `fa90684`; paired DeepSeek responses both score
+3/4, with revised qualitatively preferred. Deployment and ordinary observation remain
 pending. The useful timing hold and the invalid scoring are reported separately.
 Prompt decision improvements still do not establish reliable autonomous execution.
 
@@ -653,3 +654,28 @@ Doctor and source audit pass, tree clean. Exact CI runs 39925227120 / 3992521807
 pass; full unedited output is retained as `results/verification-fa90684-*`.
 Source review found no blocking defect. Actual post-deployment execution remains
 a separate required observation, not inferred from a corrected candidate record.
+
+### Prelaunch comparison: unchanged coarse score, clearer boundary
+
+Both DeepSeek responses reject local scoring and score **3/4**. Label-blinded review
+prefers revised because it names the computational boundary directly and avoids the
+baseline's unsupported claims that ten annual slices imply few independent positives
+and repeated parks across temporal splits constitute leakage unless declared. Neither
+response explicitly preserves failed gate diagnostics, so both fail that compound
+criterion. Revised also overstates the case for change/onset redesign and historical
+availability impossibility. Those weaknesses remain in the full response and review.
+
+The two calls used **74,732 inclusive tokens** (baseline 37,607 / 20.616s; revised
+37,125 / 23.762s). Cumulative controlled usage is **127 attempts / 4,326,764 tokens**,
+within the unchanged 128/5M checkpoint and 100k reserve. Both request/response digests,
+strict main routes and all task/counter sums were verified. Scout corrected a prose
+counter breakdown that disagreed with the authoritative JSON rows; original and
+corrected receipts are preserved. Scout's runtime receipt reports zero resolved tools
+and zero observed tool calls/messages; Codex did not query the hosted database directly.
+No calls were repeated, and no further controlled calls are planned. Dollars unknown.
+
+This is one adaptive visible case, not a statistically established improvement or
+execution guarantee. Source review and clean-checkout CI support deployment of the
+small clarification; the tied score does not erase the earlier live violation.
+An ordinary advancement using the installed bytes remains to be source-audited.
+Full evidence: `results/prelaunch-fa90684-{requests,responses,grades,author-review}.json`.

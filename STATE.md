@@ -1,23 +1,22 @@
 # Current state
 
-Updated: 2026-10-23 08:32Z (Codex live-audit correction).
+Updated: 2026-10-23 08:46Z (Codex prompt outcome review).
 
-Ordinary advancement `20261023_081240_e08dd8` completed at `e3ee2bc` after normal
-GLM backend failure/DeepSeek failover. It preserved publication holds and blocked
-ZA construction on feature-vintage evidence, but built/scored the EA prediction
-panel locally as a pre-launch ceiling without qualification. This is a violation;
-no figure from that panel supports accepted headroom or rejection claims. Original
-source/report/response remain history; assisted hold `4f77649` keeps EA investigating.
-Camara/INPE and public-release holds also remain unchanged.
+PR #14's reviewed source `fa90684` clarifies that in-memory prediction panels and
+fixed-reference scoring require the existing worker qualification/acceptance order.
+The paired adaptive DeepSeek responses both score 3/4, revised qualitatively preferred;
+both omit explicit failed-report preservation and retain reasoning weaknesses. Full
+responses, blind/author reviews and reconciled counters are retained. No execution
+reliability claim follows. Controlled ledger: 127 attempts / 4,326,764 inclusive tokens,
+within unchanged 128/5M checkpoint; no more controlled calls planned.
 
-PR #14 contains the full audit and a narrow reviewed instruction clarification
-at `fa90684`: computation determines construction/scoring, regardless of in-memory
-storage, published inputs or a fixed reference. Bounded source inspection remains
-allowed. Clean-clone 588 tests (6 skips), doctor/source audit and exact CI pass.
-Two paired DeepSeek responses are pending under the unchanged cumulative 128/5M
-checkpoint (127 planned total attempts). Next: review both outputs, deploy tested
-bytes at idle, then audit a normal advancement without coaching. Do not claim
-execution reliability from the earlier decision scores or assisted record repair.
+Clean Python 3.13 checkout: 588 tests OK (6 skips), doctor and source audit pass.
+No executable gate, assertions, budgets or published artifacts changed. EA remains
+investigating under assisted hold `4f77649` after the preserved local scoring violation;
+Camara/INPE and publication holds remain. Next: merge reviewed PR after exact CI,
+install at idle with hash readback, then audit one ordinary advancement without
+candidate-specific coaching under existing admission. Keep useful work and failures
+separate; do not reopen held candidates merely to make the evaluation succeed.
 
 ## Historical update (superseded)
 
