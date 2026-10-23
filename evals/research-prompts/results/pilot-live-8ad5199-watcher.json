@@ -618,11 +618,67 @@
       "elapsed_seconds": 18.804,
       "response": "Decision: run exactly one diagnosed recovery \u2014 a fresh transfer attempt (new job ID, linked to the failed parent) that copies the one omitted asset from the immutable staging release to the target release, proves the digest on arrival and after upload, re-verifies destination completeness, then cleans up and records the handoff. No tag, no publication, no manifest or digest edits.\n\nEvidence: the staging source is immutable and holds the expected bytes/digest; the old worker and its owned IP are confirmed deleted, so the slot is free; an approved transfer declaration exists; allowance and remaining time permit it; no recovery has been attempted in this chain; the artifact already passed the current gate and `--accept`; the candidate is private with no publication approval.\n\nUncertainty: a successful transfer does not prove a complete or correct release. The omission may not be the only defect, asset names may not match the manifest\u2019s expected names, and loading/destination verification is still unproven; worker timeout or disk could also bite. Next discriminating check: after collection, compare every target asset name, size and SHA-256 against the manifest and run the destination verifier (`hf-publish.py --verify` for Hub, `check-package.py` for the package), plus the loading check where applicable.\n\nOrdered actions:\n1. Reconcile the failed parent job in the ledger and preserve its diagnostics; confirm provider-side deletion of its worker/IP.\n2. Record the missing asset\u2019s logical path, size, SHA-256 and source release ID; copy the job declaration to a new attempt ID explicitly linked to the parent, marked as release work.\n3. `worker plan` (fails early on missing publish credential or allowance), then `launch`.\n4. `status` / `collect` bounded; on the worker verify arrival digest, then the digest the destination reports; never fetch bulk CSVs to the coordinator.\n5. Verify the target release\u2019s full asset set against the manifest, then run the destination verifier and loading check.\n6. `destroy`; confirm the server and owned IP are gone via the provider.\n7. Update the candidate record and `STATE.md` with job IDs, evidence paths, verified per-destination result and next action; inspect the diff, commit/push only this job\u2019s changes, and check CI for that exact commit.\n8. Write `.factory/<job_id>/handled` only after the durable record exists, citing the commit and any remaining blocker.\n\nStopping condition: stop on missing source, any digest mismatch, a second recovery need, or incomplete destination/loading verification. Record the blocked state and hand off to advancement/operator; cleanup of the owned worker still completes. Never tag, publish, rewrite receipts or move expiry.\n\nVariants:\n- Source bytes gone: no recovery source, so no rebuild and no bulk coordinator fetch. Record the threatened/lost artifact, keep the release incomplete, clean up, and hand off.\n- Digest conflicts with the manifest: hard stop. Do not overwrite published bytes or \u201cfix\u201d the digest; preserve evidence, record the conflict, hand off after cleanup.\n- A prior linked recovery already failed: the single recovery is spent. Do not launch another; record the failure and the cheapest discriminating next check, hand off, and complete cleanup.\n\nOperator report: transfer failed on one omitted asset; staging is intact and the failed worker is deleted. I would perform the one permitted same-artifact transfer under a new linked job ID, verify digest and destination completeness, clean up, and record it. Publication remains unapproved and untouched; if the source is gone, the digest conflicts, or a linked recovery already failed, this becomes a blocked handoff rather than a retry.\n\n\u2014 Scout (Hermes)\n",
       "response_sha256": "07946917606dc9ed41f214e0ba801aa75ed529e3a0abeab00f120498f6be7bb1"
+    },
+    {
+      "partition": "watcher-targeted",
+      "case": "watcher-recovery",
+      "arm": "baseline",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-89",
+      "session_id": "20261023_001138_c57231",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "4ddedbc0238c8ff85b2fb1b9d981243eb52bfaae15a3aa5f90d0306e152ee668",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 20184,
+        "output_tokens": 2483,
+        "cache_read_tokens": 384,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 23051,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 58,
+          "output_tokens": 12,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 20126,
+          "output_tokens": 2471,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 33.009,
+      "response": "Decision: run one narrow recovery transfer for the omitted asset under a new job ID, using the approved job as the template. Do not rebuild, rescore, repackage, or publish. The target stays private.\n\nSupporting evidence: the candidate is private; its artifact has current qualification/acceptance; the immutable staging source still has the expected bytes and digest; the old worker is confirmed deleted; the approved job supports transferring that asset with a new ID; allowance and time remain; no recovery has been attempted. Rebuilding would create new, unqualified bytes; transferring the verified missing asset is the least-risk completion.\n\nUncertainty and next discriminating check: confirm the missing asset\u2019s exact target name, size, digest, and target release, and whether the target already has a partial or zero-byte asset. Read the source manifest and target release listing; assert the target is private and that the source file still matches the accepted artifact version. If a partial target asset exists, reconcile by digest rather than overwrite.\n\nOrdered actions:\n1. Collect the failed job if uncollected; fetch only its small manifest/report files, never bulk CSVs. Record the failure.\n2. Compare source manifest with target release; confirm exactly one omitted asset and its expected size/SHA-256.\n3. Copy the approved transfer declaration to a new attempt ID; narrow `assets` to the missing asset; retain expected size/digest; no command or image; bounded timeout.\n4. Run `plan` to check credentials, target visibility, and allowance; launch only if it passes.\n5. Collect; verify the target now contains every manifest asset with matching size/SHA-256. Do not download bulk data here.\n6. Update `STATE.md` and the candidate `record.json`; commit and push; check CI for that exact commit. Destroy the worker and confirm its server/IP are gone.\n7. Report to the operator, then write `.factory/<job_id>/handled` with the one-line outcome.\n\nStopping condition: success only when the target is complete at the manifest digests, records/CI are updated, and the worker is destroyed. Refuse or stop on missing source bytes, digest mismatch, an unexpected public target without approval, insufficient allowance/time, or an unexplained target state.\n\nVariations:\n- Source bytes gone: do not launch a transfer. Preserve evidence, look for another verified staging copy or reproducible build. If none, mark blocked and do not publish; any rebuilt bytes need fresh qualification and acceptance.\n- Digest conflicts with the manifest: hard stop; never overwrite. Identify authoritative bytes. Changed bytes invalidate prior acceptance and require requalification as a new version. Preserve any conflicting target asset for investigation.\n- Prior linked recovery already failed: inspect its reports, logs, and target state first; do not duplicate it. Retry once with a new ID only if the cause is ordinary/transient and corrected. Otherwise hold and escalate, reconciling any partial upload by digest.\n\nOperator report: the failed transfer omitted one asset. Staging still has the expected bytes and digest, the old worker is deleted, and the candidate remains private. I will launch a new-ID single-asset recovery transfer, verify the full target manifest, close out the records, and report the result. No publication will occur.\n",
+      "response_sha256": "2c9e78af7f6bd05da009ddef563372bf36a5ac4187ce366997b597575b3f0d29"
     }
   ],
   "ledger": {
-    "calls": 89,
-    "tokens": 3050388
+    "calls": 90,
+    "tokens": 3073439
   },
-  "updated_at": "2026-10-23T00:11:44Z"
+  "updated_at": "2026-10-23T00:12:25Z"
 }
