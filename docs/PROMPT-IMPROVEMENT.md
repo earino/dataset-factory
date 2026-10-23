@@ -1,7 +1,42 @@
 # Research prompt improvement
 
-Status: controlled comparisons complete; reviewed for deployment. Merge, live file/scheduler
-readback and ordinary discovery/advancement observations remain pending.
+Status: PR #11 is merged and deployed at `b80a84da3be28ce51d2c555a3423b32284feb9a7`.
+The first ordinary discovery is complete. Its live audit found a false-ready decision;
+a focused follow-up is being tested. Ordinary advancement is running. The goal remains
+open; controlled scores alone did not establish safe research execution.
+
+## Deployed observation and correction
+
+[Scout's signed deployment receipt](https://github.com/earino/dataset-factory/pull/11#issuecomment-6354753780)
+records guarded shim/profile installation, matching hashes, runtime audit, doctor and
+admission. Codex independently verified merge CI. The watcher retains ID/cadence/delivery,
+uses the reviewed script-only wrapper, and both automatic writer holds and independent
+expiry cleanup remain active. Rollback preimages are retained. Two scheduler ticks
+completed silently while discovery held the mutex: busy-path evidence only.
+
+Ordinary discovery `20261023_005500_3d7a64` used the deployed shim without additional
+research coaching. Commit `be44e01` records three Latin American leads: Brazil ready,
+Colombia investigating, Chile dropped, with source probes and useful blockers. The
+checks and CI are green, but independent content review rejects the Brazil readiness:
+its 13:00 prediction occurs inside its target day; it assumes historical observations
+immutable; split capacity remains incomplete; and the next action orders reference
+scoring before qualification. INPE's own FAQ Q39 documents historical reprocessing,
+which Codex independently verified in Chrome and supplied to Scout. Scout accepts
+these findings and explicitly attributes them to that post-run assistance.
+
+Preserve the original run and useful evidence. Keep INPE private and unconstructed
+pending a corrected contract. The follow-up replaces abstract timing advice with a
+dated timeline, reconciles all five contracts before readiness, retains small probe
+recipes, distinguishes source aggregates from panel construction, and orders the
+handoff through qualification/acceptance before scoring. No executable gate change.
+Two adaptive transfer cases compare this follow-up with the deployed bundle; they
+are not hidden tests. Another ordinary discovery must follow deployment.
+
+Ordinary advancement `20261023_011135_3731ee` / `proc_52e3e9a2a39e` is running untouched;
+its selected work and outcome remain to be reviewed. Repairs of World Bank or INPE
+findings already supplied by Codex are assisted. Full provenance and review questions
+are retained in `evals/research-prompts/results/deployed-observation-b80a84d.json`.
+No higher dataset yield, lower dollar cost or causal speed gain is claimed.
 
 ## Latest decision — corrected bundle cd29d10
 
@@ -60,7 +95,7 @@ Scout's 00:47Z preflight reports clean main `1d2f301`, no active workers/researc
 writer holds effective and independent cleanup active. The midnight discovery tick
 was held by the evaluation mutex; it produced no ordinary research session. Verify
 fresh identities again at deployment. The existing runbook captures rollback preimages;
-no scheduler or production deployment has happened yet.
+that preflight is historical; the deployed receipt above supersedes it.
 
 ## Earlier evaluation checkpoints (historical; superseded by the decision above)
 

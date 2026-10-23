@@ -6353,3 +6353,21 @@ the Colombia lead needs one bounded threshold-hunt probe before any verdict.
 - Advancement evaluation now pending: the first discovery invocation (session `20261023_005500_3d7a64`) completed
   and pushed `be44e01`. Earlier "merge/deploy next" notes are superseded by this
   checkpoint.
+
+
+Prompt live-audit checkpoint (Codex, 2026-10-23): PR #11 is deployed and its first
+ordinary discovery be44e01 produced useful source evidence but an unsupported INPE
+ready decision. Prediction falls inside the target window; historical availability
+is assumed despite reprocessing; split capacity is incomplete; the proposed handoff
+scores references before qualification. Codex supplied these findings and publisher
+FAQ Q39; Scout explicitly records the assistance and keeps INPE private/unconstructed.
+Original records/history remain evidence, not a passing new-prompt outcome.
+
+A focused follow-up on evaluate/prompt-rollout adds a dated timeline and reconciliation
+of the five discovery contracts, keeps probe recipes, and makes handoff order explicit.
+No qualification executable/version, published bytes or production allowance changes.
+Two adaptive transfer cases will compare deployed versus follow-up bundles on both
+routes (eight calls, same cumulative ledger, 128-attempt checkpoint/unchanged 5M tokens).
+Next: exact source/CI and Scout review, targeted responses, idle deployment and another
+ordinary discovery; retain live advancement 20261023_011135_3731ee untouched and audit
+its output. Do not declare the goal complete from the earlier decision scores.

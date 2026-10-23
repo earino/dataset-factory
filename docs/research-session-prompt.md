@@ -35,7 +35,13 @@ For the selected candidate, follow the applicable sequence:
 
 1. Confirm useful outcome, prediction instant, features actually available then,
    population selection, label source, splits, licence and novelty. A timestamp
-   describing a period is not proof the data was published then.
+   describing a period is not proof the data was published then. Read the evidence
+   behind `ready`, not only that status. Write one dated timeline with availability,
+   eligibility, prediction and target bounds in a named timezone: a future-event
+   label must not include time before prediction. Check current/reprocessed archives
+   against the claimed historical information set; a future churn check cannot
+   establish past availability. Resolve contradictions before a construction launch;
+   preserve useful partial evidence and record a precise blocked handoff if needed.
 2. Construct on a worker using existing assembly/lifecycle commands. Changed source
    needs a fresh attempt ID; preserve previous bundles and reports.
 3. Run the unchanged qualification gate on the **full artifact on the worker**.

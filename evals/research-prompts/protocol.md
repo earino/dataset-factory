@@ -265,3 +265,32 @@ The final watcher wording explicitly includes bookkeeping/ledger writes in defer
 The already-planned targeted ownership pair verifies that clarification. The wrapper
 mechanically skips the model while another coordinator owns the mutex, but that
 enforcement does not turn the flawed no-tool answer into a passing decision.
+
+## First deployed discovery audit and targeted correction
+
+The ordinary discovery at deployed `b80a84d` produced concrete source evidence but
+incorrectly marked INPE ready: its target starts before prediction, historical
+availability is assumed despite archive regeneration, split capacity is incomplete,
+and its handoff puts baselines before qualification. Codex independently found
+publisher FAQ Q39 documenting historical reprocessing. The subsequent candidate
+hold/review is assisted. Preserve the original run and all these failures; controlled
+decision scores did not predict this execution outcome.
+
+The follow-up makes the model work one dated timeline and reconcile all five
+contracts against the actual evidence before readiness. It preserves the executable
+gate and requires the gate-ordered handoff, even for reference scoring inside a build.
+`rollout-cases.json` declares two adaptive transfer diagnostics before responses exist.
+Compare **deployed b80a84d** to the exact follow-up, two cases on both recorded routes
+and both arms: eight calls, alternating arm order. Both arms use the same current
+role-specific eager skill sets. Do not mix this comparison into the original-baseline
+score. Freeze source/request hashes and keep grading criteria out of requests.
+
+Use the same cumulative ledger after ordinary advancement releases its lock. Extend
+the helper attempt checkpoint to **128**, with **121 planned total attempts**; keep
+the unchanged 5M inclusive-token checkpoint, 100k reserve and production allowances.
+Retain every earlier response/failure. Stop on accounting/route/tool failure or a new
+critical behavior rather than repeat unchanged calls for a win. Review source, checks
+and Scout's assessment before inference. Then deploy at idle and observe another
+ordinary uncoached discovery; a corrected assisted INPE record alone cannot validate
+the revised general behavior. Ordinary advancement and real watcher observations
+remain separate evidence with their actual prompt versions and assistance disclosed.
