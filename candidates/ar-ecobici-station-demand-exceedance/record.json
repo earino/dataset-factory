@@ -1,0 +1,121 @@
+{
+  "id": "ar-ecobici-station-demand-exceedance",
+  "status": "dropped",
+  "created_at": "2026-10-23T02:48:48.145350+00:00",
+  "domain": "urban mobility / public bicycle-share trip panel",
+  "prediction_question": "HYPOTHETICAL task this source would support (closed on novelty, never constructed): for an Ecobici station, given all published trips through the end of day D-1, will the station's day-D departures exceed a per-station threshold frozen from training data (a rebalancing-relevant exceedance)?",
+  "prediction_time": "End of day D-1, America/Argentina/Buenos_Aires: each trip is event-logged with its own timestamp, so 'information available at the instant' = the trip log through 23:59:59 of D-1. The operator logs trips in real time; the published yearly archive is refreshed in-year (2026 file CDN Last-Modified 2026-10-07, portal metadata_modified 2026-10-08) and each year-Y file stops updating after year end (observed final Last-Modified: 2023 file -> 2024-01-03; 2024 -> 2025-03-01; 2025 -> 2026-01-14).",
+  "target_definition": "Day-D origin-station trip count >= theta_station, theta frozen from the training window; label source columns fecha_origen_recorrido + id_estacion_origen/nombre_estacion_origen, excludable from shipped features. Never built: the task was closed at the novelty gate.",
+  "sources": [
+    {
+      "name": "Bicicletas P\u00fablicas - Recorridos Realizados (Ecobici trip archive, yearly files 2010-2026)",
+      "url": "https://data.buenosaires.gob.ar/dataset/bicicletas-publicas",
+      "api": "CKAN package_show + CDN HEADs (both anonymous, 2026-10-23): 41 resources; trips = one file per year 2010-2026 at cdn.buenosaires.gob.ar/datosabiertos/datasets/transporte-y-obras-publicas/bicicletas-publicas/ (2010-2013 CSV, 2014-2026 ZIP). Measured sizes: 2010 0.68 MB, 2011 86.9 MB (zip 4.0), 2012 145 MB (11), 2013 259 MB (27), 2014 17 MB, 2015 8.8, 2016 12, 2017 26, 2018 99, 2019 398, 2020 137, 2021 155, 2022 167, 2023 150, 2024 176, 2025 208, 2026(partial through Oct) 143 MB; total ~1.75 GB. CDN Last-Modified sampled 2010-2026 (in record measurements).",
+      "licence": "CC-BY-2.5-AR per package metadata"
+    }
+  ],
+  "license_evidence": [
+    "CKAN package_show id=bicicletas-publicas (data.buenosaires.gob.ar, read 2026-10-23): license_id 'CC-BY-2.5-AR', license_title 'CC-BY-2.5-AR'.",
+    "Dataset page https://data.buenosaires.gob.ar/dataset/bicicletas-publicas shows 'Licencia CC-BY-2.5-AR' (web-search snippet, confirmed by the CKAN API field).",
+    "Third-party audit (1001smartcities.org, July 2026) counted 451 BA datasets all under CC BY variants (386 CC BY 2.5 AR); the publisher's own publication guide says CC BY 4.0 is always applied - an internal contradiction about VERSION, not openness; both are attribution-only."
+  ],
+  "construction_script": null,
+  "split_strategy": "Would have been temporal windows over the 17-year station-day panel (e.g. train 2011-2018 / eval 2019-2022 / holdout 2023-2026 with structural-break review at the 2019 network expansion and COVID collapse); never fixed - the candidate was dropped at the novelty gate before any split measurement.",
+  "measurements": {
+    "file_inventory_2026_10_23": "Every year 2010-2026 exists and returns HTTP 200 with Content-Length (HEAD, measured 2026-10-23; sizes in sources.api). CDN Last-Modified: 2026 file 2026-10-07; 2025 -> 2026-01-14; 2024 -> 2025-03-01; 2023 -> 2024-01-03; 2020/2010/2013 -> 2023-03-06/07 (a CDN migration stamp, not a content date); 2018 -> 2021-03-11. Current-year accumulation is the publication channel for fresh rows; completed years are static.",
+    "bounded_sample_2015_2026_10_23": "Downloaded the 2015 zip (8.8 MB, 30.8 s at 0.3 MB/s; single member recorridos-realizados-2015.csv, 116,754,579 B uncompressed): 503,252 trips, 15 documented columns - periodo, genero_usuario, fecha_origen_recorrido, id_estacion_origen, nombre_estacion_origen, long_estacion_origen, lat_estacion_origen, domicilio_estacion_origen, duracion_recorrido, fecha_destino_recorrido, id/nombre/long/lat/domicilio_estacion_destino. Trip-level rows carry station ids + coordinates; station-day aggregation is directly constructible. (The 2026 partial-year sample download was started and killed: the novelty gate had already closed the task, so the 143 MB fetch was not completed - no recent-era station-day counts were measured.)",
+    "not_measured": "No split counts, base rates or station-day panel counts: the novelty gate closed the task first."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "Novelty gate: the task is not genuinely novel. Bike-share demand prediction is a saturated, ML-ready benchmark family on public datasets for other cities, Ecobici-specific demand prediction (with weather and panel models) and user-churn already exist in published academic work, and the raw Ecobici trip data is already mirrored on Kaggle with ML notebooks. What we would add - splits, gating, a binary exceedance reformulation - is packaging on a saturated task, which the standing rule ('publish nothing rather than mirror; novelty of the task, not just data openness') excludes. Licence (CC BY 2.5 AR) and access (17 clean yearly files, stable CDN URLs) were excellent and are recorded so a future session does not re-verify them.",
+  "review": "A textbook 'easy source, taken task': the publisher's data is clean, well-licensed and bulk-accessible, which is exactly why the task on top of it is already done (theses, course projects, a Kaggle raw-data mirror). Closed at the cheapest decisive gate (novelty search, minutes) before any split/baseline measurement was spent. Argentina coverage honestly recorded: one lead opened, licence+access verified, task rejected as saturated.",
+  "next_action": "Closed. Reopen only if (a) the operator explicitly decides this bench wants a bike-share benchmark and values city/population novelty over task novelty - the source and licence are ready and the measured inventory in this record is the full access map; or (b) a genuinely distinct formulation on this source is found with recorded absence evidence (demand level, demand+weather, and churn are all taken; nothing else identified in the bounded search). Do not re-verify the licence or the file inventory.",
+  "verdict": "drop",
+  "licence_class": "A",
+  "licence_note": "CC BY 2.5 Argentina (attribution) stated by the publisher in CKAN package metadata (license_id CC-BY-2.5-AR, license_title CC-BY-2.5-AR, read via package_show 2026-10-23) and on the dataset page. Clean for redistribution with attribution; no share-alike/NC constraints. Licence was NOT the blocker.",
+  "jurisdiction": {
+    "country": "AR",
+    "region": "Latin America",
+    "publisher": "Gobierno de la Ciudad de Buenos Aires (Buenos Aires Data portal, Secretar\u00eda de Transporte y Obras P\u00fablicas)",
+    "recorded_at": "2026-10-23"
+  },
+  "novelty_check": {
+    "checked_at": "2026-10-23T02:48:57+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "bike share station demand prediction benchmark",
+      "Ecobici Buenos Aires trips dataset machine learning"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "bike share station demand prediction benchmark",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "Ecobici Buenos Aires trips dataset machine learning",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "bike share station demand prediction benchmark",
+          "hits": 293955,
+          "top": [
+            "E-bisiklet \u015earj \u0130stasyonlar\u0131 i\u00e7in FV Sistem Tasar\u0131m\u0131",
+            "DMP: Predicting Bike Rental Demand for Smarter Urban Mobility",
+            "Share and share a bike",
+            "Context-aware demand prediction in bike sharing systems: incorporating spatial, meteorological and calendrical context",
+            "Describing and predicting demand in Lisbon's public Bike sharing system"
+          ]
+        },
+        {
+          "query": "Ecobici Buenos Aires trips dataset machine learning",
+          "hits": 612415,
+          "top": [
+            "Identification of Clusters in Physico-Chemical Data of Water Samples from an Important Local River",
+            "Dataset: Air Quality Dataset for Buenos Aires (2022-08-01 to 2026-02-18)",
+            "Moniliformis moniliformis moniliformis (Bremser, 1811) Travassos 1915",
+            "RIVA: An Image Dataset of Conventional Pap Smear Cytology with Multiple Independent Annotations",
+            "Dataset: Prevalence of Antibodies Against Dengue Virus in Buenos Aires"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "bike share station demand prediction benchmark",
+          "hits": 5,
+          "top": [
+            "Micromobility Flow Prediction: A Bike Sharing Station-level Study via Multi-level Spatial-Temporal Attention Neural Netw",
+            "Predicting Station-Level Bike-Sharing Demands Using Graph Convolutional Neural Network",
+            "Towards Dynamic Urban Bike Usage Prediction for Station Network Reconfiguration",
+            "Bike Sharing Demand Prediction based on Knowledge Sharing across Modes: A Graph-based Deep Learning Approach",
+            "Predicting Citi Bike Demand Evolution Using Dynamic Graphs"
+          ]
+        },
+        {
+          "query": "Ecobici Buenos Aires trips dataset machine learning",
+          "hits": 5,
+          "top": [
+            "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+            "DOME: Recommendations for supervised machine learning validation in biology",
+            "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
+            "Active learning for data streams: a survey",
+            "A Benchmark Study of Machine Learning Models for Online Fake News Detection"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'bike share station demand prediction benchmark': 0 hit(s) - nothing notable\n- huggingface_datasets / 'Ecobici Buenos Aires trips dataset machine learning': 0 hit(s) - nothing notable\n- zenodo_records / 'bike share station demand prediction benchmark': 293955 hit(s) - E-bisiklet \u015earj \u0130stasyonlar\u0131 i\u00e7in FV Sistem Tasar\u0131m\u0131, DMP: Predicting Bike Rental Demand for Smarter Urban Mobility, Share and share a bike, Context-aware demand prediction in bike sharing systems: incorporating spatial, meteorological and calendrical context, Describing and predicting demand in Lisbon's public Bike sharing system\n- zenodo_records / 'Ecobici Buenos Aires trips dataset machine learning': 612415 hit(s) - Identification of Clusters in Physico-Chemical Data of Water Samples from an Important Local River, Dataset: Air Quality Dataset for Buenos Aires (2022-08-01 to 2026-02-18), Moniliformis moniliformis moniliformis (Bremser, 1811) Travassos 1915, RIVA: An Image Dataset of Conventional Pap Smear Cytology with Multiple Independent Annotations, Dataset: Prevalence of Antibodies Against Dengue Virus in Buenos Aires\n- arxiv_preprints / 'bike share station demand prediction benchmark': 5 hit(s) - Micromobility Flow Prediction: A Bike Sharing Station-level Study via Multi-level Spatial-Temporal Attention Neural Netw, Predicting Station-Level Bike-Sharing Demands Using Graph Convolutional Neural Network, Towards Dynamic Urban Bike Usage Prediction for Station Network Reconfiguration, Bike Sharing Demand Prediction based on Knowledge Sharing across Modes: A Graph-based Deep Learning Approach, Predicting Citi Bike Demand Evolution Using Dynamic Graphs\n- arxiv_preprints / 'Ecobici Buenos Aires trips dataset machine learning': 5 hit(s) - Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Active learning for data streams: a survey, A Benchmark Study of Machine Learning Models for Online Fake News Detection",
+    "prior_art": [
+      "UCI Bike Sharing dataset (ML-ready); Seoul Bike Sharing Demand (ML-ready); Kaggle Bike Sharing Demand (2015); UTDT 'Prediccion de demanda del uso de las bicicletas publicas de CABA'; Kaggle 'Buenos Aires EcoBici 2025' raw-data mirror"
+    ],
+    "theirs": "Task family exists ML-ready for other cities (UCI Bike Sharing hourly; Seoul Bike Sharing Demand; Kaggle Bike Sharing Demand 2015) with active literature (Citi Bike, Beijing, Shenzhen, Seoul); Ecobici-specific work already published: UTDT thesis predicting Ecobici demand 2018-2020 (econometric/panel models + rebalancing optimisation), UBA datamining course project benchmarking xgboost on Ecobici 2016-2017 with weather (RMSLE 0.90-0.93), TFI predicting 2016 hourly demand, UTDT thesis on Ecobici user churn; raw 2025 trips mirrored on Kaggle with EDA notebook for ML use.",
+    "ours": "Only packaging would be ours: publication-gated temporal splits, leakage checks, frozen per-station thresholds on the 17-year panel - no substantive task novelty.",
+    "verdict": "mirror",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
+}

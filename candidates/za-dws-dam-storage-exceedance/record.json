@@ -1,0 +1,52 @@
+{
+  "id": "za-dws-dam-storage-exceedance",
+  "status": "parked",
+  "created_at": "2026-10-23T04:07:26.565177+00:00",
+  "domain": "water security / reservoir storage monitoring (dam-level weekly hydrology panel)",
+  "prediction_question": "For a listed South African dam, given the weekly storage series published through week W (DWS State of Reservoirs bulletin / NIWIS export), will that dam's storage fall below a per-dam drought threshold (e.g. % of full supply capacity, or absolute storage) at any point in the next 4 weeks? Prospective users: municipal water departments (restriction timing), irrigation boards and agri insurers (planting/coverage decisions), and the DWS's own weekly briefing cycle. A useful prediction supports earlier restriction and allocation decisions than the week-lag bulletin alone.",
+  "prediction_time": "Not yet fixed. The natural instant is the publication of the weekly State of Reservoirs bulletin (typically Tuesday/Wednesday per reservoirs.earth's transparency review and DWS media releases); features would be the dam-week storage/level series through bulletin W. This instant was NOT verified from the publisher this session: the publisher's site is unreachable from this coordinator (see measurements), so release cadence is third-party-attributed, not measured. Unresolved while parked.",
+  "target_definition": "Hypothetical while parked: binary per-dam 4-week-ahead storage-threshold exceedance (label source = the dam's own storage/level series, excludable from features). No official threshold table (per-dam drought/restriction levels) was obtainable this session; the threshold would be fixed from training data (as in other exceedance candidates) or from an obtainable official document. Never constructed; no split counts exist.",
+  "sources": [
+    {
+      "name": "Department of Water and Sanitation (DWS) - Weekly State of Reservoirs bulletins",
+      "url": "https://www.dws.gov.za/Hydrology/Weekly/WeeklyBulletins.aspx",
+      "api": "none found reachable this session: HTML tables + weekly PDFs per reservoirs.earth's third-party review (no public REST API, no documented bulk download); NIWIS (niwis.dws.gov.za/niwis2/) offers manual CSV/Excel export with ~5 years of weekly series per the same review",
+      "license": "UNREADABLE this session: dws.gov.za returns HTTP 403 to both a plain HTTP client and a real browser from this coordinator; no Wayback Machine capture of any DWS terms/disclaimer page exists (CDX query 2026-10-23: Disclaimer.aspx 'not archived'; WeeklyBulletins.aspx zero captures; domain captures exist but are scanner noise/redirects only)",
+      "access": "Blocked from the coordinator: 403 Forbidden on https://www.dws.gov.za/Disclaimer.aspx and .../WeeklyBulletins.aspx from plain client AND real browser (both recorded 2026-10-23); niwis.dws.gov.za connection timeout; legacy www.dwa.gov.za NXDOMAIN; data.gov.za DNS 'temporary failure in name resolution'. Not yet tested from a worker network."
+    },
+    {
+      "name": "City of Cape Town - daily/weekly dam levels (Western Cape supply system only)",
+      "url": "https://www.capetown.gov.za/family-and-home/residential-utility-services/residential-water-and-sanitation-services/this-weeks-dam-levels/",
+      "api": "reachable (HTTP 200, 2026-10-23): daily levels table + weekly PDF report ('Dam Levels Report: 19 October 2026', ~2.5 MB) for the ~6 major Western Cape supply dams",
+      "license": "not read this session; City of Cape Town Open Data Portal (odp-cctwdesa.opendata.arcgis.com) is reachable but its licence terms were not read before the Cape-Town-only variant was rejected on split-capacity grounds (see rejection_reason)",
+      "access": "Live and reachable, but covers one water system; rejected as a standalone task (below)."
+    }
+  ],
+  "license_evidence": [
+    "dws.gov.za Terms: NOT OBTAINED. Measured 2026-10-23 from the coordinator: https://www.dws.gov.za/Disclaimer.aspx -> HTTP 403 with a plain client AND inside a real browser ('403 Forbidden' page, same result both ways); the site is network-blocked, which is inaccessible evidence, not proof that terms are absent (dataset-discovery licence-posture rule).",
+    "Wayback Machine, queried 2026-10-23: no capture exists of Disclaimer.aspx ('The Wayback Machine has not archived that URL'); CDX for dws.gov.za/Hydrology/Weekly/WeeklyBulletins.aspx returns [] (never captured); the domain-level CDX shows only a 2016 redirect and 2025 scanner-noise captures (error-page revisits, statuscode '-'), i.e. no readable archived DWS page.",
+    "No South African national open-data licence instrument was found to cover DWS: data.gov.za (the national portal that would carry per-dataset licences) no longer resolves (DNS 'temporary failure in name resolution', 2026-10-23). The ZA precedent in this repo (za-municipal-audit-opinion, ready) relies on National Treasury's own terms, which do not extend to DWS."
+  ],
+  "construction_script": null,
+  "split_strategy": "Never measured. The task needs per-dam weekly series long enough for disjoint train/eval/holdout windows with drought exceedance positives in each. Third-party evidence (reservoirs.earth, read 2026-10-23) says NIWIS carries ~5 years of weekly series over ~250 listed dams; whether the HTML/PDF bulletin archive extends further back is unmeasured (site unreachable). Positives would cluster in multi-dam drought episodes (2017-2018 Western Cape 'Day Zero'; subsequent Eastern Cape/Karoo droughts), so clustered counts per window are required before any ready verdict - none were computed.",
+  "measurements": {
+    "access_probes_2026_10_23": "dws.gov.za: 403 Forbidden (plain client + real browser, both recorded); niwis.dws.gov.za/niwis2/: connection timeout; www.dwa.gov.za: NXDOMAIN; data.gov.za: DNS resolution failure; capetown.gov.za dam-levels page: HTTP 200 (daily table + weekly PDF readable - six major dams at 48.3-100.2%, total 74.0% storage, bulletin 19-22 October 2026).",
+    "wayback_cdx_2026_10_23": "WeeklyBulletins.aspx: zero captures. Disclaimer.aspx: not archived. Domain dws.gov.za: captures exist (2016 302; 2025 entries are warc/revisit scanner noise with garbage URLs, statuscode '-'), i.e. no readable archived DWS page.",
+    "third_party_attribution": "reservoirs.earth/transparency-index/south-africa (read 2026-10-23): ~250 covered dams, weekly Tue/Wed bulletins, HTML tables + weekly PDFs, NIWIS manual CSV export with ~5 years of weekly series, no public API. Attribution used only because the publisher is unreachable; every fact attributed to it must be re-measured from the source before a ready verdict.",
+    "cape_town_variant_assessment": "Cape-Town-only (City of Cape Town, reachable): rejected as a standalone task on split-capacity + prior-art grounds without further probing. The single supply system concentrates drought exceedance positives in the 2017-2018 'Day Zero' episode (current levels are 74.0% total and recovered), so later eval/holdout windows would likely lack positives; and the system is already the subject of published forecasting work and raw-data mirrors (Day Zero studies; Kaggle Cape Town dam-level mirrors - to be formally checked via check-novelty.py only if this variant is ever reopened)."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "PARK (two stacked blockers, both recorded as measurements; neither is a scientific rejection of the data). (1) Access: the publisher is unreachable from this coordinator - dws.gov.za and niwis.dws.gov.za both fail (403/timeout) for a plain client and a real browser, and no Wayback capture exists of the bulletin or terms pages, so nothing about schema, history depth or terms could be measured first-hand. The same 403 may or may not apply from a Hetzner worker network (untested). (2) Licence: no redistribution terms could be read from any instrument (site blocked; data.gov.za gone; no archive capture). Under the standing rule this stays parked rather than probed further from the coordinator: an unread licence is a blocker and inventing a grant is forbidden. The Cape-Town-only fallback was assessed and rejected (single system, clustered positives, existing prior art). Access failure is not evidence the source is unusable - it is the recorded reason nothing further was measured.",
+  "review": "The strongest task idea of the 2026-10-23 Africa tick (national per-dam drought early warning, ~250 dams, weekly, real decision value for restrictions and irrigation) parked on two measured blockers before any costly probing. Everything currently attributed to the source is third-party and must be re-measured. The cheap decisive probes are named in next_action and are worth one bounded attempt per future tick.",
+  "next_action": "Two bounded probes, in order: (1) worker-side access test - one ~2-minute read-only job fetching https://www.dws.gov.za/Hydrology/Weekly/WeeklyBulletins.aspx and https://niwis.dws.gov.za/niwis2/ from the Hetzner network to learn whether the 403/timeout is coordinator-specific; record status codes and page bytes. (2) If reachable from the worker: read and quote the DWS terms/disclaimer instrument, classify licence A/B/C/D, and enumerate the bulletin archive depth (how many weekly files, earliest date, per-dam columns). Only if licence is A/B AND history supports three disjoint windows with drought positives in each: run check-novelty.py positioned against Cape Town Day Zero forecasting papers and Kaggle dam-level mirrors, then decide. If the worker is also blocked, park indefinitely and stop spending ticks on it.",
+  "verdict": "park",
+  "licence_class": null,
+  "licence_note": "Unclassified: no licence instrument could be read (see license_evidence). Parked records may remain unclassified per the checker; this must be classified before anything beyond investigating.",
+  "jurisdiction": {
+    "country": "ZA",
+    "region": "Africa",
+    "publisher": "National Department of Water and Sanitation (DWS), Republic of South Africa",
+    "recorded_at": "2026-10-23"
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "id": "ng-nbs-state-price-exceedance",
+  "status": "dropped",
+  "created_at": "2026-10-23T04:07:26.659209+00:00",
+  "domain": "food and fuel price monitoring / state-level monthly price panel (licence-blocked before construction)",
+  "prediction_question": "HYPOTHETICAL task this source would have supported (closed at the licence gate, never constructed): for a Nigerian state, given the published monthly price-watch series through month M, will the state's price of a monitored staple or fuel (e.g. maize grain, PMS petrol, AGO diesel) exceed a threshold frozen from training data in month M+1? Prospective users: food-security analysts (WFP/FEWS NET-style early warning), subsidy/transfer programme designers, inflation trackers.",
+  "prediction_time": "Would have been the NBS monthly publication of the price-watch report for month M (the series are monthly; the Data Release Calendar is published on the NBS site). Never fixed: the candidate was closed at the licence gate before any publication-instant measurement.",
+  "target_definition": "Hypothetical: state-month price >= theta_state,item frozen from the training window; label source = the state x item price table itself, excludable from features. Never built.",
+  "sources": [
+    {
+      "name": "National Bureau of Statistics (NBS) - monthly Price Watch series (Selected Food Price Watch; PMS/Petrol, AGO/Diesel, LPG Price Watch; Transport Fare Watch), state-level tables",
+      "url": "https://nigerianstat.gov.ng/ (reports published monthly as Excel; e.g. AGO Diesel Price Watch series also catalogued at microdata.nigerianstat.gov.ng)",
+      "api": "anonymous HTML site with monthly Excel report downloads (not re-verified this session: the licence gate closed the lead first); a companion 'nigeriafoodpricetracking.ng' site is linked from the NBS homepage (found 2026-10-23, not probed)",
+      "license": "NBS Terms & Conditions page (https://nigerianstat.gov.ng/page/terms, read 2026-10-23) states: 'The data and other materials provided by the National Bureau of Statistics will not be redistributed or sold to other individuals, institutions, or organizations with out the written agreement of the National Bureau of Statistics.' Class D for this channel.",
+      "access": "Site reachable (HTTP 200, 2026-10-23). Bulk affordability was never measured - the licence veto came first."
+    },
+    {
+      "name": "nigeriadata.gov.ng - 'Integrated Data Sharing Portal' (new MDA macro-data portal)",
+      "url": "https://www.nigeriadata.gov.ng/",
+      "api": "React SPA; no data API or licence terms found in the page source or the main JS bundle as probed 2026-10-23 (bundle greps found only map/tile endpoints); not probed further",
+      "license": "no licence statement found in the page source as probed 2026-10-23; unassessed",
+      "access": "Reachable (HTTP 200)."
+    },
+    {
+      "name": "Nigeria Open Data Portal (ODP) - nigeria.opendataforafrica.org",
+      "url": "https://nigeria.opendataforafrica.org/ (linked as 'Open Data Portal' from the NBS footer)",
+      "api": "unreachable for anonymous use: the link currently answers HTTP 403 Forbidden (measured twice 2026-10-23 - once a connection-level failure, once 403); the Knoema/opendataforafrica platform behind it is in sunset per its re3data entry ('formerly: Open data for Africa'), recorded as attribution",
+      "license": "unreadable (403 to anonymous clients)",
+      "access": "Dead link still carried by the NBS footer."
+    }
+  ],
+  "license_evidence": [
+    "NBS Terms & Conditions (https://nigerianstat.gov.ng/page/terms, fetched and read 2026-10-23), exact quote: 'The data and other materials provided by the National Bureau of Statistics will not be redistributed or sold to other individuals, institutions, or organizations with out the written agreement of the National Bureau of Statistics.' The same page adds 'The data will be used for statistical and scientific research purposes only' and a citation requirement. This is the publisher's own instrument, read directly.",
+    "Context noted honestly: the clause's surrounding wording (citation requirement, re-identification prohibitions) is microdata-style boilerplate, but it sits on the site-wide Terms & Conditions page and covers 'The data and other materials provided by the National Bureau of Statistics' without limiting itself to survey microdata. Read as written, it prohibits redistribution of derived tables without written agreement.",
+    "The NBS microdata catalog (microdata.nigerianstat.gov.ng) marks some study-level datasets 'other-open', but the monthly price-watch series are published on the main nigerianstat.gov.ng site under the terms above; a per-study 'other-open' marker on survey microdata does not relicense the site-wide price series.",
+    "A third-party HF organisation (electricsheepafrica) already mirrors at least one NBS price-watch series (africa-nigeria-automotive-gas-oil-diesel-price-watch, license_id 'other-open' from the NADA catalog, observed 2026-10-23). Their provenance judgement is theirs; it is recorded here as a novelty/landscape observation, not as permission, and does not change the class D posture of the publisher's own terms for this channel."
+  ],
+  "construction_script": null,
+  "split_strategy": "Never designed: the licence gate closed the lead before any panel, split or base-rate measurement. No counts exist.",
+  "measurements": {
+    "terms_page_2026_10_23": "https://nigerianstat.gov.ng/page/terms fetched 2026-10-23 (HTTP 200): the no-redistribution clause quoted in license_evidence is present verbatim in the page body.",
+    "homepage_2026_10_23": "https://nigerianstat.gov.ng/ HTTP 200; footer links 'Terms Of Use' -> /page/terms, 'Open Data Portal' -> https://nigeria.opendataforafrica.org/ (403/blocked to anonymous clients), and https://www.nigeriafoodpricetracking.ng/ (not probed).",
+    "not_measured": "No state-month panel shape, no history depth, no publication-lag measurement, no base rates: the cheapest veto (licence) fired first."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "Licence veto (class D): the publisher's own Terms & Conditions prohibit redistribution of 'The data and other materials provided by the National Bureau of Statistics' without written agreement, which forecloses publishing derived state-month price rows from this channel. The monthly state-level price-watch series were otherwise the most task-shaped Nigerian data found this session (food-security-relevant, state-panel, event-structured around the 2023 fuel-subsidy removal), which is exactly why the decisive clause is recorded: a future session must not re-derive the idea and start probing splits on a channel that cannot be published. Novelty was never reached and is NOT claimed in either direction.",
+  "review": "A clean licence-first kill: the cheapest decisive fact (publisher's own terms) was probed before any schema or split work, quoted verbatim, and closed the lead. Nigeria coverage is recorded honestly: the national statistical publisher is licence-blocked, the new Integrated Data Sharing Portal exposes no readable terms/API as probed, and the legacy ODP link is dead.",
+  "next_action": "Closed. Reopen ONLY on: (a) written agreement from NBS permitting redistribution of derived tables (operator-side action; do not send unsolicited permission email per standing policy), or (b) a different channel carrying equivalent Nigerian price series under its own open terms (e.g. the WFP VAM market-price dataset for Nigeria, which would need its own licence + novelty check and is NOT covered by this record's verdict). Do not re-verify the NBS terms clause; the quote is dated and archived in license_evidence.",
+  "verdict": "drop",
+  "licence_class": "D",
+  "licence_note": "Class D: publisher's own Terms & Conditions prohibit redistribution without written agreement (exact quote in license_evidence, read 2026-10-23 from https://nigerianstat.gov.ng/page/terms). Research use of the data itself may be permitted under the same page, but publishing derived rows - the core of any dataset we ship - is not, so the channel is rejected for our pipeline.",
+  "jurisdiction": {
+    "country": "NG",
+    "region": "Africa",
+    "publisher": "National Bureau of Statistics of Nigeria (nigerianstat.gov.ng)",
+    "recorded_at": "2026-10-23"
+  }
+}

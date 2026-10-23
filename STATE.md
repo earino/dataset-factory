@@ -1,9 +1,199 @@
 # Current state
 
-Updated: 2026-10-22 22:47Z (watcher close-out: wb-baseline-001 green and closed out - the nine
-small report assets of staging 421265626 fetched and sha256-verified, eval AUC 0.5879 confirmed
-from the worker's own logs; the triad and the pre-packaging decision point were recorded by the
-advancement tick (d77213d6); next action is the bounded holdout-leg scoring job.)
+Updated: 2026-10-23 07:00Z (camara-001 worker follow-up tick: the advancement session's close-out was verified and
+completed - provider-confirmed cleanup (Hetzner 404 on server 171985941; zero camara-001 IPs remain, the only project
+IP is camara-002's), staging release job-camara-001 re-verified 8/8 assets by size+sha256, and the three commits the
+advancement session left unpushed (30b03d8, d54add9, 97d7beb) were pushed this tick. One process flag handed to
+advancement: build.py computes in-build reference AUCs before the qualification gate. camara-002 still running at
+close. Next action unchanged: collect camara-002, exit 0 + passing gate report + --accept on the exact bytes before
+any scoring, then the runner-contract baseline.)
+
+## 2026-10-23 - camara-bill-advancement construction tick: label-code and right-censoring defects corrected from measurement; build written, smoke-green; camara-001 failed on guard anchors, camara-002 running
+
+No actionable release work existed (tsb published; nhs-ae and wb-ieg dropped with preserved negative findings),
+so the tick went to construction, per the operator's actionable list. Candidate chosen from the class-A ready
+queue: camara-bill-advancement (worker-trivial measured cost vs chilecompra's 100-150 GB, nz-ea's 3.7 GB and
+za's multi-table timing work).
+
+**Two discovery-record claims were measured wrong before any build was written, and both changed the design.**
+
+1. **The label code.** The record carried "idSituacao 251 = Transformado em Norma Jurídica, 1.5% on the 2005
+   sample". Re-measured with a quote-parity parser keyed on the file's own header names (whole 1991 file as
+   ground truth): the positive code is **1140** (`Transformado em Norma Jurídica`, 311/4,436 = 7.0% of the 1991
+   cohort); 251 is an `ultimoStatus_idTipoTramitacao` value. `probe_samples.py` read column 25 positionally as
+   idSituacao, so its codes (100/319/1005/502/…) and the "1.5%" were mis-indexed artefacts of the same defect.
+   `probe_censoring.py` (v1) reproduced the class of defect independently (naive line-splitting breaks on quoted
+   multi-line ementas); its numbers are kept only as the diagnosis, superseded by `probe_censoring2.py`.
+2. **Right-censoring.** ~25-53% of rows carry an EMPTY `ultimoStatus_idSituacao` and the API v2 confirms genuinely
+   no tramitação on record (not a file gap). And bills do NOT settle at legislature close: 5/5 sampled 2019-file
+   non-terminal rows match the live API exactly, with 2024-2026 status timestamps (e.g. PL 1/2019 "Aguardando
+   Apreciação pelo Senado Federal", 2025-08-26). The scored population is therefore "bills whose status is
+   terminal at the vintage", with no-status/non-terminal/merged rows counted per window - recorded, never
+   inferred as a membership decision. `probe_file_inventory.py`: 35/35 years 200 OK, 747.4 MB + 456.0 MB.
+
+**Build + smoke.** `source/build.py` (descending-first-wins union, presentation-instant features only, terminal
+label with a frozen code-classification table, in-build naive references, fixtures). `tests_smoke_build.py`
+runs the real build over 70 synthetic year files - caught three real bugs before worker spend (whole-file header
+trim in both passes, a wrong row-count metric) and validated the proponente-ordering rule, the true id-collision
+path, unobserved buckets and the quality/meta writers. **SMOKE OK.**
+
+**camara-001 (server 171985941, 395.6 s, exit 2, EUR 0.06) failed on three of MY anchors, not on the data:** the
+record's row estimates were too high (measured 642,067 in-window / 160,559 train vs estimated 700k-1.05M /
+180k-420k) and the portal facet bound 11,640 was read from a **PL-filtered** search page, so it bounds PL-only
+positives, not the all-types total (17,513). The full build was otherwise coherent: train 160,559 / 14,323
+positives (8.92%), eval 37,885 / 1,397 (3.69%), holdout 36,892 / 1,793 (4.86%); PL 4188/2021 (BR do Mar)
+matched and positive in holdout; both classes in every window. Reports collected into
+`.factory/camara-001/reports/` (sha256-verified; bulk CSVs skipped); worker destroyed 06:48:42Z.
+
+**camara-002 (server 171989986, launched 06:51:44Z, EUR 0.06) is RUNNING** with exactly one repair - the guards
+re-anchored on camara-001's measurement and the cross-check narrowed to PL-only scope. Label rule, windows,
+splits, features unchanged. **Acceptance pending: exit 0 + passing gate report + `--accept` on the exact bytes
+before any scoring.** Two measured properties must be reported beside any score: the scored population is the
+terminal-status subset (unobserved ≈55% train / 64% holdout) and the positive rate moves 8.92% → 3.69% → 4.86%.
+
+Checks this tick: `check-candidate.py` OK (status ready); local smoke green; `assemble-job.py` bundle hashes
+verified; October worker reservations now ~EUR 8.0 of 20 (camara-001 0.06 + camara-002 0.06 added). Commit
+`30b03d8` pushed with the probes, build, smoke, record and camara-001 ledger; CI result for that commit is
+reported in the session close-out.
+
+## 2026-10-23 - camara-001 worker follow-up tick: cleanup and preservation provider-verified; unpushed commits pushed; in-build-reference order flagged to advancement
+
+The watcher handed off camara-001 (failed, exit 2). The advancement session had already diagnosed it (three of
+its own guard anchors, not a data defect), collected the bounded reports and destroyed the worker; this tick
+verified that close-out and completed the missing pieces. No new job was launched - camara-002 remains the single
+diagnosed recovery on this attempt chain, and interpreting its result belongs to advancement / the next tick.
+
+- **Cleanup confirmed against the provider, not just the ledger.** Read-only Hetzner checks at 06:58Z:
+  `GET /servers/171985941` -> 404 `server not found` (deletion provider-confirmed); the project holds exactly one
+  primary IP (65.21.158.17), labeled `job=camara-002` and assigned to camara-002's live server - **zero IPs
+  reference camara-001**. camara-002's server 171989986 answered 200 (running; ledger status running, consistent
+  with its 06:51:44Z launch and camara-001's 6.6-minute build).
+- **Preservation verified.** The failed attempt's evidence is durable in the private staging draft release
+  `job-camara-001` (id 421522080): all 8 assets re-verified by id, size and sha256 against the job ledger. Bulk
+  CSVs were deliberately not fetched to the coordinator; the bounded set (manifest.json, both summary.json
+  copies, container.log 8,013 B, source.tar 174,080 B - ~189 KB total) is under `.factory/camara-001/reports/`,
+  within the 20 MiB cap.
+- **Failure interpretation re-checked from the collected evidence.** container.log shows the full build completed
+  (642,067 in-window bills after the descending-first-wins union; 49 situation codes, 0 unresolved by data;
+  coherent per-split buckets) and then exactly three FAIL lines - the three guard anchors - followed by
+  `build failed; the extract is incomplete and qualification is not meaningful`, exit 2 **before** the gate
+  (run.sh order is build -> qualify). The fixture anchor (PL 4188/2021 positive) produced no FAIL. Consequence:
+  **camara-001's artifact was never qualified; no figure from this attempt is quotable** - the split/bucket
+  numbers are construction diagnostics only.
+- **The advancement session's commits were not actually pushed.** `origin/main..HEAD` held 30b03d8, d54add9,
+  97d7beb (so the line above, "Commit `30b03d8` pushed", did not hold; cause not diagnosed this tick - the
+  documented pitfall is a shell GH_TOKEN resolving to the staging token, which this repo denies). This tick
+  pushed the chain with GH_TOKEN/GITHUB_TOKEN/FACTORY_GH_TOKEN cleared from the push environment and verified
+  origin/main caught up. CI runs once at the pushed HEAD; exact-commit status is in this session's close-out.
+- **Process flag to advancement (their decision; not acted on here).** build.py computes the in-build naive
+  reference AUCs on the written rows **before** the qualification gate runs (camara-001 container.log
+  "reference baselines" block sits beside the FAIL lines; run.sh runs the gate only after the build exits 0).
+  The qualification skill's required order is construct -> qualify -> accept -> score, and construction must
+  not compute/log baseline performance before acceptance. Decide whether that reference computation moves
+  after acceptance (a construction change), and until decided no in-build reference figure may be quoted -
+  this governs how camara-002's summary is read too.
+
+## 2026-10-23 - Africa discovery tick: Kenya unpark question resolved (with an NC decision); ZA dam lead parked on access+licence; Nigeria closed on the publisher's own terms; Morocco censused clean-but-not-task-shaped; Ghana unreachable
+
+Regional focus Africa; all five verdicts are in-region, no US substitution. Nigeria, Ghana and Morocco went from zero
+coverage to recorded evidence. Nothing was built, qualified or packaged; no US source padded the report.
+
+- `za-dws-dam-storage-exceedance` (ZA, NEW) - **parked on two measured blockers**; the strongest task idea of the tick
+  (national per-dam weekly storage exceedance, ~250 dams, drought early warning for restriction/irrigation decisions).
+  dws.gov.za answers 403 to a plain client AND a real browser from this coordinator; niwis.dws.gov.za times out;
+  data.gov.za is DNS-dead; Wayback has ZERO captures of the terms or bulletin pages (CDX measured). So no schema, history
+  or licence instrument could be read first-hand; everything attributed to the source is third-party (reservoirs.earth)
+  and must be re-measured. The Cape-Town-only fallback (reachable, daily+weekly) was rejected on split-capacity + prior
+  art (single system, Day Zero positives clustered 2017-18). Next action: one ~2-minute worker-side access test (is the
+  403 coordinator-specific?), then read+quote the terms instrument if reachable, classify, and only then novelty.
+- `ng-nbs-state-price-exceedance` (NG, NEW) - **dropped at the licence gate, the cheapest veto**. NBS's monthly
+  state-level Price Watch series (food/PMS/AGO, the most task-shaped Nigerian data found) cannot be published: the
+  publisher's own Terms & Conditions (nigerianstat.gov.ng/page/terms, fetched 2026-10-23) state verbatim that NBS data
+  "will not be redistributed or sold to other individuals, institutions, or organizations with out the written agreement
+  of the National Bureau of Statistics" - class D, quote archived in the record. Novelty never reached, not claimed.
+  Reopen: written NBS agreement (operator-side) or a different channel under its own open terms. Landscape note: an HF
+  org (electricsheepafrica) already mirrors NBS price-watch raw series - their provenance judgement, recorded as
+  observation, not permission.
+- `ma-datagovma-coverage` (MA, NEW) - **parked: portal censused, clean licence, no task-shaped content**. data.gov.ma is
+  live with an anonymous CKAN API and ODbL on ALL 697 datasets (per-dataset license facet + portal FAQ, class B).
+  Top-10-publisher title census (~590 datasets): annual court-activity tables (3-5 periods), HCP/BAM/ACAPS macro
+  aggregates ending 2022-2023, regional real-estate/construction-materials tables ending 2019-2022, third-party
+  governance indices at INPPLC, and AMMC weekly OPCVM files verified by download to be 6-category aggregates, NOT
+  per-fund. No unit-level ongoing series. The census + licence are recorded so the next Africa tick re-probes only on
+  portal growth, not from scratch.
+- `gh-opendata-coverage` (GH, NEW) - **investigating: portal unreachable from this coordinator** (CKAN action API
+  connection refused; real browser ERR_SOCKS_CONNECTION_FAILED). Third-party evidence (Data Landscapers, WB eTransform
+  completion report): catalogue static ~3 years, no open licence on record, dated static CSVs. Access failure is not a
+  rejection; next probe is one bounded re-probe from a worker network alongside the ZA test, then close under class C
+  policy if per-dataset licences are absent.
+- `kenya-opendata-knbs` (KE, UPDATED) - **the recorded unpark question is answered: YES, a channel now exists - with a
+  condition.** KNBS runs a NEW National Statistical Repository (repository.knbs.or.ke, DSpace 10.0): anonymous REST
+  API, 20 statistical communities, 1,366 discover-indexed objects (sampled: monthly Leading Economic Indicators back to
+  2011, monthly CPI reports to 2026, quarterly GDP/BOP, Economic Survey 2007) - a real long-run channel. Its own
+  accessibility page states (fetched + verified directly): "Unless stated otherwise on the item itself, content in this
+  repository may be reused for non-commercial purposes, with attribution. CC BY-NC 4.0". NC is a stated conditional
+  licence, not an open grant: whether our non-commercial research releases may carry an NC condition is an OPERATOR
+  DECISION, recorded as next-action step 1. Item-level enumeration is 401/404 anonymously, so no series/timing census
+  exists yet; CBK (regulator probe from the 2026-10-21 next action) was unreachable from the coordinator this tick -
+  recorded as not-probed, not negative.
+
+AfDB/UNECA coverage (no candidates opened, recorded here for the rotation): data.afdb.org is NXDOMAIN; the AfDB data
+infrastructure is the Africa Information Highway (africadata.org / dataportal.opendataforafrica.org country portals,
+Knoema-platform indicator portals), and UNECA's channel is ecastats.uneca.org - both aggregate-indicator territory,
+already crowded by WDI mirrors and the electricsheepafrica HF mirrors; no unit-level task-shaped source was identified.
+Session hygiene: check-candidate.py OK for all five records and --all exit 0 (82 records); probe scripts kept as the
+recipes in each candidate directory and re-run end-to-end with identical evidence (probe_repository.py,
+probe_terms.py, probe_portal_census.py, probe_access.py, probe_access_licence.py); scratch probes deleted after the
+recipes were copied; no bulk data downloaded (largest fetches were four ~40-55 KB AMMC XLSX files).
+
+## 2026-10-23 - Latin America discovery tick: IDEAM threshold blocker RESOLVED (measured); Argentina lead opened and closed at the novelty gate
+
+Regional focus Latin America; both verdicts are in-region, no US substitution. One existing lead advanced
+with a decisive measurement, one new lead (Argentina, previously zero coverage) opened, fully triaged and
+closed with recorded evidence. Nothing was built, qualified or packaged.
+
+- `ideam-rio-nivel-exceedance` (CO, class B CC BY-SA) - **still investigating, but the one blocking fact from
+  the first pass (does an official per-station threshold exist in any obtainable form?) is resolved YES.**
+  Current IDEAM bulletins (BAH/ITD/BCH, Oct 2026, fetched and text-extracted) carry zone-level alerts only;
+  the per-station "COTA CRITICA x.xx m" values live in the historical IHD (Informe Hidrologico) PDFs,
+  Wayback-archived (CDX captures 2017-2025): 16 station cotas extracted from one Oct-2024 IHD via pypdf
+  (recipe kept as probe_ihd_cota_extract.py), with decade-stability evidence (Puerto Salgar 6.20 / El Banco
+  8.30 identical in 2014 and 2024 bulletins). No machine-readable threshold table exists on datos.gov.co
+  (catalogue searches empty; h4gs-wsmg Alertas Hidrologicas is a non-tabular Socrata view, 403 row access).
+  Measured via SoQL (probe_cota_soql.py, re-run end-to-end today with identical output): El Banco 0025027020
+  vs cota 8.30 = 5,937/105,354 hourly obs over 2015-2026 (5.64%), distinct days over cota per window
+  train 2015-2019 137/1,777 days-with-data / eval 2020-2023 137/828 / holdout 2024-2026 111/957 - both
+  classes in every window on this station, positives clustered into flood episodes, telemetry gaps measured.
+  Two construction hazards measured, not assumed: name-only joins produce FALSE PAIRS (IHD "PUERTO ANGOSTURAS
+  - RIO ARIARI" matches telemetry "ANGOSTURA" 0021137050, a Magdalena station - excluded from claims), and
+  Mitu 0042077020 shows 0/29,688 obs over cota 10.20 - an unexplained frame/station anomaly; every joined
+  station needs the zero/always-positive sanity check. record.json carries the new measurement block and a
+  rewritten next_action: IHD harvest (CDX sweep 2016-2024) -> join by codigoestacion + river + municipio ->
+  per-station continuity and clustered base rates -> raw-vs-validated as-of comparison -> novelty check before
+  any ready verdict. check-candidate OK (status=investigating).
+- `ar-ecobici-station-demand-exceedance` (AR, NEW) - **dropped at the novelty gate; licence and access were
+  excellent and are recorded so nobody re-verifies them.** Buenos Aires Data (CKAN) carries every Ecobici trip
+  since 2010 under CC-BY-2.5-AR (package metadata, read 2026-10-23): 17 yearly files 2010-2026, all HEAD-200
+  with sizes measured (~1.75 GB total; 2019 398 MB, 2025 208 MB, 2026 partial 143 MB, CDN Last-Modified shows
+  the current-year file updating in-year and completed years frozen Jan-Mar of Y+1). Bounded 2015 sample
+  parsed: 503,252 trips, 15 documented columns with station ids + coordinates. The task (station-day demand
+  exceedance) failed the novelty check with a recorded mirror verdict (check-novelty.py, 2 queries): the task
+  family exists ML-ready for other cities (UCI Bike Sharing, Seoul Bike Sharing Demand, Kaggle 2015),
+  Ecobici-specific demand prediction is already published (UTDT thesis 2018-2020; UBA course project
+  benchmarking xgboost on Ecobici 2016-2017 with weather; TFI 2016), Ecobici user churn has a UTDT thesis,
+  and the raw 2025 trips are mirrored on Kaggle with EDA notebooks. What would be ours (splits, gating,
+  frozen thresholds) is packaging on a saturated task - closed per the standing rule. Reopen conditions in
+  the record. check-candidate OK (status=dropped).
+
+Coverage after this session (discovery-coverage.py): 78 candidates, 25 live; Latin America 7 (BR 2, CL 2,
+CO 1, MX 1, AR 1 - Argentina no longer zero); live non-US 19/25 (76%); ready buffer 4 (camara-bill-
+advancement BR, chilecompra-tender-outcome CL, nz-ea-wholesale-price-exceedance, za-municipal-audit-opinion)
+plus tsb/wb above them at packaged/qualified. Session hygiene: check-candidate.py --all exit 0 (78 records,
+warning lines pre-existing); unittest suite 588/588 OK; factory doctor and check-runtime --source-only clean;
+probe scripts kept in the two candidate directories (probe_ihd_cota_extract.py, probe_cota_soql.py executed
+end-to-end today with identical output; probe_ba_inventory.py) and session scratch deleted (~160 MB of
+bulletin PDFs and samples never committed). No US source substituted for the regional quota; Argentina's
+empty coverage was probed honestly and closed on evidence, not padded.
 
 ## 2026-10-22 - wb-baseline-001 close-out (watcher): runner-contract baseline green; every recorded number verified against the fetched reports
 
@@ -6476,3 +6666,23 @@ no candidate records yet. Evidence: evals/research-prompts/results/deployed-obse
 Next: let that normal session finish, audit its actual source evidence/decisions and
 exact-commit checks, archive full four-field usage including vision, and only then
 close the prompt-improvement goal. Do not infer a new accepted dataset from scores.
+
+## 2026-10-23 worker-status follow-up: camara-002 (camara-bill-advancement) failed the gate; cleanup verified; design decision handed to advancement
+
+camara-002 (server 171989986) failed exit 1 after 389.4 s: the build ran clean over the full
+70-file union (splits identical to camara-001's measurement) and uploaded all 12 assets to the
+private staging release `job-camara-002` (id 421533646), but qualification gate 1.4.0 failed
+one of 38 checks — `splits.enough_clustered_positives`: with `event_key_column=apresentacao_year`
+the eval/holdout windows carry only 4 distinct positive events each (1,397 and 1,793 positives)
+against the gate minimum of 30 positives and 20 events. Structural for the 4-year cohort design,
+not a code defect; no same-design rebuild can pass.
+
+Handled this session: bounded reports collected into `.factory/camara-002/reports/`
+(sha256-verified; bulk CSVs preserved at the staging release and proven by ranged GET);
+worker destroyed 07:12:22Z with provider deletion read back (GET /servers/171989986 = 404
+server not found; project primary_ips empty). Candidate record updated (camara-002 outcome,
+`measurements.camara_002_gate_result_2026_10_23`, next_action = advancement handoff); full
+artifact preserved at release job-camara-002 (421533646). No figure from either attempt is
+quotable. Next: advancement decides the independence claim (re-target/drop, or re-declare the
+event key and re-gate the same staged artifact — no third full build; the one-rebuild budget
+for this defect class is spent).

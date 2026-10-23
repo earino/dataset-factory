@@ -1,0 +1,45 @@
+{
+  "id": "ma-datagovma-coverage",
+  "status": "parked",
+  "created_at": "2026-10-23T04:07:26.757978+00:00",
+  "domain": "national open-data infrastructure / statistical publishing (country portal record, Morocco)",
+  "prediction_question": "No task carried to formulation: this is a country-coverage record for the Africa tick. Morocco's national open-data portal (data.gov.ma) is live, machine-readable and cleanly licensed (ODbL on all 697 datasets), but the 2026-10-23 census of its top publishers found no unit-level, ongoing, task-shaped series: content is annual/quarterly aggregate tables, static institutional inventories, and third-party governance indices. Candidate shapes that were checked and rejected this tick: per-court annual caseload prediction (Ministry of Justice tables are annual snapshots 2021-2023 + a 2017-2021 quinquennat - too few periods); regional construction-materials/rent price series (MATNUHPV tables end 2019-2022); weekly OPCVM fund-flow prediction (AMMC publishes category-level aggregates only - 6 categories, verified by file download).",
+  "prediction_time": "n/a while parked. The portal does carry dated annual/weekly files (AMMC weekly OPCVM 2016-2026), so a publication-instant formulation would be stateable for a future unit-level stream.",
+  "target_definition": "n/a while parked: no obtainable series was found whose label source could both carry a task and be excluded from shipped features at unit grain.",
+  "sources": [
+    {
+      "name": "Portail de l'Open Data au Maroc - data.gov.ma (national CKAN portal)",
+      "url": "https://www.data.gov.ma/ (CKAN API: https://www.data.gov.ma/data/api/3/action/)",
+      "api": "anonymous CKAN API, measured 2026-10-23: package_list = 697 datasets; license_id facet = odc-odbl on all 697; formats XLSX 524, XLS 102, CSV 10; top orgs by count: Justice et des Libertes 84, HCP 79, Economie et Finances 75, MATNUHPV 61, Bank Al-Maghrib 43, mjcc (youth/culture) 41, ACAPS 34, Commune d'Ait Melloul 27, ANRT 16, INPPLC 15, AMMC 11",
+      "license": "ODbL for the portal's datasets, per the portal's own FAQ (https://www.data.gov.ma/fr/faq, read 2026-10-23): reusers may 'Copier, distribuer et utiliser' / 'Produire des creations' / 'Adapter, modifier et construire' subject to attribution and share-alike; the CKAN license facet records odc-odbl on every dataset",
+      "access": "Live, fast, fully anonymous; machine-readable resource URLs (verified by downloading four AMMC weekly XLSX files, 39-55 KB each, 2026-10-23)."
+    }
+  ],
+  "license_evidence": [
+    "data.gov.ma FAQ (https://www.data.gov.ma/fr/faq, read 2026-10-23): 'L'utilisation des jeux de donnees/Bases de donnees Open Data sur le portail national www.data.gov.ma est soumise aux conditions de la licence ODbL (Open Database Licence)' - with the enumerated rights (copy/distribute/use, produce creations, adapt/modify/build) and conditions (attribution, share-alike for adapted databases, keep-open).",
+    "CKAN package_search facet (measured 2026-10-23): license_id = odc-odbl with count 697 of 697 datasets - the licence is recorded per-dataset by the portal itself, not inferred from a policy page.",
+    "Class B (attribution + share-alike): our derived rows would need to carry ODbL share-alike into LICENSE.md, exactly the class-B handling the discovery skill prescribes."
+  ],
+  "construction_script": null,
+  "split_strategy": "n/a - no task was opened. The census found no series with the depth and grain to support disjoint train/eval/holdout windows (annual tables end 2019-2023; weekly OPCVM data is 6-category aggregates; court tables are annual with ~3-5 periods visible).",
+  "measurements": {
+    "census_2026_10_23": "697 datasets enumerated via CKAN; top-10 publishers by count (~590 datasets) title-censused: Justice (annual court-activity tables per court type, 2021/2022/2023 + quinquennat 2017-2021), HCP (national accounts/CPI/labour aggregates, mirrored conceptually by WDI), Economie et Finances (75), MATNUHPV (regional real-estate/construction-materials prices 2005-2022, agent fees/rents/deposits 2001-2022, housing units started/completed 2016-2023, cement consumption), Bank Al-Maghrib (monetary/credit aggregates, most ending sept-2023), mjcc (static youth/culture facility inventories), ACAPS (insurance/AMO/retraite sector indicators, 2012-2023), Commune d'Ait Melloul (27), ANRT (16), INPPLC (third-party governance indices - Basel AML, WJP, BTI, TRACE, V-Dem, Mo Ibrahim, OBI - plus annual corruption-complaint counts), AMMC (weekly OPCVM statistics).",
+    "ammc_opcvm_granularity_check_2026_10_23": "Downloaded 4 weekly files from stat-hebdo-opcvm-2025 (39,552 / 40,678 / 40,916 / 39,586 bytes; sheet names 'Francais', 'data', 'VALEURS_LIQUIDATIVES'): content is 'Actif net par categorie OPCVM' with 6 categories (Actions, Diversifies, Monetaire, Obligations CT/MLT, Contractuel) plus performance indices - CATEGORY-level aggregates, NOT per-fund rows. A ~6-series weekly panel is not a viable task.",
+    "unexamined_tail": "The long tail beyond the top-10 orgs (~100 datasets, incl. education ministry, tourism, reform-of-administration) was not title-censused this tick; formats there are the same XLSX/XLS annual-table pattern. Recorded as an explicit census limitation, not as evidence of absence.",
+    "third_party_mirror_landscape": "The electricsheepafrica HF organisation (observed 2026-10-23, 100+ datasets) standardizes African indicator series (World-Bank-style) to HF - macro-indicator tasks on African data are a crowded raw-mirror space, which further reduces the value of aggregate-table tasks from this portal."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "PARK (coverage, not a task defect): the portal is one of the cleanest open-licence channels in Africa (ODbL on all 697 datasets, anonymous CKAN API, machine-readable files), but the census found no unit-level ongoing series to build a task on - annual aggregate tables, static inventories, category-level fund aggregates, and third-party governance indices. No cheap decisive fact remains unprobed for the current catalogue: the licence is clean and the content is not task-shaped.",
+  "review": "A high-value negative: the next Africa tick should NOT re-crawl data.gov.ma from scratch. The licence posture (class B, ODbL) and the full org census are recorded here, so adopting a future dataset from this portal is cheap; what is missing is content, not access. Morocco's zero-coverage gap is closed with evidence.",
+  "next_action": "Re-census (title-level, one CKAN package_search call) only when the portal's dataset count moves materially above 697 or a new publisher org appears (e.g. ONCF, ONEE, ONICL, Office des Changes); probe specifically for unit-level/event-level streams (procurement records, inspections, licences, per-establishment series). Reopen condition for a task: any unit-grain, ongoing, dated series with an outcome observable after a stateable prediction instant. Do not re-verify the ODbL licence - it is quoted and faceted in this record.",
+  "verdict": "park",
+  "licence_class": "B",
+  "licence_note": "ODbL (attribution + share-alike) stated by the publisher in the portal FAQ and recorded by the CKAN license facet on all 697 datasets (both measured 2026-10-23). Any future derived dataset from this portal ships with ODbL conditions carried into LICENSE.md.",
+  "jurisdiction": {
+    "country": "MA",
+    "region": "Africa",
+    "publisher": "Kingdom of Morocco national open-data portal data.gov.ma (Direction du Development Digital / eGov unit) and its publishing institutions (HCP, Bank Al-Maghrib, AMMC, ACAPS, CNSS, ministries)",
+    "recorded_at": "2026-10-23"
+  }
+}
