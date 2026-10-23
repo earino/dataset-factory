@@ -1,171 +1,188 @@
 {
- "id": "camara-bill-advancement",
- "status": "ready",
- "created_at": "2026-10-21T12:06:45.522906+00:00",
- "domain": "legislative process - bill-level ultimate-outcome prediction (Brazil, Chamber of Deputies)",
- "prediction_question": "A legislative proposition (Projeto de Lei, PEC, PLP, PDL, PRC, Requerimento and other documented types) is presented in the Brazilian Chamber of Deputies at a known date. At the presentation instant, given only presentation-time context - proposition type, the bill's own ementa (the abstract written at introduction), its author(s) and their party/faction, and the presentation calendar - will the proposition ultimately be transformed into legal norm (enacted) rather than archived or merged, by the close of its legislature?",
- "prediction_time": "The instant of presentation (dataApresentacao). Excluded from shipped features by documented timing reasoning: the publisher's indexa\u00e7\u00e3o fields keywords and proposicoesTemas (assigned by the Chamber's indexing service after presentation - post-hoc, and the file documentation itself lists them beside 'informa\u00e7\u00f5es sobre a tramita\u00e7\u00e3o mais recente'); all ultimoStatus_* fields (the current/last tramita\u00e7\u00e3o state - label source); regime as recorded in ultimoStatus (current regime, mutable after presentation); uriPropAnterior/Principal/Posterior (later-created links); urnFinal. Safe features: siglaTipo/codTipo/descricaoTipo, ementa text, dataApresentacao + calendar features, authors (from the separate proposicoesAutores bulk family), ano/numero.",
- "target_definition": "Binary from the publisher's own situation vocabulary in the bulk CSV's ultimoStatus (current status at the file vintage; file and live API agree, measured 2026-10-23): positive = situation code 1140 'Transformado em Norma Jur\u00eddica' (CORRECTED 2026-10-23: the discovery sample's 'idSituacao 251' was a positional indexing defect - column 25 is ultimoStatus_idTipoTramitacao, not idSituacao; the header-name-keyed parse shows 1140 with a consistent code->description table, e.g. 923 Arquivada, 1230 Transformado em nova proposi\u00e7\u00e3o, 937 Vetado totalmente). Terminal negative = Arquivada* codes plus the other settled non-enactment states (Vetado totalmente, Retirado pelo(a) Autor(a), Devolvida ao(\u00e0) Autor(a), Tramita\u00e7\u00e3o Finalizada, Enviada ao Arquivo). Merged rows (1230 'Transformado em nova proposi\u00e7\u00e3o') are EXCLUDED from the scored population - the outcome is carried by the merged-into bill (decision recorded; share measured per window). Rows with a non-terminal status, and the 25-53% of rows (by year, measured) whose idSituacao is empty - the API confirms genuinely no tramita\u00e7\u00e3o on record, not a file gap - are unobserved targets, excluded and counted per window, never membership decisions on future data. Label source columns: all ultimoStatus_* fields and urnFinal, excluded from shipped features.",
- "sources": [
-  {
-   "name": "Bulk per-year proposition files (proposicoes)",
-   "url": "https://dadosabertos.camara.leg.br/arquivos/proposicoes/csv/proposicoes-{ano}.csv",
-   "api": "anonymous, semicolon-delimited UTF-8 CSV, byte-range supported; 30 documented columns (id, uri, siglaTipo, numero, ano, codTipo, descricaoTipo, ementa, ementaDetalhada, keywords, dataApresentacao, uriOrgaoNumerador, uriPropAnterior, uriPropPrincipal, uriPropPosterior, urlInteiroTeor, urnFinal, ultimoStatus_dataHora/sequencia/uriRelator/idOrgao/siglaOrgao/uriOrgao/regime/descricaoTramitacao/idTipoTramitacao/descricaoSituacao/idSituacao/despacho/apreciacao/url). Publisher description: 'cada registro cont\u00e9m dados sobre uma proposi\u00e7\u00e3o apresentada \u00e0 C\u00e2mara dos Deputados para delibera\u00e7\u00e3o ... informa\u00e7\u00f5es sobre a tramita\u00e7\u00e3o mais recente'.",
-   "license": "see license_evidence (portal terms: dom\u00ednio p\u00fablico with attribution)",
-   "access": "measured 2026-10-21: sizes 1991: 4,451,452 B; 1995: 4,914,946 B; 2000: 6,846,297 B; 2005: 22,247,788 B; 2010: 15,888,349 B; 2015: 34,171,659 B; 2019: 33,295,980 B (last-modified 2026-10-21, live); 2023: 52,259,953 B; 2024: 53,088,881 B; 2025: 90,204,760 B. FILE SEMANTICS MEASURED: 98-100% of rows in file-YYYY have dataApresentacao in year YYYY; the ~2% remainder are older bills re-numbered to the current 'ano' when un-archived at a legislature boundary (measured: 2019-file rows with dataApresentacao 2000/2001). Cohorts must therefore be defined by dataApresentacao across the union of files, not by file year alone."
-  },
-  {
-   "name": "Companion bulk families (same URL pattern, arquivos/{family}/csv/{family}-{ano}.csv)",
-   "url": "https://dadosabertos.camara.leg.br/arquivos/proposicoesAutores/, arquivos/proposicoesTemas/, arquivos/votacoesProposicoes/",
-   "api": "proposicoesAutores (author at presentation - safe feature source), proposicoesTemas (post-hoc thematic indexa\u00e7\u00e3o - EXCLUDED from features by timing), votacoesProposicoes (floor votes - possible richer label source at construction).",
-   "license": "see license_evidence",
-   "access": "families documented on dadosabertos.camara.leg.br/swagger/api.html (fetched 2026-10-21)."
-  },
-  {
-   "name": "REST API v2 - proposicoes",
-   "url": "https://dadosabertos.camara.leg.br/api/v2/proposicoes",
-   "api": "anonymous; dataApresentacaoInicio/dataApresentacaoFim cohort filter (range limited to 3 months per request - measured HTTP 400: 'A diferen\u00e7a entre as datas n\u00e3o pode ser maior que 3 meses'); itens=100 per page; the Link rel=last header gives page counts. Situation code table endpoint exists but its method is undocumented (GET and POST both 405 on /api/v2/referencias/proposicoes/situacoes) - construction resolves idSituacao meanings from the publisher's Refer\u00eancias documentation.",
-   "license": "see license_evidence",
-   "access": "measured cohort counts (pages x 100): 2005 = 41+92+61+69 ~= 26,300 presented; 2019 = 68+105+107+135 ~= 41,400 presented."
-  }
- ],
- "license_evidence": [
-  {
-   "note": "Portal terms (fetched 2026-10-21): 'Todas as informa\u00e7\u00f5es publicadas no Portal da C\u00e2mara s\u00e3o de dom\u00ednio p\u00fablico, gratuitas e podem ser reproduzidas desde que citada a fonte \"C\u00e2mara dos Deputados\" e a autoria da informa\u00e7\u00e3o, quando houver.' Free reproduction with attribution; the Dados Abertos portal is part of the Portal da C\u00e2mara.",
-   "url": "https://www2.camara.leg.br/termo-de-uso-e-politica-de-privacidade"
-  },
-  {
-   "note": "Institutional open-data policy: Portaria n\u00ba 226 de 23/12/2025 defines dados abertos as 'dados process\u00e1veis por m\u00e1quina, estruturados em formato aberto, referenciados na internet e disponibilizados ao p\u00fablico para livre utiliza\u00e7\u00e3o, consumo ou cruzamento' and provides for public disclosure of databases under arts. 29 a 37 da Lei n\u00ba 14.129, de 2021. LICENCE DECISION: redistribution of derived rows permitted with attribution ('Fonte: C\u00e2mara dos Deputados'); source terms preserved; our derived compilation dedicated CC0 per standing policy; derived, never presented as the Chamber's official product.",
-   "url": "https://www2.camara.leg.br/legin/int/portar/2025/portaria-226-23-dezembro-2025-798595-publicacaooriginal-177615-cd-dg.html"
-  }
- ],
- "construction_script": null,
- "split_strategy": "Cohorts by dataApresentacao over the union of the 35 year files (1991-2025; files processed descending, first id wins so re-numbered bills contribute their current row), windows by presentation date: train 1991-01..2014-12, eval 2015-01..2018-12, holdout 2019-01..2022-12. RIGHT-CENSORING CORRECTED 2026-10-23: Brazilian propositions carry across legislatures (bills presented 2019 still show live statuses with 2024-2026 timestamps, file and API agree), so 'closed legislature' does not settle labels; the scored population is bills whose status is terminal at the current file vintage, and the unobserved share (no-status + non-terminal) is measured per window and recorded as a property - it rises with recency. Sampled positive rates drift strongly downward by cohort (1991 whole file 311/4,436 = 7.0%; 2005 sampled ~2.2%; 2019-2022 sampled ~0.4-0.8%), a measured phenomenon property. Grain: one proposition = one row, keyed by id (unique across the union; construction asserts uniqueness).",
- "measurements": {
-  "ranged_samples_2026_10_21": "probe_samples.py: 4 x 1 MB ranged chunks each of proposicoes-2005.csv (4,852 parsed rows) and proposicoes-2019.csv (4,909 rows). 2005 sample: dataApresentacao 100% in 2005; ultimoStatus vocabulary: 'Arquivada' ~62% across codes (1005, 502, 241, 100, 1001, 180...), 'Transformado em nova proposi\u00e7\u00e3o' ~3.5% (codes 469, 604...), 'Transformado em Norma Jur\u00eddica' (idSituacao 251) 72 = 1.5%; urnFinal non-empty 0/4,852. 2019 sample: 98% presented 2019; statuses still mixed (Arquivada 14.8%, ongoing tramita\u00e7\u00e3o states) - recent cohorts right-censored, excluded from the task.",
-  "situation_code_quality_2026_10_21": "Many rows carry idSituacao with EMPTY descricaoSituacao (codes '100', '319' are the most frequent with empty descriptions, 39-40% of sample rows) while the same codes also appear WITH descriptions elsewhere - the label must be defined on the publisher's situation CODE table (fetched at construction), with descriptions as a cross-check where present. Measured on the same samples.",
-  "api_cohort_counts_2026_10_21": "dataApresentacao-filtered cohorts via Link rel=last page counts x 100: 2005 ~= 26,300 (41+92+61+69 pages); 2019 ~= 41,400 (68+105+107+135). Cross-checks the file-based row estimate for 2005 (~22 MB / ~850 B/row).",
-  "cost_measured": "Discovery cost: 15 requests / ~4 MB of ranged samples / 31 s wall clock (probe_samples.py) + 8 API count requests. Construction cost: ~35 year files (sizes measured, sum ~= 1.2 GB ESTIMATE) + proposicoesAutores files; worker-trivial.",
-  "construction_probes_2026_10_23": "probe_censoring.py (v1, naive line-splitting: defective - quoted multi-line ementas corrupt mid-file chunks), corrected by probe_censoring2.py (quote-parity record-boundary trimming; whole-1991 file ground truth) + probe_empty_status.py + probe_file_vs_api.py + probe_file_inventory.py, all run end-to-end 2026-10-23 from the coordinator: (1) situation-code vocabulary keyed by header name: 923 Arquivada (2,491 of 4,436 whole-1991 rows), 1140 Transformado em Norma Jur\u00eddica (311 = 7.0%), 1230 Transformado em nova proposi\u00e7\u00e3o, 937 Vetado totalmente, 925 Tramitando em Conjunto, 907/915/924/926/936/1070/1120/1170/1220/1285 ongoing/other - consistent code->description pairs, unlike the discovery sample's mis-indexed columns; (2) empty ultimoStatus share by year-file sample: 1991 36.6% (whole file), 2000 14.8%, 2005 51.4%, 2010 52.7%, 2015 51.9%, 2019 48.7%, 2021 52.3%, 2022 39.9% - and the API returns statusProposicao None for sampled such ids, so the emptiness is the publisher's own record, not a file gap; empty-status rows skew to procedural types (RIC/REQ/EMP/MSC) but include some PLs; (3) right-censoring: bills presented 2019 still carry non-terminal statuses with ultimoStatus_dataHora in 2024-2026 (e.g. PL 1/2019 id 2190407 'Aguardando Aprecia\u00e7\u00e3o pelo Senado Federal', dataHora 2025-08-26) and the API agrees with the file on every sampled id - the vintage is current, the legislatures are not closed for these bills; (4) file inventory: 35/35 years 200 OK for both families, proposicoes 747.4 MB + proposicoesAutores 456.0 MB total; (5) autores schema measured: idProposicao, tipoAutor, siglaPartidoAutor, siglaUFAutor, ordemAssinatura, proponente - first-author features keyed on the proponente row. Observation for the novelty record: an HF org (belisards) mirrors the raw proposicoes files 1934-2024 (ementas_camarabr_1934_2024) - raw extract, no splits, no scored contract; recorded as a mirror observation, not permission, and it does not change the recorded 'differentiated' verdict.",
-  "camara_001_full_union_2026_10_23": "Full build over the 70 bulk year files on the worker (camara-001, 395.6 s, exit 2 on guard anchors only). Measured: 642,067 in-window bills (presented 1991-2022) after a descending-first-wins union; splits train 160,559 rows / 14,323 positives (8.92%), eval 37,885 / 1,397 (3.69%), holdout 36,892 / 1,793 (4.86%); assumption buckets - train empty-status 208,487 / non-terminal 9,662 / merged 12,893, eval 68,809 / 8,553 / 776, holdout 75,639 / 20,842 / 1,070. Two measured properties to report beside any model score: (1) the scored population is only the terminal-status subset - roughly 55% of train and 64% of holdout rows are unobserved (no status or still live), so the task is conditioned on an observed fate and the unobserved share rises with recency; (2) positive rate moves 8.92% (train) -> 3.69% (eval) -> 4.86% (holdout), a prevalence shift that is a property of the phenomenon, not a construction fault. The in-build naive references and the fixture results are in the camara-002 summary.",
-  "camara_002_gate_result_2026_10_23": "Gate 1.4.0 over the full staged artifact (artifact_version digest 013f0b0696696a03cd0e0bcaad176936e7cd96b8c2e02358d0a67257af799fa9; train/eval/holdout/meta/quality): 37 of 38 checks passed; the only failure is splits.enough_clustered_positives, recomputed by the gate from the rows as eval 1,397 positives / 4 distinct apresentacao_year events and holdout 1,793 / 4, against minimums of 30 positives and 20 distinct events (train has 24 distinct positive years). The full artifact and the gate report are preserved at the private staging release job-camara-002 (id 421533646, 12 assets, digests verified at collection); the gate report is also at .factory/camara-002/reports/qualification-camara-bill-advancement.json (gitignored local copy)."
- },
- "jobs": [
-  {
-   "id": "camara-001",
-   "date": "2026-10-23",
-   "outcome": "failed (exit 2, 395.6 s): the full build ran and wrote coherent splits, but three of MY guard anchors fired - (a) in-window rows 642,067 outside the estimated [700k, 1.05M], (b) train rows 160,559 outside the estimated [180k, 420k], (c) positives total 17,513 exceeded a portal facet bound of 11,640 that was read from a PL-FILTERED search page (bounds PL-only, not all types). Not a data defect: PL 4188/2021 fixture matched positive in holdout, code 1140 canonical description correct, both classes in every window, buckets coherent. Reports collected into .factory/camara-001/reports/ (manifest, summary, container.log, source.tar sha256-verified); worker destroyed 06:48:42Z. Worker follow-up 2026-10-23 07:00Z verified: provider deletion read back (GET /servers/171985941 = 404 server not found; the project's only primary IP belongs to camara-002's live server - zero IPs reference camara-001); staging draft release job-camara-001 (421522080) re-verified all 8 assets by id+size+sha256; qualification never ran on this attempt (exit 2 before the gate per run.sh order), so no figure from it is quotable; handled marker written",
-   "server_id": 171985941
-  },
-  {
-   "id": "camara-002",
-   "date": "2026-10-23",
-   "outcome": "failed (exit 1, 389.4 s): the re-anchored rebuild ran the full 70-file union cleanly (build_status=0; 642,067 in-window bills, splits identical to camara-001's full-union measurement - train 160,559 rows / 14,323 positives, eval 37,885 / 1,397, holdout 36,892 / 1,793; PL 4188/2021 fixture positive in holdout; portal PL-only cross-check within its 11,640 bound) and uploaded all 12 assets to staging release job-camara-002 (id 421533646), then qualification gate 1.4.0 FAILED exactly one of 38 checks: splits.enough_clustered_positives - with event_key_column=apresentacao_year the positives cluster into only 4 distinct events in eval (1,397 positives over 2015-2018) and 4 in holdout (1,793 over 2019-2022) against the gate minimum of 30 positives AND 20 distinct events. Scientific/task-design failure, not infrastructure and not a code defect: 4-year cohort windows can never carry 20 year-clusters. The other 37 checks passed, including every leakage, timing, split-window/disjointness and runner-contract check. Reports collected into .factory/camara-002/reports/ (8 small assets + the staging manifest, each sha256-verified; the 3 bulk CSV digests agree across the gate artifact block, the staging manifest and the collect result, and each answered a ranged GET at its full size). Worker destroyed 07:12:22Z via the lifecycle CLI; provider deletion read back (GET /servers/171989986 = 404 server not found; project primary_ips list is empty). No figure from this attempt is quotable: the gate did not pass, so the in-build naive references and the 8.92% -> 3.69% -> 4.86% prevalence shift remain unqualified.",
-   "server_id": 171989986
-  }
- ],
- "artifacts": [],
- "rejection_reason": null,
- "review": null,
- "next_action": "HANDED TO ADVANCEMENT (task-design decision, not a code patch). camara-002's only gate failure, splits.enough_clustered_positives, is structural under the current design: event_key_column=apresentacao_year with 4-year eval/holdout cohort windows caps independent positive events at 4, far below the gate's 20-event minimum, so no rebuild of the same design can pass. Cheapest discriminating next check: decide the independence claim. (a) If year-level clustering is the honest claim for Brazilian bill enactment, the design cannot pass - record the negative finding and re-target (e.g. an onset/change target with denser event grain) or drop; (b) if bill-level (or legislature-session-level) independence is defensible on domain grounds, re-declare event_key_column in quality.json and re-run the gate over the SAME staged artifact (release job-camara-002, id 421533646) as a bounded re-gate job - do not launch a third full build; the one-rebuild budget for this defect class is already spent (camara-001 guard re-anchor -> camara-002 gate fail). Inflating the clustered count without a defensible independence claim is exactly what the gate refuses. No number from either attempt is quotable until a gate passes and --accept verifies the exact bytes on a worker.",
- "novelty_check": {
-  "checked_at": "2026-10-21T12:21:37+00:00",
-  "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
-  "queries": [
-   "Brazilian legislative bill prediction dataset",
-   "bill passage prediction benchmark",
-   "previsao tramitacao proposicoes camara"
+  "id": "camara-bill-advancement",
+  "status": "investigating",
+  "created_at": "2026-10-21T12:06:45.522906+00:00",
+  "domain": "legislative process - bill-level ultimate-outcome prediction (Brazil, Chamber of Deputies)",
+  "prediction_question": "A legislative proposition (Projeto de Lei, PEC, PLP, PDL, PRC, Requerimento and other documented types) is presented in the Brazilian Chamber of Deputies at a known date. At the presentation instant, given only presentation-time context - proposition type, the bill's own ementa (the abstract written at introduction), its author(s) and their party/faction, and the presentation calendar - will the proposition ultimately be transformed into legal norm (enacted) rather than archived or merged, by the close of its legislature?",
+  "prediction_time": "The instant of presentation (dataApresentacao). Excluded from shipped features by documented timing reasoning: the publisher's indexa\u00e7\u00e3o fields keywords and proposicoesTemas (assigned by the Chamber's indexing service after presentation - post-hoc, and the file documentation itself lists them beside 'informa\u00e7\u00f5es sobre a tramita\u00e7\u00e3o mais recente'); all ultimoStatus_* fields (the current/last tramita\u00e7\u00e3o state - label source); regime as recorded in ultimoStatus (current regime, mutable after presentation); uriPropAnterior/Principal/Posterior (later-created links); urnFinal. Safe features: siglaTipo/codTipo/descricaoTipo, ementa text, dataApresentacao + calendar features, authors (from the separate proposicoesAutores bulk family), ano/numero.",
+  "target_definition": "Binary from the publisher's own situation vocabulary in the bulk CSV's ultimoStatus (current status at the file vintage; file and live API agree, measured 2026-10-23): positive = situation code 1140 'Transformado em Norma Jur\u00eddica' (CORRECTED 2026-10-23: the discovery sample's 'idSituacao 251' was a positional indexing defect - column 25 is ultimoStatus_idTipoTramitacao, not idSituacao; the header-name-keyed parse shows 1140 with a consistent code->description table, e.g. 923 Arquivada, 1230 Transformado em nova proposi\u00e7\u00e3o, 937 Vetado totalmente). Terminal negative = Arquivada* codes plus the other settled non-enactment states (Vetado totalmente, Retirado pelo(a) Autor(a), Devolvida ao(\u00e0) Autor(a), Tramita\u00e7\u00e3o Finalizada, Enviada ao Arquivo). Merged rows (1230 'Transformado em nova proposi\u00e7\u00e3o') are EXCLUDED from the scored population - the outcome is carried by the merged-into bill (decision recorded; share measured per window). Rows with a non-terminal status, and the 25-53% of rows (by year, measured) whose idSituacao is empty - the API confirms genuinely no tramita\u00e7\u00e3o on record, not a file gap - are unobserved targets, excluded and counted per window, never membership decisions on future data. Label source columns: all ultimoStatus_* fields and urnFinal, excluded from shipped features.",
+  "sources": [
+    {
+      "name": "Bulk per-year proposition files (proposicoes)",
+      "url": "https://dadosabertos.camara.leg.br/arquivos/proposicoes/csv/proposicoes-{ano}.csv",
+      "api": "anonymous, semicolon-delimited UTF-8 CSV, byte-range supported; 30 documented columns (id, uri, siglaTipo, numero, ano, codTipo, descricaoTipo, ementa, ementaDetalhada, keywords, dataApresentacao, uriOrgaoNumerador, uriPropAnterior, uriPropPrincipal, uriPropPosterior, urlInteiroTeor, urnFinal, ultimoStatus_dataHora/sequencia/uriRelator/idOrgao/siglaOrgao/uriOrgao/regime/descricaoTramitacao/idTipoTramitacao/descricaoSituacao/idSituacao/despacho/apreciacao/url). Publisher description: 'cada registro cont\u00e9m dados sobre uma proposi\u00e7\u00e3o apresentada \u00e0 C\u00e2mara dos Deputados para delibera\u00e7\u00e3o ... informa\u00e7\u00f5es sobre a tramita\u00e7\u00e3o mais recente'.",
+      "license": "see license_evidence (portal terms: dom\u00ednio p\u00fablico with attribution)",
+      "access": "measured 2026-10-21: sizes 1991: 4,451,452 B; 1995: 4,914,946 B; 2000: 6,846,297 B; 2005: 22,247,788 B; 2010: 15,888,349 B; 2015: 34,171,659 B; 2019: 33,295,980 B (last-modified 2026-10-21, live); 2023: 52,259,953 B; 2024: 53,088,881 B; 2025: 90,204,760 B. FILE SEMANTICS MEASURED: 98-100% of rows in file-YYYY have dataApresentacao in year YYYY; the ~2% remainder are older bills re-numbered to the current 'ano' when un-archived at a legislature boundary (measured: 2019-file rows with dataApresentacao 2000/2001). Cohorts must therefore be defined by dataApresentacao across the union of files, not by file year alone."
+    },
+    {
+      "name": "Companion bulk families (same URL pattern, arquivos/{family}/csv/{family}-{ano}.csv)",
+      "url": "https://dadosabertos.camara.leg.br/arquivos/proposicoesAutores/, arquivos/proposicoesTemas/, arquivos/votacoesProposicoes/",
+      "api": "proposicoesAutores (author at presentation - safe feature source), proposicoesTemas (post-hoc thematic indexa\u00e7\u00e3o - EXCLUDED from features by timing), votacoesProposicoes (floor votes - possible richer label source at construction).",
+      "license": "see license_evidence",
+      "access": "families documented on dadosabertos.camara.leg.br/swagger/api.html (fetched 2026-10-21)."
+    },
+    {
+      "name": "REST API v2 - proposicoes",
+      "url": "https://dadosabertos.camara.leg.br/api/v2/proposicoes",
+      "api": "anonymous; dataApresentacaoInicio/dataApresentacaoFim cohort filter (range limited to 3 months per request - measured HTTP 400: 'A diferen\u00e7a entre as datas n\u00e3o pode ser maior que 3 meses'); itens=100 per page; the Link rel=last header gives page counts. Situation code table endpoint exists but its method is undocumented (GET and POST both 405 on /api/v2/referencias/proposicoes/situacoes) - construction resolves idSituacao meanings from the publisher's Refer\u00eancias documentation.",
+      "license": "see license_evidence",
+      "access": "measured cohort counts (pages x 100): 2005 = 41+92+61+69 ~= 26,300 presented; 2019 = 68+105+107+135 ~= 41,400 presented."
+    }
   ],
-  "evidence": {
-   "huggingface_datasets": [
+  "license_evidence": [
     {
-     "query": "Brazilian legislative bill prediction dataset",
-     "hits": 0,
-     "top": []
+      "note": "Portal terms (fetched 2026-10-21): 'Todas as informa\u00e7\u00f5es publicadas no Portal da C\u00e2mara s\u00e3o de dom\u00ednio p\u00fablico, gratuitas e podem ser reproduzidas desde que citada a fonte \"C\u00e2mara dos Deputados\" e a autoria da informa\u00e7\u00e3o, quando houver.' Free reproduction with attribution; the Dados Abertos portal is part of the Portal da C\u00e2mara.",
+      "url": "https://www2.camara.leg.br/termo-de-uso-e-politica-de-privacidade"
     },
     {
-     "query": "bill passage prediction benchmark",
-     "hits": 0,
-     "top": []
-    },
-    {
-     "query": "previsao tramitacao proposicoes camara",
-     "hits": 0,
-     "top": []
+      "note": "Institutional open-data policy: Portaria n\u00ba 226 de 23/12/2025 defines dados abertos as 'dados process\u00e1veis por m\u00e1quina, estruturados em formato aberto, referenciados na internet e disponibilizados ao p\u00fablico para livre utiliza\u00e7\u00e3o, consumo ou cruzamento' and provides for public disclosure of databases under arts. 29 a 37 da Lei n\u00ba 14.129, de 2021. LICENCE DECISION: redistribution of derived rows permitted with attribution ('Fonte: C\u00e2mara dos Deputados'); source terms preserved; our derived compilation dedicated CC0 per standing policy; derived, never presented as the Chamber's official product.",
+      "url": "https://www2.camara.leg.br/legin/int/portar/2025/portaria-226-23-dezembro-2025-798595-publicacaooriginal-177615-cd-dg.html"
     }
-   ],
-   "zenodo_records": [
-    {
-     "query": "Brazilian legislative bill prediction dataset",
-     "hits": 438994,
-     "top": [
-      "Legislative Information of the violence against women propositions",
-      "Legislative Readability in Brazil (2003\u20132025): Analytical Dataset and Replication Code",
-      "ERRATUM: Evaluation of automated monitoring calving prediction in dairy buffaloes a new tool for calving management",
-      "Appraisal of Legislative Process and Drafting in Nigeria",
-      "parlnet: v1.3 \u2013 Full data and documentation"
-     ]
-    },
-    {
-     "query": "bill passage prediction benchmark",
-     "hits": 142301,
-     "top": [
-      "Perceptions of Cebuano mothers about the Reproductive Health Law",
-      "Earning the Congress's Vote: A New Oncology Trial Framework for Enacting H. R. 9510",
-      "Adaptation to Frugivory of Mediterranean Avian Seed Dispersers",
-      "Starsim: A flexible framework for agent-based modeling of health and disease",
-      "Looking in the medicine cabinet: methods for using real-world data to assess the impact of measles, mumps and rubella (MMR) and recombinant adjuvanted varicella-zoster vaccines on coronavirus disease 2019 (COVID-19) prevention and case fatality"
-     ]
-    },
-    {
-     "query": "previsao tramitacao proposicoes camara",
-     "hits": 4547,
-     "top": [
-      "Proposi\u00e7\u00f5es em tramita\u00e7\u00e3o na C\u00e2mara dos Deputados at\u00e9 dezembro de 2017",
-      "Proposi\u00e7\u00f5es legislativas C\u00e2mara dos Deputados 56\u00aa Legislatura sobre mulheres",
-      "Proposi\u00e7\u00f5es em tramita\u00e7\u00e3o na C\u00e2mara dos Deputados com os par\u00e2metros de busca contendo o termo \"mulher\" at\u00e9 dezembro de 2017",
-      "Grupos de trabalho e perda da qualidade deliberativa no processo legislativo",
-      "Proposi\u00e7\u00f5es na C\u00e2mara dos Deputados de 1988 at\u00e9 2022 classificadas por Tema"
-     ]
-    }
-   ],
-   "arxiv_preprints": [
-    {
-     "query": "Brazilian legislative bill prediction dataset",
-     "error": "TimeoutError",
-     "hits": null,
-     "top": []
-    },
-    {
-     "query": "bill passage prediction benchmark",
-     "error": "HTTPError",
-     "hits": null,
-     "top": []
-    },
-    {
-     "query": "previsao tramitacao proposicoes camara",
-     "error": "HTTPError",
-     "hits": null,
-     "top": []
-    }
-   ]
-  },
-  "evidence_summary": "- huggingface_datasets / 'Brazilian legislative bill prediction dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'bill passage prediction benchmark': 0 hit(s) - nothing notable\n- huggingface_datasets / 'previsao tramitacao proposicoes camara': 0 hit(s) - nothing notable\n- zenodo_records / 'Brazilian legislative bill prediction dataset': 438994 hit(s) - Legislative Information of the violence against women propositions, Legislative Readability in Brazil (2003\u20132025): Analytical Dataset and Replication Code, ERRATUM: Evaluation of automated monitoring calving prediction in dairy buffaloes a new tool for calving management, Appraisal of Legislative Process and Drafting in Nigeria, parlnet: v1.3 \u2013 Full data and documentation\n- zenodo_records / 'bill passage prediction benchmark': 142301 hit(s) - Perceptions of Cebuano mothers about the Reproductive Health Law, Earning the Congress's Vote: A New Oncology Trial Framework for Enacting H. R. 9510, Adaptation to Frugivory of Mediterranean Avian Seed Dispersers, Starsim: A flexible framework for agent-based modeling of health and disease, Looking in the medicine cabinet: methods for using real-world data to assess the impact of measles, mumps and rubella (MMR) and recombinant adjuvanted varicella-zoster vaccines on coronavirus disease 2019 (COVID-19) prevention and case fatality\n- zenodo_records / 'previsao tramitacao proposicoes camara': 4547 hit(s) - Proposi\u00e7\u00f5es em tramita\u00e7\u00e3o na C\u00e2mara dos Deputados at\u00e9 dezembro de 2017, Proposi\u00e7\u00f5es legislativas C\u00e2mara dos Deputados 56\u00aa Legislatura sobre mulheres, Proposi\u00e7\u00f5es em tramita\u00e7\u00e3o na C\u00e2mara dos Deputados com os par\u00e2metros de busca contendo o termo \"mulher\" at\u00e9 dezembro de 2017, Grupos de trabalho e perda da qualidade deliberativa no processo legislativo, Proposi\u00e7\u00f5es na C\u00e2mara dos Deputados de 1988 at\u00e9 2022 classificadas por Tema\n- arxiv_preprints / 'Brazilian legislative bill prediction dataset': unavailable (TimeoutError)\n- arxiv_preprints / 'bill passage prediction benchmark': unavailable (HTTPError)\n- arxiv_preprints / 'previsao tramitacao proposicoes camara': unavailable (HTTPError)",
-  "prior_art": [
-   "LegisPL-BR dataset (GitHub, PL 2022-2024, raw extract, no splits/scoring); ML analise de projetos legislativos ZFM 2011-2018 (regressao logistica, paper); SBSI 5085 (approval prediction, paper); LLM constitucionalidade study (194-bill curated sample, paper)"
   ],
-  "theirs": "Publisher ships raw per-year bulk files and the API, no task. Research prior art: a 2011-2018 logistic-regression study of ZFM-related bills becoming norma juridica (semanticscholar 2d57/06f0a54a); SBSI 5085 'Compreendendo e Prevendo o Processo Legislativo na Camara' (approval prediction model, paper only); LegisPL-BR (github.com/juanmorysson/LegisPL-BR) - a published GitHub dataset of PL propositions 2022-2024 with numero, ano, autores, ementa, ultima tramitacao, no splits, no scored contract, and covering only the current (unclosed) legislature so final-outcome labels are right-censored; that slice cannot carry a settled-outcome prediction task.",
-  "ours": "First scored, temporally-split formulation of bill advancement for the Brazilian Camara dos Deputados over the full 1991-2022 closed-legislature panel (all proposition types, ~26k-41k presentations/year, label = ultimate outcome from the publisher's own situation vocabulary, e.g. idSituacao 251 'Transformado em Norma Juridica', measured 1.5% on the 2005 cohort sample), with presentation-time features only (type, ementa text, author/party, presentation calendar; the publisher's post-hoc indexacao fields keywords/temas excluded by documented timing reasoning), disjoint train/eval/holdout windows by presentation date, and a runner-compatible binary contract.",
-  "verdict": "differentiated",
-  "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
- },
- "verdict": "go",
- "jurisdiction": {
-  "country": "BR",
-  "region": "Latin America",
-  "publisher": "C\u00e2mara dos Deputados do Brasil - Dados Abertos (dadosabertos.camara.leg.br)",
-  "recorded_at": "2026-10-21"
- },
- "licence_class": "A",
- "licence_note": "Portal terms: public domain, free to reproduce with attribution"
+  "construction_script": null,
+  "split_strategy": "Cohorts by dataApresentacao over the union of the 35 year files (1991-2025; files processed descending, first id wins so re-numbered bills contribute their current row), windows by presentation date: train 1991-01..2014-12, eval 2015-01..2018-12, holdout 2019-01..2022-12. RIGHT-CENSORING CORRECTED 2026-10-23: Brazilian propositions carry across legislatures (bills presented 2019 still show live statuses with 2024-2026 timestamps, file and API agree), so 'closed legislature' does not settle labels; the scored population is bills whose status is terminal at the current file vintage, and the unobserved share (no-status + non-terminal) is measured per window and recorded as a property - it rises with recency. Sampled positive rates drift strongly downward by cohort (1991 whole file 311/4,436 = 7.0%; 2005 sampled ~2.2%; 2019-2022 sampled ~0.4-0.8%), a measured phenomenon property. Grain: one proposition = one row, keyed by id (unique across the union; construction asserts uniqueness).",
+  "measurements": {
+    "ranged_samples_2026_10_21": "probe_samples.py: 4 x 1 MB ranged chunks each of proposicoes-2005.csv (4,852 parsed rows) and proposicoes-2019.csv (4,909 rows). 2005 sample: dataApresentacao 100% in 2005; ultimoStatus vocabulary: 'Arquivada' ~62% across codes (1005, 502, 241, 100, 1001, 180...), 'Transformado em nova proposi\u00e7\u00e3o' ~3.5% (codes 469, 604...), 'Transformado em Norma Jur\u00eddica' (idSituacao 251) 72 = 1.5%; urnFinal non-empty 0/4,852. 2019 sample: 98% presented 2019; statuses still mixed (Arquivada 14.8%, ongoing tramita\u00e7\u00e3o states) - recent cohorts right-censored, excluded from the task.",
+    "situation_code_quality_2026_10_21": "Many rows carry idSituacao with EMPTY descricaoSituacao (codes '100', '319' are the most frequent with empty descriptions, 39-40% of sample rows) while the same codes also appear WITH descriptions elsewhere - the label must be defined on the publisher's situation CODE table (fetched at construction), with descriptions as a cross-check where present. Measured on the same samples.",
+    "api_cohort_counts_2026_10_21": "dataApresentacao-filtered cohorts via Link rel=last page counts x 100: 2005 ~= 26,300 (41+92+61+69 pages); 2019 ~= 41,400 (68+105+107+135). Cross-checks the file-based row estimate for 2005 (~22 MB / ~850 B/row).",
+    "cost_measured": "Discovery cost: 15 requests / ~4 MB of ranged samples / 31 s wall clock (probe_samples.py) + 8 API count requests. Construction cost: ~35 year files (sizes measured, sum ~= 1.2 GB ESTIMATE) + proposicoesAutores files; worker-trivial.",
+    "construction_probes_2026_10_23": "probe_censoring.py (v1, naive line-splitting: defective - quoted multi-line ementas corrupt mid-file chunks), corrected by probe_censoring2.py (quote-parity record-boundary trimming; whole-1991 file ground truth) + probe_empty_status.py + probe_file_vs_api.py + probe_file_inventory.py, all run end-to-end 2026-10-23 from the coordinator: (1) situation-code vocabulary keyed by header name: 923 Arquivada (2,491 of 4,436 whole-1991 rows), 1140 Transformado em Norma Jur\u00eddica (311 = 7.0%), 1230 Transformado em nova proposi\u00e7\u00e3o, 937 Vetado totalmente, 925 Tramitando em Conjunto, 907/915/924/926/936/1070/1120/1170/1220/1285 ongoing/other - consistent code->description pairs, unlike the discovery sample's mis-indexed columns; (2) empty ultimoStatus share by year-file sample: 1991 36.6% (whole file), 2000 14.8%, 2005 51.4%, 2010 52.7%, 2015 51.9%, 2019 48.7%, 2021 52.3%, 2022 39.9% - and the API returns statusProposicao None for sampled such ids, so the emptiness is the publisher's own record, not a file gap; empty-status rows skew to procedural types (RIC/REQ/EMP/MSC) but include some PLs; (3) right-censoring: bills presented 2019 still carry non-terminal statuses with ultimoStatus_dataHora in 2024-2026 (e.g. PL 1/2019 id 2190407 'Aguardando Aprecia\u00e7\u00e3o pelo Senado Federal', dataHora 2025-08-26) and the API agrees with the file on every sampled id - the vintage is current, the legislatures are not closed for these bills; (4) file inventory: 35/35 years 200 OK for both families, proposicoes 747.4 MB + proposicoesAutores 456.0 MB total; (5) autores schema measured: idProposicao, tipoAutor, siglaPartidoAutor, siglaUFAutor, ordemAssinatura, proponente - first-author features keyed on the proponente row. Observation for the novelty record: an HF org (belisards) mirrors the raw proposicoes files 1934-2024 (ementas_camarabr_1934_2024) - raw extract, no splits, no scored contract; recorded as a mirror observation, not permission, and it does not change the recorded 'differentiated' verdict.",
+    "camara_001_full_union_2026_10_23": "Full build over the 70 bulk year files on the worker (camara-001, 395.6 s, exit 2 on guard anchors only). Measured: 642,067 in-window bills (presented 1991-2022) after a descending-first-wins union; splits train 160,559 rows / 14,323 positives (8.92%), eval 37,885 / 1,397 (3.69%), holdout 36,892 / 1,793 (4.86%); assumption buckets - train empty-status 208,487 / non-terminal 9,662 / merged 12,893, eval 68,809 / 8,553 / 776, holdout 75,639 / 20,842 / 1,070. Two measured properties to report beside any model score: (1) the scored population is only the terminal-status subset - roughly 55% of train and 64% of holdout rows are unobserved (no status or still live), so the task is conditioned on an observed fate and the unobserved share rises with recency; (2) positive rate moves 8.92% (train) -> 3.69% (eval) -> 4.86% (holdout), a prevalence shift that is a property of the phenomenon, not a construction fault. The in-build naive references and the fixture results are in the camara-002 summary.",
+    "camara_002_gate_result_2026_10_23": "Gate 1.4.0 over the full staged artifact (artifact_version digest 013f0b0696696a03cd0e0bcaad176936e7cd96b8c2e02358d0a67257af799fa9; train/eval/holdout/meta/quality): 37 of 38 checks passed; the only failure is splits.enough_clustered_positives, recomputed by the gate from the rows as eval 1,397 positives / 4 distinct apresentacao_year events and holdout 1,793 / 4, against minimums of 30 positives and 20 distinct events (train has 24 distinct positive years). The full artifact and the gate report are preserved at the private staging release job-camara-002 (id 421533646, 12 assets, digests verified at collection); the gate report is also at .factory/camara-002/reports/qualification-camara-bill-advancement.json (gitignored local copy)."
+  },
+  "jobs": [
+    {
+      "id": "camara-001",
+      "date": "2026-10-23",
+      "outcome": "failed (exit 2, 395.6 s): the full build ran and wrote coherent splits, but three of MY guard anchors fired - (a) in-window rows 642,067 outside the estimated [700k, 1.05M], (b) train rows 160,559 outside the estimated [180k, 420k], (c) positives total 17,513 exceeded a portal facet bound of 11,640 that was read from a PL-FILTERED search page (bounds PL-only, not all types). Not a data defect: PL 4188/2021 fixture matched positive in holdout, code 1140 canonical description correct, both classes in every window, buckets coherent. Reports collected into .factory/camara-001/reports/ (manifest, summary, container.log, source.tar sha256-verified); worker destroyed 06:48:42Z. Worker follow-up 2026-10-23 07:00Z verified: provider deletion read back (GET /servers/171985941 = 404 server not found; the project's only primary IP belongs to camara-002's live server - zero IPs reference camara-001); staging draft release job-camara-001 (421522080) re-verified all 8 assets by id+size+sha256; qualification never ran on this attempt (exit 2 before the gate per run.sh order), so no figure from it is quotable; handled marker written",
+      "server_id": 171985941
+    },
+    {
+      "id": "camara-002",
+      "date": "2026-10-23",
+      "outcome": "failed (exit 1, 389.4 s): the re-anchored rebuild ran the full 70-file union cleanly (build_status=0; 642,067 in-window bills, splits identical to camara-001's full-union measurement - train 160,559 rows / 14,323 positives, eval 37,885 / 1,397, holdout 36,892 / 1,793; PL 4188/2021 fixture positive in holdout; portal PL-only cross-check within its 11,640 bound) and uploaded all 12 assets to staging release job-camara-002 (id 421533646), then qualification gate 1.4.0 FAILED exactly one of 38 checks: splits.enough_clustered_positives - with event_key_column=apresentacao_year the positives cluster into only 4 distinct events in eval (1,397 positives over 2015-2018) and 4 in holdout (1,793 over 2019-2022) against the gate minimum of 30 positives AND 20 distinct events. Scientific/task-design failure, not infrastructure and not a code defect: 4-year cohort windows can never carry 20 year-clusters. The other 37 checks passed, including every leakage, timing, split-window/disjointness and runner-contract check. Reports collected into .factory/camara-002/reports/ (8 small assets + the staging manifest, each sha256-verified; the 3 bulk CSV digests agree across the gate artifact block, the staging manifest and the collect result, and each answered a ranged GET at its full size). Worker destroyed 07:12:22Z via the lifecycle CLI; provider deletion read back (GET /servers/171989986 = 404 server not found; project primary_ips list is empty). No figure from this attempt is quotable: the gate did not pass, so the in-build naive references and the 8.92% -> 3.69% -> 4.86% prevalence shift remain unqualified.",
+      "server_id": 171989986
+    }
+  ],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": {
+    "assisted": true,
+    "recorded_at": "2026-10-23",
+    "reviewers": "Codex with Scout (Hermes)",
+    "reason": "Explicit scientific/code review hold; no declaration-only re-gate and no further job",
+    "findings": [
+      "Early scoring originated in code copied from the World Bank build: baseline block at build.py:654-682 (logged :682, embedded :794 and :1027) runs before run.sh:29-32 invokes the gate; auc (:343) and fit_rate_table (:364) are byte-identical to wb build (:571/:592).",
+      "majority_class_accuracy at build.py:676 restates train prevalence (same defect as wb build :749).",
+      "quality.json selection claim conflicts with excluding terminal/merged rows using current outcomes; 37 passing checks do not establish historical eligibility or feature availability.",
+      "camara-001 and camara-002 attempts and every figure remain unqualified construction diagnostics; none may be quoted."
+    ],
+    "prohibited": [
+      "declaration-only re-gate of the same staged artifact",
+      "further build/job before the selection and scoring-order issues are resolved"
+    ],
+    "preserve": "all attempts, reports and figures retained as unqualified diagnostics",
+    "reopen_condition": "Resolve eligibility/selection against prediction-time information and remove early scoring from construction; then a fresh qualified build and gate/accept cycle (or record the negative finding and re-target/drop)."
+  },
+  "next_action": "NONE until the review hold is lifted. No declaration-only re-gate, no further job. Resolve (a) selection against prediction-time information, (b) early scoring copied from the WB build, (c) train-prevalence-as-accuracy; then either a fresh qualified build with gate+accept, or record the negative finding and re-target/drop. All existing attempts/figures remain unqualified diagnostics.",
+  "novelty_check": {
+    "checked_at": "2026-10-21T12:21:37+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "Brazilian legislative bill prediction dataset",
+      "bill passage prediction benchmark",
+      "previsao tramitacao proposicoes camara"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "Brazilian legislative bill prediction dataset",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "bill passage prediction benchmark",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "previsao tramitacao proposicoes camara",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "Brazilian legislative bill prediction dataset",
+          "hits": 438994,
+          "top": [
+            "Legislative Information of the violence against women propositions",
+            "Legislative Readability in Brazil (2003\u20132025): Analytical Dataset and Replication Code",
+            "ERRATUM: Evaluation of automated monitoring calving prediction in dairy buffaloes a new tool for calving management",
+            "Appraisal of Legislative Process and Drafting in Nigeria",
+            "parlnet: v1.3 \u2013 Full data and documentation"
+          ]
+        },
+        {
+          "query": "bill passage prediction benchmark",
+          "hits": 142301,
+          "top": [
+            "Perceptions of Cebuano mothers about the Reproductive Health Law",
+            "Earning the Congress's Vote: A New Oncology Trial Framework for Enacting H. R. 9510",
+            "Adaptation to Frugivory of Mediterranean Avian Seed Dispersers",
+            "Starsim: A flexible framework for agent-based modeling of health and disease",
+            "Looking in the medicine cabinet: methods for using real-world data to assess the impact of measles, mumps and rubella (MMR) and recombinant adjuvanted varicella-zoster vaccines on coronavirus disease 2019 (COVID-19) prevention and case fatality"
+          ]
+        },
+        {
+          "query": "previsao tramitacao proposicoes camara",
+          "hits": 4547,
+          "top": [
+            "Proposi\u00e7\u00f5es em tramita\u00e7\u00e3o na C\u00e2mara dos Deputados at\u00e9 dezembro de 2017",
+            "Proposi\u00e7\u00f5es legislativas C\u00e2mara dos Deputados 56\u00aa Legislatura sobre mulheres",
+            "Proposi\u00e7\u00f5es em tramita\u00e7\u00e3o na C\u00e2mara dos Deputados com os par\u00e2metros de busca contendo o termo \"mulher\" at\u00e9 dezembro de 2017",
+            "Grupos de trabalho e perda da qualidade deliberativa no processo legislativo",
+            "Proposi\u00e7\u00f5es na C\u00e2mara dos Deputados de 1988 at\u00e9 2022 classificadas por Tema"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "Brazilian legislative bill prediction dataset",
+          "error": "TimeoutError",
+          "hits": null,
+          "top": []
+        },
+        {
+          "query": "bill passage prediction benchmark",
+          "error": "HTTPError",
+          "hits": null,
+          "top": []
+        },
+        {
+          "query": "previsao tramitacao proposicoes camara",
+          "error": "HTTPError",
+          "hits": null,
+          "top": []
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'Brazilian legislative bill prediction dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'bill passage prediction benchmark': 0 hit(s) - nothing notable\n- huggingface_datasets / 'previsao tramitacao proposicoes camara': 0 hit(s) - nothing notable\n- zenodo_records / 'Brazilian legislative bill prediction dataset': 438994 hit(s) - Legislative Information of the violence against women propositions, Legislative Readability in Brazil (2003\u20132025): Analytical Dataset and Replication Code, ERRATUM: Evaluation of automated monitoring calving prediction in dairy buffaloes a new tool for calving management, Appraisal of Legislative Process and Drafting in Nigeria, parlnet: v1.3 \u2013 Full data and documentation\n- zenodo_records / 'bill passage prediction benchmark': 142301 hit(s) - Perceptions of Cebuano mothers about the Reproductive Health Law, Earning the Congress's Vote: A New Oncology Trial Framework for Enacting H. R. 9510, Adaptation to Frugivory of Mediterranean Avian Seed Dispersers, Starsim: A flexible framework for agent-based modeling of health and disease, Looking in the medicine cabinet: methods for using real-world data to assess the impact of measles, mumps and rubella (MMR) and recombinant adjuvanted varicella-zoster vaccines on coronavirus disease 2019 (COVID-19) prevention and case fatality\n- zenodo_records / 'previsao tramitacao proposicoes camara': 4547 hit(s) - Proposi\u00e7\u00f5es em tramita\u00e7\u00e3o na C\u00e2mara dos Deputados at\u00e9 dezembro de 2017, Proposi\u00e7\u00f5es legislativas C\u00e2mara dos Deputados 56\u00aa Legislatura sobre mulheres, Proposi\u00e7\u00f5es em tramita\u00e7\u00e3o na C\u00e2mara dos Deputados com os par\u00e2metros de busca contendo o termo \"mulher\" at\u00e9 dezembro de 2017, Grupos de trabalho e perda da qualidade deliberativa no processo legislativo, Proposi\u00e7\u00f5es na C\u00e2mara dos Deputados de 1988 at\u00e9 2022 classificadas por Tema\n- arxiv_preprints / 'Brazilian legislative bill prediction dataset': unavailable (TimeoutError)\n- arxiv_preprints / 'bill passage prediction benchmark': unavailable (HTTPError)\n- arxiv_preprints / 'previsao tramitacao proposicoes camara': unavailable (HTTPError)",
+    "prior_art": [
+      "LegisPL-BR dataset (GitHub, PL 2022-2024, raw extract, no splits/scoring); ML analise de projetos legislativos ZFM 2011-2018 (regressao logistica, paper); SBSI 5085 (approval prediction, paper); LLM constitucionalidade study (194-bill curated sample, paper)"
+    ],
+    "theirs": "Publisher ships raw per-year bulk files and the API, no task. Research prior art: a 2011-2018 logistic-regression study of ZFM-related bills becoming norma juridica (semanticscholar 2d57/06f0a54a); SBSI 5085 'Compreendendo e Prevendo o Processo Legislativo na Camara' (approval prediction model, paper only); LegisPL-BR (github.com/juanmorysson/LegisPL-BR) - a published GitHub dataset of PL propositions 2022-2024 with numero, ano, autores, ementa, ultima tramitacao, no splits, no scored contract, and covering only the current (unclosed) legislature so final-outcome labels are right-censored; that slice cannot carry a settled-outcome prediction task.",
+    "ours": "First scored, temporally-split formulation of bill advancement for the Brazilian Camara dos Deputados over the full 1991-2022 closed-legislature panel (all proposition types, ~26k-41k presentations/year, label = ultimate outcome from the publisher's own situation vocabulary, e.g. idSituacao 251 'Transformado em Norma Juridica', measured 1.5% on the 2005 cohort sample), with presentation-time features only (type, ementa text, author/party, presentation calendar; the publisher's post-hoc indexacao fields keywords/temas excluded by documented timing reasoning), disjoint train/eval/holdout windows by presentation date, and a runner-compatible binary contract.",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  },
+  "verdict": "hold",
+  "jurisdiction": {
+    "country": "BR",
+    "region": "Latin America",
+    "publisher": "C\u00e2mara dos Deputados do Brasil - Dados Abertos (dadosabertos.camara.leg.br)",
+    "recorded_at": "2026-10-21"
+  },
+  "licence_class": "A",
+  "licence_note": "Portal terms: public domain, free to reproduce with attribution"
 }
