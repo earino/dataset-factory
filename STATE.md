@@ -6652,3 +6652,23 @@ explicit in results/rollout-aa0e735-author-review.json, not hidden by the score.
 Cumulative experiment 121 attempts / 4,099,323 inclusive tokens; no extra repeats.
 Exact tested prompts approved for merge/idle deployment, followed by one ordinary
 uncoached discovery and source audit. Do not close the goal before that live pass.
+
+## 2026-10-23 worker-status follow-up: camara-002 (camara-bill-advancement) failed the gate; cleanup verified; design decision handed to advancement
+
+camara-002 (server 171989986) failed exit 1 after 389.4 s: the build ran clean over the full
+70-file union (splits identical to camara-001's measurement) and uploaded all 12 assets to the
+private staging release `job-camara-002` (id 421533646), but qualification gate 1.4.0 failed
+one of 38 checks — `splits.enough_clustered_positives`: with `event_key_column=apresentacao_year`
+the eval/holdout windows carry only 4 distinct positive events each (1,397 and 1,793 positives)
+against the gate minimum of 30 positives and 20 events. Structural for the 4-year cohort design,
+not a code defect; no same-design rebuild can pass.
+
+Handled this session: bounded reports collected into `.factory/camara-002/reports/`
+(sha256-verified; bulk CSVs preserved at the staging release and proven by ranged GET);
+worker destroyed 07:12:22Z with provider deletion read back (GET /servers/171989986 = 404
+server not found; project primary_ips empty). Candidate record updated (camara-002 outcome,
+`measurements.camara_002_gate_result_2026_10_23`, next_action = advancement handoff); full
+artifact preserved at release job-camara-002 (421533646). No figure from either attempt is
+quotable. Next: advancement decides the independence claim (re-target/drop, or re-declare the
+event key and re-gate the same staged artifact — no third full build; the one-rebuild budget
+for this defect class is spent).

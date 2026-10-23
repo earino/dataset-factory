@@ -143,3 +143,34 @@ report + `--accept` on the exact bytes before anything is scored (next_action in
 Mirror observation (novelty record, not permission): HF org `belisards` mirrors the raw
 proposicoes files 1934–2024 (`ementas_camarabr_1934_2024`) — raw extract, no splits, no scored
 contract; the recorded `differentiated` verdict is unchanged.
+
+## 2026-10-23 worker follow-up (camara-002): build clean, gate failed on clustered positives; handed to advancement
+
+camara-002 (server 171989986) failed at exit 1 after 389.4 s. The re-anchored build itself was
+clean — `build_status=0`, all 70 source files fetched (1,203,400,945 bytes), the full union
+reproduced camara-001's measurement (642,067 in-window bills; splits 160,559/14,323,
+37,885/1,397, 36,892/1,793), the PL 4188/2021 fixture matched positive in holdout, and the
+PL-only portal cross-check stayed within its 11,640 bound — and all 12 assets uploaded to the
+private staging release `job-camara-002` (id 421533646).
+
+Qualification gate 1.4.0 then failed **exactly one of 38 checks**:
+`splits.enough_clustered_positives`. With `event_key_column = apresentacao_year`, the positives
+cluster into only **4 distinct events** in eval (1,397 positives over 2015–2018) and **4** in
+holdout (1,793 over 2019–2022), against the gate's minimum of 30 positives **and** 20 distinct
+events. Every other check passed — leakage, timing, split windows/disjointness, both classes per
+window, and the runner contract. This is a task-design failure, not a code defect: 4-year cohort
+windows can never carry 20 year-clusters, so no same-design rebuild can pass.
+
+Handling (this session): reports collected into `.factory/camara-002/reports/` (8 small assets +
+the staging manifest, each sha256-verified against the manifest; the 3 bulk CSV digests agree
+across the gate artifact block, the staging manifest and the collect result, and each answered a
+ranged GET at full size); worker destroyed 07:12:22Z and provider deletion read back (GET
+/servers/171989986 → 404 server not found; project `primary_ips` empty). **No figure from either
+attempt is quotable** — the in-build naive references and the 8.92% → 3.69% → 4.86% prevalence
+shift stay unqualified until a gate passes and `--accept` verifies the exact bytes.
+
+`next_action` in record.json is now the advancement handoff: decide the independence claim
+(year-level clustering stands → record the negative finding and re-target or drop; bill/session
+level is defensible → re-declare `event_key_column` and re-run the gate over the same staged
+artifact as a bounded re-gate job, not a third full build — the one-rebuild budget for this
+defect class is spent).
