@@ -165,13 +165,21 @@ LEG_START_BASE, LEG_START_YEAR = 1987, 1987
 # tolerances wide enough to absorb vintage drift but tight enough to catch a
 # broken union or label rule.
 EXPECTED = {
-    "rows_fetched_total": (700_000, 1_050_000),
-    "author_rows_total": (2_500_000, 5_500_000),
-    "train_rows": (180_000, 420_000), "train_positives": (2_500, 20_000),
-    "eval_rows": (25_000, 90_000), "eval_positives": (250, 2_500),
-    "holdout_rows": (25_000, 110_000), "holdout_positives": (200, 2_500),
+    # Anchored on the camara-001 full-union measurement (2026-10-23): 642,067
+    # in-window bills; train/eval/holdout 160,559/37,885/36,892 rows and
+    # 14,323/1,397/1,793 positives. The discovery figures were bounded-sample
+    # ESTIMATES and are superseded. Margins are corruption guards, not
+    # science: windows, label rule and features are unchanged from camara-001.
+    "rows_fetched_total": (600_000, 700_000),
+    "author_rows_total": (2_500_000, 6_500_000),
+    "train_rows": (145_000, 180_000), "train_positives": (12_000, 17_000),
+    "eval_rows": (32_000, 45_000), "eval_positives": (1_100, 1_900),
+    "holdout_rows": (32_000, 45_000), "holdout_positives": (1_400, 2_400),
     "fixture_pl_4188_2021_positive": True,
-    "positives_total_max": 11_640,   # portal search facet, all years/types, 2026-10-23
+    # The portal facet count read 2026-10-23 came from a PL-FILTERED search
+    # page (tipoproposicao=PL+-+Projeto), so it bounds the PL-only positive
+    # count - not the all-types total (camara-001 measured 17,513 all types).
+    "positives_pl_max": 11_640,
     "code_1140_canonical_desc": POSITIVE_DESC,
 }
 # Whole-file measured anchor: proposicoes-1991.csv parses to 4,436 rows with
@@ -706,9 +714,15 @@ def main(argv=None) -> int:
                        f"expected {EXPECTED['code_1140_canonical_desc']!r}")
     if classification.get("1140") != "positive":
         failures.append("code 1140 is not classified positive")
-    if positives_total > EXPECTED["positives_total_max"]:
-        failures.append(f"positives total {positives_total} exceeds the portal "
-                        f"facet bound {EXPECTED['positives_total_max']}")
+    positives_by_type: Counter = Counter()
+    for split in LAYOUT:
+        for row in rows_by_split[split]:
+            if row[TARGET] == POSITIVE_LABEL:
+                positives_by_type[row["siglaTipo"]] += 1
+    positives_pl = positives_by_type.get("PL", 0)
+    if positives_pl > EXPECTED["positives_pl_max"]:
+        failures.append(f"PL positives {positives_pl} exceed the PL-filtered "
+                        f"portal facet bound {EXPECTED['positives_pl_max']}")
     if failures:
         for failure in failures:
             log(f"FAIL: {failure}")
@@ -760,11 +774,15 @@ def main(argv=None) -> int:
                                   "codes_seen": sorted({b["code"] for b in fixture_hits})},
         "portal_facet_cross_check": {
             "situation": "Transformado em Norma Jurídica",
-            "portal_count_all_years_types": EXPECTED["positives_total_max"],
+            "portal_count_pl_only_all_years": EXPECTED["positives_pl_max"],
             "read_at": "2026-10-23 via the portal's own proposition-search facet "
-                       "(buscaProposicoesWeb); the panel's in-window positive "
-                       "total must not exceed it (it covers every year and type)",
+                       "(buscaProposicoesWeb with tipoproposicao=PL - a PL-FILTERED "
+                       "page, so the count bounds the PL-only positive total across "
+                       "all years); camara-001's all-types total is recorded "
+                       "separately and is NOT bounded by this PL figure",
+            "panel_positives_pl": positives_pl,
             "panel_positives_total": positives_total,
+            "panel_positives_by_type": dict(positives_by_type.most_common()),
         },
         "author_rows_total": author_rows_total,
         "bills_without_author_rows": dict(no_author),

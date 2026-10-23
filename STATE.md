@@ -1,10 +1,58 @@
 # Current state
 
-Updated: 2026-10-23 04:35Z (Africa discovery tick: four country-coverage/lead records opened - ZA dam-exceedance lead
-parked on measured access+licence blockers, Nigeria NBS price-watch lead dropped on the publisher's own no-redistribution
-clause, Morocco portal census parked with clean ODbL licence posture, Ghana portal unreachable - and the Kenya record's
-recorded unpark question RESOLVED: a new KNBS statistical repository exists with an anonymous API and a blanket CC BY-NC
-4.0 statement. Next action: operator decision on the Kenya NC condition; then the worker-side ZA DWS + Ghana access probe.)
+Updated: 2026-10-23 06:55Z (camara-bill-advancement construction tick: the discovery record's label code was WRONG
+(situation 1140, not the mis-indexed "251") and the "closed legislature settles labels" assumption was wrong (Brazilian
+bills carry across legislatures) - both corrected from measured probes; build written + smoke-green; camara-001 failed
+only on my own guard anchors (diagnosed, reports collected, worker destroyed); camara-002 repaired and RUNNING. Next
+action: collect camara-002, gate + --accept before any scoring, then the runner-contract baseline.)
+
+## 2026-10-23 - camara-bill-advancement construction tick: label-code and right-censoring defects corrected from measurement; build written, smoke-green; camara-001 failed on guard anchors, camara-002 running
+
+No actionable release work existed (tsb published; nhs-ae and wb-ieg dropped with preserved negative findings),
+so the tick went to construction, per the operator's actionable list. Candidate chosen from the class-A ready
+queue: camara-bill-advancement (worker-trivial measured cost vs chilecompra's 100-150 GB, nz-ea's 3.7 GB and
+za's multi-table timing work).
+
+**Two discovery-record claims were measured wrong before any build was written, and both changed the design.**
+
+1. **The label code.** The record carried "idSituacao 251 = Transformado em Norma Jurídica, 1.5% on the 2005
+   sample". Re-measured with a quote-parity parser keyed on the file's own header names (whole 1991 file as
+   ground truth): the positive code is **1140** (`Transformado em Norma Jurídica`, 311/4,436 = 7.0% of the 1991
+   cohort); 251 is an `ultimoStatus_idTipoTramitacao` value. `probe_samples.py` read column 25 positionally as
+   idSituacao, so its codes (100/319/1005/502/…) and the "1.5%" were mis-indexed artefacts of the same defect.
+   `probe_censoring.py` (v1) reproduced the class of defect independently (naive line-splitting breaks on quoted
+   multi-line ementas); its numbers are kept only as the diagnosis, superseded by `probe_censoring2.py`.
+2. **Right-censoring.** ~25-53% of rows carry an EMPTY `ultimoStatus_idSituacao` and the API v2 confirms genuinely
+   no tramitação on record (not a file gap). And bills do NOT settle at legislature close: 5/5 sampled 2019-file
+   non-terminal rows match the live API exactly, with 2024-2026 status timestamps (e.g. PL 1/2019 "Aguardando
+   Apreciação pelo Senado Federal", 2025-08-26). The scored population is therefore "bills whose status is
+   terminal at the vintage", with no-status/non-terminal/merged rows counted per window - recorded, never
+   inferred as a membership decision. `probe_file_inventory.py`: 35/35 years 200 OK, 747.4 MB + 456.0 MB.
+
+**Build + smoke.** `source/build.py` (descending-first-wins union, presentation-instant features only, terminal
+label with a frozen code-classification table, in-build naive references, fixtures). `tests_smoke_build.py`
+runs the real build over 70 synthetic year files - caught three real bugs before worker spend (whole-file header
+trim in both passes, a wrong row-count metric) and validated the proponente-ordering rule, the true id-collision
+path, unobserved buckets and the quality/meta writers. **SMOKE OK.**
+
+**camara-001 (server 171985941, 395.6 s, exit 2, EUR 0.06) failed on three of MY anchors, not on the data:** the
+record's row estimates were too high (measured 642,067 in-window / 160,559 train vs estimated 700k-1.05M /
+180k-420k) and the portal facet bound 11,640 was read from a **PL-filtered** search page, so it bounds PL-only
+positives, not the all-types total (17,513). The full build was otherwise coherent: train 160,559 / 14,323
+positives (8.92%), eval 37,885 / 1,397 (3.69%), holdout 36,892 / 1,793 (4.86%); PL 4188/2021 (BR do Mar)
+matched and positive in holdout; both classes in every window. Reports collected into
+`.factory/camara-001/reports/` (sha256-verified; bulk CSVs skipped); worker destroyed 06:48:42Z.
+
+**camara-002 (server 171989986, launched 06:51:44Z, EUR 0.06) is RUNNING** with exactly one repair - the guards
+re-anchored on camara-001's measurement and the cross-check narrowed to PL-only scope. Label rule, windows,
+splits, features unchanged. **Acceptance pending: exit 0 + passing gate report + `--accept` on the exact bytes
+before any scoring.** Two measured properties must be reported beside any score: the scored population is the
+terminal-status subset (unobserved ≈55% train / 64% holdout) and the positive rate moves 8.92% → 3.69% → 4.86%.
+
+Checks this tick: `check-candidate.py` OK (status ready); local smoke green; `assemble-job.py` bundle hashes
+verified; October worker reservations now ~EUR 8.0 of 20 (camara-001 0.06 + camara-002 0.06 added). Commit
+`30b03d8` pushed with the probes, build, smoke, record and camara-001 ledger; CI result for that commit is
+reported in the session close-out.
 
 ## 2026-10-23 - Africa discovery tick: Kenya unpark question resolved (with an NC decision); ZA dam lead parked on access+licence; Nigeria closed on the publisher's own terms; Morocco censused clean-but-not-task-shaped; Ghana unreachable
 
