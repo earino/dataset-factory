@@ -1,6 +1,54 @@
 # Current state
 
-Updated: 2026-10-23 13:19Z (cl-tender-003 worker follow-up: the operator-directed rebuild is
+Updated: 2026-10-23 14:20Z (cl-tender-baseline-001: the assisted review is SIGNED OFF and the one
+operator-authorized runner-contract baseline ran clean end to end on accepted artifact 27e610ba65e13805
+- model eval AUC 0.4752 vs the independently recomputed unspsc_only bar 0.57075, paired day-clustered
+95% CI [-0.1134, -0.0744] - NO demonstrated headroom, negative finding recorded, candidate DROPPED;
+worker destroyed provider-confirmed; entry below).
+
+## 2026-10-23 - chilecompra-tender-outcome CLOSED: review signed off, baseline shows no headroom, dropped
+
+**Operator-directed decision sequence executed in full:**
+
+1. **Assisted-review sign-off: RESOLVED.** The declared outcome-conditioning and the 180-day
+   terminal-state rule close the Codex-assisted review (full reasoning in record.json
+   `review.signoff`). In short: the label is now a deterministic function of a closed,
+   vintage-covered window (last terminal award status within pub+180d; frozen horizon capped by the
+   zip vintages; mixed_terminal 0, duplicate_ocid 0; awardUpdate releases matched); the scored
+   population is no longer misdeclared - membership is publication-time-only and the outcome-dependent
+   scored subset is DECLARED with per-split measured rates that must be quoted beside any score; a
+   competing-risks-style conditional population is legitimate when declared with measured rates. A
+   scope limitation is carried: every score describes the conditional population only (~90-93% of
+   eligible rows).
+2. **The one authorized baseline job ran (cl-tender-baseline-001, server 172057629, 116.1 s, exit 0,
+   EUR 0.06, release 421911676).** Bytes fetched from staging release 421857839, digest-verified,
+   RE-ACCEPTED on the worker before any scoring (container.log order verified); the benchmark's
+   unmodified train.py + validate.sh completed (CONTRACT OK); the private holdout never entered the
+   workdir. A pre-launch stdlib smoke of the bundle (kept as baseline/smoke.py) passed 5/5 locally,
+   including both guard-failure paths, before any worker spend.
+3. **The decisive comparison, measured three ways and agreeing:** model eval AUC 0.4752 (train.py,
+   validate.py, and reference_check.py's independent std-lib AUC) vs the unspsc_only bar
+   independently recomputed at 0.57075 from the same fetched bytes (accepted: 0.5707) on the identical
+   11,791 eval rows (identity asserted in-job). Paired difference -0.0955, publication-day-clustered
+   95% bootstrap CI [-0.1134, -0.0744] (1000 resamples, 0 skipped, 58 distinct days). **The full
+   runner-contract model loses to the one-column reference decisively and sits below 0.5.** Under the
+   pre-declared criterion (model must exceed the bar with the clustered interval excluding zero):
+   NO demonstrated headroom.
+4. **Negative finding recorded, candidate DROPPED (no packaging, no publication, per the directive).**
+   The finding does not prove every competent model must lose; it records that under this protocol,
+   with this runner and these accepted references, no useful headroom was demonstrated. An UNVERIFIED
+   hypothesis is recorded: eval AUC < 0.5 suggests the model learned feature-label associations that
+   reversed between the 2019 train cohorts and the 2020 eval cohorts (plausible regime change), while
+   the single stable categorical keeps modest signal; further diagnosis was outside the one-job
+   authorization. Reopen conditions in record.json `next_action`.
+5. **Cleanup provider-confirmed** (GET /servers/172057629 -> 404; ledger deleted 14:06:33Z; the scoped
+   token refuses list endpoints, so the direct server GET is the provider-side check). October
+   reservations: EUR 8.26 of 20 (this job's 0.06 counted at launch). Full test suite 588 tests OK;
+   check-candidate OK; bounded reports sha256-verified into .factory/cl-tender-baseline-001/reports/.
+
+Next for the queue: chilecompra is closed; the licence-ranked construction queue (cra-charity-filing-exit,
+dvsa-mot-next-test-outcome, npri-facility-reporting-exit, nws-tornado-warning-verification,
+nz-ea rebuild decision, za-municipal-audit-opinion) is unblocked for the next advancement session.
 verified GREEN end to end - gate 1.4.0 38/38, --accept ACCEPTED on the exact bytes, artifact
 27e610ba65e13805 - and the worker is destroyed with provider-confirmed cleanup; entry below).
 

@@ -1,0 +1,246 @@
+{
+  "job": {
+    "id": "cl-tender-baseline-001",
+    "candidate": "chilecompra-tender-outcome",
+    "image": "python:3.13-slim",
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 3072,
+    "timeout_minutes": 45,
+    "lifetime_minutes": 90,
+    "max_disk_mb": 4096,
+    "max_artifact_mb": 16,
+    "what": "operator-authorized runner-contract baseline (ONE job) on the accepted cl-tender-003 artifact 27e610ba65e13805, fetched from staging release 421857839 (not rebuilt): re-accept the five fetched files through the qualification gate against the gate's own collected report, materialize the runner workdir (public train+eval only; the private holdout is fetched for re-acceptance only and never copied into the workdir or scored), run the benchmark's own train.py and validate.sh unmodified, then independently recompute the decisive comparison from the same bytes with reference_check.py: the unspsc_only bar (train-fitted segment rates, own stdlib AUC), the model eval AUC (train.py's predict_proba), and the paired difference with a publication-day-clustered bootstrap, on the identical 11,791 eval rows the accepted references were measured on. The accepted bar to compare against is unspsc_only 0.5707. This is the contract only, not the agent harness loop; no packaging, no publication.",
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 421857839,
+      "assets": [
+        {
+          "asset_id": 669167939,
+          "dest": "extract/meta.json",
+          "size": 3151,
+          "sha256": "c12bb4392c8f4a1190ea644497b3872fc5430960c2aba2629e7097487410a665"
+        },
+        {
+          "asset_id": 669168006,
+          "dest": "extract/private/holdout.csv",
+          "size": 2902213,
+          "sha256": "85a7112ad5b0a1f447a13253184cdae6f0ccba88c632e06977dde37b280d80ff"
+        },
+        {
+          "asset_id": 669168128,
+          "dest": "extract/public/eval.csv",
+          "size": 1983903,
+          "sha256": "677cbb522133e4e8f784576690a528264a3695effb0b9a063f93600c0f5d02a4"
+        },
+        {
+          "asset_id": 669168208,
+          "dest": "extract/public/train.csv",
+          "size": 3883318,
+          "sha256": "2c7e341817a041b8a55ead6c71c9adf9fefbec492fae6c7cd94b8d300c86ce8e"
+        },
+        {
+          "asset_id": 669168296,
+          "dest": "extract/quality.json",
+          "size": 11474,
+          "sha256": "001eaf5cadf4624ca65c9020d8a2540f0bd8e958bab3e3e9296558b8373cb30e"
+        }
+      ]
+    },
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "source_files": [
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/chilecompra-tender-outcome/baseline/run.sh",
+        "bytes": 4094,
+        "sha256": "7549144227b6f26fbfe50a57ac33fa5aed768eb37fa9e0cf323a086a828cf539"
+      },
+      {
+        "bundled_as": "materialize.py",
+        "source": "candidates/chilecompra-tender-outcome/baseline/materialize.py",
+        "bytes": 2399,
+        "sha256": "0a2c0802d6c739e64cc6d6840d1dce9f1430564ac5a3601eb45de61664e48f09"
+      },
+      {
+        "bundled_as": "reference_check.py",
+        "source": "candidates/chilecompra-tender-outcome/baseline/reference_check.py",
+        "bytes": 12613,
+        "sha256": "5b4ce602384b9a9d7661c0e72a48ac73072712480fbf284c7d6fbd281beefbb6"
+      },
+      {
+        "bundled_as": "report.py",
+        "source": "candidates/chilecompra-tender-outcome/baseline/report.py",
+        "bytes": 7868,
+        "sha256": "d219721f1083316572d1df9bf10f4bb91947e75bd496a9afa2ea355ea442aa2a"
+      },
+      {
+        "bundled_as": "qualification.json",
+        "source": "candidates/chilecompra-tender-outcome/baseline/qualification.json",
+        "bytes": 13719,
+        "sha256": "c5ee2fb657159cdb5509a0ecea8da8365f1f84947a04a5991ba9108d608b0b70"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 44907,
+        "sha256": "4e51d2e9494fd66dd220517476119d7b3f2edea4ffde276caa90999a28cc0a87"
+      },
+      {
+        "bundled_as": "train.py",
+        "source": "/opt/data/harness_benchmark/task_template/train.py",
+        "bytes": 2500,
+        "sha256": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8"
+      },
+      {
+        "bundled_as": "validate.py",
+        "source": "/opt/data/harness_benchmark/task_template/validate.py",
+        "bytes": 1277,
+        "sha256": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b"
+      },
+      {
+        "bundled_as": "validate.sh",
+        "source": "/opt/data/harness_benchmark/task_template/validate.sh",
+        "bytes": 482,
+        "sha256": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      }
+    ]
+  },
+  "reservation_eur": "0.06",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 3,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 174080,
+  "source_sha256": "854d7b2ec0bcc0709a40c4478399ac01236241f48dbd57981d06d2fc978e286e",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-10-23T13:58:38.033331+00:00",
+  "expires": 1792769318,
+  "budget_months": [
+    "2026-10"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 172057629,
+  "known_hosts": "/opt/data/dataset-factory/.factory/cl-tender-baseline-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "65.21.158.17",
+  "result": {
+    "job_id": "cl-tender-baseline-001",
+    "status": "succeeded",
+    "uploaded": true,
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 421857839,
+      "fetched": [
+        {
+          "dest": "extract/meta.json",
+          "bytes": 3151,
+          "sha256": "c12bb4392c8f4a1190ea644497b3872fc5430960c2aba2629e7097487410a665"
+        },
+        {
+          "dest": "extract/private/holdout.csv",
+          "bytes": 2902213,
+          "sha256": "85a7112ad5b0a1f447a13253184cdae6f0ccba88c632e06977dde37b280d80ff"
+        },
+        {
+          "dest": "extract/public/eval.csv",
+          "bytes": 1983903,
+          "sha256": "677cbb522133e4e8f784576690a528264a3695effb0b9a063f93600c0f5d02a4"
+        },
+        {
+          "dest": "extract/public/train.csv",
+          "bytes": 3883318,
+          "sha256": "2c7e341817a041b8a55ead6c71c9adf9fefbec492fae6c7cd94b8d300c86ce8e"
+        },
+        {
+          "dest": "extract/quality.json",
+          "bytes": 11474,
+          "sha256": "001eaf5cadf4624ca65c9020d8a2540f0bd8e958bab3e3e9296558b8373cb30e"
+        }
+      ],
+      "failures": [],
+      "bytes": 8784059
+    },
+    "image_id": "sha256:57b29a7c050c4e679e4bea572e14b3965cf4b5839de2da49d55e49ffc4024f39",
+    "image_digests": [
+      "python@sha256:57b29a7c050c4e679e4bea572e14b3965cf4b5839de2da49d55e49ffc4024f39"
+    ],
+    "exit_code": 0,
+    "oom_killed": false,
+    "elapsed_seconds": 116.1,
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 421911676,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-fedf4246d3e86206f5b3",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-fedf4246d3e86206f5b3/manifest.json",
+    "assets": [
+      {
+        "id": 669302463,
+        "size": 72,
+        "sha256": "eb282650322358c590a20270a2c040b46e4dba74defdb9c403312f3f9f2895b1"
+      },
+      {
+        "id": 669302543,
+        "size": 8210,
+        "sha256": "0ca1c378db9fa415b2b132ca275e6ab36ec56700a3fff9fd8a998bbc428f33ce"
+      },
+      {
+        "id": 669302628,
+        "size": 247,
+        "sha256": "5acdeacb55f71293d60706375f987af96d6a7463ae29869e06db24f36e94584e"
+      },
+      {
+        "id": 669302717,
+        "size": 199,
+        "sha256": "cd4b872b864dfd6f11ab278be638bde72570a614f2b03f0d262d86bcc34cec98"
+      },
+      {
+        "id": 669302832,
+        "size": 364,
+        "sha256": "abd6f7249a473f07f501069dde0fe2436ada294e0816606ef6d35309752ff944"
+      },
+      {
+        "id": 669302916,
+        "size": 239,
+        "sha256": "5ea2498a10ce3e1345dff2ac7b3e709565412452126c9e75bdc417ccd82ce82e"
+      },
+      {
+        "id": 669303027,
+        "size": 2896,
+        "sha256": "60efbdde058ec63613b051a669e5ca0c782132a2d2cf3bfcb26c7cb035a65f98"
+      },
+      {
+        "id": 669303116,
+        "size": 53,
+        "sha256": "8c4bf852d9aa5371517df562d9fc2fb975f37de4bebd25821ee922f35cbffe80"
+      },
+      {
+        "id": 669303194,
+        "size": 178,
+        "sha256": "651d6dc09aee39294497e6176ffeccc04a891f93639051ae033afcf7ee417b83"
+      },
+      {
+        "id": 669303293,
+        "size": 174080,
+        "sha256": "854d7b2ec0bcc0709a40c4478399ac01236241f48dbd57981d06d2fc978e286e"
+      },
+      {
+        "id": 669303410,
+        "size": 1476,
+        "sha256": "cbede2989950b37c9c5ffb6336305a5acc1b88f14d2454af6e7b4c90c8b45ce9"
+      },
+      {
+        "id": 669303477,
+        "size": 10379,
+        "sha256": "23a4ca3880b3b2ae9fc17cb75071ff3c76333240374a3c95c10d635b919df248"
+      }
+    ]
+  },
+  "collected_at": "2026-10-23T14:04:30.511113+00:00",
+  "deleted_at": "2026-10-23T14:06:33.769792+00:00"
+}

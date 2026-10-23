@@ -256,3 +256,34 @@ Baseline decision criterion (recorded before the run): model eval AUC vs the uns
 publication-day-clustered bootstrap interval (the day is the gate's independence unit).
 Headroom is demonstrated only if the model exceeds the bar AND the clustered interval
 excludes zero; otherwise the finding is negative-or-inconclusive and gets recorded as such.
+
+## 2026-10-23 runner-contract baseline (cl-tender-baseline-001): NO HEADROOM - negative finding recorded, candidate dropped
+
+The one operator-authorized baseline job ran on the accepted artifact 27e610ba65e13805 (fresh attempt
+id, server 172057629, 116.1 s container, exit 0, EUR 0.06 reservation, worker destroyed
+provider-confirmed). Bytes fetched from staging release 421857839 with on-arrival digest checks and
+RE-ACCEPTED on the worker before any scoring; the private holdout was fetched for re-acceptance only
+and never entered the workdir; the benchmark's runner was bundled verbatim (hashes identical to
+tsb-baseline-001's record).
+
+On the identical eval rows (identity asserted in-job: 11,791 rows / 1,959 positives / 23,188 train):
+
+- Model (unmodified train.py, XGBoost 3.4.1): eval AUC 0.4752 - three agreeing implementations
+  (train.py's print, validate.py's recompute, reference_check.py's independent std-lib AUC).
+- unspsc_only bar, recomputed independently from the fetched bytes: 0.57075 (accepted 0.5707;
+  0 fallback rows, 55 segment levels).
+- Paired difference -0.0955; publication-day-clustered 95% bootstrap CI [-0.1134, -0.0745]
+  (1000 resamples, 0 skipped, 58 distinct eval days); naive row bootstrap [-0.1159, -0.0741].
+
+The full model loses to the one-column reference decisively, and sits below 0.5. Under the
+pre-declared criterion (model must EXCEED the bar with the clustered interval excluding zero) this is
+no demonstrated headroom; per the operator directive the negative finding is recorded and the candidate
+is DROPPED (no packaging, no publication). Outcome-conditioning rates quoted beside every score:
+scored_share 0.9262/0.8990/0.9105, censored 0.0453/0.0566/0.0512, revoked 0.0286/0.0444/0.0383
+(train/eval/holdout).
+
+Recorded as an UNVERIFIED hypothesis, not a diagnosis: an eval AUC below 0.5 suggests the model
+learned feature-label associations that reversed between the 2019 train cohorts and the 2020 eval
+cohorts (plausible regime change, e.g. pandemic-era procurement), while the single stable categorical
+keeps modest signal. Further diagnosis was outside the one-job authorization and would not change
+the criterion's verdict. Reopen conditions are in record.json next_action.
