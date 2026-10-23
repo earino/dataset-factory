@@ -1,9 +1,59 @@
 # Current state
 
-Updated: 2026-10-22 22:47Z (watcher close-out: wb-baseline-001 green and closed out - the nine
-small report assets of staging 421265626 fetched and sha256-verified, eval AUC 0.5879 confirmed
-from the worker's own logs; the triad and the pre-packaging decision point were recorded by the
-advancement tick (d77213d6); next action is the bounded holdout-leg scoring job.)
+Updated: 2026-10-23 03:05Z (Latin America discovery tick: ideam-rio-nivel-exceedance unblocked - the official
+per-station flood thresholds (cotas) were found extractable from archived IHD bulletins with a measured
+base-rate demonstration; new Argentina lead ar-ecobici-station-demand-exceedance opened, licence and access
+verified, then dropped at the novelty gate as a saturated task with named prior art. Next action: the IDEAM
+IHD harvest per its recorded next_action.)
+
+## 2026-10-23 - Latin America discovery tick: IDEAM threshold blocker RESOLVED (measured); Argentina lead opened and closed at the novelty gate
+
+Regional focus Latin America; both verdicts are in-region, no US substitution. One existing lead advanced
+with a decisive measurement, one new lead (Argentina, previously zero coverage) opened, fully triaged and
+closed with recorded evidence. Nothing was built, qualified or packaged.
+
+- `ideam-rio-nivel-exceedance` (CO, class B CC BY-SA) - **still investigating, but the one blocking fact from
+  the first pass (does an official per-station threshold exist in any obtainable form?) is resolved YES.**
+  Current IDEAM bulletins (BAH/ITD/BCH, Oct 2026, fetched and text-extracted) carry zone-level alerts only;
+  the per-station "COTA CRITICA x.xx m" values live in the historical IHD (Informe Hidrologico) PDFs,
+  Wayback-archived (CDX captures 2017-2025): 16 station cotas extracted from one Oct-2024 IHD via pypdf
+  (recipe kept as probe_ihd_cota_extract.py), with decade-stability evidence (Puerto Salgar 6.20 / El Banco
+  8.30 identical in 2014 and 2024 bulletins). No machine-readable threshold table exists on datos.gov.co
+  (catalogue searches empty; h4gs-wsmg Alertas Hidrologicas is a non-tabular Socrata view, 403 row access).
+  Measured via SoQL (probe_cota_soql.py, re-run end-to-end today with identical output): El Banco 0025027020
+  vs cota 8.30 = 5,937/105,354 hourly obs over 2015-2026 (5.64%), distinct days over cota per window
+  train 2015-2019 137/1,777 days-with-data / eval 2020-2023 137/828 / holdout 2024-2026 111/957 - both
+  classes in every window on this station, positives clustered into flood episodes, telemetry gaps measured.
+  Two construction hazards measured, not assumed: name-only joins produce FALSE PAIRS (IHD "PUERTO ANGOSTURAS
+  - RIO ARIARI" matches telemetry "ANGOSTURA" 0021137050, a Magdalena station - excluded from claims), and
+  Mitu 0042077020 shows 0/29,688 obs over cota 10.20 - an unexplained frame/station anomaly; every joined
+  station needs the zero/always-positive sanity check. record.json carries the new measurement block and a
+  rewritten next_action: IHD harvest (CDX sweep 2016-2024) -> join by codigoestacion + river + municipio ->
+  per-station continuity and clustered base rates -> raw-vs-validated as-of comparison -> novelty check before
+  any ready verdict. check-candidate OK (status=investigating).
+- `ar-ecobici-station-demand-exceedance` (AR, NEW) - **dropped at the novelty gate; licence and access were
+  excellent and are recorded so nobody re-verifies them.** Buenos Aires Data (CKAN) carries every Ecobici trip
+  since 2010 under CC-BY-2.5-AR (package metadata, read 2026-10-23): 17 yearly files 2010-2026, all HEAD-200
+  with sizes measured (~1.75 GB total; 2019 398 MB, 2025 208 MB, 2026 partial 143 MB, CDN Last-Modified shows
+  the current-year file updating in-year and completed years frozen Jan-Mar of Y+1). Bounded 2015 sample
+  parsed: 503,252 trips, 15 documented columns with station ids + coordinates. The task (station-day demand
+  exceedance) failed the novelty check with a recorded mirror verdict (check-novelty.py, 2 queries): the task
+  family exists ML-ready for other cities (UCI Bike Sharing, Seoul Bike Sharing Demand, Kaggle 2015),
+  Ecobici-specific demand prediction is already published (UTDT thesis 2018-2020; UBA course project
+  benchmarking xgboost on Ecobici 2016-2017 with weather; TFI 2016), Ecobici user churn has a UTDT thesis,
+  and the raw 2025 trips are mirrored on Kaggle with EDA notebooks. What would be ours (splits, gating,
+  frozen thresholds) is packaging on a saturated task - closed per the standing rule. Reopen conditions in
+  the record. check-candidate OK (status=dropped).
+
+Coverage after this session (discovery-coverage.py): 78 candidates, 25 live; Latin America 7 (BR 2, CL 2,
+CO 1, MX 1, AR 1 - Argentina no longer zero); live non-US 19/25 (76%); ready buffer 4 (camara-bill-
+advancement BR, chilecompra-tender-outcome CL, nz-ea-wholesale-price-exceedance, za-municipal-audit-opinion)
+plus tsb/wb above them at packaged/qualified. Session hygiene: check-candidate.py --all exit 0 (78 records,
+warning lines pre-existing); unittest suite 588/588 OK; factory doctor and check-runtime --source-only clean;
+probe scripts kept in the two candidate directories (probe_ihd_cota_extract.py, probe_cota_soql.py executed
+end-to-end today with identical output; probe_ba_inventory.py) and session scratch deleted (~160 MB of
+bulletin PDFs and samples never committed). No US source substituted for the regional quota; Argentina's
+empty coverage was probed honestly and closed on evidence, not padded.
 
 ## 2026-10-22 - wb-baseline-001 close-out (watcher): runner-contract baseline green; every recorded number verified against the fetched reports
 
