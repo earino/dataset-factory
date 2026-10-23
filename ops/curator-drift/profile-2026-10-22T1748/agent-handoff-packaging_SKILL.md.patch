@@ -1,0 +1,72 @@
+--- /opt/data/cache/scratch/handoff/ops/skills/agent-handoff-packaging/SKILL.md	2026-10-22 17:28:47.457924358 +0000
++++ /opt/data/skills/devops/agent-handoff-packaging/SKILL.md	2026-10-22 17:47:48.713393028 +0000
+@@ -99,6 +99,12 @@
+ 7. **Record the handoff result as measured, not accepted.** Note which of the sender's claims you
+    verified yourself, the ones you measured differently and how they reconcile, and any defect you
+    found and fixed.
++8. **Run the operator's real commands against the branch, not only its test suite.** In a separate
++   worktree, point the packaging, verification and publication-planning tools at live data and note
++   which commands now refuse, no-op or change behaviour. A branch can be green and still close a
++   workflow the operator relies on — a manifest command that now refuses to rewrite a published
++   package is correct and is also a blocked recovery path unless a replacement recipe is written
++down. Report the blocked command, not the principle.
+ 
+ ## Handing a running system to an outside implementer
+ 
+@@ -149,6 +155,25 @@
+ 
+ Starter: `templates/refactor-brief.md`.
+ 
++### Preserving live edits you did not make
++
++A self-maintaining agent can leave unreviewed edits in a working tree — including in skills it is not
++supposed to own. Do not commit them into an unrelated change, and do not discard them to get a clean
++tree. Preserve them as a reviewable patch on its own branch:
++
++1. Capture the diff against the current HEAD: `git diff -- <paths> > <scratch>/<topic>.patch`.
++2. Record, per file, the HEAD blob digest and the working-tree digest, plus the base commit — that
++   pair is what lets a reviewer see exactly what changed and reproduce it.
++3. In a **separate worktree at that base commit**, add the patch plus a README carrying the base SHA,
++   the digests, and the provenance (which actor changed what, from the tool's own ledger or log).
++4. Prove it applies: `git apply --check <patch>` on the base. A patch that does not apply is a
++   transcript, not a patch.
++5. Open it as its own PR and leave the live tree untouched; say explicitly that the edits are still
++   uncommitted where they were found.
++
++The point is reviewability without custody: the owner decides whether to apply, rewrite or revert,
++and nothing is lost while they decide.
++
+ ## The versioned export
+ 
+ - **Export by allowlist, never by copying the configuration and redacting.** Name each field you
+@@ -171,6 +196,16 @@
+ - **Keep secrets by reference.** Names, roles and file paths only - never a value, never a signed
+   URL, never a private messaging identifier. Distinguish credentials that look alike by role: the
+   publishing credential is not the inference credential, and the export should say which is which.
++- **Vendor the skills that carry the operating knowledge, not only the repository's.** Profile
++  skills usually live outside version control and are exactly what a host loss destroys. Copy each
++  one's `SKILL.md` and supporting files verbatim, with host path, version and per-file digest, and
++  state the load tier for every source (profile / external repo dir / bundled image) plus which one
++  wins on a name collision. Say plainly whether any profile copy shadows an external skill, because
++  a shadowing copy silently replaces the version under review.
++- **Treat every captured digest as a point-in-time claim.** Automated maintenance can edit skills
++  and configuration while you are capturing. Record the capture time, and before merging re-check
++  the files you hashed for uncommitted edits: report the drift and the pre/post digests rather than
++  quietly re-hashing, so the reader knows which version the document describes.
+ 
+ ## Recovery instructions
+ 
+@@ -216,6 +251,13 @@
+   Confirm no value-shaped strings are committed, and if the visibility is not what the operator
+   expects, raise it as a question rather than changing it - the owner may have made it public on
+   purpose.
++- **Hashing a live tree and assuming it holds still.** A self-maintaining agent can rewrite its own
++  skills mid-capture, leaving an export whose digests describe a version that no longer exists and
++  whose edits sit uncommitted where a scheduled job may commit them into an unrelated change. Re-read
++  the status of every hashed path before merge and record the drift.
++- **A handoff that covers tracked files only.** The scheduler, wrappers, runtime config and profile
++  skills are the parts that vanish with the host; an inventory of what version control already holds
++  describes the part that was never at risk.
+ - **Version-controlling a copy of your own working tree.** A directory-replacing copy can drop a
+   nested repository, after which version control silently walks up to the parent and reports a clean
+   tree - commit from inside the copy and confirm with a status call on that path.
