@@ -41,7 +41,12 @@
       "role": "discovery",
       "status": "completed; audit found readiness failures",
       "session_id": "20261023_005500_3d7a64",
-      "source": "scout-research",
+      "source": {
+        "url": "https://github.com/earino/dataset-factory/pull/11#issuecomment-6355027773",
+        "created_at": "2026-10-23T01:16:19Z",
+        "body": "### Discovery close-out \u2014 session `20261023_005500_3d7a64` (signed, sanitized)\n\n- **Route:** `glm-5.3` / `lunaroute` (strict main-task rows).\n- **Brief:** `docs/discovery-session-prompt.md` sha256 `d666206a25ed8ae2\u2026`; preload `dataset-discovery` only\n  (role-specific loader in `scripts/scout_research_session.py:290`).\n- **Timing:** started 00:55:05Z, last usage 01:10:37Z (\u224815.5 min).\n- **Usage (four fields):** main 80 calls \u2014 input 104,327 / output 71,274 / cache_read 8,110,208 / cache_write 0;\n  title 1 call \u2014 509 / 386 / 0 / 0. **All-inclusive total 8,286,704.**\n- **Commit/CI:** `be44e01` pushed; check success (run 39882390044).\n- **Outcome:** three new leads \u2014 `inpe-foco-municipal-onset` (ready at discovery time), `ideam-rio-nivel-exceedance`\n  (investigating), `sag-residuos-plaguicidas` (dropped). LatAm 6 records, live non-US 19/26.\n\n**INPE caveat (assisted review, not discovery):** the \"ready\" verdict is under an assisted audit hold \u2014 the D+1\n13:00 instant falls 13 hours after the [D+1 00:00, D+8 00:00) label window opens, the archive is retrospectively\nreprocessed (FAQ Q39), and `next_action` put baselines before the gate. Do not construct from that contract\npending review.\n\n**Final response (verbatim, sanitized):**\n\n```\nSession complete. Report:\n\n**Leads opened** (3, all new; none duplicate the existing BR/CL/MX records, which are different task shapes):\n- `inpe-foco-municipal-onset` (BR, INPE Programa Queimadas)\n- `ideam-rio-nivel-exceedance` (CO, IDEAM via datos.gov.co)\n- `sag-residuos-plaguicidas` (CL, SAG)\n\n**Decisions and decisive evidence**\n- **INPE (ready).** Municipal fire-alert onset: after 14 detection-free days, will \u22651 reference-satellite detection occur in the next 7 days; instant 13:00 UTC on D+1 (day-D daily CSV measured complete by 09:05 BRT on D+1). Licence class B on the publisher's own instrument (\"Dados Abertos para Uso P\u00fablico\" footer; FAQ Q18 free transfer/use; Q36 attribution-by-citation; geonetwork licence field unreadable at 502 \u2014 recorded as unread channel). Four reference years fully counted (53k/55k/50k/62k municipality-days with detections; 2024 onset base rate 88,888/1,173,526 = 7.6%); exact cross-check against INPE's own statistics CSV (MT-2024 totals identical, 50,551); cost measured: 4 years = 35.5 MB/16.9 s, full 23-year series \u2248 150 MB. Novelty verdict **differentiated** \u2014 closest artifacts are the Cerrado ConvLSTM paper (2 prototype years, Cerrado grid only) and arXiv 2606.04170 (Cerrado-MG conservation units, explicitly retrospective with same-day covariates and pseudo-absences); neither ships a prospective national task with splits.\n- **IDEAM (investigating).** 26-year hourly level series measured (14.67M rows, 2001\u20132026, 345 stations, anonymous Socrata, CC BY-SA = class B). Blocked on two named facts: the official per-station alert-threshold table (absent from the station catalog; catalog search empty) and the raw-vs-validated as-of policy (data explicitly unvalidated, preliminary\u2192definitivo lifecycle). No base-rate or split claim made.\n- **SAG (dropped).** Sample-level residue results exist only in annual PDFs; national catalog search returns 0 relevant entries; licence unstated (SAG's other entries are cc-nc). Closed under the standing class-C policy, with the reopen condition recorded. This is a distribution/format rejection, not a scientific one.\n\n**Strongest remaining uncertainty:** for the INPE lead, no historical file vintages exist (archive regenerated 2025-09-08/2025-06-06), so construction must measure late-row churn (re-fetch one fixed month after \u22652 weeks) before any number is quoted; for Colombia, whether an official threshold table is obtainable at all.\n\n**Checks / commit / CI:** `check-candidate` OK for all three, `--all` OK (77 candidates), suite OK (588 tests, 13.4 s), `factory doctor` OK, `check-runtime --source-only` OK. Commit `be44e01` pushed to main; CI for that exact commit passed (run 39882390044, 19 s). Session scratch deleted after push.\n\n**Actual coverage:** Brazil probed to a ready verdict, Colombia bounded-probed, Chile closed with evidence. Mexico got no fresh probe this tick (DENUE stays parked with its unblock condition) and Argentina was not probed \u2014 reported as a gap, not as evidence of no viable source. LatAm now holds 6 records (BR 2, CL 2, CO 1, MX 1); live non-US share 19/26.\n\n**Next action:** advancement may construct the INPE fire-onset task per its recorded `next_action` (worker job, ~150 MB); the Colombia lead needs one bounded threshold-hunt probe before any verdict.\n\n\u2014 Scout (Hermes)\n```\n\n\u2014 Scout (Hermes)",
+        "scope": "Scout signed host/accounting readback and sanitized final response"
+      },
       "started_at": "2026-10-23T00:55:05Z",
       "runner_handle": "proc_ba9ba7b20044",
       "wrapper_pid": 14145,
@@ -61,15 +66,165 @@
           "sag-residuos-plaguicidas": "dropped"
         },
         "useful_evidence": "Regional source/metadata probes, publisher-summary cross-check, explicit Colombia threshold and vintage blockers, Chile format/terms rejection. No newly accepted dataset."
+      },
+      "finished_at": "2026-10-23T01:10:37Z",
+      "finish_scope": "last recorded usage; exact process exit timestamp not supplied",
+      "route": {
+        "model": "glm-5.3",
+        "provider": "lunaroute",
+        "scope": "recorded main-task route, not independent served-model attestation"
+      },
+      "usage": {
+        "main_calls": 80,
+        "main": {
+          "input": 104327,
+          "output": 71274,
+          "cache_read": 8110208,
+          "cache_write": 0
+        },
+        "auxiliary_title_calls": 1,
+        "auxiliary": {
+          "input": 509,
+          "output": 386,
+          "cache_read": 0,
+          "cache_write": 0
+        },
+        "all_inclusive_tokens": 8286704,
+        "uncached_input_plus_output_tokens": 176496,
+        "usd": null
+      },
+      "checks": {
+        "candidate": "all 77 OK (Scout report)",
+        "unittest": "588 tests in 13.4s OK (Scout report)",
+        "doctor": "OK (Scout report)",
+        "runtime_source_audit": "OK (Scout report)",
+        "ci": "https://github.com/earino/dataset-factory/actions/runs/39882390044"
+      },
+      "template_sha256": "d666206a25ed8ae2ba097e8e9402bc3e943cd391678e2336c86b3e8a0ee7dd97",
+      "preload_configuration": [
+        "dataset-discovery"
+      ],
+      "actual_submitted_prompt_sha256": "cdee0c85353a2792de88eff68e932fb397d762314ffdfe13c8f45bf191a728f4",
+      "identity_note": "Scout wrapper-log readback confirms actual submitted brief including generated context, eager skills and limits; template hash kept separately. Reported usage-window timestamps differ in scope from wrapper elapsed time.",
+      "preloaded_skills": [
+        "dataset-discovery"
+      ],
+      "wrapper_elapsed_seconds": 944.2,
+      "wrapper_finished_at": "2026-10-23T01:10:39Z",
+      "wrapper_identity_source": {
+        "url": "https://github.com/earino/dataset-factory/pull/11#issuecomment-6355210386",
+        "created_at": "2026-10-23T01:30:54Z",
+        "body": "### Discovery close-out addendum \u2014 actual submitted brief identity\n\nFrom the wrapper's own session log (`.factory/research-sessions.jsonl`, 2026-10-23T01:10:39Z), distinct from the\ntemplate file hash:\n\n- `submitted_brief_sha256`: **cdee0c85353a2792de88eff68e932fb397d762314ffdfe13c8f45bf191a728f4**\n- `preloaded_skills`: `[\"dataset-discovery\"]`\n- `max_turns`: 120, `run_budget`: 5400, `outcome`: completed, `elapsed_seconds`: 944.2\n- Template file `docs/discovery-session-prompt.md`: `d666206a25ed8ae2\u2026` \u2014 **not** the submitted brief, because\n  the wrapper appends the generated regional-focus context.\n\nThe advancement close-out will get the same treatment from its own log line. No private memory, system text or\nreasoning included.\n\n\u2014 Scout (Hermes)"
+      },
+      "assisted_hold": {
+        "commit": "5dac3c50cc87429c3496b37cec8d2fe5a8b7e37e",
+        "status": "investigating",
+        "verdict": "hold",
+        "ci": "https://github.com/earino/dataset-factory/actions/runs/39886364402",
+        "verification": "Codex independently read committed hold and exact-head CI success"
       }
     },
     {
       "role": "advancement",
       "session_id": "20261023_011135_3731ee",
       "runner_handle": "proc_52e3e9a2a39e",
-      "status": "running",
+      "status": "completed; negative finding retained, post-run wording audit pending",
       "observation_source": "Scout Telegram 2026-10-23T01:15Z",
-      "coaching": "Ordinary invocation; World Bank audit already supplied before launch. INPE audit communicated to coordinator after launch; Scout reports advancement untouched. Candidate/actual input evidence pending."
+      "coaching": "Ordinary invocation; World Bank audit already supplied before launch. INPE audit communicated to coordinator after launch; Scout reports advancement untouched. Candidate/actual input evidence pending.",
+      "candidate": "wb-ieg-project-outcome",
+      "working_artifact": "candidates/wb-ieg-project-outcome/holdout/",
+      "progress_observation": {
+        "time": "2026-10-23T01:26Z",
+        "source": "Scout read-only Telegram checkpoint",
+        "wrapper_pid": 16566,
+        "hermes_pid": 16568,
+        "elapsed": "15m03s",
+        "main_calls": 39,
+        "messages": 88,
+        "usage_partial": {
+          "main_input": 64520,
+          "main_output": 38061,
+          "main_cache_read": 2619648,
+          "main_cache_write": 0,
+          "title_input": 332,
+          "title_output": 383,
+          "title_cache_read": 192,
+          "title_cache_write": 0
+        },
+        "commit": null,
+        "job_id": null,
+        "lock": "held",
+        "status": "running, untouched"
+      },
+      "job_observation": {
+        "job": "wb-holdout-001",
+        "created_at": "2026-10-23T01:27:14Z",
+        "server_id": 171950621,
+        "expires_at": "2026-10-23T02:27:14Z",
+        "reservation_eur": 0.04,
+        "actual_billing_eur": null,
+        "status_at_scout_0140_readback": "collected; worker not yet deleted",
+        "result_elapsed_seconds": 57.3,
+        "result_exit_code": 0,
+        "private_staging_release": 421361824,
+        "collected_at": "2026-10-23T01:37:58Z",
+        "audit": "new-prompt-build-review-b80a84d.json",
+        "status": "deleted",
+        "deleted_at": "2026-10-23T01:40:51.312343+00:00",
+        "verification": "Committed job ledger and Scout provider-404 report; Codex did not query the cloud provider."
+      },
+      "commit": "206a94c618d5464f71577638a8afb36c9bbd2f9a",
+      "wrapper_elapsed_seconds": 2376.4,
+      "actual_submitted_prompt_sha256": "d213f4afa831a35edc3e76c7713fbc6cfb19916e4d1cbfaa51d8ec09ea8dd939",
+      "preloaded_skills": [
+        "dataset-qualification",
+        "dataset-release"
+      ],
+      "template_sha256": "92ba2f81e37aa48c58dae1af9ac8ea178f9140a5591a369fb0ed8fbe8c8c2ec2",
+      "limits": {
+        "max_turns": 120,
+        "run_budget_seconds": 5400
+      },
+      "route": {
+        "model": "glm-5.3",
+        "provider": "lunaroute",
+        "scope": "Scout reported recorded route; not independent served-model attestation"
+      },
+      "usage": {
+        "main_calls": 101,
+        "main": {
+          "input": 83780,
+          "output": 65927,
+          "cache_read": 10258176,
+          "cache_write": 0
+        },
+        "auxiliary_title_calls": 1,
+        "auxiliary": {
+          "input": 332,
+          "output": 383,
+          "cache_read": 192,
+          "cache_write": 0
+        },
+        "all_inclusive_tokens": 10408598,
+        "uncached_input_plus_output_tokens": 150422,
+        "usd": null
+      },
+      "checks": {
+        "ci": "https://github.com/earino/dataset-factory/actions/runs/39885846532",
+        "exact_head_ci": "completed/success independently verified by Codex"
+      },
+      "outcome": "wb-ieg-project-outcome dropped under the current protocol/budget; no packaging or public release. Intervals cross zero, which does not establish equivalence or absence of task signal.",
+      "closeout_source": "Signed Scout receipt, archived verbatim (sanitized by Scout)",
+      "remaining_review": "Codex requested post-run correction of equivalence/task-signal overclaims, historical-vintage scope and prior holdout exposure; no additional experiment requested.",
+      "source": {
+        "html_url": "https://github.com/earino/dataset-factory/pull/12#issuecomment-6355494997",
+        "created_at": "2026-10-23T01:53:30Z",
+        "body": "### Advancement close-out receipt \u2014 session `20261023_011135_3731ee` (signed, sanitized)\n\n- **Route:** `glm-5.3` / `lunaroute` (main-task rows).\n- **Submitted brief:** `d213f4afa831a35edc3e76c7713fbc6cfb19916e4d1cbfaa51d8ec09ea8dd939`\n  (template `docs/research-session-prompt.md` `92ba2f81e37aa48c\u2026`); preloads\n  `[\"dataset-qualification\",\"dataset-release\"]`; max_turns 120, run_budget 5400.\n- **Timing:** 2376.4 s (39.6 min), 212 messages.\n- **Usage:** main 101 calls \u2014 input 83,780 / output 65,927 / cache_read 10,258,176 / cache_write 0;\n  title 332 / 383 / 192 / 0. **All-inclusive 10,408,598.**\n- **Commit/CI:** `206a94c`, CI run 39885846532 success; candidate dropped with negative finding preserved.\n- **Wording corrections (assisted audit)** committed as `4d54eb1`: CIs containing zero = advantage not\n  demonstrated (not equivalence, not proof task signal cannot survive); historical as-of/vintage limitation\n  unresolved; identity holdout AUC already known (fixed-config refit, first new-model holdout comparison);\n  \"no packaging\" is a protocol/budget decision, not impossibility. Record, notes and STATE patched.\n\n**Final response (verbatim, sanitized):**\n\n```\nMemory consolidated (95%, 2,099/2,200). Session close-out is complete. Final report:\n\n**What advanced**\n\nwb-ieg-project-outcome (the only package-stage candidate; release work outranks construction) moved from its recorded decision point to a resolved verdict: **dropped, with a preserved negative finding**. No packaging occurred, and the record's own pre-registered rule \u2014 \"record the negative result and drop\" \u2014 was followed.\n\n**The decisive job (wb-holdout-001)**\n\nBundle `candidates/wb-ieg-project-outcome/holdout/` (new), worker 171950621, exit 0, 57.3 s, \u20ac0.04 reservation. It fetched the five accepted files from staging 421262457, re-ACCEPTed them through the gate **before** any scoring (\"matches the qualified artifact b8345bcb5769e422\"), then ran the benchmark's own train.py verbatim via runpy (same fitted model as wb-baseline-001, no retraining choices) and scored it against train-fitted references on identical rows. Report: staging release 421361824 (asset 667622270). The scorer was smoke-tested end-to-end on a synthetic fixture on the coordinator before the worker cycle was spent.\n\n**Measured results (full artifact, no samples)**\n\n- Holdout (FY2015-19, 1,097 rows, 885 positives, prevalence 0.8067): model AUC **0.5301**, identity rule 0.4909, genuine time-only calendar 0.4780, prior-track-record 0.4938. Paired cluster bootstrap by country (2,000 resamples, fixed seed): model\u2212identity \u0394 +0.0393, 95% CI **[\u22120.0113, +0.0899] \u2014 contains zero**; same for calendar and prior-share. No benchmark claim is supportable.\n- Eval comparison kept, not replaced: model 0.5879 trails identity 0.6003 (\u0394 \u22120.0124, CI contains zero). Only interval excluding zero anywhere: model>calendar on eval \u2014 the split the runner does not score.\n- Scope: this is \"no demonstrated headroom under this protocol\", not a claim the task is impossible. The full-model holdout figure came from one implementation path (the runner's own predict_proba; AUC arithmetic dual-implemented and asserted to 1e-9); the identity-rule figures were independently replicated from the written bytes (0.6003/0.4909, matching build.py's stdlib loop).\n\n**Codex source-review items closed in scope**: accept-before-score ordering enforced this stage; majority-class accuracy measured per split (0.7931/0.8067), never restated as train prevalence; the degenerate country\u00d7year \"calendar\" control empirically confirmed (100% fallback, scores bit-identical to identity) and replaced by a train-fitted logistic on approval_fy + cyclical month; reference information sets verified by perturbation. The latest-vintage prior-history claim is moot for release (nothing ships) and is recorded as an assumption any future instance must state.\n\n**Held/running work**: none. Worker destroyed (provider 404 confirmed). Scratch smoke venv/fixtures remain in `/opt/data/cache/scratch` \u2014 the rm -rf was refused by the approval guard and I did not bypass it; the 24h idle pruner will remove them. Note: the platform pre-sets FACTORY_GITHUB_TOKEN (= staging token) in every shell, so terminal-backend scratch snapshots carry it in plaintext \u2014 a pre-existing platform condition, now recorded in memory.\n\n**Checks/commit/CI**: check-candidate for wb-ieg OK (dropped) and --all OK; suite 588 tests OK; doctor OK. Commit `206a94c` pushed to main; CI run 39885846532 (Local checks) **success on that exact commit**. October worker reservations \u20ac7.90/\u20ac20, release reserve untouched.\n\n**Next action**: the operator's actionable list stands minus wb-ieg. inpe-foco-municipal-onset (build) is the discovery session's handoff pick; every remaining item needs its build authored first \u2014 the next session should pick one and write the construction before launching. Reopening wb-ieg means a new task instance with its own qualification cycle, never a re-tuned threshold on this one.\n\n\u2014 Scout (Hermes)\n```\n\n\u2014 Scout (Hermes)"
+      },
+      "wording_correction": {
+        "commit": "4d54eb145b5d7d883b2df513851a18d6546194cf",
+        "status": "clarification added, active rejection_reason still contradicts it; further correction requested"
+      }
     }
   ],
   "observations": [
