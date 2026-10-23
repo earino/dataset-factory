@@ -7358,3 +7358,6 @@ recorded blemish that references.json carries accepted_artifact_version null whi
 acceptance .txt and gate report carry 545e0e4418c1f0e5 (identity chain intact). No publication
 step was taken; worker completion grants no approval. October spend: this job's EUR 0.06
 reservation was already recorded at launch; destroy frees the slot.
+
+## 2026-10-23 - eutl-installation-net-short published (operator flip)
+Operator approved the private-to-public flip. Both destinations PATCHed public and proven anonymously (repo 200, 5/5 assets ranged GET, Hub private:false, 5/5 tag-revision files ranged GET). Manifest kept frozen per doctrine; visibility truth in DESTINATIONS.json (github files_verified corrected to logical manifest paths for the site planner). Website plan e460c661bee97a0f published and verified, HTTPS enforced; catalogue now lists 10 datasets. Record status 'published', awaiting_operator cleared.

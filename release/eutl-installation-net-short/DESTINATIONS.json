@@ -7,14 +7,14 @@
       "release_id": 421047536,
       "release_tag": "v2026.10",
       "target_commit": "cba922f4a3c50f775d031cda7d0c0eaabd2b3bec",
-      "private": true,
+      "private": false,
       "verified": true,
       "verified_at": "2026-10-22T18:43:03Z",
       "files_verified": [
+        "private/holdout.csv",
+        "public/eval.csv",
+        "public/train.csv",
         "meta.json",
-        "private-holdout.csv",
-        "public-eval.csv",
-        "public-train.csv",
         "quality.json"
       ],
       "checks": [
@@ -23,22 +23,24 @@
         "GitHub API readback: exactly 5 assets, every name/size/server-side sha256 digest matches package MANIFEST.json (meta.json b0e54387..., private-holdout.csv 1c694e5e..., public-eval.csv 0d9f35d5..., public-train.csv c7f23c55..., quality.json 88222d66...)",
         "get_dataset.py executed end-to-end against the private release (5 files, 12,602,654 bytes, every digest verified) and qualify_dataset.py --accept on the downloaded tree returned ACCEPTED, artifact 3540ad2180d8df8a - the bytes the release serves are the qualified artifact",
         "release published non-draft at 2026-10-22T18:43Z by the close-out takeover (the turn-limited session left it draft); git-refs API readback: tag v2026.10 and main both resolve to cba922f4a3c50f775d031cda7d0c0eaabd2b3bec (tag == main)",
-        "anonymous GET of the repository API answers 404 (checked 2026-10-22T18:43Z with no credential): the repository is private by design; the flip is the operator's act"
+        "anonymous GET of the repository API answers 404 (checked 2026-10-22T18:43Z with no credential): the repository is private by design; the flip is the operator's act",
+        "operator approved the private-to-public flip; repo PATCHed private=false and verified anonymously at 2026-10-23T21:31:15Z: repository API answers 200 with no credential, release non-draft, all 5 assets answer ranged GETs (206 partial content at the recorded sizes)",
+        "files_verified list corrected to the logical manifest paths (the site planner reads package paths; the flat release-asset names are GitHub's no-slash constraint on the same five verified assets)"
       ],
       "anonymous_access": {
-        "checked_at": "2026-10-22T18:43:03Z",
+        "checked_at": "2026-10-23T21:31:15Z",
         "method": "unauthenticated HTTPS, no token",
-        "repository_visible": false,
+        "repository_visible": true,
         "release_draft": false,
-        "assets_listed": 0,
-        "digests_rechecked": "n/a while private - 5/5 sha256 digests verified by authenticated API readback instead"
+        "assets_listed": 5,
+        "digests_rechecked": "ranged GETs answered 206 on all 5 assets; full digests were verified pre-flip by authenticated readback and the bytes are unchanged by visibility"
       },
-      "note": "private release v2026.10, 5 assets, digests re-read from the API after upload"
+      "note": "public release v2026.10 since 2026-10-23T21:31:15Z (operator flip); 5 assets; digests verified before the flip and unchanged by it"
     },
     "huggingface": {
       "repo": "earino/eutl-installation-net-short",
       "revision": "v2026.10",
-      "private": true,
+      "private": false,
       "verified": true,
       "verified_at": "2026-10-22T18:45:21+00:00",
       "files_verified": [
@@ -50,7 +52,21 @@
       ],
       "missing": [],
       "size_mismatch": [],
-      "loading_check": "run by the worker job and recorded in its report"
+      "loading_check": "run by the worker job and recorded in its report",
+      "note": "public dataset revision v2026.10 since 2026-10-23T21:31:15Z (operator flip); files verified before the flip and unchanged by it",
+      "checks": [
+        "operator approved the private-to-public flip; update_repo_settings(private=False) with the write credential, verified anonymously at 2026-10-23T21:31:15Z: Hub API reports private:false, and all five tag-revision paths answer ranged GETs (data/*.csv, meta.json, quality.json)"
+      ]
+    },
+    "site": {
+      "type": "github-pages",
+      "url": "https://earino.github.io/eutl-installation-net-short/versions/v2026.10/",
+      "private": false,
+      "verified": true,
+      "verified_at": "2026-10-23T21:35:08+00:00",
+      "checks": [
+        "anonymous GET https://earino.github.io/eutl-installation-net-short/versions/v2026.10/ -> 200; navigation and release record verified by the publisher"
+      ]
     }
   }
 }
