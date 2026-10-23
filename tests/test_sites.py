@@ -298,17 +298,53 @@ class WebsiteTests(unittest.TestCase):
         gh, hub = FakeGitHub(self.record), FakeHub()
         self.complete(self.plan, self.out, gh, hub)
         editorial = copy.deepcopy(self.editorial)
-        editorial.update({"summary": "Corrected explanation of the same dataset.", "site_revision": 2})
+        editorial.update({"summary": "Corrected explanation of the same dataset.",
+                          "site_revision": self.editorial["site_revision"] + 1})
         folder = self.root / "edition2"
         prepare(ROOT / "release/austin-911-response", editorial, self.config, folder)
         second = load_bundle(folder)
         self.complete(second, folder, gh, hub)
         repo = self.record["github_repository"]
-        for edition in (1, 2):
+        for edition in (self.editorial["site_revision"], self.editorial["site_revision"] + 1):
             self.assertIn(f".dataset-site/editions/austin-911-response/v2026.09/{edition}.json", gh.files[repo])
         self.assertEqual(second["record"]["artifact_version"], self.record["artifact_version"])
         with self.assertRaisesRegex(FactoryError, "Older site revisions"):
             reconcile(self.plan, self.out, gh, hub, gh.fetch)
+
+    def test_newly_documented_facts_are_allowed_for_the_same_artifact(self):
+        """Splits and baseline measurements the projector learned to read later are additive
+        documentation of the pinned artifact, not a change to a published number."""
+        gh, hub = FakeGitHub(self.record), FakeHub()
+        self.complete(self.plan, self.out, gh, hub)
+        repo = self.record["github_repository"]
+        record_path = f".dataset-site/records/{self.record['dataset']}/{self.record['release_tag']}.json"
+        prior = json.loads(gh.files[repo][record_path])
+        prior["splits"] = {}
+        prior["baseline"]["metrics"] = {}
+        prior["site_revision"] = 1
+        gh.files[repo][record_path] = dump(prior)
+        catalog = self.plan["targets"]["catalog"]["repository"]
+        gh.files.setdefault(catalog, {})[record_path] = dump(prior)
+        editorial = copy.deepcopy(self.editorial)
+        editorial["site_revision"] = prior["site_revision"] + 1
+        folder = self.root / "enriched"
+        prepare(ROOT / "release/austin-911-response", editorial, self.config, folder)
+        self.complete(load_bundle(folder), folder, gh, hub)
+
+    def test_a_changed_number_is_still_refused(self):
+        gh, hub = FakeGitHub(self.record), FakeHub()
+        self.complete(self.plan, self.out, gh, hub)
+        repo = self.record["github_repository"]
+        record_path = f".dataset-site/records/{self.record['dataset']}/{self.record['release_tag']}.json"
+        tampered = copy.deepcopy(self.plan)
+        record = copy.deepcopy(self.record)
+        first = next(iter(record["splits"]))
+        record["splits"][first]["rows"] += 1
+        record["site_revision"] += 1
+        tampered["record"] = record
+        tampered["targets"]["dataset"]["files"][record_path] = dump(record)
+        with self.assertRaisesRegex(FactoryError, "different facts"):
+            reconcile(tampered, self.out, gh, hub, gh.fetch)
 
     def test_card_navigation_preserves_yaml_and_is_idempotent(self):
         original = "---\nlicense: cc0-1.0\n---\n\n# Card\nOriginal text\n"

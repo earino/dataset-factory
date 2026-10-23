@@ -222,8 +222,8 @@ def project(package, editorial, config):
         "configs": dataset_config_names(release),
         "source": {"name": source["name"], "url": source["landing_page"]},
         "qualification": {"gate_version": qualification["gate_version"], "result": qualification["result"]},
-        "baseline": {"metrics": metrics, "scope": (baseline.narrative if baseline else release.baseline_reason)
-                     or release.baseline_display},
+        "baseline": {"metrics": metrics, "scope": ((baseline.narrative if baseline else "")
+                     or release.baseline_reason or release.baseline_display)},
     }
     record["record_sha256"] = digest(dump(record))
     return record

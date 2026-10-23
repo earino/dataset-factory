@@ -155,7 +155,41 @@ def ensure_record(gh, target, plan, kind):
         prior, new = json.loads(old), plan["record"]
         fixed = ("dataset", "release_tag", "artifact_version", "github_repository", "hf_repository", "assets",
                  "splits", "source", "qualification", "baseline", "licenses", "release_date")
-        require(all(prior.get(k) == new.get(k) for k in fixed),
+
+        # A published version's numbers never change in place. The identity fields must
+        # match exactly: the artifact bytes are pinned by artifact_version and assets. A
+        # documentation value may be newly filled where the published record carried
+        # nothing, because that documents what the pinned artifact always contained
+        # (the projector learned to read it later). Any change to a value a reader
+        # could already have seen is still refused, as is any removal.
+        def _fill_only(was, now):
+            if was in (None, {}, [], ""):
+                return now not in (None, {}, [], "")
+            if isinstance(was, dict) and isinstance(now, dict):
+                for key in set(was) | set(now):
+                    if key in was and key in now:
+                        if was[key] == now[key]:
+                            continue
+                        if not _fill_only(was[key], now[key]):
+                            return False
+                    elif key in now:
+                        if now[key] in (None, {}, [], ""):
+                            continue
+                    else:
+                        return False
+                return True
+            return False
+
+        def _acceptable(key):
+            was, now = prior.get(key), new.get(key)
+            if was == now:
+                return True
+            if key in ("dataset", "release_tag", "artifact_version", "github_repository",
+                       "hf_repository", "assets"):
+                return False
+            return _fill_only(was, now)
+
+        require(all(_acceptable(k) for k in fixed),
                 "Existing dataset version has different facts; publish a new dataset version")
         require(new["site_revision"] > prior["site_revision"],
                 "Website content changed; increment site_revision. Older site revisions cannot overwrite newer ones.")
