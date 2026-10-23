@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "bundle": "cd29d104f8b3ded6afce74d39e9a41aac25de737",
+  "partition": "watcher-verification",
+  "records": [
+    {
+      "partition": "watcher-verification",
+      "case": "watcher-loading",
+      "arm": "baseline",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-94",
+      "session_id": "20261023_002421_86e2dc",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "d288cd9bb01138e21ed7d254b9ecbe840f67c7dd165ca226932f5c0806b8770b",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 222,
+        "output_tokens": 5754,
+        "cache_read_tokens": 19712,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 25688,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 396,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 170,
+          "output_tokens": 5358,
+          "cache_read_tokens": 19328,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 69.876,
+      "response": "DECISION\nhf-check-12's verification failed. Matching upload digests are necessary but not sufficient: loading_check.ok=false with two expected splits missing means the Hub destination is unverified, so nothing may be tagged, DESTINATIONS.json cannot record HF as published, and the artifact is not accepted. The stale note (\"upload success means ready to tag\") is wrong and gets corrected in the records, not followed. The worker is destroyed after collection \u2014 a failed job must not stay billable.\n\nSUPPORTING EVIDENCE\nCollected report: all uploaded asset digests matched, loading_check.ok=false, two expected splits missing. OPERATIONS.md: acceptance requires a collected successful job, a passing loading check, exact manifest assets, and matching live commit/blob metadata; failed results never authorize tags or publication; tag is LAST and only after destinations verify. Upload integrity (digests) is a different property from completeness (loading check at the pinned commit); the stale note conflates them. No unrelated edits, so the failure lives in the job's own evidence.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\nWhy the two splits are missing is undetermined. Candidate causes: (a) race \u2014 files uploaded after the pinned commit the loading check read; (b) Hub-upload gap \u2014 files exist in the source GitHub release and manifest but were never uploaded; (c) packaging gap \u2014 the splits are absent from the source package itself. Discriminating check: read the two missing paths from the loading-check detail and compare each against MANIFEST.json's asset list, the source release assets, and the Hub tree at both the pinned commit and current main. The result picks the fix; I will not guess before this.\n\nORDERED ACTIONS AND STOPPING CONDITION\n1. Confirm collection; fetch small reports from the staging release into .factory/hf-check-12/reports/ using its manifest.json mapping; no bulk CSV assets to this host.\n2. Read the job's result file and loading-check detail; enumerate the two missing split paths.\n3. Run the discriminating check.\n4. Record the outcome in STATE.md and the candidate's record.json: verification failed, not taggable, stale note corrected. Commit, push, check CI for that exact commit via gh api with head_sha; fix any failure before reporting done.\n5. Destroy the worker; confirm server and job-owned IP are gone.\n6. Fix per diagnosis: (a) race \u2014 new verify attempt at the current commit; (b) Hub gap \u2014 new hf_publish upload attempt (new attempt ID, same asset/loading contract; per-file idempotence uploads only the missing files); (c) packaging gap \u2014 new package version via release-manifest.py, check-package.py, re-upload small files, tag last, and re-qualification of the changed artifact before acceptance. Launch within the standing allowance and release reserve. No tag, no visibility change, no destination marked published.\n7. Only after recording and cleanup, write .factory/hf-check-12/handled with a one-line summary.\nStop and report after steps 1-6 this tick. If the discriminating check is inconclusive from the report and logs, say so explicitly rather than implying readiness. The flip is not implicated; no operator approval is needed for the fix path.\n\nOPERATOR REPORT\n\"hf-check-12 (Hugging Face verification) finished: all uploaded asset digests matched, but the loading check failed \u2014 two expected splits are missing at the checked Hub commit. Verification is incomplete and the release is NOT ready to tag; the stale note that upload success alone permits tagging has been corrected in STATE.md. Reports are collected under .factory/hf-check-12/reports/, the outcome is recorded in STATE.md and the candidate's record.json, changes are pushed, CI is checked for the exact commit, and the worker is destroyed with server and IP confirmed deleted. Next action: diff the two missing split paths against the manifest, the source GitHub release, and the Hub tree to distinguish a commit race, a Hub-upload gap, or a packaging gap, then apply the corresponding fix (re-verify, targeted per-file hf_publish upload, or a new package version) and re-verify before any tag. No destination is marked published.\"\n",
+      "response_sha256": "0ce1332dc29cba329b82a701a9444acd1356db326bb9d0c0edb533e18f9e455d"
+    }
+  ],
+  "ledger": {
+    "calls": 95,
+    "tokens": 3220753
+  },
+  "updated_at": "2026-10-23T00:25:35Z"
+}
