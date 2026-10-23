@@ -282,11 +282,67 @@
       "elapsed_seconds": 94.507,
       "response": "Decision\n\nDefer to the active advancement coordinator. The watcher performs no writes of any kind: no collection, no `worker status`, no job-ledger or watcher-bookkeeping writes, no `handled` marker, no commits, no worker destruction. It delivers a read-only status report and stops. The job stays unhandled.\n\nSupporting evidence\n\n- The brief: with ownership active or uncertain, \"report the job ID and pending follow-up, leave it unhandled, and defer to the owner.\" The idle-with-documented-handoff exception does not apply: the coordinator is active, holds the research mutex, has uncommitted edits in STATE.md and the candidate record, and no handoff was recorded.\n- Deferral explicitly includes ledger and bookkeeping writes, collection and normal worker destruction; `worker status` reconciles, writes the job record and can clean owned IPs, so it is not read-only and is not invoked. Existing records are read instead.\n- The `handled` marker requires a durable outcome plus recorded handoff; with ownership unresolved, it is left unwritten.\n- Nothing is verified: a result existing is not qualification passing. No qualified figures may be quoted; report only observed completion.\n\nUncertainty and next discriminating check\n\n- Is the coordinator genuinely live? Confirm read-only via the process table (marker pid, command line, parent/group). A stale JSON marker alone proves nothing; the lock must never be deleted or replaced to proceed. Case evidence says the mutex is held, so treat ownership as active.\n- The job's real outcome is unknown until collection: whether the staging upload is complete and durable, whether qualification passed on the exact artifact, whether any asset exists only on the worker. Discriminating check for the owner: collect, then read each required check's own result field (not overall job status), with gate `--accept` against exact bytes before any scoring or acceptance.\n- Expiry risk: the independent sweepers continue by design and will delete the worker at expiry, discarding un-uploaded artifacts. Surface the recorded expiry so the owner can collect first.\n\nOrdered actions (proposed only; nothing executed)\n\n1. Read-only ownership confirmation via the process table; no lock or marker deletion.\n2. Read-only status assembly from the existing job ledger record, STATE.md and candidate record: job/candidate IDs, worker ID, expiry, reservation, and the watcher's observation that a result exists.\n3. Deliver the operator report below; make no file changes and no commits.\n4. Leave unmodified: the coordinator's uncommitted edits, the mutex and lock marker, the job ledger and watcher bookkeeping, the worker and its artifacts, and all release/approval boundaries (no tags, no publication, no manifest, receipt or check changes).\n5. Stop after reporting; no polling loop. Handling (collect, verify each check including full-artifact qualification, account for every accepted asset's durable copy, destroy, record, then the `handled` marker) resumes only when the coordinator is idle with a documented handoff naming this job \u2014 or the coordinator handles it itself.\n\nStopping condition: report delivered while ownership remains active or uncertain. Any mutation is out of scope for this event.\n\nConcise operator report\n\nJob <id> (candidate <id>): the worker finished and a result is visible to the watcher, but nothing is verified \u2014 no collection, no check-level results, no qualified numbers. Cleanup: not requested, not performed, not provider-confirmed; the worker remains billable until the owning coordinator collects and destroys it, and independent expiry cleanup may sweep it at its recorded deadline, discarding any un-uploaded artifacts. The advancement coordinator holds the research mutex with uncommitted STATE.md/candidate edits and no handoff, so follow-up is deferred to it: collect before expiry, verify each check including qualification on the exact artifact, confirm durable preservation of every accepted asset, then delete and confirm provider deletion. Commit and CI status from this watcher: none; unknown, not pending. Next action: collect-and-verify, owned by the active advancement coordinator; the watcher re-engages on a documented handoff or an idle coordinator.\n\n\u2014 Scout (Hermes)\n",
       "response_sha256": "7b8d4abbe23d2be9acf15c03db9cdf3d9ff4b796cf316664347788938f6aa317"
+    },
+    {
+      "partition": "watcher-verification",
+      "case": "watcher-ownership",
+      "arm": "baseline",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-99",
+      "session_id": "20261023_002940_68454e",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "81ef532042d58d3eeed2771ab3ef59223c9bb8e6fa3e5312bcbfad6302e80525",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 83,
+        "output_tokens": 6387,
+        "cache_read_tokens": 19840,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 26310,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 166,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 31,
+          "output_tokens": 6221,
+          "cache_read_tokens": 19456,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 93.57,
+      "response": "DECISION\n\nRun the worker-side lifecycle now \u2014 collect, fetch bounded reports, assess, destroy \u2014 but freeze repository bookkeeping: no edits to STATE.md or the candidate record, no commit/push, no new launch, no handled marker, until the advancement session ends and its uncommitted edits are reconciled. Report the substance to the operator immediately. The mutex and the other session's work are the thing not to break; the finished worker is the thing not to leave billable.\n\nSUPPORTING EVIDENCE\n\n- OPERATIONS.md: the mutex inode must not be deleted or replaced to clear a busy session; a file existing is not evidence a lock is held; a forced stop loses in-progress agent work \u2014 \"record and reconcile that work before resuming.\"\n- \"Inspect the diff first\" before committing: the tree contains another session's uncommitted edits I cannot vouch for, so any commit now would publish half-finished work or clobber it.\n- \"Only one coordinator may launch workers using a given job ledger\": no launch while the advancement coordinator is active.\n- Hetzner bills powered-off servers; deletion is part of finishing a job. Verified collection (release, tag, digests) means the worker holds nothing unique, so destroy cannot lose data.\n- The handled marker is written last, never before reporting; a job that looks idle from outside is a known failure mode, so the watcher must stay on this job while bookkeeping is deferred.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\n\nUnknown: whether the advancement session is live or wedged, and whether its uncommitted edits already concern this job's candidate. Checks, all read-only: inspect the actual process table for the lock's pid (parent/group identity), watch whether its session JSONL is still growing, read `git diff` to see what it changed, and compare the job's ledger candidate against the edited record. Never act on a lock file's existence or timestamp alone.\n\nORDERED ACTIONS AND STOPPING CONDITION\n\n1. Read-only recon: worker status, jobs/ ledger, uncommitted diff, lock pid liveness.\n2. `worker collect <job_id>` \u2014 verified collection.\n3. Fetch small reports per manifest.json into `.factory/<job_id>/reports/`; no bulk CSVs.\n4. Assess: build job \u2192 coverage from build_summary.json first, then gate ok flags (a failed gate still uploads diagnostics \u2014 collect them; nothing is scored or accepted without a passing report for the exact artifact). Baseline \u2192 its own result file.\n5. `worker destroy <job_id>`; confirm server and job IP gone.\n6. If failed: diagnose from errors/container.log, prepare the corrected attempt offline under a new attempt ID; hold the launch.\n7. Write a short deferral note in `.factory/<job_id>/` listing the exact pending steps; do not write the handled marker.\n\nStop after step 7 and report. Resume recording when the session has demonstrably ended: reconcile its edits, append the outcome to STATE.md and record.json, commit, push, check CI for that exact SHA (`gh api ...runs?head_sha=...`), then write the marker. If the lock looks wedged with no live process, follow the orphan procedure \u2014 verify identity, orderly stop of that exact process \u2014 never delete the mutex.\n\nREMAINS UNMODIFIED\n\nThe mutex and lock files; the advancement session's process; STATE.md and candidates/<id>/record.json (no edits, no revert, no committing them); the git branch (no commits); the shared ledger (no launches); the handled marker.\n\nOPERATOR REPORT\n\n\"Job <id> (<candidate>, build/baseline) finished. Collected and verified against staging digests; reports in .factory/<id>/reports/: coverage <built/expected stations, station-years>, gate <ok/failed>, baseline <figure>. Worker and its IP destroyed at <time> \u2014 nothing billable remains. The advancement session still holds the research mutex with uncommitted edits to STATE.md and the record, so I did not touch those files and did not commit; the watcher stays on the job so it cannot be forgotten. Pending: reconcile, record, commit, push, verify CI. <If failed: cause, fix prepared as attempt <new id>, launch held until one coordinator owns the ledger.>\"\n",
+      "response_sha256": "1da49b350679bf4edfada2c91e0647444ae3525ad6918e331a88cb8b6c7d3423"
     }
   ],
   "ledger": {
-    "calls": 99,
-    "tokens": 3359691
+    "calls": 100,
+    "tokens": 3386001
   },
-  "updated_at": "2026-10-23T00:29:40Z"
+  "updated_at": "2026-10-23T00:31:21Z"
 }
