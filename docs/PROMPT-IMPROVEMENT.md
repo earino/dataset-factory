@@ -473,3 +473,37 @@ research tasks and cache conditions preclude a causal speed/cost comparison.
 Watcher observations so far cover silent busy ticks only, not terminal-event
 handling. The qualification gate, published release bytes and production budget
 rules are unchanged.
+
+
+### Follow-up comparison completed
+
+The eight `aa0e735` versus deployed `b80a84d` responses passed identity, route,
+zero-tool and accounting checks. Label-blinded review scored **10/16 baseline
+versus 14/16 revised** criteria, preferred revised in three pairs and tied one.
+The baseline GLM advancement answer proposed launching without correcting the
+six-hour target overlap; both revised advancement answers required a future
+target. Both revised discovery answers explicitly restored the full-worker
+qualification/acceptance-before-scoring sequence. This is supplied-evidence
+reasoning, not execution or new dataset yield.
+
+Material residual failures remain in revised answers: unsupported completion
+claims, overgeneralizing one observed publication day, an unjustified cutoff for
+abandoning an operational redesign, unverified cleanup assumptions, and missing
+coverage evidence before treating no events as negative labels. The narrow unsafe
+list has zero revised flags; that does **not** mean no safety-relevant weakness.
+The full blinded reviews, verbatim responses, author adjudication and Scout's
+signed review are retained as `results/rollout-aa0e735-*`.
+
+This batch used 274,665 inclusive tokens: baseline 135,010 / 269.944 seconds,
+revised 139,655 / 303.765 seconds. Revised answers also exceeded the 600-word
+request in three of four cases (baseline two). Thus this batch is not evidence of
+speed/token savings. The cumulative evaluation ledger is 121 attempts and
+4,099,323 inclusive tokens, including the retained zero-inference parser failure;
+no earlier results were reset. Dollar cost remains unknown. Standard deviations in
+the review viewer describe heterogeneous cases/routes, not repeated-run uncertainty.
+
+The exact tested source is approved for bounded deployment with these limits.
+The goal still requires another ordinary discovery and audit; an assisted repair
+or a high decision score alone cannot satisfy that check. Clean-clone verification
+after merging Scout's records at `e161f17`: 588 tests in 6.758s, OK (skipped=6),
+doctor exit 0, source audit 62 files/no problems, working tree clean after checks.

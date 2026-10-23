@@ -6453,3 +6453,12 @@ design (rather than any possible implementation issue) caused the weak result.
 The audit found no implementation defect in its checked scope; that is not proof
 of code correctness. Historical availability remains unresolved. This record
 repair is assisted review, not an additional prompt-test success.
+
+Prompt follow-up review (Codex, 2026-10-23): all eight aa0e735/b80a84d responses
+retained, identity/route/zero-tool/accounting checks passed. Blinded criteria
+10/16 -> 14/16, three revised preferences/one tie; critical baseline timing launch
+avoided by revised answers. Residual scientific/reporting/cleanup weaknesses are
+explicit in results/rollout-aa0e735-author-review.json, not hidden by the score.
+Cumulative experiment 121 attempts / 4,099,323 inclusive tokens; no extra repeats.
+Exact tested prompts approved for merge/idle deployment, followed by one ordinary
+uncoached discovery and source audit. Do not close the goal before that live pass.
