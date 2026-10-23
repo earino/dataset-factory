@@ -18,7 +18,8 @@
       "name": "NetworkSupplyPointsTable (POC -> Island / Network reporting region mapping, with POC start/end dates)",
       "url": "https://www.ea.govt.nz/data-and-insights/datasets/wholesale/mapping-and-geospatial/",
       "api": "https://emidatasets.blob.core.windows.net/publicdata/Datasets/Wholesale/MappingsAndGeospatial/NetworkSupplyPointsTable/20261021_NetworkSupplyPointsTable.csv",
-      "access": "424,502 bytes, anonymous; 2,633 rows; columns include POC code, Network reporting region ID, Network reporting region, Island, Start date, End date"
+      "access": "424,502 bytes, anonymous; 2,633 rows; columns include POC code, Network reporting region ID, Network reporting region, Island, Start date, End date",
+      "licence": "CC BY 4.0 - the NetworkSupplyPointsTable is Authority content published on the same EMI platform, covered by the same EMI LegalInformation CC BY 4.0 statement recorded in license_evidence"
     }
   ],
   "license_evidence": [
@@ -26,7 +27,7 @@
     "Successor hub copyright statement (https://www.ea.govt.nz/copyright-disclaimer-transparency/, read 2026-10-22): 'Unless indicated otherwise for specific items or collections of content (either below or within specific items or collections), this copyright material is licensed for re-use under the Creative Commons Attribution (CC-BY) 4.0 international licence... Copyright material on this website is protected by copyright owned by the Electricity Authority on behalf of the Crown.' - the same licence posture carries across the EMI retirement onto the Data & insights hub.",
     "EMI retirement is announced ('The Electricity Authority will soon begin to decommission the EMI platform... A new Data & insights hub... will replace EMI', read on https://www.emi.ea.govt.nz/ 2026-10-22): a source-migration risk, not a licence risk - the same datasets are already catalogued on the hub at https://www.ea.govt.nz/data-and-insights/datasets/wholesale/dispatch-and-pricing/ and the licence statement covers both. Construction must pin exact URLs and record digests."
   ],
-  "construction_script": null,
+  "construction_script": "candidates/nz-ea-wholesale-price-exceedance/source/build.py",
   "split_strategy": "Temporal windows on the 1996-10..2026-10 daily panel, e.g. train 1996-10..2015-12 / eval 2016-01..2020-12 / holdout 2021-01..2026-10; each window contains at least one measured high-price episode (train: 2008-07 measured 9/31 days >$200; eval: 2020-06 measured 5/30 days >$200 with mid-month means to $287; holdout: 2024-08 measured 25/31 days >$200). Positives cluster into multi-day weather/storage episodes, so split capacity is counted per episode-week, not per day; sampled episode weeks measured, exact counts computed at construction over the full files. The 2022-11-01 real-time-pricing regime change (ex-post -> real-time pricing, documented by the publisher) is a structural break: either bound all windows inside one regime or ship a regime indicator; decided and documented at construction.",
   "measurements": {
     "inventory_measured": "container listing (1 request, 2.80 s, 460,102 bytes): 728 files, 360 monthly (199610..202609, size min 8,245,783 / median 10,012,278 / max 10,894,850 bytes; total 3,594.6 MB) + 368 daily (20251021..20261021, ~312,808-348,002 bytes; total 119.7 MB); monthly naming has no gaps",
@@ -35,13 +36,43 @@
     "era_and_event_samples_measured": "market daily-mean $/MWh (mean over POCs x periods): 1997-01 min 26 / median 42 / max 50, 0 days >$100; 2008-07 median 135 / max 306, 13 days >$150, 9 >$200; 2020-06 median 145 / max 287, 12 days >$150 (mid-month event); 2024-08 median 436 / max 884, 27 days >$150, 25 >$200, 22 >$300; recent era (12 sampled days 2025-10..2026-10) median 32 / max 165, 1 day >$100",
     "known_event_fixtures": "August 2024 dry-year price episode: measured daily means 2024-08-05..08-08 of 815-884 $/MWh - must exceed any training-frozen threshold; 2008 winter dry-year: 2008-07-01 mean 306 - must exceed $200; quiet-era control: 1997-01 max 50 - must not exceed $100. Fixtures to be pinned from the publisher's own market commentary at construction.",
     "extraction_cost_measured": "probe: 19 requests, 45,112,531 bytes, 75.1 s (4 whole monthly files + 12 daily files + mapping + listings) on this coordinator; full construction estimated (not measured) at 728 files / 3,714.3 MB / ~1-2 h sequential on a worker - labelled an estimate from the measured per-file sizes",
-    "measured_on": "2026-10-22 via .factory/nz_ea_probe.py (v1, listing crashed on the monthly-file name shape, diagnosed), .factory/nz_listing_stats.py, .factory/nz_ea_probe2.py; commands and outputs in notes.md"
+    "measured_on": "2026-10-22 via .factory/nz_ea_probe.py (v1, listing crashed on the monthly-file name shape, diagnosed), .factory/nz_listing_stats.py, .factory/nz_ea_probe2.py; commands and outputs in notes.md",
+    "construction_decisions_2026_10_23": {
+      "decided_by": "advancement session 2026-10-23, before the nz-ea-001 worker launch",
+      "threshold": "NZD 100/MWh fixed (external, frozen from the training-window design). Basis: candidate levels 100/150/200/300 measured on era samples (2020-06: 28/12/5/0 days above each); the Authority's own wholesale review records 2019 average spot $127/MWh and 2020 $105/MWh, so NZD 100 keeps clustered positive target-weeks measurable in every split while staying ~2x the long-run median. Never tuned on a held-out score.",
+      "splits": "anchor-day windows train (first anchor .. 2015-12-31), eval (2016-01-01 .. 2022-10-31), holdout (2022-11-01 .. last anchor). The eval->holdout boundary coincides with the documented 2022-11-01 real-time pricing regime change, so no window straddles the structural break; the holdout is a different market regime by design and per-year reporting is mandatory.",
+      "grain": "one row per (island, anchor trading day D); row_id = {island}-{anchor_date}",
+      "timing": "prediction instant = publication of day D's final prices, conservatively placed at D+6 calendar days: the documented rule is final by 2pm the following business day, and the daily-file channel measured Last-Modified minus trade date = 0-5 calendar days over 365 files (fresh listing 2026-10-23: distribution 1d:249, 2d:52, 3d:52, 4d:9, 5d:5, 0d:1). Features read published prices for trading days <= D only; the target trading day D+7 has not finished trading at the instant, so the label cannot exist there under any publication scheme.",
+      "event_key": "target_week = ISO week of the target day, market-wide (both islands share a week). Weeks within one long storage crisis are not fully independent; the count is a capacity floor per the gate's rule, not an independence proof.",
+      "channel_ownership": "monthly ByMonth files own trading dates <= 2025-10-31; daily files own dates > 2025-10-31 (interim _I and _incomplete variants excluded and counted); the 10 overlap days 2025-10-22..31 are cross-checked between channels (max |diff| asserted <= 0.01).",
+      "mapping": "POC -> island from the current-vintage NetworkSupplyPointsTable (894 POCs, 0 island conflicts measured); POCs absent from it are excluded and counted per year (199610 first-day sample: 213/225 mapped, 12 retired POCs unmapped).",
+      "known_events": "Aug 2024 dry-year episode (EA Review of winter 2024: 'in early August the average daily price reached $820/MWh') must exceed; 2008-07-01 (record-measured market mean 306) must exceed; Jan 1997 quiet-era control (record-measured monthly max 50) must not. Asserted by the build from the constructed panel.",
+      "fixture_smoke": "synthetic fixture (fabricated data, nothing quotable): build.py ran clean and gate 1.4.0 passed 38/38 including capacity minimums; one defect found and fixed (duplicate 'island' header - the exact one-column-list failure mode the qualification skill documents). Gate --selftest passed with the shipped broken fixtures still rejected."
+    }
   },
-  "jobs": [],
+  "jobs": [
+    {
+      "id": "nz-ea-001",
+      "candidate": "nz-ea-wholesale-price-exceedance",
+      "server_id": 172021455,
+      "status": "running",
+      "launched_at": "2026-10-23T10:14:37Z",
+      "bundle": ".factory/jobs/nz-ea-001",
+      "reservation_eur": "0.06",
+      "provider_hourly_eur": "0.01152",
+      "stage_order": "construct -> qualify (gate 1.4.0, full artifact on the worker) -> --accept exact bytes -> simple references (score.py, post-acceptance, eval only)",
+      "expected_reports": [
+        "/output/summary.json",
+        "/output/qualification-nz-ea-wholesale-price-exceedance.json",
+        "/output/acceptance-nz-ea-wholesale-price-exceedance.txt",
+        "/output/references-nz-ea-wholesale-price-exceedance.json"
+      ]
+    }
+  ],
   "artifacts": [],
   "rejection_reason": null,
   "review": "Class A licence read first-hand on both the current platform and its announced successor; 30 years of daily-grain labels; a documented publication instant with measured file lags; publisher-published regional mapping; strong clustered event structure (dry-year episodes) and quiet eras giving both classes in every candidate window. Prior art is level-regression forecasting (EPF benchmark, an AUT study, a single-node GitHub project) - no published exceedance task with splits and a scored contract.",
-  "next_action": "Construction on the worker: (1) enumerate the 728 files via the container listing, download all monthly+daily price files (or stream and aggregate), join POC->Island/Network-reporting-region via the NSP table with point-in-time POC validity; (2) build the daily region x day panel; (3) define the D+k exceedance label with a threshold frozen on the training window (fixed $/MWh or training quantile - decide and document, with the measured 100/150/200/300 rates as the decision basis); (4) decide and document the 2022-11-01 regime-break treatment; (5) baseline triad (persistence: last-published day/week mean above threshold; calendar-only; model) before any headroom claim; (6) pin known-event fixtures (Aug 2024, Jul 2008, quiet-era control) from the publisher's own commentary; (7) qualification gate per the dataset-qualification skill. Pin exact blob URLs + digests because EMI is being decommissioned onto the Data & insights hub.",
+  "next_action": "nz-ea-001 worker job launched 2026-10-23T10:14:37Z (server 172021455). When it finishes: collect the compact reports, verify the gate passed 38/38 on the full artifact and --accept matched the exact bytes (both run inside run.sh on the worker), record the staging release, destroy the worker and read the deletion back from the provider; then the harness-runner baseline job evaluates the full model on the accepted eval rows next to the score.py references. If the gate fails (most likely on enough_clustered_positives for the holdout window), preserve the report, record the structural finding, and re-target under the one-rebuild budget - no silent threshold change.",
   "jurisdiction": {
     "country": "NZ",
     "region": "Oceania",
