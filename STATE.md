@@ -1,8 +1,50 @@
 # Current state
 
-Updated: 2026-10-23 13:09Z (chilecompra selection-review session: the operator's four
-selection questions answered YES/YES/YES/YES from the publisher's records, the rebuild
-launched as worker `cl-tender-003`, still running at session close - handoff below).
+Updated: 2026-10-23 13:19Z (cl-tender-003 worker follow-up: the operator-directed rebuild is
+verified GREEN end to end - gate 1.4.0 38/38, --accept ACCEPTED on the exact bytes, artifact
+27e610ba65e13805 - and the worker is destroyed with provider-confirmed cleanup; entry below).
+
+## 2026-10-23 - cl-tender-003 worker follow-up: rebuild GREEN - gate 38/38, accepted artifact 27e610ba65e13805; cleanup provider-confirmed
+
+**cl-tender-003 (server 172043826, 48.4 min, exit 0, staging release 421857839, tag
+job-cl-tender-003) is the operator-directed terminal-state-within-180d rebuild of
+chilecompra-tender-outcome, and every acceptance requirement from the handoff was verified from
+the collected bytes before anything was recorded.** Bounded reports (9 files, 91,070 B, each
+sha256-verified against the release's own manifest) are in `.factory/cl-tender-003/reports/`;
+the bulk CSVs and source.tar stayed in staging at their recorded digests (collect verified all
+14 assets by id, size and digest).
+
+- **Qualification PASSED on the full artifact, on the worker: gate 1.4.0, 38/38 checks, 0
+  failed** (leakage, timing, units, splits, runner all green; high-cardinality declared:
+  tender_id, estimated_value_clp, pub_date). **`--accept` on the exact bytes -> ACCEPTED,
+  artifact 27e610ba65e13805c8066e0bdb7932324cd39e30096f4e51b13136120e1ca3a7.**
+- **Stage order verified in container.log: build -> qualification -> acceptance -> simple
+  references.** No performance figure is computed before acceptance, so the camara-001
+  in-build-reference order defect does not apply here.
+- **Splits, gate-recomputed from rows and identical to the build summary:** train 23,188 rows /
+  4,089 positives (17.63%), eval 11,791 / 1,959 (16.61%), holdout 17,236 / 4,333 (25.14%);
+  52/50/51 distinct positive days; mixed_terminal 0, duplicate_ocid 0. The outcome-conditioned
+  scored population is declared, not hidden: scored_share 0.9262/0.8990/0.9105, censored_rate
+  0.0453/0.0566/0.0512, revoked_rate 0.0286/0.0444/0.0383 (train/eval/holdout), with
+  unobserved-target buckets counted per split.
+- **Simple references (eval only, fitted on train, post-acceptance):** procedure_only 0.5183,
+  region_only 0.5330, unspsc_only 0.5707, calendar_only 0.5295, value_procedure 0.5443;
+  majority-class accuracy 0.8339 on 11,791 eval rows; persistence INAPPLICABLE (one row per
+  tender). **previous_eval_comparison vs cl-tender-002: identical rows 11,791, old_only 152,
+  new_only 0, label disagreements on identical rows 0** - the previous 0.5673 UNSPSC bar
+  (11,943 rows, pooled any-active labels) re-measures at 0.5707 on the rows both artifacts
+  score under the new labels.
+- **Cleanup confirmed by the provider, not just the ledger:** worker destroyed through the
+  supported lifecycle at 13:17:15Z (ledger status deleted); `GET /servers/172043826` -> 404
+  "server not found"; project primary IPs: []. October reservations unchanged at EUR 8.20 of 20
+  (this job's 0.06 was already counted at launch).
+- **Record:** status investigating -> **qualified** with the new artifact digests, the
+  outcome_conditioning block and the rebuild measurement; the Codex-assisted review is preserved
+  with its reopen condition marked executed by this verified rebuild. NO baseline model job, NO
+  packaging, NO publication was run, per the operator directive. **Next (advancement):**
+  scientific sign-off that the rebuild resolves the assisted review, then the runner-contract
+  baseline decision on the accepted artifact (the bar to beat is unspsc_only 0.5707 on the
+  identical eval rows).
 
 ## 2026-10-23 - chilecompra-tender-outcome: operator-directed selection review answered; terminal-state-within-180d rebuild launched (cl-tender-003 RUNNING at close)
 

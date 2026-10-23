@@ -1,30 +1,30 @@
 {
   "id": "chilecompra-tender-outcome",
-  "status": "investigating",
+  "status": "qualified",
   "created_at": "2026-10-21T12:06:45.115079+00:00",
   "domain": "public procurement - tender-level outcome prediction (desertion), Chile",
-  "prediction_question": "A Chilean public-sector tender (licitaci\u00f3n) is published on Mercado P\u00fablico. At the publication instant, given only publication-time context - the buying organism and its unit (CL-RUT identifier, region, municipality), tender title and description, item list with UNSPSC categories and quantities, estimated value and currency, procedure type (L1/LE/LP/LQ/LR public by UTM band, E2/CO/B2/H2/I2 private, LS specialised services), convocatoria type, payment/duration terms and the publication calendar position - will the process end deserted (desierta: no valid bids, Ley 19.886 art. 3 or 9) rather than adjudicated?",
-  "prediction_time": "The instant the tender is published on Mercado P\u00fablico (tender publication date; OCDS release date). Everything decided or observed after publication is excluded from shipped features: the closing act, bids received and their counts, the evaluation, the adjudication/revocation decision and award documents, and contract fields. The OCDS award-stage status fields are the label source and are excluded from shipped columns. Construction note: a tender document fetched for a closed month carries the tender's final status/statusDetails (e.g. '5-Publicada' vs closed states) - construction must reconstruct publication-time state from publication-stage fields only.",
-  "target_definition": "Binary: the process's OCDS award status is 'unsuccessful' with statusDetails vocabulary '7-Desierta (o art. 3 \u00f3 9 Ley 19.886)' (positive) vs 'active' / '8-Adjudicada' (negative). Measured on the first-100 samples of closed months: 17/98 = 17.3% desertion (2019-06), 14/98 = 14.3% (2023-06); cancelled/revoked ('15-Revocada', ~2-3%) are excluded from the scored population at construction with the exclusion recorded. Label source columns: award release status/statusDetails (+ tender final status as cross-check); excluded from shipped feature columns.",
+  "prediction_question": "A Chilean public-sector tender (licitación) is published on Mercado Público. At the publication instant, given only publication-time context - the buying organism and its unit (CL-RUT identifier, region, municipality), tender title and description, item list with UNSPSC categories and quantities, estimated value and currency, procedure type (L1/LE/LP/LQ/LR public by UTM band, E2/CO/B2/H2/I2 private, LS specialised services), convocatoria type, payment/duration terms and the publication calendar position - will the process end deserted (desierta: no valid bids, Ley 19.886 art. 3 or 9) rather than adjudicated?",
+  "prediction_time": "The instant the tender is published on Mercado Público (tender publication date; OCDS release date). Everything decided or observed after publication is excluded from shipped features: the closing act, bids received and their counts, the evaluation, the adjudication/revocation decision and award documents, and contract fields. The OCDS award-stage status fields are the label source and are excluded from shipped columns. Construction note: a tender document fetched for a closed month carries the tender's final status/statusDetails (e.g. '5-Publicada' vs closed states) - construction must reconstruct publication-time state from publication-stage fields only.",
+  "target_definition": "Binary: the process's OCDS award status is 'unsuccessful' with statusDetails vocabulary '7-Desierta (o art. 3 ó 9 Ley 19.886)' (positive) vs 'active' / '8-Adjudicada' (negative). Measured on the first-100 samples of closed months: 17/98 = 17.3% desertion (2019-06), 14/98 = 14.3% (2023-06); cancelled/revoked ('15-Revocada', ~2-3%) are excluded from the scored population at construction with the exclusion recorded. Label source columns: award release status/statusDetails (+ tender final status as cross-check); excluded from shipped feature columns.",
   "sources": [
     {
       "name": "ChileCompra OCDS monthly process list API (licitaciones)",
-      "url": "https://api.mercadopublico.cl/APISOCDS/OCDS/listaOCDSAgnoMes/{a\u00f1o}/{mes}/{pos_inicial}/{pos_final}",
+      "url": "https://api.mercadopublico.cl/APISOCDS/OCDS/listaOCDSAgnoMes/{año}/{mes}/{pos_inicial}/{pos_final}",
       "api": "anonymous, no ticket/registration, max 1000 records per query, pagination.total in response; per-item urlTender/urlAward/urlPlanning point at per-process OCDS documents. Publisher page documents it as real-time OCDS access 'sin necesidad de registro' (datos-abiertos.chilecompra.cl/descargas/procesos-ocds).",
       "license": "see license_evidence (CC0 per OCP registry; publisher terms permit reuse)",
-      "access": "measured 2026-10-21 (probe_desertion.py): monthly licitaci\u00f3n totals 2010-01: 33,366; 2014-01: 22,218; 2018-01: 13,049; 2020-01: 11,661; 2023-01: 11,382; 2025-01: 7,785."
+      "access": "measured 2026-10-21 (probe_desertion.py): monthly licitación totals 2010-01: 33,366; 2014-01: 22,218; 2018-01: 13,049; 2020-01: 11,661; 2023-01: 11,382; 2025-01: 7,785."
     },
     {
       "name": "ChileCompra OCDS monthly bulk zips (licitaciones stream) - the construction path",
       "url": "https://ocds.blob.core.windows.net/ocds/{yyyymm}.zip",
       "api": "anonymous Azure blob; real zips verified by PK magic on ranged GET; clean 404 (XML) for missing months. Series measured 2009-01 through 2022-04 present (2022-05 -> 404). Sizes measured via Content-Range: 201001: 377,010,777 B; 201406: 948,139,521 B; 201806: 613,891,953 B; 201906: 1,131,029,693 B. URL pattern documented on the publisher's descargas page (found in the React bundle: 'variantes URLs en las que se modifique la fecha del archivo').",
       "license": "see license_evidence",
-      "access": "PROVENANCE STREAM NOTE (per the discovery skill's stream-mix rule): the OCP registry records that the publisher's bulk downloads carry ONLY the Licitaci\u00f3n stream; Trato Directo and Convenio Marco are separate API endpoints (listaOCDSAgnoMesTratoDirecto / ...Convenio) and are NOT in the bulk zips. The task is defined on the licitaci\u00f3n stream only; streams are not summed."
+      "access": "PROVENANCE STREAM NOTE (per the discovery skill's stream-mix rule): the OCP registry records that the publisher's bulk downloads carry ONLY the Licitación stream; Trato Directo and Convenio Marco are separate API endpoints (listaOCDSAgnoMesTratoDirecto / ...Convenio) and are NOT in the bulk zips. The task is defined on the licitación stream only; streams are not summed."
     },
     {
       "name": "Per-process OCDS documents (tender / award / planning)",
       "url": "https://api.mercadopublico.cl/APISOCDS/OCDS/tender/{code} and /award/{code}",
-      "api": "OCDS 1.1 releases. Tender docs: parties with CL-RUT identifiers, region, buyer role; tender.title/description/status/statusDetails, value amount+currency, items[] with UNSPSC classification ids and quantities, procurementMethod. Award docs: awards[].status (active/unsuccessful), statusDetails ('7-Desierta (o art. 3 \u00f3 9 Ley 19.886)', '8-Adjudicada', '15-Revocada'), suppliers.",
+      "api": "OCDS 1.1 releases. Tender docs: parties with CL-RUT identifiers, region, buyer role; tender.title/description/status/statusDetails, value amount+currency, items[] with UNSPSC classification ids and quantities, procurementMethod. Award docs: awards[].status (active/unsuccessful), statusDetails ('7-Desierta (o art. 3 ó 9 Ley 19.886)', '8-Adjudicada', '15-Revocada'), suppliers.",
       "license": "see license_evidence",
       "access": "measured 2026-10-21: tender doc avg 100,620 B (2019-06, n=5) / 31,987 B (2023-06, n=5) - large spread; award doc avg 11,418 B (n=98) / 8,488 B (n=98); 2/100 processes per closed month lack urlAward. Throughput ~1 request/s (214 requests in 209 s) - per-process API fetching is infeasible for the full panel (~100k+ processes/year); the monthly bulk zips are the construction channel."
     },
@@ -32,39 +32,39 @@
       "name": "Open Contracting Partnership publication registry (third-party mirror + cross-check product)",
       "url": "https://data.open-contracting.org/es/publication/144",
       "api": "OCP-hosted per-year mirrors of the publisher's OCDS API: full.jsonl.gz 2,527 MB; 2022: 506 MB; 2023: 620 MB; 2024: 682 MB; 2025: 434 MB; 2026: 186 MB (harvested Jan 2022 - May 2026, all streams). Counts recorded there: 4,920,375 licitaciones, 4,939,558 awards, 2,364,782 bidders (cross-check aggregate only; not the construction bytes - publisher bytes preferred).",
-      "license": "registry records 'Licencia: Creative Commons CC0 1.0 Universal Dedicaci\u00f3n de Dominio P\u00fablico' for this publication",
-      "access": "fetched 2026-10-21; also records 'su API es lenta (puede llevar m\u00e1s de un mes descargar todos los datos disponibles)'."
+      "license": "registry records 'Licencia: Creative Commons CC0 1.0 Universal Dedicación de Dominio Público' for this publication",
+      "access": "fetched 2026-10-21; also records 'su API es lenta (puede llevar más de un mes descargar todos los datos disponibles)'."
     },
     {
-      "name": "API Mercado P\u00fablico - Licitaciones field dictionary (publisher PDF)",
+      "name": "API Mercado Público - Licitaciones field dictionary (publisher PDF)",
       "url": "https://www.chilecompra.cl/wp-content/uploads/2026/03/Documentacion-API-Mercado-Publico-Licitaciones.pdf",
-      "api": "documents the ticket-gated v1 API's field set (tender states incl. 'publicada, cerrada, desierta, adjudicada, revocada y suspendida'; buyer fields; item/adjudicaci\u00f3n fields; procedure-type code table L1/LE/LP/LQ/LR/E2/CO/B2/H2/I2/LS). Field meanings for the OCDS documents come from the OCDS 1.1 standard itself.",
+      "api": "documents the ticket-gated v1 API's field set (tender states incl. 'publicada, cerrada, desierta, adjudicada, revocada y suspendida'; buyer fields; item/adjudicación fields; procedure-type code table L1/LE/LP/LQ/LR/E2/CO/B2/H2/I2/LS). Field meanings for the OCDS documents come from the OCDS 1.1 standard itself.",
       "license": "see license_evidence",
       "access": "fetched 2026-10-21 (web_extract); the OCDS route is anonymous - the ticket in the v1 API is NOT needed for the channels this task uses."
     }
   ],
   "license_evidence": [
     {
-      "note": "OCP publication registry (the OCDS standard's registry; publisher-profiled entry): 'Licencia: Creative Commons CC0 1.0 Universal Dedicaci\u00f3n de Dominio P\u00fablico ... Puede copiar, modificar, distribuir e interpretar la obra, incluso para prop\u00f3sitos comerciales, sin pedir permiso.'",
+      "note": "OCP publication registry (the OCDS standard's registry; publisher-profiled entry): 'Licencia: Creative Commons CC0 1.0 Universal Dedicación de Dominio Público ... Puede copiar, modificar, distribuir e interpretar la obra, incluso para propósitos comerciales, sin pedir permiso.'",
       "url": "https://data.open-contracting.org/es/publication/144"
     },
     {
-      "note": "Publisher's own terms (chilecompra.cl/terminos-y-condiciones/, fetched 2026-10-21): 'La plataforma de Datos Abiertos, a disposici\u00f3n del p\u00fablico en general a trav\u00e9s del Sistema de Informaci\u00f3n, contiene la informaci\u00f3n de las compras p\u00fablicas realizadas a trav\u00e9s de dicho sistema, en formatos que facilitan su an\u00e1lisis, monitoreo y fiscalizaci\u00f3n, as\u00ed como la reutilizaci\u00f3n de la informaci\u00f3n para el desarrollo de nuevos informes o aplicaciones.' - reuse explicitly contemplated by the publisher for its open-data platform.",
+      "note": "Publisher's own terms (chilecompra.cl/terminos-y-condiciones/, fetched 2026-10-21): 'La plataforma de Datos Abiertos, a disposición del público en general a través del Sistema de Información, contiene la información de las compras públicas realizadas a través de dicho sistema, en formatos que facilitan su análisis, monitoreo y fiscalización, así como la reutilización de la información para el desarrollo de nuevos informes o aplicaciones.' - reuse explicitly contemplated by the publisher for its open-data platform.",
       "url": "https://www.chilecompra.cl/terminos-y-condiciones/"
     },
     {
-      "note": "Statutory context (chilecompra.cl/datos-abiertos/, fetched 2026-10-21): 'Con las modificaciones a la Ley de Compras P\u00fablicas, que entran en vigencia el 12 de diciembre de 2024, la normativa indica que deber\u00e1 encontrarse disponible a trav\u00e9s de formatos de datos abiertos y reutilizables toda la informaci\u00f3n que los organismos del Estado publiquen en el sistema de informaci\u00f3n y gesti\u00f3n.'",
+      "note": "Statutory context (chilecompra.cl/datos-abiertos/, fetched 2026-10-21): 'Con las modificaciones a la Ley de Compras Públicas, que entran en vigencia el 12 de diciembre de 2024, la normativa indica que deberá encontrarse disponible a través de formatos de datos abiertos y reutilizables toda la información que los organismos del Estado publiquen en el sistema de información y gestión.'",
       "url": "https://www.chilecompra.cl/datos-abiertos/"
     },
     {
-      "note": "Channels checked that carry NO licence statement (all measured 2026-10-21, per the licence-posture procedure): the datos-abiertos React app bundle (3.1 MB main.b731c6dc.js grepped case-insensitively for licencia/t\u00e9rminos/creative commons - no match, so no licence text renders on any site page); the OCDS list API metadata (no licence field); the publisher publication-policy URL recorded by the OCP registry (api.mercadopublico.cl/APISOCDS/Utilidades/Politicas/Actualizacion -> HTTP 404); the national harvest catalogue datos.gob.cl (CKAN package_search q=chilecompra -> count 0); the Pol\u00edtica de Gobierno de Datos PDF (Res. Exenta 143-B/2024 - internal staff data-governance rules only, no public licensing deed). LICENCE DECISION: redistribution permitted - CC0 recorded for this publication by the standard's registry, plus publisher terms that explicitly contemplate reuse, plus a statutory open-formats mandate. Residual question recorded honestly: no licence deed appears on the publisher's own web surfaces; a one-time written enquiry to ChileCompra (noting the CC0 registry record, asking for preferred attribution wording) is a pre-construction confirmation step, not a blocker. Source terms preserved; our derived compilation dedicated CC0 per standing policy; derived, never presented as the publisher's official product.",
+      "note": "Channels checked that carry NO licence statement (all measured 2026-10-21, per the licence-posture procedure): the datos-abiertos React app bundle (3.1 MB main.b731c6dc.js grepped case-insensitively for licencia/términos/creative commons - no match, so no licence text renders on any site page); the OCDS list API metadata (no licence field); the publisher publication-policy URL recorded by the OCP registry (api.mercadopublico.cl/APISOCDS/Utilidades/Politicas/Actualizacion -> HTTP 404); the national harvest catalogue datos.gob.cl (CKAN package_search q=chilecompra -> count 0); the Política de Gobierno de Datos PDF (Res. Exenta 143-B/2024 - internal staff data-governance rules only, no public licensing deed). LICENCE DECISION: redistribution permitted - CC0 recorded for this publication by the standard's registry, plus publisher terms that explicitly contemplate reuse, plus a statutory open-formats mandate. Residual question recorded honestly: no licence deed appears on the publisher's own web surfaces; a one-time written enquiry to ChileCompra (noting the CC0 registry record, asking for preferred attribution wording) is a pre-construction confirmation step, not a blocker. Source terms preserved; our derived compilation dedicated CC0 per standing policy; derived, never presented as the publisher's official product.",
       "url": "https://datos-abiertos.chilecompra.cl/"
     }
   ],
   "construction_script": "candidates/chilecompra-tender-outcome/source/build.py (construction only) + score.py (simple references, runs only after acceptance) + run.sh (build -> qualify -> accept exact bytes -> references); bundle assembled by scripts/assemble-job.py from source/bundle.json",
   "split_strategy": "temporal by tender publication month, same calendar months one year apart: train 2019-05..2019-06, eval 2020-05..2020-06, holdout 2021-05..2021-06. Membership = the month of the FIRST tender release; the award release is read afterwards only to compute the label.",
   "measurements": {
-    "award_outcome_samples_2026_10_21": "probe_desertion.py, first 100 processes of each closed month: 2019-06 award statuses: active 78 (79.6%), unsuccessful 17 (17.3%), cancelled 3 (3.1%), 2 processes without urlAward; 2023-06: active 78 (79.6%), unsuccessful 14 (14.3%), cancelled 2 + '15-Revocada' 2 (4.0%), 1 with empty status, 2 without urlAward. statusDetails vocabulary observed: '7-Desierta (o art. 3 \u00f3 9 Ley 19.886)', '8-Adjudicada', '15-Revocada'.",
+    "award_outcome_samples_2026_10_21": "probe_desertion.py, first 100 processes of each closed month: 2019-06 award statuses: active 78 (79.6%), unsuccessful 17 (17.3%), cancelled 3 (3.1%), 2 processes without urlAward; 2023-06: active 78 (79.6%), unsuccessful 14 (14.3%), cancelled 2 + '15-Revocada' 2 (4.0%), 1 with empty status, 2 without urlAward. statusDetails vocabulary observed: '7-Desierta (o art. 3 ó 9 Ley 19.886)', '8-Adjudicada', '15-Revocada'.",
     "monthly_totals_2026_10_21": "listaOCDSAgnoMes pagination.total (licitaciones stream): 2010-01: 33,366; 2014-01: 22,218; 2018-01: 13,049; 2020-01: 11,661; 2023-01: 11,382; 2025-01: 7,785. Declining volumes over time - window sizing must use per-month counts, not a single year's.",
     "bulk_zip_series_2026_10_21": "ocds.blob.core.windows.net/ocds/{yyyymm}.zip: present 2009-01..2022-04 (2022-05 -> 404, clean Azure XML error). Ranged-GET sizes: 201001 377,010,777 B; 201406 948,139,521 B; 201806 613,891,953 B; 201906 1,131,029,693 B. PANEL BYTES = ESTIMATE: ~160 months x 0.38-1.13 GB ~= 100-150 GB compressed JSON - worker-scale only, streamed per month, bytes never through the coordinator.",
     "doc_sizes_2026_10_21": "tender docs avg 100,620 B (2019-06, n=5) / 31,987 B (2023-06, n=5); award docs avg 11,418 B / 8,488 B (n=98 each). API throughput measured ~1 request/s (214 requests, 209 s) - full-panel per-process API fetching infeasible; bulk zips are the channel.",
@@ -73,17 +73,22 @@
     "references_2026_10_23": "Simple references on the accepted eval rows (all fitted on train only): procedure_only 0.5164, region_only 0.5309, unspsc_only 0.5673, calendar_only (buyer_region x pub_month) 0.5270, value_procedure 0.5410. Constant train rate 0.176962 has no ranking information (AUC unmeasured). Majority-class accuracy 0.8332 on 11,943 eval rows. These are single-feature conditional-rate references, not a model: no full-model baseline has run yet, so no headroom claim exists.",
     "prevalence_shift_2026_10_23": "Positive rate by split: train 0.1770 (2019-05/06), eval 0.1668 (2020-05/06), holdout 0.2512 (2021-05/06). The holdout is an out-of-distribution window as well as a temporal one; any model comparison must be read per split, not pooled.",
     "selection_review_2026_10_23": "Operator-directed selection review, answered from the publisher's records (probe_horizon.py 241 req + probe_horizon2.py 99 req, anonymous, 2026-10-23; n=119+45 processes across the three cohort months). Q1 publication-time field for every tender: YES - every sampled process (119/119 with urlAward+urlTender) has a first tender release dated at the publication instant with status 'active' and the full publication-time feature set; the full cl-tender-002 build measured publication_state_not_evidenced at only 2/12/14 rows per split cohort-pair (~0.05%), a publication-time-knowable bucket. Q2 award status/date or contract signature date: award status YES (active/unsuccessful/cancelled/pending) with release dates on 100% of award releases and per-entry awards[].date on 110/119 sampled entries; contract signature date NO - urlContract documents exist only for 2021+ list items and every sampled contract carries signatureDate: null and date: null (period.startDate is the delivery period, not signature), so the terminal state must be defined on award status + award release date. Q3 eligibility from publication-time fields only: YES for membership (first tender release month + publication state 'active' + ocid); the scored-row restriction to observed terminal outcomes is outcome-dependent and is now declared as such in quality.json with per-split measured rates (outcome_conditioning), never presented as a publication-time rule. Q4 one terminal award state and horizon: YES - terminal vocabulary {active->adjudicated, unsuccessful->deserted, cancelled->revoked}, pending non-terminal; horizon H=180 days after publication, frozen from measured lags (first award release lag p50 33-41 days, p90 49-102 days per cohort sample) and capped by the zip vintages: every cohort zip covers pub+180d for every row (train vintage 2021-01-13, eval 2021-01-14, holdout latest release 2021-12-30 >= 2021-06-30+180d=2021-12-27), and 180d is the MAXIMUM uniform horizon the source supports (a longer one would not be covered for holdout rows published end-June 2021). Sampled terminal-within-180d fraction: 40/40 (2019-06), 36/39 (2020-06), 40/40 (2021-06). Additional finding: award status sequences are single-release in every sampled process and pooled-any-active vs last-terminal-within-180d agreed on all 119; awardUpdate-tagged releases exist in the publisher's tag vocabulary and the PREVIOUS build's exact-tag filter silently ignored them - fixed in the rebuild.",
-    "horizon_decision_2026_10_23": "HORIZON_DAYS=180 frozen before the rebuild and before any scoring; recorded in build.py, quality.json (row_selection.horizon_days + horizon_basis) and meta.json label_rule. Evidence: probe_horizon.py lag distribution + zip vintages in selection_review_2026_10_23. Not tuned on any held-out score."
+    "horizon_decision_2026_10_23": "HORIZON_DAYS=180 frozen before the rebuild and before any scoring; recorded in build.py, quality.json (row_selection.horizon_days + horizon_basis) and meta.json label_rule. Evidence: probe_horizon.py lag distribution + zip vintages in selection_review_2026_10_23. Not tuned on any held-out score.",
+    "rebuild_cl_tender_003_2026_10_23": "cl-tender-003 verified outcome (gate report + references report, staging release 421857839, collected sha256-verified): gate 1.4.0 38/38 checks 0 failed on the full artifact; --accept ACCEPTED 27e610ba65e13805 on the exact bytes on the worker. Splits train 23,188/4,089 (17.63%), eval 11,791/1,959 (16.61%), holdout 17,236/4,333 (25.14%). References on eval, fitted on train: procedure_only 0.5183, region_only 0.5330, unspsc_only 0.5707, calendar_only 0.5295, value_procedure 0.5443; majority-class accuracy 0.8339. previous_eval_comparison vs cl-tender-002: identical_rows 11,791, old_only 152, new_only 0, label_disagreements_on_identical_rows 0; the previous 0.5673 UNSPSC bar (11,943 rows, pooled any-active labels) re-measures at 0.5707 on the 11,791 rows both artifacts score under the new labels. Outcome conditioning per split: scored_share 0.9262/0.8990/0.9105, censored_rate 0.0453/0.0566/0.0512, revoked_rate 0.0286/0.0444/0.0383 (train/eval/holdout). Stage order verified in container.log: build -> qualification -> acceptance -> references; no figure computed before acceptance."
   },
   "jobs": [
     {
       "id": "cl-tender-003",
-      "status": "running",
+      "status": "succeeded",
       "server_id": 172043826,
       "server_type": "cx23",
       "launched_at": "2026-10-23T12:20:41Z",
       "reservation_eur": 0.06,
-      "note": "operator-directed rebuild after the selection review: terminal-state-within-180d label rule, award-prefixed tag filter, honest outcome-conditioned row_selection with per-split outcome_conditioning accounting, compiledRelease label fallback dropped (bucketed), stale cohort prose fixed. Order: construct -> qualify -> accept exact bytes -> simple references incl. --previous-eval identical-rows comparison against cl-tender-002's eval rows (previous_eval_rows.txt, from staging asset file-0003-part-0000, sha256 f4865ce0...4bd8782). Expected reports: summary.json, qualification-*.json (must be ok:true, current gate), acceptance-*.txt, references-*.json (with previous_eval_comparison)."
+      "note": "operator-directed terminal-state-within-180d rebuild: exit 0; gate 1.4.0 38/38 checks 0 failed on the full artifact on the worker; --accept ACCEPTED 27e610ba65e13805 on the exact bytes (worker container.log order verified: build -> qualification -> acceptance -> references); worker destroyed through the supported lifecycle, provider-confirmed (404 server not found, zero project IPs); bounded reports sha256-verified into .factory/cl-tender-003/reports/",
+      "elapsed_seconds": 2901.7,
+      "collected_at": "2026-10-23T13:12:33Z",
+      "deleted_at": "2026-10-23T13:17:15Z",
+      "result_release": 421857839
     },
     {
       "id": "cl-tender-002",
@@ -110,9 +115,10 @@
     ],
     "effect": "The mechanical gate pass (38/38) and --accept of artifact 6f8cef93850f1211 do not resolve these declaration/selection defects. Candidate is unaccepted and private pending scientific review; no package, publication or baseline job.",
     "preserved": "Source, qualification report, acceptance evidence and measured references are retained unchanged; this block records an assisted audit finding, not spontaneous model improvement.",
-    "reopen_condition": "Repair selection to publication-time information, define a terminal award state/horizon for label aggregation, then rebuild and re-qualify/accept; or record the negative finding and drop."
+    "reopen_condition": "Repair selection to publication-time information, define a terminal award state/horizon for label aggregation, then rebuild and re-qualify/accept; or record the negative finding and drop.",
+    "resolution": "2026-10-23: the reopen condition (publication-time-declared selection + terminal state/horizon label aggregation, then rebuild and re-qualify/accept) was executed as the operator-directed rebuild cl-tender-003; gate 1.4.0 38/38 and --accept PASSED on the new artifact 27e610ba65e13805. The prior artifact 6f8cef93850f1211 stays unaccepted and its evidence preserved. Scientific closure sign-off of this review belongs to advancement."
   },
-  "next_action": "Collect cl-tender-003 (running, server 172043826, launched 2026-10-23T12:20:41Z). Acceptance requires exit 0 + a passing current-version gate report on the full artifact + --accept against the exact bytes, all on the worker; then record the new per-split outcome_conditioning rates and the simple references on identical rows (including the previous_eval_comparison block against cl-tender-002's 0.5673 UNSPSC bar) beside any figure. Under this session's operator directive: NO baseline model job, NO packaging, NO publication.",
+  "next_action": "cl-tender-003 is verified green and the worker is destroyed (provider-confirmed). Advancement owns the next decisions: (1) scientific sign-off that the terminal-state-within-180d rebuild resolves the assisted review (declaration now honest: outcome-conditioned scored population with per-split rates in quality.json); (2) whether to run the runner-contract full-model baseline on the accepted artifact 27e610ba65e13805 (staging release 421857839) - the simple-reference bar on the identical eval rows is unspsc_only AUC 0.5707 (previous 0.5673 bar re-measured under the new labels); (3) any packaging/publication decision. No baseline model job, packaging or publication was run by the rebuild session or this follow-up, per the operator directive.",
   "novelty_check": {
     "checked_at": "2026-10-21T12:20:35+00:00",
     "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
@@ -145,9 +151,9 @@
           "hits": 364587,
           "top": [
             "Challenges in Procurement of Works in Design Bid Build Institutional Projects",
-            "\u0412\u041d\u0415\u0428\u041d\u0415\u0415 \u0420\u0415\u0413\u0423\u041b\u0418\u0420\u041e\u0412\u0410\u041d\u0418\u0415 \u0421\u0418\u0421\u0422\u0415\u041c\u042b \u0413\u041e\u0421\u0423\u0414\u0410\u0420\u0421\u0422\u0412\u0415\u041d\u041d\u042b\u0425 \u0422\u0415\u041d\u0414\u0415\u0420\u041d\u042b\u0425 \u0417\u0410\u041a\u0423\u041f\u041e\u041a",
+            "ВНЕШНЕЕ РЕГУЛИРОВАНИЕ СИСТЕМЫ ГОСУДАРСТВЕННЫХ ТЕНДЕРНЫХ ЗАКУПОК",
             "OncNGS PCP: D3.6 Call for Tender Publishable Report",
-            "\u0424\u041e\u0420\u041c\u042b \u041e\u0420\u0413\u0410\u041d\u0418\u0417\u0410\u0426\u0418\u0418 \u0421\u0418\u0421\u0422\u0415\u041c\u042b \u0413\u041e\u0421\u0423\u0414\u0410\u0420\u0421\u0422\u0412\u0415\u041d\u041d\u042b\u0425 \u0422\u0415\u041d\u0414\u0415\u0420\u041d\u042b\u0425 \u0417\u0410\u041a\u0423\u041f\u041e\u041a",
+            "ФОРМЫ ОРГАНИЗАЦИИ СИСТЕМЫ ГОСУДАРСТВЕННЫХ ТЕНДЕРНЫХ ЗАКУПОК",
             "\"Prozorro\" electronic system as a revolution in the public procurement system in Ukraine"
           ]
         },
@@ -155,8 +161,8 @@
           "query": "procurement desertion prediction dataset",
           "hits": 379001,
           "top": [
-            "O crime de deser\u00e7\u00e3o e sua recep\u00e7\u00e3o pela constitui\u00e7\u00e3o federal de 1988: os contornos legais e doutrin\u00e1rios dos crimes de deser\u00e7\u00e3o simples e especial e a an\u00e1lise de compatibilidade entre os artigos 187 e 190 do c\u00f3digo penal militar e a constitui\u00e7\u00e3o",
-            "\" Fugitives of War: Desertion, Defection, and Military Disobedience in the Greek Army (1821\u20131949)\"",
+            "O crime de deserção e sua recepção pela constituição federal de 1988: os contornos legais e doutrinários dos crimes de deserção simples e especial e a análise de compatibilidade entre os artigos 187 e 190 do código penal militar e a constituição",
+            "\" Fugitives of War: Desertion, Defection, and Military Disobedience in the Greek Army (1821–1949)\"",
             "Desertion in Distance Education, Living Together in Higher Education",
             "Remating opportunities and low costs underlie maternal desertion",
             "Females compensate for moult-associated male nest desertion in the Hooded Warbler"
@@ -195,7 +201,7 @@
         }
       ]
     },
-    "evidence_summary": "- huggingface_datasets / 'public procurement tender outcome prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'procurement desertion prediction dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'ChileCompra machine learning tender': 0 hit(s) - nothing notable\n- zenodo_records / 'public procurement tender outcome prediction': 364587 hit(s) - Challenges in Procurement of Works in Design Bid Build Institutional Projects, \u0412\u041d\u0415\u0428\u041d\u0415\u0415 \u0420\u0415\u0413\u0423\u041b\u0418\u0420\u041e\u0412\u0410\u041d\u0418\u0415 \u0421\u0418\u0421\u0422\u0415\u041c\u042b \u0413\u041e\u0421\u0423\u0414\u0410\u0420\u0421\u0422\u0412\u0415\u041d\u041d\u042b\u0425 \u0422\u0415\u041d\u0414\u0415\u0420\u041d\u042b\u0425 \u0417\u0410\u041a\u0423\u041f\u041e\u041a, OncNGS PCP: D3.6 Call for Tender Publishable Report, \u0424\u041e\u0420\u041c\u042b \u041e\u0420\u0413\u0410\u041d\u0418\u0417\u0410\u0426\u0418\u0418 \u0421\u0418\u0421\u0422\u0415\u041c\u042b \u0413\u041e\u0421\u0423\u0414\u0410\u0420\u0421\u0422\u0412\u0415\u041d\u041d\u042b\u0425 \u0422\u0415\u041d\u0414\u0415\u0420\u041d\u042b\u0425 \u0417\u0410\u041a\u0423\u041f\u041e\u041a, \"Prozorro\" electronic system as a revolution in the public procurement system in Ukraine\n- zenodo_records / 'procurement desertion prediction dataset': 379001 hit(s) - O crime de deser\u00e7\u00e3o e sua recep\u00e7\u00e3o pela constitui\u00e7\u00e3o federal de 1988: os contornos legais e doutrin\u00e1rios dos crimes de deser\u00e7\u00e3o simples e especial e a an\u00e1lise de compatibilidade entre os artigos 187 e 190 do c\u00f3digo penal militar e a constitui\u00e7\u00e3o, \" Fugitives of War: Desertion, Defection, and Military Disobedience in the Greek Army (1821\u20131949)\", Desertion in Distance Education, Living Together in Higher Education, Remating opportunities and low costs underlie maternal desertion, Females compensate for moult-associated male nest desertion in the Hooded Warbler\n- zenodo_records / 'ChileCompra machine learning tender': 325476 hit(s) - plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database, mushrooms, DisMo: Disentangled Motion Representations for Open-World Motion Transfer\n- arxiv_preprints / 'public procurement tender outcome prediction': unavailable (HTTPError)\n- arxiv_preprints / 'procurement desertion prediction dataset': unavailable (TimeoutError)\n- arxiv_preprints / 'ChileCompra machine learning tender': unavailable (TimeoutError)",
+    "evidence_summary": "- huggingface_datasets / 'public procurement tender outcome prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'procurement desertion prediction dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'ChileCompra machine learning tender': 0 hit(s) - nothing notable\n- zenodo_records / 'public procurement tender outcome prediction': 364587 hit(s) - Challenges in Procurement of Works in Design Bid Build Institutional Projects, ВНЕШНЕЕ РЕГУЛИРОВАНИЕ СИСТЕМЫ ГОСУДАРСТВЕННЫХ ТЕНДЕРНЫХ ЗАКУПОК, OncNGS PCP: D3.6 Call for Tender Publishable Report, ФОРМЫ ОРГАНИЗАЦИИ СИСТЕМЫ ГОСУДАРСТВЕННЫХ ТЕНДЕРНЫХ ЗАКУПОК, \"Prozorro\" electronic system as a revolution in the public procurement system in Ukraine\n- zenodo_records / 'procurement desertion prediction dataset': 379001 hit(s) - O crime de deserção e sua recepção pela constituição federal de 1988: os contornos legais e doutrinários dos crimes de deserção simples e especial e a análise de compatibilidade entre os artigos 187 e 190 do código penal militar e a constituição, \" Fugitives of War: Desertion, Defection, and Military Disobedience in the Greek Army (1821–1949)\", Desertion in Distance Education, Living Together in Higher Education, Remating opportunities and low costs underlie maternal desertion, Females compensate for moult-associated male nest desertion in the Hooded Warbler\n- zenodo_records / 'ChileCompra machine learning tender': 325476 hit(s) - plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database, mushrooms, DisMo: Disentangled Motion Representations for Open-World Motion Transfer\n- arxiv_preprints / 'public procurement tender outcome prediction': unavailable (HTTPError)\n- arxiv_preprints / 'procurement desertion prediction dataset': unavailable (TimeoutError)\n- arxiv_preprints / 'ChileCompra machine learning tender': unavailable (TimeoutError)",
     "prior_art": [
       "TenderKG arXiv:2608.14066 (FR, 2021-2023, bidder recommendation); Fatima/Nai/Meo, Machine Learning in Procurement with a View to Equity (ANAC Italy, tender-variation prediction); Springer 10.1007/s11115-026-01001-8 (TED void analysis); MiDES WBER (BR municipal tenders, descriptive only)"
     ],
@@ -208,7 +214,7 @@
   "jurisdiction": {
     "country": "CL",
     "region": "Latin America",
-    "publisher": "Direcci\u00f3n de Compras y Contrataci\u00f3n P\u00fablica (ChileCompra) - Mercado P\u00fablico platform",
+    "publisher": "Dirección de Compras y Contratación Pública (ChileCompra) - Mercado Público platform",
     "recorded_at": "2026-10-21"
   },
   "licence_class": "A",
@@ -219,114 +225,152 @@
     "ok": true,
     "failed_checks": [],
     "checks": 38,
-    "artifact_version": "6f8cef93850f1211",
+    "artifact_version": "27e610ba65e13805c8066e0bdb7932324cd39e30096f4e51b13136120e1ca3a7",
     "artifact_digests": {
-      "public/train.csv": "c1d176ea450d8693ac75c23c84d009d66f76fc2855c4bba19487f99418f6d7b9",
-      "public/eval.csv": "f4865ce092061ddbeffc5a341c96ffd65f1b2621ba8aa36b4b8704c3d4bd8782",
-      "private/holdout.csv": "b0c2f0f541d34e89ff81dc2aa5779d064ba566841456ea80f2e3220d094136cd",
-      "meta.json": "41fa6443dad3c36b5e100283ceeb9fd36f4564a9426df131c33c0cbf2edb6931",
-      "quality.json": "04b7891acf864b67eb3be847be7bfa6a77a6a78fdeb765bfea0ef6bef7b3d0f7"
+      "public/train.csv": "2c7e341817a041b8a55ead6c71c9adf9fefbec492fae6c7cd94b8d300c86ce8e",
+      "public/eval.csv": "677cbb522133e4e8f784576690a528264a3695effb0b9a063f93600c0f5d02a4",
+      "private/holdout.csv": "85a7112ad5b0a1f447a13253184cdae6f0ccba88c632e06977dde37b280d80ff",
+      "meta.json": "c12bb4392c8f4a1190ea644497b3872fc5430960c2aba2629e7097487410a665",
+      "quality.json": "001eaf5cadf4624ca65c9020d8a2540f0bd8e958bab3e3e9296558b8373cb30e"
     },
-    "report": "staging release 421653257 (tag job-cl-tender-002) asset qualification-chilecompra-tender-outcome.json",
-    "accepted_on_coordinator": "qualify_dataset.py --accept -> ACCEPTED 6f8cef93850f1211 (2026-10-23, on the download-verified bytes)",
+    "report": "staging release 421857839 (tag job-cl-tender-003) asset qualification-chilecompra-tender-outcome.json; collected and sha256-verified into .factory/cl-tender-003/reports/",
+    "accepted_on_worker": "qualify_dataset.py --accept -> ACCEPTED: /output/extract matches the qualified artifact 27e610ba65e13805 (2026-10-23, worker; acceptance-chilecompra-tender-outcome.txt)",
     "selftest": "qualify_dataset.py --selftest PASSED 2026-10-23 (unchanged gate and fixtures)",
     "splits": {
       "train": {
-        "rows": 23457,
-        "positives": 4151,
-        "positive_rate": 0.176962,
-        "distinct_events": 53
+        "rows": 23188,
+        "positives": 4089,
+        "positive_rate": 0.176341,
+        "distinct_events": 52
       },
       "eval": {
-        "rows": 11943,
-        "positives": 1992,
-        "positive_rate": 0.166792,
+        "rows": 11791,
+        "positives": 1959,
+        "positive_rate": 0.166144,
         "distinct_events": 50
       },
       "holdout": {
-        "rows": 17319,
-        "positives": 4351,
-        "positive_rate": 0.251227,
+        "rows": 17236,
+        "positives": 4333,
+        "positive_rate": 0.251392,
         "distinct_events": 51
       }
     },
     "leakage": "no single shipped column determines the target (offenders: none); high-cardinality columns declared: tender_id, estimated_value_clp, pub_date",
-    "result": "PASSED - gate 1.4.0, 38/38 checks, 0 failed, on the FULL artifact on the worker; hand-off --accept ACCEPTED on the coordinator (2026-10-23)"
+    "result": "PASSED - gate 1.4.0, 38/38 checks, 0 failed, on the FULL artifact on the worker; --accept ACCEPTED on the worker against the exact bytes (2026-10-23). Supersedes the review-unaccepted cl-tender-002 artifact 6f8cef93850f1211 (evidence preserved)."
   },
   "construction_output": {
-    "staging_release": "https://github.com/earino/dataset-factory-staging/releases/tag/job-cl-tender-002",
-    "release_id": 421653257,
-    "asset_note": "assets are opaque parts (file-000N-part-0000); manifest.json maps each part to its logical path. CSVs stay at the release; only compact reports were collected to .factory/cl-tender-002/reports/.",
+    "staging_release": "https://github.com/earino/dataset-factory-staging/releases/tag/job-cl-tender-003",
+    "release_id": 421857839,
+    "asset_note": "assets are opaque parts (file-000N-part-0000); the release manifest.json maps each part to its logical path and was itself collected. CSVs stay at the release; only compact reports (9 files, 91,070 B, sha256-verified against the manifest) were collected to .factory/cl-tender-003/reports/.",
+    "label_rule": "terminal_outcome: last terminal award-prefixed-tagged release within pub+180d decides ({active->adjudicated, unsuccessful->deserted, cancelled->revoked}); pending non-terminal; compiledRelease label fallback dropped and bucketed",
+    "horizon_days": 180,
     "sources_downloaded": {
       "201905": {
         "bytes": 1181486992,
-        "sha256": "d4ac4932c219c65fd140a45d6d0294cf799ef9eb08e8a1fa1731bff1b1b36002",
-        "last_modified": "Wed, 13 Jan 2021 11:10:01 GMT"
+        "sha256": "d4ac4932c219c65fd140a45d6d0294cf799ef9eb08e8a1fa1731bff1b1b36002"
       },
       "201906": {
         "bytes": 1131029693,
-        "sha256": "6ddeafdfc3dd77edc555bf5f1d43f41ce788dbc4f1bb1c0bc3e640527e8fab89",
-        "last_modified": "Wed, 13 Jan 2021 11:32:28 GMT"
+        "sha256": "6ddeafdfc3dd77edc555bf5f1d43f41ce788dbc4f1bb1c0bc3e640527e8fab89"
       },
       "202005": {
         "bytes": 525759271,
-        "sha256": "147320b34b945665862d5ac510084f7a757a0aec341e32301931cefca2cdf089",
-        "last_modified": "Thu, 14 Jan 2021 11:13:24 GMT"
+        "sha256": "147320b34b945665862d5ac510084f7a757a0aec341e32301931cefca2cdf089"
       },
       "202006": {
         "bytes": 575671971,
-        "sha256": "c9745a9c9041cd1489f16cf42f1a1d125910eb2950b585ef43a2d5a3374a36bb",
-        "last_modified": "Thu, 14 Jan 2021 11:23:24 GMT"
+        "sha256": "c9745a9c9041cd1489f16cf42f1a1d125910eb2950b585ef43d2d5a3374a36bb"
       },
       "202105": {
         "bytes": 660756959,
-        "sha256": "2d5712484cec33f46d09d41ec5ae7c6ab50d2c1e3055a2f1afff847e1099b09d",
-        "last_modified": "Fri, 31 Dec 2021 04:04:40 GMT"
+        "sha256": "2d5712484cec33f46d09d41ec5ae7c6ab50d2c1e3055a2f1aff847e1099b09d"
       },
       "202106": {
         "bytes": 631057013,
-        "sha256": "be0d26702b6b1d2b1a097d9f29fcdafbbc6565e48f926cf878bbd843ba0a8792",
-        "last_modified": "Fri, 31 Dec 2021 04:15:29 GMT"
+        "sha256": "be0d26702b6b1d2b1a097d9f29fcdafbbc6565e48f926cf878bbd843ba0a8792"
       }
     },
     "observation_windows": {
-      "train": "latest release seen in the 2019-05/06 zips: 2020-11-05 (zip vintage 2021-01-13)",
-      "eval": "latest release seen: 2021-01-13 (zip vintage 2021-01-14)",
-      "holdout": "latest release seen: 2021-12-30 (zip vintage 2021-12-31) - ~6.5 months after the cohort months, so the holdout has the shortest outcome window"
+      "train": "latest release seen: 2020-11-05T20:17:47Z (zip vintage 2021-01-13)",
+      "eval": "latest release seen: 2021-01-13T13:27:29Z (zip vintage 2021-01-14)",
+      "holdout": "latest release seen: 2021-12-30T13:40:40Z (zip vintage 2021-12-31) >= 2021-06-30+180d = 2021-12-27"
     },
-    "exclusions": {
+    "outcome_conditioning": {
       "train": {
-        "label:active": 19306,
-        "label:unsuccessful": 4151,
-        "unobserved:cancelled": 774,
-        "unobserved:none": 794,
-        "unobserved:pending": 11,
+        "eligible_rows": 25036,
+        "scored_rows": 23188,
+        "positives": 4089,
+        "revoked": 715,
+        "mixed_terminal": 0,
+        "duplicate_ocid": 0,
+        "censored": 1133,
+        "revoked_rate": 0.028559,
+        "censored_rate": 0.045255,
+        "scored_share": 0.926186
+      },
+      "eval": {
+        "eligible_rows": 13115,
+        "scored_rows": 11791,
+        "positives": 1959,
+        "revoked": 582,
+        "mixed_terminal": 0,
+        "duplicate_ocid": 0,
+        "censored": 742,
+        "revoked_rate": 0.044377,
+        "censored_rate": 0.056576,
+        "scored_share": 0.899047
+      },
+      "holdout": {
+        "eligible_rows": 18930,
+        "scored_rows": 17236,
+        "positives": 4333,
+        "revoked": 725,
+        "mixed_terminal": 0,
+        "duplicate_ocid": 0,
+        "censored": 969,
+        "revoked_rate": 0.038299,
+        "censored_rate": 0.051189,
+        "scored_share": 0.910512
+      },
+      "note": "scored population is the observed-terminal-outcome subset; this conditioning is outcome-dependent, declared in quality.json row_selection, and these per-split rates are the measured statement of it"
+    },
+    "buckets": {
+      "train": {
+        "outcome:adjudicated": 19099,
+        "outcome:deserted": 4089,
+        "outcome:revoked": 715,
+        "unobserved_target:award_beyond_horizon": 330,
         "publication_month_outside_cohort": 580,
+        "unobserved_target:no_award_within_horizon": 794,
+        "unobserved_target:pending_within_horizon": 9,
         "publication_state_not_evidenced": 2
       },
       "eval": {
-        "label:active": 9951,
-        "label:unsuccessful": 1992,
-        "unobserved:cancelled": 605,
-        "unobserved:none": 556,
-        "unobserved:pending": 11,
+        "outcome:adjudicated": 9832,
         "publication_month_outside_cohort": 747,
+        "outcome:deserted": 1959,
+        "unobserved_target:no_award_within_horizon": 556,
+        "outcome:revoked": 582,
+        "unobserved_target:pending_within_horizon": 11,
+        "unobserved_target:award_beyond_horizon": 175,
         "publication_state_not_evidenced": 12
       },
       "holdout": {
-        "label:active": 12968,
-        "label:unsuccessful": 4351,
-        "unobserved:cancelled": 743,
-        "unobserved:none": 861,
-        "unobserved:pending": 7,
+        "unobserved_target:no_award_within_horizon": 861,
+        "outcome:deserted": 4333,
         "publication_month_outside_cohort": 816,
-        "publication_state_not_evidenced": 14
+        "outcome:adjudicated": 12903,
+        "outcome:revoked": 725,
+        "publication_state_not_evidenced": 14,
+        "unobserved_target:pending_within_horizon": 6,
+        "unobserved_target:award_beyond_horizon": 102
       }
     },
     "tender_final_status_disagreements": {
-      "unsuccessful->active": 86,
-      "note": "86 rows where the award release says unsuccessful while the compiled tender status is 'active' (0.16% of labelled rows); the award side is the label and the disagreement is recorded, not resolved away"
+      "unsuccessful->active": 84,
+      "note": "84 rows where the award release says unsuccessful while the compiled tender status is 'active' (0.16% of labelled rows); the award side is the label and the disagreement is recorded, not resolved away"
     },
-    "simple_references": "eval split only, all fitted on train: procedure_only AUC 0.5164, region_only 0.5309, unspsc_only 0.5673, calendar_only 0.5270, value_procedure 0.5410; majority class (0) accuracy 0.8332 on 1,943 eval rows; persistence recorded INAPPLICABLE (one row per tender, no per-entity series)"
+    "simple_references": "eval split only, post-acceptance, all fitted on train: procedure_only AUC 0.5183, region_only 0.5330, unspsc_only 0.5707, calendar_only 0.5295, value_procedure 0.5443; majority-class (0) accuracy 0.8339 on 11,791 eval rows; persistence INAPPLICABLE (one row per tender, no per-entity series). No full-model baseline has run, so no headroom claim exists."
   }
 }

@@ -203,3 +203,29 @@ path; it caught two real defects before worker spend: the awardUpdate tag filter
 the horizon's timestamp-exact boundary (pub 12:00 + 180 d cuts at 12:00, not midnight).
 SMOKE OK; gate selftest OK; `check-candidate.py` OK. Worker cl-tender-003 launched
 2026-10-23T12:20:41Z (server 172043826, EUR 0.06 reservation).
+
+### cl-tender-003 verified outcome (worker follow-up, 2026-10-23)
+
+Exit 0 after 48.4 min; staging release 421857839 (tag job-cl-tender-003). Verified from the
+collected, sha256-manifest-verified bytes in .factory/cl-tender-003/reports/:
+
+- Gate 1.4.0: 38/38 checks, 0 failed, on the full artifact on the worker; `--accept` on the
+  exact bytes -> `ACCEPTED: /output/extract matches the qualified artifact 27e610ba65e13805`.
+- container.log stage order: build -> qualification -> acceptance -> simple references;
+  no performance figure exists before acceptance.
+- Splits (gate recomputed from rows, equal to the build summary): train 23,188/4,089 (17.63%),
+  eval 11,791/1,959 (16.61%), holdout 17,236/4,333 (25.14%); 52/50/51 distinct positive days;
+  mixed_terminal 0, duplicate_ocid 0 in every split.
+- Outcome conditioning (scored = observed-terminal subset), per split train/eval/holdout:
+  scored_share 0.9262/0.8990/0.9105, censored_rate 0.0453/0.0566/0.0512, revoked_rate
+  0.0286/0.0444/0.0383; unobserved-target buckets counted, never inferred.
+- References (eval only, fitted on train, post-acceptance): procedure_only 0.5183,
+  region_only 0.5330, unspsc_only 0.5707, calendar_only 0.5295, value_procedure 0.5443;
+  majority-class accuracy 0.8339 on 11,791 rows; persistence INAPPLICABLE (one row per tender).
+  previous_eval_comparison vs cl-tender-002: identical rows 11,791, old_only 152, new_only 0,
+  label disagreements on identical rows 0; the 0.5673 UNSPSC bar (11,943 rows) re-measures at
+  0.5707 on the identical rows under the new labels.
+- Cleanup: worker destroyed 13:17:15Z through the supported lifecycle; provider-confirmed
+  (GET /servers/172043826 -> 404 'server not found'; project primary IPs: []).
+- No baseline model job, no packaging, no publication - advancement owns the review sign-off
+  and the baseline decision.
