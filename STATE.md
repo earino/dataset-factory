@@ -1,5 +1,25 @@
 # Current state
 
+Updated: 2026-10-23 08:00Z (Codex prompt-evaluation continuation).
+
+Camara has no active worker and is on assisted scientific/code review hold at
+`f108bb4`: no declaration-only re-gate or further job until selection and early
+scoring defects are resolved. Both attempts and their figures are unqualified
+diagnostics. IDEAM remains investigating; `b67ebbb` corrects the bulletin to
+2016, withdrawing the unsupported decade-stability claim. Historical entries
+below preserve the original reports and are superseded by these holds.
+
+PR #13 contains the completed deployed-discovery/watcher audit and the final
+source-preflight/worked-order instruction revision at `635cede`. Clean-clone
+588 tests/doctor/source audit and exact CI pass. Four paired no-tool source-review diagnostics are complete: 5/8 baseline versus
+7/8 revised, two revised preferences, residual weaknesses retained, cumulative
+125 attempts / 4,252,032 inclusive tokens under the same 128/5M checkpoint;
+no new worker job is requested for that evaluation. Next: merge/deploy the reviewed tested bytes at idle, then observe one ordinary advancement
+under existing admission and audit actual implementation. Keep existing candidate
+holds, public-release approval, budgets and independent cleanup unchanged.
+
+## Historical update (superseded)
+
 Updated: 2026-10-23 07:00Z (camara-001 worker follow-up tick: the advancement session's close-out was verified and
 completed - provider-confirmed cleanup (Hetzner 404 on server 171985941; zero camara-001 IPs remain, the only project
 IP is camara-002's), staging release job-camara-001 re-verified 8/8 assets by size+sha256, and the three commits the
@@ -6652,6 +6672,20 @@ explicit in results/rollout-aa0e735-author-review.json, not hidden by the score.
 Cumulative experiment 121 attempts / 4,099,323 inclusive tokens; no extra repeats.
 Exact tested prompts approved for merge/idle deployment, followed by one ordinary
 uncoached discovery and source audit. Do not close the goal before that live pass.
+
+Deployed prompt validation checkpoint (Codex, 2026-10-23 02:29 UTC): PR #12 merged
+at ad607ca, merge CI green, installed hashes/readback match tested aa0e735. Runtime
+source/home audits and doctor pass; holds, budgets, cleanup and scheduler unchanged.
+The genuine watcher session 20261023_020601_752438 verified wb-holdout-001's compact
+reports and existing durable closeout before acknowledgment; no new worker/ledger
+mutation. Its own clean fast-forward advanced the checkout under its mutex; the
+changed discovery/advancement sources were not loaded into that watcher invocation.
+Ordinary discovery 20261023_021307_9ae84d is now running through the normal shim,
+uncoached; at 02:27 it was actively browsing (20 main calls plus vision/title), with
+no candidate records yet. Evidence: evals/research-prompts/results/deployed-observation-ad607ca.json.
+Next: let that normal session finish, audit its actual source evidence/decisions and
+exact-commit checks, archive full four-field usage including vision, and only then
+close the prompt-improvement goal. Do not infer a new accepted dataset from scores.
 
 ## 2026-10-23 worker-status follow-up: camara-002 (camara-bill-advancement) failed the gate; cleanup verified; design decision handed to advancement
 

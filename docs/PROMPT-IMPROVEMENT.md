@@ -1,9 +1,64 @@
 # Research prompt improvement
 
-Status: PR #11 is merged and deployed at `b80a84da3be28ce51d2c555a3423b32284feb9a7`.
-The first ordinary discovery is complete. Its live audit found a false-ready decision;
-a focused follow-up is being tested. Ordinary advancement is running. The goal remains
-open; controlled scores alone did not establish safe research execution.
+Status: PR #11 and PR #12 are deployed. The required ordinary discovery and
+watcher audit are complete, with material residual failures preserved. Overnight
+advancement also copied unsafe scoring code despite the new instructions. PR #13
+contains this evidence and a final focused source-preflight/worked-example revision
+at `635cede`; four paired source-review responses are complete and reviewed. Do not equate the
+controlled decision scores with reliable autonomous scientific execution.
+
+## Final live audit and copied-code follow-up
+
+The uncoached discovery `20261023_021307_9ae84d` kept IDEAM investigating, found an
+archived threshold source, retained probe recipes and identified station-join and
+coverage hazards. That is useful progress. It nevertheless called a **2016** IHD
+bulletin a 2024 publication and inferred decade stability. Codex fetched the exact
+700,710-byte PDF, verified its date and correction notice, and supplied the finding;
+Scout corrected current records at `b67ebbb`, preserving the original error. The
+Ecobici response also overstates annual-file immutability from Last-Modified stamps;
+its novelty drop is a research judgment, not independently established equivalence
+of prediction contracts. No accepted dataset or task-level base rate follows.
+
+The later ordinary Camara advancement `20261023_060005_6af8a5` used the deployed
+brief and both recorded routes (76 GLM main calls, 25 DeepSeek). It corrected an old
+label-code error, but copied reference scoring and training-prevalence-as-accuracy
+from the older World Bank build. Codex verified the exact staged source and log:
+reference metrics were computed **before** qualification. The declared selection
+also contradicts filters on current terminal/merged outcomes. The unchanged gate
+refused the artifact for insufficient clustered events; its other passing checks
+do not establish truthful scientific declarations. Scout's watcher preserved the
+failed result and refused quotable metrics. An assisted review hold at `f108bb4`
+now prohibits a declaration-only re-gate or another job until those issues resolve.
+
+These observations are execution failures under the deployed bundle, not erased
+by good decision scores. The final small revision requires source locations for
+row selection and each scoring stage before launch, and gives a worked fail-closed
+construction → qualification → exact-byte acceptance → scoring example. It explains
+why copied candidate code is not a vetted template. No checker, test assertion,
+allowance, lifecycle code or published artifact changes. Four paired responses to
+one adaptive code-review case compare `ad607ca` to `635cede`, within the same
+128-attempt / 5M-token checkpoint. The case tests supplied-code reasoning; a normal
+advancement observation after deployment must assess actual execution separately.
+
+Full receipts, accounting, source identities and audit limitations are retained in
+`evals/research-prompts/results/deployed-observation-ad607ca.json`. The discovery
+used 7,560,860 inclusive tokens; Camara advancement used 19,457,717. These include
+cache reads and differ from the production gate's accounting measure. Dollar cost
+is unknown, and the different tasks do not support a speed/cost comparison.
+
+Verification of `635cede` in a clean Python 3.13 checkout:
+```
+Ran 588 tests in 6.644s
+
+OK (skipped=6)
+```
+Doctor and the 62-file source audit pass; clean tree after checks. Full unedited
+output is retained as `results/verification-635cede-*`. The worked shell example
+passes syntax and local stub traces stopping at each failed pre-scoring stage;
+those stubs do not qualify a dataset or run the benchmark. Exact-commit CI runs
+39921098802 and 39921093754 pass. Initial `0533627` failed the inventory assertion
+because its updated skill digest was omitted; `635cede` fixes the inventory without
+changing tests. The executable qualification gate remains byte-identical.
 
 ## Deployed observation and correction
 
@@ -32,13 +87,15 @@ handoff through qualification/acceptance before scoring. No executable gate chan
 Two adaptive transfer cases compare this follow-up with the deployed bundle; they
 are not hidden tests. Another ordinary discovery must follow deployment.
 
-Ordinary advancement `20261023_011135_3731ee` / `proc_52e3e9a2a39e` is running untouched;
-its selected work and outcome remain to be reviewed. Repairs of World Bank or INPE
-findings already supplied by Codex are assisted. Full provenance and review questions
+Ordinary advancement `20261023_011135_3731ee` completed a fixed-config World Bank
+comparison and dropped the candidate under its protocol/budget. The source audit
+verified concrete scoring-order/reference improvements; interpretation needed
+assisted correction. Repairs of findings already supplied by Codex are assisted,
+not isolated prompt effects. Full provenance and review questions
 are retained in `evals/research-prompts/results/deployed-observation-b80a84d.json`.
 No higher dataset yield, lower dollar cost or causal speed gain is claimed.
 
-## Latest decision — corrected bundle cd29d10
+## First deployment comparison — corrected bundle cd29d10
 
 All twenty watcher verification responses are retained in
 `evals/research-prompts/results/watcher-cd29d10-*`. Source-aware review by Codex and
@@ -73,7 +130,7 @@ limitations are in `results/final-cd29d10-coverage.json` under the evaluation di
 Watcher tokens rise from 246,646 to 382,947 (about 55%); elapsed totals are 648.359s and
 562.947s. Across the final sixty responses tokens are 1,069,634 and 1,045,250, elapsed
 1,973.451s and 1,520.886s. Cache/runtime differences preclude causal speed/cost claims.
-All experiments together retain **113 attempts / 3,824,658 all-inclusive tokens**,
+At the first deployment, experiments retained **113 attempts / 3,824,658 all-inclusive tokens**,
 including one reconciled pre-inference failure and 112 successful responses. Dollar
 spend is unknown. Production budget definitions and numeric limits are unchanged.
 
@@ -507,3 +564,56 @@ The goal still requires another ordinary discovery and audit; an assisted repair
 or a high decision score alone cannot satisfy that check. Clean-clone verification
 after merging Scout's records at `e161f17`: 588 tests in 6.758s, OK (skipped=6),
 doctor exit 0, source audit 62 files/no problems, working tree clean after checks.
+
+
+### Installed follow-up and real watcher observation
+
+[Scout's signed deployment receipt](https://github.com/earino/dataset-factory/pull/12#issuecomment-6355737686)
+confirms `ad607ca` and all three changed prompt/skill hashes, source/home audits,
+doctor, admission and unchanged holds/cleanup/scheduler. Codex independently
+verified merge CI and compared the installed readback with tested source digests.
+The active watcher itself fast-forwarded the clean checkout while holding the
+mutex; no separate idle-deployment action occurred, and its own prompt/skills
+were unchanged. The next ordinary discovery began only after these checks.
+
+The genuine watcher event `20261023_020601_752438` handled `wb-holdout-001` after
+its worker had already been deleted. It verified six compact reports plus their
+manifest, checked the existing durable decision/CI and provider cleanup, then
+wrote a handled marker referring to the evidence. It retained the negative result
+and the INPE hold. No new job, ledger mutation or redundant commit was needed.
+[Verbatim sanitized output and marker](https://github.com/earino/dataset-factory/pull/12#issuecomment-6355754745)
+match the compact source/report audit already performed by Codex. Provider
+readback is Scout-reported; Codex did not query the cloud provider directly.
+
+This validates one already-deleted terminal-job path, not recovery of missing
+assets on a live worker or protection during a simultaneous-owner conflict. It
+used 22 main calls, 387.9 seconds and 1,431,834 inclusive tokens; there is no matched
+old-prompt live watcher run from which to infer a cost improvement. Full evidence
+is in `results/deployed-observation-ad607ca.json` under the evaluation directory.
+
+### Final copied-build comparison
+
+Four responses at `635cede` versus deployed `ad607ca` passed independently
+reproduced request/response hash checks, recorded-route checks and full main/aux
+usage reconciliation. Label-blinded review scores **5/8 baseline versus 7/8 revised**
+and prefers revised in both pairs. Both arms already refuse the faulty launch;
+the concrete incremental gain is specifying a train-fitted majority constant and
+measuring agreement on each evaluated split. Revised GLM leaves the full-worker
+scope implicit and loses that compound criterion. This is one adaptive code-reading
+case, not an execution benchmark or an independent statistical experiment.
+
+Residual weaknesses remain despite zero narrow unsafe flags: revised GLM's cleanup
+wording omits preservation, and revised DeepSeek ambiguously removes target columns
+and wrongly dismisses fitted identity controls. Both make overbroad source/observation
+claims. Complete responses, strict grades and source-aware adjudication are retained
+as `results/copied-build-635cede-*`. No unchanged calls were repeated.
+
+The batch used 152,709 inclusive tokens: baseline 75,764 / 84.170s, revised 76,945 /
+79.459s. Each arm exceeds the requested 600 words once. Cumulative controlled usage
+is **125 attempts / 4,252,032 inclusive tokens**, within unchanged 128/5M checkpoints
+and 100k next-call reserve. Dollars remain unknown; no efficiency claim follows.
+
+The exact source is approved for idle deployment, then one ordinary advancement
+with no candidate-specific coaching. Review its actual code and scientific decisions;
+keep existing candidate holds. Source instructions passing review and better supplied-
+code answers do not substitute for that live observation.
