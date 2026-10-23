@@ -301,7 +301,7 @@ def preloaded_skills(template_path):
     return "dataset-discovery,dataset-qualification,dataset-release"
 
 
-def main(argv=None):
+def parse_args(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--max-turns", type=int, default=60,
                         help="tool-calling iteration cap for this run")
@@ -324,11 +324,15 @@ def main(argv=None):
                         help="session source tag; use a distinct one for verification runs so "
                              "they are not counted as research sessions")
     args = parser.parse_args(argv)
-    global SOURCE_TAG_ACTIVE
-    SOURCE_TAG_ACTIVE = args.source_tag
-
     if args.max_turns <= 0 or args.run_budget <= 0:
         parser.error("--max-turns and --run-budget must be positive")
+    return args
+
+
+def main(argv=None):
+    args = parse_args(argv)
+    global SOURCE_TAG_ACTIVE
+    SOURCE_TAG_ACTIVE = args.source_tag
     try:
         with admission_lock() as lock_fd:
             return run_session(args, lock_fd)
@@ -348,11 +352,16 @@ def main(argv=None):
         return 2
 
 
-def run_session(args, lock_fd):
+def run_session(args, lock_fd, observe=None):
+    # The scheduled caller records admission durably before any model process starts.
+    # Observation never supplies a gate decision or changes the execution path.
+    scheduled = observe is not None
+    observe = observe or (lambda event, reason: None)
     if args.if_work:
         work = actionable_work()
         if not work:
             note({"event": "idle", "reason": "no actionable candidate"})
+            observe("idle", "no actionable candidate")
             return 0
         args.extra = (args.extra + "\n\n" if args.extra else "") + (
             "Actionable now: " + ", ".join(f"{name} ({step})" for name, step in work) + ". "
@@ -370,6 +379,7 @@ def run_session(args, lock_fd):
 
     if not allowed:
         note({"event": "skipped", "reason": reason})
+        observe("held", reason)
         if args.fallback_report:
             # Deterministic: built from the ledgers by research-budget.py, not by a model. This
             # is how a held checkpoint still reports, including when it is held by the session
@@ -380,7 +390,7 @@ def run_session(args, lock_fd):
             return 0
         # Routine holds are otherwise silent: a cap, an overlap or a late tick is not news. An
         # exhausted allowance is, because it needs a decision.
-        if "allowance" in reason.lower():
+        if "allowance" in reason.lower() and not scheduled:
             print(f"Scout research session held: {reason}")
         return 0
 
@@ -405,6 +415,7 @@ def run_session(args, lock_fd):
             "-s", preloaded_skills(args.prompt_file),
         ]
         with session_marker(args):
+            observe("admitted", "budget gate allowed")
             try:
                 result = run_agent(command, args.run_budget + 300, lock_fd)
                 output, error = result.stdout, result.stderr

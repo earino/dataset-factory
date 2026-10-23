@@ -1,5 +1,25 @@
 # Current state
 
+## 2026-10-23 - scheduled research resumption repair (Codex; deployment pending)
+
+Scout's 08:00/12:00 discovery and 14:00 advancement slots were dropped while the
+shared research mutex was owned. At 15:26 UTC Scout confirmed no active owner,
+no worker and no budget blocker, but the next research slots were 16:00/18:00.
+The operator authorized a focused repair of this avoidable idle interval.
+
+`fix/research-resumption` retains the four-hour due slots but adds durable receipts
+and no-model five-minute checks. Busy/held attempts remain due; admitted runs
+consume the slot before launch. Advancement has at most one early continuation
+per slot for a newly eligible candidate/stage, never unchanged blocked work.
+Existing budgets, research mutex, worker follow-up, cleanup, qualification and
+publication requirements remain in force. No further prompt evaluation is planned.
+
+Local Python 3.13 verification: 601 tests passed (6 existing skips); doctor and
+source runtime audit passed. Next: exact-commit CI and clean-clone verification,
+then Scout deploys the reviewed shims and updates the existing two cron jobs.
+Require timer-fired no-model contention/recovery evidence and delivery readback,
+then a real scheduled admission. Deployment is not yet claimed.
+
 Updated: 2026-10-23 14:20Z (cl-tender-baseline-001: the assisted review is SIGNED OFF and the one
 operator-authorized runner-contract baseline ran clean end to end on accepted artifact 27e610ba65e13805
 - model eval AUC 0.4752 vs the independently recomputed unspsc_only bar 0.57075, paired day-clustered

@@ -481,12 +481,12 @@ trade was deliberately not taken.
 
 Two jobs share the routine and both are gated by `scripts/research-budget.py`:
 
-- `scout-discovery-session` (86fe52e55ef9) - **every four hours at :00**, discovery only, one 2-hour
-  slot. Its brief
+- `scout-discovery-session` (86fe52e55ef9) - **discovery due at 00/04/08/12/16/20 UTC**.
+  Its brief
   (`docs/discovery-session-prompt.md`) reserves the session for discovery, prioritizes the
   assigned region, and selects probes by decision value instead of a fixed verdict quota.
-- `scout-research-session` (69a5bc676d10) - **every four hours at :00, offset to 02/06/10/14/18/22**,
-  advancement and packaging, one 2-hour slot.
+- `scout-research-session` (69a5bc676d10) - **advancement due at 02/06/10/14/18/22 UTC**,
+  advancement and packaging.
   The shim passes `--if-work`: the tick exits without starting an agent when no candidate is
   `ready`, `qualified`, `packaged`-and-actionable, or carrying a GO verdict, so an empty queue costs
   nothing. A session chooses one primary candidate and continues through authorized, unblocked steps
@@ -496,7 +496,54 @@ Two jobs share the routine and both are gated by `scripts/research-budget.py`:
   tokens.
 - `scout-release-notify` (ba4c8610edf8) - **hourly at :55**, script only. Prints one message when a
   candidate becomes `packaged` and `awaiting_operator`, deduped on id + `packaged_at`. Silence
-  otherwise, so the only chat message the routine sends is the flip request.
+  otherwise, so this notifier sends only the flip request.
+
+Both research jobs use script-only (`no_agent`) **five-minute checks**, through the
+versioned `scout_research_schedule.py` and their existing deployed shims. A check is
+not a model session. Receipts in `.factory/research-schedule-{role}.json` retain a
+due slot across busy or budget-held ticks. The next check re-evaluates ordinary
+admission; it does not override it or impersonate an on-time run. Missed slots
+coalesce to the latest four-hour slot, rather than replaying a backlog.
+
+The receipt is atomically persisted before model launch while holding the shared
+research mutex. A failed launch or interrupted admitted run consumes its slot;
+it is not retried every five minutes. A corrupt receipt fails closed and needs
+inspection, not deletion to force a run. An absent receipt means the latest slot
+is due, so install/restore while owning no research session and account for the
+first catch-up. Never remove either mutex inode to take ownership.
+
+Advancement can additionally run **once per four-hour slot** if a new eligible
+`(candidate, step)` appears after a successful or idle attempt. Notes changing,
+work disappearing, or the same blocked candidate remaining ready do not trigger
+this continuation. A failed/interrupted run cannot trigger it. This bounds the
+extra opportunity without changing the 40M weekly token ceiling, session cap,
+worker allowance, invocation ceilings, qualification or publication gates. At most
+18 research admissions/day (6 discovery + up to 12 advancement) are possible
+before the existing shared limits; actual usage still determines affordability.
+
+Routine not-due/idle checks are silent and start no model. A changed busy/held
+reason emits one deterministic notice with the next check interval; identical
+holds remain silent across invocations. Inspect without starting work:
+
+```bash
+python3 scripts/scout_research_schedule.py --role discovery --status
+python3 scripts/scout_research_schedule.py --role advancement --status
+```
+
+Status separates the last receipt from current due state and the next scheduled
+check; these are schedule expectations, not a liveness guarantee. Hermes must be
+running. `--dry-run` retains the original read-only gate/prompt diagnostic and
+does not simulate or consume a schedule receipt. The real session log remains
+`.factory/research-sessions.jsonl`; Hermes's bounded execution history may retain
+less than two days of these frequent, mostly no-model checks.
+
+Deploy the reviewed shim bytes before updating the **existing** two job IDs to
+`*/5 * * * *`; preserve script-only mode, delivery destinations and all other jobs.
+Keep `cron.script_timeout_seconds > 5700` (live value 6000), covering the 5400s
+agent budget and 300s wrapper grace. Confirm exact revision/runtime hashes, a
+timer-fired no-model contention/recovery test, delivery readback, and the first
+production scheduled admission. Rollback: restore the two original four-hour
+schedules first, then the previous shims; keep receipts for investigation.
 
 The discovery tick gets a rotating regional focus from the deployed shim, derived from the clock so
 a report is reproducible from its timestamp. `python3 scripts/discovery-coverage.py` prints the
