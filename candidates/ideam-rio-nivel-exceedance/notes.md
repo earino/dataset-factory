@@ -52,7 +52,7 @@ Channels probed (commands: plain HTTP GETs, scripts in session scratch disc-lata
   (885_bch_octubre_22_2026_1800.pdf, 85 pp): zone/municipality-level alert tables only; the only "Cota"
   in extracted text is the municipality of Cota (Cundinamarca). No per-station threshold values.
 - **Historical IHD (Informe Hidrológico) DOES.** Wayback copy of
-  10_IHD_Octubre_01_Dia.pdf (capture 20240805031921, 11 pp, 700,710 B, pypdf extract_text) yields 16
+  10_IHD_Octubre_01_Dia.pdf (IHD dated 01 Oct 2016 per its first page; Wayback capture 20240805031921, 11 pp, 700,710 B, sha256 307c83c9…; pypdf extract_text) yields 16
   per-station "COTA CRITICA x.xx m" chart annotations, e.g. PUERTO SALGAR (Rio Magdalena) 6.20;
   EL BANCO (Magdalena) 8.30; LA VICTORIA (Cauca) 8.74; QUIBDO (Atrato) 6.50; CABUYARO (Meta) 7.36;
   PUENTE YOPAL (Cravo Sur) 3.48; CRAVO NORTE (Casanare) 8.68; SAN JOSE (Guaviare) 8.70;
@@ -60,8 +60,9 @@ Channels probed (commands: plain HTTP GETs, scripts in session scratch disc-lata
   LA MACARENA (Guayabero) 8.79; PUERTO CARRENO (Orinoco) 14.27; PUERTO INIRIDA (Inirida) 11.14;
   MITU (Vaupes) 10.20; PUENTE TEXAS (Putumayo) 6.55. (Full json kept in session scratch; recipe =
   regex 'COTA CR[IÍ]TICA ([0-9]+[.,][0-9]+) M' over pypdf page text, station name from the 300 chars before.)
-- **Decade stability evidence:** Puerto Salgar 6.20 and El Banco 8.30 are identical in the November-2014
-  IHD (pronosticosyalertas.gov.co, web-search snippet) and the October-2024 IHD extracted here - cotas are
+- **Two-sample match, not decade stability:** Puerto Salgar 6.20 and El Banco 8.30 are identical in the November-2014
+  IHD (pronosticosyalertas.gov.co, web-search snippet) and the IHD dated 01 Oct 2016 extracted here (the
+  2024-08-05 date is a Wayback capture, not publication; the document says it may be corrected) - cotas are
   stable gauge reference levels, so an archive-harvested threshold table stays valid.
 - **Wayback CDX evidence of harvestability:** IHD PDFs archived on pronosticosyalertas.gov.co and
   ideam.gov.co /documents/78690/* paths, captures spanning 2017-2025 (40 per CDX query page, more behind
