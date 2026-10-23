@@ -7,8 +7,9 @@ Reuses supported controls instead of adding infrastructure:
 * `hermes chat --run-budget S` - a hard wall-clock ceiling for this run, with a one-time
   wrap-up notice at 80% and provider stale timeouts capped to what remains.
 * `hermes chat -Q` - only the final response, so the delivery is the session's summary.
-* `hermes chat --source scout-research` - tags the session so usage accounting can tell a
-  research session from the operator's own chat.
+* `hermes chat --source oneshot` - tags the session so usage accounting can tell a
+  research session from the operator's own chat. Free-form tags such as scout-research
+  are refused by Hermes >= v0.22.4 (see LAUNCH_SOURCE).
 * `scripts/research-budget.py --gate` - the allowance/cap/overlap gate. When it holds, **no
   agent process is started at all**, so a held tick costs nothing.
 
@@ -59,6 +60,16 @@ HERMES_CLI = "/opt/hermes/hermes"
 SOURCE_TAG = "scout-research"
 # Overridable per run via --source-tag, so verification runs can carry a distinct tag.
 SOURCE_TAG_ACTIVE = SOURCE_TAG
+# Hermes >= v0.22.4 validates the session-creation `source` against a closed enum
+# (cli, tui, gui, acp, tool, oneshot) and refuses free-form tags with a bare
+# invalid_params before the model connects (NousResearch/hermes-agent#142895,
+# #143653). Launch with the enum value `oneshot` — the tag Hermes itself assigns to
+# --oneshot runs, so session behavior matches the pre-0.22.4 default — and keep
+# `scout-research` as the wrapper-internal label (admission registry, jsonl,
+# receipts). config/research-budget.json `research_sources` must include the
+# launch tag or scheduled spend goes unaccounted; the two changes revert together
+# once upstream restores free-form source tags.
+LAUNCH_SOURCE = "oneshot"
 FACTORY_DIR = REPO / ".factory"
 LOCK = FACTORY_DIR / "research-session.lock"
 LOG = FACTORY_DIR / "research-sessions.jsonl"
@@ -409,7 +420,7 @@ def run_session(args, lock_fd, observe=None):
             HERMES_PYTHON, HERMES_CLI, "chat",
             "--query-file", handle.name,
             "--oneshot", "-Q",
-            "--source", SOURCE_TAG_ACTIVE,
+            "--source", LAUNCH_SOURCE,
             "--max-turns", str(args.max_turns),
             "--run-budget", str(args.run_budget),
             "-s", preloaded_skills(args.prompt_file),
