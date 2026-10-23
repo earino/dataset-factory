@@ -6850,3 +6850,53 @@ Checks this tick: `check-candidate.py --all` exit 0, `chilecompra-tender-outcome
 (status=investigating)`; no new worker, no rebuild, no packaging, no publication; October
 reservations unchanged at EUR 8.08 of 20 (release reserve EUR 5 untouched). Acknowledged with
 `.factory/cl-tender-002/handled`.
+
+## 2026-10-23 advancement: nz-ea-wholesale-price-exceedance authored, fixture-gated, nz-ea-001 build running
+
+No release was actionable: the only `packaged` candidate (eutl-installation-net-short) still
+carries `awaiting_operator: true` (the operator's private-to-public flip). chilecompra and
+ea-bathing-water are under review holds, so this session took the recorded queue's first
+construction item, `nz-ea-wholesale-price-exceedance` (ready, licence class A, novelty
+differentiated).
+
+**Construction authored, all decisions recorded in the candidate record before launch.**
+Threshold NZD 100/MWh fixed (from the record's measured 100/150/200/300 candidate levels plus
+the Authority's own figures - 2019 average spot $127/MWh, 2020 $105/MWh - so clustered positive
+target-weeks are measurable in every split at ~2x the long-run median; never tuned on a
+held-out score). Anchor-day splits train ..2015-12-31 / eval 2016-01-01..2022-10-31 /
+holdout 2022-11-01.. with the eval->holdout boundary ON the documented 2022-11-01 real-time
+pricing regime change, so no window straddles the break. Prediction instant = publication of
+day D's final prices, conservatively D+6 calendar days (documented 2pm-next-business-day rule;
+measured daily-channel lag 0-5 calendar days over 365 files, distribution in the record);
+features read published prices for trading days <= D only; target day D+7 has not finished
+trading at the instant. Event key target_week (ISO week of the target day, market-wide).
+Channel ownership: monthly ByMonth files own dates <= 2025-10-31, daily files own later dates
+(interim `_I` and `_incomplete` blobs excluded and counted; 3 interim + 1 incomplete seen);
+the 10 overlap days are cross-checked between channels. Known-event fixtures pinned to the
+Authority's own Review of winter 2024 ("average daily price reached $820/MWh" in early
+August) and wholesale review ("2008 ... severe hydro shortage"), plus the 1997-01 quiet-era
+control - asserted by the build from the constructed panel.
+
+**Synthetic-fixture smoke before the worker (fabricated data, nothing quotable):** build.py
+ran clean end-to-end and gate 1.4.0 passed 38/38 on the fixture output including the capacity
+minimums; `--accept` and score.py were exercised the same way. The fixture caught one real
+defect - a duplicate `island` header from two column lists (the exact failure mode the
+qualification skill documents) - fixed to a single source of truth. `--selftest` passed with
+the shipped broken fixtures still rejected. Source format pinned first-hand before authoring:
+ISO TradingDate, `ByMonth/` monthly path, NSP `Island` values already NI/SI (894 POCs, 0
+conflicts), 1996-era POC coverage 213/225 on a first-day sample.
+
+**nz-ea-001 launched 2026-10-23T10:14:37Z** (cx23/hel1, server 172021455, provider rate
+EUR 0.01152/h, reservation EUR 0.06; construct -> qualify -> accept -> post-acceptance
+references inside run.sh). At the wrap-up notice the build was streaming the daily-file tail
+(monthly phase done: 349 files in ~56 min at ~9 s/file; dailies ~3 s/file), on pace to finish
+inside the 100-minute container timeout. The full-artifact gate result, exact-byte acceptance,
+staging release id and reference figures are PENDING collection by the watcher tick; nothing
+from this artifact is quotable yet. Handoff is durable: the candidate record carries the job
+entry, expected report paths and the next acceptance check, and the source bundle is committed
+(a5e02c2). If the container times out at the boundary, the diagnosed recovery is a relaunch
+with a larger timeout under a fresh attempt id - an infrastructure retry, not a rebuild.
+
+Checks this session: `check-candidate.py nz-ea-wholesale-price-exceedance` OK; full unittest
+suite 588 tests OK; gate selftest OK; commit a5e02c2 pushed. October worker reservations:
+EUR 8.08 + 0.06 = 8.14 of 20 (release reserve EUR 5 untouched).
