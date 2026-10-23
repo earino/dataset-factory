@@ -25,16 +25,65 @@ All probes anonymous from the coordinator, via `.factory/http_probe.py` (session
 - Footer measured on knbs.or.ke: "Copyright 2026 © Kenya National Bureau of Statistics |
   All Rights Reserved". No terms-of-use or open-licence page found.
 
-## Verdict
+## Probes (2026-10-23) — the unpark question is now answered; the answer carries an NC condition
 
-PARK — infrastructure blockers, not a task defect; nothing about Kenyan statistical
-products was disqualified because nothing could be read. Unpark path recorded in
-record.json next_action (NADA microdata catalogue → successor portal → sector regulators).
+The record's recorded unpark question was: does any KNBS-published channel offer
+anonymous bulk/API access with stated licence terms? Answer as of 2026-10-23: **yes —
+a new channel exists — but the stated licence is CC BY-NC 4.0.**
+
+- `https://repository.knbs.or.ke/` — KNBS **National Statistical Repository**, DSpace
+  10.0, live. REST API root `https://repository.knbs.or.ke/server/api` answers
+  anonymously with full endpoint links (also advertises an OAI-PMH endpoint).
+- Communities: 20 top-level (Demographic and Social; 201 Macroeconomic Accounts; 202
+  Business; 203 Sectoral Statistics with 8 collections — Agriculture, Energy, Mining/
+  Manufacturing/Construction, Transport, Tourism, Banking/Insurance/Financial, Wholesale/
+  Retail; 3 Environmental; 408 Safety and Security with a "Crime and Criminal Justice"
+  collection; 4 Governance; 511 Food Security and Nutrition; 603 Statistical Registers;
+  ...).
+- Discover index: `server/api/discover/search/objects` totalElements = **1,366**.
+  First sample objects are dated KNBS statistical releases: "Leading Economic Indicators –
+  December 2011", "Leading Economic Indicators – September 2020", "The Kenya Consumer
+  Price Index and Inflation Report April 2026", "Kenya Quarterly Gross Domestic Product
+  First Quarter 2019", "Economic Survey 2007", "Kenya Quarterly Balance of Payments Third
+  Quarter, 2017" — i.e. a long historical run of monthly/quarterly publications.
+- Item-level enumeration is restricted anonymously: `server/api/core/items` → **HTTP
+  401**; `server/api/core/collections/{uuid}/items` → **HTTP 404**; discover
+  `location.collection:{uuid}` queries → 0 results. So the 1,366 objects' formats,
+  series and per-item licences were NOT enumerated this tick. A channel is not a task.
+- Licence instrument (the publisher's own page, fetched directly 2026-10-23):
+  `https://repository.knbs.or.ke/info/accessibility`, section "Open data & licensing":
+
+  > "Unless stated otherwise on the item itself, content in this repository may be
+  > reused for non-commercial purposes, with attribution. CC BY-NC 4.0"
+
+  The page footer separately carries "Kenya National Bureau of Statistics, Copyright
+  © 2026". Per the licence-posture rule this is recorded as a stated conditional
+  licence (non-commercial + attribution), NOT an open-data grant, and NOT a risk
+  acceptance: whether a non-commercial condition is acceptable for our public releases
+  is an operator decision (record.json next_action step 1).
+- `https://www.centralbank.go.ke/` — unreachable from the coordinator this tick
+  (connection-level failure); the regulator probes from the original next_action (c)
+  (CBK, KRA, NTSA) remain genuinely unprobed. Recorded as not-probed, not negative.
+
+## Verdict (updated 2026-10-23)
+
+Still PARK, but the blocker changed from "no channel with stated terms exists" to a
+decision plus a census gap: (1) the stated blanket licence is CC BY-NC 4.0 — operator
+decision required before any build; (2) item-level content is not anonymously
+enumerable, so no series/timing evidence exists yet; (3) regulator probes still open.
 
 ## Note for the Africa rotation
 
 The two African national open-data portals named by the tick's starting map
 (data.gov.za, open.data.go.ke) are both NXDOMAIN as of 2026-10-21. The live, openly
-licensed African channel found this tick was a sector treasury portal
-(municipaldata.treasury.gov.za) — for the next Africa tick, lead with treasury/audit/
-procurement-style sector infrastructure rather than the national portals.
+licensed African channel found then was a sector treasury portal
+(municipaldata.treasury.gov.za). As of 2026-10-23 Kenya has a NEW publisher channel
+(the KNBS National Statistical Repository) whose content is real but NC-licensed and
+not anonymously enumerable at item grain — lead the next Kenya tick with the operator's
+NC decision and the repository UI (browser-rendered) census, then the regulators.
+
+## Reproducing the 2026-10-23 probes
+
+`probe_repository.py` in this directory re-runs the repository probes (API root,
+communities, discover count + sample, item-endpoint 401/404, accessibility-page licence
+quote). Run: `python3 probe_repository.py`.

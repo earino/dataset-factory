@@ -1,10 +1,63 @@
 # Current state
 
-Updated: 2026-10-23 03:05Z (Latin America discovery tick: ideam-rio-nivel-exceedance unblocked - the official
-per-station flood thresholds (cotas) were found extractable from archived IHD bulletins with a measured
-base-rate demonstration; new Argentina lead ar-ecobici-station-demand-exceedance opened, licence and access
-verified, then dropped at the novelty gate as a saturated task with named prior art. Next action: the IDEAM
-IHD harvest per its recorded next_action.)
+Updated: 2026-10-23 04:35Z (Africa discovery tick: four country-coverage/lead records opened - ZA dam-exceedance lead
+parked on measured access+licence blockers, Nigeria NBS price-watch lead dropped on the publisher's own no-redistribution
+clause, Morocco portal census parked with clean ODbL licence posture, Ghana portal unreachable - and the Kenya record's
+recorded unpark question RESOLVED: a new KNBS statistical repository exists with an anonymous API and a blanket CC BY-NC
+4.0 statement. Next action: operator decision on the Kenya NC condition; then the worker-side ZA DWS + Ghana access probe.)
+
+## 2026-10-23 - Africa discovery tick: Kenya unpark question resolved (with an NC decision); ZA dam lead parked on access+licence; Nigeria closed on the publisher's own terms; Morocco censused clean-but-not-task-shaped; Ghana unreachable
+
+Regional focus Africa; all five verdicts are in-region, no US substitution. Nigeria, Ghana and Morocco went from zero
+coverage to recorded evidence. Nothing was built, qualified or packaged; no US source padded the report.
+
+- `za-dws-dam-storage-exceedance` (ZA, NEW) - **parked on two measured blockers**; the strongest task idea of the tick
+  (national per-dam weekly storage exceedance, ~250 dams, drought early warning for restriction/irrigation decisions).
+  dws.gov.za answers 403 to a plain client AND a real browser from this coordinator; niwis.dws.gov.za times out;
+  data.gov.za is DNS-dead; Wayback has ZERO captures of the terms or bulletin pages (CDX measured). So no schema, history
+  or licence instrument could be read first-hand; everything attributed to the source is third-party (reservoirs.earth)
+  and must be re-measured. The Cape-Town-only fallback (reachable, daily+weekly) was rejected on split-capacity + prior
+  art (single system, Day Zero positives clustered 2017-18). Next action: one ~2-minute worker-side access test (is the
+  403 coordinator-specific?), then read+quote the terms instrument if reachable, classify, and only then novelty.
+- `ng-nbs-state-price-exceedance` (NG, NEW) - **dropped at the licence gate, the cheapest veto**. NBS's monthly
+  state-level Price Watch series (food/PMS/AGO, the most task-shaped Nigerian data found) cannot be published: the
+  publisher's own Terms & Conditions (nigerianstat.gov.ng/page/terms, fetched 2026-10-23) state verbatim that NBS data
+  "will not be redistributed or sold to other individuals, institutions, or organizations with out the written agreement
+  of the National Bureau of Statistics" - class D, quote archived in the record. Novelty never reached, not claimed.
+  Reopen: written NBS agreement (operator-side) or a different channel under its own open terms. Landscape note: an HF
+  org (electricsheepafrica) already mirrors NBS price-watch raw series - their provenance judgement, recorded as
+  observation, not permission.
+- `ma-datagovma-coverage` (MA, NEW) - **parked: portal censused, clean licence, no task-shaped content**. data.gov.ma is
+  live with an anonymous CKAN API and ODbL on ALL 697 datasets (per-dataset license facet + portal FAQ, class B).
+  Top-10-publisher title census (~590 datasets): annual court-activity tables (3-5 periods), HCP/BAM/ACAPS macro
+  aggregates ending 2022-2023, regional real-estate/construction-materials tables ending 2019-2022, third-party
+  governance indices at INPPLC, and AMMC weekly OPCVM files verified by download to be 6-category aggregates, NOT
+  per-fund. No unit-level ongoing series. The census + licence are recorded so the next Africa tick re-probes only on
+  portal growth, not from scratch.
+- `gh-opendata-coverage` (GH, NEW) - **investigating: portal unreachable from this coordinator** (CKAN action API
+  connection refused; real browser ERR_SOCKS_CONNECTION_FAILED). Third-party evidence (Data Landscapers, WB eTransform
+  completion report): catalogue static ~3 years, no open licence on record, dated static CSVs. Access failure is not a
+  rejection; next probe is one bounded re-probe from a worker network alongside the ZA test, then close under class C
+  policy if per-dataset licences are absent.
+- `kenya-opendata-knbs` (KE, UPDATED) - **the recorded unpark question is answered: YES, a channel now exists - with a
+  condition.** KNBS runs a NEW National Statistical Repository (repository.knbs.or.ke, DSpace 10.0): anonymous REST
+  API, 20 statistical communities, 1,366 discover-indexed objects (sampled: monthly Leading Economic Indicators back to
+  2011, monthly CPI reports to 2026, quarterly GDP/BOP, Economic Survey 2007) - a real long-run channel. Its own
+  accessibility page states (fetched + verified directly): "Unless stated otherwise on the item itself, content in this
+  repository may be reused for non-commercial purposes, with attribution. CC BY-NC 4.0". NC is a stated conditional
+  licence, not an open grant: whether our non-commercial research releases may carry an NC condition is an OPERATOR
+  DECISION, recorded as next-action step 1. Item-level enumeration is 401/404 anonymously, so no series/timing census
+  exists yet; CBK (regulator probe from the 2026-10-21 next action) was unreachable from the coordinator this tick -
+  recorded as not-probed, not negative.
+
+AfDB/UNECA coverage (no candidates opened, recorded here for the rotation): data.afdb.org is NXDOMAIN; the AfDB data
+infrastructure is the Africa Information Highway (africadata.org / dataportal.opendataforafrica.org country portals,
+Knoema-platform indicator portals), and UNECA's channel is ecastats.uneca.org - both aggregate-indicator territory,
+already crowded by WDI mirrors and the electricsheepafrica HF mirrors; no unit-level task-shaped source was identified.
+Session hygiene: check-candidate.py OK for all five records and --all exit 0 (82 records); probe scripts kept as the
+recipes in each candidate directory and re-run end-to-end with identical evidence (probe_repository.py,
+probe_terms.py, probe_portal_census.py, probe_access.py, probe_access_licence.py); scratch probes deleted after the
+recipes were copied; no bulk data downloaded (largest fetches were four ~40-55 KB AMMC XLSX files).
 
 ## 2026-10-23 - Latin America discovery tick: IDEAM threshold blocker RESOLVED (measured); Argentina lead opened and closed at the novelty gate
 
