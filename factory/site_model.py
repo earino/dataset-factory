@@ -223,7 +223,9 @@ def project(package, editorial, config):
         "source": {"name": source["name"], "url": source["landing_page"]},
         "qualification": {"gate_version": qualification["gate_version"], "result": qualification["result"]},
         "baseline": {"metrics": metrics, "scope": ((baseline.narrative if baseline else "")
-                     or release.baseline_reason or release.baseline_display)},
+                     or release.baseline_reason
+                     or text_field(editorial.get("baseline_scope") or release.baseline_display,
+                                   "baseline scope", 400))},
     }
     record["record_sha256"] = digest(dump(record))
     return record

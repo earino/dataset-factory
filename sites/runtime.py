@@ -121,8 +121,8 @@ def navigation(record):
     """The get-it bar: the three canonical destinations for this release."""
     u = record["urls"]
     cells = "".join("<td>" + link(u[key], title) + "</td>" for key, title in (
-        ("github_release", "&#128194; GitHub release"), ("huggingface_version", "&#129302; Hugging Face"),
-        ("catalog", "&#128218; All datasets")))
+        ("github_release", "GitHub release"), ("huggingface_version", "Hugging Face"),
+        ("catalog", "All datasets")))
     return '<div class="tscroll"><table class="getbar" aria-label="Dataset destinations"><tr>' + cells + "</tr></table></div>"
 
 
@@ -232,10 +232,10 @@ def render(config, records, preview=False, editions=()):
         for r in records:
             url = config["catalog_url"] + 'releases/' + r["dataset"] + '/' + r["release_tag"] + '/'
             posts.append(f'<li><img src="{gif_uri("bullet")}" width="10" height="10" alt=""> {esc(r["release_date"])} &#8212; {link(url,r["post"]["title"])}</li>')
-            body = f'<h1>{esc(r["post"]["title"])}</h1>'
-            body += '<p><img src="' + gif_uri("donebadge") + '" width="96" height="22" alt="released and complete"> ' + esc(r["summary"]) + '</p>'
+            body = f'<div class="eyebrow">Release notes · {esc(r["release_date"])} · announcement</div>'
+            body += f'<h1>{esc(r["post"]["title"])}</h1>'
             body += ''.join('<p>' + esc(p) + '</p>' for p in r["post"]["paragraphs"])
-            body += navigation(r) + '<h2>Explore</h2>' + link(r["urls"]["version"], 'Open the dataset page')
+            body += '<p>' + link(r["urls"]["version"], '→ Open the dataset page for numbers, files and checksums') + '</p>'
             files[f'releases/{r["dataset"]}/{r["release_tag"]}/index.html'] = document(r["post"]["title"], body, config, preview)
         intro = f'''<h1><img src="{gif_uri("globe")}" width="36" height="36" alt="spinning globe"> The Dataset Factory</h1>
 <p class="intro">{esc(config["description"])}</p>
