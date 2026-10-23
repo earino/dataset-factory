@@ -1,10 +1,64 @@
 # Research prompt improvement
 
-Status: PR #11 and its focused follow-up PR #12 are merged and deployed. Current
-prompt source is `ad607ca2d935a5a70fb16eeb1d612f9543ffc50f`, byte-identical to the
-tested `aa0e735` bundle. Advancement and a genuine watcher follow-up completed;
-the second ordinary discovery is running. The goal remains open until that live
-pass is audited. Controlled scores alone did not establish safe research execution.
+Status: PR #11 and PR #12 are deployed. The required ordinary discovery and
+watcher audit are complete, with material residual failures preserved. Overnight
+advancement also copied unsafe scoring code despite the new instructions. PR #13
+contains this evidence and a final focused source-preflight/worked-example revision
+at `635cede`; four paired source-review responses are pending. Do not equate the
+controlled decision scores with reliable autonomous scientific execution.
+
+## Final live audit and copied-code follow-up
+
+The uncoached discovery `20261023_021307_9ae84d` kept IDEAM investigating, found an
+archived threshold source, retained probe recipes and identified station-join and
+coverage hazards. That is useful progress. It nevertheless called a **2016** IHD
+bulletin a 2024 publication and inferred decade stability. Codex fetched the exact
+700,710-byte PDF, verified its date and correction notice, and supplied the finding;
+Scout corrected current records at `b67ebbb`, preserving the original error. The
+Ecobici response also overstates annual-file immutability from Last-Modified stamps;
+its novelty drop is a research judgment, not independently established equivalence
+of prediction contracts. No accepted dataset or task-level base rate follows.
+
+The later ordinary Camara advancement `20261023_060005_6af8a5` used the deployed
+brief and both recorded routes (76 GLM main calls, 25 DeepSeek). It corrected an old
+label-code error, but copied reference scoring and training-prevalence-as-accuracy
+from the older World Bank build. Codex verified the exact staged source and log:
+reference metrics were computed **before** qualification. The declared selection
+also contradicts filters on current terminal/merged outcomes. The unchanged gate
+refused the artifact for insufficient clustered events; its other passing checks
+do not establish truthful scientific declarations. Scout's watcher preserved the
+failed result and refused quotable metrics. An assisted review hold at `f108bb4`
+now prohibits a declaration-only re-gate or another job until those issues resolve.
+
+These observations are execution failures under the deployed bundle, not erased
+by good decision scores. The final small revision requires source locations for
+row selection and each scoring stage before launch, and gives a worked fail-closed
+construction → qualification → exact-byte acceptance → scoring example. It explains
+why copied candidate code is not a vetted template. No checker, test assertion,
+allowance, lifecycle code or published artifact changes. Four paired responses to
+one adaptive code-review case compare `ad607ca` to `635cede`, within the same
+128-attempt / 5M-token checkpoint. The case tests supplied-code reasoning; a normal
+advancement observation after deployment must assess actual execution separately.
+
+Full receipts, accounting, source identities and audit limitations are retained in
+`evals/research-prompts/results/deployed-observation-ad607ca.json`. The discovery
+used 7,560,860 inclusive tokens; Camara advancement used 19,457,717. These include
+cache reads and differ from the production gate's accounting measure. Dollar cost
+is unknown, and the different tasks do not support a speed/cost comparison.
+
+Verification of `635cede` in a clean Python 3.13 checkout:
+```
+Ran 588 tests in 6.644s
+
+OK (skipped=6)
+```
+Doctor and the 62-file source audit pass; clean tree after checks. Full unedited
+output is retained as `results/verification-635cede-*`. The worked shell example
+passes syntax and local stub traces stopping at each failed pre-scoring stage;
+those stubs do not qualify a dataset or run the benchmark. Exact-commit CI runs
+39921098802 and 39921093754 pass. Initial `0533627` failed the inventory assertion
+because its updated skill digest was omitted; `635cede` fixes the inventory without
+changing tests. The executable qualification gate remains byte-identical.
 
 ## Deployed observation and correction
 

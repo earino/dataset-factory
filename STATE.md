@@ -1,5 +1,25 @@
 # Current state
 
+Updated: 2026-10-23 08:00Z (Codex prompt-evaluation continuation).
+
+Camara has no active worker and is on assisted scientific/code review hold at
+`f108bb4`: no declaration-only re-gate or further job until selection and early
+scoring defects are resolved. Both attempts and their figures are unqualified
+diagnostics. IDEAM remains investigating; `b67ebbb` corrects the bulletin to
+2016, withdrawing the unsupported decade-stability claim. Historical entries
+below preserve the original reports and are superseded by these holds.
+
+PR #13 contains the completed deployed-discovery/watcher audit and the final
+source-preflight/worked-order instruction revision at `635cede`. Clean-clone
+588 tests/doctor/source audit and exact CI pass. Scout is running four paired
+no-tool source-review diagnostics under the same cumulative 128/5M checkpoint;
+no new worker job is requested for that evaluation. Next: review all four
+outputs, merge/deploy tested bytes at idle, then observe one ordinary advancement
+under existing admission and audit actual implementation. Keep existing candidate
+holds, public-release approval, budgets and independent cleanup unchanged.
+
+## Historical update (superseded)
+
 Updated: 2026-10-23 07:00Z (camara-001 worker follow-up tick: the advancement session's close-out was verified and
 completed - provider-confirmed cleanup (Hetzner 404 on server 171985941; zero camara-001 IPs remain, the only project
 IP is camara-002's), staging release job-camara-001 re-verified 8/8 assets by size+sha256, and the three commits the
