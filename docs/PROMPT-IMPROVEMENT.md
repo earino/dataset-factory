@@ -1,11 +1,11 @@
 # Research prompt improvement
 
-Status: PR #11 and PR #12 are deployed. The required ordinary discovery and
-watcher audit are complete, with material residual failures preserved. Overnight
-advancement also copied unsafe scoring code despite the new instructions. PR #13
-contains this evidence and a final focused source-preflight/worked-example revision
-at `635cede`; four paired source-review responses are complete and reviewed. Do not equate the
-controlled decision scores with reliable autonomous scientific execution.
+Status: PRs #11, #12 and #13 are merged and deployed. Current prompt source is
+`c9d479cfd8d7a71209ecbf2b517d5411f1bc0601`, byte-identical to tested `635cede`.
+All controlled comparisons are complete. The final ordinary advancement
+`20261023_081240_e08dd8` is running under normal limits; outcome audit is pending.
+Keep the prior live failures explicit. Decision scores do not establish reliable
+autonomous scientific execution.
 
 ## Final live audit and copied-code follow-up
 

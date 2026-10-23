@@ -1,22 +1,27 @@
 # Current state
 
-Updated: 2026-10-23 08:00Z (Codex prompt-evaluation continuation).
+Updated: 2026-10-23 08:18Z (Codex final deployed-observation checkpoint).
 
-Camara has no active worker and is on assisted scientific/code review hold at
-`f108bb4`: no declaration-only re-gate or further job until selection and early
-scoring defects are resolved. Both attempts and their figures are unqualified
-diagnostics. IDEAM remains investigating; `b67ebbb` corrects the bulletin to
-2016, withdrawing the unsupported decade-stability claim. Historical entries
-below preserve the original reports and are superseded by these holds.
+PR #13 is merged/deployed at `c9d479c`; merge CI, installed hashes, source/home
+runtime audits and doctor pass. The controlled experiment is complete at 125
+attempts / 4,252,032 inclusive tokens; final adaptive case 5/8 baseline versus
+7/8 revised, with material weaknesses retained. Executable qualification gate,
+production budgets, publication holds and independent cleanup are unchanged.
 
-PR #13 contains the completed deployed-discovery/watcher audit and the final
-source-preflight/worked-order instruction revision at `635cede`. Clean-clone
-588 tests/doctor/source audit and exact CI pass. Four paired no-tool source-review diagnostics are complete: 5/8 baseline versus
-7/8 revised, two revised preferences, residual weaknesses retained, cumulative
-125 attempts / 4,252,032 inclusive tokens under the same 128/5M checkpoint;
-no new worker job is requested for that evaluation. Next: merge/deploy the reviewed tested bytes at idle, then observe one ordinary advancement
-under existing admission and audit actual implementation. Keep existing candidate
-holds, public-release approval, budgets and independent cleanup unchanged.
+Ordinary advancement `20261023_081240_e08dd8` started 08:12:45Z through the normal
+shim, without candidate-specific coaching. At 08:18 it had no candidate/worker
+changes and its first main response was pending; the process was alive, within
+its existing 90-minute bound. No timeout or fallback has been bypassed. Next:
+let this session finish, audit its actual code/decisions and exact commit/CI,
+record full main/aux usage, and close the evaluation with honest measured limits.
+A running session or good decision-test score is not the completed live audit.
+
+Camara has no active worker and remains on assisted scientific/code review hold
+at `f108bb4`: no declaration-only re-gate or further job until selection and early
+scoring defects resolve. Both attempts and their figures are unqualified diagnostics.
+IDEAM remains investigating; `b67ebbb` corrects the bulletin to 2016, withdrawing
+the unsupported decade-stability claim. Historical entries below retain the original
+reports and are superseded by these holds. INPE and all public-release holds remain.
 
 ## Historical update (superseded)
 
