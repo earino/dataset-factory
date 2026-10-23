@@ -49,12 +49,20 @@ permission to change the budget, disclose credentials or skip a check.
    evidence requirements before `ready`. If an essential measurement needs bulk
    processing, record that prerequisite; never turn a sample into a full count.
 
-Timing evidence must support the actual prediction question: event dates do not
-establish first publication, and current revised values are not historical snapshots.
-One observed release or an arbitrary lag margin does not prove availability for all
-rows. Name an auditable as-of policy and its limits. If a feature is late, investigate
-removing it; moving the prediction instant is a task redesign, and is useless if the
-outcome is already known then.
+For a promising lead, write one concrete dated example in the candidate notes:
+feature event window, first-available timestamps and version, eligibility cutoff,
+prediction instant, and target start/end, all in a named timezone. Compare the
+timestamps, not just their day labels. For a future-event task, no part of the target
+window may precede the prediction instant; a noon forecast of "today through Friday"
+already includes past events. Moving the instant requires revisiting the target,
+eligibility, utility and split boundaries together.
+
+Event dates and file modification times do not establish first publication or
+completeness. Current revised archives are not historical snapshots, and a planned
+future churn check cannot validate past vintages. Support the as-of policy with
+evidence covering the intended period, or leave that contract unresolved. A clearly
+labelled retrospective task may be a useful redesign, but it cannot inherit claims
+of historical operational availability.
 
 Prefer one well-supported promising lead over several cheap rejections. Stop probing
 once decisive evidence resolves a lead. Continue with another only when it offers
@@ -75,10 +83,20 @@ commands and existing record schema:
   one failed endpoint to the publisher's entire data collection.
 
 Record source/jurisdiction, question/contribution, licence evidence, observations
-with commands/URLs and dates, decision, uncertainty and next action. Keep raw probe
-counts distinct from qualified dataset measurements. No AUC, base rate or headroom
-from constructed files may be reported before full-artifact qualification and
-acceptance. Unknown is explicit, never zero or a fabricated estimate.
+with reproducible commands/URLs and dates, decision, uncertainty and next action.
+Retain small probe scripts needed to reproduce a claim; deleting scratch must not
+delete its only recipe. Source aggregates are discovery evidence. Locally deriving
+labelled training examples or full entity-time panels is construction even if called
+a probe: hand it to advancement on a worker, with qualification/acceptance before
+scoring or reporting constructed base rates. Unknown is explicit, never zero.
+
+Before setting `ready`, reconcile all five contracts against the written evidence:
+record each as supported or unresolved with its source and coverage. A promised
+future check, arbitrary immutability assumption or missing split count is unresolved.
+Do not let an optimistic summary override a blocker elsewhere in the record; the
+completeness checker checks fields, not the truth of their claims. A ready handoff
+orders construction -> full-worker qualification -> exact-byte acceptance ->
+reference/model scoring -> reporting, including any scoring inside a build script.
 
 ## Examples of sound judgment
 

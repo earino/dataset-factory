@@ -1,0 +1,472 @@
+{
+  "schema_version": 1,
+  "reviewer": "Codex",
+  "review_type": "read-only source and compact-report audit; no bulk dataset fetched, no local full-artifact acceptance or metric recomputation",
+  "job": "wb-holdout-001",
+  "release_id": 421361824,
+  "manifest_sha256": "fa8cc16bc879fd9d1b6b8bd8540d0649a7e17d387889732af0d26385f7d75e03",
+  "source_tar_sha256": "91e4f86fa59a2a45206f0b979bb2287978f4bf07b1af734114874d0b169960fa",
+  "files_fetched": [
+    "manifest.json",
+    "source.tar",
+    "output/accept.log",
+    "output/holdout-comparison.json",
+    "container.log"
+  ],
+  "validation": "Every fetched file verified against manifest/GitHub size and SHA-256; all source_files entries verified against archive members. Source read, not executed. Bundled gate 1.4.0 report ok true, no failed checks; unchanged executable hash verified. Worker accept.log confirms exact fetched artifact acceptance before scoring.",
+  "supported_execution_changes": [
+    {
+      "finding": "Qualification/acceptance ordering",
+      "evidence": "run.sh invokes unchanged gate --accept on fetched artifact; nonzero exits before materialization/scoring. Worker accept.log confirms acceptance. No reference computation in this entrypoint precedes acceptance."
+    },
+    {
+      "finding": "Majority accuracy measures actual split predictions",
+      "evidence": "Majority class chosen from train prevalence; each split computes mean(label == fixed majority class). The old training-prevalence proxy is no longer used as eval accuracy."
+    },
+    {
+      "finding": "Calendar and identity controls are distinct",
+      "evidence": "Calendar logistic regression fits approval FY and cyclical month on train only. The old country-by-year table is separately checked and reported as 100% fallback to identity on eval/holdout."
+    },
+    {
+      "finding": "Paired uncertainty and comparable rows",
+      "evidence": "Model/reference arrays share each split frame; country clusters are resampled jointly for both predictions. Fixed 2000-resample/seed scheme and per-year AUC/Brier are recorded."
+    },
+    {
+      "finding": "Existing runner and holdout boundary",
+      "evidence": "Bundled train.py hash matches existing runner manifest. Trusted scorer executes it on public train/eval workdir, then invokes predict_proba on private holdout in scorer; no new substitute runner or holdout copied into agent workdir."
+    }
+  ],
+  "remaining_limits": [
+    {
+      "finding": "Historical availability remains unresolved",
+      "evidence": "Original artifact and descriptor are unchanged. The prior Codex audit of current-vintage attributes/ratings and future exclusion has not been resolved by a scoring-only job. Mechanical acceptance does not establish those scientific claims."
+    },
+    {
+      "finding": "Holdout already partially exposed",
+      "evidence": "The manifest says design frozen before any holdout number existed, but score_holdout.py EXPECTED contains the previously reported identity holdout AUC. New model scoring may be first measurement, but the holdout as a whole was not unseen. No holdout-based parameter fitting observed in this source."
+    },
+    {
+      "finding": "Bootstrap scope",
+      "evidence": "Country-cluster intervals condition on these fitted models and split design; they do not measure training/model-selection variability or remove historical information-set uncertainty."
+    },
+    {
+      "finding": "Recipe cleanup pattern",
+      "evidence": "run.sh uses rm -rf \"$WORK\" with WORK fixed to /tmp/workdir on the ephemeral worker. No coordinator cleanup observed, but an explicit ownership check/path would better match the repository cleanup rule."
+    }
+  ],
+  "report": {
+    "job": "wb-holdout-001",
+    "purpose": "decisive holdout comparison for the wb-ieg-project-outcome decision point: runner-contract model vs train-fitted simple references on identical rows",
+    "artifact": {
+      "name": "wb-ieg-project-outcome",
+      "files": {
+        "public/train.csv": {
+          "sha256": "b911c270ee8bf8c188ac9976472bb6d79789be337d4e46d6f1521388e5ec103b",
+          "bytes": 2580934
+        },
+        "public/eval.csv": {
+          "sha256": "7d3a82166c9a5dbdbfe8e4abaaedc396c6a256ad2f4eb572eb785bba6b67f517",
+          "bytes": 457228
+        },
+        "private/holdout.csv": {
+          "sha256": "00b945943e62703a68fad55202dde15557910d74173f40cd4fc44948c795b583",
+          "bytes": 335643
+        },
+        "meta.json": {
+          "sha256": "5188c4ae1aeca937713f933bd6a7fa3fda1e66f582bd8976a6d78577fe8d0009",
+          "bytes": 3696
+        },
+        "quality.json": {
+          "sha256": "76aa31e5919e90904374897c18fd920cf3020c3f650f6cab4d3009e5ae3010f4",
+          "bytes": 15898
+        }
+      },
+      "gate_accept_tail": "ACCEPTED: /data/extract matches the qualified artifact b8345bcb5769e422",
+      "runner_files": {
+        "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+        "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+        "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      }
+    },
+    "environment": {
+      "python": "3.13.17",
+      "pandas": "2.3.3",
+      "numpy": "2.5.4",
+      "xgboost": "3.4.1",
+      "scikit-learn": "1.9.1"
+    },
+    "train_prevalence": 0.717962,
+    "majority_class": 1,
+    "splits": {
+      "train": {
+        "rows": 9598,
+        "positives": 6891,
+        "prevalence": 0.717962,
+        "countries": 179,
+        "countries_with_positive": 172,
+        "majority_class": 1,
+        "majority_class_accuracy_measured": 0.717962,
+        "majority_class_accuracy_is_training_prevalence": false,
+        "model_auc": 0.936028,
+        "model_brier": 0.111239,
+        "identity_country_auc": 0.661797,
+        "identity_country_brier": 0.188266,
+        "calendar_trend_auc": 0.505385,
+        "calendar_trend_brier": 0.202445,
+        "prior_share_auc": 0.50828,
+        "prior_share_brier": 0.230469,
+        "note": "train AUCs are in-sample for the references and the model; they are recorded for diagnosis, never quoted as held-out results",
+        "reference_in_sample_auc": {
+          "identity_country": 0.661797,
+          "calendar_trend": 0.505385,
+          "prior_share": 0.50828
+        }
+      },
+      "eval": {
+        "rows": 1479,
+        "positives": 1173,
+        "prevalence": 0.793103,
+        "countries": 141,
+        "countries_with_positive": 135,
+        "majority_class": 1,
+        "majority_class_accuracy_measured": 0.793103,
+        "majority_class_accuracy_is_training_prevalence": false,
+        "model_auc": 0.587923,
+        "model_brier": 0.170287,
+        "identity_country_auc": 0.600329,
+        "identity_country_brier": 0.174049,
+        "calendar_trend_auc": 0.520931,
+        "calendar_trend_brier": 0.171737,
+        "prior_share_auc": 0.578316,
+        "prior_share_brier": 0.180705
+      },
+      "holdout": {
+        "rows": 1097,
+        "positives": 885,
+        "prevalence": 0.806746,
+        "countries": 133,
+        "countries_with_positive": 128,
+        "majority_class": 1,
+        "majority_class_accuracy_measured": 0.806746,
+        "majority_class_accuracy_is_training_prevalence": false,
+        "model_auc": 0.530149,
+        "model_brier": 0.175654,
+        "identity_country_auc": 0.490873,
+        "identity_country_brier": 0.186911,
+        "calendar_trend_auc": 0.477985,
+        "calendar_trend_brier": 0.166834,
+        "prior_share_auc": 0.493796,
+        "prior_share_brier": 0.19293
+      }
+    },
+    "per_year": {
+      "eval": {
+        "2010": {
+          "rows": 334,
+          "positives": 272,
+          "prevalence": 0.814371,
+          "model_auc": 0.544058,
+          "model_brier": 0.165901,
+          "identity_country_auc": 0.535608,
+          "identity_country_brier": 0.167592,
+          "calendar_trend_auc": 0.473464,
+          "calendar_trend_brier": 0.162828,
+          "prior_share_auc": 0.468187,
+          "prior_share_brier": 0.181846
+        },
+        "2011": {
+          "rows": 326,
+          "positives": 252,
+          "prevalence": 0.773006,
+          "model_auc": 0.638326,
+          "model_brier": 0.170237,
+          "identity_country_auc": 0.651732,
+          "identity_country_brier": 0.17512,
+          "calendar_trend_auc": 0.569471,
+          "calendar_trend_brier": 0.179822,
+          "prior_share_auc": 0.61406,
+          "prior_share_brier": 0.181809
+        },
+        "2012": {
+          "rows": 241,
+          "positives": 193,
+          "prevalence": 0.80083,
+          "model_auc": 0.602547,
+          "model_brier": 0.16388,
+          "identity_country_auc": 0.59008,
+          "identity_country_brier": 0.174911,
+          "calendar_trend_auc": 0.508797,
+          "calendar_trend_brier": 0.168588,
+          "prior_share_auc": 0.590188,
+          "prior_share_brier": 0.169741
+        },
+        "2013": {
+          "rows": 269,
+          "positives": 218,
+          "prevalence": 0.810409,
+          "model_auc": 0.599973,
+          "model_brier": 0.160864,
+          "identity_country_auc": 0.643956,
+          "identity_country_brier": 0.160581,
+          "calendar_trend_auc": 0.509984,
+          "calendar_trend_brier": 0.164761,
+          "prior_share_auc": 0.633072,
+          "prior_share_brier": 0.16787
+        },
+        "2014": {
+          "rows": 309,
+          "positives": 238,
+          "prevalence": 0.770227,
+          "model_auc": 0.551278,
+          "model_brier": 0.18828,
+          "identity_country_auc": 0.579447,
+          "identity_country_brier": 0.190952,
+          "calendar_trend_auc": 0.488963,
+          "calendar_trend_brier": 0.181366,
+          "prior_share_auc": 0.587555,
+          "prior_share_brier": 0.198032
+        }
+      },
+      "holdout": {
+        "2015": {
+          "rows": 277,
+          "positives": 218,
+          "prevalence": 0.787004,
+          "model_auc": 0.514578,
+          "model_brier": 0.186501,
+          "identity_country_auc": 0.490826,
+          "identity_country_brier": 0.197179,
+          "calendar_trend_auc": 0.453118,
+          "calendar_trend_brier": 0.174692,
+          "prior_share_auc": 0.495102,
+          "prior_share_brier": 0.205505
+        },
+        "2016": {
+          "rows": 224,
+          "positives": 187,
+          "prevalence": 0.834821,
+          "model_auc": 0.577829,
+          "model_brier": 0.154276,
+          "identity_country_auc": 0.575589,
+          "identity_country_brier": 0.160007,
+          "calendar_trend_auc": 0.401864,
+          "calendar_trend_brier": 0.155395,
+          "prior_share_auc": 0.554704,
+          "prior_share_brier": 0.174743
+        },
+        "2017": {
+          "rows": 244,
+          "positives": 192,
+          "prevalence": 0.786885,
+          "model_auc": 0.536058,
+          "model_brier": 0.188018,
+          "identity_country_auc": 0.477264,
+          "identity_country_brier": 0.202432,
+          "calendar_trend_auc": 0.509115,
+          "calendar_trend_brier": 0.174869,
+          "prior_share_auc": 0.460437,
+          "prior_share_brier": 0.199636
+        },
+        "2018": {
+          "rows": 184,
+          "positives": 154,
+          "prevalence": 0.836957,
+          "model_auc": 0.50303,
+          "model_brier": 0.166003,
+          "identity_country_auc": 0.452165,
+          "identity_country_brier": 0.17949,
+          "calendar_trend_auc": 0.542857,
+          "calendar_trend_brier": 0.154713,
+          "prior_share_auc": 0.466017,
+          "prior_share_brier": 0.185819
+        },
+        "2019": {
+          "rows": 168,
+          "positives": 134,
+          "prevalence": 0.797619,
+          "model_auc": 0.507133,
+          "model_brier": 0.178888,
+          "identity_country_auc": 0.440847,
+          "identity_country_brier": 0.191442,
+          "calendar_trend_auc": 0.510755,
+          "calendar_trend_brier": 0.170733,
+          "prior_share_auc": 0.487489,
+          "prior_share_brier": 0.194497
+        }
+      }
+    },
+    "degenerate_country_x_year_check": {
+      "eval": {
+        "rows_with_train_country_fy_key": 0,
+        "rows": 1479,
+        "fallback_fraction": 1.0,
+        "auc": 0.6003293047824415,
+        "scores_identical_to_identity_rule": true
+      },
+      "holdout": {
+        "rows_with_train_country_fy_key": 0,
+        "rows": 1097,
+        "fallback_fraction": 1.0,
+        "auc": 0.4908725082613794,
+        "scores_identical_to_identity_rule": true
+      }
+    },
+    "information_sets": {
+      "model": {
+        "claimed_inputs": "all feature columns (the runner's own model)",
+        "perturbation_check": "not applicable - the model may read everything"
+      },
+      "identity_country": {
+        "claimed_inputs": [
+          "country"
+        ],
+        "perturbation_check": {
+          "eval": {
+            "columns_shuffled": 27,
+            "nonconstant_columns_all_changed": true,
+            "constant_columns": [],
+            "scores_identical_after_perturbation": true
+          },
+          "holdout": {
+            "columns_shuffled": 27,
+            "nonconstant_columns_all_changed": true,
+            "constant_columns": [],
+            "scores_identical_after_perturbation": true
+          }
+        }
+      },
+      "calendar_trend": {
+        "claimed_inputs": [
+          "approval_fy",
+          "approval_month_num"
+        ],
+        "perturbation_check": {
+          "eval": {
+            "columns_shuffled": 26,
+            "nonconstant_columns_all_changed": true,
+            "constant_columns": [],
+            "scores_identical_after_perturbation": true
+          },
+          "holdout": {
+            "columns_shuffled": 26,
+            "nonconstant_columns_all_changed": true,
+            "constant_columns": [],
+            "scores_identical_after_perturbation": true
+          }
+        }
+      },
+      "prior_share": {
+        "claimed_inputs": [
+          "prior_msplus_share",
+          "prior_evals_count"
+        ],
+        "perturbation_check": {
+          "eval": {
+            "columns_shuffled": 26,
+            "nonconstant_columns_all_changed": true,
+            "constant_columns": [],
+            "scores_identical_after_perturbation": true
+          },
+          "holdout": {
+            "columns_shuffled": 26,
+            "nonconstant_columns_all_changed": true,
+            "constant_columns": [],
+            "scores_identical_after_perturbation": true
+          }
+        }
+      }
+    },
+    "prior_share_fallback_rows": {
+      "train": 2091,
+      "eval": 25,
+      "holdout": 17
+    },
+    "cross_checks": {
+      "model_eval_auc_from_train_py_print": 0.5879,
+      "model_eval_auc_recomputed_via_predict_proba": 0.587923,
+      "previously_recorded_model_eval_auc": 0.5879,
+      "identity_eval_auc_previously_recorded": 0.6003,
+      "identity_holdout_auc_previously_recorded": 0.4909,
+      "note": "previously recorded values are cross-checks; discrepancies are findings to investigate, not values to overwrite"
+    },
+    "uncertainty": {
+      "model_minus_identity_country": {
+        "eval": {
+          "delta_auc_point_estimate": -0.012406,
+          "bootstrap_mean_delta_auc": -0.011174,
+          "ci95_low": -0.050551,
+          "ci95_high": 0.030871,
+          "resamples": 2000,
+          "skipped_degenerate": 0,
+          "cluster": "country",
+          "seed": 20261023
+        },
+        "holdout": {
+          "delta_auc_point_estimate": 0.039276,
+          "bootstrap_mean_delta_auc": 0.038019,
+          "ci95_low": -0.011312,
+          "ci95_high": 0.089927,
+          "resamples": 2000,
+          "skipped_degenerate": 0,
+          "cluster": "country",
+          "seed": 20261023
+        }
+      },
+      "model_minus_calendar_trend": {
+        "eval": {
+          "delta_auc_point_estimate": 0.066992,
+          "bootstrap_mean_delta_auc": 0.066296,
+          "ci95_low": 0.00515,
+          "ci95_high": 0.126126,
+          "resamples": 2000,
+          "skipped_degenerate": 0,
+          "cluster": "country",
+          "seed": 20261023
+        },
+        "holdout": {
+          "delta_auc_point_estimate": 0.052164,
+          "bootstrap_mean_delta_auc": 0.052816,
+          "ci95_low": -0.023619,
+          "ci95_high": 0.129649,
+          "resamples": 2000,
+          "skipped_degenerate": 0,
+          "cluster": "country",
+          "seed": 20261023
+        }
+      },
+      "model_minus_prior_share": {
+        "eval": {
+          "delta_auc_point_estimate": 0.009608,
+          "bootstrap_mean_delta_auc": 0.010124,
+          "ci95_low": -0.036072,
+          "ci95_high": 0.057613,
+          "resamples": 2000,
+          "skipped_degenerate": 0,
+          "cluster": "country",
+          "seed": 20261023
+        },
+        "holdout": {
+          "delta_auc_point_estimate": 0.036353,
+          "bootstrap_mean_delta_auc": 0.035415,
+          "ci95_low": -0.015089,
+          "ci95_high": 0.081144,
+          "resamples": 2000,
+          "skipped_degenerate": 0,
+          "cluster": "country",
+          "seed": 20261023
+        }
+      }
+    },
+    "prevalence_shift_note": "train 0.718 -> eval 0.793 -> holdout 0.807: the evaluation windows are out-of-distribution in prevalence as well as temporal; AUC is prevalence-robust, Brier is not",
+    "persistence_note": "no per-entity persistence leg exists at project grain (each project is evaluated exactly once); the identity/prior-share rules play the track-record role persistence plays in panel tasks",
+    "design_frozen_before_holdout_scoring": true
+  },
+  "attribution": "The prior Codex audit explicitly requested ordering, majority/calendar semantics, historical-vintage and holdout-selection review. Corrected implementations are assisted work under the deployed brief, not isolated causal prompt effects.",
+  "decision_at_review": "206a94c drops candidate and preserves private results; no packaging. Assisted clarifications at 4d54eb1/136dc4e and final Codex reconciliation in PR #12 narrow current prose to protocol/budget-scoped absence of demonstrated advantage. Original overstatements remain in history and the signed output.",
+  "decision_commit": "206a94c618d5464f71577638a8afb36c9bbd2f9a",
+  "cleanup": {
+    "status": "deleted",
+    "deleted_at": "2026-10-23T01:40:51.312343+00:00",
+    "scope": "committed ledger plus Scout provider-404 report, not independent provider API read"
+  }
+}

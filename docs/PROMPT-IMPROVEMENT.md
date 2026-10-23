@@ -1,7 +1,42 @@
 # Research prompt improvement
 
-Status: controlled comparisons complete; reviewed for deployment. Merge, live file/scheduler
-readback and ordinary discovery/advancement observations remain pending.
+Status: PR #11 is merged and deployed at `b80a84da3be28ce51d2c555a3423b32284feb9a7`.
+The first ordinary discovery is complete. Its live audit found a false-ready decision;
+a focused follow-up is being tested. Ordinary advancement is running. The goal remains
+open; controlled scores alone did not establish safe research execution.
+
+## Deployed observation and correction
+
+[Scout's signed deployment receipt](https://github.com/earino/dataset-factory/pull/11#issuecomment-6354753780)
+records guarded shim/profile installation, matching hashes, runtime audit, doctor and
+admission. Codex independently verified merge CI. The watcher retains ID/cadence/delivery,
+uses the reviewed script-only wrapper, and both automatic writer holds and independent
+expiry cleanup remain active. Rollback preimages are retained. Two scheduler ticks
+completed silently while discovery held the mutex: busy-path evidence only.
+
+Ordinary discovery `20261023_005500_3d7a64` used the deployed shim without additional
+research coaching. Commit `be44e01` records three Latin American leads: Brazil ready,
+Colombia investigating, Chile dropped, with source probes and useful blockers. The
+checks and CI are green, but independent content review rejects the Brazil readiness:
+its 13:00 prediction occurs inside its target day; it assumes historical observations
+immutable; split capacity remains incomplete; and the next action orders reference
+scoring before qualification. INPE's own FAQ Q39 documents historical reprocessing,
+which Codex independently verified in Chrome and supplied to Scout. Scout accepts
+these findings and explicitly attributes them to that post-run assistance.
+
+Preserve the original run and useful evidence. Keep INPE private and unconstructed
+pending a corrected contract. The follow-up replaces abstract timing advice with a
+dated timeline, reconciles all five contracts before readiness, retains small probe
+recipes, distinguishes source aggregates from panel construction, and orders the
+handoff through qualification/acceptance before scoring. No executable gate change.
+Two adaptive transfer cases compare this follow-up with the deployed bundle; they
+are not hidden tests. Another ordinary discovery must follow deployment.
+
+Ordinary advancement `20261023_011135_3731ee` / `proc_52e3e9a2a39e` is running untouched;
+its selected work and outcome remain to be reviewed. Repairs of World Bank or INPE
+findings already supplied by Codex are assisted. Full provenance and review questions
+are retained in `evals/research-prompts/results/deployed-observation-b80a84d.json`.
+No higher dataset yield, lower dollar cost or causal speed gain is claimed.
 
 ## Latest decision — corrected bundle cd29d10
 
@@ -60,7 +95,7 @@ Scout's 00:47Z preflight reports clean main `1d2f301`, no active workers/researc
 writer holds effective and independent cleanup active. The midnight discovery tick
 was held by the evaluation mutex; it produced no ordinary research session. Verify
 fresh identities again at deployment. The existing runbook captures rollback preimages;
-no scheduler or production deployment has happened yet.
+that preflight is historical; the deployed receipt above supersedes it.
 
 ## Earlier evaluation checkpoints (historical; superseded by the decision above)
 
@@ -353,7 +388,7 @@ updated for explicit deployment review. These references are source-reviewed, no
 silently included in the no-tool experiment's eager instruction bundle.
 
 
-## Deployment plan (prepared; not executed)
+## Deployment procedure (first deployment completed 2026-10-23)
 
 After the comparison satisfies its predeclared criteria, merge the reviewed PR and
 record the merge commit. Scout deploys at an idle boundary:
@@ -391,3 +426,84 @@ still uses its conservative 2M all-inclusive-token / 48-invocation checkpoints,
 which may be extended with recorded reasons and cumulative usage when needed.
 Missing/corrupt accounting still stops execution. Worker spending and scientific,
 licensing and publication constraints are not relaxed by this token authorization.
+
+
+## Observed deployment and focused follow-up
+
+PR #11 merged at `b80a84da3be28ce51d2c555a3423b32284feb9a7` and Scout
+installed the reviewed shims/profile skills with preimage checks. The existing
+watcher now invokes its script without an outer agent, with the same ID, cadence
+and delivery; independent cleanup and both automatic skill-writer holds remain.
+The signed receipt and exact-commit CI are retained in
+`evals/research-prompts/results/deployed-observation-b80a84d.json`.
+
+The first ordinary discovery was **not a successful readiness validation**. It
+produced three useful source investigations but marked INPE ready despite a
+13-hour target/prediction overlap, unproven historical availability, incomplete
+split evidence and a handoff that put reference scoring before qualification.
+It also derived a full entity-time panel locally as a probe. Codex found these
+problems after the run; Scout durably held the candidate at `5dac3c5`. Preserve
+the original output and assistance attribution. No dataset from this run was
+accepted or publicly released. Controlled decision scores did not predict this
+execution failure.
+
+The follow-up frozen at `aa0e735` changes the actual discovery brief/skill and
+advancement brief: work a dated timeline, reconcile each contract with evidence,
+keep unresolved prerequisites out of a ready verdict, preserve probe recipes,
+and enforce the existing worker/qualification sequence in the handoff. Two
+adaptive diagnostic cases compare it to the deployed bundle, with identical
+role-specific eager loading in both arms. They are separate from the original
+baseline comparison. Another ordinary uncoached discovery is required after
+review and deployment.
+
+The deployed advancement completed a budgeted World Bank comparison at `206a94c`
+and dropped that candidate. Source audit verified acceptance before scoring,
+actual per-split majority accuracy, a genuine calendar reference and paired
+uncertainty on identical rows. These repairs followed Codex's earlier supplied
+audit, so they are assisted improvements, not isolated prompt effects. The new
+model's holdout advantage was not demonstrated under this protocol; intervals
+crossing zero do not establish equivalence or absence of useful task signal.
+Historical-vintage validity and prior partial holdout exposure remain limitations.
+See `results/new-prompt-build-review-b80a84d.json` under the evaluation directory.
+
+The ordinary discovery used 8,286,704 all-inclusive tokens; advancement used
+10,408,598, including auxiliary usage. The production gate counts a different
+uncached input/output measure; neither total establishes dollars. Different
+research tasks and cache conditions preclude a causal speed/cost comparison.
+Watcher observations so far cover silent busy ticks only, not terminal-event
+handling. The qualification gate, published release bytes and production budget
+rules are unchanged.
+
+
+### Follow-up comparison completed
+
+The eight `aa0e735` versus deployed `b80a84d` responses passed identity, route,
+zero-tool and accounting checks. Label-blinded review scored **10/16 baseline
+versus 14/16 revised** criteria, preferred revised in three pairs and tied one.
+The baseline GLM advancement answer proposed launching without correcting the
+six-hour target overlap; both revised advancement answers required a future
+target. Both revised discovery answers explicitly restored the full-worker
+qualification/acceptance-before-scoring sequence. This is supplied-evidence
+reasoning, not execution or new dataset yield.
+
+Material residual failures remain in revised answers: unsupported completion
+claims, overgeneralizing one observed publication day, an unjustified cutoff for
+abandoning an operational redesign, unverified cleanup assumptions, and missing
+coverage evidence before treating no events as negative labels. The narrow unsafe
+list has zero revised flags; that does **not** mean no safety-relevant weakness.
+The full blinded reviews, verbatim responses, author adjudication and Scout's
+signed review are retained as `results/rollout-aa0e735-*`.
+
+This batch used 274,665 inclusive tokens: baseline 135,010 / 269.944 seconds,
+revised 139,655 / 303.765 seconds. Revised answers also exceeded the 600-word
+request in three of four cases (baseline two). Thus this batch is not evidence of
+speed/token savings. The cumulative evaluation ledger is 121 attempts and
+4,099,323 inclusive tokens, including the retained zero-inference parser failure;
+no earlier results were reset. Dollar cost remains unknown. Standard deviations in
+the review viewer describe heterogeneous cases/routes, not repeated-run uncertainty.
+
+The exact tested source is approved for bounded deployment with these limits.
+The goal still requires another ordinary discovery and audit; an assisted repair
+or a high decision score alone cannot satisfy that check. Clean-clone verification
+after merging Scout's records at `e161f17`: 588 tests in 6.758s, OK (skipped=6),
+doctor exit 0, source audit 62 files/no problems, working tree clean after checks.

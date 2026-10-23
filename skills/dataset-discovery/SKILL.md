@@ -61,8 +61,18 @@ looks. Each is cheap to test and expensive to discover late:
    its coverage; a small sample's fastest or largest lag plus a margin is not a
    universal bound. Remove unavailable features or investigate a useful redesign;
    moving the instant beyond the outcome's revelation does not rescue a prediction task.
+   Work one dated example in a named timezone: feature event window, first publication
+   and version, eligibility cutoff, prediction instant, target start/end. For a
+   future-event target the whole window follows prediction, including its first day.
+   A noon prediction cannot call that morning's events future. File `Last-Modified`
+   is not proof of completeness or first availability; a future re-fetch measures
+   future churn, not historical vintages. Record reprocessing evidence explicitly.
 3. **Target.** The label must be derivable from data that can actually be obtained, and its
-   source column must be excludable from what ships.
+   source column must be excludable from what ships. Distinguish no recorded event
+   from observed absence: specify source coverage and censoring. Define eligibility
+   from information available at prediction, not entities that eventually have an
+   event somewhere in the completed year. A whole-year entity list can leak future
+   inclusion even when all feature timestamps are earlier.
 4. **Split capacity.** Enough *independent* positives, spread over time, to fill disjoint
    train/eval/holdout windows with both classes present.
 5. **Not a mirror.** The *task* must not already exist in ML-ready form. The publisher having the
@@ -162,7 +172,11 @@ A candidate record (`candidates/<id>/record.json`) that answers all of:
 - A cross-check against the publisher's own summary product where one exists.
 
 `notes.md` carries the row-level probes: the exact command and its result. A claim without a
-command behind it is a guess.
+command behind it is a guess. Retain small scripts needed to reproduce those results.
+Metadata and source-side aggregates belong in discovery; constructing labelled examples
+or a full entity-time panel belongs on a worker in advancement, even when called a
+"probe". Constructed base rates and reference scores require the unchanged full-artifact
+qualification and exact-byte acceptance first.
 
 ## Order of work, cheapest first
 
@@ -207,6 +221,12 @@ command behind it is a guess.
 
 A candidate is **ready** - the buffer state, before construction - when:
 
+First reconcile the five contracts in the existing notes: supported or unresolved,
+with the evidence source and its coverage. An essential future check or an assumed
+immutable archive is unresolved, not a limitation that permits `ready`. Reconcile
+the verdict, uncertainty and next action so they cannot contradict each other.
+The completeness checker cannot establish scientific truth from populated fields.
+
 - [ ] All five contracts are satisfied, each with recorded evidence.
 - [ ] `jurisdiction` recorded as country, region and publisher — measured from the publisher, not
       inferred from the URL.
@@ -219,6 +239,9 @@ A candidate is **ready** - the buffer state, before construction - when:
       a verdict of `no_precedent` or `differentiated` - never `mirror`.
 - [ ] Split windows and their computed counts are recorded, with clustered counts where they differ.
 - [ ] Extraction cost is measured, not estimated.
+- [ ] The handoff keeps construction -> full-worker qualification -> exact-byte
+      acceptance -> reference/model scoring -> reporting in that order. "Baselines
+      first" means before comparing model performance, never before the gate.
 - [ ] `record.json` carries a verdict: `ready`, `parked` (with the blocker) or `dropped` (with the reason).
 
 Aim to keep **one ready candidate in the buffer** behind whatever is currently being built, so a

@@ -6354,6 +6354,23 @@ the Colombia lead needs one bounded threshold-hunt probe before any verdict.
   and pushed `be44e01`. Earlier "merge/deploy next" notes are superseded by this
   checkpoint.
 
+
+Prompt live-audit checkpoint (Codex, 2026-10-23): PR #11 is deployed and its first
+ordinary discovery be44e01 produced useful source evidence but an unsupported INPE
+ready decision. Prediction falls inside the target window; historical availability
+is assumed despite reprocessing; split capacity is incomplete; the proposed handoff
+scores references before qualification. Codex supplied these findings and publisher
+FAQ Q39; Scout explicitly records the assistance and keeps INPE private/unconstructed.
+Original records/history remain evidence, not a passing new-prompt outcome.
+
+A focused follow-up on evaluate/prompt-rollout adds a dated timeline and reconciliation
+of the five discovery contracts, keeps probe recipes, and makes handoff order explicit.
+No qualification executable/version, published bytes or production allowance changes.
+Two adaptive transfer cases will compare deployed versus follow-up bundles on both
+routes (eight calls, same cumulative ledger, 128-attempt checkpoint/unchanged 5M tokens).
+Next: exact source/CI and Scout review, targeted responses, idle deployment and another
+ordinary discovery; retain live advancement 20261023_011135_3731ee untouched and audit
+its output. Do not declare the goal complete from the earlier decision scores.
 ## Advancement session (Scout, 2026-10-23): wb-ieg-project-outcome decision point resolved - negative finding, dropped
 
 Release work outranked construction, so the session took the package-stage
@@ -6419,3 +6436,29 @@ preserved unchanged. Keep private; do not construct from the prior contract. Thi
 not an unprompted discovery gain. Reopen only with a fully future target window, evidenced as-of coverage (or an
 explicitly retrospective task) and a gate-ordered handoff.
 
+
+Prompt evaluation continuation (Codex, 2026-10-23 01:58 UTC): advancement completed
+at 206a94c and the assisted INPE hold is durable at 5dac3c5. Exact-commit CI passed
+for both and for the subsequent wording clarification 4d54eb1. Eight targeted
+responses are now running sequentially on the same ledger after the advancement
+mutex released. The frozen source is aa0e735; merging research records here does
+not change that prompt/skill bundle. Current verdict wording is still being
+reconciled with the assisted scientific clarification. Next: finish and review
+all eight responses, merge/deploy the unchanged tested prompts at idle, then
+observe one ordinary uncoached discovery and record its actual outcome.
+
+Codex assisted wording reconciliation (2026-10-23): preserved the World Bank drop
+and all measurements, but removed remaining current-field certainty that task
+design (rather than any possible implementation issue) caused the weak result.
+The audit found no implementation defect in its checked scope; that is not proof
+of code correctness. Historical availability remains unresolved. This record
+repair is assisted review, not an additional prompt-test success.
+
+Prompt follow-up review (Codex, 2026-10-23): all eight aa0e735/b80a84d responses
+retained, identity/route/zero-tool/accounting checks passed. Blinded criteria
+10/16 -> 14/16, three revised preferences/one tie; critical baseline timing launch
+avoided by revised answers. Residual scientific/reporting/cleanup weaknesses are
+explicit in results/rollout-aa0e735-author-review.json, not hidden by the score.
+Cumulative experiment 121 attempts / 4,099,323 inclusive tokens; no extra repeats.
+Exact tested prompts approved for merge/idle deployment, followed by one ordinary
+uncoached discovery and source audit. Do not close the goal before that live pass.

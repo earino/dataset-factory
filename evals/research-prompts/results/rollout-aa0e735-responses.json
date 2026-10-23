@@ -1,0 +1,461 @@
+{
+  "schema": 1,
+  "bundle": "aa0e7355ec22abd611678de1743e46f8e649ce2c",
+  "partition": "rollout-aa0e735",
+  "records": [
+    {
+      "partition": "rollout-aa0e735",
+      "case": "rollout-discovery-contract",
+      "arm": "baseline",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-114",
+      "session_id": "20261023_015130_130843",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "0805747d0724b901aca7353a43c3a95b5fd13e2938170f630e401c386416b4de",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 24926,
+        "output_tokens": 7201,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 32127,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 436,
+          "output_tokens": 776,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 24490,
+          "output_tokens": 6425,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 119.648,
+      "response": "DECISION\n\nNot ready. Verdict: investigating, with the blockers named. Withdraw the draft's \"ready\" label and cancel the ordered construct/baseline job. The licence is clean and the task is plausible, so this is not a drop \u2014 but three contracts lack evidence and one is contradicted by evidence already in hand. The draft planned to \"investigate revisions\" after construction; the FAQ already answers that question, so it blocks now, before construction is spent.\n\nSUPPORTING EVIDENCE\n\n1. Timing contract fails as drafted. The instant (10:00 UTC Tuesday) sits inside the target window (opens Tuesday 00:00): the first ten hours of the outcome are already known when the prediction is made. This needs a redesign \u2014 instant before 00:00 Tuesday (e.g., Monday 10:00 UTC) or a window starting at/after the instant.\n2. Availability unproven. Daily files show Last-Modified 08:00 with no documented server timezone: if the server is west of UTC, Monday's file publishes after 10:00 UTC and the instant is unusable as stated. No completeness guarantee means late-arriving events can flip labels silently.\n3. Immutability contradicted. The FAQ records a 2023 reprocessing replacing classifications and geographical mappings for 2005-2022. Current rows are post-revision values, not historical snapshots, so a \"historical operational forecast\" over 2005-2022 cannot evidence feature availability at the past instant from this archive alone. Rechecking one fixed month in two weeks is a two-point observation, not an auditable as-of policy.\n4. Split capacity uncomputed. Large 2018/2024 totals prove nothing about per-window eligible/class counts; interruptions cluster by day/storm/line, so clustered counts are required.\n5. Satisfied: redistribution (openly licensed \u2014 record class A with the terms quote). Novelty is asserted, not recorded; ready requires a check-novelty verdict.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\n\nThe cheapest fact that flips the verdict: is Monday's daily file published and stable before the proposed instant? Resolve the server timezone from the portal's own documentation or headers (compare HTTP Date to Last-Modified), then observe publication time of a few consecutive daily files against the instant. In parallel, compute per-window eligible/class and clustered counts from the already-downloaded four-year panel \u2014 no new fetch; record as partial four-year evidence, never as a full count.\n\nORDERED ACTIONS AND STOPPING CONDITION\n\n1. Persist evidence first (scratch prunes in 24h): probe commands, URLs, dates, measured extraction cost, and the panel's construction command, checksums and provenance into candidates/<id>/notes.md. Do not commit the bulk files themselves; make the panel reproducible from its recorded command.\n2. Rewrite record.json: verdict investigating; blockers named (instant/window alignment, publication timezone and completeness, as-of policy for the reprocessed archive, per-window counts, recorded novelty verdict); withdraw \"immutable\".\n3. Run check-candidate.py; its failures are the correct blocker list, not noise.\n4. STATE.md handoff: next session runs the timezone/publication observation and the window-count computation; state exactly what flips the verdict to ready (realigned instant, evidenced availability, computed windows, recorded novelty verdict), after which construction is orderable.\n5. Commit only this session's records; review the diff; push; check CI for that exact commit; report pending CI as pending.\n\nStop after records, checks and commit. No construction job, no large probe this session. Done when the record shows investigating with the exact next probe named.\n\nOPERATOR REPORT\n\nPromising island-transport lead, but \"ready\" was premature: the proposed instant falls inside its own target window, publication timing is unverified (unknown server timezone, no completeness guarantee), and the archive is proven revision-prone (2023 reprocessing of 2005-2022), breaking the immutability assumption the draft relied on. Licence is clean and extraction is measured. Construction is held. One bounded probe next session \u2014 publication time versus a realigned instant, plus window counts from the existing panel \u2014 either yields a defensible ready or saves the construction spend.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "1dd76a9edbc5713431c570d865f0cd83f76164c742e425b5aefc22d5a5659d34"
+    },
+    {
+      "partition": "rollout-aa0e735",
+      "case": "rollout-discovery-contract",
+      "arm": "revised",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-115",
+      "session_id": "20261023_015334_21f555",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "aa3c0f0f2ab49ed16c35cfb4380cb6d0a3063731ff57c8b81470ee534aaed210",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 5219,
+        "output_tokens": 8650,
+        "cache_read_tokens": 20288,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 34157,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 372,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 5167,
+          "output_tokens": 8278,
+          "cache_read_tokens": 19904,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 137.014,
+      "response": "DECISION\n\nOverride the notes' `ready` label and set `investigating`, with a defined path back to ready. Not dropped: the licence is clean and the volume is real. But the timing contract is violated as drafted and two more are unresolved, so construction cannot start.\n\nSUPPORTING EVIDENCE\n\nTiming fails as drafted. Instant is Tuesday 10:00 UTC; the target opens Tuesday 00:00, so ten hours of target precede the instant \u2014 the brief's \"noon forecast of today\" case exactly. Any fix moves the instant or target start and requires revisiting eligibility, utility and split boundaries together; none of that is recorded.\n\nAs-of is contradicted by the source itself. The FAQ says 2005-2022 was reprocessed in 2023, replacing event classifications and geographic mappings, so current rows are 2023 vintages, not operational history. \"Historical reports are immutable\" is therefore false, and the \"historical operational forecast\" framing \u2014 the premise of the recorded `differentiated` novelty verdict \u2014 cannot stand. The plan to re-check a fixed month in two weeks measures future churn, never past vintages. Last-Modified 08:00 with no documented server timezone or completeness guarantee is not publication evidence. A clearly labelled retrospective redesign may be viable but inherits no operational-availability claim, and novelty must be re-recorded for that contract before ready.\n\nSplits are unmeasured. 2018 and 2024 source counts are large, but per-window eligible/class counts were never computed; \"large\" is not a split count, and clustered positives are unexamined.\n\nProcess corrections, preserving evidence. The four-annual-file download and island-day panel is construction during discovery, on the 1.9 GiB coordinator; keep the probe script and compact observations, delete only the bulk files from the owned scratch path. The drafted job order \u2014 construct, fit baselines, then qualify \u2014 is wrong: the gate precedes any quoted number. Correct order: construct on worker, full-artifact qualification, exact-byte --accept, then reference/model scoring, then reporting. \"Investigate revisions\" after construction is moot: the 2023 reprocessing is established fact to record now.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\n\nWhen Monday's daily file is actually complete and first published. It decides the redesign: instant Monday 23:59 UTC with target Tuesday 00:00 onward, if Monday's reports publish by then; otherwise an instant after the Tuesday-morning publication with the target starting at or after it. Probe: the portal's own publication-schedule and timezone documentation, bounded, with the browser if a page challenges a plain client. If undocumented, a two-morning file-appearance observation would set the current cadence \u2014 valid for post-2023 data only, never for 2005-2022.\n\nORDERED ACTIONS AND STOPPING CONDITION\n\n1. Rewrite record.json: verdict investigating; keep licence evidence and source counts; record the three blockers with quotes, URLs and dates; annotate the differentiated verdict as premised on a false timing claim, to re-record after redesign; record the reprocessing FAQ as as-of evidence; drop the immutability assumption and the two-week churn check as gates.\n2. Preserve the probe script and panel observations under candidates/<id>/; remove the four bulk annual files from the exact owned scratch path.\n3. Record the redesign options and a worker job computing per-window eligible/class counts on the redesigned windows \u2014 advancement's job; the local panel is not qualification evidence.\n4. Update STATE.md (ready buffer now empty \u2014 flag it), run check-candidate.py <id>, discovery-coverage.py and the test suite; review the diff; commit only this session's work; push; check CI for that exact commit via the gh api head_sha query, reporting pending as pending.\n\nStop after records, checks and commit; no large probe fits the remaining budget.\n\nOPERATOR REPORT\n\nThe ready label was unsupported; the candidate is investigating with a defined path back. Decisive evidence: the target window starts ten hours before the prediction instant; the 2023 reprocessing contradicts the immutability assumption behind the \"historical operational forecast\" claim; per-window class counts were never computed. Licence clean, volume promising, so it stays open rather than dropped. The local panel was construction on the wrong host \u2014 recipe preserved, bulk removed, and it counts for nothing until the worker gate runs. Next action: publication-schedule evidence, pick the redesigned instant, re-record novelty, then a worker job counting eligible/class rows per window. Ready buffer is empty.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "6969eeb06eaf1d7ca83c7fd6341ecb6d30f6612afaa1947c83946f26e2b6f9f1"
+    },
+    {
+      "partition": "rollout-aa0e735",
+      "case": "rollout-discovery-contract",
+      "arm": "revised",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-116",
+      "session_id": "20261023_015555_829a40",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "aa3c0f0f2ab49ed16c35cfb4380cb6d0a3063731ff57c8b81470ee534aaed210",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 23764,
+        "output_tokens": 1702,
+        "cache_read_tokens": 2432,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 27898,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 503,
+          "output_tokens": 13,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 23261,
+          "output_tokens": 1689,
+          "cache_read_tokens": 2432,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 28.503,
+      "response": "DECISION: Not ready. Park as `parked` (blocker: prediction timing + unresolved split capacity), keeping the licence evidence and probe notes. Correct the record's `ready` label and its job ordering before closing the session.\n\nSupporting evidence\n\n- Target window precedes the prediction instant. Prediction is 10:00 UTC Tuesday; the target runs from Tuesday 00:00. Ten hours of the target window the model is asked to \"predict\" have already happened. That is the skill's stated defect (\"a noon prediction cannot call that morning's events future\"), and it is a definition error, not a data gap.\n- First availability is unevidenced. Last-Modified 08:00 with no documented timezone or completeness guarantee does not establish when a day's report was published, nor whether \"through Monday\" existed at Tuesday 00:00 or 10:00 UTC. Current revised files are not historical vintages.\n- Immutability is contradicted by the publisher. The FAQ states the 2005-2022 archive was reprocessed in 2023, replacing event classifications and geographic mappings. Treating historical reports as immutable, and a two-week re-fetch as validation of past vintages, is unsupported. A future churn check measures future churn.\n- Split capacity is unmeasured. 2018 and 2024 totals are not per-window eligible/class counts; independent positives per disjoint train/eval/holdout window are unknown, and interruptions likely cluster by day/weather.\n- The local probe exceeded discovery. A four-file download and full island-day panel built labelled entity-time rows on the coordinator \u2014 construction, and outside the coordinator's 1.9 GiB/6 GB role. Nothing derived from it may be quoted as a base rate or headroom; it is unqualified and unaccepted.\n- The ordered job is wrong twice: \"fit reference baselines\" and \"investigate revisions\" precede qualification, and revisions must be resolved before construction, not after scoring.\n\nUncertainty and next discriminating check\n\nThe decisive unknown is publication lag for a single named day: take one Monday report, find its first-available timestamp and version (publisher's own release/version metadata, not file mtime), in a named timezone, and state whether it precedes Tuesday 00:00 and Tuesday 10:00 UTC. This is small, bounded, and decides whether any post-instant target window is observable at all. Second, only after that: per-window eligible and class counts, computed on a worker, not here.\n\nOrdered actions\n\n1. Update `candidates/<id>/record.json`: status `parked`, `licence_class` and quoted licence evidence retained, `jurisdiction` recorded, novelty verdict retained as `differentiated` but flagged as conditional on a valid target.\n2. In `notes.md`, record the Tuesday 00:00 vs 10:00 UTC defect, the 2023 reprocessing quote, the absent timezone/completeness statement, the missing per-window counts, and that the local panel is unqualified scratch \u2014 preserve the probe script as the recipe; do not delete the scratch path wholesale.\n3. Replace the job ordering with: resolve revision/first-availability \u2192 redefine target to begin at the instant (or adopt an explicitly labelled retrospective task with no operational-availability claim) \u2192 worker construction \u2192 full-worker qualification \u2192 exact-byte acceptance \u2192 reference/model scoring \u2192 reporting.\n4. Run `python3 scripts/check-candidate.py <id>`; record any remaining missing field as missing.\n5. Commit and push this session's records only; check CI for that exact commit and report pending as pending.\n\nStopping condition\n\nStop at the single dated lag example plus the record update. If Monday's report is first available only after Tuesday 00:00 UTC and no earlier vintage exists, drop the operational forecast (retrospective redesign only on a fresh decision). If the lag and timezone are established, reopen as `investigating` with per-window counts as the next worker probe. No further large probe this session.\n\nOperator report: one openly licensed transport source parked, not dropped \u2014 the drafted task leaks ten hours of target before prediction, its archive is publisher-reprocessed, and its first-availability timing is undocumented. Evidence and a corrected handoff are recorded; publication impact: none.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "94a2a3c6907489df42369b71a8c423b7d7ebe3348054849b7eaaed68ed5ebd43"
+    },
+    {
+      "partition": "rollout-aa0e735",
+      "case": "rollout-discovery-contract",
+      "arm": "baseline",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-117",
+      "session_id": "20261023_015628_dfec09",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "0805747d0724b901aca7353a43c3a95b5fd13e2938170f630e401c386416b4de",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 25614,
+        "output_tokens": 2184,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 27798,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 516,
+          "output_tokens": 12,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 25098,
+          "output_tokens": 2172,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 28.551,
+      "response": "Decision: Not ready. Verdict `parked` (timing/target defect and unproven as-of availability), not `ready`, and no construction job.\n\nEvidence\n- The task as drafted is internally invalid: prediction at 10:00 UTC Tuesday with target \"any interruption Tuesday 00:00 \u2192 following Monday 23:59\" already observes 00:00\u201310:00 of the outcome window. A same-day interruption makes the label true before the prediction instant. That is target leakage, not just a feature-timing question.\n- \"Reports through Monday\" cannot be shown available at the prediction instant. The 30 daily files have Last-Modified 08:00 with no documented server timezone and no completeness guarantee. If 08:00 is local time east of UTC, Monday's file may not exist at 10:00 UTC Tuesday.\n- The archive is not immutable: the FAQ records a 2023 reprocessing that replaced event classifications and geographical mappings for 2005\u20132022. Historical \"reports\" are therefore revised retrospectives, not evidence of what was knowable then. Re-reading one fixed month in two weeks tests nothing about a 2023 rewrite.\n- Split capacity is asserted from large 2018/2024 totals, but per-window eligible counts and class/provenance mix were never computed; \"large annual file\" is not independent positives per window.\n- The local scratch panel from four annual files was built on the coordinator, contrary to the bulk-data rule; it is not a qualified artifact.\n- Licence, jurisdiction and `licence_class` are not recorded in the case.\n\nUncertainty and next discriminating check\nThe decisive question is whether any as-of record exists: a revision history, per-day snapshot, or documented publication timestamp with timezone. If the archive only serves reprocessed final state, historical features cannot be reconstructed and the task is buildable only from forward-collected daily files. Cheapest probe: inspect the portal/API for version or snapshot endpoints and a documented timezone; if absent, record that and stop. Second, recompute the target with the prediction instant moved to before the window opens (e.g. Monday 23:59 UTC or Tuesday 00:00) and count eligible rows, class mix and independent positives in three disjoint windows.\n\nOrdered actions, stopping condition\n1. Downgrade the candidate to `parked`; record the 10:00-Tuesday leakage, the 08:00/unknown-timezone gap, the 2023 reprocessing quote, and missing licence/jurisdiction/class.\n2. Preserve probe URLs, dates, the four-file probe command and compact aggregates only; delete the local panel or keep summary counts, noting the coordinator oversize breach.\n3. Run the bounded snapshot/timezone probe and the per-window count from source (worker if large). No construction, no baselines, no headroom figures.\n4. Handoff: reopen only when (a) an auditable as-of policy with observed coverage exists, or a forward-collection start date is agreed; (b) prediction instant precedes the target window; (c) per-window independent counts show three disjoint windows with both classes; (d) `licence_class` A/B and jurisdiction are recorded.\n5. Stop after that probe: if no as-of evidence and no forward collection is authorized, record the blocker and leave it parked. Do not order \"construct, fit baselines, investigate revisions, qualify\" \u2014 revisions must precede construction.\n\nOperator report\nLead: openly licensed island transport event archive, plausible differentiated operational forecast. Blocked: leaked target window, unproven publication timing, 2023 reprocessing invalidating historical immutability, and no per-window counts. No construction launched; no measurements quoted. Next action: bounded snapshot/timezone probe, then decide as-of policy or park for forward collection. Checks/commit: record update and `check-candidate.py` only; no dataset claims.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "444324e13d5d2e88051b9e3decd64734e5e6cc452a921f8a9240c6c185776600"
+    },
+    {
+      "partition": "rollout-aa0e735",
+      "case": "rollout-advancement-selection",
+      "arm": "revised",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-118",
+      "session_id": "20261023_015701_4311e0",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "1fa7e788270ec7e98caf86b55d34eec81181cfee2848ae67c70226cf98c21120",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 14174,
+        "output_tokens": 7237,
+        "cache_read_tokens": 19584,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 40995,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 371,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 14122,
+          "output_tokens": 6866,
+          "cache_read_tokens": 19200,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 118.034,
+      "response": "DECISION\nDo not launch a worker as the candidate stands. Two defects are design-level and must be corrected before construction, because they are the exact shape that once reached packaged (nhs-ae-four-hour-decline): (1) the outcome window starts at 12:00 UTC, six hours before the 18:00 UTC prediction instant, so the label includes time before prediction and is partly knowable at prediction time; (2) eligibility is \"districts appearing anywhere in each completed year's event file\" - a hindsight population conditioned on the full year's outcomes, dropping zero-event districts, even though a district register predating each year was available. The recorded next_action is also wrong: computing references inside build.py is early scoring, and inverting order (references before the gate) violates construct, qualify, accept, score, report. Fix design locally (free, reversible, pre-construction, so no rebuild budget consumed), then launch the corrected build with a fresh attempt ID this slot if budget remains; otherwise the launch is the recorded next action. The packaged sibling carries awaiting_operator: a human wait that blocks nothing and does not consume this slot; leave it private.\n\nSUPPORTING EVIDENCE\n- Session brief: a future-event label must not include time before prediction; resolve contradictions before a construction launch.\n- Qualification skill: construction must not compute or log baseline performance before acceptance; a later passing report does not retroactively cure early scoring; row selection must not reach past the instant.\n- AGENTS.md/OPERATIONS.md: awaiting_operator exempts the sibling from preemption; ship-first covers actionable packaged work only; changed source needs a fresh attempt ID.\n\nFIXES\n1. Target: window becomes [18:00 UTC instant, instant + 7 days]; recorded as a protocol-first decision before any scoring, not chosen for scores. Base-rate impact is unknown until measured.\n2. Eligibility: panel from the pre-year register vintage; zero-event districts retained with negative labels; register release dates recorded as row_selection evidence.\n3. build.py constructs only; persistence and calendar-only references move to the evaluation stage, after acceptance, on identical eval rows.\n4. Pin eligibility with a counterfactual test: a register district with no events must still emit rows; a history/target-side variant must still bite. Run the gate's --selftest.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\nNothing is measured; quote no figures. Before launch, verify the register vintage dates against each prediction year, and read the daily report's column documentation to confirm the same-day 12:00-18:00 UTC events are not separately shipped as features. After launch, the discriminating checks are the full-artifact gate's timing and selection checks on the worker, plus --accept on exact bytes.\n\nORDERED ACTIONS AND STOPPING CONDITION\n1. Record the dated timeline (availability, eligibility, 18:00 UTC instant, target bounds) and both defects in the candidate record.\n2. Apply fixes 1-3 to build.py and quality.json (timing/row_selection declarations from the ledger and register evidence).\n3. Add the counterfactual pin; run --selftest locally.\n4. Set a fresh attempt ID; run scripts/assemble-job.py (offline, no cloud action); confirm the bundle carries qualify_dataset.py and runner files.\n5. If within the time/turn reserve: plan, then launch; record job ID, reservation, expected reports - a running worker is a valid handoff. Next tick: collect, full-artifact gate, --accept, then the reference triad.\n6. Stop without launching if register dates or timing evidence cannot be verified; record a precise blocked handoff instead.\nClose-out: update STATE.md and the candidate record, run check-candidate.py --all, review the diff, commit/push this session's work only, and report CI for that exact commit as pending until read.\n\nOPERATOR REPORT\nThis slot advanced the ready outage candidate; the packaged sibling still awaits your flip and was left private. The outage candidate's label window began six hours before its prediction instant and its district panel was selected from the completed year's events; both are corrected in design before any spend (window now starts at the 18:00 UTC instant; panel now from the pre-year district register, zero-event districts retained). No worker launches until those corrections are recorded and the bundle is assembled; construction then runs within allowance under a fresh attempt ID, and no numbers will be quoted until the gate passes and --accept verifies the exact artifact on the worker.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "17455f559b820faa1df992652099445a4cec50dbbf95a35358109bfcba933a03"
+    },
+    {
+      "partition": "rollout-aa0e735",
+      "case": "rollout-advancement-selection",
+      "arm": "baseline",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-119",
+      "session_id": "20261023_015903_25e501",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "6fb9dd8eb674392af93a5cd96e94d961777e8c231f5495e4b93f0e7a260e7ae3",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 1345,
+        "output_tokens": 4973,
+        "cache_read_tokens": 32320,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 38638,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 243,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 1293,
+          "output_tokens": 4730,
+          "cache_read_tokens": 31936,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 89.324,
+      "response": "Decision\n\nDo not launch a worker with the build as currently specified. The candidate's recorded next_action embeds two defects that would waste the paid job or make its output unusable:\n\n1. Hindsight selection. Eligibility uses \"districts appearing anywhere in each completed year's event file.\" A completed year's file contains events from after each prediction instant, so panel membership is conditioned on future outcomes, and eventless districts \u2014 the pure negative class \u2014 are dropped. The pre-existing district register is the instant-available population source the case itself supplies. This is exactly what gate 1.4.0's `selection_uses_only_available_data` / `row_selection` checks and the \"iterate the provider's months, not pairs of qualifying outcomes\" rule exist for; it also inflates the base rate by excluding quiet districts.\n2. Scoring before acceptance. \"Compute references inside build.py\" runs baselines before qualification and `--accept`. Required order is construct \u2192 qualify \u2192 accept exact bytes \u2192 score \u2192 report; construction must not compute or log reference performance.\n\nThe fix is design-level and local, so make it first, then launch. One rebuild budget applies to structural defects; this is the cheapest point to spend it \u2014 no job has run yet.\n\nSupporting evidence\n\nEverything else is documented clean: 18:00 UTC instant after the 17:00 publication, feature availability established by the dated release ledger and archived versions, and licence/redistribution/novelty/capacity recorded. So the candidate is otherwise ready and the amendment is bounded to selection and scoring order. The packaged sibling is `awaiting_operator: true` \u2014 a human wait that neither blocks nor deserves this slot.\n\nUncertainty and next discriminating check\n\n- Register-based eligibility will lower positive prevalence by adding eventless districts; that is a property to measure after acceptance, not a reason to keep event-file selection.\n- Register\u2194event-file identifier join consistency across years is unverified.\n- The label window starts at 12:00 UTC, six hours before the 18:00 instant; whether that segment is knowable depends on the report's coverage cutoff. Record it in `quality.json` timing; the persistence reference will show how much of the task is \"outage already underway\".\n\nDiscriminating check: the unchanged gate on the full artifact of the fixed build (timing/selection and split checks), plus a counterfactual fixture \u2014 a register district with zero events still emits rows; a district absent from a later register loses them.\n\nOrdered actions and stopping condition\n\n1. Amend the candidate record: replace next_action (no references in build.py), record this diagnosis.\n2. Edit build.py: eligibility from the district register as of each year; event file used only for labels; add the counterfactual assertions.\n3. Update `quality.json` timing: `row_selection` basis = register, `latest_period_used`, the 12:00-window note.\n4. Move reference computation to post-acceptance evaluation.\n5. Run `qualify_dataset.py --selftest`; `assemble-job.py` with a fresh attempt ID; `worker plan`, then `worker launch` for construct+qualify.\n6. Stop condition: collect; gate pass \u2192 `--accept` exact bytes on the worker, then score persistence/calendar/full-model on identical eval rows and interpret; gate fail \u2192 collect diagnostics, one bounded diagnosis, record blocker, no second rebuild without a diagnosis. Stop initiating work at the 80% wrap-up notice; a running worker with recorded job ID and expected reports is a valid handoff. Commit the amended source and record; check CI for that exact commit.\n\nOperator report\n\nThe packaged sibling remains private pending your flip. This slot advanced the outage candidate: its planned eligibility was conditioned on the completed year's event file (future data) and its next_action scored references inside the build; both amended locally to register-based selection and scoring-after-acceptance. One construct+qualify worker job launches under the normal allowance. No figures are quoted; the gate result and the reference triad will be reported after full-artifact acceptance.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "7cb21b6afb388e2ea0d0923634768e671d145a1935a2f84988e87e1f81eed978"
+    },
+    {
+      "partition": "rollout-aa0e735",
+      "case": "rollout-advancement-selection",
+      "arm": "baseline",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-120",
+      "session_id": "20261023_020037_d7d998",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "6fb9dd8eb674392af93a5cd96e94d961777e8c231f5495e4b93f0e7a260e7ae3",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 34000,
+        "output_tokens": 1935,
+        "cache_read_tokens": 512,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 36447,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 186,
+          "output_tokens": 14,
+          "cache_read_tokens": 256,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 33814,
+          "output_tokens": 1921,
+          "cache_read_tokens": 256,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 32.421,
+      "response": "Decision: do not launch a worker this slot. Fix the construction design and declaration first; the current task definition cannot pass qualification and scoring inside `build.py` would run too early.\n\nSupporting evidence\n\n1. Eligibility is hindsight-selected. \"Districts appearing anywhere in each completed year's event file\" uses the year's own outcomes to decide which rows exist, and omitting districts with no event rows removes the negative-heavy population using future information. The skill names this exact failure: iterate the provider's months/districts, not the qualifying set; a thin or absent target is missing outcome data (`unobserved_target`), never a membership decision. An independent district register predating each year is already available, so the fix needs no new source.\n\n2. Label window overlaps the prediction instant. Prediction is 18:00 UTC; the outcome window opens 12:00 UTC the same day, so six hours of the outcome precede the forecast. Part of the label is already knowable at the instant \u2014 a timing defect regardless of feature cleanliness. This is independent of the archive ledger, which covers only feature availability.\n\n3. The recorded `next_action` inverts the required order. Construct \u2192 qualify \u2192 accept exact bytes \u2192 score. Computing references inside `build.py` is hidden early scoring; the gate says to inspect the invoked build script, not just the wrapper. References (persistence, calendar/identity, full model on identical eval rows) belong after acceptance.\n\n4. The packaged sibling is `awaiting_operator: true` \u2014 a human wait. It does not preempt construction and does not authorise a launch by itself; it also does not justify starting a build whose definition is unsettled.\n\nUncertainty and next discriminating check\n\nWhether the 6-hour overlap is a real leak depends on how the label is derived from the source: if the report is an event list, an outage starting at 12:30 may already be listed by 17:00. Cheapest check: read the publisher's field documentation and one archived sample to confirm the label's derivation and exactly what the 17:00 report contains. Second check: confirm the district register's vintage predates each constructed year. Either answer changes the window definition, not the availability evidence.\n\nOrdered actions\n\n1. Update the candidate record: record the hindsight eligibility, the 12:00/18:00 overlap, and the mis-ordered reference computation as failed design review; do not touch the packaged sibling.\n2. Rewrite eligibility to read only the district register as of before the year; look up the target afterwards solely for the label; count and report `unobserved_target`; assert non-zero filtered rows and log before/after counts.\n3. Move all reference computation out of `build.py` into a separate post-acceptance scoring step, leaving construction free of any performance output.\n4. Settle the window: either move the outcome window to start at the prediction instant (18:00 \u2192 +7d) or justify the 12:00 start from documented report contents; write the chosen instant, lag and observations into `quality.json`'s `timing` block.\n5. Add the smallest counterfactual test: a district with a thin/absent target month must still emit its row; lowering a history month must remove it.\n6. Re-assemble with a new attempt ID (changed source; preserve the old bundle) and stop with a launch-ready job.\n\nStopping condition: stop before launching if the label derivation cannot be established from documentation and archived samples, or if the window change alters the task's outcome definition beyond this candidate's protocol \u2014 record the decision needed and hand off. Do not launch a build that would fail the gate.\n\nOperator report: no worker launched, no spend committed. Ready candidate has a construction/timing defect found before any build: hindsight population selection and a label window opening six hours before the forecast. Repaired design drafted; launch pending the label-derivation check. Packaged sibling still awaiting your flip; untouched. \u2014 Scout (Hermes)\n",
+      "response_sha256": "97f345f09a5a27291f9b2c1ad6332014c4839579b0e95a2d423879b5c900ae6a"
+    },
+    {
+      "partition": "rollout-aa0e735",
+      "case": "rollout-advancement-selection",
+      "arm": "revised",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-121",
+      "session_id": "20261023_020114_e499e1",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "1fa7e788270ec7e98caf86b55d34eec81181cfee2848ae67c70226cf98c21120",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 34228,
+        "output_tokens": 1936,
+        "cache_read_tokens": 441,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 36605,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 62,
+          "output_tokens": 13,
+          "cache_read_tokens": 441,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 34166,
+          "output_tokens": 1923,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 20.214,
+      "response": "**Decision:** Do not launch a worker this slot. The candidate's next_action is defective and the task design has two structural defects that a construction launch would bake into the artifact. Fix the design, record it, and hand off a launch-ready candidate; the packaged sibling stays private and does not gate anything (its `awaiting_operator` flag is a human wait, and its absence would not itself be approval).\n\n**Supporting evidence (from the case, not measured by me):**\n1. Label window precedes the prediction instant. Prediction is 18:00 UTC on day D; the outcome window opens 12:00 UTC on D. Six hours of the label are in the past at prediction time \u2014 the exact \"future-event label must not include time before prediction\" defect. A model can score this without forecasting anything.\n2. Hindsight-selected population. Eligibility is \"districts appearing anywhere in that completed year's event file,\" while an independent district register existed before each year. A district that had no outage is silently deleted, and the row list for a mid-year instant depends on the whole year \u2014 selection reaching past the instant (`selection_uses_only_available_data`).\n3. Wrong step order. \"Compute references inside build.py, then qualify\" inverts the required sequence: construction must not compute or log baseline performance before acceptance. References belong after `--accept` on the exact bytes.\nFeature availability itself looks evidenced (dated release ledger + archived versions, 17:00 publish vs 18:00 predict, 1 h lag), and redistribution/novelty/raw capacity are recorded \u2014 those are not blockers.\n\n**Uncertainty and next discriminating check:** whether outages occurring 12:00\u201318:00 on D are already visible in the 17:00 report (likely, which is why the window must move rather than be argued about). Cheapest discriminating test: for one constructed year, (a) count districts in the pre-year register edition vs the event file and confirm at least one zero-event district is emitted, and (b) assert no label window overlaps its prediction instant. One-row counterfactual, not a full build.\n\n**Ordered actions:**\n1. Write the dated timeline into the candidate record \u2014 name the timezone, state 17:00 publication, 18:00 prediction, and the target bound (recommend 18:00 D \u2192 18:00 D+7; alternatively 12:00 D+1 \u2192 12:00 D+7). Record both defects with the exact times/results.\n2. Re-specify eligibility to the archived pre-year district register edition; declare `expected_duplicate_ids`/row counts and state that no field reads past the instant.\n3. Rewrite next_action: build \u2192 qualify (full artifact, on worker) \u2192 `--accept` exact bytes \u2192 references on identical eval rows (persistence, calendar/identity, full model) \u2192 interpret gap and clustered positive counts (7-day windows overlap, so rows are not independent).\n4. Assemble a fresh attempt ID only after 1\u20133 are recorded; then one worker, construction + gate.\n5. Stopping condition: gate fails \u2192 record failed qualification with diagnostics, no scoring, no declaration edits; gate passes and accepts \u2192 proceed to the reference triad and stop for interpretation.\n\nDiff reviewed, candidate record and STATE.md updated with the corrected next_action; no job ledger entry exists, so nothing to reconcile.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "e3f8c45e886758992de90fdba3f5607a9c4876049ca34d8ee8b571be8022aac4"
+    }
+  ],
+  "ledger": {
+    "calls": 121,
+    "tokens": 4099323
+  },
+  "updated_at": "2026-10-23T02:01:44Z",
+  "finished": true
+}
