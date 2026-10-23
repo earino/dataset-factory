@@ -23,6 +23,7 @@ the agent run; a separate JSON marker feeds budget reporting and is removed when
 import argparse
 import contextlib
 import fcntl
+import hashlib
 import json
 import os
 import re
@@ -286,6 +287,20 @@ def strip_footer(text):
     return "\n".join(lines).strip()
 
 
+def preloaded_skills(template_path):
+    """Load the methods needed for this role; custom briefs keep the prior set."""
+    path = Path(template_path)
+    if not path.is_absolute():
+        path = REPO / path
+    role = path.resolve()
+    if role == (REPO / "docs/discovery-session-prompt.md").resolve():
+        return "dataset-discovery"
+    if role in {(REPO / "docs/research-session-prompt.md").resolve(),
+                (REPO / "docs/worker-watch-prompt.md").resolve()}:
+        return "dataset-qualification,dataset-release"
+    return "dataset-discovery,dataset-qualification,dataset-release"
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--max-turns", type=int, default=60,
@@ -370,6 +385,11 @@ def run_session(args, lock_fd):
         return 0
 
     prompt = build_prompt(resume_block, args.extra, args.prompt_file)
+    prompt += (f"\n\nInvocation limits: {args.max_turns} tool-calling iterations; "
+               f"{args.run_budget} seconds wall clock. Reserve the final 20% for close-out.\n")
+    # Hash the actual submitted brief, not only its template. This deliberately
+    # does not claim to capture Hermes's private memory or full system context.
+    prompt_sha256 = hashlib.sha256(prompt.encode()).hexdigest()
     started = time.monotonic()
     outcome, output, error, exit_code = "completed", "", "", 0
     with tempfile.NamedTemporaryFile("w", suffix=".md") as handle:
@@ -382,7 +402,7 @@ def run_session(args, lock_fd):
             "--source", SOURCE_TAG_ACTIVE,
             "--max-turns", str(args.max_turns),
             "--run-budget", str(args.run_budget),
-            "-s", "dataset-discovery,dataset-qualification,dataset-release",
+            "-s", preloaded_skills(args.prompt_file),
         ]
         with session_marker(args):
             try:
@@ -401,6 +421,8 @@ def run_session(args, lock_fd):
     elapsed = round(time.monotonic() - started, 1)
     note({"event": "session", "outcome": outcome, "elapsed_seconds": elapsed,
           "prompt_file": Path(args.prompt_file).name,
+          "submitted_brief_sha256": prompt_sha256,
+          "preloaded_skills": preloaded_skills(args.prompt_file).split(","),
           "max_turns": args.max_turns, "run_budget": args.run_budget})
     print(strip_footer(output) or f"Scout research session {outcome} after {elapsed}s")
     if error.strip():

@@ -1,8 +1,9 @@
 # Schedule-entry shims
 
-These are the *deployed* wrappers the Hermes scheduler invokes. They live on the host at
-`/opt/data/scripts/` — outside Git, which is why they are vendored here. Copies are verbatim:
-every sha256 below equals the live file's, measured 2026-10-22T17:15Z.
+These wrappers are reviewed sources for the Hermes scheduler entries under
+`/opt/data/scripts/`. The table below is the original capture measured
+2026-10-22T17:15Z, not a claim that later revisions are already deployed. Current
+source identities live in `ops/runtime-files.json`; verify live copies separately.
 
 | File | sha256[:16] | Bytes | Job it serves |
 | --- | --- | --- | --- |
@@ -24,11 +25,13 @@ then calls the repository's runner:
 
 ```
 hermes chat --query-file <prompt> --oneshot -Q --source scout-research \
-    --max-turns 120 --run-budget 5400 -s dataset-discovery,dataset-qualification,dataset-release
+    --max-turns 120 --run-budget 5400 -s <role-specific-skills>
 ```
 
-The prompts they point at are in Git (`docs/discovery-session-prompt.md`,
-`docs/research-session-prompt.md`), so scheduler behaviour is reconstructible from this directory
+Discovery preloads `dataset-discovery`; advancement and worker follow-up preload
+`dataset-qualification,dataset-release`. Custom briefs retain all three. The prompts
+are in Git (`docs/discovery-session-prompt.md`, `docs/research-session-prompt.md`,
+`docs/worker-watch-prompt.md`), so scheduler behaviour is reconstructible from this directory
 plus the repository — which is the point of vendoring them.
 
 ## Sanitisation review
@@ -59,5 +62,11 @@ added later under the same procedure.
 ## Verifying a copy
 
 ```bash
-sha256sum ops/shims/* | cut -c1-16   # compare with the table and with /opt/data/scripts/
+python3 scripts/check-runtime.py --source-only
+python3 scripts/check-runtime.py --home /opt/data
 ```
+
+The proposed `scout_worker_followup.sh` replaces the active watcher entry via a
+supported edit to its existing job. Keeping the old shim in history/inventory does
+not authorize enabling both paths. Deployment and readback are tracked in
+`docs/PROMPT-IMPROVEMENT.md`.

@@ -1,5 +1,26 @@
 # Hosted Scout inventory — updated 2026-09-18
 
+## Runtime update — 2026-10-22
+
+The historical inventory below is retained; these observations supersede its Hermes
+version and model-route information. Scout's installed-source review reports Hermes
+0.22.2 at upstream `d923a5eb`, installed at `/opt/hermes`, with home `/opt/data` and
+project `/opt/data/dataset-factory`. Primary recorded research route is `glm-5.3` via
+`lunaroute`; configured fallback is `deepseek/deepseek-v4.1-flash-1017` via `nous`.
+Those are configured/usage-recorded routes, not independent served-model attestation.
+
+The supported bounded chat path supplies `--source`, `--max-turns`, `--run-budget`
+and a nonzero exit for unsuccessful/partial completion. It does not write a usage file;
+session/model usage is read from the existing accounting database. On this chat path,
+`--ignore-rules` suppresses discovered project context and built-in memory. The optional
+prompt experiment's zero-tool resolution is installed-version-specific and checked
+before each invocation, not a portable public CLI guarantee. See
+[Scout's runtime evidence](https://github.com/earino/dataset-factory/pull/11#issuecomment-6352157221)
+and `evals/research-prompts/protocol.md`. Re-read current `doctor.memory` for capacity;
+the September memory observation below is not a current concurrency allowance.
+
+## Historical inventory
+
 Source: Scout's initial read-only inventory and 2026-09-18 execution report,
 supplied by the operator. This is deployed-instance evidence, not a claim about
 every Hermes installation. Repository setup observations by the builder are

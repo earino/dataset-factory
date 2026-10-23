@@ -184,9 +184,9 @@ destination from one source.
 - **Refuse at the gate.** A package with no declared terms, or one naming a licence file it does not
   ship, should fail the check rather than be assumed permissive.
 - **A licence change is a package change.** Editing a licence document changes its hash, so
-  regenerate the manifest, re-verify, re-upload the small files and re-point the version - while the
-  artifact's data digests stay identical. That is what "the accepted bytes are unchanged" means, and
-  it is worth stating explicitly, because a licence edit looks like a content change to a reader.
+  prepare a new reviewed package version, regenerate its manifest and re-verify. Data digests
+  may stay identical, but package bytes changed. Preserve existing version tags and published
+  manifests; do not re-point a historical version for a licence or documentation correction.
 
 Depth, including the declaration shape and how one source renders on each destination:
 `references/licensing-and-attribution.md`.
@@ -348,14 +348,11 @@ data" or a dash weeks later, and the artifact is fine the whole time.
   with the manifest entry describing it** - the tools that own that record recompute it, and until
   they do, the next run refuses with "the README already disagrees with its manifest". Build the tree
   and the commit together rather than pushing the document alone.
-- **A documents-only licence change still has to move every pin, and the refusal reads like a licence
-  dispute.** A downstream publisher that reads the manifest **at the pinned tag** compares terms
-  there, not in the working tree, so after editing the licence notice and the manifest it refuses
-  with "pinned manifest licence terms differ" while both current copies are correct. Move the tag
-  onto the documentation commit on **every** destination - a registry tag and a git tag are separate
-  refs, and a site builder may check both - read each tag back, then re-run the planner and expect
-  the plan digest to be unchanged, because only documents moved. Read that message as a stale-pin
-  signal before reading it as a licensing problem.
+- **A documents-only licence change is a new package version when terms are pinned.**
+  A downstream consumer reads the manifest at the existing tag, not the working tree. If
+  terms differ, preserve the old tag and inspect both records. Prepare a new reviewed version
+  for changed package bytes; never move each destination's pin to suppress the refusal. Re-read
+  every new pin and review the resulting plan. Document changes can change its digest too.
 - **Changing the licence in the manifest does not change a card whose frontmatter is a literal.**
   `license:` and `license_name:` usually live in a hand-written card template, so the manifest, the
   licence file and the notice can all say "no licence asserted" while the destination still
@@ -423,9 +420,9 @@ data" or a dash weeks later, and the artifact is fine the whole time.
   says a check passed while the record says otherwise is a false claim in published documentation.
   Repair it in two parts, in this order: fix what the check objected to, then **run the documented
   path again against the published revision** - a correction is not a verification, and the earlier
-  failure is recorded as it happened beside the later pass rather than overwritten by it. Re-pointing
-  the version pin onto that documentation commit is the **last** action, and the record says what
-  moved and that every data digest is unchanged. Read the pinned revision, tag and commit ids back
+  failure is recorded as it happened beside the later pass rather than overwritten by it.
+  Keep existing version pins fixed. If the package changes, prepare a new reviewed version;
+  distinguish its package digest from unchanged data digests. Read the pinned revision, tag and commit ids back
   from the service; a hash transcribed by hand can carry a corrupted tail that nothing resolves until
   a consumer tries to fetch it.
  - **Answering "what is still unpublished?" from an artifact's own record.** A published artifact's

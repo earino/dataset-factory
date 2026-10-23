@@ -6062,6 +6062,88 @@ then ea-flood-alert-escalation). This session's outcome is the record above, for
 close-out inspection noted in the hardening-rollout entry.
 
 
+### Prompt improvement goal — draft and evaluation protocol (2026-10-22)
+
+Eduardo authorized Codex and Scout to improve the actual research prompts/skills,
+compare behavior, merge/deploy reviewed changes and evaluate live behavior within
+existing budgets. Branch `improve/research-prompts` rewrites discovery/advancement,
+versions worker-watch, corrects tag-mutation instructions and scientific overclaims,
+and reuses research admission for watcher collection/follow-up. Qualification code,
+published artifacts and numeric allowances remain unchanged; automatic writer holds
+remain in place. The old quota-wording assertion changes with the intentional brief
+change; all other existing assertions are preserved. Local Python 3.13: 578 tests,
+6.790s, OK (six existing skips). Live deployment has not happened.
+
+Next: Scout reviews the source and isolated no-tool evaluation setup; compare the
+predeclared cases in evals/research-prompts within 2M tokens and 48 main invocations
+including auxiliary usage in spend, then revise, clean-clone checks, exact-commit CI,
+reviewed deployment and ordinary-run observation. Record actual responses and
+uncertainties; do not claim improved dataset yield from instruction edits alone.
+
+Prompt-evaluation checkpoint (Codex, 2026-10-22): PR #11 remains draft and undeployed.
+The sequential helper uses the existing research mutex/gate, no tools, a neutral
+fixture directory and a single strict ledger. Scout's installed-source review caught
+cached tokens missing from the experiment total before any inference ran; the helper
+now counts input/output/cache read/cache write plus auxiliary work. Local Python 3.13
+suite: 585 tests in 6.605s, OK (six existing skips). On-demand profile references are
+also aligned with evidence-based discovery and immutable package versions.
+
+Next action is explicit: await Eduardo's pending budget-definition answer. The existing
+40M weekly gate counts uncached input plus output; Scout measured 8,932,464 of those
+versus 370,352,432 including cache in the checked seven-day window. Dollar price is
+unknown. Keep the evaluation pilot held and existing production configuration unchanged
+pending the answer; then give Scout the reviewed exact commit and run only the first
+baseline/revised pair before authorizing the rest. No evaluation calls have run, and
+no improved research outcome or deployment is claimed.
+
+
+Prompt-evaluation resumed (Codex, 2026-10-22): Eduardo explicitly authorized the
+inference tokens needed to finish and ship. Budget-definition hold is resolved;
+production settings remain unchanged. Scout is authorized to run the first paired
+`discovery-value` comparison on the primary route using reviewed `413244c`, then
+return sanitized responses and measured usage before the remaining development
+cases. All accounting, failed attempts and all four token classes remain recorded.
+The initial batch checkpoints may be extended with a reason under this new authority;
+worker spending and scientific/publication gates remain intact. Source review is clear,
+586 clean-checkout tests and exact-commit CI pass, but behavioral improvement and
+deployment remain unproven until the evaluation and live pass finish.
+
+
+Prompt comparison checkpoint (Codex, 2026-10-23 local): pilot pair completed through
+supported bounded chat with database accounting. The earlier usage-file parser error
+was verified pre-inference and retained in the same ledger as a reconciled zero-token
+failed attempt. GLM discovery-value: both arms 4/4 original utility criteria, no listed
+unsafe actions; total tokens 44,836 baseline / 28,930 revised, 109.1s / 85.4s. Cache warmth
+differs, so no causal speed/dollar claim. Label-blinded second review agrees on the tie
+and narrowly prefers revised scientific branch handling. Revised conditional suite
+execution remains a concern. Sanitized source/grades: evals/research-prompts/results/pilot.json.
+
+Hosted remaining-development batch handle proc_5c5f359dda7e (PID 20410), script
+/opt/data/eval-pilot/run_batch.py, progress /opt/data/eval-pilot/progress.jsonl, same
+ledger /opt/data/eval-pilot/run/ledger.json. It waits behind live ordinary old-prompt
+research session 20261022_220005_615452 (Hermes PID 19812, wrapper 19810); do not kill or
+replace either on an observation timeout. Scout is retaining that run's public outcome
+and measured usage as a live baseline. Next: poll this exact handle, inspect all 24
+development responses, revise documented weaknesses, then reserved/adaptive diagnostics,
+merge/deploy reviewed files and observe real new-prompt discovery/advancement. No deployment
+has happened. Three added diagnostic cases are explicitly adaptive, not hidden holdout.
+
+Prompt revision checkpoint (Codex, 2026-10-23 local): the original development batch
+still uses frozen 413244c requests and helper 89dc99b; do not replace files under it.
+At 22:18Z Scout confirmed both that batch and the ordinary wb-ieg advancement were
+alive, with evaluation waiting for the research mutex. No process was restarted.
+
+The next candidate bundle addresses the pilot's conditional close-out, overstrong
+lag-margin guidance, and Scout's concern that blanket watcher repair deferral loses
+useful autonomy. One diagnosed same-artifact recovery is allowed with source/digest,
+linked attempts, exclusive ownership and normal budget/cleanup; no construction,
+published-byte/tag or visibility changes. The grading protocol separates role policy
+from common safety. A fourth adaptive diagnostic tests recovery and stop conditions.
+588 tests in 6.650s, OK (six existing skips), source inventory audit green. No executable
+qualification change or deployment. Next: retain the initial responses, test this
+revised bundle explicitly and complete reserved/live validation before claiming gains.
+
+
 ## Advancement — wb-ieg-project-outcome constructed, qualified, baselined (2026-10-22)
 
 Scheduled advancement tick. No actionable packaged candidate (eutl-installation-net-short
@@ -6121,3 +6203,104 @@ candidates); suite OK (572 tests, 12.9 s). Scratch scripts under .factory/ and d
 /opt/data/cache/scratch deleted after the push. Baseline staging releases 421262457 / 421265626
 remain private staging (staging-repo lifecycle as before); no publication, tag movement or
 flip was performed.
+
+
+Codex review checkpoint (2026-10-23 local): preserved Scout's ordinary advancement
+commits 31e8771 and d77213d alongside this prompt work. A bounded, read-only inspection
+of wb-001's manifest, source archive and compact reports found scoring/logging before
+the gate, a training-prevalence value mislabeled as split accuracy, a calendar control
+that falls back entirely to country identity, and unsupported historical-vintage
+claims. Evidence and scope: evals/research-prompts/results/old-prompt-build-review.json.
+The passing mechanical report does not resolve these source findings. The next review
+must address them before interpreting a favorable holdout result as permission to
+package; keep the candidate private. Prior artifacts and the original run remain intact.
+Scout received the findings; any subsequent repair responding to them is assisted,
+not an unprompted improvement attributed to the new brief.
+
+The ordinary research session has finished and released the mutex; initial frozen
+prompt-comparison calls are now proceeding. The incremental evidence publisher is
+being checked because its first results were not yet visible remotely. Do not rerun
+completed model calls to repair an exporter. PR #11 remains draft, undeployed.
+
+The next prompt bundle also addresses those source findings: inspect construction
+for early scoring, enforce construct/qualify/accept/score/report on workers, and
+verify reference predictions and information sets rather than trusting metric names.
+This supersedes 2a3ceb9 before any follow-up inference; use its successor's exact
+manifest for the planned 52 calls. No need to evaluate both revisions. The original
+413244c development batch remains frozen, with every result retained.
+
+Prompt-evaluation checkpoint (Codex, 2026-10-22 23:00Z): the original 24 successful
+development responses are complete and preserved with request/response hashes and
+criterion evidence. Revised 413244c scores 44/46 versus baseline 34/46 after excluding
+the two watcher repair-role criteria; original role-inclusive grades are retained.
+The cases show clearer baseline interpretation and active-owner handling, alongside
+remaining statistical, timing and report-fidelity weaknesses. This is not evidence
+of higher real dataset yield. Total measured usage is 835,103 tokens across all four
+classes, including auxiliary work; the reconciled parser failure remains attempt one.
+
+The next prompt bundle is frozen at 21b72994bc6a6ccd568c9395147ee3e6416b0e4c, adding
+paired-uncertainty interpretation and observed-completion reporting. Clean-clone
+588 tests (six existing Mac skips), doctor, source audit and exact-commit CI pass;
+Scout source review is signed on PR #11. Scout is authorized to start the planned
+52 further paired calls only after the initial batch exits, using the updated helper
+and the same cumulative ledger under 96 attempts / 5M tokens. Do not replace original
+results, reset usage or silently retry failures. Next: review the frozen follow-up,
+merge/deploy only if criteria pass, then observe real discovery and advancement.
+
+Prompt-evaluation checkpoint (Codex, 2026-10-22 23:30Z): all 24 frozen 21b72994
+development responses are preserved; role-neutral scores 32/46 baseline vs 43/46
+revised, total 838,699 all-inclusive tokens. A revised ownership answer still proposes
+a ledger/bookkeeping write under an active owner; it fails mutation deferral despite
+zero narrow unsafe flags. A separate source review found cleanup-before-preservation
+ambiguity. The final watcher clarification covers both, counts preservation within
+the existing one-recovery limit, and changes no lifecycle code or numeric allowance.
+The ongoing 52-call batch stays frozen. Then run the predeclared 16 watcher calls,
+including retained-source recovery, on the final exact bundle (93 cumulative planned
+attempts within 96/5M). PR #11 remains draft and undeployed. Next: finish reserved and
+adaptive reviews, verify the final watcher responses, then merge/deploy and observe
+ordinary research; retain all earlier results and truthful uncertainties.
+
+Prompt-evaluation checkpoint (Codex, 2026-10-23 00:00Z): all 52 frozen follow-up
+responses are complete and preserved. Adaptive diagnostic scores are 23/32 baseline
+versus 30/32 revised; both revised close-out answers still fail reporting fidelity.
+They must not be described as flawless or as executed research. The same cumulative
+ledger records 77 attempts / 2,696,235 all-inclusive tokens before the final watcher
+batch. Its first final-8ad5199 response has arrived and validates against the prepared
+request hash. No deployment yet. Next: review all 16 final watcher responses, update
+PR #11 with complete measured evidence, merge/deploy at an idle boundary, then inspect
+ordinary discovery and advancement against actual records and logs. Exact final-bundle
+clean-clone test/doctor output is now retained with the evaluation evidence.
+
+Watcher risk checkpoint (Codex, 2026-10-23): the frozen 8ad5199 loading answers did
+not clear source-aware safety review. One invents a verified backup before deletion;
+another proposes unsupported rename/PATCH and reports cleanup without confirmation.
+Scout confirms collection does not mechanically protect omitted assets. Keep deployment
+held and finish/preserve the existing sixteen calls. The watcher-only successor requires
+explicit preservation evidence, supported copy-only recovery and truthful cleanup state;
+it also warns that worker status mutates reconciliation state. Next verification is
+twenty paired calls across five watcher cases, with a new unknown-backup diagnostic,
+under 120 cumulative attempts / unchanged 5M tokens (113 planned). Review exact source
+and CI before any successor calls. No production allowance, gate or lifecycle code change.
+
+The frozen watcher batch is complete: 93 cumulative attempts / 3,195,065 inclusive
+tokens, all sixteen responses retained in watcher-8ad5199 evidence. Coarse scores
+18/32 vs 31/32 do not clear safety: revised retained-source run-90 also permits early
+deletion after failed preservation and a nested retry; baseline preserves that source
+until expiry. The successor clarifies both. Prepared 63c0705 is superseded before any
+inference; use only its next reviewed commit for the twenty-call verification. No
+deployment or successor calls yet. Next: exact successor source review/CI and request
+hash agreement with Scout, then bounded evaluation using the existing ledger.
+
+
+Prompt evaluation complete (Codex, 2026-10-23 00:50Z): corrected cd29d10 watcher
+verification preserved all twenty responses, 23/40 baseline versus 36/40 revised.
+Source-aware review with Scout clears controlled deployment: no repeat of early
+source deletion, invented-backup deletion authority, active-owner mutation or direct
+watcher asset mutation. Residual reporting/close-out/overrestriction defects remain
+recorded; scores do not prove execution quality. Final coverage: 60 matched responses,
+80/120 versus 112/120 original criteria; non-watcher 57/80 versus 76/80. Total evaluation
+ledger 113 attempts / 3,824,658 inclusive tokens, no reset or silent reruns. Exact
+cd29d10 clean-clone 588 tests in 6.733s (six existing skips), doctor and source audit
+pass; full logs retained. Next: commit evidence, exact-commit CI, merge PR #11, deploy
+reviewed files and scheduler entry at idle, verify readback, then observe ordinary
+discovery and advancement. No live improvement or deployment is claimed yet.

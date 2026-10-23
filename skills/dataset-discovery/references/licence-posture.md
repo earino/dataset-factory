@@ -23,11 +23,12 @@ to a plain HTTP client while rendering fine in a real browser. Before recording 
 states no terms", load the page in a browser and read it; a bot block recorded as publisher
 silence is a fabricated finding that later gets quoted as evidence. See `blocked-page-recovery`.
 
-## 2. When the publisher stays silent, ask once with a deadline
+## 2. New unresolved sources are closed under the standing policy
 
-Draft a short enquiry: which licence applies, whether redistribution of the data *and derived
-features* is permitted, and the preferred attribution wording. Send it, or hand it to the operator
-to send. Pair the ask with a dated fall-off (e.g. reject if no written answer arrives by a named
+Do not initiate a permission enquiry during routine discovery. The 2026-10-21 policy
+closes new unresolved class C leads. Preserve this distinction from a previously recorded
+operator risk acceptance. Only when the operator explicitly authorizes an enquiry, draft it: which licence applies, whether redistribution of the data *and derived
+features* is permitted, and the preferred attribution wording. Hand it to the operator unless sending to the named publisher was explicitly authorized. Pair the ask with a dated fall-off (e.g. reject if no written answer arrives by a named
 date) — an enquiry with no deadline is a candidate parked forever.
 
 ## 3. When the operator accepts the risk instead

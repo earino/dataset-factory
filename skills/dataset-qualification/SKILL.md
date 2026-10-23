@@ -45,8 +45,15 @@ python3 skills/dataset-qualification/scripts/qualify_dataset.py --selftest
 when every check passes; each failure names the column, split or declaration responsible.
 
 **Run it on the full artifact, where the rows are.** The gate reads rows, so a bounded local
-sample cannot stand in for it; run it on the worker as part of the build job. Exceeding the
-coordinator's disk or RAM budget to run it locally is not a trade worth making.
+sample cannot stand in for it; run it and exact-byte `--accept` on the worker. Keep the
+full dataset off the coordinator even when it happens to fit; collect compact evidence.
+
+Make the worker entrypoint's order explicit: **construct → qualify → accept exact
+bytes → score → report**. Stop before scoring on any failed stage. Construction may
+write the diagnostics the gate needs, but must not compute/log baseline performance
+or present its rates as qualified findings before acceptance. A later passing report
+does not retroactively make earlier scoring comply. Inspect the invoked build script,
+not just the shell wrapper, for hidden early scoring.
 
 ## Required evidence
 
@@ -74,10 +81,25 @@ Before any AUC is quoted as evidence that the task teaches something, measure th
 **exactly the same evaluation rows**:
 
 1. **Persistence** - the most recent observed value (or last observed label) as the score. This is
-the rule the task has to beat; if it does not, the label is a level that persists, not a forecast.
+a reference the model must improve on to support a headroom claim. If the model trails it,
+inspect alignment, availability, uncertainty and split shift before interpreting the task.
 2. **Calendar-only** - country/entity identity plus cyclical week-of-year plus a seasonal prior
-   estimated only from training-era rows. This separates learned signal from seasonality.
+   estimated only from training-era rows. This tests that particular seasonal/identity
+   reference; beating it does not rule out all seasonality or prove a causal source of signal.
 3. **The full model**, on the same rows and the same fit/eval boundary.
+
+Verify each reference implements its claimed information set and evaluates predictions
+against that split's labels. Training prevalence is not held-out accuracy; a supposedly
+different control that always falls back to the same predictor is not independent
+evidence. Record degenerate or inapplicable controls explicitly instead of relying on
+the names of fields in a result dictionary.
+
+Separate the observed difference from its uncertainty. A lower measured AUC is an
+observed result even without intervals; its generality and precision remain uncertain.
+Use paired differences on the same rows with an appropriate dependence-aware interval,
+not overlap of two marginal intervals as the comparison test. An interval containing
+zero does not establish equality or parity: report an inconclusive difference unless
+a pre-specified equivalence margin and analysis support an equivalence claim.
 
 Report the gap, not just the top-line AUC. A model below persistence is a **recorded defect**, not
 an encouraging result: on a four-week-ahead exceedance task a baseline reached 0.870 while week-W
@@ -92,20 +114,31 @@ Two structural checks belong with it:
   Brier by target year as well.
 - **Prevalence shift between splits.** Compare positive rates per split and per year. A training
   split at ~59% positives scored against an evaluation window at ~24% is an out-of-distribution
-  test as much as a temporal one, and it explains a model that trails a trivial rule. Say which
-  it is rather than letting the pooled AUC imply a clean temporal split.
+  test as much as a temporal one. Investigate whether conditional distributions or
+  calibration changed; prevalence alone does not mathematically determine AUC. Say what
+  was measured rather than letting a pooled AUC imply a clean temporal split or a cause.
 
-When the label is persistent, the usual fix is to re-target **change**: onset, transition or
-sustained-exceedance rather than a single future week's level, because persistence cannot win that
-by construction. Treat that as a new task instance with its own qualification, not a tweak.
+When persistence dominates, a substantively useful **change** target (onset, transition or
+sustained exceedance) may warrant a new task instance. It does not guarantee headroom:
+persistence or another simple rule can still win. Specify the user need and protocol first,
+then qualify and compare anew; do not choose a target because it improves a held-out score.
 
 ### When the task itself is the finding
 
-Audits make artifacts correct; they cannot make a task interesting. If persistence, a calendar-only
-rule or a train-only identity prior beats every model the task can carry, the dataset is a **negative
-result, not a benchmark**: record the comparison, state it plainly, and drop the candidate rather
-than rebuilding to publish a number that a one-line rule already beats. The purpose is datasets where
-the prediction problem works out, not the maximum count of releases.
+Audits make artifacts correct; they do not establish task usefulness. If a simple reference
+beats the tested full model, record **no demonstrated headroom under this protocol**, with both
+scores on identical rows. That finding does not prove that every competent model must lose.
+Check a concrete diagnosis (misaligned rows, a post-hoc reference, prevalence shift, or an
+implementation defect) within a bounded repair. If validated comparisons still show no useful
+headroom, preserve the negative finding and drop or explicitly re-scope the candidate. Do not
+publish a benchmark claim unsupported by the comparison, or keep fitting until a score wins.
+
+Specify metrics, split boundaries, target/threshold and comparisons before evaluation. Fit
+priors and data-derived thresholds on training data only unless a fixed external domain standard
+supplies the threshold. Keep holdout out of target/feature/split selection and model tuning.
+For clustered data, use independent-event counts and appropriate uncertainty; label missing
+intervals as a limitation. Missing historical vintages remain a limitation, never a claim of
+point-in-time reconstruction. Select tasks for utility and headroom, not agent outcome variance.
 
 Budget the repair, too: **one rebuild per structural defect**. A second and third rebuild of the same
 construction usually means the defect is in the task design (a period-end instant that cannot be
@@ -122,11 +155,11 @@ quoted rather than independently rerun.
 
 ### Answering an external review with measurements
 
-A review is a list of hypotheses, not a verdict. Convert each claim into the cheapest measurement
-that can confirm or refute it, and lead the reply with numbers:
+A review supplies hypotheses to test. First ensure full-artifact qualification and acceptance;
+then use the cheapest discriminating measurement and report its scope and uncertainty:
 
-- **Seasonality** -> calendar-only AUC on identical rows (above). If it lands near the model, the
-  task is a calendar exercise; a 0.24 gap is evidence of real signal.
+- **Seasonality** -> calendar-only AUC on identical rows (above). A small or large observed gap needs its rows, uncertainty and scope;
+  no universal AUC difference proves usefulness.
 - **Mixed populations** -> count eligible rows per provenance stream from the source itself, and
   say what fraction of the panel survives the stricter definition.
 - **Leakage through the timing claim** -> check whether the publisher exposes historical vintages.
@@ -218,13 +251,16 @@ it, which is what the counterfactual test below is for:
   event, a 911 call closed at the event) may ship none.
 - **`row_selection`** must not reach past the instant. Using M+1 to decide which rows qualify
   conditions the population on the future even when every feature is clean.
-- **Use a bound above every observation, with margin - not the mean, and not the maximum.**
-  Publications slip: a source that lands 9, 13 and 10 days after three consecutive period ends has
-  no single lag, and the mean reads one of those months days before it existed. But a maximum over a
-  sample is not a bound either: with the rule set to the largest of three observations (13 days), a
-  fourth month landed at 16 days, and 121 rows used features that did not yet exist. Record several
-  observations and set `days_after_period_end` to the largest **plus margin** - a week of margin is
-  cheap, because the label is a whole period ahead.
+- **Observed lags and margins are evidence, not a guarantee.** Publications slip; a
+  sample's mean, maximum or maximum plus margin cannot prove availability for every
+  row. Use actual release/snapshot evidence across the constructed periods or a
+  supported conservative as-of rule, and document coverage and unresolved exceptions.
+  Current revised rows cannot stand in for values available at an earlier instant.
+  If historical availability cannot be established, exclude that feature or keep
+  the candidate unresolved. A later instant requires a useful future outcome and
+  redesigned eligibility/splits; never move it past the outcome merely to pass the
+  declaration check. The gate's minimum observed-date requirement is unchanged and
+  does not certify this broader scientific claim.
 
 #### Removing the history count is not removing the future
 

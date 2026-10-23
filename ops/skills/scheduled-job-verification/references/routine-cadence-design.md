@@ -20,12 +20,13 @@ stops happening, and only counting the outputs over time reveals it.
    work with different success criteria; sharing one brief and one slot means the mode that
    reports visible progress wins every tick. Separate jobs, separate templates, and a sentence in
    each brief forbidding the other mode's work (naming it explicitly, not "other work").
-2. **Make the quota countable and per session.** "Find more sources" cannot be checked; "at least
-   N new sources taken to a recorded verdict, each in its own record with the reason" can. State in
-   the prompt what a short session should report, so it states its count instead of inventing one.
-3. **Count rejections as output.** If only accepted candidates count, the quota is met by lowering
-   the bar; a rejection with its evidence is the honest way to clear a lead, and the brief should
-   say so.
+2. **Make the evidence and decision countable, without a verdict quota.** Report opened leads,
+   supported decisions, useful next steps and unresolved questions. Judge whether the work
+   improved the queue, not whether it reached N verdicts. A promising unresolved question can
+   deserve the next probe more than an easy rejection.
+3. **Preserve rejections with their evidence.** They can prevent wasted construction; counting
+   only accepted candidates invites lowering the bar. Neither acceptance nor rejection count
+   alone measures research quality. Record what evidence would reopen a closed lead.
 4. **Keep every mode inside the same accounting.** Modes carrying a different source tag or job id
    escape the period cap and the spend report unless they are added to the config that classifies
    them - register the new job id in the same change that creates it.
@@ -50,10 +51,10 @@ Two jobs that both open a session lock cannot be offset by a few minutes.
   sessions in adjacent 2-hour slots collide on the kill tail; alternating types across 4-hour slots
   (`0 */4` and `0 2-22/4`) gives each run a 2-hour slot that a 90-minute run and its 95-minute hard
   stop always fit inside.
-- **Raise the stale-lock window with the budget.** The gate treats a lock older than
-  `session_max_minutes * 60 + grace` as dead, so a 90-minute session under a 40-minute setting is
-  declared stale while it is still working and the next tick starts a second one on top of it.
-  Every field that encodes "how long a session lasts" moves in the same change as the runner flag.
+- **Use the OS mutex as ownership, not marker age.** Dataset Factory's current wrapper holds
+  its mutex through the child process. Never delete or replace it to take over a supposedly
+  stale run. Marker timestamps describe a run; investigate actual process ownership and use
+  the documented recovery path. Keep configured invocation limits consistent with the schedule.
 
 ## Widening the window: measure which limit binds first
 
@@ -108,9 +109,10 @@ not - so the unit of durable progress must be smaller than the session.
   Compare the session's last-message timestamp against now, and its per-call latency, before
   concluding the work is heavy; a 60-second stale-stream threshold plus six aborts can consume half a
   window without a single tool call being made.
-- **If every run dies at the ceiling, the ceiling is the defect.** Raise the budget and lower the
-  cadence rather than repeating the kill; then re-measure the run duration before trusting the new
-  number.
+- **Repeated ceiling exits need diagnosis.** Inspect task scope, provider stalls, repeated
+  probes and close-out behavior before proposing different limits. A larger budget is not the
+  default remedy and cannot override the operator's allowance. Test the justified change and
+  measure completion rather than inferring that a longer window fixes it.
 
 ## Verification that the cadence actually changed
 
@@ -118,8 +120,8 @@ not - so the unit of durable progress must be smaller than the session.
 - Count the **distribution** of what discovery opened, not only how many: a per-session quota with
   no coverage measure is met every tick from the cheapest source. Measuring it by publisher
   jurisdiction is `open-data-source-vetting` -> `references/discovery-coverage.md`.
-- Read one run's delivered report for the countable quota (how many leads, how many verdicts); a
-  report with no count is the previous behaviour under a new name.
+- Read the delivered report for actual coverage, decisions and evidence. A numerical count
+  without useful findings or precise blockers is activity, not demonstrated progress.
 - Confirm the new job fires on its own schedule, not only via the manual fire used to test it.
 - Confirm the idle gate by its own log: an `idle` row on a tick with nothing to do, and a `session`
   row on a tick with work. Silence alone does not distinguish the two.

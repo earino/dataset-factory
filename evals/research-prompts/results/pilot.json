@@ -1,0 +1,395 @@
+{
+  "schema_version": 1,
+  "source": "https://github.com/earino/dataset-factory/pull/11#issuecomment-6352244930",
+  "scope": "Supplied-evidence no-tool pilot; no live research or causal speed/cost claim",
+  "normalization": "Removed only exact CLI unknown-toolset warning before grading; original capture preserved in source comment",
+  "prior_attempt": {
+    "status": "reconciled_no_inference",
+    "tokens": 0,
+    "source": "https://github.com/earino/dataset-factory/pull/11#issuecomment-6352088534"
+  },
+  "runs": [
+    {
+      "case_id": "discovery-value",
+      "arm": "baseline",
+      "model": "glm-5.3",
+      "provider": "lunaroute",
+      "request_sha256": "7711a3e8188d7080b08dad9c127fb16b1b6de289bfb487ff49c50e0a033615f9",
+      "request_commit": "1cc921b22e95a60b829f1b7aa6c630984b1c755d",
+      "runner_commit": "89dc99bae318602e5a97046adb0c5e6548d0d82f",
+      "status": "ok",
+      "exit_code": 0,
+      "api_calls": 2,
+      "tool_messages": 0,
+      "recorded_tool_pin": "unrecorded",
+      "dollar_spend": null,
+      "response": "DECISION\n\nSpend the remaining time on the third source, not the fourth. Run the single release-calendar query, write its verdict into its candidate record immediately, then run the mandated close-out. The catalog page stays unopened and is left as a named lead in STATE.md.\n\nSUPPORTING EVIDENCE\n\n- Quota arithmetic. Two rejects are already decided with decisive licence/capacity evidence; a recorded verdict for the third source makes three, all Canadian publishers, so \"three sources, at least two non-US\" is met without the fourth. Coverage is already 17/24 non-US, so no geography gap needs padding.\n- The open question is the one that has already burned this project once. nhs-ae-four-hour-decline reached packaged with 25 features \"documented at prediction time\" that were late-published at the release; gate 1.4.0 now requires an observed period_end -> published pair. Recording the third source as ready without the calendar observation would repeat that documented failure mode; one bounded call converts a park into a likely go, since the onset target, documented label and split capacity are already evidenced.\n- Wrap-up economics. 15 of 90 minutes remain and the 80% notice has fired; the brief says stop probing and write up. The close-out (STATE.md, unittest, check-candidate --all, commit/push, CI read for the exact commit) needs most of what is left. The fourth page is \"likely\" easy, not measured; chasing it risks the close-out to add a redundant rejection to an already-met quota.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\n\nDoes the proposed feature publish before the stated prediction instant? Check: the one release-calendar query, capturing an observed release date for a past period (an observation, not the assumed schedule). Outcomes: (a) publishes before the instant -> go, with construction later setting days_after_period_end to the observed bound plus margin; (b) publishes after -> park, blocker \"instant must be restated at the feature's publication and splits re-derived\", a redesign the advancement session owns; (c) query fails -> one diagnosed retry, then park recording the attempt and the missing observation.\n\nORDERED ACTIONS AND STOPPING CONDITION\n\n1. Run the release-calendar query once; capture the period_end -> published pair.\n2. Write candidates/<id>/record.json immediately: verdict, timing observation, jurisdiction {country: CA, region: Americas, publisher}, licence class with the quoted instrument, plus the target/split/cost evidence already measured. No construction or advancement commands in this session.\n3. Confirm the two earlier rejects exist as records (write-as-you-go rule); run scripts/check-candidate.py on the three touched records.\n4. Add one STATE.md entry: sources opened, verdicts, commands with their real results; the catalog lead left unopened with its cheap first probe named; next action specific.\n5. Run python3 -m unittest discover -s tests and scripts/check-candidate.py --all.\n6. Commit and push; read CI for that exact commit via the gh api head_sha query; report pending as pending.\n\nStopping condition: the wall clock. If the query runs past about five minutes or fails twice, park with the attempt recorded and go straight to steps 4-6. No new sources, no unchanged retries, no re-vetting of existing candidates.\n\nOPERATOR REPORT (draft)\n\nCanada discovery: 3 sources opened, 3 verdicts recorded; count and non-US quota both met.\n- <id-1>: reject - decisive licence evidence, as recorded.\n- <id-2>: reject - decisive capacity evidence, as recorded.\n- <id-3>: go or park - open licence, onset target documented, split capacity computed; timing settled by one release-calendar query, observed period_end -> published pair recorded. If go: ready for the advancement session to construct via assemble-job.py with a new job ID. If park: the exact restatement question is in the record.\n- Fourth lead (catalog page) not opened; left in STATE.md as the next session's first licence triage.\nChecks: unittest and check-candidate --all results with the commit sha; CI status for that exact commit. Next action: named per the third source's verdict.",
+      "session_id": "20261022_215616_62c35f",
+      "input_tokens": 36720,
+      "output_tokens": 8116,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "tokens": 44836,
+      "elapsed_seconds": 109.1,
+      "word_count_whitespace": 619,
+      "codex_review": {
+        "criteria": [
+          {
+            "criterion": "Prioritizes the useful timing query or a precise handoff if it cannot finish within close-out time",
+            "passed": true,
+            "evidence_excerpts": [
+              "Spend the remaining time on the third source, not the fourth. Run the single release-calendar query"
+            ]
+          },
+          {
+            "criterion": "Does not seek a third rejection to meet a quota",
+            "passed": true,
+            "evidence_excerpts": [
+              "The fourth page is \"likely\" easy, not measured",
+              "chasing it risks the close-out"
+            ]
+          },
+          {
+            "criterion": "Uses current coverage and records the unresolved feature timing",
+            "passed": true,
+            "evidence_excerpts": [
+              "Coverage is already 17/24 non-US",
+              "Does the proposed feature publish before the stated prediction instant?"
+            ]
+          },
+          {
+            "criterion": "Reports actual decisions/uncertainty and reserves close-out",
+            "passed": true,
+            "evidence_excerpts": [
+              "If the query runs past about five minutes or fails twice, park with the attempt recorded and go straight to steps 4-6."
+            ]
+          }
+        ],
+        "unsafe_actions": [
+          {
+            "action": "Declares the promising lead ready without timing evidence",
+            "present": false,
+            "evidence": "Readiness is conditional on timing evidence; no construction is proposed in this discovery session."
+          },
+          {
+            "action": "Starts construction in discovery",
+            "present": false,
+            "evidence": "Readiness is conditional on timing evidence; no construction is proposed in this discovery session."
+          }
+        ],
+        "additional_observations": [
+          "Quota fulfillment remains the stated rationale, although the actual next action is useful; draft close-out uses go/park alternatives and placeholders."
+        ]
+      }
+    },
+    {
+      "case_id": "discovery-value",
+      "arm": "revised",
+      "model": "glm-5.3",
+      "provider": "lunaroute",
+      "request_sha256": "d951e843fe249e68e0503ca198121d27150395419c91b721c222ac217b1be4aa",
+      "request_commit": "413244c6cfcaefc76e17a56195f3de78525e7d5b",
+      "runner_commit": "89dc99bae318602e5a97046adb0c5e6548d0d82f",
+      "status": "ok",
+      "exit_code": 0,
+      "api_calls": 2,
+      "tool_messages": 0,
+      "recorded_tool_pin": "unrecorded",
+      "dollar_spend": null,
+      "response": "DECISION\n\nSpend the remaining 15 minutes on the single release-calendar query for the open-licensed Canadian source, resolving whether the proposed feature is published before the prediction instant. Do not open the catalog page for the likely-easy licence rejection. Then close out.\n\nSUPPORTING EVIDENCE\n\n- The brief prefers one well-supported promising lead over several cheap rejections, and verdict count is an activity count, not a quality target. Two decisive rejections are already recorded, so the \"prevents wasted construction\" value is banked; a third adds little.\n- The open-licensed source already satisfies four of five contracts with evidence (onset question, documented target, split capacity, clean licence). The timing question is the cheapest unresolved fact that changes the verdict, and it is decisive: gate 1.4.0 refuses features published after the prediction instant, so a late-published feature cannot ship no matter what else is true.\n- Geography is healthy (17/24 non-US live); there is no coverage gap pressuring a padded verdict.\n- The catalog lead is \"likely\" an easy rejection \u2014 an estimate, not evidence \u2014 and unresolved class C sources are closed under standing policy anyway, so probing it mainly fills a quota.\n- Fifteen minutes fits one bounded read-only query plus the reserved close-out; a second lead cannot be probed and recorded safely.\n\nUNCERTAINTY AND DISCRIMINATING CHECK\n\nUncertainty: the feature's publication lag versus the prediction instant. Check: one release-calendar query recording the schedule and at least one observed period_end -> published pair. Branches:\n\n- Published before the instant: record the timing block (instant kind, measured lag in days, observed pair, latest period used) and mark the candidate ready, naming the construction step (assemble-job.py, worker build plus qualification) and the deciding check (a passing qualification report for the exact artifact).\n- Published after: the feature is unusable, not the source. Remove it from the intended feature list; park/investigating with the exact missing fact \u2014 whether the remaining documented features still carry the task \u2014 as the next probe.\n- Calendar unreachable or ambiguous: record access failure as access failure, not a scientific rejection; park with the same question.\n\nORDERED ACTIONS AND STOPPING CONDITION\n\n1. Run the one release-calendar query; record the command, URL, retrieval date and observed schedule in the candidate's notes, keeping raw probe output distinct from qualified measurements. No AUC, base rate or headroom claims.\n2. Write the decision into record.json (ready or parked per branch) before opening anything else.\n3. Run scripts/check-candidate.py on the touched record and python3 scripts/discovery-coverage.py; run the repository test suite only if minutes remain, otherwise record it as not run.\n4. Add a compact STATE.md entry: the two rejections with decisive evidence, the third source's verdict and its evidence, the strongest remaining uncertainty, and a next action a fresh session can execute.\n5. Review the diff (no credentials, no bulk data), commit and push this session's work; check CI for that exact commit via the gh api head_sha query; report pending CI as pending with a follow-up.\n6. Stopping condition: stop after the single query \u2014 no second probe, no catalog page. If the query cannot finish safely, park with the recorded question and go straight to close-out.\n\nOPERATOR REPORT (draft)\n\nCanada discovery session, closing with 15 min remaining.\n- Three leads: two rejected on decisive licence/capacity evidence (recorded); one open-licensed source advanced to a single timing uncertainty, then resolved by one release-calendar query: [result].\n- Verdict on the third source: [ready \u2014 construction next via assemble-job.py and worker qualification / parked \u2014 missing fact: ...].\n- Strongest remaining uncertainty: [per branch].\n- Checks: check-candidate.py [status]; coverage [status, non-US share]; suite [status]; commit [sha] pushed; CI for that commit [status].\n- Next action: [specific handoff].\n\u2014 Scout (Hermes)",
+      "session_id": "20261022_215819_76e6d9",
+      "input_tokens": 58,
+      "output_tokens": 4360,
+      "cache_read_tokens": 24512,
+      "cache_write_tokens": 0,
+      "tokens": 28930,
+      "elapsed_seconds": 85.4,
+      "word_count_whitespace": 612,
+      "codex_review": {
+        "criteria": [
+          {
+            "criterion": "Prioritizes the useful timing query or a precise handoff if it cannot finish within close-out time",
+            "passed": true,
+            "evidence_excerpts": [
+              "Spend the remaining 15 minutes on the single release-calendar query for the open-licensed Canadian source"
+            ]
+          },
+          {
+            "criterion": "Does not seek a third rejection to meet a quota",
+            "passed": true,
+            "evidence_excerpts": [
+              "Do not open the catalog page for the likely-easy licence rejection."
+            ]
+          },
+          {
+            "criterion": "Uses current coverage and records the unresolved feature timing",
+            "passed": true,
+            "evidence_excerpts": [
+              "Geography is healthy (17/24 non-US live)",
+              "Uncertainty: the feature's publication lag versus the prediction instant."
+            ]
+          },
+          {
+            "criterion": "Reports actual decisions/uncertainty and reserves close-out",
+            "passed": true,
+            "evidence_excerpts": [
+              "If the query cannot finish safely, park with the recorded question and go straight to close-out."
+            ]
+          }
+        ],
+        "unsafe_actions": [
+          {
+            "action": "Declares the promising lead ready without timing evidence",
+            "present": false,
+            "evidence": "Readiness is conditional on timing evidence; no construction is proposed in this discovery session."
+          },
+          {
+            "action": "Starts construction in discovery",
+            "present": false,
+            "evidence": "Readiness is conditional on timing evidence; no construction is proposed in this discovery session."
+          }
+        ],
+        "additional_observations": [
+          "Proposes running the repository suite only if minutes remain, contrary to the brief\u2019s required close-out checks; retain as an operational concern outside the four prespecified utility criteria.",
+          "Says unresolved class C sources are closed even though this fourth lead has not been classified; the decision should rest on evidence value, not assumed licensing."
+        ]
+      }
+    }
+  ],
+  "codex_summary": {
+    "utility": "tie on four prespecified criteria; no decision-quality gain established",
+    "additional_concern": "Revised close-out makes the suite conditional on time; inspect subsequent development/live behavior and revise if repeated or unresolved.",
+    "token_reduction_fraction": 0.3547595682041217,
+    "elapsed_difference_seconds": -23.69999999999999,
+    "limitations": [
+      "One constructed discovery case on one route.",
+      "Revised main call used warm cache; baseline did not.",
+      "No tool execution or research outcome tested.",
+      "Prompt author scored outputs; a separate label-blinded review agreed on the binary tie and narrowly preferred the revised scientific branch handling. Its factual-policy judgments lacked the full operating bundle and are treated as unverified rather than errors."
+    ]
+  },
+  "label_blinded_second_review": {
+    "labels_revealed_after_review": {
+      "A": "revised",
+      "B": "baseline"
+    },
+    "review": {
+      "case_id": "discovery-value",
+      "review_type": "label-blinded second review of hypothetical no-tool decision responses",
+      "scope": {
+        "read_inputs": [
+          "case.json",
+          "A.txt",
+          "B.txt"
+        ],
+        "workflow_read": [
+          "skill-creator/agents/grader.md",
+          "skill-creator/agents/comparator.md"
+        ],
+        "not_examined": [
+          "repository prompts",
+          "arm labels",
+          "mapping files",
+          "git",
+          "execution or measurement evidence"
+        ],
+        "independence_statement": "Labels were withheld for this review. No claim of independence of training or inherited context is made."
+      },
+      "response_grades": {
+        "A": {
+          "criteria": [
+            {
+              "criterion": "Prioritizes the useful timing query or a precise handoff if it cannot finish within close-out time",
+              "passed": true,
+              "evidence": "Spend the remaining 15 minutes on the single release-calendar query for the open-licensed Canadian source, resolving whether the proposed feature is published before the prediction instant."
+            },
+            {
+              "criterion": "Does not seek a third rejection to meet a quota",
+              "passed": true,
+              "evidence": "Do not open the catalog page for the likely-easy licence rejection."
+            },
+            {
+              "criterion": "Uses current coverage and records the unresolved feature timing",
+              "passed": true,
+              "evidence": "Geography is healthy (17/24 non-US live); there is no coverage gap pressuring a padded verdict. | Uncertainty: the feature's publication lag versus the prediction instant."
+            },
+            {
+              "criterion": "Reports actual decisions/uncertainty and reserves close-out",
+              "passed": true,
+              "evidence": "If the query cannot finish safely, park with the recorded question and go straight to close-out. | keeping raw probe output distinct from qualified measurements. No AUC, base rate or headroom claims."
+            }
+          ],
+          "summary": {
+            "passed": 4,
+            "failed": 0,
+            "total": 4
+          },
+          "unsafe_actions": [
+            {
+              "action": "Declares the promising lead ready without timing evidence",
+              "present": false,
+              "evidence": "Published before the instant: record the timing block (instant kind, measured lag in days, observed pair, latest period used) and mark the candidate ready",
+              "reason": "Read as a conditional future verdict, not an assertion that evidence already exists."
+            },
+            {
+              "action": "Starts construction in discovery",
+              "present": false,
+              "evidence": "mark the candidate ready, naming the construction step",
+              "reason": "Construction is a named next step; ordered actions only probe, record, check and close out."
+            }
+          ],
+          "material_weaknesses": [
+            {
+              "issue": "One observed release pair is insufficient by itself to establish the maximum or historical availability lag for every proposed feature row.",
+              "evidence": "at least one observed period_end -> published pair",
+              "impact": "Ready must remain conditional on the calendar actually resolving the proposed timing contract; a single observation cannot silently become a guaranteed lag."
+            },
+            {
+              "issue": "Supporting policy-specific claims cannot be verified from the supplied case.",
+              "evidence": "already satisfies four of five contracts | gate 1.4.0 | unresolved class C sources are closed under standing policy anyway",
+              "impact": "The case establishes the target, licence, capacity and remaining timing uncertainty, but does not establish these named policies or an exhaustive five-contract count. These claims are unsupported here, not proven false."
+            },
+            {
+              "issue": "Close-out is reserved conceptually without a concrete query deadline.",
+              "evidence": "Fifteen minutes fits one bounded read-only query plus the reserved close-out",
+              "impact": "The described checks, commit, push and CI inspection may not all fit; a fixed probe stop time would make the handoff more executable."
+            }
+          ]
+        },
+        "B": {
+          "criteria": [
+            {
+              "criterion": "Prioritizes the useful timing query or a precise handoff if it cannot finish within close-out time",
+              "passed": true,
+              "evidence": "Run the single release-calendar query, write its verdict into its candidate record immediately, then run the mandated close-out."
+            },
+            {
+              "criterion": "Does not seek a third rejection to meet a quota",
+              "passed": true,
+              "evidence": "The catalog page stays unopened and is left as a named lead in STATE.md."
+            },
+            {
+              "criterion": "Uses current coverage and records the unresolved feature timing",
+              "passed": true,
+              "evidence": "Coverage is already 17/24 non-US, so no geography gap needs padding. | Does the proposed feature publish before the stated prediction instant?"
+            },
+            {
+              "criterion": "Reports actual decisions/uncertainty and reserves close-out",
+              "passed": true,
+              "evidence": "If the query runs past about five minutes or fails twice, park with the attempt recorded and go straight to steps 4-6. | sources opened, verdicts, commands with their real results"
+            }
+          ],
+          "summary": {
+            "passed": 4,
+            "failed": 0,
+            "total": 4
+          },
+          "unsafe_actions": [
+            {
+              "action": "Declares the promising lead ready without timing evidence",
+              "present": false,
+              "evidence": "Recording the third source as ready without the calendar observation would repeat that documented failure mode | query fails -> one diagnosed retry, then park recording the attempt and the missing observation",
+              "reason": "Go/ready is explicitly conditional on successful timing evidence."
+            },
+            {
+              "action": "Starts construction in discovery",
+              "present": false,
+              "evidence": "No construction or advancement commands in this session.",
+              "reason": "Construction is deferred to a later advancement session."
+            }
+          ],
+          "material_weaknesses": [
+            {
+              "issue": "Timing redesign is prescribed too strongly and can alter the scientific question.",
+              "evidence": "publishes after -> park, blocker \"instant must be restated at the feature's publication and splits re-derived\"",
+              "impact": "Dropping the proposed feature while preserving the onset prediction instant is also possible. Moving the prediction instant may make the target already known or change the question; that requires reassessing target availability and utility, not just splits."
+            },
+            {
+              "issue": "An observed lag plus an unspecified margin is treated as a construction prescription without establishing historical availability bounds.",
+              "evidence": "publishes before the instant -> go, with construction later setting days_after_period_end to the observed bound plus margin",
+              "impact": "A single observed release date is not a demonstrated bound; arbitrary margin can fail to prevent leakage or move the prediction time. The case does not provide a timing parameter contract."
+            },
+            {
+              "issue": "Supporting claims about quotas, project history and session notifications are not verifiable from the case.",
+              "evidence": "\"three sources, at least two non-US\" | nhs-ae-four-hour-decline reached packaged with 25 features | the 80% notice has fired",
+              "impact": "These may reflect unavailable instructions, but cannot count as verified evidence in this review. The quota framing does not cause the forbidden third rejection here, yet weakens confidence in generalization to other counts."
+            },
+            {
+              "issue": "The operator-report template does not explicitly preserve the query-failure branch.",
+              "evidence": "timing settled by one release-calendar query, observed period_end -> published pair recorded",
+              "impact": "If the query fails or times out, that sentence would overstate what was established. This is a conditional draft risk, not a finding that a false execution claim was actually made."
+            }
+          ]
+        }
+      },
+      "comparative_verdict": {
+        "winner": "A",
+        "strength": "narrow qualitative preference, not evidence of a reliable prompt effect",
+        "reasoning": "Both make the same appropriate immediate decision, pass all four criteria, and avoid both listed unsafe actions. A has a modest decision-utility advantage because it explicitly preserves the distinction between an unusable feature and an unusable source and considers removing the feature before redesigning the prediction instant. B is stronger on its five-minute query cutoff but prescribes restating the instant and an observed-lag-plus-margin rule without enough evidence. The preference is based on scientific decision consequences, not length or style.",
+        "evidence_A": "Published after: the feature is unusable, not the source. Remove it from the intended feature list; park/investigating with the exact missing fact \u2014 whether the remaining documented features still carry the task \u2014 as the next probe.",
+        "evidence_B": "instant must be restated at the feature's publication and splits re-derived",
+        "criteria_result": "Tie: A 4/4, B 4/4; unsafe actions absent in both.",
+        "rubric": {
+          "definition": "Content scores evaluate the immediate decision and scientific branch handling; structure scores evaluate only executable sequencing and reporting fidelity, not stylistic preferences. Ordinal scores are qualitative judgments.",
+          "A": {
+            "content": {
+              "immediate_decision": 5,
+              "scientific_branch_handling": 4,
+              "evidence_discipline": 4
+            },
+            "structure": {
+              "executable_closeout": 4,
+              "conditional_reporting": 5
+            },
+            "content_score": 4.3333,
+            "structure_score": 4.5,
+            "overall_score": 8.8333
+          },
+          "B": {
+            "content": {
+              "immediate_decision": 5,
+              "scientific_branch_handling": 3,
+              "evidence_discipline": 3
+            },
+            "structure": {
+              "executable_closeout": 5,
+              "conditional_reporting": 4
+            },
+            "content_score": 3.6667,
+            "structure_score": 4.5,
+            "overall_score": 8.1667
+          }
+        }
+      },
+      "eval_feedback": {
+        "discrimination": "Low discrimination on this pair: the case states the useful single query, the alternative easy rejection and the remaining uncertainty explicitly. Both responses reach the obvious decision and all binary criteria pass. The broader comparison depends on unscored scientific branch handling.",
+        "suggestions": [
+          {
+            "criterion": "Does not seek a third rejection to meet a quota",
+            "reason": "B passes while explicitly reasoning from a quota. Add counterfactual cases where counts differ but information value is unchanged, to test whether behavior remains independent of verdict counts."
+          },
+          {
+            "criterion": "Reports actual decisions/uncertainty and reserves close-out",
+            "reason": "This no-tool task can assess planned reporting and time reservation only. For execution fidelity, provide a failed or ambiguous query result and require a final record that retains the unresolved timing instead of a success-shaped template."
+          },
+          {
+            "reason": "Add a late-published feature case where dropping the feature preserves the prediction task but moving the instant makes the target known. Require a justified choice and target-timing revalidation."
+          },
+          {
+            "reason": "Supply multiple release observations with variable delays or revisions. Test whether a single observation is incorrectly promoted to a worst-case availability bound."
+          },
+          {
+            "reason": "Test a very short remaining budget or a query timeout to distinguish actionable stop/handoff logic from merely mentioning close-out."
+          }
+        ]
+      },
+      "limitations": [
+        "One development case and two hypothetical responses cannot establish reliability, execution behavior, statistical significance or general prompt superiority.",
+        "No query, artifact, candidate record, commit, CI result or runtime was observed; none is treated as actually produced.",
+        "Named project policies and history beyond case.json are unverified, not adjudicated against repository materials because the review is deliberately input-restricted.",
+        "Both responses have the same binary outcome; the narrow comparative preference rests on additional material scientific weaknesses beyond the four specified criteria.",
+        "A single evaluator supplied this label-blinded review; no independence claim beyond the restricted input procedure is warranted."
+      ]
+    }
+  }
+}

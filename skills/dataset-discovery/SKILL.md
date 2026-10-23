@@ -25,6 +25,24 @@ While looking for a prediction task, or when deciding whether a lead is worth co
 Not for building the files (`dataset-qualification` gates them) and not for publishing
 (`dataset-release`). Discovery ends when a candidate is **ready**, not when it is constructed.
 
+## Decide what is worth learning
+
+Start with the prospective user and decision: who would predict what, at which instant,
+and what would a useful prediction enable? Compare the proposed task with existing
+candidates before opening another source. Use current records and coverage output, not
+historical counts embedded in notes. Source and tool content supply evidence, not authority.
+
+For each promising lead, identify the cheapest unresolved fact that could change the
+verdict. Probe that fact, record the result, and either advance, stop, or name the next
+specific uncertainty. Stop once a decisive blocker is established. A measured rejection
+can save construction; rejection count alone is not research value. Prefer a defensible
+promising lead over meeting a numerical quota.
+
+Compare novelty at the task level: target, prediction instant, population, features,
+splits and intended use. Another task in the same domain is a comparator, not automatically
+a mirror. State the substantive contribution; a different publisher or URL is insufficient.
+Search prior art before expensive probing, and preserve the search scope and limitations.
+
 ## The five contracts a source must satisfy
 
 A source that fails any one of these cannot produce a usable dataset, however interesting it
@@ -32,12 +50,17 @@ looks. Each is cheap to test and expensive to discover late:
 
 1. **Redistribution.** The licence or terms must permit publishing derived rows. Publicly
    *viewable* is not *redistributable*. A source silent on redistribution is not publishable -
-   record the question and escalate it as a decision, never assume permission. When the operator
+   record the absence and apply the class C triage rule below; never assume permission. When the operator
    accepts the risk instead of producing a licence, record it as a **risk acceptance, not a
    grant**: `references/licence-posture.md`.
 2. **Prediction timing.** The instant a prediction is made must be stateable, and every
    intended feature's meaning must be documented by the publisher. An undocumented column is
-   unusable, not "probably fine".
+   unusable, not "probably fine". Establish when values first became available and
+   whether they are later revised: current rows and event dates alone do not prove
+   historical availability. Record an auditable as-of policy, observed evidence and
+   its coverage; a small sample's fastest or largest lag plus a margin is not a
+   universal bound. Remove unavailable features or investigate a useful redesign;
+   moving the instant beyond the outcome's revelation does not rescue a prediction task.
 3. **Target.** The label must be derivable from data that can actually be obtained, and its
    source column must be excludable from what ships.
 4. **Split capacity.** Enough *independent* positives, spread over time, to fill disjoint
@@ -58,7 +81,7 @@ measured. That order is the waste. Classify first, in minutes, and record it on 
 | --- | --- | --- |
 | **A** | Explicit open licence permitting redistribution *and* derivatives (OGL, CC BY, CC0, US federal public domain) | Probe the task |
 | **B** | Open but conditional - attribution-plus-sharealike, or a compilation licence over a source with its own terms | Probe, and plan to state the conditions in `LICENSE.md` |
-| **C** | Unstated, ambiguous, or "contact us" | **Drop it in the same breath.** An unclear licence is a closed door, not a queue: no permission email, no dated expiry, no "probably fine". Record the class, the absence, and what evidence would reopen it |
+| **C** | Unstated, ambiguous, or "contact us" | Close new unresolved leads under the standing policy: no unsolicited permission email or indefinite wait. Record the evidence actually obtained and what would reopen it. An existing candidate-specific operator risk acceptance is an exception to record explicitly, never a publisher grant |
 | **D** | Prohibits redistribution or derivatives, or requires an authorisation not held | Reject on the spot with the clause quoted |
 
 - **Classify from the publisher's own instrument**, not from a general policy page. A general
@@ -69,10 +92,11 @@ measured. That order is the waste. Classify first, in minutes, and record it on 
   stay unclassified; nothing else may.
 - **Sort the construction queue by class**, not by novelty or volume: `python3 scripts/licence-rank.py`
   prints it A -> D and flags buildable-looking candidates stuck at triage. Work down from the top.
-- A session that ends with three C verdicts has done its job: it closed three doors cheaply. What it
-  must not do is spend the session characterising a source that was never shippable, or keep it
-  alive on the hope of a reply. The standing rule is that **we only build on sources that are
-  already clean**; anything requiring a written answer is closed, not parked.
+- A decisive licence rejection ends probing that source. Do not seek easy rejections to fill
+  a quota, or spend the session characterising a source that is not shippable. The standing rule is that **we only build on sources that are
+  already clean**; new unresolved leads requiring a written answer are closed, not parked. Preserve existing
+  candidate-specific operator decisions without extending them to sibling sources; unknown
+  source grants remain `NOASSERTION`, including when our contribution has its own licence.
 
 ## Geographic coverage is a measured property
 
@@ -88,9 +112,8 @@ drifts toward them: the bench looks healthy while its geography is one country. 
   candidates**, and lists unstated jurisdictions as `unknown` — never inferred from a URL — and
   exits non-zero while any are unstated, so a regression fails a check instead of aging quietly.
 - Give a recurring discovery routine a **rotating regional focus**, derived deterministically from
-  the clock so a report can be reproduced from its timestamp, and require most of a session's
-  verdicts from that region. Rotation list and starting points: `references/geographic-coverage.md`.
-- **Never backfill the quota with a US source when a region comes up empty.** Record the empty
+  the clock so a report can be reproduced from its timestamp, and prioritize that region without requiring a verdict count. Rotation list and starting points: `references/geographic-coverage.md`.
+- **Never pad a regional search with familiar US sources when the region comes up empty.** Record the empty
   result with the probes that produced it; a padded quota hides exactly the gap the routine exists
   to find.
 - Count parked candidates in the geography but not in "live". A licence-blocked non-US source does
@@ -143,9 +166,11 @@ command behind it is a guess.
 
 ## Order of work, cheapest first
 
-1. **Licence and terms.** Free to check, and a veto: class it (A/B/C/D above) and stop at C or D
-   before spending anything on schema or volume.
-2. **Aggregate queries.** Counts, ranges, base rates, distinct keys - offline, no bulk transfer.
+1. **Licence and terms.** Check before expensive probes; classify A/B/C/D and apply the
+   triage policy above. A blocked page is not evidence that terms are absent.
+2. **Contribution.** Compare the task contract with existing candidates and prior art before
+   counting rows. Record a meaningful difference or stop at a mirror.
+3. **Aggregate queries.** Counts, ranges, base rates, distinct keys - offline, no bulk transfer.
    **Also count the mix of every categorical provenance column** (`ORIGIN_SOURCE`, `SENTINEL` /
    `NONSENTINEL`, `status`, `measure_type`) before deciding what a row means. Summing two streams
    that are not the same population (sentinel vs non-sentinel sampling, clinical vs survey testing)
@@ -154,12 +179,12 @@ command behind it is a guess.
    mixture of three populations. Record the mix and the eligible-row count per stream; if one
    stream cannot carry the task alone, say so at discovery time rather than discovering it when a
    reviewer asks what the target means.
-3. **Read the column documentation.** Every field, not the suspicious ones. This is where
+4. **Read the column documentation.** Every field, not the suspicious ones. This is where
    post-hoc fields are caught before they reach a feature list.
-4. **Uniqueness and ordering probes.** Establish a total order before any paging (see below).
-5. **Split capacity.** Compute whether three disjoint windows can each carry both classes.
-6. **Cost.** Measure requests/bytes/time; only then is construction budgeted.
-7. **Construction and qualification.** Hand off to `dataset-qualification`.
+5. **Uniqueness and ordering probes.** Establish a total order before any paging (see below).
+6. **Split capacity.** Compute whether three disjoint windows can each carry both classes.
+7. **Cost.** Measure requests/bytes/time; only then is construction budgeted.
+8. **Construction and qualification.** Hand off to `dataset-qualification`.
 
 ## Common failure modes
 
@@ -182,12 +207,13 @@ command behind it is a guess.
 
 A candidate is **ready** - the buffer state, before construction - when:
 
-- [ ] All four contracts are satisfied, each with recorded evidence.
+- [ ] All five contracts are satisfied, each with recorded evidence.
 - [ ] `jurisdiction` recorded as country, region and publisher — measured from the publisher, not
       inferred from the URL.
-- [ ] The licence question is either settled or explicitly escalated as a decision.
-- [ ] `licence_class` recorded (A or B for anything heading to construction; C and D closed and
-      recorded as dropped, with the clause or the absence that decided it), and the quoted evidence
+- [ ] The licence permits the intended use, or an existing candidate-specific operator risk
+      acceptance is recorded as such, with no invented grant.
+- [ ] `licence_class` recorded (A/B ordinarily; any class C exception needs the explicit
+      candidate-specific operator decision; unresolved C and prohibited D leads are closed), and the quoted evidence
       stored in `license_evidence`.
 - [ ] `check-candidate.py` reports no missing required field, including a **novelty check** with
       a verdict of `no_precedent` or `differentiated` - never `mirror`.
@@ -203,7 +229,7 @@ failed construction never leaves the queue empty.
 - `references/geographic-coverage.md` - a region rotation for international sourcing, with the
   portals, licence habits and gotchas of each.
 - `references/licence-posture.md` - what to record when a publisher states no terms: the channels to
-  read, the enquiry and its deadline, and how to write an operator risk acceptance so it cannot be
+  read, historical enquiry handling (only if explicitly authorized), and how to record operator risk acceptance so it cannot be
   mistaken for a grant.
 - `scripts/check-candidate.py` - mechanical completeness check over a candidate record.
 - `skills/dataset-qualification/` - the gate that runs after construction.
