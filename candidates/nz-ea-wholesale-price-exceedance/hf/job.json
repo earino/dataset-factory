@@ -1,0 +1,96 @@
+{
+  "id": "nz-ea-hf-003",
+  "candidate": "nz-ea-wholesale-price-exceedance",
+  "release": true,
+  "server_type": "cx23",
+  "location": "hel1",
+  "cpus": 2,
+  "memory_mb": 2048,
+  "timeout_minutes": 25,
+  "lifetime_minutes": 45,
+  "max_disk_mb": 2000,
+  "max_artifact_mb": 8,
+  "what": "hf_publish verify-only worker job for nz-ea-wholesale-price-exceedance (attempt 3): re-read the private Hugging Face dataset repo earino/nz-ea-wholesale-price-exceedance at main and produce the pinned bulk-digest receipt for the five released data files (no upload, no tag change), then run the documented load_dataset path against the uploaded bytes. Attempt 2 (nz-ea-hf-002) was killed by a host-monitor du race during pip install (root-caused, fixed in commit 6f6fd4a); this is the diagnosed infrastructure retry, not a changed rebuild.",
+  "hf_publish": {
+    "repo": "earino/nz-ea-wholesale-price-exceedance",
+    "revision": "main",
+    "source_repo": "earino/nz-ea-wholesale-price-exceedance",
+    "assets": [
+      {
+        "asset_id": 670582156,
+        "dest": "meta.json",
+        "target": "meta.json",
+        "size": 3133,
+        "sha256": "f9b8105a997e6269abe2bd85aa2b32c94545377f796ec6ca50af03eb61101590"
+      },
+      {
+        "asset_id": 670582219,
+        "dest": "private-holdout.csv",
+        "target": "data/private-holdout.csv",
+        "size": 364911,
+        "sha256": "101f6a70284aff37b3d2715717e65315883a29c7a9a75ced9a2497edc4806cc9"
+      },
+      {
+        "asset_id": 670582283,
+        "dest": "public-eval.csv",
+        "target": "data/public-eval.csv",
+        "size": 627892,
+        "sha256": "6302310db2fced5ee0439e56526b2a88d1c165d02ad9ffb074cd54ebfcc8be67"
+      },
+      {
+        "asset_id": 670582371,
+        "dest": "public-train.csv",
+        "target": "data/public-train.csv",
+        "size": 1744686,
+        "sha256": "273aeb069ab29445d901b1ae043ec73c93465d203b8f5115c51cf35ece3c25a1"
+      },
+      {
+        "asset_id": 670582436,
+        "dest": "quality.json",
+        "target": "quality.json",
+        "size": 13421,
+        "sha256": "c37aed791cd38f0b005013f6d7bde6b5b313ad236fe57be1af7e672672182763"
+      }
+    ],
+    "verify_loading": {
+      "splits": {
+        "eval": {
+          "rows": 4992,
+          "positives": 2150
+        },
+        "holdout": {
+          "rows": 2890,
+          "positives": 1571
+        },
+        "train": {
+          "rows": 14004,
+          "positives": 2789
+        }
+      },
+      "columns": [
+        "row_id",
+        "target_high_price",
+        "anchor_date",
+        "target_week",
+        "island",
+        "last_day_mean",
+        "mean_7d",
+        "mean_30d",
+        "max_30d",
+        "std_7d",
+        "days_above_threshold_30d",
+        "cross_island_ratio_7d",
+        "anchor_month",
+        "anchor_dow",
+        "anchor_doy_sin",
+        "anchor_doy_cos"
+      ],
+      "label": "target_high_price",
+      "label_values": [
+        0,
+        1
+      ]
+    },
+    "verify_only": true
+  }
+}

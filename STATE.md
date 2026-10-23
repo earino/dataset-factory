@@ -1,3 +1,72 @@
+## 2026-10-23 (23:35Z) - nz-ea Hugging Face staging COMPLETE on both destinations; two worker-framework defects root-caused and fixed; awaiting_operator=true
+
+The tick went to release work: nz-ea-wholesale-price-exceedance is the actionable packaged
+candidate and release outranks construction. The handoff's remaining steps are done. The
+candidate is now staged private and digest-verified on BOTH destinations, DESTINATIONS.json
+records both with files_verified lists, and awaiting_operator=true is set - **the flip is now
+the operator's single remaining act**. scout-release-notify will deliver the request.
+
+- **Hugging Face destination (private, complete).** Card written per the one-card rule
+  (candidates/<id>/card.md: our prose, every checkable fact generated from MANIFEST.json;
+  the card test enforces split/config/row-count consistency), then hf-publish --create
+  --upload-small created the private repo and landed the 10 small files, and worker job
+  nz-ea-hf-001 uploaded the 5 data files from the GitHub release (2,754,043 B, 0 failures,
+  95.3 s), each sha256 verified on arrival and against the digest the Hub reports. The
+  documented load_dataset path was exercised against the uploaded bytes by the worker:
+  train 14,004/2,789, eval 4,992/2,150, holdout 2,890/1,571, 16 columns, label values
+  ['0','1'], problems []. hf-publish --verify (worker receipt nz-ea-hf-003): 5/5 present,
+  0 missing, 0 size-mismatched, 0 digest-unverified; --tag LAST created Hub tag v2026.10
+  at the verified commit 868c42f7 (tag == main, tag_matches_main true) and recorded the
+  destination. DESTINATIONS.json now carries both destinations, artifact_version
+  545e0e4418c1f0e5 and per-destination files_verified lists (GitHub logical paths, Hub
+  target paths).
+- **The staging 422 that hit nz-ea-publish-001 is no longer unexplained - root-caused and
+  fixed (7f6d63d).** Both host-side jobs (transfer/hf_publish) since 256bd79 lost their
+  staging result upload to the same POST 422. Measured directly: a host job's container.log
+  is the 0-byte file execute()'s log.touch() leaves behind (stop_and_capture never runs
+  without a container), and GitHub's asset-upload endpoint refuses a zero-length body - a
+  72-byte control POST to the same draft release answered 201, a 0-byte replay reproduced
+  the exact 422. publish() now records empty artifacts as skipped_empty and never plans a
+  0-byte part; the regression test fails on the pre-fix code. nz-ea-hf-002/003 proved the
+  fix in production (both staged their results cleanly with skipped_empty
+  ['container.log']).
+- **A second, new defect found and fixed (6f6fd4a).** nz-ea-hf-002 (verify-only) was killed
+  46 s in as resource-monitor-failed:CalledProcessError: the supervisor's once-a-second
+  du -sb observation can lose a race with pip installing datasets into the job venv (a file
+  vanishing mid-walk makes du exit 1). disk_bytes now retries a transient du failure twice
+  and still fails closed when the error persists; the regression test fails on the pre-fix
+  code. Infrastructure failure, not a data verdict; the fresh attempt nz-ea-hf-003 ran
+  clean after the fix.
+- **Evidence chain honesty:** because the 422 left the ledger unable to mark nz-ea-hf-001
+  collected, its (otherwise clean) report is NOT ledger-backed and load_worker_receipt
+  correctly refuses it; the full result is preserved at .factory/nz-ea-hf-001/result.json.
+  The verify-only attempt nz-ea-hf-003 (uploads 0 - all five already at their manifest
+  digests) produced the ledger-backed pinned receipt at commit 868c42f7 and the passing
+  loading check, which is what --verify/--tag accepted.
+- **Cleanup and spend.** All three workers destroyed and provider-confirmed: hf-002/003
+  through the supported lifecycle after verified collection (23:20:37Z, 23:25:41Z); hf-001
+  could not reach a collectable state (the 422), so deletion followed the recorded
+  nz-ea-publish-001 precedent - the factory's own scoped delete_owned + clean_job_ips,
+  read-back GET /servers/172121873 -> 404, project primary_ips 0, ledger reconciled to
+  deleted at 23:11:47Z. October worker reservations: EUR 8.66 of 20 (this tick added
+  3 x 0.04). The seven sites/*.json site_revision bumps from another session remain
+  untouched and uncommitted.
+
+Checks this tick: full unittest suite 618 OK (after each fix); gate selftest unchanged;
+check-candidate.py nz-ea OK (status=packaged) and --all exit 0; check-package.py OK
+(DESTINATIONS.json outside the frozen manifest is the same accepted state as tsb's);
+dashboard rebuilt (13 live, 12 releases). Commits 7f6d63d + 6f6fd4a pushed; this entry's
+commit (card, hf/job.json, three ledgers, record, DESTINATIONS, STATE) with CI checked for
+the exact sha in the close-out.
+
+Next action (unchanged except now complete on our side): the operator's flip for
+nz-ea-wholesale-price-exceedance; after it, publication is automatic per dataset-release
+(record visibility, flip both, anonymous proofs, refresh private-state wording and
+re-upload small files, tag == main on both, website pipeline). Quote the whole triad beside
+any score: model 0.8924 vs persistence_value 0.8820 / persistence_mean7 0.8843 /
+calendar-only 0.5011; week-clustered intervals contain zero - headroom over persistence
+NOT demonstrated (inconclusive advantage). The holdout stays sealed.
+
 ## 2026-10-23 (22:39Z) - nz-ea-publish-001 watcher close-out: transfer re-verified at the destination, cleanup re-confirmed provider-side, stale ledger reconciled
 
 The watcher handed off nz-ea-publish-001 (succeeded, no staged result: the worker's result.json

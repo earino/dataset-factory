@@ -209,6 +209,54 @@
    "reports_status": "result.json collected locally (staging upload of the report 42'd); transfer verified independently by the GitHub API asset read-back. Watcher 2026-10-23 22:34Z: the staging draft release job-nz-ea-publish-001 (422361965) holds exactly one asset, file-0000-part-0000 (71,680 B, sha256 a69b6175... equal to the ledger's source-bundle digest), so the source bundle landed and the result-report asset is what failed; .factory/nz-ea-publish-001/result.json remains the only complete result copy",
    "provider_cleanup": "server 172117571 deleted 2026-10-23T22:29:17Z (provider action 663400654954053, delete_server); direct read-back GET /servers/172117571 -> 404 not found; project primary_ips count 0. Note: the first 'worker destroy' attempt printed its collect-before-delete caution without deleting; deletion was then performed via the provider API and confirmed by read-back. Watcher 22:34Z re-verification: GET /servers/172117571 -> 404 server not found; primary_ips total_entries 0; ledger reconciled to status=deleted via 'worker status' (its deleted_at is the reconcile stamp, not the 22:29:17Z provider deletion).",
    "next_acceptance_check": "DONE at packaging: verify-staged-report.py 422246241 ACCEPTED (report digests equal the uploaded staging bytes for all five components); gate --accept on a locally fetched extract ACCEPTED (artifact 545e0e4418c1f0e5); get_dataset.py executed end-to-end against the private GitHub release and gate --accept on the downloaded tree ACCEPTED."
+  },
+  {
+   "id": "nz-ea-hf-001",
+   "candidate": "nz-ea-wholesale-price-exceedance",
+   "server_id": 172121873,
+   "status": "succeeded",
+   "launched_at": "2026-10-23T22:53:45Z",
+   "reservation_eur": "0.04",
+   "provider_hourly_eur": "0.0115200000000000",
+   "stage_order": "host-side (no container): fetch each accepted asset from private GitHub release 422360451 (sha256 verified on arrival) -> upload to the private Hub repo earino/nz-ea-wholesale-price-exceedance -> verify the digest the Hub reports -> delete local copy -> pinned receipt -> documented load_dataset check",
+   "outcome": "upload clean: 5/5 assets (2,754,043 bytes) transferred GitHub release -> private Hub repo, 0 failures, 95.3 s; the pinned Hub receipt verified every file's sha256 and git blob id at commit 868c42f7a58bc547acf62b64f03865fd30182f92; hf_loading ok with the exact manifest splits (train 14,004/2,789, eval 4,992/2,150, holdout 2,890/1,571), all 16 columns and label values ['0','1'] (report preserved at .factory/nz-ea-hf-001/result.json). ONE BLEMISH, ROOT-CAUSED THIS SESSION (the same 422 that hit nz-ea-publish-001, until now unexplained): the worker's staging result upload failed POST 422 because a host-side job's container.log is a 0-byte file (execute() touches it; stop_and_capture never runs without a container) and GitHub's asset-upload endpoint refuses a zero-length body - measured directly: a 72-byte control POST to the same draft release answered 201, a 0-byte replay reproduced the exact 422. Fixed in workers/upload.py (commit 7f6d63d): empty artifacts are recorded as skipped_empty and never planned as upload parts; regression test fails on the pre-fix code. Because the failed staging upload left the ledger unable to mark the job collected, this job's evidence is NOT ledger-backed (hub_integrity.load_worker_receipt correctly refuses it) and the fresh verify-only attempt nz-ea-hf-003 was run for ledger-backed evidence; the transfer itself was independently verified by the Hub receipt, the loading check, hf-publish --verify and the API.",
+   "staging_release": 422378532,
+   "reports_status": "complete result preserved locally only (.factory/nz-ea-hf-001/result.json); the staging draft release job-nz-ea-hf-001 (422378532) holds only the source-bundle part",
+   "provider_cleanup": "server 172121873 could not be destroyed through the supported path (collect refuses an unuploaded result), so deletion followed the recorded nz-ea-publish-001 precedent: the factory's own scoped delete_owned + clean_job_ips at 23:11:47Z, then provider read-back GET /servers/172121873 -> 404 not found and project primary_ips total 0; ledger reconciled to status=deleted via 'worker status' (deleted_at is the reconcile stamp)"
+  },
+  {
+   "id": "nz-ea-hf-002",
+   "candidate": "nz-ea-wholesale-price-exceedance",
+   "server_id": 172124004,
+   "status": "failed",
+   "launched_at": "2026-10-23T23:14:37Z",
+   "reservation_eur": "0.04",
+   "provider_hourly_eur": "0.0115200000000000",
+   "stage_order": "host-side verify-only (hf_publish.verify_only true): no upload, no tag change - re-read the Hub at main, produce the pinned bulk-digest receipt, run the documented load_dataset path",
+   "outcome": "infrastructure failure, not a data defect: killed 46.4 s in as resource-monitor-failed:CalledProcessError. Root cause (measured from the code path): the supervisor samples job-directory disk once a second with du -sb, and a file vanishing mid-walk makes du exit 1, which check_output raised; pip installing datasets into the job venv churns the tree fast enough to lose that race (nz-ea-hf-001 survived the same phase by timing). Fixed in workers/executor.py (commit 6f6fd4a): disk_bytes retries a transient du failure twice (bounded, 0.5 s apart) and still fails closed when the error persists; regression test fails on the pre-fix code. The 0-byte-artifact fix from 7f6d63d was proven in production by this run: its staging result upload succeeded (uploaded true, release 422387176, skipped_empty ['container.log']).",
+   "staging_release": 422387176,
+   "collected_at": "2026-10-23T23:16:11Z",
+   "reports_status": "failure report collected through the normal path (the first host job to stage its result since 256bd79 introduced the early return); nothing from this attempt is used as evidence",
+   "provider_cleanup": "destroyed through the supported lifecycle at 23:20:37Z after verified collection (jobs/nz-ea-hf-002.json status=deleted)"
+  },
+  {
+   "id": "nz-ea-hf-003",
+   "candidate": "nz-ea-wholesale-price-exceedance",
+   "server_id": 172125044,
+   "status": "succeeded",
+   "launched_at": "2026-10-23T23:21:41Z",
+   "collected_at": "2026-10-23T23:25:05Z",
+   "destroyed_at": "2026-10-23T23:25:41Z",
+   "reservation_eur": "0.04",
+   "provider_hourly_eur": "0.0115200000000000",
+   "stage_order": "host-side verify-only (hf_publish.verify_only true): re-read the private Hub repo at main, produce the pinned bulk-digest receipt for the five released files (no upload, no tag change), then the documented load_dataset path",
+   "outcome": "the diagnosed infrastructure retry after the nz-ea-hf-002 monitor race, and the ledger-backed evidence job: uploads 0 (all five already at their manifest digests - the hf-001 transfer was correct), failures [], 81.9 s; pinned receipt schema 1, ok, at commit 868c42f7a58bc547acf62b64f03865fd30182f92 with all five files' sha256 and git blob ids; hf_loading ok (train 14,004 rows / 2,789 positives, eval 4,992 / 2,150, holdout 2,890 / 1,571; 16 columns per split; label target_high_price values ['0','1']; problems []). Staging result uploaded cleanly (release 422391450, skipped_empty ['container.log']) and collected, so hub_integrity.load_worker_receipt accepts this job: hf-publish --verify --worker-job nz-ea-hf-003 returned ok (5/5 present, 0 missing, 0 size-mismatched, 0 digest-unverified) and --tag created Hub tag v2026.10 at the verified commit with tag_matches_main true, recording the huggingface destination in release/nz-ea-wholesale-price-exceedance/DESTINATIONS.json.",
+   "staging_release": 422391450,
+   "expected_reports": [
+    "result.json"
+   ],
+   "reports_status": "result collected through the normal path and verified by collect against the staging release assets (jobs/nz-ea-hf-003.json result embedded)",
+   "provider_cleanup": "destroyed through the supported lifecycle at 23:25:41Z after verified collection (jobs/nz-ea-hf-003.json status=deleted)"
   }
  ],
  "artifacts": {
@@ -333,11 +381,29 @@
    "draft": false,
    "assets_verified_at": "2026-10-23T22:28Z",
    "verification": "5/5 assets at the manifest digests by authenticated API read-back; get_dataset.py end-to-end (5 files, 2,754,043 B, every digest verified, exit 0) and qualify_dataset.py --accept on the downloaded tree returned ACCEPTED (artifact 545e0e4418c1f0e5); tag v2026.10 == main == 3b9952500f875b22f98d9a1292dec1f3bfc69b64; the release is private and non-draft - the flip is the operator's act"
+  },
+  "huggingface_destination": {
+   "repo": "earino/nz-ea-wholesale-price-exceedance",
+   "revision": "v2026.10",
+   "commit": "868c42f7a58bc547acf62b64f03865fd30182f92",
+   "private": true,
+   "created_by": "hf-publish.py --create --upload-small (2026-10-23T22:47Z, 10 small files: card README.md from candidates/<id>/card.md rendered from the manifest, LOADING.md, MANIFEST.json, SHA256SUMS, LICENSE.md, LICENSE-MIT.txt, LICENSE-CC0-1.0.txt, DATA_DICTIONARY.md, VERIFICATION.md, measurements.json), then the nz-ea-hf-001 worker job for the five data files",
+   "tag_matches_main": true,
+   "verified": true,
+   "verified_at": "2026-10-23T23:25:59Z",
+   "verification": "hf-publish --verify --worker-job nz-ea-hf-003: 5/5 files present at the manifest digests (worker-pinned bulk receipt + streamed small-file digests), 0 missing, 0 size-mismatched, 0 digest-unverified; loading check verified by the same collected job (exact splits, columns, label values); --tag created v2026.10 at the verified commit 868c42f7 (tag == main); repo private (the flip is the operator's)",
+   "files_verified": [
+    "data/private-holdout.csv",
+    "data/public-eval.csv",
+    "data/public-train.csv",
+    "meta.json",
+    "quality.json"
+   ]
   }
  },
  "rejection_reason": null,
  "review": "Class A licence read first-hand on both the current platform and its announced successor; 30 years of daily-grain labels; a documented publication instant with measured file lags; publisher-published regional mapping; strong clustered event structure (dry-year episodes) and quiet eras giving both classes in every candidate window. Prior art is level-regression forecasting (EPF benchmark, an AUT study, a single-node GitHub project) - no published exceedance task with splits and a scored contract.",
- "next_action": "PACKAGED and privately staged on GitHub (release 422360451, tag v2026.10 == main, 5/5 assets digest-verified, get_dataset + gate --accept re-verified on the downloaded bytes). REMAINING before the operator flip: (1) Hugging Face private staging - hf-publish.py --create --upload-small, then the hf_publish worker job from the GitHub release, hf-publish --verify, --tag LAST; (2) write release/nz-ea-wholesale-price-exceedance/DESTINATIONS.json recording both destinations with artifact_version 545e0e4418c1f0e5 and files_verified lists; (3) set awaiting_operator=true once the flip is the sole remaining step. Quote the whole triad beside any score (model 0.8924 vs persistence_value 0.8820 / persistence_mean7 0.8843 / calendar-only 0.5011; week-clustered intervals contain zero - headroom over persistence NOT demonstrated, inconclusive advantage). The holdout stays sealed (post-2022-11 regime, prevalence 0.544; no holdout evaluation run or implied).",
+ "next_action": "PACKAGED and privately staged on BOTH destinations; the flip is now the sole remaining step, so awaiting_operator=true is set. GitHub: private repo earino/nz-ea-wholesale-price-exceedance, release v2026.10 (422360451), tag == main == 3b995250, 5/5 assets at the manifest digests, get_dataset.py + gate --accept re-verified on the downloaded bytes. Hugging Face: private repo, tag v2026.10 == main == 868c42f7, 5/5 data files at the manifest digests plus the card/docs, documented load_dataset path verified by collected worker job nz-ea-hf-003 (exact splits/positives/columns/label values). release/<id>/DESTINATIONS.json records both destinations with artifact_version 545e0e4418c1f0e5 and files_verified lists. AFTER THE OPERATOR'S FLIP publication is automatic per dataset-release: record verified visibility in DESTINATIONS.json, flip both destinations, anonymous proofs from a no-credential client, refresh the private-state wording in the card/LOADING.md/README/release notes and re-upload the small files (hf-publish.py --upload-small changes no visibility), verify tag == main on both, then the website pipeline (site prepare/inspect/publish/verify with a sites/<id>.json editorial file). Quote the whole triad beside any score: model eval AUC 0.8924 vs persistence_value 0.8820 / persistence_mean7 0.8843 / calendar-only 0.5011 on the identical 4,992 eval rows; week-clustered paired intervals contain zero, so headroom over persistence is NOT demonstrated (inconclusive advantage, not parity); calendar-only beaten decisively. The holdout stays sealed (post-2022-11 real-time pricing regime, prevalence 0.544; no holdout evaluation run or implied).",
  "jurisdiction": {
   "country": "NZ",
   "region": "Oceania",
@@ -478,7 +544,7 @@
   }
  },
  "packaged_at": "2026-10-23T22:32:00Z",
- "awaiting_operator": false,
+ "awaiting_operator": true,
  "qualification": {
   "qualified_at": "2026-10-23T19:48:16Z",
   "gate_version": "1.4.0",
