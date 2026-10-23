@@ -32,23 +32,29 @@ def digest(text):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--revision', required=True, help='exact revised commit')
+    parser.add_argument('--baseline-revision', default=BASELINE, help='comparison commit; default is original baseline')
+    parser.add_argument('--baseline-role-loading', choices=('legacy','current'), default='legacy',
+                        help='legacy loads all research skills; current uses role-specific eager skills')
+    parser.add_argument('--case-file', default='evals/research-prompts/cases.json',
+                        help='versioned case file at the revised commit')
     parser.add_argument('--out',type=Path,required=True,help='new directory; existing paths refused')
     parser.add_argument('--partition',choices=('development','reserved','diagnostic'),default='development')
     args=parser.parse_args()
     revision=subprocess.check_output(['git','rev-parse',f'{args.revision}^{{commit}}'],cwd=ROOT,text=True).strip()
-    baseline=subprocess.check_output(['git','rev-parse',f'{BASELINE}^{{commit}}'],cwd=ROOT,text=True).strip()
-    case_source=source(revision,'evals/research-prompts/cases.json')
+    baseline=subprocess.check_output(['git','rev-parse',f'{args.baseline_revision}^{{commit}}'],cwd=ROOT,text=True).strip()
+    case_source=source(revision,args.case_file)
     cases=json.loads(case_source)['cases']
     args.out.mkdir(parents=True, exist_ok=False)
     manifest={'schema_version':1,'baseline':baseline,'revised':revision,
-              'partition':args.partition,'case_source_sha256':digest(case_source),'requests':[]}
+              'partition':args.partition,'case_source_sha256':digest(case_source),
+              'case_file':args.case_file,'baseline_role_loading':args.baseline_role_loading,'requests':[]}
     for case in cases:
-        if case['partition']!=args.partition: continue
+        if case.get('partition','diagnostic')!=args.partition: continue
         for arm,commit in (('baseline',baseline),('revised',revision)):
             paths=COMMON.copy()
             # Match role-specific eager loading. This is part of the bundle treatment,
             # not an isolated estimate of the effect of rewriting one brief.
-            if arm == 'baseline':
+            if arm == 'baseline' and args.baseline_role_loading == 'legacy':
                 if case['role'] != 'watcher': paths += SKILLS
             elif case['role'] == 'discovery':
                 paths += SKILLS[:1]
@@ -59,7 +65,7 @@ def main():
                 text=source(commit,name); identities[name]=digest(text)
                 sections.append(f'--- BEGIN {name} ---\n{text}\n--- END {name} ---')
             name=BRIEFS[case['role']]
-            if case['role']=='watcher' and arm=='baseline':
+            if case['role']=='watcher' and arm=='baseline' and args.baseline_role_loading=='legacy':
                 brief=source(revision,'evals/research-prompts/baseline-worker-watch.md')
                 origin='scheduler snapshot, PR #10 comment 6350828810'
             else:
