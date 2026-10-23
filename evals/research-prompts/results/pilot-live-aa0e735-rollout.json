@@ -58,11 +58,67 @@
       "elapsed_seconds": 119.648,
       "response": "DECISION\n\nNot ready. Verdict: investigating, with the blockers named. Withdraw the draft's \"ready\" label and cancel the ordered construct/baseline job. The licence is clean and the task is plausible, so this is not a drop \u2014 but three contracts lack evidence and one is contradicted by evidence already in hand. The draft planned to \"investigate revisions\" after construction; the FAQ already answers that question, so it blocks now, before construction is spent.\n\nSUPPORTING EVIDENCE\n\n1. Timing contract fails as drafted. The instant (10:00 UTC Tuesday) sits inside the target window (opens Tuesday 00:00): the first ten hours of the outcome are already known when the prediction is made. This needs a redesign \u2014 instant before 00:00 Tuesday (e.g., Monday 10:00 UTC) or a window starting at/after the instant.\n2. Availability unproven. Daily files show Last-Modified 08:00 with no documented server timezone: if the server is west of UTC, Monday's file publishes after 10:00 UTC and the instant is unusable as stated. No completeness guarantee means late-arriving events can flip labels silently.\n3. Immutability contradicted. The FAQ records a 2023 reprocessing replacing classifications and geographical mappings for 2005-2022. Current rows are post-revision values, not historical snapshots, so a \"historical operational forecast\" over 2005-2022 cannot evidence feature availability at the past instant from this archive alone. Rechecking one fixed month in two weeks is a two-point observation, not an auditable as-of policy.\n4. Split capacity uncomputed. Large 2018/2024 totals prove nothing about per-window eligible/class counts; interruptions cluster by day/storm/line, so clustered counts are required.\n5. Satisfied: redistribution (openly licensed \u2014 record class A with the terms quote). Novelty is asserted, not recorded; ready requires a check-novelty verdict.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\n\nThe cheapest fact that flips the verdict: is Monday's daily file published and stable before the proposed instant? Resolve the server timezone from the portal's own documentation or headers (compare HTTP Date to Last-Modified), then observe publication time of a few consecutive daily files against the instant. In parallel, compute per-window eligible/class and clustered counts from the already-downloaded four-year panel \u2014 no new fetch; record as partial four-year evidence, never as a full count.\n\nORDERED ACTIONS AND STOPPING CONDITION\n\n1. Persist evidence first (scratch prunes in 24h): probe commands, URLs, dates, measured extraction cost, and the panel's construction command, checksums and provenance into candidates/<id>/notes.md. Do not commit the bulk files themselves; make the panel reproducible from its recorded command.\n2. Rewrite record.json: verdict investigating; blockers named (instant/window alignment, publication timezone and completeness, as-of policy for the reprocessed archive, per-window counts, recorded novelty verdict); withdraw \"immutable\".\n3. Run check-candidate.py; its failures are the correct blocker list, not noise.\n4. STATE.md handoff: next session runs the timezone/publication observation and the window-count computation; state exactly what flips the verdict to ready (realigned instant, evidenced availability, computed windows, recorded novelty verdict), after which construction is orderable.\n5. Commit only this session's records; review the diff; push; check CI for that exact commit; report pending CI as pending.\n\nStop after records, checks and commit. No construction job, no large probe this session. Done when the record shows investigating with the exact next probe named.\n\nOPERATOR REPORT\n\nPromising island-transport lead, but \"ready\" was premature: the proposed instant falls inside its own target window, publication timing is unverified (unknown server timezone, no completeness guarantee), and the archive is proven revision-prone (2023 reprocessing of 2005-2022), breaking the immutability assumption the draft relied on. Licence is clean and extraction is measured. Construction is held. One bounded probe next session \u2014 publication time versus a realigned instant, plus window counts from the existing panel \u2014 either yields a defensible ready or saves the construction spend.\n\n\u2014 Scout (Hermes)\n",
       "response_sha256": "1dd76a9edbc5713431c570d865f0cd83f76164c742e425b5aefc22d5a5659d34"
+    },
+    {
+      "partition": "rollout-aa0e735",
+      "case": "rollout-discovery-contract",
+      "arm": "revised",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-115",
+      "session_id": "20261023_015334_21f555",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "aa3c0f0f2ab49ed16c35cfb4380cb6d0a3063731ff57c8b81470ee534aaed210",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 5219,
+        "output_tokens": 8650,
+        "cache_read_tokens": 20288,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 34157,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 372,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 5167,
+          "output_tokens": 8278,
+          "cache_read_tokens": 19904,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 137.014,
+      "response": "DECISION\n\nOverride the notes' `ready` label and set `investigating`, with a defined path back to ready. Not dropped: the licence is clean and the volume is real. But the timing contract is violated as drafted and two more are unresolved, so construction cannot start.\n\nSUPPORTING EVIDENCE\n\nTiming fails as drafted. Instant is Tuesday 10:00 UTC; the target opens Tuesday 00:00, so ten hours of target precede the instant \u2014 the brief's \"noon forecast of today\" case exactly. Any fix moves the instant or target start and requires revisiting eligibility, utility and split boundaries together; none of that is recorded.\n\nAs-of is contradicted by the source itself. The FAQ says 2005-2022 was reprocessed in 2023, replacing event classifications and geographic mappings, so current rows are 2023 vintages, not operational history. \"Historical reports are immutable\" is therefore false, and the \"historical operational forecast\" framing \u2014 the premise of the recorded `differentiated` novelty verdict \u2014 cannot stand. The plan to re-check a fixed month in two weeks measures future churn, never past vintages. Last-Modified 08:00 with no documented server timezone or completeness guarantee is not publication evidence. A clearly labelled retrospective redesign may be viable but inherits no operational-availability claim, and novelty must be re-recorded for that contract before ready.\n\nSplits are unmeasured. 2018 and 2024 source counts are large, but per-window eligible/class counts were never computed; \"large\" is not a split count, and clustered positives are unexamined.\n\nProcess corrections, preserving evidence. The four-annual-file download and island-day panel is construction during discovery, on the 1.9 GiB coordinator; keep the probe script and compact observations, delete only the bulk files from the owned scratch path. The drafted job order \u2014 construct, fit baselines, then qualify \u2014 is wrong: the gate precedes any quoted number. Correct order: construct on worker, full-artifact qualification, exact-byte --accept, then reference/model scoring, then reporting. \"Investigate revisions\" after construction is moot: the 2023 reprocessing is established fact to record now.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\n\nWhen Monday's daily file is actually complete and first published. It decides the redesign: instant Monday 23:59 UTC with target Tuesday 00:00 onward, if Monday's reports publish by then; otherwise an instant after the Tuesday-morning publication with the target starting at or after it. Probe: the portal's own publication-schedule and timezone documentation, bounded, with the browser if a page challenges a plain client. If undocumented, a two-morning file-appearance observation would set the current cadence \u2014 valid for post-2023 data only, never for 2005-2022.\n\nORDERED ACTIONS AND STOPPING CONDITION\n\n1. Rewrite record.json: verdict investigating; keep licence evidence and source counts; record the three blockers with quotes, URLs and dates; annotate the differentiated verdict as premised on a false timing claim, to re-record after redesign; record the reprocessing FAQ as as-of evidence; drop the immutability assumption and the two-week churn check as gates.\n2. Preserve the probe script and panel observations under candidates/<id>/; remove the four bulk annual files from the exact owned scratch path.\n3. Record the redesign options and a worker job computing per-window eligible/class counts on the redesigned windows \u2014 advancement's job; the local panel is not qualification evidence.\n4. Update STATE.md (ready buffer now empty \u2014 flag it), run check-candidate.py <id>, discovery-coverage.py and the test suite; review the diff; commit only this session's work; push; check CI for that exact commit via the gh api head_sha query, reporting pending as pending.\n\nStop after records, checks and commit; no large probe fits the remaining budget.\n\nOPERATOR REPORT\n\nThe ready label was unsupported; the candidate is investigating with a defined path back. Decisive evidence: the target window starts ten hours before the prediction instant; the 2023 reprocessing contradicts the immutability assumption behind the \"historical operational forecast\" claim; per-window class counts were never computed. Licence clean, volume promising, so it stays open rather than dropped. The local panel was construction on the wrong host \u2014 recipe preserved, bulk removed, and it counts for nothing until the worker gate runs. Next action: publication-schedule evidence, pick the redesigned instant, re-record novelty, then a worker job counting eligible/class rows per window. Ready buffer is empty.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "6969eeb06eaf1d7ca83c7fd6341ecb6d30f6612afaa1947c83946f26e2b6f9f1"
     }
   ],
   "ledger": {
-    "calls": 115,
-    "tokens": 3856785
+    "calls": 116,
+    "tokens": 3890942
   },
-  "updated_at": "2026-10-23T01:53:35Z"
+  "updated_at": "2026-10-23T01:55:57Z"
 }
