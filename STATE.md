@@ -6900,3 +6900,58 @@ with a larger timeout under a fresh attempt id - an infrastructure retry, not a 
 Checks this session: `check-candidate.py nz-ea-wholesale-price-exceedance` OK; full unittest
 suite 588 tests OK; gate selftest OK; commit a5e02c2 pushed. October worker reservations:
 EUR 8.08 + 0.06 = 8.14 of 20 (release reserve EUR 5 untouched).
+
+## 2026-10-23 follow-up: nz-ea-001 failed on a build.py code defect before qualification; worker destroyed; handed to advancement
+
+The watcher tick found nz-ea-001 terminal (failed exit=1, 74.3 min elapsed, 6 staging assets,
+release 421764285). The follow-up runner held the research mutex for the whole invocation and
+the only modified tracked file was the job ledger written by collection, so ownership was
+exclusive. Collection had verified the private release (asset membership, sizes, SHA-256
+digests; nothing bulk was downloaded to the coordinator); this session fetched the bounded
+evidence to `.factory/nz-ea-001/reports/` (container.log 4,006 B, manifest.json 3,717 B - both
+digests re-verified locally against the ledger), mapping the opaque `file-NNNN-part-NNNN` asset
+names through the manifest. (The manifest asset embeds an earlier `uploaded: false` result
+snapshot from upload planning; the ledger's collected result supersedes it and the asset
+digests agree.)
+
+Diagnosis - a **construction failure** (code defect), not infrastructure (elapsed 74.3 min <
+the 100-minute container timeout, oom_killed false, all price files fetched) and not
+scientific (the gate never ran): build.py:663, in the non-fixture daily-channel branch that
+assembles `timing.observations` for quality.json, calls
+`lags.append((published - trade).days, trade, published, name)` - four arguments to
+list.append, a missing pair of parentheses - and raised TypeError after the panel and the
+split CSVs were complete. The synthetic-fixture smoke hardcoded its observations
+(build.py:646-652), so its 38/38 pass never exercised the branch; the first real run crashed
+there. Everything before the crash is **build-log diagnostics only, not qualified findings**
+(run.sh stopped at the build stage exactly as ordered - "build failed; the extract is
+incomplete and qualification is not meaningful" - and qualification, --accept and score.py
+never ran, so no figure from this artifact may be quoted): 714/724 price files aggregated
+(359 monthly + 365 daily; 3 interim + 1 incomplete variants excluded), 119,188,371 island-day
+(POC x period) rows, coverage 10978/10978 days 1996-10-01..2026-10-21, monthly/daily channel
+cross-check max |diff| 0.000000 over 20 island-days, all six known-event fixture assertions ok
+(Aug 2024 market daily means 814.77-883.56 inside 700-1000; 2008-07-01 305.79 inside 250-360;
+Jan 1997 monthly max 50.0 below), and written split CSVs - train 14004 rows / 2789 positives /
+404 distinct positive target-weeks, eval 4992 / 2150 / 231, holdout 2888 / 1570 / 152.
+quality.json and meta.json were never written, so the extract is incomplete; the expected
+reports (summary/qualification/acceptance/references) do not exist because their stages never
+started - the absence is explained by the traceback, not missing evidence.
+
+Preservation and cleanup: no accepted asset existed (nothing passed the gate), so no recovery
+transfer was owed; the incomplete extract CSVs, container.log and source.tar remain durable in
+the private staging release 421764285 (tag job-nz-ea-001) with collect-verified digests.
+Worker 172021455 and its owned IP 65.21.158.17 were destroyed with
+`sh scripts/scout-factory worker destroy nz-ea-001` (ledger deleted_at 2026-10-23T11:37:54Z)
+and the deletion was read back from the provider: GET api.hetzner.cloud/v1/servers/172021455
+-> 404 not_found, and the project lists zero servers and zero primary IPs. (An initial
+read-back attempt hit api.hetzner.com - the wrong host - and was discarded; the recorded
+evidence is from api.hetzner.cloud, the host the factory client uses.) October reservations
+are unchanged at EUR 8.14 of 20 (this job's EUR 0.06 reservation was recorded at launch;
+release reserve EUR 5 untouched).
+
+Next action (advancement): fix build.py:663 to append a single 4-tuple, add a fixture-path
+regression that runs the real lag assembly on synthetic listing metadata (the hardcoded
+observations are exactly why the smoke missed this), re-run the fixture smoke, then assemble a
+fresh attempt id (nz-ea-002) and relaunch with the same construct -> qualify -> accept ->
+references order. The gate never ran, so the gate-failure rebuild budget is intact and no
+threshold/split decision reopens. Evidence: staging release 421764285 and
+`.factory/nz-ea-001/reports/`.

@@ -55,24 +55,34 @@
       "id": "nz-ea-001",
       "candidate": "nz-ea-wholesale-price-exceedance",
       "server_id": 172021455,
-      "status": "running",
+      "status": "failed",
       "launched_at": "2026-10-23T10:14:37Z",
+      "collected_at": "2026-10-23T11:34:18Z",
+      "destroyed_at": "2026-10-23T11:37:54Z",
       "bundle": ".factory/jobs/nz-ea-001",
       "reservation_eur": "0.06",
       "provider_hourly_eur": "0.01152",
       "stage_order": "construct -> qualify (gate 1.4.0, full artifact on the worker) -> --accept exact bytes -> simple references (score.py, post-acceptance, eval only)",
+      "outcome": "construction failure, exit 1 at 74.3 min (container timeout 100 min, oom_killed false): build.py:663 calls lags.append((published - trade).days, trade, published, name) - four arguments to list.append, a missing pair of parentheses - in the non-fixture daily-channel branch that assembles timing.observations for quality.json. The panel and the three split CSVs were complete, but quality.json/meta.json were never written; run.sh stopped at the build stage, so qualification, --accept and score.py never ran and nothing from this artifact is qualified or quotable.",
+      "staging_release": {"repo": "earino/dataset-factory-staging", "id": 421764285, "tag": "job-nz-ea-001", "assets": "incomplete extract CSVs (public/train.csv, public/eval.csv, private/holdout.csv), container.log, source.tar, manifest.json - membership, sizes and SHA-256 digests verified at collection"},
+      "evidence": [
+        ".factory/nz-ea-001/reports/container.log (sha256 e3fd46d2ed3218e5f5fba832e74e923b42c871d00c54ca634061367a9af65344, digest re-verified locally)",
+        ".factory/nz-ea-001/reports/manifest.json (sha256 3da5346d791ccd407dc19b9a5c8cd55190ed26bbd0c5fb5f304b2be84ee88ba0, digest re-verified locally)",
+        "jobs/nz-ea-001.json"
+      ],
       "expected_reports": [
         "/output/summary.json",
         "/output/qualification-nz-ea-wholesale-price-exceedance.json",
         "/output/acceptance-nz-ea-wholesale-price-exceedance.txt",
         "/output/references-nz-ea-wholesale-price-exceedance.json"
-      ]
+      ],
+      "reports_status": "none written - run.sh stops at the build stage on a non-zero build, and the crash predates even summary.json; the absence is explained by the traceback in container.log"
     }
   ],
   "artifacts": [],
   "rejection_reason": null,
   "review": "Class A licence read first-hand on both the current platform and its announced successor; 30 years of daily-grain labels; a documented publication instant with measured file lags; publisher-published regional mapping; strong clustered event structure (dry-year episodes) and quiet eras giving both classes in every candidate window. Prior art is level-regression forecasting (EPF benchmark, an AUT study, a single-node GitHub project) - no published exceedance task with splits and a scored contract.",
-  "next_action": "nz-ea-001 worker job launched 2026-10-23T10:14:37Z (server 172021455). When it finishes: collect the compact reports, verify the gate passed 38/38 on the full artifact and --accept matched the exact bytes (both run inside run.sh on the worker), record the staging release, destroy the worker and read the deletion back from the provider; then the harness-runner baseline job evaluates the full model on the accepted eval rows next to the score.py references. If the gate fails (most likely on enough_clustered_positives for the holdout window), preserve the report, record the structural finding, and re-target under the one-rebuild budget - no silent threshold change.",
+  "next_action": "Handed to advancement: nz-ea-001 failed on a one-line construction defect before qualification (build.py:663 - lags.append given four args instead of one 4-tuple, in the non-fixture daily-channel publication-lag branch; the synthetic fixture hardcodes its timing observations at build.py:646-652, so the 38/38 fixture smoke could not exercise the branch - close that gap with a regression that runs the real lag assembly on synthetic listing metadata). Fix the append, re-run the fixture smoke, assemble a fresh attempt id (nz-ea-002) and relaunch with the same stage order; the gate never ran, so the gate-failure rebuild budget is untouched and no threshold/split decision reopens. Worker 172021455 and its owned IP are destroyed and provider-confirmed (ledger deleted_at 2026-10-23T11:37:54Z; GET api.hetzner.cloud/v1/servers/172021455 -> 404 not_found, project lists zero servers and zero primary IPs). Failure evidence is durable in private staging release 421764285 (tag job-nz-ea-001) plus .factory/nz-ea-001/reports/.",
   "jurisdiction": {
     "country": "NZ",
     "region": "Oceania",
