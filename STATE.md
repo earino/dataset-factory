@@ -1,5 +1,16 @@
 # Current state
 
+Updated: 2026-10-23 09:47Z (cl-tender-002 worker follow-up tick: the advancement session's close-out of
+worker `cl-tender-002` is verified complete end-to-end - collection, digest-verified reports,
+provider-confirmed cleanup, commits `5171618` + hold `d207dda` pushed with CI green at `d207dda`
+(run 39932613693), and the final ordinary receipt posted on PR #14 at 09:33:26Z. Nothing is
+outstanding for the worker. ChileCompra itself stays on the assisted scientific-review hold:
+no baseline job, packaging or publication until advancement (assisted review) resolves the
+future-conditioned-selection and terminal-state findings; see the tick section at the bottom
+and `candidates/chilecompra-tender-outcome/record.json` `review`/`next_action`.)
+
+## Historical update (superseded)
+
 Updated: 2026-10-23 09:13Z (Codex prompt project close-out).
 
 Prompt PRs #11–#14 are merged/deployed, latest `6613f72`; hashes, runtime audits,
@@ -6798,3 +6809,44 @@ worker reservations now EUR 8.08 of 20 (release reserve EUR 5 untouched). Next:
 `chilecompra-tender-outcome` baseline job with the harness runner on the accepted artifact,
 compared on eval to the 0.5673 reference and reported per split; then nz-ea-wholesale-price-
 exceedance (build), and the four construct-first candidates.
+
+## 2026-10-23 - cl-tender-002 worker follow-up tick: close-out verified end-to-end; preservation and cleanup re-confirmed; hold unchanged
+
+The watcher handed off `cl-tender-002` (succeeded, exit 0, 1,120.8 s, EUR 0.06, 14 assets,
+staging release 421653257). The advancement session had already collected, verified, recorded
+and closed it out (commits `5171618` + hold `d207dda`, both pushed; CI completed/success at
+`d207dda`, run 39932613693) and posted the final ordinary receipt on PR #14 (09:33:26Z). This
+tick re-verified the chain read-only; nothing was relaunched, rebuilt, repackaged or published,
+and no budget was spent.
+
+- Result and checks: gate 1.4.0 report `ok: true`, 38/38 checks, `failed_checks: []`,
+  artifact_version `6f8cef93850f1211026bb4a8471811b1b6827534b232ede6a752d14c62bbdf7d` over
+  eval/holdout/meta.json/quality.json/train; acceptance line "ACCEPTED: /output/extract
+  matches the qualified artifact 6f8cef93850f1211"; container.log stage order is qualification
+  -> acceptance -> "simple references (post-acceptance only)", so no pre-acceptance scoring
+  ran. Verified reference figures (identical eval rows, 11,943 rows / 1,992 positives,
+  train-fitted): procedure 0.5164, buyer region 0.5309, UNSPSC segment 0.5673,
+  calendar/identity 0.5270, value-band x procedure 0.5410; majority-class eval accuracy 0.8332;
+  persistence inapplicable (one row per tender). These are single-feature conditional
+  references, not a model; no headroom claim exists and none may be quoted.
+- Preservation: staging release `job-cl-tender-002` (id 421653257) re-verified this tick - tag
+  correct, 14/14 assets `state: uploaded` with GitHub-reported digests matching the ledger's
+  sha256s; the bulk CSVs (train 2,915,993 B / eval 2,009,309 B / holdout 3,927,979 B) stay
+  there. All 9 collected reports in `.factory/cl-tender-002/reports/` re-hash to their
+  recorded asset digests. Cosmetic quirk recorded: the qualification report is present as both
+  `.json` and `.txt` parts (file-0007/file-0008, identical bytes) and summary.json at two paths
+  (file-0006/file-0010, identical bytes); all mapped in manifest.json, no data defect.
+- Cleanup re-confirmed from the provider this tick (read-only): GET /servers/172010382 = 404
+  "server not found"; zero servers named `scout-cl-tender-002`; zero primary IPs remain in the
+  project. Deletion confirmed by the provider (first read back at close-out; ledger
+  `deleted_at` 2026-10-23T09:24:36Z, `status: deleted`, `collected_at` 09:22:32Z).
+- Hold unchanged (owner: advancement, assisted review): record status `investigating`;
+  `next_action` = "NONE under this hold. Do not run a baseline job, package or publish.
+  Resolve future-conditioned selection (build.py:237-243, 415-417, 566-575) and the
+  unspecified terminal award state/horizon; then rebuild, qualify, accept, and score
+  references on identical rows - or record the negative finding and drop."
+
+Checks this tick: `check-candidate.py --all` exit 0, `chilecompra-tender-outcome: OK
+(status=investigating)`; no new worker, no rebuild, no packaging, no publication; October
+reservations unchanged at EUR 8.08 of 20 (release reserve EUR 5 untouched). Acknowledged with
+`.factory/cl-tender-002/handled`.
