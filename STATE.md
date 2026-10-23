@@ -7359,5 +7359,66 @@ acceptance .txt and gate report carry 545e0e4418c1f0e5 (identity chain intact). 
 step was taken; worker completion grants no approval. October spend: this job's EUR 0.06
 reservation was already recorded at launch; destroy frees the slot.
 
+## 2026-10-23 follow-up (nz-ea-baseline-001/002/003): baseline triad completed clean on the accepted artifact; headroom over persistence NOT demonstrated (inconclusive); all three workers destroyed with provider-confirmed cleanup
+
+The watcher reported three finished jobs for `nz-ea-wholesale-price-exceedance`:
+baseline-001 failed (3.0 s, staging release 422293521), baseline-002 failed (2.7 s, release
+422299339), baseline-003 succeeded (exit 0, 73.8 s, 12 assets, release 422309725). This
+follow-up held the research mutex for collection and handling.
+
+**001/002 - diagnosed fetch-spec failures, no scoring ran.** Both died at the fetch stage,
+before any container started: the job spec hand-transcribed the holdout sha256 with one wrong
+hex character (15797.. vs the gate report's and staging manifest's 15717..), so the worker
+digest guard correctly refused the correctly-downloaded bytes against the wrong expectation.
+Not a data or source defect - the staging asset was byte-verified intact. 002 was first
+mis-diagnosed as a transient download error and retried unchanged (the wrong move; the right
+move was diffing the fetch spec against the gate report programmatically, which found the
+one-character error after the second failure). Lesson recorded in the candidate record and
+the bundle smoke: fetch digests are copied programmatically from the gate report and
+cross-checked at smoke time. Failure evidence collected to
+`.factory/nz-ea-baseline-001/reports/` and `-002/reports/` (source.tar, container.log,
+staging manifest; digests ledger-verified); each staging manifest's embedded fetch spec
+carries the mis-transcribed digest, confirming the diagnosis from the preserved bytes.
+
+**003 - verified result (all figures qualified).** The five artifact files were fetched from
+staging release 422246241 with every digest verified, then re-ACCEPTED through gate 1.4.0 on
+the worker BEFORE any scoring (accept.log: "ACCEPTED: /data/extract matches the qualified
+artifact 545e0e4418c1f0e5", the accepted nz-ea-002 artifact
+545e0e4418c1f0e54bb55389e7816c1736a8473de600e70d6f006ed33089f7e7); the private holdout was
+fetched for re-acceptance only and never entered the workdir. The benchmark's own train.py
+and validate.sh ran unmodified: CONTRACT OK, eval AUC 0.8924 from both train.py's print and
+validate.py's recompute. reference_check.py then independently recomputed the decisive
+comparison from the same bytes with its own stdlib AUC: all three accepted references match
+exactly (persistence_value 0.8820357429258793, persistence_mean7 0.884293406215734,
+calendar_only 0.5010555946516537) on the identical 4,992 eval rows / 2,150 positives;
+full-model AUC 0.8924379326710636. Week-clustered (target_week, the gate's declared event
+key) paired 95% bootstrap: model-persistence_value +0.0104 [-0.00098, +0.02263];
+model-persistence_mean7 +0.0081 [-0.00281, +0.02057] - both intervals CONTAIN ZERO. Under
+the pre-declared criterion (model > persistence_mean7 AND the week-clustered interval
+excludes zero), headroom over persistence is NOT demonstrated: the observed advantage is
+positive but inconclusive at the dependence-aware level - neither parity nor a
+trailing-model defect. Calendar-only is beaten decisively (+0.391 observed). Majority-class
+accuracy 0.5693 measured against this split's labels. Per-target-year AUCs recorded in the
+candidate record (2016 model 0.392 vs persistence 0.457 on only 6 positives, up to 2022
+model 0.855 vs 0.824). This session verified each required check's own result in
+baseline_result.json (accepted_before_scoring true, contract_ok true, identity ok, all
+agreement_with_accepted ok) and that all 8 expected collected reports digest-match the
+ledger's asset digests.
+
+**Cleanup (provider-confirmed, re-verified in this session).** Servers 172106797, 172107560
+and 172109172 all deleted; direct provider read-back now: GET /servers/<id> -> 404 for all
+three, project primary_ips count 0. Durable destinations for every expected accepted asset:
+the qualified artifact stays at staging release 422246241 (five files, digests API-verified at
+fetch and recorded in the candidate record's artifacts block), the baseline reports at
+staging release 422309725 (12 assets with sizes+digests in the ledger), with the 8 expected
+reports additionally collected to `.factory/nz-ea-baseline-003/reports/` and re-hashed here.
+
+**Handoff to advancement** (recorded in the candidate record's next_action): package the
+accepted artifact for review, quoting the whole triad and the inconclusive persistence
+comparison beside any score; the holdout stays sealed (post-2022-11 regime, prevalence 0.544,
+no holdout evaluation has been run or is implied). No publication step was taken; worker
+completion grants no approval. October reservations after these three launches: EUR 8.50 of
+the 20 ceiling (ledger-computed; release reserve EUR 5 untouched).
+
 ## 2026-10-23 - eutl-installation-net-short published (operator flip)
 Operator approved the private-to-public flip. Both destinations PATCHed public and proven anonymously (repo 200, 5/5 assets ranged GET, Hub private:false, 5/5 tag-revision files ranged GET). Manifest kept frozen per doctrine; visibility truth in DESTINATIONS.json (github files_verified corrected to logical manifest paths for the site planner). Website plan e460c661bee97a0f published and verified, HTTPS enforced; catalogue now lists 10 datasets. Record status 'published', awaiting_operator cleared.

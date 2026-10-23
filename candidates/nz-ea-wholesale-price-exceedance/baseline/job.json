@@ -1,0 +1,50 @@
+{
+  "id": "nz-ea-baseline-003",
+  "candidate": "nz-ea-wholesale-price-exceedance",
+  "image": "python:3.13-slim",
+  "server_type": "cx23",
+  "location": "hel1",
+  "cpus": 2,
+  "memory_mb": 3072,
+  "timeout_minutes": 45,
+  "lifetime_minutes": 90,
+  "max_disk_mb": 4096,
+  "max_artifact_mb": 16,
+  "what": "runner-contract baseline (ONE job; third attempt. nz-ea-baseline-001 and -002 both failed at the fetch stage because this job spec hand-transcribed the holdout digest with one wrong hex character (15797.. vs the gate report and staging manifest 15717..); the worker digest guard correctly refused both. Root cause fixed by copying all five fetch digests programmatically from the gate report and adding a smoke-time cross-check of the fetch spec against the bundled qualification report. Not a source or data defect: staging asset byte-verified intact.) On the accepted nz-ea-002 artifact 545e0e4418c1f0e54bb55389e7816c1736a8473de600e70d6f006ed33089f7e7, fetched from staging release 422246241 (not rebuilt): re-accept the five fetched files through the qualification gate against the gate own collected report, materialize the runner workdir (public train+eval only; the private holdout is fetched for re-acceptance only and never copied into the workdir or scored), run the benchmark own train.py and validate.sh unmodified, then independently recompute the decisive comparison from the same bytes with reference_check.py: the three accepted references (persistence_value = last_day_mean 0.8820357429258793, persistence_mean7 = mean_7d 0.884293406215734, calendar_only = train-fitted (island, target_week) rates 0.5010555946516537) with this module own stdlib AUC, the model eval AUC from train.py predict_proba, and paired differences with a target_week-clustered bootstrap (target_week is the gate declared event key) on the identical 4,992 eval rows / 2,150 positives the accepted references were measured on. Pre-declared criterion, decided by the coordinator session after the job: headroom is demonstrated only if the model eval AUC exceeds the stronger persistence reference (persistence_mean7 0.8843) AND the week-clustered paired interval for (model - persistence_mean7) excludes zero. This is the contract only, not the agent harness loop; no packaging, no publication.",
+  "fetch": {
+    "repo": "earino/dataset-factory-staging",
+    "release": 422246241,
+    "assets": [
+      {
+        "asset_id": 670199987,
+        "dest": "extract/meta.json",
+        "size": 3133,
+        "sha256": "f9b8105a997e6269abe2bd85aa2b32c94545377f796ec6ca50af03eb61101590"
+      },
+      {
+        "asset_id": 670200031,
+        "dest": "extract/private/holdout.csv",
+        "size": 364911,
+        "sha256": "101f6a70284aff37b3d2715717e65315883a29c7a9a75ced9a2497edc4806cc9"
+      },
+      {
+        "asset_id": 670200099,
+        "dest": "extract/public/eval.csv",
+        "size": 627892,
+        "sha256": "6302310db2fced5ee0439e56526b2a88d1c165d02ad9ffb074cd54ebfcc8be67"
+      },
+      {
+        "asset_id": 670200164,
+        "dest": "extract/public/train.csv",
+        "size": 1744686,
+        "sha256": "273aeb069ab29445d901b1ae043ec73c93465d203b8f5115c51cf35ece3c25a1"
+      },
+      {
+        "asset_id": 670200232,
+        "dest": "extract/quality.json",
+        "size": 13421,
+        "sha256": "c37aed791cd38f0b005013f6d7bde6b5b313ad236fe57be1af7e672672182763"
+      }
+    ]
+  }
+}

@@ -1,0 +1,246 @@
+{
+  "job": {
+    "id": "nz-ea-baseline-003",
+    "candidate": "nz-ea-wholesale-price-exceedance",
+    "image": "python:3.13-slim",
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 3072,
+    "timeout_minutes": 45,
+    "lifetime_minutes": 90,
+    "max_disk_mb": 4096,
+    "max_artifact_mb": 16,
+    "what": "runner-contract baseline (ONE job; third attempt. nz-ea-baseline-001 and -002 both failed at the fetch stage because this job spec hand-transcribed the holdout digest with one wrong hex character (15797.. vs the gate report and staging manifest 15717..); the worker digest guard correctly refused both. Root cause fixed by copying all five fetch digests programmatically from the gate report and adding a smoke-time cross-check of the fetch spec against the bundled qualification report. Not a source or data defect: staging asset byte-verified intact.) On the accepted nz-ea-002 artifact 545e0e4418c1f0e54bb55389e7816c1736a8473de600e70d6f006ed33089f7e7, fetched from staging release 422246241 (not rebuilt): re-accept the five fetched files through the qualification gate against the gate own collected report, materialize the runner workdir (public train+eval only; the private holdout is fetched for re-acceptance only and never copied into the workdir or scored), run the benchmark own train.py and validate.sh unmodified, then independently recompute the decisive comparison from the same bytes with reference_check.py: the three accepted references (persistence_value = last_day_mean 0.8820357429258793, persistence_mean7 = mean_7d 0.884293406215734, calendar_only = train-fitted (island, target_week) rates 0.5010555946516537) with this module own stdlib AUC, the model eval AUC from train.py predict_proba, and paired differences with a target_week-clustered bootstrap (target_week is the gate declared event key) on the identical 4,992 eval rows / 2,150 positives the accepted references were measured on. Pre-declared criterion, decided by the coordinator session after the job: headroom is demonstrated only if the model eval AUC exceeds the stronger persistence reference (persistence_mean7 0.8843) AND the week-clustered paired interval for (model - persistence_mean7) excludes zero. This is the contract only, not the agent harness loop; no packaging, no publication.",
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 422246241,
+      "assets": [
+        {
+          "asset_id": 670199987,
+          "dest": "extract/meta.json",
+          "size": 3133,
+          "sha256": "f9b8105a997e6269abe2bd85aa2b32c94545377f796ec6ca50af03eb61101590"
+        },
+        {
+          "asset_id": 670200031,
+          "dest": "extract/private/holdout.csv",
+          "size": 364911,
+          "sha256": "101f6a70284aff37b3d2715717e65315883a29c7a9a75ced9a2497edc4806cc9"
+        },
+        {
+          "asset_id": 670200099,
+          "dest": "extract/public/eval.csv",
+          "size": 627892,
+          "sha256": "6302310db2fced5ee0439e56526b2a88d1c165d02ad9ffb074cd54ebfcc8be67"
+        },
+        {
+          "asset_id": 670200164,
+          "dest": "extract/public/train.csv",
+          "size": 1744686,
+          "sha256": "273aeb069ab29445d901b1ae043ec73c93465d203b8f5115c51cf35ece3c25a1"
+        },
+        {
+          "asset_id": 670200232,
+          "dest": "extract/quality.json",
+          "size": 13421,
+          "sha256": "c37aed791cd38f0b005013f6d7bde6b5b313ad236fe57be1af7e672672182763"
+        }
+      ]
+    },
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "source_files": [
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/nz-ea-wholesale-price-exceedance/baseline/run.sh",
+        "bytes": 4292,
+        "sha256": "677425aad99d012a6aa96f8eac2615e57983ffbb451748c2855127c68cf9e25b"
+      },
+      {
+        "bundled_as": "materialize.py",
+        "source": "candidates/nz-ea-wholesale-price-exceedance/baseline/materialize.py",
+        "bytes": 2404,
+        "sha256": "823ad591fb253b279e01762a5554e8db91cd77a0eb1756e69badc8a3754c359f"
+      },
+      {
+        "bundled_as": "reference_check.py",
+        "source": "candidates/nz-ea-wholesale-price-exceedance/baseline/reference_check.py",
+        "bytes": 18664,
+        "sha256": "3957f21737e601bc67e991a1fbeeb0e7c8ba3f741e8e0d683d7b405883915637"
+      },
+      {
+        "bundled_as": "report.py",
+        "source": "candidates/nz-ea-wholesale-price-exceedance/baseline/report.py",
+        "bytes": 10263,
+        "sha256": "16745cb09644a1b7eea6cda8985b9c0c8993cc07743d9b0d2e653400b1a707a6"
+      },
+      {
+        "bundled_as": "qualification.json",
+        "source": "candidates/nz-ea-wholesale-price-exceedance/baseline/qualification.json",
+        "bytes": 16528,
+        "sha256": "51e5b46a1c51d20dbb571095a4aa2d3c04c3ce4a7acf186ba53c5996c8d59e88"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 44907,
+        "sha256": "4e51d2e9494fd66dd220517476119d7b3f2edea4ffde276caa90999a28cc0a87"
+      },
+      {
+        "bundled_as": "train.py",
+        "source": "/opt/data/harness_benchmark/task_template/train.py",
+        "bytes": 2500,
+        "sha256": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8"
+      },
+      {
+        "bundled_as": "validate.py",
+        "source": "/opt/data/harness_benchmark/task_template/validate.py",
+        "bytes": 1277,
+        "sha256": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b"
+      },
+      {
+        "bundled_as": "validate.sh",
+        "source": "/opt/data/harness_benchmark/task_template/validate.sh",
+        "bytes": 482,
+        "sha256": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      }
+    ]
+  },
+  "reservation_eur": "0.06",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 3,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 184320,
+  "source_sha256": "5e462538143284bfd64c1dbcf039d6d02d3f0adc667a72df60aabbb2cee2b0aa",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-10-23T21:03:55.130936+00:00",
+  "expires": 1792794835,
+  "budget_months": [
+    "2026-10"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 172109172,
+  "known_hosts": "/opt/data/dataset-factory/.factory/nz-ea-baseline-003/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "65.21.158.17",
+  "result": {
+    "job_id": "nz-ea-baseline-003",
+    "status": "succeeded",
+    "uploaded": true,
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 422246241,
+      "fetched": [
+        {
+          "dest": "extract/meta.json",
+          "bytes": 3133,
+          "sha256": "f9b8105a997e6269abe2bd85aa2b32c94545377f796ec6ca50af03eb61101590"
+        },
+        {
+          "dest": "extract/private/holdout.csv",
+          "bytes": 364911,
+          "sha256": "101f6a70284aff37b3d2715717e65315883a29c7a9a75ced9a2497edc4806cc9"
+        },
+        {
+          "dest": "extract/public/eval.csv",
+          "bytes": 627892,
+          "sha256": "6302310db2fced5ee0439e56526b2a88d1c165d02ad9ffb074cd54ebfcc8be67"
+        },
+        {
+          "dest": "extract/public/train.csv",
+          "bytes": 1744686,
+          "sha256": "273aeb069ab29445d901b1ae043ec73c93465d203b8f5115c51cf35ece3c25a1"
+        },
+        {
+          "dest": "extract/quality.json",
+          "bytes": 13421,
+          "sha256": "c37aed791cd38f0b005013f6d7bde6b5b313ad236fe57be1af7e672672182763"
+        }
+      ],
+      "failures": [],
+      "bytes": 2754043
+    },
+    "image_id": "sha256:57b29a7c050c4e679e4bea572e14b3965cf4b5839de2da49d55e49ffc4024f39",
+    "image_digests": [
+      "python@sha256:57b29a7c050c4e679e4bea572e14b3965cf4b5839de2da49d55e49ffc4024f39"
+    ],
+    "exit_code": 0,
+    "oom_killed": false,
+    "elapsed_seconds": 73.8,
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 422309725,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-6982674586e8ba203afd",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-6982674586e8ba203afd/manifest.json",
+    "assets": [
+      {
+        "id": 670408564,
+        "size": 72,
+        "sha256": "11b6d1e65c8b160126cc0267b51e147640ade5e7b79c7e6c6229c0eb3d3b6ac0"
+      },
+      {
+        "id": 670408624,
+        "size": 10455,
+        "sha256": "84d1d64984044ca8ef55c20c5c203048ce9f6f5ed4c78b5ff1b1cc2dd6bc52e5"
+      },
+      {
+        "id": 670408678,
+        "size": 247,
+        "sha256": "5acdeacb55f71293d60706375f987af96d6a7463ae29869e06db24f36e94584e"
+      },
+      {
+        "id": 670408752,
+        "size": 203,
+        "sha256": "4b23bad44932e36d6b6bf14895179585c4cd160c0f5f5cf47f011d5a4169af40"
+      },
+      {
+        "id": 670408845,
+        "size": 364,
+        "sha256": "abd6f7249a473f07f501069dde0fe2436ada294e0816606ef6d35309752ff944"
+      },
+      {
+        "id": 670408918,
+        "size": 355,
+        "sha256": "11ffdd4af70ba4ece791007417e1d37d04d06fdba3ee633c620bd659a99e39fc"
+      },
+      {
+        "id": 670408980,
+        "size": 4204,
+        "sha256": "a273e74bdbaabb4036acd485632e514d870d3eea2da1dffbc3be160d688959ac"
+      },
+      {
+        "id": 670409061,
+        "size": 53,
+        "sha256": "2921c3da16ec792d6836d0c616977ecf4ade7bcc271c375784061f42441c19c1"
+      },
+      {
+        "id": 670409124,
+        "size": 178,
+        "sha256": "7a0269c0288d85643c9218c1c9a9d123e9a8af5a04e071dcec25bb4357859f2a"
+      },
+      {
+        "id": 670409178,
+        "size": 184320,
+        "sha256": "5e462538143284bfd64c1dbcf039d6d02d3f0adc667a72df60aabbb2cee2b0aa"
+      },
+      {
+        "id": 670409243,
+        "size": 3247,
+        "sha256": "d4fc38273ceaa0a49e2a910dec447f6f2bda0a6ce50c9cc465b7d3ebcdd70082"
+      },
+      {
+        "id": 670409301,
+        "size": 11397,
+        "sha256": "4b775347f57c60fab44dda07fd20b2b3ea439ad672bea67a687e1df094be57ff"
+      }
+    ]
+  },
+  "collected_at": "2026-10-23T21:11:37.733765+00:00",
+  "deleted_at": "2026-10-23T21:13:05.208561+00:00"
+}

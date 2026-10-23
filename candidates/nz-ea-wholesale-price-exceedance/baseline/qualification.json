@@ -1,0 +1,605 @@
+{
+ "ok": true,
+ "dataset": "/output/extract",
+ "gate_version": "1.4.0",
+ "artifact": {
+  "train": {
+   "file": "public/train.csv",
+   "sha256": "273aeb069ab29445d901b1ae043ec73c93465d203b8f5115c51cf35ece3c25a1",
+   "bytes": 1744686
+  },
+  "eval": {
+   "file": "public/eval.csv",
+   "sha256": "6302310db2fced5ee0439e56526b2a88d1c165d02ad9ffb074cd54ebfcc8be67",
+   "bytes": 627892
+  },
+  "holdout": {
+   "file": "private/holdout.csv",
+   "sha256": "101f6a70284aff37b3d2715717e65315883a29c7a9a75ced9a2497edc4806cc9",
+   "bytes": 364911
+  },
+  "meta.json": {
+   "file": "meta.json",
+   "sha256": "f9b8105a997e6269abe2bd85aa2b32c94545377f796ec6ca50af03eb61101590",
+   "bytes": 3133
+  },
+  "quality.json": {
+   "file": "quality.json",
+   "sha256": "c37aed791cd38f0b005013f6d7bde6b5b313ad236fe57be1af7e672672182763",
+   "bytes": 13421
+  },
+  "artifact_version": {
+   "digest": "545e0e4418c1f0e54bb55389e7816c1736a8473de600e70d6f006ed33089f7e7",
+   "components": [
+    "eval",
+    "holdout",
+    "meta.json",
+    "quality.json",
+    "train"
+   ]
+  }
+ },
+ "results": [
+  {
+   "check": "descriptor",
+   "ok": true,
+   "detail": "quality.json loaded for 'nz-ea-wholesale-price-exceedance'",
+   "evidence": {}
+  },
+  {
+   "check": "leakage.declared_columns",
+   "ok": true,
+   "detail": "every shipped column is declared",
+   "evidence": {
+    "undeclared": []
+   }
+  },
+  {
+   "check": "leakage.answer_source_absent",
+   "ok": true,
+   "detail": "no answer source or post-hoc column is shipped",
+   "evidence": {
+    "shipped_forbidden": []
+   }
+  },
+  {
+   "check": "leakage.every_column_could_be_scored",
+   "ok": true,
+   "detail": "every column was scored for leakage",
+   "evidence": {
+    "unscorable": []
+   }
+  },
+  {
+   "check": "leakage.no_single_column_determines_the_target",
+   "ok": true,
+   "detail": "no shipped column separates the classes on its own",
+   "evidence": {
+    "offenders": [],
+    "high_cardinality": [
+     "anchor_date@eval",
+     "anchor_date@holdout",
+     "anchor_date@train",
+     "row_id@eval",
+     "row_id@holdout",
+     "row_id@train"
+    ],
+    "missing_splits": []
+   }
+  },
+  {
+   "check": "leakage.high_cardinality_declared",
+   "ok": true,
+   "detail": "high-cardinality columns are declared as identifiers or free fields",
+   "evidence": {
+    "undeclared": [],
+    "declared": [
+     "anchor_date",
+     "row_id"
+    ]
+   }
+  },
+  {
+   "check": "timing.prediction_time_declared",
+   "ok": true,
+   "detail": "prediction instant is declared",
+   "evidence": {}
+  },
+  {
+   "check": "timing.no_post_hoc_feature",
+   "ok": true,
+   "detail": "no feature is documented as post-hoc",
+   "evidence": {
+    "overlap": []
+   }
+  },
+  {
+   "check": "timing.label_source_is_not_a_feature",
+   "ok": true,
+   "detail": "the label source is not a feature",
+   "evidence": {
+    "source_features": []
+   }
+  },
+  {
+   "check": "timing.every_feature_documented",
+   "ok": true,
+   "detail": "features documented as available 'prediction_time'",
+   "evidence": {
+    "features_documented_at": "prediction_time"
+   }
+  },
+  {
+   "check": "timing.instant_declared",
+   "ok": true,
+   "detail": "prediction instant kind='publication' citation=True",
+   "evidence": {
+    "prediction_instant": {
+     "kind": "publication",
+     "period": "trading day D",
+     "days_after_period_end": 6,
+     "citation": "Electricity Authority, Real-time dispatch and pricing (https://www.ea.govt.nz/data-and-insights/datasets/wholesale/dispatch-and-pricing/): interim prices 'will be declared to be final prices by 2pm the following business day'. Measured on the publisher's daily-file channel, Last-Modified minus trade date is 0-5 calendar days over 365+ files (distribution in summary.json; observations below), so the instant is placed at D+6 calendar days: a conservative bound under which every feature (final prices for trading days <= D) is published and the target trading day D+7 has not finished trading."
+    }
+   }
+  },
+  {
+   "check": "timing.publication_lag_measured",
+   "ok": true,
+   "detail": "11 of 11 observed period_end -> published dates are usable (statistical release: at least one observed publication date is required)",
+   "evidence": {
+    "observations": [
+     {
+      "period": "2026-10-15",
+      "period_end": "2026-10-15",
+      "published": "2026-10-16",
+      "source_file": "20261015_FinalEnergyPrices.csv"
+     },
+     {
+      "period": "2026-10-16",
+      "period_end": "2026-10-16",
+      "published": "2026-10-19",
+      "source_file": "20261016_FinalEnergyPrices.csv"
+     },
+     {
+      "period": "2026-10-17",
+      "period_end": "2026-10-17",
+      "published": "2026-10-19",
+      "source_file": "20261017_FinalEnergyPrices.csv"
+     },
+     {
+      "period": "2026-10-18",
+      "period_end": "2026-10-18",
+      "published": "2026-10-19",
+      "source_file": "20261018_FinalEnergyPrices.csv"
+     }
+    ],
+    "measured_lag_days": 5,
+    "source_kind": "statistical_release"
+   }
+  },
+  {
+   "check": "timing.features_available_at_instant",
+   "ok": true,
+   "detail": "features publish 6d after the period, instant is 6d after it",
+   "evidence": {
+    "features_lag_days": 6,
+    "instant_lag_days": 6,
+    "measured_lag_days": 5
+   }
+  },
+  {
+   "check": "timing.instant_accounts_for_publication_lag",
+   "ok": true,
+   "detail": "instant is a publication instant",
+   "evidence": {
+    "kind": "publication",
+    "features_lag_days": 6
+   }
+  },
+  {
+   "check": "timing.selection_uses_only_available_data",
+   "ok": true,
+   "detail": "row selection declares its latest period as 'D (the anchor trading day; features read published final prices for trading days <= D only)'",
+   "evidence": {
+    "latest_period_used": "D (the anchor trading day; features read published final prices for trading days <= D only)",
+    "fields": [
+     "anchor trading day",
+     "island daily means for D-29..D (both islands)",
+     "island daily mean for D+7 (label source, read afterwards)"
+    ]
+   }
+  },
+  {
+   "check": "units.measured_columns_declare_unit_and_frame",
+   "ok": true,
+   "detail": "11 measured column(s) declare unit and frame",
+   "evidence": {
+    "measurements": [
+     {
+      "column": "last_day_mean",
+      "unit": "NZD/MWh (nominal)",
+      "frame": "island daily mean of the publisher's final DollarsPerMegawattHour values, averaged over every (POC x trading period) row of that island and trading day, using POCs mapped to the island by the publisher's NetworkSupplyPointsTable (POCs absent from that current-vintage table are excluded and counted), for the anchor day D itself"
+     },
+     {
+      "column": "mean_7d",
+      "unit": "NZD/MWh (nominal)",
+      "frame": "island daily mean of the publisher's final DollarsPerMegawattHour values, averaged over every (POC x trading period) row of that island and trading day, using POCs mapped to the island by the publisher's NetworkSupplyPointsTable (POCs absent from that current-vintage table are excluded and counted), averaged over D-6..D"
+     },
+     {
+      "column": "mean_30d",
+      "unit": "NZD/MWh (nominal)",
+      "frame": "island daily mean of the publisher's final DollarsPerMegawattHour values, averaged over every (POC x trading period) row of that island and trading day, using POCs mapped to the island by the publisher's NetworkSupplyPointsTable (POCs absent from that current-vintage table are excluded and counted), averaged over D-29..D"
+     },
+     {
+      "column": "max_30d",
+      "unit": "NZD/MWh (nominal)",
+      "frame": "island daily mean of the publisher's final DollarsPerMegawattHour values, averaged over every (POC x trading period) row of that island and trading day, using POCs mapped to the island by the publisher's NetworkSupplyPointsTable (POCs absent from that current-vintage table are excluded and counted), maximum over D-29..D"
+     },
+     {
+      "column": "std_7d",
+      "unit": "NZD/MWh (nominal)",
+      "frame": "island daily mean of the publisher's final DollarsPerMegawattHour values, averaged over every (POC x trading period) row of that island and trading day, using POCs mapped to the island by the publisher's NetworkSupplyPointsTable (POCs absent from that current-vintage table are excluded and counted), population standard deviation over D-6..D"
+     },
+     {
+      "column": "days_above_threshold_30d",
+      "unit": "count of days (0-30)",
+      "frame": "days among D-29..D whose island daily mean exceeds the frozen NZD 100/MWh threshold - the same threshold the label uses, applied only to published days"
+     },
+     {
+      "column": "cross_island_ratio_7d",
+      "unit": "ratio (dimensionless)",
+      "frame": "row island mean_7d divided by the other island's mean_7d, both from published final prices"
+     },
+     {
+      "column": "anchor_month",
+      "unit": "calendar month 1-12",
+      "frame": "calendar field of the anchor trading day D"
+     },
+     {
+      "column": "anchor_dow",
+      "unit": "day of week 0-6 (Monday=0)",
+      "frame": "calendar field of the anchor trading day D"
+     },
+     {
+      "column": "anchor_doy_sin",
+      "unit": "dimensionless",
+      "frame": "sine of the anchor day's year-day on a 365.25-day cycle"
+     },
+     {
+      "column": "anchor_doy_cos",
+      "unit": "dimensionless",
+      "frame": "cosine of the anchor day's year-day on a 365.25-day cycle"
+     }
+    ]
+   }
+  },
+  {
+   "check": "units.known_event_fixture_recorded",
+   "ok": true,
+   "detail": "known-event fixture recorded: 'August 2024 New Zealand dry-year wholesale price episode'",
+   "evidence": {
+    "known_event": {
+     "name": "August 2024 New Zealand dry-year wholesale price episode",
+     "expected_verdict": "exceeds",
+     "source": "Electricity Authority, Review of winter 2024 (https://www.ea.govt.nz/documents/7159/Review_of_winter_2024_jnOSQfc.pdf): 'in early August the average daily price reached $820/MWh'; the candidate record independently measured market daily means of 815-884 NZD/MWh for 2024-08-05..08-08 from the publisher's own files. The build asserts all fixture days from the constructed panel (see summary.json known_event_fixtures)."
+    }
+   }
+  },
+  {
+   "check": "splits.time_column_declared",
+   "ok": true,
+   "detail": "split overlap is checked against 'anchor_date'",
+   "evidence": {}
+  },
+  {
+   "check": "splits.machine_readable_windows",
+   "ok": true,
+   "detail": "train/eval/holdout windows are declared with start/end",
+   "evidence": {
+    "split_windows": {
+     "train": {
+      "start": "1996-10-30",
+      "end": "2016-01-01"
+     },
+     "eval": {
+      "start": "2016-01-01",
+      "end": "2022-11-01"
+     },
+     "holdout": {
+      "start": "2022-11-01",
+      "end": "2026-10-16"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.files_present",
+   "ok": true,
+   "detail": "all three split files exist",
+   "evidence": {
+    "missing": []
+   }
+  },
+  {
+   "check": "splits.non_empty",
+   "ok": true,
+   "detail": "every split has rows",
+   "evidence": {
+    "train": {
+     "rows": 14004,
+     "positives": 2789,
+     "negatives": 11215,
+     "positive_rate": 0.199157
+    },
+    "eval": {
+     "rows": 4992,
+     "positives": 2150,
+     "negatives": 2842,
+     "positive_rate": 0.430689
+    },
+    "holdout": {
+     "rows": 2890,
+     "positives": 1571,
+     "negatives": 1319,
+     "positive_rate": 0.543599
+    }
+   }
+  },
+  {
+   "check": "splits.eval_and_holdout_have_both_classes",
+   "ok": true,
+   "detail": "eval and holdout each contain positives and negatives",
+   "evidence": {
+    "train": {
+     "rows": 14004,
+     "positives": 2789,
+     "negatives": 11215,
+     "positive_rate": 0.199157
+    },
+    "eval": {
+     "rows": 4992,
+     "positives": 2150,
+     "negatives": 2842,
+     "positive_rate": 0.430689
+    },
+    "holdout": {
+     "rows": 2890,
+     "positives": 1571,
+     "negatives": 1319,
+     "positive_rate": 0.543599
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_declared",
+   "ok": true,
+   "detail": "eval and holdout declare positives and distinct events",
+   "evidence": {
+    "declared": {
+     "eval": {
+      "positives": 2150,
+      "distinct_events": 231
+     },
+     "holdout": {
+      "positives": 1571,
+      "distinct_events": 152
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_match_rows",
+   "ok": true,
+   "detail": "declared positive counts match the rows",
+   "evidence": {
+    "mismatched": []
+   }
+  },
+  {
+   "check": "splits.event_key_column_declared",
+   "ok": true,
+   "detail": "clustered events are counted by 'target_week' (date part)",
+   "evidence": {}
+  },
+  {
+   "check": "splits.distinct_events_match_rows",
+   "ok": true,
+   "detail": "declared clustered event counts match the rows",
+   "evidence": {
+    "recomputed": {
+     "train": 404,
+     "eval": 231,
+     "holdout": 152
+    },
+    "declared": {
+     "eval": {
+      "positives": 2150,
+      "distinct_events": 231
+     },
+     "holdout": {
+      "positives": 1571,
+      "distinct_events": 152
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.enough_clustered_positives",
+   "ok": true,
+   "detail": "eval and holdout carry enough independent positive events to score",
+   "evidence": {
+    "thin": [],
+    "recomputed_events": {
+     "train": 404,
+     "eval": 231,
+     "holdout": 152
+    },
+    "minimums": {
+     "positives": 30,
+     "distinct_events": 20
+    }
+   }
+  },
+  {
+   "check": "splits.rates_not_uniform",
+   "ok": true,
+   "detail": "positive rates are between 0 and 1",
+   "evidence": {
+    "rates": [
+     0.199157,
+     0.430689,
+     0.543599
+    ]
+   }
+  },
+  {
+   "check": "splits.actual_ranges_computed",
+   "ok": true,
+   "detail": "row timestamps found for every split",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "1996-10-30",
+      "max": "2015-12-31"
+     },
+     "eval": {
+      "min": "2016-01-01",
+      "max": "2022-10-31"
+     },
+     "holdout": {
+      "min": "2022-11-01",
+      "max": "2026-10-15"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.actual_ranges_disjoint",
+   "ok": true,
+   "detail": "the rows of the three splits occupy disjoint periods",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "1996-10-30",
+      "max": "2015-12-31"
+     },
+     "eval": {
+      "min": "2016-01-01",
+      "max": "2022-10-31"
+     },
+     "holdout": {
+      "min": "2022-11-01",
+      "max": "2026-10-15"
+     }
+    },
+    "overlaps": []
+   }
+  },
+  {
+   "check": "splits.rows_within_declared_windows",
+   "ok": true,
+   "detail": "every row falls inside its split's declared window",
+   "evidence": {
+    "windows": {
+     "train": {
+      "start": "1996-10-30",
+      "end": "2016-01-01"
+     },
+     "eval": {
+      "start": "2016-01-01",
+      "end": "2022-11-01"
+     },
+     "holdout": {
+      "start": "2022-11-01",
+      "end": "2026-10-16"
+     }
+    },
+    "ranges": {
+     "train": {
+      "min": "1996-10-30",
+      "max": "2015-12-31"
+     },
+     "eval": {
+      "min": "2016-01-01",
+      "max": "2022-10-31"
+     },
+     "holdout": {
+      "min": "2022-11-01",
+      "max": "2026-10-15"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.no_cross_split_entities",
+   "ok": true,
+   "detail": "no row_id appears in more than one split",
+   "evidence": {
+    "shared_sample": [],
+    "shared_count": 0
+   }
+  },
+  {
+   "check": "splits.duplicate_entities_within_splits",
+   "ok": true,
+   "detail": "0 repeated-identifier rows within splits, at most the declared 0",
+   "evidence": {
+    "duplicate_rows": {},
+    "declared": 0
+   }
+  },
+  {
+   "check": "runner.layout",
+   "ok": true,
+   "detail": "holdout is private and train/eval are public",
+   "evidence": {}
+  },
+  {
+   "check": "runner.meta_json_keys",
+   "ok": true,
+   "detail": "meta.json carries the keys the runner reads",
+   "evidence": {
+    "keys": [
+     "built_at_utc",
+     "columns",
+     "description",
+     "features",
+     "id_columns",
+     "label_rule",
+     "label_source_columns",
+     "license",
+     "name",
+     "positive_label",
+     "positive_rate",
+     "prediction_time",
+     "rows",
+     "source",
+     "source_urls",
+     "split",
+     "target"
+    ]
+   }
+  },
+  {
+   "check": "runner.meta_matches_files",
+   "ok": true,
+   "detail": "meta.json agrees with the split files",
+   "evidence": {
+    "problems": []
+   }
+  },
+  {
+   "check": "runner.meta_counts_match_files",
+   "ok": true,
+   "detail": "meta rows and rates match the files",
+   "evidence": {}
+  },
+  {
+   "check": "runner.id_columns_are_not_features",
+   "ok": true,
+   "detail": "declared identifiers are not also listed as features",
+   "evidence": {}
+  }
+ ],
+ "failed_checks": []
+}
