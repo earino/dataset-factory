@@ -7,7 +7,7 @@ per-station cotas live in the historical IHD chart annotations. This script fetc
 Wayback-archived IHD and prints station / cota pairs. See notes.md sections 5-6.
 
 Usage: python3 probe_ihd_cota_extract.py [wayback_url]
-Default URL = the Oct-2024 IHD used in the discovery session.
+Default URL = the IHD dated 01 Oct 2016 used in the discovery session (Wayback capture 2024-08-05; capture date is not publication).
 """
 import re
 import sys
