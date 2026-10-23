@@ -6399,3 +6399,15 @@ missing decisive number. No packaging occurred and none is now possible.
   discovery session's handoff pick; every remaining item needs its build
   authored first, so the next session should pick ONE and write the
   construction before launching (no half-written bundle was left behind).
+
+## Assisted audit hold - inpe-foco-municipal-onset (2026-10-23)
+
+Codex's post-run review found the discovery "ready" verdict unsafe: the D+1 13:00 prediction instant falls 13
+hours after the [D+1 00:00, D+8 00:00) target window opens; INPE FAQ Q39 documents retroactive Base 2
+reprocessing (Collection 6, Terra history from 2000, Aqua from 2002, IBGE 2016 boundaries), so current files and
+a future churn check cannot establish historical as-of availability; and the handoff ordered baselines before
+qualification. Record status set to `investigating` with a `review` block; original measurements and evidence are
+preserved unchanged. Keep private; do not construct from the prior contract. This is an assisted audit finding,
+not an unprompted discovery gain. Reopen only with a fully future target window, evidenced as-of coverage (or an
+explicitly retrospective task) and a gate-ordered handoff.
+
