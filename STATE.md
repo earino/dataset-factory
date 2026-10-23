@@ -1,3 +1,48 @@
+## 2026-10-23 (23:38Z) - nz-ea-hf-001/002/003 watcher close-out: receipts re-verified, push and exact-sha CI confirmed, handled markers written
+
+The watcher delivered the three finished hf_publish jobs. The 23:35Z tick had already
+collected, verified and closed them, so this close-out re-reads the evidence instead of
+repeating it. Nothing was re-run on a worker; no bulk data touched this host.
+
+- **nz-ea-hf-003 (the ledger-backed receipt).** Succeeded; verify-only (uploads 0 - all
+  five targets already at their manifest digests). Receipt pinned at Hub commit
+  868c42f7a58bc547acf62b64f03865fd30182f92: all five files (meta.json, quality.json,
+  data/public-train.csv, data/public-eval.csv, data/private-holdout.csv) present with
+  sizes and sha256 equal to the manifest - re-checked programmatically, 5/5. hf_loading
+  ok=true, problems=[], train 14,004/2,789, eval 4,992/2,150, holdout 2,890/1,571,
+  16 columns, label ['0','1'] - identical to the accepted artifact. This receipt is what
+  hf-publish --verify/--tag accepted; DESTINATIONS.json records the Hub destination
+  verified at revision v2026.10 with files_verified listing all five target paths.
+- **nz-ea-hf-001.** The worker-side upload of the five data files succeeded (2,754,043 B,
+  0 failures, same pinned commit), but its staging result upload hit the 422 (0-byte
+  container.log part; fixed in 7f6d63d), so the ledger cannot mark it collected. The full
+  result stays preserved at .factory/nz-ea-hf-001/result.json and is deliberately not
+  ledger-backed. Superseded for evidence by nz-ea-hf-003.
+- **nz-ea-hf-002.** Infrastructure failure only: the host-monitor du race killed it at
+  46.4 s during pip install (fixed in 6f6fd4a); it still staged its result (staging
+  release 422387176, 2 assets, skipped_empty ['container.log'] - the 7f6d63d fix proven
+  in production). Not a data verdict.
+- **Cleanup, re-read from the ledger:** all three status=deleted - hf-001 at 23:11:47Z
+  (scoped delete_owned + clean_job_ips after the nz-ea-publish-001 precedent, provider
+  read-back GET /servers/172121873 -> 404, project primary_ips 0), hf-002 at 23:20:37Z
+  and hf-003 at 23:25:41Z (both through the supported lifecycle after verified
+  collection). Deletion confirmed by the provider, not merely requested. No worker or
+  owned IP remains.
+- **Push and CI.** git ls-remote shows remote main == 6e60fb7; this checkout's origin/main
+  tracking ref was stale until a fetch reconciled it. CI for that exact sha: Local checks
+  and Website pipeline preview both completed/success (runs 40040175150, 40040175096).
+  The 23:35Z entry's close-out CI claim is confirmed.
+- **Handled markers** written at .factory/nz-ea-hf-001/handled, .factory/nz-ea-hf-002/handled
+  and .factory/nz-ea-hf-003/handled (local, git-ignored). The seven sites/*.json
+  site_revision bumps from the other session remain untouched and uncommitted.
+
+Next action: unchanged - the operator's flip for nz-ea-wholesale-price-exceedance
+(awaiting_operator=true; both destinations private, verified and digest-matched). After
+the flip, publication is automatic per dataset-release. Score figures unchanged: quote the
+full triad as recorded in the 23:35Z entry (model 0.8924 vs persistence_value 0.8820 /
+persistence_mean7 0.8843 / calendar-only 0.5011; headroom over persistence NOT
+demonstrated). The holdout stays sealed.
+
 ## 2026-10-23 (23:35Z) - nz-ea Hugging Face staging COMPLETE on both destinations; two worker-framework defects root-caused and fixed; awaiting_operator=true
 
 The tick went to release work: nz-ea-wholesale-price-exceedance is the actionable packaged
