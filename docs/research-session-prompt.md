@@ -52,6 +52,11 @@ For the selected candidate, follow the applicable sequence:
    template. If the source contradicts the contract, repair or hold before launch.
    Then construct on a worker using existing assembly/lifecycle commands. Changed
    source needs a fresh attempt ID; preserve previous bundles and reports.
+   This boundary begins when a probe aligns examples with prediction features and
+   targets: an in-memory panel or a fixed persistence score is already construction
+   and evaluation. "Pre-launch ceiling", published inputs, small size, no CSV and
+   no fitted model are not exemptions. Use source metadata/counts to decide the
+   next step; if task-performance evidence is needed, use the worker/gate sequence.
 3. Run the unchanged qualification gate on the **full artifact on the worker**.
    Require a passing current-version report and `--accept` against the exact bytes
    before scoring, quoting figures or acceptance. A sample or old report cannot

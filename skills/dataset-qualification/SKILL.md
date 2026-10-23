@@ -55,6 +55,16 @@ or present its rates as qualified findings before acceptance. A later passing re
 does not retroactively make earlier scoring comply. Inspect the invoked build script,
 not just the shell wrapper, for hidden early scoring.
 
+The boundary is the computation, not its name or output format. Joining published
+periods into examples with lag features/targets and computing persistence AUC is
+construction and scoring, even entirely in memory with no CSV or fitted model.
+Do not run it locally as a "pre-launch ceiling", "cheap probe" or "go/no-go test".
+If numerical task-performance evidence is needed, construct and qualify the full
+artifact on a worker, accept its exact bytes, then compute references. Otherwise
+use bounded source metadata, schema, coverage/counts and documented semantics to
+decide the next step without scoring a prediction panel. A persistence result is
+a comparator, not a proven upper bound on every other model's performance.
+
 ### Worked worker order: review the code that each command calls
 
 Adapt these filenames/arguments to the job bundle; this illustrates ordering, not

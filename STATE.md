@@ -1,22 +1,22 @@
 # Current state
 
-Updated: 2026-10-23 08:00Z (Codex prompt-evaluation continuation).
+Updated: 2026-10-23 08:46Z (Codex prompt outcome review).
 
-Camara has no active worker and is on assisted scientific/code review hold at
-`f108bb4`: no declaration-only re-gate or further job until selection and early
-scoring defects are resolved. Both attempts and their figures are unqualified
-diagnostics. IDEAM remains investigating; `b67ebbb` corrects the bulletin to
-2016, withdrawing the unsupported decade-stability claim. Historical entries
-below preserve the original reports and are superseded by these holds.
+PR #14's reviewed source `fa90684` clarifies that in-memory prediction panels and
+fixed-reference scoring require the existing worker qualification/acceptance order.
+The paired adaptive DeepSeek responses both score 3/4, revised qualitatively preferred;
+both omit explicit failed-report preservation and retain reasoning weaknesses. Full
+responses, blind/author reviews and reconciled counters are retained. No execution
+reliability claim follows. Controlled ledger: 127 attempts / 4,326,764 inclusive tokens,
+within unchanged 128/5M checkpoint; no more controlled calls planned.
 
-PR #13 contains the completed deployed-discovery/watcher audit and the final
-source-preflight/worked-order instruction revision at `635cede`. Clean-clone
-588 tests/doctor/source audit and exact CI pass. Four paired no-tool source-review diagnostics are complete: 5/8 baseline versus
-7/8 revised, two revised preferences, residual weaknesses retained, cumulative
-125 attempts / 4,252,032 inclusive tokens under the same 128/5M checkpoint;
-no new worker job is requested for that evaluation. Next: merge/deploy the reviewed tested bytes at idle, then observe one ordinary advancement
-under existing admission and audit actual implementation. Keep existing candidate
-holds, public-release approval, budgets and independent cleanup unchanged.
+Clean Python 3.13 checkout: 588 tests OK (6 skips), doctor and source audit pass.
+No executable gate, assertions, budgets or published artifacts changed. EA remains
+investigating under assisted hold `4f77649` after the preserved local scoring violation;
+Camara/INPE and publication holds remain. Next: merge reviewed PR after exact CI,
+install at idle with hash readback, then audit one ordinary advancement without
+candidate-specific coaching under existing admission. Keep useful work and failures
+separate; do not reopen held candidates merely to make the evaluation succeed.
 
 ## Historical update (superseded)
 

@@ -315,3 +315,21 @@ generation or a scientific acceptance guarantee. Independently review the entire
 response, including any invented evidence outside coarse criteria. After source/CI
 review, deploy the tested bytes and observe one normal advancement session within
 ordinary admission. Its held candidate must not be reopened merely for evaluation.
+
+## In-memory prelaunch scoring after the next ordinary run
+
+The normal c9d479c advancement (DeepSeek after automatic provider failover)
+built the proposed EA prediction panel and scored references locally, calling
+it an unqualified pre-launch ceiling. This is a material violation, not an
+exemption because no CSV or fitted model exists. Preserve the run and assisted
+record correction. The next narrow instruction change defines that computational
+boundary and permits bounded source inspection without prediction scoring.
+
+`prelaunch-cases.json` fixes one adaptive transfer case before responses exist.
+Compare deployed c9d479c with the exact reviewed successor, two calls on the
+actual DeepSeek route (baseline then revised), identical current role loading.
+127 planned cumulative attempts remain within the unchanged 128/5M checkpoint
+and 100k reserve. No other model calls or repeats are planned. Keep all prior
+failures/accounting and verify identities/route/zero-tool evidence. Review source
+and CI before inference. A no-tool improvement cannot substitute for a later
+ordinary source-audited run or establish mechanical enforcement.
