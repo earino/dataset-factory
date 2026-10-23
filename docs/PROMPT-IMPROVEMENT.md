@@ -4,7 +4,7 @@ Status: PR #11 and PR #12 are deployed. The required ordinary discovery and
 watcher audit are complete, with material residual failures preserved. Overnight
 advancement also copied unsafe scoring code despite the new instructions. PR #13
 contains this evidence and a final focused source-preflight/worked-example revision
-at `635cede`; four paired source-review responses are pending. Do not equate the
+at `635cede`; four paired source-review responses are complete and reviewed. Do not equate the
 controlled decision scores with reliable autonomous scientific execution.
 
 ## Final live audit and copied-code follow-up
@@ -590,3 +590,30 @@ assets on a live worker or protection during a simultaneous-owner conflict. It
 used 22 main calls, 387.9 seconds and 1,431,834 inclusive tokens; there is no matched
 old-prompt live watcher run from which to infer a cost improvement. Full evidence
 is in `results/deployed-observation-ad607ca.json` under the evaluation directory.
+
+### Final copied-build comparison
+
+Four responses at `635cede` versus deployed `ad607ca` passed independently
+reproduced request/response hash checks, recorded-route checks and full main/aux
+usage reconciliation. Label-blinded review scores **5/8 baseline versus 7/8 revised**
+and prefers revised in both pairs. Both arms already refuse the faulty launch;
+the concrete incremental gain is specifying a train-fitted majority constant and
+measuring agreement on each evaluated split. Revised GLM leaves the full-worker
+scope implicit and loses that compound criterion. This is one adaptive code-reading
+case, not an execution benchmark or an independent statistical experiment.
+
+Residual weaknesses remain despite zero narrow unsafe flags: revised GLM's cleanup
+wording omits preservation, and revised DeepSeek ambiguously removes target columns
+and wrongly dismisses fitted identity controls. Both make overbroad source/observation
+claims. Complete responses, strict grades and source-aware adjudication are retained
+as `results/copied-build-635cede-*`. No unchanged calls were repeated.
+
+The batch used 152,709 inclusive tokens: baseline 75,764 / 84.170s, revised 76,945 /
+79.459s. Each arm exceeds the requested 600 words once. Cumulative controlled usage
+is **125 attempts / 4,252,032 inclusive tokens**, within unchanged 128/5M checkpoints
+and 100k next-call reserve. Dollars remain unknown; no efficiency claim follows.
+
+The exact source is approved for idle deployment, then one ordinary advancement
+with no candidate-specific coaching. Review its actual code and scientific decisions;
+keep existing candidate holds. Source instructions passing review and better supplied-
+code answers do not substitute for that live observation.

@@ -11,10 +11,10 @@ below preserve the original reports and are superseded by these holds.
 
 PR #13 contains the completed deployed-discovery/watcher audit and the final
 source-preflight/worked-order instruction revision at `635cede`. Clean-clone
-588 tests/doctor/source audit and exact CI pass. Scout is running four paired
-no-tool source-review diagnostics under the same cumulative 128/5M checkpoint;
-no new worker job is requested for that evaluation. Next: review all four
-outputs, merge/deploy tested bytes at idle, then observe one ordinary advancement
+588 tests/doctor/source audit and exact CI pass. Four paired no-tool source-review diagnostics are complete: 5/8 baseline versus
+7/8 revised, two revised preferences, residual weaknesses retained, cumulative
+125 attempts / 4,252,032 inclusive tokens under the same 128/5M checkpoint;
+no new worker job is requested for that evaluation. Next: merge/deploy the reviewed tested bytes at idle, then observe one ordinary advancement
 under existing admission and audit actual implementation. Keep existing candidate
 holds, public-release approval, budgets and independent cleanup unchanged.
 

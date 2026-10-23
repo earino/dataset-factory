@@ -1,0 +1,258 @@
+{
+  "schema": 1,
+  "kind": "copied-build comparison",
+  "bundle": "635cedeaa34b9cb32532b6bbf1e4ace16f0caea3",
+  "baseline": "ad607ca2d935a5a70fb16eeb1d612f9543ffc50f",
+  "baseline_role_loading": "current",
+  "case_file": "evals/research-prompts/copied-build-cases.json",
+  "ledger": {
+    "calls": 125,
+    "tokens": 4252032,
+    "checkpoint_calls": 128,
+    "checkpoint_tokens": 5000000,
+    "reserve": 100000
+  },
+  "requests": [
+    {
+      "case": "rollout-copied-build",
+      "arm": "baseline",
+      "file": "rollout-copied-build--baseline.txt",
+      "bytes": 152841,
+      "sha256": "01a61791864338622cad063b249c587aa9e517f2494a2557aefdd8cc2c2e6c4f"
+    },
+    {
+      "case": "rollout-copied-build",
+      "arm": "revised",
+      "file": "rollout-copied-build--revised.txt",
+      "bytes": 155558,
+      "sha256": "3b493808ee6188159891c273080386001a0b9e785cc74da81a0ea5fda089397b"
+    }
+  ],
+  "responses": [
+    {
+      "run": "run-122",
+      "session_id": "20261023_075744_b413c1",
+      "case": "rollout-copied-build",
+      "arm": "baseline",
+      "model_requested": "glm-5.3",
+      "provider_requested": "lunaroute",
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "request_sha256": "01a61791864338622cad063b249c587aa9e517f2494a2557aefdd8cc2c2e6c4f",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "tool_pin": "unrecorded",
+      "zero_tool": true,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 314,
+          "output_tokens": 11,
+          "cache_read_tokens": 128,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 33464,
+          "output_tokens": 4917,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        }
+      ],
+      "input_tokens": 33778,
+      "output_tokens": 4928,
+      "cache_read_tokens": 128,
+      "cache_write_tokens": 0,
+      "total_tokens": 38834,
+      "elapsed_seconds": 58.846,
+      "exit_code": 0,
+      "response_bytes": 4608,
+      "response_sha256": "e462252698523b8f0846f9e99cdc1c72684c752d9534b88936ad99efac1eb81d",
+      "response": "Warning: Unknown toolsets: __none__\nDECISION\nDo not launch. The colleague's patch \u2014 move `write_summary` after the gate, keep the calculation \u2014 is insufficient, and launching on it risks the worst outcome: a gate-passing artifact whose population was selected by the outcome.\n\nEVIDENCE\n1. Outcome-conditioned selection. `current_status in (\"approved\",\"rejected\")` defines eligibility using the label source. At the prediction instant (submission) every application is pending; eligibility must read only application-time fields. Pending rows are unobserved targets (censored by the snapshot) \u2014 count them in an `unobserved_target` bucket and report, never a membership decision. The dropped rows are invisible to the gate, which sees only shipped rows: exactly the hindsight-population shape an independent audit caught in nhs-ae after staging. Here it is caught pre-launch.\n2. The timing declaration contradicts the code: `basis: \"only application-time eligibility\"` is false as written, and the block lacks `prediction_instant`, per-column feature-availability evidence and observations \u2014 gate 1.4.0 refuses it. Features come from a current snapshot; as-of-submission availability is unestablished for any mutable field, and field names are not proof.\n3. Early scoring in construction. `build.py` computes and writes reference metrics before qualification. Moving only the write keeps the violation; a later passing report does not retroactively cure earlier scoring. The references are also invalid: `majority_class_accuracy` is training prevalence, not a held-out reference; `identity_auc` is neither persistence, calendar-only, nor the full model, and its information set is unstated.\n4. The old smoke test asserts a previous candidate's summary keys; passing it is evidence about that candidate, not this one.\n5. Wrapper order is close (`set -eu`, gate before score) but omits `--accept` on the exact bytes between qualify and score. Also confirm `current_status` and any decision-time fields are absent from the written CSVs, not merely unlisted.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\nWhether applicant features are knowable at submission: read the publisher's per-column documentation and check whether historical vintages exist. If only the current vintage exists, as-of availability is not performable \u2014 restrict to immutable application-time fields or record it as an unresolved limitation. Second check: severity of censoring, via a bounded aggregate (counts by status \u00d7 submission month) answering whether recent eval/holdout windows survive, without bulk data on the coordinator.\n\nORDERED ACTIONS AND STOPPING CONDITION\n1. Record this review in the candidate record. No launch; nothing scored \u2014 no artifact has a passing current report.\n2. Repair the build (one rebuild per structural defect): eligibility from application-time fields only; pending applications emitted/counted as `unobserved_target` with reported counts; assert absence of label-source and decision-time columns in written files; complete the timing block honestly; add a counterfactual test \u2014 a pending application must yield a counted row, an out-of-window one must not.\n3. Remove all metric computation from the build; implement the reference triad in the score stage after gate plus `--accept` on exact bytes (add `--accept` to the wrapper before `score.py`). Rewrite or retire the old smoke test against this candidate's contract.\n4. Fresh attempt ID in `source/job.json` (changed source), `assemble-job.py`, verify the bundle carries the gate, plan offline, then launch. Require a passing full-artifact report and `--accept` before any scoring; collect diagnostics even on failure; destroy the worker after collection.\nStop: if the second audit still finds the archive cannot establish as-of-submission availability and no immutable subset suffices, record a precise blocked handoff or drop/re-target \u2014 a repeat timing defect after one rebuild means the task design, not the code, is broken.\n\nOPERATOR REPORT\nPermit candidate reviewed pre-launch; launch refused. The builder selected its population by eventual outcome \u2014 a defect the gate cannot see because dropped rows leave no trace \u2014 its timing declaration contradicts its code, and it computes reference metrics inside construction before qualification. The proposed patch moves the write but preserves early scoring and none of the substantive defects. Repair, fresh attempt, full qualification on the worker; nothing is scored until a passing report and `--accept` on exact bytes. No worker spent; nothing qualified.\n\n\u2014 Scout (Hermes)\n"
+    },
+    {
+      "run": "run-123",
+      "session_id": "20261023_075847_c803f4",
+      "case": "rollout-copied-build",
+      "arm": "revised",
+      "model_requested": "glm-5.3",
+      "provider_requested": "lunaroute",
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "request_sha256": "3b493808ee6188159891c273080386001a0b9e785cc74da81a0ea5fda089397b",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "tool_pin": "unrecorded",
+      "zero_tool": true,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 260,
+          "output_tokens": 12,
+          "cache_read_tokens": 256,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 14188,
+          "output_tokens": 4625,
+          "cache_read_tokens": 19840,
+          "cache_write_tokens": 0
+        }
+      ],
+      "input_tokens": 14448,
+      "output_tokens": 4637,
+      "cache_read_tokens": 20096,
+      "cache_write_tokens": 0,
+      "total_tokens": 39181,
+      "elapsed_seconds": 54.165,
+      "exit_code": 0,
+      "response_bytes": 4980,
+      "response_sha256": "306d30bee1c8f628ee6a4445f1d7e274a58ba11765081ead59ae462b2dd910ce",
+      "response": "Warning: Unknown toolsets: __none__\nDECISION\nDo not launch. Hold the candidate for repair. The colleague's reorder is insufficient, and the stated reason for launching (\"a gate failure will stop final reporting\") is wrong on both mechanism and substance.\n\nSUPPORTING EVIDENCE\n1. The row filter conditions the population on the future. `current_status in (\"approved\",\"rejected\")` keeps only applications whose outcome is already decided at snapshot time; at the submission-time prediction instant that is future information. The written basis (\"only application-time eligibility; pending outcomes are unobserved targets\") misdescribes the code. Calling the excluded rows \"unobserved targets\" does not make the selection knowable at prediction time, and the gate cannot establish a declaration's truth - it checks rows against claims. It also biases the splits: recent submission periods survive only as fast-decided cases, so prevalence and population shift by window.\n2. Scoring runs before acceptance. `build.py` computes train prevalence, fits scores, computes an identity AUC and writes a summary before the gate runs. Moving `write_summary` after the gate keeps the computation too early; a wrapper is still wrong if build computes AUC internally, and a later passing report does not retroactively comply. The references are also wrong: train prevalence copied into \"majority_class_accuracy\" measures no split's accuracy, and one fitted identity AUC is not the required triad (persistence, calendar/identity, full model on identical eval rows).\n3. `quality.json` declares only `timing.row_selection`. Missing time column, event key, split windows, label source (`current_status` must be absent from shipped CSVs, not just unlisted), prediction instant, features and observations - missing declarations fail rather than pass silently.\n4. The smoke test asserts summary keys exist; that is not evidence of correctness, and a script copied from a previous candidate is historical evidence, not a vetted template.\n5. A failed gate still uploads diagnostics for collection, so \"stops final reporting\" is not the issue; compliance and a scientifically valid population are.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\nI have not read the publisher's documentation, so `current_status` semantics (lifecycle, withdrawn/abandoned values, revocation), decision latency and whether historical vintages exist are unknown; field names do not establish them. Cheapest discriminating measurement: read the field documentation and compute, per submission month, the fraction still pending at snapshot. That decides whether a decision horizon or censoring rule can define the population without future conditioning. If only a current vintage exists, availability-at-instant must be recorded as a stated assumption, not a reconstruction.\n\nORDERED ACTIONS AND STOPPING CONDITION\n1. Record the hold in the candidate record and STATE.md with this review; reject the reorder proposal with reasons. No launch.\n2. Read source documentation for `current_status` and the decision lifecycle; measure per-month pending fractions off the coordinator.\n3. Redesign selection: eligibility from submission-time fields only; iterate all eligible submissions; look up outcomes afterwards; pending rows counted in an `unobserved_target` bucket and reported per split. If a decision horizon D is supportable, define the target as approved within D and restrict the panel to submissions at least D old, documenting censoring. Ship a complete quality.json (prediction instant kind, features, observations, split windows, label_source_columns).\n4. Move all metric computation into `score.py`, after the gate and exact-byte `--accept`; implement the triad on identical rows; compute majority accuracy against each split's labels from the train-fitted constant.\n5. One rebuild per structural defect - this is that rebuild. New attempt ID; assemble with `assemble-job.py` (confirm the bundle carries `qualify_dataset.py`); preflight citing the row filter and stage boundaries; plan/launch/collect; require a passing current-version report plus `--accept` before any scoring; destroy the worker either way. Rewrite the smoke test to assert stage boundaries, not key presence.\nStop: if the documentation cannot establish an outcome-observation mechanism, or pending fractions make recent windows unusable, preserve partial evidence and record a precise blocked handoff or a re-scope - do not launch on the current design even if the gate would pass.\n\nOPERATOR REPORT\nPrelaunch review of the permit-outcome candidate found a population selected on eventual outcome and reference scoring inside construction; the proposed reorder fixes neither, so I held the launch. Next: source-documentation read and a per-month pending-fraction measurement to decide whether a censoring-aware rebuild is supportable; no worker has run and no artifact has a passing report. Proposed actions are pending until verified.\n\u2014 Scout (Hermes)\n"
+    },
+    {
+      "run": "run-124",
+      "session_id": "20261023_075945_51eeb9",
+      "case": "rollout-copied-build",
+      "arm": "revised",
+      "model_requested": "deepseek/deepseek-v4.1-flash-1017",
+      "provider_requested": "nous",
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "request_sha256": "3b493808ee6188159891c273080386001a0b9e785cc74da81a0ea5fda089397b",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "tool_pin": "unrecorded",
+      "zero_tool": true,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 503,
+          "output_tokens": 12,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 34641,
+          "output_tokens": 2352,
+          "cache_read_tokens": 256,
+          "cache_write_tokens": 0
+        }
+      ],
+      "input_tokens": 35144,
+      "output_tokens": 2364,
+      "cache_read_tokens": 256,
+      "cache_write_tokens": 0,
+      "total_tokens": 37764,
+      "elapsed_seconds": 25.294,
+      "exit_code": 0,
+      "response_bytes": 4010,
+      "response_sha256": "b0d1953e6b76c1d43e5e50f335f9015ea37dac711e0c67ae0c0f76da07e0e4a6",
+      "response": "Warning: Unknown toolsets: __none__\nDecision: do not launch. The defect is in task design and construction order, not in reporting order; moving `write_summary` after the gate still leaves scoring inside construction, and the row filter is post-hoc. Record a hold, repair, then re-attempt under a new job ID.\n\nEvidence\n- Population selection uses `current_status`, a today-snapshot field, so eligibility conditions on future completion. The `quality.json` claim that selection is \"only application-time eligibility\" contradicts the code; labelling pending rows \"unobserved targets\" while filtering them out does not fix the bias.\n- `timing.row_selection.fields` names `submission_date` but the filter reads `current_status`. Gate 1.4.0 also requires `prediction_instant`, `features` and (for statistical releases) `observations`, none present.\n- `write_summary` computes an `auc` over eval fitted scores inside `build.py`. Any AUC computed before `--accept` is early scoring; the skill says a wrapper so ordered is still wrong if the build computes it. Reordering does not retroactively qualify it.\n- `majority_class_accuracy: train_rate` is training prevalence, not accuracy. It must be `majority = int(train_rate >= 0.5)` then agreement with eval labels.\n- `identity_auc` is a model fitted on train scored on eval, not an identity or calendar control. It is mislabelled and cannot stand as the reference.\n- The wrapper has no `--accept` step between qualify and score.\n- The copied builder and its passing smoke test are historical evidence, not a vetted template. No artifact has a passing current report.\n\nUncertainty and next discriminating check\nApplicant features may be revised after submission; a field name does not establish availability. Decide, before construction, either (a) an event-time instant at submission with a fixed decision window W and eligibility `submission_date <= snapshot - W`, requiring evidence that outcomes are final within W and that features are not back-filled, or (b) a different target knowable at submission for all applications. The discriminating check is the source's documented field semantics plus an observed snapshot showing whether any feature or status changes after submission. If neither can be evidenced, hold \u2014 do not ship.\n\nOrdered actions\n1. Hold launch; write the defects and this decision into the candidate record.\n2. Resolve the population/timing question with recorded source evidence; set an explicit instant with timezone.\n3. Rewrite `build.py` to construct files and gate diagnostics only; delete `write_summary` entirely, not reorder it.\n4. Write a truthful `timing` block and full `quality.json` declarations (time column, event key, machine-readable split windows, label source); ensure label columns are absent from CSVs.\n5. Move all metrics into `score.py`: majority from train then eval labels; triad of persistence, calendar-only and full model on identical eval rows.\n6. Wrapper: `set -eu; python3 build.py --out /output/extract; python3 qualify_dataset.py /output/extract --json --report /output/qualification.json; python3 qualify_dataset.py --accept /output/qualification.json /output/extract; python3 score.py --data /output/extract`.\n7. Fresh attempt ID, `assemble-job.py`, preflight review, then plan/launch; qualify on the full artifact, accept exact bytes, score.\n\nStopping condition: stop before launch if eligibility cannot be made knowable at the instant, or if a second rebuild of the same structural defect is needed \u2014 then re-target or drop and record the negative result. Stop the pipeline at the first failing stage; preserve the failed gate report.\n\nOperator report\nNothing launched and no figures exist yet. Builder was copied from a prior candidate and selects rows by terminal status, so its population and timing claims are unsupported; its \"identity\" baseline is a fitted model and its \"accuracy\" is training prevalence. Holding for a design repair with fresh evidence, then a new attempt ID.\n\n\u2014 Scout (Hermes)\n"
+    },
+    {
+      "run": "run-125",
+      "session_id": "20261023_080015_0a702b",
+      "case": "rollout-copied-build",
+      "arm": "baseline",
+      "model_requested": "deepseek/deepseek-v4.1-flash-1017",
+      "provider_requested": "nous",
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "request_sha256": "01a61791864338622cad063b249c587aa9e517f2494a2557aefdd8cc2c2e6c4f",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "tool_pin": "unrecorded",
+      "zero_tool": true,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 442,
+          "output_tokens": 12,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 31894,
+          "output_tokens": 2150,
+          "cache_read_tokens": 2432,
+          "cache_write_tokens": 0
+        }
+      ],
+      "input_tokens": 32336,
+      "output_tokens": 2162,
+      "cache_read_tokens": 2432,
+      "cache_write_tokens": 0,
+      "total_tokens": 36930,
+      "elapsed_seconds": 25.324,
+      "exit_code": 0,
+      "response_bytes": 4249,
+      "response_sha256": "9d1ec69589d78cf062afb2435c9f7045b3ae4bc7ed505c730e75e3c603d34b3e",
+      "response": "Warning: Unknown toolsets: __none__\n**Decision: do not launch. The colleague's change is not a repair.** Keeping the metric calculation inside `build.py` keeps scoring before acceptance no matter where the file is written; `set -eu` also means the arithmetic claim is wrong in spirit \u2014 the numbers are computed and written *inside construction*, so nothing the gate does can un-score them. The old smoke test asserting the summary keys actively certifies the defect.\n\n**Evidence in the case**\n\n- The builder filters on `current_status` \u2014 the label source \u2014 then writes quality declaring only `row_selection`. Nothing declares `time_column`, `event_key_column`, `split_windows`, `label_source_columns`, or `timing.prediction_instant` / `timing.features` / `observations`. Under gate 1.4.0 this fails on declaration alone.\n- Prediction is \"approval at submission,\" but features come from a *current* snapshot. Field names prove nothing: intake fields are the only candidates for submission-time availability. Status, decision, inspection and resolution fields are post-hoc. That the snapshot is current also means historical feature values are unevidenced \u2014 a future-state snapshot cannot establish what was knowable at submission.\n- Row selection is outcome-conditioned: rows exist only if a terminal status was observed in this snapshot. At submission time you cannot know which applications would still be pending. That population is chosen with hindsight; unresolved applications must be censored (`unobserved_target`), not excluded from membership.\n- `train_rate` labelled `majority_class_accuracy` is training prevalence, not held-out accuracy. `identity_auc` is one fitted model, not the persistence/calendar-only triad, and it is fit and scored before acceptance. Metrics \"from a previous candidate\" are not evidence for this artifact.\n\n**Uncertainty and the next discriminating check**\n\nThe decisive unknown is whether *any* shipped column was knowable at submission. Next check: a column-by-column table from the publisher's own documentation, each marked submission-time / post-hoc / label source, with a citation. If almost every feature is post-hoc or only current-vintage values exist, the task cannot be built from this snapshot \u2014 record that and re-scope rather than dressing an assumption as a reconstruction.\n\n**Ordered actions**\n\n1. Record in the candidate file: `ready` \u2260 qualified; no passing current-version report exists; launch blocked; this exact next action.\n2. Freeze the copied builder as evidence; do not edit it in place into a \"fix,\" since provenance differs from this candidate.\n3. Build the dated timeline in a named timezone: submission instant \u2192 label resolution bound. Enumerate and classify every column.\n4. Remove `current_status`, its derivations, and every post-hoc field from the **written CSVs**, declare the label source in `label_source_columns`, and assert absence in written files.\n5. Replace outcome-conditioned filtering with a submission-date cohort; unresolved applications counted as `unobserved_target`.\n6. Write the full `quality.json` timing block with observed release/vintage evidence \u2014 not an assumed schedule.\n7. Strip all scoring (`write_summary`, `fitted_scores`, `auc`) from `build.py`. Entrypoint: construct \u2192 qualify \u2192 `--accept` exact bytes \u2192 separate score step on the accepted artifact.\n8. Rewrite the smoke test to assert *no* summary exists before acceptance, and prove it fails on the pre-fix builder.\n9. New attempt ID, `assemble-job.py`, `plan` review (bundle carries `qualify_dataset.py`), then launch.\n\n**Stopping condition:** launch only when the plan shows the new job ID and a bundle whose build entrypoint contains no metric computation; otherwise stop with the blocked timing handoff. No AUC may be quoted until a passing report and `--accept` exist.\n\n**Operator report:** permit candidate held pre-launch. Defects: label-source column in shipped data, current-snapshot features sold as submission-time, hindsight row selection, baseline computed inside construction and mislabelled. No worker spent, nothing scored, nothing packaged. Repair plan above; decision needed only if historical feature availability cannot be evidenced.\n\n\u2014 Scout (Hermes)\n"
+    }
+  ],
+  "verification": {
+    "reviewer": "Codex",
+    "request_hashes": "matches independent prepare.py output",
+    "response_hashes": "matches signed verbatim responses including original trailing newline",
+    "accounting": "all main and auxiliary counters reconcile; batch plus previous ledger matches new cumulative total",
+    "main_routes": "each matches requested route; no fallback in these four calls",
+    "tool_context": "Scout reported runtime preflight, --ignore-rules, zero tool messages; tool pin explicitly unrecorded, not independent served-model/tool attestation",
+    "batch_tokens": 152709,
+    "source_urls": [
+      "https://github.com/earino/dataset-factory/pull/13#issuecomment-6360351078",
+      "https://github.com/earino/dataset-factory/pull/13#issuecomment-6360364948"
+    ]
+  }
+}
