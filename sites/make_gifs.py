@@ -170,6 +170,24 @@ def emailgif(w=28, h=16):
     return frames_to_gif(frames, 120)
 
 
+def donebadge(w=96, h=22):
+    """100% COMPLETE badge for finished datasets (static, with a slow shine pulse)."""
+    frames = []
+    for i in range(4):
+        img = canvas(w, h)
+        d = ImageDraw.Draw(img)
+        d.rectangle([0, 0, w - 1, h - 1], fill=(0, 128, 0), outline=(255, 255, 0))
+        # check mark
+        d.line([(6, 11), (10, 16), (18, 5)], fill=(255, 255, 255), width=2)
+        text = "100% COMPLETE"
+        tw = d.textlength(text, font=FONT)
+        draw_text(d, ((w - 26 - tw) / 2 + 22, 5), text, (255, 255, 255))
+        if i == 2:
+            d.line([(26, 2), (30, 18)], fill=(0, 255, 0))
+        frames.append(img)
+    return frames_to_gif(frames, 350)
+
+
 def rainbow(w=300, h=6):
     """Rainbow horizontal rule (static)."""
     img = canvas(w, h)
@@ -199,6 +217,7 @@ ASSETS = {
     "construction": construction(),
     "flame": flame(),
     "newbadge": newbadge(),
+    "donebadge": donebadge(),
     "starfield": starfield(),
     "counter": counter(),
     "email": emailgif(),
