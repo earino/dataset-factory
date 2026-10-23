@@ -81,6 +81,65 @@ paper; SBSI 5085 approval-prediction paper; LLM constitutionality study (194-bil
 
 GO (ready) 2026-10-21. Contracts: licence (free reproduction with attribution, quoted), timing
 (presentation instant; indexação fields excluded with documented reasoning), target (publisher's
-own situation vocabulary, idSituacao 251 = became law, 1.5% measured on the 2005 sample),
-splits (1991–2022 closed-legislature cohorts by dataApresentacao; API cohort counts measured),
-not a mirror (novelty check recorded). Next action in record.json names the construction steps.
+own situation vocabulary — the 2026-10-21 line read "idSituacao 251 = became law, 1.5% on the 2005
+sample"; CORRECTED 2026-10-23 to situation code 1140, see the construction-probe section below:
+the discovery probe mis-indexed column 25), splits (1991–2022 closed-legislature cohorts by
+dataApresentacao; API cohort counts measured; right-censoring reframed 2026-10-23), not a
+mirror (novelty check recorded). Next action in record.json names the construction steps.
+
+## 2026-10-23 construction-probe tick: the discovery sample's label code was a mis-indexed column; right-censoring reframed; camara-001 launched
+
+Four probe scripts (kept in this directory, each run end-to-end from the coordinator):
+
+- **`probe_censoring.py` (v1) — defective, kept as the diagnosis.** Naive `split("\n")` on ranged
+  chunks corrupts rows whose quoted ementa/despacho contains embedded newlines; mid-file fragments
+  parsed as full-width rows with empty trailing fields, inflating "empty status" to 77–93%. The
+  discovery probe (`probe_samples.py`) has the same line-splitting shape plus a second, worse defect
+  (below). v1's numbers are not evidence; recorded so nobody re-runs it as-is.
+- **`probe_censoring2.py` — the corrected vocabulary measurement.** Quote-parity-aware record
+  trimming; whole-1991 file as ground truth (4,436 rows). Situation codes keyed **by header name**:
+  923 `Arquivada` (2,491 rows), **1140 `Transformado em Norma Jurídica` (311 = 7.0%)**, 1230
+  `Transformado em nova proposição`, 937 `Vetado totalmente`, and ongoing states 925/907/915/924/
+  926/936/1070/1120/1170/1220/1285. **This corrects the discovery record: `probe_samples.py` read
+  column 25 positionally as idSituacao, but column 25 is `ultimoStatus_idTipoTramitacao`; "code
+  251" never was a situation code.** The same defect produced the "codes 100/319 with empty
+  descriptions, 39–40% of rows" note — those were tramitação codes.
+- **`probe_empty_status.py` — the empty statuses are real.** 25–53% of rows by year carry an empty
+  `ultimoStatus_idSituacao` (whole-1991: 36.6%). For 12 sampled such ids the API v2 returns
+  `statusProposicao: null` — genuinely no tramitação on record (many are procedural types RIC/EMP/
+  MSC/REQ, some PLs), not a file gap. These are unobserved targets, excluded and counted per
+  window in the build.
+- **`probe_file_vs_api.py` — the file is current; bills outlive their legislature.** 2019-file
+  non-terminal rows match the live API exactly (5/5 sampled) and their `ultimoStatus_dataHora`
+  updates run into 2025–2026 (e.g. PL 1/2019 "Aguardando Apreciação pelo Senado Federal",
+  2025-08-26). So the recorded "closed-legislature settles the label" assumption is **wrong**:
+  Brazilian bills carry across legislatures; the scored population is bills whose status is
+  terminal **at the vintage**, with per-window unobserved shares measured and recorded.
+- **`probe_file_inventory.py` — the download budget.** 35/35 years 200 OK for both families:
+  `proposicoes` 747.4 MB + `proposicoesAutores` 456.0 MB. Autores schema measured: idProposicao,
+  tipoAutor, siglaPartidoAutor, siglaUFAutor, ordemAssinatura, proponente.
+
+Label design decided from these measurements (all recorded in record.json before the build ran):
+positive = code 1140; terminal negatives = Arquivada* + Vetado totalmente + Retirado + Devolvida
++ Tramitação Finalizada + Enviada ao Arquivo; merged (1230) excluded with its share recorded;
+everything else (incl. empty) = unobserved. Sampled cohort positive rates drift 7.0% (1991) →
+~2.2% (2005) → ~0.4–0.8% (2019–2022) — a prevalence-drift property to report beside any score.
+
+**Build + smoke.** `source/build.py` (union descending-first-wins, presentation-instant features,
+terminal-outcome label, in-build naive references, fixtures: PL 4188/2021 "BR do Mar" must be
+positive in the holdout window; portal facet bound 11,640 in situation 1140 across all years/types,
+read 2026-10-23). `tests_smoke_build.py` runs the real build over 70 synthetic year files (incl.
+multi-line quoted ementas, a true cross-file id collision, an everywhere-undescribed code, and a
+proponente-on-higher-ordem author pair) — **SMOKE OK** after it caught three real bugs (the
+whole-file header trim, the same in the autores pass, and a wrong row-count metric). The smoke
+also produced the corrected expectation for the proponente rule (build prefers `proponente=1`
+over lower ordemAssinatura — verified PROPR beats PSDB in the synthetic output).
+
+**camara-001 launched 06:30:58Z** (server 171985941, cx23/hel1, EUR 0.06 reservation, bundle
+build.py sha256 e3039dd7241c15ac…). The job downloads the 70 files on the worker, builds the panel,
+and runs the qualification gate on the full artifact; collection requires exit 0 + a passing gate
+report + `--accept` on the exact bytes before anything is scored (next_action in record.json).
+
+Mirror observation (novelty record, not permission): HF org `belisards` mirrors the raw
+proposicoes files 1934–2024 (`ementas_camarabr_1934_2024`) — raw extract, no splits, no scored
+contract; the recorded `differentiated` verdict is unchanged.
