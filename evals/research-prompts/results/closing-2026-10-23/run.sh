@@ -1,0 +1,56 @@
+#!/bin/sh
+# Worker entrypoint for the chilecompra-tender-outcome full build.
+#
+# Order is fixed and each stage stops the next: construct -> qualify ->
+# accept exact bytes -> simple references. build.py only constructs files and
+# gate diagnostics; no performance number is computed before acceptance.
+set -u
+
+OUT=/output/extract
+mkdir -p /output
+
+echo "== build =="
+python3 -u /workspace/build.py --out "$OUT" --work-dir /tmp/cl
+build_status=$?
+
+if [ -f "$OUT/summary.json" ]; then
+    cp "$OUT/summary.json" /output/summary.json
+fi
+
+if [ "$build_status" -ne 0 ]; then
+    echo "build failed; the extract is incomplete and qualification is not meaningful" >&2
+    exit "$build_status"
+fi
+
+echo "== qualification =="
+python3 /workspace/qualify_dataset.py "$OUT" --json \
+    --report /output/qualification-chilecompra-tender-outcome.json \
+    > /output/qualification-chilecompra-tender-outcome.txt 2>&1
+qual_status=$?
+cat /output/qualification-chilecompra-tender-outcome.txt
+
+if [ "$qual_status" -ne 0 ]; then
+    echo "qualification failed; nothing is scored" >&2
+    exit "$qual_status"
+fi
+
+echo "== acceptance (exact bytes) =="
+python3 /workspace/qualify_dataset.py --accept \
+    /output/qualification-chilecompra-tender-outcome.json "$OUT" \
+    > /output/acceptance-chilecompra-tender-outcome.txt 2>&1
+accept_status=$?
+cat /output/acceptance-chilecompra-tender-outcome.txt
+
+if [ "$accept_status" -ne 0 ]; then
+    echo "acceptance failed; nothing is scored" >&2
+    exit "$accept_status"
+fi
+
+echo "== simple references (post-acceptance only) =="
+python3 /workspace/score.py --data "$OUT" \
+    --report /output/references-chilecompra-tender-outcome.json
+score_status=$?
+cat /output/references-chilecompra-tender-outcome.json 2>/dev/null
+
+echo "build_status=$build_status qualification_status=$qual_status acceptance_status=$accept_status score_status=$score_status"
+exit "$score_status"
