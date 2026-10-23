@@ -618,11 +618,67 @@
       "elapsed_seconds": 20.833,
       "response": "**Decision: perform the single pre-authorized recovery \u2014 copy the missing asset from the immutable staging source to its already-declared asset name/path as a new attempt ID linked to the parent job, verify by digest, then clean up and record. Nothing else.**\n\nSupporting evidence: I hold the mutex and the documented handoff; no other writer. The candidate is private with a passing current qualification/acceptance and no publication approval, so no release boundary is at risk. The staging source is immutable and holds exactly the expected bytes; expected digest is recorded. The old worker is confirmed deleted, so no provider slot conflict. The approved transfer job already supports this asset, so the recovery uses the existing lifecycle rather than a new endpoint. No recovery has been spent in this chain, so the one-recovery budget is intact.\n\nUncertainty: that the staged asset still hashes to the manifest digest *at transfer time*, and that the transfer verifies both arrival and post-upload digests. Discriminating check: hash the staged asset on the worker before upload and compare to the manifest value; on mismatch, stop.\n\nOrdered actions:\n1. Record parent job ID, new attempt ID linked to it, expected asset name/path, size, SHA-256, and the reachable source (staging repo, release, asset id) in the candidate/job record and STATE.md.\n2. Plan the transfer job (`worker plan`, offline) to confirm it is refused-or-admitted correctly, names the same declared asset path, is not flagged `release`, and fits remaining allowance and time.\n3. Launch, wait, collect bounded evidence. Verify the asset reports the expected digest at the target release and that its name matches the declared path exactly.\n4. On verified match: destroy the worker, confirm provider-side deletion of server and owned IPs, record destination/asset/digest evidence, and note recovery consumed.\n5. Write `.factory/<job_id>/handled` with commit/evidence path and remaining blocker; run checks, inspect diff, commit only this job's changes, push, and read CI for that exact commit.\n\nStopping condition: stop and hand off to advancement on any digest conflict, any naming/path mismatch requiring a rename/PATCH, any manifest/card/loading change, or a second failure. Do not extend expiry, do not delete the last recovery source before verification, do not tag or publish, do not rewrite the verification receipt.\n\nOperator report (concise): transfer job <parent> omitted one asset; staging source intact with expected digest; recovery attempt <new id> copying to declared path; result and cleanup evidence to follow; publication remains unapproved and untouched.\n\n**Variant A \u2014 source bytes gone.** The recovery source no longer exists, so there is nothing to copy and no authority to rebuild. Do not normally delete anything still holding bytes, do not fetch bulk data to the coordinator, do not clear the ledger. Record the threatened/lost artifact explicitly with the evidence that staging no longer holds it, leave a blocked handoff to advancement within existing expiry, and confirm cleanup of already-deleted resources only. Independent expiry cleanup continues.\n\n**Variant B \u2014 digest conflicts with the manifest.** A conflict is a stop, not permission to replace published bytes. Do not overwrite the target, do not edit the manifest or digest to match the new bytes, do not invent a repair. Record both digests and the observed source identity, preserve prior evidence, and hand to advancement for a decision (new reviewed version, not an in-place edit).\n\n**Variant C \u2014 prior linked recovery already failed.** The one-recovery budget across the attempt chain is spent. No second model-directed attempt, no unchanged retry loop, no fresh worker. Record the failed attempt and its diagnostics, leave the job unhandled/unresolved as appropriate, and hand off with the exact source, expected digest and cheapest next check.\n\n\u2014 Scout (Hermes)\n",
       "response_sha256": "73c6c4f113411c8f5fc6e301f72c0323d98865ab5e08e54530834e4b4b07767b"
+    },
+    {
+      "partition": "watcher-verification",
+      "case": "watcher-recovery",
+      "arm": "baseline",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-105",
+      "session_id": "20261023_003522_bdc6c9",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "4ddedbc0238c8ff85b2fb1b9d981243eb52bfaae15a3aa5f90d0306e152ee668",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 216,
+        "output_tokens": 1295,
+        "cache_read_tokens": 20352,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 21863,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 186,
+          "output_tokens": 12,
+          "cache_read_tokens": 256,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 30,
+          "output_tokens": 1283,
+          "cache_read_tokens": 20096,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 20.981,
+      "response": "Decision: perform a new, bounded recovery attempt as a *new* transfer job ID \u2014 not a rerun of the failed one \u2014 moving only the missing asset from the immutable staging release to the existing private target. The accepted artifact is unchanged, qualification/acceptance is current, and no publication is involved, so this is ordinary release-path repair within standing authority. Do not publish, do not flip visibility, do not touch the manifest to match bytes.\n\nSupporting evidence (from the case, nothing added): candidate is private; artifact passed current qualification/acceptance; staging source is immutable and holds exactly the expected bytes and digest; failure cause is a single omitted asset, not corruption; old worker confirmed deleted; approved transfer job already supports the operation; allowance and time remain; no prior recovery attempt in this chain.\n\nUncertainty and next discriminating check: the case does not state whether the missing asset is absent from staging (versus merely omitted from the failed transfer's asset list) or whether a partial target upload exists. First check: read the staging release's manifest.json to get that asset's asset_id, size and SHA-256, confirm the source blob hashes to it, and confirm the target release lacks a file at that digest. That single check separates \"recoverable omission\" from the two refusal branches below. Secondary uncertainty: admission headroom for a second reservation \u2014 check the ledger and allowance before launch, and treat a refusal as a hold, not a workaround.\n\nBranches:\n- Source bytes gone: no recovery is possible from the accepted source. Do not synthesize bytes, restart construction as if it were the same artifact, or relax acceptance. Mark the transfer incomplete in the job record and candidate record, park the candidate with the evidence, and escalate to the operator with a named missing asset.\n- Digest conflicts with the manifest: hard refusal. The bytes on staging are not the accepted artifact; never overwrite the target, never rewrite the manifest or acceptance report to fit. Stop, preserve the observed digests, and escalate \u2014 a corrected artifact needs a new qualification and version.\n- Prior linked recovery already failed: no third blind retry. Diagnose the failure from its report and logs, reconcile any partial target uploads by digest, park and escalate. Bounded retries are exhausted once a linked attempt fails without a changed cause.\n\nOrdered actions:\n1. Read staging manifest.json; verify the missing asset's id, size, SHA-256; confirm source present and target absent.\n2. Allocate a new job ID in the candidate's job declaration; declare the transfer with exact source asset id, target name, size and digest; source reads via staging token, target write via the publish token only; keep `allow_public` unset.\n3. `worker plan` (offline) \u2014 it must refuse on missing credential or allowance; then `worker launch`.\n4. `worker collect`; verify the post-upload server digest equals the manifest digest and the asset is present in the target release. Collect small reports only; no bulk CSV to this host.\n5. `worker destroy`; confirm no server/IP remains.\n6. Record outcome, digests and worker deletion in STATE.md and candidates/<id>/record.json; commit, push, check CI for that exact commit.\n7. Last, write `.factory/<job_id>/handled` with a one-line summary.\n\nStopping condition: stop when the target asset verifies at the manifest digest and the worker is destroyed \u2014 or at the first named refusal (bytes gone, digest conflict, admission refused, linked failure) with its evidence recorded. No tag, no site step, no publication in either outcome.\n\nOperator report: \"Transfer recovery for <job> launched under new ID <id>: one missing asset copied from immutable staging to the private target, digest verified, worker destroyed, recorded and CI checked. Nothing was published; release still requires your flip. If the check had shown missing or conflicting source bytes, I would have stopped and parked the candidate instead.\"\n",
+      "response_sha256": "0682d37ccd4a277009c4c360fe9f75a218046fdedc9066644746a722ea9f3cef"
     }
   ],
   "ledger": {
-    "calls": 105,
-    "tokens": 3544560
+    "calls": 106,
+    "tokens": 3566423
   },
-  "updated_at": "2026-10-23T00:35:27Z"
+  "updated_at": "2026-10-23T00:35:48Z"
 }
