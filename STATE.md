@@ -6340,3 +6340,16 @@ check-runtime --source-only OK. Coverage after session: Latin America 6 records
 (BR 2, CL 2, CO 1, MX 1), live non-US 19/26. Next action: advancement session may
 construct the INPE fire-onset task per its recorded next_action (worker job, ~150 MB);
 the Colombia lead needs one bounded threshold-hunt probe before any verdict.
+
+## Deployment checkpoint - 2026-10-23
+
+- Merged PR #11 deployed at `b80a84da3be28ce51d2c555a3423b32284feb9a7` (fast-forward from `1d2f301`, clean tree,
+  merge CI run 39880723584 success; merge-commit check success).
+- Readback verified: watcher `98b45d983280` is `scout_worker_followup.sh`, `no_agent=true`, monitor fields cleared,
+  same 5-minute cadence, ID and delivery; exactly one watcher job. Installed shims/skills were hash-guarded;
+  `check-runtime --source-only` and `--home` clean, `factory doctor` exit 0, research admission allowed.
+- Holds unchanged: `auxiliary.background_review.enabled=false`, curator `PAUSED`; independent cleanup
+  `e80975eddd4a` enabled. Worker allowance and weekly token policy unchanged.
+- Advancement evaluation now pending: the first discovery invocation (session `20261023_005500_3d7a64`) completed
+  and pushed `be44e01`. Earlier "merge/deploy next" notes are superseded by this
+  checkpoint.
