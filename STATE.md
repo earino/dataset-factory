@@ -7206,3 +7206,53 @@ Checks this tick: `check-candidate.py hk-red-tide-sighting` OK (status=parked); 
 --all` run at close-out; no worker launched, nothing constructed, qualified or published; no
 reservation changed. Probe script retained at `candidates/hk-red-tide-sighting/probe_red_tide.py`
 (reproduces every aggregate quoted in the record; `--vintages` reproduces the Wayback comparison).
+
+## 2026-10-23 advancement: nz-ea-001 defect repaired with a proven regression guard; nz-ea-002 relaunched
+
+No release was actionable: every `packaged` candidate (eutl-installation-net-short, nhs-ae-four-hour-decline,
+tsb-railway-occurrence-casualty, who-flunet-activity-exceedance, my-pricecatcher-weekly-increase,
+chicago-food-inspections, abs-visitor-arrivals-direction) still carries `awaiting_operator: true`, which is
+the operator's private-to-public flip, not this session's work. za-municipal-audit-opinion remains
+unlaunchable on its recorded feature-vintage blocker, so the advancement took the recorded queue's first
+actionable build item, the nz-ea-001 repair with a fresh attempt id.
+
+**The repair, done as the record's next action prescribed.** build.py:663's four-argument `list.append`
+(one missing pair of parentheses) is fixed to a single 4-tuple append, and the lag assembly it lived in is
+extracted into `assemble_lag_observations()`. The gap that hid the defect from the smoke is closed at the
+source: fixture mode no longer hardcodes `timing.observations` - it synthesises listing metadata
+(`fixture_listing_entry`, deterministic lag cycle 1/2/3/5 days, RFC 7231 Last-Modified exactly like the
+Azure channel) and runs the same assembly function the real channel runs. The smoke generator moved from
+ignored `.factory/` to `candidates/nz-ea-wholesale-price-exceedance/source/make_fixture.py` with a
+parameterised out dir so tests are hermetic.
+
+**The guard was watched to fail, both ways.** `tests/test_nz_ea_build.py` (10 tests): against the pre-fix
+build.py (git stash of the repair) it fails with the hardcoded `note` observation surviving plus six errors
+(no `assemble_lag_observations`, no derived observations, empty lag summary); with only the shipped defect
+shape reintroduced inside the fixed function it fails with the exact
+`TypeError: list.append() takes exactly one argument (4 given)`; restored, 10/10 pass in 2 s. The
+integration test runs the full fixture-mode build in-process (fixture generation 1.6 s + build 1.0 s) and
+asserts the written observations equal the assembly's output on independently synthesised metadata -
+the pre-fix hardcoded pair (lags 1 and 3, both inside the new cycle, so lag values alone cannot
+distinguish) is caught by its `note` key, missing `source_file`, and the empty `daily_channel_lag_days`
+summary. A column-contract test pins the one-column-list rule (the duplicate-`island`-header family).
+
+**Full fixture smoke after the repair (fabricated data, nothing quotable):** build exits 0 (334 daily
+files, synthesised lag distribution {1:84, 2:84, 3:83, 5:83}, observations derived through both selection
+paths), gate 1.4.0 exits 0, `--accept` exits 0 against the exact bytes, score.py exits 0; gate `--selftest`
+OK with the shipped broken fixtures still rejected. Full unittest suite 611 tests OK (22 s);
+`check-candidate.py nz-ea-wholesale-price-exceedance` OK. Commit a126652 pushed with the repair, the
+generator move, the tests and the job bump.
+
+**nz-ea-002 launched 2026-10-23T18:11:32Z** (cx23/hel1, server 172091812, reservation EUR 0.06, provider
+rate EUR 0.01152/h; bundle sha256-verified, carries the fixed build.py at bundle line 371). The stage order
+inside run.sh is unchanged: construct -> full-artifact qualification (gate 1.4.0 on the worker) -> exact-byte
+`--accept` -> post-acceptance simple references only. Container timeout raised 100->120 min and lifetime
+120->150 min over nz-ea-001: the previous run spent 74.3 min fetching before it crashed, so the extra margin
+covers download-time variance, not a design change - the threshold, splits, instant and event-key decisions
+are untouched and the gate-failure rebuild budget stays intact (the gate never ran on nz-ea-001).
+
+PENDING (worker runs past this session): collection by the watcher tick, then the acceptance check recorded
+in the job entry - a passing gate report at 1.4.0 on the exact bytes plus `--accept` re-verification before
+any figure from the artifact is quoted; the expected reports are summary/qualification/acceptance/references
+under /output. October reservations after this launch: EUR 8.14 + 0.06 = 8.20 of 20 (release reserve EUR 5
+untouched).
