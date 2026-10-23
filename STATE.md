@@ -6758,3 +6758,43 @@ chilecompra-tender-outcome (build), nz-ea-wholesale-price-exceedance (build),
 za-municipal-audit-opinion (blocked on the CSV-vintage question),
 cra-charity-filing-exit / dvsa-mot-next-test-outcome / npri-facility-reporting-exit
 / nws-tornado-warning-verification (construct, each needs its build authored first).
+
+## 2026-10-23 advancement: chilecompra-tender-outcome built, qualified and accepted
+
+No release was actionable: the only `packaged` candidate (eutl-installation-net-short) still
+carries `awaiting_operator: true` (the operator's private-to-public flip). Picked the first
+construction item in the queue, `chilecompra-tender-outcome` (status `ready`).
+
+**Built and gated: PASSED.** Worker `cl-tender-002` (cx23, 1,120.8 s, EUR 0.06, destroyed
+and deletion read back from the provider: GET /servers/172010382 = 404 "server not found",
+zero servers by name). It streamed six monthly OCDS bulk zips (5.1 GB: 201905, 201906,
+202005, 202006, 202105, 202106; each digest and blob vintage recorded in the candidate
+record), one month at a time, and wrote the runner layout. Gate 1.4.0 passed 38/38 checks
+with `failed_checks: []` on the FULL artifact on the worker; `--accept` re-verified
+artifact `6f8cef93850f1211` on the coordinator against the download-verified bytes;
+`--selftest` passed with the unchanged gate and fixtures. Staging release
+`job-cl-tender-002` (id 421653257) holds the bulk CSVs; only compact reports sit in
+`.factory/cl-tender-002/reports/`.
+
+**A vintage defect shaped the design.** The 2016 zips were rebuilt at migration (blob
+Last-Modified 2020-03) and carry one release stamped 2018-12-31 with
+`tender.status = "complete"` and the final text - a compiled state, not a publication
+snapshot. Sampled 201906 (n=12) / 202101 (n=18) carry a genuine progressive release
+history. The build now *requires* `tender.status == "active"` on the first tender release
+and buckets the rest as `publication_state_not_evidenced`; the 2016 cohort was abandoned
+before any bytes were downloaded. Splits: train 2019-05/06 (23,457 rows / 4,151 pos),
+eval 2020-05/06 (11,943 / 1,992), holdout 2021-05/06 (17,319 / 4,351). Holdout prevalence
+0.2512 vs train 0.1770 is a recorded out-of-distribution property, not a clean temporal
+split.
+
+**Measured references (eval only, train-fitted), no model yet:** UNSPSC segment 0.5673,
+value-band x procedure 0.5410, buyer region 0.5309, calendar/identity 0.5270, procedure
+0.5164; majority-class accuracy 0.8332. Persistence is recorded INAPPLICABLE (one row per
+tender). No headroom claim exists and none may be quoted from these.
+
+Checks: `pytest -q` (see session record), `check-candidate.py --all`, both clean; record
+status `qualified` with the gate report, digests, exclusions and vintage evidence. October
+worker reservations now EUR 8.08 of 20 (release reserve EUR 5 untouched). Next:
+`chilecompra-tender-outcome` baseline job with the harness runner on the accepted artifact,
+compared on eval to the 0.5673 reference and reported per split; then nz-ea-wholesale-price-
+exceedance (build), and the four construct-first candidates.

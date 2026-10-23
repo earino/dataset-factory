@@ -85,3 +85,54 @@ GO (ready) 2026-10-21. All four discovery contracts hold with measured evidence:
 award fields excluded), target (award status unsuccessful/desierta, 14–17% measured base rate),
 splits (160 anonymous bulk months; windows proposed in record.json), not a mirror (novelty
 check recorded). Next action in record.json names the construction steps.
+
+## 2026-10-23 advancement: built, qualified and accepted (job cl-tender-002)
+
+Constructed on a Hetzner cx23 (`cl-tender-002`, 1,120.8 s, EUR 0.06 reservation). The
+construction channel is the monthly OCDS bulk zips, parsed member by member (entries are
+STORED, one JSON record package per process, central directory readable by ranged GET).
+
+**Cohort choice was forced by a measured vintage defect.** The 2016 zips were rebuilt at
+migration (blob Last-Modified 2020-03) and carry a single release stamped 2018-12-31 with
+`tender.status = "complete"` and the final text: a compiled state, not a publication
+snapshot. Sampled 201906 (n=12) and 202101 (n=18) carry a genuine progressive history -
+first release == `tenderPeriod.startDate` within 0-1 days, status `active`, 3-7
+tenderUpdates, status moving to `complete` at closing. The build therefore *requires*
+`tender.status == "active"` on the first tender release and buckets anything else as
+`publication_state_not_evidenced` (2 / 12 / 14 rows). The 2016 cohort was abandoned before
+any download of it; no 2016 artifact exists.
+
+Splits (same calendar months, one year apart): train 2019-05..06, eval 2020-05..06,
+holdout 2021-05..06. Membership is the first tender release's month; the award release is
+read afterwards only to compute the label. Cancelled awards and processes without an award
+release are counted per split as `unobserved:*`, never used as a membership rule.
+
+| split | rows | positives | rate | distinct positive days |
+| --- | --- | --- | --- | --- |
+| train (2019-05/06) | 23,457 | 4,151 | 0.1770 | 53 |
+| eval (2020-05/06) | 11,943 | 1,992 | 0.1668 | 50 |
+| holdout (2021-05/06) | 17,319 | 4,351 | 0.2512 | 51 |
+
+Unobserved: train 794 none / 774 cancelled, eval 556 / 605, holdout 861 / 743. The
+holdout's zips are the 2021-12-31 vintage, so its outcome window is ~6.5 months (latest
+release seen 2021-12-30); train's is ~17 months. 86 labelled rows disagree between award
+status (`unsuccessful`) and compiled tender status (`active`); recorded, not resolved away.
+
+**Qualification: PASSED** - gate 1.4.0, 38/38 checks, 0 failed, on the full artifact on the
+worker; `--accept` re-verified `6f8cef93850f1211` on the coordinator against the
+download-verified bytes. No single shipped column determines the target; only `tender_id`,
+`estimated_value_clp` and `pub_date` are declared high-cardinality. `--selftest` passed
+with the unchanged gate and fixtures.
+
+**Simple references (eval rows only, fitted on train):** procedure 0.5164, buyer region
+0.5309, UNSPSC segment 0.5673, calendar/identity 0.5270, value-band x procedure 0.5410;
+majority-class accuracy 0.8332. Persistence is recorded INAPPLICABLE (one row per tender,
+no per-entity series) rather than replaced by a lookalike. These are single-feature
+conditional rates, **not** a model - no headroom claim exists and none may be quoted.
+
+Artifacts: staging release `job-cl-tender-002` (id 421653257); bulk CSVs stay there, only
+compact reports collected to `.factory/cl-tender-002/reports/` (digest-verified).
+
+Next: baseline job with the harness runner against this exact artifact, compared on eval to
+the 0.5673 UNSPSC reference and reported per split (holdout prevalence 0.2512 vs train
+0.1770 makes a pooled number unreadable). Package only if headroom is real.
