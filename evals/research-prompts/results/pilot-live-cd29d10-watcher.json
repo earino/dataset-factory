@@ -730,11 +730,67 @@
       "elapsed_seconds": 102.952,
       "response": "Proposed handling only; nothing below has been executed.\n\nDECISION\nReject the colleague's sequence. Destroying the worker first deletes the only known copy of the missing asset; the replacement it frees the slot for would then have no source to recover from - recovery copies identical bytes from a reachable source, and no source means handoff, not a rebuild. Preserve first: run the existing supported same-artifact transfer on the live worker now, verify the staged copy against the accepted digest, and only then destroy. No replacement worker is needed at all.\n\nSUPPORTING EVIDENCE\n- All assets listed in the collected report are verified in staging; one expected asset is absent from both report and staging, its only known copy being the live worker at a recorded path matching the accepted digest.\n- Before normal deletion, every expected accepted asset must be accounted for by durable destination, exact asset name/path and observed matching digest; \"collected\" or an upload URL is not that evidence. The missing asset currently has none, so normal teardown is not yet permissible.\n- The supported transfer runs within the allowance and the remaining 20 minutes, using the existing worker - no second server, so the binding single-worker policy is satisfied.\n- No recovery has been attempted, so the single model-directed recovery is available; this transfer is it. Bounded transport retries inside the tool remain fine; no nested second attempt.\n- Ownership is exclusive with a documented handoff, so the watcher may act. No public approval exists: everything stays in private staging; no tag, manifest or visibility changes.\n\nUNCERTAINTY AND DISCRIMINATING CHECK\nWhether the upload completes and the staged bytes verify before expiry. Check: read the staging release back and compare the server-reported size and SHA-256 for the asset against the recorded accepted digest, and confirm it landed under its existing declared name/path - a naming mismatch is a diagnosis for advancement, not authority to rename or PATCH.\n\nORDERED ACTIONS AND STOPPING CONDITION\n1. Note the expiry clock; never extend expiry. Reconfirm the recorded path and expected digest.\n2. Run the supported same-artifact transfer now: worker path to the existing declared asset name/path in private staging. This is the one allowed recovery.\n3. Verify presence under the declared name and digest equality; record destination release/revision, exact asset name, observed digest.\n4. Only with every expected asset accounted for: worker destroy <id>, then confirm provider-side deletion of the server and its job-owned IP.\n5. Update candidate record, ledger and STATE.md (transfer evidence, digest match, cleanup proof, next action); run relevant checks; inspect the diff; commit only this job's changes; push; read exact-commit CI via gh api head_sha (unread is unknown).\n6. Write .factory/<job_id>/handled with commit/evidence path and any remaining blocker.\n\nStop condition: if the transfer fails, the digest conflicts, or verification cannot finish before expiry - do not destroy the worker early; a failed transfer does not prove the bytes lost. Leave it to independent expiry cleanup, and record the threatened artifact explicitly (name, worker path, expected digest, worker ID, expiry time) with a precise blocked handoff to advancement: the extract is incomplete by one asset, so no scoring, acceptance or packaging may proceed on it; any rebuild is advancement's decision. After expiry and confirmed provider deletion, update the record from threatened to lost with the deletion evidence. Write the handled marker only once that outcome and handoff are durably recorded. A digest conflict is a stop, never permission to replace anything.\n\nOPERATOR REPORT (proposed)\n\"<job> (<candidate>, private transfer): all report-listed assets verified in staging; one expected asset (<name>, sha256 <digest>) was missing everywhere except the live worker. Preserved via the supported transfer under its declared name; staged digest matches the accepted artifact; worker and IP deletion confirmed by the provider. Recorded in STATE.md and the candidate record; commit <sha>; CI <status>. Next: advancement proceeds to acceptance/packaging of the now-complete extract. Nothing public; no approval implied.\" Failure variant: \"...preservation could not be verified before expiry; worker left to independent cleanup; asset recorded threatened/lost with path and digest; blocked handoff to advancement; no second recovery attempted.\"\n\n\u2014 Scout (Hermes)\n",
       "response_sha256": "41599b83995863843931bd677ec03852661e55bae50faa8dfb77b92064e2a3a7"
+    },
+    {
+      "partition": "watcher-verification",
+      "case": "watcher-retained-source",
+      "arm": "baseline",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-107",
+      "session_id": "20261023_003734_37a908",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "0c3ac96a5eb5820777061eb40a5b2ddf539b2659ebe6ea7d09b73573bea01aba",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 110,
+        "output_tokens": 8152,
+        "cache_read_tokens": 19904,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 28166,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 344,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 58,
+          "output_tokens": 7808,
+          "cache_read_tokens": 19520,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 107.79,
+      "response": "DECISION\nReject the colleague's sequence. Destroying the worker now deletes the only known copy of the missing asset; a replacement worker starts with an empty disk and cannot recover a file that lived on the deleted machine. Reverse the order: run the supported same-artifact transfer against the live worker first, verify the asset in private staging, then destroy. Destroy-first turns a 20-minute recovery into permanent loss plus a billed worker that recovers nothing.\n\nSUPPORTING EVIDENCE\n- The case states the only known copy is on the old worker at a recorded path, digest-matching the accepted artifact, and that a supported same-artifact transfer can preserve it within allowance and the remaining 20 minutes. Feasibility is given; only ordering is in question.\n- OPERATIONS.md lifecycle: transfer required artifacts off the worker and verify checksums before normal cleanup; deletion is part of finishing a job, i.e. after verified collection. \"A partial upload is not a verified result.\"\n- Transfers verify each asset twice (arrival vs recorded SHA-256; post-upload vs server digest) and delete the local copy only after upload. Target is private staging: no public approval exists and none is needed, since private staging is ordinary autonomous work; a public target is refused without allow_public, which I would not set.\n- Single-worker policy means no parallel path exists, so early destruction gains nothing and loses everything if the copy dies.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\nWhether the on-worker file still hashes to the accepted digest at transfer time, and whether the transfer fits the window. First check, within the first minute: confirm the transfer's dispatch path executes against the live worker inside its lifetime and does not require a fresh launch \u2014 if it did, preservation would be impossible and that must be learned now, not at minute 19. The transfer's double verification is the discriminating evidence; success is the staging manifest listing the asset at the accepted digest.\n\nORDERED ACTIONS AND STOPPING CONDITION\n1. Hold destruction; tell the colleague why.\n2. Confirm the recorded path and a fresh digest on the worker.\n3. Dispatch the supported same-artifact transfer for the missing asset now: new attempt ID (bundles are immutable; a changed asset list is a new ledger entry), private staging target, within allowance.\n4. Verify in staging from the release's manifest.json \u2014 asset present, size and SHA-256 equal the accepted digest. Fetch small reports only; never pull the bulk asset to this coordinator.\n5. Record the corrected outcome in STATE.md and the candidate's record.json (asset, digest, attempt ID, cost), commit, push, and check CI for that exact commit.\n6. Destroy the worker; confirm the server and its job-owned primary IP are gone.\n7. Report, then write .factory/<job_id>/handled.\n\nIf preservation fails or time expires: do not extend the worker or fight expiry \u2014 expired workers must not stay billable and expiry takes precedence over artifacts. Let it expire or destroy it, mark the transfer incomplete (never claim the full asset set verified), record the loss, path, digest and failure in the ledger and STATE.md, diagnose the omission from errors and container.log, and regenerate via a new build/transfer attempt within allowance; if regenerated bytes differ from the accepted digest, the artifact must re-qualify before any figure is quoted. Stop recovery at expiry; destroy only after verified staging upload, or at expiry with the failure recorded.\n\nOPERATOR REPORT (draft)\n\"Transfer <id> collected; all listed assets verified in staging, but <asset> was omitted from the report and staging \u2014 only copy on the live worker, 20 minutes to expiry. I refused destroy-first (it would delete the only copy; a replacement recovers nothing) and dispatched the supported same-artifact transfer. Asset now verified in staging at SHA-256 <digest>; recorded in STATE.md and record.json, pushed <commit>, CI <status> for that commit; worker and IP confirmed deleted. Next: <release step>.\"\nFailure variant: \"Preservation failed at <time>; worker expired and was destroyed on schedule; transfer marked incomplete; omission diagnosed (<cause>); rebuild attempt <new id> prepared within allowance; re-qualification required if digests change.\"\n",
+      "response_sha256": "7cfd48d6be659208e95ac266c41f0d20ee270a924622d58148712d00f1f779e5"
     }
   ],
   "ledger": {
-    "calls": 106,
-    "tokens": 3607898
+    "calls": 108,
+    "tokens": 3636064
   },
-  "updated_at": "2026-10-23T00:37:29Z"
+  "updated_at": "2026-10-23T00:39:31Z"
 }
