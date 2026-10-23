@@ -1,0 +1,50 @@
+{
+  "id": "cl-tender-baseline-001",
+  "candidate": "chilecompra-tender-outcome",
+  "image": "python:3.13-slim",
+  "server_type": "cx23",
+  "location": "hel1",
+  "cpus": 2,
+  "memory_mb": 3072,
+  "timeout_minutes": 45,
+  "lifetime_minutes": 90,
+  "max_disk_mb": 4096,
+  "max_artifact_mb": 16,
+  "what": "operator-authorized runner-contract baseline (ONE job) on the accepted cl-tender-003 artifact 27e610ba65e13805, fetched from staging release 421857839 (not rebuilt): re-accept the five fetched files through the qualification gate against the gate's own collected report, materialize the runner workdir (public train+eval only; the private holdout is fetched for re-acceptance only and never copied into the workdir or scored), run the benchmark's own train.py and validate.sh unmodified, then independently recompute the decisive comparison from the same bytes with reference_check.py: the unspsc_only bar (train-fitted segment rates, own stdlib AUC), the model eval AUC (train.py's predict_proba), and the paired difference with a publication-day-clustered bootstrap, on the identical 11,791 eval rows the accepted references were measured on. The accepted bar to compare against is unspsc_only 0.5707. This is the contract only, not the agent harness loop; no packaging, no publication.",
+  "fetch": {
+    "repo": "earino/dataset-factory-staging",
+    "release": 421857839,
+    "assets": [
+      {
+        "asset_id": 669167939,
+        "dest": "extract/meta.json",
+        "size": 3151,
+        "sha256": "c12bb4392c8f4a1190ea644497b3872fc5430960c2aba2629e7097487410a665"
+      },
+      {
+        "asset_id": 669168006,
+        "dest": "extract/private/holdout.csv",
+        "size": 2902213,
+        "sha256": "85a7112ad5b0a1f447a13253184cdae6f0ccba88c632e06977dde37b280d80ff"
+      },
+      {
+        "asset_id": 669168128,
+        "dest": "extract/public/eval.csv",
+        "size": 1983903,
+        "sha256": "677cbb522133e4e8f784576690a528264a3695effb0b9a063f93600c0f5d02a4"
+      },
+      {
+        "asset_id": 669168208,
+        "dest": "extract/public/train.csv",
+        "size": 3883318,
+        "sha256": "2c7e341817a041b8a55ead6c71c9adf9fefbec492fae6c7cd94b8d300c86ce8e"
+      },
+      {
+        "asset_id": 669168296,
+        "dest": "extract/quality.json",
+        "size": 11474,
+        "sha256": "001eaf5cadf4624ca65c9020d8a2540f0bd8e958bab3e3e9296558b8373cb30e"
+      }
+    ]
+  }
+}

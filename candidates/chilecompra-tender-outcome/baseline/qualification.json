@@ -1,0 +1,563 @@
+{
+ "ok": true,
+ "dataset": "/output/extract",
+ "gate_version": "1.4.0",
+ "artifact": {
+  "train": {
+   "file": "public/train.csv",
+   "sha256": "2c7e341817a041b8a55ead6c71c9adf9fefbec492fae6c7cd94b8d300c86ce8e",
+   "bytes": 3883318
+  },
+  "eval": {
+   "file": "public/eval.csv",
+   "sha256": "677cbb522133e4e8f784576690a528264a3695effb0b9a063f93600c0f5d02a4",
+   "bytes": 1983903
+  },
+  "holdout": {
+   "file": "private/holdout.csv",
+   "sha256": "85a7112ad5b0a1f447a13253184cdae6f0ccba88c632e06977dde37b280d80ff",
+   "bytes": 2902213
+  },
+  "meta.json": {
+   "file": "meta.json",
+   "sha256": "c12bb4392c8f4a1190ea644497b3872fc5430960c2aba2629e7097487410a665",
+   "bytes": 3151
+  },
+  "quality.json": {
+   "file": "quality.json",
+   "sha256": "001eaf5cadf4624ca65c9020d8a2540f0bd8e958bab3e3e9296558b8373cb30e",
+   "bytes": 11474
+  },
+  "artifact_version": {
+   "digest": "27e610ba65e13805c8066e0bdb7932324cd39e30096f4e51b13136120e1ca3a7",
+   "components": [
+    "eval",
+    "holdout",
+    "meta.json",
+    "quality.json",
+    "train"
+   ]
+  }
+ },
+ "results": [
+  {
+   "check": "descriptor",
+   "ok": true,
+   "detail": "quality.json loaded for 'chilecompra-tender-outcome'",
+   "evidence": {}
+  },
+  {
+   "check": "leakage.declared_columns",
+   "ok": true,
+   "detail": "every shipped column is declared",
+   "evidence": {
+    "undeclared": []
+   }
+  },
+  {
+   "check": "leakage.answer_source_absent",
+   "ok": true,
+   "detail": "no answer source or post-hoc column is shipped",
+   "evidence": {
+    "shipped_forbidden": []
+   }
+  },
+  {
+   "check": "leakage.every_column_could_be_scored",
+   "ok": true,
+   "detail": "every column was scored for leakage",
+   "evidence": {
+    "unscorable": []
+   }
+  },
+  {
+   "check": "leakage.no_single_column_determines_the_target",
+   "ok": true,
+   "detail": "no shipped column separates the classes on its own",
+   "evidence": {
+    "offenders": [],
+    "high_cardinality": [
+     "estimated_value_clp@eval",
+     "estimated_value_clp@holdout",
+     "tender_id@eval",
+     "tender_id@holdout",
+     "tender_id@train"
+    ],
+    "missing_splits": []
+   }
+  },
+  {
+   "check": "leakage.high_cardinality_declared",
+   "ok": true,
+   "detail": "high-cardinality columns are declared as identifiers or free fields",
+   "evidence": {
+    "undeclared": [],
+    "declared": [
+     "estimated_value_clp",
+     "pub_date",
+     "tender_id"
+    ]
+   }
+  },
+  {
+   "check": "timing.prediction_time_declared",
+   "ok": true,
+   "detail": "prediction instant is declared",
+   "evidence": {}
+  },
+  {
+   "check": "timing.no_post_hoc_feature",
+   "ok": true,
+   "detail": "no feature is documented as post-hoc",
+   "evidence": {
+    "overlap": []
+   }
+  },
+  {
+   "check": "timing.label_source_is_not_a_feature",
+   "ok": true,
+   "detail": "the label source is not a feature",
+   "evidence": {
+    "source_features": []
+   }
+  },
+  {
+   "check": "timing.every_feature_documented",
+   "ok": true,
+   "detail": "features documented as available 'prediction_time'",
+   "evidence": {
+    "features_documented_at": "prediction_time"
+   }
+  },
+  {
+   "check": "timing.instant_declared",
+   "ok": true,
+   "detail": "prediction instant kind='publication' citation=True",
+   "evidence": {
+    "prediction_instant": {
+     "kind": "publication",
+     "period": "instant",
+     "days_after_period_end": 0,
+     "citation": "timestamp of the first OCDS `tender` release for the process, i.e. the moment the platform publishes the tender (observed values shipped in pub_date; the record package's publishedDate is later and unused)"
+    }
+   }
+  },
+  {
+   "check": "timing.publication_lag_measured",
+   "ok": true,
+   "detail": "6 of 6 observed period_end -> published dates are usable",
+   "evidence": {
+    "observations": [
+     {
+      "period": "2019-05",
+      "period_end": "2019-05-31",
+      "published": "2021-01-13",
+      "channel": "monthly bulk zip blob Last-Modified (vintage of the label window; the features are administrative records written at publication)"
+     },
+     {
+      "period": "2019-06",
+      "period_end": "2019-06-30",
+      "published": "2021-01-13",
+      "channel": "monthly bulk zip blob Last-Modified (vintage of the label window; the features are administrative records written at publication)"
+     },
+     {
+      "period": "2020-05",
+      "period_end": "2020-05-31",
+      "published": "2021-01-14",
+      "channel": "monthly bulk zip blob Last-Modified (vintage of the label window; the features are administrative records written at publication)"
+     },
+     {
+      "period": "2020-06",
+      "period_end": "2020-06-30",
+      "published": "2021-01-14",
+      "channel": "monthly bulk zip blob Last-Modified (vintage of the label window; the features are administrative records written at publication)"
+     }
+    ],
+    "measured_lag_days": 593,
+    "source_kind": "administrative_record"
+   }
+  },
+  {
+   "check": "timing.features_available_at_instant",
+   "ok": true,
+   "detail": "features publish 0d after the period, instant is 0d after it",
+   "evidence": {
+    "features_lag_days": 0,
+    "instant_lag_days": 0,
+    "measured_lag_days": 593
+   }
+  },
+  {
+   "check": "timing.instant_accounts_for_publication_lag",
+   "ok": true,
+   "detail": "instant is a publication instant",
+   "evidence": {
+    "kind": "publication",
+    "features_lag_days": 0
+   }
+  },
+  {
+   "check": "timing.selection_uses_only_available_data",
+   "ok": true,
+   "detail": "row selection declares its latest period as 'the publication instant of the row itself (first tender release; cohort months train 2019-05, 2019-06; eval 2020-05, 2020-06; holdout 2021-05, 2021-06)'",
+   "evidence": {
+    "latest_period_used": "the publication instant of the row itself (first tender release; cohort months train 2019-05, 2019-06; eval 2020-05, 2020-06; holdout 2021-05, 2021-06)",
+    "fields": [
+     "first tender release date",
+     "ocid"
+    ]
+   }
+  },
+  {
+   "check": "units.measured_columns_declare_unit_and_frame",
+   "ok": true,
+   "detail": "4 measured column(s) declare unit and frame",
+   "evidence": {
+    "measurements": [
+     {
+      "column": "estimated_value_clp",
+      "unit": "Chilean pesos (CLP), nominal",
+      "frame": "tender.value.amount with tender.value.currency == 'CLP'; amounts in any other currency (UTM/USD) are left empty and flagged in value_missing so no mixed-unit column is shipped"
+     },
+     {
+      "column": "quantity_sum",
+      "unit": "sum of the item quantities in the units the publisher states per item (mixed item units)",
+      "frame": "tender.items[].quantity summed; has_quantity records whether any item carried a numeric quantity, so a zero is not read as missing"
+     },
+     {
+      "column": "tender_period_days",
+      "unit": "days between tenderPeriod.startDate and endDate",
+      "frame": "publisher's durationInDays where present, otherwise computed from the two timestamps in UTC"
+     },
+     {
+      "column": "pub_date",
+      "unit": "calendar date in UTC",
+      "frame": "date part of the first tender release timestamp (the publication instant); split windows are month boundaries in this frame"
+     }
+    ]
+   }
+  },
+  {
+   "check": "units.known_event_fixture_recorded",
+   "ok": true,
+   "detail": "no external threshold, so no known-event fixture is required",
+   "evidence": {}
+  },
+  {
+   "check": "splits.time_column_declared",
+   "ok": true,
+   "detail": "split overlap is checked against 'pub_date'",
+   "evidence": {}
+  },
+  {
+   "check": "splits.machine_readable_windows",
+   "ok": true,
+   "detail": "train/eval/holdout windows are declared with start/end",
+   "evidence": {
+    "split_windows": {
+     "train": {
+      "start": "2019-05-01",
+      "end": "2019-07-01"
+     },
+     "eval": {
+      "start": "2020-05-01",
+      "end": "2020-07-01"
+     },
+     "holdout": {
+      "start": "2021-05-01",
+      "end": "2021-07-01"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.files_present",
+   "ok": true,
+   "detail": "all three split files exist",
+   "evidence": {
+    "missing": []
+   }
+  },
+  {
+   "check": "splits.non_empty",
+   "ok": true,
+   "detail": "every split has rows",
+   "evidence": {
+    "train": {
+     "rows": 23188,
+     "positives": 4089,
+     "negatives": 19099,
+     "positive_rate": 0.176341
+    },
+    "eval": {
+     "rows": 11791,
+     "positives": 1959,
+     "negatives": 9832,
+     "positive_rate": 0.166144
+    },
+    "holdout": {
+     "rows": 17236,
+     "positives": 4333,
+     "negatives": 12903,
+     "positive_rate": 0.251392
+    }
+   }
+  },
+  {
+   "check": "splits.eval_and_holdout_have_both_classes",
+   "ok": true,
+   "detail": "eval and holdout each contain positives and negatives",
+   "evidence": {
+    "train": {
+     "rows": 23188,
+     "positives": 4089,
+     "negatives": 19099,
+     "positive_rate": 0.176341
+    },
+    "eval": {
+     "rows": 11791,
+     "positives": 1959,
+     "negatives": 9832,
+     "positive_rate": 0.166144
+    },
+    "holdout": {
+     "rows": 17236,
+     "positives": 4333,
+     "negatives": 12903,
+     "positive_rate": 0.251392
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_declared",
+   "ok": true,
+   "detail": "eval and holdout declare positives and distinct events",
+   "evidence": {
+    "declared": {
+     "eval": {
+      "positives": 1959,
+      "distinct_events": 50
+     },
+     "holdout": {
+      "positives": 4333,
+      "distinct_events": 51
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_match_rows",
+   "ok": true,
+   "detail": "declared positive counts match the rows",
+   "evidence": {
+    "mismatched": []
+   }
+  },
+  {
+   "check": "splits.event_key_column_declared",
+   "ok": true,
+   "detail": "clustered events are counted by 'pub_date' (date part)",
+   "evidence": {}
+  },
+  {
+   "check": "splits.distinct_events_match_rows",
+   "ok": true,
+   "detail": "declared clustered event counts match the rows",
+   "evidence": {
+    "recomputed": {
+     "train": 52,
+     "eval": 50,
+     "holdout": 51
+    },
+    "declared": {
+     "eval": {
+      "positives": 1959,
+      "distinct_events": 50
+     },
+     "holdout": {
+      "positives": 4333,
+      "distinct_events": 51
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.enough_clustered_positives",
+   "ok": true,
+   "detail": "eval and holdout carry enough independent positive events to score",
+   "evidence": {
+    "thin": [],
+    "recomputed_events": {
+     "train": 52,
+     "eval": 50,
+     "holdout": 51
+    },
+    "minimums": {
+     "positives": 30,
+     "distinct_events": 20
+    }
+   }
+  },
+  {
+   "check": "splits.rates_not_uniform",
+   "ok": true,
+   "detail": "positive rates are between 0 and 1",
+   "evidence": {
+    "rates": [
+     0.176341,
+     0.166144,
+     0.251392
+    ]
+   }
+  },
+  {
+   "check": "splits.actual_ranges_computed",
+   "ok": true,
+   "detail": "row timestamps found for every split",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "2019-05-01",
+      "max": "2019-06-29"
+     },
+     "eval": {
+      "min": "2020-05-01",
+      "max": "2020-06-30"
+     },
+     "holdout": {
+      "min": "2021-05-01",
+      "max": "2021-06-30"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.actual_ranges_disjoint",
+   "ok": true,
+   "detail": "the rows of the three splits occupy disjoint periods",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "2019-05-01",
+      "max": "2019-06-29"
+     },
+     "eval": {
+      "min": "2020-05-01",
+      "max": "2020-06-30"
+     },
+     "holdout": {
+      "min": "2021-05-01",
+      "max": "2021-06-30"
+     }
+    },
+    "overlaps": []
+   }
+  },
+  {
+   "check": "splits.rows_within_declared_windows",
+   "ok": true,
+   "detail": "every row falls inside its split's declared window",
+   "evidence": {
+    "windows": {
+     "train": {
+      "start": "2019-05-01",
+      "end": "2019-07-01"
+     },
+     "eval": {
+      "start": "2020-05-01",
+      "end": "2020-07-01"
+     },
+     "holdout": {
+      "start": "2021-05-01",
+      "end": "2021-07-01"
+     }
+    },
+    "ranges": {
+     "train": {
+      "min": "2019-05-01",
+      "max": "2019-06-29"
+     },
+     "eval": {
+      "min": "2020-05-01",
+      "max": "2020-06-30"
+     },
+     "holdout": {
+      "min": "2021-05-01",
+      "max": "2021-06-30"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.no_cross_split_entities",
+   "ok": true,
+   "detail": "no tender_id appears in more than one split",
+   "evidence": {
+    "shared_sample": [],
+    "shared_count": 0
+   }
+  },
+  {
+   "check": "splits.duplicate_entities_within_splits",
+   "ok": true,
+   "detail": "0 repeated-identifier rows within splits, at most the declared 0",
+   "evidence": {
+    "duplicate_rows": {},
+    "declared": 0
+   }
+  },
+  {
+   "check": "runner.layout",
+   "ok": true,
+   "detail": "holdout is private and train/eval are public",
+   "evidence": {}
+  },
+  {
+   "check": "runner.meta_json_keys",
+   "ok": true,
+   "detail": "meta.json carries the keys the runner reads",
+   "evidence": {
+    "keys": [
+     "built_at_utc",
+     "columns",
+     "description",
+     "features",
+     "id_columns",
+     "label_rule",
+     "label_source_columns",
+     "license",
+     "name",
+     "positive_label",
+     "positive_rate",
+     "prediction_time",
+     "rows",
+     "source",
+     "source_urls",
+     "split",
+     "target"
+    ]
+   }
+  },
+  {
+   "check": "runner.meta_matches_files",
+   "ok": true,
+   "detail": "meta.json agrees with the split files",
+   "evidence": {
+    "problems": []
+   }
+  },
+  {
+   "check": "runner.meta_counts_match_files",
+   "ok": true,
+   "detail": "meta rows and rates match the files",
+   "evidence": {}
+  },
+  {
+   "check": "runner.id_columns_are_not_features",
+   "ok": true,
+   "detail": "declared identifiers are not also listed as features",
+   "evidence": {}
+  }
+ ],
+ "failed_checks": []
+}

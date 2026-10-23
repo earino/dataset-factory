@@ -229,3 +229,30 @@ collected, sha256-manifest-verified bytes in .factory/cl-tender-003/reports/:
   (GET /servers/172043826 -> 404 'server not found'; project primary IPs: []).
 - No baseline model job, no packaging, no publication - advancement owns the review sign-off
   and the baseline decision.
+
+## 2026-10-23 assisted-review sign-off (advancement, operator-directed)
+
+Decision: RESOLVED. The declared outcome-conditioning and the 180-day terminal-state rule
+close the assisted review; artifact 27e610ba65e13805 (cl-tender-003) is the accepted evidence
+base and the baseline decision may proceed on it. Full reasoning is in `record.json`
+`review.signoff`; the substance:
+
+- The label is now a deterministic function of a closed, vintage-covered window (last
+  terminal award status within pub+180d; frozen horizon capped by the zip vintages;
+  mixed_terminal 0, duplicate_ocid 0; awardUpdate releases matched).
+- The scored population is no longer misdeclared: membership is publication-time-only, and
+  the scored subset is DECLARED outcome-dependent with per-split measured rates
+  (scored_share 0.9262/0.8990/0.9105, censored 0.0453/0.0566/0.0512, revoked
+  0.0286/0.0444/0.0383), which quality.json requires to be quoted beside any score.
+- A conditional (competing-risks style) population is a legitimate task when declared with
+  measured rates; the review's defect was the false publication-time claim plus the
+  ill-defined any-active label, and both are gone.
+- Scope limitation carried forward: every score describes the conditional population only
+  (~90-93% of eligible rows); deployment over all published tenders faces the excluded
+  revoked (~3-4%) and unresolved-at-180d (~5%) cases.
+
+Baseline decision criterion (recorded before the run): model eval AUC vs the unspsc_only
+0.5707 bar on the identical 11,791 eval rows, decided on the paired difference with a
+publication-day-clustered bootstrap interval (the day is the gate's independence unit).
+Headroom is demonstrated only if the model exceeds the bar AND the clustered interval
+excludes zero; otherwise the finding is negative-or-inconclusive and gets recorded as such.
