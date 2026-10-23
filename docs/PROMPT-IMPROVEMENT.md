@@ -1,9 +1,10 @@
 # Research prompt improvement
 
-Status: PR #11 is merged and deployed at `b80a84da3be28ce51d2c555a3423b32284feb9a7`.
-The first ordinary discovery is complete. Its live audit found a false-ready decision;
-a focused follow-up is being tested. Ordinary advancement is running. The goal remains
-open; controlled scores alone did not establish safe research execution.
+Status: PR #11 and its focused follow-up PR #12 are merged and deployed. Current
+prompt source is `ad607ca2d935a5a70fb16eeb1d612f9543ffc50f`, byte-identical to the
+tested `aa0e735` bundle. Advancement and a genuine watcher follow-up completed;
+the second ordinary discovery is running. The goal remains open until that live
+pass is audited. Controlled scores alone did not establish safe research execution.
 
 ## Deployed observation and correction
 
@@ -32,13 +33,15 @@ handoff through qualification/acceptance before scoring. No executable gate chan
 Two adaptive transfer cases compare this follow-up with the deployed bundle; they
 are not hidden tests. Another ordinary discovery must follow deployment.
 
-Ordinary advancement `20261023_011135_3731ee` / `proc_52e3e9a2a39e` is running untouched;
-its selected work and outcome remain to be reviewed. Repairs of World Bank or INPE
-findings already supplied by Codex are assisted. Full provenance and review questions
+Ordinary advancement `20261023_011135_3731ee` completed a fixed-config World Bank
+comparison and dropped the candidate under its protocol/budget. The source audit
+verified concrete scoring-order/reference improvements; interpretation needed
+assisted correction. Repairs of findings already supplied by Codex are assisted,
+not isolated prompt effects. Full provenance and review questions
 are retained in `evals/research-prompts/results/deployed-observation-b80a84d.json`.
 No higher dataset yield, lower dollar cost or causal speed gain is claimed.
 
-## Latest decision — corrected bundle cd29d10
+## First deployment comparison — corrected bundle cd29d10
 
 All twenty watcher verification responses are retained in
 `evals/research-prompts/results/watcher-cd29d10-*`. Source-aware review by Codex and
@@ -73,7 +76,7 @@ limitations are in `results/final-cd29d10-coverage.json` under the evaluation di
 Watcher tokens rise from 246,646 to 382,947 (about 55%); elapsed totals are 648.359s and
 562.947s. Across the final sixty responses tokens are 1,069,634 and 1,045,250, elapsed
 1,973.451s and 1,520.886s. Cache/runtime differences preclude causal speed/cost claims.
-All experiments together retain **113 attempts / 3,824,658 all-inclusive tokens**,
+At the first deployment, experiments retained **113 attempts / 3,824,658 all-inclusive tokens**,
 including one reconciled pre-inference failure and 112 successful responses. Dollar
 spend is unknown. Production budget definitions and numeric limits are unchanged.
 
@@ -507,3 +510,29 @@ The goal still requires another ordinary discovery and audit; an assisted repair
 or a high decision score alone cannot satisfy that check. Clean-clone verification
 after merging Scout's records at `e161f17`: 588 tests in 6.758s, OK (skipped=6),
 doctor exit 0, source audit 62 files/no problems, working tree clean after checks.
+
+
+### Installed follow-up and real watcher observation
+
+[Scout's signed deployment receipt](https://github.com/earino/dataset-factory/pull/12#issuecomment-6355737686)
+confirms `ad607ca` and all three changed prompt/skill hashes, source/home audits,
+doctor, admission and unchanged holds/cleanup/scheduler. Codex independently
+verified merge CI and compared the installed readback with tested source digests.
+The active watcher itself fast-forwarded the clean checkout while holding the
+mutex; no separate idle-deployment action occurred, and its own prompt/skills
+were unchanged. The next ordinary discovery began only after these checks.
+
+The genuine watcher event `20261023_020601_752438` handled `wb-holdout-001` after
+its worker had already been deleted. It verified six compact reports plus their
+manifest, checked the existing durable decision/CI and provider cleanup, then
+wrote a handled marker referring to the evidence. It retained the negative result
+and the INPE hold. No new job, ledger mutation or redundant commit was needed.
+[Verbatim sanitized output and marker](https://github.com/earino/dataset-factory/pull/12#issuecomment-6355754745)
+match the compact source/report audit already performed by Codex. Provider
+readback is Scout-reported; Codex did not query the cloud provider directly.
+
+This validates one already-deleted terminal-job path, not recovery of missing
+assets on a live worker or protection during a simultaneous-owner conflict. It
+used 22 main calls, 387.9 seconds and 1,431,834 inclusive tokens; there is no matched
+old-prompt live watcher run from which to infer a cost improvement. Full evidence
+is in `results/deployed-observation-ad607ca.json` under the evaluation directory.

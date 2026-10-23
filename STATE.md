@@ -6462,3 +6462,17 @@ explicit in results/rollout-aa0e735-author-review.json, not hidden by the score.
 Cumulative experiment 121 attempts / 4,099,323 inclusive tokens; no extra repeats.
 Exact tested prompts approved for merge/idle deployment, followed by one ordinary
 uncoached discovery and source audit. Do not close the goal before that live pass.
+
+Deployed prompt validation checkpoint (Codex, 2026-10-23 02:29 UTC): PR #12 merged
+at ad607ca, merge CI green, installed hashes/readback match tested aa0e735. Runtime
+source/home audits and doctor pass; holds, budgets, cleanup and scheduler unchanged.
+The genuine watcher session 20261023_020601_752438 verified wb-holdout-001's compact
+reports and existing durable closeout before acknowledgment; no new worker/ledger
+mutation. Its own clean fast-forward advanced the checkout under its mutex; the
+changed discovery/advancement sources were not loaded into that watcher invocation.
+Ordinary discovery 20261023_021307_9ae84d is now running through the normal shim,
+uncoached; at 02:27 it was actively browsing (20 main calls plus vision/title), with
+no candidate records yet. Evidence: evals/research-prompts/results/deployed-observation-ad607ca.json.
+Next: let that normal session finish, audit its actual source evidence/decisions and
+exact-commit checks, archive full four-field usage including vision, and only then
+close the prompt-improvement goal. Do not infer a new accepted dataset from scores.
