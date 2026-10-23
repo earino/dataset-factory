@@ -57,13 +57,13 @@ body{{margin:0;padding:14px 8px;background:#000 url({star}) repeat;color:#fff;fo
 .win{{max-width:920px;margin:0 auto;background:#c0c0c0;border:3px outset #f4f4f4;padding:3px}}
 .titlebar{{background:#000080;color:#fff;font:bold 14px "Comic Sans MS","Comic Neue",cursive;padding:5px 10px;display:flex;justify-content:space-between;align-items:center;gap:10px}}
 .titlebar a{{color:#ff0}}
-.marq{{display:block;background:#000;color:#0f0;font:bold 14px "Courier New",monospace;padding:4px 0;white-space:nowrap}}
+.marq{{display:block;background:#000;color:#0f0;font:bold 14px "Courier New",monospace;padding:4px 0;white-space:nowrap;overflow:hidden}}
 .content{{background:#fff;color:#000;padding:16px 18px;border:2px inset #f4f4f4}}
 .content a{{color:#0000ee}}.content a:visited{{color:#551a8b}}
 h1{{font:900 30px/1.15 Impact,"Comic Sans MS",cursive;margin:8px 0 10px;color:#000080}}
 h2{{font:bold 21px "Comic Sans MS","Comic Neue",cursive;color:#000080;border-bottom:3px double #000080;margin:30px 0 12px;padding-bottom:3px}}
 h3{{font:bold 16px "Comic Sans MS",cursive;margin:18px 0 8px}}
-p{{max-width:78ch}}
+p{{max-width:78ch;overflow-wrap:anywhere}}
 img{{image-rendering:pixelated}}
 table{{border-collapse:collapse;border:3px outset #808080;background:#fff;margin:10px 0;width:100%}}
 th{{background:#000080;color:#ff0;font:bold 13px "Courier New",monospace;padding:6px 9px;text-align:left;border:1px solid #808080}}
@@ -76,6 +76,7 @@ code{{font-family:"Courier New",monospace}}
 @keyframes blink{{50%{{visibility:hidden}}}}
 .newbadge{{vertical-align:middle;margin-left:8px}}
 .getbar td{{background:#fff;font:bold 14px "Comic Sans MS",cursive}}
+.getbar td a{{max-width:100%}}
 .getbar td a{{text-decoration:none;padding:4px 6px;border:2px outset #c0c0c0;background:#c0c0c0;color:#000;display:inline-block}}
 .badges{{margin-top:10px}}
 .badge{{display:inline-block;border:2px outset #fff;background:#c0c0c0;font:bold 10px "Courier New",monospace;color:#000;padding:3px 7px;margin:3px 4px 3px 0}}
@@ -83,7 +84,8 @@ code{{font-family:"Courier New",monospace}}
 .footer a{{color:#0000ee}}
 .counter{{image-rendering:pixelated}}
 .note{{font-size:14px;color:#333}}
-@media(max-width:640px){{.content{{padding:10px}}h1{{font-size:24px}}}}
+.tscroll{{overflow-x:auto}}
+@media(max-width:640px){{.content{{padding:10px}}h1{{font-size:24px}}h2{{font-size:18px}}}}
 </style></head><body>
 {notice}
 <div class="win">
@@ -112,7 +114,7 @@ def navigation(record):
     cells = "".join("<td>" + link(u[key], title) + "</td>" for key, title in (
         ("github_release", "&#128194; GitHub release"), ("huggingface_version", "&#129302; Hugging Face"),
         ("catalog", "&#128218; All datasets")))
-    return '<table class="getbar" aria-label="Dataset destinations"><tr>' + cells + "</tr></table>"
+    return '<div class="tscroll"><table class="getbar" aria-label="Dataset destinations"><tr>' + cells + "</tr></table></div>"
 
 
 def dataset_body(r):
@@ -153,14 +155,14 @@ def dataset_body(r):
     return f'''<h1>{esc(r['title'])}</h1>
 <p class="intro">{esc(r['summary'])}</p>
 <p><img src="{gif_uri("donebadge")}" width="96" height="22" alt="released and complete"> <strong>This release is finished.</strong> Every number below is measured and reproducible.</p>
-<h2>At a glance</h2><table><tbody>{facts}{metrics}<tr><th scope="row">Artifact</th><td><code>{esc(r['artifact_version'])}</code></td></tr></tbody></table>
+<h2>At a glance</h2><div class="tscroll"><table><tbody>{facts}{metrics}<tr><th scope="row">Artifact</th><td><code>{esc(r['artifact_version'])}</code></td></tr></tbody></table></div>
 <h2>Get this dataset</h2>{navigation(r)}
 <h3>How to load it</h3><pre><code>{esc(snippet)}</code></pre>
 <p>The version links and checksums identify this artifact. Exclude the labelled holdout from the agent's workspace when running an evaluation.</p>
 <h2>What is inside</h2>
-<table><thead><tr><th>Split</th><th>Rows</th><th>Positive labels</th></tr></thead><tbody>{split_rows}</tbody></table>
+<div class="tscroll"><table><thead><tr><th>Split</th><th>Rows</th><th>Positive labels</th></tr></thead><tbody>{split_rows}</tbody></table></div>
 <h2>Files and checksums</h2>
-<table><thead><tr><th>Download</th><th>Bytes</th><th>SHA-256</th></tr></thead><tbody>{asset_rows}</tbody></table>
+<div class="tscroll"><table><thead><tr><th>Download</th><th>Bytes</th><th>SHA-256</th></tr></thead><tbody>{asset_rows}</tbody></table></div>
 <h2>Release notes &#183; {esc(r['release_date'])}</h2>{''.join('<p>'+esc(p)+'</p>' for p in r['post']['paragraphs'])}
 <h2>Why you can trust it</h2><p>{esc(r['qualification']['result'])} Gate {esc(r['qualification']['gate_version'])}.</p><p>{esc(r['baseline']['scope'])}</p>
 <nav aria-label="Documentation">{docs}</nav>
@@ -231,21 +233,21 @@ def render(config, records, preview=False, editions=()):
 <h2>What is this?</h2>
 <p>The Dataset Factory turns public data into prediction tasks. Each dataset answers a real question. Each answer can be scored. You get the source, the build code, and a measured baseline. Your system tries to beat the baseline. Every release can be rebuilt and checked.</p>
 <h2>How a dataset is made</h2>
-<table><tbody>
+<div class="tscroll"><table><tbody>
 <tr><th scope="row">1 &#183; Find</th><td>Pick public data that contains a real question.</td></tr>
 <tr><th scope="row">2 &#183; Check</th><td>Test the data before use. Row counts, splits, and licences must pass a fixed gate. A failed gate stops the release.</td></tr>
 <tr><th scope="row">3 &#183; Build</th><td>One script builds the dataset from the source. The same input gives the same bytes.</td></tr>
 <tr><th scope="row">4 &#183; Release</th><td>Publish with checksums, a measured baseline, and a labelled holdout. The holdout stays outside the evaluated workspace.</td></tr>
-</tbody></table>
+</tbody></table></div>
 <h2>Use a dataset in three steps</h2>
-<table><tbody>
+<div class="tscroll"><table><tbody>
 <tr><th scope="row">1 &#183; Load</th><td>Take the dataset from the GitHub release or the Hugging Face Hub.</td></tr>
 <tr><th scope="row">2 &#183; Separate</th><td>Keep the labelled holdout out of your agent's workspace.</td></tr>
 <tr><th scope="row">3 &#183; Score</th><td>Run the score script. Compare your number with the baseline.</td></tr>
-</tbody></table>
+</tbody></table></div>
 <p>Who is it for? Teams that evaluate coding agents and prediction models. Anyone who needs honest, reproducible numbers.</p>
 <h2><img src="{gif_uri("flame")}" width="16" height="24" alt=""> Datasets <img src="{gif_uri("flame")}" width="16" height="24" alt=""></h2>
-<table><thead><tr><th>Dataset</th><th>Field</th><th>Rows</th><th>Released</th><th>What it asks</th></tr></thead><tbody>{''.join(card_rows)}</tbody></table>
+<div class="tscroll"><table><thead><tr><th>Dataset</th><th>Field</th><th>Rows</th><th>Released</th><th>What it asks</th></tr></thead><tbody>{''.join(card_rows)}</tbody></table></div>
 <h2>Release archive</h2><ul>{''.join(posts)}</ul>'''
         files["index.html"] = document(config["title"], intro, config, preview)
         files["catalog.json"] = canonical({"schema_version": 1, "releases": records})
