@@ -226,11 +226,67 @@
       "elapsed_seconds": 29.584,
       "response": "## Decision\n\n`hf-check-12` is a **failed / incomplete verification**, not a ready release. Do **not** run `hf-publish.py --tag`, do **not** write `DESTINATIONS.json` as verified/published, and do not proceed toward publication. The stale note (\"upload success means ready to tag\") is wrong and gets corrected in the record: matching digests prove only that the bytes which uploaded are the intended bytes; they say nothing about expected files that never arrived, and `--tag` legitimately verifies assets at an exact commit \u2014 tagging here would bind a tag to a release missing two splits.\n\n## Supporting evidence\n\n- `loading_check.ok=false` is a hard gate. Per OPERATIONS.md, the coordinator requires a collected successful job, a **passing loading check**, exact manifest assets, and matching live commit/blob metadata before accepting evidence.\n- Two expected splits missing = incomplete coverage. Standing rule from the brief and skill set: never accept an artifact with incomplete coverage or a failed gate.\n- Failed/stale reports \"cannot be upgraded by editing JSON\" \u2014 no hand-editing the receipt.\n- A failed job is still a job: it must be collected and its worker destroyed, not left billable.\n- Incomplete/failed attempts must preserve the previous receipt and write a compact diagnostic to `.factory/hub-verification/<candidate>/latest.json`.\n\n## Uncertainty and next discriminating check\n\nUnknown whether the two splits were never uploaded (packaging gap) or the loading contract expects different names/paths than the manifest ships (contract gap). Compare the staging release `manifest.json` asset list against the `hf_publish` job's declared `assets`/loading contract \u2014 names, sizes, SHA-256 \u2014 and against `build_summary.json` coverage for those splits. That one comparison decides the fix: re-upload/verify_only (packaging) versus rebuild (construction/coverage).\n\n## Ordered actions\n\n1. Confirm collection is complete for `hf-check-12`; if not, `sh scripts/scout-factory worker collect hf-check-12`.\n2. Read the release `manifest.json`; fetch only small reports into `.factory/hf-check-12/reports/` (no bulk CSVs to this host).\n3. Run the discriminating asset/contract/coverage comparison above; preserve the failed report and write the diagnostic to `.factory/hub-verification/<candidate>/latest.json`.\n4. Record outcome in `STATE.md` and `candidates/<id>/record.json` (status failed/incomplete, missing splits named, tagging explicitly withheld), including the corrected note.\n5. Commit and push; check CI for that exact commit via the `head_sha` query, and report pending/blocked CI as such.\n6. `sh scripts/scout-factory worker destroy hf-check-12`; read server and IP back to confirm deletion.\n7. Prepare a **new** attempt ID (e.g. `hf-check-13`) \u2014 `hf_publish.verify_only: true` preserving the assets/loading contract if the gap is packaging; a rebuild job if coverage is short \u2014 and launch within standing allowance. Never reuse `hf-check-12`.\n8. Last, write `.factory/hf-check-12/handled` with a one-line summary.\n\n**Stopping condition:** handled marker written, worker confirmed deleted, corrected attempt planned/launched \u2014 and no tag created and no destination marked published.\n\n## Operator report\n\nhf-check-12 (Hugging Face verification) finished **failed/incomplete**. Uploaded assets matched expected digests, but `loading_check.ok=false` and two expected splits are absent, so verification cannot be accepted. I did **not** tag, did not mark DESTINATIONS verified, and did not publish. Recorded the failure with the missing split names in `STATE.md` and the candidate record, committed and checked CI for that commit. Worker destroyed and deletion confirmed. Next: new attempt `hf-check-13` \u2014 either a `verify_only` re-check after uploading the two missing splits, or a rebuild \u2014 pending the manifest-vs-contract-vs-coverage comparison that tells those apart.\n",
       "response_sha256": "18aab1485ce0adcd7861fa7159c7d172663f480fc5b27da13643ad5636649033"
+    },
+    {
+      "partition": "watcher-targeted",
+      "case": "watcher-ownership",
+      "arm": "revised",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-82",
+      "session_id": "20261023_000310_8f3a9f",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "ef611708b14421871efb4d7ba55fc7de1f3b7f07853c13033de776067899e931",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 173,
+        "output_tokens": 4667,
+        "cache_read_tokens": 33280,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 38120,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 387,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 121,
+          "output_tokens": 4280,
+          "cache_read_tokens": 32896,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 76.445,
+      "response": "Decision: defer the event to the active coordinator. Ownership is active and provable \u2014 a live process holds the shared research mutex and the working tree contains that session's uncommitted edits \u2014 so this follow-up takes no write action of any kind. The job is left unhandled; I deliver a read-only status report and stop.\n\nSupporting evidence: the brief's ownership rule says that with an active coordinator and unfinished work in the tree, I must not take over its candidate, launch replacements, commit its edits, or regenerate its package, and that deferral explicitly includes job-ledger and watcher-bookkeeping writes, collection, and normal worker destruction \u2014 calling a write \"bookkeeping\" does not make it safe. The mutex is held by a running process, not merely a stale JSON marker, so ownership is established, not just uncertain; even for a stale marker, deleting the lock is forbidden. No handoff was recorded, so the idle-coordinator path (\"handle only the named job and candidate\") is unavailable \u2014 there is no named authorization to act on. Independent expiry cleanup continues on its own; that is not mine to trigger or prevent. This event also does not authorize research or publication.\n\nWhat remains unmodified: the mutex and lock files; the coordinator's uncommitted STATE.md and candidate-record edits; the job ledger (no watcher-bookkeeping writes from me); the `.factory/<job_id>/handled` marker (stays absent \u2014 ownership is unresolved, and the marker is written only after a durable outcome and handoff); the worker and its artifacts (no collection, no destruction, no recovery attempt \u2014 the one-recovery budget belongs to the owner's chain); and nothing may be committed or pushed.\n\nUncertainty and next discriminating check: from read-only observation I cannot establish (a) whether the worker host already uploaded outputs to the private staging draft release, (b) which per-check results passed \u2014 overall completion, a zero exit, or an uploaded report does not mean qualification passed, and (c) whether the coordinator will finish before the worker's expiry. The cheapest discriminating check belongs to the owner: `worker collect <id>` verifies the staging release, tag, asset membership, sizes and GitHub digests without downloading bulk data; then read each required check's own result field, and for a build require the passing qualification report plus `--accept` against exact bytes before quoting any number. Ownership liveness is confirmed from the process table behind the mutex, never from the marker file.\n\nOrdered actions:\n1. Read-only confirmation from existing records only: mutex holder alive (process inspection, not the JSON marker), uncommitted edits present, job state and expiry as recorded. If any inspection could write, skip it.\n2. Deliver the operator report below.\n3. Leave the event unhandled; end this follow-up without polling or waiting on the coordinator.\nStopping condition: report delivered and event deferred. A later watcher tick will re-surface the job; only the owner may handle it \u2014 collect, read per-check results, preserve diagnostics before teardown, destroy, and confirm provider deletion of server and IP \u2014 or record an explicit handoff naming job and candidate for a later idle tick.\n\nOperator report:\n\"Job <id> (candidate <id>) finished while the advancement coordinator is still active, holding the research mutex, with uncommitted STATE.md/candidate edits and no recorded handoff. Per the ownership rule I deferred: no collection, ledger or watcher writes, commits, or worker changes were made, and the handled marker was not written. Read-only status: a result exists and the worker remains within its recorded expiry; it is unverified whether outputs reached private staging or which checks passed. Next action, owned by that coordinator: collect and read each check's own result (qualification must pass and `--accept` on exact bytes before any figure is quoted), preserve diagnostics, then destroy and confirm provider deletion \u2014 or record a handoff so a later tick can proceed. Do not rely on expiry: the sweeps are best-effort backstops, not deadlines. \u2014 Scout (Hermes)\"\n",
+      "response_sha256": "14e848b8f156a47903e3aa7861b8141cdc3b1f0a0d5b1516f71504e923b5bf8d"
     }
   ],
   "ledger": {
-    "calls": 82,
-    "tokens": 2820438
+    "calls": 83,
+    "tokens": 2858558
   },
-  "updated_at": "2026-10-23T00:03:15Z"
+  "updated_at": "2026-10-23T00:04:36Z"
 }
