@@ -1,6 +1,6 @@
 # Current state
 
-## 2026-10-23 - scheduled research resumption repair (Codex; deployment pending)
+## 2026-10-23 - scheduled research resumption repair (Codex; deployed and verified)
 
 Scout's 08:00/12:00 discovery and 14:00 advancement slots were dropped while the
 shared research mutex was owned. At 15:26 UTC Scout confirmed no active owner,
