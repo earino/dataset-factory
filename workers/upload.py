@@ -289,6 +289,17 @@ def publish(base, job, report, client=None):
         elif not path.is_dir():
             raise UploadError("Non-regular artifact")
     files.extend((name, base / name) for name in ("source.tar", "container.log"))
+    # GitHub's asset-upload endpoint refuses a zero-length body (measured HTTP 422 against
+    # the staging draft release for job nz-ea-hf-001; a 72-byte control POST to the same
+    # release answered 201). A host-side job (transfer or hf_publish) returns before any
+    # container runs, so its container.log is the 0-byte file execute()'s log.touch()
+    # left behind, and planning a part for it aborted the whole result upload after the
+    # earlier parts had already landed. An empty file carries no bytes of evidence:
+    # record that it was skipped instead of failing everything after it.
+    kept, skipped_empty = [], []
+    for logical, path in files:
+        (skipped_empty if path.stat().st_size == 0 else kept).append((logical, path))
+    files = kept
     if sum(p.stat().st_size for _, p in files) > job["max_artifact_mb"] * 1024**2:
         raise UploadError("Artifacts exceed job allowance; worker expires on schedule")
     planned = parts(files)
@@ -314,6 +325,7 @@ def publish(base, job, report, client=None):
                         {"id": asset["id"], "url": asset["browser_download_url"]})
     manifest = base / "manifest.json"
     manifest.write_text(json.dumps({"job": job, "result": report, "assets": uploaded,
+                                   "skipped_empty": [logical for logical, _ in skipped_empty],
                                    "reconstruction": "Concatenate each file's parts in ascending offset order."}, indent=2))
     sha = digest(manifest)
     asset = client.ensure_asset(release["id"], manifest, "manifest.json", 0, manifest.stat().st_size, sha)
@@ -321,4 +333,5 @@ def publish(base, job, report, client=None):
     compact = [{key: a[key] for key in ("id", "size", "sha256")} for a in uploaded]
     compact.append({"id": asset["id"], "size": asset["size"], "sha256": sha})
     return {"uploaded": True, "repo": repo, "release_id": release["id"], "release_url": release["html_url"],
-            "manifest_url": asset["browser_download_url"], "assets": compact}
+            "manifest_url": asset["browser_download_url"], "assets": compact,
+            "skipped_empty": [logical for logical, _ in skipped_empty]}

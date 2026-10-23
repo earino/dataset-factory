@@ -310,6 +310,61 @@ class ArtifactTests(unittest.TestCase):
             self.assertEqual(manifest["assets"][0]["file"], "output/data.csv")
             self.assertNotIn(b"fake", client.files["manifest.json"])
 
+    def test_publish_skips_empty_artifacts_instead_of_failing_the_upload(self):
+        """A 0-byte artifact must never be planned as an upload part.
+
+        Regression, measured twice in production: GitHub's asset-upload endpoint answers
+        HTTP 422 to a zero-length body, and a host-side job (transfer or hf_publish)
+        returns before any container runs, so its container.log is the empty file
+        execute()'s log.touch() left behind. Planning a part for it aborted the whole
+        result upload after the earlier parts had already landed (jobs
+        nz-ea-publish-001 and nz-ea-hf-001 both lost their staging result this way),
+        which left the job uncollectable and its evidence unsupported by the ledger.
+        """
+
+        class Store:
+            repo = "owner/private"
+
+            def __init__(self):
+                self.release = None
+                self.files = {}
+
+            def request(self, method, path, body=None):
+                if path == "/repos/owner/private":
+                    return {"private": True}
+                if method == "GET":
+                    return [self.release] if self.release else []
+                self.release = {"id": 7, "tag_name": body["tag_name"],
+                                 "html_url": "https://github.com/owner/private/releases/7"}
+                return self.release
+
+            def ensure_asset(self, release_id, path, name, offset, size, sha256):
+                if size <= 0:
+                    raise AssertionError("an empty artifact must never be planned as an upload part")
+                raw = path.read_bytes()[offset:offset + size]
+                if hashlib.sha256(raw).hexdigest() != sha256:
+                    raise AssertionError("Incorrect artifact digest")
+                self.files[name] = raw
+                return {"id": len(self.files), "size": size,
+                        "browser_download_url": "https://github.com/owner/private/" + name}
+
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            (base / "source.tar").write_bytes(b"source fixture")
+            (base / "container.log").write_bytes(b"")  # the 0-byte host-job log
+            (base / "credentials.json").write_text('{"token":"fake", "repo":"owner/private"}')
+            job = {"id": "job", "max_artifact_mb": 10}
+            result = {"job_id": "job", "status": "succeeded", "uploaded": False}
+            client = Store()
+            first = upload.publish(base, job, result, client)
+            self.assertTrue(first["uploaded"])
+            self.assertEqual(first["skipped_empty"], ["container.log"])
+            self.assertNotIn("container.log", client.files)
+            self.assertTrue(all(len(raw) > 0 for name, raw in client.files.items()
+                                if name != "manifest.json"))
+            manifest = json.loads(client.files["manifest.json"])
+            self.assertEqual(manifest["skipped_empty"], ["container.log"])
+
     def test_http_upload_streams_file_in_bounded_chunks(self):
         from unittest.mock import MagicMock
         with tempfile.TemporaryDirectory() as tmp:
