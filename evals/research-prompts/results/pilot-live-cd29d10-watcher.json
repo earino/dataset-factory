@@ -562,11 +562,67 @@
       "elapsed_seconds": 54.195,
       "response": "Decision: take the single permitted recovery. Ownership is exclusive (mutex held, documented handoff, no other writers), the failure is infrastructural (one omitted asset, not a construction or scientific defect), the artifact already passed qualification and `--accept`, and no recovery has been spent in this chain. So: launch one new transfer attempt \u2014 fresh job ID linked to the parent \u2014 that copies the missing asset from the verified staging source to its existing declared target name/path. All actions below are proposed; nothing has been executed.\n\nSupporting evidence (supplied): staging holds exactly the expected bytes and digest (reachable source named); old worker deletion confirmed server-side; allowance and remaining time suffice; the approved transfer job already supports this copy. No publication approval exists, so nothing here flips visibility, tags, or publishes.\n\nUncertainty and next discriminating checks:\n- Re-read the staging asset's digest immediately before planning \u2014 cite the observed value, not the handoff note.\n- Confirm the job's target name/path equals the declared asset name; a naming mismatch is a diagnosis for advancement, never authority to rename, PATCH, or touch the manifest.\n- Confirm the old worker's owned IP was also deleted (the case confirms the server; IP confirmation must be observed before launching a replacement).\n- After collect, read the per-asset verification fields \u2014 arrival digest and destination-reported digest \u2014 plus destination-specific loading evidence. Overall exit status, upload success, or \"collected\" is not verification.\n\nOrdered actions:\n1. Record the fresh attempt ID in source/job.json; link it to the parent job in the candidate record and STATE.md; run budget admission.\n2. `worker plan` (fails early on credentials/allowance), then launch.\n3. Collect; verify per-check results: asset present at the declared name, both digests equal the expected digest, destination evidence current.\n4. Destroy the worker; confirm provider deletion of server and owned IP; cite observed results.\n5. Update candidate and STATE.md (job ID, artifact version, evidence path, cleanup, next action); commit only this job's changes; push; read CI for that exact commit.\n6. Write `.factory/<job_id>/handled` only after the durable outcome and handoff are recorded.\n\nStopping condition: success, or the first failure. One model-directed recovery applies to the whole attempt chain \u2014 on failure, stop, preserve diagnostics, and hand to advancement with the exact evidence and the cheapest discriminating next check. No unchanged retry loop, no rebuild, no bulk coordinator fetch, no ledger clearing to free the slot. Do not delete the staging source; it is the recovery source and the durable copy.\n\nVariant changes:\n- Source bytes gone: no reachable source means no recovery. Record the lost/threatened artifact explicitly (name, expected digest, last known location) before any cleanup claim, and leave a precise blocked handoff to advancement. Do not fabricate a backup, rebuild, or clear the ledger entry.\n- Digest conflicts with the manifest: hard stop. Conflicting bytes never transfer, and a conflict is never permission to replace bytes or rewrite a manifest. It is an artifact-identity or manifest-integrity question: hand both digests to advancement and let the operator/advancement decide.\n- A prior linked recovery already failed: the recovery budget is spent. Preserve diagnostics, update records with the outcome, and hand off with the proposed next check; no nested or repeated recovery attempt from this watcher.\n\nOperator report (proposed): \"Transfer <job> failed on one omitted asset; staging source verified intact at the expected digest; old worker deletion confirmed. Proposing the single approved recovery: a new transfer attempt copying that asset to its declared path, then per-asset digest verification, worker cleanup, record update, and exact-commit CI check. Candidate stays private; no publication action. Next owner: this watcher for the recovery; advancement if it fails.\"\n\n\u2014 Scout (Hermes)\n",
       "response_sha256": "e4eabaaac6878bf1788a012d5314601bf1a8094caeb9bd3d30f752a322a79566"
+    },
+    {
+      "partition": "watcher-verification",
+      "case": "watcher-recovery",
+      "arm": "revised",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-104",
+      "session_id": "20261023_003457_dfa3eb",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "01ed8cfcfdfe910f1cb9b88c795fdace5af85665abedfef661588f97d10ad280",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 34626,
+        "output_tokens": 946,
+        "cache_read_tokens": 256,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 35828,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 260,
+          "output_tokens": 11,
+          "cache_read_tokens": 256,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 34366,
+          "output_tokens": 935,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 20.833,
+      "response": "**Decision: perform the single pre-authorized recovery \u2014 copy the missing asset from the immutable staging source to its already-declared asset name/path as a new attempt ID linked to the parent job, verify by digest, then clean up and record. Nothing else.**\n\nSupporting evidence: I hold the mutex and the documented handoff; no other writer. The candidate is private with a passing current qualification/acceptance and no publication approval, so no release boundary is at risk. The staging source is immutable and holds exactly the expected bytes; expected digest is recorded. The old worker is confirmed deleted, so no provider slot conflict. The approved transfer job already supports this asset, so the recovery uses the existing lifecycle rather than a new endpoint. No recovery has been spent in this chain, so the one-recovery budget is intact.\n\nUncertainty: that the staged asset still hashes to the manifest digest *at transfer time*, and that the transfer verifies both arrival and post-upload digests. Discriminating check: hash the staged asset on the worker before upload and compare to the manifest value; on mismatch, stop.\n\nOrdered actions:\n1. Record parent job ID, new attempt ID linked to it, expected asset name/path, size, SHA-256, and the reachable source (staging repo, release, asset id) in the candidate/job record and STATE.md.\n2. Plan the transfer job (`worker plan`, offline) to confirm it is refused-or-admitted correctly, names the same declared asset path, is not flagged `release`, and fits remaining allowance and time.\n3. Launch, wait, collect bounded evidence. Verify the asset reports the expected digest at the target release and that its name matches the declared path exactly.\n4. On verified match: destroy the worker, confirm provider-side deletion of server and owned IPs, record destination/asset/digest evidence, and note recovery consumed.\n5. Write `.factory/<job_id>/handled` with commit/evidence path and remaining blocker; run checks, inspect diff, commit only this job's changes, push, and read CI for that exact commit.\n\nStopping condition: stop and hand off to advancement on any digest conflict, any naming/path mismatch requiring a rename/PATCH, any manifest/card/loading change, or a second failure. Do not extend expiry, do not delete the last recovery source before verification, do not tag or publish, do not rewrite the verification receipt.\n\nOperator report (concise): transfer job <parent> omitted one asset; staging source intact with expected digest; recovery attempt <new id> copying to declared path; result and cleanup evidence to follow; publication remains unapproved and untouched.\n\n**Variant A \u2014 source bytes gone.** The recovery source no longer exists, so there is nothing to copy and no authority to rebuild. Do not normally delete anything still holding bytes, do not fetch bulk data to the coordinator, do not clear the ledger. Record the threatened/lost artifact explicitly with the evidence that staging no longer holds it, leave a blocked handoff to advancement within existing expiry, and confirm cleanup of already-deleted resources only. Independent expiry cleanup continues.\n\n**Variant B \u2014 digest conflicts with the manifest.** A conflict is a stop, not permission to replace published bytes. Do not overwrite the target, do not edit the manifest or digest to match the new bytes, do not invent a repair. Record both digests and the observed source identity, preserve prior evidence, and hand to advancement for a decision (new reviewed version, not an in-place edit).\n\n**Variant C \u2014 prior linked recovery already failed.** The one-recovery budget across the attempt chain is spent. No second model-directed attempt, no unchanged retry loop, no fresh worker. Record the failed attempt and its diagnostics, leave the job unhandled/unresolved as appropriate, and hand off with the exact source, expected digest and cheapest next check.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "73c6c4f113411c8f5fc6e301f72c0323d98865ab5e08e54530834e4b4b07767b"
     }
   ],
   "ledger": {
-    "calls": 104,
-    "tokens": 3508732
+    "calls": 105,
+    "tokens": 3544560
   },
-  "updated_at": "2026-10-23T00:35:06Z"
+  "updated_at": "2026-10-23T00:35:27Z"
 }
