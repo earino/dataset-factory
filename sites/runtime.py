@@ -195,6 +195,20 @@ def render(config, records, preview=False, editions=()):
         for value in (r["dataset"], r["release_tag"]):
             if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,99}", value):
                 raise ValueError("Unsafe dataset or version path")
+        # A record that documents no split rows renders as a homepage "Rows = 0" and an
+        # empty split table (the abs v2026.10 site record shipped that way when the
+        # projector had not yet learned to read its manifest). Refuse instead: every
+        # split needs a positive integer row count, and when train/eval/holdout are
+        # all documented, the total across splits must equal their sum so no fourth
+        # split can silently inflate the homepage figure.
+        if not r.get("splits") or not all(type(s.get("rows")) is int and s["rows"] > 0
+                                          for s in r["splits"].values()):
+            raise ValueError("Release record must document every split with positive row counts")
+        documented = ("train", "eval", "holdout")
+        if all(k in r["splits"] for k in documented):
+            total_rows = sum(s["rows"] for s in r["splits"].values())
+            if total_rows != sum(r["splits"][k]["rows"] for k in documented):
+                raise ValueError("Total rows must equal train + eval + holdout")
         key = (r["dataset"], r["release_tag"])
         if key in seen:
             raise ValueError("Duplicate release record")

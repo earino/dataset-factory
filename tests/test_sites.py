@@ -346,6 +346,33 @@ class WebsiteTests(unittest.TestCase):
         with self.assertRaisesRegex(FactoryError, "different facts"):
             reconcile(tampered, self.out, gh, hub, gh.fetch)
 
+    def test_renderer_refuses_records_without_documented_splits(self):
+        """The abs v2026.10 site record shipped with empty splits and rendered 'Rows = 0'
+        on the catalogue homepage. The build now refuses such records instead."""
+        config = json.loads(self.plan["targets"]["dataset"]["files"][".dataset-site/config.json"])
+        broken = copy.deepcopy(self.record)
+        broken["splits"] = {}
+        broken.pop("record_sha256")
+        broken["record_sha256"] = digest(dump(broken))
+        with self.assertRaisesRegex(ValueError, "positive row"):
+            RUNTIME["render"](config, [broken])
+
+    def test_renderer_refuses_zero_rows_and_totals_off_the_documented_splits(self):
+        config = json.loads(self.plan["targets"]["dataset"]["files"][".dataset-site/config.json"])
+        zero = copy.deepcopy(self.record)
+        first = next(iter(zero["splits"]))
+        zero["splits"][first]["rows"] = 0
+        zero.pop("record_sha256")
+        zero["record_sha256"] = digest(dump(zero))
+        with self.assertRaisesRegex(ValueError, "positive row"):
+            RUNTIME["render"](config, [zero])
+        extra = copy.deepcopy(self.record)
+        extra["splits"]["dev"] = {"rows": 100}
+        extra.pop("record_sha256")
+        extra["record_sha256"] = digest(dump(extra))
+        with self.assertRaisesRegex(ValueError, "train \\+ eval \\+ holdout"):
+            RUNTIME["render"](config, [extra])
+
     def test_card_navigation_preserves_yaml_and_is_idempotent(self):
         original = "---\nlicense: cc0-1.0\n---\n\n# Card\nOriginal text\n"
         updated = linked_readme(original, self.record)
