@@ -6366,7 +6366,7 @@ decision, not a claim of impossibility.
   171950621, exit 0, 57.3 s, EUR 0.04 reservation): fetched the five accepted
   files from staging 421262457, re-ACCEPTed through the gate BEFORE any
   scoring (b8345bcb5769e422), materialized the public-only runner workdir,
-  ran the benchmark's own train.py verbatim via runpy (same fitted model as
+  ran the benchmark's own train.py verbatim via runpy (fixed-config deterministic refit, as
   wb-baseline-001, no retraining choices) and scored it against train-fitted
   references on identical eval and holdout rows. Report: staging release
   421361824 (asset 667622270). Worker destroyed, provider 404 confirmed.
