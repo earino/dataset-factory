@@ -1,5 +1,60 @@
 # Current state
 
+## 2026-10-23 scheduled discovery (International organisations tick): unhcr-refugee-data-finder REOPENED and ready
+
+Regional focus (World Bank, OECD, UN agencies, WHO, IMF, ITU) with one decision this tick:
+the parked UNHCR lead was reopened on new evidence and is the buffer-ready candidate
+(live 26, ready 3: unhcr-refugee-data-finder, za-municipal-audit-opinion,
+nz-ea-wholesale-price-exceedance).
+
+**The reopen.** The 2026-10-20 park reason was "no machine-fetchable bulk path"; the
+recorded HDX-mirror check ("HDX does not unblock the bulk data") was a search-visibility
+miss, not a fact. HDX package `unhcr-population-data-for-world` (created 2020-08-27,
+UNHCR organisation account) carries the full origin x host x year panel in five anonymous
+CSVs; the applications resource measured 1 GET / 8,669,567 B / 2.06 s, sha256
+`d5808616…`, data through 2025. Licence: CC BY 3.0 IGO on the dataset record (grant and
+Section 4 restrictions quoted in license_evidence), class A; the unhcr.org site-terms
+tension stays flagged but acquisition uses the publisher's own HDX channel.
+
+**The task** (corridor grain, annual): for a corridor with >=500 government-procedure
+applications in year D, will year D+1 be >=2x year D? Doubling prevalence measured 9.3%.
+Splits computed from the source: train 3,677/302 pos, eval 1,918/166, holdout 1,994/234;
+clustered (origin, label-year) positive counts 198/109/135; both classes in every
+label-year. This replaces the parked thin annual derivative (unicef record updated to
+point here; 34 eval positives there vs 166 here).
+
+**Data-quality rule, cross-checked to the publisher's own source.** 28.5% of G/P
+corridor-year cells carry duplicate rows with identical dimensions but different counts;
+summing all rows reproduces BAMF's published German totals to within 0.005-0.09% in four
+years (2000/2010/2015/2016) while max-rule matches BAMF first applications - the
+duplicates are first/follow-up pairs exported under one type code. Eval/holdout eligible
+rows are 100% split-type-coded; the ambiguous unsplit-V rows live only in the training
+era, where the BAMF cross-check validates the sum rule.
+
+**Timing is labelled honestly as a publication-lag NOWCAST** (abs precedent): at the
+year-D publication instant (HDX refreshes observed 2025-11-05, 2026-02-25, 2026-06-11/19/22,
+2026-08-20), the target year D+1 has partially elapsed but its value is unpublished and
+unavailable on the channel; no "window follows the instant" claim is made, and the
+strictly-future variant (D+2 vs published D) was considered and rejected as a different
+task with different base rates. Current-vintage archive, sha256-pinned, cutoff documented.
+Known-event fixtures verified in-stream (SYR->DEU 2015 TRUE, AFG->USA 2022 TRUE,
+AFG->DEU 2022 FALSE; UKR->POL below eligibility - temporary protection is not asylum
+applications, and the record says so for the reviewer who asks where Ukraine is).
+
+Novelty verdict: differentiated (check-novelty.py recorded; prior art named:
+arXiv:2505.06249 origin-monthly early warning, arXiv:2405.06857 stock projections,
+J. Econ. Geog. 25(1):3 EU-bilateral monthly Eurostat, JRC system; no ML-ready
+corridor-grain benchmark with splits exists; HF/Zenodo carry raw-panel repackages only).
+
+Checks this tick: `check-candidate.py unhcr-refugee-data-finder` OK (ready);
+`check-candidate.py --all` all OK; full unittest suite 613 tests OK (22 s);
+discovery-coverage: live 26, ready 3, non-US share 20/26 (77%). Seven probe scripts
+retained in `candidates/unhcr-refugee-data-finder/` (all reproduce the quoted numbers;
+fixture probe exits 0). No worker launched, nothing constructed, qualified or published;
+no reservation changed. Next action (advancement): construct the corridor panel on a
+worker from the pinned CSV, gate 1.4.x on the exact bytes, then baselines.
+
+
 ## 2026-10-23 - scheduled research resumption repair (Codex; deployed and verified)
 
 Scout's 08:00/12:00 discovery and 14:00 advancement slots were dropped while the
