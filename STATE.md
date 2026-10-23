@@ -1,3 +1,36 @@
+## 2026-10-23 (22:39Z) - nz-ea-publish-001 watcher close-out: transfer re-verified at the destination, cleanup re-confirmed provider-side, stale ledger reconciled
+
+The watcher handed off nz-ea-publish-001 (succeeded, no staged result: the worker's result.json
+upload to staging failed POST 422). The packaging entry below had already recorded the transfer
+and the provider-API deletion; this tick verified the job independently from read-only
+observations and closed the one leftover: the job ledger still said "running". No new job and no
+recovery were needed - every accepted asset is durably placed and digest-verified at its
+destination.
+
+- **Transfer re-verified from the coordinator (read-only GitHub API):** release 422360451
+  (v2026.10, non-draft) in earino/nz-ea-wholesale-price-exceedance holds exactly 5/5 assets;
+  every name/size/server-side sha256 equals the package MANIFEST digests (meta.json f9b8105a...,
+  private-holdout.csv 101f6a70..., public-eval.csv 6302310d..., public-train.csv 273aeb06...,
+  quality.json c37aed79...). Anonymous repo GET still 404s - still private, nothing published.
+- **The 422 explained from evidence:** the staging draft release job-nz-ea-publish-001 (422361965)
+  holds exactly one asset, file-0000-part-0000 - 71,680 B whose sha256 equals the ledger's
+  source-bundle digest a69b6175..., so the source bundle landed and the result-report asset is
+  what failed. The complete result (5/5 transferred, 0 failures, 2,754,043 B, 11.1 s) is
+  preserved at .factory/nz-ea-publish-001/result.json and recorded verbatim in record.json jobs[].
+- **Cleanup re-confirmed provider-side at 22:34Z:** GET /servers/172117571 -> 404 "server not
+  found"; project primary_ips total_entries 0. (The deletion by the packaging session at
+  22:29:17Z, provider action 663400654954053, was already recorded.)
+- **Ledger reconciled through the supported lifecycle:** 'worker status nz-ea-publish-001' set
+  jobs/nz-ea-publish-001.json status=deleted, deleted_at 22:38:53Z - the reconcile stamp, not the
+  provider deletion time; both are now distinguished in the candidate record.
+- **Handoff unchanged (advancement owns it):** HF private staging (hf-publish --create
+  --upload-small, hf_publish worker job, --verify, --tag LAST), DESTINATIONS.json for both
+  destinations, then awaiting_operator=true. The flip remains the operator's.
+
+Checks this tick: check-candidate.py nz-ea-wholesale-price-exceedance OK (status=packaged);
+check-candidate.py --all exit 0. The seven sites/*.json site_revision bumps from another session
+remain untouched and uncommitted.
+
 ## 2026-10-23 (22:35Z) - nz-ea-wholesale-price-exceedance PACKAGED: GitHub staged private, HF staging handed off
 
 Release work outranked construction this tick (no actionable packaged candidate: every
