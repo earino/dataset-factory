@@ -226,11 +226,67 @@
       "elapsed_seconds": 28.551,
       "response": "Decision: Not ready. Verdict `parked` (timing/target defect and unproven as-of availability), not `ready`, and no construction job.\n\nEvidence\n- The task as drafted is internally invalid: prediction at 10:00 UTC Tuesday with target \"any interruption Tuesday 00:00 \u2192 following Monday 23:59\" already observes 00:00\u201310:00 of the outcome window. A same-day interruption makes the label true before the prediction instant. That is target leakage, not just a feature-timing question.\n- \"Reports through Monday\" cannot be shown available at the prediction instant. The 30 daily files have Last-Modified 08:00 with no documented server timezone and no completeness guarantee. If 08:00 is local time east of UTC, Monday's file may not exist at 10:00 UTC Tuesday.\n- The archive is not immutable: the FAQ records a 2023 reprocessing that replaced event classifications and geographical mappings for 2005\u20132022. Historical \"reports\" are therefore revised retrospectives, not evidence of what was knowable then. Re-reading one fixed month in two weeks tests nothing about a 2023 rewrite.\n- Split capacity is asserted from large 2018/2024 totals, but per-window eligible counts and class/provenance mix were never computed; \"large annual file\" is not independent positives per window.\n- The local scratch panel from four annual files was built on the coordinator, contrary to the bulk-data rule; it is not a qualified artifact.\n- Licence, jurisdiction and `licence_class` are not recorded in the case.\n\nUncertainty and next discriminating check\nThe decisive question is whether any as-of record exists: a revision history, per-day snapshot, or documented publication timestamp with timezone. If the archive only serves reprocessed final state, historical features cannot be reconstructed and the task is buildable only from forward-collected daily files. Cheapest probe: inspect the portal/API for version or snapshot endpoints and a documented timezone; if absent, record that and stop. Second, recompute the target with the prediction instant moved to before the window opens (e.g. Monday 23:59 UTC or Tuesday 00:00) and count eligible rows, class mix and independent positives in three disjoint windows.\n\nOrdered actions, stopping condition\n1. Downgrade the candidate to `parked`; record the 10:00-Tuesday leakage, the 08:00/unknown-timezone gap, the 2023 reprocessing quote, and missing licence/jurisdiction/class.\n2. Preserve probe URLs, dates, the four-file probe command and compact aggregates only; delete the local panel or keep summary counts, noting the coordinator oversize breach.\n3. Run the bounded snapshot/timezone probe and the per-window count from source (worker if large). No construction, no baselines, no headroom figures.\n4. Handoff: reopen only when (a) an auditable as-of policy with observed coverage exists, or a forward-collection start date is agreed; (b) prediction instant precedes the target window; (c) per-window independent counts show three disjoint windows with both classes; (d) `licence_class` A/B and jurisdiction are recorded.\n5. Stop after that probe: if no as-of evidence and no forward collection is authorized, record the blocker and leave it parked. Do not order \"construct, fit baselines, investigate revisions, qualify\" \u2014 revisions must precede construction.\n\nOperator report\nLead: openly licensed island transport event archive, plausible differentiated operational forecast. Blocked: leaked target window, unproven publication timing, 2023 reprocessing invalidating historical immutability, and no per-window counts. No construction launched; no measurements quoted. Next action: bounded snapshot/timezone probe, then decide as-of policy or park for forward collection. Checks/commit: record update and `check-candidate.py` only; no dataset claims.\n\n\u2014 Scout (Hermes)\n",
       "response_sha256": "444324e13d5d2e88051b9e3decd64734e5e6cc452a921f8a9240c6c185776600"
+    },
+    {
+      "partition": "rollout-aa0e735",
+      "case": "rollout-advancement-selection",
+      "arm": "revised",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-118",
+      "session_id": "20261023_015701_4311e0",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "1fa7e788270ec7e98caf86b55d34eec81181cfee2848ae67c70226cf98c21120",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 14174,
+        "output_tokens": 7237,
+        "cache_read_tokens": 19584,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 40995,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 371,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 14122,
+          "output_tokens": 6866,
+          "cache_read_tokens": 19200,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 118.034,
+      "response": "DECISION\nDo not launch a worker as the candidate stands. Two defects are design-level and must be corrected before construction, because they are the exact shape that once reached packaged (nhs-ae-four-hour-decline): (1) the outcome window starts at 12:00 UTC, six hours before the 18:00 UTC prediction instant, so the label includes time before prediction and is partly knowable at prediction time; (2) eligibility is \"districts appearing anywhere in each completed year's event file\" - a hindsight population conditioned on the full year's outcomes, dropping zero-event districts, even though a district register predating each year was available. The recorded next_action is also wrong: computing references inside build.py is early scoring, and inverting order (references before the gate) violates construct, qualify, accept, score, report. Fix design locally (free, reversible, pre-construction, so no rebuild budget consumed), then launch the corrected build with a fresh attempt ID this slot if budget remains; otherwise the launch is the recorded next action. The packaged sibling carries awaiting_operator: a human wait that blocks nothing and does not consume this slot; leave it private.\n\nSUPPORTING EVIDENCE\n- Session brief: a future-event label must not include time before prediction; resolve contradictions before a construction launch.\n- Qualification skill: construction must not compute or log baseline performance before acceptance; a later passing report does not retroactively cure early scoring; row selection must not reach past the instant.\n- AGENTS.md/OPERATIONS.md: awaiting_operator exempts the sibling from preemption; ship-first covers actionable packaged work only; changed source needs a fresh attempt ID.\n\nFIXES\n1. Target: window becomes [18:00 UTC instant, instant + 7 days]; recorded as a protocol-first decision before any scoring, not chosen for scores. Base-rate impact is unknown until measured.\n2. Eligibility: panel from the pre-year register vintage; zero-event districts retained with negative labels; register release dates recorded as row_selection evidence.\n3. build.py constructs only; persistence and calendar-only references move to the evaluation stage, after acceptance, on identical eval rows.\n4. Pin eligibility with a counterfactual test: a register district with no events must still emit rows; a history/target-side variant must still bite. Run the gate's --selftest.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\nNothing is measured; quote no figures. Before launch, verify the register vintage dates against each prediction year, and read the daily report's column documentation to confirm the same-day 12:00-18:00 UTC events are not separately shipped as features. After launch, the discriminating checks are the full-artifact gate's timing and selection checks on the worker, plus --accept on exact bytes.\n\nORDERED ACTIONS AND STOPPING CONDITION\n1. Record the dated timeline (availability, eligibility, 18:00 UTC instant, target bounds) and both defects in the candidate record.\n2. Apply fixes 1-3 to build.py and quality.json (timing/row_selection declarations from the ledger and register evidence).\n3. Add the counterfactual pin; run --selftest locally.\n4. Set a fresh attempt ID; run scripts/assemble-job.py (offline, no cloud action); confirm the bundle carries qualify_dataset.py and runner files.\n5. If within the time/turn reserve: plan, then launch; record job ID, reservation, expected reports - a running worker is a valid handoff. Next tick: collect, full-artifact gate, --accept, then the reference triad.\n6. Stop without launching if register dates or timing evidence cannot be verified; record a precise blocked handoff instead.\nClose-out: update STATE.md and the candidate record, run check-candidate.py --all, review the diff, commit/push this session's work only, and report CI for that exact commit as pending until read.\n\nOPERATOR REPORT\nThis slot advanced the ready outage candidate; the packaged sibling still awaits your flip and was left private. The outage candidate's label window began six hours before its prediction instant and its district panel was selected from the completed year's events; both are corrected in design before any spend (window now starts at the 18:00 UTC instant; panel now from the pre-year district register, zero-event districts retained). No worker launches until those corrections are recorded and the bundle is assembled; construction then runs within allowance under a fresh attempt ID, and no numbers will be quoted until the gate passes and --accept verifies the exact artifact on the worker.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "17455f559b820faa1df992652099445a4cec50dbbf95a35358109bfcba933a03"
     }
   ],
   "ledger": {
-    "calls": 118,
-    "tokens": 3946638
+    "calls": 119,
+    "tokens": 3987633
   },
-  "updated_at": "2026-10-23T01:56:59Z"
+  "updated_at": "2026-10-23T01:59:00Z"
 }
