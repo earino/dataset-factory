@@ -204,3 +204,53 @@ commands from the repo root unless stated; scratch files deleted afterwards.
 - Identity rule on holdout: 0.4909 (below chance; stale priors across the
   prevalence shift). The model's holdout AUC was not measured by the
   contract job - that is the decisive missing number and the next action.
+
+### Decisive holdout comparison (wb-holdout-001, collected 2026-10-23)
+
+Bundle candidates/wb-ieg-project-outcome/holdout; worker 171950621, exit 0,
+57.3 s; report = output/holdout-comparison.json in staging release 421361824
+(asset 667622270, sha256 90fa57f557f36ca57624b1324d142a1fa6dfaaec35fc41da8a274a0aaa4d1145);
+worker destroyed 01:40:51Z, provider 404 confirmed. Ordering: gate --accept
+("matches the qualified artifact b8345bcb5769e422") BEFORE any scoring.
+
+Numbers (all on the exact accepted bytes, references fitted on train only):
+
+- Eval (1,479 rows, prevalence 0.7931): model 0.5879 (reproduces
+  wb-baseline-001), identity rule 0.6003 (reproduces the build's early-scored
+  value), calendar-trend 0.5209, prior-share 0.5783. Model trails identity
+  (delta -0.0124, CI [-0.0506, +0.0309], contains zero); model beats calendar
+  (+0.0670, CI [+0.0052, +0.1261], excludes zero - but eval is not where the
+  runner scores).
+- Holdout (1,097 rows, prevalence 0.8067): model 0.5301, identity 0.4909,
+  calendar-trend 0.4780, prior-share 0.4938 - all at or below ~chance.
+  model-identity delta +0.0393, cluster-bootstrap CI [-0.0113, +0.0899]
+  (contains zero); model-calendar +0.0522 CI [-0.0236, +0.1296]; model-prior
+  +0.0364 CI [-0.0151, +0.0811]. No benchmark claim is supportable.
+- Per-year holdout model AUC never above 0.578; the identity rule decays
+  0.4908 (2015) -> 0.4408 (2019). Prevalence shift 0.7180 -> 0.7931 -> 0.8067
+  documented as a property.
+
+Codex source-review items, closure within this stage:
+
+- scoring-before-qualification: this stage ran accept -> score; a later
+  passing report was never treated as compliance for the wb-001 build.
+- incorrect-accuracy-field: majority-class accuracy measured per split as a
+  constant prediction (eval 0.7931, holdout 0.8067), never restated as the
+  0.7180 training prevalence.
+- calendar-control-degenerates: empirically confirmed - the country x
+  approval_fy table hits zero eval/holdout keys (fallback fraction 1.0, scores
+  bit-identical to the identity rule) - and replaced by a genuine train-fitted
+  time-only control (logistic on approval_fy + cyclical month).
+- historical-vintage-claim: unresolved scientifically; it affects no release because the candidate is dropped, but any future instance must state it as an assumption - the candidate is dropped and
+  nothing ships from it. The prior_msplus_share feature remains
+  latest-vintage (evaluation_fy from the current IEG snapshot) and would need
+  an explicit assumption, never a reconstruction claim, in any future instance.
+- information sets verified by perturbation, not trusted from names: every
+  non-claimed column row-shuffled with scores bit-identical (identity reads
+  only country; calendar only approval_fy + approval_month_num; prior-share
+  only prior_msplus_share + prior_evals_count).
+
+Verdict: DROP. The runner-scored split shows no demonstrated headroom over
+the simple rules and no useful absolute signal; the negative finding is
+preserved in the record with both scores on identical rows. Reopen only as a
+new task instance with its own qualification cycle.

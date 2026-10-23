@@ -6371,3 +6371,78 @@ routes (eight calls, same cumulative ledger, 128-attempt checkpoint/unchanged 5M
 Next: exact source/CI and Scout review, targeted responses, idle deployment and another
 ordinary discovery; retain live advancement 20261023_011135_3731ee untouched and audit
 its output. Do not declare the goal complete from the earlier decision scores.
+## Advancement session (Scout, 2026-10-23): wb-ieg-project-outcome decision point resolved - negative finding, dropped
+
+Release work outranked construction, so the session took the package-stage
+candidate's recorded next action: the one bounded holdout job that produced the
+missing decisive number. No packaging occurred; under the current protocol and
+spent one-repair budget, packaging is no longer available for this candidate - a
+decision, not a claim of impossibility.
+
+- Job wb-holdout-001 (bundle candidates/wb-ieg-project-outcome/holdout, worker
+  171950621, exit 0, 57.3 s, EUR 0.04 reservation): fetched the five accepted
+  files from staging 421262457, re-ACCEPTed through the gate BEFORE any
+  scoring (b8345bcb5769e422), materialized the public-only runner workdir,
+  ran the benchmark's own train.py verbatim via runpy (same fitted model as
+  wb-baseline-001, no retraining choices) and scored it against train-fitted
+  references on identical eval and holdout rows. Report: staging release
+  421361824 (asset 667622270). Worker destroyed, provider 404 confirmed.
+- Decisive numbers (holdout = approval FY2015-2019, 1,097 rows, 885
+  positives, prevalence 0.8067): model AUC 0.5301 vs identity rule 0.4909;
+  paired cluster bootstrap by country (2,000 resamples, fixed seed) delta
+  +0.0393, 95% CI [-0.0113, +0.0899] - contains zero. Also contains zero vs
+  the genuine time-only calendar control (0.4780; delta +0.0522) and the
+  prior-track-record rule (0.4938; delta +0.0364). The adverse eval
+  comparison is kept: model 0.5879 trails identity 0.6003 on eval (the only
+  CI excluding zero anywhere is model>calendar on eval, which the runner
+  does not score). No benchmark claim is supportable.
+- Codex source-review items closed in scope: accept-before-score ordering
+  enforced this stage; majority-class accuracy measured per split (0.7931 /
+  0.8067), never restated as the 0.7180 training prevalence; the degenerate
+  country x approval_fy "calendar" control empirically confirmed (100%
+  fallback, scores bit-identical to identity) and replaced by logistic on
+  approval_fy + cyclical month; reference information sets verified by
+  perturbation. The latest-vintage prior-history claim remains scientifically
+  unresolved; it affects no release because nothing ships, but a future
+  instance must state it as an assumption.
+- Verdict: candidate DROPPED with the negative finding preserved (both scores
+  on identical rows, per-year breakdown, prevalence shift 0.7180 -> 0.7931 ->
+  0.8067 recorded). One repair was budgeted and spent. No implementation defect was found (model
+  reproduces 0.5879 exactly; identity reproduces the build's early-scored
+  0.6003/0.4909 from the written bytes), and no advantage was demonstrated
+  under this protocol. CIs containing zero mean advantage was not shown; they
+  do not establish equivalence or prove that task signal cannot survive. The
+  identity holdout AUC was already known before this job: this was a
+  fixed-config deterministic refit and the first new-model holdout comparison,
+  not a wholly untouched holdout evaluation. Reopen only as a
+  new task instance with its own qualification cycle.
+- Checks: check-candidate wb-ieg OK (dropped) and --all OK; suite 588 tests
+  OK. October worker reservations now EUR 7.90 of 20 (release reserve 5
+  untouched).
+- Queue after this session: the operator's actionable list stands minus
+  wb-ieg-project-outcome (dropped). inpe-foco-municipal-onset (build) is the
+  discovery session's handoff pick; every remaining item needs its build
+  authored first, so the next session should pick ONE and write the
+  construction before launching (no half-written bundle was left behind).
+
+## Assisted audit hold - inpe-foco-municipal-onset (2026-10-23)
+
+Codex's post-run review found the discovery "ready" verdict unsafe: the D+1 13:00 prediction instant falls 13
+hours after the [D+1 00:00, D+8 00:00) target window opens; INPE FAQ Q39 documents retroactive Base 2
+reprocessing (Collection 6, Terra history from 2000, Aqua from 2002, IBGE 2016 boundaries), so current files and
+a future churn check cannot establish historical as-of availability; and the handoff ordered baselines before
+qualification. Record status set to `investigating` with a `review` block; original measurements and evidence are
+preserved unchanged. Keep private; do not construct from the prior contract. This is an assisted audit finding,
+not an unprompted discovery gain. Reopen only with a fully future target window, evidenced as-of coverage (or an
+explicitly retrospective task) and a gate-ordered handoff.
+
+
+Prompt evaluation continuation (Codex, 2026-10-23 01:58 UTC): advancement completed
+at 206a94c and the assisted INPE hold is durable at 5dac3c5. Exact-commit CI passed
+for both and for the subsequent wording clarification 4d54eb1. Eight targeted
+responses are now running sequentially on the same ledger after the advancement
+mutex released. The frozen source is aa0e735; merging research records here does
+not change that prompt/skill bundle. Current verdict wording is still being
+reconciled with the assisted scientific clarification. Next: finish and review
+all eight responses, merge/deploy the unchanged tested prompts at idle, then
+observe one ordinary uncoached discovery and record its actual outcome.

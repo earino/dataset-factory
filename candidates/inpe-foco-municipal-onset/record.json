@@ -1,6 +1,6 @@
 {
   "id": "inpe-foco-municipal-onset",
-  "status": "ready",
+  "status": "investigating",
   "created_at": "2026-10-23T01:04:55.126964+00:00",
   "domain": "wildfire operations - municipal fire-alert onset prediction (Brazil, all biomes; INPE reference-satellite active-fire detections)",
   "prediction_question": "A Brazilian municipality has recorded zero active-fire detections (INPE reference-satellite series) for 14 consecutive days through day D. At 13:00 UTC on day D+1 - after INPE's morning consolidation of day-D detections (daily CSV for day D observed published 09:05 BRT on D+1) - given only the municipality's detection history through day D, the calendar, state and biome, will at least one active-fire detection be recorded in that municipality within the next 7 days (event days D+1..D+7)? A useful prediction lets PREVFOGO/IBAMA, state civil defence and municipal fire brigades pre-position crews in a country where detection precedes enforcement, and persistence cannot win by construction.",
@@ -72,7 +72,21 @@
   "jobs": [],
   "artifacts": [],
   "rejection_reason": null,
-  "review": null,
+  "review": {
+    "assisted": true,
+    "recorded_at": "2026-10-23",
+    "reviewers": "Codex with Scout (Hermes)",
+    "reason": "Ready contract withheld pending correction",
+    "findings": [
+      "Target window [D+1 00:00, D+8 00:00) begins 13 hours before the 13:00 UTC D+1 prediction instant; label information precedes prediction.",
+      "INPE FAQ Q39: Base 2 launched 14 Jun 2018, replaced Collection 5 with 6, reprocessed Terra history since 01 Nov 2000 and Aqua since 04 Jul 2002, corrected 2017 MODIS/VIIRS detections, moved to IBGE 2016 boundaries. Historical rows are retrospectively reprocessed, not operational snapshots.",
+      "Current regenerated files and a prospective two-week churn check do not establish historical as-of availability; Last-Modified is not completeness or time zone.",
+      "next_action ordered reference baselines before the full qualification gate; construction must qualify and accept exact bytes before any scoring."
+    ],
+    "primary_source": "https://data.inpe.br/queimadas/portal/pages/secao_informacoes/faq/",
+    "preserved": "Original discovery evidence and measurements retained unchanged; this block records an assisted audit finding, not a discovery win.",
+    "reopen_condition": "Corrected contract with a fully future target window, evidenced as-of coverage for the constructed years (or an explicitly retrospective task), and gate-ordered handoff."
+  },
   "next_action": "Advancement session constructs on the worker: (1) download all focos_br_ref_YYYY.zip 2003-2025 with checksums; map municipio names to IBGE codes (2024+ monthly files carry municipio_id; assert mapping total); (2) build the municipality-day detection panel by year; record the reference-satellite era notes and per-year totals; cross-check every year against the Estatisticas per-state CSVs (2024 MT matched exactly); (3) emit onset-conditioned pairs: zero detections in [D-13,D], target >=1 in [D+1,D+7]; train 2003-2019 / eval 2020-2022 / holdout 2023-2025; (4) features: trailing detection counts/lags, calendar, state, biome only - assert no row with event time > D enters features; (5) baselines FIRST and reported beside the model: global rate, biome-month climatology, and INPE's own danger rating (2026 window) - if the model does not beat climatology+persistence, record as defect and re-target; (6) late-row churn check per the as-of limitation; (7) qualification gate on the full artifact before any headroom number is quoted.",
   "jurisdiction": {
     "country": "BR",
@@ -82,7 +96,7 @@
   },
   "licence_class": "B",
   "licence_note": "Publisher's own instrument (portal footer + FAQ): open data for public use, free of cost, explicitly transferable and usable in any system, with attribution-by-citation as the stated condition - attribution-conditioned open use; no formal CC legal code located, so class B rather than A; conditions to be stated in LICENSE.md",
-  "verdict": "go",
+  "verdict": "hold",
   "novelty_check": {
     "checked_at": "2026-10-23T01:07:48+00:00",
     "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
