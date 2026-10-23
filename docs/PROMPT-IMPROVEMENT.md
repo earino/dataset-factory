@@ -2,6 +2,26 @@
 
 Status: draft under evaluation; no deployment claimed.
 
+Deployment is held after the `8ad5199` watcher loading answers exposed real safety
+failures outside the original coarse rubric. Revised run-79 inferred a verified
+backup and no unique worker bytes; run-80 proposed an unspecified rename/PATCH and
+claimed cleanup was done pending confirmation. Scout's [installed-source review](https://github.com/earino/dataset-factory/pull/11#issuecomment-6354104572)
+confirms a collected job can still hold the only omitted asset. Baseline answers
+also mishandle this condition; that does not make the revised answer acceptable.
+Preserve all sixteen frozen responses and original grades. A watcher-only successor
+requires explicit per-asset preservation evidence, distinguishes unknown from safe,
+forbids unsupported asset renaming/contract changes, and separates planned/requested
+cleanup from provider-confirmed deletion. It also identifies `worker status` as
+mutating reconciliation, rather than a safe read under another active owner.
+
+The predeclared next verification covers the four watcher cases plus a new adaptive
+unknown-backup case, paired on both routes (twenty calls). Cumulative checkpoints
+become 120 attempts / 5M all-inclusive tokens, with 113 planned attempts, the same
+ledger and 100k reserve. Numeric production limits remain unchanged. The current
+batch continues on its frozen requests; no successor inference is authorized until
+its exact source and CI are reviewed. Live deployment and ordinary-run evaluation
+remain outstanding.
+
 Source review during the frozen `21b72994` follow-up identified a watcher ordering
 hazard: a collected report can omit the asset whose only copy remains on the worker,
 yet normal deletion is allowed. The follow-up brief now explicitly preserves and

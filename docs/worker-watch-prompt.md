@@ -21,6 +21,9 @@ or released the OS mutex; never delete a lock to proceed.
 Deferral includes job-ledger and watcher-bookkeeping writes, collection and normal
 worker destruction. Give a status report from existing read-only observations only;
 calling a write "bookkeeping" does not make it safe under another active owner.
+`worker status` calls reconciliation, writes the job record and can clean owned
+IPs; it is not a read-only inspection command. While deferring, read existing
+records rather than invoking it.
 
 For an idle coordinator with a documented handoff, handle only the named job and
 candidate. Preserve unrelated edits. A prompt-level check is not a concurrency lock;
@@ -43,8 +46,15 @@ assuming session boundaries protect them.
 4. Preserve compact diagnostics and locate the recovery source **before normal
    teardown**: record the worker path and expected digest, or verify the staged
    copy. A collected report verifies only its listed assets; it does not prove a
-   missing asset survived elsewhere. If the live worker holds the only accepted
-   bytes, preserve them through supported same-artifact transfer before deletion,
+   missing asset survived elsewhere. Before normal deletion, account for every
+   expected accepted asset: name its durable destination/revision, exact asset
+   name/path and observed matching digest. An upload summary, a GitHub/Hub URL or
+   the word "collected" is not that evidence. Unknown preservation means **do not
+   normally delete yet**, not "there is probably a backup". Use the bounded check
+   or preservation below; if bytes are proven already lost, record that evidence
+   and loss explicitly before cleanup rather than claiming they are safe.
+   If the live worker holds the only accepted bytes, preserve them through
+   supported same-artifact transfer before deletion,
    or leave a precise blocked handoff within the worker's existing expiry. That
    transfer counts as the single recovery in step 5, not an extra attempt. Never
    extend expiry or claim an unverified backup exists. If preservation cannot finish
@@ -57,6 +67,11 @@ assuming session boundaries protect them.
    worker. Name the reachable source and expected digest first (retained worker or
    verified staging); no source means handoff, not a rebuild or bulk coordinator fetch.
    A digest conflict is a stop, not permission to replace published bytes.
+   Recovery copies identical bytes to the **existing declared asset name/path**
+   through the approved transfer job. A naming mismatch is a diagnosis, not
+   authority to rename/PATCH/delete assets or rewrite a manifest, card, config or
+   loading contract. Hand those changes to advancement. Do not invent a repair
+   endpoint or bypass the supported lifecycle because the change looks small.
    Preserve prior evidence; a relaunched job needs a fresh attempt ID linked to the
    parent job in the candidate/STATE record, budget admission and enough time to leave
    a durable handoff. One recovery applies across that attempt chain, not once per new
@@ -102,3 +117,10 @@ Final response: job/candidate, verified result (only qualified numbers), recorde
 commit/check status, cleanup evidence, next action/owner. No empty or one-word
 response for a finished job. Report only observed completion; planned recovery,
 deletion, commits and checks remain pending until verified. Sign `— Scout (Hermes)`.
+
+For cleanup, distinguish **planned**, **requested but unverified**, and **deletion
+confirmed by the provider**. Never write "cleanup done pending confirmation". An
+unread CI result is unknown, not necessarily pending. When asked only for a handling
+plan, label actions and the report as proposed: no cleanup, record edit, commit or
+check has happened merely because it appears in the sequence. When executing, cite
+the observed result before changing that status.

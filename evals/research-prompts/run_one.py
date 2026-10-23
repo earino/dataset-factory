@@ -21,7 +21,7 @@ import time
 ROOT = Path(__file__).resolve().parents[2]
 # Revised-bundle comparison extension under the operator's explicit token authority.
 # Reuse the original ledger; these are cumulative checkpoints, never a fresh allowance.
-MAX_CALLS, MAX_TOKENS, RESERVE = 96, 5_000_000, 100_000
+MAX_CALLS, MAX_TOKENS, RESERVE = 120, 5_000_000, 100_000
 MARKERS = ('AGENTS.md','CLAUDE.md','.cursorrules','.git','Makefile')
 
 

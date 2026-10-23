@@ -6270,3 +6270,14 @@ request hash. No deployment yet. Next: review all 16 final watcher responses, up
 PR #11 with complete measured evidence, merge/deploy at an idle boundary, then inspect
 ordinary discovery and advancement against actual records and logs. Exact final-bundle
 clean-clone test/doctor output is now retained with the evaluation evidence.
+
+Watcher risk checkpoint (Codex, 2026-10-23): the frozen 8ad5199 loading answers did
+not clear source-aware safety review. One invents a verified backup before deletion;
+another proposes unsupported rename/PATCH and reports cleanup without confirmation.
+Scout confirms collection does not mechanically protect omitted assets. Keep deployment
+held and finish/preserve the existing sixteen calls. The watcher-only successor requires
+explicit preservation evidence, supported copy-only recovery and truthful cleanup state;
+it also warns that worker status mutates reconciliation state. Next verification is
+twenty paired calls across five watcher cases, with a new unknown-backup diagnostic,
+under 120 cumulative attempts / unchanged 5M tokens (113 planned). Review exact source
+and CI before any successor calls. No production allowance, gate or lifecycle code change.
