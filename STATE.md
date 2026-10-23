@@ -6259,3 +6259,14 @@ including retained-source recovery, on the final exact bundle (93 cumulative pla
 attempts within 96/5M). PR #11 remains draft and undeployed. Next: finish reserved and
 adaptive reviews, verify the final watcher responses, then merge/deploy and observe
 ordinary research; retain all earlier results and truthful uncertainties.
+
+Prompt-evaluation checkpoint (Codex, 2026-10-23 00:00Z): all 52 frozen follow-up
+responses are complete and preserved. Adaptive diagnostic scores are 23/32 baseline
+versus 30/32 revised; both revised close-out answers still fail reporting fidelity.
+They must not be described as flawless or as executed research. The same cumulative
+ledger records 77 attempts / 2,696,235 all-inclusive tokens before the final watcher
+batch. Its first final-8ad5199 response has arrived and validates against the prepared
+request hash. No deployment yet. Next: review all 16 final watcher responses, update
+PR #11 with complete measured evidence, merge/deploy at an idle boundary, then inspect
+ordinary discovery and advancement against actual records and logs. Exact final-bundle
+clean-clone test/doctor output is now retained with the evaluation evidence.

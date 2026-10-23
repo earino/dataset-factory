@@ -34,7 +34,25 @@ reporting and chronology claims. The primary release-priority answer has a quali
 preference for baseline's clearer preparation-only fallback. Token totals are 245,099
 baseline versus 207,827 revised; elapsed totals 368.406s versus 265.954s, with revised
 DeepSeek slower. Full responses, grades and limitations are preserved alongside the
-development results. Adaptive diagnostics and the final watcher check continue.
+development results.
+
+The four adaptive diagnostics are complete: baseline 23/32 versus revised 30/32.
+Revised answers better preserve auditable historical availability and a single
+same-artifact recovery, while both revised close-out answers fail report fidelity
+by claiming checks are in progress or defaulting unread CI to pending. Their actual
+status is unknown. These weaknesses and interpretation-sensitive unsafe flags remain
+in the detailed grades. Tokens: 305,502 baseline versus 264,005 revised; elapsed
+totals: 669.436s versus 414.789s. These adaptive, no-tool cases are not a hidden
+holdout or evidence of causal speedup. The original plus follow-up batches now total
+77 attempts, including the retained pre-inference failure, and 2,696,235 all-inclusive
+tokens. The separately frozen final watcher check has started; deployment is pending.
+
+Exact clean-clone output for the final prompt bundle is preserved in
+`evals/research-prompts/results/verification-8ad5199-unittest.txt` and
+`verification-8ad5199-doctor.json`: 588 tests in 6.763s, OK (skipped=6), doctor exit 0.
+The test log's synthetic dataset figures and expected old-gate rejection are fixture
+diagnostics, not new research measurements. No previously passing assertion was
+removed to obtain this result; the intentional quota-wording change is explained below.
 
 ## Original development comparison completed
 
