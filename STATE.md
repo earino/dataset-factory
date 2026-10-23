@@ -1,10 +1,12 @@
 # Current state
 
-Updated: 2026-10-23 06:55Z (camara-bill-advancement construction tick: the discovery record's label code was WRONG
-(situation 1140, not the mis-indexed "251") and the "closed legislature settles labels" assumption was wrong (Brazilian
-bills carry across legislatures) - both corrected from measured probes; build written + smoke-green; camara-001 failed
-only on my own guard anchors (diagnosed, reports collected, worker destroyed); camara-002 repaired and RUNNING. Next
-action: collect camara-002, gate + --accept before any scoring, then the runner-contract baseline.)
+Updated: 2026-10-23 07:00Z (camara-001 worker follow-up tick: the advancement session's close-out was verified and
+completed - provider-confirmed cleanup (Hetzner 404 on server 171985941; zero camara-001 IPs remain, the only project
+IP is camara-002's), staging release job-camara-001 re-verified 8/8 assets by size+sha256, and the three commits the
+advancement session left unpushed (30b03d8, d54add9, 97d7beb) were pushed this tick. One process flag handed to
+advancement: build.py computes in-build reference AUCs before the qualification gate. camara-002 still running at
+close. Next action unchanged: collect camara-002, exit 0 + passing gate report + --accept on the exact bytes before
+any scoring, then the runner-contract baseline.)
 
 ## 2026-10-23 - camara-bill-advancement construction tick: label-code and right-censoring defects corrected from measurement; build written, smoke-green; camara-001 failed on guard anchors, camara-002 running
 
@@ -53,6 +55,43 @@ Checks this tick: `check-candidate.py` OK (status ready); local smoke green; `as
 verified; October worker reservations now ~EUR 8.0 of 20 (camara-001 0.06 + camara-002 0.06 added). Commit
 `30b03d8` pushed with the probes, build, smoke, record and camara-001 ledger; CI result for that commit is
 reported in the session close-out.
+
+## 2026-10-23 - camara-001 worker follow-up tick: cleanup and preservation provider-verified; unpushed commits pushed; in-build-reference order flagged to advancement
+
+The watcher handed off camara-001 (failed, exit 2). The advancement session had already diagnosed it (three of
+its own guard anchors, not a data defect), collected the bounded reports and destroyed the worker; this tick
+verified that close-out and completed the missing pieces. No new job was launched - camara-002 remains the single
+diagnosed recovery on this attempt chain, and interpreting its result belongs to advancement / the next tick.
+
+- **Cleanup confirmed against the provider, not just the ledger.** Read-only Hetzner checks at 06:58Z:
+  `GET /servers/171985941` -> 404 `server not found` (deletion provider-confirmed); the project holds exactly one
+  primary IP (65.21.158.17), labeled `job=camara-002` and assigned to camara-002's live server - **zero IPs
+  reference camara-001**. camara-002's server 171989986 answered 200 (running; ledger status running, consistent
+  with its 06:51:44Z launch and camara-001's 6.6-minute build).
+- **Preservation verified.** The failed attempt's evidence is durable in the private staging draft release
+  `job-camara-001` (id 421522080): all 8 assets re-verified by id, size and sha256 against the job ledger. Bulk
+  CSVs were deliberately not fetched to the coordinator; the bounded set (manifest.json, both summary.json
+  copies, container.log 8,013 B, source.tar 174,080 B - ~189 KB total) is under `.factory/camara-001/reports/`,
+  within the 20 MiB cap.
+- **Failure interpretation re-checked from the collected evidence.** container.log shows the full build completed
+  (642,067 in-window bills after the descending-first-wins union; 49 situation codes, 0 unresolved by data;
+  coherent per-split buckets) and then exactly three FAIL lines - the three guard anchors - followed by
+  `build failed; the extract is incomplete and qualification is not meaningful`, exit 2 **before** the gate
+  (run.sh order is build -> qualify). The fixture anchor (PL 4188/2021 positive) produced no FAIL. Consequence:
+  **camara-001's artifact was never qualified; no figure from this attempt is quotable** - the split/bucket
+  numbers are construction diagnostics only.
+- **The advancement session's commits were not actually pushed.** `origin/main..HEAD` held 30b03d8, d54add9,
+  97d7beb (so the line above, "Commit `30b03d8` pushed", did not hold; cause not diagnosed this tick - the
+  documented pitfall is a shell GH_TOKEN resolving to the staging token, which this repo denies). This tick
+  pushed the chain with GH_TOKEN/GITHUB_TOKEN/FACTORY_GH_TOKEN cleared from the push environment and verified
+  origin/main caught up. CI runs once at the pushed HEAD; exact-commit status is in this session's close-out.
+- **Process flag to advancement (their decision; not acted on here).** build.py computes the in-build naive
+  reference AUCs on the written rows **before** the qualification gate runs (camara-001 container.log
+  "reference baselines" block sits beside the FAIL lines; run.sh runs the gate only after the build exits 0).
+  The qualification skill's required order is construct -> qualify -> accept -> score, and construction must
+  not compute/log baseline performance before acceptance. Decide whether that reference computation moves
+  after acceptance (a construction change), and until decided no in-build reference figure may be quoted -
+  this governs how camara-002's summary is read too.
 
 ## 2026-10-23 - Africa discovery tick: Kenya unpark question resolved (with an NC decision); ZA dam lead parked on access+licence; Nigeria closed on the publisher's own terms; Morocco censused clean-but-not-task-shaped; Ghana unreachable
 
