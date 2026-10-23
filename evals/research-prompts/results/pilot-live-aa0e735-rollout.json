@@ -338,11 +338,67 @@
       "elapsed_seconds": 89.324,
       "response": "Decision\n\nDo not launch a worker with the build as currently specified. The candidate's recorded next_action embeds two defects that would waste the paid job or make its output unusable:\n\n1. Hindsight selection. Eligibility uses \"districts appearing anywhere in each completed year's event file.\" A completed year's file contains events from after each prediction instant, so panel membership is conditioned on future outcomes, and eventless districts \u2014 the pure negative class \u2014 are dropped. The pre-existing district register is the instant-available population source the case itself supplies. This is exactly what gate 1.4.0's `selection_uses_only_available_data` / `row_selection` checks and the \"iterate the provider's months, not pairs of qualifying outcomes\" rule exist for; it also inflates the base rate by excluding quiet districts.\n2. Scoring before acceptance. \"Compute references inside build.py\" runs baselines before qualification and `--accept`. Required order is construct \u2192 qualify \u2192 accept exact bytes \u2192 score \u2192 report; construction must not compute or log reference performance.\n\nThe fix is design-level and local, so make it first, then launch. One rebuild budget applies to structural defects; this is the cheapest point to spend it \u2014 no job has run yet.\n\nSupporting evidence\n\nEverything else is documented clean: 18:00 UTC instant after the 17:00 publication, feature availability established by the dated release ledger and archived versions, and licence/redistribution/novelty/capacity recorded. So the candidate is otherwise ready and the amendment is bounded to selection and scoring order. The packaged sibling is `awaiting_operator: true` \u2014 a human wait that neither blocks nor deserves this slot.\n\nUncertainty and next discriminating check\n\n- Register-based eligibility will lower positive prevalence by adding eventless districts; that is a property to measure after acceptance, not a reason to keep event-file selection.\n- Register\u2194event-file identifier join consistency across years is unverified.\n- The label window starts at 12:00 UTC, six hours before the 18:00 instant; whether that segment is knowable depends on the report's coverage cutoff. Record it in `quality.json` timing; the persistence reference will show how much of the task is \"outage already underway\".\n\nDiscriminating check: the unchanged gate on the full artifact of the fixed build (timing/selection and split checks), plus a counterfactual fixture \u2014 a register district with zero events still emits rows; a district absent from a later register loses them.\n\nOrdered actions and stopping condition\n\n1. Amend the candidate record: replace next_action (no references in build.py), record this diagnosis.\n2. Edit build.py: eligibility from the district register as of each year; event file used only for labels; add the counterfactual assertions.\n3. Update `quality.json` timing: `row_selection` basis = register, `latest_period_used`, the 12:00-window note.\n4. Move reference computation to post-acceptance evaluation.\n5. Run `qualify_dataset.py --selftest`; `assemble-job.py` with a fresh attempt ID; `worker plan`, then `worker launch` for construct+qualify.\n6. Stop condition: collect; gate pass \u2192 `--accept` exact bytes on the worker, then score persistence/calendar/full-model on identical eval rows and interpret; gate fail \u2192 collect diagnostics, one bounded diagnosis, record blocker, no second rebuild without a diagnosis. Stop initiating work at the 80% wrap-up notice; a running worker with recorded job ID and expected reports is a valid handoff. Commit the amended source and record; check CI for that exact commit.\n\nOperator report\n\nThe packaged sibling remains private pending your flip. This slot advanced the outage candidate: its planned eligibility was conditioned on the completed year's event file (future data) and its next_action scored references inside the build; both amended locally to register-based selection and scoring-after-acceptance. One construct+qualify worker job launches under the normal allowance. No figures are quoted; the gate result and the reference triad will be reported after full-artifact acceptance.\n\n\u2014 Scout (Hermes)\n",
       "response_sha256": "7cb21b6afb388e2ea0d0923634768e671d145a1935a2f84988e87e1f81eed978"
+    },
+    {
+      "partition": "rollout-aa0e735",
+      "case": "rollout-advancement-selection",
+      "arm": "baseline",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-120",
+      "session_id": "20261023_020037_d7d998",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "6fb9dd8eb674392af93a5cd96e94d961777e8c231f5495e4b93f0e7a260e7ae3",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 34000,
+        "output_tokens": 1935,
+        "cache_read_tokens": 512,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 36447,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 186,
+          "output_tokens": 14,
+          "cache_read_tokens": 256,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 33814,
+          "output_tokens": 1921,
+          "cache_read_tokens": 256,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 32.421,
+      "response": "Decision: do not launch a worker this slot. Fix the construction design and declaration first; the current task definition cannot pass qualification and scoring inside `build.py` would run too early.\n\nSupporting evidence\n\n1. Eligibility is hindsight-selected. \"Districts appearing anywhere in each completed year's event file\" uses the year's own outcomes to decide which rows exist, and omitting districts with no event rows removes the negative-heavy population using future information. The skill names this exact failure: iterate the provider's months/districts, not the qualifying set; a thin or absent target is missing outcome data (`unobserved_target`), never a membership decision. An independent district register predating each year is already available, so the fix needs no new source.\n\n2. Label window overlaps the prediction instant. Prediction is 18:00 UTC; the outcome window opens 12:00 UTC the same day, so six hours of the outcome precede the forecast. Part of the label is already knowable at the instant \u2014 a timing defect regardless of feature cleanliness. This is independent of the archive ledger, which covers only feature availability.\n\n3. The recorded `next_action` inverts the required order. Construct \u2192 qualify \u2192 accept exact bytes \u2192 score. Computing references inside `build.py` is hidden early scoring; the gate says to inspect the invoked build script, not just the wrapper. References (persistence, calendar/identity, full model on identical eval rows) belong after acceptance.\n\n4. The packaged sibling is `awaiting_operator: true` \u2014 a human wait. It does not preempt construction and does not authorise a launch by itself; it also does not justify starting a build whose definition is unsettled.\n\nUncertainty and next discriminating check\n\nWhether the 6-hour overlap is a real leak depends on how the label is derived from the source: if the report is an event list, an outage starting at 12:30 may already be listed by 17:00. Cheapest check: read the publisher's field documentation and one archived sample to confirm the label's derivation and exactly what the 17:00 report contains. Second check: confirm the district register's vintage predates each constructed year. Either answer changes the window definition, not the availability evidence.\n\nOrdered actions\n\n1. Update the candidate record: record the hindsight eligibility, the 12:00/18:00 overlap, and the mis-ordered reference computation as failed design review; do not touch the packaged sibling.\n2. Rewrite eligibility to read only the district register as of before the year; look up the target afterwards solely for the label; count and report `unobserved_target`; assert non-zero filtered rows and log before/after counts.\n3. Move all reference computation out of `build.py` into a separate post-acceptance scoring step, leaving construction free of any performance output.\n4. Settle the window: either move the outcome window to start at the prediction instant (18:00 \u2192 +7d) or justify the 12:00 start from documented report contents; write the chosen instant, lag and observations into `quality.json`'s `timing` block.\n5. Add the smallest counterfactual test: a district with a thin/absent target month must still emit its row; lowering a history month must remove it.\n6. Re-assemble with a new attempt ID (changed source; preserve the old bundle) and stop with a launch-ready job.\n\nStopping condition: stop before launching if the label derivation cannot be established from documentation and archived samples, or if the window change alters the task's outcome definition beyond this candidate's protocol \u2014 record the decision needed and hand off. Do not launch a build that would fail the gate.\n\nOperator report: no worker launched, no spend committed. Ready candidate has a construction/timing defect found before any build: hindsight population selection and a label window opening six hours before the forecast. Repaired design drafted; launch pending the label-derivation check. Packaged sibling still awaiting your flip; untouched. \u2014 Scout (Hermes)\n",
+      "response_sha256": "97f345f09a5a27291f9b2c1ad6332014c4839579b0e95a2d423879b5c900ae6a"
     }
   ],
   "ledger": {
-    "calls": 120,
-    "tokens": 4026271
+    "calls": 121,
+    "tokens": 4062718
   },
-  "updated_at": "2026-10-23T02:00:41Z"
+  "updated_at": "2026-10-23T02:01:22Z"
 }
