@@ -59,6 +59,9 @@ assuming session boundaries protect them.
    transfer counts as the single recovery in step 5, not an extra attempt. Never
    extend expiry or claim an unverified backup exists. If preservation cannot finish
    before expiry, record the threatened/lost artifact; independent cleanup continues.
+   A failed transfer or spent recovery does not prove retained bytes are already
+   lost. Keep the blocked handoff until the existing expiry; do not normally delete
+   a still-recoverable source early merely because this recovery failed.
 5. For failure/incompleteness, distinguish infrastructure, construction, scientific
    and verification failures. Record the cheapest discriminating next check. With
    exclusive ownership and a documented handoff, allow one diagnosed recovery of
@@ -75,7 +78,10 @@ assuming session boundaries protect them.
    Preserve prior evidence; a relaunched job needs a fresh attempt ID linked to the
    parent job in the candidate/STATE record, budget admission and enough time to leave
    a durable handoff. One recovery applies across that attempt chain, not once per new
-   job ID. Verify the result rather than treating retry completion as success. No
+   job ID. This means one model-directed recovery attempt: do not nest a second
+   invocation inside it and call both "one recovery". Existing bounded transport
+   retries inside the approved tool/job remain unchanged. Verify the result rather
+   than treating retry completion as success. No
    unchanged retry loop. Before launching a fresh worker, confirm deletion of the
    old worker and its owned IP through the provider. Do not delete the only recovery
    source merely to free that slot; preserve and verify it first. A blocked launch

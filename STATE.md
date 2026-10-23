@@ -6281,3 +6281,12 @@ it also warns that worker status mutates reconciliation state. Next verification
 twenty paired calls across five watcher cases, with a new unknown-backup diagnostic,
 under 120 cumulative attempts / unchanged 5M tokens (113 planned). Review exact source
 and CI before any successor calls. No production allowance, gate or lifecycle code change.
+
+The frozen watcher batch is complete: 93 cumulative attempts / 3,195,065 inclusive
+tokens, all sixteen responses retained in watcher-8ad5199 evidence. Coarse scores
+18/32 vs 31/32 do not clear safety: revised retained-source run-90 also permits early
+deletion after failed preservation and a nested retry; baseline preserves that source
+until expiry. The successor clarifies both. Prepared 63c0705 is superseded before any
+inference; use only its next reviewed commit for the twenty-call verification. No
+deployment or successor calls yet. Next: exact successor source review/CI and request
+hash agreement with Scout, then bounded evaluation using the existing ledger.

@@ -22,6 +22,25 @@ batch continues on its frozen requests; no successor inference is authorized unt
 its exact source and CI are reviewed. Live deployment and ordinary-run evaluation
 remain outstanding.
 
+The frozen retained-source primary answer also permits early destruction after a
+failed preservation and a retry nested inside the single recovery. Its baseline
+counterpart retains the source until expiry, so this is a possible safety regression
+requiring correction. The successor states that failed preservation is not proof of
+lost bytes and prohibits a second model-directed invocation disguised as the same
+attempt; existing bounded retries inside supported tools remain unchanged.
+`63c0705` was source/test preparation only and is superseded before any inference.
+
+All sixteen `8ad5199` watcher responses are now preserved. Original coarse scores
+are 18/32 baseline and 31/32 revised; excluding only the loading repair-handoff
+criterion gives 18/30 and 29/30. **The bundle is not deployable despite that score.**
+Other composite criteria still mix role policy with correctness, and the narrow
+unsafe list misses the material failures above. Source review also finds baseline
+run-84's supposedly read-only `worker status` mutates the ledger despite its case-only
+4/4 grade. Those original grades are retained alongside the source-aware correction.
+Tokens increase from 201,883 baseline to 296,947 revised; elapsed totals are 551.958s
+and 389.160s. Cache/runtime variation and unknown prices preclude cost/speed claims.
+The ledger ends at 93 attempts / 3,195,065 inclusive tokens before the successor.
+
 Source review during the frozen `21b72994` follow-up identified a watcher ordering
 hazard: a collected report can omit the asset whose only copy remains on the worker,
 yet normal deletion is allowed. The follow-up brief now explicitly preserves and
