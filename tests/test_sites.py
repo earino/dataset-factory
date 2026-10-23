@@ -373,6 +373,18 @@ class WebsiteTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "train \\+ eval \\+ holdout"):
             RUNTIME["render"](config, [extra])
 
+    def test_historical_editions_render_without_current_split_rules(self):
+        """Edition records published before split documentation are immutable history;
+        the catalogue build must keep rendering them (the msha redeploy failed on abs's
+        edition 1 until the guard learned the difference)."""
+        config = json.loads(self.plan["targets"]["dataset"]["files"][".dataset-site/config.json"])
+        early = copy.deepcopy(self.record)
+        early["splits"] = {}
+        early.pop("record_sha256")
+        early["record_sha256"] = digest(dump(early))
+        files = RUNTIME["render"](config, [self.record], editions=(early,))
+        self.assertIn("index.html", files)
+
     def test_card_navigation_preserves_yaml_and_is_idempotent(self):
         original = "---\nlicense: cc0-1.0\n---\n\n# Card\nOriginal text\n"
         updated = linked_readme(original, self.record)

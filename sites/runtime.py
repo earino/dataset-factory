@@ -179,7 +179,7 @@ def dataset_body(r):
 <h2>Source, licences, and citation</h2><p>{link(r['source']['url'],r['source']['name'])}</p><p>{esc(terms['attribution'])}</p>
 <p>Source: {esc(terms['source_data'])}. Compilation: {esc(terms['data_compilation'])}. Code and documentation: {esc(terms['code'])}.</p>
 <p>{esc(terms['compilation_scope'])}</p><h3>Suggested citation</h3><p>{esc(terms['citation'])}</p>'''
-def render(config, records, preview=False, editions=()):
+def render(config, records, preview=False, editions=(), _historical=False):
     """Pure rendering: no filesystem, clock, credentials, remote requests or private metadata."""
     if config.get("schema_version") != 1 or config.get("kind") not in ("catalog", "dataset"):
         raise ValueError("Unsupported renderer configuration")
@@ -201,11 +201,11 @@ def render(config, records, preview=False, editions=()):
         # split needs a positive integer row count, and when train/eval/holdout are
         # all documented, the total across splits must equal their sum so no fourth
         # split can silently inflate the homepage figure.
-        if not r.get("splits") or not all(type(s.get("rows")) is int and s["rows"] > 0
-                                          for s in r["splits"].values()):
+        if not _historical and (not r.get("splits") or not all(type(s.get("rows")) is int and s["rows"] > 0
+                                          for s in r["splits"].values())):
             raise ValueError("Release record must document every split with positive row counts")
         documented = ("train", "eval", "holdout")
-        if all(k in r["splits"] for k in documented):
+        if not _historical and all(k in r["splits"] for k in documented):
             total_rows = sum(s["rows"] for s in r["splits"].values())
             if total_rows != sum(r["splits"][k]["rows"] for k in documented):
                 raise ValueError("Total rows must equal train + eval + holdout")
@@ -286,7 +286,7 @@ def render(config, records, preview=False, editions=()):
         base = (f'versions/{r["release_tag"]}/editions/' if config["kind"] == "dataset" else
                 f'releases/{r["dataset"]}/{r["release_tag"]}/editions/') + str(r["site_revision"]) + '/'
         # Validate and render each immutable edition through the same contract.
-        historical = render(config, [r], preview=preview)
+        historical = render(config, [r], preview=preview, _historical=True)
         files[base + "release.json"] = canonical(r)
         files[base + "index.html"] = historical["index.html"]
     return files
