@@ -275,3 +275,34 @@ class HostSupervisorTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class DiskObservationTests(unittest.TestCase):
+    def test_du_transient_race_is_retried_and_persistent_failure_fails_closed(self):
+        """A file vanishing mid-walk makes du exit 1 after printing its total.
+
+        Measured on job nz-ea-hf-002: `pip install datasets` churns the venv while the
+        supervisor samples disk once a second, one du lost the race and the whole
+        verify-only job was killed as resource-monitor-failed:CalledProcessError at
+        46 s. One lost race must be retried, not read as a monitor failure; a
+        persistent observation error still fails closed.
+        """
+        calls = []
+
+        def fake_run(cmd, capture_output=True, timeout=None):
+            calls.append(cmd)
+            if len(calls) < 3:
+                return subprocess.CompletedProcess(cmd, 1, b"", b"du: cannot access: No such file")
+            return subprocess.CompletedProcess(cmd, 0, b"4096\t/opt/scout\n", b"")
+
+        with patch.object(executor.subprocess, "run", side_effect=fake_run), \
+             patch.object(executor.time, "sleep") as slept:
+            self.assertEqual(executor.disk_bytes(Path("/opt/scout")), 4096)
+            self.assertEqual(len(calls), 3)
+            self.assertEqual(slept.call_count, 2)
+
+        persistent = subprocess.CompletedProcess(["du"], 1, b"", b"du: cannot access")
+        with patch.object(executor.subprocess, "run", return_value=persistent), \
+             patch.object(executor.time, "sleep"):
+            with self.assertRaises(subprocess.CalledProcessError):
+                executor.disk_bytes(Path("/opt/scout"))

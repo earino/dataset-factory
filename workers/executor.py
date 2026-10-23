@@ -34,8 +34,21 @@ def write_report(base, report):
 
 
 def disk_bytes(path):
-    # du counts hidden files and avoids reading data into memory.
-    return int(subprocess.check_output(["du", "-sb", str(path)], timeout=10).split()[0])
+    # du counts hidden files and avoids reading data into memory. A file that vanishes
+    # mid-walk makes du exit 1 (after printing its total, which check_output would
+    # discard), and a package installer churning the venv can lose that race once a
+    # second for a minute: job nz-ea-hf-002 was killed as
+    # resource-monitor-failed:CalledProcessError 46 s in, during `pip install datasets`.
+    # Retry briefly so a transient vanishing file is not read as a monitor failure; a
+    # persistent observation error still fails closed.
+    result = None
+    for attempt in range(3):
+        result = subprocess.run(["du", "-sb", str(path)], capture_output=True, timeout=10)
+        if result.returncode == 0:
+            return int(result.stdout.split()[0])
+        if attempt < 2:
+            time.sleep(0.5)
+    raise subprocess.CalledProcessError(result.returncode, ["du", "-sb", str(path)])
 
 
 def stop_and_capture(base, name):
