@@ -170,11 +170,67 @@
       "elapsed_seconds": 28.503,
       "response": "DECISION: Not ready. Park as `parked` (blocker: prediction timing + unresolved split capacity), keeping the licence evidence and probe notes. Correct the record's `ready` label and its job ordering before closing the session.\n\nSupporting evidence\n\n- Target window precedes the prediction instant. Prediction is 10:00 UTC Tuesday; the target runs from Tuesday 00:00. Ten hours of the target window the model is asked to \"predict\" have already happened. That is the skill's stated defect (\"a noon prediction cannot call that morning's events future\"), and it is a definition error, not a data gap.\n- First availability is unevidenced. Last-Modified 08:00 with no documented timezone or completeness guarantee does not establish when a day's report was published, nor whether \"through Monday\" existed at Tuesday 00:00 or 10:00 UTC. Current revised files are not historical vintages.\n- Immutability is contradicted by the publisher. The FAQ states the 2005-2022 archive was reprocessed in 2023, replacing event classifications and geographic mappings. Treating historical reports as immutable, and a two-week re-fetch as validation of past vintages, is unsupported. A future churn check measures future churn.\n- Split capacity is unmeasured. 2018 and 2024 totals are not per-window eligible/class counts; independent positives per disjoint train/eval/holdout window are unknown, and interruptions likely cluster by day/weather.\n- The local probe exceeded discovery. A four-file download and full island-day panel built labelled entity-time rows on the coordinator \u2014 construction, and outside the coordinator's 1.9 GiB/6 GB role. Nothing derived from it may be quoted as a base rate or headroom; it is unqualified and unaccepted.\n- The ordered job is wrong twice: \"fit reference baselines\" and \"investigate revisions\" precede qualification, and revisions must be resolved before construction, not after scoring.\n\nUncertainty and next discriminating check\n\nThe decisive unknown is publication lag for a single named day: take one Monday report, find its first-available timestamp and version (publisher's own release/version metadata, not file mtime), in a named timezone, and state whether it precedes Tuesday 00:00 and Tuesday 10:00 UTC. This is small, bounded, and decides whether any post-instant target window is observable at all. Second, only after that: per-window eligible and class counts, computed on a worker, not here.\n\nOrdered actions\n\n1. Update `candidates/<id>/record.json`: status `parked`, `licence_class` and quoted licence evidence retained, `jurisdiction` recorded, novelty verdict retained as `differentiated` but flagged as conditional on a valid target.\n2. In `notes.md`, record the Tuesday 00:00 vs 10:00 UTC defect, the 2023 reprocessing quote, the absent timezone/completeness statement, the missing per-window counts, and that the local panel is unqualified scratch \u2014 preserve the probe script as the recipe; do not delete the scratch path wholesale.\n3. Replace the job ordering with: resolve revision/first-availability \u2192 redefine target to begin at the instant (or adopt an explicitly labelled retrospective task with no operational-availability claim) \u2192 worker construction \u2192 full-worker qualification \u2192 exact-byte acceptance \u2192 reference/model scoring \u2192 reporting.\n4. Run `python3 scripts/check-candidate.py <id>`; record any remaining missing field as missing.\n5. Commit and push this session's records only; check CI for that exact commit and report pending as pending.\n\nStopping condition\n\nStop at the single dated lag example plus the record update. If Monday's report is first available only after Tuesday 00:00 UTC and no earlier vintage exists, drop the operational forecast (retrospective redesign only on a fresh decision). If the lag and timezone are established, reopen as `investigating` with per-window counts as the next worker probe. No further large probe this session.\n\nOperator report: one openly licensed transport source parked, not dropped \u2014 the drafted task leaks ten hours of target before prediction, its archive is publisher-reprocessed, and its first-availability timing is undocumented. Evidence and a corrected handoff are recorded; publication impact: none.\n\n\u2014 Scout (Hermes)\n",
       "response_sha256": "94a2a3c6907489df42369b71a8c423b7d7ebe3348054849b7eaaed68ed5ebd43"
+    },
+    {
+      "partition": "rollout-aa0e735",
+      "case": "rollout-discovery-contract",
+      "arm": "baseline",
+      "requested_model": "deepseek/deepseek-v4.1-flash-1017",
+      "requested_provider": "nous",
+      "run": "run-117",
+      "session_id": "20261023_015628_dfec09",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "0805747d0724b901aca7353a43c3a95b5fd13e2938170f630e401c386416b4de",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 25614,
+        "output_tokens": 2184,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 27798,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 516,
+          "output_tokens": 12,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 25098,
+          "output_tokens": 2172,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "provider": "nous",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 28.551,
+      "response": "Decision: Not ready. Verdict `parked` (timing/target defect and unproven as-of availability), not `ready`, and no construction job.\n\nEvidence\n- The task as drafted is internally invalid: prediction at 10:00 UTC Tuesday with target \"any interruption Tuesday 00:00 \u2192 following Monday 23:59\" already observes 00:00\u201310:00 of the outcome window. A same-day interruption makes the label true before the prediction instant. That is target leakage, not just a feature-timing question.\n- \"Reports through Monday\" cannot be shown available at the prediction instant. The 30 daily files have Last-Modified 08:00 with no documented server timezone and no completeness guarantee. If 08:00 is local time east of UTC, Monday's file may not exist at 10:00 UTC Tuesday.\n- The archive is not immutable: the FAQ records a 2023 reprocessing that replaced event classifications and geographical mappings for 2005\u20132022. Historical \"reports\" are therefore revised retrospectives, not evidence of what was knowable then. Re-reading one fixed month in two weeks tests nothing about a 2023 rewrite.\n- Split capacity is asserted from large 2018/2024 totals, but per-window eligible counts and class/provenance mix were never computed; \"large annual file\" is not independent positives per window.\n- The local scratch panel from four annual files was built on the coordinator, contrary to the bulk-data rule; it is not a qualified artifact.\n- Licence, jurisdiction and `licence_class` are not recorded in the case.\n\nUncertainty and next discriminating check\nThe decisive question is whether any as-of record exists: a revision history, per-day snapshot, or documented publication timestamp with timezone. If the archive only serves reprocessed final state, historical features cannot be reconstructed and the task is buildable only from forward-collected daily files. Cheapest probe: inspect the portal/API for version or snapshot endpoints and a documented timezone; if absent, record that and stop. Second, recompute the target with the prediction instant moved to before the window opens (e.g. Monday 23:59 UTC or Tuesday 00:00) and count eligible rows, class mix and independent positives in three disjoint windows.\n\nOrdered actions, stopping condition\n1. Downgrade the candidate to `parked`; record the 10:00-Tuesday leakage, the 08:00/unknown-timezone gap, the 2023 reprocessing quote, and missing licence/jurisdiction/class.\n2. Preserve probe URLs, dates, the four-file probe command and compact aggregates only; delete the local panel or keep summary counts, noting the coordinator oversize breach.\n3. Run the bounded snapshot/timezone probe and the per-window count from source (worker if large). No construction, no baselines, no headroom figures.\n4. Handoff: reopen only when (a) an auditable as-of policy with observed coverage exists, or a forward-collection start date is agreed; (b) prediction instant precedes the target window; (c) per-window independent counts show three disjoint windows with both classes; (d) `licence_class` A/B and jurisdiction are recorded.\n5. Stop after that probe: if no as-of evidence and no forward collection is authorized, record the blocker and leave it parked. Do not order \"construct, fit baselines, investigate revisions, qualify\" \u2014 revisions must precede construction.\n\nOperator report\nLead: openly licensed island transport event archive, plausible differentiated operational forecast. Blocked: leaked target window, unproven publication timing, 2023 reprocessing invalidating historical immutability, and no per-window counts. No construction launched; no measurements quoted. Next action: bounded snapshot/timezone probe, then decide as-of policy or park for forward collection. Checks/commit: record update and `check-candidate.py` only; no dataset claims.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "444324e13d5d2e88051b9e3decd64734e5e6cc452a921f8a9240c6c185776600"
     }
   ],
   "ledger": {
-    "calls": 117,
-    "tokens": 3918840
+    "calls": 118,
+    "tokens": 3946638
   },
-  "updated_at": "2026-10-23T01:56:38Z"
+  "updated_at": "2026-10-23T01:56:59Z"
 }
