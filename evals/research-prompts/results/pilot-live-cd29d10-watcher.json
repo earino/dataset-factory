@@ -450,11 +450,67 @@
       "elapsed_seconds": 18.687,
       "response": "Decision: defer. Ownership is active and no handoff exists, so this session must not handle the finished job. The watcher's event is a notification, not a handoff. Report the job ID and pending follow-up from read-only records, leave the job unhandled, and let the owner reconcile it.\n\nSupporting evidence (supplied): (a) the advancement coordinator is active and holds the shared research mutex; (b) STATE.md and the candidate record carry that session's uncommitted edits; (c) no handoff was recorded naming this job or candidate. Per the brief, active or uncertain ownership means: report, do not act; deferral explicitly covers ledger/watcher bookkeeping, collection, and normal worker destruction. A prompt-level check is not a lock, so I cannot establish exclusive ownership.\n\nWhat remains unmodified: STATE.md and the candidate record (not edited, not committed, not formatted); the job ledger and job records; the mutex file and lock marker (never deleted to proceed); the package, manifest, qualification report and any tag; the worker and its owned IP (no destroy, no `worker status` \u2014 it writes the job record and can clean IPs); the staging release and its assets; `.factory/<job_id>/handled` (not written; processing is unresolved).\n\nRead-only observations allowed: existing job record, candidate notes, STATE.md as written, and any already-collected report in its directory. If no compact result is present locally, the result is unverified \u2014 not \"collected,\" not successful.\n\nUncertainty and next discriminating check: I cannot tell from here whether the finished job's result is a passing qualification for the staged artifact, or whether the active owner is mid-way through collecting it. Cheapest discriminator: once the mutex is released or the owner records a handoff, confirm the owning process is gone (process table, not a stale JSON PID) and check for a collection record or staged manifest entry binding the job's assets to digests. Second check, if needed: whether the worker's expiry still leaves a usable recovery window.\n\nOrdered actions:\n1. Do nothing mutating. Do not call collect, status, destroy, or any ledger write.\n2. Read existing records only; note the job ID, candidate, and whether a compact result already exists.\n3. Report to the operator: job finished, owner active, event deferred and unhandled.\n4. Stop.\n\nStopping condition: stop after the read-only report. Resume handling only when the mutex is released and the owner's work is committed or a documented handoff names this job. Independent expiry cleanup continues regardless; expiry is not extended, and if the worker expires first, the artifact is recorded as at risk rather than claimed safe.\n\nOperator report: \"Worker job <id> (candidate <name>) finished while the advancement session still holds the research mutex and has uncommitted changes to STATE.md and the candidate record. No handoff was recorded, so I have not collected, inspected via `worker status`, deleted, or marked the job handled, and I have left the ledger, lock, package and staging assets untouched. The job's result is unverified from here. Next action belongs to that owner: on release of the mutex, collect and read the per-check results, confirm qualified numbers only, verify asset digests before any teardown. \u2014 Scout (Hermes)\"\n",
       "response_sha256": "26b1e240c3fe29a82b23f36a3039c711a8e7bf4d1e8c63c79adf946800f1e91e"
+    },
+    {
+      "partition": "watcher-verification",
+      "case": "watcher-recovery",
+      "arm": "baseline",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-102",
+      "session_id": "20261023_003215_04f7a4",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "4ddedbc0238c8ff85b2fb1b9d981243eb52bfaae15a3aa5f90d0306e152ee668",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 99,
+        "output_tokens": 7116,
+        "cache_read_tokens": 19904,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 27119,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 52,
+          "output_tokens": 642,
+          "cache_read_tokens": 384,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 47,
+          "output_tokens": 6474,
+          "cache_read_tokens": 19520,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 98.031,
+      "response": "DECISION\nLaunch the corrected transfer now: a NEW job ID (the old bundle is immutable and its worker is gone), scoped to the single omitted asset, using the already-approved transfer declaration. This is ordinary private work within allowance \u2014 no approval needed, and `allow_public` must NOT be set: no publication approval exists and the candidate is private.\n\nEVIDENCE\n- Staging still holds the expected bytes and digest, so the accepted artifact is recoverable and the existing qualification/acceptance report still binds these exact bytes \u2014 a transfer verifies digests, it does not modify them.\n- The old worker is confirmed deleted, so `worker retry-upload` has nothing to reuse, and assembled job directories are immutable, so a new job ID is the only sanctioned path. Allowance and remaining time suffice; I hold the mutex and the ledger via the documented handoff.\n\nUNCERTAINTY / DISCRIMINATING CHECK\nThe \"source matches\" claim is confirmed by the plan step: offline, it validates the declaration and the asset's size/SHA-256 and refuses missing publish credentials before any spend. Also reconcile the target release by digest for partial prior uploads \u2014 confirm the omitted asset is truly absent and the present ones match. Partial remote uploads must be reconciled by digest in the next deliberately planned attempt, not assumed away.\n\nORDERED ACTIONS\n1. If not already fetched, collect the old job and pull its small reports from the staging release (never bulk CSVs on this host). Record the outcome in STATE.md and the candidate's record.json: one asset omitted, deletion confirmed, ledger reconciled.\n2. New job ID; scope the transfer to the missing asset (source asset id, target name, size, SHA-256 from the manifest). Plan; it must pass.\n3. Launch, status, collect, destroy immediately after verified collection.\n4. Accept only on the transfer's own double verification \u2014 arrival against the recorded SHA-256, post-upload against the server's digest \u2014 plus complete manifest coverage at the target.\n5. Commit, push, check CI for that exact commit (gh api .../actions/runs?head_sha=..., not gh run list).\n6. Last: write `.factory/<old-job>/handled` with a one-line summary, and report the substance \u2014 the marker never substitutes for the report.\n\nSTOPPING CONDITION\nSuccess = every manifest asset at the target with verified digests, job recorded, worker destroyed, CI green. Stop and hold if the new job fails (collect diagnostics first; fix only an identified cause; at most one more deliberate attempt), if allowance or remaining time runs out, or if the cause is not locally identifiable \u2014 then record, hold, escalate.\n\nVARIANTS\n- Source bytes gone: no transfer is possible; do not launch. Check for any other copy (target release, other staging releases, compact evidence). If truly lost, the artifact must be rebuilt by a construction job and re-qualified in full \u2014 the old acceptance report cannot bind new bytes, and `--accept` fails on changed files. Report the loss; never mark the artifact complete.\n- Digest conflicts with the manifest: refuse to move those bytes. Recompute the hash; compare manifest and qualification.json's artifact_version. If the manifest is stale, regenerate it and re-run check-package before any move. If the staging bytes are wrong, do not transfer; locate correct bytes or rebuild. The arrival check would fail anyway \u2014 catch it at plan, not on a paid worker.\n- A prior linked recovery already failed: stop repeat attempts. Diagnose from collected errors and logs first \u2014 likely systematic causes: a target-name collision with a different completed asset (uploads never overwrite a different completed one), the 2 GiB per-asset limit, credential scope, host-side disk/time limits. Fix the identified cause, then one deliberately planned attempt; a second failure or unclear cause means hold and escalate rather than spend a third.\n\nOPERATOR REPORT\n\"Transfer <id> failed \u2014 one asset omitted. Source intact and digest-matching; old worker confirmed deleted and recorded. Relaunching as new job <new-id> scoped to the missing asset, within allowance. Will verify target digests, destroy the worker, record, mark handled, and report the verified result.\"\n",
+      "response_sha256": "f2d50d9c937294dd0dbc4514e82542e38482e947731edeadc8ddb7563ac3ca61"
     }
   ],
   "ledger": {
-    "calls": 102,
-    "tokens": 3444217
+    "calls": 103,
+    "tokens": 3471336
   },
-  "updated_at": "2026-10-23T00:32:23Z"
+  "updated_at": "2026-10-23T00:34:04Z"
 }
