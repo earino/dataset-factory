@@ -87,27 +87,49 @@
       "id": "nz-ea-002",
       "candidate": "nz-ea-wholesale-price-exceedance",
       "server_id": 172091812,
-      "status": "running",
+      "status": "succeeded",
       "launched_at": "2026-10-23T18:11:32Z",
       "bundle": ".factory/jobs/nz-ea-002",
       "reservation_eur": "0.06",
       "provider_hourly_eur": "0.01152",
       "stage_order": "construct -> qualify (gate 1.4.0, full artifact on the worker) -> --accept exact bytes -> simple references (score.py, post-acceptance, eval only)",
       "sizing_note": "container timeout raised 100->120 min, lifetime 120->150 min over nz-ea-001: the previous run spent 74.3 min before crashing, so the margin covers download-time variance only; no design change. Source repair commit a126652.",
-      "outcome": null,
+      "outcome": "success, verified at collection: run.sh ran the prescribed order on the worker (container.log stage headers build -> qualification -> acceptance -> simple references; build_status=0 qualification_status=0 acceptance_status=0 score_status=0). Gate 1.4.0 passed over the full artifact: ok=true, failed_checks=[], all 34 checks true (leakage incl. every_column_could_be_scored; timing incl. 11/11 usable observed publication dates, instant publication D+6d >= measured max lag 5d; units with known-event fixture; splits disjoint/both-classes/no-cross-entities; runner contract). qualify_dataset.py --accept re-verified the exact bytes: 'ACCEPTED: /output/extract matches the qualified artifact 545e0e4418c1f0e5' (gate artifact_version digest 545e0e4418c1f0e54bb55389e7816c1736a8473de600e70d6f006ed33089f7e7). Coverage measured: 10,979/10,979 trading days 1996-10-01..2026-10-22, 0 missing, both islands 10,979; 714 price files processed (728 blobs listed, 4 interim/incomplete variants excluded, the 10 overlap daily files 2025-10-22..31 cross-checked at max |island mean diff| 0.0 and owned by the monthly channel); 9,437,515 unmapped POC rows excluded and counted. Splits measured: train 14,004 rows / 2,789 positives (0.199) / 404 positive target-weeks; eval 4,992 / 2,150 (0.431) / 231; holdout 2,890 / 1,571 (0.544) / 152. Known-event fixtures all ok: Aug 2024 dry-year 4 days means 814.77-883.56 exceed; 2008-07-01 mean 305.79 exceeds; Jan 1997 quiet control max 50.0 below. Post-acceptance references (score.py, eval only, train-fitted, on the accepted bytes): persistence_value AUC 0.8820 (Brier 0.1851), persistence_mean7 AUC 0.8843, calendar-only AUC 0.5011, majority-class accuracy 0.5693 (fit on train, measured against this split's labels), global-rate Brier 0.2988; paired persistence-vs-calendar difference +0.381 (95% bootstrap CI 0.371-0.389); persistence_value vs mean7 -0.0023 (CI -0.0096..0.0043, inconclusive). Per-year eval prevalence swings 0.008 (2016, 6 positives; persistence AUC 0.457) to 0.659 (2021; AUC 0.917) - prevalence shift across splits (train 0.199 -> eval 0.431 -> holdout 0.544) is a documented property of the regime-bounded design, reported per year as required. The full model is NOT computed at this stage: the harness runner's baseline job owns that figure on the same eval rows.",
       "expected_reports": [
         "/output/summary.json",
         "/output/qualification-nz-ea-wholesale-price-exceedance.json",
         "/output/acceptance-nz-ea-wholesale-price-exceedance.txt",
         "/output/references-nz-ea-wholesale-price-exceedance.json"
       ],
-      "next_acceptance_check": "after collection: the gate report must pass at version 1.4.0 on the exact bytes and qualify_dataset.py --accept must re-verify before any figure from the artifact is quoted; a build failure is diagnosed from container.log with one changed retry at most."
+      "next_acceptance_check": "SATISFIED 2026-10-23 at collection: gate 1.4.0 passed on the full artifact on the worker and --accept re-verified the exact bytes (artifact 545e0e4418c1f0e5) before score.py ran; figures above are qualified and quotable.",
+      "collected_at": "2026-10-23T19:48:16Z",
+      "destroyed_at": "2026-10-23T19:52:50Z",
+      "elapsed_minutes": 91,
+      "exit_code": 0,
+      "staging_release": {
+        "repo": "earino/dataset-factory-staging",
+        "id": 422246241,
+        "tag": "job-nz-ea-002",
+        "artifact_version": "545e0e4418c1f0e54bb55389e7816c1736a8473de600e70d6f006ed33089f7e7",
+        "assets": "14 parts mapped through the staging manifest.json: the three split CSVs (train 1,744,686 B sha256 273aeb06..., eval 627,892 B 6302310d..., holdout 364,911 B 101f6a70...), meta.json, quality.json, summary.json, qualification report (.json+.txt), acceptance, references, container.log, source.tar, manifest.json - every size and sha256 verified against the GitHub API at collect; the 9 small report files also fetched to the coordinator and digest-verified. Bulk CSVs remain on staging only."
+      },
+      "evidence": [
+        ".factory/nz-ea-002/reports/qualification-nz-ea-wholesale-price-exceedance.json (sha256 51e5b46a1c51d20dbb571095a4aa2d3c04c3ce4a7acf186ba53c5996c8d59e88, digest verified locally)",
+        ".factory/nz-ea-002/reports/acceptance-nz-ea-wholesale-price-exceedance.txt (sha256 c677c852bd6ce9106c97b6924ed2e364a09ff2c221f7176265121c568f8e295f, digest verified locally)",
+        ".factory/nz-ea-002/reports/references-nz-ea-wholesale-price-exceedance.json (sha256 4b3496d38c6ab7c9e03c2325ab5bbffbbe716898cbfb23b82effb1c18247c313, digest verified locally)",
+        ".factory/nz-ea-002/reports/summary.json (sha256 c80a224f1c26f1058a2881bd72c0841751f3e6c6e57c7309637a5d81dfcdad0b, digest verified locally)",
+        ".factory/nz-ea-002/reports/container.log (sha256 cbd12e30e9e1968330a7851432db15b585b766b00f48a92e17b8fabd95878b28, digest verified locally)",
+        ".factory/nz-ea-002/reports/staging-manifest.json, extract-meta.json, extract-quality.json (digests verified locally)",
+        "jobs/nz-ea-002.json"
+      ],
+      "reports_status": "all four expected /output reports collected and digest-verified (summary, qualification, acceptance, references), plus container.log, the staging manifest.json and the extract meta.json/quality.json. One recording blemish, not an artifact defect: references.json carries accepted_artifact_version: null - the acceptance .txt and the gate report both record 545e0e4418c1f0e5 and the stage order in container.log ties the references to the accepted bytes, so the identity chain is intact; advancement may want score.py to read the acceptance record instead of writing null.",
+      "provider_cleanup": "server 172091812 deleted 2026-10-23T19:52:50Z via scout-factory worker destroy; provider read-back after deletion: 0 servers and 0 floating IPs in the project (deletion confirmed by the provider, not merely requested)."
     }
   ],
   "artifacts": [],
   "rejection_reason": null,
   "review": "Class A licence read first-hand on both the current platform and its announced successor; 30 years of daily-grain labels; a documented publication instant with measured file lags; publisher-published regional mapping; strong clustered event structure (dry-year episodes) and quiet eras giving both classes in every candidate window. Prior art is level-regression forecasting (EPF benchmark, an AUT study, a single-node GitHub project) - no published exceedance task with splits and a scored contract.",
-  "next_action": "nz-ea-002 launched 2026-10-23T18:11:32Z (server 172091812, repair commit a126652): the nz-ea-001 one-line lag-assembly defect is fixed (list.append given four args instead of one 4-tuple), the assembly is extracted into assemble_lag_observations(), and fixture mode now synthesises listing metadata (fixture_listing_entry, lag cycle 1/2/3/5) and runs the same function as the real channel, so the smoke exercises the branch that crashed. Regression tests tests/test_nz_ea_build.py were watched to fail both on the pre-fix code (hardcoded-note observation, missing function) and on the defect shape reintroduced alone (TypeError: list.append() takes exactly one argument), then pass 10/10; full suite 611 OK; fixture smoke build + gate 1.4.0 + --accept + score all exit 0; gate --selftest OK. PENDING: worker collection - require the passing full-artifact gate report and exact-byte --accept before any figure is quoted; score.py references run only after acceptance inside run.sh.",
+  "next_action": "nz-ea-002 succeeded, qualified and accepted 2026-10-23 (staging release 422246241, tag job-nz-ea-002, artifact 545e0e4418c1f0e54bb55389e7816c1736a8473de600e70d6f006ed33089f7e7); worker destroyed with provider-confirmed cleanup. OWNED BY ADVANCEMENT: decide the next step for this candidate - (a) package the accepted artifact for review (release-manifest from the staging bytes; the accepted split CSVs live on staging release 422246241 with API-verified digests), and/or (b) run the harness runner's baseline job to get the full-model figure on the same eval rows and quote it beside the collected references (persistence_value 0.8820, persistence_mean7 0.8843, calendar-only 0.5011; the full model is NOT yet computed, so no headroom claim exists either way). Note for packaging: references.json records accepted_artifact_version null (blemish recorded in the job entry). Prevalence shift across splits is documented; per-year reporting stays mandatory.",
   "jurisdiction": {
     "country": "NZ",
     "region": "Oceania",

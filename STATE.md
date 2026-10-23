@@ -7256,3 +7256,50 @@ in the job entry - a passing gate report at 1.4.0 on the exact bytes plus `--acc
 any figure from the artifact is quoted; the expected reports are summary/qualification/acceptance/references
 under /output. October reservations after this launch: EUR 8.14 + 0.06 = 8.20 of 20 (release reserve EUR 5
 untouched).
+
+## 2026-10-23 follow-up (nz-ea-002): build succeeded, full-artifact gate passed, exact-byte acceptance verified; worker destroyed with provider-confirmed cleanup
+
+The watcher reported nz-ea-002 finished (succeeded, exit 0, 91 min, 14 assets, staging release
+422246241). This follow-up held the research mutex; the advancement session that launched the job
+was closed with a documented handoff naming exactly this collection and acceptance check.
+
+**Collection.** The job record was already at status "collected" (collect fetches the bounded
+result.json and verifies every asset's size and sha256 against the GitHub API; tag confirmed
+job-nz-ea-002). The staging assets were opaque numbered parts, so they were mapped through the
+release's own manifest.json; the 9 small report files (summary, qualification .json/.txt,
+acceptance, references, container.log, staging manifest, extract meta/quality) were fetched to
+`.factory/nz-ea-002/reports/` and each digest re-verified locally. The three bulk split CSVs were
+NOT fetched to the coordinator; they stay on the private staging release with API-verified
+digests (train 273aeb06..., eval 6302310d..., holdout 101f6a70...).
+
+**Verified result (all figures qualified: gate 1.4.0 on the full artifact on the worker, then
+`--accept` on the exact bytes).** run.sh's stage order is confirmed in container.log (build ->
+qualification -> acceptance -> simple references; all four exit 0, scoring only after
+acceptance). Gate report: ok=true, failed_checks=[], all 34 checks true. Acceptance record:
+"ACCEPTED: /output/extract matches the qualified artifact 545e0e4418c1f0e5" (digest
+545e0e4418c1f0e54bb55389e7816c1736a8473de600e70d6f006ed33089f7e7). Coverage 10,979/10,979
+trading days 1996-10-01..2026-10-22, 0 missing, both islands complete; 714 price files processed,
+4 interim/incomplete variants excluded, the 10 overlap daily files cross-checked at max
+|island mean diff| 0.0; 9,437,515 unmapped POC rows excluded and counted. Splits: train 14,004
+rows / 2,789 positives (0.199) / 404 positive target-weeks; eval 4,992 / 2,150 (0.431) / 231;
+holdout 2,890 / 1,571 (0.544) / 152. Known-event fixtures all ok (Aug 2024 814.77-883.56
+exceeds; 2008-07-01 305.79 exceeds; Jan 1997 max 50.0 below). Post-acceptance references (eval
+only, train-fitted): persistence_value AUC 0.8820 (Brier 0.1851), persistence_mean7 0.8843,
+calendar-only 0.5011, majority-class accuracy 0.5693, global-rate Brier 0.2988; paired
+persistence-vs-calendar +0.381 (95% CI 0.371-0.389); persistence_value vs mean7 -0.0023
+(inconclusive). Per-year eval prevalence runs 0.008 (2016) to 0.659 (2021) - the cross-split
+prevalence shift (0.199 -> 0.431 -> 0.544) is a documented property of the regime-bounded
+design. The full model is NOT computed yet; the harness runner's baseline job owns that figure,
+so no headroom claim exists either way.
+
+**Cleanup (provider-confirmed).** Server 172091812 and its owned IP deleted via
+`scout-factory worker destroy` at 2026-10-23T19:52:50Z; provider read-back shows 0 servers and
+0 floating IPs in the project. The durable copies of every expected accepted asset are the
+staging release 422246241 assets (all 14 size+digest API-verified at collect).
+
+**Handoff to advancement** (recorded in the candidate record's next_action): decide packaging of
+the accepted artifact and/or the harness baseline job for the full-model figure; note the
+recorded blemish that references.json carries accepted_artifact_version null while the
+acceptance .txt and gate report carry 545e0e4418c1f0e5 (identity chain intact). No publication
+step was taken; worker completion grants no approval. October spend: this job's EUR 0.06
+reservation was already recorded at launch; destroy frees the slot.
