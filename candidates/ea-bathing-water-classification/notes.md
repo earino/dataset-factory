@@ -88,6 +88,63 @@ Small panel (~450 entities x 11 label seasons). Strong persistence baseline
 expected (4-year rolling window) - headroom above persistence is the
 make-or-break measurement at construction; publish or demote on that finding.
 
+## Pre-launch persistence ceiling measured 2026-10-23 (advancement session)
+
+Before spending a worker job, the panel this candidate would ship was built from the
+publisher's own ten season slices (2015-2025; 2020 suspended) and the two simplest
+references were measured on the declared split windows. Command:
+`python3 candidates/ea-bathing-water-classification/eab_ceiling.py` over data fetched by
+`candidates/ea-bathing-water-classification/eab_fetch.py` into `.factory/eab-probe/data`
+(ignored scratch; both scripts ship with the record). Report: `candidates/ea-bathing-water-classification/ceiling-2026-10-23.json`.
+This is a **pre-launch measurement on published slices**, not a qualification report:
+no gate has run, nothing was accepted, and no model was fitted.
+
+Panel: 3,359 rows of (bwspid, season) with a season Y-1 classification present. Frame
+losses measured: 17 Closed labels excluded; 878 water-seasons dropped for having no
+prior-season observation (415 for 2015, which has no 2014 slice, and 419 for 2021,
+whose Y-1 season 2020 does not exist) - so the usable label seasons are 2016-2019,
+2022-2023 and 2024-2025, not 2015-2025.
+
+| split | rows | positives | rate | binary persistence AUC | **ordinal persistence AUC** |
+| --- | --- | --- | --- | --- | --- |
+| train 2016-2019 | 1,652 | 121 | 0.073 | 0.850 | **0.951** |
+| eval 2022-2023 | 836 | 71 | 0.085 | 0.820 | **0.958** |
+| holdout 2024-2025 | 871 | 102 | 0.117 | 0.940 | **0.981** |
+
+Positive waters (declared event key = bwspid): 50 / 44 / 67 per split. Transition
+counts 2022+ (bg1 -> y): 1511 stay-negative, 138 stay-positive, 35 onset, 23 recovery.
+
+The decisive number is the **ordinal** persistence reference, not the binary one.
+Last season's published classification used on its own 4-level scale (Poor <
+Sufficient < Good < Excellent) already reaches 0.958 on eval and 0.981 on holdout,
+because the label is a 4-season rolling percentile that already contains three of the
+four seasons being classified. A model given the same information starts at that
+ceiling; the richer 3-season count reference is *worse* (0.847 / 0.941), so no simple
+recombination of the same history adds anything. The gap the candidate would have
+claimed against the binary collapse (0.82 -> ~0.95) is an artefact of scoring
+persistence more coarsely than the data allows, not headroom.
+
+Decision: **parked, not constructed.** A season-ahead classification task whose
+information set is definitionally dominated by the previous year's value of the same
+lagging regulatory quantity is a persistence task, and the skill's rule for that case
+is to re-target a change/onset label or stop - not to spend a build to demonstrate it.
+This is a pre-launch ceiling finding, recorded as such: it is not a model-vs-persistence
+measurement on a gate-accepted artifact, and it does not establish that no model could
+beat 0.958 by a small margin.
+
+What would reopen it (a new task instance, with its own qualification cycle):
+
+- A **change** target with enough events (onset of below-Good from Good: 35 onsets
+  across 2022-2025 - too thin for a clustered event count of 20 per split without a
+  longer window).
+- An information set that is **upstream of the label**: antecedent rainfall, storm
+  overflow/EDM discharge events, or catchment land use. The publisher's own in-season
+  slices were re-measured today and carry only the sample date and ISO week
+  (`_about`, `sampleWeek`) - **no bacterial result value** - so this dataset cannot
+  supply sample-derived features; an upstream-pressure re-scope needs a different
+  source (EA EDM/storm-overflow releases, Met Office rainfall) and a fresh novelty
+  and licence pass.
+
 ## Next action
 
 See record.json `next_action`.

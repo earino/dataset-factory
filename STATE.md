@@ -6711,3 +6711,48 @@ artifact preserved at release job-camara-002 (421533646). No figure from either 
 quotable. Next: advancement decides the independence claim (re-target/drop, or re-declare the
 event key and re-gate the same staged artifact — no third full build; the one-rebuild budget
 for this defect class is spent).
+
+## 2026-10-23 advancement: ea-bathing-water parked on a measured persistence ceiling; za-municipal timing pinned
+
+No release was actionable this session: the only `packaged` candidate
+(eutl-installation-net-short) carries `awaiting_operator: true`, which is the operator's
+private-to-public flip, not work I can advance. Construction queue, picked one candidate.
+
+**ea-bathing-water-classification - PARKED unconstructed, with the ceiling measured.**
+Before spending a worker job I built the panel the candidate would ship from the
+publisher's ten season slices (2015-2025, 2020 suspended) and measured the simple
+references on the declared windows (`python3 .factory/eab_ceiling.py`, report
+`candidates/ea-bathing-water-classification/ceiling-2026-10-23.json`; a PRE-LAUNCH
+measurement on published slices - no gate ran, no model was fitted, nothing accepted).
+Panel 3,359 rows; measured frame 2016-2019 / 2022-2023 / 2024-2025 (2015 has no 2014
+slice; 2021 has no 2020 season): train 1,652 rows/121 pos, eval 836/71, holdout 871/102.
+Binary persistence AUC 0.850/0.820/0.940, but ORDINAL persistence - last season's
+published 4-level classification - is 0.951/0.958/0.981, and the 3-season count
+reference is worse (0.859/0.847/0.941). The label is a 4-season rolling percentile that
+already contains three of the four seasons classified, so the candidate's own information
+set is persistence; the apparent 0.82 -> 0.95 gap is a scoring-coarseness artefact. Also
+measured: the in-season point slices carry only sample date and ISO week - no bacterial
+result value - so sample-derived or upstream features cannot come from this source.
+Decision recorded as parked (not "no model can win"): reopen only as a new task instance
+with a change/onset target carrying >=20 clustered events per split, or upstream pressure
+data from a different source under a fresh novelty + licence pass. No worker job launched,
+no rebuild budget spent.
+
+**za-municipal-audit-opinion - timing evidence pinned, construction still blocked.**
+Read first-hand from the publisher: MFMA s126 requires AFS submission for auditing by
+31 August (30 September consolidated); AGSA tabled the 2024-25 consolidated report on
+24 June 2026, so the FY-Y opinion appears ~12 months after year end while the statements
+are due ~2 months after it. Recorded in `measurements.timing_evidence_2026_10_23`.
+Unresolved and now the gating question: whether the AGSA bulk CSVs carry the audited
+year-end figures (created during the audit, hence post-hoc to the instant) or the
+unaudited submission - a build that reads audited statements as features would leak the
+audit. Next: pin publication dates per label year from the archived mfma-YYYY sites,
+inspect the CSV vintage, then author the build.
+
+Checks: `check-candidate.py` OK for both touched records and for `--all`; the full suite
+was run before this commit. No worker launched, no ledger change: October reservations
+stay at EUR 7.90 of 20 (release reserve EUR 5 untouched). Queue after this session:
+chilecompra-tender-outcome (build), nz-ea-wholesale-price-exceedance (build),
+za-municipal-audit-opinion (blocked on the CSV-vintage question),
+cra-charity-filing-exit / dvsa-mot-next-test-outcome / npri-facility-reporting-exit
+/ nws-tornado-warning-verification (construct, each needs its build authored first).
