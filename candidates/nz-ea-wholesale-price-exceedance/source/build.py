@@ -102,6 +102,7 @@ import urllib.request
 import xml.etree.ElementTree as ET
 from collections import Counter
 from datetime import date, datetime, timedelta, timezone
+from email.utils import format_datetime
 from pathlib import Path
 
 NAME = "nz-ea-wholesale-price-exceedance"
@@ -135,6 +136,11 @@ DAILY_RE = re.compile(r"^(\d{8})_FinalEnergyPrices\.csv$")
 # documented 2022-11-01 real-time pricing regime change.
 REAL_BOUNDARIES = {"train": date(2015, 12, 31), "eval": date(2022, 10, 31)}
 FIXTURE_BOUNDARIES = {"train": date(2024, 12, 31), "eval": date(2025, 12, 31)}
+
+# Deterministic publication lags synthesised for fixture-mode listing metadata,
+# chosen to exercise the distribution summary (several distinct lags) and the
+# top-laggard observation selection. Fabricated; nothing from them is quotable.
+FIXTURE_LAG_CYCLE = (1, 2, 3, 5)
 
 FEATURES = [
     ISLAND,
@@ -340,6 +346,70 @@ def week_key(day: date) -> str:
     return f"{iso[0]}-W{iso[1]:02d}"
 
 
+def assemble_lag_observations(listing_observed: dict) -> tuple[list[dict], dict] | None:
+    """Measure publication lags from the daily-file channel's listing metadata.
+
+    Returns ``(observations, lag_summary)``, or ``None`` when no daily-file lag
+    could be measured (the caller fails the build). Both the real channel and
+    the synthetic fixture run this same function: fixture mode synthesises its
+    listing metadata (see ``fixture_listing_entry``), so the smoke exercises
+    the exact branch the worker runs. The nz-ea-001 attempt crashed inside
+    this assembly - ``list.append`` was given four arguments instead of one
+    4-tuple - and the fixture's hardcoded observations had let the smoke pass
+    38/38 without ever reaching the branch.
+    """
+    lags = []
+    for name, blob in sorted(listing_observed.items()):
+        match = DAILY_RE.match(name)
+        if not match:
+            continue
+        stamp = match.group(1)
+        trade = date.fromisoformat(f"{stamp[:4]}-{stamp[4:6]}-{stamp[6:]}")
+        published = http_date(blob["last_modified"])
+        if published and published >= trade:
+            lag = (published - trade).days
+            lags.append((lag, trade, published, name))
+    if not lags:
+        return None
+    lag_days = sorted(lag for lag, *_ in lags)
+    counter = Counter(lag_days)
+    summary = {"files": len(lag_days), "min": min(lag_days), "max": max(lag_days),
+               "distribution": dict(counter)}
+    log(f"daily channel lags over {len(lag_days)} files: min {min(lag_days)}, "
+        f"max {max(lag_days)}")
+    chosen: dict[str, dict] = {}
+    for _lag, trade, published, name in sorted(lags, key=lambda item: item[1])[-8:]:
+        chosen[name] = {"period": trade.isoformat(), "period_end": trade.isoformat(),
+                        "published": published.isoformat(), "source_file": name}
+    for _lag, trade, published, name in sorted(lags, key=lambda item: -item[0])[:3]:
+        chosen.setdefault(name, {"period": trade.isoformat(),
+                                 "period_end": trade.isoformat(),
+                                 "published": published.isoformat(),
+                                 "source_file": name})
+    return list(chosen.values()), summary
+
+
+def fixture_listing_entry(name: str, index: int) -> dict:
+    """Synthetic listing metadata for one fixture daily file.
+
+    Shaped exactly like the publisher's channel listing (leaf name plus an
+    RFC 7231 Last-Modified string), with a deterministic publication lag
+    drawn from ``FIXTURE_LAG_CYCLE`` so the fixture exercises the same
+    lag assembly, distribution summary and observation selection as the real
+    channel. Everything here is fabricated; nothing from it is quotable.
+    """
+    stamp_match = DAILY_RE.match(name)
+    if stamp_match is None:
+        raise ValueError(f"fixture listing metadata requested for non-daily name {name!r}")
+    stamp = stamp_match.group(1)
+    trade = date.fromisoformat(f"{stamp[:4]}-{stamp[4:6]}-{stamp[6:]}")
+    published = trade + timedelta(days=FIXTURE_LAG_CYCLE[index % len(FIXTURE_LAG_CYCLE)])
+    return {"name": name,
+            "last_modified": format_datetime(
+                datetime(published.year, published.month, published.day,
+                         tzinfo=timezone.utc), usegmt=True)}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--out", required=True)
@@ -383,6 +453,12 @@ def main() -> int:
             elif DAILY_RE.match(path.name):
                 daily_files.append({"name": path.name, "path": path,
                                     "bytes": path.stat().st_size})
+                # Synthetic listing metadata so fixture mode runs the same
+                # publication-lag assembly as the real channel (nz-ea-001
+                # crashed in that branch; hardcoded observations had hidden
+                # it from the smoke).
+                listing_observed[path.name] = fixture_listing_entry(
+                    path.name, len(listing_observed))
         log(f"fixture: {len(monthly_files)} monthly + {len(daily_files)} daily files "
             f"from {fixture_dir}")
     else:
@@ -640,47 +716,14 @@ def main() -> int:
         }
         log(f"{split}: {written_stats[split]}")
 
-    # publication-lag observations from the daily-file channel
-    observations = []
-    daily_lag_summary: dict = {}
-    if fixture:
-        observations = [
-            {"period": "2026-06-28", "period_end": "2026-06-28", "published": "2026-06-29",
-             "note": "synthetic fixture observation standing in for the measured channel"},
-            {"period": "2026-06-29", "period_end": "2026-06-29", "published": "2026-07-02",
-             "note": "synthetic fixture observation"},
-        ]
-    else:
-        lags = []
-        for name, blob in sorted(listing_observed.items()):
-            match = DAILY_RE.match(name)
-            if not match:
-                continue
-            stamp = match.group(1)
-            trade = date.fromisoformat(f"{stamp[:4]}-{stamp[4:6]}-{stamp[6:]}")
-            published = http_date(blob["last_modified"])
-            if published and published >= trade:
-                lags.append((published - trade).days, trade, published, name)
-        if lags:
-            lag_days = sorted(lag for lag, *_ in lags)
-            counter = Counter(lag_days)
-            daily_lag_summary = {"files": len(lag_days), "min": min(lag_days),
-                                 "max": max(lag_days), "distribution": dict(counter)}
-            log(f"daily channel lags over {len(lag_days)} files: min {min(lag_days)}, "
-                f"max {max(lag_days)}")
-            chosen: dict[str, dict] = {}
-            for lag, trade, published, name in sorted(lags, key=lambda item: item[1])[-8:]:
-                chosen[name] = {"period": trade.isoformat(), "period_end": trade.isoformat(),
-                                "published": published.isoformat(), "source_file": name}
-            for lag, trade, published, name in sorted(lags, key=lambda item: -item[0])[:3]:
-                chosen.setdefault(name, {"period": trade.isoformat(),
-                                         "period_end": trade.isoformat(),
-                                         "published": published.isoformat(),
-                                         "source_file": name})
-            observations = list(chosen.values())
-        else:
-            log("FAIL: no daily-file publication lags could be measured")
-            return 2
+    # publication-lag observations from the daily-file channel. Fixture and
+    # real mode both run the same assembly here: the fixture synthesises its
+    # listing metadata above, so this branch is exercised by the smoke.
+    assembled = assemble_lag_observations(listing_observed)
+    if assembled is None:
+        log("FAIL: no daily-file publication lags could be measured")
+        return 2
+    observations, daily_lag_summary = assembled
 
     summary = {
         "name": NAME,
