@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "bundle": "aa0e7355ec22abd611678de1743e46f8e649ce2c",
+  "partition": "rollout-aa0e735",
+  "records": [
+    {
+      "partition": "rollout-aa0e735",
+      "case": "rollout-discovery-contract",
+      "arm": "baseline",
+      "requested_model": "glm-5.3",
+      "requested_provider": "lunaroute",
+      "run": "run-114",
+      "session_id": "20261023_015130_130843",
+      "status": "ok",
+      "exit_code": 0,
+      "request_sha256": "0805747d0724b901aca7353a43c3a95b5fd13e2938170f630e401c386416b4de",
+      "runtime_sha256": {
+        "model_tools.py": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
+        "hermes_cli/main.py": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
+        "hermes_cli/cli_agent_setup_mixin.py": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
+        "hermes_cli/cli_single_query.py": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4"
+      },
+      "context_scope": "chat --ignore-rules suppresses discovered context and built-in memory",
+      "dollar_spend": null,
+      "tokens": {
+        "input_tokens": 24926,
+        "output_tokens": 7201,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0
+      },
+      "total_tokens": 32127,
+      "tasks": [
+        {
+          "task": "title_generation",
+          "calls": 1,
+          "input_tokens": 436,
+          "output_tokens": 776,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        },
+        {
+          "task": "",
+          "calls": 1,
+          "input_tokens": 24490,
+          "output_tokens": 6425,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0
+        }
+      ],
+      "main_routes": [
+        {
+          "model": "glm-5.3",
+          "provider": "lunaroute",
+          "calls": 1
+        }
+      ],
+      "tool_pin": "unrecorded",
+      "elapsed_seconds": 119.648,
+      "response": "DECISION\n\nNot ready. Verdict: investigating, with the blockers named. Withdraw the draft's \"ready\" label and cancel the ordered construct/baseline job. The licence is clean and the task is plausible, so this is not a drop \u2014 but three contracts lack evidence and one is contradicted by evidence already in hand. The draft planned to \"investigate revisions\" after construction; the FAQ already answers that question, so it blocks now, before construction is spent.\n\nSUPPORTING EVIDENCE\n\n1. Timing contract fails as drafted. The instant (10:00 UTC Tuesday) sits inside the target window (opens Tuesday 00:00): the first ten hours of the outcome are already known when the prediction is made. This needs a redesign \u2014 instant before 00:00 Tuesday (e.g., Monday 10:00 UTC) or a window starting at/after the instant.\n2. Availability unproven. Daily files show Last-Modified 08:00 with no documented server timezone: if the server is west of UTC, Monday's file publishes after 10:00 UTC and the instant is unusable as stated. No completeness guarantee means late-arriving events can flip labels silently.\n3. Immutability contradicted. The FAQ records a 2023 reprocessing replacing classifications and geographical mappings for 2005-2022. Current rows are post-revision values, not historical snapshots, so a \"historical operational forecast\" over 2005-2022 cannot evidence feature availability at the past instant from this archive alone. Rechecking one fixed month in two weeks is a two-point observation, not an auditable as-of policy.\n4. Split capacity uncomputed. Large 2018/2024 totals prove nothing about per-window eligible/class counts; interruptions cluster by day/storm/line, so clustered counts are required.\n5. Satisfied: redistribution (openly licensed \u2014 record class A with the terms quote). Novelty is asserted, not recorded; ready requires a check-novelty verdict.\n\nUNCERTAINTY AND NEXT DISCRIMINATING CHECK\n\nThe cheapest fact that flips the verdict: is Monday's daily file published and stable before the proposed instant? Resolve the server timezone from the portal's own documentation or headers (compare HTTP Date to Last-Modified), then observe publication time of a few consecutive daily files against the instant. In parallel, compute per-window eligible/class and clustered counts from the already-downloaded four-year panel \u2014 no new fetch; record as partial four-year evidence, never as a full count.\n\nORDERED ACTIONS AND STOPPING CONDITION\n\n1. Persist evidence first (scratch prunes in 24h): probe commands, URLs, dates, measured extraction cost, and the panel's construction command, checksums and provenance into candidates/<id>/notes.md. Do not commit the bulk files themselves; make the panel reproducible from its recorded command.\n2. Rewrite record.json: verdict investigating; blockers named (instant/window alignment, publication timezone and completeness, as-of policy for the reprocessed archive, per-window counts, recorded novelty verdict); withdraw \"immutable\".\n3. Run check-candidate.py; its failures are the correct blocker list, not noise.\n4. STATE.md handoff: next session runs the timezone/publication observation and the window-count computation; state exactly what flips the verdict to ready (realigned instant, evidenced availability, computed windows, recorded novelty verdict), after which construction is orderable.\n5. Commit only this session's records; review the diff; push; check CI for that exact commit; report pending CI as pending.\n\nStop after records, checks and commit. No construction job, no large probe this session. Done when the record shows investigating with the exact next probe named.\n\nOPERATOR REPORT\n\nPromising island-transport lead, but \"ready\" was premature: the proposed instant falls inside its own target window, publication timing is unverified (unknown server timezone, no completeness guarantee), and the archive is proven revision-prone (2023 reprocessing of 2005-2022), breaking the immutability assumption the draft relied on. Licence is clean and extraction is measured. Construction is held. One bounded probe next session \u2014 publication time versus a realigned instant, plus window counts from the existing panel \u2014 either yields a defensible ready or saves the construction spend.\n\n\u2014 Scout (Hermes)\n",
+      "response_sha256": "1dd76a9edbc5713431c570d865f0cd83f76164c742e425b5aefc22d5a5659d34"
+    }
+  ],
+  "ledger": {
+    "calls": 115,
+    "tokens": 3856785
+  },
+  "updated_at": "2026-10-23T01:53:35Z"
+}
