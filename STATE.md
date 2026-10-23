@@ -1,27 +1,23 @@
 # Current state
 
-Updated: 2026-10-23 08:18Z (Codex final deployed-observation checkpoint).
+Updated: 2026-10-23 08:32Z (Codex live-audit correction).
 
-PR #13 is merged/deployed at `c9d479c`; merge CI, installed hashes, source/home
-runtime audits and doctor pass. The controlled experiment is complete at 125
-attempts / 4,252,032 inclusive tokens; final adaptive case 5/8 baseline versus
-7/8 revised, with material weaknesses retained. Executable qualification gate,
-production budgets, publication holds and independent cleanup are unchanged.
+Ordinary advancement `20261023_081240_e08dd8` completed at `e3ee2bc` after normal
+GLM backend failure/DeepSeek failover. It preserved publication holds and blocked
+ZA construction on feature-vintage evidence, but built/scored the EA prediction
+panel locally as a pre-launch ceiling without qualification. This is a violation;
+no figure from that panel supports accepted headroom or rejection claims. Original
+source/report/response remain history; assisted hold `4f77649` keeps EA investigating.
+Camara/INPE and public-release holds also remain unchanged.
 
-Ordinary advancement `20261023_081240_e08dd8` started 08:12:45Z through the normal
-shim, without candidate-specific coaching. At 08:18 it had no candidate/worker
-changes and its first main response was pending; the process was alive, within
-its existing 90-minute bound. No timeout or fallback has been bypassed. Next:
-let this session finish, audit its actual code/decisions and exact commit/CI,
-record full main/aux usage, and close the evaluation with honest measured limits.
-A running session or good decision-test score is not the completed live audit.
-
-Camara has no active worker and remains on assisted scientific/code review hold
-at `f108bb4`: no declaration-only re-gate or further job until selection and early
-scoring defects resolve. Both attempts and their figures are unqualified diagnostics.
-IDEAM remains investigating; `b67ebbb` corrects the bulletin to 2016, withdrawing
-the unsupported decade-stability claim. Historical entries below retain the original
-reports and are superseded by these holds. INPE and all public-release holds remain.
+PR #14 contains the full audit and a narrow reviewed instruction clarification
+at `fa90684`: computation determines construction/scoring, regardless of in-memory
+storage, published inputs or a fixed reference. Bounded source inspection remains
+allowed. Clean-clone 588 tests (6 skips), doctor/source audit and exact CI pass.
+Two paired DeepSeek responses are pending under the unchanged cumulative 128/5M
+checkpoint (127 planned total attempts). Next: review both outputs, deploy tested
+bytes at idle, then audit a normal advancement without coaching. Do not claim
+execution reliability from the earlier decision scores or assisted record repair.
 
 ## Historical update (superseded)
 

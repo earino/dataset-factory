@@ -1,11 +1,11 @@
 # Research prompt improvement
 
-Status: PRs #11, #12 and #13 are merged and deployed. Current prompt source is
-`c9d479cfd8d7a71209ecbf2b517d5411f1bc0601`, byte-identical to tested `635cede`.
-All controlled comparisons are complete. The final ordinary advancement
-`20261023_081240_e08dd8` is running under normal limits; outcome audit is pending.
-Keep the prior live failures explicit. Decision scores do not establish reliable
-autonomous scientific execution.
+Status: PRs #11–#13 are deployed at `c9d479c`. The next ordinary advancement
+completed and exposed another scoring violation: an in-memory prediction panel
+was treated as an exempt pre-launch probe. PR #14 retains the full failure and
+clarifies that boundary at reviewed `fa90684`; two paired DeepSeek responses are
+pending. The useful timing hold and the invalid scoring are reported separately.
+Prompt decision improvements still do not establish reliable autonomous execution.
 
 ## Final live audit and copied-code follow-up
 
@@ -617,3 +617,39 @@ The exact source is approved for idle deployment, then one ordinary advancement
 with no candidate-specific coaching. Review its actual code and scientific decisions;
 keep existing candidate holds. Source instructions passing review and better supplied-
 code answers do not substitute for that live observation.
+
+### In-memory prelaunch violation in the next ordinary run
+
+The ordinary advancement `20261023_081240_e08dd8` completed in 823.3 seconds after
+GLM backend failure and normal failover to DeepSeek. All 47 recorded main calls
+used DeepSeek; title usage was GLM. Four-counter total was 4,255,024 inclusive tokens.
+No worker launched and the publication hold remained. ZA's next action now blocks
+construction on an unresolved financial-feature vintage question, useful progress.
+
+But EA's `eab_ceiling.py` constructs the intended lag/target panel, splits years
+and computes AUCs locally before any qualification. "Published slices", "no CSV",
+"no fitted model" and "unqualified pre-launch ceiling" do not exempt that work.
+The full source/report and original response remain in history. Its majority
+helper now correctly evaluates a train-fitted constant on each split, but that
+implementation improvement cannot legitimize the unqualified results. Current
+outcomes determine exclusions and missing older lags are collapsed to non-events;
+these choices also need justification. A persistence score is not a mathematical
+upper bound on other models. Scout placed an assisted review hold at `4f77649`.
+
+The narrow `fa90684` revision defines construction/scoring by the computation,
+including in-memory examples and fixed references. It permits useful bounded source
+metadata/count/semantics work without performance scoring; numerical task comparisons
+still require full-worker qualification and acceptance. Two paired adaptive responses
+on the actual DeepSeek route are planned within the same 128/5M checkpoint (127
+planned total attempts). No new runtime infrastructure, checker or budget change.
+
+Clean-clone Python 3.13 verification of `fa90684`:
+```
+Ran 588 tests in 6.875s
+
+OK (skipped=6)
+```
+Doctor and source audit pass, tree clean. Exact CI runs 39925227120 / 39925218075
+pass; full unedited output is retained as `results/verification-fa90684-*`.
+Source review found no blocking defect. Actual post-deployment execution remains
+a separate required observation, not inferred from a corrected candidate record.
