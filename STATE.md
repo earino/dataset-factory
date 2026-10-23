@@ -15,10 +15,21 @@ Existing budgets, research mutex, worker follow-up, cleanup, qualification and
 publication requirements remain in force. No further prompt evaluation is planned.
 
 Local Python 3.13 verification: 601 tests passed (6 existing skips); doctor and
-source runtime audit passed. Next: exact-commit CI and clean-clone verification,
-then Scout deploys the reviewed shims and updates the existing two cron jobs.
-Require timer-fired no-model contention/recovery evidence and delivery readback,
-then a real scheduled admission. Deployment is not yet claimed.
+source runtime audit passed. Exact-commit CI passed on the merged revision.
+**Deployed 2026-10-23 after PR #16 merged at `e5b79f1d6c50909b82fb12f42b190a2a82c8f000`**:
+clean fast-forward from `25c93b2`, only the two reviewed shims installed
+(`scout_advancement.py` `a4c5852f…`, `scout_discovery_session.py` `07dcfee0…`; preimages kept),
+source/home audit, doctor and admission clean. Both existing jobs `86fe52e55ef9` and
+`69a5bc676d10` are now `*/5 * * * *` with `no_agent`, script and delivery unchanged; the other 11
+jobs were not touched. Timer-fired no-model contention test delivered to Telegram at 15:50Z
+(`delivered`, `Ran 1 test in 0.027s / OK`); probe job and script removed after capture.
+
+First real production admission: discovery admitted the due 12:00Z slot at 15:45:00Z (session
+`20261023_154505_1bd19d`, skill `dataset-discovery`, revision `e5b79f1`); advancement wrote
+`busy`/`another research session owns the admission lock` at 15:45, 15:50 and 15:55 with its slot
+unconsumed. The 15:50/15:55 discovery ticks were skipped by the scheduler's job claim while its own
+run was in flight; the 16:00Z tick was outside the closed 15:58Z observation window. Evidence:
+`/opt/data/rollout-2026-10-23/{SCHEDULE-DEPLOYMENT.md,resumption-probe-evidence.json,resumption-probe-executions.json}`.
 
 Updated: 2026-10-23 14:20Z (cl-tender-baseline-001: the assisted review is SIGNED OFF and the one
 operator-authorized runner-contract baseline ran clean end to end on accepted artifact 27e610ba65e13805
