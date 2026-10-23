@@ -241,7 +241,7 @@ Codex source-review items, closure within this stage:
   approval_fy table hits zero eval/holdout keys (fallback fraction 1.0, scores
   bit-identical to the identity rule) - and replaced by a genuine train-fitted
   time-only control (logistic on approval_fy + cyclical month).
-- historical-vintage-claim: moot for release - the candidate is dropped and
+- historical-vintage-claim: unresolved scientifically; it affects no release because the candidate is dropped, but any future instance must state it as an assumption - the candidate is dropped and
   nothing ships from it. The prior_msplus_share feature remains
   latest-vintage (evaluation_fy from the current IEG snapshot) and would need
   an explicit assumption, never a reconstruction claim, in any future instance.

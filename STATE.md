@@ -6358,7 +6358,9 @@ the Colombia lead needs one bounded threshold-hunt probe before any verdict.
 
 Release work outranked construction, so the session took the package-stage
 candidate's recorded next action: the one bounded holdout job that produced the
-missing decisive number. No packaging occurred and none is now possible.
+missing decisive number. No packaging occurred; under the current protocol and
+spent one-repair budget, packaging is no longer available for this candidate - a
+decision, not a claim of impossibility.
 
 - Job wb-holdout-001 (bundle candidates/wb-ieg-project-outcome/holdout, worker
   171950621, exit 0, 57.3 s, EUR 0.04 reservation): fetched the five accepted
@@ -6383,13 +6385,19 @@ missing decisive number. No packaging occurred and none is now possible.
   country x approval_fy "calendar" control empirically confirmed (100%
   fallback, scores bit-identical to identity) and replaced by logistic on
   approval_fy + cyclical month; reference information sets verified by
-  perturbation. The latest-vintage prior-history claim is moot: nothing
-  ships from this candidate.
+  perturbation. The latest-vintage prior-history claim remains scientifically
+  unresolved; it affects no release because nothing ships, but a future
+  instance must state it as an assumption.
 - Verdict: candidate DROPPED with the negative finding preserved (both scores
   on identical rows, per-year breakdown, prevalence shift 0.7180 -> 0.7931 ->
-  0.8067 recorded). One repair was budgeted and spent; the failure is task
-  signal, not code (model reproduces 0.5879 exactly; identity reproduces the
-  build's early-scored 0.6003/0.4909 from the written bytes). Reopen only as a
+  0.8067 recorded). One repair was budgeted and spent. No implementation defect was found (model
+  reproduces 0.5879 exactly; identity reproduces the build's early-scored
+  0.6003/0.4909 from the written bytes), and no advantage was demonstrated
+  under this protocol. CIs containing zero mean advantage was not shown; they
+  do not establish equivalence or prove that task signal cannot survive. The
+  identity holdout AUC was already known before this job: this was a
+  fixed-config deterministic refit and the first new-model holdout comparison,
+  not a wholly untouched holdout evaluation. Reopen only as a
   new task instance with its own qualification cycle.
 - Checks: check-candidate wb-ieg OK (dropped) and --all OK; suite 588 tests
   OK. October worker reservations now EUR 7.90 of 20 (release reserve 5
