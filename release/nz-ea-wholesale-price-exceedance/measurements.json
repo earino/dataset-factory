@@ -1,0 +1,86 @@
+{
+ "name": "nz-ea-wholesale-price-exceedance",
+ "built_at_utc": "2026-10-23T18:13:06Z",
+ "source": {
+  "publisher": "Electricity Authority (Te Mana Hiko) - EMI datasets 'Final energy prices' and 'Network supply points table'",
+  "landing_page": "https://www.ea.govt.nz/data-and-insights/datasets/wholesale/dispatch-and-pricing/final-energy-prices/",
+  "mode": "http (anonymous Azure blob container)",
+  "files": 714,
+  "vintage": "container listed 2026-10-23: 728 blobs (360 monthly 199610..202609 ~8.2-10.9 MB each, 368 daily since 2025-10-21 ~0.31-0.35 MB each; 3 interim and 1 incomplete variant excluded and counted); monthly channel owns trading dates <= 2025-10-31, daily channel owns dates > 2025-10-31; the 10 overlap days 2025-10-22..31 cross-checked between channels (18 island-days compared, max |island mean diff| 0.0)",
+  "container_listing": {"bytes": 460102, "sha256": "b1bb79a6816b3167f3a83abb0c32f3b4b5ec4db406516581160b323a576e9c8b"},
+  "nsp_table": {"bytes": 442717, "sha256": "ffb2a55413dee13bde159d7992d25a178b5e4c1dd1ef9531b329007eaf5fcc98", "last_modified": "Thu, 22 Oct 2026 16:47:15 GMT", "note": "current-vintage POC -> island mapping, 2,633 rows / 894 distinct POCs; POCs absent from it are excluded from island aggregation and counted per year"},
+  "fetch_provenance": "worker job nz-ea-002 (server 172091812, cx23/hel1, 91 min, exit 0) fetched the publisher directly; the bytes never passed through the coordinator. Per-file digests for all 714 price files are recorded in the job's summary.json (staging release 422246241)"
+ },
+ "grain": "one row per (island, anchor trading day D); row_id = {island}-{anchor_date}; history window 30 published days, horizon 7 trading days, instant lag 6 calendar days",
+ "coverage": {
+  "first_trading_day": "1996-10-01",
+  "last_trading_day": "2026-10-22",
+  "calendar_days_expected": 10979,
+  "days_present": 10979,
+  "missing_days": 0,
+  "island_days": {"SI": 10979, "NI": 10979},
+  "unmapped_poc_rows_total": 9437515,
+  "unmapped_poc_rows_note": "rows whose POC is absent from the current-vintage NetworkSupplyPointsTable (retired POCs) are excluded from island aggregation and counted per year in the job summary; 199610 first-day sample: 213/225 mapped"
+ },
+ "threshold": {
+  "value_nzd_mwh": 100.0,
+  "decision": "NZD 100/MWh fixed from the training-window design: the candidate record measured candidate levels on era samples (2020-06: 28/12/5/0 days above 100/150/200/300), and the Authority's own review records 2019 average spot price $127/MWh and 2020 $105/MWh, so NZD 100 keeps clustered positive weeks measurable in every split while remaining roughly twice the long-run median; chosen before construction and never tuned on a held-out score"
+ },
+ "splits": {
+  "train": {"rows": 14004, "positives": 2789, "positive_rate": 0.199157, "distinct_positive_target_weeks": 404, "anchor_days": "1996-10-30 .. 2016-01-01 (ex-post pricing regime)"},
+  "eval": {"rows": 4992, "positives": 2150, "positive_rate": 0.430689, "distinct_positive_target_weeks": 231, "anchor_days": "2016-01-01 .. 2022-11-01 (ex-post pricing regime)"},
+  "holdout": {"rows": 2890, "positives": 1571, "positive_rate": 0.543599, "distinct_positive_target_weeks": 152, "anchor_days": "2022-11-01 .. 2026-10-16 (real-time pricing regime from the documented 2022-11-01 change; a different market regime by design - per-year reporting is mandatory when interpreting it)"}
+ },
+ "known_event_fixtures": {
+  "aug_2024_dry_year": "four fixture days 2024-08-05..08 measured market daily means 814.77 / 861.95 / 883.56 / 825.31, all in the expected 700-1000 range and exceeding the threshold (Authority Review of winter 2024: 'in early August the average daily price reached $820/MWh'); asserted in-build from the constructed panel",
+  "winter_2008": "2008-07-01 market daily mean 305.79 exceeds the threshold (record-measured 306 on the 2008 winter dry-year)",
+  "quiet_era_control": "January 1997 market daily means max 50.0, below the threshold (quiet-era control)"
+ },
+ "reference_baselines": {
+  "note": "stdlib rank AUC measured post-acceptance on the written eval rows by score.py (job nz-ea-002), rate tables estimated on train rows only; independently recomputed by reference_check.py in job nz-ea-baseline-003 with exact agreement on every value",
+  "eval": {
+   "persistence_value_last_day_mean_auc": 0.8820357429258793,
+   "persistence_value_brier": 0.1851,
+   "persistence_mean7_auc": 0.884293406215734,
+   "calendar_only_island_week_auc": 0.5010555946516537,
+   "calendar_only_fallback_rows": 4986,
+   "majority_class_accuracy": 0.5693108974358975,
+   "global_rate_brier": 0.2988,
+   "paired_persistence_vs_calendar": {"observed": 0.381, "ci95": [0.371, 0.389], "cluster": "eval-day bootstrap, 1000 resamples"},
+   "paired_persistence_value_vs_mean7": {"observed": -0.0023, "ci95": [-0.0096, 0.0043], "note": "inconclusive: the two persistence variants are not distinguishable on eval"}
+  }
+ },
+ "baseline_full_model": {
+  "job": "nz-ea-baseline-003",
+  "runner": "the benchmark's own train.py + validate.sh, unmodified (bundled sha256 equal the benchmark's declared hashes: train.py a3c6bcf1..., validate.py b597e7f8..., validate.sh 3f06ca48...)",
+  "eval_auc_train_py": 0.8924,
+  "eval_auc_validate_py_independent_recompute": 0.8924,
+  "eval_auc_reference_check_independent_recompute": 0.8924379326710636,
+  "model_minus_persistence_value": {"observed": 0.010402, "week_clustered_ci95": [-0.000985, 0.022632]},
+  "model_minus_persistence_mean7": {"observed": 0.008145, "week_clustered_ci95": [-0.002809, 0.02057]},
+  "model_minus_calendar_only_observed": 0.391382,
+  "predeclared_criterion": "headroom demonstrated only if the model exceeds persistence_mean7 AND the week-clustered paired interval for (model - persistence_mean7) excludes zero",
+  "verdict_under_criterion": "NOT demonstrated: the observed advantage is positive but the dependence-aware interval contains zero - an inconclusive difference, neither parity nor a trailing-model defect; calendar-only is beaten decisively",
+  "dependencies": {"python": "3.13", "pandas": "2.3.3", "numpy": "2.5.4", "xgboost": "3.4.1", "scikit-learn": "1.9.1"},
+  "note": "0.8924 vs persistence_value 0.8820 / persistence_mean7 0.8843 / calendar-only 0.5011 on the identical 4,992 eval rows; no holdout AUC is quoted (the holdout never enters a workdir; it is the post-2022-11 real-time pricing regime, prevalence 0.544)"
+ },
+ "per_year_eval": {
+  "2016": {"rows": 718, "positives": 6, "positive_rate": 0.008357, "model_auc": 0.391971, "persistence_value_auc": 0.456929},
+  "2017": {"rows": 730, "positives": 187, "positive_rate": 0.256164, "model_auc": 0.919163, "persistence_value_auc": 0.949163},
+  "2018": {"rows": 730, "positives": 234, "positive_rate": 0.320548, "model_auc": 0.806292, "persistence_value_auc": 0.803669},
+  "2019": {"rows": 730, "positives": 471, "positive_rate": 0.645205, "model_auc": 0.752132, "persistence_value_auc": 0.743895},
+  "2020": {"rows": 732, "positives": 380, "positive_rate": 0.519126, "model_auc": 0.800632, "persistence_value_auc": 0.815857},
+  "2021": {"rows": 730, "positives": 481, "positive_rate": 0.658904, "model_auc": 0.937063, "persistence_value_auc": 0.917358},
+  "2022": {"rows": 622, "positives": 391, "positive_rate": 0.628617, "model_auc": 0.854963, "persistence_value_auc": 0.824327}
+ },
+ "timing": {
+  "prediction_instant": "publication of final prices for trading day D, conservatively placed at D + 6 calendar days",
+  "documented_rule": "the Authority states interim prices 'will be declared to be final prices by 2pm the following business day' (Real-time dispatch and pricing page + Code Part 13)",
+  "measured_lag_daily_channel": {"files": 365, "min_days": 1, "max_days": 5, "distribution": {"1": 249, "2": 52, "3": 52, "4": 9, "5": 3}},
+  "measured_lag_all_daily_files": "Last-Modified minus trade date over all 368 daily files: min 0.75 d, p50 1.80 d, p90 3.80 d, max 5.80 d",
+  "instant_choice": "D + 6 calendar days covers the measured maximum publication lag, so every shipped feature (final prices for trading days <= D) is published at the instant, and the target trading day D+7 has not finished trading there under any publication scheme",
+  "no_early_target_knowledge": "the label reads the D+7 island mean, which cannot exist at the instant; the D+7 label source columns are excluded from every shipped file",
+  "vintage_caveat": "the EMI container publishes current final prices only; historical vintages are not exposed, so a true point-in-time reconstruction of past publication states is not performable. The monthly-channel files carrying pre-2022 dates were themselves uploaded 2022-10-31 (Last-Modified measured), so feature values are stated as current-vintage with the cutoff a documented assumption anchored on the publisher's own documented finality rule and the measured daily-channel lags"
+ },
+ "prevalence_shift_note": "train 0.199 -> eval 0.431 -> holdout 0.544 (gate-recorded): the eval window is prevalence-shifted relative to training and the holdout sits in the post-2022-11 real-time pricing regime; any score is as much out-of-distribution as temporal, and per-year rates are reported rather than smoothed"
+}

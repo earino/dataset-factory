@@ -1,0 +1,32 @@
+{
+ "release_version": "2026.10",
+ "release_tag": "v2026.10",
+ "repository": "https://github.com/earino/nz-ea-wholesale-price-exceedance",
+ "construction_commit": "a126652",
+ "construction_commit_note": "a126652 is the source-repair commit the nz-ea-002 worker executed (job launched 2026-10-23T18:11:32Z): it carries candidates/nz-ea-wholesale-price-exceedance/source/build.py at sha256 ae691ec27b3f054dac7ef43f4eddc78fd55d8944a2a12b18675131685145b257, source/run.sh at 77235c3987e515f482f0220e6804c31db790f67f46de45ef5d5bc082f771417b and source/score.py at ee9f54245ee8b525bad841ea22e51c00c51e5688ca4d3e51b1d1dbf416979b61 - the exact bytes recorded in the job's staging manifest (release 422246241), which produced the gated artifact 545e0e4418c1f0e54bb55389e7816c1736a8473de600e70d6f006ed33089f7e7 from the EMI FinalEnergyPrices blob container as listed 2026-10-23 (728 blobs, 714 price files processed; container listing sha256 b1bb79a6...) plus the NetworkSupplyPointsTable vintage 20261021 (442,717 B, sha256 ffb2a554..., last-modified 2026-10-22).",
+ "source": {
+  "name": "Electricity Authority (Te Mana Hiko) - EMI datasets 'Final energy prices' (Real-time dispatch and pricing; 360 monthly files 199610..202609 and daily files since 2025-10-21) and 'Network supply points table' (POC -> island mapping)",
+  "landing_page": "https://www.ea.govt.nz/data-and-insights/datasets/wholesale/dispatch-and-pricing/final-energy-prices/",
+  "api": "https://emidatasets.blob.core.windows.net/publicdata?restype=container&comp=list&prefix=Datasets/Wholesale/DispatchAndPricing/FinalEnergyPrices/ - anonymous Azure blob container listing, no key, no SAS; mapping at .../NetworkSupplyPointsTable/20261021_NetworkSupplyPointsTable.csv",
+  "accessed": "2026-10-23",
+  "licence": "CC BY 4.0 per EMI LegalInformation and the successor hub's copyright statement (attribution to the Electricity Authority; changes indicated). Derived research dataset - not the Authority's official product."
+ },
+ "commands": {
+  "gate": "python3 code/qualify_dataset.py ./task",
+  "baseline": "sh baseline/reproduce_baseline.sh ./task",
+  "get_dataset": "python3 get_dataset.py --dest ./task"
+ },
+ "layout": {
+  "public/train.csv": "public/train.csv",
+  "public/eval.csv": "public/eval.csv",
+  "private/holdout.csv": "private/holdout.csv",
+  "meta.json": "meta.json",
+  "quality.json": "quality.json"
+ },
+ "required_docs": [
+  "code/materialize.py",
+  "code/run.sh",
+  "code/score.py"
+ ],
+ "note": "One task instance, one artifact. The five shipped files are the nz-ea-002 worker artifact 545e0e4418c1f0e54bb55389e7816c1736a8473de600e70d6f006ed33089f7e7 (gate 1.4.0, 34/34 checks on the full artifact, exact bytes re-accepted on the worker before any scoring); the package's code/ carries the construction script, the worker driver, the post-acceptance reference scorer, the runner-workdir materializer and the gate, baseline/ the runner-contract baseline (job nz-ea-baseline-003). The holdout ships as an asset like the other splits; it is never copied into any runner workdir."
+}

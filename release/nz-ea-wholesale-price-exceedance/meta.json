@@ -1,0 +1,72 @@
+{
+ "name": "nz-ea-wholesale-price-exceedance",
+ "description": "For a New Zealand electricity island, at the publication instant of the final wholesale energy prices for trading day D (conservatively D + 6 calendar days, covering the maximum publication lag measured on the publisher's daily-file channel), given the published island daily mean final prices for trading days up to and including D, will the island daily mean final price on trading day D+7 exceed NZD 100/MWh?",
+ "source": "Electricity Authority (Te Mana Hiko) EMI 'Final energy prices' (Real-time dispatch and pricing), Azure blob container",
+ "source_urls": [
+  "https://emidatasets.blob.core.windows.net/publicdata?restype=container&comp=list&prefix=Datasets/Wholesale/DispatchAndPricing/FinalEnergyPrices/&maxresults=5000",
+  "https://emidatasets.blob.core.windows.net/publicdata/Datasets/Wholesale/MappingsAndGeospatial/NetworkSupplyPointsTable/20261021_NetworkSupplyPointsTable.csv"
+ ],
+ "license": "Source: CC BY 4.0 (attribution 'www.emi.ea.govt.nz provided by the Electricity Authority (New Zealand)'; EMI LegalInformation and the successor hub copyright statement). Our derived compilation is dedicated CC0-1.0. Derived research dataset - not the Authority's official product.",
+ "target": "target_high_price",
+ "positive_label": 1,
+ "id_columns": [
+  "row_id"
+ ],
+ "columns": [
+  "row_id",
+  "target_high_price",
+  "anchor_date",
+  "target_week",
+  "island",
+  "last_day_mean",
+  "mean_7d",
+  "mean_30d",
+  "max_30d",
+  "std_7d",
+  "days_above_threshold_30d",
+  "cross_island_ratio_7d",
+  "anchor_month",
+  "anchor_dow",
+  "anchor_doy_sin",
+  "anchor_doy_cos"
+ ],
+ "rows": {
+  "train": 14004,
+  "eval": 4992,
+  "holdout": 2890
+ },
+ "positive_rate": {
+  "train": 0.199157,
+  "eval": 0.430689,
+  "holdout": 0.543599
+ },
+ "split": {
+  "strategy": "temporal on the anchor trading day; the eval->holdout boundary is the documented 2022-11-01 real-time pricing regime change",
+  "boundaries": {
+   "train": "1996-10-30 .. 2016-01-01",
+   "eval": "2016-01-01 .. 2022-11-01",
+   "holdout": "2022-11-01 .. 2026-10-16"
+  }
+ },
+ "label_rule": "island daily mean of DollarsPerMegawattHour over trading day D+7 exceeds NZD 100/MWh (threshold frozen from the training-window design)",
+ "label_source_columns": [
+  "target_day_island_mean_price",
+  "target_day_DollarsPerMegawattHour_rows"
+ ],
+ "prediction_time": "the publication instant of final prices for trading day D. The Authority documents that interim prices 'will be declared to be final prices by 2pm the following business day'; measured on the daily-file channel, Last-Modified minus trade date is 0-5 calendar days over 365+ files, so the instant is placed at D + 6 calendar days. Features are final prices for trading days <= D; the target trading day D+7 has not finished trading at the instant, so its price cannot exist there.",
+ "features": [
+  "island",
+  "last_day_mean",
+  "mean_7d",
+  "mean_30d",
+  "max_30d",
+  "std_7d",
+  "days_above_threshold_30d",
+  "cross_island_ratio_7d",
+  "anchor_month",
+  "anchor_dow",
+  "anchor_doy_sin",
+  "anchor_doy_cos"
+ ],
+ "built_at_utc": "2026-10-23T18:13:06Z"
+}

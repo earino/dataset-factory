@@ -1,6 +1,6 @@
 {
  "id": "nz-ea-wholesale-price-exceedance",
- "status": "ready",
+ "status": "packaged",
  "created_at": "2026-10-22T04:24:56+00:00",
  "domain": "energy markets / wholesale electricity spot prices",
  "prediction_question": "For a New Zealand pricing region (island-level aggregate of published nodal final prices), will the daily mean final wholesale energy price on a trading day about a week ahead exceed a threshold fixed from the training window?",
@@ -190,6 +190,25 @@
    "evidence": ".factory/nz-ea-baseline-003/reports/",
    "reports_status": "all expected reports collected from staging release 422309725 and verified by collect (asset digests checked); all 8 local report files re-hashed by the 21:17Z watcher tick and every sha256 matches the ledger's recorded asset digests",
    "provider_cleanup": "server 172109172 deletion confirmed by the provider: destroy command's recheck at 2026-10-23T21:13:05Z, plus the 21:17Z watcher tick's direct read-back GET /servers/172109172 -> 404 server not found; project primary_ips count 0"
+  },
+  {
+   "id": "nz-ea-publish-001",
+   "candidate": "nz-ea-wholesale-price-exceedance",
+   "server_id": 172117571,
+   "status": "succeeded",
+   "launched_at": "2026-10-23T22:22:32Z",
+   "collected_at": "2026-10-23T22:29:05Z",
+   "destroyed_at": "2026-10-23T22:29:17Z",
+   "reservation_eur": "0.04",
+   "provider_hourly_eur": "0.01152",
+   "stage_order": "transfer (host-side, no container): fetch each accepted asset from staging 422246241, verify sha256 on arrival, upload to the private dataset repo release, verify the server-side digest, delete local copy",
+   "outcome": "transfer clean: 5/5 assets copied from private staging 422246241 into private repo earino/nz-ea-wholesale-price-exceedance release v2026.10 (422360451) under the flat asset names, 0 failures, 2,754,043 bytes, 11.1 s. GitHub API read-back: exactly 5 assets, every name/size/server-side sha256 matches package MANIFEST.json (meta.json f9b8105a..., private-holdout.csv 101f6a70..., public-eval.csv 6302310d..., public-train.csv 273aeb06..., quality.json c37aed79...). One report-preservation blemish, not a data defect: the worker's compact result.json failed to upload to staging (GitHub POST 422); the result is preserved and digest-recorded locally at .factory/nz-ea-publish-001/result.json.",
+   "expected_reports": [
+    "result.json"
+   ],
+   "reports_status": "result.json collected locally (staging upload of the report 42'd); transfer verified independently by the GitHub API asset read-back",
+   "provider_cleanup": "server 172117571 deleted 2026-10-23T22:29:17Z (provider action 663400654954053, delete_server); direct read-back GET /servers/172117571 -> 404 not found; project primary_ips count 0. Note: the first 'worker destroy' attempt printed its collect-before-delete caution without deleting; deletion was then performed via the provider API and confirmed by read-back.",
+   "next_acceptance_check": "DONE at packaging: verify-staged-report.py 422246241 ACCEPTED (report digests equal the uploaded staging bytes for all five components); gate --accept on a locally fetched extract ACCEPTED (artifact 545e0e4418c1f0e5); get_dataset.py executed end-to-end against the private GitHub release and gate --accept on the downloaded tree ACCEPTED."
   }
  ],
  "artifacts": {
@@ -304,11 +323,21 @@
    },
    "prevalence_shift_note": "train 0.199 vs eval 0.431 vs holdout 0.544 (gate-recorded): the eval window is prevalence-shifted relative to training and the holdout sits in the post-2022-11 real-time pricing regime; any score is as much out-of-distribution as temporal",
    "full_model_note": "the runner's stock 30-tree XGBoost baseline through the unmodified contract; quoted, not independently re-trained by a second implementation (three implementations agree on its eval AUC to 4 decimals)"
+  },
+  "github_destination": {
+   "repo": "earino/nz-ea-wholesale-price-exceedance",
+   "release_id": 422360451,
+   "release_tag": "v2026.10",
+   "target_commit": "3b9952500f875b22f98d9a1292dec1f3bfc69b64",
+   "private": true,
+   "draft": false,
+   "assets_verified_at": "2026-10-23T22:28Z",
+   "verification": "5/5 assets at the manifest digests by authenticated API read-back; get_dataset.py end-to-end (5 files, 2,754,043 B, every digest verified, exit 0) and qualify_dataset.py --accept on the downloaded tree returned ACCEPTED (artifact 545e0e4418c1f0e5); tag v2026.10 == main == 3b9952500f875b22f98d9a1292dec1f3bfc69b64; the release is private and non-draft - the flip is the operator's act"
   }
  },
  "rejection_reason": null,
  "review": "Class A licence read first-hand on both the current platform and its announced successor; 30 years of daily-grain labels; a documented publication instant with measured file lags; publisher-published regional mapping; strong clustered event structure (dry-year episodes) and quiet eras giving both classes in every candidate window. Prior art is level-regression forecasting (EPF benchmark, an AUT study, a single-node GitHub project) - no published exceedance task with splits and a scored contract.",
- "next_action": "nz-ea-baseline-003 completed the baseline triad on the accepted nz-ea-002 artifact (re-accepted on the worker before scoring, staging release 422309725, worker destroyed provider-confirmed): full model 0.8924 vs persistence_value 0.8820 / persistence_mean7 0.8843 / calendar-only 0.5011 on the identical 4,992 eval rows; week-clustered intervals for the model-persistence differences contain zero, so under the pre-declared criterion headroom over persistence is NOT demonstrated (inconclusive advantage, not parity). NEXT: package the accepted artifact for review (release-manifest from the staging 422246241 bytes; quote the whole triad and the inconclusive persistence comparison beside any score; record baseline scope explicitly); then private staging, check-package, and the operator flip decision. The holdout stays sealed: it is out-of-distribution (post-2022-11 regime, prevalence 0.544) and no holdout evaluation has been run or is implied. Lesson recorded: fetch-spec digests are copied from the gate report programmatically and cross-checked in the bundle smoke (nz-ea-baseline-001/002 failed on one hand-typed hex character; the worker digest guard caught it both times).",
+ "next_action": "PACKAGED and privately staged on GitHub (release 422360451, tag v2026.10 == main, 5/5 assets digest-verified, get_dataset + gate --accept re-verified on the downloaded bytes). REMAINING before the operator flip: (1) Hugging Face private staging - hf-publish.py --create --upload-small, then the hf_publish worker job from the GitHub release, hf-publish --verify, --tag LAST; (2) write release/nz-ea-wholesale-price-exceedance/DESTINATIONS.json recording both destinations with artifact_version 545e0e4418c1f0e5 and files_verified lists; (3) set awaiting_operator=true once the flip is the sole remaining step. Quote the whole triad beside any score (model 0.8924 vs persistence_value 0.8820 / persistence_mean7 0.8843 / calendar-only 0.5011; week-clustered intervals contain zero - headroom over persistence NOT demonstrated, inconclusive advantage). The holdout stays sealed (post-2022-11 regime, prevalence 0.544; no holdout evaluation run or implied).",
  "jurisdiction": {
   "country": "NZ",
   "region": "Oceania",
@@ -425,5 +454,57 @@
   "ours": "30-year island/region-level panel of NZ final wholesale prices (1996-2026) with a daily exceedance label at a documented publication instant (final by 2pm next business day; measured file lag p50 1.8d max 5.8d), benchmark splits and a scored binary contract",
   "verdict": "differentiated",
   "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+ },
+ "construction_output": {
+  "splits": {
+   "train": {
+    "rows": 14004,
+    "positives": 2789,
+    "positive_rate": 0.199157,
+    "distinct_events": 404
+   },
+   "eval": {
+    "rows": 4992,
+    "positives": 2150,
+    "positive_rate": 0.430689,
+    "distinct_events": 231
+   },
+   "holdout": {
+    "rows": 2890,
+    "positives": 1571,
+    "positive_rate": 0.543599,
+    "distinct_events": 152
+   }
+  }
+ },
+ "packaged_at": "2026-10-23T22:32:00Z",
+ "awaiting_operator": false,
+ "qualification": {
+  "qualified_at": "2026-10-23T19:48:16Z",
+  "gate_version": "1.4.0",
+  "job": "nz-ea-002",
+  "result": "passed; 0 failed checks of 38 (leakage incl. every_column_could_be_scored, timing incl. 11/11 observed publication dates, units with known-event fixture, splits incl. disjoint actual ranges and clustered positive events, runner contract)",
+  "artifact_version": "545e0e4418c1f0e54bb55389e7816c1736a8473de600e70d6f006ed33089f7e7",
+  "report": "private staging release 422246241 (tag job-nz-ea-002, 14 parts); the gate report is assets file-0007/file-0008 (byte-identical, sha256 51e5b46a1c51d20d...); the five extract files and the report were fetched on the coordinator and every digest matched the staging manifest, verify-staged-report.py 422246241 re-verified the report against the uploaded bytes (ACCEPTED), and qualify_dataset.py --accept re-verified a locally fetched extract (ACCEPTED, artifact 545e0e4418c1f0e5); the extract stays in staging, never on the coordinator",
+  "splits": {
+   "train": {
+    "rows": 14004,
+    "positives": 2789,
+    "positive_rate": 0.199157,
+    "distinct_events": 404
+   },
+   "eval": {
+    "rows": 4992,
+    "positives": 2150,
+    "positive_rate": 0.430689,
+    "distinct_events": 231
+   },
+   "holdout": {
+    "rows": 2890,
+    "positives": 1571,
+    "positive_rate": 0.543599,
+    "distinct_events": 152
+   }
+  }
  }
 }

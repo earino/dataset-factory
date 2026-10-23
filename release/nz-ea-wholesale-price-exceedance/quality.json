@@ -1,0 +1,272 @@
+{
+ "name": "nz-ea-wholesale-price-exceedance",
+ "task": {
+  "question": "For a New Zealand electricity island, at the publication instant of the final wholesale energy prices for trading day D (conservatively D + 6 calendar days, covering the maximum publication lag measured on the publisher's daily-file channel), given the published island daily mean final prices for trading days up to and including D, will the island daily mean final price on trading day D+7 exceed NZD 100/MWh?",
+  "prediction_time": "the publication instant of final prices for trading day D. The Authority documents that interim prices 'will be declared to be final prices by 2pm the following business day'; measured on the daily-file channel, Last-Modified minus trade date is 0-5 calendar days over 365+ files, so the instant is placed at D + 6 calendar days. Features are final prices for trading days <= D; the target trading day D+7 has not finished trading at the instant, so its price cannot exist there."
+ },
+ "target": "target_high_price",
+ "positive_label": 1,
+ "time_column": "anchor_date",
+ "event_key_column": "target_week",
+ "event_key_note": "the gate reads the first ten characters of the event key as its independence unit; target_week is the ISO week of the target trading day, shared by both islands, so positives inside one storage/weather episode cluster together. Weeks within one long crisis are not fully independent: the count is a capacity floor per the gate's rule, not an independence proof.",
+ "features": [
+  "island",
+  "last_day_mean",
+  "mean_7d",
+  "mean_30d",
+  "max_30d",
+  "std_7d",
+  "days_above_threshold_30d",
+  "cross_island_ratio_7d",
+  "anchor_month",
+  "anchor_dow",
+  "anchor_doy_sin",
+  "anchor_doy_cos"
+ ],
+ "features_documented_at": "prediction_time",
+ "feature_documentation": "every shipped feature is derived only from final prices published at the prediction instant and from the calendar: last_day_mean/mean_7d/mean_30d/max_30d/std_7d/days_above_threshold_30d are statistics of the row's island daily mean prices over trading days D-29..D (all published by the instant, which is placed D+6 to cover the maximum measured daily-channel lag of 5 calendar days); cross_island_ratio_7d divides the row's island 7-day mean by the other island's (both published in the same files); anchor_month/anchor_dow/anchor_doy_sin/anchor_doy_cos are calendar fields of the anchor day D. Field meanings come from the publisher's FinalEnergyPrices dataset (TradingDate, TradingPeriod, PointOfConnection, DollarsPerMegawattHour) and the NetworkSupplyPointsTable mapping, both recorded in the candidate record.",
+ "carry_columns": [
+  "anchor_date",
+  "target_week"
+ ],
+ "id_columns": [
+  "row_id"
+ ],
+ "high_cardinality_columns": [
+  "anchor_date"
+ ],
+ "high_cardinality_note": "anchor_date is the anchor trading day (time column); a per-value AUC on it would memorise the calendar, so it is declared here rather than scored as a candidate leak. target_week is the clustered event key, shipped as a carry column.",
+ "label_source_columns": [
+  "target_day_island_mean_price",
+  "target_day_DollarsPerMegawattHour_rows"
+ ],
+ "post_hoc_columns": [],
+ "measurements": [
+  {
+   "column": "last_day_mean",
+   "unit": "NZD/MWh (nominal)",
+   "frame": "island daily mean of the publisher's final DollarsPerMegawattHour values, averaged over every (POC x trading period) row of that island and trading day, using POCs mapped to the island by the publisher's NetworkSupplyPointsTable (POCs absent from that current-vintage table are excluded and counted), for the anchor day D itself"
+  },
+  {
+   "column": "mean_7d",
+   "unit": "NZD/MWh (nominal)",
+   "frame": "island daily mean of the publisher's final DollarsPerMegawattHour values, averaged over every (POC x trading period) row of that island and trading day, using POCs mapped to the island by the publisher's NetworkSupplyPointsTable (POCs absent from that current-vintage table are excluded and counted), averaged over D-6..D"
+  },
+  {
+   "column": "mean_30d",
+   "unit": "NZD/MWh (nominal)",
+   "frame": "island daily mean of the publisher's final DollarsPerMegawattHour values, averaged over every (POC x trading period) row of that island and trading day, using POCs mapped to the island by the publisher's NetworkSupplyPointsTable (POCs absent from that current-vintage table are excluded and counted), averaged over D-29..D"
+  },
+  {
+   "column": "max_30d",
+   "unit": "NZD/MWh (nominal)",
+   "frame": "island daily mean of the publisher's final DollarsPerMegawattHour values, averaged over every (POC x trading period) row of that island and trading day, using POCs mapped to the island by the publisher's NetworkSupplyPointsTable (POCs absent from that current-vintage table are excluded and counted), maximum over D-29..D"
+  },
+  {
+   "column": "std_7d",
+   "unit": "NZD/MWh (nominal)",
+   "frame": "island daily mean of the publisher's final DollarsPerMegawattHour values, averaged over every (POC x trading period) row of that island and trading day, using POCs mapped to the island by the publisher's NetworkSupplyPointsTable (POCs absent from that current-vintage table are excluded and counted), population standard deviation over D-6..D"
+  },
+  {
+   "column": "days_above_threshold_30d",
+   "unit": "count of days (0-30)",
+   "frame": "days among D-29..D whose island daily mean exceeds the frozen NZD 100/MWh threshold - the same threshold the label uses, applied only to published days"
+  },
+  {
+   "column": "cross_island_ratio_7d",
+   "unit": "ratio (dimensionless)",
+   "frame": "row island mean_7d divided by the other island's mean_7d, both from published final prices"
+  },
+  {
+   "column": "anchor_month",
+   "unit": "calendar month 1-12",
+   "frame": "calendar field of the anchor trading day D"
+  },
+  {
+   "column": "anchor_dow",
+   "unit": "day of week 0-6 (Monday=0)",
+   "frame": "calendar field of the anchor trading day D"
+  },
+  {
+   "column": "anchor_doy_sin",
+   "unit": "dimensionless",
+   "frame": "sine of the anchor day's year-day on a 365.25-day cycle"
+  },
+  {
+   "column": "anchor_doy_cos",
+   "unit": "dimensionless",
+   "frame": "cosine of the anchor day's year-day on a 365.25-day cycle"
+  }
+ ],
+ "external_threshold": {
+  "column": "target day island daily mean price",
+  "threshold": 100.0,
+  "unit": "NZD/MWh (nominal)",
+  "frame": "island daily mean of the publisher's final DollarsPerMegawattHour values, averaged over every (POC x trading period) row of that island and trading day, using POCs mapped to the island by the publisher's NetworkSupplyPointsTable (POCs absent from that current-vintage table are excluded and counted), for trading day D+7",
+  "frozen": "fixed from the training-window design before construction: the candidate record measured candidate levels 100/150/200/300 NZD/MWh on era samples (2020-06: 28/12/5/0 days above each), and the Authority's own wholesale review records the 2019 average spot price at $127/MWh and 2020 at $105/MWh - NZD 100 keeps clustered positive weeks measurable in every split while remaining roughly twice the long-run median; it was not tuned on any held-out score"
+ },
+ "known_event": {
+  "name": "August 2024 New Zealand dry-year wholesale price episode",
+  "expected_verdict": "exceeds",
+  "source": "Electricity Authority, Review of winter 2024 (https://www.ea.govt.nz/documents/7159/Review_of_winter_2024_jnOSQfc.pdf): 'in early August the average daily price reached $820/MWh'; the candidate record independently measured market daily means of 815-884 NZD/MWh for 2024-08-05..08-08 from the publisher's own files. The build asserts all fixture days from the constructed panel (see summary.json known_event_fixtures)."
+ },
+ "known_events_extra": [
+  {
+   "name": "July 2008 dry winter",
+   "expected_verdict": "exceeds",
+   "source": "Authority wholesale review: '2008, when there was a severe hydro shortage during the winter'; record-measured market mean 306 NZD/MWh on 2008-07-01"
+  },
+  {
+   "name": "January 1997 quiet-era control",
+   "expected_verdict": "below",
+   "source": "record-measured monthly maximum market daily mean 50 NZD/MWh"
+  }
+ ],
+ "timing": {
+  "prediction_instant": {
+   "kind": "publication",
+   "period": "trading day D",
+   "days_after_period_end": 6,
+   "citation": "Electricity Authority, Real-time dispatch and pricing (https://www.ea.govt.nz/data-and-insights/datasets/wholesale/dispatch-and-pricing/): interim prices 'will be declared to be final prices by 2pm the following business day'. Measured on the publisher's daily-file channel, Last-Modified minus trade date is 0-5 calendar days over 365+ files (distribution in summary.json; observations below), so the instant is placed at D+6 calendar days: a conservative bound under which every feature (final prices for trading days <= D) is published and the target trading day D+7 has not finished trading."
+  },
+  "features": {
+   "period": "trading days up to and including D",
+   "published_days_after_period_end": 6,
+   "source_kind": "statistical_release"
+  },
+  "row_selection": {
+   "latest_period_used": "D (the anchor trading day; features read published final prices for trading days <= D only)",
+   "fields": [
+    "anchor trading day",
+    "island daily means for D-29..D (both islands)",
+    "island daily mean for D+7 (label source, read afterwards)"
+   ],
+   "basis": "membership requires only data published by the instant: both islands' daily means for D-29..D must exist. A missing target day D+7 is missing outcome data - counted as unobserved_target per split and excluded - never used to decide another row's membership. No field dated after D is read for selection."
+  },
+  "observations": [
+   {
+    "period": "2026-10-15",
+    "period_end": "2026-10-15",
+    "published": "2026-10-16",
+    "source_file": "20261015_FinalEnergyPrices.csv"
+   },
+   {
+    "period": "2026-10-16",
+    "period_end": "2026-10-16",
+    "published": "2026-10-19",
+    "source_file": "20261016_FinalEnergyPrices.csv"
+   },
+   {
+    "period": "2026-10-17",
+    "period_end": "2026-10-17",
+    "published": "2026-10-19",
+    "source_file": "20261017_FinalEnergyPrices.csv"
+   },
+   {
+    "period": "2026-10-18",
+    "period_end": "2026-10-18",
+    "published": "2026-10-19",
+    "source_file": "20261018_FinalEnergyPrices.csv"
+   },
+   {
+    "period": "2026-10-19",
+    "period_end": "2026-10-19",
+    "published": "2026-10-20",
+    "source_file": "20261019_FinalEnergyPrices.csv"
+   },
+   {
+    "period": "2026-10-20",
+    "period_end": "2026-10-20",
+    "published": "2026-10-21",
+    "source_file": "20261020_FinalEnergyPrices.csv"
+   },
+   {
+    "period": "2026-10-21",
+    "period_end": "2026-10-21",
+    "published": "2026-10-22",
+    "source_file": "20261021_FinalEnergyPrices.csv"
+   },
+   {
+    "period": "2026-10-22",
+    "period_end": "2026-10-22",
+    "published": "2026-10-23",
+    "source_file": "20261022_FinalEnergyPrices.csv"
+   },
+   {
+    "period": "2025-12-24",
+    "period_end": "2025-12-24",
+    "published": "2025-12-29",
+    "source_file": "20251224_FinalEnergyPrices.csv"
+   },
+   {
+    "period": "2025-12-31",
+    "period_end": "2025-12-31",
+    "published": "2026-01-05",
+    "source_file": "20251231_FinalEnergyPrices.csv"
+   },
+   {
+    "period": "2026-04-02",
+    "period_end": "2026-04-02",
+    "published": "2026-04-07",
+    "source_file": "20260402_FinalEnergyPrices.csv"
+   }
+  ],
+  "observations_note": "observed Last-Modified dates of the publisher's daily final-price files (period_end = the trade date the file covers, published = the blob's Last-Modified date). The historical monthly files are current-vintage regenerations (the 1996 files' Last-Modified is 2022-10-31), so per-day publication lags cannot be observed for 1996-2025; the conservative D+6 instant rests on the documented 2pm-next-business-day timetable plus the measured current-era lags, and is recorded as a supported conservative as-of rule, not a point-in-time reconstruction."
+ },
+ "split_windows": {
+  "train": {
+   "start": "1996-10-30",
+   "end": "2016-01-01"
+  },
+  "eval": {
+   "start": "2016-01-01",
+   "end": "2022-11-01"
+  },
+  "holdout": {
+   "start": "2022-11-01",
+   "end": "2026-10-16"
+  }
+ },
+ "split_boundaries": {
+  "train": "anchor days 1996-10-30 .. 2016-01-01 (ex-post pricing regime)",
+  "eval": "anchor days 2016-01-01 .. 2022-11-01 (ex-post pricing regime)",
+  "holdout": "anchor days 2022-11-01 .. 2026-10-16 (real-time pricing regime from the documented 2022-11-01 change; a different market regime by design - per-year reference reporting is mandatory when interpreting it)"
+ },
+ "positive_events": {
+  "eval": {
+   "positives": 2150,
+   "distinct_events": 231
+  },
+  "holdout": {
+   "positives": 1571,
+   "distinct_events": 152
+  }
+ },
+ "positive_events_note": "distinct_events counts distinct target ISO weeks among positive rows (both islands share a week), the clustered unit described in event_key_note",
+ "expected_duplicate_ids": 0,
+ "id_columns_are_entity_keys": true,
+ "splits": {
+  "train": "public/train.csv",
+  "eval": "public/eval.csv",
+  "holdout": "private/holdout.csv"
+ },
+ "built_at_utc": "2026-10-23T18:13:06Z",
+ "shipped_columns": [
+  "row_id",
+  "target_high_price",
+  "anchor_date",
+  "target_week",
+  "island",
+  "last_day_mean",
+  "mean_7d",
+  "mean_30d",
+  "max_30d",
+  "std_7d",
+  "days_above_threshold_30d",
+  "cross_island_ratio_7d",
+  "anchor_month",
+  "anchor_dow",
+  "anchor_doy_sin",
+  "anchor_doy_cos"
+ ]
+}

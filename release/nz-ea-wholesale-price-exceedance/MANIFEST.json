@@ -1,0 +1,665 @@
+{
+  "dataset": "nz-ea-wholesale-price-exceedance",
+  "release_version": "2026.10",
+  "release_tag": "v2026.10",
+  "repository": "https://github.com/earino/nz-ea-wholesale-price-exceedance",
+  "visibility": "private (publication requires explicit authorisation)",
+  "artifact_version": "545e0e4418c1f0e54bb55389e7816c1736a8473de600e70d6f006ed33089f7e7",
+  "package_digest": null,
+  "artifact_job": "nz-ea-002 (gate 1.4.0, all checks passed, 0 failed)",
+  "staging_release": 422246241,
+  "staging_release_tag": "job-nz-ea-002 (gate 1.4.0, all checks passed, 0 failed)",
+  "staging_repo": "earino/dataset-factory-staging",
+  "construction_commit": "a126652",
+  "gate_version": "1.4.0",
+  "gate_command": "python3 code/qualify_dataset.py ./task",
+  "measurements": {
+    "name": "nz-ea-wholesale-price-exceedance",
+    "built_at_utc": "2026-10-23T18:13:06Z",
+    "source": {
+      "publisher": "Electricity Authority (Te Mana Hiko) - EMI datasets 'Final energy prices' and 'Network supply points table'",
+      "landing_page": "https://www.ea.govt.nz/data-and-insights/datasets/wholesale/dispatch-and-pricing/final-energy-prices/",
+      "mode": "http (anonymous Azure blob container)",
+      "files": 714,
+      "vintage": "container listed 2026-10-23: 728 blobs (360 monthly 199610..202609 ~8.2-10.9 MB each, 368 daily since 2025-10-21 ~0.31-0.35 MB each; 3 interim and 1 incomplete variant excluded and counted); monthly channel owns trading dates <= 2025-10-31, daily channel owns dates > 2025-10-31; the 10 overlap days 2025-10-22..31 cross-checked between channels (18 island-days compared, max |island mean diff| 0.0)",
+      "container_listing": {
+        "bytes": 460102,
+        "sha256": "b1bb79a6816b3167f3a83abb0c32f3b4b5ec4db406516581160b323a576e9c8b"
+      },
+      "nsp_table": {
+        "bytes": 442717,
+        "sha256": "ffb2a55413dee13bde159d7992d25a178b5e4c1dd1ef9531b329007eaf5fcc98",
+        "last_modified": "Thu, 22 Oct 2026 16:47:15 GMT",
+        "note": "current-vintage POC -> island mapping, 2,633 rows / 894 distinct POCs; POCs absent from it are excluded from island aggregation and counted per year"
+      },
+      "fetch_provenance": "worker job nz-ea-002 (server 172091812, cx23/hel1, 91 min, exit 0) fetched the publisher directly; the bytes never passed through the coordinator. Per-file digests for all 714 price files are recorded in the job's summary.json (staging release 422246241)"
+    },
+    "grain": "one row per (island, anchor trading day D); row_id = {island}-{anchor_date}; history window 30 published days, horizon 7 trading days, instant lag 6 calendar days",
+    "coverage": {
+      "first_trading_day": "1996-10-01",
+      "last_trading_day": "2026-10-22",
+      "calendar_days_expected": 10979,
+      "days_present": 10979,
+      "missing_days": 0,
+      "island_days": {
+        "SI": 10979,
+        "NI": 10979
+      },
+      "unmapped_poc_rows_total": 9437515,
+      "unmapped_poc_rows_note": "rows whose POC is absent from the current-vintage NetworkSupplyPointsTable (retired POCs) are excluded from island aggregation and counted per year in the job summary; 199610 first-day sample: 213/225 mapped"
+    },
+    "threshold": {
+      "value_nzd_mwh": 100.0,
+      "decision": "NZD 100/MWh fixed from the training-window design: the candidate record measured candidate levels on era samples (2020-06: 28/12/5/0 days above 100/150/200/300), and the Authority's own review records 2019 average spot price $127/MWh and 2020 $105/MWh, so NZD 100 keeps clustered positive weeks measurable in every split while remaining roughly twice the long-run median; chosen before construction and never tuned on a held-out score"
+    },
+    "splits": {
+      "train": {
+        "rows": 14004,
+        "positives": 2789,
+        "positive_rate": 0.199157,
+        "distinct_positive_target_weeks": 404,
+        "anchor_days": "1996-10-30 .. 2016-01-01 (ex-post pricing regime)"
+      },
+      "eval": {
+        "rows": 4992,
+        "positives": 2150,
+        "positive_rate": 0.430689,
+        "distinct_positive_target_weeks": 231,
+        "anchor_days": "2016-01-01 .. 2022-11-01 (ex-post pricing regime)"
+      },
+      "holdout": {
+        "rows": 2890,
+        "positives": 1571,
+        "positive_rate": 0.543599,
+        "distinct_positive_target_weeks": 152,
+        "anchor_days": "2022-11-01 .. 2026-10-16 (real-time pricing regime from the documented 2022-11-01 change; a different market regime by design - per-year reporting is mandatory when interpreting it)"
+      }
+    },
+    "known_event_fixtures": {
+      "aug_2024_dry_year": "four fixture days 2024-08-05..08 measured market daily means 814.77 / 861.95 / 883.56 / 825.31, all in the expected 700-1000 range and exceeding the threshold (Authority Review of winter 2024: 'in early August the average daily price reached $820/MWh'); asserted in-build from the constructed panel",
+      "winter_2008": "2008-07-01 market daily mean 305.79 exceeds the threshold (record-measured 306 on the 2008 winter dry-year)",
+      "quiet_era_control": "January 1997 market daily means max 50.0, below the threshold (quiet-era control)"
+    },
+    "reference_baselines": {
+      "note": "stdlib rank AUC measured post-acceptance on the written eval rows by score.py (job nz-ea-002), rate tables estimated on train rows only; independently recomputed by reference_check.py in job nz-ea-baseline-003 with exact agreement on every value",
+      "eval": {
+        "persistence_value_last_day_mean_auc": 0.8820357429258793,
+        "persistence_value_brier": 0.1851,
+        "persistence_mean7_auc": 0.884293406215734,
+        "calendar_only_island_week_auc": 0.5010555946516537,
+        "calendar_only_fallback_rows": 4986,
+        "majority_class_accuracy": 0.5693108974358975,
+        "global_rate_brier": 0.2988,
+        "paired_persistence_vs_calendar": {
+          "observed": 0.381,
+          "ci95": [
+            0.371,
+            0.389
+          ],
+          "cluster": "eval-day bootstrap, 1000 resamples"
+        },
+        "paired_persistence_value_vs_mean7": {
+          "observed": -0.0023,
+          "ci95": [
+            -0.0096,
+            0.0043
+          ],
+          "note": "inconclusive: the two persistence variants are not distinguishable on eval"
+        }
+      }
+    },
+    "baseline_full_model": {
+      "job": "nz-ea-baseline-003",
+      "runner": "the benchmark's own train.py + validate.sh, unmodified (bundled sha256 equal the benchmark's declared hashes: train.py a3c6bcf1..., validate.py b597e7f8..., validate.sh 3f06ca48...)",
+      "eval_auc_train_py": 0.8924,
+      "eval_auc_validate_py_independent_recompute": 0.8924,
+      "eval_auc_reference_check_independent_recompute": 0.8924379326710636,
+      "model_minus_persistence_value": {
+        "observed": 0.010402,
+        "week_clustered_ci95": [
+          -0.000985,
+          0.022632
+        ]
+      },
+      "model_minus_persistence_mean7": {
+        "observed": 0.008145,
+        "week_clustered_ci95": [
+          -0.002809,
+          0.02057
+        ]
+      },
+      "model_minus_calendar_only_observed": 0.391382,
+      "predeclared_criterion": "headroom demonstrated only if the model exceeds persistence_mean7 AND the week-clustered paired interval for (model - persistence_mean7) excludes zero",
+      "verdict_under_criterion": "NOT demonstrated: the observed advantage is positive but the dependence-aware interval contains zero - an inconclusive difference, neither parity nor a trailing-model defect; calendar-only is beaten decisively",
+      "dependencies": {
+        "python": "3.13",
+        "pandas": "2.3.3",
+        "numpy": "2.5.4",
+        "xgboost": "3.4.1",
+        "scikit-learn": "1.9.1"
+      },
+      "note": "0.8924 vs persistence_value 0.8820 / persistence_mean7 0.8843 / calendar-only 0.5011 on the identical 4,992 eval rows; no holdout AUC is quoted (the holdout never enters a workdir; it is the post-2022-11 real-time pricing regime, prevalence 0.544)"
+    },
+    "per_year_eval": {
+      "2016": {
+        "rows": 718,
+        "positives": 6,
+        "positive_rate": 0.008357,
+        "model_auc": 0.391971,
+        "persistence_value_auc": 0.456929
+      },
+      "2017": {
+        "rows": 730,
+        "positives": 187,
+        "positive_rate": 0.256164,
+        "model_auc": 0.919163,
+        "persistence_value_auc": 0.949163
+      },
+      "2018": {
+        "rows": 730,
+        "positives": 234,
+        "positive_rate": 0.320548,
+        "model_auc": 0.806292,
+        "persistence_value_auc": 0.803669
+      },
+      "2019": {
+        "rows": 730,
+        "positives": 471,
+        "positive_rate": 0.645205,
+        "model_auc": 0.752132,
+        "persistence_value_auc": 0.743895
+      },
+      "2020": {
+        "rows": 732,
+        "positives": 380,
+        "positive_rate": 0.519126,
+        "model_auc": 0.800632,
+        "persistence_value_auc": 0.815857
+      },
+      "2021": {
+        "rows": 730,
+        "positives": 481,
+        "positive_rate": 0.658904,
+        "model_auc": 0.937063,
+        "persistence_value_auc": 0.917358
+      },
+      "2022": {
+        "rows": 622,
+        "positives": 391,
+        "positive_rate": 0.628617,
+        "model_auc": 0.854963,
+        "persistence_value_auc": 0.824327
+      }
+    },
+    "timing": {
+      "prediction_instant": "publication of final prices for trading day D, conservatively placed at D + 6 calendar days",
+      "documented_rule": "the Authority states interim prices 'will be declared to be final prices by 2pm the following business day' (Real-time dispatch and pricing page + Code Part 13)",
+      "measured_lag_daily_channel": {
+        "files": 365,
+        "min_days": 1,
+        "max_days": 5,
+        "distribution": {
+          "1": 249,
+          "2": 52,
+          "3": 52,
+          "4": 9,
+          "5": 3
+        }
+      },
+      "measured_lag_all_daily_files": "Last-Modified minus trade date over all 368 daily files: min 0.75 d, p50 1.80 d, p90 3.80 d, max 5.80 d",
+      "instant_choice": "D + 6 calendar days covers the measured maximum publication lag, so every shipped feature (final prices for trading days <= D) is published at the instant, and the target trading day D+7 has not finished trading there under any publication scheme",
+      "no_early_target_knowledge": "the label reads the D+7 island mean, which cannot exist at the instant; the D+7 label source columns are excluded from every shipped file",
+      "vintage_caveat": "the EMI container publishes current final prices only; historical vintages are not exposed, so a true point-in-time reconstruction of past publication states is not performable. The monthly-channel files carrying pre-2022 dates were themselves uploaded 2022-10-31 (Last-Modified measured), so feature values are stated as current-vintage with the cutoff a documented assumption anchored on the publisher's own documented finality rule and the measured daily-channel lags"
+    },
+    "prevalence_shift_note": "train 0.199 -> eval 0.431 -> holdout 0.544 (gate-recorded): the eval window is prevalence-shifted relative to training and the holdout sits in the post-2022-11 real-time pricing regime; any score is as much out-of-distribution as temporal, and per-year rates are reported rather than smoothed"
+  },
+  "assets": {
+    "meta.json": {
+      "asset_name": "meta.json",
+      "bytes": 3133,
+      "sha256": "f9b8105a997e6269abe2bd85aa2b32c94545377f796ec6ca50af03eb61101590"
+    },
+    "private/holdout.csv": {
+      "asset_name": "private-holdout.csv",
+      "bytes": 364911,
+      "sha256": "101f6a70284aff37b3d2715717e65315883a29c7a9a75ced9a2497edc4806cc9"
+    },
+    "public/eval.csv": {
+      "asset_name": "public-eval.csv",
+      "bytes": 627892,
+      "sha256": "6302310db2fced5ee0439e56526b2a88d1c165d02ad9ffb074cd54ebfcc8be67"
+    },
+    "public/train.csv": {
+      "asset_name": "public-train.csv",
+      "bytes": 1744686,
+      "sha256": "273aeb069ab29445d901b1ae043ec73c93465d203b8f5115c51cf35ece3c25a1"
+    },
+    "quality.json": {
+      "asset_name": "quality.json",
+      "bytes": 13421,
+      "sha256": "c37aed791cd38f0b005013f6d7bde6b5b313ad236fe57be1af7e672672182763"
+    }
+  },
+  "package_files": {
+    "DATA_DICTIONARY.md": "11675bfb80fe8f5cb11be38e29721e6fd5745a6a0d70d51362b4d6c98fe82cad",
+    "LICENSE-CC0-1.0.txt": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+    "LICENSE-MIT.txt": "200f782f6b8bc23b926ea774cbacb4147826b3b2b59200917d8dc5ec68159535",
+    "LICENSE.md": "620754aa6ca2c944bb04d999150f2145d27de8e340fe51c0c4995ee8a80e12ad",
+    "README.md": "459b1766bcd11e05a3262b09fcb2e1624be0037e0fbc52e665a81e475d053f72",
+    "RELEASE_NOTES.md": "237e183da01c30bd17c26ac0eeed7a0af2ec0911a0c30c2d012f1cc468f09b7a",
+    "REPRODUCE.md": "376ba49b02eb063bbe3989234be9f0b314b2dd5327adcea1df7c5a1ffaf8053a",
+    "VERIFICATION.md": "9b99d0bae9eb86dd1d44fbdfd3ad15eaa9b279c48a3ffbed4bd3de906a9548eb",
+    "baseline/README.md": "1a7c16d245afb4b6c3123f4d11f6204fd9e38cee01f53be4889649ab0bbab99c",
+    "baseline/reproduce_baseline.sh": "32de96032ab1b55d19fdcd1e04e0f5a6b10a187633aa280e9ee76aee9f03c584",
+    "baseline/train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+    "baseline/validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+    "baseline/validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d",
+    "code/build.py": "ae691ec27b3f054dac7ef43f4eddc78fd55d8944a2a12b18675131685145b257",
+    "code/materialize.py": "823ad591fb253b279e01762a5554e8db91cd77a0eb1756e69badc8a3754c359f",
+    "code/qualify_dataset.py": "4e51d2e9494fd66dd220517476119d7b3f2edea4ffde276caa90999a28cc0a87",
+    "code/run.sh": "77235c3987e515f482f0220e6804c31db790f67f46de45ef5d5bc082f771417b",
+    "code/score.py": "ee9f54245ee8b525bad841ea22e51c00c51e5688ca4d3e51b1d1dbf416979b61",
+    "get_dataset.py": "a1bce9a13ffaefad8f646c0905ca77104250a22eaa95078625bd178d1cdac40e",
+    "measurements.json": "84afa3a1ac4c7e1763481079c55d9fa35b0c7f952807d2f4cc30d32e1fffaf9a",
+    "meta.json": "f9b8105a997e6269abe2bd85aa2b32c94545377f796ec6ca50af03eb61101590",
+    "qualification.json": "51e5b46a1c51d20dbb571095a4aa2d3c04c3ce4a7acf186ba53c5996c8d59e88",
+    "quality.json": "c37aed791cd38f0b005013f6d7bde6b5b313ad236fe57be1af7e672672182763",
+    "SHA256SUMS": "071896b0ef5a23f4b5834db89b477c1d6ca2e336e985b9a715b8e8d285a57bd5"
+  },
+  "baseline_command": "sh baseline/reproduce_baseline.sh ./task",
+  "get_dataset_command": "python3 get_dataset.py --dest ./task",
+  "source": {
+    "name": "Electricity Authority (Te Mana Hiko) - EMI datasets 'Final energy prices' (Real-time dispatch and pricing; 360 monthly files 199610..202609 and daily files since 2025-10-21) and 'Network supply points table' (POC -> island mapping)",
+    "landing_page": "https://www.ea.govt.nz/data-and-insights/datasets/wholesale/dispatch-and-pricing/final-energy-prices/",
+    "api": "https://emidatasets.blob.core.windows.net/publicdata?restype=container&comp=list&prefix=Datasets/Wholesale/DispatchAndPricing/FinalEnergyPrices/ - anonymous Azure blob container listing, no key, no SAS; mapping at .../NetworkSupplyPointsTable/20261021_NetworkSupplyPointsTable.csv",
+    "accessed": "2026-10-23",
+    "licence": "CC BY 4.0 per EMI LegalInformation and the successor hub's copyright statement (attribution to the Electricity Authority; changes indicated). Derived research dataset - not the Authority's official product.",
+    "licence_evidence": [
+      "EMI Legal information (https://www.emi.ea.govt.nz/LegalInformation, read 2026-10-22): 'Unless indicated otherwise for specific items or collections of content (either below or within specific items or collections), this copyright material is licensed for re-use under the Creative Commons Attribution (CC-BY) 4.0 international licence. In essence, you are free to copy, store, distribute and adapt the material, as long as you attribute it to the Electricity Authority... and abide by the other licence terms.' Restricted material carve-outs are emblems/trademarks, EMI tools and models, third-party works and section-46 request responses - the FinalEnergyPrices CSV datasets are Authority content and none of the carve-outs.",
+      "Successor hub copyright statement (https://www.ea.govt.nz/copyright-disclaimer-transparency/, read 2026-10-22): 'Unless indicated otherwise for specific items or collections of content (either below or within specific items or collections), this copyright material is licensed for re-use under the Creative Commons Attribution (CC-BY) 4.0 international licence... Copyright material on this website is protected by copyright owned by the Electricity Authority on behalf of the Crown.' - the same licence posture carries across the EMI retirement onto the Data & insights hub.",
+      "EMI retirement is announced ('The Electricity Authority will soon begin to decommission the EMI platform... A new Data & insights hub... will replace EMI', read on https://www.emi.ea.govt.nz/ 2026-10-22): a source-migration risk, not a licence risk - the same datasets are already catalogued on the hub at https://www.ea.govt.nz/data-and-insights/datasets/wholesale/dispatch-and-pricing/ and the licence statement covers both. Construction must pin exact URLs and record digests."
+    ]
+  },
+  "layout": {
+    "public/train.csv": "public/train.csv",
+    "public/eval.csv": "public/eval.csv",
+    "private/holdout.csv": "private/holdout.csv",
+    "meta.json": "meta.json",
+    "quality.json": "quality.json"
+  },
+  "files": {
+    "public/train.csv": {
+      "bytes": 1744686,
+      "sha256": "273aeb069ab29445d901b1ae043ec73c93465d203b8f5115c51cf35ece3c25a1"
+    },
+    "public/eval.csv": {
+      "bytes": 627892,
+      "sha256": "6302310db2fced5ee0439e56526b2a88d1c165d02ad9ffb074cd54ebfcc8be67"
+    },
+    "private/holdout.csv": {
+      "bytes": 364911,
+      "sha256": "101f6a70284aff37b3d2715717e65315883a29c7a9a75ced9a2497edc4806cc9"
+    },
+    "meta.json": {
+      "bytes": 3133,
+      "sha256": "f9b8105a997e6269abe2bd85aa2b32c94545377f796ec6ca50af03eb61101590"
+    },
+    "quality.json": {
+      "bytes": 13421,
+      "sha256": "c37aed791cd38f0b005013f6d7bde6b5b313ad236fe57be1af7e672672182763"
+    }
+  },
+  "splits": {
+    "train": {
+      "rows": 14004,
+      "positives": 2789,
+      "positive_rate": 0.199157
+    },
+    "eval": {
+      "rows": 4992,
+      "positives": 2150,
+      "positive_rate": 0.430689
+    },
+    "holdout": {
+      "rows": 2890,
+      "positives": 1571,
+      "positive_rate": 0.543599
+    }
+  },
+  "qualification": {
+    "gate_version": "1.4.0",
+    "ok": true,
+    "failed_checks": [],
+    "result": "PASSED",
+    "artifact_version": "545e0e4418c1f0e54bb55389e7816c1736a8473de600e70d6f006ed33089f7e7",
+    "report": "qualification.json"
+  },
+  "baseline": {
+    "job": "nz-ea-baseline-003",
+    "purpose": "one baseline through the runner's existing training and validation contract, on the accepted nz-ea-wholesale-price-exceedance artifact 545e0e4418c1f0e54bb55389e7816c1736a8473de600e70d6f006ed33089f7e7, compared with the accepted references on identical eval rows",
+    "artifact": {
+      "name": "nz-ea-wholesale-price-exceedance",
+      "target": "target_high_price",
+      "positive_label": 1,
+      "id_columns": [
+        "row_id"
+      ],
+      "rows": {
+        "train": 14004,
+        "eval": 4992,
+        "holdout": 2890
+      },
+      "positive_rate": {
+        "train": 0.199157,
+        "eval": 0.430689,
+        "holdout": 0.543599
+      },
+      "label_rule": "island daily mean of DollarsPerMegawattHour over trading day D+7 exceeds NZD 100/MWh (threshold frozen from the training-window design)"
+    },
+    "qualification_report": {
+      "bundled": "qualification.json",
+      "sha256": "51e5b46a1c51d20dbb571095a4aa2d3c04c3ce4a7acf186ba53c5996c8d59e88",
+      "accepted_before_scoring": true,
+      "accepted_artifact_version": "545e0e4418c1f0e5",
+      "gate_version": "1.4.0"
+    },
+    "contract": {
+      "contract_ok": true,
+      "eval_auc_from_train_py": 0.8924,
+      "eval_auc_from_validate_py": 0.8924
+    },
+    "comparison": {
+      "accepted_references": {
+        "persistence_value": 0.8820357429258793,
+        "persistence_mean7": 0.884293406215734,
+        "calendar_only": 0.5010555946516537
+      },
+      "criterion": "model eval AUC vs the stronger persistence reference (persistence_mean7) on the identical eval rows; headroom is demonstrated only if the model exceeds persistence_mean7 AND the week-clustered paired interval for (model - persistence_mean7) excludes zero (decided by the coordinator session, not by this job)",
+      "reference_check": {
+        "purpose": "independent recomputation of the accepted references and the model eval AUC from the fetched, re-accepted bytes; paired on the identical rows",
+        "identity": {
+          "train_rows": 14004,
+          "train_positives": 2789,
+          "eval_rows": 4992,
+          "eval_positives": 2150,
+          "expected": {
+            "train_rows": 14004,
+            "train_positives": 2789,
+            "eval_rows": 4992,
+            "eval_positives": 2150
+          },
+          "ok": true
+        },
+        "references": {
+          "persistence_value": {
+            "column": "last_day_mean",
+            "definition": "score = last_day_mean, the most recent published island daily mean (day D)",
+            "auc": 0.8820357429258793
+          },
+          "persistence_mean7": {
+            "column": "mean_7d",
+            "definition": "score = mean_7d, the published 7-day trailing mean",
+            "auc": 0.884293406215734
+          },
+          "calendar_only": {
+            "definition": "train-fitted positive rate per (island, target_week), global train rate fallback",
+            "auc": 0.5010555946516537,
+            "fallback_rows": 4986
+          }
+        },
+        "agreement_with_accepted": {
+          "persistence_value": {
+            "recomputed": 0.8820357429258793,
+            "accepted": 0.8820357429258793,
+            "ok": true
+          },
+          "persistence_mean7": {
+            "recomputed": 0.884293406215734,
+            "accepted": 0.884293406215734,
+            "ok": true
+          },
+          "calendar_only": {
+            "recomputed": 0.5010555946516537,
+            "accepted": 0.5010555946516537,
+            "ok": true
+          }
+        },
+        "model": {
+          "auc": 0.8924379326710636,
+          "source": "benchmark train.py predict_proba on the eval rows, AUC by this module's own implementation"
+        },
+        "paired_differences": {
+          "model_minus_persistence_value": {
+            "observed_difference": 0.010402189745184365,
+            "week_clustered_bootstrap": {
+              "mean": 0.010682750349140248,
+              "ci_low": -0.0009846994671012298,
+              "ci_high": 0.022631788291207815,
+              "resamples": 1000,
+              "skipped": 0
+            },
+            "row_bootstrap": {
+              "mean": 0.01033643970576851,
+              "ci_low": 0.0036722509899115795,
+              "ci_high": 0.017528655407091004,
+              "resamples": 1000,
+              "skipped": 0
+            }
+          },
+          "model_minus_persistence_mean7": {
+            "observed_difference": 0.008144526455329593,
+            "week_clustered_bootstrap": {
+              "mean": 0.008425240779703476,
+              "ci_low": -0.002809457662423101,
+              "ci_high": 0.020569718830382715,
+              "resamples": 1000,
+              "skipped": 0
+            },
+            "row_bootstrap": {
+              "mean": 0.008204045126867085,
+              "ci_low": 0.002179776735442898,
+              "ci_high": 0.014277136355116564,
+              "resamples": 1000,
+              "skipped": 0
+            }
+          },
+          "model_minus_calendar_only": {
+            "observed_difference": 0.3913823380194099,
+            "note": "observed difference only; the calendar reference is not the decisive comparator, so no interval is spent on it"
+          }
+        },
+        "majority_class": {
+          "majority": 0,
+          "definition": "majority = int(train_positive_rate >= 0.5); accuracy measured against THIS split's labels",
+          "accuracy": 0.5693108974358975
+        },
+        "per_target_year": {
+          "2016": {
+            "rows": 718,
+            "positives": 6,
+            "model_auc": 0.3919709737827715,
+            "persistence_value_auc": 0.45692883895131087
+          },
+          "2017": {
+            "rows": 730,
+            "positives": 187,
+            "model_auc": 0.9192099742960972,
+            "persistence_value_auc": 0.949163392127318
+          },
+          "2018": {
+            "rows": 730,
+            "positives": 234,
+            "model_auc": 0.8062922180865729,
+            "persistence_value_auc": 0.8036686655638269
+          },
+          "2019": {
+            "rows": 730,
+            "positives": 471,
+            "model_auc": 0.7521497839969178,
+            "persistence_value_auc": 0.7438949413471706
+          },
+          "2020": {
+            "rows": 732,
+            "positives": 380,
+            "model_auc": 0.8005756578947368,
+            "persistence_value_auc": 0.8158567583732057
+          },
+          "2021": {
+            "rows": 730,
+            "positives": 481,
+            "model_auc": 0.937078876837913,
+            "persistence_value_auc": 0.9173575800081825
+          },
+          "2022": {
+            "rows": 622,
+            "positives": 391,
+            "model_auc": 0.8549672833560301,
+            "persistence_value_auc": 0.8243265685720929
+          }
+        },
+        "train_positive_rate": 0.19915738360468438,
+        "eval_positive_rate": 0.4306891025641026,
+        "bootstrap_samples": 1000,
+        "distinct_target_weeks": 358,
+        "note": "the week-clustered interval is the primary dependence-aware measure (target_week is the gate's declared event key); the row bootstrap assumes independent rows and is reported for comparison only. An interval containing zero is an inconclusive difference, not parity."
+      },
+      "decisive": {
+        "model_auc": 0.8924379326710636,
+        "persistence_value_auc": 0.8820357429258793,
+        "persistence_mean7_auc": 0.884293406215734,
+        "calendar_only_auc": 0.5010555946516537,
+        "model_minus_persistence_mean7": 0.008144526455329593,
+        "week_clustered_ci95": [
+          -0.002809457662423101,
+          0.020569718830382715
+        ],
+        "per_target_year": {
+          "2016": {
+            "rows": 718,
+            "positives": 6,
+            "model_auc": 0.3919709737827715,
+            "persistence_value_auc": 0.45692883895131087
+          },
+          "2017": {
+            "rows": 730,
+            "positives": 187,
+            "model_auc": 0.9192099742960972,
+            "persistence_value_auc": 0.949163392127318
+          },
+          "2018": {
+            "rows": 730,
+            "positives": 234,
+            "model_auc": 0.8062922180865729,
+            "persistence_value_auc": 0.8036686655638269
+          },
+          "2019": {
+            "rows": 730,
+            "positives": 471,
+            "model_auc": 0.7521497839969178,
+            "persistence_value_auc": 0.7438949413471706
+          },
+          "2020": {
+            "rows": 732,
+            "positives": 380,
+            "model_auc": 0.8005756578947368,
+            "persistence_value_auc": 0.8158567583732057
+          },
+          "2021": {
+            "rows": 730,
+            "positives": 481,
+            "model_auc": 0.937078876837913,
+            "persistence_value_auc": 0.9173575800081825
+          },
+          "2022": {
+            "rows": 622,
+            "positives": 391,
+            "model_auc": 0.8549672833560301,
+            "persistence_value_auc": 0.8243265685720929
+          }
+        },
+        "majority_class": {
+          "majority": 0,
+          "definition": "majority = int(train_positive_rate >= 0.5); accuracy measured against THIS split's labels",
+          "accuracy": 0.5693108974358975
+        }
+      },
+      "agreement": {
+        "references_agreement_ok": true,
+        "model_agreement_ok": true
+      }
+    },
+    "prevalence_shift": {
+      "gate_recorded_positive_rates": {
+        "train": 0.199157,
+        "eval": 0.430689,
+        "holdout": 0.543599
+      },
+      "note": "train ~0.199 vs eval ~0.431 vs holdout ~0.544 as recorded by the accepted gate report: the eval window is prevalence-shifted relative to training and the holdout sits in the post-2022-11 real-time pricing regime; any score is out-of-distribution as much as temporal, and per-target-year reporting is mandatory"
+    },
+    "runner_files": {
+      "bundled_sha256": {
+        "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+        "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+        "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      },
+      "expected_sha256": {
+        "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+        "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+        "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      },
+      "unmodified": true
+    },
+    "dependencies": {
+      "python": "3.13.17",
+      "pandas": "2.3.3",
+      "numpy": "2.5.4",
+      "xgboost": "3.4.1",
+      "scikit-learn": "1.9.1"
+    },
+    "scope": "baseline only, through the runner's own contract. No agent or harness comparison was run, and none is implied. The private holdout was fetched for gate re-acceptance only and never copied into the workdir or scored; its positive rate is quoted from the accepted gate report, not recomputed here."
+  },
+  "scope": "One baseline through the runner's training and validation contract. No agent or harness comparison was run and none is implied.",
+  "published": false,
+  "publication_note": "Prepared for human review. Nothing here has been published.",
+  "licenses": {
+    "policy_version": "2026-09-19",
+    "decided": "2026-10-23",
+    "code": {
+      "spdx": "MIT",
+      "file": "LICENSE-MIT.txt",
+      "copyright": "Copyright (c) 2026 E. Arino de la Rubia (earino)",
+      "third_party": [
+        {
+          "file": "baseline/train.py, baseline/validate.py, baseline/validate.sh",
+          "terms": "MIT - the harness benchmark's own runner files, shipped verbatim and unmodified (bundled sha256 equal the benchmark's declared hashes: train.py a3c6bcf1..., validate.py b597e7f8..., validate.sh 3f06ca48..., recorded in the baseline job result)",
+          "permission": "The benchmark checkout is read-only; permission to distribute verbatim copies of its runner files covers the distributed copies only and required no edit to that checkout"
+        }
+      ]
+    },
+    "data_compilation": {
+      "spdx": "CC0-1.0",
+      "file": "LICENSE-CC0-1.0.txt",
+      "scope": "Our contribution - the island/day row selection and eligibility frame, the derived exceedance label at a fixed NZD 100/MWh threshold, the published-window feature derivations, the temporal partition at the 2022-11-01 regime boundary, and the packaging - is dedicated to the public domain under CC0-1.0. The dedication covers only our contribution: the underlying Electricity Authority final prices and mapping tables keep their own designation and remain subject to the Authority's CC BY 4.0 terms, whose attribution condition carries through to every copy of the derived data. Nothing here relicenses the source or presents CC0 as the source's terms."
+    },
+    "source_data": {
+      "spdx": "CC-BY-4.0",
+      "status": "Electricity Authority (Te Mana Hiko) EMI LegalInformation: CC BY 4.0 unless otherwise indicated for specific items. The FinalEnergyPrices datasets and the NetworkSupplyPointsTable are Authority content published on the EMI platform; neither is in the stated restricted carve-outs. Reuse is allowed with attribution to the Electricity Authority and abiding by the other licence terms. The dataset's derived rows are indicated changes: a row selection, a derived binary label at a fixed threshold and derived features, not the Authority's official product.",
+      "evidence": [
+        "[https://www.emi.ea.govt.nz/LegalInformation, read 2026-10-22] 'Unless indicated otherwise for specific items or collections of content (either below or within specific items or collections of content), this copyright material is licensed for re-use under the Creative Commons Attribution (CC-BY) 4.0 international licence. In essence, you are free to copy, store, distribute and adapt the material, as long as you attribute it to the Electricity Authority... and abide by the other licence terms.' Restricted material carve-outs are emblems/trademarks, EMI tools and models, third-party works and section-46 request responses - the FinalEnergyPrices CSV datasets are Authority content and none of the carve-outs.",
+        "[https://www.ea.govt.nz/copyright-disclaimer-transparency/, read 2026-10-22] 'Unless indicated otherwise for specific items or collections of content (either below or within specific items or collections), this copyright material is licensed for re-use under the Creative Commons Attribution (CC-BY) 4.0 international licence... Copyright material on this website is protected by copyright owned by the Electricity Authority on behalf of the Crown.' - the same licence posture carries across the EMI retirement onto the Data & insights hub.",
+        "[https://www.emi.ea.govt.nz/, read 2026-10-22] The EMI retirement announcement ('The Electricity Authority will soon begin to decommission the EMI platform... A new Data & insights hub... will replace EMI') is a source-migration risk, not a licence risk: the same datasets are catalogued on the hub and the licence statement covers both."
+      ],
+      "attribution": "www.emi.ea.govt.nz provided by the Electricity Authority (New Zealand) - EMI datasets 'Final energy prices' (Real-time dispatch and pricing) and 'Network supply points table', vintages of 2026-10-22/2026-10-21 (sha256 recorded in meta.json / MANIFEST.json). Contains Authority content licensed under CC BY 4.0.",
+      "citation": "Electricity Authority (Te Mana Hiko). EMI dataset: Final energy prices (Real-time dispatch and pricing), https://www.ea.govt.nz/data-and-insights/datasets/wholesale/dispatch-and-pricing/final-energy-prices/ ; Network supply points table, https://www.ea.govt.nz/data-and-insights/datasets/wholesale/mapping-and-geospatial/ . Licensed under CC BY 4.0. Derived dataset: NZ wholesale price exceedance prediction task (not the Electricity Authority's official product).",
+      "derived_labelling": "Labelled as a derived research dataset throughout; it is not the Electricity Authority's official product and the Authority has not reviewed or endorsed it. The publisher's own designation, attribution and suggested citation are preserved verbatim, and changes from the source are indicated (row selection, derived label, derived features)."
+    },
+    "rules": [
+      "Code and documentation: MIT by default.",
+      "Our rights in a derived compilation: CC0-1.0 by default.",
+      "The source's own terms are preserved and never relicensed; the compilation dedication covers only our contribution.",
+      "Each dataset must use terms compatible with its sources. CC0 is NOT a blanket override of upstream terms: attribution, share-alike and non-commercial requirements from a source are carried through unchanged.",
+      "A source whose licence terms cannot be read is not published at all.",
+      "The chosen terms are declared per dataset in candidates/<id>/license.json and recorded in the release manifest, so the manifest cannot drift from the decision."
+    ]
+  }
+}

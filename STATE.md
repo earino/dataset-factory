@@ -1,3 +1,55 @@
+## 2026-10-23 (22:35Z) - nz-ea-wholesale-price-exceedance PACKAGED: GitHub staged private, HF staging handed off
+
+Release work outranked construction this tick (no actionable packaged candidate: every
+packaged one is published or dropped), so the session packaged the accepted nz-ea-002
+artifact (gate 1.4.0, 38/38, artifact 545e0e4418c1f0e5) end to end on the GitHub side.
+
+**Package** (release/nz-ea-wholesale-price-exceedance/, 25 tracked files, CSVs off disk):
+all nine required documents plus code/ (build.py ae691ec2..., run.sh, score.py,
+qualify_dataset.py 4e51d2e9..., materialize.py - the exact worker-executed bytes),
+baseline/ (runner files at the benchmark's hashes), meta.json/quality.json copied from
+the digest-verified collected reports, and the gate report as qualification.json.
+license.json written (CC BY 4.0 source terms quoted from EMI LegalInformation + successor
+hub; CC0 compilation; MIT code; class A, no operator risk acceptance needed).
+release.json names construction commit a126652. get_dataset.py was GENERATED
+programmatically from expected_artifact.json (digests never hand-typed) after a first
+hand-formatting attempt corrupted it - caught by compile() before anything shipped.
+MANIFEST.json + SHA256SUMS via release-manifest.py (needed construction_output.splits
+added to the record from the gate report); check-package exit 0; check-candidate OK
+(status=packaged).
+
+**Acceptance chain before any release claim** (the baseline-003 next_acceptance_check):
+verify-staged-report.py 422246241 ACCEPTED (all five report digests equal the uploaded
+staging bytes); gate --accept on a locally fetched extract ACCEPTED; the shipped
+score.py executed on that extract and reproduced every accepted reference exactly.
+
+**GitHub destination (private, complete):** repo earino/nz-ea-wholesale-price-exceedance
+created private, 25 files pushed to main; release v2026.10 (422360451) published
+non-draft; worker job nz-ea-publish-001 (server 172117571, 11.1 s, EUR 0.04 reservation)
+transferred the 5 assets staging->release with 0 failures, each verified on arrival and
+against the server digest; API read-back: 5/5 assets at the manifest digests. get_dataset.py
+executed end-to-end against the private release (5 files, 2,754,043 B, every digest
+verified, exit 0) and gate --accept on the downloaded tree returned ACCEPTED; tag ==
+main == 3b995250. Server destroyed provider-confirmed (404 read-back, 0 floating IPs; the
+first 'worker destroy' printed its caution without deleting - deletion done via the
+provider API and recorded). Blemishes recorded, not smoothed: the worker's result.json
+failed to upload to staging (POST 422; preserved locally at .factory/nz-ea-publish-001/),
+and the release was briefly left draft which 404'd the first get_dataset attempt until
+published non-draft.
+
+**Honest baseline framing shipped with the package:** model eval AUC 0.8924 vs
+persistence_value 0.8820 / persistence_mean7 0.8843 / calendar-only 0.5011 on the identical
+4,992 eval rows; week-clustered paired intervals contain zero, so headroom over persistence
+is NOT demonstrated (inconclusive advantage, not parity); calendar-only beaten decisively.
+The holdout stays sealed (post-2022-11 regime, prevalence 0.544).
+
+**NOT done this session (precise handoff in the record's next_action):** Hugging Face
+private staging (hf-publish --create --upload-small, hf_publish worker job, --verify,
+--tag LAST), DESTINATIONS.json (both destinations, artifact_version 545e0e4418c1f0e5,
+files_verified lists), then awaiting_operator=true. The flip remains the operator's.
+Seven sites/*.json site_revision bumps from another session were left untouched and
+uncommitted.
+
 # Current state
 
 ## 2026-10-23 scheduled discovery (International organisations tick): unhcr-refugee-data-finder REOPENED and ready

@@ -1,0 +1,284 @@
+{
+  "job": "nz-ea-baseline-003",
+  "purpose": "one baseline through the runner's existing training and validation contract, on the accepted nz-ea-wholesale-price-exceedance artifact 545e0e4418c1f0e54bb55389e7816c1736a8473de600e70d6f006ed33089f7e7, compared with the accepted references on identical eval rows",
+  "artifact": {
+    "name": "nz-ea-wholesale-price-exceedance",
+    "target": "target_high_price",
+    "positive_label": 1,
+    "id_columns": [
+      "row_id"
+    ],
+    "rows": {
+      "train": 14004,
+      "eval": 4992,
+      "holdout": 2890
+    },
+    "positive_rate": {
+      "train": 0.199157,
+      "eval": 0.430689,
+      "holdout": 0.543599
+    },
+    "label_rule": "island daily mean of DollarsPerMegawattHour over trading day D+7 exceeds NZD 100/MWh (threshold frozen from the training-window design)"
+  },
+  "qualification_report": {
+    "bundled": "qualification.json",
+    "sha256": "51e5b46a1c51d20dbb571095a4aa2d3c04c3ce4a7acf186ba53c5996c8d59e88",
+    "accepted_before_scoring": true,
+    "accepted_artifact_version": "545e0e4418c1f0e5",
+    "gate_version": "1.4.0"
+  },
+  "contract": {
+    "contract_ok": true,
+    "eval_auc_from_train_py": 0.8924,
+    "eval_auc_from_validate_py": 0.8924
+  },
+  "comparison": {
+    "accepted_references": {
+      "persistence_value": 0.8820357429258793,
+      "persistence_mean7": 0.884293406215734,
+      "calendar_only": 0.5010555946516537
+    },
+    "criterion": "model eval AUC vs the stronger persistence reference (persistence_mean7) on the identical eval rows; headroom is demonstrated only if the model exceeds persistence_mean7 AND the week-clustered paired interval for (model - persistence_mean7) excludes zero (decided by the coordinator session, not by this job)",
+    "reference_check": {
+      "purpose": "independent recomputation of the accepted references and the model eval AUC from the fetched, re-accepted bytes; paired on the identical rows",
+      "identity": {
+        "train_rows": 14004,
+        "train_positives": 2789,
+        "eval_rows": 4992,
+        "eval_positives": 2150,
+        "expected": {
+          "train_rows": 14004,
+          "train_positives": 2789,
+          "eval_rows": 4992,
+          "eval_positives": 2150
+        },
+        "ok": true
+      },
+      "references": {
+        "persistence_value": {
+          "column": "last_day_mean",
+          "definition": "score = last_day_mean, the most recent published island daily mean (day D)",
+          "auc": 0.8820357429258793
+        },
+        "persistence_mean7": {
+          "column": "mean_7d",
+          "definition": "score = mean_7d, the published 7-day trailing mean",
+          "auc": 0.884293406215734
+        },
+        "calendar_only": {
+          "definition": "train-fitted positive rate per (island, target_week), global train rate fallback",
+          "auc": 0.5010555946516537,
+          "fallback_rows": 4986
+        }
+      },
+      "agreement_with_accepted": {
+        "persistence_value": {
+          "recomputed": 0.8820357429258793,
+          "accepted": 0.8820357429258793,
+          "ok": true
+        },
+        "persistence_mean7": {
+          "recomputed": 0.884293406215734,
+          "accepted": 0.884293406215734,
+          "ok": true
+        },
+        "calendar_only": {
+          "recomputed": 0.5010555946516537,
+          "accepted": 0.5010555946516537,
+          "ok": true
+        }
+      },
+      "model": {
+        "auc": 0.8924379326710636,
+        "source": "benchmark train.py predict_proba on the eval rows, AUC by this module's own implementation"
+      },
+      "paired_differences": {
+        "model_minus_persistence_value": {
+          "observed_difference": 0.010402189745184365,
+          "week_clustered_bootstrap": {
+            "mean": 0.010682750349140248,
+            "ci_low": -0.0009846994671012298,
+            "ci_high": 0.022631788291207815,
+            "resamples": 1000,
+            "skipped": 0
+          },
+          "row_bootstrap": {
+            "mean": 0.01033643970576851,
+            "ci_low": 0.0036722509899115795,
+            "ci_high": 0.017528655407091004,
+            "resamples": 1000,
+            "skipped": 0
+          }
+        },
+        "model_minus_persistence_mean7": {
+          "observed_difference": 0.008144526455329593,
+          "week_clustered_bootstrap": {
+            "mean": 0.008425240779703476,
+            "ci_low": -0.002809457662423101,
+            "ci_high": 0.020569718830382715,
+            "resamples": 1000,
+            "skipped": 0
+          },
+          "row_bootstrap": {
+            "mean": 0.008204045126867085,
+            "ci_low": 0.002179776735442898,
+            "ci_high": 0.014277136355116564,
+            "resamples": 1000,
+            "skipped": 0
+          }
+        },
+        "model_minus_calendar_only": {
+          "observed_difference": 0.3913823380194099,
+          "note": "observed difference only; the calendar reference is not the decisive comparator, so no interval is spent on it"
+        }
+      },
+      "majority_class": {
+        "majority": 0,
+        "definition": "majority = int(train_positive_rate >= 0.5); accuracy measured against THIS split's labels",
+        "accuracy": 0.5693108974358975
+      },
+      "per_target_year": {
+        "2016": {
+          "rows": 718,
+          "positives": 6,
+          "model_auc": 0.3919709737827715,
+          "persistence_value_auc": 0.45692883895131087
+        },
+        "2017": {
+          "rows": 730,
+          "positives": 187,
+          "model_auc": 0.9192099742960972,
+          "persistence_value_auc": 0.949163392127318
+        },
+        "2018": {
+          "rows": 730,
+          "positives": 234,
+          "model_auc": 0.8062922180865729,
+          "persistence_value_auc": 0.8036686655638269
+        },
+        "2019": {
+          "rows": 730,
+          "positives": 471,
+          "model_auc": 0.7521497839969178,
+          "persistence_value_auc": 0.7438949413471706
+        },
+        "2020": {
+          "rows": 732,
+          "positives": 380,
+          "model_auc": 0.8005756578947368,
+          "persistence_value_auc": 0.8158567583732057
+        },
+        "2021": {
+          "rows": 730,
+          "positives": 481,
+          "model_auc": 0.937078876837913,
+          "persistence_value_auc": 0.9173575800081825
+        },
+        "2022": {
+          "rows": 622,
+          "positives": 391,
+          "model_auc": 0.8549672833560301,
+          "persistence_value_auc": 0.8243265685720929
+        }
+      },
+      "train_positive_rate": 0.19915738360468438,
+      "eval_positive_rate": 0.4306891025641026,
+      "bootstrap_samples": 1000,
+      "distinct_target_weeks": 358,
+      "note": "the week-clustered interval is the primary dependence-aware measure (target_week is the gate's declared event key); the row bootstrap assumes independent rows and is reported for comparison only. An interval containing zero is an inconclusive difference, not parity."
+    },
+    "decisive": {
+      "model_auc": 0.8924379326710636,
+      "persistence_value_auc": 0.8820357429258793,
+      "persistence_mean7_auc": 0.884293406215734,
+      "calendar_only_auc": 0.5010555946516537,
+      "model_minus_persistence_mean7": 0.008144526455329593,
+      "week_clustered_ci95": [
+        -0.002809457662423101,
+        0.020569718830382715
+      ],
+      "per_target_year": {
+        "2016": {
+          "rows": 718,
+          "positives": 6,
+          "model_auc": 0.3919709737827715,
+          "persistence_value_auc": 0.45692883895131087
+        },
+        "2017": {
+          "rows": 730,
+          "positives": 187,
+          "model_auc": 0.9192099742960972,
+          "persistence_value_auc": 0.949163392127318
+        },
+        "2018": {
+          "rows": 730,
+          "positives": 234,
+          "model_auc": 0.8062922180865729,
+          "persistence_value_auc": 0.8036686655638269
+        },
+        "2019": {
+          "rows": 730,
+          "positives": 471,
+          "model_auc": 0.7521497839969178,
+          "persistence_value_auc": 0.7438949413471706
+        },
+        "2020": {
+          "rows": 732,
+          "positives": 380,
+          "model_auc": 0.8005756578947368,
+          "persistence_value_auc": 0.8158567583732057
+        },
+        "2021": {
+          "rows": 730,
+          "positives": 481,
+          "model_auc": 0.937078876837913,
+          "persistence_value_auc": 0.9173575800081825
+        },
+        "2022": {
+          "rows": 622,
+          "positives": 391,
+          "model_auc": 0.8549672833560301,
+          "persistence_value_auc": 0.8243265685720929
+        }
+      },
+      "majority_class": {
+        "majority": 0,
+        "definition": "majority = int(train_positive_rate >= 0.5); accuracy measured against THIS split's labels",
+        "accuracy": 0.5693108974358975
+      }
+    },
+    "agreement": {
+      "references_agreement_ok": true,
+      "model_agreement_ok": true
+    }
+  },
+  "prevalence_shift": {
+    "gate_recorded_positive_rates": {
+      "train": 0.199157,
+      "eval": 0.430689,
+      "holdout": 0.543599
+    },
+    "note": "train ~0.199 vs eval ~0.431 vs holdout ~0.544 as recorded by the accepted gate report: the eval window is prevalence-shifted relative to training and the holdout sits in the post-2022-11 real-time pricing regime; any score is out-of-distribution as much as temporal, and per-target-year reporting is mandatory"
+  },
+  "runner_files": {
+    "bundled_sha256": {
+      "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+      "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+      "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+    },
+    "expected_sha256": {
+      "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+      "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+      "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+    },
+    "unmodified": true
+  },
+  "dependencies": {
+    "python": "3.13.17",
+    "pandas": "2.3.3",
+    "numpy": "2.5.4",
+    "xgboost": "3.4.1",
+    "scikit-learn": "1.9.1"
+  },
+  "scope": "baseline only, through the runner's own contract. No agent or harness comparison was run, and none is implied. The private holdout was fetched for gate re-acceptance only and never copied into the workdir or scored; its positive rate is quoted from the accepted gate report, not recomputed here."
+}
