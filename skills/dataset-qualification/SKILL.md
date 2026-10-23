@@ -55,6 +55,43 @@ or present its rates as qualified findings before acceptance. A later passing re
 does not retroactively make earlier scoring comply. Inspect the invoked build script,
 not just the shell wrapper, for hidden early scoring.
 
+### Worked worker order: review the code that each command calls
+
+Adapt these filenames/arguments to the job bundle; this illustrates ordering, not
+a replacement runner. `build.py` only constructs files and gate diagnostics.
+`score.py` invokes the existing runner/references and never rewrites qualified files.
+
+```sh
+set -eu
+python3 /workspace/build.py --out /output/extract
+python3 /workspace/qualify_dataset.py /output/extract --json \
+    --report /output/qualification.json
+python3 /workspace/qualify_dataset.py --accept \
+    /output/qualification.json /output/extract
+python3 /workspace/score.py --data /output/extract
+```
+
+Any failed command stops before the next one. Keep the failed gate report for
+collection. A wrapper ordered this way is still wrong if `build.py` computes AUC
+internally: move that computation and its logging into the accepted scoring stage.
+Trace imports/helpers too. A previous candidate's script is historical evidence,
+not a vetted template; preserve its old results but do not copy its defects.
+
+Before launch, cite the actual row filter and stage boundaries in a compact source
+preflight. Check that every declared eligibility field matches the filter. Selecting
+only records with a terminal outcome at today's snapshot can condition evaluation
+on future completion; labelling the others "unobserved" does not resolve that bias.
+A checker trusting the declaration cannot establish its truth. Resolve the intended
+population and observation mechanism before launch, or leave an explicit hold.
+
+For a majority-class accuracy reference, fit the constant label on **train** and
+measure its agreement with **that evaluated split's labels** after acceptance:
+`majority = int(train_positive_rate >= 0.5)`;
+`accuracy = sum(y == majority for y in eval_labels) / len(eval_labels)`.
+Handle an empty split explicitly. Copying `train_positive_rate` into an accuracy
+field measures neither eval nor holdout accuracy. A constant score has no ranking
+information; it is not a meaningful independent calendar/identity control.
+
 ## Required evidence
 
 Every one of these must exist before "qualified" can be claimed. Absence is not a pass:

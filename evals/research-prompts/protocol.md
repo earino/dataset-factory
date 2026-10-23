@@ -294,3 +294,24 @@ and Scout's assessment before inference. Then deploy at idle and observe another
 ordinary uncoached discovery; a corrected assisted INPE record alone cannot validate
 the revised general behavior. Ordinary advancement and real watcher observations
 remain separate evidence with their actual prompt versions and assistance disclosed.
+
+## Copied-build failure after deployment
+
+The ordinary Camara advancement copied early scoring and training-prevalence-as-
+accuracy from an older build despite explicit instructions. The unchanged gate
+blocked acceptance for clustered events; it did not prevent early computation or
+establish the truth of a future-dependent selection declaration. The candidate
+hold and IDEAM publication-date correction are assisted audits, not prompt wins.
+
+The final focused revision adds a worked fail-closed stage example and a required
+prelaunch source-location review. No executable gate or infrastructure changes.
+`copied-build-cases.json` declares one adaptive source-review transfer case before
+responses exist. Compare deployed ad607ca against the exact revised source, both
+existing routes and both arms, alternating arm order: four calls, 125 planned total
+attempts within the unchanged 128-attempt / 5M-token checkpoint and 100k reserve.
+Keep the same ledger, all original outcomes, eager role loading and accounting.
+No repeats to obtain a win. This tests reading supplied code, not autonomous code
+generation or a scientific acceptance guarantee. Independently review the entire
+response, including any invented evidence outside coarse criteria. After source/CI
+review, deploy the tested bytes and observe one normal advancement session within
+ordinary admission. Its held candidate must not be reopened merely for evaluation.
