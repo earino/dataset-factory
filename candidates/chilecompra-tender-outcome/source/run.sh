@@ -48,6 +48,7 @@ fi
 
 echo "== simple references (post-acceptance only) =="
 python3 /workspace/score.py --data "$OUT" \
+    --previous-eval /workspace/previous_eval_rows.txt \
     --report /output/references-chilecompra-tender-outcome.json
 score_status=$?
 cat /output/references-chilecompra-tender-outcome.json 2>/dev/null

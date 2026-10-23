@@ -1,5 +1,78 @@
 # Current state
 
+Updated: 2026-10-23 13:09Z (chilecompra selection-review session: the operator's four
+selection questions answered YES/YES/YES/YES from the publisher's records, the rebuild
+launched as worker `cl-tender-003`, still running at session close - handoff below).
+
+## 2026-10-23 - chilecompra-tender-outcome: operator-directed selection review answered; terminal-state-within-180d rebuild launched (cl-tender-003 RUNNING at close)
+
+The operator directed this session to answer the four selection questions from the
+publisher schema and records, then either rebuild once or record the negative finding
+and drop. All four came out supportable, so the rebuild branch was taken. No baseline
+model job, no packaging, no publication was run, per the directive.
+
+**The four answers (measured, kept in `candidates/chilecompra-tender-outcome/notes.md`
+and `record.json` `measurements.selection_review_2026_10_23`):**
+
+1. Publication-time field for every tender: YES. 119/119 sampled processes carry a first
+   tender release dated at publication with status `active` + the full feature set;
+   `publication_state_not_evidenced` measured at only 2/12/14 rows per split cohort-pair
+   in the full cl-tender-002 build.
+2. Award status/date or contract signature date: award status + award release date YES
+   (release date 100%, per-entry `awards[].date` 110/119); contract signature date NO -
+   `urlContract` docs exist only for 2021+ items and every sampled contract carries
+   `signatureDate: null` (only `period.startDate`, the delivery period). Terminal state
+   therefore defined on award status + release date.
+3. Eligibility from publication-time fields only: YES for membership (first tender
+   release month + publication state + ocid). The scored-row restriction to observed
+   terminal outcomes is outcome-dependent and is now DECLARED as such (honest
+   `row_selection` basis + per-split `outcome_conditioning` rates in quality.json),
+   never presented as a publication-time rule.
+4. One terminal award state and horizon: YES. Terminal vocabulary
+   {active->adjudicated, unsuccessful->deserted, cancelled->revoked}, pending
+   non-terminal; HORIZON_DAYS=180 frozen from measured lags (p50 33-41 d, p90 <=102 d)
+   and capped by the zip vintages (holdout latest release 2021-12-30 >= 2021-06-30
+   +180 d = 2021-12-27) - 180 d is the maximum uniform horizon the source supports.
+   Sampled terminal-within-180d: 40/40, 36/39, 40/40 per cohort month.
+
+Probes kept in the candidate dir (`probe_horizon.py` 241 req, `probe_horizon2.py` 99
+req, anonymous): also found that the publisher's tag vocabulary includes `awardUpdate`
+and the previous build's exact `"award" in tags` filter silently ignored such releases -
+fixed in the rebuild; award sequences were single-release in every sample, so pooled vs
+last-terminal-within-180d agreed on all 119.
+
+**The rebuild (one rebuild, as directed):** `terminal_outcome` (last terminal
+award-prefixed-tagged release within pub+180d decides; timestamp-exact boundary),
+compiledRelease label fallback dropped and bucketed (`compiled_only_awards`), stale
+2016/2021-01 cohort prose in the docstring/row_selection replaced with derived months,
+measured zip-vintage `observations`, per-split `outcome_accounting`/`outcome_conditioning`
+identity-checked over the buckets. `score.py` gained `--previous-eval`
+(`previous_eval_rows.txt`: the 11,943 (ocid,label) pairs of cl-tender-002's eval CSV,
+staging asset file-0003-part-0000, digest-verified) so the references against the
+0.5673 UNSPSC bar are measured on identical rows with row-set movement and label
+disagreements quantified. Synthetic-fixture smoke (`tests_smoke_build.py`) runs real
+build+gate+accept+score over fabricated members covering every label path; it caught
+the awardUpdate-tag defect and the timestamp-exact horizon boundary BEFORE worker
+spend. SMOKE OK; gate `--selftest` OK; `check-candidate.py` OK; full suite 588 tests
+OK (exit 0).
+
+**cl-tender-003 (server 172043826, launched 12:20:41Z, EUR 0.06 reservation) was still
+RUNNING at session close (~47 min elapsed; container timeout 80 min).** Nothing from it
+is quotable: no gate report, acceptance or references exist yet. Durable handoff:
+`record.json` jobs entry + next_action name the job, the server, the expected reports
+(summary.json, qualification-*.json, acceptance-*.txt, references-*.json with
+`previous_eval_comparison`) and the acceptance requirement (exit 0 + passing
+current-gate report on the full artifact + `--accept` on exact bytes, on the worker).
+The existing watcher/cleanup retains collection, preservation and provider-confirmed
+destruction. If the container times out, the diagnosed recovery is a relaunch under a
+fresh attempt id - an infrastructure retry, not a rebuild.
+
+Checks this session: gate selftest, check-candidate, candidate smoke, full unittest
+suite (588 OK). October worker reservations: EUR 8.14 + 0.06 = 8.20 of 20 (release
+reserve EUR 5 untouched).
+
+## Historical update (superseded)
+
 Updated: 2026-10-23 09:47Z (cl-tender-002 worker follow-up tick: the advancement session's close-out of
 worker `cl-tender-002` is verified complete end-to-end - collection, digest-verified reports,
 provider-confirmed cleanup, commits `5171618` + hold `d207dda` pushed with CI green at `d207dda`

@@ -32,15 +32,20 @@ Frame rules (each is measured and reported, never assumed)
   the platform publishes the process. Every shipped feature is taken from THAT
   release; later `tenderUpdate` releases (which carry the closing act and the
   final status) are never read for features.
-* Label: from the award-side releases. Positive = every award entry is
-  `unsuccessful` (the OCDS encoding of desierta). Negative = at least one
-  `active` award. Processes whose award is `cancelled` (revocada) are excluded
-  from the scored population; processes with no award release at all are
-  `unobserved_target` and excluded. Both exclusions are counted per split and
-  reported in summary.json and the candidate notes - they are missing outcome
-  data, not a membership decision.
-* Splits: temporal by publication month - train 2016-05..2016-06,
-  eval 2019-05..2019-06, holdout 2021-01..2021-02. Each month's zip vintage
+* Label: the terminal award state within HORIZON_DAYS (180) of publication,
+  read from award-side releases only. Award releases dated inside the horizon
+  are walked in date order and the LAST release carrying a terminal status
+  decides: any `active` entry -> adjudicated (0); all entries `unsuccessful`
+  -> deserted (1, the OCDS encoding of desierta); all `cancelled` -> revoked
+  (a terminal state that is neither class). Revoked rows, rows with only
+  pending entries, and rows with no award release inside the horizon are
+  excluded from the scored files and counted per split (outcome:revoked,
+  unobserved_target:*) - right-censored or other-outcome data, never a
+  membership decision. The horizon is uniform across splits and covered by
+  every cohort zip's vintage (measured: rows published up to 2021-06-30 need
+  award data to 2021-12-27; the 2021 zips' latest release is 2021-12-30).
+* Splits: temporal by publication month - train 2019-05..2019-06,
+  eval 2020-05..2020-06, holdout 2021-05..2021-06. Each month's zip vintage
   (blob Last-Modified, recorded by HEAD) is reported so the observation window
   behind each label is visible.
 * Leakage discipline: tender.status / statusDetails, awards, bids,
@@ -59,6 +64,7 @@ a derived research dataset, never ChileCompra's official product.
 from __future__ import annotations
 
 import argparse
+import calendar
 import csv
 import hashlib
 import json
@@ -69,7 +75,8 @@ import time
 import urllib.request
 import zipfile
 from collections import Counter
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 
 NAME = "chilecompra-tender-outcome"
@@ -87,6 +94,18 @@ COHORTS = {
     "eval": ([(2020, 5), (2020, 6)], "2020-05-01", "2020-07-01"),
     "holdout": ([(2021, 5), (2021, 6)], "2021-05-01", "2021-07-01"),
 }
+# Uniform label horizon: the terminal award state must be observable within
+# this many days of publication. Chosen from measured evidence, frozen before
+# any scoring: publisher records show first-award-release lags of p50 33-41
+# days and p90 <= 102 days (probe_horizon.py, 2026-10-23, n=119 processes
+# across the three cohort months), and every cohort zip's vintage covers
+# publication + 180 days for every row (train vintage 2021-01-13, eval
+# 2021-01-14, holdout latest release 2021-12-30 vs 2021-06-30 + 180d =
+# 2021-12-27). A longer horizon would NOT be covered for holdout rows
+# published at the end of June 2021, so 180 is the maximum uniform horizon
+# the source supports.
+HORIZON_DAYS = 180
+TERMINAL_STATUSES = ("active", "unsuccessful", "cancelled")
 LAYOUT = {"train": "public/train.csv", "eval": "public/eval.csv",
           "holdout": "private/holdout.csv"}
 
@@ -170,6 +189,32 @@ def parse_instant(value: str | None) -> datetime | None:
         return None
 
 
+def vintage_observations(sources: dict) -> list[dict]:
+    """Turn the measured zip vintages into timing observations.
+
+    Each observation records when the monthly blob that carries a cohort's
+    label window was last modified: the published date of the LABEL channel,
+    not of the features (those are administrative records written at the
+    publication instant itself). Measured blob Last-Modified values, not an
+    assumed schedule.
+    """
+    out: list[dict] = []
+    for ym in sorted(sources):
+        modified = (sources[ym] or {}).get("last_modified") or ""
+        try:
+            published = parsedate_to_datetime(modified).date().isoformat()
+        except (TypeError, ValueError):
+            continue
+        year, month = int(ym[:4]), int(ym[4:])
+        period_end = date(year, month, calendar.monthrange(year, month)[1]).isoformat()
+        out.append({"period": f"{year}-{month:02d}", "period_end": period_end,
+                    "published": published,
+                    "channel": "monthly bulk zip blob Last-Modified (vintage of the "
+                               "label window; the features are administrative records "
+                               "written at publication)"})
+    return out
+
+
 def first_tender_release(record: dict) -> dict | None:
     releases = [r for r in (record.get("releases") or [])
                 if "tender" in (r.get("tag") or []) and r.get("date")]
@@ -214,34 +259,80 @@ def numeric(value) -> float | None:
     return out
 
 
-def label_from(record: dict) -> tuple[int | None, str, str]:
-    """Return (label, award_status, award_status_details).
+def terminal_outcome(record: dict, published: datetime) -> tuple[int | None, str, str]:
+    """Reduce the award side to ONE terminal state within the horizon.
 
-    label: 1 deserted, 0 adjudicated, None when the outcome is cancelled or
-    unobserved. Reads award-side releases only - never used for features.
+    Returns (label, outcome_key, award_status_details): label is 1 deserted,
+    0 adjudicated, or None when the process has no terminal adjudicated or
+    deserted state within HORIZON_DAYS of publication. Reads award-side
+    releases only - never used for features.
+
+    Rule (defined, not pooled): walk the award releases dated inside
+    pub+HORIZON in date order; the LAST release that carries a terminal
+    status decides the outcome - a `pending`-only release never decides, and a
+    later terminal release supersedes an earlier one. Within that deciding
+    release: any `active` entry -> adjudicated; all entries `unsuccessful` ->
+    deserted; all `cancelled` -> revoked (terminal, neither class); anything
+    else -> mixed. A process with no award release inside the horizon is
+    right-censored at the horizon; late-only awards, undated-only awards and
+    compiled-only awards are counted in distinct censored buckets so the old
+    artifact's label sources are measurable. The compiledRelease fallback the
+    previous build used is deliberately NOT used for labels: a compiled award
+    cannot always be dated into the horizon, and the impact of dropping it is
+    measured by the compiled_only bucket instead of being assumed away.
     """
+    cutoff = published + timedelta(days=HORIZON_DAYS)
+    # Award-side releases are every release tagged with an OCDS award-prefixed
+    # tag: `award`, `awardUpdate`, `awardCancellation`. The previous build
+    # filtered on the exact tag `award` and so silently ignored update-only
+    # releases - the defect that made "later state supersedes earlier"
+    # unmeasurable. `contractTermination` etc. do not match the prefix.
     award_releases = [r for r in (record.get("releases") or [])
-                      if "award" in (r.get("tag") or []) and r.get("date")]
-    award_releases.sort(key=lambda r: r["date"])
-    entries: list[dict] = []
+                      if any(str(tag).startswith("award")
+                             for tag in (r.get("tag") or [])) and r.get("date")]
+    dated: list[tuple[datetime, list[dict]]] = []
+    unparseable = 0
     for release in award_releases:
-        entries.extend(release.get("awards") or [])
-    if not entries:
+        stamp = parse_instant(release["date"])
+        if stamp is None:
+            unparseable += 1
+            continue
+        dated.append((stamp, release.get("awards") or []))
+    dated.sort(key=lambda pair: pair[0])
+    within = [pair for pair in dated if pair[0] <= cutoff]
+    if not within:
+        if any(stamp > cutoff for stamp, _entries in dated):
+            return None, "unobserved_target:award_beyond_horizon", ""
+        if award_releases:
+            return None, "unobserved_target:award_date_unparseable", ""
         compiled = (record.get("compiledRelease") or {}).get("awards") or []
-        entries.extend(compiled)
-    if not entries:
-        return None, "none", ""
-    statuses = [(entry.get("status") or "").strip().lower() for entry in entries]
-    details = ";".join(sorted({str(entry.get("statusDetails") or "") for entry in entries
-                               if entry.get("statusDetails")}))
-    observed = sorted(set(statuses))
-    if "active" in statuses:
-        return 0, "active", details
-    if statuses and all(status == "unsuccessful" for status in statuses):
-        return 1, "unsuccessful", details
-    if statuses and all(status == "cancelled" for status in statuses):
-        return None, "cancelled", details
-    return None, "|".join(observed) or "unknown", details
+        if compiled:
+            return None, "unobserved_target:compiled_only_awards", ""
+        return None, "unobserved_target:no_award_within_horizon", ""
+    details = ""
+    decided: tuple[int | None, str] | None = None
+    for _stamp, release_entries in within:
+        statuses = [(entry.get("status") or "").strip().lower()
+                    for entry in release_entries]
+        if not statuses or not any(status in TERMINAL_STATUSES for status in statuses):
+            continue
+        if "active" in statuses:
+            decided = (0, "outcome:adjudicated")
+        elif all(status == "unsuccessful" for status in statuses):
+            decided = (1, "outcome:deserted")
+        elif all(status == "cancelled" for status in statuses):
+            decided = (None, "outcome:revoked")
+        else:
+            decided = (None, "outcome:mixed_terminal")
+        details = ";".join(sorted({str(entry.get("statusDetails") or "")
+                                   for entry in release_entries
+                                   if entry.get("statusDetails")}))
+    if decided is None:
+        return None, "unobserved_target:pending_within_horizon", details
+    label, key = decided
+    if unparseable and label is not None:
+        key += "+undated_release"
+    return label, key, details
 
 
 def extract(record: dict, split: str, month: str) -> tuple[dict | None, str]:
@@ -292,7 +383,7 @@ def extract(record: dict, split: str, month: str) -> tuple[dict | None, str]:
     description = (tender.get("description") or "").strip()
     code, detail = procedure_fields(tender)
 
-    label, award_status, award_details = label_from(record)
+    label, outcome_key, award_details = terminal_outcome(record, published)
     row = {
         TENDER_ID: ocid,
         TARGET: "" if label is None else label,
@@ -318,7 +409,7 @@ def extract(record: dict, split: str, month: str) -> tuple[dict | None, str]:
         "pub_dow": published.weekday(),
         "pub_dom": published.day,
     }
-    row["_award_status"] = award_status
+    row["_outcome_key"] = outcome_key
     row["_award_details"] = award_details
     row["_split"] = split
     return row, "ok"
@@ -367,6 +458,7 @@ def main() -> int:
     rows_by_split: dict[str, list[dict]] = {key: [] for key in COHORTS}
     sources: dict[str, dict] = {}
     buckets: dict[str, Counter] = {key: Counter() for key in COHORTS}
+    eligible: dict[str, int] = {key: 0 for key in COHORTS}
     seen: dict[str, str] = {}
     max_release: dict[str, str] = {}
     tender_status_disagreement = Counter()
@@ -406,20 +498,22 @@ def main() -> int:
                     if row is None:
                         buckets[split][reason] += 1
                         continue
-                    status = row.pop("_award_status")
-                    details = row.pop("_award_details")
+                    eligible[split] += 1
+                    outcome_key = row.pop("_outcome_key")
+                    row.pop("_award_details", None)
                     row.pop("_split", None)
                     final_status = ((record.get("compiledRelease") or {}).get("tender") or {}).get("status")
-                    if status == "unsuccessful" and final_status not in (None, "unsuccessful", "complete"):
-                        tender_status_disagreement[f"{status}->{final_status}"] += 1
+                    if outcome_key == "outcome:deserted" and \
+                            final_status not in (None, "unsuccessful", "complete"):
+                        tender_status_disagreement[f"unsuccessful->{final_status}"] += 1
                     if row[TARGET] == "":
-                        buckets[split][f"unobserved:{status}"] += 1
+                        buckets[split][outcome_key] += 1
                         continue
                     if ocid in seen:
                         buckets[split]["duplicate_ocid"] += 1
                         continue
                     seen[ocid] = split
-                    buckets[split][f"label:{status}"] += 1
+                    buckets[split][outcome_key] += 1
                     rows_by_split[split].append(row)
 
     stats = {}
@@ -427,15 +521,40 @@ def main() -> int:
         stats[split] = write_split(out, rel, rows_by_split[split])
         log(f"{split}: {stats[split]}")
 
+    outcome_accounting = {}
+    for split, counter in buckets.items():
+        revoked = counter.get("outcome:revoked", 0)
+        mixed = counter.get("outcome:mixed_terminal", 0)
+        duplicates = counter.get("duplicate_ocid", 0)
+        censored_detail = {key: value for key, value in counter.items()
+                           if key.startswith("unobserved_target:")}
+        censored = sum(censored_detail.values())
+        base = eligible[split] or 1
+        outcome_accounting[split] = {
+            "eligible_rows": eligible[split],
+            "scored_rows": stats[split]["rows"],
+            "positives": stats[split]["positives"],
+            "revoked": revoked,
+            "mixed_terminal": mixed,
+            "duplicate_ocid": duplicates,
+            "censored": censored,
+            "revoked_rate": round(revoked / base, 6),
+            "censored_rate": round(censored / base, 6),
+            "scored_share": round(stats[split]["rows"] / base, 6),
+            "censored_detail": censored_detail,
+        }
+
     summary = {
         "name": NAME,
         "built_at_utc": built_at,
+        "horizon_days": HORIZON_DAYS,
         "sources": sources,
         "grain": "one row per OCDS record (ocid) whose first tender release falls in the cohort month",
         "splits": stats,
         "cohorts": {split: [f"{y}-{m:02d}" for y, m in months]
                     for split, (months, _s, _e) in COHORTS.items()},
         "buckets": {split: dict(counter) for split, counter in buckets.items()},
+        "outcome_accounting": outcome_accounting,
         "max_release_date_seen": max_release,
         "tender_final_status_disagreements": dict(tender_status_disagreement),
     }
@@ -476,9 +595,13 @@ def main() -> int:
         "split": {"strategy": "temporal by tender publication month",
                   "boundaries": {split: f"{start} .. {end}"
                                  for split, (_m, start, end) in COHORTS.items()}},
-        "label_rule": "deserted=1 iff every award entry is 'unsuccessful'; "
-                      "adjudicated=0 iff any award entry is 'active'; cancelled and "
-                      "processes without an award release are excluded as unobserved",
+        "label_rule": "terminal award state within 180 days of publication: award "
+                      "releases dated inside pub+180d are walked in date order and "
+                      "the last release carrying a terminal status decides - any "
+                      "'active' entry -> adjudicated=0, all 'unsuccessful' -> "
+                      "deserted=1, all 'cancelled' -> revoked (excluded from scored "
+                      "rows, counted); only pending entries or no award release "
+                      "inside the horizon -> right-censored (excluded, counted)",
         "label_source_columns": LABEL_SOURCE_COLUMNS,
         "prediction_time": PREDICTION_TIME,
         "features": FEATURES,
@@ -565,22 +688,61 @@ def main() -> int:
             },
             "row_selection": {
                 "latest_period_used": "the publication instant of the row itself "
-                                      "(cohort months 2016-05..2016-06, "
-                                      "2019-05..2019-06, 2021-01..2021-02)",
+                                      "(first tender release; cohort months "
+                                      + "; ".join(
+                                          f"{split} " + ", ".join(f"{y}-{m:02d}"
+                                                                 for y, m in months)
+                                          for split, (months, _s, _e)
+                                          in COHORTS.items()) + ")",
                 "fields": ["first tender release date", "ocid"],
-                "basis": "membership is decided by the first tender release's month "
-                         "only; the award release is read afterwards solely to compute "
-                         "the label, and a process without an outcome is counted as "
-                         "unobserved_target rather than dropped on a future condition",
+                "basis": "MEMBERSHIP is decided by publication-time fields only: "
+                         "the first tender release's month (the cohort windows) "
+                         "plus its publication state ('active'); the award side is "
+                         "never read to decide whether a row exists. The scored "
+                         "CSVs are then the subset of those eligible rows whose "
+                         f"award process reaches a terminal adjudicated or deserted "
+                         f"state within {HORIZON_DAYS} days of publication. That "
+                         "restriction is OUTCOME-DEPENDENT, and it is declared "
+                         "here rather than presented as a timing-neutral filter: "
+                         "rows whose terminal state is revoked, and rows "
+                         "right-censored at the horizon (no award release inside "
+                         "it, awards only after it, only pending entries, undated "
+                         "or compiled-only awards), are excluded from the scored "
+                         "files and counted per split in summary.json buckets and "
+                         "the outcome_conditioning block. The rates in that block "
+                         "must be quoted beside any score taken from this artifact.",
+                "horizon_days": HORIZON_DAYS,
+                "horizon_basis": "measured first-award-release lag p50 33-41 days, "
+                                 "p90 <= 102 days (probe_horizon.py 2026-10-23, "
+                                 "n=119 processes across the three cohort months); "
+                                 "every cohort zip's vintage covers publication + "
+                                 "180 days for every row (train vintage 2021-01-13, "
+                                 "eval 2021-01-14, holdout latest release "
+                                 "2021-12-30 vs 2021-06-30 + 180d = 2021-12-27), so "
+                                 "180 is the maximum uniform horizon this source "
+                                 "supports and no split's labels depend on data "
+                                 "its zip vintage does not contain",
             },
-            "observations": [],
-            "observations_note": "administrative record written by the platform at "
-                                 "publication, so no statistical-release lag applies; "
-                                 "each month's zip vintage (blob Last-Modified) and the "
-                                 "latest release date seen inside it are recorded in "
-                                 "summary.json so the observation window behind each "
-                                 "label is visible",
+            "observations": vintage_observations(sources),
+            "observations_note": "features are administrative records written by the "
+                                 "platform at the publication instant, so no "
+                                 "statistical-release lag applies to them; the "
+                                 "observations above record each cohort zip's "
+                                 "measured blob Last-Modified - the vintage of the "
+                                 "label window - and summary.json also records the "
+                                 "latest release date seen inside each zip",
         },
+        "horizon_days": HORIZON_DAYS,
+        "outcome_conditioning": outcome_accounting,
+        "outcome_conditioning_note": "scored rows are the eligible "
+                                      "(publication-time membership) rows whose "
+                                      "award process reaches a terminal "
+                                      "adjudicated/deserted state within "
+                                      f"{HORIZON_DAYS} days of publication; these "
+                                      "measured rates quantify the "
+                                      "outcome-dependent share excluded from each "
+                                      "split (revoked, right-censored), from the "
+                                      "same rows the gate reads",
         "split_windows": {split: {"start": start, "end": end}
                           for split, (_m, start, end) in COHORTS.items()},
         "split_boundaries": {split: f"tenders first published {start} .. {end}"

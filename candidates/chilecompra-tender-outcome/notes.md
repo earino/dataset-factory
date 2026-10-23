@@ -136,3 +136,70 @@ compact reports collected to `.factory/cl-tender-002/reports/` (digest-verified)
 Next: baseline job with the harness runner against this exact artifact, compared on eval to
 the 0.5673 UNSPSC reference and reported per split (holdout prevalence 0.2512 vs train
 0.1770 makes a pooled number unreadable). Package only if headroom is real.
+
+## 2026-10-23 selection review (operator-directed): the four questions, answered from the publisher's records
+
+Probes kept in this directory: `probe_horizon.py` (241 requests, 7.2 MB, 246 s; first 40
+processes of each cohort month 2019-06 / 2020-06 / 2021-06, tender + award docs) and
+`probe_horizon2.py` (99 requests, 3.3 MB, 107 s; first 15 per month, detail-preserving,
+plus the first 5 urlContract docs of 2021-06). Aggregates in the raw outputs kept at
+`/opt/data/cache/scratch/cl_probe_horizon{,2}.json` (scratch; distilled here).
+
+1. **Publication-time field for every tender: YES.** 119/119 sampled processes carry a
+   first tender release dated at the publication instant with `status: active` and the
+   full publication-time feature set. Full-build measurement (cl-tender-002 buckets):
+   `publication_state_not_evidenced` only 2 / 12 / 14 rows per split cohort-pair.
+2. **Award status/date or contract signature date: award YES, contract signature NO.**
+   Award release `date` present on 100% of award releases; per-entry `awards[].date` on
+   110/119 sampled entries. `urlContract` documents exist only for 2021+ list items and
+   every sampled contract carries `signatureDate: null` and `date: null` - only
+   `period.startDate` (the delivery period) exists. The terminal state must therefore be
+   defined on award status + award release date. Observed award statuses: active,
+   unsuccessful, cancelled, pending. (statusDetails, which carried the 7-Desierta /
+   8-Adjudicada / 15-Revocada vocabulary on 2026-10-21, was empty in every 2026-10-23
+   sample; the label rule uses status only, so nothing depends on it.)
+3. **Eligibility from publication-time fields only: YES for membership** (first tender
+   release month + publication state + ocid). The scored-row restriction to observed
+   terminal outcomes is outcome-dependent; the rebuild declares it as such and measures
+   it per split (`outcome_conditioning` in quality.json / summary.json).
+4. **One terminal award state and horizon: YES.** Terminal vocabulary
+   {active -> adjudicated, unsuccessful -> deserted, cancelled -> revoked}; pending is
+   non-terminal. Horizon H = 180 days after publication, frozen from the measured lag
+   distribution (first-award-release lag p50 33-41 d, p90 49-102 d, max 526 d for one
+   2020-06 outlier) and capped by the zip vintages: every cohort zip covers pub+180 d
+   for every row (train 2021-01-13, eval 2021-01-14, holdout latest release 2021-12-30
+   vs 2021-06-30 + 180 d = 2021-12-27). 180 d is the MAXIMUM uniform horizon the source
+   supports. Sampled terminal-within-180d: 40/40 (2019-06), 36/39 (2020-06), 40/40
+   (2021-06); the not-terminal cases were awards at +375/+375/+526 d - real late
+   processes, right-censored at the horizon by design.
+
+Extra findings: (a) award status sequences were single-release for every sampled
+process and pooled-any-active vs last-terminal-within-180d agreed on all 119 - but the
+publisher's tag vocabulary includes `awardUpdate`, and the previous build's exact
+`"award" in tags` filter silently ignored awardUpdate-tagged releases; the rebuild
+matches any award-prefixed tag. (b) The previous build's compiledRelease label fallback
+is dropped in the rebuild (a compiled award cannot always be dated into the horizon);
+its impact is measured by the `unobserved_target:compiled_only_awards` bucket instead of
+being assumed away. (c) The two not-urlAward processes per 100 (2026-10-21 probe)
+reappear as right-censored rows under the horizon rule.
+
+## 2026-10-23 rebuild (cl-tender-003) - what changed and why
+
+All four questions supportable, so the operator's "rebuild once" branch was taken.
+Changes in `source/build.py`: terminal-state-within-180d label rule
+(`terminal_outcome`), award-prefixed tag filter, compiledRelease fallback dropped
+(bucketed), honest `row_selection` with derived cohort months (the old prose still said
+"2016-05..2016-06 / 2021-01..2021-02"), measured zip-vintage `observations`, per-split
+`outcome_accounting` in summary.json and `outcome_conditioning` in quality.json.
+`source/score.py` gained `--previous-eval` (shipped `previous_eval_rows.txt`: the
+11,943 (ocid, label) pairs of cl-tender-002's eval CSV, downloaded from staging release
+421653257 asset file-0003-part-0000, sha256 f4865ce092061ddbeffc5a341c96ffd65f1b2621ba8
+aa36b4b8704c3d4bd8782) so the references against the 0.5673 UNSPSC bar are measured on
+identical rows, with the row-set movement and label disagreements quantified.
+
+Synthetic-fixture smoke (`tests_smoke_build.py`, kept in this directory) runs the real
+build + gate + accept + score over fabricated member documents covering every label
+path; it caught two real defects before worker spend: the awardUpdate tag filter and
+the horizon's timestamp-exact boundary (pub 12:00 + 180 d cuts at 12:00, not midnight).
+SMOKE OK; gate selftest OK; `check-candidate.py` OK. Worker cl-tender-003 launched
+2026-10-23T12:20:41Z (server 172043826, EUR 0.06 reservation).

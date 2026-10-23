@@ -127,6 +127,10 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--data", required=True)
     parser.add_argument("--report", required=True)
+    parser.add_argument("--previous-eval", default=None,
+                        help="TSV (tender_id<TAB>deserted) from a previous "
+                             "artifact's eval split; adds an identical-rows "
+                             "comparison against that artifact's references")
     args = parser.parse_args()
 
     root = Path(args.data)
@@ -190,6 +194,72 @@ def main() -> int:
     references["eval_positive_rate"] = round(sum(eval_labels) / len(eval_labels), 6)
     references["train_positive_rate"] = round(train_rate, 6)
     references["value_band_thresholds_clp"] = thresholds
+
+    if args.previous_eval:
+        previous = {}
+        with Path(args.previous_eval).open(encoding="utf-8") as handle:
+            for index, line in enumerate(handle):
+                line = line.rstrip("\n")
+                if not line:
+                    continue
+                ocid, label = line.split(",")
+                if index == 0:
+                    if [ocid, label] != ["tender_id", "deserted"]:
+                        raise SystemExit(f"unexpected previous-eval header: {line}")
+                    continue
+                previous[ocid] = int(label)
+        new_ids = {row["tender_id"] for row in evaluation}
+        identical = [row for row in evaluation if row["tender_id"] in previous]
+        comparison = {
+            "previous_artifact_eval_rows": len(previous),
+            "new_artifact_eval_rows": len(evaluation),
+            "identical_rows": len(identical),
+            "old_only_rows": sum(1 for ocid in previous if ocid not in new_ids),
+            "new_only_rows": sum(1 for ocid in new_ids if ocid not in previous),
+            "note": "rows are matched by tender_id (ocid). old_only rows are "
+                    "eval rows of the previous artifact that the rebuilt label "
+                    "rule no longer scores (moved to revoked/right-censored "
+                    "buckets or lost to the dropped compiledRelease fallback); "
+                    "their count and the per-split outcome_conditioning block "
+                    "in quality.json quantify that movement.",
+        }
+        if identical:
+            disagreements = sum(
+                1 for row in identical
+                if int(row[TARGET] == POSITIVE) != previous[row["tender_id"]])
+            identical_refs = {}
+            for name, key in keys.items():
+                rates, _ = rate_table(train, key)
+                identical_refs[name] = evaluate(identical, rates, key, train_rate)
+                identical_refs[name]["fitted_on"] = "train only (new artifact)"
+            labels_new = [int(row[TARGET] == POSITIVE) for row in identical]
+            labels_old = [previous[row["tender_id"]] for row in identical]
+            majority_acc = sum(1 for label in labels_new if label == majority) / len(labels_new)
+            comparison.update({
+                "label_disagreements_on_identical_rows": disagreements,
+                "identical_positive_rate_new_labels": round(
+                    sum(labels_new) / len(labels_new), 6),
+                "identical_positive_rate_old_labels": round(
+                    sum(labels_old) / len(labels_old), 6),
+                "majority_class_on_identical_rows": {
+                    "majority": majority,
+                    "accuracy": round(majority_acc, 6)},
+                "references_on_identical_rows": identical_refs,
+                "previous_bar": {
+                    "unspsc_only_auc": 0.5673,
+                    "rows": 11943,
+                    "positives": 1992,
+                    "source": "cl-tender-002 references-chilecompra-tender-outcome.json "
+                              "(recorded 2026-10-23), measured on the previous "
+                              "artifact's eval rows under the pooled any-active label "
+                              "rule with no horizon",
+                    "note": "references_on_identical_rows re-measures the same "
+                            "reference family on the rows both artifacts score, "
+                            "under the rebuilt terminal-state-within-180d labels; "
+                            "the label_disagreements count above separates "
+                            "row-set movement from label changes"},
+            })
+        references["previous_eval_comparison"] = comparison
 
     report = {
         "artifact": "chilecompra-tender-outcome",
