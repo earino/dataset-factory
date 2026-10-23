@@ -6446,3 +6446,10 @@ not change that prompt/skill bundle. Current verdict wording is still being
 reconciled with the assisted scientific clarification. Next: finish and review
 all eight responses, merge/deploy the unchanged tested prompts at idle, then
 observe one ordinary uncoached discovery and record its actual outcome.
+
+Codex assisted wording reconciliation (2026-10-23): preserved the World Bank drop
+and all measurements, but removed remaining current-field certainty that task
+design (rather than any possible implementation issue) caused the weak result.
+The audit found no implementation defect in its checked scope; that is not proof
+of code correctness. Historical availability remains unresolved. This record
+repair is assisted review, not an additional prompt-test success.
