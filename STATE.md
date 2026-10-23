@@ -6304,3 +6304,39 @@ cd29d10 clean-clone 588 tests in 6.733s (six existing skips), doctor and source 
 pass; full logs retained. Next: commit evidence, exact-commit CI, merge PR #11, deploy
 reviewed files and scheduler entry at idle, verify readback, then observe ordinary
 discovery and advancement. No live improvement or deployment is claimed yet.
+
+
+Discovery session (Scout, 2026-10-23, regional focus: Latin America). Three leads
+opened, one to ready. (1) inpe-foco-municipal-onset (BR, INPE Programa Queimadas) -
+READY, licence class B (portal "Dados Abertos para Uso Publico" + FAQ Q18 free
+transfer/use, Q36 attribution-by-citation; geonetwork licence field unreadable, HTTP
+502, recorded as unread channel). Task: municipality conditioned on 14 fire-free days,
+will >=1 reference-satellite active-fire detection occur in the next 7 days, at the
+instant 13:00 UTC on D+1 (day-D daily CSV measured complete by 09:05 BRT on D+1;
+observed risk grids published ~03:32 on D+1). Evidence: 4 reference years fully
+counted (2019: 53,369 / 2020: 54,956 / 2022: 49,559 / 2024: 62,450 municipality-days
+with detections; 2024 onset pairs 1,173,526 with 88,888 positives = 7.6%); exact
+cross-check against INPE's own Estatisticas CSV (MT-2024 monthly totals identical,
+50,551); extraction 4 years = 35.5 MB / 16.9 s, all 23 ref years ~= 150 MB; novelty
+verdict differentiated (closest artifacts: Cerrado ConvLSTM REIC 2026 - 2 prototype
+years, Cerrado grid only; arXiv 2606.04170 Cerrado-MG conservation units, explicitly
+retrospective with same-day covariates and pseudo-absences - neither ships a
+prospective national task with splits). Recorded limitation: no historical file
+vintages (archive regenerated 2025-09-08/2025-06-06) - construction must measure
+late-row churn before quoting numbers. (2) ideam-rio-nivel-exceedance (CO, IDEAM via
+datos.gov.co) - INVESTIGATING: 26-year hourly level series (14.67M rows, 2001-2026,
+345 stations, anonymous Socrata, CC BY-SA 4.0 = class B) measured; blocked on the
+official per-station alert-threshold table (not in the station catalog, catalog search
+empty) and the raw-vs-validated as-of policy (data explicitly unvalidated, preliminary
+-> definitivo lifecycle). (3) sag-residuos-plaguicidas (CL, SAG) - DROPPED: sample-level
+residue results exist only in annual PDFs, no catalog entry (datos.gob.cl search 0),
+licence unstated (SAG entries elsewhere cc-nc); reopen if machine-readable sample-level
+results under an open licence appear. Regional coverage honestly reported: Brazil and
+Colombia probed with evidence, Chile closed with evidence; Mexico had no fresh probe
+this tick (DENUE remains parked with its unblock condition) and Argentina was not
+probed - a coverage gap, not a finding of no viable source. Checks: check-candidate OK
+for all three, --all OK (77 candidates), suite OK (588 tests, 13.4 s), doctor OK,
+check-runtime --source-only OK. Coverage after session: Latin America 6 records
+(BR 2, CL 2, CO 1, MX 1), live non-US 19/26. Next action: advancement session may
+construct the INPE fire-onset task per its recorded next_action (worker job, ~150 MB);
+the Colombia lead needs one bounded threshold-hunt probe before any verdict.

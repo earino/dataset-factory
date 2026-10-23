@@ -1,0 +1,50 @@
+{
+  "id": "sag-residuos-plaguicidas",
+  "status": "dropped",
+  "created_at": "2026-10-23T01:04:55.314231+00:00",
+  "domain": "food-safety enforcement - agricultural sample residue-noncompliance prediction (Chile, SAG pesticide-residue monitoring)",
+  "prediction_question": "HYPOTHESIS at close: given a fruit/vegetable sample taken by SAG's monitoring programme (commodity, origin, region, season, programme), predict whether it will be non-compliant (unauthorized residue or above national MRL) - a targeting signal for risk-based sampling. Not openable this tick: the publisher's sample-level results are published only inside PDF reports, and no licence statement covers them.",
+  "prediction_time": "Undetermined - the sampling reports are annual PDFs; per-sample field documentation (which columns exist at sampling time vs lab time) is only inside the PDFs, and no machine-readable schema exists to state a prediction instant. Recorded as unresolved, not as satisfied.",
+  "target_definition": "PROPOSED: binary sample non-compliance (residue above MRL per Resolucion 33/2010, or unauthorized use). Measured from publisher reports: 2009-10 programme 1,639 samples, 10 unauthorized (0.4%), ~1% MRL non-compliance; 2025 programme 9,390 samples (PDF summary tables). Sample-level rows are NOT published machine-readably - only aggregate/summary tables inside PDFs.",
+  "sources": [
+    {
+      "name": "SAG Monitoreo de residuos de plaguicidas (annual programme reports)",
+      "url": "https://www.sag.gob.cl/content/monitoreo-de-residuos-de-plaguicidas",
+      "api": "Publisher web page + PDF reports, e.g. 'Resultados Programa de Control Residuos 2025 OK.pdf' (9,390 samples analysed in 2025) and 'informe_anual_programa_nacional_de_monitoreo_de_residuos_de_plaguicidas_en_vegetales_de_exportacion_ano_2009-2010.pdf' (1,639 samples, 0.4% unauthorized). No CSV/JSON sample-level distribution found on the page or the national catalog.",
+      "license": "no licence statement found for this data (see license_evidence)",
+      "access": "Fetched/read 2026-10-23 via search results and page reads."
+    },
+    {
+      "name": "datos.gob.cl national catalog check",
+      "url": "https://datos.gob.cl/api/3/action/package_search?q=residuos%20plaguicidas",
+      "api": "CKAN package_search measured 2026-10-23: 'residuos plaguicidas' = 0 datasets; 'plaguicidas' = 3 datasets ('Listado de Plaguicidas' - the registered-products list, SAG, licence cc-nc; two regional applicator registries). None contain the residue-monitoring sample results.",
+      "license": "catalog entries for SAG data use cc-nc (non-commercial) - not an open-data licence",
+      "access": "API measured 2026-10-23."
+    }
+  ],
+  "license_evidence": [
+    {
+      "note": "No terms/licence text found on the SAG monitoring page or in the report PDFs for the residue-monitoring results (read 2026-10-23). The national catalog carries no entry for this data; SAG's other catalog entries are marked cc-nc (non-commercial). Unstated + no machine-readable distribution = class C under the standing triage policy, and the format blocker stands independently.",
+      "url": "https://www.sag.gob.cl/content/monitoreo-de-residuos-de-plaguicidas"
+    }
+  ],
+  "construction_script": null,
+  "split_strategy": null,
+  "measurements": {
+    "probe_2026_10_23": "Web + catalog probes: sample-level results exist only as PDF report tables (2025 report: 9,390 samples; 2009-10 report: 1,639 samples, 0.4% unauthorized, 99% MRL compliance). datos.gob.cl: 0 entries for 'residuos plaguicidas'. Volume IF machine-readable would be ~9k samples/year over ~15 years, positives ~0.4-2% - plausible but unmeasurable from PDFs."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "DROP (status dropped), decisive evidence: (1) FORMAT - the sample-level residue results are published only inside annual PDF reports; no machine-readable distribution exists on the SAG page or the national catalog (datos.gob.cl search measured 0 relevant entries), so no schema, prediction instant, or split counts can be computed from the source; per the discovery skill a PDF-only publisher is not a 'go'. (2) LICENCE - no terms statement covers this data (class C, unstated; SAG's other catalog entries carry non-commercial licences), and under the standing policy new unresolved class-C leads are closed, not parked. This is a publisher-side data-distribution rejection, NOT a scientific rejection of the task shape. REOPEN IF: SAG (or a national catalog entry) publishes sample-level residue-monitoring results in machine-readable form under an open licence - then probe schema, instant and split capacity; the 0.4-2% positive rate measured from the reports suggests capacity would need the multi-year union.",
+  "review": null,
+  "next_action": "None (dropped). Reopen condition recorded in rejection_reason. The water-quality sample-positivity shape remains live elsewhere in the portfolio (bvl-zoom-sample-positivity, DE, investigating).",
+  "jurisdiction": {
+    "country": "CL",
+    "region": "Latin America",
+    "publisher": "Servicio Agricola y Ganadero (SAG), Chile - pesticide-residue monitoring programme",
+    "recorded_at": "2026-10-23"
+  },
+  "licence_class": "C",
+  "licence_note": "No licence stated for the residue-monitoring results; SAG catalog entries elsewhere are cc-nc; closed under the standing class-C policy (no unsolicited permission email)",
+  "verdict": "drop"
+}

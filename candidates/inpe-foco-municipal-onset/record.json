@@ -1,0 +1,177 @@
+{
+  "id": "inpe-foco-municipal-onset",
+  "status": "ready",
+  "created_at": "2026-10-23T01:04:55.126964+00:00",
+  "domain": "wildfire operations - municipal fire-alert onset prediction (Brazil, all biomes; INPE reference-satellite active-fire detections)",
+  "prediction_question": "A Brazilian municipality has recorded zero active-fire detections (INPE reference-satellite series) for 14 consecutive days through day D. At 13:00 UTC on day D+1 - after INPE's morning consolidation of day-D detections (daily CSV for day D observed published 09:05 BRT on D+1) - given only the municipality's detection history through day D, the calendar, state and biome, will at least one active-fire detection be recorded in that municipality within the next 7 days (event days D+1..D+7)? A useful prediction lets PREVFOGO/IBAMA, state civil defence and municipal fire brigades pre-position crews in a country where detection precedes enforcement, and persistence cannot win by construction.",
+  "prediction_time": "Instant: 13:00 UTC on day D+1. Features are everything published by then with event time <= D: the complete detection archive through day D (daily file for D observed complete at 09:05 BRT on D+1; detections stream near-real-time at 10-minute granularity during day D), calendar, state/biome. Optional covariates also available at the instant: observed fire-risk grid for day D (NetCDF published ~03:32 server time on D+1) and INPE's forecast risk grids for D+1..D+3 (published on day D). Excluded as post-instant: every detection row with event time > D, and any current-year statistic that only becomes final later. As-of policy: each detection row carries its event timestamp (data_pas / data_hora_gmt); the archive is treated as an append-mostly observation log; LIMITATION (recorded): INPE regenerates archive files (2003-2017 files regenerated 2025-09-08; 2024 file regenerated 2025-06-06) and no historical file vintages are kept, so features are taken from the current archive under the policy that detection rows are immutable observations; construction pins file checksums and must re-fetch one fixed month after >=2 weeks to measure late-row churn before quoting any number.",
+  "target_definition": "Binary. Positive: >=1 reference-satellite detection with event timestamp in [D+1 00:00, D+8 00:00) located in municipality m; negative: zero such detections. Label source: the same detection rows (data_pas timestamp + municipio/estado name) that feed the feature history - construction derives the label from event-time windows and must not ship any row with event time > D in feature columns (the label column is a derived aggregate, never a carried source column). Population: all Brazilian municipalities (5570 IBGE codes; ref-era files key by name - construction maps names to IBGE codes and asserts the mapping is total over the detection rows). Conditioning: evaluated pairs are municipality-days with zero detections in [D-13, D] (onset-conditioned; raw-pair variant recorded for comparison).",
+  "sources": [
+    {
+      "name": "Annual reference-satellite active-fire archive (focos, Brasil, satelite de referencia)",
+      "url": "https://dataserver-coids.inpe.br/queimadas/queimadas/focos/csv/anual/Brasil_sat_ref/focos_br_ref_{ano}.zip",
+      "api": "Anonymous HTTP; one zip per year 2003-2025 (23 files, 2.5-11 MB each; measured 2019: 7,766,490 B; 2020: 8,786,351 B; 2022: 8,256,945 B; 2024: 10,727,110 B). Schema (measured): id_bdq, foco_id, lat, lon, data_pas, pais, estado, municipio, bioma. No satellite column (the publisher curates the reference series for comparability); municipality by name within estado.",
+      "license": "see license_evidence",
+      "access": "Measured 2026-10-23: 2019: 197,632 rows / 4,417 municipalities / 53,369 municipality-days with >=1 detection; 2020: 222,797 / 4,447 / 54,956; 2022: 200,763 / 4,038 / 49,559; 2024: 278,299 / 4,502 / 62,450. Biome mix 2024: Amazonia 140,346; Cerrado 81,468; Mata Atlantica 21,328; Caatinga 20,235; Pantanal 14,498; Pampa 424."
+    },
+    {
+      "name": "Monthly all-satellite CSVs (richer schema) + daily near-real-time CSVs",
+      "url": "https://dataserver-coids.inpe.br/queimadas/queimadas/focos/csv/mensal/Brasil/focos_mensal_br_{ano}{mes}.csv (2024-01 onward plain CSV; 2023 zips); diario/Brasil/focos_diario_br_{yyyymmdd}.csv (rolling window)",
+      "api": "Monthly schema (measured on 202406, 25 MB partial read): id, lat, lon, data_hora_gmt, satelite, municipio, estado, pais, municipio_id, estado_id, pais_id, numero_dias_sem_chuva, precipitacao, risco_fogo, bioma, frp. Satellite mix June 2024 (156,530 partial rows): GOES-16 38,953; NOAA-20 36,133; NOAA-21 34,924; NPP-375 19,837 + NPP-375D 10,310; METOP-B/C ~4,300; TERRA/AQUA ~11,200; MSG-03 754; 2,716 distinct municipalities in the partial read. All-satellite counts inflate with the active constellation - target uses the reference series, not this file.",
+      "license": "see license_evidence",
+      "access": "Daily file for day D observed: lastmod 09:05 on D+1 (complete); day-D file also written incrementally during day D (20:06 same-day lastmod observed; portal states 10-minute updates). 2026-10-23 file existed at 143 bytes at 21:06 on 2026-10-22 (in progress)."
+    },
+    {
+      "name": "Publisher's own summary product (Estatisticas) - cross-check source",
+      "url": "https://data.inpe.br/queimadas/portal/csv/download/historico-mensal/estados/mato_grosso.csv",
+      "api": "Anonymous CSV; reference-satellite monthly totals per state, 1998-present; current-month values partial through yesterday (page text).",
+      "license": "see license_evidence",
+      "access": "Cross-check 2026-10-23: my Mato Grosso 2024 monthly counts recomputed from focos_br_ref_2024.zip match this CSV exactly month by month (Jan 847, Feb 863, Mar 1624, Apr 797, May 1996, Jun 2671, Jul 2472, Aug 14617, Sep 19964, Oct 3814, Nov 435, Dec 451; total 50,551) - the annual ref file and the publisher's statistics are the same series."
+    },
+    {
+      "name": "Fire-risk and meteorology products (baseline comparison, not historical feature)",
+      "url": "https://dataserver-coids.inpe.br/queimadas/queimadas/riscofogo_meteorologia/observado/risco_fogo/ (INPE_FireRiskModel_2.2_FireRisk_YYYYMMDD.nc) and .../previsto/",
+      "api": "Daily ~9-11 MB NetCDF grids. Observed archive on this server starts 2026-01-01 (285 files through 2026-10-21; ascending listing measured); day-D file published ~03:32 on D+1. Previsto covers next 3 days. The Anuario states historical risk maps since 2017 exist but not as this machine-readable daily series - so the danger-rating comparison is a live-period (2026+) analysis, not a history feature.",
+      "license": "see license_evidence",
+      "access": "Listing measured 2026-10-23."
+    },
+    {
+      "name": "Programa Queimadas portal (licence instrument + docs)",
+      "url": "https://data.inpe.br/queimadas/portal/ (mirrors terrabrasilis.dpi.inpe.br/queimadas/portal/)",
+      "api": "SPA; FAQ and downloads pages readable anonymously; dataserver-coids.inpe.br is the direct repository the FAQ names.",
+      "license": "see license_evidence",
+      "access": "Fetched 2026-10-23 (terrabrasilis host does not resolve from the coordinator container DNS; fetched via DoH-resolved IP with SNI, and via the supported browser - both succeeded)."
+    }
+  ],
+  "license_evidence": [
+    {
+      "note": "Portal footer (fetched 2026-10-23, browser): '2025 - Dados Abertos para Uso Publico - Programa Queimadas do INPE'. Downloads section is titled 'Dados Abertos'.",
+      "url": "https://data.inpe.br/queimadas/portal/"
+    },
+    {
+      "note": "FAQ Q3 (fetched 2026-10-23): 'todos os dados e produtos sao divulgados na internet pelo INPE sem custo para qualquer usuario.' Q18: 'E possivel transferir e usar em um SIG qualquer os focos detectados pelo INPE? Sim, e sem nenhum custo.' - explicit free transfer and use in any system.",
+      "url": "https://data.inpe.br/queimadas/portal/pages/secao_informacoes/faq/"
+    },
+    {
+      "note": "FAQ Q36 (fetched 2026-10-23) defines the attribution the publisher expects: cite 'Segundo os dados de focos de queimadas detectados para o Brasil (INPE, 2019)' with reference 'INPE. Banco de Dados de queimadas. Disponivel em: ... Acesso em: <date>.' - attribution-by-citation is the recorded condition.",
+      "url": "https://data.inpe.br/queimadas/portal/pages/secao_informacoes/faq/"
+    },
+    {
+      "note": "No formal licence legal code (CC/OGL text) found on the portal; the INPE geonetwork metadata record (data.inpe.br) that may carry a structured licence field returned HTTP 502 on every attempt 2026-10-23 - recorded as an unread channel, not as absence of terms. Third parties (institutoforest.org, Kaggle municipal panel) already redistribute derived BDQueimadas products - practice evidence, not a grant.",
+      "url": "https://data.inpe.br/geonetwork/srv/api/records/6422463f-3652-437f-bb33-2ac7bbc9bebe"
+    }
+  ],
+  "construction_script": null,
+  "split_strategy": "Windows by fire year (July-June or calendar year - construction fixes one definition and records it), temporal, non-overlapping: train 2003-2019, eval 2020-2022, holdout 2023-2025, each window carrying full seasonal cycles. Every measured year holds both classes at large margin: municipality-days with >=1 detection 2019: 53,369; 2020: 54,956; 2022: 49,559; 2024: 62,450 (positives cluster in the dry season and in drought years - reported as clustered counts; onset-conditioned pairs measured on 2024: 1,173,526 evaluated pairs, 88,888 positives = 7.57% base rate; raw pairs 1,535,182 with 244,175 positives = 15.9%). Exact per-window pair counts are computed on the full files at construction (all 23 ref years measured feasible: 4 years = 35.5 MB in 16.9 s on the coordinator). Reference-satellite era consistency: the publisher curates the reference series for comparability and the Estatisticas product uses the same series (cross-check exact), but construction must record the per-era reference satellite from INPE documentation and pin window boundaries on any era change observed in the yearly counts.",
+  "measurements": {
+    "probe_evidence_2026_10_23": "Probes (scripts in .factory scratch, summarized in notes.md): dataserver repository listing; annual ref zip inventory 2003-2025 with sizes; 4 ref years fully downloaded and counted; monthly 2024-06 partial schema read (25 MB); daily-file publication lastmods; risk-grid archive ascending listing; Estatisticas CSV cross-check (exact match).",
+    "cost_measured": "Discovery: 4 ref-year zips = 35,536,896 B in 16.9 s wall (coordinator container, 4 vCPU); plus ~30 small HTTP listings/page reads. Construction estimate from measured per-file sizes: all 23 ref years ~= 150 MB in one worker job (minutes), plus optional monthly all-satellite files 2024+ (~25-90 MB/month measured/partial) if used.",
+    "publication_lag_measured": "Day-D daily CSV complete by 09:05 BRT on D+1 (lastmod pattern measured across 30 daily files); risk grids for D published by ~03:32 on D+1; Estatisticas current-month partial through yesterday (page text). These fix the prediction instant at 13:00 UTC on D+1.",
+    "asof_limitation": "No historical vintages of archive files; files regenerated 2025-09-08 (2003-2017) and 2025-06-06 (2024). Detection rows carry event timestamps and are treated as immutable observations; construction measures late-row churn (re-fetch one fixed month after >=2 weeks, compare checksums/row counts) before any number is quoted."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": null,
+  "next_action": "Advancement session constructs on the worker: (1) download all focos_br_ref_YYYY.zip 2003-2025 with checksums; map municipio names to IBGE codes (2024+ monthly files carry municipio_id; assert mapping total); (2) build the municipality-day detection panel by year; record the reference-satellite era notes and per-year totals; cross-check every year against the Estatisticas per-state CSVs (2024 MT matched exactly); (3) emit onset-conditioned pairs: zero detections in [D-13,D], target >=1 in [D+1,D+7]; train 2003-2019 / eval 2020-2022 / holdout 2023-2025; (4) features: trailing detection counts/lags, calendar, state, biome only - assert no row with event time > D enters features; (5) baselines FIRST and reported beside the model: global rate, biome-month climatology, and INPE's own danger rating (2026 window) - if the model does not beat climatology+persistence, record as defect and re-target; (6) late-row churn check per the as-of limitation; (7) qualification gate on the full artifact before any headroom number is quoted.",
+  "jurisdiction": {
+    "country": "BR",
+    "region": "Latin America",
+    "publisher": "Instituto Nacional de Pesquisas Espaciais (INPE) - Programa Queimadas (portal data.inpe.br / terrabrasilis.dpi.inpe.br; repository dataserver-coids.inpe.br)",
+    "recorded_at": "2026-10-23"
+  },
+  "licence_class": "B",
+  "licence_note": "Publisher's own instrument (portal footer + FAQ): open data for public use, free of cost, explicitly transferable and usable in any system, with attribution-by-citation as the stated condition - attribution-conditioned open use; no formal CC legal code located, so class B rather than A; conditions to be stated in LICENSE.md",
+  "verdict": "go",
+  "novelty_check": {
+    "checked_at": "2026-10-23T01:07:48+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "Brazil active fire prediction benchmark",
+      "BDQueimadas machine learning",
+      "wildfire ignition prediction Brazil dataset"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "Brazil active fire prediction benchmark",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "BDQueimadas machine learning",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "wildfire ignition prediction Brazil dataset",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "Brazil active fire prediction benchmark",
+          "hits": 434264,
+          "top": [
+            "Spatio-Temporal Adaptive Graph Attention Networks for Sensor Conflict Resolution and Early Fire Risk Prediction (STAGAT-CAFP) Smart Home Fire Detection Benchmark Dataset: Simulated Residential Multi-Sensor Time-Series Data and Synthetic Fire Scenario Metadata (1200 Hours)",
+            "Satellite-based active fire and hotspot research in Brazil and worldwide 1993\u20132024",
+            "malu-barbosa/FLAME: FLAME 1.0 : Fogo local analisado pela M\u00e1xima Entropia",
+            "Understanding Active Fire Detection Uncertainty with Bayesian Neural Networks",
+            "Understanding Active Fire Detection Uncertainty with Bayesian Neural Networks"
+          ]
+        },
+        {
+          "query": "BDQueimadas machine learning",
+          "hits": 325643,
+          "top": [
+            "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
+            "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI",
+            "RGB and RGNIR Plastic Waste Database",
+            "mushrooms",
+            "DisMo: Disentangled Motion Representations for Open-World Motion Transfer"
+          ]
+        },
+        {
+          "query": "wildfire ignition prediction Brazil dataset",
+          "hits": 561554,
+          "top": [
+            "Mesogeos: A multi-purpose dataset for data-driven wildfire modeling in the Mediterranean",
+            "Wildfire Risk Assessment in a Restricted Military\u2013Civilian In-terface: A Multi-Model Analytical Framework from the Korean DMZ",
+            "High Praire Weather and Ignition Dataset",
+            "Predicting Wildfires Triggered by Human-caused Ignition: A Spatial Framework Integrating AI Models",
+            "CA Wildfire Scenarios"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "Brazil active fire prediction benchmark",
+          "error": "TimeoutError",
+          "hits": null,
+          "top": []
+        },
+        {
+          "query": "BDQueimadas machine learning",
+          "error": "TimeoutError",
+          "hits": null,
+          "top": []
+        },
+        {
+          "query": "wildfire ignition prediction Brazil dataset",
+          "error": "HTTPError",
+          "hits": null,
+          "top": []
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'Brazil active fire prediction benchmark': 0 hit(s) - nothing notable\n- huggingface_datasets / 'BDQueimadas machine learning': 0 hit(s) - nothing notable\n- huggingface_datasets / 'wildfire ignition prediction Brazil dataset': 0 hit(s) - nothing notable\n- zenodo_records / 'Brazil active fire prediction benchmark': 434264 hit(s) - Spatio-Temporal Adaptive Graph Attention Networks for Sensor Conflict Resolution and Early Fire Risk Prediction (STAGAT-CAFP) Smart Home Fire Detection Benchmark Dataset: Simulated Residential Multi-Sensor Time-Series Data and Synthetic Fire Scenario Metadata (1200 Hours), Satellite-based active fire and hotspot research in Brazil and worldwide 1993\u20132024, malu-barbosa/FLAME: FLAME 1.0 : Fogo local analisado pela M\u00e1xima Entropia, Understanding Active Fire Detection Uncertainty with Bayesian Neural Networks, Understanding Active Fire Detection Uncertainty with Bayesian Neural Networks\n- zenodo_records / 'BDQueimadas machine learning': 325643 hit(s) - plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database, mushrooms, DisMo: Disentangled Motion Representations for Open-World Motion Transfer\n- zenodo_records / 'wildfire ignition prediction Brazil dataset': 561554 hit(s) - Mesogeos: A multi-purpose dataset for data-driven wildfire modeling in the Mediterranean, Wildfire Risk Assessment in a Restricted Military\u2013Civilian In-terface: A Multi-Model Analytical Framework from the Korean DMZ, High Praire Weather and Ignition Dataset, Predicting Wildfires Triggered by Human-caused Ignition: A Spatial Framework Integrating AI Models, CA Wildfire Scenarios\n- arxiv_preprints / 'Brazil active fire prediction benchmark': unavailable (TimeoutError)\n- arxiv_preprints / 'BDQueimadas machine learning': unavailable (TimeoutError)\n- arxiv_preprints / 'wildfire ignition prediction Brazil dataset': unavailable (HTTPError)",
+    "prior_art": [
+      "Vieira et al., REIC 24(1):99-107 (2026) ConvLSTM Cerrado; Padua/Levada/Valente arXiv:2606.04170 (2026) Cerrado-CU retrospective benchmark; Zenodo 21269005 focos+NASA-POWER 2020-2025; Kaggle 'Brazil Official Public Data by Municipality'; Brito (UnB) dissertation RF/XGB/MLP Amazon 2021; TS-SatFire (Kaggle)"
+    ],
+    "theirs": "INPE publishes the detections themselves (free, open, since 1998) plus a daily meteorological fire-DANGER rating (a covariate, not a detection benchmark); no shipped detection-prediction task with splits exists. Closest artifacts: Cerrado ConvLSTM (REIC 24(1) 2026) - 5km Cerrado-only grid, next-day, 2 prototype years, data via Google Drive; arXiv 2606.04170 - Cerrado-Minas Gerais conservation units only, explicitly RETROSPECTIVE ('same-day covariates... rather than a prospective forecast'), rule-bound pseudo-absences, GEE-dependent covariates, public repo without a shipped task artifact; Zenodo 21269005 - detection rows joined to weather (no task, no splits); Kaggle municipal panel - annual covariates only. US wildfire datasets (TS-SatFire, HF wildfire-ignition) are imagery-based, different population/instant",
+    "ours": "A prospective, instant-honest national benchmark: predict, per Brazilian municipality conditioned on 14 fire-free days, whether >=1 INPE reference-satellite active-fire detection occurs in the next 7 days, from trailing detection history + calendar + biome only (all features published by 09:05 BRT on D+1); exhaustive true-population negatives (no pseudo-absence sampling), year-disjoint train/eval/holdout 2003-2025, publisher danger-rating (FireRiskModel) shipped as a baseline, runner-compatible versioned artifact",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
+}

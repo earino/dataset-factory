@@ -1,0 +1,62 @@
+{
+  "id": "ideam-rio-nivel-exceedance",
+  "status": "investigating",
+  "created_at": "2026-10-23T01:04:55.219902+00:00",
+  "domain": "hydrological risk operations - river-station alert-threshold exceedance prediction (Colombia, IDEAM automatic-station telemetry)",
+  "prediction_question": "HYPOTHESIS under test: given a Colombian river station's hourly maximum-level telemetry through hour H (raw automatic-sensor readings, published openly on datos.gov.co), predict whether the water level will exceed the station's official alert threshold within the next 48 hours. A useful prediction feeds municipal early-warning (IDEAM/Carabineros/SNGRD protocols) with lead time for evacuation and road closures. The exact missing fact: an official per-station alert/danger threshold in machine-readable form - without it the label degrades to a self-referential percentile, which is a different (weaker) task.",
+  "prediction_time": "Telemetry is hourly and near-real-time on the live feed; the published dataset is one current table of raw unvalidated sensor values (publisher clause: 'los datos ... no han sido validados por el IDEAM'), and IDEAM documents a preliminary -> en revision -> definitivo lifecycle for its validated series (separate 'Niveles Horarios' dataset). UNRESOLVED: the as-of policy - current raw values may later be corrected, so features computed from today's table may differ from what the live feed showed at the time; construction must either use only the raw-feed table (accepting and measuring the revision effect) or obtain vintage information. This is the main open question besides the threshold.",
+  "target_definition": "PROPOSED (blocked on threshold source): binary - station-hour (or station-day) level exceedance of the official alert threshold within (H, H+48]. Label source: valorobservado hourly maxima (cm/m) per station; the threshold would come from an official IDEAM table (NOT FOUND in the bounded probe: the station catalog cqmv-a99d has no threshold columns, and a catalog search for alert-level datasets returned nothing machine-readable). Fallback (weaker): per-station seasonal high-quantile exceedance - requires a known-event fixture (e.g. a documented 2021-2025 flood on a specific river) before that route may be probed further.",
+  "sources": [
+    {
+      "name": "Nivel Maximo del Rio (hourly max level per automatic station)",
+      "url": "https://www.datos.gov.co/Ambiente-y-Desarrollo-Sostenible/Nivel-M-ximo-del-Rio/vfth-yucv",
+      "api": "Socrata, anonymous. Measured 2026-10-23: 14,672,316 rows (SoQL count), span 2001-01-01T07:17 .. 2026-10-21T23:59, 345 distinct stations. Columns: codigoestacion, codigosensor, fechaobservacion, valorobservado, nombreestacion, departamento, municipio, zonahidrografica, latitud, longitud, descripcionsensor, unidadmedida. Rows/year measured: 2009: 844,095; 2017: 1,214,445; 2019: 1,547,326; 2022: 446,478; 2025: 1,219,800; 2026 (partial): 991,988. Sample unit measured 'mt' (Nivel Maximo sensor). Publisher clauses in the description: raw, unvalidated, published under Ley 1712 de 2014.",
+      "license": "Socrata licenseId CC_40_BY_SA (CC BY-SA 4.0) read from the dataset metadata 2026-10-23",
+      "access": "Anonymous SoQL; sample rows fetched; no auth, no rate problems at probe scale."
+    },
+    {
+      "name": "IDEAM station catalog (Catalogo Nacional de Estaciones)",
+      "url": "https://www.datos.gov.co/en/en/Environment-and-Sustainable-Development/IDEAM/cqmv-a99d",
+      "api": "Socrata, anonymous. Columns measured: Codigo, Nombre, Categoria, Estado, Departamento, Municipio, Ubicacion, Altitud, Fecha_instalacion, Fecha_suspension, Corriente - NO threshold/alert-level column. LicenseId CC_40_BY_SA.",
+      "license": "CC BY-SA 4.0 (Socrata metadata)",
+      "access": "Fetched 2026-10-23."
+    },
+    {
+      "name": "IDEAM open-data section (institutional licence statement)",
+      "url": "https://www.ideam.gov.co/transparencia/datos-abiertos/seccion-de-datos-abiertos",
+      "api": "Page text: 'Los datos abiertos son informacion publica ... bajo licencia abierta y sin restricciones legales para su aprovechamiento' (read 2026-10-23 via search-result snippet of the live page).",
+      "license": "see license_evidence",
+      "access": "Page lists the full hydrometric family on datos.gov.co: hourly levels (ig79-2jr9), monthly max/mean/min, annual maxima, caudales maximos anuales (k7qg-5zes)."
+    }
+  ],
+  "license_evidence": [
+    {
+      "note": "Socrata dataset metadata (fetched 2026-10-23) carries licenseId CC_40_BY_SA (CC BY-SA 4.0) for vfth-yucv and cqmv-a99d: attribution + share-alike - class B; share-alike obligation would need to be stated in LICENSE.md for any derived rows we publish.",
+      "url": "https://www.datos.gov.co/api/views/vfth-yucv.json"
+    },
+    {
+      "note": "Dataset description clauses (fetched 2026-10-23): 'Los datos disponibles a traves de este medio pueden ser libremente consumidos ... 1. Los datos ... no han sido validados por el IDEAM. 2. ... datos crudos instantaneos provenientes de los sensores de las estaciones automaticas ... 3. ... como datos abiertos en cumplimiento de la Ley 1712 de 2014.' - free consumption confirmed; the raw/unvalidated caveat is recorded as a data-quality and as-of concern, not a licence restriction.",
+      "url": "https://www.datos.gov.co/Ambiente-y-Desarrollo-Sostenible/Nivel-M-ximo-del-Rio/vfth-yucv"
+    }
+  ],
+  "construction_script": null,
+  "split_strategy": null,
+  "measurements": {
+    "probe_2026_10_23": "Socrata metadata + SoQL (scripts in session scratch): rows 14,672,316; span 2001-01-01..2026-10-21; 345 stations; rows-by-year listed in sources; sample rows show hourly 'Nivel Maximo' in metres with station/department/municipio/zona metadata; catalog has no threshold columns; catalog v1 search for alert-threshold datasets returned no machine-readable result.",
+    "capacity_note": "Volume is ample for station-hour exceedance pairs across 26 years, but positive counts are NOT measured until a threshold exists - no base-rate or split claim is made yet."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": null,
+  "next_action": "Next probe (bounded, one session): (1) locate the official per-station alert/danger threshold: search datos.gov.co catalogue API for 'nivel de alerta'/'umbral' datasets, IDEAM's SAIC flood-warning pages and geoportal, and IDEAM's published station 'niveles de alerta' PDFs; if only PDF, extract for the subset of stations with clean telemetry and record the fixture; (2) measure per-station continuity (gap rates) and exceedance base rates on one bounded window (e.g. 2019-2024) against the threshold; (3) resolve the raw-vs-validated as-of policy: compare a fixed station-month in the raw table against the validated 'Niveles Horarios' (ig79-2jr9) family if vintages permit; (4) re-verdict: ready if threshold + base rates + as-of policy resolve; drop if no official threshold is obtainable in any form (the percentile fallback requires a known-event fixture and is a weaker task - decide explicitly then).",
+  "jurisdiction": {
+    "country": "CO",
+    "region": "Latin America",
+    "publisher": "Instituto de Hidrologia, Meteorologia y Estudios Ambientales (IDEAM), Colombia - via Datos Abiertos (datos.gov.co, Socrata)",
+    "recorded_at": "2026-10-23"
+  },
+  "licence_class": "B",
+  "licence_note": "CC BY-SA 4.0 per dataset metadata (attribution + share-alike); publisher states open licence without legal restrictions",
+  "verdict": "investigate"
+}
