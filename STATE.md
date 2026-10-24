@@ -7851,3 +7851,13 @@ receipts are in audits/remediation-2026-10-24/. The 002 transport was independen
 reassembled byte-for-byte (48b6a70a…, 880640 bytes) and approved in issue #17; the
 installer correction preserves the original Dockerfile and records its derived
 hash. Real worker acceptance remains outstanding; Scout supervises and cleans up.
+
+Attempt 002 built the corrected image and passed full gate 1.5 qualification,
+exact-artifact acceptance and the container protocol probe, then failed at
+stream_baseline. Source review found that executor umask 077 left the adapter
+whitelist data/ directory at 0700, despite files being 0444 and its root 0755.
+The adapter now sets directory permissions explicitly; protocol probes use this
+same staging helper rather than a separate recursive chmod path. A worker-umask
+regression covers exact whitelisted files/modes. Fresh smoke assembly now pins
+the current committed adapter, not the superseded explicit source commit.
+Scout is verifying the failure and cleaning up; no successful score is claimed.

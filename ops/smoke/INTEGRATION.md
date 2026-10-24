@@ -92,3 +92,8 @@ Software fixtures verify actual builder → qualify → accept behavior, and tha
 mutation after qualification is refused. They are explicitly software tests,
 not substitute acceptance datasets. Passing tests alone does not close the real
 worker verification requirement in issue #17.
+
+Attempt 002 exposed a worker-umask regression: the scorer made files readable but
+left its data directory at 0700. Input staging now explicitly sets directory and
+file modes, and the protocol probe uses that same helper. Fresh assembly captures
+the adapter from the current committed factory source and records its exact hash.
