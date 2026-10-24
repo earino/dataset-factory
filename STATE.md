@@ -7776,3 +7776,15 @@ base64 payloads stay out of tracked source; each job is freshly assembled from
 committed code. Next: Scout prepares the actual allowance-backed plan, launches
 once the merged runtime is reviewed, collects qualification/protocol/agreement
 receipts, and proves provider-side cleanup. Real worker verification is pending.
+
+Worker preflight follow-up: the initial smoke launch failed before record/provider
+creation because its source directory occupied `.factory/<job-id>`, reserved for
+runtime state. Scout confirmed no ledger record and zero provider servers, moved
+the exact owned source directory intact under `.factory/job-sources/`, and the
+corrected launch command succeeded. The plan keeps the reviewed pinned payload,
+EUR 0.32 reservation, cpx32, 120-minute runtime and 180-minute lifetime. Accounting
+uses the EUR 15 cap after the construction reserve (this job lacks release:true);
+EUR 8.98 including this reservation fits. No policy or budget change was made.
+The tracked template now matches those allowed defaults. `worker plan` refuses
+source/runtime path overlap early with a useful message; the 19 worker tests pass.
+Execution acceptance and provider cleanup remain pending.

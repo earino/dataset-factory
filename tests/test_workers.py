@@ -90,6 +90,16 @@ class WorkerTests(unittest.TestCase):
             worker.launch(self.root, self.path, self.config, self.cloud)
         return worker.load_record(self.root, self.job["id"])
 
+    def test_plan_refuses_source_inside_reserved_runtime_directory(self):
+        reserved=self.root / ".factory" / self.job["id"]
+        reserved.mkdir(parents=True)
+        source=reserved / "job.json"
+        write_json(source,self.job)
+        with self.assertRaisesRegex(FactoryError,"reserved runtime directory"):
+            worker.plan(self.root,source,self.config)
+        self.assertTrue(source.exists())
+        self.assertEqual(self.cloud.created,0)
+
     def test_disabled_launch_makes_no_api_calls(self):
         self.config["enabled"] = False
         with self.assertRaises(FactoryError):
