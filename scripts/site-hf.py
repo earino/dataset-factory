@@ -13,6 +13,38 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from factory.http import secret
 from factory.release_schema import from_manifest
 from factory.site_model import linked_readme, require, check_manifest
+from factory.hub_integrity import load_worker_receipt, HubIntegrityError
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def prior_editorial_identity(record, commit):
+    """Reviewed continuity of an already verified release, not a fresh data-hash claim."""
+    path = ROOT / 'config/editorial-release-baselines.json'
+    if not path.is_file():
+        return False
+    for prior in json.loads(path.read_text()).get('releases', []):
+        if all(prior.get(k) == record.get(k) for k in ('dataset', 'release_tag', 'artifact_version')) \
+                and prior.get('repository') == record['hf_repository'] and prior.get('hf_commit') == commit:
+            return True
+    return False
+
+
+def worker_evidence(record, commit):
+    expected = {v['hf_path']: (v['bytes'], v['sha256']) for v in record['assets'].values()}
+    for path in sorted((ROOT / 'jobs').glob('*.json')):
+        if path.is_symlink() or path.stat().st_size > 1024 * 1024:
+            continue
+        try:
+            candidate = json.loads(path.read_text())
+            if (candidate.get('job', {}).get('hf_publish') or {}).get('repo') != record['hf_repository']:
+                continue
+            receipt = load_worker_receipt(ROOT, path.stem, record['hf_repository'], expected)
+            if receipt.get('commit') == commit:
+                return receipt
+        except (OSError, ValueError, KeyError, HubIntegrityError):
+            continue
+    return None
 
 
 def execute(payload):
@@ -40,27 +72,41 @@ def execute(payload):
         return raw
 
     entries = {s.rfilename: s for s in info.siblings}
+    inherited = prior_editorial_identity(record, info.sha)
+    receipt = worker_evidence(record, info.sha) if not inherited else None
+    continuity_only = []
     for filename, expected in record["assets"].items():
         item = entries.get(expected["hf_path"])
         require(item is not None and item.size == expected["bytes"], f"Hub asset missing or size differs: {filename}")
         lfs = getattr(item, "lfs", None)
         sha = lfs.get("sha256") if isinstance(lfs, dict) else getattr(lfs, "sha256", None)
         if not sha:
-            # The Hub reports a SHA-256 only for LFS-stored files. A CSV below Hugging Face's ~10 MB
-            # auto-LFS threshold stays a plain blob, and .gitattributes does not change that for an
-            # API upload. Skipping the comparison would drop the check; demanding a digest the Hub
-            # cannot report would refuse a correct release. So the file is fetched under a bounded
-            # cap and hashed here, and the digest is still compared. Anything larger than the cap
-            # must be LFS-stored, which is what the cap enforces.
-            record.setdefault("hashed_from_hub", []).append(expected["hf_path"])
-            sha = hashlib.sha256(small_file(item.rfilename, info.sha, item.size,
-                                            limit=64 * 1024 * 1024)).hexdigest()
-        require(sha == expected["sha256"], f"Hub asset digest differs: {filename}")
+            evidence = (receipt or {}).get('files', {}).get(item.rfilename, {})
+            if evidence:
+                require(evidence.get('blob_id') == getattr(item, 'blob_id', None)
+                        and evidence.get('bytes') == item.size, 'Worker evidence differs from pinned Hub blob')
+                sha = evidence.get('sha256')
+            elif Path(item.rfilename).suffix.lower() in ('.json', '.md', '.txt') and item.size <= 256 * 1024:
+                sha = hashlib.sha256(small_file(item.rfilename, info.sha, item.size)).hexdigest()
+            elif inherited:
+                # The reviewed commit pins every blob of this previously verified release.
+                # Do not download CSVs to manufacture a new byte-verification claim.
+                continuity_only.append(filename)
+            else:
+                require(False, f'Non-LFS bulk asset requires collected worker verification: {filename}')
+        if filename not in continuity_only:
+            require(sha == expected["sha256"], f"Hub asset digest differs: {filename}")
     item = entries.get("MANIFEST.json")
     require(item is not None, "Hub release has no manifest")
     manifest = json.loads(small_file("MANIFEST.json", info.sha, item.size))
     check_manifest(record, from_manifest(manifest, strict=False))
     main = api.dataset_info(repo, revision="main", files_metadata=True)
+    current_entries = {s.rfilename: s for s in main.siblings}
+    for expected in record['assets'].values():
+        was, now = entries[expected['hf_path']], current_entries.get(expected['hf_path'])
+        require(now is not None and now.size == was.size and getattr(now, 'blob_id', None)
+                and now.blob_id == getattr(was, 'blob_id', None),
+                'Hub current data blob differs from the immutable release')
     main_manifest = next((s for s in main.siblings if s.rfilename == "MANIFEST.json"), None)
     require(main_manifest is not None, "Hub default branch has no manifest")
     current_raw = json.loads(small_file("MANIFEST.json", main.sha, main_manifest.size))
@@ -97,7 +143,9 @@ def execute(payload):
     else:
         main_sha = main.sha
     return {"private": info.private, "verified": True, "revision_commit": info.sha,
-            "main_commit": main_sha, "links_present": not pending or payload["action"] == "link"}
+            "main_commit": main_sha, "links_present": not pending or payload["action"] == "link",
+            "verification_basis": "prior_verified_immutable_release" if continuity_only else "asset_digests",
+            "inherited_non_lfs_assets": continuity_only, "bulk_downloads": 0}
 
 
 if __name__ == "__main__":

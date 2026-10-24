@@ -17,10 +17,10 @@ Scout has only **6 GB of disk**: keep bulk data, Docker images, and ML environme
 on workers. The [hosted inventory](deployment/capabilities.md) confirms working
 search, extraction, a remote browser and scheduling. These remain Scout's tools.
 
-The starter kit includes the research assignment, candidate records and a worker
+The repository includes the research assignment, candidate records and a worker
 lifecycle using Python's standard library and SSH. It uploads directly to private
-GitHub Releases and includes independent expiry cleanup. Paid launches are disabled
-until configured; the live cloud smoke test is still outstanding. See
+GitHub Releases and includes independent expiry cleanup. Worker launches require
+configured credentials, budget and lifetime limits. See
 [worker operations](docs/OPERATIONS.md).
 
 Run these with Python 3.11+; no Python dependencies are needed:
@@ -41,9 +41,18 @@ setup decisions and next actions.
 The first assignment is [discover and construct one usable task](docs/FIRST_ASSIGNMENT.md).
 Missing compute credentials do not block source research.
 
-Dataset qualification, the benchmark adapter, public release automation and the
-website come after the first worker cycle and discovery. Their intended behavior
-is specified in `PROJECT.md`; they are not implemented yet.
+Construction, qualification, dual-platform releases and website publication are
+implemented. Read [prediction contracts and suitability](docs/PREDICTION-CONTRACT.md)
+before building or evaluating a task. New artifacts must declare their intended use,
+input availability, source vintage, selection rule and evaluation access. Verified
+historical forecasting requires full-row availability evidence; retrospective research
+may retain explicit timing assumptions.
+
+Every release has an exact-artifact review in `suitability/`. Current notices on
+dataset websites and GitHub/Hugging Face documentation come from those records;
+frozen data and version tags are preserved. The chronological scoring adapter installs
+only into an owned execution copy of the existing harness. Its worker integration
+status is recorded in [current state](STATE.md); unit tests alone do not establish it.
 
 This repository is intended to be private. Each published dataset gets its own
 public GitHub repository for code and documentation, with the data attached to
