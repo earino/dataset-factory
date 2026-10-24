@@ -48,9 +48,37 @@ def validate(job, config):
         raise FactoryError("Job runtime exceeds policy")
     if not job["timeout_minutes"] + 15 <= job["lifetime_minutes"] <= config["max_lifetime_minutes"]:
         raise FactoryError("Lifetime must include at least 15 minutes for boot/upload and fit policy")
-    # A transfer job moves already-built artifacts between releases, and an hf_publish job pushes
-    # them to Hugging Face: neither runs a container, so neither needs argv or an image.
-    runs_container = not (job.get("transfer") or job.get("hf_publish"))
+    # A transfer job moves already-built artifacts between releases, an hf_publish job pushes
+    # them to Hugging Face, and a smoke_adapter job runs the integration smoke host-side:
+    # none runs a container, so none needs argv or an image.
+    runs_container = not (job.get("transfer") or job.get("hf_publish") or job.get("smoke_adapter"))
+    if job.get("smoke_adapter"):
+        smoke = job.get("smoke")
+        if not isinstance(smoke, dict):
+            raise FactoryError("smoke_adapter job needs a smoke spec object")
+        for name in ("harness_commit", "image_tag", "release_tag", "artifact_version",
+                     "time_column", "target"):
+            if not isinstance(smoke.get(name), str) or not smoke[name]:
+                raise FactoryError(f"smoke.{name} must be a non-empty string")
+        if not re.fullmatch(r"[0-9a-f]{40}", smoke["harness_commit"]):
+            raise FactoryError("smoke.harness_commit must be a commit sha256")
+        if not re.fullmatch(r"[0-9a-f]{64}", smoke["artifact_version"]):
+            raise FactoryError("smoke.artifact_version must be a 64-hex digest")
+        if type(smoke.get("positive_label")) is not int or type(smoke.get("dev_months")) is not int \
+                or not 1 <= smoke["dev_months"] <= 24:
+            raise FactoryError("smoke.positive_label and smoke.dev_months must be ints (1..24 months)")
+        if type(smoke.get("tolerance")) is not float or not 0 < smoke["tolerance"] <= 1e-6:
+            raise FactoryError("smoke.tolerance must be a small positive float for vector agreement")
+        expected = smoke.get("expected_sha256")
+        if not isinstance(expected, dict) or sorted(expected) != ["meta.json", "public/eval.csv",
+                                                                  "public/train.csv", "quality.json"]:
+            raise FactoryError("smoke.expected_sha256 must pin train/eval/meta/quality digests")
+        if any(not re.fullmatch(r"[0-9a-f]{64}", value) for value in expected.values()):
+            raise FactoryError("smoke.expected_sha256 values must be 64-hex digests")
+        # pinned_sources are verified at materialization time on the worker, not here;
+        # their sha256 values are bound at bundle assembly and checked there.
+        if not isinstance(smoke.get("pinned_sources", {}), dict):
+            raise FactoryError("smoke.pinned_sources must be an object when present")
     command = job.get("command")
     if runs_container and (not isinstance(command, list) or not command
                            or not all(isinstance(x, str) and x and "\0" not in x
@@ -139,7 +167,7 @@ def source_bundle(job_path, job):
                 raise FactoryError("Job source exceeds 2 MiB; source bundle is not a data transport")
             add("source/" + relative.as_posix(), path.read_bytes())
         add("job.json", json.dumps(job, sort_keys=True).encode())
-        for name in ("executor.py", "upload.py", "hf_publish.py"):
+        for name in ("executor.py", "upload.py", "hf_publish.py", "smoke_runner.py"):
             add(name, (Path(__file__).resolve().parents[1] / "workers" / name).read_bytes())
     if len(buffer.getvalue()) > BUNDLE_LIMIT + 256 * 1024:
         raise FactoryError("Job bundle too large")
