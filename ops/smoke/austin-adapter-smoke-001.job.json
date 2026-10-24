@@ -1,0 +1,44 @@
+{
+  "id": "austin-adapter-smoke-001",
+  "candidate": "austin-911-response",
+  "dataset": "austin-911-response",
+  "note": "Integration smoke for the prediction-time adapter (issue #17): streamed chronological inference on the real Austin baseline, three-derivative-file split, gate 1.5 accept, vector agreement against the ordinary row-wise reference run. Not a construction job, not a publication step; the published private holdout is never fetched.",
+  "smoke_adapter": true,
+  "location": "hel1",
+  "server_type": "cx32",
+  "cpus": 4,
+  "memory_mb": 8192,
+  "timeout_minutes": 150,
+  "lifetime_minutes": 180,
+  "max_disk_mb": 30000,
+  "max_report_bytes": 262144,
+  "reservation_eur": "0.06",
+  "smoke": {
+    "harness_repo": "https://github.com/earino/harness_benchmark.git",
+    "harness_commit": "58b434fee9b53eab953b6a3d84baf5cbeb01bc6e",
+    "image_tag": "scout-harness-smoke-austin:1",
+    "release_tag": "v2026.09",
+    "artifact_version": "e4598317e406984fa590aacc5e7aff675867578c51ae1a84ebf6279bc42c3328",
+    "time_column": "response_datetime",
+    "target": "late",
+    "positive_label": 1,
+    "dev_months": 6,
+    "threads": 4,
+    "score_timeout": 7200,
+    "expected_sha256": {
+      "public/train.csv": "6fc37e034447b2e982d737f6d62d0da9a24584d89d25799d5d882ba584604434",
+      "public/eval.csv": "241dee5eb84cfdd5e1101a3453d2af4dea9bdf9dfca549d83323584a6e442d7a",
+      "meta.json": "5dc8aed06c157a35955e7913748609cf6c42be2b2d144f405de41240dd9d45fb",
+      "quality.json": "a7f9c99c5d0c9465e28ef66eee9ffa9c7f15c53d094148567c2ff48c961241a7"
+    },
+    "bundle_files": {
+      "workers/smoke_runner.py": "workers/smoke_runner.py",
+      "scripts/install-prediction-adapter.py": "scripts/install-prediction-adapter.py",
+      "adapters/score_holdout.py": "adapters/score_holdout.py",
+      "gate/qualify_dataset.py": "gate/qualify_dataset.py",
+      "smoke/derivative-descriptor.json": "smoke/derivative-descriptor.json",
+      "runner/train.py": "runner/train.py",
+      "runner/task.json": "runner/task.json"
+    }
+  }
+}
