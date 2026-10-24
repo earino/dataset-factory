@@ -7802,3 +7802,10 @@ is diagnosing the original pinned build on the existing worker under a bounded
 now retains private, bounded build-output tails on the worker (not automatic
 artifacts), with only their hash/size in the receipt. Preserve the failed run;
 construction remains on hold pending successful integration and provider cleanup.
+
+The bounded reproduction identified installer drift: live Hermes install.sh expects
+PM files absent at the pinned Hermes commit. The worker now copies the verified
+image context and replaces only that URL with the official script at its existing
+HERMES_COMMIT. Original and execution Dockerfile hashes are recorded, and unknown
+recipe layouts fail for review. No harness checkout, baseline or lockfile edit.
+A new job must reproduce this repair before adapter acceptance.

@@ -80,6 +80,14 @@ uploaded output directory; the compact receipt records its size and hash. Retrie
 only a bounded, credential-checked excerpt before destroying the failed worker.
 Candidate inference output is never opted into this diagnostic log.
 
+The original image recipe fetched a live Hermes installer for a pinned Hermes
+checkout. Attempt 001 demonstrated drift: the current installer required PM files
+absent from that checkout. The runtime now creates a separate image-context copy
+and changes only that installer URL to the official script at the recipe's existing
+`HERMES_COMMIT`. The original Dockerfile remains intact; both Dockerfile hashes and
+the installer commit are recorded. Unknown recipe layouts fail for review. The
+baseline, scorer, dependency lock and harness source checkout are unchanged.
+
 Software fixtures verify actual builder → qualify → accept behavior, and that
 mutation after qualification is refused. They are explicitly software tests,
 not substitute acceptance datasets. Passing tests alone does not close the real

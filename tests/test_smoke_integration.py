@@ -49,6 +49,21 @@ class RuntimeTests(unittest.TestCase):
             runner.checked_run([sys.executable,'-c','print("ok")'],3,diagnostic_path=success)
             self.assertFalse(success.exists())
 
+    def test_image_bootstrap_pin_preserves_original_and_refuses_unknown_layout(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);source=root/'source';source.mkdir();work=root/'work';work.mkdir()
+            original='ARG HERMES_COMMIT='+ 'a'*40 +'\nRUN curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash\n'
+            (source/'Dockerfile').write_text(original);(source/'uv.lock').write_text('unchanged')
+            context,receipt=runner.prepare_image_context(source,work)
+            self.assertEqual((source/'Dockerfile').read_text(),original)
+            self.assertEqual((context/'uv.lock').read_text(),'unchanged')
+            self.assertIn('${HERMES_COMMIT}/scripts/install.sh', (context/'Dockerfile').read_text())
+            self.assertNotEqual(receipt['original_dockerfile_sha256'],receipt['execution_dockerfile_sha256'])
+            self.assertEqual(receipt['hermes_commit'],'a'*40)
+            with self.assertRaises(ValueError):runner.prepare_image_context(source,work)
+            (source/'Dockerfile').write_text(original.replace('ARG HERMES_COMMIT=', 'ARG UNKNOWN='))
+            with self.assertRaisesRegex(ValueError,'explicit review'):runner.prepare_image_context(source,work)
+
     def test_pinned_source_materialization_verifies_bytes_commit_and_path(self):
         with tempfile.TemporaryDirectory() as tmp:
             base=Path(tmp);(base/'source').mkdir();dest=base/'dest';dest.mkdir()
