@@ -117,3 +117,23 @@ class ContractTests(unittest.TestCase):
         c['access']='isolated_rows'
         checks,_=self.checks()
         self.assertTrue(checks['contract.cross_row_probe_0']['ok'])
+
+    def test_cross_split_donor_and_price_operand(self):
+        rows={'train':columns([{'entity':'a','date':'2020-01-08','price':3,'y':0}]),
+              'eval':columns([{'entity':'a','date':'2020-01-01','price':2,'y':1}])}
+        p={'entity_columns':['entity'],'time_column':'date','left':'price','right':'price',
+           'right_row':'earlier','operation':'gt','offset_days':7}
+        result=gate.cross_row_probe(rows,self.q,p)
+        self.assertEqual((result['eval']['covered'],result['eval']['mismatches']),(1,0))
+        self.assertEqual(result['train']['covered'],0)
+
+    def test_noaa_approximate_recovery_still_requires_restriction(self):
+        self.rows={'eval':columns([{'id':'a','date':'2020-01-01','x':0,'y':0},
+                                  {'id':'a','date':'2020-01-02','x':0.011,'y':0}])}
+        c=self.q['evaluation_contract'];c['access']='common_cutoff_batch'
+        c['cross_row_audit']['probes']=[{'entity_columns':['id'],'time_column':'date','left':'x',
+                                       'operation':'gt','threshold':0,'offset_days':1}]
+        checks,_=self.checks()
+        check=checks['contract.cross_row_probe_0']
+        self.assertFalse(check['ok'])
+        self.assertEqual(check['evidence']['eval']['mismatches'],1)

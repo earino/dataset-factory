@@ -381,6 +381,8 @@ def check_evaluation_contract(dataset, quality, report, columns_by_split):
                and access in ('isolated_rows', 'chronological', 'common_cutoff_batch'),
                f'use={scope!r}; access={access!r}; eval is development, holdout is final')
     evidence = contract.get('feature_evidence', {})
+    if not isinstance(evidence, dict):
+        evidence = {}
     columns = set(next(iter(columns_by_split.values()))[0]) - {quality.get('target')} if columns_by_split else set()
     missing = [name for name in sorted(columns) if not isinstance(evidence.get(name), dict)
                or not evidence[name].get('source') or not evidence[name].get('availability')
@@ -389,12 +391,15 @@ def check_evaluation_contract(dataset, quality, report, columns_by_split):
                f'Every solver-visible non-target column needs availability evidence; missing: {missing}')
     vintage = contract.get('vintage', {})
     selection = contract.get('selection', {})
+    if not isinstance(vintage, dict): vintage = {}
+    if not isinstance(selection, dict): selection = {}
     report.add('contract.vintage_and_selection',
                vintage.get('kind') in ('as_of', 'current_snapshot', 'mixed') and bool(vintage.get('evidence'))
                and selection.get('kind') in ('prediction_time', 'outcome_conditioned')
                and bool(selection.get('evidence')) and bool(contract.get('limitations')),
                'Vintage, selection and limitations must be explicit; declarations are not measurements')
     audit = contract.get('cross_row_audit', {})
+    if not isinstance(audit, dict): audit = {}
     probes = audit.get('probes', [])
     report.add('contract.cross_row_review', isinstance(probes, list)
                and bool(audit.get('rationale')) and bool(audit.get('auxiliary_files_review')),
@@ -436,7 +441,7 @@ def check_evaluation_contract(dataset, quality, report, columns_by_split):
             if len(expected[split]) != len(cols[quality['target']]):
                 raise ValueError('availability ledger needs unique composite row identifiers')
         seen = {split: set() for split in expected}
-        earliest, latest = {}, {}
+        earliest, latest, last_prediction = {}, {}, {}
         def stamp(value):
             parsed = datetime.datetime.fromisoformat(value.replace('Z', '+00:00'))
             if parsed.tzinfo is None:
@@ -454,7 +459,10 @@ def check_evaluation_contract(dataset, quality, report, columns_by_split):
                 if available > prediction:
                     problems.append(f'{split}/{key}: features arrive after prediction')
                 earliest[split] = min(earliest.get(split, prediction), prediction)
+                last_prediction[split] = max(last_prediction.get(split, prediction), prediction)
                 latest[split] = max(latest.get(split, label), label)
+        if access == 'common_cutoff_batch' and earliest != last_prediction:
+            problems.append('common_cutoff_batch contains multiple prediction instants within a split')
         if seen != expected:
             problems.append('availability ledger does not cover every artifact row exactly once')
         for before, after in (('train', 'eval'), ('train', 'holdout'), ('eval', 'holdout')):
@@ -488,10 +496,22 @@ def cross_row_probe(columns_by_split, quality, probe):
     result = {}
     for split, (_, cols) in columns_by_split.items():
         n = len(cols[target]); keys = []; donors = {}; counts = {}
+        # Freeze donor operands across only the splits visible at this evaluation stage.
+        ranks = {'train': 0, 'eval': 1, 'holdout': 2}
+        donor_cols = {c: [] for c in cols}
+        for donor_split, (_, values) in columns_by_split.items():
+            if ranks.get(donor_split, 99) <= ranks.get(split, -1):
+                for c in donor_cols:
+                    donor_cols[c].extend(values[c])
         for i in range(n):
             day = datetime.date.fromisoformat(cols[time_col][i][:10] + ('-01' if len(cols[time_col][i]) == 7 else ''))
             key = tuple(cols[c][i] for c in entities) + (day.isoformat(),)
             keys.append(key); counts[key] = counts.get(key, 0) + 1
+        target_cols = cols
+        cols = donor_cols
+        for i in range(len(cols[target])):
+            day = datetime.date.fromisoformat(cols[time_col][i][:10] + ('-01' if len(cols[time_col][i]) == 7 else ''))
+            key = tuple(cols[c][i] for c in entities) + (day.isoformat(),)
             if 'lag_days_column' in probe:
                 if probe['lag_days_column'] == target:
                     raise ValueError('lag cannot read target')
@@ -511,15 +531,12 @@ def cross_row_probe(columns_by_split, quality, probe):
                     raise ValueError('offset must point backwards')
                 earlier = day - datetime.timedelta(days=days)
             left = float(cols[lhs][i])
-            if op == 'copy':
-                if left not in (0, 1):
-                    continue
-                prediction = int(left)
-            else:
-                right = float(cols[rhs][i]) if rhs else float(probe.get('threshold', 0))
-                prediction = int(left < right) if op == 'lt' else int(left * float(probe.get('scale', 1)) > right)
+            if op == 'copy' and left not in (0, 1):
+                continue
+            right = (None if probe.get('right_row') == 'earlier' else
+                     float(cols[rhs][i]) if rhs else float(probe.get('threshold', 0)))
             donor_key = key[:-1] + (earlier.isoformat(),)
-            donors.setdefault(donor_key, set()).add(prediction)
+            donors.setdefault(donor_key, set()).add((left, right))
         covered = mismatches = ambiguous = 0
         for i, key in enumerate(keys):
             votes = donors.get(key, set())
@@ -527,8 +544,13 @@ def cross_row_probe(columns_by_split, quality, probe):
                 ambiguous += bool(votes)
                 continue
             covered += 1
-            actual = int(cols[target][i] == str(quality['positive_label']))
-            mismatches += next(iter(votes)) != actual
+            left, right = next(iter(votes))
+            if probe.get('right_row') == 'earlier':
+                right = float(target_cols[rhs][i])
+            prediction = int(left) if op == 'copy' else (int(left < right) if op == 'lt' else
+                          int(left * float(probe.get('scale', 1)) > right))
+            actual = int(target_cols[target][i] == str(quality['positive_label']))
+            mismatches += prediction != actual
         result[split] = {'rows': n, 'covered': covered, 'mismatches': mismatches,
                          'ambiguous_or_conflicting': ambiguous}
     return result

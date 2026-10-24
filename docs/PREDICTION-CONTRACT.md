@@ -75,7 +75,7 @@ explicitly unverified, and must not be marketed as verified historical forecasts
 Each probe has `entity_columns`, `time_column`, `left`, `operation` (`copy`, `gt`, `lt`,
 `scaled_gt`) and optional `right`, `threshold`, `scale`. It points a donor row to an earlier
 row using `offset_days`, `offset_months`, or `lag_days_column`. The operands are donor features;
-target labels cannot be operands. The gate executes the joins on each full split on the worker,
+target labels cannot be operands. Set `right_row: earlier` to compare a donated price with the earlier row’s own feature. Donors include train for validation and train+validation for holdout; future private splits are never donors to development. The gate executes the joins on each full split on the worker,
 requires singleton target keys and unanimous donors, and records coverage and mismatches.
 No AUC is manufactured for abstentions. Examples:
 
