@@ -7715,3 +7715,29 @@ Operator-commissioned independent audit (Codex; plan and predictions frozen befo
 
 ## 2026-10-24 - REMEDIATION HOLD (issue #17, operator-authorized, Codex coordinating)
 Do not launch ANY new construction job during this remediation. Scheduled sessions: this hold overrides GO-to-construction next_actions in every candidate record until #17 closes. Cleanup, collection, reconciliation and close-out continue normally. Preserve all frozen data, tags and checksums. Keep nz-ea and NHS staging private. Scout works on branch remediation/dataset-review-17 only (per-dataset suitability review documents; no shared gate/site code edits). See https://github.com/earino/dataset-factory/issues/17.
+## 2026-10-24 follow-up (six-site editorial deploy): all ten sites live, verified and immutable; publication receipts committed
+
+The resumed driver (background proc, resume_six_sites.py) published and verified the six
+remaining reviewed plans on the first attempt each: msha-enforcement-citations,
+my-pricecatcher-weekly-increase, noaa-tide-flooding, tsb-railway-occurrence-casualty,
+who-flunet-activity-exceedance, eutl-installation-net-short - every site `publish` complete
+and `verify` verified against the reviewed plan hashes in audits/remediation-2026-10-24/
+site-plans.json. Together with the four verified on 2026-10-23 (austin-911-response,
+abs-visitor-arrivals-direction, chicago-doah-adjudication, chicago-food-inspections),
+all ten editorial bundles are live under the zero-bulk-download path: the coordinator
+read release metadata only, no CSV bytes were downloaded, and pre-existing HF cache
+entries were left untouched.
+
+Immutability re-verified after the deploy from the coordinator, metadata only:
+
+- GitHub release assets: every manifest file's size matches the live asset for all ten
+  datasets (multi-config suites included - chicago-food-inspections, msha, noaa - via the
+  flat `<config>-<split>-<file>` asset naming).
+- Hugging Face tags: the v2026.09/v2026.10 tag revisions answer exactly the
+  editorial-release-baselines.json pins for all ten datasets (anonymous /refs reads);
+  the site pipeline moved default-branch documentation only.
+- Receipts: each of the six DESTINATIONS.json site blocks advanced only its
+  `verified_at` timestamp; no recorded history was rewritten.
+
+Receipts committed to main with this entry. The smoke integration patch remains on
+remediation/dataset-review-17 (commit 1f523d1) under review; nothing was launched.
