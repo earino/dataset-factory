@@ -7788,3 +7788,10 @@ EUR 8.98 including this reservation fits. No policy or budget change was made.
 The tracked template now matches those allowed defaults. `worker plan` refuses
 source/runtime path overlap early with a useful message; the 19 worker tests pass.
 Execution acceptance and provider cleanup remain pending.
+
+Catalogue visual follow-up: long names forced suitability notices into a narrow
+column. The shared renderer now wraps names and gives the notice column 40%
+width while preserving dates and row counts. Codex reviewed the complete ten-row
+Chrome preview and the concrete EUTL editorial revision 3 plan (9b5cd371…).
+The 24 site tests pass. Publish through the normal site procedure after CI;
+no dataset asset or tag changes. Worker acceptance remains pending.
