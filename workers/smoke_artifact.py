@@ -94,6 +94,11 @@ def build_derivative(input_dir: Path, output_dir: Path, smoke: dict) -> dict:
     source_meta = json.loads((input_dir / "meta.json").read_text())
     source_quality = json.loads((input_dir / "quality.json").read_text())
     _require(source_quality, source_meta)
+    if (source_quality["target"] != target or source_meta["target"] != target
+            or source_quality["time_column"] != time_column
+            or source_quality["positive_label"] != smoke["positive_label"]
+            or source_meta["id_columns"] != source_quality["id_columns"]):
+        raise ValueError("reviewed job disagrees with source task declarations")
     event_key = source_quality.get("event_key_column") or time_column
 
     # The runtime pre-creates derivative_dir holding only the .smoke-owned marker;
@@ -203,6 +208,7 @@ def build_derivative(input_dir: Path, output_dir: Path, smoke: dict) -> dict:
     repeated_rows = {"train": 0, "eval": 0, "holdout": 0}
     label_sets: dict[tuple, set] = {}
     cross_split = []
+    cross_split_count = 0
     for split, relative in (("train", "public/train.csv"), ("eval", "public/eval.csv"),
                             ("holdout", "private/holdout.csv")):
         with (output_dir / relative).open(newline="", encoding="utf-8") as handle:
@@ -213,6 +219,7 @@ def build_derivative(input_dir: Path, output_dir: Path, smoke: dict) -> dict:
                     first_split[key[1]] = split
                     first_label[key] = row.get(target)
                 elif seen_split != split:
+                    cross_split_count += 1
                     if len(cross_split) < 10:
                         cross_split.append(f"{key[1]} in {seen_split} and {split}")
                 else:
@@ -306,10 +313,11 @@ def build_derivative(input_dir: Path, output_dir: Path, smoke: dict) -> dict:
                         "vintages were obtained",
         },
         "selection": {
-            "kind": "prediction_time",
-            "evidence": "rows are the source release's own rows; the derivative re-cuts "
-                        "train by calendar month and copies the published eval "
-                        "unchanged; no row was filtered by outcome",
+            "kind": "outcome_conditioned",
+            "evidence": "Austin source construction requires response_time IS NOT NULL "
+                        "(release/austin-911-response/code/build.py ELIGIBLE); membership "
+                        "therefore depends on outcome availability. This derivative preserves "
+                        "that source selection, re-cuts train by month and copies public eval.",
         },
         "limitations": [
             "Derivative of the published release, constructed for the adapter "
@@ -359,7 +367,7 @@ def build_derivative(input_dir: Path, output_dir: Path, smoke: dict) -> dict:
             "differing_sample": differing_labels[:5],
         },
         "cross_split_entities": {
-            "count": len(cross_split),
+            "count": cross_split_count,
             "sample": cross_split,
         },
         "sha256": digests,

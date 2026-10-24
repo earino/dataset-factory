@@ -23,8 +23,7 @@ The pinned payload carries exactly the runtime schema:
 
 The harness sources are read from the read-only pinned harness checkout via
 ``git show <commit>:<path>``, so provenance binds to the commit, never the
-worktree state. Repo sources are read from this repository's working tree and
-bound to the recorded HEAD commit (kept in the job's provenance sidecar, not in
+worktree state. Repo sources are read from the recorded HEAD commit (kept in the job's provenance sidecar, not in
 the runtime payload). The bundle is code-only: ``.git``, ``data``, ``runs``,
 ``results``, ``auth`` and every ``.csv`` are refused, so no bulk row can enter.
 Image-context requirements (Dockerfile, .dockerignore, uv.lock,
@@ -51,7 +50,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_HARNESS = Path("/opt/data/harness_benchmark")
-FORBIDDEN_PARTS = {".git", "data", "runs", "results", "auth"}
+FORBIDDEN_PARTS = {".git", ".env", "data", "runs", "results", "auth"}
 FORBIDDEN_SUFFIXES = {".csv", ".env"}
 REQUIRED_IMAGE_FILES = ("image/Dockerfile", "image/.dockerignore", "image/uv.lock",
                         "image/pyproject.toml")
@@ -75,6 +74,8 @@ def _safe_bundle_path(path: str) -> None:
     candidate = Path(path)
     if candidate.is_absolute() or ".." in candidate.parts or path.startswith("~"):
         raise ValueError(f"unsafe bundle path: {path!r}")
+    if "\\" in path or any(part in ("", ".", "..") for part in path.split("/")):
+        raise ValueError(f"unsafe source path: {path!r}")
     parts = set(candidate.parts)
     forbidden = parts & FORBIDDEN_PARTS
     if forbidden:
@@ -90,7 +91,7 @@ def read_source(spec: str, harness: Path, harness_commit: str,
     """Return (content, provenance) for a source spec.
 
     Forms: ``harness:<path>`` (read from the pinned harness commit),
-    ``repo:<path>`` (read from this checkout's working tree) and
+    ``repo:<path>`` (read from this checkout's HEAD commit) and
     ``repo:<path>@<ref>`` (read from a resolved repository commit — used to
     bundle the runtime owner's adapter from their branch). Provenance always
     records the 40-hex commit the bytes were read from.
@@ -99,6 +100,7 @@ def read_source(spec: str, harness: Path, harness_commit: str,
     if not sep or relative.startswith("/"):
         raise ValueError(f"source spec must be 'harness:<path>' or 'repo:<path>': {spec!r}")
     if origin == "harness":
+        _safe_bundle_path(relative)
         # Bind to the commit, not the worktree: the read-only checkout could be
         # dirty or moved, and the bundle must reproduce from the pin alone.
         probe = subprocess.run(["git", "-C", str(harness), "show",
@@ -110,6 +112,7 @@ def read_source(spec: str, harness: Path, harness_commit: str,
     if origin == "repo":
         path_part, marker, ref = relative.rpartition("@")
         if marker:
+            _safe_bundle_path(path_part)
             relative, resolved = path_part, _git(["rev-parse", f"{ref}^{{commit}}"],
                                                   REPO_ROOT)
             probe = subprocess.run(["git", "-C", str(REPO_ROOT), "show",
@@ -119,10 +122,12 @@ def read_source(spec: str, harness: Path, harness_commit: str,
                 raise FileNotFoundError(f"repository commit {resolved[:12]} has no "
                                         f"{relative!r}")
             return probe.stdout, f"repo@{resolved}:{relative}"
-        path = REPO_ROOT / relative
-        if not path.is_file():
-            raise FileNotFoundError(f"repository has no {relative!r}")
-        return path.read_bytes(), f"repo@{repo_commit[:12]}:{relative}"
+        _safe_bundle_path(relative)
+        probe = subprocess.run(["git", "-C", str(REPO_ROOT), "show",
+                                f"{repo_commit}:{relative}"], capture_output=True, timeout=120)
+        if probe.returncode:
+            raise FileNotFoundError(f"repository commit lacks {relative!r}; commit source before assembly")
+        return probe.stdout, f"repo@{repo_commit}:{relative}"
     raise ValueError(f"unknown source origin {origin!r} in {spec!r}")
 
 
@@ -180,6 +185,8 @@ def gh_verify(smoke: dict, dataset: str, release_tag: str) -> list[str]:
         proof.append(f"asset {name!r} ({logical}): present, size matches frozen "
                      f"manifest ({asset['size']} bytes)")
         if name.endswith(".json"):
+            if asset["size"] > 256 * 1024:
+                raise ValueError("metadata exceeds coordinator compact-file limit")
             # Small metadata file: download and confirm the digest live. CSVs are
             # never fetched here — size agreement plus the frozen manifest digest is
             # the bulk-free guarantee.
@@ -209,10 +216,12 @@ def assemble(job_path: Path, harness: Path, out_path: Path | None,
     if not re.fullmatch(r"[0-9a-f]{40}", harness_commit):
         raise ValueError("smoke.harness_commit must be a 40-hex commit ID")
 
-    actual = _git(["rev-parse", "HEAD"], harness)
+    try:
+        actual = _git(["rev-parse", f"{harness_commit}^{{commit}}"], harness)
+    except RuntimeError as exc:
+        raise RuntimeError("harness does not contain the commit the job pins") from exc
     if actual != harness_commit:
-        raise RuntimeError(f"harness checkout is at {actual[:12]}, job pins "
-                           f"{harness_commit[:12]}")
+        raise RuntimeError("harness commit differs from job pins")
     repo_commit = _git(["rev-parse", "HEAD"], REPO_ROOT)
 
     bundle_files = smoke.get("bundle_files")
@@ -248,8 +257,7 @@ def assemble(job_path: Path, harness: Path, out_path: Path | None,
     if verify:
         proof = gh_verify(smoke, dataset, release_tag)
 
-    out_path = out_path or (REPO_ROOT / "ops" / "smoke" /
-                            f"{job['id']}.source-bundle.json")
+    out_path = out_path or (job_path.parent / "pinned.json")
     # Exactly the runtime's source/pinned.json schema: harness pin + files with
     # base64 + sha256. Nothing else may live in this payload.
     bundle = {
@@ -294,7 +302,7 @@ def main(argv=None) -> int:
     parser.add_argument("--harness", type=Path, default=DEFAULT_HARNESS,
                         help="read-only pinned harness checkout")
     parser.add_argument("--out", type=Path, default=None,
-                        help="bundle output path (default ops/smoke/<id>.source-bundle.json)")
+                        help="bundle output path (default pinned.json beside the job)")
     parser.add_argument("--no-gh-verify", action="store_true",
                         help="skip live GitHub asset verification")
     args = parser.parse_args(argv)

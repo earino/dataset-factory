@@ -88,7 +88,7 @@ def validate(job, config):
         pins = smoke.get("pinned_sources")
         required = {"image/Dockerfile", "image/.dockerignore", "image/uv.lock", "image/pyproject.toml",
                     "image/task_template/train.py", "image/bench/score_holdout.py",
-                    "adapter/score_holdout.py", "gate/qualify_dataset.py"}
+                    "adapter/score_holdout.py", "gate/qualify_dataset.py", "workers/smoke_artifact.py"}
         if not isinstance(pins, dict) or not required <= pins.keys():
             raise FactoryError("Smoke sources must pin the real harness, adapter and gate")
         for name, digest in pins.items():

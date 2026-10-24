@@ -1,165 +1,77 @@
-# Adapter smoke: integration contract (issue #17)
+# Real-runner adapter verification
 
-Status: **assembly and artifact construction only — no launch.** The runtime
-(smoke runner, executor dispatch, worker bundle wiring, container/stream probes)
-is owned and integrated separately; this document covers the artifact half.
+This job verifies the chronological scorer against the unchanged baseline from the
+existing harness. It is an integration check on a public-source derivative, not a
+new benchmark, published data version, or historical-availability certification.
+The original harness checkout remains read-only. The published final holdout is
+never downloaded.
 
-## Ownership
+## Artifact and protocol
 
-| Half | Owner | Files |
-| --- | --- | --- |
-| Artifact + assembly + job/docs | Scout | `workers/smoke_artifact.py`, `scripts/assemble-smoke-job.py`, `tests/test_smoke_artifact.py`, `ops/smoke/*` |
-| Runtime integration | Codex | `workers/smoke_runner.py`, `workers/executor.py`, `factory/worker.py`, adapter protocol/cleanup, their tests |
+`workers/smoke_artifact.py` constructs three disjoint files on the worker:
 
-The assembler's `bundle_files` above intentionally lists only the artifact half's
-sources. The runtime owner adds `workers/smoke_runner.py` (`repo:` source) and
-worker provisioning fields to the job when integrating; the assembler refuses a
-listed source that does not exist, so a wrong path fails at assembly, not on the
-worker.
+- Train: original public train excluding its final six observed calendar months.
+- Development: those final six observed months, visible to baseline training.
+- Scored test: original public eval, byte-identical, visible only to the scorer.
 
-## The derivative artifact
+Source metadata declarations are preserved and derivative counts/windows/events
+are recomputed. Feature timing is assumed, vintage is current-snapshot, label
+availability is unverified, and source selection is outcome-conditioned because
+Austin construction requires a recorded response_time. No publication timestamps
+are invented. The actual gate must pass and `--accept` must verify those exact
+artifact hashes before any baseline execution.
 
-`workers/smoke_artifact.py::build_derivative(input_dir, output_dir, smoke)`
-constructs, from a directory holding the published release's **public** assets
-under their real release-asset names (`train.csv`, `eval.csv`, `meta.json`,
-`quality.json`):
+The worker builds the original pinned Dockerfile and uses its locked Python
+dependencies. A protocol fixture checks network refusal, input mounts, absence of
+credentials/image data, and one committed prediction before the next row. The
+unchanged real baseline then predicts the full derivative test chronologically.
+A separate trusted reference run uses the same baseline/train/development inputs
+and predicts that test as a frame. Every probability must agree within the
+predeclared 1e-12 tolerance. This comparison reports no AUC claim.
 
-- `public/train.csv` — train' = public train minus its final `dev_months`
-  calendar months (months are calendar-sorted, never encounter-ordered);
-- `public/eval.csv` — dev = that tail; the only eval-role rows the candidate
-  sees;
-- `private/holdout.csv` — the published eval bytes, **unchanged**; the
-  scorer-owned test, never candidate-visible.
+## Prepare a source-only job
 
-The published private holdout is never fetched. The derivative `meta.json` and
-`quality.json` preserve every truthful source declaration verbatim and re-measure
-everything the gate recomputes: rows, positives, rates, split windows, clustered
-positive events, duplicate identifiers, cross-split identifier sharing. The gate
-1.5 timing and evaluation-contract blocks are derived honestly:
+The assembler reads original harness files with `git show <commit>:<path>` and
+factory files from committed Git objects. The checkout need only contain the
+pinned commit; it is never switched or modified. Source paths and SHA256 hashes
+are explicit, and both encoded and decoded payloads are bounded to 2 MiB. Only
+small metadata assets are downloaded during live source verification.
 
-- `timing`: administrative event-time instant (kind
-  `administrative_event`, 0-day lag), `observations: []` — no publication dates
-  are invented; `latest_period_used` is the last month actually present in the
-  derivative rows.
-- `evaluation_contract`: `use=retrospective_research`,
-  `access=chronological` (the dev split is a later period than train'),
-  per-column `feature_evidence` with `status=assumed` for every shipped
-  non-target column (administrative event-time availability assumed from the
-  release's dispatch definition — never `verified` without as-of evidence),
-  `vintage=current_snapshot`, `selection=prediction_time`,
-  `cross_row_audit` with rationale and auxiliary-file review, and
-  `training_label_timing=unverified` with no availability ledger.
-- The release's own `id_columns` are used (`incident_number` for Austin); no
-  synthetic identifiers are declared.
+Create a fresh job directory containing a copy of
+`ops/smoke/austin-adapter-smoke-001.job.json` named `job.json`, then run:
 
-If the source release predates a declaration the gate requires, the builder
-refuses and names the missing key. If the re-cut produces an artifact the gate
-would refuse (overlapping windows, cross-split identifiers), the finding is
-measured, returned in the metadata and left to the gate — never spoofed.
-
-## The source bundle
-
-`scripts/assemble-smoke-job.py <job.json>` assembles the source-only bundle from
-the read-only pinned harness:
-
-- every `bundle_files` entry becomes one entry of the **`source/pinned.json`
-  payload** the runtime places inside the worker source bundle. The payload
-  carries exactly the runtime schema:
-
-  ```json
-  {"harness_commit": "<40hex>",
-   "files": {"image/Dockerfile": {"base64": "...", "sha256": "..."}, ...}}
-  ```
-
-  The coordinator-side file is `ops/smoke/<id>.source-bundle.json`; the runtime
-  copies it to `source/pinned.json` verbatim.
-- harness sources are read via `git show <commit>:<path>` — provenance binds to
-  the pinned commit `58b434fee9b53eab953b6a3d84baf5cbeb01bc6e`, not the
-  worktree;
-- the runtime materializes from the payload: the `image/` context (original
-  `Dockerfile`, `.dockerignore`, `uv.lock`, `pyproject.toml`, `bench.yaml`, all
-  `bench/*.py`, full `task_template/`), `adapter/score_holdout.py`,
-  `gate/qualify_dataset.py` and `workers/smoke_artifact.py`;
-- forbidden paths (`.git`, `data`, `runs`, `results`, `auth`) and every `.csv`
-  are refused, so no bulk row and no credential can enter the bundle;
-- the job's `smoke.pinned_sources` is the exact relative-path→sha256 map of the
-  payload, and `smoke.source_provenance` records each file's origin binding;
-- the job's `expected_sha256` is keyed by the **real** GitHub release asset
-  names, taken from the frozen `MANIFEST.json` `assets` block (`train.csv`,
-  `eval.csv`, `meta.json`, `quality.json` for Austin — the old
-  `public/train.csv`-style URLs do not exist as release assets);
-- with `gh` present, live verification confirms each asset name and size, and
-  re-downloads only the two small metadata assets to confirm digests; the CSVs
-  are never fetched by the assembler.
-
-Run it:
-
-```
-python3 scripts/assemble-smoke-job.py ops/smoke/austin-adapter-smoke-001.job.json
+```sh
+python3 scripts/assemble-smoke-job.py <fresh-job-dir>/job.json --harness <read-only-harness>
+python3 -m factory worker plan <fresh-job-dir>/job.json
 ```
 
-The run writes `ops/smoke/austin-adapter-smoke-001.source-bundle.json`, fills
-`smoke.pinned_sources`, `smoke.source_provenance` and `smoke.source_bundle` in
-the job, and prints the verification proof.
+The assembler writes `pinned.json` beside the copied job and updates its pins.
+That directory must contain only those two files. The worker's source bundle puts
+it at `source/pinned.json`. Keys in `expected_sha256` are logical names; Austin's
+actual release asset filenames are `train.csv`, `eval.csv`, `meta.json`, and
+`quality.json`. Data downloads and full-artifact qualification occur only on the
+worker. A tracked source-bundle receipt is reference evidence, not a launch input;
+reassemble after source changes.
 
-## Runtime contract
+`factory/worker.py` validates this specific Austin smoke operation and binds the
+original harness, adapter, gate and artifact builder pins. `workers/executor.py`
+runs the host child under the existing deadline/disk supervisor. The daemon must
+be empty on the dedicated VM before work begins; exact job-owned container IDs
+are removed at normal closeout and after supervisor termination. No Docker socket
+or credentials are mounted into prediction containers. Fresh directories refuse
+reuse rather than delete prior evidence.
 
-`build_derivative(input_dir, derivative_dir, smoke)`:
+## Launch, collect, and close
 
-- `input_dir` holds the fetched public assets under their real release-asset
-  names: `train.csv`, `eval.csv`, `meta.json`, `quality.json`;
-- `derivative_dir` already exists, containing only the `.smoke-owned` marker;
-  the builder keeps the marker and refuses any other pre-existing content;
-- output is exactly `meta.json`, `quality.json`, `public/train.csv`,
-  `public/eval.csv`, `private/holdout.csv`;
-- the gate report's success key is `ok` (top-level boolean in the report JSON).
+Scout is the sole coordinator of the worker ledger. Review the computed allowance
+reservation (the template does not override pricing), then use the existing
+worker launch/status/collect/cleanup commands from `docs/OPERATIONS.md`. The job
+caps runtime/lifetime at 150/180 minutes, disk at 30,000 MiB, individual reports at
+256 KiB, and collected output at 1 MiB. No bulk derivative or vectors are uploaded;
+compact reports retain full hashes, provenance, qualification acceptance,
+protocol checks and vector agreement. Confirm provider-side worker destruction.
 
-## Gate proof (required before any launch)
-
-The derivative must pass the real gate, two-phase, on the worker:
-
-```
-python3 gate/qualify_dataset.py <derivative> --report <report.json>   # report.ok must be true
-python3 gate/qualify_dataset.py --accept <report.json> <derivative>   # must ACCEPT
-```
-
-`tests/test_smoke_artifact.py` proves this locally on a software fixture built
-**through** `build_derivative`: the fixture passes qualification and acceptance,
-and a mutated CSV after the report is refused by `--accept` (digest mismatch).
-Selftest or `--help` invocations do not count as this proof.
-
-## Job fields
-
-- `candidate`, `dataset`, `note`, `smoke_adapter` — job identity; the smoke is
-  host-side, so no container image is provisioned by the job itself.
-- `location`, `server_type`, `cpus`, `memory_mb`, `timeout_minutes`,
-  `lifetime_minutes`, `max_disk_mb`, `max_artifact_mb`, `max_report_bytes`,
-  `reservation_eur` — worker provisioning, validated by `factory/worker.py`.
-- `smoke.harness_commit` — the 40-hex pinned harness commit the bundle reads
-  its harness sources from.
-- `smoke.image_tag`, `smoke.release_tag` — the locally built image tag and the
-  published release being smoked.
-- `smoke.artifact_version` — the frozen manifest's artifact version, filled
-  by the assembler programmatically.
-- `smoke.time_column`, `target`, `positive_label`, `dev_months` — the re-cut
-  parameters; `tolerance` bounds streamed-vs-reference vector agreement.
-- `smoke.threads`, `smoke.score_timeout` — runtime knobs for the runner.
-- `smoke.expected_sha256` — keyed by the LOGICAL names the runtime's fetch loop
-  uses (`public/train.csv`, `public/eval.csv`, `meta.json`, `quality.json`);
-  `smoke.asset_names` maps each logical name to its REAL GitHub release asset
-  name (`train.csv`, `eval.csv` for Austin), `smoke.asset_bytes` carries the
-  frozen sizes. All three are filled by the assembler from the manifest's
-  `assets` block and verified live.
-- `smoke.bundle_files` — bundle path → `harness:<path>`, `repo:<path>` or
-  `repo:<path>@<ref>` (a resolved repository commit; the adapter is pinned to
-  the runtime owner's `fix/worker-smoke` commit so the bundle carries the
-  job-label-capable version).
-- `smoke.pinned_sources`, `smoke.source_provenance`, `smoke.source_bundle` —
-  filled by the assembler.
-
-## What is deliberately absent
-
-- No worker provisioning fields (`server_type`, timeouts, budget) — the runtime
-  owner's integration adds them through `factory/worker.py` validation.
-- No `smoke_runner.py` in `bundle_files` yet — added by the runtime owner.
-- No launch: the smoke runs only after both halves are integrated and reviewed.
+Software fixtures verify actual builder → qualify → accept behavior, and that
+mutation after qualification is refused. They are explicitly software tests,
+not substitute acceptance datasets. Passing tests alone does not close the real
+worker verification requirement in issue #17.

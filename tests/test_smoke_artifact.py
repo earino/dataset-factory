@@ -24,7 +24,9 @@ sys.path.insert(0, str(ROOT))
 import smoke_artifact
 
 GATE = ROOT / "skills" / "dataset-qualification" / "scripts" / "qualify_dataset.py"
-HARNESS = Path("/opt/data/harness_benchmark")
+HARNESS = ROOT.parent / "harness_benchmark"
+if not HARNESS.is_dir():
+    HARNESS = Path("/opt/data/harness_benchmark")
 HARNESS_COMMIT = "58b434fee9b53eab953b6a3d84baf5cbeb01bc6e"
 ASSEMBLER = ROOT / "scripts" / "assemble-smoke-job.py"
 
@@ -172,6 +174,12 @@ class BuildDerivativeTests(unittest.TestCase):
         self.assertTrue((self.output / "public" / "train.csv").is_file())
         self.assertTrue((self.output / "meta.json").is_file())
 
+    def test_selection_preserves_outcome_availability_condition(self):
+        smoke_artifact.build_derivative(self.input, self.output, SMOKE)
+        contract=json.loads((self.output/'quality.json').read_text())['evaluation_contract']
+        self.assertEqual(contract['selection']['kind'],'outcome_conditioned')
+        self.assertIn('response_time IS NOT NULL',contract['selection']['evidence'])
+
     def test_refuses_foreign_directory(self):
         self.output.mkdir()
         (self.output / "someone-elses-file").write_text("keep me\n")
@@ -314,10 +322,10 @@ class AssemblerTests(unittest.TestCase):
         self.base = Path(self.tmp.name)
         if not HARNESS.is_dir():
             raise unittest.SkipTest("pinned harness checkout not present")
-        head = subprocess.run(["git", "-C", str(HARNESS), "rev-parse", "HEAD"],
+        head = subprocess.run(["git", "-C", str(HARNESS), "rev-parse", f"{HARNESS_COMMIT}^{{commit}}"],
                               capture_output=True, text=True, timeout=60)
         if head.stdout.strip() != HARNESS_COMMIT:
-            raise unittest.SkipTest(f"harness checkout not at {HARNESS_COMMIT[:12]}")
+            raise unittest.SkipTest(f"harness commit unavailable: {HARNESS_COMMIT[:12]}")
         job = json.loads((ROOT / "ops" / "smoke" /
                           "austin-adapter-smoke-001.job.json").read_text())
         # CI clones are shallow: cross-branch commit pins (the runtime owner's

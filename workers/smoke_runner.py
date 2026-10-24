@@ -230,8 +230,7 @@ def smoke_run(base, job, report):
                 shutil.copyfileobj(response,output,length=1024*1024)
             if sha256_file(input_dir/filename)!=smoke['expected_sha256'][logical]:raise ValueError('public source digest differs')
         report['stage']='derivative_and_gate'
-        try:from .smoke_artifact import build_derivative
-        except ImportError:from smoke_artifact import build_derivative
+        build_derivative=load_adapter(sources/'workers/smoke_artifact.py').build_derivative
         derivative=owned_directory(work,'derivative')
         receipts['derivative']=build_derivative(input_dir,derivative,smoke)
         gate=sources/'gate/qualify_dataset.py';gate_report=base/'output'/'smoke-qualification.json'

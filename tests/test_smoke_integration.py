@@ -102,7 +102,7 @@ class JobValidationTests(unittest.TestCase):
         config=json.loads((root/'config/worker.example.json').read_text())
         config.update(server_types={job['server_type']:'0.0179'},allowed_locations=[job['location']],max_job_minutes=200,max_lifetime_minutes=240)
         required=('image/Dockerfile','image/.dockerignore','image/uv.lock','image/pyproject.toml',
-                  'image/task_template/train.py','image/bench/score_holdout.py','adapter/score_holdout.py','gate/qualify_dataset.py')
+                  'image/task_template/train.py','image/bench/score_holdout.py','adapter/score_holdout.py','gate/qualify_dataset.py','workers/smoke_artifact.py')
         job['smoke']['pinned_sources']={name:'a'*64 for name in required}
         self.assertEqual(worker.validate(job,config)['job']['id'],job['id'])
         for mutate in (
