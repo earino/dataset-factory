@@ -74,6 +74,20 @@ caps runtime/lifetime at 120/180 minutes, disk at 30,000 MiB, individual reports
 compact reports retain full hashes, provenance, qualification acceptance,
 protocol checks and vector agreement. Confirm provider-side worker destruction.
 
+If the trusted image build fails, `smoke-build-diagnostic.log` retains at most
+32 KiB from each output stream, mode 0600, on the worker only. It is outside the
+uploaded output directory; the compact receipt records its size and hash. Retrieve
+only a bounded, credential-checked excerpt before destroying the failed worker.
+Candidate inference output is never opted into this diagnostic log.
+
+The original image recipe fetched a live Hermes installer for a pinned Hermes
+checkout. Attempt 001 demonstrated drift: the current installer required PM files
+absent from that checkout. The runtime now creates a separate image-context copy
+and changes only that installer URL to the official script at the recipe's existing
+`HERMES_COMMIT`. The original Dockerfile remains intact; both Dockerfile hashes and
+the installer commit are recorded. Unknown recipe layouts fail for review. The
+baseline, scorer, dependency lock and harness source checkout are unchanged.
+
 Software fixtures verify actual builder → qualify → accept behavior, and that
 mutation after qualification is refused. They are explicitly software tests,
 not substitute acceptance datasets. Passing tests alone does not close the real

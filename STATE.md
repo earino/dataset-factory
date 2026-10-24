@@ -7795,3 +7795,17 @@ width while preserving dates and row counts. Codex reviewed the complete ten-row
 Chrome preview and the concrete EUTL editorial revision 3 plan (9b5cd371…).
 The 24 site tests pass. Publish through the normal site procedure after CI;
 no dataset asset or tag changes. Worker acceptance remains pending.
+
+Smoke attempt 001 failed at image_build before data fetching or scoring. Scout
+is diagnosing the original pinned build on the existing worker under a bounded
+15-minute diagnostic run. The failure exposed discarded build stderr; the runtime
+now retains private, bounded build-output tails on the worker (not automatic
+artifacts), with only their hash/size in the receipt. Preserve the failed run;
+construction remains on hold pending successful integration and provider cleanup.
+
+The bounded reproduction identified installer drift: live Hermes install.sh expects
+PM files absent at the pinned Hermes commit. The worker now copies the verified
+image context and replaces only that URL with the official script at its existing
+HERMES_COMMIT. Original and execution Dockerfile hashes are recorded, and unknown
+recipe layouts fail for review. No harness checkout, baseline or lockfile edit.
+A new job must reproduce this repair before adapter acceptance.

@@ -21,7 +21,7 @@ def sha256_file(path):
         return hashlib.file_digest(stream, 'sha256').hexdigest()
 
 
-def checked_run(command, timeout, *, env=None, cwd=None, limit=2*1024*1024):
+def checked_run(command, timeout, *, env=None, cwd=None, limit=2*1024*1024, diagnostic_path=None):
     """Bound actual pipe output and elapsed time, not only the final read size."""
     proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env, cwd=cwd)
     buffers = {proc.stdout: bytearray(), proc.stderr: bytearray()}
@@ -43,6 +43,16 @@ def checked_run(command, timeout, *, env=None, cwd=None, limit=2*1024*1024):
             # Commands have no secret arguments, but arbitrary process output is not a receipt.
             raise RuntimeError(f'smoke subprocess failed: {Path(command[0]).name}, exit {proc.returncode}')
         return buffers[proc.stdout].decode()
+    except Exception:
+        if diagnostic_path is not None:
+            # Opt-in only for the trusted, credential-free image build. Keep two
+            # bounded tails on the worker, outside output/ and automatic uploads.
+            fd = os.open(diagnostic_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+            with os.fdopen(fd, 'wb') as diagnostic:
+                for label, stream in ((b'stdout', proc.stdout), (b'stderr', proc.stderr)):
+                    diagnostic.write(label + b' (last 32768 bytes):\n')
+                    diagnostic.write(buffers[stream][-32768:] + b'\n')
+        raise
     finally:
         if proc.poll() is None: proc.kill(); proc.wait(timeout=10)
         proc.stdout.close(); proc.stderr.close()
@@ -86,6 +96,22 @@ def public_readable(folder):
     for path in folder.rglob('*'):
         if path.is_symlink(): raise ValueError('no symlinks in inference inputs')
         path.chmod(0o755 if path.is_dir() else 0o444)
+
+
+def prepare_image_context(source, work):
+    """Preserve the original harness; pin its drifting Hermes bootstrap in a copy."""
+    original = (source/'Dockerfile').read_text()
+    commits = re.findall(r'^ARG HERMES_COMMIT=([a-f0-9]{40})$', original, re.MULTILINE)
+    old = 'https://hermes-agent.nousresearch.com/install.sh'
+    if len(commits) != 1 or original.count(old) != 1:
+        raise ValueError('unrecognized Hermes image bootstrap; explicit review required')
+    new = '"https://raw.githubusercontent.com/NousResearch/hermes-agent/${HERMES_COMMIT}/scripts/install.sh"'
+    context = owned_directory(work, 'image-context')
+    shutil.copytree(source, context, dirs_exist_ok=True)
+    (context/'Dockerfile').write_text(original.replace(old, new))
+    return context, {'change':'pin Hermes installer URL to the existing HERMES_COMMIT',
+        'hermes_commit':commits[0], 'original_dockerfile_sha256':sha256_file(source/'Dockerfile'),
+        'execution_dockerfile_sha256':sha256_file(context/'Dockerfile')}
 
 
 def assert_agreement(actual, expected, tolerance):
@@ -206,9 +232,18 @@ def smoke_run(base, job, report):
     establish_docker_ownership(base,job)
     try:
         report['stage']='image_build'
-        image=smoke['image_tag'];context=sources/'image'
-        checked_run(['docker','build','--quiet','--force-rm','-t',image,str(context)],3600,
-                    env={**os.environ,'DOCKER_BUILDKIT':'0'})
+        image=smoke['image_tag']
+        context, receipts['image_build_adjustment'] = prepare_image_context(sources/'image', work)
+        diagnostic = base/'smoke-build-diagnostic.log'
+        try:
+            checked_run(['docker','build','--quiet','--force-rm','-t',image,str(context)],3600,
+                        env={**os.environ,'DOCKER_BUILDKIT':'0'}, diagnostic_path=diagnostic)
+        except Exception:
+            if diagnostic.is_file():
+                receipts['build_diagnostic'] = {'worker_file':diagnostic.name,
+                    'bytes':diagnostic.stat().st_size, 'sha256':sha256_file(diagnostic),
+                    'automatically_uploaded':False}
+            raise
         receipts['image_id']=json.loads(checked_run(['docker','image','inspect',image],30))[0]['Id']
         report['stage']='host_environment'
         extract='scout-extract-'+job['id']
