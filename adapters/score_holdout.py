@@ -99,6 +99,20 @@ def assert_scoring_separate(scored, development, id_columns):
             raise ValueError('scoring rows overlap mounted development inputs')
 
 
+def stage_inputs(folder, dev_eval, source_root=Path('.')):
+    """Make only whitelisted development inputs readable by container UID 1000."""
+    folder = Path(folder)
+    folder.chmod(0o755)
+    data = folder/'data'; data.mkdir(); data.chmod(0o755)
+    for rel in ('train.py', 'task.json', 'data/train.csv', 'data/eval.csv'):
+        source = Path(dev_eval) if rel == 'data/eval.csv' else Path(source_root)/rel
+        if source.is_symlink() or not source.is_file():
+            raise ValueError(f'non-regular development input: {rel}')
+        shutil.copyfile(source, folder/rel); (folder/rel).chmod(0o444)
+    (folder/'factory_child.py').write_text(CHILD)
+    (folder/'factory_child.py').chmod(0o444)
+
+
 def main():
     import pandas as pd
     from sklearn.metrics import average_precision_score, roc_auc_score
@@ -124,14 +138,8 @@ def main():
         raise ValueError('invalid thread allowance')
     name = 'factory-predict-' + uuid.uuid4().hex[:16]
     with tempfile.TemporaryDirectory(prefix='factory-prediction-') as tmp:
-        folder = Path(tmp); folder.chmod(0o755); (folder/'data').mkdir()
-        for rel in ('train.py', 'task.json', 'data/train.csv', 'data/eval.csv'):
-            source = dev_eval if rel == 'data/eval.csv' else Path(rel)
-            if source.is_symlink() or not source.is_file():
-                raise ValueError(f'non-regular development input: {rel}')
-            shutil.copyfile(source, folder/rel); (folder/rel).chmod(0o444)
-        (folder/'factory_child.py').write_text(CHILD)
-        (folder/'factory_child.py').chmod(0o444)
+        folder = Path(tmp)
+        stage_inputs(folder, dev_eval)
         # Only worker-host execution is supported; nested host-path mappings are deliberately refused.
         if os.environ.get('BENCH_IN_DOCKER'):
             raise ValueError('run scorer on worker host with its execution-copy venv, not nested Docker')

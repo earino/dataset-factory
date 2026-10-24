@@ -190,14 +190,15 @@ print(json.dumps([float(v) for v in p]))
 
 
 def protocol_probe(work, adapter, image, job, dev, task):
-    stage=owned_directory(work,'protocol-probe'); (stage/'data').mkdir()
-    (stage/'train.py').write_text(PROBE_TRAIN)
-    (stage/'factory_child.py').write_text(adapter.CHILD)
-    (stage/'task.json').write_text(json.dumps(task))
+    fixture=owned_directory(work,'protocol-fixture'); (fixture/'data').mkdir()
+    (fixture/'train.py').write_text(PROBE_TRAIN)
+    (fixture/'task.json').write_text(json.dumps(task))
     # This is a software protocol fixture, not an acceptance dataset or a performance score.
-    for name in ('train','eval'): (stage/'data'/f'{name}.csv').write_text('probe\n')
+    for name in ('train','eval'): (fixture/'data'/f'{name}.csv').write_text('probe\n')
+    stage=owned_directory(work,'protocol-probe')
     (stage/'.smoke-owned').unlink()  # Exact marker we just created; mount only protocol inputs.
-    public_readable(stage)
+    # Exercise the identical whitelist/permissions path used by actual scoring.
+    adapter.stage_inputs(stage, fixture/'data/eval.csv', fixture)
     name='scout-probe-'+job['id']
     command=adapter.docker_command(str(stage), image, name, job['cpus'], job_id=job['id'])
     proc=subprocess.Popen(command,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,text=True)

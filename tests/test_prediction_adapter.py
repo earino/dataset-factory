@@ -1,5 +1,6 @@
 """Protocol/software tests only; not substitute benchmark acceptance tasks."""
 import importlib.util
+import os
 from pathlib import Path
 import sys
 import subprocess
@@ -13,6 +14,21 @@ adapter=importlib.util.module_from_spec(spec)
 exec(compile(PATH.read_bytes(),str(PATH),'exec'),adapter.__dict__)
 
 class AdapterTests(unittest.TestCase):
+    def test_actual_input_staging_is_readable_under_worker_private_umask(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp); source=root/'source';source.mkdir();(source/'data').mkdir()
+            for name in ('train.py','task.json','data/train.csv','data/eval.csv','private-labels.csv'):
+                (source/name).write_text(name)
+            stage=root/'stage';stage.mkdir()
+            previous=os.umask(0o077)
+            try: adapter.stage_inputs(stage,source/'data/eval.csv',source)
+            finally: os.umask(previous)
+            self.assertEqual(stage.stat().st_mode & 0o777,0o755)
+            self.assertEqual((stage/'data').stat().st_mode & 0o777,0o755)
+            files={str(p.relative_to(stage)):p for p in stage.rglob('*') if p.is_file()}
+            self.assertEqual(set(files),{'train.py','task.json','data/train.csv','data/eval.csv','factory_child.py'})
+            self.assertTrue(all(p.stat().st_mode & 0o777 == 0o444 for p in files.values()))
+
     def test_scored_rows_cannot_be_mounted_even_after_renaming(self):
         with tempfile.TemporaryDirectory() as tmp:
             scored=Path(tmp)/'test.csv'; dev=Path(tmp)/'development.csv'
