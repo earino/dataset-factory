@@ -1,3 +1,66 @@
+## 2026-10-24 - EU/EEA discovery tick: ec-merger-phase2-opening READY (go); Paris MoU and G-BA/IQTIG closed at triage
+
+Regional focus Europe - EU/EEA per the tick. Coverage before: 83 candidates, EU
+5 / DE 1, Europe region 16; after: 86 candidates, EU 6 / DE 2 / NL 1, Europe
+region 19, live non-US 21/27 (78%). Probes started from data.europa.eu as
+required. No construction, packaging or advancement was touched.
+
+1. **ec-merger-phase2-opening - READY (go), licence A, novelty differentiated.**
+   DG COMP's case open data (bulk JSON via data.europa.eu since 2025-03-18;
+   1 anonymous GET, 42,025,677 B, 0.87 s) covers every merger case from Nov
+   1990. Task: at notification, from case attributes fixed that day (parties,
+   NACE sectors, regulation), will the Commission open Phase II (adopt an
+   Art. 6(1)(c) decision)? Measured on the full 2026-10-24 snapshot (sha256
+   061027db...): 10,395 cases, 10,123 eligible; label base rate 309/10,123 =
+   3.05%; opener timing 308/309 strictly after notification (median ~1 month,
+   the Phase I window); the single exception identified (M.3333, Sony/BMG
+   re-notification carrying its 2004 opener) with an exclusion rule. Splits
+   measured, both classes in every window: 1990-2013 5,411/217, 2014-2018
+   1,770/46, 2019-2026 2,942/46 (post-reform alternative recorded). Register
+   fidelity proven against three externally sourced fixtures across regimes
+   and eras: M.877 Boeing/McDonnell Douglas (1997 decision text + IP/97/729),
+   M.4731 Google/DoubleClick (IP/07/1695 + IP/08/458), M.10188 Illumina/GRAIL
+   (IP/22/5364, incl. the 2024 post-ECJ withdrawal - recorded as the one
+   post-hoc opener withdrawal). Sector-conditional rates 0.00%-6.25% vs the
+   3.05% base rate: the sector-conditional reference is the required baseline.
+   caseSimplified EXCLUDED (upgrade leak); NACE coding is current-vintage
+   (1997 case coded Rev 2 C.30.3) - recorded in the as-of note. Licence: EC
+   reuse notice -> CC BY 4.0, class A; register fields shipped, not decision
+   PDFs. Novelty differentiated (check-novelty.py): prior art is non-public
+   (EEL 2025 paper, Compass Lexecon 7,823-case dataset, DG COMP's unpublished
+   ex-post EU Merger Database) or text corpora (modernlegal/eurlex); no public
+   ML-ready formulation exists. The fetch is trivially open - the contribution
+   is formulation, splits, fixtures and validation, stated as such in the
+   record. Handoff: construction pins label variant, split partition, the
+   M.3333 rule, missing-sector handling (79 cases), pending-case censoring
+   (41 live), and one EUR-Lex sector spot-check, then the full gate before any
+   figure. Probe scripts retained in candidates/ec-merger-phase2-opening/.
+2. **parismou-psc-detention - DROPPED (class C, closed under standing policy).**
+   Ship-detention task is real and studied, but the only bulk channel requires
+   an account application (personal + organisation details; live Data Sharing
+   page read in the supported browser after parismou.org 404'd non-browser
+   clients), and its only stated terms are liability/support/discretionary
+   account retraction - no redistribution terms at all. The anonymous monthly
+   lists are detention-only (no negative class). Reopen conditions recorded;
+   USCG PSIX (CC0) noted as the open alternative for a future non-EU tick.
+3. **gba-hospital-quality-breach - DROPPED (class C, closed under standing
+   policy).** German hospital quality-report panel exists in exactly the
+   needed shape (per-site indicator values vs reference ranges), but the
+   machine-readable XML sits behind the Qb-Datenportal order form +
+   individual credentials under the ANB, whose §4(2)-(3) make redistribution
+   per-order-declared and require the G-BA's prior written consent for
+   unprocessed data; no anonymous bulk channel exists (per-site PDFs and
+   IQTIG aggregates only). Reopen conditions recorded.
+
+Not opened, recorded for later: DG COMP's sibling open-data feeds (Antitrust
+and State Aid case publications, same portal) could carry further
+procedure-outcome tasks; deferred until ec-merger ships or a second instance
+is wanted.
+
+Checks: scripts/check-candidate.py --all exit 0 (86 records incl. the three
+new); discovery-coverage.py exit 0. Probe scratch deleted (fetched JSON and
+scratch probe copies; retained scripts live in the candidate directory).
+
 ## 2026-10-23 (23:38Z) - nz-ea-hf-001/002/003 watcher close-out: receipts re-verified, push and exact-sha CI confirmed, handled markers written
 
 The watcher delivered the three finished hf_publish jobs. The 23:35Z tick had already

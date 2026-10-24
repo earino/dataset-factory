@@ -1,0 +1,166 @@
+{
+  "id": "ec-merger-phase2-opening",
+  "status": "ready",
+  "created_at": "2026-10-24T00:15:18.727242+00:00",
+  "domain": "EU competition policy / merger-control procedure outcomes (EU institution publisher, DG COMP open data)",
+  "prediction_question": "For a concentration notified to the European Commission under the EU Merger Regulation, using only case attributes fixed at notification (the parties as named in the case title, the case's NACE sector codes, the applicable regulation, and the notification date), will the Commission open an in-depth Phase II investigation (adopt an Art. 6(1)(c) decision) in this case?",
+  "prediction_time": "The notification date of the case (caseNotificationDate; date-only precision, Brussels local). All shipped features are case attributes fixed when the file is registered: caseTitle (the merging parties, an immutable historical fact), caseSectors (NACE codes of the parties' activities; current-vintage register coding, see revision_note), caseRegulation (4064/89 or 139/2004), caseNotificationDate. The label event - an Art. 6(1)(c) decision opening Phase II - is adopted after notification: measured 308/309 openers strictly follow the notification date (302/309 within 2 months; single documented exception M.3333, see anomalies). Fields that can change after notification are excluded from features and recorded below. No feature's target window precedes the instant.",
+  "target_definition": "Binary: the case record carries at least one decision of type 'Art. 6(1)(c)' (the decision by which the Commission initiates proceedings because of serious doubts - the Phase II opener, same article number under Reg 4064/89 and Reg 139/2004). Label source: the decisions[] block of the register record (decisionTypes, decisionAdoptionDate), which is excluded wholesale from shipped features. Measured: 309 positives / 10,123 eligible cases = 3.05%. Measured alternative recorded for construction: any-intervention union (Phase II opener OR Phase I remedies 'Art. 6(1)(b) with conditions & obligations') = 673 / 10,123 = 6.65% (remedies-only 367 = 3.63%).",
+  "sources": [
+    {
+      "name": "European Commission, Directorate-General for Competition - EU Competition: Merger case publications (open data, machine-readable case register, coverage from November 1990, updated daily)",
+      "url": "https://data.europa.eu/data/datasets/cc7e224e-6569-40f0-8037-d3389aa0fae7",
+      "api": "https://compcases-open-data-portal-files-prod.s3.eu-west-1.amazonaws.com/case-data-M.json",
+      "access": "anonymous bulk download; measured 2026-10-24: HTTP 200, 1 GET, 42,025,677 bytes, 0.87 s wall on the coordinator; publisher states the data sets are updated once a day (observed snapshot Last-Modified 2026-10-23T00:48:26Z); dataset landing page at competition-cases.ec.europa.eu is the interactive register",
+      "licence": "European Commission reuse notice -> CC BY 4.0 (see license_evidence)"
+    }
+  ],
+  "license_evidence": [
+    "DG COMP news 'DG Competition's case data available as Open Data' (https://competition-policy.ec.europa.eu/about/news/dg-competitions-case-data-available-open-data-2025-03-18_en, read 2026-10-24): 'We are releasing the data under the European Commission reuse notice, so that the machine-readable data sets can be processed in any way the users may wish, for commercial or non-commercial purposes, provided that the source is acknowledged.'",
+    "European Commission legal notice (https://ec.europa.eu/info/legal-notice_en, read 2026-10-24): 'The Commission's reuse policy is implemented by the Commission Decision of 12 December 2011 on the reuse of Commission documents... Unless otherwise indicated (e.g. in individual copyright notices), content owned by the EU on this website is licensed under the Creative Commons Attribution 4.0 International (CC BY 4.0) licence. This means that reuse is allowed, provided appropriate credit is given and changes are indicated.'",
+    "Scope note: the dataset ships register metadata (case numbers, dates, NACE codes with labels, decision-type labels, case titles). The EC notice adds 'You may be required to clear additional rights if a specific content depicts identifiable private individuals or includes third-party works' - the underlying decision PDFs (caseAttachments) are NOT shipped; only register fields are, and the same fields are the Commission's own published register data. caseTitle carries the parties' names, factual public register data."
+  ],
+  "construction_script": null,
+  "split_strategy": "Temporal splits on notification year, measured from the full register. Candidate partitions (both classes present in every window): full-era thirds train 1990-2013 (5,411 cases / 217 Phase II), eval 2014-2018 (1,770 / 46), holdout 2019-2026 (2,942 / 46); or post-reform (Reg 139/2004 from 2005-09): train 2005-2015 (3,451 / 101), eval 2016-2020 (1,876 / 42), holdout 2021-2026 (2,207 / 30). Construction picks one and documents it; the Art. 6(1)(c) label is the same legal instrument under both regulations. Positive cases cluster weakly by acquisition wave; intervals on any score use notification-year clusters (positives per notification year measured 1-22, median ~8). Pending cases (41 live investigation-phase cases at fetch, concentrated 2025-2026) are censored like the ABS live-month rows: scorable when their procedure concludes.",
+  "measurements": {
+    "panel_shape_measured": "case-data-M.json 2026-10-24 (sha256 in notes.md): 10,395 case records keyed by case number; 10,123 eligible (caseType=MergerCaseType1 'Merger' AND has caseNotificationDate); excluded with recorded mix: 272 no-notification-date cases (decision mix: 219 Art. 4(4)-Full referral, 17 Art. 18 SO, 15 Art. 14, 6 Art. 7(3), 4 Art. 22 Refusal, plus singletons - referral/Art. 22 procedures that never produce an EU notification), 26 'Additional Procedure' (.AP purchaser-approval records), 2 'Consultation'. Notifications per year 1990: 11 rising to 2018: 408, then 350-400/yr to 2026: 317.",
+    "label_base_rate_measured": "Phase II opener (Art. 6(1)(c) present) 309/10,123 = 3.05% of notified cases; per notification year ranges 1 (2024) to 22 (2001); Phase I remedies ('Art. 6(1)(b) with conditions & obligations') 367/10,123 = 3.63%; union any-intervention 673 = 6.65%. Decision-type inventory across all records measured and recorded in notes.md (Art. 6(1)(b) 9,170 occurrences, referrals Art. 4(4)/4(5)/9(3)/22, Art. 8(1)/(2)/(3) outcomes, Withdrawn 263, etc.).",
+    "label_timing_measured": "notification -> first opener lag in months: 1 mo 201, 2 mo 101, 0 mo 1, plus a thin tail 3-18 mo (suspended-clock and extended cases); openers dated BEFORE notification: 1 (M.3333 SONY/BMG re-notification carrying the 2004-02-12 opener of the original procedure under its 2007-01-31 re-notification - exclusion rule: drop label decisions predating notification, or drop the case). Post-hoc withdrawal of an adopted opener: 1 case (M.10188, withdrawn 2024-09-06 after the ECJ Illumina judgment) - label stays 'opened' under the ever-adopted rule; recorded.",
+    "split_window_counts_phase2_label": {
+      "train 1990-2013": "5,411 notified / 217 positive (4.01%) / 24 years, all carry both classes",
+      "eval 2014-2018": "1,770 notified / 46 positive (2.60%) / 5 years, all carry both classes",
+      "holdout 2019-2026": "2,942 notified / 46 positive (1.56%) / 8 years, all carry both classes (2024-2026 positives 1/4/3 reflect still-maturing recent procedures, not zero)"
+    },
+    "feature_coverage_measured": "caseSectors missing on 79/10,123 eligible cases (0.78%, concentrated 1997-2004); caseTitle and caseRegulation present on 100%; caseSimplified present but EXCLUDED as a feature (a simplified filing upgraded to Normal during review would make the current value post-hoc; using it leaks the upgrade); caseInvestigationPhase (41 live cases) and caseDeadlineDate/caseLastDecisionDate/caseLinks/caseCourtCases/caseRenotificationDate excluded as post-hoc or derived.",
+    "learnability_evidence_measured": "Sector-conditional Phase II rates vary well above/below the 3.05% base rate (top divisions by volume: div 20 rate 6.25% (n=256), div 61 5.23% (n=363), div 64 0.85% (n=351), div 65 0.00% (n=230), div 0 4.20% (n=1,523)) - a sector-conditional reference baseline is the required comparator, as with the matrix-stratified bvl reference.",
+    "known_event_fixtures": [
+      "M.877 BOEING / McDONNELL DOUGLAS: register shows notif 1997-02-18, opener Art. 6(1)(c) 1997-03-19, Art. 8(2) with conditions & obligations 1997-07-30, Reg 4064/89 - matches the Commission's own decision PDF (ec.europa.eu/competition/mergers/cases/decisions/m877_19970730_600_fr.pdf: notification received 18 February 1997; proceedings opened by decision of 19 March 1997) and press release IP/97/729 (30 July 1997, cleared 'under conditions and obligations'). Expected verdict: positive; observed: positive.",
+      "M.4731 GOOGLE / DOUBLECLICK: register shows notif 2007-09-21, opener Art. 6(1)(c) 2007-11-13, Art. 8(1) 2008-03-11 - matches press release IP/07/1695 (Commission opens in-depth investigation, 13 November 2007) and IP/08/458 (clearance, 11 March 2008). Expected verdict: positive; observed: positive.",
+      "M.10188 ILLUMINA / GRAIL: register shows notif 2021-06-16, Art. 22 Full referral 2021-04-19, opener Art. 6(1)(c) 2021-07-22, Art. 8(3) prohibition 2022-09-06 - matches press release IP/22/5364 (6 September 2022 prohibition, register case number M.10188), including the 2024-09-06 withdrawals after the ECJ judgment. Expected verdict: positive; observed: positive. Also demonstrates the post-hoc-withdrawal caveat."
+    ],
+    "revision_note": "The register is a current snapshot (bulk feed since 2025-03-18; interactive register earlier). Three fixtures spanning 1997-2022 reproduce external sources exactly, evidence that the register preserves historical procedure facts; features are nevertheless stated as current-vintage register values (precedent: ABS revision note). caseSectors uses NACE Rev 2 codes for all eras including pre-2008 notifications (M.877, notified 1997, coded C.30.3 'Manufacture of air and spacecraft') - the taxonomy label is current-vintage even where the underlying industries are notification-time facts; construction records this in the feature documentation and verifies one further old case's sectors against its OJ prior notice as a build-time fixture.",
+    "dated_example": "M.10188 ILLUMINA / GRAIL, all dates Brussels local (register carries date-only precision): feature event window = case attributes fixed at registration on 2021-06-16 (title 'ILLUMINA / GRAIL', sectors C.27.9 + C.21, Reg 139/2004); eligibility cutoff = caseType Merger and a notification date exists; prediction instant = 2021-06-16; target window = 2021-06-16 until the procedure's Phase I decision (by EUMR Art. 10(3) at most ~25-35 working days later, extendable); observed outcome = opener adopted 2021-07-22, 36 days after the instant, label positive. Downstream events (Art. 8(3) 2022-09-06, withdrawals 2024-09-06) are outside the label. No part of the target window precedes the instant; the same-month opener case (0-month lag) is still dated after its notification date.",
+    "fetch_cost_measured": "1 anonymous GET, 42,025,677 bytes, 0.87 s wall on the coordinator (whole-register fetch is trivial; no worker needed for discovery). S3 objects carry a 30-day expiry rule with daily regeneration - the distribution URL from the data.europa.eu record is the stable channel; construction records fetch date + sha256.",
+    "measured_on": "2026-10-24 via scripts retained in candidates/ec-merger-phase2-opening/probe_merger_*.py, commands and outputs in notes.md"
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": "All five discovery contracts have measured evidence: redistribution (Commission reuse notice, CC BY 4.0, class A), timing (notification-date instant; 308/309 openers strictly post-instant, lag distribution measured; post-hoc and derived fields excluded by name), target (label from the decisions block, excludable; base rate 3.05% measured), splits (three disjoint windows, both classes everywhere, positives 217/46/46), not-a-mirror (novelty check differentiated: literature and proprietary compiled datasets exist; no public ML-ready formulation of this task with splits and a scored contract). The fetch is trivially open - the contribution is the formulation (notification-time contract, eligibility, label from the decision-type inventory, splits, fixtures, baselines) and validation, and the record states that explicitly.",
+  "next_action": "Construction (advancement): build.py on a worker from a fresh GET (record sha256); pin the label variant (Phase II opener recommended; any-intervention alternative recorded), split partition (full-era thirds recommended; post-reform alternative recorded), M.3333 exclusion rule, missing-sector handling (79 cases), pending-case censoring; verify one further pre-2008 case's sectors against its OJ prior notice; then full-artifact qualification gate -> exact-byte acceptance -> reference baselines (sector-conditional rate as the required comparator, plus global-rate and title-text baselines) before any figure is quoted.",
+  "jurisdiction": {
+    "country": "EU",
+    "region": "Europe",
+    "publisher": "Directorate-General for Competition, European Commission",
+    "recorded_at": "2026-10-24"
+  },
+  "licence_class": "A",
+  "licence_note": "CC BY 4.0 via the European Commission reuse notice (Commission Decision 2011/833); attribution 'European Commission, Directorate-General for Competition' and indicating changes; conditions carried into LICENSE.md at release. Decision PDFs (potential third-party content) are not redistributed - register fields only.",
+  "verdict": "go",
+  "novelty_check": {
+    "checked_at": "2026-10-24T00:17:20+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "EU merger Phase II prediction dataset",
+      "merger clearance prediction European Commission benchmark",
+      "EC merger decision outcome machine learning task"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "EU merger Phase II prediction dataset",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "merger clearance prediction European Commission benchmark",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "EC merger decision outcome machine learning task",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "EU merger Phase II prediction dataset",
+          "hits": 777421,
+          "top": [
+            "Spamming the regulator: Exploring a new lobbying strategy in EU competition procedures",
+            "European Size of Transaction Tests within the EUMR's Case Referral System and the German-Austrian Guidance Paper",
+            "Cooperation in Multijurisdictional Merger Filings: the ECA Notice Mechanism",
+            "The EU Merger Working Group: Looking Through the Rear View Mirror",
+            "Results of white lupin (Lupinus albus) variety trials in Switzerland from 2017 to 2024"
+          ]
+        },
+        {
+          "query": "merger clearance prediction European Commission benchmark",
+          "hits": 862088,
+          "top": [
+            "The plight of migrant women nightworkers in the Irish night-time economy",
+            "The Role of Expertise in EU Law on Digital Markets \u2013 dataset",
+            "Better Connected: European Co-operation in Telecoms Cases",
+            "Sanitation-service conditions in water-utility merger approvals: a comparative competition-law analysis linking merger-condition silence to service-quality remedies for affected customers",
+            "Mega Mergers in the Seeds & Agro-chem Industry"
+          ]
+        },
+        {
+          "query": "EC merger decision outcome machine learning task",
+          "hits": 492321,
+          "top": [
+            "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
+            "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI",
+            "RGB and RGNIR Plastic Waste Database",
+            "Training Coordination Proxy Agents.",
+            "A Data-Efficient and Explainable Machine Learning Framework for Predictiing Microbial Contamination Risk in Groundwater of Resource-Constrained Regions"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "EU merger Phase II prediction dataset",
+          "hits": 5,
+          "top": [
+            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+            "Measurement of the integrated luminosity of the Phase 2 data of the Belle II experiment",
+            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+            "The Belle II Experiment at SuperKEKB -- Input to the European Particle Physics Strategy",
+            "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset"
+          ]
+        },
+        {
+          "query": "merger clearance prediction European Commission benchmark",
+          "hits": 5,
+          "top": [
+            "Response by the Montreal AI Ethics Institute to the European Commission's Whitepaper on AI",
+            "ERAnets Evaluation of Collaboration Among Participants of IST Research and their Evolution to Collaborations in the Euro",
+            "Physics Briefing Book",
+            "The Accuracy Paradox: Empirical Diagnostic of Default Decision Thresholds in Multi-Label Enzyme Commission Prediction [W",
+            "Corrigendum to \"On subgroup perfect codes in Cayley graphs\" [European J. Combin. 91 (2021) 103228]"
+          ]
+        },
+        {
+          "query": "EC merger decision outcome machine learning task",
+          "hits": 5,
+          "top": [
+            "DOME: Recommendations for supervised machine learning validation in biology",
+            "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
+            "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+            "Physics-Inspired Interpretability Of Machine Learning Models",
+            "Active learning for data streams: a survey"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'EU merger Phase II prediction dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'merger clearance prediction European Commission benchmark': 0 hit(s) - nothing notable\n- huggingface_datasets / 'EC merger decision outcome machine learning task': 0 hit(s) - nothing notable\n- zenodo_records / 'EU merger Phase II prediction dataset': 777421 hit(s) - Spamming the regulator: Exploring a new lobbying strategy in EU competition procedures, European Size of Transaction Tests within the EUMR's Case Referral System and the German-Austrian Guidance Paper, Cooperation in Multijurisdictional Merger Filings: the ECA Notice Mechanism, The EU Merger Working Group: Looking Through the Rear View Mirror, Results of white lupin (Lupinus albus) variety trials in Switzerland from 2017 to 2024\n- zenodo_records / 'merger clearance prediction European Commission benchmark': 862088 hit(s) - The plight of migrant women nightworkers in the Irish night-time economy, The Role of Expertise in EU Law on Digital Markets \u2013 dataset, Better Connected: European Co-operation in Telecoms Cases, Sanitation-service conditions in water-utility merger approvals: a comparative competition-law analysis linking merger-condition silence to service-quality remedies for affected customers, Mega Mergers in the Seeds & Agro-chem Industry\n- zenodo_records / 'EC merger decision outcome machine learning task': 492321 hit(s) - plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database, Training Coordination Proxy Agents., A Data-Efficient and Explainable Machine Learning Framework for Predictiing Microbial Contamination Risk in Groundwater of Resource-Constrained Regions\n- arxiv_preprints / 'EU merger Phase II prediction dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, Measurement of the integrated luminosity of the Phase 2 data of the Belle II experiment, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, The Belle II Experiment at SuperKEKB -- Input to the European Particle Physics Strategy, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset\n- arxiv_preprints / 'merger clearance prediction European Commission benchmark': 5 hit(s) - Response by the Montreal AI Ethics Institute to the European Commission's Whitepaper on AI, ERAnets Evaluation of Collaboration Among Participants of IST Research and their Evolution to Collaborations in the Euro, Physics Briefing Book, The Accuracy Paradox: Empirical Diagnostic of Default Decision Thresholds in Multi-Label Enzyme Commission Prediction [W, Corrigendum to \"On subgroup perfect codes in Cayley graphs\" [European J. Combin. 91 (2021) 103228]\n- arxiv_preprints / 'EC merger decision outcome machine learning task': 5 hit(s) - DOME: Recommendations for supervised machine learning validation in biology, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Changing Data Sources in the Age of Machine Learning for Official Statistics, Physics-Inspired Interpretability Of Machine Learning Models, Active learning for data streams: a survey",
+    "prior_art": [
+      "Gupta/Parikh/Patel EEL 2025 doi 10.52783/eel.v15i2.3347 (non-public compiled dataset); Compass Lexecon EC merger decisions dataset (proprietary); Stiebale & Szucs 2026 DG COMP ex-post study (unpublished database); modernlegal/eurlex HF corpus"
+    ],
+    "theirs": "Publisher provides the case register as bulk open data (since 2025-03-18) and decision documents; researchers compiled proprietary/manual datasets (Compass Lexecon 7,823 cases; EEL 2025 paper's non-public sample; DG COMP internal ex-post EU Merger Database); a decision-text corpus exists on Hugging Face. No public task formulation, label contract, splits or scored benchmark.",
+    "ours": "First public ML-ready formulation of the EC merger Phase II referral-risk task: notification-time prediction instant over the full public register (1990-2026, 10,123 notified cases), label contract from the decision-type inventory (Art. 6(1)(c) opener), measured split windows with both classes, external known-event fixtures, documented feature as-of policy.",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
+}

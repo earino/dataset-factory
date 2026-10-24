@@ -1,0 +1,57 @@
+{
+  "id": "gba-hospital-quality-breach",
+  "status": "dropped",
+  "created_at": "2026-10-24T00:20:22.919391+00:00",
+  "domain": "German hospital quality reporting - would-be task: for a German hospital site (Standort) in reporting year N-1, will one of its published external quality-assurance indicators breach its reference range in reporting year N? (national sector-regulator publisher: Gemeinsamer Bundesausschuss / IQTIG, DE; statutory Strukturierte Qualitaetsberichte under SGB V §136b)",
+  "prediction_question": "Dropped at licence/access triage before task probing: will a hospital site's quality indicator value fall outside its reference range next reporting year? Not probed further because the per-hospital machine-readable channel is gated by a conditional contract and no anonymous bulk channel exists (see rejection_reason).",
+  "prediction_time": "Not established - the lead was closed at licence/access triage. The would-be contract (predict next year's threshold breach from this year's published report + site covariates, publication each spring for the prior reporting year) was plausible and the population (~1,500-2,000 hospital sites, reports statutory since 2005) large enough; that is why the access/licence check ran first.",
+  "target_definition": "Would-be label: the site's indicator result is flagged outside the reference range (unterschritten/ueberschritten) in the next Structured Quality Report. Not measurable: the machine-readable per-hospital values sit behind the gated Qb-Datenportal XML channel; the anonymous public channel is per-hospital PDF 'Referenzberichte' (thousands per year, one per site, values embedded in prose/tables) - no bulk machine-readable distribution. IQTIG publishes only indicator definitions and aggregates (Indikatoren- und Kennzahlenuebersicht CSV/XLSX ~400 KB per Auswertungsjahr; Bundesqualitaetsbericht Excel annex; Qualitaetsreport PDFs).",
+  "sources": [
+    {
+      "name": "G-BA Qb-Datenportal - machine-readable XML of hospital quality reports (the only bulk per-hospital channel)",
+      "url": "https://qb-datenportal.g-ba.de/",
+      "api": null,
+      "access": "GATED: 'Die maschinenverwertbaren Daten der Qualitaetsberichte liegen ... in der Extensible Markup-Language (XML) vor ... Sie werden auf der Grundlage der Allgemeinen Nutzungsbedingungen zum Download zur Verfuegung gestellt. Hierzu ist eine Bestellung ueber das Auftragsformular erforderlich. Nach erfolgreicher Verifizierung der Auftragsdaten erhalten Sie individuelle Zugangsdaten fuer den Download' (Qb-Datenportal XML-Download section, read 2026-10-24).",
+      "licence": "ANB (Allgemeine Nutzungsbedingungen) of the G-BA - conditional instrument, see license_evidence; free of charge (§3 ANB) but bound to a concluded contract per order (§2 ANB)"
+    },
+    {
+      "name": "G-BA Referenzdatenbank - per-hospital PDF reference reports (anonymous, not machine-readable bulk)",
+      "url": "https://www.g-ba.de/qualitaetsberichte/",
+      "api": null,
+      "access": "anonymous per-hospital PDFs (Berichtsjahr 2024 online since 2026-03-18 per G-BA fachnews); one PDF per hospital site per year - not a bulk extraction channel for a multi-year panel",
+      "licence": "unstated for the PDFs; the XML channel carries the ANB"
+    },
+    {
+      "name": "IQTIG - indicator definitions, aggregates and quality reports (definition + aggregate level only)",
+      "url": "https://iqtig.org/veroeffentlichungen/strukturierterqualitaetsbericht/",
+      "api": null,
+      "access": "anonymous PDFs/XLSX/CSV of indicator overviews and federal aggregates; no per-hospital values in bulk",
+      "licence": "IQTIG states publications are placed at the public's disposal for unentgeltliche Nutzung; redistribution terms for compiled data not stated on the pages read"
+    }
+  ],
+  "license_evidence": [
+    "ANB §4(2) (https://qb-datenportal.g-ba.de/anb, read 2026-10-24): 'Der Nutzer ist zur Weiterverbreitung der bereitgestellten Daten der Qualitaetsberichte nur berechtigt, sofern er auf dem Auftragsformular angegeben hat, dass er die Daten der Qualitaetsberichte weiterverbreitet.' - redistribution is only permitted when declared per order with recipient, platform, purpose and scope details.",
+    "ANB §4(3): 'Erfolgt die Weiterverbreitung der Daten der Qualitaetsberichte, ohne dass diese aufbereitet werden, muss zuvor die schriftliche Zustimmung des G-BA eingeholt werden.' - redistributing the data unprocessed requires prior written consent of the G-BA.",
+    "ANB §5(2): future publications or sold products making statements about specific hospitals must be reported to the G-BA with source details; §6: user data are stored so the G-BA can check compliance with the ANB in individual cases; §9: contractual penalties and exclusion up to four years for violations of §4/§5."
+  ],
+  "construction_script": null,
+  "split_strategy": null,
+  "measurements": {
+    "access_measured": "XML bulk channel: registration + Auftragsformular + individual credentials (ANB §2, §7); no account was requested (standing policy: no unsolicited permission requests). Anonymous alternative measured as not bulk: the Referenzdatenbank serves per-hospital PDFs; Berichtsjahr 2024 set announced online 2026-03-18 (~185 indicators and 81 Kennzahlen per G-BA fachnews 236). IQTIG indicator-overview downloads measured at definition/aggregate level only (e.g., Indikatoren- und Kennzahlenuebersicht CSV 402 KB for Auswertungsjahr 2025).",
+    "measured_on": "2026-10-24, pages read via web extraction; no data files downloaded beyond the ANB text."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "Closed under the standing triage policy: the per-hospital machine-readable channel exists but is gated behind a per-order contract (registration, Auftragsformular, individual credentials), and its instrument (ANB) makes redistribution conditional on per-order declarations and requires the G-BA's prior written consent for unprocessed redistribution (§4(2)-(3)), plus reporting duties for hospital-specific publications (§5(2)). No anonymous bulk machine-readable channel exists (PDFs are per-site only; IQTIG publishes definitions and aggregates). We only build on sources that are already clean; this one is not. Would reopen if: the G-BA or IQTIG publishes per-hospital indicator values through an anonymous machine-readable distribution under an open licence (e.g., a govdata.de or data.europa.eu distribution under dl-de or CC BY), or the operator explicitly records a candidate-specific decision to apply under the ANB and accept its conditions (a recorded operator decision, never a publisher grant).",
+  "review": "A measured rejection at the cheapest decisive step: the entity-time panel exists in exactly the shape the task needs, but German statutory reporting routes its machine-readable form through a gated conditional channel. The evidence (ANB quotes, access mechanics, aggregate-level alternatives) is recorded so a future tick can reopen instantly if the publisher posts an open distribution.",
+  "next_action": "Closed. Reopen conditions in rejection_reason.",
+  "jurisdiction": {
+    "country": "DE",
+    "region": "Europe",
+    "publisher": "Gemeinsamer Bundesausschuss (G-BA) / Institut fuer Qualitätssicherung und Transparenz im Gesundheitswesen (IQTIG)",
+    "recorded_at": "2026-10-24"
+  },
+  "licence_class": "C",
+  "licence_note": "Conditional application-based instrument (ANB): free of charge but redistribution requires per-order declaration and, for unprocessed data, the G-BA's prior written consent. No grant exists; nothing was requested.",
+  "verdict": "reject"
+}
