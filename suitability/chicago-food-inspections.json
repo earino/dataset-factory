@@ -4,20 +4,19 @@
   "release_tag": "v2026.10",
   "artifact_version": "c951bf5b42a0bfd20fea52f645486ecbd450ebef9d8c5387f01af40f70b58102",
   "reviewed_on": "2026-10-24",
-  "reviewer": "Scout; reviewed by Codex",
+  "reviewer": "Scout and Codex (code/document review; no new full-artifact scoring)",
   "decision": "retain_restricted",
-  "summary": "Retained with restrictions: licensed-establishment inspection; label is whether the inspection cites the configuration's code, asked at inspection start. The published vv2026.10 files are self-answering under cross-row joins (all 40 configurations, 22,309/35,358 eval rows covered, zero mismatches, blind AUC 1.0), so unrestricted batch access is not a valid benchmark surface. Supported as a retrospective development corpus under the isolated-rows interface once it is mechanically enforced.",
+  "summary": "Retained for retrospective model-development research with documented timing limitations. Later evaluation rows expose earlier outcomes; predictions require restricted access.",
   "supported_uses": [
-    "Retrospective model-development experiments under the runner's isolated-rows interface: public eval rows for development and model selection, sealed labelled holdout for final scoring",
-    "Research use of the construction, provenance and honest baselines on the frozen artifact"
+    "Retrospective train/validation model-development experiments under the documented timing and selection limitations",
+    "Final evaluation only under a protocol that isolates holdout data from development and prevents later rows influencing earlier predictions"
   ],
   "unsupported_uses": [
     "Claims of verified real-time or operational forecasting validity",
-    "Unrestricted cross-row batch access to the public files as a benchmark surface",
-    "Reporting public-eval scores as out-of-sample forecasting skill",
-    "Any benchmark score produced by a solver holding the public files, including scores indistinguishable from honest ones: the join recovery is deterministic"
+    "Treating development/validation scores as untouched final-test results",
+    "Forecasting scores from unrestricted cross-row access to this artifact"
   ],
-  "evaluation_access": "isolated_rows",
+  "evaluation_access": "chronological",
   "historical_availability": "assumed",
   "training_label_timing": "unverified",
   "vintage": "current_snapshot",
@@ -33,10 +32,11 @@
     "reverse-history join through days_since_previous: a later inspection S with S.inspection_date - S.days_since_previous = T.inspection_date ships prev_target_cited, which is T's label",
     "The labelled holdout is presumed to carry the same self-answering structure by construction; it was never opened by the audit and must be treated as compromisable by the same join class.",
     "Historical feature/label availability at the declared instant is assumed from current snapshots, not verified against release vintages.",
-    "The current scorer passes the complete feature frame to predict_proba; prediction-time isolation is instructed but not mechanically enforced, so any framework score on these files is gameable."
+    "The current scorer passes the complete feature frame to predict_proba; prediction-time isolation is instructed but not mechanically enforced, so any framework score on these files is gameable.",
+    "Strictly earlier inspection dates exclude same-day history, but recorded inspection dates do not establish publication or outcome-availability times."
   ],
   "required_actions": [
-    "Run predictions through the isolated-rows interface once implemented (issue #17); the current scorer passes the complete feature frame and does not mechanically enforce prediction-time isolation",
+    "Use a prediction-time-restricted evaluator for future experiments; the historical scorer supplied the full frame. Do not relabel old scores as results from the revised protocol.",
     "Keep the labelled holdout outside evaluated workspaces and never load later rows when scoring earlier targets",
     "Versioned rebuild (next release tag) at a common information cutoff, or a chronological as-of interface, with outcome-bearing later rows and lagged fields purged; re-run the blind join battery before any stronger claim.",
     "Site page and Hub card must carry the suitability record's restrictions once Codex integrates them."
@@ -51,6 +51,11 @@
       "claim": "Task grain and prediction instant",
       "source": "release/chicago-food-inspections/README.md",
       "detail": "task definition section"
+    },
+    {
+      "claim": "Prediction-time availability remains unverified",
+      "source": "release/chicago-food-inspections/code/build.py",
+      "detail": "Strictly earlier inspection dates exclude same-day history, but recorded inspection dates do not establish publication or outcome-availability times."
     }
   ],
   "corrections": [

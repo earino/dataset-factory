@@ -52,7 +52,7 @@ import json
 import sys
 from pathlib import Path
 
-GATE_VERSION = "1.4.0"
+GATE_VERSION = "1.5.0"
 
 MIN_GROUP_FOR_CATEGORICAL = 5
 MIN_EVAL_POSITIVES = 30
@@ -342,7 +342,7 @@ def check_prediction_time(quality: dict, report: Report) -> None:
     instant_lag = instant.get("days_after_period_end")
     numeric = all(isinstance(v, int) and v >= 0 for v in (feature_lag, instant_lag))
     report.add("timing.features_available_at_instant",
-               numeric and feature_lag <= instant_lag,
+               numeric and feature_lag <= instant_lag and (not lags or feature_lag >= max(lags)),
                (f"features publish {feature_lag}d after the period, instant is {instant_lag}d after it"
                 if numeric else "features or instant do not state a publication lag in days"),
                {"features_lag_days": feature_lag, "instant_lag_days": instant_lag,
@@ -362,6 +362,176 @@ def check_prediction_time(quality: dict, report: Report) -> None:
                + ("" if latest and "+" not in latest else " - a selection that reaches into a later "
                   "period (M+1 or beyond) makes the retained population depend on the future"),
                {"latest_period_used": latest, "fields": selection.get("fields")})
+
+
+def check_evaluation_contract(dataset, quality, report, columns_by_split):
+    """Check declared scientific scope; measured chronology requires a full-row private ledger.
+
+    Retrospective artifacts may qualify with explicit assumptions. They cannot claim historical
+    availability. Cross-row probes measure exposure, not whether an existing model used it.
+    """
+    contract = quality.get('evaluation_contract')
+    report.add('contract.declared', isinstance(contract, dict),
+               'evaluation_contract required: intended use, access, vintage and evidence')
+    if not isinstance(contract, dict):
+        return
+    scope = contract.get('use')
+    access = contract.get('access')
+    report.add('contract.scope', scope in ('retrospective_research', 'historical_forecasting')
+               and access in ('isolated_rows', 'chronological', 'common_cutoff_batch'),
+               f'use={scope!r}; access={access!r}; eval is development, holdout is final')
+    evidence = contract.get('feature_evidence', {})
+    columns = set(next(iter(columns_by_split.values()))[0]) - {quality.get('target')} if columns_by_split else set()
+    missing = [name for name in sorted(columns) if not isinstance(evidence.get(name), dict)
+               or not evidence[name].get('source') or not evidence[name].get('availability')
+               or evidence[name].get('status') not in ('verified', 'assumed', 'unverified')]
+    report.add('contract.every_input_has_availability_evidence', not missing,
+               f'Every solver-visible non-target column needs availability evidence; missing: {missing}')
+    vintage = contract.get('vintage', {})
+    selection = contract.get('selection', {})
+    report.add('contract.vintage_and_selection',
+               vintage.get('kind') in ('as_of', 'current_snapshot', 'mixed') and bool(vintage.get('evidence'))
+               and selection.get('kind') in ('prediction_time', 'outcome_conditioned')
+               and bool(selection.get('evidence')) and bool(contract.get('limitations')),
+               'Vintage, selection and limitations must be explicit; declarations are not measurements')
+    audit = contract.get('cross_row_audit', {})
+    probes = audit.get('probes', [])
+    report.add('contract.cross_row_review', isinstance(probes, list)
+               and bool(audit.get('rationale')) and bool(audit.get('auxiliary_files_review')),
+               'Document applicable cross-row probes and every solver-visible auxiliary file')
+    if isinstance(probes, list):
+        for index, probe in enumerate(probes):
+            try:
+                results = cross_row_probe(columns_by_split, quality, probe)
+                exposed = any(v['covered'] for v in results.values())
+                report.add(f'contract.cross_row_probe_{index}',
+                           not exposed or access in ('isolated_rows', 'chronological'),
+                           'Outcome-bearing later-row exposure requires restricted evaluation access; mismatches are reported', results)
+            except (KeyError, ValueError, TypeError, IndexError) as exc:
+                report.add(f'contract.cross_row_probe_{index}', False, f'Invalid probe: {exc}')
+    if scope == 'historical_forecasting':
+        verified = not missing and all(evidence[c].get('status') == 'verified' for c in columns)
+        report.add('contract.historical_evidence', verified and vintage.get('kind') == 'as_of'
+                   and selection.get('kind') == 'prediction_time',
+                   'Historical forecasting requires verified inputs, as-of vintage and prediction-time selection')
+    ledger = contract.get('availability_ledger')
+    if not ledger:
+        report.add('contract.label_availability', scope == 'retrospective_research'
+                   and contract.get('training_label_timing') == 'unverified',
+                   'No full-row availability ledger: training-label timing UNVERIFIED; retrospective use only')
+        return
+    problems = []
+    try:
+        path = dataset / ledger
+        if not path.resolve().is_relative_to(dataset.resolve()) or path.is_symlink():
+            raise ValueError('availability ledger must be a regular file inside the artifact')
+        report.artifact['availability_ledger'] = {'file': ledger, 'sha256': sha256_of(path),
+                                                'bytes': path.stat().st_size}
+        id_cols = quality['id_columns']
+        if not id_cols:
+            raise ValueError('availability ledger requires id_columns')
+        expected = {}
+        for split, (_, cols) in columns_by_split.items():
+            expected[split] = {tuple(values) for values in zip(*(cols[c] for c in id_cols))}
+            if len(expected[split]) != len(cols[quality['target']]):
+                raise ValueError('availability ledger needs unique composite row identifiers')
+        seen = {split: set() for split in expected}
+        earliest, latest = {}, {}
+        def stamp(value):
+            parsed = datetime.datetime.fromisoformat(value.replace('Z', '+00:00'))
+            if parsed.tzinfo is None:
+                raise ValueError('ledger timestamps must have explicit timezone')
+            return parsed
+        with path.open(newline='') as handle:
+            for row in csv.DictReader(handle):
+                split = row['split']; key = tuple(row[c] for c in id_cols)
+                if split not in expected or key not in expected[split] or key in seen[split]:
+                    raise ValueError(f'unknown or duplicate ledger row: {split}/{key}')
+                seen[split].add(key)
+                prediction = stamp(row['prediction_time'])
+                available = stamp(row['features_available_at'])
+                label = stamp(row['label_available_at'])
+                if available > prediction:
+                    problems.append(f'{split}/{key}: features arrive after prediction')
+                earliest[split] = min(earliest.get(split, prediction), prediction)
+                latest[split] = max(latest.get(split, label), label)
+        if seen != expected:
+            problems.append('availability ledger does not cover every artifact row exactly once')
+        for before, after in (('train', 'eval'), ('train', 'holdout'), ('eval', 'holdout')):
+            if before not in latest or after not in earliest or latest[before] > earliest[after]:
+                problems.append(f'{before} outcomes unavailable before first {after} prediction')
+        report.add('contract.label_availability', not problems,
+                   '; '.join(problems[:10]) or 'Full-row feature and development-label availability verified against supplied ledger',
+                   {'problems': len(problems), 'rows_checked': {k: len(v) for k, v in seen.items()}})
+    except (OSError, KeyError, ValueError, TypeError) as exc:
+        report.add('contract.label_availability', False, f'Invalid availability ledger: {exc}')
+
+
+def cross_row_probe(columns_by_split, quality, probe):
+    """Full-artifact blind join, with singleton targets and unanimous donors. No model/AUC.
+
+    The source row points to an earlier target by fixed day/month/year offset or a day-lag
+    column. expression is copy, gt, lt, or scaled_gt; operands come only from donor features.
+    Supports inspection histories, ABS, FluNet, EUTL and NOAA margin probes. Price ledger
+    extensions can be expressed as multiple probes. Target labels are read only to compare.
+    """
+    entities = probe['entity_columns']; time_col = probe['time_column']
+    if not entities or not isinstance(entities, list):
+        raise ValueError('entity_columns must be nonempty')
+    lhs, rhs = probe['left'], probe.get('right')
+    target = quality['target']
+    if lhs == target or rhs == target or target in entities or time_col == target:
+        raise ValueError('probe inputs cannot read target labels')
+    op = probe['operation']
+    if op not in ('copy', 'gt', 'lt', 'scaled_gt'):
+        raise ValueError('unsupported probe operation')
+    result = {}
+    for split, (_, cols) in columns_by_split.items():
+        n = len(cols[target]); keys = []; donors = {}; counts = {}
+        for i in range(n):
+            day = datetime.date.fromisoformat(cols[time_col][i][:10] + ('-01' if len(cols[time_col][i]) == 7 else ''))
+            key = tuple(cols[c][i] for c in entities) + (day.isoformat(),)
+            keys.append(key); counts[key] = counts.get(key, 0) + 1
+            if 'lag_days_column' in probe:
+                if probe['lag_days_column'] == target:
+                    raise ValueError('lag cannot read target')
+                lag = int(cols[probe['lag_days_column']][i])
+                if lag <= 0:
+                    continue
+                earlier = day - datetime.timedelta(days=lag)
+            elif 'offset_months' in probe:
+                months = int(probe['offset_months'])
+                if months <= 0:
+                    raise ValueError('offset must point backwards')
+                y, m = divmod(day.year * 12 + day.month - 1 - months, 12)
+                earlier = day.replace(year=y, month=m + 1)
+            else:
+                days = int(probe['offset_days'])
+                if days <= 0:
+                    raise ValueError('offset must point backwards')
+                earlier = day - datetime.timedelta(days=days)
+            left = float(cols[lhs][i])
+            if op == 'copy':
+                if left not in (0, 1):
+                    continue
+                prediction = int(left)
+            else:
+                right = float(cols[rhs][i]) if rhs else float(probe.get('threshold', 0))
+                prediction = int(left < right) if op == 'lt' else int(left * float(probe.get('scale', 1)) > right)
+            donor_key = key[:-1] + (earlier.isoformat(),)
+            donors.setdefault(donor_key, set()).add(prediction)
+        covered = mismatches = ambiguous = 0
+        for i, key in enumerate(keys):
+            votes = donors.get(key, set())
+            if counts[key] != 1 or len(votes) != 1:
+                ambiguous += bool(votes)
+                continue
+            covered += 1
+            actual = int(cols[target][i] == str(quality['positive_label']))
+            mismatches += next(iter(votes)) != actual
+        result[split] = {'rows': n, 'covered': covered, 'mismatches': mismatches,
+                         'ambiguous_or_conflicting': ambiguous}
+    return result
 
 
 def check_units_and_frames(quality: dict, report: Report) -> None:
@@ -730,6 +900,7 @@ def qualify(dataset: Path) -> Report:
     report.artifact["quality.json"] = {"file": "quality.json",
                                        "sha256": sha256_of(quality_path),
                                        "bytes": quality_path.stat().st_size}
+    check_evaluation_contract(dataset, quality, report, columns_by_split)
     report.artifact["artifact_version"] = {
         "digest": hashlib.sha256(
             "".join(sorted(f"{key}:{value['sha256']}"
@@ -764,7 +935,11 @@ def accept(report_path: Path, dataset: Path) -> int:
         return 1
     recorded = report.get("artifact", {})
     problems = []
-    for key in ("train", "eval", "holdout", "meta.json", "quality.json"):
+    required = ["train", "eval", "holdout", "meta.json", "quality.json"]
+    descriptor = json.loads((dataset / "quality.json").read_text())
+    if descriptor.get("evaluation_contract", {}).get("availability_ledger"):
+        required.append("availability_ledger")
+    for key in required:
         entry = recorded.get(key)
         if not entry:
             problems.append(f"{key} is missing from the report")

@@ -4,28 +4,26 @@
   "release_tag": "v2026.09",
   "artifact_version": "fb49f932c7b4ea5ab532c20f7dce59a7d733de925d1e172054ff1d38abe1eeed",
   "reviewed_on": "2026-10-24",
-  "reviewer": "Scout; reviewed by Codex",
+  "reviewer": "Scout and Codex (code/document review; no new full-artifact scoring)",
   "decision": "retain_restricted",
-  "summary": "Retained with restrictions: station-day minor-flood exceedance. A (station, D) -> (station, D+1) join exposes the outcome day's observed_max_ft, giving near-perfect blind ranking (AUC ~0.9993, hundreds of binary mismatches against NOAA's official flag) in both split designs - not exact recovery, but far beyond honest modelling. The build and the data dictionary also disagree on the day definition (the build assigns the official minFlag to date+1).",
+  "summary": "Retained for retrospective model-development research with documented timing limitations. Later evaluation rows expose earlier outcomes; predictions require restricted access.",
   "supported_uses": [
-    "Retrospective model-development experiments under the runner's isolated-rows interface: public eval rows for development and model selection, sealed labelled holdout for final scoring",
-    "Research use of the construction, provenance and honest baselines on the frozen artifact"
+    "Retrospective train/validation model-development experiments under the documented timing and selection limitations",
+    "Final evaluation only under a protocol that isolates holdout data from development and prevents later rows influencing earlier predictions"
   ],
   "unsupported_uses": [
     "Claims of verified real-time or operational forecasting validity",
-    "Unrestricted cross-row batch access to the public files as a benchmark surface",
-    "Reporting public-eval scores as out-of-sample forecasting skill",
-    "Any benchmark score produced by a solver holding the public files: the future-measurement join ranks near-perfectly",
-    "Presenting the label as NOAA's official same-day flag until the day definition is corrected and documented"
+    "Treating development/validation scores as untouched final-test results",
+    "Forecasting scores from unrestricted cross-row access to this artifact"
   ],
-  "evaluation_access": "isolated_rows",
+  "evaluation_access": "chronological",
   "historical_availability": "assumed",
   "training_label_timing": "unverified",
   "vintage": "current_snapshot",
   "selection": "unverified",
   "cross_row_audit": {
     "status": "recovery_demonstrated",
-    "scope": "Both split designs (temporal, station-disjoint) tested; temporal 88,915/89,038 covered AUC 0.99929 with 423 binary mismatches; station-disjoint 29,889/29,930 AUC 0.99922 with 191; a D+2 margin_ft variant still ranks ~0.9993, so deleting the obvious column is not a fix",
+    "scope": "Both split designs (temporal, station-disjoint) tested; temporal 88,915/89,038 covered AUC 0.99929 with 423 binary mismatches; station-disjoint 29,889/29,930 AUC 0.99922 with 191; a D+2 margin_ft variant still ranks ~0.9993, so deleting the obvious column is not a fix Holdout recovery was not tested by this audit.",
     "evidence": [
       "audits/2026-10-24-static-benchmark-leakage-audit.md"
     ]
@@ -38,7 +36,7 @@
     "The current scorer passes the complete feature frame; isolation is not mechanically enforced."
   ],
   "required_actions": [
-    "Run predictions through the isolated-rows interface once implemented (issue #17); the current scorer passes the complete feature frame and does not mechanically enforce prediction-time isolation",
+    "Use a prediction-time-restricted evaluator for future experiments; the historical scorer supplied the full frame. Do not relabel old scores as results from the revised protocol.",
     "Keep the labelled holdout outside evaluated workspaces and never load later rows when scoring earlier targets",
     "Correct the day-definition documentation conflict (editorial overlay; frozen bytes untouched) and state the raw-max/official-flag distinction on the public page.",
     "Versioned rebuild with outcome-day measurements purged from solver-visible rows in both designs; re-run the blind join battery before stronger claims."
@@ -56,6 +54,7 @@
     }
   ],
   "corrections": [
-    "Public page and card must state the restricted suitability and the day-definition correction once rendered; no frozen package bytes change."
+    "For row date D, observed_max_ft is the measurement on D; margin_ft and trailing summaries use observations preceding D (through D-1 when consecutive). The label is NOAA’s official minor-flood flag for D+1. It is not the same-day flag and is not defined by simply thresholding observed_max_ft. Historical verification/publication timing remains unverified.",
+    "The original dictionary says carry columns are dropped. The bundled template excludes only target and id_columns; observed_max_ft and threshold_ft are therefore available to that baseline. This does not by itself expose its own D+1 label, but the documentation must not claim those columns were excluded."
   ]
 }

@@ -9,6 +9,7 @@ from pathlib import Path
 from urllib.parse import quote
 
 from .common import FactoryError
+from .suitability import load as load_suitability, public_projection, markdown as suitability_markdown
 from .release_schema import (Release, load_release, from_manifest, normalise_splits)
 
 SCHEMA = 1
@@ -227,6 +228,12 @@ def project(package, editorial, config):
                      or text_field(editorial.get("baseline_scope") or release.baseline_display,
                                    "baseline scope", 400))},
     }
+    suitability = load_suitability(package)
+    require(suitability is not None, "A version-bound suitability review is required before preparing publication")
+    if suitability:
+        require(suitability["decision"] not in ("retire", "rebuild_before_use"),
+                "This artifact is not approved for public recommendation")
+        record["suitability"] = public_projection(suitability)
     record["record_sha256"] = digest(dump(record))
     return record
 
@@ -256,10 +263,11 @@ def check_manifest(record, manifest):
 
 def links(record):
     u = record["urls"]
+    notice = ("\n\n" + suitability_markdown(record["suitability"])) if record.get("suitability") else ""
     return (f"{START}\n**Dataset Factory · {record['release_tag']}**\n\n"
             f"[Dataset website]({u['version']}) · [GitHub release]({u['github_release']}) · "
             f"[Hugging Face]({u['huggingface_version']}) · [Catalogue]({u['catalog']})\n\n"
-            f"Artifact: {record['artifact_version']}\n{END}")
+            f"Artifact: {record['artifact_version']}{notice}\n{END}")
 
 
 def linked_readme(original, record):
@@ -268,6 +276,8 @@ def linked_readme(original, record):
     if START in original:
         begin, after = original.split(START, 1)
         _, tail = after.split(END, 1)
-        return begin + links(record) + tail
-    # Append so that Hugging Face's YAML header and author-written documentation are preserved.
-    return original.rstrip() + "\n\n" + links(record) + "\n"
+        original = (begin + tail).strip() + "\n"
+    if original.startswith("---\n") and "\n---\n" in original[4:]:
+        end = original.index("\n---\n", 4) + 5
+        return original[:end] + "\n" + links(record) + "\n\n" + original[end:].lstrip()
+    return links(record) + "\n\n" + original

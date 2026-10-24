@@ -421,11 +421,12 @@ class Constructed(unittest.TestCase):
         self.assertGreater(prior0, 0, "the persistence feature never reads 0")
         self.assertGreater(prior1, 0, "the persistence feature never fires")
 
-    def test_every_config_passes_the_gate(self):
+    def test_legacy_configs_require_new_evaluation_contract(self):
         failures = []
         for name in self.manifest["shipped_configs"]:
             report = gate.qualify(self.out / name)
-            if not report.ok:
+            self.assertFalse(report.ok)
+            if report.failed_checks != ["contract.declared"]:
                 failures.append((name, report.failed_checks))
         self.assertEqual(failures, [])
 

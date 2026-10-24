@@ -306,7 +306,6 @@ and run its commands.
 | The dataset page prints a command that raises "Config name is missing" | The page's "Use this version" snippet was hardcoded into the template instead of generated from the record | Derive it from one rule (`factory.site_model.config_names`) shared with the Hub card, and assert both; a page is a documentation surface too |
 | A documents-only Hub refresh makes a recorded revision or tag claim false | The refresh moves the Hub revision, and re-tagging moves the tag, but the `DESTINATIONS.json` claim was written before it | Keep the tag fixed; record editorial main separately from verification of pinned data |
 | Re-syncing the public tree drops the website's file entries from `MANIFEST.json` | The release package's manifest overwrote the public one, which also declares the site scaffolding | Use the website pipeline and its separate site revision; do not overwrite or extend a frozen dataset manifest |
-| A static temporal-panel eval batch leaks labels through its own future rows | The label is derived from the future value of a shipped feature or lagged field, so the same file answers its own question - reverse-history joins through keys, dates and back-reference arithmetic all work (the 2026-10-24 catalog audit found 7 of 10 published datasets blind-AUC 1.0 or ~0.999, with digests, single-column sweeps and references all passing; a defect found pre-flip on one dataset was the same class) | Require the blind cross-row join test in the gate - direct joins, lag ledgers and back-reference arithmetic, label-blind, two AUC implementations - before the operator flip; prefer an as-of evaluation interface that hides future covariate rows; a published dataset that fails it needs a versioned rebuild, not a column deletion |
 | A guard that has never been seen to fail | The test was written against the fixed input only | Revert the code or data path (`git stash push -- <file>`, or check out the pre-fix document), watch the guard fail, restore, and record which defect it caught |
 | An older staged release can still be flipped by a later session | A rebuild creates a new tag but the superseded staged release keeps its private artifacts and its record | Rename the superseded releases as `SUPERSEDED - DO NOT PUBLISH` at the destination, list them under `superseded` in `DESTINATIONS.json`, and point the record's `next_action` at the current tag |
 | The Hub card carries no licence metadata | The card was uploaded without YAML front matter - the upload succeeds and the licence field simply disappears | Keep the front matter in the card source, upload the card as `README.md`, and read `cardData.license` back from the API; a release README is not a dataset card |
@@ -364,3 +363,22 @@ A package is **ready for review** when:
 - `scripts/check-package.py` - mechanical completeness check over a package directory.
 - `scripts/release-manifest.py`, `scripts/publish-dataset.py`, `scripts/verify-staged-report.py`.
 - `docs/OPERATIONS.md` - worker lifecycle, credentials, cleanup and the allowance.
+
+## Prediction contract and suitability (gate 1.5)
+
+Follow `docs/PREDICTION-CONTRACT.md` in the project before new construction or release.
+Read observation time, actual feature availability, label availability and revision/vintage
+separately. Labeled eval is development/validation, never an untouched final test.
+Declare every solver-visible file, including joint label matrices; exclude holdout outcomes
+from agent development. Run source-specific reverse-history probes on every full configuration
+on the worker and record coverage/mismatches. A demonstrated cross-row exposure requires an
+enforced restricted prediction protocol; it does not automatically make retrospective research
+data worthless. No historical forecasting certification without a full-row availability ledger
+and reviewed as-of evidence; unverified assumptions must remain unverified.
+
+New artifacts require `quality.json.evaluation_contract` and the current gate. Older reports
+remain historical evidence only. Never fill fields with invented evidence to obtain a pass.
+Before recommending or publishing, create/update the exact-artifact suitability record, run
+`python3 scripts/check-suitability.py`, and carry its public notice to GitHub, Hub and website.
+Current editorial corrections preserve frozen data/tags/checksums. A bounded audit PASS does
+not establish operational validity. See `docs/PREDICTION-CONTRACT.md` for the schema and probes.

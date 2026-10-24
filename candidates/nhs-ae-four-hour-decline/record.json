@@ -1,531 +1,538 @@
 {
- "id": "nhs-ae-four-hour-decline",
- "status": "dropped",
- "verdict": "reject",
- "jurisdiction": {
-  "country": "GB",
-  "region": "Europe",
-  "publisher": "NHS England (United Kingdom)",
-  "recorded_at": "2026-10-21"
- },
- "created_at": "2026-10-21T04:28:59.794832+00:00",
- "domain": "health-system operations - NHS emergency care four-hour performance prediction (UK public-service performance panel)",
- "prediction_question": "For an NHS England provider operating a consultant-led (Type 1) A&E department, will the percentage of its Type 1 attendances admitted, transferred or discharged within 4 hours of arrival decline in month M+1 relative to month M, given that provider's monthly A&E series (attendances by department type and booked-appointment status, over-4-hour counts, waits from decision-to-admit, emergency admissions) for all months through M, plus calendar month? A relative month-over-month change is used instead of a fixed standard threshold because the fixed thresholds measured near-uniform positive rates in recent years (see measurements).",
- "prediction_time": "End of month M, when month M's monthly CSV is published (measured: the September 2026 monthly CSV was already downloadable on 2026-10-21, i.e. a ~3 week publication lag). Every feature is derived from provider months <= M; the label is month M+1's within-4-hour rate versus month M's, and month M+1's row is published about a month after the prediction is made.",
- "target_definition": "Binary, computed from the source row of month M+1: within4h_rate(M+1) < within4h_rate(M), where within4h_rate(Y) = 1 - Attendances over 4hrs Type 1 / A&E attendances Type 1 for the provider in month Y. Unit: proportion of Type 1 attendances within 4 hours. Label source columns: month M+1's 'A&E attendances Type 1' and 'Attendances over 4hrs Type 1' (recorded in label_source_columns; excluded from shipped columns). Volume gate: provider-month excluded unless Type 1 attendances >= 100 in both M and M+1 (measured: leaves 124 providers with >= 24 such months).",
- "sources": [
-  {
-   "name": "NHS England - A&E Attendances and Emergency Admissions, statistical work area (monthly provider-level CSVs)",
-   "url": "https://www.england.nhs.uk/statistics/statistical-work-areas/ae-waiting-times-and-activity/",
-   "api": "per-financial-year sub-pages (2018-19 through 2026-27) each link 12 monthly provider-level CSVs (about 30 KB each, 21 columns: Period, Org Code, Parent Org, Org name, attendances by department type incl. booked, attendances over 4hrs by department type, DTA waits 4-12h/12+h, emergency admissions); pre-2018-19 months are XLS-only; the main page also carries a cumulative 'Monthly-AE-Time-Series' XLS (all months in one file) for use on a worker",
-   "license": "Open Government Licence v3.0 - stated in the work-area page footer, linking to https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/ (Crown copyright)",
-   "access": "anonymous HTTPS, no key. Measured 2026-10-21: 102 monthly CSVs (2018-04 through 2026-09) = 3,115,779 bytes fetched in 1.2 s total from the coordinator; year pages are ~71-81 KB each and 11 were read to enumerate the CSV URLs"
+  "id": "nhs-ae-four-hour-decline",
+  "status": "dropped",
+  "verdict": "reject",
+  "jurisdiction": {
+    "country": "GB",
+    "region": "Europe",
+    "publisher": "NHS England (United Kingdom)",
+    "recorded_at": "2026-10-21"
   },
-  {
-   "name": "NHS England - monthly statistical commentary PDF (publisher's own summary product, used as cross-check)",
-   "url": "https://www.england.nhs.uk/statistics/wp-content/uploads/sites/2/2026/09/Statistical-commentary-August-2026-WE76sa.pdf",
-   "api": "none - published commentary",
-   "license": "Open Government Licence v3.0 (same standing terms as the statistics pages)",
-   "access": "measured 2026-10-21 via web search snippet: '61.1% of patients were admitted, transferred or discharged within 4 hours in Type 1 A&E Departments in August 2026 compared to 61.7% in July 2026' - cross-check against the panel's own 60.9% for 2026-08 (difference consistent with revised-vs-provisional publication states)"
-  }
- ],
- "license_evidence": [
-  {
-   "note": "Measured 2026-10-21 from https://www.england.nhs.uk/statistics/statistical-work-areas/ae-waiting-times-and-activity/: the page footer carries a menu item 'Open Government Licence v3.0' linking to https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/. NHS England statistics content is published under OGL v3 unless otherwise stated; OGL v3 permits commercial and non-commercial reuse and redistribution with attribution. Third-party reusers (e.g. github.com/rajatgaur505/nhs-ae-performance-analysis) state the same basis: 'publicly available NHS England data (Open Government Licence)'.",
-   "url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
-  }
- ],
- "label_source_columns": [
-  "A&E attendances Type 1 (month M+1 row)",
-  "Attendances over 4hrs Type 1 (month M+1 row)"
- ],
- "construction_script": "candidates/nhs-ae-four-hour-decline/source/build.py (stdlib only; --source-dir reads a staged/predownloaded copy of the 102 monthly CSVs, the default HTTP path enumerates the year pages - blocked from datacenter IPs, see measurements.publisher_cdn_datacenter_block; --smoke relaxes acceptance for bounded exercises)",
- "split_strategy": "Temporal, on the target month M+1, windows recomputed 2026-10-21 on the corrected panel (102 months 2018-04..2026-09, 134 providers; see probe_defect_correction_2026_10_21): train targets 2019-01..2022-12 = 6,116 provider-months (3,285 positives, 53.7%); eval targets 2023-01..2024-12 = 2,937 (1,478 positives, 50.3%); holdout targets 2025-01..2026-09 = 2,538 (1,233 positives, 48.6%). Both classes present in every window. Positives cluster within providers (a declining provider tends to keep declining), so the conservative independent-unit count is the distinct positive providers per window: 133 (train) / 124 (eval) / 121 (holdout) of 134 providers. Features for the earliest train rows draw on 2018-04..2018-12 history. Rows are keyed (Org Code, target month) - shipped as the composite row_id '<ORG>-<YYYY-MM>'; providers with <100 Type 1 attendances in either month are excluded by the volume gate.",
- "measurements": {
-  "panel_2026_10_21": "Corrected 2026-10-21 (see probe_defect_correction_2026_10_21): 102 monthly CSVs 2018-04..2026-09 (every month the year pages carry), 21,649 rows read, 101 non-monthly Period rows (TOTAL artefacts, excluded), 21,548 (org, month) keys - NO duplicate keys exist across the 102 files (each month is published in exactly one file, so the recorded 'revision dedup' never had anything to dedup; the build still implements prefer-latest-upload). 134 providers with Type 1 attendances >= 100 in >= 24 months -> 12,765 qualifying provider-months; 12,631 consecutive qualifying pairs (1,040 with target months before 2019-01, outside the split windows). The discovery session's recorded panel (20,497 keys / 97 months / 124 providers / 9,071 provider-months) was computed with the two probe defects described in probe_defect_correction_2026_10_21 and is superseded.",
-  "national_within4h_type1_by_year": "Corrected 2026-10-21 on the full 102-month panel (volume-gated providers): 2018 83.0%, 2019 78.1%, 2020 82.6%, 2021 72.9%, 2022 62.4%, 2023 59.8%, 2024 58.6%, 2025 60.2%, 2026 YTD 61.0%. The recorded series (2020 85.1%, 2021 73.2%, 2023 60.1%) covered only the months the damaged panel retained (no qualifying month before 2020-04; 2023-07/08/09 dropped). August 2026 national Type 1 within-4h recomputed on the corrected panel: 60.86% vs the publisher commentary's 61.1% - the cross-check still holds (revised-vs-provisional publication states). NAO HC 588 fiscal-year anchors remain consistent within calendar-year offsets.",
-  "label_base_rates_measured": "Corrected 2026-10-21 on the full panel: m/m decline label train(2019-01..2022-12 targets) 6,116 rows / 3,285 positives = 53.7%; eval(2023-01..2024-12) 2,937 / 1,478 = 50.3%; holdout(2025-01..2026-09) 2,538 / 1,233 = 48.6% (holdout unchanged - its months were intact in the damaged panel). Fixed-threshold labels RE-COMPUTED on the corrected panel and still REFUSED: within4h < 95% gives train 87.2% / eval 97.5% / holdout 99.9% positive (uniform-class red flag); < 80% gives holdout 95.8%; < 74% gives holdout 90.8%. The refusal conclusion and the base-rate non-stationarity property stand unchanged.",
-  "cost_measured": "102 CSV GETs, 3,115,779 bytes, 1.2 s wall clock on the coordinator (1.9 GiB class host) + 11 year-page GETs (~80 KB each) to enumerate URLs. Full-history extension to 2015-06 requires the cumulative Monthly-AE-Time-Series .xls (440 KB) parsed on a worker (xlrd), or per-month XLS for 2015-16..2017-18.",
-  "revision_policy_measured": "Re-measured 2026-10-21 at construction: across the 102 monthly CSVs there are NO duplicate (org, month) keys - each calendar month is published in exactly one file (originals are replaced on the year page by their '...revised...' successor, e.g. April-2020-revised-260421), so the recorded 'keep max Type 1 attendances' dedup never operated on anything. The build still implements prefer-latest-upload (ordered by the revision datestamp in the filename, then revised flag) and reports the dedup count, which measured 0.",
-  "known_event_note": "December 2021 (Omicron) moves the national aggregate only slightly (65.6% vs 66.2% in Nov 2021, quick un-deduped national check) - winter pressure shows at provider grain, so it is not a usable national known-event fixture; the publisher-commentary cross-check above anchors the rate computation instead. The m/m-decline label has no external threshold, so the qualification known-event fixture requirement does not apply; seasonal structure (winter declines) is the headroom signal a competent model must capture.",
-  "no_cross_split_entities": "org codes repeat across splits by design (same providers tracked over time) - the entity is the provider-month, not the provider; the gate's expected_duplicate_ids must not claim org codes as entity keys, and id columns for the runner are (Org Code, target month).",
-  "probe_defect_correction_2026_10_21": "CORRECTION 2026-10-21 (construction session): the discovery panel probe (probe_panel.py) had two defects that silently shrank its panel, and every figure below was recomputed on the corrected load (build.py --source-dir over the same 102 CSVs; script .factory/nhsae_recompute.py, command and output in notes.md). Defect 1: the probe opened files with encoding=\"utf-8\", so the five BOM-prefixed files (July 2019, August 2021, July/August/September 2023) keyed Period as \"\\ufeffPeriod\", d.get(\"Period\") returned \"\" and five whole months were dropped (probe printed '1,152 non-monthly rows' where the true count is 101 TOTAL rows; 1,051 were BOM-file rows). Defect 2: the probe looked up \"A&E attendances Type 1\", but the 2018-04..2020-03 files name the column \"Number of A&E attendances Type 1\", so att1 parsed as 0 for 24 months and no provider-month before 2020-04 ever passed the volume gate - the recorded '97 months' panel in fact had no qualifying month before 2020-04. The corrected build reads utf-8-sig and normalises the 'Number of' prefix: 102 months 2018-04..2026-09 (every month the year pages carry), 21,548 provider-months, 134 providers with >= 24 qualifying months, 12,765 qualifying provider-months.",
-  "schema_evolution_2026_10_21": "Measured at construction across all 102 files: 16 data columns 2018-04..2020-07 (the 2018-04..2020-03 files prefix counts with 'Number of'); booked-appointment columns appear from 2020-08 (22 columns); files from 2024-09 carry 28 header fields of which the last six are unnamed/zero padding. Booked-appointment columns are parsed but NOT shipped: they are absent for train feature months 2018-12..2020-07, so their availability would be split-dependent - a prediction-timing defect wearing a feature-list costume. The 12 core columns are published across the whole window and are the only shipped source columns.",
-  "publisher_cdn_datacenter_block": "Measured 2026-10-21: www.england.nhs.uk (CloudFront) serves HTTP 202 with an empty body to the Hetzner worker IP (65.21.158.17, from both servers tried), for every year page; the same URLs serve 200/82,127 B with 12 CSV links to the coordinator under three User-Agent variants. Consequence: construction jobs cannot fetch this publisher from a worker; the 102 CSVs are fetched on the coordinator (measured 3.1 MB total) and staged in the private staging repo, and the job consumes them with per-file sha256 verification. The build's default HTTP path remains for reproducing from an unblocked network."
- },
- "jobs": [
-  {
-   "id": "nhsae-001",
-   "status": "failed",
-   "server_id": 171522297,
-   "launched_at": "2026-10-21T06:12:28Z",
-   "collected_at": "2026-10-21T06:18:26Z",
-   "destroyed_at": "2026-10-21T06:19:52Z",
-   "note": "exit 2 in 11.9 s: 0 monthly CSV URLs enumerated. Diagnosis: the publisher's CDN (CloudFront) serves HTTP 202 with an empty body to the worker's datacenter IP (measured by fetching a year page from the worker: status 202, 0 bytes; the same URL serves 200/82,127 B to the coordinator under every User-Agent tried). The Hetzner POST for this job also returned a transient HTTP 412 with no server created; the identical POST succeeded on retry and reconcile adopted server 171522297. Full result release 419218537."
-  },
-  {
-   "id": "nhsae-002",
-   "status": "succeeded",
-   "server_id": 171523693,
-   "launched_at": "2026-10-21T06:21:29Z",
-   "collected_at": "2026-10-21T06:23:34Z",
-   "destroyed_at": "2026-10-21T06:25:02Z",
-   "job_elapsed_seconds": 12.1,
-   "note": "build + qualification gate green on the worker over the staged source (fetch job, release source-nhsae-001); composite source digest 99cb3339... identical to the coordinator exercise; --accept re-verified the collected bytes (artifact 9903df974f233dfa). Result release 419222791."
-  },
-  {
-   "id": "nhsae-baseline-001",
-   "status": "succeeded",
-   "server_id": 171525370,
-   "launched_at": "2026-10-21T06:28:45Z",
-   "collected_at": "2026-10-21T06:31:47Z",
-   "destroyed_at": "2026-10-21T06:41:51Z",
-   "job_elapsed_seconds": 56.8,
-   "note": "runner-contract baseline on the accepted artifact fetched from staging release 419222791 (not rebuilt): gate --accept re-verified the released bytes (artifact 9903df974f233dfa) before scoring, the benchmark's own train.py and validate.sh ran unmodified, eval AUC 0.5526 on both independent paths, CONTRACT OK; below the mean-reversion reference (0.5659 eval / 0.6562 holdout) - recorded as headroom. Reports in .factory/nhsae-baseline-001/reports/ and staging release 419227918."
-  },
-  {
-   "id": "nhsae-publish-001",
-   "status": "succeeded",
-   "server_id": 171563321,
-   "launched_at": "2026-10-21T10:07:19Z",
-   "collected_at": "2026-10-21T10:09:44Z",
-   "destroyed_at": "2026-10-21T10:12:08Z",
-   "target_repo": "earino/nhs-ae-four-hour-decline",
-   "note": "destination-staging transfer: copied the five accepted nhsae-002 files from private staging release 419222791 into the private dataset repository earino/nhs-ae-four-hour-decline release v2026.10 (419405716) under the flat asset names the download helper restores, verifying each sha256 on arrival and against the server's own digest after upload (transfers 5, failures 0, 4,898,346 bytes); the bytes never passed through the coordinator. Result release 419407464."
-  },
-  {
-   "id": "nhsae-hf-001",
-   "status": "succeeded",
-   "server_id": 171563744,
-   "launched_at": "2026-10-21T10:10:30Z",
-   "collected_at": "2026-10-21T10:13:47Z",
-   "destroyed_at": "2026-10-21T10:14:03Z",
-   "note": "hf_publish worker job: uploaded the five data files to the private Hugging Face dataset repo earino/nhs-ae-four-hour-decline from the staged private GitHub release, verifying each sha256 before and after transfer (uploads 5, skipped 0, failures 0, 4,898,346 bytes); the bytes never passed through the coordinator. Result release 419411258."
-  },
-  {
-   "id": "nhsae-hf-002",
-   "status": "succeeded",
-   "server_id": 171564314,
-   "launched_at": "2026-10-21T10:14:34Z",
-   "collected_at": "2026-10-21T10:17:35Z",
-   "destroyed_at": "2026-10-21T10:17:48Z",
-   "note": "loading-check retry: every per-file upload skipped (already at the manifest digests; uploads 0, skipped 5, failures 0) and the card's documented loading path executed on the worker - load_dataset against the private repo returned train 6,116 rows / 3,285 positives, eval 2,937 / 1,478, holdout 2,538 / 1,233, label values ['0','1'], 37 columns per split, exactly matching the manifest (hf_loading ok: true, problems: []). Result release 419414704."
-  },
-  {
-   "id": "nhsae-hf-003",
-   "status": "succeeded",
-   "server_id": 171610910,
-   "launched_at": "2026-10-21T14:14:40Z",
-   "collected_at": "2026-10-21T14:22:17Z",
-   "destroyed_at": "2026-10-21T14:23:17Z",
-   "note": "hf_publish worker job for v2026.11: uploaded the five released data files to the private Hugging Face repo earino/nhs-ae-four-hour-decline from the private GitHub release v2026.11 (419642457), verifying each sha256 against the manifest before and after transfer - uploads 3 (public-train.csv, meta.json, quality.json carry the v2026.11 bytes), skipped 2 (public-eval.csv, private-holdout.csv, byte-identical to v2026.10), failures 0, 1,674,061 bytes; the bytes never passed through the coordinator. Result release 419647149."
-  },
-  {
-   "id": "nhsae-hf-004",
-   "status": "succeeded",
-   "server_id": 171612481,
-   "launched_at": "2026-10-21T14:23:50Z",
-   "collected_at": "2026-10-21T14:36:24Z",
-   "destroyed_at": "2026-10-21T14:43:20Z",
-   "note": "intended v2026.11 loading check, but the job spec omitted the verify_loading block that makes the worker execute the documented loading path, so the job ran only the upload pass (uploads 0, skipped 5, failures 0) and reported success without any loading evidence - the result has no hf_loading block. Diagnosed by the 14:22Z worker-watch run from the missing block; superseded by nhsae-hf-005, which repeated the pass WITH verify_loading. Worker destroyed by the watcher. Result release 419656381."
-  },
-  {
-   "id": "nhsae-hf-005",
-   "status": "succeeded",
-   "server_id": 171616919,
-   "launched_at": "2026-10-21T14:46:49Z",
-   "collected_at": "2026-10-21T14:50:41Z",
-   "destroyed_at": "2026-10-21T14:51:44Z",
-   "note": "corrected loading check for v2026.11 (spec = hf-004's + the verify_loading block, expectations from the v2026.11 manifest): uploads 0 / skipped 5 / failures 0, then the card's documented load_dataset path ran against the private repo revision main - train 4,074 rows / 2,260 positives, eval 2,937 / 1,478, holdout 2,538 / 1,233, label values ['0','1'], 37 columns per split, exactly matching the manifest; hf_loading ok: true, problems: []. Result release 419681562."
-  }
- ],
- "artifacts": [
-  {
-   "kind": "staging_release",
-   "repo": "earino/dataset-factory-staging",
-   "id": 419222791,
-   "note": "nhsae-002 build: the five gated extract files plus the gate report, build summary, container log and job bundle"
-  },
-  {
-   "kind": "staging_release",
-   "repo": "earino/dataset-factory-staging",
-   "id": 419227918,
-   "note": "nhsae-baseline-001 reports and logs (baseline result, gate re-acceptance, train/validate output, pip freeze)"
-  },
-  {
-   "kind": "staging_release",
-   "repo": "earino/dataset-factory-staging",
-   "id": 419407464,
-   "note": "nhsae-publish-001 result: worker-side transfer record and source bundle"
-  },
-  {
-   "kind": "staging_release",
-   "repo": "earino/dataset-factory-staging",
-   "id": 419411258,
-   "note": "nhsae-hf-001 reports: worker-side hf_publish upload record and source bundle"
-  },
-  {
-   "kind": "staging_release",
-   "repo": "earino/dataset-factory-staging",
-   "id": 419414704,
-   "note": "nhsae-hf-002 reports: loading-check record and source bundle"
-  },
-  {
-   "job": "staging (GitHub)",
-   "repository": "https://github.com/earino/nhs-ae-four-hour-decline",
-   "visibility": "private (publication requires explicit authorisation)",
-   "tag": "v2026.11",
-   "commit": "98139919fb7bf0b4",
-   "release": "https://github.com/earino/nhs-ae-four-hour-decline/releases/tag/v2026.11",
-   "release_id": 419642457,
-   "artifact_version": "0990af0f90fbe304cb94bd53754a337f7704e1005d92f8d9d250b2e8e157b3b5",
-   "artifact_version_note": "v2026.11 staged 2026-10-21 (release 419642457, non-draft, created at commit 29d567a; main then advanced to the splits-correction commit 98139919 and tag v2026.11 resolves to 98139919 == main, observed by readback 14:47Z). 5/5 release assets at exactly the package MANIFEST sizes and server-side sha256 digests (watcher API readback; the research session had already run get_dataset.py end-to-end against the private release and qualify_dataset.py --accept on the downloaded tree: ACCEPTED, artifact 0990af0f90fbe304). Anonymous fetch 404s (private). v2026.10 release 419405716 and its tag preserved unchanged; v2026.10 is superseded and must not be published."
-  },
-  {
-   "job": "staging (Hugging Face)",
-   "repository": "https://huggingface.co/datasets/earino/nhs-ae-four-hour-decline",
-   "visibility": "private (publication requires explicit authorisation)",
-   "revision": "v2026.11",
-   "artifact_version": "0990af0f90fbe304cb94bd53754a337f7704e1005d92f8d9d250b2e8e157b3b5",
-   "artifact_version_note": "v2026.11 staged 2026-10-21: nhsae-hf-003 uploaded the three changed files (public-train.csv, meta.json, quality.json) and skipped the two byte-identical ones, digests verified before and after transfer; hf-publish.py --verify from the coordinator: present 5/5, missing 0, size_mismatch 0, and the Hub MANIFEST.json byte-identical to the package manifest; nhsae-hf-005 executed the card's documented loading path against revision main and every split matched the manifest (train 4,074/2,260 positives, eval 2,937/1,478, holdout 2,538/1,233, label ['0','1'], 37 columns; ok true, problems []); Hub tag v2026.11 created LAST at 18b2e97f9ad3981c48d8168acec76a5aa032c2c0 with tag_matches_main true - the tag pins exactly the bytes the loading check verified; anonymous Hub API answers 401 (private). v2026.10 tag preserved; v2026.10 is superseded."
-  },
-  {
-   "kind": "staging_release",
-   "repo": "earino/dataset-factory-staging",
-   "id": 419647149,
-   "note": "nhsae-hf-003 result: v2026.11 Hub upload record and source bundle"
-  },
-  {
-   "kind": "staging_release",
-   "repo": "earino/dataset-factory-staging",
-   "id": 419656381,
-   "note": "nhsae-hf-004 result: upload-pass-only record (loading check never ran; superseded by nhsae-hf-005)"
-  },
-  {
-   "kind": "staging_release",
-   "repo": "earino/dataset-factory-staging",
-   "id": 419681562,
-   "note": "nhsae-hf-005 result: corrected loading-check record and source bundle"
-  }
- ],
- "rejection_reason": "DROPPED by operator decision 2026-10-21: the task is marginal and expensive. On identical eval rows persistence (0.5758), a train-only month prior (0.6027) and reversal (0.5839) all beat the shipped baseline (0.5511), so the dataset's headline result is that a one-line rule wins. Publication lag cannot be established point-in-time from the public record (no vintage archive), so every timing claim is a bound, and three independent audits each found a real defect (temporal availability, hindsight selection, a 16-day release against a 13-day rule). The factory's purpose is useful benchmarks; this is neither useful nor cheap.",
- "review": null,
- "next_action": "None - dropped. Re-open only if a task is found on this source whose label is not dominated by persistence or seasonality, and only with a publication-date archive.",
- "novelty_check": {
-  "checked_at": "2026-10-21T04:36:13+00:00",
-  "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
-  "queries": [
-   "NHS A&E four hour wait prediction",
-   "emergency department performance forecasting dataset",
-   "hospital four hour target benchmark"
+  "created_at": "2026-10-21T04:28:59.794832+00:00",
+  "domain": "health-system operations - NHS emergency care four-hour performance prediction (UK public-service performance panel)",
+  "prediction_question": "For an NHS England provider operating a consultant-led (Type 1) A&E department, will the percentage of its Type 1 attendances admitted, transferred or discharged within 4 hours of arrival decline in month M+1 relative to month M, given that provider's monthly A&E series (attendances by department type and booked-appointment status, over-4-hour counts, waits from decision-to-admit, emergency admissions) for all months through M, plus calendar month? A relative month-over-month change is used instead of a fixed standard threshold because the fixed thresholds measured near-uniform positive rates in recent years (see measurements).",
+  "prediction_time": "End of month M, when month M's monthly CSV is published (measured: the September 2026 monthly CSV was already downloadable on 2026-10-21, i.e. a ~3 week publication lag). Every feature is derived from provider months <= M; the label is month M+1's within-4-hour rate versus month M's, and month M+1's row is published about a month after the prediction is made.",
+  "target_definition": "Binary, computed from the source row of month M+1: within4h_rate(M+1) < within4h_rate(M), where within4h_rate(Y) = 1 - Attendances over 4hrs Type 1 / A&E attendances Type 1 for the provider in month Y. Unit: proportion of Type 1 attendances within 4 hours. Label source columns: month M+1's 'A&E attendances Type 1' and 'Attendances over 4hrs Type 1' (recorded in label_source_columns; excluded from shipped columns). Volume gate: provider-month excluded unless Type 1 attendances >= 100 in both M and M+1 (measured: leaves 124 providers with >= 24 such months).",
+  "sources": [
+    {
+      "name": "NHS England - A&E Attendances and Emergency Admissions, statistical work area (monthly provider-level CSVs)",
+      "url": "https://www.england.nhs.uk/statistics/statistical-work-areas/ae-waiting-times-and-activity/",
+      "api": "per-financial-year sub-pages (2018-19 through 2026-27) each link 12 monthly provider-level CSVs (about 30 KB each, 21 columns: Period, Org Code, Parent Org, Org name, attendances by department type incl. booked, attendances over 4hrs by department type, DTA waits 4-12h/12+h, emergency admissions); pre-2018-19 months are XLS-only; the main page also carries a cumulative 'Monthly-AE-Time-Series' XLS (all months in one file) for use on a worker",
+      "license": "Open Government Licence v3.0 - stated in the work-area page footer, linking to https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/ (Crown copyright)",
+      "access": "anonymous HTTPS, no key. Measured 2026-10-21: 102 monthly CSVs (2018-04 through 2026-09) = 3,115,779 bytes fetched in 1.2 s total from the coordinator; year pages are ~71-81 KB each and 11 were read to enumerate the CSV URLs"
+    },
+    {
+      "name": "NHS England - monthly statistical commentary PDF (publisher's own summary product, used as cross-check)",
+      "url": "https://www.england.nhs.uk/statistics/wp-content/uploads/sites/2/2026/09/Statistical-commentary-August-2026-WE76sa.pdf",
+      "api": "none - published commentary",
+      "license": "Open Government Licence v3.0 (same standing terms as the statistics pages)",
+      "access": "measured 2026-10-21 via web search snippet: '61.1% of patients were admitted, transferred or discharged within 4 hours in Type 1 A&E Departments in August 2026 compared to 61.7% in July 2026' - cross-check against the panel's own 60.9% for 2026-08 (difference consistent with revised-vs-provisional publication states)"
+    }
   ],
-  "evidence": {
-   "huggingface_datasets": [
+  "license_evidence": [
     {
-     "query": "NHS A&E four hour wait prediction",
-     "hits": 0,
-     "top": []
-    },
-    {
-     "query": "emergency department performance forecasting dataset",
-     "hits": 0,
-     "top": []
-    },
-    {
-     "query": "hospital four hour target benchmark",
-     "hits": 0,
-     "top": []
+      "note": "Measured 2026-10-21 from https://www.england.nhs.uk/statistics/statistical-work-areas/ae-waiting-times-and-activity/: the page footer carries a menu item 'Open Government Licence v3.0' linking to https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/. NHS England statistics content is published under OGL v3 unless otherwise stated; OGL v3 permits commercial and non-commercial reuse and redistribution with attribution. Third-party reusers (e.g. github.com/rajatgaur505/nhs-ae-performance-analysis) state the same basis: 'publicly available NHS England data (Open Government Licence)'.",
+      "url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
     }
-   ],
-   "zenodo_records": [
-    {
-     "query": "NHS A&E four hour wait prediction",
-     "hits": 3303809,
-     "top": [
-      "Large Scale Travelling Ionospheric Disturbances during geomagnetic storms of 17 March and 23 June 2015 in the Australian region",
-      "There Is an Hour, a Pensive Hour. Four-Part Song",
-      "Corridor Care in the NHS II",
-      "Queue Wait Time Prediction in Supercomputers",
-      "Long-term temperature prediction with hybrid auto encoder algorithms"
-     ]
-    },
-    {
-     "query": "emergency department performance forecasting dataset",
-     "hits": 1137344,
-     "top": [
-      "People waiting and median waits in emergency departments, Queensland, live",
-      "Emergency department busyness by day and hour, Queensland",
-      "Public hospital emergency departments and minor injury clinics, Queensland, live list",
-      "Forecasting hourly emergency department arrival using time series analysis",
-      "A Time-Series Forecasting Model for Clinical Outcomes in Ghanaian Emergency Care Units: A Methodological Evaluation, 2000\u20132024"
-     ]
-    },
-    {
-     "query": "hospital four hour target benchmark",
-     "hits": 494673,
-     "top": [
-      "The Private Nurse and Twenty-Four Hour Hospital Duty1:",
-      "Data from:  Exploring emergency department 4-hour target performance and cancelled elective operations: a regression analysis of routinely collected and openly reported NHS trust data.",
-      "The Distributional Misery Index (DMI): Making the Five Economies Visible",
-      "target-benchmark/target: ACL Submission Version - Feb15th",
-      "Catching the Stars Across Time: A 24-Hour Orbital Transformation and the Four Target Points"
-     ]
-    }
-   ],
-   "arxiv_preprints": [
-    {
-     "query": "NHS A&E four hour wait prediction",
-     "hits": 5,
-     "top": [
-      "Measurements of Four-Fermion Production via Neutral Elektroweak Currents at LEP",
-      "\"Wait, I'm Still Talking!\" Predicting the Dialogue Interaction Behavior Using Imagine-Then-Arbitrate Model",
-      "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
-      "Hey, wait a minute: on at-issue sensitivity in Language Models",
-      "A Combined Deep Learning-Gradient Boosting Machine Framework for Fluid Intelligence Prediction"
-     ]
-    },
-    {
-     "query": "emergency department performance forecasting dataset",
-     "hits": 5,
-     "top": [
-      "SDWPF: A Dataset for Spatial Dynamic Wind Power Forecasting Challenge at KDD Cup 2022",
-      "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
-      "Forecasting intermittent time series with Gaussian Processes and Tweedie likelihood",
-      "Probabilistic Hierarchical Forecasting with Deep Poisson Mixtures",
-      "Quantile Regression for Qualifying Match of GEFCom2017 Probabilistic Load Forecasting"
-     ]
-    },
-    {
-     "query": "hospital four hour target benchmark",
-     "hits": 5,
-     "top": [
-      "Global maps of travel time to emergency and tertiary hospitals",
-      "Target search by active particles",
-      "Measurements of Four-Fermion Production via Neutral Elektroweak Currents at LEP",
-      "Fluid fragmentation from hospital toilets",
-      "Towards a Large Language-Vision Question Answering Model for MSTAR Automatic Target Recognition"
-     ]
-    }
-   ]
-  },
-  "evidence_summary": "- huggingface_datasets / 'NHS A&E four hour wait prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'emergency department performance forecasting dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'hospital four hour target benchmark': 0 hit(s) - nothing notable\n- zenodo_records / 'NHS A&E four hour wait prediction': 3303809 hit(s) - Large Scale Travelling Ionospheric Disturbances during geomagnetic storms of 17 March and 23 June 2015 in the Australian region, There Is an Hour, a Pensive Hour. Four-Part Song, Corridor Care in the NHS II, Queue Wait Time Prediction in Supercomputers, Long-term temperature prediction with hybrid auto encoder algorithms\n- zenodo_records / 'emergency department performance forecasting dataset': 1137344 hit(s) - People waiting and median waits in emergency departments, Queensland, live, Emergency department busyness by day and hour, Queensland, Public hospital emergency departments and minor injury clinics, Queensland, live list, Forecasting hourly emergency department arrival using time series analysis, A Time-Series Forecasting Model for Clinical Outcomes in Ghanaian Emergency Care Units: A Methodological Evaluation, 2000\u20132024\n- zenodo_records / 'hospital four hour target benchmark': 494673 hit(s) - The Private Nurse and Twenty-Four Hour Hospital Duty1:, Data from:  Exploring emergency department 4-hour target performance and cancelled elective operations: a regression analysis of routinely collected and openly reported NHS trust data., The Distributional Misery Index (DMI): Making the Five Economies Visible, target-benchmark/target: ACL Submission Version - Feb15th, Catching the Stars Across Time: A 24-Hour Orbital Transformation and the Four Target Points\n- arxiv_preprints / 'NHS A&E four hour wait prediction': 5 hit(s) - Measurements of Four-Fermion Production via Neutral Elektroweak Currents at LEP, \"Wait, I'm Still Talking!\" Predicting the Dialogue Interaction Behavior Using Imagine-Then-Arbitrate Model, Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, Hey, wait a minute: on at-issue sensitivity in Language Models, A Combined Deep Learning-Gradient Boosting Machine Framework for Fluid Intelligence Prediction\n- arxiv_preprints / 'emergency department performance forecasting dataset': 5 hit(s) - SDWPF: A Dataset for Spatial Dynamic Wind Power Forecasting Challenge at KDD Cup 2022, The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, Forecasting intermittent time series with Gaussian Processes and Tweedie likelihood, Probabilistic Hierarchical Forecasting with Deep Poisson Mixtures, Quantile Regression for Qualifying Match of GEFCom2017 Probabilistic Load Forecasting\n- arxiv_preprints / 'hospital four hour target benchmark': 5 hit(s) - Global maps of travel time to emergency and tertiary hospitals, Target search by active particles, Measurements of Four-Fermion Production via Neutral Elektroweak Currents at LEP, Fluid fragmentation from hospital toilets, Towards a Large Language-Vision Question Answering Model for MSTAR Automatic Target Recognition",
-  "prior_art": [
-   "A unified machine learning approach to time series forecasting with an application to hospital demand, BMC Emerg Med 20:36 (2020) - ED daily-arrival volume forecasting, private data",
-   "github.com/rajatgaur505/nhs-ae-performance-analysis - descriptive dashboard, not a benchmark"
   ],
-  "theirs": "NHS England publishes the raw monthly provider CSVs and its own headline commentary; hobby GitHub repos analyse 12 months descriptively and project 3 months with regression; academic work forecasts ED arrival volume at two London hospitals from non-public data",
-  "ours": "the first scored, split, leak-gated provider-month formulation of NHS England four-hour A&E performance direction (m/m decline, Type 1 providers, 2018-2026, temporal train/eval/holdout windows with both classes measured in every window); no existing artifact ships this prediction task with splits and a scored contract",
-  "verdict": "differentiated",
-  "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
- },
- "qualification": {
-  "gate_version": "1.4.0",
-  "ok": true,
-  "failed_checks": [],
-  "artifact_version": "5784f80a29df04f4c115a680341eb026945cd3d8c5beec121eefd0c2bcbadfb9",
-  "result": "PASSED - gate 1.4.0 on v2026.13 (21-day publication bound)",
-  "splits": {
-   "train": {
-    "rows": 4074,
-    "positives": 2260,
-    "positive_rate": 0.554737,
-    "distinct_events": 114
-   },
-   "eval": {
-    "rows": 2937,
-    "positives": 1478,
-    "positive_rate": 0.503235,
-    "distinct_events": 124
-   },
-   "holdout": {
-    "rows": 2538,
-    "positives": 1233,
-    "positive_rate": 0.485816,
-    "distinct_events": 121
-   }
-  }
- },
- "construction_output": {
-  "job": "coordinator-rebuild-2026-10-21c",
-  "artifact_version": "d871b45b667448a123bad9762cf066fd5d31c08700761b27ca8ff57a8a0690f9",
-  "gate_version": "1.4.0",
-  "built_at_utc": "2026-10-21T18:06:51Z",
-  "rows": 9549,
-  "splits": {
-   "train": {
-    "rows": 4074,
-    "positives": 2260,
-    "positive_rate": 0.554737,
-    "distinct_events": 114
-   },
-   "eval": {
-    "rows": 2937,
-    "positives": 1478,
-    "positive_rate": 0.503235,
-    "distinct_events": 124
-   },
-   "holdout": {
-    "rows": 2538,
-    "positives": 1233,
-    "positive_rate": 0.485816,
-    "distinct_events": 121
-   }
+  "label_source_columns": [
+    "A&E attendances Type 1 (month M+1 row)",
+    "Attendances over 4hrs Type 1 (month M+1 row)"
+  ],
+  "construction_script": "candidates/nhs-ae-four-hour-decline/source/build.py (stdlib only; --source-dir reads a staged/predownloaded copy of the 102 monthly CSVs, the default HTTP path enumerates the year pages - blocked from datacenter IPs, see measurements.publisher_cdn_datacenter_block; --smoke relaxes acceptance for bounded exercises)",
+  "split_strategy": "Temporal, on the target month M+1, windows recomputed 2026-10-21 on the corrected panel (102 months 2018-04..2026-09, 134 providers; see probe_defect_correction_2026_10_21): train targets 2019-01..2022-12 = 6,116 provider-months (3,285 positives, 53.7%); eval targets 2023-01..2024-12 = 2,937 (1,478 positives, 50.3%); holdout targets 2025-01..2026-09 = 2,538 (1,233 positives, 48.6%). Both classes present in every window. Positives cluster within providers (a declining provider tends to keep declining), so the conservative independent-unit count is the distinct positive providers per window: 133 (train) / 124 (eval) / 121 (holdout) of 134 providers. Features for the earliest train rows draw on 2018-04..2018-12 history. Rows are keyed (Org Code, target month) - shipped as the composite row_id '<ORG>-<YYYY-MM>'; providers with <100 Type 1 attendances in either month are excluded by the volume gate.",
+  "measurements": {
+    "panel_2026_10_21": "Corrected 2026-10-21 (see probe_defect_correction_2026_10_21): 102 monthly CSVs 2018-04..2026-09 (every month the year pages carry), 21,649 rows read, 101 non-monthly Period rows (TOTAL artefacts, excluded), 21,548 (org, month) keys - NO duplicate keys exist across the 102 files (each month is published in exactly one file, so the recorded 'revision dedup' never had anything to dedup; the build still implements prefer-latest-upload). 134 providers with Type 1 attendances >= 100 in >= 24 months -> 12,765 qualifying provider-months; 12,631 consecutive qualifying pairs (1,040 with target months before 2019-01, outside the split windows). The discovery session's recorded panel (20,497 keys / 97 months / 124 providers / 9,071 provider-months) was computed with the two probe defects described in probe_defect_correction_2026_10_21 and is superseded.",
+    "national_within4h_type1_by_year": "Corrected 2026-10-21 on the full 102-month panel (volume-gated providers): 2018 83.0%, 2019 78.1%, 2020 82.6%, 2021 72.9%, 2022 62.4%, 2023 59.8%, 2024 58.6%, 2025 60.2%, 2026 YTD 61.0%. The recorded series (2020 85.1%, 2021 73.2%, 2023 60.1%) covered only the months the damaged panel retained (no qualifying month before 2020-04; 2023-07/08/09 dropped). August 2026 national Type 1 within-4h recomputed on the corrected panel: 60.86% vs the publisher commentary's 61.1% - the cross-check still holds (revised-vs-provisional publication states). NAO HC 588 fiscal-year anchors remain consistent within calendar-year offsets.",
+    "label_base_rates_measured": "Corrected 2026-10-21 on the full panel: m/m decline label train(2019-01..2022-12 targets) 6,116 rows / 3,285 positives = 53.7%; eval(2023-01..2024-12) 2,937 / 1,478 = 50.3%; holdout(2025-01..2026-09) 2,538 / 1,233 = 48.6% (holdout unchanged - its months were intact in the damaged panel). Fixed-threshold labels RE-COMPUTED on the corrected panel and still REFUSED: within4h < 95% gives train 87.2% / eval 97.5% / holdout 99.9% positive (uniform-class red flag); < 80% gives holdout 95.8%; < 74% gives holdout 90.8%. The refusal conclusion and the base-rate non-stationarity property stand unchanged.",
+    "cost_measured": "102 CSV GETs, 3,115,779 bytes, 1.2 s wall clock on the coordinator (1.9 GiB class host) + 11 year-page GETs (~80 KB each) to enumerate URLs. Full-history extension to 2015-06 requires the cumulative Monthly-AE-Time-Series .xls (440 KB) parsed on a worker (xlrd), or per-month XLS for 2015-16..2017-18.",
+    "revision_policy_measured": "Re-measured 2026-10-21 at construction: across the 102 monthly CSVs there are NO duplicate (org, month) keys - each calendar month is published in exactly one file (originals are replaced on the year page by their '...revised...' successor, e.g. April-2020-revised-260421), so the recorded 'keep max Type 1 attendances' dedup never operated on anything. The build still implements prefer-latest-upload (ordered by the revision datestamp in the filename, then revised flag) and reports the dedup count, which measured 0.",
+    "known_event_note": "December 2021 (Omicron) moves the national aggregate only slightly (65.6% vs 66.2% in Nov 2021, quick un-deduped national check) - winter pressure shows at provider grain, so it is not a usable national known-event fixture; the publisher-commentary cross-check above anchors the rate computation instead. The m/m-decline label has no external threshold, so the qualification known-event fixture requirement does not apply; seasonal structure (winter declines) is the headroom signal a competent model must capture.",
+    "no_cross_split_entities": "org codes repeat across splits by design (same providers tracked over time) - the entity is the provider-month, not the provider; the gate's expected_duplicate_ids must not claim org codes as entity keys, and id columns for the runner are (Org Code, target month).",
+    "probe_defect_correction_2026_10_21": "CORRECTION 2026-10-21 (construction session): the discovery panel probe (probe_panel.py) had two defects that silently shrank its panel, and every figure below was recomputed on the corrected load (build.py --source-dir over the same 102 CSVs; script .factory/nhsae_recompute.py, command and output in notes.md). Defect 1: the probe opened files with encoding=\"utf-8\", so the five BOM-prefixed files (July 2019, August 2021, July/August/September 2023) keyed Period as \"\\ufeffPeriod\", d.get(\"Period\") returned \"\" and five whole months were dropped (probe printed '1,152 non-monthly rows' where the true count is 101 TOTAL rows; 1,051 were BOM-file rows). Defect 2: the probe looked up \"A&E attendances Type 1\", but the 2018-04..2020-03 files name the column \"Number of A&E attendances Type 1\", so att1 parsed as 0 for 24 months and no provider-month before 2020-04 ever passed the volume gate - the recorded '97 months' panel in fact had no qualifying month before 2020-04. The corrected build reads utf-8-sig and normalises the 'Number of' prefix: 102 months 2018-04..2026-09 (every month the year pages carry), 21,548 provider-months, 134 providers with >= 24 qualifying months, 12,765 qualifying provider-months.",
+    "schema_evolution_2026_10_21": "Measured at construction across all 102 files: 16 data columns 2018-04..2020-07 (the 2018-04..2020-03 files prefix counts with 'Number of'); booked-appointment columns appear from 2020-08 (22 columns); files from 2024-09 carry 28 header fields of which the last six are unnamed/zero padding. Booked-appointment columns are parsed but NOT shipped: they are absent for train feature months 2018-12..2020-07, so their availability would be split-dependent - a prediction-timing defect wearing a feature-list costume. The 12 core columns are published across the whole window and are the only shipped source columns.",
+    "publisher_cdn_datacenter_block": "Measured 2026-10-21: www.england.nhs.uk (CloudFront) serves HTTP 202 with an empty body to the Hetzner worker IP (65.21.158.17, from both servers tried), for every year page; the same URLs serve 200/82,127 B with 12 CSV links to the coordinator under three User-Agent variants. Consequence: construction jobs cannot fetch this publisher from a worker; the 102 CSVs are fetched on the coordinator (measured 3.1 MB total) and staged in the private staging repo, and the job consumes them with per-file sha256 verification. The build's default HTTP path remains for reproducing from an unblocked network."
   },
-  "split_windows": {
-   "train": "target months 2019-01..2022-12",
-   "eval": "target months 2023-01..2024-12",
-   "holdout": "target months 2025-01..2026-09"
+  "jobs": [
+    {
+      "id": "nhsae-001",
+      "status": "failed",
+      "server_id": 171522297,
+      "launched_at": "2026-10-21T06:12:28Z",
+      "collected_at": "2026-10-21T06:18:26Z",
+      "destroyed_at": "2026-10-21T06:19:52Z",
+      "note": "exit 2 in 11.9 s: 0 monthly CSV URLs enumerated. Diagnosis: the publisher's CDN (CloudFront) serves HTTP 202 with an empty body to the worker's datacenter IP (measured by fetching a year page from the worker: status 202, 0 bytes; the same URL serves 200/82,127 B to the coordinator under every User-Agent tried). The Hetzner POST for this job also returned a transient HTTP 412 with no server created; the identical POST succeeded on retry and reconcile adopted server 171522297. Full result release 419218537."
+    },
+    {
+      "id": "nhsae-002",
+      "status": "succeeded",
+      "server_id": 171523693,
+      "launched_at": "2026-10-21T06:21:29Z",
+      "collected_at": "2026-10-21T06:23:34Z",
+      "destroyed_at": "2026-10-21T06:25:02Z",
+      "job_elapsed_seconds": 12.1,
+      "note": "build + qualification gate green on the worker over the staged source (fetch job, release source-nhsae-001); composite source digest 99cb3339... identical to the coordinator exercise; --accept re-verified the collected bytes (artifact 9903df974f233dfa). Result release 419222791."
+    },
+    {
+      "id": "nhsae-baseline-001",
+      "status": "succeeded",
+      "server_id": 171525370,
+      "launched_at": "2026-10-21T06:28:45Z",
+      "collected_at": "2026-10-21T06:31:47Z",
+      "destroyed_at": "2026-10-21T06:41:51Z",
+      "job_elapsed_seconds": 56.8,
+      "note": "runner-contract baseline on the accepted artifact fetched from staging release 419222791 (not rebuilt): gate --accept re-verified the released bytes (artifact 9903df974f233dfa) before scoring, the benchmark's own train.py and validate.sh ran unmodified, eval AUC 0.5526 on both independent paths, CONTRACT OK; below the mean-reversion reference (0.5659 eval / 0.6562 holdout) - recorded as headroom. Reports in .factory/nhsae-baseline-001/reports/ and staging release 419227918."
+    },
+    {
+      "id": "nhsae-publish-001",
+      "status": "succeeded",
+      "server_id": 171563321,
+      "launched_at": "2026-10-21T10:07:19Z",
+      "collected_at": "2026-10-21T10:09:44Z",
+      "destroyed_at": "2026-10-21T10:12:08Z",
+      "target_repo": "earino/nhs-ae-four-hour-decline",
+      "note": "destination-staging transfer: copied the five accepted nhsae-002 files from private staging release 419222791 into the private dataset repository earino/nhs-ae-four-hour-decline release v2026.10 (419405716) under the flat asset names the download helper restores, verifying each sha256 on arrival and against the server's own digest after upload (transfers 5, failures 0, 4,898,346 bytes); the bytes never passed through the coordinator. Result release 419407464."
+    },
+    {
+      "id": "nhsae-hf-001",
+      "status": "succeeded",
+      "server_id": 171563744,
+      "launched_at": "2026-10-21T10:10:30Z",
+      "collected_at": "2026-10-21T10:13:47Z",
+      "destroyed_at": "2026-10-21T10:14:03Z",
+      "note": "hf_publish worker job: uploaded the five data files to the private Hugging Face dataset repo earino/nhs-ae-four-hour-decline from the staged private GitHub release, verifying each sha256 before and after transfer (uploads 5, skipped 0, failures 0, 4,898,346 bytes); the bytes never passed through the coordinator. Result release 419411258."
+    },
+    {
+      "id": "nhsae-hf-002",
+      "status": "succeeded",
+      "server_id": 171564314,
+      "launched_at": "2026-10-21T10:14:34Z",
+      "collected_at": "2026-10-21T10:17:35Z",
+      "destroyed_at": "2026-10-21T10:17:48Z",
+      "note": "loading-check retry: every per-file upload skipped (already at the manifest digests; uploads 0, skipped 5, failures 0) and the card's documented loading path executed on the worker - load_dataset against the private repo returned train 6,116 rows / 3,285 positives, eval 2,937 / 1,478, holdout 2,538 / 1,233, label values ['0','1'], 37 columns per split, exactly matching the manifest (hf_loading ok: true, problems: []). Result release 419414704."
+    },
+    {
+      "id": "nhsae-hf-003",
+      "status": "succeeded",
+      "server_id": 171610910,
+      "launched_at": "2026-10-21T14:14:40Z",
+      "collected_at": "2026-10-21T14:22:17Z",
+      "destroyed_at": "2026-10-21T14:23:17Z",
+      "note": "hf_publish worker job for v2026.11: uploaded the five released data files to the private Hugging Face repo earino/nhs-ae-four-hour-decline from the private GitHub release v2026.11 (419642457), verifying each sha256 against the manifest before and after transfer - uploads 3 (public-train.csv, meta.json, quality.json carry the v2026.11 bytes), skipped 2 (public-eval.csv, private-holdout.csv, byte-identical to v2026.10), failures 0, 1,674,061 bytes; the bytes never passed through the coordinator. Result release 419647149."
+    },
+    {
+      "id": "nhsae-hf-004",
+      "status": "succeeded",
+      "server_id": 171612481,
+      "launched_at": "2026-10-21T14:23:50Z",
+      "collected_at": "2026-10-21T14:36:24Z",
+      "destroyed_at": "2026-10-21T14:43:20Z",
+      "note": "intended v2026.11 loading check, but the job spec omitted the verify_loading block that makes the worker execute the documented loading path, so the job ran only the upload pass (uploads 0, skipped 5, failures 0) and reported success without any loading evidence - the result has no hf_loading block. Diagnosed by the 14:22Z worker-watch run from the missing block; superseded by nhsae-hf-005, which repeated the pass WITH verify_loading. Worker destroyed by the watcher. Result release 419656381."
+    },
+    {
+      "id": "nhsae-hf-005",
+      "status": "succeeded",
+      "server_id": 171616919,
+      "launched_at": "2026-10-21T14:46:49Z",
+      "collected_at": "2026-10-21T14:50:41Z",
+      "destroyed_at": "2026-10-21T14:51:44Z",
+      "note": "corrected loading check for v2026.11 (spec = hf-004's + the verify_loading block, expectations from the v2026.11 manifest): uploads 0 / skipped 5 / failures 0, then the card's documented load_dataset path ran against the private repo revision main - train 4,074 rows / 2,260 positives, eval 2,937 / 1,478, holdout 2,538 / 1,233, label values ['0','1'], 37 columns per split, exactly matching the manifest; hf_loading ok: true, problems: []. Result release 419681562."
+    }
+  ],
+  "artifacts": [
+    {
+      "kind": "staging_release",
+      "repo": "earino/dataset-factory-staging",
+      "id": 419222791,
+      "note": "nhsae-002 build: the five gated extract files plus the gate report, build summary, container log and job bundle"
+    },
+    {
+      "kind": "staging_release",
+      "repo": "earino/dataset-factory-staging",
+      "id": 419227918,
+      "note": "nhsae-baseline-001 reports and logs (baseline result, gate re-acceptance, train/validate output, pip freeze)"
+    },
+    {
+      "kind": "staging_release",
+      "repo": "earino/dataset-factory-staging",
+      "id": 419407464,
+      "note": "nhsae-publish-001 result: worker-side transfer record and source bundle"
+    },
+    {
+      "kind": "staging_release",
+      "repo": "earino/dataset-factory-staging",
+      "id": 419411258,
+      "note": "nhsae-hf-001 reports: worker-side hf_publish upload record and source bundle"
+    },
+    {
+      "kind": "staging_release",
+      "repo": "earino/dataset-factory-staging",
+      "id": 419414704,
+      "note": "nhsae-hf-002 reports: loading-check record and source bundle"
+    },
+    {
+      "job": "staging (GitHub)",
+      "repository": "https://github.com/earino/nhs-ae-four-hour-decline",
+      "visibility": "private (publication requires explicit authorisation)",
+      "tag": "v2026.11",
+      "commit": "98139919fb7bf0b4",
+      "release": "https://github.com/earino/nhs-ae-four-hour-decline/releases/tag/v2026.11",
+      "release_id": 419642457,
+      "artifact_version": "0990af0f90fbe304cb94bd53754a337f7704e1005d92f8d9d250b2e8e157b3b5",
+      "artifact_version_note": "v2026.11 staged 2026-10-21 (release 419642457, non-draft, created at commit 29d567a; main then advanced to the splits-correction commit 98139919 and tag v2026.11 resolves to 98139919 == main, observed by readback 14:47Z). 5/5 release assets at exactly the package MANIFEST sizes and server-side sha256 digests (watcher API readback; the research session had already run get_dataset.py end-to-end against the private release and qualify_dataset.py --accept on the downloaded tree: ACCEPTED, artifact 0990af0f90fbe304). Anonymous fetch 404s (private). v2026.10 release 419405716 and its tag preserved unchanged; v2026.10 is superseded and must not be published."
+    },
+    {
+      "job": "staging (Hugging Face)",
+      "repository": "https://huggingface.co/datasets/earino/nhs-ae-four-hour-decline",
+      "visibility": "private (publication requires explicit authorisation)",
+      "revision": "v2026.11",
+      "artifact_version": "0990af0f90fbe304cb94bd53754a337f7704e1005d92f8d9d250b2e8e157b3b5",
+      "artifact_version_note": "v2026.11 staged 2026-10-21: nhsae-hf-003 uploaded the three changed files (public-train.csv, meta.json, quality.json) and skipped the two byte-identical ones, digests verified before and after transfer; hf-publish.py --verify from the coordinator: present 5/5, missing 0, size_mismatch 0, and the Hub MANIFEST.json byte-identical to the package manifest; nhsae-hf-005 executed the card's documented loading path against revision main and every split matched the manifest (train 4,074/2,260 positives, eval 2,937/1,478, holdout 2,538/1,233, label ['0','1'], 37 columns; ok true, problems []); Hub tag v2026.11 created LAST at 18b2e97f9ad3981c48d8168acec76a5aa032c2c0 with tag_matches_main true - the tag pins exactly the bytes the loading check verified; anonymous Hub API answers 401 (private). v2026.10 tag preserved; v2026.10 is superseded."
+    },
+    {
+      "kind": "staging_release",
+      "repo": "earino/dataset-factory-staging",
+      "id": 419647149,
+      "note": "nhsae-hf-003 result: v2026.11 Hub upload record and source bundle"
+    },
+    {
+      "kind": "staging_release",
+      "repo": "earino/dataset-factory-staging",
+      "id": 419656381,
+      "note": "nhsae-hf-004 result: upload-pass-only record (loading check never ran; superseded by nhsae-hf-005)"
+    },
+    {
+      "kind": "staging_release",
+      "repo": "earino/dataset-factory-staging",
+      "id": 419681562,
+      "note": "nhsae-hf-005 result: corrected loading-check record and source bundle"
+    }
+  ],
+  "rejection_reason": "DROPPED by operator decision 2026-10-21: the task is marginal and expensive. On identical eval rows persistence (0.5758), a train-only month prior (0.6027) and reversal (0.5839) all beat the shipped baseline (0.5511), so the dataset's headline result is that a one-line rule wins. Publication lag cannot be established point-in-time from the public record (no vintage archive), so every timing claim is a bound, and three independent audits each found a real defect (temporal availability, hindsight selection, a 16-day release against a 13-day rule). The factory's purpose is useful benchmarks; this is neither useful nor cheap.",
+  "review": null,
+  "next_action": "None - dropped. Re-open only if a task is found on this source whose label is not dominated by persistence or seasonality, and only with a publication-date archive.",
+  "novelty_check": {
+    "checked_at": "2026-10-21T04:36:13+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "NHS A&E four hour wait prediction",
+      "emergency department performance forecasting dataset",
+      "hospital four hour target benchmark"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "NHS A&E four hour wait prediction",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "emergency department performance forecasting dataset",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "hospital four hour target benchmark",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "NHS A&E four hour wait prediction",
+          "hits": 3303809,
+          "top": [
+            "Large Scale Travelling Ionospheric Disturbances during geomagnetic storms of 17 March and 23 June 2015 in the Australian region",
+            "There Is an Hour, a Pensive Hour. Four-Part Song",
+            "Corridor Care in the NHS II",
+            "Queue Wait Time Prediction in Supercomputers",
+            "Long-term temperature prediction with hybrid auto encoder algorithms"
+          ]
+        },
+        {
+          "query": "emergency department performance forecasting dataset",
+          "hits": 1137344,
+          "top": [
+            "People waiting and median waits in emergency departments, Queensland, live",
+            "Emergency department busyness by day and hour, Queensland",
+            "Public hospital emergency departments and minor injury clinics, Queensland, live list",
+            "Forecasting hourly emergency department arrival using time series analysis",
+            "A Time-Series Forecasting Model for Clinical Outcomes in Ghanaian Emergency Care Units: A Methodological Evaluation, 2000–2024"
+          ]
+        },
+        {
+          "query": "hospital four hour target benchmark",
+          "hits": 494673,
+          "top": [
+            "The Private Nurse and Twenty-Four Hour Hospital Duty1:",
+            "Data from:  Exploring emergency department 4-hour target performance and cancelled elective operations: a regression analysis of routinely collected and openly reported NHS trust data.",
+            "The Distributional Misery Index (DMI): Making the Five Economies Visible",
+            "target-benchmark/target: ACL Submission Version - Feb15th",
+            "Catching the Stars Across Time: A 24-Hour Orbital Transformation and the Four Target Points"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "NHS A&E four hour wait prediction",
+          "hits": 5,
+          "top": [
+            "Measurements of Four-Fermion Production via Neutral Elektroweak Currents at LEP",
+            "\"Wait, I'm Still Talking!\" Predicting the Dialogue Interaction Behavior Using Imagine-Then-Arbitrate Model",
+            "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
+            "Hey, wait a minute: on at-issue sensitivity in Language Models",
+            "A Combined Deep Learning-Gradient Boosting Machine Framework for Fluid Intelligence Prediction"
+          ]
+        },
+        {
+          "query": "emergency department performance forecasting dataset",
+          "hits": 5,
+          "top": [
+            "SDWPF: A Dataset for Spatial Dynamic Wind Power Forecasting Challenge at KDD Cup 2022",
+            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+            "Forecasting intermittent time series with Gaussian Processes and Tweedie likelihood",
+            "Probabilistic Hierarchical Forecasting with Deep Poisson Mixtures",
+            "Quantile Regression for Qualifying Match of GEFCom2017 Probabilistic Load Forecasting"
+          ]
+        },
+        {
+          "query": "hospital four hour target benchmark",
+          "hits": 5,
+          "top": [
+            "Global maps of travel time to emergency and tertiary hospitals",
+            "Target search by active particles",
+            "Measurements of Four-Fermion Production via Neutral Elektroweak Currents at LEP",
+            "Fluid fragmentation from hospital toilets",
+            "Towards a Large Language-Vision Question Answering Model for MSTAR Automatic Target Recognition"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'NHS A&E four hour wait prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'emergency department performance forecasting dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'hospital four hour target benchmark': 0 hit(s) - nothing notable\n- zenodo_records / 'NHS A&E four hour wait prediction': 3303809 hit(s) - Large Scale Travelling Ionospheric Disturbances during geomagnetic storms of 17 March and 23 June 2015 in the Australian region, There Is an Hour, a Pensive Hour. Four-Part Song, Corridor Care in the NHS II, Queue Wait Time Prediction in Supercomputers, Long-term temperature prediction with hybrid auto encoder algorithms\n- zenodo_records / 'emergency department performance forecasting dataset': 1137344 hit(s) - People waiting and median waits in emergency departments, Queensland, live, Emergency department busyness by day and hour, Queensland, Public hospital emergency departments and minor injury clinics, Queensland, live list, Forecasting hourly emergency department arrival using time series analysis, A Time-Series Forecasting Model for Clinical Outcomes in Ghanaian Emergency Care Units: A Methodological Evaluation, 2000–2024\n- zenodo_records / 'hospital four hour target benchmark': 494673 hit(s) - The Private Nurse and Twenty-Four Hour Hospital Duty1:, Data from:  Exploring emergency department 4-hour target performance and cancelled elective operations: a regression analysis of routinely collected and openly reported NHS trust data., The Distributional Misery Index (DMI): Making the Five Economies Visible, target-benchmark/target: ACL Submission Version - Feb15th, Catching the Stars Across Time: A 24-Hour Orbital Transformation and the Four Target Points\n- arxiv_preprints / 'NHS A&E four hour wait prediction': 5 hit(s) - Measurements of Four-Fermion Production via Neutral Elektroweak Currents at LEP, \"Wait, I'm Still Talking!\" Predicting the Dialogue Interaction Behavior Using Imagine-Then-Arbitrate Model, Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, Hey, wait a minute: on at-issue sensitivity in Language Models, A Combined Deep Learning-Gradient Boosting Machine Framework for Fluid Intelligence Prediction\n- arxiv_preprints / 'emergency department performance forecasting dataset': 5 hit(s) - SDWPF: A Dataset for Spatial Dynamic Wind Power Forecasting Challenge at KDD Cup 2022, The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, Forecasting intermittent time series with Gaussian Processes and Tweedie likelihood, Probabilistic Hierarchical Forecasting with Deep Poisson Mixtures, Quantile Regression for Qualifying Match of GEFCom2017 Probabilistic Load Forecasting\n- arxiv_preprints / 'hospital four hour target benchmark': 5 hit(s) - Global maps of travel time to emergency and tertiary hospitals, Target search by active particles, Measurements of Four-Fermion Production via Neutral Elektroweak Currents at LEP, Fluid fragmentation from hospital toilets, Towards a Large Language-Vision Question Answering Model for MSTAR Automatic Target Recognition",
+    "prior_art": [
+      "A unified machine learning approach to time series forecasting with an application to hospital demand, BMC Emerg Med 20:36 (2020) - ED daily-arrival volume forecasting, private data",
+      "github.com/rajatgaur505/nhs-ae-performance-analysis - descriptive dashboard, not a benchmark"
+    ],
+    "theirs": "NHS England publishes the raw monthly provider CSVs and its own headline commentary; hobby GitHub repos analyse 12 months descriptively and project 3 months with regression; academic work forecasts ED arrival volume at two London hospitals from non-public data",
+    "ours": "the first scored, split, leak-gated provider-month formulation of NHS England four-hour A&E performance direction (m/m decline, Type 1 providers, 2018-2026, temporal train/eval/holdout windows with both classes measured in every window); no existing artifact ships this prediction task with splits and a scored contract",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
   },
-  "source_composite_sha256": "99cb3339b31ae2045c990c950a40fb44dc93f1dfc4d58f1ae1879fa851666833",
-  "source_staging": "v2026.12 rebuild c fetched the 102 publisher CSVs over HTTP on the coordinator (114 requests, 3,115,779 bytes, 5.9 s, composite sha256 99cb3339b31ae204... - identical to the 15:26 v2026.12 build and to the nhsae-002 staged source, because the publisher serves the same bytes and the snapshot did not move on 2026-10-21; v2026.10 consumed them from staging release source-nhsae-001, id 419221351, asset 661561799, sha256 8d8bc1b1...)",
-  "files": {
-   "public/train.csv": {
-    "bytes": 1664506,
-    "sha256": "55af812900519d39b5a294c38c76f554ed67f0aeb721862592b4d3c588ea7430"
-   },
-   "public/eval.csv": {
-    "bytes": 1246633,
-    "sha256": "cb786792ac321dd851c272bd159fed24e13d6b633276606b294ddc976e72f266"
-   },
-   "private/holdout.csv": {
-    "bytes": 1099411,
-    "sha256": "527a385f12a920b019434c70588c6532af1bd4dd5459eb64ed46809b5ef99b70"
-   },
-   "meta.json": {
-    "bytes": 3579,
-    "sha256": "196d300ec0c6b7fc3e8b04809019f075c2d2f93a76bdc66d2b26cdd08122aadc"
-   },
-   "quality.json": {
-    "bytes": 6679,
-    "sha256": "0fb29a658ac5d097994534177de60a463b46fe8cf0adac37f3ec742a40690256"
-   }
-  },
-  "staging_release": null,
   "qualification": {
-   "gate": "skills/dataset-qualification/scripts/qualify_dataset.py (shipped as code/qualify_dataset.py, gate 1.4.0)",
-   "report": "release/nhs-ae-four-hour-decline/qualification.json (sha256 2118ecd4f7498a3c1e7f25f95707857b8be5a162519fa87d6149a4b25c9a18d2), bundled in the package",
-   "ok": true,
-   "failed_checks": [],
-   "accept_recheck": "qualify_dataset.py --accept re-verified the package bytes (2026-10-21T14:07Z) and the bytes downloaded from the staged private GitHub release v2026.11 (2026-10-21T14:26Z): ACCEPTED, artifact 0990af0f90fbe304"
+    "gate_version": "1.4.0",
+    "ok": true,
+    "failed_checks": [],
+    "artifact_version": "5784f80a29df04f4c115a680341eb026945cd3d8c5beec121eefd0c2bcbadfb9",
+    "result": "PASSED - gate 1.4.0 on v2026.13 (21-day publication bound)",
+    "splits": {
+      "train": {
+        "rows": 4074,
+        "positives": 2260,
+        "positive_rate": 0.554737,
+        "distinct_events": 114
+      },
+      "eval": {
+        "rows": 2937,
+        "positives": 1478,
+        "positive_rate": 0.503235,
+        "distinct_events": 124
+      },
+      "holdout": {
+        "rows": 2538,
+        "positives": 1233,
+        "positive_rate": 0.485816,
+        "distinct_events": 121
+      }
+    }
   },
-  "superseded_v2026_10": "the v2026.10 construction_output (job nhsae-002, artifact 9903df974f233dfa, gate 1.3.0, 11,591 rows, staging release 419222791) is preserved in git history and in that staging release"
- },
- "baseline": {
-  "job": "coordinator-rebuild-2026-10-21c",
-  "where": "coordinator, baseline/reproduce_baseline.sh re-run on the v2026.12 rebuild c public splits (the runner files unmodified, bundled sha256 == expected)",
-  "accepted_artifact_version": "d871b45b667448a123bad9762cf066fd5d31c08700761b27ca8ff57a8a0690f9",
-  "contract_ok": true,
-  "eval_auc_from_train_py": 0.5511,
-  "eval_auc_from_validate_py": 0.5511,
-  "runner_files_unmodified": true,
-  "dependencies": {
-   "python": "3.14",
-   "xgboost": "3.4.1",
-   "scikit-learn": "1.9.1",
-   "pandas": "2.3.3",
-   "numpy": "2.5.4"
+  "construction_output": {
+    "job": "coordinator-rebuild-2026-10-21c",
+    "artifact_version": "d871b45b667448a123bad9762cf066fd5d31c08700761b27ca8ff57a8a0690f9",
+    "gate_version": "1.4.0",
+    "built_at_utc": "2026-10-21T18:06:51Z",
+    "rows": 9549,
+    "splits": {
+      "train": {
+        "rows": 4074,
+        "positives": 2260,
+        "positive_rate": 0.554737,
+        "distinct_events": 114
+      },
+      "eval": {
+        "rows": 2937,
+        "positives": 1478,
+        "positive_rate": 0.503235,
+        "distinct_events": 124
+      },
+      "holdout": {
+        "rows": 2538,
+        "positives": 1233,
+        "positive_rate": 0.485816,
+        "distinct_events": 121
+      }
+    },
+    "split_windows": {
+      "train": "target months 2019-01..2022-12",
+      "eval": "target months 2023-01..2024-12",
+      "holdout": "target months 2025-01..2026-09"
+    },
+    "source_composite_sha256": "99cb3339b31ae2045c990c950a40fb44dc93f1dfc4d58f1ae1879fa851666833",
+    "source_staging": "v2026.12 rebuild c fetched the 102 publisher CSVs over HTTP on the coordinator (114 requests, 3,115,779 bytes, 5.9 s, composite sha256 99cb3339b31ae204... - identical to the 15:26 v2026.12 build and to the nhsae-002 staged source, because the publisher serves the same bytes and the snapshot did not move on 2026-10-21; v2026.10 consumed them from staging release source-nhsae-001, id 419221351, asset 661561799, sha256 8d8bc1b1...)",
+    "files": {
+      "public/train.csv": {
+        "bytes": 1664506,
+        "sha256": "55af812900519d39b5a294c38c76f554ed67f0aeb721862592b4d3c588ea7430"
+      },
+      "public/eval.csv": {
+        "bytes": 1246633,
+        "sha256": "cb786792ac321dd851c272bd159fed24e13d6b633276606b294ddc976e72f266"
+      },
+      "private/holdout.csv": {
+        "bytes": 1099411,
+        "sha256": "527a385f12a920b019434c70588c6532af1bd4dd5459eb64ed46809b5ef99b70"
+      },
+      "meta.json": {
+        "bytes": 3579,
+        "sha256": "196d300ec0c6b7fc3e8b04809019f075c2d2f93a76bdc66d2b26cdd08122aadc"
+      },
+      "quality.json": {
+        "bytes": 6679,
+        "sha256": "0fb29a658ac5d097994534177de60a463b46fe8cf0adac37f3ec742a40690256"
+      }
+    },
+    "staging_release": null,
+    "qualification": {
+      "gate": "skills/dataset-qualification/scripts/qualify_dataset.py (shipped as code/qualify_dataset.py, gate 1.4.0)",
+      "report": "release/nhs-ae-four-hour-decline/qualification.json (sha256 2118ecd4f7498a3c1e7f25f95707857b8be5a162519fa87d6149a4b25c9a18d2), bundled in the package",
+      "ok": true,
+      "failed_checks": [],
+      "accept_recheck": "qualify_dataset.py --accept re-verified the package bytes (2026-10-21T14:07Z) and the bytes downloaded from the staged private GitHub release v2026.11 (2026-10-21T14:26Z): ACCEPTED, artifact 0990af0f90fbe304"
+    },
+    "superseded_v2026_10": "the v2026.10 construction_output (job nhsae-002, artifact 9903df974f233dfa, gate 1.3.0, 11,591 rows, staging release 419222791) is preserved in git history and in that staging release"
   },
-  "references_eval": {
-   "month_prior_auc": 0.6027,
-   "reversal_auc": 0.5839,
-   "persistence_auc": 0.5758,
-   "mean_reversion_auc": 0.5659,
-   "winter_auc": 0.5473,
-   "momentum_auc": 0.4161
+  "baseline": {
+    "job": "coordinator-rebuild-2026-10-21c",
+    "where": "coordinator, baseline/reproduce_baseline.sh re-run on the v2026.12 rebuild c public splits (the runner files unmodified, bundled sha256 == expected)",
+    "accepted_artifact_version": "d871b45b667448a123bad9762cf066fd5d31c08700761b27ca8ff57a8a0690f9",
+    "contract_ok": true,
+    "eval_auc_from_train_py": 0.5511,
+    "eval_auc_from_validate_py": 0.5511,
+    "runner_files_unmodified": true,
+    "dependencies": {
+      "python": "3.14",
+      "xgboost": "3.4.1",
+      "scikit-learn": "1.9.1",
+      "pandas": "2.3.3",
+      "numpy": "2.5.4"
+    },
+    "references_eval": {
+      "month_prior_auc": 0.6027,
+      "reversal_auc": 0.5839,
+      "persistence_auc": 0.5758,
+      "mean_reversion_auc": 0.5659,
+      "winter_auc": 0.5473,
+      "momentum_auc": 0.4161
+    },
+    "references_holdout": {
+      "mean_reversion_auc": 0.6562,
+      "reversal_auc": 0.6007,
+      "persistence_auc": 0.6046,
+      "winter_auc": 0.509,
+      "month_prior_auc": 0.5294,
+      "momentum_auc": 0.3993
+    },
+    "note": "The runner-contract baseline re-run on exactly the v2026.12 rebuild c bytes: 0.5511 eval AUC through both independent paths, CONTRACT OK (python 3.14.7; the v2026.11 run under python 3.13.16 measured the identical 0.5511 on the byte-identical CSVs) - below every eval reference (target-month prior 0.6027, reversal 0.5839, persistence 0.5758, mean reversion 0.5659): recorded as measured headroom. The superseded v2026.10 worker baseline nhsae-baseline-001 (server 171525370, 56.8 s, eval AUC 0.5526 on artifact 9903df974f233dfa, reports in staging release 419227918) is preserved in jobs[] and in the audit block."
   },
-  "references_holdout": {
-   "mean_reversion_auc": 0.6562,
-   "reversal_auc": 0.6007,
-   "persistence_auc": 0.6046,
-   "winter_auc": 0.509,
-   "month_prior_auc": 0.5294,
-   "momentum_auc": 0.3993
+  "packaged_at": "2026-10-21T21:43:43Z",
+  "awaiting_operator": false,
+  "audit_2026_10_21": {
+    "auditor": "independent agent, gh CLI, read-only, did not read dataset-factory",
+    "artifact": "9903df974f233dfa",
+    "integrity": "PASS - 26 checksum-covered files match; tag == main == f36e4fc3",
+    "labels": "UNCERTAIN - 11,457 reconstructed labels agree with the shipped label; 134 cannot be reconstructed (10 train, 3 eval, 121 holdout) because target-month counts are absent from the released rows",
+    "temporal_safety": "FAIL - 25 features carry month-M statistics that NHS England publishes about 10 days after month end (rate_m, att1_m, over4_1_m, the delta and mean families, months_reported_12m, ...). The prediction instant was documented as end of month M, which is before those values existed. Revision vintages are unverified.",
+    "population_selection": "FAIL - eligibility uses M+1 attendance and a >=24-month criterion evaluated over the whole snapshot, so the retained rows depend on future information (example: R0A-2019-01 has months_reported_12m=9 yet is retained). Hindsight selection independent of feature leakage.",
+    "splits": "PASS - no duplicate provider-months, no overlapping target months, no training targets inside eval; train 2019-01..2022-12, eval 2023-01..2024-12, holdout 2025-01..2026-09",
+    "baseline": "reproduces at AUC 0.552621 / Brier 0.398525, but persistence 0.575845 and a target-month-of-year prior 0.616765 both beat it",
+    "holdout": "labelled and shipped by design; blind evaluation requires isolation",
+    "documentation": "FAIL - timing conflation, rate_delta_1m scored with the opposite sign (it yields 0.5839/0.6007 eval/holdout), 'public/no credentials' wrong, checksum instructions use inconsistent paths, downloader does not consult SHA256SUMS or implement its gh fallback"
   },
-  "note": "The runner-contract baseline re-run on exactly the v2026.12 rebuild c bytes: 0.5511 eval AUC through both independent paths, CONTRACT OK (python 3.14.7; the v2026.11 run under python 3.13.16 measured the identical 0.5511 on the byte-identical CSVs) - below every eval reference (target-month prior 0.6027, reversal 0.5839, persistence 0.5758, mean reversion 0.5659): recorded as measured headroom. The superseded v2026.10 worker baseline nhsae-baseline-001 (server 171525370, 56.8 s, eval AUC 0.5526 on artifact 9903df974f233dfa, reports in staging release 419227918) is preserved in jobs[] and in the audit block."
- },
- "packaged_at": "2026-10-21T21:43:43Z",
- "awaiting_operator": false,
- "audit_2026_10_21": {
-  "auditor": "independent agent, gh CLI, read-only, did not read dataset-factory",
-  "artifact": "9903df974f233dfa",
-  "integrity": "PASS - 26 checksum-covered files match; tag == main == f36e4fc3",
-  "labels": "UNCERTAIN - 11,457 reconstructed labels agree with the shipped label; 134 cannot be reconstructed (10 train, 3 eval, 121 holdout) because target-month counts are absent from the released rows",
-  "temporal_safety": "FAIL - 25 features carry month-M statistics that NHS England publishes about 10 days after month end (rate_m, att1_m, over4_1_m, the delta and mean families, months_reported_12m, ...). The prediction instant was documented as end of month M, which is before those values existed. Revision vintages are unverified.",
-  "population_selection": "FAIL - eligibility uses M+1 attendance and a >=24-month criterion evaluated over the whole snapshot, so the retained rows depend on future information (example: R0A-2019-01 has months_reported_12m=9 yet is retained). Hindsight selection independent of feature leakage.",
-  "splits": "PASS - no duplicate provider-months, no overlapping target months, no training targets inside eval; train 2019-01..2022-12, eval 2023-01..2024-12, holdout 2025-01..2026-09",
-  "baseline": "reproduces at AUC 0.552621 / Brier 0.398525, but persistence 0.575845 and a target-month-of-year prior 0.616765 both beat it",
-  "holdout": "labelled and shipped by design; blind evaluation requires isolation",
-  "documentation": "FAIL - timing conflation, rate_delta_1m scored with the opposite sign (it yields 0.5839/0.6007 eval/holdout), 'public/no credentials' wrong, checksum instructions use inconsistent paths, downloader does not consult SHA256SUMS or implement its gh fallback"
- },
- "rebuild_2026_10_21": {
-  "artifact": "0990af0f90fbe304cb94bd53754a337f7704e1005d92f8d9d250b2e8e157b3b5",
-  "release": "v2026.11",
-  "built_at": "2026-10-21T12:38:18Z",
-  "fixed": [
-   "prediction instant is the publication date of month M (observed 2026-08-31 -> 2026-09-10), not the period end",
-   "eligibility counts qualifying months at or before M; M+1 attendance and the whole-snapshot history count are gone",
-   "rate_delta_1m documented and reported with the correct sign (reversal 0.5839 eval, momentum 0.4161)",
-   "persistence, reversal and a train-only target-month prior published as references"
-  ],
-  "measured": {
-   "baseline_eval_auc": 0.5511,
-   "persistence_eval": 0.5758,
-   "persistence_holdout": 0.6046,
-   "month_prior_eval": 0.6027,
-   "reversal_eval": 0.5839,
-   "mean_reversion_eval": 0.5659,
-   "mean_reversion_holdout": 0.6562
+  "rebuild_2026_10_21": {
+    "artifact": "0990af0f90fbe304cb94bd53754a337f7704e1005d92f8d9d250b2e8e157b3b5",
+    "release": "v2026.11",
+    "built_at": "2026-10-21T12:38:18Z",
+    "fixed": [
+      "prediction instant is the publication date of month M (observed 2026-08-31 -> 2026-09-10), not the period end",
+      "eligibility counts qualifying months at or before M; M+1 attendance and the whole-snapshot history count are gone",
+      "rate_delta_1m documented and reported with the correct sign (reversal 0.5839 eval, momentum 0.4161)",
+      "persistence, reversal and a train-only target-month prior published as references"
+    ],
+    "measured": {
+      "baseline_eval_auc": 0.5511,
+      "persistence_eval": 0.5758,
+      "persistence_holdout": 0.6046,
+      "month_prior_eval": 0.6027,
+      "reversal_eval": 0.5839,
+      "mean_reversion_eval": 0.5659,
+      "mean_reversion_holdout": 0.6562
+    },
+    "rows": {
+      "train": 4074,
+      "eval": 2937,
+      "holdout": 2538
+    },
+    "providers": 141,
+    "removed_training_rows": 2042,
+    "note": "Eval and holdout bytes are unchanged from v2026.10; only training rows a provider had not yet earned were removed."
   },
-  "rows": {
-   "train": 4074,
-   "eval": 2937,
-   "holdout": 2538
+  "rebuild_2026_10_21_b": {
+    "artifact": "f4cb7fde0af5c21105e4e41bf17d8535801f305c694ba901b110280ad2b2e302",
+    "release": "v2026.12",
+    "built_at": "2026-10-21T15:26:44Z",
+    "trigger": "re-audit 2026-10-21: v2026.11 fixed the history count but still required a volume-qualified M+1 for a row to exist (build.py:634-642). The counterfactual: R0A-2022-03, changing only the target month's attendances, removed the row.",
+    "fixed": [
+      "eligibility decided at M only: 24 volume-qualified months at or before M, and M qualifies",
+      "the target month is looked up only to compute the label; an absent target month is counted as `unobserved_target` (134), not as exclusion",
+      "publication instant uses the MAXIMUM observed lag (13 days; observations 9/13/10 for Jun/Jul/Aug 2026), not a fixed 10",
+      "docs corrected: month-end wording in DATA_DICTIONARY, flat-path checksum instruction, three-week lag, 'balanced by construction'"
+    ],
+    "rows": {
+      "train": 4074,
+      "eval": 2937,
+      "holdout": 2538
+    },
+    "providers": {
+      "shipped": 129,
+      "candidates": 142
+    },
+    "data_bytes_unchanged_from": "v2026.11 (same row sets and values; only quality.json and the documents differ)",
+    "measured": {
+      "baseline_eval_auc": 0.5511,
+      "persistence_eval": 0.5758,
+      "month_prior_eval": 0.6027,
+      "reversal_eval": 0.5839
+    }
   },
-  "providers": 141,
-  "removed_training_rows": 2042,
-  "note": "Eval and holdout bytes are unchanged from v2026.10; only training rows a provider had not yet earned were removed."
- },
- "rebuild_2026_10_21_b": {
-  "artifact": "f4cb7fde0af5c21105e4e41bf17d8535801f305c694ba901b110280ad2b2e302",
-  "release": "v2026.12",
-  "built_at": "2026-10-21T15:26:44Z",
-  "trigger": "re-audit 2026-10-21: v2026.11 fixed the history count but still required a volume-qualified M+1 for a row to exist (build.py:634-642). The counterfactual: R0A-2022-03, changing only the target month's attendances, removed the row.",
-  "fixed": [
-   "eligibility decided at M only: 24 volume-qualified months at or before M, and M qualifies",
-   "the target month is looked up only to compute the label; an absent target month is counted as `unobserved_target` (134), not as exclusion",
-   "publication instant uses the MAXIMUM observed lag (13 days; observations 9/13/10 for Jun/Jul/Aug 2026), not a fixed 10",
-   "docs corrected: month-end wording in DATA_DICTIONARY, flat-path checksum instruction, three-week lag, 'balanced by construction'"
-  ],
-  "rows": {
-   "train": 4074,
-   "eval": 2937,
-   "holdout": 2538
+  "rebuild_2026_10_21_c": {
+    "artifact": "5784f80a29df04f4c115a680341eb026945cd3d8c5beec121eefd0c2bcbadfb9",
+    "release": "v2026.13",
+    "trigger": "third audit: a March 2026 release took 16 days, so the 13-day instant read 121 April-target rows three days early",
+    "fixed": [
+      "instant is 21 days after month end - above every observed lag (16/9/13/10)",
+      "manifest artifact identity is the gate digest; package digest recorded separately",
+      "summary.json shipped",
+      "get_dataset.py defaults to v2026.13",
+      "documentation corrections listed in the third audit"
+    ]
   },
-  "providers": {
-   "shipped": 129,
-   "candidates": 142
-  },
-  "data_bytes_unchanged_from": "v2026.11 (same row sets and values; only quality.json and the documents differ)",
-  "measured": {
-   "baseline_eval_auc": 0.5511,
-   "persistence_eval": 0.5758,
-   "month_prior_eval": 0.6027,
-   "reversal_eval": 0.5839
+  "licence_class": "A",
+  "licence_note": "Open Government Licence v3.0 (NHS England) - redistribution and derivatives permitted with attribution",
+  "dropped_at": "2026-10-21T21:48:12Z",
+  "suitability_review": {
+    "record": "suitability/nhs-ae-four-hour-decline.json",
+    "reviewed_on": "2026-10-24",
+    "decision": "rebuild_before_use",
+    "scope": "Purpose-specific review supersedes blanket usability recommendations in the static-batch audit; measured audit findings remain unchanged.",
+    "artifact_version": "5784f80a29df04f4c115a680341eb026945cd3d8c5beec121eefd0c2bcbadfb9"
   }
- },
- "rebuild_2026_10_21_c": {
-  "artifact": "5784f80a29df04f4c115a680341eb026945cd3d8c5beec121eefd0c2bcbadfb9",
-  "release": "v2026.13",
-  "trigger": "third audit: a March 2026 release took 16 days, so the 13-day instant read 121 April-target rows three days early",
-  "fixed": [
-   "instant is 21 days after month end - above every observed lag (16/9/13/10)",
-   "manifest artifact identity is the gate digest; package digest recorded separately",
-   "summary.json shipped",
-   "get_dataset.py defaults to v2026.13",
-   "documentation corrections listed in the third audit"
-  ]
- },
- "licence_class": "A",
- "licence_note": "Open Government Licence v3.0 (NHS England) - redistribution and derivatives permitted with attribution",
- "dropped_at": "2026-10-21T21:48:12Z"
 }

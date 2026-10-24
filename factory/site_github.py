@@ -117,9 +117,22 @@ class GitHub:
         manifest["package_files"]["README.md"] = digest(readme)
         for path, content in (managed or {}).items():
             manifest["package_files"][path] = digest(content)
-        # The default branch may advance; the immutable dataset tag is never edited.
-        return ({"README.md": readme, "MANIFEST.json": dump(manifest)},
-                {"README.md": original, "MANIFEST.json": remote_manifest})
+        updates = {"README.md": readme}
+        originals = {"README.md": original, "MANIFEST.json": remote_manifest}
+        if record.get("suitability"):
+            for name in ("DATA_DICTIONARY.md", "RELEASE_NOTES.md", "VERIFICATION.md", "LOADING.md"):
+                prior = self.file(repo, name, missing_ok=True)
+                if prior is None:
+                    continue
+                expected = manifest.get("package_files", {}).get(name)
+                require(expected is None or digest(prior) == expected,
+                        f"Default-branch {name} disagrees with its manifest")
+                updates[name] = linked_readme(prior, record)
+                originals[name] = prior
+                manifest["package_files"][name] = digest(updates[name])
+        # Current editorial overlays advance; data tags, asset digests and frozen files do not.
+        updates["MANIFEST.json"] = dump(manifest)
+        return updates, originals
 
     def setup_pages(self, repo):
         pages = self.request("GET", f"repos/{repo}/pages", missing_ok=True)

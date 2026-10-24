@@ -216,3 +216,14 @@ these limits. Keep credentials out of tracked records.
   relevant checks, and commit/push completed project changes when GitHub access
   is configured. Inspect the diff first; exclude credentials and bulk data.
 - Keep the next action specific enough that a fresh session can carry it out.
+
+## Prediction-time contracts and suitability
+
+Read `docs/PREDICTION-CONTRACT.md` for new construction, qualification, dataset review and release work.
+Use purpose-specific suitability, not blanket withdrawal or universal leakage-free claims.
+`eval.csv` is labeled development/validation; holdout is final scoring. Check input availability,
+training/validation label availability, vintage and outcome-conditioned selection separately.
+Gate 1.5 requires `evaluation_contract`; retrospective scope may retain explicit assumptions.
+Historical forecasting requires full-row availability evidence. Every package has a version-bound
+`suitability/<dataset>.json`; run `python3 scripts/check-suitability.py` before publication.
+Keep current editorial corrections separate from frozen artifact bytes and tags.

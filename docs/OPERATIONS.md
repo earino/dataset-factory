@@ -962,3 +962,11 @@ handoffs remain required. A processing marker acknowledges recorded work, not Te
 delivery. Scheduler deployment must change the existing job to script-only using the
 supported CLI, keep its ID/cadence/delivery, and verify the new shim and live invocation.
 The previous unguarded watcher must not remain enabled alongside this path.
+
+## Prediction-contract migration (24 October 2026)
+
+Gate 1.5 is mandatory for new artifacts. Read docs/PREDICTION-CONTRACT.md. Legacy builders lacking
+an evaluation_contract fail closed until reviewed and updated; do not edit frozen release copies
+or reissue historical reports. Retrospective research is an allowed scope with explicit timing
+limitations. Historical forecasts need a complete measured private availability ledger.
+Suitability notices are required for every release and generated consistently by the site pipeline.

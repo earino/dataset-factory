@@ -101,6 +101,13 @@ def build_austin_fixture(out_dir: str, *, spread_days: bool = True,
          contextlib.redirect_stdout(io.StringIO()):
         argv = ["--out", out_dir] + (["--built-at", built_at] if built_at else [])
         assert austin_build.main(argv) == 0
+    # Legacy builder output needs an explicit review contract under gate 1.5.
+    from prediction_fixtures import research_contract
+    qp = Path(out_dir) / "quality.json"
+    q = json.loads(qp.read_text())
+    meta = json.loads((Path(out_dir) / "meta.json").read_text())
+    q["evaluation_contract"] = research_contract(meta["columns"], q["target"])
+    qp.write_text(json.dumps(q))
     manifest = json.loads((Path(out_dir) / "manifest.json").read_text())
     return Path(out_dir), manifest
 
