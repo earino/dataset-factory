@@ -7809,3 +7809,36 @@ image context and replaces only that URL with the official script at its existin
 HERMES_COMMIT. Original and execution Dockerfile hashes are recorded, and unknown
 recipe layouts fail for review. No harness checkout, baseline or lockfile edit.
 A new job must reproduce this repair before adapter acceptance.
+## 2026-10-24 (14:07Z) - EUTL editorial revision 3 published and verified (plan 9b5cd371, PR #22 catalogue layout)
+Deployed merged main cd2c26e after green exact-merge CI. The EUTL revision-3 site plan
+reproduced the reviewed hash 9b5cd37159237fd75fec0e4b879e2e44928f58f94a1f3b5940d794da28443254
+exactly (prepare made zero network calls) and was published under that approved plan and
+verified on both repos: dataset page and shared catalogue live with the readable catalogue
+columns from PR #22, frozen tags and assets untouched, zero CSV bytes on the coordinator.
+Receipt: release/eutl-installation-net-short/DESTINATIONS.json site block verified_at
+2026-10-24T14:07:39Z. All other nine catalogue records preserved.
+
+## 2026-10-24 (14:04Z) - austin-adapter-smoke-001 FAILED at image_build; diagnosed, receipts preserved, worker destroyed and provider-confirmed
+The approved smoke (cpx32/120/180, EUR 0.32 reservation) launched at 13:42:04Z (Hetzner
+172207846, actual hourly EUR 0.06924) and failed at 258 s in stage image_build; the
+uploaded report carried no build stderr (checked_run discarded it). Within the original
+lifetime and reservation, the pinned Docker build alone was reproduced on the same owned
+worker for diagnosis (bounded, credentials excluded): steps 1-19 pass; step 20/29 fails
+because the live-fetched Hermes install.sh expects a pm/ layout that pinned HERMES_COMMIT
+d20a8e44755a8e999a2e816ef9f458c438d3e17c does not carry (pm/lock.json missing,
+ModuleNotFoundError: No module named 'pm'), so pm install failed and the build exited 1.
+Installer drift against the pinned commit - not a payload, assembler, runtime or gate
+defect. Full diagnostic preserved at .factory/austin-adapter-smoke-001/reports/
+imagebuild-diagnostic.log; original failed receipt .factory/austin-adapter-smoke-001/
+result.json preserved; staging release 422758299.
+
+Corrections recorded additively per reviewer: image-build containers did run, while no
+inference/scoring container and no data stage ran. Deletion does NOT release the monthly
+conservative reservation - worker.launch sums all records for the budget month regardless
+of status, so October counts EUR 8.98 including this job. The ~EUR 0.025 provider cost is
+an estimate, not a billed amount. Worker destroyed 14:04:18Z; provider read-back 404,
+zero servers remaining. Fix merged in PR #23 (f32020d): the runner derives an
+execution-copy Dockerfile that fetches scripts/install.sh from the exact pinned
+HERMES_COMMIT, preserving the original verified Dockerfile and recording both hashes;
+failed builds retain a bounded mode-0600 worker-local diagnostic. No retry of 001;
+fresh 002 prepared for review.
