@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "site_revision": 2,
+  "site_revision": 3,
   "title": "Australian visitor arrivals, next month",
-  "summary": "Predict whether short-term visitor arrivals to Australia fall below last year's same month - 27,131 country-months from the ABS OAD panel.",
+  "summary": "Research task: predict whether short-term visitor arrivals to Australia fall below last year's same month - 27,131 country-months from the ABS OAD panel.",
   "task_type": "binary-classification",
   "domain": "Tourism and migration statistics",
   "release_date": "2026-10-22",
@@ -19,7 +19,9 @@
     "The pandemic window 2020-01..2021-12 is excluded by construction and counted, so crisis behaviour is not represented.",
     "The source is revised monthly; a later rebuild will not reproduce these bytes.",
     "The holdout is labelled and ships with the release; isolate it for blind evaluation.",
-    "Direction labels of this kind are dominated by seasonality in some series; per-series scores are not published."
+    "Direction labels of this kind are dominated by seasonality in some series; per-series scores are not published.",
+    "Suitability record (issue #17): the public evaluation rows are development and validation data, not a benchmark surface on their own - cross-row joins on the published files can recover labels mechanically. Use the isolated-rows interface and the sealed holdout for final scoring; the current scorer does not yet enforce isolation mechanically.",
+    "No claim of real-time or operational forecasting validity: historical feature and label availability at the prediction instant is assumed from a current source snapshot, not verified against release vintages."
   ],
   "baseline_scope": "One baseline through the runner's training and validation contract. No agent or harness comparison was run and none is implied."
 }

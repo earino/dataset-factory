@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "site_revision": 3,
+  "site_revision": 4,
   "title": "MSHA enforcement citations",
-  "summary": "Predict whether a US mine safety inspection will cite a given 30 CFR section - one binary task instance per section, over 26 years of federal enforcement records.",
+  "summary": "Research task: predict whether a US mine safety inspection will cite a given 30 CFR section - one binary task instance per section, over 26 years of federal enforcement records.",
   "task_type": "binary-classification",
   "domain": "Workplace safety and regulation",
   "release_date": "2026-10-19",
@@ -18,7 +18,9 @@
     "A derived research dataset from MSHA public-domain data, labelled as derived - not an official MSHA or Department of Labor product.",
     "The label is an enforcement outcome: what an inspector cited, not a measured hazard. Mines that are inspected more often generate more citations.",
     "Only sections cited in at least 1% of pooled inspections ship as configs, so this is not a census of 30 CFR.",
-    "A mine is the same entity across splits by design - prior history is the point of the task. The temporal split is what prevents leakage, and the holdout is labelled and downloadable: keep its labels outside an evaluated agent's workspace."
+    "A mine is the same entity across splits by design - prior history is the point of the task. The temporal split is what prevents leakage, and the holdout is labelled and downloadable: keep its labels outside an evaluated agent's workspace.",
+    "Suitability record (issue #17): the public evaluation rows are development and validation data, not a benchmark surface on their own - cross-row joins on the published files can recover labels mechanically. Use the isolated-rows interface and the sealed holdout for final scoring; the current scorer does not yet enforce isolation mechanically.",
+    "No claim of real-time or operational forecasting validity: historical feature and label availability at the prediction instant is assumed from a current source snapshot, not verified against release vintages."
   ],
   "baseline_scope": "One baseline through the runner's training and validation contract. No agent or harness comparison was run and none is implied."
 }

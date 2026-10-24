@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "dataset": "nz-ea-wholesale-price-exceedance",
+  "release_tag": "v2026.10",
+  "artifact_version": "545e0e4418c1f0e54bb55389e7816c1736a8473de600e70d6f006ed33089f7e7",
+  "reviewed_on": "2026-10-24",
+  "reviewer": "Scout; reviewed by Codex",
+  "decision": "rebuild_before_use",
+  "summary": "Not published and never to be flipped in this form: the staged private v2026.10 eval file answers its own questions. For each row (island, D) the (island, D+7) feature row ships the label-source price as last_day_mean; a label-blind join reproduces 4,978/4,992 labels with zero mismatches, blind eval AUC 1.0. Secondary defects: 14 eval targets cross the declared 2022-11-01 regime break; VERIFICATION.md claims 58 eval weeks vs 358 actual; train/eval share target week 2016-W01; the threshold rationale cites out-of-window data. The baseline triad itself was verified honest (references and model scale reproduce exactly), so the construction - not the measurement - is what must be rebuilt.",
+  "supported_uses": [
+    "None for v2026.10 as staged; the frozen artifact may serve as a construction post-mortem example only"
+  ],
+  "unsupported_uses": [
+    "Any publication or benchmark use of the staged v2026.10",
+    "Real-time forecasting claims"
+  ],
+  "evaluation_access": "common_cutoff_batch",
+  "historical_availability": "assumed",
+  "training_label_timing": "unverified",
+  "vintage": "current_snapshot",
+  "selection": "outcome_conditioned",
+  "cross_row_audit": {
+    "status": "recovery_demonstrated",
+    "scope": "Pre-flip operator-commissioned audit: label-blind join, holdout never opened, two AUC implementations; 4,978/4,992 labels recovered with zero mismatches",
+    "evidence": [
+      "candidates/nz-ea-wholesale-price-exceedance/audits/2026-10-24-independent-codex-audit.md"
+    ]
+  },
+  "limitations": [
+    "Exact cross-row label recovery, blind AUC 1.0 (see cross_row_audit scope).",
+    "Row selection is outcome-conditioned: shipped rows require the target week's own outcome data to exist in the extract, so eligibility depends on the future.",
+    "Strict point-in-time causality is unverified (12 train labels would publish after the first eval prediction under the same D+6 lag; no release-vintage evidence shipped)."
+  ],
+  "required_actions": [
+    "Rebuild at a common information cutoff or as an as-of interface hiding future covariate rows; purge regime-boundary and shared-week edges; correct the week-count and threshold evidence; re-qualify and re-run the baseline triad; only then re-enter packaging. The staged private v2026.10 must be renamed SUPERSEDED - DO NOT PUBLISH when a corrected version is staged."
+  ],
+  "evidence": [
+    {
+      "claim": "Exact cross-row recovery with proof script",
+      "source": "candidates/nz-ea-wholesale-price-exceedance/audits/2026-10-24-independent-codex-audit.md",
+      "detail": "CRITICAL FAIL section"
+    },
+    {
+      "claim": "Outcome-conditioned selection",
+      "source": "release/nz-ea-wholesale-price-exceedance/README.md",
+      "detail": "shipped rows restricted to in-frame weeks whose target values exist"
+    }
+  ],
+  "corrections": []
+}

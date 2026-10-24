@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "dataset": "nhs-ae-four-hour-decline",
+  "release_tag": "v2026.13",
+  "artifact_version": "5784f80a29df04f4c115a680341eb026945cd3d8c5beec121eefd0c2bcbadfb9",
+  "reviewed_on": "2026-10-24",
+  "reviewer": "Scout; reviewed by Codex",
+  "decision": "rebuild_before_use",
+  "summary": "Not published; the candidate was dropped before any flip, and for two independent reasons. Task quality: the recorded drop rationale is that the label (month-over-month decline of the within-4-hour rate) is dominated by persistence and seasonality, and the record requires a publication-date archive before any re-open. Leakage risk: the construction has the same structural shape as the demonstrated cross-row class - the label's operands are a provider's M+1 monthly rates, which a later row for the same provider ships as feature months - so any re-open must assume the same reverse-history join applies until a blind-join battery proves otherwise. Publication timing is the one well-evidenced property: month-M CSVs were observed publishing 9-13 days after period end and the task takes the maximum.",
+  "supported_uses": [
+    "None as staged; the package is retained as evidence of the construction review only"
+  ],
+  "unsupported_uses": [
+    "Any publication of the staged package",
+    "Real-time or operational claims about NHS A&E performance"
+  ],
+  "evaluation_access": "common_cutoff_batch",
+  "historical_availability": "assumed",
+  "training_label_timing": "partial",
+  "vintage": "current_snapshot",
+  "selection": "outcome_conditioned",
+  "cross_row_audit": {
+    "status": "untested",
+    "scope": "Bulk data never shipped in the repository tree; the local package carries no public CSVs to join, and the audit did not cover this dataset. The structural risk is reasoned from the documented grain, not measured.",
+    "evidence": []
+  },
+  "limitations": [
+    "Label dominated by persistence/seasonality per the candidate record's drop rationale.",
+    "Structural risk of the same reverse-history join class as the seven demonstrated failures (label operands are the next row's feature months); untested.",
+    "Publication timing is the best-evidenced property (observed 9-13 day lags), which makes an as-of construction feasible on re-open."
+  ],
+  "required_actions": [
+    "Stay dropped. If re-opened: require the publication-date archive the record names, rebuild at a common information cutoff, run the blind cross-row join battery before any packaging, and re-test whether any non-persistence signal exists at all."
+  ],
+  "evidence": [
+    {
+      "claim": "Drop rationale and re-open conditions",
+      "source": "candidates/nhs-ae-four-hour-decline/record.json",
+      "detail": "status=dropped; next_action requires a non-persistence-dominated task and a publication-date archive"
+    },
+    {
+      "claim": "Observed publication lag 9-13 days",
+      "source": "release/nhs-ae-four-hour-decline/README.md",
+      "detail": "prediction-instant section"
+    }
+  ],
+  "corrections": []
+}

@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "dataset": "noaa-tide-flooding",
+  "release_tag": "v2026.09",
+  "artifact_version": "fb49f932c7b4ea5ab532c20f7dce59a7d733de925d1e172054ff1d38abe1eeed",
+  "reviewed_on": "2026-10-24",
+  "reviewer": "Scout; reviewed by Codex",
+  "decision": "retain_restricted",
+  "summary": "Retained with restrictions: station-day minor-flood exceedance. A (station, D) -> (station, D+1) join exposes the outcome day's observed_max_ft, giving near-perfect blind ranking (AUC ~0.9993, hundreds of binary mismatches against NOAA's official flag) in both split designs - not exact recovery, but far beyond honest modelling. The build and the data dictionary also disagree on the day definition (the build assigns the official minFlag to date+1).",
+  "supported_uses": [
+    "Retrospective model-development experiments under the runner's isolated-rows interface: public eval rows for development and model selection, sealed labelled holdout for final scoring",
+    "Research use of the construction, provenance and honest baselines on the frozen artifact"
+  ],
+  "unsupported_uses": [
+    "Claims of verified real-time or operational forecasting validity",
+    "Unrestricted cross-row batch access to the public files as a benchmark surface",
+    "Reporting public-eval scores as out-of-sample forecasting skill",
+    "Any benchmark score produced by a solver holding the public files: the future-measurement join ranks near-perfectly",
+    "Presenting the label as NOAA's official same-day flag until the day definition is corrected and documented"
+  ],
+  "evaluation_access": "isolated_rows",
+  "historical_availability": "assumed",
+  "training_label_timing": "unverified",
+  "vintage": "current_snapshot",
+  "selection": "unverified",
+  "cross_row_audit": {
+    "status": "recovery_demonstrated",
+    "scope": "Both split designs (temporal, station-disjoint) tested; temporal 88,915/89,038 covered AUC 0.99929 with 423 binary mismatches; station-disjoint 29,889/29,930 AUC 0.99922 with 191; a D+2 margin_ft variant still ranks ~0.9993, so deleting the obvious column is not a fix",
+    "evidence": [
+      "audits/2026-10-24-static-benchmark-leakage-audit.md"
+    ]
+  },
+  "limitations": [
+    "Near-perfect future-outcome ranking in both split designs (see cross_row_audit scope).",
+    "Dictionary/build day-definition conflict: release/noaa-tide-flooding/code/build.py assigns the official minFlag to date+1 while DATA_DICTIONARY.md describes the target-day value.",
+    "One calendar week straddles train/eval in each design (244 temporal, 82 station-disjoint eval rows).",
+    "Historical feature/label availability is assumed from current snapshots, not verified against release vintages.",
+    "The current scorer passes the complete feature frame; isolation is not mechanically enforced."
+  ],
+  "required_actions": [
+    "Run predictions through the isolated-rows interface once implemented (issue #17); the current scorer passes the complete feature frame and does not mechanically enforce prediction-time isolation",
+    "Keep the labelled holdout outside evaluated workspaces and never load later rows when scoring earlier targets",
+    "Correct the day-definition documentation conflict (editorial overlay; frozen bytes untouched) and state the raw-max/official-flag distinction on the public page.",
+    "Versioned rebuild with outcome-day measurements purged from solver-visible rows in both designs; re-run the blind join battery before stronger claims."
+  ],
+  "evidence": [
+    {
+      "claim": "Cross-row approximate recovery, both designs",
+      "source": "audits/2026-10-24-static-benchmark-leakage-audit.md",
+      "detail": "noaa rows in the overall table"
+    },
+    {
+      "claim": "Day-definition conflict",
+      "source": "release/noaa-tide-flooding/code/build.py",
+      "detail": "minFlag assigned to date+1; DATA_DICTIONARY.md describes the target-day value"
+    }
+  ],
+  "corrections": [
+    "Public page and card must state the restricted suitability and the day-definition correction once rendered; no frozen package bytes change."
+  ]
+}

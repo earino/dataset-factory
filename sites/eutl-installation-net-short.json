@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
   "title": "EU ETS installation net-short",
-  "summary": "Predict whether a stationary EU ETS installation's verified emissions for compliance year t exceed the free allocation it holds for that year - a net-short year in which the operator must buy allowances. The prediction instant is the surrender deadline, 30 April of year t: the previous year's emissions are settled and reported, and the year-t allocation is already published. One row per installation and year, built from the European Commission's Union Registry public extracts.",
+  "summary": "Research task: predict whether a stationary EU ETS installation's verified emissions for compliance year t exceed the free allocation it holds for that year - a net-short year in which the operator must buy allowances. The prediction instant is the surrender deadline, 30 April of year t: the previous year's emissions are settled and reported, and the year-t allocation is already published. One row per installation and year, built from the European Commission's Union Registry public extracts.",
   "domain": "Environment and climate policy",
   "task_type": "binary-classification",
   "release_date": "2026-10-22",
-  "site_revision": 1,
+  "site_revision": 2,
   "baseline_scope": "One baseline through the runner's training and validation contract. No agent or harness comparison was run and none is implied.",
   "post": {
     "title": "A compliance-year shortfall task from the EU emissions trading registry",
@@ -20,6 +20,8 @@
     "The positive base rate rises over time - 45.5 percent in train, 74.0 in evaluation, 72.2 in holdout - because the free-allocation share fell while the cap declined. Read every score against the documented per-year prevalence.",
     "The single column margin_t alone reaches an AUC near 0.90 under the gate's one-column sweep: the intended one-line rule nearly solves the task, so a model must beat it honestly rather than rediscover it.",
     "Exact emission-allocation ties are labelled 0 and counted (4,224 rows); the label source values are excluded from every shipped file.",
-    "The panel ends at 2025 because the extract carries no numeric verified emissions for later years at the snapshot date."
+    "The panel ends at 2025 because the extract carries no numeric verified emissions for later years at the snapshot date.",
+    "Suitability record (issue #17): the public evaluation rows are development and validation data, not a benchmark surface on their own - cross-row joins on the published files can recover labels mechanically. Use the isolated-rows interface and the sealed holdout for final scoring; the current scorer does not yet enforce isolation mechanically.",
+    "No claim of real-time or operational forecasting validity: historical feature and label availability at the prediction instant is assumed from a current source snapshot, not verified against release vintages."
   ]
 }
