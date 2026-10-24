@@ -7842,3 +7842,12 @@ execution-copy Dockerfile that fetches scripts/install.sh from the exact pinned
 HERMES_COMMIT, preserving the original verified Dockerfile and recording both hashes;
 failed builds retain a bounded mode-0600 worker-local diagnostic. No retry of 001;
 fresh 002 prepared for review.
+
+Codex independently verified live EUTL editorial revision 3, unchanged original
+GitHub/HF tags and asset identities, current documentation notices/hashes, and all
+ten catalogue record hashes and links at catalogue commit 11563e3…. Exact deployed
+CI passed; Chrome visual review confirms readable notice columns. Updated compact
+receipts are in audits/remediation-2026-10-24/. The 002 transport was independently
+reassembled byte-for-byte (48b6a70a…, 880640 bytes) and approved in issue #17; the
+installer correction preserves the original Dockerfile and records its derived
+hash. Real worker acceptance remains outstanding; Scout supervises and cleans up.
