@@ -1,371 +1,378 @@
 {
- "id": "tsb-railway-occurrence-casualty",
- "status": "published",
- "verdict": "go",
- "packaged_at": "2026-10-22T06:30:00Z",
- "awaiting_operator": false,
- "jurisdiction": {
-  "country": "CA",
-  "region": "North America",
-  "publisher": "Transportation Safety Board of Canada (TSB / BST), Gatineau, Quebec",
-  "recorded_at": "2026-10-21"
- },
- "created_at": "2026-10-21T08:09:17.014606+00:00",
- "domain": "railway safety - prediction of casualty outcomes of reported rail occurrences (Canada, federal)",
- "prediction_question": "A railway occurrence begins at a known place, time and operating context on the Canadian network (crossing accident, derailment, trespasser event, fire, collision, movement exceeding limits of authority, ...). At that instant, given only pre-occurrence context - where (subdivision, nearest location, province, region, lat/long), which railway, when (date, time of day, season), and what the train was doing (activity type) - will the occurrence result in at least one casualty (fatality or any injury)?",
- "prediction_time": "The instant the occurrence begins (OccDate/OccTime, with the documented local time zone via TimeZoneID). Everything the TSB records during or after the occurrence is excluded from the shipped features: TSB's accident/incident type assignment (its taxonomy embeds outcomes, e.g. 'NON-MAIN-TRACK TRAIN DERAILMENT (NO DAMAGE)'), all injury/DG-release/fire/evacuation/damage flags and counts, weather observations taken at the occurrence, track and rolling-stock attributes measured during the occurrence, investigation/deployment/closeout fields, process dates (ENTRY_DT, RELEASE_DT, DAILY_RELEASED_DT, OccClosedDate), the free-text Summary, and even ReportedDate/ReportedTime (the notification instant, which post-dates the onset) - the last is shipped only in the record's provenance, never as a feature. The casualty outcome unfolds after onset and is the label.",
- "target_definition": "Binary: occurrence resulted in >=1 casualty. Label source columns: InjuriesIND ('Injuries indicator'), cross-checked against TotalFatalInjuries / TotalSeriousInjuries / TotalMinorInjuries ('Total fatal/serious/minor injuries') and the separate INJURIES table (RODSdb_MDOTW_VW_INJURIES_PUBLIC.csv, 2,710,400 bytes). All are excluded from the shipped feature columns by construction.",
- "sources": [
-  {
-   "name": "TSB Rail Occurrence Database System (RODS) - 'Rail transportation occurrence data from January 1983' dataset page",
-   "url": "https://www.tsb.gc.ca/eng/stats/rail/data-5.html",
-   "api": "5 anonymous bulk CSVs + a CSV data dictionary; publisher states 'The RODS datasets are is released on or soon after the 15th of each month, and contains data from January 1983 to the last day of the month preceding its release' and that the Occurrence table contains 'Occurrence summary data... Notification data, including the date and time that the occurrence was reported. Track infrastructure data...'",
-   "license": "see license_evidence; page carries a use-at-your-own-risk disclaimer, the licence comes from the open.canada.ca record (OGL - Canada 2.0)",
-   "access": "measured 2026-10-21 (probe_access.py): plain urllib with a custom User-Agent gets HTTP 403 on all TSB file URLs; a full browser-like header set gets HTTP 200/206 with Range support. The exact working header set is recorded in probe_access.py (User-Agent, Accept, Accept-Language, Referer) - a documented, reproducible programmatic path suitable for a worker."
+  "id": "tsb-railway-occurrence-casualty",
+  "status": "published",
+  "verdict": "go",
+  "packaged_at": "2026-10-22T06:30:00Z",
+  "awaiting_operator": false,
+  "jurisdiction": {
+    "country": "CA",
+    "region": "North America",
+    "publisher": "Transportation Safety Board of Canada (TSB / BST), Gatineau, Quebec",
+    "recorded_at": "2026-10-21"
   },
-  {
-   "name": "RODSdb public tables (CSV, measured sizes, last-modified 2026-09-15)",
-   "url": "https://www.tsb.gc.ca/sites/default/files/stats/RODSdb_MDOTW_VW_OCCURRENCE_PUBLIC.csv",
-   "api": "OCCURRENCE 97,765,258 bytes / 345 columns (OccID, OccNo, occurrence date/time/year, time zone, occurrence+accident/incident type, train activity, subdivision owner+name+mileage, province, station, nearest location, latitude/longitude, region, outcome flags InjuriesIND/FireIND/EvacuationIND/DGReleasedCarsIND..., TotalFatal/Serious/MinorInjuries, NumEvacuated, IsolationRadius_Feet, DeployedIND, process dates, 345-col schema); TRAIN 21,742,734 bytes; ROLLING_STOCK 34,723,267 bytes; INJURIES 2,710,400 bytes; COMPONENTS 42,523 bytes; data dictionary https://www.tsb.gc.ca/sites/default/files/data/en/RODSdb-dd.csv (109,771 bytes, 699 rows, per-column documented meanings). File is ordered newest-first; rows span 2026-09-05 (row 1) back to 1983-01-02 (last row).",
-   "license": "OGL - Canada 2.0 via open.canada.ca package",
-   "access": "measured 2026-10-21 via ranged GETs (browser-like headers): 2 MB samples at offsets 0 / 30,000,000 / 50,000,000 / 70,000,000 and 1.5 MB tail. Row density ~1.4 KB/row -> total row count ESTIMATE ~70,000 occurrences (labelled estimate; full count to be measured on the worker)."
-  },
-  {
-   "name": "open.canada.ca catalogue record for the TSB railway occurrence data",
-   "url": "https://open.canada.ca/data/en/dataset/4f8d9b0d-c4af-4be2-b751-3f5a403993ff",
-   "api": "CKAN package_show answered anonymously 2026-10-21; license_id=ca-ogl-lgo; resources list the 5 CSVs in en+fr plus the data dictionary",
-   "license": "Open Government Licence - Canada 2.0 (ca-ogl-lgo)",
-   "access": "CKAN API (https://open.canada.ca/data/en/api/3/action/package_show) anonymous, clean JSON."
-  },
-  {
-   "name": "TSB Rail transportation occurrences in 2025 - annual statistical summary (publisher's own cross-check product)",
-   "url": "https://www.tsb.gc.ca/eng/stats/rail/2025/sser-ssro-2025.html",
-   "api": "HTML+PDF annual summary, released monthly then compiled annually",
-   "license": "OGL - Canada 2.0 (open.canada.ca TSB statistics package f9073ffd)",
-   "access": "measured 2026-10-21: 'In 2025, 831 rail accidents... were reported to the TSB... down from the 2024 total of 895, and 17% below the previous 10-year (2015 to 2024) average of 1007'; '332 rail transportation incidents reported to the TSB in 2025, a 10% increase from 2024 (303)'; 'Among all rail transportation accidents, 82 involved dangerous goods... Three accidents in 2025 resulted in dangerous goods being released.'"
-  }
- ],
- "license_evidence": [
-  {
-   "note": "open.canada.ca package records license_id 'ca-ogl-lgo' (Open Government Licence - Canada 2.0) for the TSB railway occurrence data (CKAN package_show, measured 2026-10-21). The TSB dataset page itself (data-5.html) carries no licence text, only: 'The dataset is for information purposes only. The user of the data assumes all responsibilities for the data's use and for verifying their completeness and accuracy for both critical and non-critical uses and applications.' OGL-CA permits commercial and non-commercial redistribution with attribution: 'Acknowledge the source of the Information by including any attribution statement specified by the Information Provider(s) and, where possible, provide a link to this licence. If the Information Provider does not provide a specific attribution statement... you must use the following attribution statement: Contains information licensed under the Open Government Licence - Canada.' (open.canada.ca/en/open-government-licence-canada, fetched 2026-10-21). Licence decision: redistribution permitted under OGL-CA 2.0; source terms preserved; our derived compilation dedicated CC0-1.0 per standing policy; derived, not official.",
-   "url": "https://open.canada.ca/en/open-government-licence-canada"
-  }
- ],
- "construction_script": "candidates/tsb-railway-occurrence-casualty/source/build.py",
- "split_strategy": "MEASURED on the full panel (worker job tsb-004, gate 1.4.0, artifact digest e75a59bb1116e39b980c9fa2f5ea7c2b984fa6ccce4b3286f194de69d2b32309, all 37 gate checks passed, 2026-10-22). Modern-era panel start is measured, not assumed: the taxonomy-era share (AccIncType HISTORICAL/DG LEAKER) runs 25-38% in 1983-1991, 8-17% in 1993-2000, 4-9% in 2001-2013, 2.3% in 2015 and ~0 only from 2016 (0.58%; 0.0% from 2017) - the record's proposed 2004 start sits inside a measured 6.8% early-taxonomy tail, so the panel starts 2016-01-01. Windows by occurrence date: train 2016-01-01..2021-12-31 (7,925 rows, 883 positives, 11.14%), eval 2022-01-01..2024-12-31 (3,831 rows, 463 positives, 12.09%), holdout 2025-01-01..2026-08-31 (1,976 rows, 278 positives, 14.07%); both classes in every split, each positive an independent occurrence (distinct_events == positives). Holdout ends one settling month behind the vintage (data through 2026-08-31 exactly; 109 later occurrences counted and excluded). 139 byte-identical exported rows deduplicated; 7 non-identical OccNo collisions suffixed and pinned via expected_duplicate_ids (id_columns_are_entity_keys=false).",
- "measurements": {
-  "access_2026_10_21": "probe_access.py: plain urllib (custom UA) -> HTTP 403 on all www.tsb.gc.ca CSVs; browser-like headers (User-Agent: Mozilla/5.0 (X11; Linux x86_64)... Chrome/128, Accept, Accept-Language, Referer: https://www.tsb.gc.ca/) -> HTTP 200, Range requests honored (HTTP 206). All 5 table sizes measured by bytes=0-0 ranged GET (Content-Range read back): OCCURRENCE 97,765,258; TRAIN 21,742,734; ROLLING_STOCK 34,723,267; INJURIES 2,710,400; COMPONENTS 42,523 bytes; all last-modified 2026-09-15 17:13-17:14 GMT (consistent with the documented on-or-after-the-15th monthly release).",
-  "label_base_rates_measured": "Bounded 2 MB era samples of the occurrence CSV (InjuriesIND; reproduced by candidates/tsb-railway-occurrence-casualty/probe_era_samples.py): 1995: 18.0% (249/1,383); 2001-02: 15.0% (204/1,359); 2008-10: 13.9% (208/1,499); 2025-26: 14.7% (220/1,501). Fatality rows (TotalFatalInjuries>0): 5.7% (1995, n=1,383), 5.7% (2001-02, n=1,359), 6.3% (2008-10, n=1,499), 7.4% (111/1,501 in 2025-26). Other outcome flags in the 2025-26 sample: FireIND 7.4%, DerailedRSIND 48.4%, DGCarsInvolvedIND 8.4%, EvacuationIND 0.2%, DGReleasedCarsIND 0.1% - which rules out DG-release (3/year per the publisher's own 2025 summary) and evacuation as primary labels; casualty is the right label.",
-  "publisher_cross_check": "TSB 2025 annual summary (fetched 2026-10-21): 831 rail accidents in 2025 (895 in 2024; 10-year average 1,007), 332 incidents (303 in 2024), 82 accidents involving dangerous goods, 3 with DG released, 'Freight trains accounted for 42% of all rolling stock involved in rail accidents in 2025'. Sample consistency: the newest 2 MB sample holds 665 rows from 2025 and 836 from 2026 (to 2026-09-05) - consistent in order of magnitude with 831+332=1,163 occurrences in 2025. Full-panel accident/incident counts must be cross-checked against these published figures at construction.",
-  "row_count_estimate": "97,765,258 bytes / (2,097,152 bytes per 1,502 rows ~= 1,396 B/row) ~= 70,000 occurrences total (ESTIMATE; measured on samples only - the full file was not downloaded to the coordinator, per the coordinator's no-bulk-download rule). Construction fetches it on the worker.",
-  "novelty_prior_art": "Web search 2026-10-21: (1) NRC/CNR publication 'Development of a daily updated train derailment impact map...' - a risk-mapping tool built on RODS historical counts, explicitly deferring predictive derailment models to future work; (2) Rana, Sattari, Lefsrud & Hendry (2024), 'Machine Learning Approach to Enhance Highway Railroad Grade Crossing Safety by Analyzing Crash Data and Identifying Hotspot Crash Locations' (doi:10.1177/03611981231212162) - ML analysis of grade-crossing casualty severity from TSB/RODS data, a research paper, not a shipped dataset/benchmark; (3) TSB's own statistics products are descriptive. No public ML-ready rail-occurrence prediction dataset with splits and a scored contract found; mechanical catalog search recorded via check-novelty.py.",
-  "cost_measured": "Coordinator discovery cost: 8 ranged HTTP requests (5 size probes + dictionary + 4 era samples + tail) ~= 8.6 MB transferred, <60 s wall clock. Construction cost on the worker: one ~157 MB fetch of 5 CSVs plus joins; trivial for a Hetzner worker; the bytes never pass through the coordinator.",
-  "full_panel_era_diagnostics_2026_10_22": "tsb-001/tsb-002 worker runs (staging releases 420237693/420240534, container.log + output/extract/diagnostics.json in .factory/tsb-00*/reports/): all 5 RODSdb CSVs downloaded clean with the browser-like header set (OCCURRENCE 97,894,047 B; TRAIN 21,775,681 B; ROLLING_STOCK 34,758,209 B; INJURIES 2,713,169 B; COMPONENTS 42,523 B); 70,706 occurrences parsed (139 exact duplicates dropped, 0 unparseable OccDate). Full-panel per-year measurement (year: rows casualty_rate era_sig_share tz_missing_share): 1983: rows=1576 casualty_rate=0.3293 era_sig_share=0.2513 tz_missing_share=0.9956; 1984: rows=1719 casualty_rate=0.3008 era_sig_share=0.2821 tz_missing_share=0.9936; 1985: rows=1611 casualty_rate=0.3023 era_sig_share=0.2595 tz_missing_share=0.9944; 1986: rows=1541 casualty_rate=0.2641 era_sig_share=0.3024 tz_missing_share=0.9955; 1987: rows=1499 casualty_rate=0.2915 era_sig_share=0.3202 tz_missing_share=0.9967; 1988: rows=1459 casualty_rate=0.2872 era_sig_share=0.3023 tz_missing_share=0.9959; 1989: rows=1343 casualty_rate=0.3075 era_sig_share=0.309 tz_missing_share=0.9918; 1990: rows=1387 casualty_rate=0.2379 era_sig_share=0.3244 tz_missing_share=0.9488; 1991: rows=1821 casualty_rate=0.2114 era_sig_share=0.3822 tz_missing_share=0.8913; 1992: rows=1883 casualty_rate=0.2246 era_sig_share=0.3128 tz_missing_share=0.299; 1993: rows=2183 casualty_rate=0.2066 era_sig_share=0.1677 tz_missing_share=0.0; 1994: rows=2501 casualty_rate=0.1683 era_sig_share=0.1327 tz_missing_share=0.0; 1995: rows=2524 casualty_rate=0.1807 era_sig_share=0.1395 tz_missing_share=0.0; 1996: rows=2243 casualty_rate=0.1761 era_sig_share=0.1476 tz_missing_share=0.0; 1997: rows=1984 casualty_rate=0.1608 era_sig_share=0.1442 tz_missing_share=0.0; 1998: rows=1901 casualty_rate=0.1394 era_sig_share=0.1431 tz_missing_share=0.0; 1999: rows=1757 casualty_rate=0.1616 era_sig_share=0.095 tz_missing_share=0.0; 2000: rows=1618 casualty_rate=0.1638 era_sig_share=0.1162 tz_missing_share=0.0; 2001: rows=2065 casualty_rate=0.1341 era_sig_share=0.0939 tz_missing_share=0.1734; 2002: rows=1955 casualty_rate=0.1294 era_sig_share=0.0854 tz_missing_share=0.1754; 2003: rows=1927 casualty_rate=0.1469 era_sig_share=0.0778 tz_missing_share=0.1645; 2004: rows=1921 casualty_rate=0.1411 era_sig_share=0.0682 tz_missing_share=0.1379; 2005: rows=2048 casualty_rate=0.1445 era_sig_share=0.061 tz_missing_share=0.1079; 2006: rows=1848 casualty_rate=0.1342 era_sig_share=0.0444 tz_missing_share=0.1234; 2007: rows=1639 casualty_rate=0.1501 era_sig_share=0.0543 tz_missing_share=0.0488; 2008: rows=1456 casualty_rate=0.138 era_sig_share=0.044 tz_missing_share=0.0; 2009: rows=1278 casualty_rate=0.1393 era_sig_share=0.061 tz_missing_share=0.0; 2010: rows=1348 casualty_rate=0.1343 era_sig_share=0.0504 tz_missing_share=0.0; 2011: rows=1310 casualty_rate=0.1252 era_sig_share=0.0603 tz_missing_share=0.0; 2012: rows=1301 casualty_rate=0.1376 era_sig_share=0.0715 tz_missing_share=0.0; 2013: rows=1330 casualty_rate=0.1211 era_sig_share=0.0707 tz_missing_share=0.0; 2014: rows=1470 casualty_rate=0.1007 era_sig_share=0.0429 tz_missing_share=0.0; 2015: rows=1419 casualty_rate=0.0902 era_sig_share=0.0233 tz_missing_share=0.0; 2016: rows=1198 casualty_rate=0.126 era_sig_share=0.0058 tz_missing_share=0.0; 2017: rows=1322 casualty_rate=0.1218 era_sig_share=0.0 tz_missing_share=0.0; 2018: rows=1454 casualty_rate=0.1059 era_sig_share=0.0 tz_missing_share=0.0; 2019: rows=1499 casualty_rate=0.1081 era_sig_share=0.0 tz_missing_share=0.0; 2020: rows=1217 casualty_rate=0.0978 era_sig_share=0.0 tz_missing_share=0.0; 2021: rows=1235 casualty_rate=0.1101 era_sig_share=0.0 tz_missing_share=0.0; 2022: rows=1383 casualty_rate=0.1085 era_sig_share=0.0 tz_missing_share=0.0; 2023: rows=1246 casualty_rate=0.1164 era_sig_share=0.0 tz_missing_share=0.0; 2024: rows=1202 casualty_rate=0.1398 era_sig_share=0.0008 tz_missing_share=0.0; 2025: rows=1163 casualty_rate=0.1402 era_sig_share=0.0009 tz_missing_share=0.0; 2026: rows=922 casualty_rate=0.1497 era_sig_share=0.0 tz_missing_share=0.0. The taxonomy-era share (AccIncType HISTORICAL/DG LEAKER) decays gradually - 25-38% through 1991, 13-17% 1993-1998, 4-7% 2004-2013, 2.3% at 2015, <2% only from 2016 - so the build's 2%-every-later-year rule measures the panel start at 2016, outside the asserted [1995, 2010] band, and both jobs exited 2 on that guard by design. Timezone-missingness is a different, abrupter boundary: ~99% through 1991, 29.9% at 1992, 0% 1993-2000, a sporadic 5-17% bump 2001-2007, 0% from 2008 on.",
-  "panel_split_and_coordinate_guard_2026_10_22": "tsb-003 worker run (staging release 420242998): with the band re-pinned to [2014, 2018] the panel-start guard passes (measured 2016-01-01) and the full-panel split windows compute to train 7,925 / eval 3,831 / holdout 1,976 rows (pre-window 56,865, post-window 109; total 70,706 as parsed twice before; 7 non-identical OccNo collisions, 0 empty OccNo). New guard fired: 5 lat/long values on 4 occurrences (R21V0255, R21V0233, R21Q0053, R21V0160; lat 4.9033/4.8598, lon -12.2598/-12.2150 in the east-positive convention) fall outside the asserted Canadian envelope (41-72 N, 52-145 W) - corrupt source coordinates, since the same x10^4 integer frame and West->east conversion validates the other ~70k rows. CORRECTION (tsb-004 close-out, targeted probe of the same 2 MB window): the four 'corrupt' occurrences are not corrupt - R21V0255 raw 492200/122598, R21V0233 49033/122150, R21Q0053 48598/723566, R21V0160 49033/122150 each decode to exactly one valid Canadian position under the measured three-encoding rule (49.3667N ddmm.ff + 122.598W x1e3; 49.033N + 122.150W; 48.598N x1e3 + 72.594W ddmm.ff; 49.033N + 122.150W). The defect was the assumed x10^4 frame, not the data: the source mixes encodings per value, which a single-scale assumption misplaces by an order of magnitude.",
-  "construction_2026_10_22": "Worker jobs tsb-001..tsb-004 (cx23, ~31-33 s each, EUR 0.06 reservation each; tsb-001/002/003 failed by design on assertions, each diagnosis recorded in notes.md; tsb-004 passed the gate on the full artifact). Full panel: 70,706 occurrences kept after dropping 139 byte-identical export duplicates; vintage last-modified 2026-10-21 16:49:48 GMT, data through 2026-08-31 (occurrences dated to 2026-10-10 exist in the raw file and are post-window excluded). Coordinates measured in three magnitude-disjoint encodings (ddmm.ff packed dominant, decimal-degrees x10^3 and x10^6; 3,088-value window: 0 ambiguous, 0 undecodable; Ottawa 452500 -> 45deg25.00'N exact; 723566-style values rule out DDMMSS). Publisher cross-check reproduced to 0.1%. Baselines measured inside the build (see qualification.reference_baselines). tsb-004 frame check on the written rows: 0 of 13,732 outside [41,72]N / [-145,-52]E (container.log), and the four occurrences that tripped tsb-003's guard all decode exactly under the measured rule (see the correction appended to panel_split_and_coordinate_guard_2026_10_22)."
- },
- "jobs": [
-  {
-   "id": "tsb-001",
-   "date": "2026-10-22",
-   "outcome": "failed (panel-start band assertion): measured start 2016 under a rule that wrongly counted timezone-missingness as an era signal; diagnosed from container.log, worker destroyed",
-   "server_id": 171728396
-  },
-  {
-   "id": "tsb-002",
-   "date": "2026-10-22",
-   "outcome": "failed (same band): per-year diagnostics uploaded before assertions show the taxonomy-era share persists at 2-7% through 2015, reaching ~0 only at 2016 - the 2004 proposal was wrong, the band was wrong, not the data",
-   "server_id": 171728935
-  },
-  {
-   "id": "tsb-003",
-   "date": "2026-10-22",
-   "outcome": "failed (lat/long frame assertion): source uses three coordinate encodings, not the assumed degrees-x-10^4; bounded 2 MB window probe (offset 8,000,000) measured the decode rule with 0 ambiguous/0 undecodable",
-   "server_id": 171729523
-  },
-  {
-   "id": "tsb-004",
-   "date": "2026-10-22",
-   "outcome": "succeeded: gate 1.4.0 passed on the full artifact (37/37 checks, 0 failed), extract + qualification report uploaded to private staging release 420246008 (draft tag untagged-2b564130537390692b6a), worker destroyed after verified collection",
-   "server_id": 171730217,
-   "release": 420246008,
-   "collected_at": "2026-10-22T02:29:02Z",
-   "destroyed_at": "2026-10-22T02:29:52Z",
-   "job_elapsed_seconds": 31.1
-  },
-  {
-   "id": "tsb-baseline-001",
-   "date": "2026-10-22",
-   "outcome": "succeeded: runner-contract baseline on the accepted artifact, exit 0 in 73.7 s - gate re-accept before scoring (ACCEPTED, artifact e75a59bb1116e39b), train.py and validate.py both eval AUC 0.8126, CONTRACT OK, runner files unmodified; result release 420361967, worker destroyed 06:10:12Z",
-   "server_id": 171753063,
-   "release": 420361967,
-   "job_elapsed_seconds": 73.7
-  },
-  {
-   "id": "tsb-publish-001",
-   "date": "2026-10-22",
-   "outcome": "succeeded: destination-staging transfer, 5/5 assets copied from private staging 420246008 into private earino/tsb-railway-occurrence-casualty release v2026.10 (420368897), every sha256 verified on arrival and against the server digest after upload; 1,709,187 bytes never touched the coordinator; result release 420369733, worker destroyed 06:21:50Z",
-   "server_id": 171755236,
-   "release": 420369733
-  },
-  {
-   "id": "tsb-hf-001",
-   "date": "2026-10-22",
-   "outcome": "succeeded: hf_publish job - 5/5 data files uploaded to the private Hugging Face repo earino/tsb-railway-occurrence-casualty from the staged private GitHub release, digest-verified both ends, and the built-in loading check passed (train 7,925/883 positives, eval 3,831/463, holdout 1,976/278, 17 columns, label ['0','1'], ok: true, problems: []); result release 420373659, worker destroyed 06:27:46Z",
-   "server_id": 171755920,
-   "release": 420373659
-  }
- ],
- "artifacts": [
-  {
-   "kind": "staging_release",
-   "repo": "earino/dataset-factory-staging",
-   "id": 420246008,
-   "note": "tsb-004 build: gated extract (public/train.csv, public/eval.csv, private/holdout.csv, meta.json, quality.json), the gate report (two byte-identical copies), build summary, diagnostics.json, source.tar and container.log; artifact digest e75a59bb1116e39b980c9fa2f5ea7c2b984fa6ccce4b3286f194de69d2b32309"
-  },
-  {
-   "kind": "destination_release",
-   "repo": "earino/tsb-railway-occurrence-casualty",
-   "id": 420368897,
-   "tag": "v2026.10",
-   "commit": "61f06f1d9b3a0dec34a1cc8f4eceda3260758ba0",
-   "private": true,
-   "note": "GitHub destination, staged private: 5/5 assets at the manifest digests (API readback, server-side sha256), release non-draft, tag == main == 61f06f1d, get_dataset.py executed end-to-end against the private release (token, 1,709,187 bytes, digests verified) and qualify_dataset.py --accept ACCEPTED the downloaded tree; anonymous GET 404. Evidence in release/tsb-railway-occurrence-casualty/DESTINATIONS.json"
-  },
-  {
-   "kind": "destination_hub_repo",
-   "repo": "earino/tsb-railway-occurrence-casualty",
-   "revision_tag": "v2026.10",
-   "commit": "e6fe2a2c9d629b8a9a6f1efa6c5e7158b2e4a050",
-   "private": true,
-   "note": "Hugging Face destination, staged private: 5/5 data files at the manifest digests (hf-publish --verify ok, 0 missing, 0 size-mismatched) plus 10 small files (card, LOADING.md, MANIFEST.json, SHA256SUMS, licences, docs); the documented load_dataset path verified by the tsb-hf-001 loading check (ok: true, split rows/positives/columns/label all match); tag v2026.10 created last, tag_matches_main true"
-  }
- ],
- "rejection_reason": null,
- "review": null,
- "next_action": "PUBLISHED 2026-10-22T09:05:57Z - GitHub public (v2026.10, 5/5 assets digest-verified anonymously), Hugging Face public (16 files), site live at earino.github.io/tsb-railway-occurrence-casualty. Baseline 0.8126 eval AUC, reproduced on both paths; beats activity_type 0.707 and persistence 0.527.",
- "construction_output": {
-  "job": "tsb-004",
-  "artifact_version": "e75a59bb1116e39b980c9fa2f5ea7c2b984fa6ccce4b3286f194de69d2b32309",
-  "built_at_utc": "2026-10-22T02:27:00Z",
-  "rows": 13732,
-  "splits": {
-   "train": {
-    "rows": 7925,
-    "positives": 883,
-    "positive_rate": 0.11142,
-    "distinct_events": 883
-   },
-   "eval": {
-    "rows": 3831,
-    "positives": 463,
-    "positive_rate": 0.120856,
-    "distinct_events": 463
-   },
-   "holdout": {
-    "rows": 1976,
-    "positives": 278,
-    "positive_rate": 0.140688,
-    "distinct_events": 278
-   }
-  },
-  "split_windows": {
-   "train": "occurrences 2016-01-01 .. 2021-12-31",
-   "eval": "2022-01-01 .. 2024-12-31",
-   "holdout": "2025-01-01 .. 2026-08-31"
-  },
-  "files": {
-   "public/train.csv": {
-    "bytes": 980529,
-    "sha256": "4a032f68c4ad944a0b5d6ef96a904d4d13f3c3eb8b228e2fa74c3174b8054e94"
-   },
-   "public/eval.csv": {
-    "bytes": 474335,
-    "sha256": "2f1dcafb6cc701b1427a74d1969733f290ed6de030ed849a6988dcab31722a0d"
-   },
-   "private/holdout.csv": {
-    "bytes": 244586,
-    "sha256": "b00bf00bd4f918ce434b9821535669d465c9a63bab53b21f90f187f4c33c0ac4"
-   },
-   "meta.json": {
-    "bytes": 2606,
-    "sha256": "5f3852f3150cd808a1f58b7aa7f77c932ef315bb857628c6eff56a4530f06381"
-   },
-   "quality.json": {
-    "bytes": 7131,
-    "sha256": "a7343bd15a119c67f2ef79ba5b10f5414a6ef406fdeeb81772b22ba1bccf3789"
-   }
-  },
-  "staging_release": 420246008,
-  "distinct_events_note": "each positive is an independent occurrence (distinct_events == positives in every window; no storm-style clustering), so the row counts are also the independent-event counts"
- },
- "baseline": {
-  "job": "tsb-baseline-001",
-  "server_id": 171753063,
-  "elapsed_seconds": 73.7,
-  "artifact_fetched_from_staging": 420246008,
-  "accepted_artifact_version": "e75a59bb1116e39b",
-  "contract_ok": true,
-  "eval_auc_from_train_py": 0.8126,
-  "eval_auc_from_validate_py": 0.8126,
-  "runner_files_unmodified": true,
-  "dependencies": {
-   "python": "3.13.17",
-   "pandas": "2.3.3",
-   "numpy": "2.5.4",
-   "xgboost": "3.4.1",
-   "scikit-learn": "1.9.1"
-  },
-  "staging_release": 420361967,
-  "note": "Measured on the bytes being released (fetched from staging, digest-verified, gate --accept before scoring), not a rebuild. The XGBoost pass (0.8126) clears the construction-time references - persistence analogue 0.527 eval / 0.495 holdout, best single column activity_type 0.707 / 0.699 - so the task has real headroom and is not a persistence exercise. The holdout was not scored."
- },
- "novelty_check": {
-  "checked_at": "2026-10-21T08:11:04+00:00",
-  "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
-  "queries": [
-   "railway occurrence prediction",
-   "rail accident severity dataset",
-   "train derailment prediction benchmark"
+  "created_at": "2026-10-21T08:09:17.014606+00:00",
+  "domain": "railway safety - prediction of casualty outcomes of reported rail occurrences (Canada, federal)",
+  "prediction_question": "A railway occurrence begins at a known place, time and operating context on the Canadian network (crossing accident, derailment, trespasser event, fire, collision, movement exceeding limits of authority, ...). At that instant, given only pre-occurrence context - where (subdivision, nearest location, province, region, lat/long), which railway, when (date, time of day, season), and what the train was doing (activity type) - will the occurrence result in at least one casualty (fatality or any injury)?",
+  "prediction_time": "The instant the occurrence begins (OccDate/OccTime, with the documented local time zone via TimeZoneID). Everything the TSB records during or after the occurrence is excluded from the shipped features: TSB's accident/incident type assignment (its taxonomy embeds outcomes, e.g. 'NON-MAIN-TRACK TRAIN DERAILMENT (NO DAMAGE)'), all injury/DG-release/fire/evacuation/damage flags and counts, weather observations taken at the occurrence, track and rolling-stock attributes measured during the occurrence, investigation/deployment/closeout fields, process dates (ENTRY_DT, RELEASE_DT, DAILY_RELEASED_DT, OccClosedDate), the free-text Summary, and even ReportedDate/ReportedTime (the notification instant, which post-dates the onset) - the last is shipped only in the record's provenance, never as a feature. The casualty outcome unfolds after onset and is the label.",
+  "target_definition": "Binary: occurrence resulted in >=1 casualty. Label source columns: InjuriesIND ('Injuries indicator'), cross-checked against TotalFatalInjuries / TotalSeriousInjuries / TotalMinorInjuries ('Total fatal/serious/minor injuries') and the separate INJURIES table (RODSdb_MDOTW_VW_INJURIES_PUBLIC.csv, 2,710,400 bytes). All are excluded from the shipped feature columns by construction.",
+  "sources": [
+    {
+      "name": "TSB Rail Occurrence Database System (RODS) - 'Rail transportation occurrence data from January 1983' dataset page",
+      "url": "https://www.tsb.gc.ca/eng/stats/rail/data-5.html",
+      "api": "5 anonymous bulk CSVs + a CSV data dictionary; publisher states 'The RODS datasets are is released on or soon after the 15th of each month, and contains data from January 1983 to the last day of the month preceding its release' and that the Occurrence table contains 'Occurrence summary data... Notification data, including the date and time that the occurrence was reported. Track infrastructure data...'",
+      "license": "see license_evidence; page carries a use-at-your-own-risk disclaimer, the licence comes from the open.canada.ca record (OGL - Canada 2.0)",
+      "access": "measured 2026-10-21 (probe_access.py): plain urllib with a custom User-Agent gets HTTP 403 on all TSB file URLs; a full browser-like header set gets HTTP 200/206 with Range support. The exact working header set is recorded in probe_access.py (User-Agent, Accept, Accept-Language, Referer) - a documented, reproducible programmatic path suitable for a worker."
+    },
+    {
+      "name": "RODSdb public tables (CSV, measured sizes, last-modified 2026-09-15)",
+      "url": "https://www.tsb.gc.ca/sites/default/files/stats/RODSdb_MDOTW_VW_OCCURRENCE_PUBLIC.csv",
+      "api": "OCCURRENCE 97,765,258 bytes / 345 columns (OccID, OccNo, occurrence date/time/year, time zone, occurrence+accident/incident type, train activity, subdivision owner+name+mileage, province, station, nearest location, latitude/longitude, region, outcome flags InjuriesIND/FireIND/EvacuationIND/DGReleasedCarsIND..., TotalFatal/Serious/MinorInjuries, NumEvacuated, IsolationRadius_Feet, DeployedIND, process dates, 345-col schema); TRAIN 21,742,734 bytes; ROLLING_STOCK 34,723,267 bytes; INJURIES 2,710,400 bytes; COMPONENTS 42,523 bytes; data dictionary https://www.tsb.gc.ca/sites/default/files/data/en/RODSdb-dd.csv (109,771 bytes, 699 rows, per-column documented meanings). File is ordered newest-first; rows span 2026-09-05 (row 1) back to 1983-01-02 (last row).",
+      "license": "OGL - Canada 2.0 via open.canada.ca package",
+      "access": "measured 2026-10-21 via ranged GETs (browser-like headers): 2 MB samples at offsets 0 / 30,000,000 / 50,000,000 / 70,000,000 and 1.5 MB tail. Row density ~1.4 KB/row -> total row count ESTIMATE ~70,000 occurrences (labelled estimate; full count to be measured on the worker)."
+    },
+    {
+      "name": "open.canada.ca catalogue record for the TSB railway occurrence data",
+      "url": "https://open.canada.ca/data/en/dataset/4f8d9b0d-c4af-4be2-b751-3f5a403993ff",
+      "api": "CKAN package_show answered anonymously 2026-10-21; license_id=ca-ogl-lgo; resources list the 5 CSVs in en+fr plus the data dictionary",
+      "license": "Open Government Licence - Canada 2.0 (ca-ogl-lgo)",
+      "access": "CKAN API (https://open.canada.ca/data/en/api/3/action/package_show) anonymous, clean JSON."
+    },
+    {
+      "name": "TSB Rail transportation occurrences in 2025 - annual statistical summary (publisher's own cross-check product)",
+      "url": "https://www.tsb.gc.ca/eng/stats/rail/2025/sser-ssro-2025.html",
+      "api": "HTML+PDF annual summary, released monthly then compiled annually",
+      "license": "OGL - Canada 2.0 (open.canada.ca TSB statistics package f9073ffd)",
+      "access": "measured 2026-10-21: 'In 2025, 831 rail accidents... were reported to the TSB... down from the 2024 total of 895, and 17% below the previous 10-year (2015 to 2024) average of 1007'; '332 rail transportation incidents reported to the TSB in 2025, a 10% increase from 2024 (303)'; 'Among all rail transportation accidents, 82 involved dangerous goods... Three accidents in 2025 resulted in dangerous goods being released.'"
+    }
   ],
-  "evidence": {
-   "huggingface_datasets": [
+  "license_evidence": [
     {
-     "query": "railway occurrence prediction",
-     "hits": 0,
-     "top": []
-    },
-    {
-     "query": "rail accident severity dataset",
-     "hits": 0,
-     "top": []
-    },
-    {
-     "query": "train derailment prediction benchmark",
-     "hits": 0,
-     "top": []
+      "note": "open.canada.ca package records license_id 'ca-ogl-lgo' (Open Government Licence - Canada 2.0) for the TSB railway occurrence data (CKAN package_show, measured 2026-10-21). The TSB dataset page itself (data-5.html) carries no licence text, only: 'The dataset is for information purposes only. The user of the data assumes all responsibilities for the data's use and for verifying their completeness and accuracy for both critical and non-critical uses and applications.' OGL-CA permits commercial and non-commercial redistribution with attribution: 'Acknowledge the source of the Information by including any attribution statement specified by the Information Provider(s) and, where possible, provide a link to this licence. If the Information Provider does not provide a specific attribution statement... you must use the following attribution statement: Contains information licensed under the Open Government Licence - Canada.' (open.canada.ca/en/open-government-licence-canada, fetched 2026-10-21). Licence decision: redistribution permitted under OGL-CA 2.0; source terms preserved; our derived compilation dedicated CC0-1.0 per standing policy; derived, not official.",
+      "url": "https://open.canada.ca/en/open-government-licence-canada"
     }
-   ],
-   "zenodo_records": [
-    {
-     "query": "railway occurrence prediction",
-     "hits": 167498,
-     "top": [
-      "Fig. 3 in The ammonoids from the Gattendorfia Limestone of Oberr\u00f6dinghausen (Early Carboniferous; Rhenish Mountains, Germany)",
-      "Quantifying the impact of risk factors at railway level crossings using accident prediction models: A cross-country study",
-      "The electromagnetic interferance caused by high voltage power lines along the electrical railway equipment",
-      "A Comprehensive Review of Automated Gate Control, Airbag Systems and Smoke Detectors in Enhancing Railway Safety",
-      "Fig. 4 in The ammonoids from the Gattendorfia Limestone of Oberr\u00f6dinghausen (Early Carboniferous; Rhenish Mountains, Germany)"
-     ]
-    },
-    {
-     "query": "rail accident severity dataset",
-     "hits": 331722,
-     "top": [
-      "Analyses on three-wheeled vehicles in relation to congestion: A case study  in Bishoftu City, Ethiopia",
-      "ROAD ACCIDENT SEVERITY PREDICTION USING MACHINE LEARNING",
-      "Real-Time AI-Driven Accident Detection and Emergency Alert Architecture for Smart City Infrastructure",
-      "Data for Accident Severity Prediction Modelling for Indian Highways Case Study",
-      "Graded Dashcam Events (GraDE)"
-     ]
-    },
-    {
-     "query": "train derailment prediction benchmark",
-     "hits": 140511,
-     "top": [
-      "East Palestine Train Derailment Health Tracking Study: Survey Summer/Fall 2024",
-      "East Palestine Train Derailment Health Tracking Study: Survey Spring/Summer 2025",
-      "East Palestine Train Derailment Health Tracking Study: Focus Groups",
-      "REFLECTING ON THE DERAILMENT IN OHIO, USA",
-      "An Assessment of the Ocular Toxicity of Two Major Sources of Environmental Exposure"
-     ]
-    }
-   ],
-   "arxiv_preprints": [
-    {
-     "query": "railway occurrence prediction",
-     "hits": 5,
-     "top": [
-      "Unveiling connectivity patterns of railway timetables through complex network theory and Infomap clustering",
-      "Railway Operation Rescheduling System via Dynamic Simulation and Reinforcement Learning",
-      "Neural Network Approach to Railway Stand Lateral Skew Control",
-      "Integrated Maintenance: analysis and perspective of innovation in railway sector",
-      "Integrated Digital Management System for Railway Workshops: A Modular Multi-Workflow Architecture for Machine, Permit, C"
-     ]
-    },
-    {
-     "query": "rail accident severity dataset",
-     "hits": 5,
-     "top": [
-      "Markov switching negative binomial models: an application to vehicle accident frequencies",
-      "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
-      "Empirical assessment of the impact of highway design exceptions on the frequency and severity of vehicle accidents",
-      "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
-      "ROAR: Robust Accident Recognition and Anticipation for Autonomous Driving"
-     ]
-    },
-    {
-     "query": "train derailment prediction benchmark",
-     "hits": 5,
-     "top": [
-      "MLIM: Vision-and-Language Model Pre-training with Masked Language and Image Modeling",
-      "Conversation Modeling to Predict Derailment",
-      "Understanding and Predicting Derailment in Toxic Conversations on GitHub",
-      "Conversation Derailment Forecasting with Graph Convolutional Networks",
-      "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer"
-     ]
-    }
-   ]
-  },
-  "evidence_summary": "- huggingface_datasets / 'railway occurrence prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'rail accident severity dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'train derailment prediction benchmark': 0 hit(s) - nothing notable\n- zenodo_records / 'railway occurrence prediction': 167498 hit(s) - Fig. 3 in The ammonoids from the Gattendorfia Limestone of Oberr\u00f6dinghausen (Early Carboniferous; Rhenish Mountains, Germany), Quantifying the impact of risk factors at railway level crossings using accident prediction models: A cross-country study, The electromagnetic interferance caused by high voltage power lines along the electrical railway equipment, A Comprehensive Review of Automated Gate Control, Airbag Systems and Smoke Detectors in Enhancing Railway Safety, Fig. 4 in The ammonoids from the Gattendorfia Limestone of Oberr\u00f6dinghausen (Early Carboniferous; Rhenish Mountains, Germany)\n- zenodo_records / 'rail accident severity dataset': 331722 hit(s) - Analyses on three-wheeled vehicles in relation to congestion: A case study  in Bishoftu City, Ethiopia, ROAD ACCIDENT SEVERITY PREDICTION USING MACHINE LEARNING, Real-Time AI-Driven Accident Detection and Emergency Alert Architecture for Smart City Infrastructure, Data for Accident Severity Prediction Modelling for Indian Highways Case Study, Graded Dashcam Events (GraDE)\n- zenodo_records / 'train derailment prediction benchmark': 140511 hit(s) - East Palestine Train Derailment Health Tracking Study: Survey Summer/Fall 2024, East Palestine Train Derailment Health Tracking Study: Survey Spring/Summer 2025, East Palestine Train Derailment Health Tracking Study: Focus Groups, REFLECTING ON THE DERAILMENT IN OHIO, USA, An Assessment of the Ocular Toxicity of Two Major Sources of Environmental Exposure\n- arxiv_preprints / 'railway occurrence prediction': 5 hit(s) - Unveiling connectivity patterns of railway timetables through complex network theory and Infomap clustering, Railway Operation Rescheduling System via Dynamic Simulation and Reinforcement Learning, Neural Network Approach to Railway Stand Lateral Skew Control, Integrated Maintenance: analysis and perspective of innovation in railway sector, Integrated Digital Management System for Railway Workshops: A Modular Multi-Workflow Architecture for Machine, Permit, C\n- arxiv_preprints / 'rail accident severity dataset': 5 hit(s) - Markov switching negative binomial models: an application to vehicle accident frequencies, The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, Empirical assessment of the impact of highway design exceptions on the frequency and severity of vehicle accidents, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, ROAR: Robust Accident Recognition and Anticipation for Autonomous Driving\n- arxiv_preprints / 'train derailment prediction benchmark': 5 hit(s) - MLIM: Vision-and-Language Model Pre-training with Masked Language and Image Modeling, Conversation Modeling to Predict Derailment, Understanding and Predicting Derailment in Toxic Conversations on GitHub, Conversation Derailment Forecasting with Graph Convolutional Networks, Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
-  "prior_art": [
-   "Rana, Sattari, Lefsrud, Hendry (2024), Machine Learning Approach to Enhance Highway Railroad Grade Crossing Safety, doi:10.1177/03611981231212162",
-   "NRC/CNR: Development of a daily updated train derailment impact map (uses RODS 2006-2019, historical counts only)"
   ],
-  "theirs": "TSB publishes the raw RODS occurrence tables plus descriptive monthly/annual statistics; prior analyses use RODS for a derailment risk-mapping tool (NRC) and a grade-crossing casualty-severity ML study (Rana et al. 2024) - research papers on subsets, not shipped datasets or benchmarks",
-  "ours": "Occurrence-level casualty prediction for Canadian rail occurrences from pre-onset context only (time, place, railway, activity): monthly-republished 1983-2026 panel, temporal splits, context-only features with TSB's outcome-coded accident-type taxonomy and all investigation fields excluded by construction",
-  "verdict": "differentiated",
-  "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
- },
- "licence_class": "A",
- "licence_note": "Open Government Licence - Canada 2.0 per the open.canada.ca package record",
- "qualification": {
-  "qualified_at": "2026-10-22T02:34:00Z",
-  "gate_version": "1.4.0",
-  "job": "tsb-004",
-  "result": "passed; 0 failed checks of 37 (leakage, timing, units, splits, runner)",
-  "artifact_version": "e75a59bb1116e39b980c9fa2f5ea7c2b984fa6ccce4b3286f194de69d2b32309",
-  "report": "private staging release 420246008 (draft tag untagged-2b564130537390692b6a, 13 assets); the gate report is assets file-0007/file-0008 (byte-identical, sha256 4aac3d111fd9...); close-out re-matched the report's five artifact sha256s (train/eval/holdout/meta/quality) to the release manifest asset digests; the extract stays in staging, never on the coordinator",
-  "label_integrity": "InjuriesIND and fatal+serious+minor totals agree on all 1,624 positive panel rows (0 disagreements either way); the separate INJURIES child table corroborates all 1,624",
-  "publisher_crosscheck": "2025 panel: 832 ACCIDENT vs 831 published, 331 INCIDENT vs 332 published (TSB 2025 annual summary)",
-  "reference_baselines": {
-   "note": "measured at construction on the written rows, before any model spend (summary.json reference_baselines)",
-   "global_rate_train": 0.11142,
-   "activity_type_auc": {
-    "eval": 0.707,
-    "holdout": 0.6987
-   },
-   "subdivision_auc": {
-    "eval": 0.6997,
-    "holdout": 0.6544
-   },
-   "railway_auc": {
-    "eval": 0.5472,
-    "holdout": 0.5234
-   },
-   "province_auc": {
-    "eval": 0.5576,
-    "holdout": 0.5813
-   },
-   "month_auc": {
-    "eval": 0.5421,
-    "holdout": 0.5599
-   },
-   "trailing_12m_rate_auc": {
-    "eval": 0.527,
-    "holdout": 0.4952
-   },
-   "verdict": "real context signal with headroom over the global rate, and the persistence analogue does NOT dominate (0.527 eval) - unlike nhs-ae, this is not a persistence exercise; the full-model baseline job is the remaining step"
+  "construction_script": "candidates/tsb-railway-occurrence-casualty/source/build.py",
+  "split_strategy": "MEASURED on the full panel (worker job tsb-004, gate 1.4.0, artifact digest e75a59bb1116e39b980c9fa2f5ea7c2b984fa6ccce4b3286f194de69d2b32309, all 37 gate checks passed, 2026-10-22). Modern-era panel start is measured, not assumed: the taxonomy-era share (AccIncType HISTORICAL/DG LEAKER) runs 25-38% in 1983-1991, 8-17% in 1993-2000, 4-9% in 2001-2013, 2.3% in 2015 and ~0 only from 2016 (0.58%; 0.0% from 2017) - the record's proposed 2004 start sits inside a measured 6.8% early-taxonomy tail, so the panel starts 2016-01-01. Windows by occurrence date: train 2016-01-01..2021-12-31 (7,925 rows, 883 positives, 11.14%), eval 2022-01-01..2024-12-31 (3,831 rows, 463 positives, 12.09%), holdout 2025-01-01..2026-08-31 (1,976 rows, 278 positives, 14.07%); both classes in every split, each positive an independent occurrence (distinct_events == positives). Holdout ends one settling month behind the vintage (data through 2026-08-31 exactly; 109 later occurrences counted and excluded). 139 byte-identical exported rows deduplicated; 7 non-identical OccNo collisions suffixed and pinned via expected_duplicate_ids (id_columns_are_entity_keys=false).",
+  "measurements": {
+    "access_2026_10_21": "probe_access.py: plain urllib (custom UA) -> HTTP 403 on all www.tsb.gc.ca CSVs; browser-like headers (User-Agent: Mozilla/5.0 (X11; Linux x86_64)... Chrome/128, Accept, Accept-Language, Referer: https://www.tsb.gc.ca/) -> HTTP 200, Range requests honored (HTTP 206). All 5 table sizes measured by bytes=0-0 ranged GET (Content-Range read back): OCCURRENCE 97,765,258; TRAIN 21,742,734; ROLLING_STOCK 34,723,267; INJURIES 2,710,400; COMPONENTS 42,523 bytes; all last-modified 2026-09-15 17:13-17:14 GMT (consistent with the documented on-or-after-the-15th monthly release).",
+    "label_base_rates_measured": "Bounded 2 MB era samples of the occurrence CSV (InjuriesIND; reproduced by candidates/tsb-railway-occurrence-casualty/probe_era_samples.py): 1995: 18.0% (249/1,383); 2001-02: 15.0% (204/1,359); 2008-10: 13.9% (208/1,499); 2025-26: 14.7% (220/1,501). Fatality rows (TotalFatalInjuries>0): 5.7% (1995, n=1,383), 5.7% (2001-02, n=1,359), 6.3% (2008-10, n=1,499), 7.4% (111/1,501 in 2025-26). Other outcome flags in the 2025-26 sample: FireIND 7.4%, DerailedRSIND 48.4%, DGCarsInvolvedIND 8.4%, EvacuationIND 0.2%, DGReleasedCarsIND 0.1% - which rules out DG-release (3/year per the publisher's own 2025 summary) and evacuation as primary labels; casualty is the right label.",
+    "publisher_cross_check": "TSB 2025 annual summary (fetched 2026-10-21): 831 rail accidents in 2025 (895 in 2024; 10-year average 1,007), 332 incidents (303 in 2024), 82 accidents involving dangerous goods, 3 with DG released, 'Freight trains accounted for 42% of all rolling stock involved in rail accidents in 2025'. Sample consistency: the newest 2 MB sample holds 665 rows from 2025 and 836 from 2026 (to 2026-09-05) - consistent in order of magnitude with 831+332=1,163 occurrences in 2025. Full-panel accident/incident counts must be cross-checked against these published figures at construction.",
+    "row_count_estimate": "97,765,258 bytes / (2,097,152 bytes per 1,502 rows ~= 1,396 B/row) ~= 70,000 occurrences total (ESTIMATE; measured on samples only - the full file was not downloaded to the coordinator, per the coordinator's no-bulk-download rule). Construction fetches it on the worker.",
+    "novelty_prior_art": "Web search 2026-10-21: (1) NRC/CNR publication 'Development of a daily updated train derailment impact map...' - a risk-mapping tool built on RODS historical counts, explicitly deferring predictive derailment models to future work; (2) Rana, Sattari, Lefsrud & Hendry (2024), 'Machine Learning Approach to Enhance Highway Railroad Grade Crossing Safety by Analyzing Crash Data and Identifying Hotspot Crash Locations' (doi:10.1177/03611981231212162) - ML analysis of grade-crossing casualty severity from TSB/RODS data, a research paper, not a shipped dataset/benchmark; (3) TSB's own statistics products are descriptive. No public ML-ready rail-occurrence prediction dataset with splits and a scored contract found; mechanical catalog search recorded via check-novelty.py.",
+    "cost_measured": "Coordinator discovery cost: 8 ranged HTTP requests (5 size probes + dictionary + 4 era samples + tail) ~= 8.6 MB transferred, <60 s wall clock. Construction cost on the worker: one ~157 MB fetch of 5 CSVs plus joins; trivial for a Hetzner worker; the bytes never pass through the coordinator.",
+    "full_panel_era_diagnostics_2026_10_22": "tsb-001/tsb-002 worker runs (staging releases 420237693/420240534, container.log + output/extract/diagnostics.json in .factory/tsb-00*/reports/): all 5 RODSdb CSVs downloaded clean with the browser-like header set (OCCURRENCE 97,894,047 B; TRAIN 21,775,681 B; ROLLING_STOCK 34,758,209 B; INJURIES 2,713,169 B; COMPONENTS 42,523 B); 70,706 occurrences parsed (139 exact duplicates dropped, 0 unparseable OccDate). Full-panel per-year measurement (year: rows casualty_rate era_sig_share tz_missing_share): 1983: rows=1576 casualty_rate=0.3293 era_sig_share=0.2513 tz_missing_share=0.9956; 1984: rows=1719 casualty_rate=0.3008 era_sig_share=0.2821 tz_missing_share=0.9936; 1985: rows=1611 casualty_rate=0.3023 era_sig_share=0.2595 tz_missing_share=0.9944; 1986: rows=1541 casualty_rate=0.2641 era_sig_share=0.3024 tz_missing_share=0.9955; 1987: rows=1499 casualty_rate=0.2915 era_sig_share=0.3202 tz_missing_share=0.9967; 1988: rows=1459 casualty_rate=0.2872 era_sig_share=0.3023 tz_missing_share=0.9959; 1989: rows=1343 casualty_rate=0.3075 era_sig_share=0.309 tz_missing_share=0.9918; 1990: rows=1387 casualty_rate=0.2379 era_sig_share=0.3244 tz_missing_share=0.9488; 1991: rows=1821 casualty_rate=0.2114 era_sig_share=0.3822 tz_missing_share=0.8913; 1992: rows=1883 casualty_rate=0.2246 era_sig_share=0.3128 tz_missing_share=0.299; 1993: rows=2183 casualty_rate=0.2066 era_sig_share=0.1677 tz_missing_share=0.0; 1994: rows=2501 casualty_rate=0.1683 era_sig_share=0.1327 tz_missing_share=0.0; 1995: rows=2524 casualty_rate=0.1807 era_sig_share=0.1395 tz_missing_share=0.0; 1996: rows=2243 casualty_rate=0.1761 era_sig_share=0.1476 tz_missing_share=0.0; 1997: rows=1984 casualty_rate=0.1608 era_sig_share=0.1442 tz_missing_share=0.0; 1998: rows=1901 casualty_rate=0.1394 era_sig_share=0.1431 tz_missing_share=0.0; 1999: rows=1757 casualty_rate=0.1616 era_sig_share=0.095 tz_missing_share=0.0; 2000: rows=1618 casualty_rate=0.1638 era_sig_share=0.1162 tz_missing_share=0.0; 2001: rows=2065 casualty_rate=0.1341 era_sig_share=0.0939 tz_missing_share=0.1734; 2002: rows=1955 casualty_rate=0.1294 era_sig_share=0.0854 tz_missing_share=0.1754; 2003: rows=1927 casualty_rate=0.1469 era_sig_share=0.0778 tz_missing_share=0.1645; 2004: rows=1921 casualty_rate=0.1411 era_sig_share=0.0682 tz_missing_share=0.1379; 2005: rows=2048 casualty_rate=0.1445 era_sig_share=0.061 tz_missing_share=0.1079; 2006: rows=1848 casualty_rate=0.1342 era_sig_share=0.0444 tz_missing_share=0.1234; 2007: rows=1639 casualty_rate=0.1501 era_sig_share=0.0543 tz_missing_share=0.0488; 2008: rows=1456 casualty_rate=0.138 era_sig_share=0.044 tz_missing_share=0.0; 2009: rows=1278 casualty_rate=0.1393 era_sig_share=0.061 tz_missing_share=0.0; 2010: rows=1348 casualty_rate=0.1343 era_sig_share=0.0504 tz_missing_share=0.0; 2011: rows=1310 casualty_rate=0.1252 era_sig_share=0.0603 tz_missing_share=0.0; 2012: rows=1301 casualty_rate=0.1376 era_sig_share=0.0715 tz_missing_share=0.0; 2013: rows=1330 casualty_rate=0.1211 era_sig_share=0.0707 tz_missing_share=0.0; 2014: rows=1470 casualty_rate=0.1007 era_sig_share=0.0429 tz_missing_share=0.0; 2015: rows=1419 casualty_rate=0.0902 era_sig_share=0.0233 tz_missing_share=0.0; 2016: rows=1198 casualty_rate=0.126 era_sig_share=0.0058 tz_missing_share=0.0; 2017: rows=1322 casualty_rate=0.1218 era_sig_share=0.0 tz_missing_share=0.0; 2018: rows=1454 casualty_rate=0.1059 era_sig_share=0.0 tz_missing_share=0.0; 2019: rows=1499 casualty_rate=0.1081 era_sig_share=0.0 tz_missing_share=0.0; 2020: rows=1217 casualty_rate=0.0978 era_sig_share=0.0 tz_missing_share=0.0; 2021: rows=1235 casualty_rate=0.1101 era_sig_share=0.0 tz_missing_share=0.0; 2022: rows=1383 casualty_rate=0.1085 era_sig_share=0.0 tz_missing_share=0.0; 2023: rows=1246 casualty_rate=0.1164 era_sig_share=0.0 tz_missing_share=0.0; 2024: rows=1202 casualty_rate=0.1398 era_sig_share=0.0008 tz_missing_share=0.0; 2025: rows=1163 casualty_rate=0.1402 era_sig_share=0.0009 tz_missing_share=0.0; 2026: rows=922 casualty_rate=0.1497 era_sig_share=0.0 tz_missing_share=0.0. The taxonomy-era share (AccIncType HISTORICAL/DG LEAKER) decays gradually - 25-38% through 1991, 13-17% 1993-1998, 4-7% 2004-2013, 2.3% at 2015, <2% only from 2016 - so the build's 2%-every-later-year rule measures the panel start at 2016, outside the asserted [1995, 2010] band, and both jobs exited 2 on that guard by design. Timezone-missingness is a different, abrupter boundary: ~99% through 1991, 29.9% at 1992, 0% 1993-2000, a sporadic 5-17% bump 2001-2007, 0% from 2008 on.",
+    "panel_split_and_coordinate_guard_2026_10_22": "tsb-003 worker run (staging release 420242998): with the band re-pinned to [2014, 2018] the panel-start guard passes (measured 2016-01-01) and the full-panel split windows compute to train 7,925 / eval 3,831 / holdout 1,976 rows (pre-window 56,865, post-window 109; total 70,706 as parsed twice before; 7 non-identical OccNo collisions, 0 empty OccNo). New guard fired: 5 lat/long values on 4 occurrences (R21V0255, R21V0233, R21Q0053, R21V0160; lat 4.9033/4.8598, lon -12.2598/-12.2150 in the east-positive convention) fall outside the asserted Canadian envelope (41-72 N, 52-145 W) - corrupt source coordinates, since the same x10^4 integer frame and West->east conversion validates the other ~70k rows. CORRECTION (tsb-004 close-out, targeted probe of the same 2 MB window): the four 'corrupt' occurrences are not corrupt - R21V0255 raw 492200/122598, R21V0233 49033/122150, R21Q0053 48598/723566, R21V0160 49033/122150 each decode to exactly one valid Canadian position under the measured three-encoding rule (49.3667N ddmm.ff + 122.598W x1e3; 49.033N + 122.150W; 48.598N x1e3 + 72.594W ddmm.ff; 49.033N + 122.150W). The defect was the assumed x10^4 frame, not the data: the source mixes encodings per value, which a single-scale assumption misplaces by an order of magnitude.",
+    "construction_2026_10_22": "Worker jobs tsb-001..tsb-004 (cx23, ~31-33 s each, EUR 0.06 reservation each; tsb-001/002/003 failed by design on assertions, each diagnosis recorded in notes.md; tsb-004 passed the gate on the full artifact). Full panel: 70,706 occurrences kept after dropping 139 byte-identical export duplicates; vintage last-modified 2026-10-21 16:49:48 GMT, data through 2026-08-31 (occurrences dated to 2026-10-10 exist in the raw file and are post-window excluded). Coordinates measured in three magnitude-disjoint encodings (ddmm.ff packed dominant, decimal-degrees x10^3 and x10^6; 3,088-value window: 0 ambiguous, 0 undecodable; Ottawa 452500 -> 45deg25.00'N exact; 723566-style values rule out DDMMSS). Publisher cross-check reproduced to 0.1%. Baselines measured inside the build (see qualification.reference_baselines). tsb-004 frame check on the written rows: 0 of 13,732 outside [41,72]N / [-145,-52]E (container.log), and the four occurrences that tripped tsb-003's guard all decode exactly under the measured rule (see the correction appended to panel_split_and_coordinate_guard_2026_10_22)."
+  },
+  "jobs": [
+    {
+      "id": "tsb-001",
+      "date": "2026-10-22",
+      "outcome": "failed (panel-start band assertion): measured start 2016 under a rule that wrongly counted timezone-missingness as an era signal; diagnosed from container.log, worker destroyed",
+      "server_id": 171728396
+    },
+    {
+      "id": "tsb-002",
+      "date": "2026-10-22",
+      "outcome": "failed (same band): per-year diagnostics uploaded before assertions show the taxonomy-era share persists at 2-7% through 2015, reaching ~0 only at 2016 - the 2004 proposal was wrong, the band was wrong, not the data",
+      "server_id": 171728935
+    },
+    {
+      "id": "tsb-003",
+      "date": "2026-10-22",
+      "outcome": "failed (lat/long frame assertion): source uses three coordinate encodings, not the assumed degrees-x-10^4; bounded 2 MB window probe (offset 8,000,000) measured the decode rule with 0 ambiguous/0 undecodable",
+      "server_id": 171729523
+    },
+    {
+      "id": "tsb-004",
+      "date": "2026-10-22",
+      "outcome": "succeeded: gate 1.4.0 passed on the full artifact (37/37 checks, 0 failed), extract + qualification report uploaded to private staging release 420246008 (draft tag untagged-2b564130537390692b6a), worker destroyed after verified collection",
+      "server_id": 171730217,
+      "release": 420246008,
+      "collected_at": "2026-10-22T02:29:02Z",
+      "destroyed_at": "2026-10-22T02:29:52Z",
+      "job_elapsed_seconds": 31.1
+    },
+    {
+      "id": "tsb-baseline-001",
+      "date": "2026-10-22",
+      "outcome": "succeeded: runner-contract baseline on the accepted artifact, exit 0 in 73.7 s - gate re-accept before scoring (ACCEPTED, artifact e75a59bb1116e39b), train.py and validate.py both eval AUC 0.8126, CONTRACT OK, runner files unmodified; result release 420361967, worker destroyed 06:10:12Z",
+      "server_id": 171753063,
+      "release": 420361967,
+      "job_elapsed_seconds": 73.7
+    },
+    {
+      "id": "tsb-publish-001",
+      "date": "2026-10-22",
+      "outcome": "succeeded: destination-staging transfer, 5/5 assets copied from private staging 420246008 into private earino/tsb-railway-occurrence-casualty release v2026.10 (420368897), every sha256 verified on arrival and against the server digest after upload; 1,709,187 bytes never touched the coordinator; result release 420369733, worker destroyed 06:21:50Z",
+      "server_id": 171755236,
+      "release": 420369733
+    },
+    {
+      "id": "tsb-hf-001",
+      "date": "2026-10-22",
+      "outcome": "succeeded: hf_publish job - 5/5 data files uploaded to the private Hugging Face repo earino/tsb-railway-occurrence-casualty from the staged private GitHub release, digest-verified both ends, and the built-in loading check passed (train 7,925/883 positives, eval 3,831/463, holdout 1,976/278, 17 columns, label ['0','1'], ok: true, problems: []); result release 420373659, worker destroyed 06:27:46Z",
+      "server_id": 171755920,
+      "release": 420373659
+    }
+  ],
+  "artifacts": [
+    {
+      "kind": "staging_release",
+      "repo": "earino/dataset-factory-staging",
+      "id": 420246008,
+      "note": "tsb-004 build: gated extract (public/train.csv, public/eval.csv, private/holdout.csv, meta.json, quality.json), the gate report (two byte-identical copies), build summary, diagnostics.json, source.tar and container.log; artifact digest e75a59bb1116e39b980c9fa2f5ea7c2b984fa6ccce4b3286f194de69d2b32309"
+    },
+    {
+      "kind": "destination_release",
+      "repo": "earino/tsb-railway-occurrence-casualty",
+      "id": 420368897,
+      "tag": "v2026.10",
+      "commit": "61f06f1d9b3a0dec34a1cc8f4eceda3260758ba0",
+      "private": true,
+      "note": "GitHub destination, staged private: 5/5 assets at the manifest digests (API readback, server-side sha256), release non-draft, tag == main == 61f06f1d, get_dataset.py executed end-to-end against the private release (token, 1,709,187 bytes, digests verified) and qualify_dataset.py --accept ACCEPTED the downloaded tree; anonymous GET 404. Evidence in release/tsb-railway-occurrence-casualty/DESTINATIONS.json"
+    },
+    {
+      "kind": "destination_hub_repo",
+      "repo": "earino/tsb-railway-occurrence-casualty",
+      "revision_tag": "v2026.10",
+      "commit": "e6fe2a2c9d629b8a9a6f1efa6c5e7158b2e4a050",
+      "private": true,
+      "note": "Hugging Face destination, staged private: 5/5 data files at the manifest digests (hf-publish --verify ok, 0 missing, 0 size-mismatched) plus 10 small files (card, LOADING.md, MANIFEST.json, SHA256SUMS, licences, docs); the documented load_dataset path verified by the tsb-hf-001 loading check (ok: true, split rows/positives/columns/label all match); tag v2026.10 created last, tag_matches_main true"
+    }
+  ],
+  "rejection_reason": null,
+  "review": null,
+  "next_action": "Survived the 2026-10-24T11:15:09Z bounded leakage audit (bounded PASS: no train match supplying outcomes; AUC undefined (0 covered)). Not a proof that no stronger shortcut exists; include the blind-join test in every future re-qualification.",
+  "construction_output": {
+    "job": "tsb-004",
+    "artifact_version": "e75a59bb1116e39b980c9fa2f5ea7c2b984fa6ccce4b3286f194de69d2b32309",
+    "built_at_utc": "2026-10-22T02:27:00Z",
+    "rows": 13732,
+    "splits": {
+      "train": {
+        "rows": 7925,
+        "positives": 883,
+        "positive_rate": 0.11142,
+        "distinct_events": 883
+      },
+      "eval": {
+        "rows": 3831,
+        "positives": 463,
+        "positive_rate": 0.120856,
+        "distinct_events": 463
+      },
+      "holdout": {
+        "rows": 1976,
+        "positives": 278,
+        "positive_rate": 0.140688,
+        "distinct_events": 278
+      }
+    },
+    "split_windows": {
+      "train": "occurrences 2016-01-01 .. 2021-12-31",
+      "eval": "2022-01-01 .. 2024-12-31",
+      "holdout": "2025-01-01 .. 2026-08-31"
+    },
+    "files": {
+      "public/train.csv": {
+        "bytes": 980529,
+        "sha256": "4a032f68c4ad944a0b5d6ef96a904d4d13f3c3eb8b228e2fa74c3174b8054e94"
+      },
+      "public/eval.csv": {
+        "bytes": 474335,
+        "sha256": "2f1dcafb6cc701b1427a74d1969733f290ed6de030ed849a6988dcab31722a0d"
+      },
+      "private/holdout.csv": {
+        "bytes": 244586,
+        "sha256": "b00bf00bd4f918ce434b9821535669d465c9a63bab53b21f90f187f4c33c0ac4"
+      },
+      "meta.json": {
+        "bytes": 2606,
+        "sha256": "5f3852f3150cd808a1f58b7aa7f77c932ef315bb857628c6eff56a4530f06381"
+      },
+      "quality.json": {
+        "bytes": 7131,
+        "sha256": "a7343bd15a119c67f2ef79ba5b10f5414a6ef406fdeeb81772b22ba1bccf3789"
+      }
+    },
+    "staging_release": 420246008,
+    "distinct_events_note": "each positive is an independent occurrence (distinct_events == positives in every window; no storm-style clustering), so the row counts are also the independent-event counts"
+  },
+  "baseline": {
+    "job": "tsb-baseline-001",
+    "server_id": 171753063,
+    "elapsed_seconds": 73.7,
+    "artifact_fetched_from_staging": 420246008,
+    "accepted_artifact_version": "e75a59bb1116e39b",
+    "contract_ok": true,
+    "eval_auc_from_train_py": 0.8126,
+    "eval_auc_from_validate_py": 0.8126,
+    "runner_files_unmodified": true,
+    "dependencies": {
+      "python": "3.13.17",
+      "pandas": "2.3.3",
+      "numpy": "2.5.4",
+      "xgboost": "3.4.1",
+      "scikit-learn": "1.9.1"
+    },
+    "staging_release": 420361967,
+    "note": "Measured on the bytes being released (fetched from staging, digest-verified, gate --accept before scoring), not a rebuild. The XGBoost pass (0.8126) clears the construction-time references - persistence analogue 0.527 eval / 0.495 holdout, best single column activity_type 0.707 / 0.699 - so the task has real headroom and is not a persistence exercise. The holdout was not scored."
+  },
+  "novelty_check": {
+    "checked_at": "2026-10-21T08:11:04+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "railway occurrence prediction",
+      "rail accident severity dataset",
+      "train derailment prediction benchmark"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "railway occurrence prediction",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "rail accident severity dataset",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "train derailment prediction benchmark",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "railway occurrence prediction",
+          "hits": 167498,
+          "top": [
+            "Fig. 3 in The ammonoids from the Gattendorfia Limestone of Oberr\u00f6dinghausen (Early Carboniferous; Rhenish Mountains, Germany)",
+            "Quantifying the impact of risk factors at railway level crossings using accident prediction models: A cross-country study",
+            "The electromagnetic interferance caused by high voltage power lines along the electrical railway equipment",
+            "A Comprehensive Review of Automated Gate Control, Airbag Systems and Smoke Detectors in Enhancing Railway Safety",
+            "Fig. 4 in The ammonoids from the Gattendorfia Limestone of Oberr\u00f6dinghausen (Early Carboniferous; Rhenish Mountains, Germany)"
+          ]
+        },
+        {
+          "query": "rail accident severity dataset",
+          "hits": 331722,
+          "top": [
+            "Analyses on three-wheeled vehicles in relation to congestion: A case study  in Bishoftu City, Ethiopia",
+            "ROAD ACCIDENT SEVERITY PREDICTION USING MACHINE LEARNING",
+            "Real-Time AI-Driven Accident Detection and Emergency Alert Architecture for Smart City Infrastructure",
+            "Data for Accident Severity Prediction Modelling for Indian Highways Case Study",
+            "Graded Dashcam Events (GraDE)"
+          ]
+        },
+        {
+          "query": "train derailment prediction benchmark",
+          "hits": 140511,
+          "top": [
+            "East Palestine Train Derailment Health Tracking Study: Survey Summer/Fall 2024",
+            "East Palestine Train Derailment Health Tracking Study: Survey Spring/Summer 2025",
+            "East Palestine Train Derailment Health Tracking Study: Focus Groups",
+            "REFLECTING ON THE DERAILMENT IN OHIO, USA",
+            "An Assessment of the Ocular Toxicity of Two Major Sources of Environmental Exposure"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "railway occurrence prediction",
+          "hits": 5,
+          "top": [
+            "Unveiling connectivity patterns of railway timetables through complex network theory and Infomap clustering",
+            "Railway Operation Rescheduling System via Dynamic Simulation and Reinforcement Learning",
+            "Neural Network Approach to Railway Stand Lateral Skew Control",
+            "Integrated Maintenance: analysis and perspective of innovation in railway sector",
+            "Integrated Digital Management System for Railway Workshops: A Modular Multi-Workflow Architecture for Machine, Permit, C"
+          ]
+        },
+        {
+          "query": "rail accident severity dataset",
+          "hits": 5,
+          "top": [
+            "Markov switching negative binomial models: an application to vehicle accident frequencies",
+            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+            "Empirical assessment of the impact of highway design exceptions on the frequency and severity of vehicle accidents",
+            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+            "ROAR: Robust Accident Recognition and Anticipation for Autonomous Driving"
+          ]
+        },
+        {
+          "query": "train derailment prediction benchmark",
+          "hits": 5,
+          "top": [
+            "MLIM: Vision-and-Language Model Pre-training with Masked Language and Image Modeling",
+            "Conversation Modeling to Predict Derailment",
+            "Understanding and Predicting Derailment in Toxic Conversations on GitHub",
+            "Conversation Derailment Forecasting with Graph Convolutional Networks",
+            "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'railway occurrence prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'rail accident severity dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'train derailment prediction benchmark': 0 hit(s) - nothing notable\n- zenodo_records / 'railway occurrence prediction': 167498 hit(s) - Fig. 3 in The ammonoids from the Gattendorfia Limestone of Oberr\u00f6dinghausen (Early Carboniferous; Rhenish Mountains, Germany), Quantifying the impact of risk factors at railway level crossings using accident prediction models: A cross-country study, The electromagnetic interferance caused by high voltage power lines along the electrical railway equipment, A Comprehensive Review of Automated Gate Control, Airbag Systems and Smoke Detectors in Enhancing Railway Safety, Fig. 4 in The ammonoids from the Gattendorfia Limestone of Oberr\u00f6dinghausen (Early Carboniferous; Rhenish Mountains, Germany)\n- zenodo_records / 'rail accident severity dataset': 331722 hit(s) - Analyses on three-wheeled vehicles in relation to congestion: A case study  in Bishoftu City, Ethiopia, ROAD ACCIDENT SEVERITY PREDICTION USING MACHINE LEARNING, Real-Time AI-Driven Accident Detection and Emergency Alert Architecture for Smart City Infrastructure, Data for Accident Severity Prediction Modelling for Indian Highways Case Study, Graded Dashcam Events (GraDE)\n- zenodo_records / 'train derailment prediction benchmark': 140511 hit(s) - East Palestine Train Derailment Health Tracking Study: Survey Summer/Fall 2024, East Palestine Train Derailment Health Tracking Study: Survey Spring/Summer 2025, East Palestine Train Derailment Health Tracking Study: Focus Groups, REFLECTING ON THE DERAILMENT IN OHIO, USA, An Assessment of the Ocular Toxicity of Two Major Sources of Environmental Exposure\n- arxiv_preprints / 'railway occurrence prediction': 5 hit(s) - Unveiling connectivity patterns of railway timetables through complex network theory and Infomap clustering, Railway Operation Rescheduling System via Dynamic Simulation and Reinforcement Learning, Neural Network Approach to Railway Stand Lateral Skew Control, Integrated Maintenance: analysis and perspective of innovation in railway sector, Integrated Digital Management System for Railway Workshops: A Modular Multi-Workflow Architecture for Machine, Permit, C\n- arxiv_preprints / 'rail accident severity dataset': 5 hit(s) - Markov switching negative binomial models: an application to vehicle accident frequencies, The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, Empirical assessment of the impact of highway design exceptions on the frequency and severity of vehicle accidents, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, ROAR: Robust Accident Recognition and Anticipation for Autonomous Driving\n- arxiv_preprints / 'train derailment prediction benchmark': 5 hit(s) - MLIM: Vision-and-Language Model Pre-training with Masked Language and Image Modeling, Conversation Modeling to Predict Derailment, Understanding and Predicting Derailment in Toxic Conversations on GitHub, Conversation Derailment Forecasting with Graph Convolutional Networks, Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
+    "prior_art": [
+      "Rana, Sattari, Lefsrud, Hendry (2024), Machine Learning Approach to Enhance Highway Railroad Grade Crossing Safety, doi:10.1177/03611981231212162",
+      "NRC/CNR: Development of a daily updated train derailment impact map (uses RODS 2006-2019, historical counts only)"
+    ],
+    "theirs": "TSB publishes the raw RODS occurrence tables plus descriptive monthly/annual statistics; prior analyses use RODS for a derailment risk-mapping tool (NRC) and a grade-crossing casualty-severity ML study (Rana et al. 2024) - research papers on subsets, not shipped datasets or benchmarks",
+    "ours": "Occurrence-level casualty prediction for Canadian rail occurrences from pre-onset context only (time, place, railway, activity): monthly-republished 1983-2026 panel, temporal splits, context-only features with TSB's outcome-coded accident-type taxonomy and all investigation fields excluded by construction",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  },
+  "licence_class": "A",
+  "licence_note": "Open Government Licence - Canada 2.0 per the open.canada.ca package record",
+  "qualification": {
+    "qualified_at": "2026-10-22T02:34:00Z",
+    "gate_version": "1.4.0",
+    "job": "tsb-004",
+    "result": "passed; 0 failed checks of 37 (leakage, timing, units, splits, runner)",
+    "artifact_version": "e75a59bb1116e39b980c9fa2f5ea7c2b984fa6ccce4b3286f194de69d2b32309",
+    "report": "private staging release 420246008 (draft tag untagged-2b564130537390692b6a, 13 assets); the gate report is assets file-0007/file-0008 (byte-identical, sha256 4aac3d111fd9...); close-out re-matched the report's five artifact sha256s (train/eval/holdout/meta/quality) to the release manifest asset digests; the extract stays in staging, never on the coordinator",
+    "label_integrity": "InjuriesIND and fatal+serious+minor totals agree on all 1,624 positive panel rows (0 disagreements either way); the separate INJURIES child table corroborates all 1,624",
+    "publisher_crosscheck": "2025 panel: 832 ACCIDENT vs 831 published, 331 INCIDENT vs 332 published (TSB 2025 annual summary)",
+    "reference_baselines": {
+      "note": "measured at construction on the written rows, before any model spend (summary.json reference_baselines)",
+      "global_rate_train": 0.11142,
+      "activity_type_auc": {
+        "eval": 0.707,
+        "holdout": 0.6987
+      },
+      "subdivision_auc": {
+        "eval": 0.6997,
+        "holdout": 0.6544
+      },
+      "railway_auc": {
+        "eval": 0.5472,
+        "holdout": 0.5234
+      },
+      "province_auc": {
+        "eval": 0.5576,
+        "holdout": 0.5813
+      },
+      "month_auc": {
+        "eval": 0.5421,
+        "holdout": 0.5599
+      },
+      "trailing_12m_rate_auc": {
+        "eval": 0.527,
+        "holdout": 0.4952
+      },
+      "verdict": "real context signal with headroom over the global rate, and the persistence analogue does NOT dominate (0.527 eval) - unlike nhs-ae, this is not a persistence exercise; the full-model baseline job is the remaining step"
+    }
+  },
+  "published_at": "2026-10-22T09:05:57Z",
+  "benchmark_audit_2026_10_24": {
+    "verdict": "PASS (bounded)",
+    "finding": "bounded PASS: no train match supplying outcomes; AUC undefined (0 covered)",
+    "report": "audits/2026-10-24-static-benchmark-leakage-audit.md",
+    "audited_at": "2026-10-24T11:15:09Z",
+    "attacker_model": "blind cross-row joins on shipped public files; no fitting; holdouts sealed"
   }
- },
- "published_at": "2026-10-22T09:05:57Z"
 }

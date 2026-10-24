@@ -119,7 +119,7 @@
   ],
   "rejection_reason": null,
   "review": null,
-  "next_action": "PUBLISHED 2026-10-23T21:35:25Z: operator approved the private-to-public flip; both destinations public and anonymously verified (GitHub repo 200, 5/5 release assets ranged-GET, Hub private:false, 5/5 tag-revision files ranged-GET). Website published and verified (plan e460c661bee97a0f, https enforced): dataset page https://earino.github.io/eutl-installation-net-short/ and catalogue entry live. The frozen manifest keeps its packaging-time wording and is read through the schema adapter; visibility truth lives in DESTINATIONS.json. No further action; the next release follows the normal procedure.",
+  "next_action": "BENCHMARK DEFECT confirmed by independent audit (2026-10-24T11:15:09Z): join (installation,t)->(installation,t+1): next net_short_l1 is T's label; 14731/24322 covered, 0 mismatches, blind AUC 1.0. The public eval rows are self-answering via cross-row joins, so published eval scores are gameable and the holdout files are presumed self-answering under the same construction. The dataset must not be used as a static benchmark in this version. REWORK for v-next: rebuild at a common information cutoff (no solver-visible row or lagged field may expose another scored row's outcome) or move to chronological as-of evaluation; purge outcome-bearing later rows; for food/MSHA keep joint label matrices outside solver inputs; for noaa also fix the day definition and the raw-max/official-flag distinction. Re-qualify, re-run the blind joins, new baseline triad, then version. Publication status of v1 (withdraw vs defect notice) is the operator's decision.",
   "jurisdiction": {
     "country": "EU",
     "region": "Europe",
@@ -398,5 +398,12 @@
   },
   "packaged_at": "2026-10-22T18:43:19Z",
   "awaiting_operator": false,
-  "published_at": "2026-10-23T21:35:25Z"
+  "published_at": "2026-10-23T21:35:25Z",
+  "benchmark_audit_2026_10_24": {
+    "verdict": "FAIL",
+    "finding": "join (installation,t)->(installation,t+1): next net_short_l1 is T's label; 14731/24322 covered, 0 mismatches, blind AUC 1.0",
+    "report": "audits/2026-10-24-static-benchmark-leakage-audit.md",
+    "audited_at": "2026-10-24T11:15:09Z",
+    "attacker_model": "blind cross-row joins on shipped public files; no fitting; holdouts sealed"
+  }
 }
