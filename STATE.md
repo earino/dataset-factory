@@ -7762,3 +7762,17 @@ isolation/commitment probes still require the reviewed worker run. Scout owns
 artifact assembly plus gate-passing fixture tests; Codex owns the runtime and
 reviews the assembled job before launch. No final holdout is fetched. Construction
 hold stays active pending this acceptance; NHS and NZ-EA remain private/rebuild.
+
+Adapter integration preparation at c75e923: 668 tests pass locally (six existing
+skips) and in a clean clone (13 skips, including seven requiring the absent
+private harness checkout). The seven real assembler tests passed here against
+read-only Git objects. A real 29-file source-only bundle was assembled, live small
+metadata digests confirmed, and the 880,640-byte transport bundle round-tripped
+through the worker materializer; every source hash matched. Receipt:
+`audits/remediation-2026-10-24/smoke-assembly-review.json`. The builder now records
+Austin's inherited response_time-not-null selection as outcome-conditioned.
+The runtime imports that builder from its verified source payload. Generated
+base64 payloads stay out of tracked source; each job is freshly assembled from
+committed code. Next: Scout prepares the actual allowance-backed plan, launches
+once the merged runtime is reviewed, collects qualification/protocol/agreement
+receipts, and proves provider-side cleanup. Real worker verification is pending.
