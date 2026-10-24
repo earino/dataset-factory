@@ -15,9 +15,11 @@ class HubNoticeTest(unittest.TestCase):
         execute = runpy.run_path(str(ROOT/'scripts/site-hf.py'))['execute']
         read_paths=[]
         files={'README.md':b'NOTICE', 'MANIFEST.json':b'{}', 'data/test.csv':b'id,target\na,1\n'}
+        changed_current_blob = False
         def info(repo,revision,**kwargs):
             return NS(private=False,sha='frozen' if revision=='v1' else 'current',siblings=[
-                NS(rfilename=k,size=len(v),blob_id=hashlib.sha1(v).hexdigest(),lfs=None)
+                NS(rfilename=k,size=len(v),blob_id=('changed' if changed_current_blob and revision=='main'
+                   and k.endswith('.csv') else hashlib.sha1(v).hexdigest()),lfs=None)
                 for k,v in files.items()])
         with tempfile.TemporaryDirectory() as tmp:
             def download(repo,filename,revision,**kwargs):
@@ -40,6 +42,17 @@ class HubNoticeTest(unittest.TestCase):
                     self.assertEqual(result['verification_basis'],'prior_verified_immutable_release')
                     self.assertEqual(result['inherited_non_lfs_assets'],['test.csv'])
                     self.assertEqual(result['bulk_downloads'],0)
+                    changed_current_blob = True
+                    with self.assertRaisesRegex(Exception,'current data blob differs'):
+                        execute(payload)
+
+    def test_continuity_baseline_binds_commit_and_artifact(self):
+        fn=runpy.run_path(str(ROOT/'scripts/site-hf.py'))['prior_editorial_identity']
+        prior=json.loads((ROOT/'config/editorial-release-baselines.json').read_text())['releases'][0]
+        record={**prior,'hf_repository':prior['repository']}
+        self.assertTrue(fn(record,prior['hf_commit']))
+        self.assertFalse(fn(record,'different-commit'))
+        self.assertFalse(fn({**record,'artifact_version':'different-artifact'},prior['hf_commit']))
 
     def test_all_current_docs_updated_atomically_and_idempotently(self):
         module = runpy.run_path(str(ROOT/'scripts/site-hf.py'))

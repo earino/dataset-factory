@@ -216,4 +216,3 @@ the pinned release. Its receipt explicitly says `prior_verified_immutable_releas
 non-LFS assets whose previous verification was inherited. This is continuity evidence,
 not a claim that the coordinator freshly rehashed those data files. Unknown releases,
 changed tags, changed artifacts, or changed data blobs fail closed without worker evidence.
-
