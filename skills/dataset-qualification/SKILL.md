@@ -416,6 +416,7 @@ and any column shipped beyond the declared set.
 | A model AUC is quoted with no reference | Only one baseline was ever run, or the reference lives in a notes field nobody compares | Run the triad (persistence, calendar-only, full model) on identical rows; record all three beside the number |
 | The gate dies with `ValueError: labels and scores must align and be non-empty` | A split has a duplicate header or a ragged row, so one column's values no longer align with the labels | Fix the build's column list; the gate now reports `leakage.every_column_could_be_scored` naming the column and split instead of aborting - keep that behaviour, a bare traceback hides which column is malformed |
 | The model trails a one-line rule | The label is largely persistent, or the eval window shifts prevalence | Record it as a defect; re-target a change/onset label or report the task as persistence |
+| A future row in the same shipped file reveals a row's label source | The label is the future value of a shipped feature column, so the batch join `same key, later timestamp` reconstructs the label | Run the blind cross-row join the attacker would run: for every row, look up every shipped feature row at the label's source instant and test whether thresholding it reproduces the label; any zero-mismatch recovery over more than a rounding-level fraction of rows fails the gate (nz-ea v2026.10 scored eval AUC 1.0 this way after the single-column sweep passed) |
 
 ## Completion criteria
 

@@ -1,576 +1,576 @@
 {
- "id": "nz-ea-wholesale-price-exceedance",
- "status": "packaged",
- "created_at": "2026-10-22T04:24:56+00:00",
- "domain": "energy markets / wholesale electricity spot prices",
- "prediction_question": "For a New Zealand pricing region (island-level aggregate of published nodal final prices), will the daily mean final wholesale energy price on a trading day about a week ahead exceed a threshold fixed from the training window?",
- "prediction_time": "The publication instant of final prices: the Electricity Authority states interim prices 'will be declared to be final prices by 2pm the following business day' (Real-time dispatch and pricing page + Code Part 13); measured on the actual files, Last-Modified minus trade date is p50 1.80 days, max 5.80 days (368 daily files, measured 2026-10-22). Features are final prices for trading dates already published at the instant; the label day is not.",
- "target_definition": "Binary: market/island daily mean of DollarsPerMegawattHour over all trading periods of day D+k exceeds a threshold frozen from the training window (candidate fixed thresholds measured at 100/150/200/300 $/MWh; a per-region training-quantile threshold is the alternative). Label source columns: the target day's per-POC prices, excluded from shipped features.",
- "sources": [
-  {
-   "name": "Electricity Authority (Te Mana Hiko) - EMI dataset 'Final energy prices' (Real-time dispatch and pricing)",
-   "url": "https://www.ea.govt.nz/data-and-insights/datasets/wholesale/dispatch-and-pricing/final-energy-prices/",
-   "api": "https://emidatasets.blob.core.windows.net/publicdata?restype=container&comp=list&prefix=Datasets/Wholesale/DispatchAndPricing/FinalEnergyPrices/",
-   "access": "anonymous Azure blob container listing (no key, no SAS; documented forum thread 'New access arrangements to EMI datasets'); 728 files: 360 monthly files 199610..202609 (~8.2-10.9 MB each) and 368 daily files since 2025-10-21 (~0.31-0.35 MB each); measured 3,714.3 MB total",
-   "licence": "CC BY 4.0 per EMI LegalInformation and the successor hub's copyright statement (see license_evidence)"
+  "id": "nz-ea-wholesale-price-exceedance",
+  "status": "investigating",
+  "created_at": "2026-10-22T04:24:56+00:00",
+  "domain": "energy markets / wholesale electricity spot prices",
+  "prediction_question": "For a New Zealand pricing region (island-level aggregate of published nodal final prices), will the daily mean final wholesale energy price on a trading day about a week ahead exceed a threshold fixed from the training window?",
+  "prediction_time": "The publication instant of final prices: the Electricity Authority states interim prices 'will be declared to be final prices by 2pm the following business day' (Real-time dispatch and pricing page + Code Part 13); measured on the actual files, Last-Modified minus trade date is p50 1.80 days, max 5.80 days (368 daily files, measured 2026-10-22). Features are final prices for trading dates already published at the instant; the label day is not.",
+  "target_definition": "Binary: market/island daily mean of DollarsPerMegawattHour over all trading periods of day D+k exceeds a threshold frozen from the training window (candidate fixed thresholds measured at 100/150/200/300 $/MWh; a per-region training-quantile threshold is the alternative). Label source columns: the target day's per-POC prices, excluded from shipped features.",
+  "sources": [
+    {
+      "name": "Electricity Authority (Te Mana Hiko) - EMI dataset 'Final energy prices' (Real-time dispatch and pricing)",
+      "url": "https://www.ea.govt.nz/data-and-insights/datasets/wholesale/dispatch-and-pricing/final-energy-prices/",
+      "api": "https://emidatasets.blob.core.windows.net/publicdata?restype=container&comp=list&prefix=Datasets/Wholesale/DispatchAndPricing/FinalEnergyPrices/",
+      "access": "anonymous Azure blob container listing (no key, no SAS; documented forum thread 'New access arrangements to EMI datasets'); 728 files: 360 monthly files 199610..202609 (~8.2-10.9 MB each) and 368 daily files since 2025-10-21 (~0.31-0.35 MB each); measured 3,714.3 MB total",
+      "licence": "CC BY 4.0 per EMI LegalInformation and the successor hub's copyright statement (see license_evidence)"
+    },
+    {
+      "name": "NetworkSupplyPointsTable (POC -> Island / Network reporting region mapping, with POC start/end dates)",
+      "url": "https://www.ea.govt.nz/data-and-insights/datasets/wholesale/mapping-and-geospatial/",
+      "api": "https://emidatasets.blob.core.windows.net/publicdata/Datasets/Wholesale/MappingsAndGeospatial/NetworkSupplyPointsTable/20261021_NetworkSupplyPointsTable.csv",
+      "access": "424,502 bytes, anonymous; 2,633 rows; columns include POC code, Network reporting region ID, Network reporting region, Island, Start date, End date",
+      "licence": "CC BY 4.0 - the NetworkSupplyPointsTable is Authority content published on the same EMI platform, covered by the same EMI LegalInformation CC BY 4.0 statement recorded in license_evidence"
+    }
+  ],
+  "license_evidence": [
+    "EMI Legal information (https://www.emi.ea.govt.nz/LegalInformation, read 2026-10-22): 'Unless indicated otherwise for specific items or collections of content (either below or within specific items or collections), this copyright material is licensed for re-use under the Creative Commons Attribution (CC-BY) 4.0 international licence. In essence, you are free to copy, store, distribute and adapt the material, as long as you attribute it to the Electricity Authority... and abide by the other licence terms.' Restricted material carve-outs are emblems/trademarks, EMI tools and models, third-party works and section-46 request responses - the FinalEnergyPrices CSV datasets are Authority content and none of the carve-outs.",
+    "Successor hub copyright statement (https://www.ea.govt.nz/copyright-disclaimer-transparency/, read 2026-10-22): 'Unless indicated otherwise for specific items or collections of content (either below or within specific items or collections), this copyright material is licensed for re-use under the Creative Commons Attribution (CC-BY) 4.0 international licence... Copyright material on this website is protected by copyright owned by the Electricity Authority on behalf of the Crown.' - the same licence posture carries across the EMI retirement onto the Data & insights hub.",
+    "EMI retirement is announced ('The Electricity Authority will soon begin to decommission the EMI platform... A new Data & insights hub... will replace EMI', read on https://www.emi.ea.govt.nz/ 2026-10-22): a source-migration risk, not a licence risk - the same datasets are already catalogued on the hub at https://www.ea.govt.nz/data-and-insights/datasets/wholesale/dispatch-and-pricing/ and the licence statement covers both. Construction must pin exact URLs and record digests."
+  ],
+  "construction_script": "candidates/nz-ea-wholesale-price-exceedance/source/build.py",
+  "split_strategy": "Temporal windows on the 1996-10..2026-10 daily panel, e.g. train 1996-10..2015-12 / eval 2016-01..2020-12 / holdout 2021-01..2026-10; each window contains at least one measured high-price episode (train: 2008-07 measured 9/31 days >$200; eval: 2020-06 measured 5/30 days >$200 with mid-month means to $287; holdout: 2024-08 measured 25/31 days >$200). Positives cluster into multi-day weather/storage episodes, so split capacity is counted per episode-week, not per day; sampled episode weeks measured, exact counts computed at construction over the full files. The 2022-11-01 real-time-pricing regime change (ex-post -> real-time pricing, documented by the publisher) is a structural break: either bound all windows inside one regime or ship a regime indicator; decided and documented at construction.",
+  "measurements": {
+    "inventory_measured": "container listing (1 request, 2.80 s, 460,102 bytes): 728 files, 360 monthly (199610..202609, size min 8,245,783 / median 10,012,278 / max 10,894,850 bytes; total 3,594.6 MB) + 368 daily (20251021..20261021, ~312,808-348,002 bytes; total 119.7 MB); monthly naming has no gaps",
+    "publication_lag_measured": "daily files: Last-Modified minus trade date over all 368 files: min 0.75 d, p50 1.80 d, p90 3.80 d, max 5.80 d; documented instrument says final by 2pm the following business day",
+    "schema_measured": "FinalEnergyPrices CSV columns: TradingDate, TradingPeriod, PointOfConnection, DollarsPerMegawattHour; 48 trading periods per day; per-file rows 346,392-370,512 (monthly) and POCs 238 (1997) / 249 (2008) / 241 (2020, 2024) - node set evolves, the NSP table carries POC start/end dates",
+    "era_and_event_samples_measured": "market daily-mean $/MWh (mean over POCs x periods): 1997-01 min 26 / median 42 / max 50, 0 days >$100; 2008-07 median 135 / max 306, 13 days >$150, 9 >$200; 2020-06 median 145 / max 287, 12 days >$150 (mid-month event); 2024-08 median 436 / max 884, 27 days >$150, 25 >$200, 22 >$300; recent era (12 sampled days 2025-10..2026-10) median 32 / max 165, 1 day >$100",
+    "known_event_fixtures": "August 2024 dry-year price episode: measured daily means 2024-08-05..08-08 of 815-884 $/MWh - must exceed any training-frozen threshold; 2008 winter dry-year: 2008-07-01 mean 306 - must exceed $200; quiet-era control: 1997-01 max 50 - must not exceed $100. Fixtures to be pinned from the publisher's own market commentary at construction.",
+    "extraction_cost_measured": "probe: 19 requests, 45,112,531 bytes, 75.1 s (4 whole monthly files + 12 daily files + mapping + listings) on this coordinator; full construction estimated (not measured) at 728 files / 3,714.3 MB / ~1-2 h sequential on a worker - labelled an estimate from the measured per-file sizes",
+    "measured_on": "2026-10-22 via .factory/nz_ea_probe.py (v1, listing crashed on the monthly-file name shape, diagnosed), .factory/nz_listing_stats.py, .factory/nz_ea_probe2.py; commands and outputs in notes.md",
+    "construction_decisions_2026_10_23": {
+      "decided_by": "advancement session 2026-10-23, before the nz-ea-001 worker launch",
+      "threshold": "NZD 100/MWh fixed (external, frozen from the training-window design). Basis: candidate levels 100/150/200/300 measured on era samples (2020-06: 28/12/5/0 days above each); the Authority's own wholesale review records 2019 average spot $127/MWh and 2020 $105/MWh, so NZD 100 keeps clustered positive target-weeks measurable in every split while staying ~2x the long-run median. Never tuned on a held-out score.",
+      "splits": "anchor-day windows train (first anchor .. 2015-12-31), eval (2016-01-01 .. 2022-10-31), holdout (2022-11-01 .. last anchor). The eval->holdout boundary coincides with the documented 2022-11-01 real-time pricing regime change, so no window straddles the structural break; the holdout is a different market regime by design and per-year reporting is mandatory.",
+      "grain": "one row per (island, anchor trading day D); row_id = {island}-{anchor_date}",
+      "timing": "prediction instant = publication of day D's final prices, conservatively placed at D+6 calendar days: the documented rule is final by 2pm the following business day, and the daily-file channel measured Last-Modified minus trade date = 0-5 calendar days over 365 files (fresh listing 2026-10-23: distribution 1d:249, 2d:52, 3d:52, 4d:9, 5d:5, 0d:1). Features read published prices for trading days <= D only; the target trading day D+7 has not finished trading at the instant, so the label cannot exist there under any publication scheme.",
+      "event_key": "target_week = ISO week of the target day, market-wide (both islands share a week). Weeks within one long storage crisis are not fully independent; the count is a capacity floor per the gate's rule, not an independence proof.",
+      "channel_ownership": "monthly ByMonth files own trading dates <= 2025-10-31; daily files own dates > 2025-10-31 (interim _I and _incomplete variants excluded and counted); the 10 overlap days 2025-10-22..31 are cross-checked between channels (max |diff| asserted <= 0.01).",
+      "mapping": "POC -> island from the current-vintage NetworkSupplyPointsTable (894 POCs, 0 island conflicts measured); POCs absent from it are excluded and counted per year (199610 first-day sample: 213/225 mapped, 12 retired POCs unmapped).",
+      "known_events": "Aug 2024 dry-year episode (EA Review of winter 2024: 'in early August the average daily price reached $820/MWh') must exceed; 2008-07-01 (record-measured market mean 306) must exceed; Jan 1997 quiet-era control (record-measured monthly max 50) must not. Asserted by the build from the constructed panel.",
+      "fixture_smoke": "synthetic fixture (fabricated data, nothing quotable): build.py ran clean and gate 1.4.0 passed 38/38 including capacity minimums; one defect found and fixed (duplicate 'island' header - the exact one-column-list failure mode the qualification skill documents). Gate --selftest passed with the shipped broken fixtures still rejected."
+    }
   },
-  {
-   "name": "NetworkSupplyPointsTable (POC -> Island / Network reporting region mapping, with POC start/end dates)",
-   "url": "https://www.ea.govt.nz/data-and-insights/datasets/wholesale/mapping-and-geospatial/",
-   "api": "https://emidatasets.blob.core.windows.net/publicdata/Datasets/Wholesale/MappingsAndGeospatial/NetworkSupplyPointsTable/20261021_NetworkSupplyPointsTable.csv",
-   "access": "424,502 bytes, anonymous; 2,633 rows; columns include POC code, Network reporting region ID, Network reporting region, Island, Start date, End date",
-   "licence": "CC BY 4.0 - the NetworkSupplyPointsTable is Authority content published on the same EMI platform, covered by the same EMI LegalInformation CC BY 4.0 statement recorded in license_evidence"
-  }
- ],
- "license_evidence": [
-  "EMI Legal information (https://www.emi.ea.govt.nz/LegalInformation, read 2026-10-22): 'Unless indicated otherwise for specific items or collections of content (either below or within specific items or collections), this copyright material is licensed for re-use under the Creative Commons Attribution (CC-BY) 4.0 international licence. In essence, you are free to copy, store, distribute and adapt the material, as long as you attribute it to the Electricity Authority... and abide by the other licence terms.' Restricted material carve-outs are emblems/trademarks, EMI tools and models, third-party works and section-46 request responses - the FinalEnergyPrices CSV datasets are Authority content and none of the carve-outs.",
-  "Successor hub copyright statement (https://www.ea.govt.nz/copyright-disclaimer-transparency/, read 2026-10-22): 'Unless indicated otherwise for specific items or collections of content (either below or within specific items or collections), this copyright material is licensed for re-use under the Creative Commons Attribution (CC-BY) 4.0 international licence... Copyright material on this website is protected by copyright owned by the Electricity Authority on behalf of the Crown.' - the same licence posture carries across the EMI retirement onto the Data & insights hub.",
-  "EMI retirement is announced ('The Electricity Authority will soon begin to decommission the EMI platform... A new Data & insights hub... will replace EMI', read on https://www.emi.ea.govt.nz/ 2026-10-22): a source-migration risk, not a licence risk - the same datasets are already catalogued on the hub at https://www.ea.govt.nz/data-and-insights/datasets/wholesale/dispatch-and-pricing/ and the licence statement covers both. Construction must pin exact URLs and record digests."
- ],
- "construction_script": "candidates/nz-ea-wholesale-price-exceedance/source/build.py",
- "split_strategy": "Temporal windows on the 1996-10..2026-10 daily panel, e.g. train 1996-10..2015-12 / eval 2016-01..2020-12 / holdout 2021-01..2026-10; each window contains at least one measured high-price episode (train: 2008-07 measured 9/31 days >$200; eval: 2020-06 measured 5/30 days >$200 with mid-month means to $287; holdout: 2024-08 measured 25/31 days >$200). Positives cluster into multi-day weather/storage episodes, so split capacity is counted per episode-week, not per day; sampled episode weeks measured, exact counts computed at construction over the full files. The 2022-11-01 real-time-pricing regime change (ex-post -> real-time pricing, documented by the publisher) is a structural break: either bound all windows inside one regime or ship a regime indicator; decided and documented at construction.",
- "measurements": {
-  "inventory_measured": "container listing (1 request, 2.80 s, 460,102 bytes): 728 files, 360 monthly (199610..202609, size min 8,245,783 / median 10,012,278 / max 10,894,850 bytes; total 3,594.6 MB) + 368 daily (20251021..20261021, ~312,808-348,002 bytes; total 119.7 MB); monthly naming has no gaps",
-  "publication_lag_measured": "daily files: Last-Modified minus trade date over all 368 files: min 0.75 d, p50 1.80 d, p90 3.80 d, max 5.80 d; documented instrument says final by 2pm the following business day",
-  "schema_measured": "FinalEnergyPrices CSV columns: TradingDate, TradingPeriod, PointOfConnection, DollarsPerMegawattHour; 48 trading periods per day; per-file rows 346,392-370,512 (monthly) and POCs 238 (1997) / 249 (2008) / 241 (2020, 2024) - node set evolves, the NSP table carries POC start/end dates",
-  "era_and_event_samples_measured": "market daily-mean $/MWh (mean over POCs x periods): 1997-01 min 26 / median 42 / max 50, 0 days >$100; 2008-07 median 135 / max 306, 13 days >$150, 9 >$200; 2020-06 median 145 / max 287, 12 days >$150 (mid-month event); 2024-08 median 436 / max 884, 27 days >$150, 25 >$200, 22 >$300; recent era (12 sampled days 2025-10..2026-10) median 32 / max 165, 1 day >$100",
-  "known_event_fixtures": "August 2024 dry-year price episode: measured daily means 2024-08-05..08-08 of 815-884 $/MWh - must exceed any training-frozen threshold; 2008 winter dry-year: 2008-07-01 mean 306 - must exceed $200; quiet-era control: 1997-01 max 50 - must not exceed $100. Fixtures to be pinned from the publisher's own market commentary at construction.",
-  "extraction_cost_measured": "probe: 19 requests, 45,112,531 bytes, 75.1 s (4 whole monthly files + 12 daily files + mapping + listings) on this coordinator; full construction estimated (not measured) at 728 files / 3,714.3 MB / ~1-2 h sequential on a worker - labelled an estimate from the measured per-file sizes",
-  "measured_on": "2026-10-22 via .factory/nz_ea_probe.py (v1, listing crashed on the monthly-file name shape, diagnosed), .factory/nz_listing_stats.py, .factory/nz_ea_probe2.py; commands and outputs in notes.md",
-  "construction_decisions_2026_10_23": {
-   "decided_by": "advancement session 2026-10-23, before the nz-ea-001 worker launch",
-   "threshold": "NZD 100/MWh fixed (external, frozen from the training-window design). Basis: candidate levels 100/150/200/300 measured on era samples (2020-06: 28/12/5/0 days above each); the Authority's own wholesale review records 2019 average spot $127/MWh and 2020 $105/MWh, so NZD 100 keeps clustered positive target-weeks measurable in every split while staying ~2x the long-run median. Never tuned on a held-out score.",
-   "splits": "anchor-day windows train (first anchor .. 2015-12-31), eval (2016-01-01 .. 2022-10-31), holdout (2022-11-01 .. last anchor). The eval->holdout boundary coincides with the documented 2022-11-01 real-time pricing regime change, so no window straddles the structural break; the holdout is a different market regime by design and per-year reporting is mandatory.",
-   "grain": "one row per (island, anchor trading day D); row_id = {island}-{anchor_date}",
-   "timing": "prediction instant = publication of day D's final prices, conservatively placed at D+6 calendar days: the documented rule is final by 2pm the following business day, and the daily-file channel measured Last-Modified minus trade date = 0-5 calendar days over 365 files (fresh listing 2026-10-23: distribution 1d:249, 2d:52, 3d:52, 4d:9, 5d:5, 0d:1). Features read published prices for trading days <= D only; the target trading day D+7 has not finished trading at the instant, so the label cannot exist there under any publication scheme.",
-   "event_key": "target_week = ISO week of the target day, market-wide (both islands share a week). Weeks within one long storage crisis are not fully independent; the count is a capacity floor per the gate's rule, not an independence proof.",
-   "channel_ownership": "monthly ByMonth files own trading dates <= 2025-10-31; daily files own dates > 2025-10-31 (interim _I and _incomplete variants excluded and counted); the 10 overlap days 2025-10-22..31 are cross-checked between channels (max |diff| asserted <= 0.01).",
-   "mapping": "POC -> island from the current-vintage NetworkSupplyPointsTable (894 POCs, 0 island conflicts measured); POCs absent from it are excluded and counted per year (199610 first-day sample: 213/225 mapped, 12 retired POCs unmapped).",
-   "known_events": "Aug 2024 dry-year episode (EA Review of winter 2024: 'in early August the average daily price reached $820/MWh') must exceed; 2008-07-01 (record-measured market mean 306) must exceed; Jan 1997 quiet-era control (record-measured monthly max 50) must not. Asserted by the build from the constructed panel.",
-   "fixture_smoke": "synthetic fixture (fabricated data, nothing quotable): build.py ran clean and gate 1.4.0 passed 38/38 including capacity minimums; one defect found and fixed (duplicate 'island' header - the exact one-column-list failure mode the qualification skill documents). Gate --selftest passed with the shipped broken fixtures still rejected."
-  }
- },
- "jobs": [
-  {
-   "id": "nz-ea-001",
-   "candidate": "nz-ea-wholesale-price-exceedance",
-   "server_id": 172021455,
-   "status": "failed",
-   "launched_at": "2026-10-23T10:14:37Z",
-   "collected_at": "2026-10-23T11:34:18Z",
-   "destroyed_at": "2026-10-23T11:37:54Z",
-   "bundle": ".factory/jobs/nz-ea-001",
-   "reservation_eur": "0.06",
-   "provider_hourly_eur": "0.01152",
-   "stage_order": "construct -> qualify (gate 1.4.0, full artifact on the worker) -> --accept exact bytes -> simple references (score.py, post-acceptance, eval only)",
-   "outcome": "construction failure, exit 1 at 74.3 min (container timeout 100 min, oom_killed false): build.py:663 calls lags.append((published - trade).days, trade, published, name) - four arguments to list.append, a missing pair of parentheses - in the non-fixture daily-channel branch that assembles timing.observations for quality.json. The panel and the three split CSVs were complete, but quality.json/meta.json were never written; run.sh stopped at the build stage, so qualification, --accept and score.py never ran and nothing from this artifact is qualified or quotable.",
-   "staging_release": {
-    "repo": "earino/dataset-factory-staging",
-    "id": 421764285,
-    "tag": "job-nz-ea-001",
-    "assets": "incomplete extract CSVs (public/train.csv, public/eval.csv, private/holdout.csv), container.log, source.tar, manifest.json - membership, sizes and SHA-256 digests verified at collection"
-   },
-   "evidence": [
-    ".factory/nz-ea-001/reports/container.log (sha256 e3fd46d2ed3218e5f5fba832e74e923b42c871d00c54ca634061367a9af65344, digest re-verified locally)",
-    ".factory/nz-ea-001/reports/manifest.json (sha256 3da5346d791ccd407dc19b9a5c8cd55190ed26bbd0c5fb5f304b2be84ee88ba0, digest re-verified locally)",
-    "jobs/nz-ea-001.json"
-   ],
-   "expected_reports": [
-    "/output/summary.json",
-    "/output/qualification-nz-ea-wholesale-price-exceedance.json",
-    "/output/acceptance-nz-ea-wholesale-price-exceedance.txt",
-    "/output/references-nz-ea-wholesale-price-exceedance.json"
-   ],
-   "reports_status": "none written - run.sh stops at the build stage on a non-zero build, and the crash predates even summary.json; the absence is explained by the traceback in container.log"
+  "jobs": [
+    {
+      "id": "nz-ea-001",
+      "candidate": "nz-ea-wholesale-price-exceedance",
+      "server_id": 172021455,
+      "status": "failed",
+      "launched_at": "2026-10-23T10:14:37Z",
+      "collected_at": "2026-10-23T11:34:18Z",
+      "destroyed_at": "2026-10-23T11:37:54Z",
+      "bundle": ".factory/jobs/nz-ea-001",
+      "reservation_eur": "0.06",
+      "provider_hourly_eur": "0.01152",
+      "stage_order": "construct -> qualify (gate 1.4.0, full artifact on the worker) -> --accept exact bytes -> simple references (score.py, post-acceptance, eval only)",
+      "outcome": "construction failure, exit 1 at 74.3 min (container timeout 100 min, oom_killed false): build.py:663 calls lags.append((published - trade).days, trade, published, name) - four arguments to list.append, a missing pair of parentheses - in the non-fixture daily-channel branch that assembles timing.observations for quality.json. The panel and the three split CSVs were complete, but quality.json/meta.json were never written; run.sh stopped at the build stage, so qualification, --accept and score.py never ran and nothing from this artifact is qualified or quotable.",
+      "staging_release": {
+        "repo": "earino/dataset-factory-staging",
+        "id": 421764285,
+        "tag": "job-nz-ea-001",
+        "assets": "incomplete extract CSVs (public/train.csv, public/eval.csv, private/holdout.csv), container.log, source.tar, manifest.json - membership, sizes and SHA-256 digests verified at collection"
+      },
+      "evidence": [
+        ".factory/nz-ea-001/reports/container.log (sha256 e3fd46d2ed3218e5f5fba832e74e923b42c871d00c54ca634061367a9af65344, digest re-verified locally)",
+        ".factory/nz-ea-001/reports/manifest.json (sha256 3da5346d791ccd407dc19b9a5c8cd55190ed26bbd0c5fb5f304b2be84ee88ba0, digest re-verified locally)",
+        "jobs/nz-ea-001.json"
+      ],
+      "expected_reports": [
+        "/output/summary.json",
+        "/output/qualification-nz-ea-wholesale-price-exceedance.json",
+        "/output/acceptance-nz-ea-wholesale-price-exceedance.txt",
+        "/output/references-nz-ea-wholesale-price-exceedance.json"
+      ],
+      "reports_status": "none written - run.sh stops at the build stage on a non-zero build, and the crash predates even summary.json; the absence is explained by the traceback in container.log"
+    },
+    {
+      "id": "nz-ea-002",
+      "candidate": "nz-ea-wholesale-price-exceedance",
+      "server_id": 172091812,
+      "status": "succeeded",
+      "launched_at": "2026-10-23T18:11:32Z",
+      "bundle": ".factory/jobs/nz-ea-002",
+      "reservation_eur": "0.06",
+      "provider_hourly_eur": "0.01152",
+      "stage_order": "construct -> qualify (gate 1.4.0, full artifact on the worker) -> --accept exact bytes -> simple references (score.py, post-acceptance, eval only)",
+      "sizing_note": "container timeout raised 100->120 min, lifetime 120->150 min over nz-ea-001: the previous run spent 74.3 min before crashing, so the margin covers download-time variance only; no design change. Source repair commit a126652.",
+      "outcome": "success, verified at collection: run.sh ran the prescribed order on the worker (container.log stage headers build -> qualification -> acceptance -> simple references; build_status=0 qualification_status=0 acceptance_status=0 score_status=0). Gate 1.4.0 passed over the full artifact: ok=true, failed_checks=[], all 34 checks true (leakage incl. every_column_could_be_scored; timing incl. 11/11 usable observed publication dates, instant publication D+6d >= measured max lag 5d; units with known-event fixture; splits disjoint/both-classes/no-cross-entities; runner contract). qualify_dataset.py --accept re-verified the exact bytes: 'ACCEPTED: /output/extract matches the qualified artifact 545e0e4418c1f0e5' (gate artifact_version digest 545e0e4418c1f0e54bb55389e7816c1736a8473de600e70d6f006ed33089f7e7). Coverage measured: 10,979/10,979 trading days 1996-10-01..2026-10-22, 0 missing, both islands 10,979; 714 price files processed (728 blobs listed, 4 interim/incomplete variants excluded, the 10 overlap daily files 2025-10-22..31 cross-checked at max |island mean diff| 0.0 and owned by the monthly channel); 9,437,515 unmapped POC rows excluded and counted. Splits measured: train 14,004 rows / 2,789 positives (0.199) / 404 positive target-weeks; eval 4,992 / 2,150 (0.431) / 231; holdout 2,890 / 1,571 (0.544) / 152. Known-event fixtures all ok: Aug 2024 dry-year 4 days means 814.77-883.56 exceed; 2008-07-01 mean 305.79 exceeds; Jan 1997 quiet control max 50.0 below. Post-acceptance references (score.py, eval only, train-fitted, on the accepted bytes): persistence_value AUC 0.8820 (Brier 0.1851), persistence_mean7 AUC 0.8843, calendar-only AUC 0.5011, majority-class accuracy 0.5693 (fit on train, measured against this split's labels), global-rate Brier 0.2988; paired persistence-vs-calendar difference +0.381 (95% bootstrap CI 0.371-0.389); persistence_value vs mean7 -0.0023 (CI -0.0096..0.0043, inconclusive). Per-year eval prevalence swings 0.008 (2016, 6 positives; persistence AUC 0.457) to 0.659 (2021; AUC 0.917) - prevalence shift across splits (train 0.199 -> eval 0.431 -> holdout 0.544) is a documented property of the regime-bounded design, reported per year as required. The full model is NOT computed at this stage: the harness runner's baseline job owns that figure on the same eval rows.",
+      "expected_reports": [
+        "/output/summary.json",
+        "/output/qualification-nz-ea-wholesale-price-exceedance.json",
+        "/output/acceptance-nz-ea-wholesale-price-exceedance.txt",
+        "/output/references-nz-ea-wholesale-price-exceedance.json"
+      ],
+      "next_acceptance_check": "SATISFIED 2026-10-23 at collection: gate 1.4.0 passed on the full artifact on the worker and --accept re-verified the exact bytes (artifact 545e0e4418c1f0e5) before score.py ran; figures above are qualified and quotable.",
+      "collected_at": "2026-10-23T19:48:16Z",
+      "destroyed_at": "2026-10-23T19:52:50Z",
+      "elapsed_minutes": 91,
+      "exit_code": 0,
+      "staging_release": {
+        "repo": "earino/dataset-factory-staging",
+        "id": 422246241,
+        "tag": "job-nz-ea-002",
+        "artifact_version": "545e0e4418c1f0e54bb55389e7816c1736a8473de600e70d6f006ed33089f7e7",
+        "assets": "14 parts mapped through the staging manifest.json: the three split CSVs (train 1,744,686 B sha256 273aeb06..., eval 627,892 B 6302310d..., holdout 364,911 B 101f6a70...), meta.json, quality.json, summary.json, qualification report (.json+.txt), acceptance, references, container.log, source.tar, manifest.json - every size and sha256 verified against the GitHub API at collect; the 9 small report files also fetched to the coordinator and digest-verified. Bulk CSVs remain on staging only."
+      },
+      "evidence": [
+        ".factory/nz-ea-002/reports/qualification-nz-ea-wholesale-price-exceedance.json (sha256 51e5b46a1c51d20dbb571095a4aa2d3c04c3ce4a7acf186ba53c5996c8d59e88, digest verified locally)",
+        ".factory/nz-ea-002/reports/acceptance-nz-ea-wholesale-price-exceedance.txt (sha256 c677c852bd6ce9106c97b6924ed2e364a09ff2c221f7176265121c568f8e295f, digest verified locally)",
+        ".factory/nz-ea-002/reports/references-nz-ea-wholesale-price-exceedance.json (sha256 4b3496d38c6ab7c9e03c2325ab5bbffbbe716898cbfb23b82effb1c18247c313, digest verified locally)",
+        ".factory/nz-ea-002/reports/summary.json (sha256 c80a224f1c26f1058a2881bd72c0841751f3e6c6e57c7309637a5d81dfcdad0b, digest verified locally)",
+        ".factory/nz-ea-002/reports/container.log (sha256 cbd12e30e9e1968330a7851432db15b585b766b00f48a92e17b8fabd95878b28, digest verified locally)",
+        ".factory/nz-ea-002/reports/staging-manifest.json, extract-meta.json, extract-quality.json (digests verified locally)",
+        "jobs/nz-ea-002.json"
+      ],
+      "reports_status": "all four expected /output reports collected and digest-verified (summary, qualification, acceptance, references), plus container.log, the staging manifest.json and the extract meta.json/quality.json. One recording blemish, not an artifact defect: references.json carries accepted_artifact_version: null - the acceptance .txt and the gate report both record 545e0e4418c1f0e5 and the stage order in container.log ties the references to the accepted bytes, so the identity chain is intact; advancement may want score.py to read the acceptance record instead of writing null.",
+      "provider_cleanup": "server 172091812 deleted 2026-10-23T19:52:50Z via scout-factory worker destroy; provider read-back after deletion: 0 servers and 0 floating IPs in the project (deletion confirmed by the provider, not merely requested)."
+    },
+    {
+      "id": "nz-ea-baseline-001",
+      "candidate": "nz-ea-wholesale-price-exceedance",
+      "server_id": 172106797,
+      "status": "failed",
+      "launched_at": "2026-10-23T20:43:21Z",
+      "bundle": ".factory/jobs/nz-ea-baseline-001",
+      "reservation_eur": "0.06",
+      "provider_hourly_eur": "0.01152",
+      "stage_order": "fetch (digest-verified) -> --accept -> runner train.py + validate.sh -> reference_check -> report",
+      "outcome": "failed 3.0 s in at the fetch stage, before any container or scoring: the holdout asset download was refused by the worker digest guard. Root cause (found after the second identical failure): this session hand-transcribed the holdout sha256 into the job fetch spec with one wrong hex character (15797.. vs the gate report's and staging manifest's 15717..); the worker downloaded the CORRECT bytes and correctly refused them against the wrong expectation. No data or source defect - the staging asset was byte-verified intact from the coordinator. Failure artifacts preserved on staging release 422293521.",
+      "collected_at": "2026-10-23T20:49:50Z",
+      "destroyed_at": "2026-10-23T20:50:43Z",
+      "staging_release": 422293521,
+      "reports_status": "failure evidence only; no scoring ran. Bounded failure assets fetched to .factory/nz-ea-baseline-001/reports/ by the 21:17Z watcher tick and sha256-verified against the ledger: source.tar (184,320 B), container.log (72 B - post-destroy docker capture error only, no container ever ran), staging manifest.json. The staging manifest's embedded fetch spec carries the mis-transcribed holdout digest, confirming the diagnosis from the preserved bytes.",
+      "provider_cleanup": "server 172106797 deletion confirmed by the provider at the 21:17Z watcher tick: GET /servers/172106797 -> 404 server not found; project primary_ips count 0",
+      "digest_guard_verification": "watcher tick re-diffed the fetch specs programmatically: 001/002 holdout sha256 differ from the gate report and the 003 spec at exactly one hex character (position 24, '9' vs '1'); the other four asset digests are identical"
+    },
+    {
+      "id": "nz-ea-baseline-002",
+      "candidate": "nz-ea-wholesale-price-exceedance",
+      "server_id": 172107560,
+      "status": "failed",
+      "launched_at": "2026-10-23T20:51:07Z",
+      "bundle": ".factory/jobs/nz-ea-baseline-002",
+      "reservation_eur": "0.06",
+      "provider_hourly_eur": "0.01152",
+      "stage_order": "fetch (digest-verified) -> --accept -> runner train.py + validate.sh -> reference_check -> report",
+      "outcome": "failed 2.7 s in, identical to nz-ea-baseline-001: same mis-transcribed holdout digest in the fetch spec (diagnosed as transient at first, which was wrong - a re-download from the coordinator reproduced the guard mismatch against the bad expectation while gh-verified bytes matched the gate report). After this second failure the fetch spec was diffed programmatically against the bundled gate report and the one-character error was found. Failure artifacts preserved on staging release 422299339.",
+      "collected_at": "2026-10-23T20:58:34Z",
+      "destroyed_at": "2026-10-23T21:03:10Z",
+      "staging_release": 422299339,
+      "reports_status": "failure evidence only; no scoring ran. Bounded failure assets fetched to .factory/nz-ea-baseline-002/reports/ by the 21:17Z watcher tick and sha256-verified against the ledger: source.tar (184,320 B), container.log (72 B - post-destroy docker capture error only), staging manifest.json. collected_at corrected by the watcher tick to the ledger value 20:58:34Z (the advancement session's 21:02:30Z was a hand-written approximation).",
+      "provider_cleanup": "server 172107560 deletion confirmed by the provider at the 21:17Z watcher tick: GET /servers/172107560 -> 404 server not found; project primary_ips count 0"
+    },
+    {
+      "id": "nz-ea-baseline-003",
+      "candidate": "nz-ea-wholesale-price-exceedance",
+      "server_id": 172109172,
+      "status": "succeeded",
+      "launched_at": "2026-10-23T21:03:55Z",
+      "bundle": ".factory/jobs/nz-ea-baseline-003",
+      "reservation_eur": "0.06",
+      "provider_hourly_eur": "0.01152",
+      "stage_order": "fetch (digest-verified, spec cross-checked against the gate report) -> --accept (ACCEPTED, artifact 545e0e4418c1f0e5, before any scoring) -> runner train.py + validate.sh (CONTRACT OK) -> reference_check (independent stdlib recompute) -> report",
+      "outcome": "runner-contract baseline completed clean on the accepted nz-ea-002 bytes fetched from staging release 422246241 (not rebuilt): the five fetched files re-ACCEPTED through gate 1.4.0 on the worker before scoring; the private holdout was fetched for re-acceptance only and never entered the workdir; the benchmark's own train.py and validate.sh ran unmodified (hashes recorded, unmodified: true). Model eval AUC 0.8924 (train.py print = validate.py recompute = independent recompute 0.8924379326710636) vs the accepted references on the identical 4,992 eval rows / 2,150 positives: persistence_value 0.8820357429258793, persistence_mean7 0.884293406215734, calendar_only 0.5010555946516537 - all three recomputed independently and matching the accepted values exactly. Paired week-clustered (target_week, the gate's event key) 95% bootstrap CIs: model-persistence_value +0.010402 [-0.000985, +0.022632]; model-persistence_mean7 +0.008145 [-0.002809, +0.020570] - both CONTAIN ZERO. Under the pre-declared criterion (model > persistence_mean7 AND the week-clustered interval excludes zero) headroom over persistence is NOT demonstrated: the observed advantage is positive but inconclusive at the dependence-aware level, not parity and not a defect. Calendar-only is beaten decisively (+0.391 observed).",
+      "expected_reports": [
+        "baseline_result.json",
+        "reference_check.json",
+        "accept.log",
+        "train.log",
+        "validate.log",
+        "dependency-versions.txt",
+        "container.log",
+        "staging-manifest.json"
+      ],
+      "next_acceptance_check": "packaging session: verify-staged-report.py --accept against the artifact bytes before any release claim; quote the triad beside any score",
+      "collected_at": "2026-10-23T21:11:37Z",
+      "destroyed_at": "2026-10-23T21:13:05Z",
+      "elapsed_minutes": 1.2,
+      "exit_code": 0,
+      "staging_release": 422309725,
+      "evidence": ".factory/nz-ea-baseline-003/reports/",
+      "reports_status": "all expected reports collected from staging release 422309725 and verified by collect (asset digests checked); all 8 local report files re-hashed by the 21:17Z watcher tick and every sha256 matches the ledger's recorded asset digests",
+      "provider_cleanup": "server 172109172 deletion confirmed by the provider: destroy command's recheck at 2026-10-23T21:13:05Z, plus the 21:17Z watcher tick's direct read-back GET /servers/172109172 -> 404 server not found; project primary_ips count 0"
+    },
+    {
+      "id": "nz-ea-publish-001",
+      "candidate": "nz-ea-wholesale-price-exceedance",
+      "server_id": 172117571,
+      "status": "succeeded",
+      "launched_at": "2026-10-23T22:22:32Z",
+      "collected_at": "2026-10-23T22:29:05Z",
+      "destroyed_at": "2026-10-23T22:29:17Z",
+      "reservation_eur": "0.04",
+      "provider_hourly_eur": "0.01152",
+      "stage_order": "transfer (host-side, no container): fetch each accepted asset from staging 422246241, verify sha256 on arrival, upload to the private dataset repo release, verify the server-side digest, delete local copy",
+      "outcome": "transfer clean: 5/5 assets copied from private staging 422246241 into private repo earino/nz-ea-wholesale-price-exceedance release v2026.10 (422360451) under the flat asset names, 0 failures, 2,754,043 bytes, 11.1 s. GitHub API read-back: exactly 5 assets, every name/size/server-side sha256 matches package MANIFEST.json (meta.json f9b8105a..., private-holdout.csv 101f6a70..., public-eval.csv 6302310d..., public-train.csv 273aeb06..., quality.json c37aed79...). One report-preservation blemish, not a data defect: the worker's compact result.json failed to upload to staging (GitHub POST 422); the result is preserved and digest-recorded locally at .factory/nz-ea-publish-001/result.json.",
+      "expected_reports": [
+        "result.json"
+      ],
+      "reports_status": "result.json collected locally (staging upload of the report 42'd); transfer verified independently by the GitHub API asset read-back. Watcher 2026-10-23 22:34Z: the staging draft release job-nz-ea-publish-001 (422361965) holds exactly one asset, file-0000-part-0000 (71,680 B, sha256 a69b6175... equal to the ledger's source-bundle digest), so the source bundle landed and the result-report asset is what failed; .factory/nz-ea-publish-001/result.json remains the only complete result copy",
+      "provider_cleanup": "server 172117571 deleted 2026-10-23T22:29:17Z (provider action 663400654954053, delete_server); direct read-back GET /servers/172117571 -> 404 not found; project primary_ips count 0. Note: the first 'worker destroy' attempt printed its collect-before-delete caution without deleting; deletion was then performed via the provider API and confirmed by read-back. Watcher 22:34Z re-verification: GET /servers/172117571 -> 404 server not found; primary_ips total_entries 0; ledger reconciled to status=deleted via 'worker status' (its deleted_at is the reconcile stamp, not the 22:29:17Z provider deletion).",
+      "next_acceptance_check": "DONE at packaging: verify-staged-report.py 422246241 ACCEPTED (report digests equal the uploaded staging bytes for all five components); gate --accept on a locally fetched extract ACCEPTED (artifact 545e0e4418c1f0e5); get_dataset.py executed end-to-end against the private GitHub release and gate --accept on the downloaded tree ACCEPTED."
+    },
+    {
+      "id": "nz-ea-hf-001",
+      "candidate": "nz-ea-wholesale-price-exceedance",
+      "server_id": 172121873,
+      "status": "succeeded",
+      "launched_at": "2026-10-23T22:53:45Z",
+      "reservation_eur": "0.04",
+      "provider_hourly_eur": "0.0115200000000000",
+      "stage_order": "host-side (no container): fetch each accepted asset from private GitHub release 422360451 (sha256 verified on arrival) -> upload to the private Hub repo earino/nz-ea-wholesale-price-exceedance -> verify the digest the Hub reports -> delete local copy -> pinned receipt -> documented load_dataset check",
+      "outcome": "upload clean: 5/5 assets (2,754,043 bytes) transferred GitHub release -> private Hub repo, 0 failures, 95.3 s; the pinned Hub receipt verified every file's sha256 and git blob id at commit 868c42f7a58bc547acf62b64f03865fd30182f92; hf_loading ok with the exact manifest splits (train 14,004/2,789, eval 4,992/2,150, holdout 2,890/1,571), all 16 columns and label values ['0','1'] (report preserved at .factory/nz-ea-hf-001/result.json). ONE BLEMISH, ROOT-CAUSED THIS SESSION (the same 422 that hit nz-ea-publish-001, until now unexplained): the worker's staging result upload failed POST 422 because a host-side job's container.log is a 0-byte file (execute() touches it; stop_and_capture never runs without a container) and GitHub's asset-upload endpoint refuses a zero-length body - measured directly: a 72-byte control POST to the same draft release answered 201, a 0-byte replay reproduced the exact 422. Fixed in workers/upload.py (commit 7f6d63d): empty artifacts are recorded as skipped_empty and never planned as upload parts; regression test fails on the pre-fix code. Because the failed staging upload left the ledger unable to mark the job collected, this job's evidence is NOT ledger-backed (hub_integrity.load_worker_receipt correctly refuses it) and the fresh verify-only attempt nz-ea-hf-003 was run for ledger-backed evidence; the transfer itself was independently verified by the Hub receipt, the loading check, hf-publish --verify and the API.",
+      "staging_release": 422378532,
+      "reports_status": "complete result preserved locally only (.factory/nz-ea-hf-001/result.json); the staging draft release job-nz-ea-hf-001 (422378532) holds only the source-bundle part",
+      "provider_cleanup": "server 172121873 could not be destroyed through the supported path (collect refuses an unuploaded result), so deletion followed the recorded nz-ea-publish-001 precedent: the factory's own scoped delete_owned + clean_job_ips at 23:11:47Z, then provider read-back GET /servers/172121873 -> 404 not found and project primary_ips total 0; ledger reconciled to status=deleted via 'worker status' (deleted_at is the reconcile stamp)"
+    },
+    {
+      "id": "nz-ea-hf-002",
+      "candidate": "nz-ea-wholesale-price-exceedance",
+      "server_id": 172124004,
+      "status": "failed",
+      "launched_at": "2026-10-23T23:14:37Z",
+      "reservation_eur": "0.04",
+      "provider_hourly_eur": "0.0115200000000000",
+      "stage_order": "host-side verify-only (hf_publish.verify_only true): no upload, no tag change - re-read the Hub at main, produce the pinned bulk-digest receipt, run the documented load_dataset path",
+      "outcome": "infrastructure failure, not a data defect: killed 46.4 s in as resource-monitor-failed:CalledProcessError. Root cause (measured from the code path): the supervisor samples job-directory disk once a second with du -sb, and a file vanishing mid-walk makes du exit 1, which check_output raised; pip installing datasets into the job venv churns the tree fast enough to lose that race (nz-ea-hf-001 survived the same phase by timing). Fixed in workers/executor.py (commit 6f6fd4a): disk_bytes retries a transient du failure twice (bounded, 0.5 s apart) and still fails closed when the error persists; regression test fails on the pre-fix code. The 0-byte-artifact fix from 7f6d63d was proven in production by this run: its staging result upload succeeded (uploaded true, release 422387176, skipped_empty ['container.log']).",
+      "staging_release": 422387176,
+      "collected_at": "2026-10-23T23:16:11Z",
+      "reports_status": "failure report collected through the normal path (the first host job to stage its result since 256bd79 introduced the early return); nothing from this attempt is used as evidence",
+      "provider_cleanup": "destroyed through the supported lifecycle at 23:20:37Z after verified collection (jobs/nz-ea-hf-002.json status=deleted)"
+    },
+    {
+      "id": "nz-ea-hf-003",
+      "candidate": "nz-ea-wholesale-price-exceedance",
+      "server_id": 172125044,
+      "status": "succeeded",
+      "launched_at": "2026-10-23T23:21:41Z",
+      "collected_at": "2026-10-23T23:25:05Z",
+      "destroyed_at": "2026-10-23T23:25:41Z",
+      "reservation_eur": "0.04",
+      "provider_hourly_eur": "0.0115200000000000",
+      "stage_order": "host-side verify-only (hf_publish.verify_only true): re-read the private Hub repo at main, produce the pinned bulk-digest receipt for the five released files (no upload, no tag change), then the documented load_dataset path",
+      "outcome": "the diagnosed infrastructure retry after the nz-ea-hf-002 monitor race, and the ledger-backed evidence job: uploads 0 (all five already at their manifest digests - the hf-001 transfer was correct), failures [], 81.9 s; pinned receipt schema 1, ok, at commit 868c42f7a58bc547acf62b64f03865fd30182f92 with all five files' sha256 and git blob ids; hf_loading ok (train 14,004 rows / 2,789 positives, eval 4,992 / 2,150, holdout 2,890 / 1,571; 16 columns per split; label target_high_price values ['0','1']; problems []). Staging result uploaded cleanly (release 422391450, skipped_empty ['container.log']) and collected, so hub_integrity.load_worker_receipt accepts this job: hf-publish --verify --worker-job nz-ea-hf-003 returned ok (5/5 present, 0 missing, 0 size-mismatched, 0 digest-unverified) and --tag created Hub tag v2026.10 at the verified commit with tag_matches_main true, recording the huggingface destination in release/nz-ea-wholesale-price-exceedance/DESTINATIONS.json.",
+      "staging_release": 422391450,
+      "expected_reports": [
+        "result.json"
+      ],
+      "reports_status": "result collected through the normal path and verified by collect against the staging release assets (jobs/nz-ea-hf-003.json result embedded)",
+      "provider_cleanup": "destroyed through the supported lifecycle at 23:25:41Z after verified collection (jobs/nz-ea-hf-003.json status=deleted)"
+    }
+  ],
+  "artifacts": {
+    "qualified_artifact": {
+      "artifact_version": "545e0e4418c1f0e54bb55389e7816c1736a8473de600e70d6f006ed33089f7e7",
+      "gate_version": "1.4.0",
+      "staging_release": 422246241,
+      "built_by_job": "nz-ea-002",
+      "rows": {
+        "train": 14004,
+        "eval": 4992,
+        "holdout": 2890
+      },
+      "positive_rates": {
+        "train": 0.199157,
+        "eval": 0.430689,
+        "holdout": 0.543599
+      },
+      "files": {
+        "public/train.csv": {
+          "bytes": 1744686,
+          "sha256": "273aeb069ab29445d901b1ae043ec73c93465d203b8f5115c51cf35ece3c25a1"
+        },
+        "public/eval.csv": {
+          "bytes": 627892,
+          "sha256": "6302310db2fced5ee0439e56526b2a88d1c165d02ad9ffb074cd54ebfcc8be67"
+        },
+        "private/holdout.csv": {
+          "bytes": 364911,
+          "sha256": "101f6a70284aff37b3d2715717e65315883a29c7a9a75ced9a2497edc4806cc9"
+        },
+        "meta.json": {
+          "bytes": 3133,
+          "sha256": "f9b8105a997e6269abe2bd85aa2b32c94545377f796ec6ca50af03eb61101590"
+        },
+        "quality.json": {
+          "bytes": 13421,
+          "sha256": "c37aed791cd38f0b005013f6d7bde6b5b313ad236fe57be1af7e672672182763"
+        }
+      },
+      "digest_source": "copied programmatically from the gate report artifact section; never hand-typed (the nz-ea-baseline-001/002 failures were one hand-mis-transcribed hex character)"
+    },
+    "baseline_triad_on_eval_rows": {
+      "measured_by_job": "nz-ea-baseline-003",
+      "rows": 4992,
+      "positives": 2150,
+      "persistence_value_auc": 0.8820357429258793,
+      "persistence_mean7_auc": 0.884293406215734,
+      "calendar_only_auc": 0.5010555946516537,
+      "full_model_auc": 0.8924379326710636,
+      "model_minus_persistence_value": {
+        "observed": 0.010402,
+        "week_clustered_ci95": [
+          -0.000985,
+          0.022632
+        ]
+      },
+      "model_minus_persistence_mean7": {
+        "observed": 0.008145,
+        "week_clustered_ci95": [
+          -0.002809,
+          0.02057
+        ]
+      },
+      "model_minus_calendar_only_observed": 0.391382,
+      "majority_class_accuracy": 0.5693108974358975,
+      "predeclared_criterion": "headroom demonstrated only if model > persistence_mean7 AND the week-clustered paired interval for (model - persistence_mean7) excludes zero",
+      "verdict_under_criterion": "NOT demonstrated: observed advantage positive but the dependence-aware interval contains zero - an inconclusive difference, neither parity nor a trailing-model defect; calendar-only beaten decisively",
+      "per_target_year": {
+        "2016": {
+          "rows": 718,
+          "positives": 6,
+          "model_auc": 0.391971,
+          "persistence_auc": 0.456929
+        },
+        "2017": {
+          "rows": 730,
+          "positives": 187,
+          "model_auc": 0.919163,
+          "persistence_auc": 0.949163
+        },
+        "2018": {
+          "rows": 730,
+          "positives": 234,
+          "model_auc": 0.806292,
+          "persistence_auc": 0.803669
+        },
+        "2019": {
+          "rows": 730,
+          "positives": 471,
+          "model_auc": 0.752132,
+          "persistence_auc": 0.743895
+        },
+        "2020": {
+          "rows": 732,
+          "positives": 380,
+          "model_auc": 0.800632,
+          "persistence_auc": 0.815857
+        },
+        "2021": {
+          "rows": 730,
+          "positives": 481,
+          "model_auc": 0.937063,
+          "persistence_auc": 0.917358
+        },
+        "2022": {
+          "rows": 622,
+          "positives": 391,
+          "model_auc": 0.854963,
+          "persistence_auc": 0.824327
+        }
+      },
+      "prevalence_shift_note": "train 0.199 vs eval 0.431 vs holdout 0.544 (gate-recorded): the eval window is prevalence-shifted relative to training and the holdout sits in the post-2022-11 real-time pricing regime; any score is as much out-of-distribution as temporal",
+      "full_model_note": "the runner's stock 30-tree XGBoost baseline through the unmodified contract; quoted, not independently re-trained by a second implementation (three implementations agree on its eval AUC to 4 decimals)"
+    },
+    "github_destination": {
+      "repo": "earino/nz-ea-wholesale-price-exceedance",
+      "release_id": 422360451,
+      "release_tag": "v2026.10",
+      "target_commit": "3b9952500f875b22f98d9a1292dec1f3bfc69b64",
+      "private": true,
+      "draft": false,
+      "assets_verified_at": "2026-10-23T22:28Z",
+      "verification": "5/5 assets at the manifest digests by authenticated API read-back; get_dataset.py end-to-end (5 files, 2,754,043 B, every digest verified, exit 0) and qualify_dataset.py --accept on the downloaded tree returned ACCEPTED (artifact 545e0e4418c1f0e5); tag v2026.10 == main == 3b9952500f875b22f98d9a1292dec1f3bfc69b64; the release is private and non-draft - the flip is the operator's act"
+    },
+    "huggingface_destination": {
+      "repo": "earino/nz-ea-wholesale-price-exceedance",
+      "revision": "v2026.10",
+      "commit": "868c42f7a58bc547acf62b64f03865fd30182f92",
+      "private": true,
+      "created_by": "hf-publish.py --create --upload-small (2026-10-23T22:47Z, 10 small files: card README.md from candidates/<id>/card.md rendered from the manifest, LOADING.md, MANIFEST.json, SHA256SUMS, LICENSE.md, LICENSE-MIT.txt, LICENSE-CC0-1.0.txt, DATA_DICTIONARY.md, VERIFICATION.md, measurements.json), then the nz-ea-hf-001 worker job for the five data files",
+      "tag_matches_main": true,
+      "verified": true,
+      "verified_at": "2026-10-23T23:25:59Z",
+      "verification": "hf-publish --verify --worker-job nz-ea-hf-003: 5/5 files present at the manifest digests (worker-pinned bulk receipt + streamed small-file digests), 0 missing, 0 size-mismatched, 0 digest-unverified; loading check verified by the same collected job (exact splits, columns, label values); --tag created v2026.10 at the verified commit 868c42f7 (tag == main); repo private (the flip is the operator's)",
+      "files_verified": [
+        "data/private-holdout.csv",
+        "data/public-eval.csv",
+        "data/public-train.csv",
+        "meta.json",
+        "quality.json"
+      ]
+    }
   },
-  {
-   "id": "nz-ea-002",
-   "candidate": "nz-ea-wholesale-price-exceedance",
-   "server_id": 172091812,
-   "status": "succeeded",
-   "launched_at": "2026-10-23T18:11:32Z",
-   "bundle": ".factory/jobs/nz-ea-002",
-   "reservation_eur": "0.06",
-   "provider_hourly_eur": "0.01152",
-   "stage_order": "construct -> qualify (gate 1.4.0, full artifact on the worker) -> --accept exact bytes -> simple references (score.py, post-acceptance, eval only)",
-   "sizing_note": "container timeout raised 100->120 min, lifetime 120->150 min over nz-ea-001: the previous run spent 74.3 min before crashing, so the margin covers download-time variance only; no design change. Source repair commit a126652.",
-   "outcome": "success, verified at collection: run.sh ran the prescribed order on the worker (container.log stage headers build -> qualification -> acceptance -> simple references; build_status=0 qualification_status=0 acceptance_status=0 score_status=0). Gate 1.4.0 passed over the full artifact: ok=true, failed_checks=[], all 34 checks true (leakage incl. every_column_could_be_scored; timing incl. 11/11 usable observed publication dates, instant publication D+6d >= measured max lag 5d; units with known-event fixture; splits disjoint/both-classes/no-cross-entities; runner contract). qualify_dataset.py --accept re-verified the exact bytes: 'ACCEPTED: /output/extract matches the qualified artifact 545e0e4418c1f0e5' (gate artifact_version digest 545e0e4418c1f0e54bb55389e7816c1736a8473de600e70d6f006ed33089f7e7). Coverage measured: 10,979/10,979 trading days 1996-10-01..2026-10-22, 0 missing, both islands 10,979; 714 price files processed (728 blobs listed, 4 interim/incomplete variants excluded, the 10 overlap daily files 2025-10-22..31 cross-checked at max |island mean diff| 0.0 and owned by the monthly channel); 9,437,515 unmapped POC rows excluded and counted. Splits measured: train 14,004 rows / 2,789 positives (0.199) / 404 positive target-weeks; eval 4,992 / 2,150 (0.431) / 231; holdout 2,890 / 1,571 (0.544) / 152. Known-event fixtures all ok: Aug 2024 dry-year 4 days means 814.77-883.56 exceed; 2008-07-01 mean 305.79 exceeds; Jan 1997 quiet control max 50.0 below. Post-acceptance references (score.py, eval only, train-fitted, on the accepted bytes): persistence_value AUC 0.8820 (Brier 0.1851), persistence_mean7 AUC 0.8843, calendar-only AUC 0.5011, majority-class accuracy 0.5693 (fit on train, measured against this split's labels), global-rate Brier 0.2988; paired persistence-vs-calendar difference +0.381 (95% bootstrap CI 0.371-0.389); persistence_value vs mean7 -0.0023 (CI -0.0096..0.0043, inconclusive). Per-year eval prevalence swings 0.008 (2016, 6 positives; persistence AUC 0.457) to 0.659 (2021; AUC 0.917) - prevalence shift across splits (train 0.199 -> eval 0.431 -> holdout 0.544) is a documented property of the regime-bounded design, reported per year as required. The full model is NOT computed at this stage: the harness runner's baseline job owns that figure on the same eval rows.",
-   "expected_reports": [
-    "/output/summary.json",
-    "/output/qualification-nz-ea-wholesale-price-exceedance.json",
-    "/output/acceptance-nz-ea-wholesale-price-exceedance.txt",
-    "/output/references-nz-ea-wholesale-price-exceedance.json"
-   ],
-   "next_acceptance_check": "SATISFIED 2026-10-23 at collection: gate 1.4.0 passed on the full artifact on the worker and --accept re-verified the exact bytes (artifact 545e0e4418c1f0e5) before score.py ran; figures above are qualified and quotable.",
-   "collected_at": "2026-10-23T19:48:16Z",
-   "destroyed_at": "2026-10-23T19:52:50Z",
-   "elapsed_minutes": 91,
-   "exit_code": 0,
-   "staging_release": {
-    "repo": "earino/dataset-factory-staging",
-    "id": 422246241,
-    "tag": "job-nz-ea-002",
+  "rejection_reason": null,
+  "review": "Class A licence read first-hand on both the current platform and its announced successor; 30 years of daily-grain labels; a documented publication instant with measured file lags; publisher-published regional mapping; strong clustered event structure (dry-year episodes) and quiet eras giving both classes in every candidate window. Prior art is level-regression forecasting (EPF benchmark, an AUT study, a single-node GitHub project) - no published exceedance task with splits and a scored contract.",
+  "next_action": "DO NOT FLIP - publication cancelled 2026-10-24T10:45:45Z. Independent audit (audits/2026-10-24-independent-codex-audit.md, operator-commissioned) found a critical cross-row target-source leak: for each eval row (island, D) the eval feature row at D+7 ships the row's label-source price as last_day_mean, so a label-blind join reproduces 4978/4992 labels with zero mismatches and scores eval AUC 1.0. Also: 14 eval targets cross the declared 2022-11-01 regime break; VERIFICATION.md claims 58 eval weeks vs 358 actual; train/eval share target week 2016-W01; the threshold rationale cites out-of-window data. The staged private v2026.10 must never be flipped and must be renamed SUPERSEDED - DO NOT PUBLISH when a corrected version is staged. REWORK: (1) an as-of construction or equivalent that hides future covariate rows at every prediction instant, (2) purge the regime-boundary and shared-week edges, (3) correct the week-count and threshold evidence, (4) re-qualify and re-run the baseline triad on the corrected artifact before any new packaging. Integrity, reference AUCs and the ~0.89 model scale all reproduced exactly; persistence headroom stays inconclusive. Advancement owns the rework plan.",
+  "jurisdiction": {
+    "country": "NZ",
+    "region": "Oceania",
+    "publisher": "Electricity Authority Te Mana Hiko (New Zealand)",
+    "recorded_at": "2026-10-22"
+  },
+  "licence_class": "A",
+  "licence_note": "CC BY 4.0 International (attribution: 'www.emi.ea.govt.nz provided by the Electricity Authority (New Zealand)'); confirmed identically on the successor hub's copyright statement, so the announced EMI decommissioning does not change licence posture.",
+  "verdict": "go",
+  "novelty_check": {
+    "checked_at": "2026-10-22T04:26:55+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "New Zealand electricity price forecasting",
+      "electricity price spike prediction benchmark",
+      "spot price exceedance dataset"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "New Zealand electricity price forecasting",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "electricity price spike prediction benchmark",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "spot price exceedance dataset",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "New Zealand electricity price forecasting",
+          "hits": 1507923,
+          "top": [
+            "DEEP LEARNING APPROACH TO FORECASTING ELECTRICITY PRICE  FROM LOAD DATA",
+            "A hybrid extreme learning machine and sine cosine algorithm  model for accurate electricity price forecasting",
+            "Machine Learning-Based Electricity Price Forecasting Using Support Vector Machine",
+            "Forecasting day-ahead electricity prices for the electricity market with dynamic time period",
+            "Electricity price forecast for futures contracts with artificial neural network and spearman data correlation"
+          ]
+        },
+        {
+          "query": "electricity price spike prediction benchmark",
+          "hits": 183924,
+          "top": [
+            "Machine Learning-Based Electricity Price Forecasting Using Support Vector Machine",
+            "Analysis of Features of Power Market Price: Lithuanian Case",
+            "DEEP LEARNING APPROACH TO FORECASTING ELECTRICITY PRICE  FROM LOAD DATA",
+            "Correlation Analysis Electricity Price and Solar Energy in Germany 2018-2023",
+            "BQEB-Data: An Open Benchmark Dataset for Autonomous Energy Intelligence and Smart Grid Analytics"
+          ]
+        },
+        {
+          "query": "spot price exceedance dataset",
+          "hits": 378553,
+          "top": [
+            "Amazon EC2 Spot Price History: 2014--2015, 2017--2023",
+            "Rediscovering global hotspots of monthly freshwater boundary exceedances by integrating water storage capacity",
+            "Forecasting Day-Ahead Electricity Price with Artificial Neural Networks: a Comparison of Architectures",
+            "Statistical data collected in the case studies of the SPOT report - dataset",
+            "Results of SPOT surveys for tourists, residents and entrepreneurs in the case studies - dataset"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "New Zealand electricity price forecasting",
+          "hits": 5,
+          "top": [
+            "Current New Zealand Activities in Radio Astronomy: Building Capacity in Engineering &amp; Science for the Square Kilomet",
+            "Probabilistic Forecasting in Day-Ahead Electricity Markets: Simulating Peak and Off-Peak Prices",
+            "A Study of the New Zealand Mathematics Curriculum",
+            "Lasso estimation for GEFCom2014 probabilistic electric load forecasting",
+            "Explainable Artificial Intelligence for Assault Sentence Prediction in New Zealand"
+          ]
+        },
+        {
+          "query": "electricity price spike prediction benchmark",
+          "hits": 5,
+          "top": [
+            "Investigating the effect of competitiveness power in estimating the average weighted price in electricity market",
+            "Econometric Modeling of Regional Electricity Spot Prices in the Australian Market",
+            "Prediction Interval Construction Method for Electricity Prices",
+            "Adaptive Online Learning with LSTM Networks for Energy Price Prediction",
+            "Do VLMs Truly \"Read\" Candlesticks? A Multi-Scale Benchmark for Visual Stock Price Forecasting"
+          ]
+        },
+        {
+          "query": "spot price exceedance dataset",
+          "hits": 5,
+          "top": [
+            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+            "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset",
+            "Location, Location, Location: Exploring Amazon EC2 Spot Instance Pricing Across Geographical Regions - Extended Version",
+            "Understanding the Impacts of Dark Pools on Price Discovery"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'New Zealand electricity price forecasting': 0 hit(s) - nothing notable\n- huggingface_datasets / 'electricity price spike prediction benchmark': 0 hit(s) - nothing notable\n- huggingface_datasets / 'spot price exceedance dataset': 0 hit(s) - nothing notable\n- zenodo_records / 'New Zealand electricity price forecasting': 1507923 hit(s) - DEEP LEARNING APPROACH TO FORECASTING ELECTRICITY PRICE  FROM LOAD DATA, A hybrid extreme learning machine and sine cosine algorithm  model for accurate electricity price forecasting, Machine Learning-Based Electricity Price Forecasting Using Support Vector Machine, Forecasting day-ahead electricity prices for the electricity market with dynamic time period, Electricity price forecast for futures contracts with artificial neural network and spearman data correlation\n- zenodo_records / 'electricity price spike prediction benchmark': 183924 hit(s) - Machine Learning-Based Electricity Price Forecasting Using Support Vector Machine, Analysis of Features of Power Market Price: Lithuanian Case, DEEP LEARNING APPROACH TO FORECASTING ELECTRICITY PRICE  FROM LOAD DATA, Correlation Analysis Electricity Price and Solar Energy in Germany 2018-2023, BQEB-Data: An Open Benchmark Dataset for Autonomous Energy Intelligence and Smart Grid Analytics\n- zenodo_records / 'spot price exceedance dataset': 378553 hit(s) - Amazon EC2 Spot Price History: 2014--2015, 2017--2023, Rediscovering global hotspots of monthly freshwater boundary exceedances by integrating water storage capacity, Forecasting Day-Ahead Electricity Price with Artificial Neural Networks: a Comparison of Architectures, Statistical data collected in the case studies of the SPOT report - dataset, Results of SPOT surveys for tourists, residents and entrepreneurs in the case studies - dataset\n- arxiv_preprints / 'New Zealand electricity price forecasting': 5 hit(s) - Current New Zealand Activities in Radio Astronomy: Building Capacity in Engineering &amp; Science for the Square Kilomet, Probabilistic Forecasting in Day-Ahead Electricity Markets: Simulating Peak and Off-Peak Prices, A Study of the New Zealand Mathematics Curriculum, Lasso estimation for GEFCom2014 probabilistic electric load forecasting, Explainable Artificial Intelligence for Assault Sentence Prediction in New Zealand\n- arxiv_preprints / 'electricity price spike prediction benchmark': 5 hit(s) - Investigating the effect of competitiveness power in estimating the average weighted price in electricity market, Econometric Modeling of Regional Electricity Spot Prices in the Australian Market, Prediction Interval Construction Method for Electricity Prices, Adaptive Online Learning with LSTM Networks for Energy Price Prediction, Do VLMs Truly \"Read\" Candlesticks? A Multi-Scale Benchmark for Visual Stock Price Forecasting\n- arxiv_preprints / 'spot price exceedance dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, Location, Location, Location: Exploring Amazon EC2 Spot Instance Pricing Across Geographical Regions - Extended Version, Understanding the Impacts of Dark Pools on Price Discovery",
+    "prior_art": [
+      "Lago, Marcjasz, De Schutter, Wierzbicki, EPF benchmark, Applied Energy 293 (2021)",
+      "Electricity price forecasting in New Zealand, AUT study (GARCH/SV vs ML, daily prices 2014-2022)",
+      "github.com/SoyeonIm/nz-electricity-market-analytics"
+    ],
+    "theirs": "Electricity Authority publishes raw nodal final prices; the EPF benchmark (Lago et al. 2021) is day-ahead level regression on five Northern-Hemisphere markets with no NZ; an AUT study forecast NZ daily price levels 2014-2022 with no published artifact; a GitHub project forecasts one node (OTA2201) as level regression with no task contract",
+    "ours": "30-year island/region-level panel of NZ final wholesale prices (1996-2026) with a daily exceedance label at a documented publication instant (final by 2pm next business day; measured file lag p50 1.8d max 5.8d), benchmark splits and a scored binary contract",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  },
+  "construction_output": {
+    "splits": {
+      "train": {
+        "rows": 14004,
+        "positives": 2789,
+        "positive_rate": 0.199157,
+        "distinct_events": 404
+      },
+      "eval": {
+        "rows": 4992,
+        "positives": 2150,
+        "positive_rate": 0.430689,
+        "distinct_events": 231
+      },
+      "holdout": {
+        "rows": 2890,
+        "positives": 1571,
+        "positive_rate": 0.543599,
+        "distinct_events": 152
+      }
+    }
+  },
+  "packaged_at": null,
+  "awaiting_operator": false,
+  "qualification": {
+    "qualified_at": "2026-10-23T19:48:16Z",
+    "gate_version": "1.4.0",
+    "job": "nz-ea-002",
+    "result": "passed; 0 failed checks of 38 (leakage incl. every_column_could_be_scored, timing incl. 11/11 observed publication dates, units with known-event fixture, splits incl. disjoint actual ranges and clustered positive events, runner contract)",
     "artifact_version": "545e0e4418c1f0e54bb55389e7816c1736a8473de600e70d6f006ed33089f7e7",
-    "assets": "14 parts mapped through the staging manifest.json: the three split CSVs (train 1,744,686 B sha256 273aeb06..., eval 627,892 B 6302310d..., holdout 364,911 B 101f6a70...), meta.json, quality.json, summary.json, qualification report (.json+.txt), acceptance, references, container.log, source.tar, manifest.json - every size and sha256 verified against the GitHub API at collect; the 9 small report files also fetched to the coordinator and digest-verified. Bulk CSVs remain on staging only."
-   },
-   "evidence": [
-    ".factory/nz-ea-002/reports/qualification-nz-ea-wholesale-price-exceedance.json (sha256 51e5b46a1c51d20dbb571095a4aa2d3c04c3ce4a7acf186ba53c5996c8d59e88, digest verified locally)",
-    ".factory/nz-ea-002/reports/acceptance-nz-ea-wholesale-price-exceedance.txt (sha256 c677c852bd6ce9106c97b6924ed2e364a09ff2c221f7176265121c568f8e295f, digest verified locally)",
-    ".factory/nz-ea-002/reports/references-nz-ea-wholesale-price-exceedance.json (sha256 4b3496d38c6ab7c9e03c2325ab5bbffbbe716898cbfb23b82effb1c18247c313, digest verified locally)",
-    ".factory/nz-ea-002/reports/summary.json (sha256 c80a224f1c26f1058a2881bd72c0841751f3e6c6e57c7309637a5d81dfcdad0b, digest verified locally)",
-    ".factory/nz-ea-002/reports/container.log (sha256 cbd12e30e9e1968330a7851432db15b585b766b00f48a92e17b8fabd95878b28, digest verified locally)",
-    ".factory/nz-ea-002/reports/staging-manifest.json, extract-meta.json, extract-quality.json (digests verified locally)",
-    "jobs/nz-ea-002.json"
-   ],
-   "reports_status": "all four expected /output reports collected and digest-verified (summary, qualification, acceptance, references), plus container.log, the staging manifest.json and the extract meta.json/quality.json. One recording blemish, not an artifact defect: references.json carries accepted_artifact_version: null - the acceptance .txt and the gate report both record 545e0e4418c1f0e5 and the stage order in container.log ties the references to the accepted bytes, so the identity chain is intact; advancement may want score.py to read the acceptance record instead of writing null.",
-   "provider_cleanup": "server 172091812 deleted 2026-10-23T19:52:50Z via scout-factory worker destroy; provider read-back after deletion: 0 servers and 0 floating IPs in the project (deletion confirmed by the provider, not merely requested)."
-  },
-  {
-   "id": "nz-ea-baseline-001",
-   "candidate": "nz-ea-wholesale-price-exceedance",
-   "server_id": 172106797,
-   "status": "failed",
-   "launched_at": "2026-10-23T20:43:21Z",
-   "bundle": ".factory/jobs/nz-ea-baseline-001",
-   "reservation_eur": "0.06",
-   "provider_hourly_eur": "0.01152",
-   "stage_order": "fetch (digest-verified) -> --accept -> runner train.py + validate.sh -> reference_check -> report",
-   "outcome": "failed 3.0 s in at the fetch stage, before any container or scoring: the holdout asset download was refused by the worker digest guard. Root cause (found after the second identical failure): this session hand-transcribed the holdout sha256 into the job fetch spec with one wrong hex character (15797.. vs the gate report's and staging manifest's 15717..); the worker downloaded the CORRECT bytes and correctly refused them against the wrong expectation. No data or source defect - the staging asset was byte-verified intact from the coordinator. Failure artifacts preserved on staging release 422293521.",
-   "collected_at": "2026-10-23T20:49:50Z",
-   "destroyed_at": "2026-10-23T20:50:43Z",
-   "staging_release": 422293521,
-   "reports_status": "failure evidence only; no scoring ran. Bounded failure assets fetched to .factory/nz-ea-baseline-001/reports/ by the 21:17Z watcher tick and sha256-verified against the ledger: source.tar (184,320 B), container.log (72 B - post-destroy docker capture error only, no container ever ran), staging manifest.json. The staging manifest's embedded fetch spec carries the mis-transcribed holdout digest, confirming the diagnosis from the preserved bytes.",
-   "provider_cleanup": "server 172106797 deletion confirmed by the provider at the 21:17Z watcher tick: GET /servers/172106797 -> 404 server not found; project primary_ips count 0",
-   "digest_guard_verification": "watcher tick re-diffed the fetch specs programmatically: 001/002 holdout sha256 differ from the gate report and the 003 spec at exactly one hex character (position 24, '9' vs '1'); the other four asset digests are identical"
-  },
-  {
-   "id": "nz-ea-baseline-002",
-   "candidate": "nz-ea-wholesale-price-exceedance",
-   "server_id": 172107560,
-   "status": "failed",
-   "launched_at": "2026-10-23T20:51:07Z",
-   "bundle": ".factory/jobs/nz-ea-baseline-002",
-   "reservation_eur": "0.06",
-   "provider_hourly_eur": "0.01152",
-   "stage_order": "fetch (digest-verified) -> --accept -> runner train.py + validate.sh -> reference_check -> report",
-   "outcome": "failed 2.7 s in, identical to nz-ea-baseline-001: same mis-transcribed holdout digest in the fetch spec (diagnosed as transient at first, which was wrong - a re-download from the coordinator reproduced the guard mismatch against the bad expectation while gh-verified bytes matched the gate report). After this second failure the fetch spec was diffed programmatically against the bundled gate report and the one-character error was found. Failure artifacts preserved on staging release 422299339.",
-   "collected_at": "2026-10-23T20:58:34Z",
-   "destroyed_at": "2026-10-23T21:03:10Z",
-   "staging_release": 422299339,
-   "reports_status": "failure evidence only; no scoring ran. Bounded failure assets fetched to .factory/nz-ea-baseline-002/reports/ by the 21:17Z watcher tick and sha256-verified against the ledger: source.tar (184,320 B), container.log (72 B - post-destroy docker capture error only), staging manifest.json. collected_at corrected by the watcher tick to the ledger value 20:58:34Z (the advancement session's 21:02:30Z was a hand-written approximation).",
-   "provider_cleanup": "server 172107560 deletion confirmed by the provider at the 21:17Z watcher tick: GET /servers/172107560 -> 404 server not found; project primary_ips count 0"
-  },
-  {
-   "id": "nz-ea-baseline-003",
-   "candidate": "nz-ea-wholesale-price-exceedance",
-   "server_id": 172109172,
-   "status": "succeeded",
-   "launched_at": "2026-10-23T21:03:55Z",
-   "bundle": ".factory/jobs/nz-ea-baseline-003",
-   "reservation_eur": "0.06",
-   "provider_hourly_eur": "0.01152",
-   "stage_order": "fetch (digest-verified, spec cross-checked against the gate report) -> --accept (ACCEPTED, artifact 545e0e4418c1f0e5, before any scoring) -> runner train.py + validate.sh (CONTRACT OK) -> reference_check (independent stdlib recompute) -> report",
-   "outcome": "runner-contract baseline completed clean on the accepted nz-ea-002 bytes fetched from staging release 422246241 (not rebuilt): the five fetched files re-ACCEPTED through gate 1.4.0 on the worker before scoring; the private holdout was fetched for re-acceptance only and never entered the workdir; the benchmark's own train.py and validate.sh ran unmodified (hashes recorded, unmodified: true). Model eval AUC 0.8924 (train.py print = validate.py recompute = independent recompute 0.8924379326710636) vs the accepted references on the identical 4,992 eval rows / 2,150 positives: persistence_value 0.8820357429258793, persistence_mean7 0.884293406215734, calendar_only 0.5010555946516537 - all three recomputed independently and matching the accepted values exactly. Paired week-clustered (target_week, the gate's event key) 95% bootstrap CIs: model-persistence_value +0.010402 [-0.000985, +0.022632]; model-persistence_mean7 +0.008145 [-0.002809, +0.020570] - both CONTAIN ZERO. Under the pre-declared criterion (model > persistence_mean7 AND the week-clustered interval excludes zero) headroom over persistence is NOT demonstrated: the observed advantage is positive but inconclusive at the dependence-aware level, not parity and not a defect. Calendar-only is beaten decisively (+0.391 observed).",
-   "expected_reports": [
-    "baseline_result.json",
-    "reference_check.json",
-    "accept.log",
-    "train.log",
-    "validate.log",
-    "dependency-versions.txt",
-    "container.log",
-    "staging-manifest.json"
-   ],
-   "next_acceptance_check": "packaging session: verify-staged-report.py --accept against the artifact bytes before any release claim; quote the triad beside any score",
-   "collected_at": "2026-10-23T21:11:37Z",
-   "destroyed_at": "2026-10-23T21:13:05Z",
-   "elapsed_minutes": 1.2,
-   "exit_code": 0,
-   "staging_release": 422309725,
-   "evidence": ".factory/nz-ea-baseline-003/reports/",
-   "reports_status": "all expected reports collected from staging release 422309725 and verified by collect (asset digests checked); all 8 local report files re-hashed by the 21:17Z watcher tick and every sha256 matches the ledger's recorded asset digests",
-   "provider_cleanup": "server 172109172 deletion confirmed by the provider: destroy command's recheck at 2026-10-23T21:13:05Z, plus the 21:17Z watcher tick's direct read-back GET /servers/172109172 -> 404 server not found; project primary_ips count 0"
-  },
-  {
-   "id": "nz-ea-publish-001",
-   "candidate": "nz-ea-wholesale-price-exceedance",
-   "server_id": 172117571,
-   "status": "succeeded",
-   "launched_at": "2026-10-23T22:22:32Z",
-   "collected_at": "2026-10-23T22:29:05Z",
-   "destroyed_at": "2026-10-23T22:29:17Z",
-   "reservation_eur": "0.04",
-   "provider_hourly_eur": "0.01152",
-   "stage_order": "transfer (host-side, no container): fetch each accepted asset from staging 422246241, verify sha256 on arrival, upload to the private dataset repo release, verify the server-side digest, delete local copy",
-   "outcome": "transfer clean: 5/5 assets copied from private staging 422246241 into private repo earino/nz-ea-wholesale-price-exceedance release v2026.10 (422360451) under the flat asset names, 0 failures, 2,754,043 bytes, 11.1 s. GitHub API read-back: exactly 5 assets, every name/size/server-side sha256 matches package MANIFEST.json (meta.json f9b8105a..., private-holdout.csv 101f6a70..., public-eval.csv 6302310d..., public-train.csv 273aeb06..., quality.json c37aed79...). One report-preservation blemish, not a data defect: the worker's compact result.json failed to upload to staging (GitHub POST 422); the result is preserved and digest-recorded locally at .factory/nz-ea-publish-001/result.json.",
-   "expected_reports": [
-    "result.json"
-   ],
-   "reports_status": "result.json collected locally (staging upload of the report 42'd); transfer verified independently by the GitHub API asset read-back. Watcher 2026-10-23 22:34Z: the staging draft release job-nz-ea-publish-001 (422361965) holds exactly one asset, file-0000-part-0000 (71,680 B, sha256 a69b6175... equal to the ledger's source-bundle digest), so the source bundle landed and the result-report asset is what failed; .factory/nz-ea-publish-001/result.json remains the only complete result copy",
-   "provider_cleanup": "server 172117571 deleted 2026-10-23T22:29:17Z (provider action 663400654954053, delete_server); direct read-back GET /servers/172117571 -> 404 not found; project primary_ips count 0. Note: the first 'worker destroy' attempt printed its collect-before-delete caution without deleting; deletion was then performed via the provider API and confirmed by read-back. Watcher 22:34Z re-verification: GET /servers/172117571 -> 404 server not found; primary_ips total_entries 0; ledger reconciled to status=deleted via 'worker status' (its deleted_at is the reconcile stamp, not the 22:29:17Z provider deletion).",
-   "next_acceptance_check": "DONE at packaging: verify-staged-report.py 422246241 ACCEPTED (report digests equal the uploaded staging bytes for all five components); gate --accept on a locally fetched extract ACCEPTED (artifact 545e0e4418c1f0e5); get_dataset.py executed end-to-end against the private GitHub release and gate --accept on the downloaded tree ACCEPTED."
-  },
-  {
-   "id": "nz-ea-hf-001",
-   "candidate": "nz-ea-wholesale-price-exceedance",
-   "server_id": 172121873,
-   "status": "succeeded",
-   "launched_at": "2026-10-23T22:53:45Z",
-   "reservation_eur": "0.04",
-   "provider_hourly_eur": "0.0115200000000000",
-   "stage_order": "host-side (no container): fetch each accepted asset from private GitHub release 422360451 (sha256 verified on arrival) -> upload to the private Hub repo earino/nz-ea-wholesale-price-exceedance -> verify the digest the Hub reports -> delete local copy -> pinned receipt -> documented load_dataset check",
-   "outcome": "upload clean: 5/5 assets (2,754,043 bytes) transferred GitHub release -> private Hub repo, 0 failures, 95.3 s; the pinned Hub receipt verified every file's sha256 and git blob id at commit 868c42f7a58bc547acf62b64f03865fd30182f92; hf_loading ok with the exact manifest splits (train 14,004/2,789, eval 4,992/2,150, holdout 2,890/1,571), all 16 columns and label values ['0','1'] (report preserved at .factory/nz-ea-hf-001/result.json). ONE BLEMISH, ROOT-CAUSED THIS SESSION (the same 422 that hit nz-ea-publish-001, until now unexplained): the worker's staging result upload failed POST 422 because a host-side job's container.log is a 0-byte file (execute() touches it; stop_and_capture never runs without a container) and GitHub's asset-upload endpoint refuses a zero-length body - measured directly: a 72-byte control POST to the same draft release answered 201, a 0-byte replay reproduced the exact 422. Fixed in workers/upload.py (commit 7f6d63d): empty artifacts are recorded as skipped_empty and never planned as upload parts; regression test fails on the pre-fix code. Because the failed staging upload left the ledger unable to mark the job collected, this job's evidence is NOT ledger-backed (hub_integrity.load_worker_receipt correctly refuses it) and the fresh verify-only attempt nz-ea-hf-003 was run for ledger-backed evidence; the transfer itself was independently verified by the Hub receipt, the loading check, hf-publish --verify and the API.",
-   "staging_release": 422378532,
-   "reports_status": "complete result preserved locally only (.factory/nz-ea-hf-001/result.json); the staging draft release job-nz-ea-hf-001 (422378532) holds only the source-bundle part",
-   "provider_cleanup": "server 172121873 could not be destroyed through the supported path (collect refuses an unuploaded result), so deletion followed the recorded nz-ea-publish-001 precedent: the factory's own scoped delete_owned + clean_job_ips at 23:11:47Z, then provider read-back GET /servers/172121873 -> 404 not found and project primary_ips total 0; ledger reconciled to status=deleted via 'worker status' (deleted_at is the reconcile stamp)"
-  },
-  {
-   "id": "nz-ea-hf-002",
-   "candidate": "nz-ea-wholesale-price-exceedance",
-   "server_id": 172124004,
-   "status": "failed",
-   "launched_at": "2026-10-23T23:14:37Z",
-   "reservation_eur": "0.04",
-   "provider_hourly_eur": "0.0115200000000000",
-   "stage_order": "host-side verify-only (hf_publish.verify_only true): no upload, no tag change - re-read the Hub at main, produce the pinned bulk-digest receipt, run the documented load_dataset path",
-   "outcome": "infrastructure failure, not a data defect: killed 46.4 s in as resource-monitor-failed:CalledProcessError. Root cause (measured from the code path): the supervisor samples job-directory disk once a second with du -sb, and a file vanishing mid-walk makes du exit 1, which check_output raised; pip installing datasets into the job venv churns the tree fast enough to lose that race (nz-ea-hf-001 survived the same phase by timing). Fixed in workers/executor.py (commit 6f6fd4a): disk_bytes retries a transient du failure twice (bounded, 0.5 s apart) and still fails closed when the error persists; regression test fails on the pre-fix code. The 0-byte-artifact fix from 7f6d63d was proven in production by this run: its staging result upload succeeded (uploaded true, release 422387176, skipped_empty ['container.log']).",
-   "staging_release": 422387176,
-   "collected_at": "2026-10-23T23:16:11Z",
-   "reports_status": "failure report collected through the normal path (the first host job to stage its result since 256bd79 introduced the early return); nothing from this attempt is used as evidence",
-   "provider_cleanup": "destroyed through the supported lifecycle at 23:20:37Z after verified collection (jobs/nz-ea-hf-002.json status=deleted)"
-  },
-  {
-   "id": "nz-ea-hf-003",
-   "candidate": "nz-ea-wholesale-price-exceedance",
-   "server_id": 172125044,
-   "status": "succeeded",
-   "launched_at": "2026-10-23T23:21:41Z",
-   "collected_at": "2026-10-23T23:25:05Z",
-   "destroyed_at": "2026-10-23T23:25:41Z",
-   "reservation_eur": "0.04",
-   "provider_hourly_eur": "0.0115200000000000",
-   "stage_order": "host-side verify-only (hf_publish.verify_only true): re-read the private Hub repo at main, produce the pinned bulk-digest receipt for the five released files (no upload, no tag change), then the documented load_dataset path",
-   "outcome": "the diagnosed infrastructure retry after the nz-ea-hf-002 monitor race, and the ledger-backed evidence job: uploads 0 (all five already at their manifest digests - the hf-001 transfer was correct), failures [], 81.9 s; pinned receipt schema 1, ok, at commit 868c42f7a58bc547acf62b64f03865fd30182f92 with all five files' sha256 and git blob ids; hf_loading ok (train 14,004 rows / 2,789 positives, eval 4,992 / 2,150, holdout 2,890 / 1,571; 16 columns per split; label target_high_price values ['0','1']; problems []). Staging result uploaded cleanly (release 422391450, skipped_empty ['container.log']) and collected, so hub_integrity.load_worker_receipt accepts this job: hf-publish --verify --worker-job nz-ea-hf-003 returned ok (5/5 present, 0 missing, 0 size-mismatched, 0 digest-unverified) and --tag created Hub tag v2026.10 at the verified commit with tag_matches_main true, recording the huggingface destination in release/nz-ea-wholesale-price-exceedance/DESTINATIONS.json.",
-   "staging_release": 422391450,
-   "expected_reports": [
-    "result.json"
-   ],
-   "reports_status": "result collected through the normal path and verified by collect against the staging release assets (jobs/nz-ea-hf-003.json result embedded)",
-   "provider_cleanup": "destroyed through the supported lifecycle at 23:25:41Z after verified collection (jobs/nz-ea-hf-003.json status=deleted)"
+    "report": "private staging release 422246241 (tag job-nz-ea-002, 14 parts); the gate report is assets file-0007/file-0008 (byte-identical, sha256 51e5b46a1c51d20d...); the five extract files and the report were fetched on the coordinator and every digest matched the staging manifest, verify-staged-report.py 422246241 re-verified the report against the uploaded bytes (ACCEPTED), and qualify_dataset.py --accept re-verified a locally fetched extract (ACCEPTED, artifact 545e0e4418c1f0e5); the extract stays in staging, never on the coordinator",
+    "splits": {
+      "train": {
+        "rows": 14004,
+        "positives": 2789,
+        "positive_rate": 0.199157,
+        "distinct_events": 404
+      },
+      "eval": {
+        "rows": 4992,
+        "positives": 2150,
+        "positive_rate": 0.430689,
+        "distinct_events": 231
+      },
+      "holdout": {
+        "rows": 2890,
+        "positives": 1571,
+        "positive_rate": 0.543599,
+        "distinct_events": 152
+      }
+    }
   }
- ],
- "artifacts": {
-  "qualified_artifact": {
-   "artifact_version": "545e0e4418c1f0e54bb55389e7816c1736a8473de600e70d6f006ed33089f7e7",
-   "gate_version": "1.4.0",
-   "staging_release": 422246241,
-   "built_by_job": "nz-ea-002",
-   "rows": {
-    "train": 14004,
-    "eval": 4992,
-    "holdout": 2890
-   },
-   "positive_rates": {
-    "train": 0.199157,
-    "eval": 0.430689,
-    "holdout": 0.543599
-   },
-   "files": {
-    "public/train.csv": {
-     "bytes": 1744686,
-     "sha256": "273aeb069ab29445d901b1ae043ec73c93465d203b8f5115c51cf35ece3c25a1"
-    },
-    "public/eval.csv": {
-     "bytes": 627892,
-     "sha256": "6302310db2fced5ee0439e56526b2a88d1c165d02ad9ffb074cd54ebfcc8be67"
-    },
-    "private/holdout.csv": {
-     "bytes": 364911,
-     "sha256": "101f6a70284aff37b3d2715717e65315883a29c7a9a75ced9a2497edc4806cc9"
-    },
-    "meta.json": {
-     "bytes": 3133,
-     "sha256": "f9b8105a997e6269abe2bd85aa2b32c94545377f796ec6ca50af03eb61101590"
-    },
-    "quality.json": {
-     "bytes": 13421,
-     "sha256": "c37aed791cd38f0b005013f6d7bde6b5b313ad236fe57be1af7e672672182763"
-    }
-   },
-   "digest_source": "copied programmatically from the gate report artifact section; never hand-typed (the nz-ea-baseline-001/002 failures were one hand-mis-transcribed hex character)"
-  },
-  "baseline_triad_on_eval_rows": {
-   "measured_by_job": "nz-ea-baseline-003",
-   "rows": 4992,
-   "positives": 2150,
-   "persistence_value_auc": 0.8820357429258793,
-   "persistence_mean7_auc": 0.884293406215734,
-   "calendar_only_auc": 0.5010555946516537,
-   "full_model_auc": 0.8924379326710636,
-   "model_minus_persistence_value": {
-    "observed": 0.010402,
-    "week_clustered_ci95": [
-     -0.000985,
-     0.022632
-    ]
-   },
-   "model_minus_persistence_mean7": {
-    "observed": 0.008145,
-    "week_clustered_ci95": [
-     -0.002809,
-     0.02057
-    ]
-   },
-   "model_minus_calendar_only_observed": 0.391382,
-   "majority_class_accuracy": 0.5693108974358975,
-   "predeclared_criterion": "headroom demonstrated only if model > persistence_mean7 AND the week-clustered paired interval for (model - persistence_mean7) excludes zero",
-   "verdict_under_criterion": "NOT demonstrated: observed advantage positive but the dependence-aware interval contains zero - an inconclusive difference, neither parity nor a trailing-model defect; calendar-only beaten decisively",
-   "per_target_year": {
-    "2016": {
-     "rows": 718,
-     "positives": 6,
-     "model_auc": 0.391971,
-     "persistence_auc": 0.456929
-    },
-    "2017": {
-     "rows": 730,
-     "positives": 187,
-     "model_auc": 0.919163,
-     "persistence_auc": 0.949163
-    },
-    "2018": {
-     "rows": 730,
-     "positives": 234,
-     "model_auc": 0.806292,
-     "persistence_auc": 0.803669
-    },
-    "2019": {
-     "rows": 730,
-     "positives": 471,
-     "model_auc": 0.752132,
-     "persistence_auc": 0.743895
-    },
-    "2020": {
-     "rows": 732,
-     "positives": 380,
-     "model_auc": 0.800632,
-     "persistence_auc": 0.815857
-    },
-    "2021": {
-     "rows": 730,
-     "positives": 481,
-     "model_auc": 0.937063,
-     "persistence_auc": 0.917358
-    },
-    "2022": {
-     "rows": 622,
-     "positives": 391,
-     "model_auc": 0.854963,
-     "persistence_auc": 0.824327
-    }
-   },
-   "prevalence_shift_note": "train 0.199 vs eval 0.431 vs holdout 0.544 (gate-recorded): the eval window is prevalence-shifted relative to training and the holdout sits in the post-2022-11 real-time pricing regime; any score is as much out-of-distribution as temporal",
-   "full_model_note": "the runner's stock 30-tree XGBoost baseline through the unmodified contract; quoted, not independently re-trained by a second implementation (three implementations agree on its eval AUC to 4 decimals)"
-  },
-  "github_destination": {
-   "repo": "earino/nz-ea-wholesale-price-exceedance",
-   "release_id": 422360451,
-   "release_tag": "v2026.10",
-   "target_commit": "3b9952500f875b22f98d9a1292dec1f3bfc69b64",
-   "private": true,
-   "draft": false,
-   "assets_verified_at": "2026-10-23T22:28Z",
-   "verification": "5/5 assets at the manifest digests by authenticated API read-back; get_dataset.py end-to-end (5 files, 2,754,043 B, every digest verified, exit 0) and qualify_dataset.py --accept on the downloaded tree returned ACCEPTED (artifact 545e0e4418c1f0e5); tag v2026.10 == main == 3b9952500f875b22f98d9a1292dec1f3bfc69b64; the release is private and non-draft - the flip is the operator's act"
-  },
-  "huggingface_destination": {
-   "repo": "earino/nz-ea-wholesale-price-exceedance",
-   "revision": "v2026.10",
-   "commit": "868c42f7a58bc547acf62b64f03865fd30182f92",
-   "private": true,
-   "created_by": "hf-publish.py --create --upload-small (2026-10-23T22:47Z, 10 small files: card README.md from candidates/<id>/card.md rendered from the manifest, LOADING.md, MANIFEST.json, SHA256SUMS, LICENSE.md, LICENSE-MIT.txt, LICENSE-CC0-1.0.txt, DATA_DICTIONARY.md, VERIFICATION.md, measurements.json), then the nz-ea-hf-001 worker job for the five data files",
-   "tag_matches_main": true,
-   "verified": true,
-   "verified_at": "2026-10-23T23:25:59Z",
-   "verification": "hf-publish --verify --worker-job nz-ea-hf-003: 5/5 files present at the manifest digests (worker-pinned bulk receipt + streamed small-file digests), 0 missing, 0 size-mismatched, 0 digest-unverified; loading check verified by the same collected job (exact splits, columns, label values); --tag created v2026.10 at the verified commit 868c42f7 (tag == main); repo private (the flip is the operator's)",
-   "files_verified": [
-    "data/private-holdout.csv",
-    "data/public-eval.csv",
-    "data/public-train.csv",
-    "meta.json",
-    "quality.json"
-   ]
-  }
- },
- "rejection_reason": null,
- "review": "Class A licence read first-hand on both the current platform and its announced successor; 30 years of daily-grain labels; a documented publication instant with measured file lags; publisher-published regional mapping; strong clustered event structure (dry-year episodes) and quiet eras giving both classes in every candidate window. Prior art is level-regression forecasting (EPF benchmark, an AUT study, a single-node GitHub project) - no published exceedance task with splits and a scored contract.",
- "next_action": "PACKAGED and privately staged on BOTH destinations; the flip is now the sole remaining step, so awaiting_operator=true is set. GitHub: private repo earino/nz-ea-wholesale-price-exceedance, release v2026.10 (422360451), tag == main == 3b995250, 5/5 assets at the manifest digests, get_dataset.py + gate --accept re-verified on the downloaded bytes. Hugging Face: private repo, tag v2026.10 == main == 868c42f7, 5/5 data files at the manifest digests plus the card/docs, documented load_dataset path verified by collected worker job nz-ea-hf-003 (exact splits/positives/columns/label values). release/<id>/DESTINATIONS.json records both destinations with artifact_version 545e0e4418c1f0e5 and files_verified lists. AFTER THE OPERATOR'S FLIP publication is automatic per dataset-release: record verified visibility in DESTINATIONS.json, flip both destinations, anonymous proofs from a no-credential client, refresh the private-state wording in the card/LOADING.md/README/release notes and re-upload the small files (hf-publish.py --upload-small changes no visibility), verify tag == main on both, then the website pipeline (site prepare/inspect/publish/verify with a sites/<id>.json editorial file). Quote the whole triad beside any score: model eval AUC 0.8924 vs persistence_value 0.8820 / persistence_mean7 0.8843 / calendar-only 0.5011 on the identical 4,992 eval rows; week-clustered paired intervals contain zero, so headroom over persistence is NOT demonstrated (inconclusive advantage, not parity); calendar-only beaten decisively. The holdout stays sealed (post-2022-11 real-time pricing regime, prevalence 0.544; no holdout evaluation run or implied).",
- "jurisdiction": {
-  "country": "NZ",
-  "region": "Oceania",
-  "publisher": "Electricity Authority Te Mana Hiko (New Zealand)",
-  "recorded_at": "2026-10-22"
- },
- "licence_class": "A",
- "licence_note": "CC BY 4.0 International (attribution: 'www.emi.ea.govt.nz provided by the Electricity Authority (New Zealand)'); confirmed identically on the successor hub's copyright statement, so the announced EMI decommissioning does not change licence posture.",
- "verdict": "go",
- "novelty_check": {
-  "checked_at": "2026-10-22T04:26:55+00:00",
-  "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
-  "queries": [
-   "New Zealand electricity price forecasting",
-   "electricity price spike prediction benchmark",
-   "spot price exceedance dataset"
-  ],
-  "evidence": {
-   "huggingface_datasets": [
-    {
-     "query": "New Zealand electricity price forecasting",
-     "hits": 0,
-     "top": []
-    },
-    {
-     "query": "electricity price spike prediction benchmark",
-     "hits": 0,
-     "top": []
-    },
-    {
-     "query": "spot price exceedance dataset",
-     "hits": 0,
-     "top": []
-    }
-   ],
-   "zenodo_records": [
-    {
-     "query": "New Zealand electricity price forecasting",
-     "hits": 1507923,
-     "top": [
-      "DEEP LEARNING APPROACH TO FORECASTING ELECTRICITY PRICE  FROM LOAD DATA",
-      "A hybrid extreme learning machine and sine cosine algorithm  model for accurate electricity price forecasting",
-      "Machine Learning-Based Electricity Price Forecasting Using Support Vector Machine",
-      "Forecasting day-ahead electricity prices for the electricity market with dynamic time period",
-      "Electricity price forecast for futures contracts with artificial neural network and spearman data correlation"
-     ]
-    },
-    {
-     "query": "electricity price spike prediction benchmark",
-     "hits": 183924,
-     "top": [
-      "Machine Learning-Based Electricity Price Forecasting Using Support Vector Machine",
-      "Analysis of Features of Power Market Price: Lithuanian Case",
-      "DEEP LEARNING APPROACH TO FORECASTING ELECTRICITY PRICE  FROM LOAD DATA",
-      "Correlation Analysis Electricity Price and Solar Energy in Germany 2018-2023",
-      "BQEB-Data: An Open Benchmark Dataset for Autonomous Energy Intelligence and Smart Grid Analytics"
-     ]
-    },
-    {
-     "query": "spot price exceedance dataset",
-     "hits": 378553,
-     "top": [
-      "Amazon EC2 Spot Price History: 2014--2015, 2017--2023",
-      "Rediscovering global hotspots of monthly freshwater boundary exceedances by integrating water storage capacity",
-      "Forecasting Day-Ahead Electricity Price with Artificial Neural Networks: a Comparison of Architectures",
-      "Statistical data collected in the case studies of the SPOT report - dataset",
-      "Results of SPOT surveys for tourists, residents and entrepreneurs in the case studies - dataset"
-     ]
-    }
-   ],
-   "arxiv_preprints": [
-    {
-     "query": "New Zealand electricity price forecasting",
-     "hits": 5,
-     "top": [
-      "Current New Zealand Activities in Radio Astronomy: Building Capacity in Engineering &amp; Science for the Square Kilomet",
-      "Probabilistic Forecasting in Day-Ahead Electricity Markets: Simulating Peak and Off-Peak Prices",
-      "A Study of the New Zealand Mathematics Curriculum",
-      "Lasso estimation for GEFCom2014 probabilistic electric load forecasting",
-      "Explainable Artificial Intelligence for Assault Sentence Prediction in New Zealand"
-     ]
-    },
-    {
-     "query": "electricity price spike prediction benchmark",
-     "hits": 5,
-     "top": [
-      "Investigating the effect of competitiveness power in estimating the average weighted price in electricity market",
-      "Econometric Modeling of Regional Electricity Spot Prices in the Australian Market",
-      "Prediction Interval Construction Method for Electricity Prices",
-      "Adaptive Online Learning with LSTM Networks for Energy Price Prediction",
-      "Do VLMs Truly \"Read\" Candlesticks? A Multi-Scale Benchmark for Visual Stock Price Forecasting"
-     ]
-    },
-    {
-     "query": "spot price exceedance dataset",
-     "hits": 5,
-     "top": [
-      "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
-      "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
-      "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset",
-      "Location, Location, Location: Exploring Amazon EC2 Spot Instance Pricing Across Geographical Regions - Extended Version",
-      "Understanding the Impacts of Dark Pools on Price Discovery"
-     ]
-    }
-   ]
-  },
-  "evidence_summary": "- huggingface_datasets / 'New Zealand electricity price forecasting': 0 hit(s) - nothing notable\n- huggingface_datasets / 'electricity price spike prediction benchmark': 0 hit(s) - nothing notable\n- huggingface_datasets / 'spot price exceedance dataset': 0 hit(s) - nothing notable\n- zenodo_records / 'New Zealand electricity price forecasting': 1507923 hit(s) - DEEP LEARNING APPROACH TO FORECASTING ELECTRICITY PRICE  FROM LOAD DATA, A hybrid extreme learning machine and sine cosine algorithm  model for accurate electricity price forecasting, Machine Learning-Based Electricity Price Forecasting Using Support Vector Machine, Forecasting day-ahead electricity prices for the electricity market with dynamic time period, Electricity price forecast for futures contracts with artificial neural network and spearman data correlation\n- zenodo_records / 'electricity price spike prediction benchmark': 183924 hit(s) - Machine Learning-Based Electricity Price Forecasting Using Support Vector Machine, Analysis of Features of Power Market Price: Lithuanian Case, DEEP LEARNING APPROACH TO FORECASTING ELECTRICITY PRICE  FROM LOAD DATA, Correlation Analysis Electricity Price and Solar Energy in Germany 2018-2023, BQEB-Data: An Open Benchmark Dataset for Autonomous Energy Intelligence and Smart Grid Analytics\n- zenodo_records / 'spot price exceedance dataset': 378553 hit(s) - Amazon EC2 Spot Price History: 2014--2015, 2017--2023, Rediscovering global hotspots of monthly freshwater boundary exceedances by integrating water storage capacity, Forecasting Day-Ahead Electricity Price with Artificial Neural Networks: a Comparison of Architectures, Statistical data collected in the case studies of the SPOT report - dataset, Results of SPOT surveys for tourists, residents and entrepreneurs in the case studies - dataset\n- arxiv_preprints / 'New Zealand electricity price forecasting': 5 hit(s) - Current New Zealand Activities in Radio Astronomy: Building Capacity in Engineering &amp; Science for the Square Kilomet, Probabilistic Forecasting in Day-Ahead Electricity Markets: Simulating Peak and Off-Peak Prices, A Study of the New Zealand Mathematics Curriculum, Lasso estimation for GEFCom2014 probabilistic electric load forecasting, Explainable Artificial Intelligence for Assault Sentence Prediction in New Zealand\n- arxiv_preprints / 'electricity price spike prediction benchmark': 5 hit(s) - Investigating the effect of competitiveness power in estimating the average weighted price in electricity market, Econometric Modeling of Regional Electricity Spot Prices in the Australian Market, Prediction Interval Construction Method for Electricity Prices, Adaptive Online Learning with LSTM Networks for Energy Price Prediction, Do VLMs Truly \"Read\" Candlesticks? A Multi-Scale Benchmark for Visual Stock Price Forecasting\n- arxiv_preprints / 'spot price exceedance dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, Location, Location, Location: Exploring Amazon EC2 Spot Instance Pricing Across Geographical Regions - Extended Version, Understanding the Impacts of Dark Pools on Price Discovery",
-  "prior_art": [
-   "Lago, Marcjasz, De Schutter, Wierzbicki, EPF benchmark, Applied Energy 293 (2021)",
-   "Electricity price forecasting in New Zealand, AUT study (GARCH/SV vs ML, daily prices 2014-2022)",
-   "github.com/SoyeonIm/nz-electricity-market-analytics"
-  ],
-  "theirs": "Electricity Authority publishes raw nodal final prices; the EPF benchmark (Lago et al. 2021) is day-ahead level regression on five Northern-Hemisphere markets with no NZ; an AUT study forecast NZ daily price levels 2014-2022 with no published artifact; a GitHub project forecasts one node (OTA2201) as level regression with no task contract",
-  "ours": "30-year island/region-level panel of NZ final wholesale prices (1996-2026) with a daily exceedance label at a documented publication instant (final by 2pm next business day; measured file lag p50 1.8d max 5.8d), benchmark splits and a scored binary contract",
-  "verdict": "differentiated",
-  "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
- },
- "construction_output": {
-  "splits": {
-   "train": {
-    "rows": 14004,
-    "positives": 2789,
-    "positive_rate": 0.199157,
-    "distinct_events": 404
-   },
-   "eval": {
-    "rows": 4992,
-    "positives": 2150,
-    "positive_rate": 0.430689,
-    "distinct_events": 231
-   },
-   "holdout": {
-    "rows": 2890,
-    "positives": 1571,
-    "positive_rate": 0.543599,
-    "distinct_events": 152
-   }
-  }
- },
- "packaged_at": "2026-10-23T22:32:00Z",
- "awaiting_operator": true,
- "qualification": {
-  "qualified_at": "2026-10-23T19:48:16Z",
-  "gate_version": "1.4.0",
-  "job": "nz-ea-002",
-  "result": "passed; 0 failed checks of 38 (leakage incl. every_column_could_be_scored, timing incl. 11/11 observed publication dates, units with known-event fixture, splits incl. disjoint actual ranges and clustered positive events, runner contract)",
-  "artifact_version": "545e0e4418c1f0e54bb55389e7816c1736a8473de600e70d6f006ed33089f7e7",
-  "report": "private staging release 422246241 (tag job-nz-ea-002, 14 parts); the gate report is assets file-0007/file-0008 (byte-identical, sha256 51e5b46a1c51d20d...); the five extract files and the report were fetched on the coordinator and every digest matched the staging manifest, verify-staged-report.py 422246241 re-verified the report against the uploaded bytes (ACCEPTED), and qualify_dataset.py --accept re-verified a locally fetched extract (ACCEPTED, artifact 545e0e4418c1f0e5); the extract stays in staging, never on the coordinator",
-  "splits": {
-   "train": {
-    "rows": 14004,
-    "positives": 2789,
-    "positive_rate": 0.199157,
-    "distinct_events": 404
-   },
-   "eval": {
-    "rows": 4992,
-    "positives": 2150,
-    "positive_rate": 0.430689,
-    "distinct_events": 231
-   },
-   "holdout": {
-    "rows": 2890,
-    "positives": 1571,
-    "positive_rate": 0.543599,
-    "distinct_events": 152
-   }
-  }
- }
 }
