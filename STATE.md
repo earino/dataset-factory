@@ -17,9 +17,11 @@ automatic retry is authorized. The original plan's adapter-verification item was
 separated from core cleanup after the operator raised scope drift, not marked passed.
 Do not use this prototype as a verified final-scoring interface.
 
-Next action: final hosted readback of this closeout and exact-commit CI, then close
-#17. Normal advancement thereafter reviews the next candidate's source-specific
-prediction contract and updates its builder before construction; #25 remains deferred.
+Next action: the final hosted readback is recorded (receipt at
+audits/remediation-2026-10-24/hosted-closeout-readback-2026-10-24.json, deployed
+commit 8512fd8). Close #17; ordinary advancement thereafter is source-specific
+candidate review - review the next candidate's source-specific prediction contract
+and update its builder before construction; #25 remains deferred.
 
 ## 2026-10-24 - EU/EEA discovery tick: ec-merger-phase2-opening READY (go); Paris MoU and G-BA/IQTIG closed at triage
 
