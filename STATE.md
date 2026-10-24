@@ -7851,7 +7851,6 @@ receipts are in audits/remediation-2026-10-24/. The 002 transport was independen
 reassembled byte-for-byte (48b6a70a…, 880640 bytes) and approved in issue #17; the
 installer correction preserves the original Dockerfile and records its derived
 hash. Real worker acceptance remains outstanding; Scout supervises and cleans up.
-
 Attempt 002 built the corrected image and passed full gate 1.5 qualification,
 exact-artifact acceptance and the container protocol probe, then failed at
 stream_baseline. Source review found that executor umask 077 left the adapter
@@ -7861,3 +7860,29 @@ same staging helper rather than a separate recursive chmod path. A worker-umask
 regression covers exact whitelisted files/modes. Fresh smoke assembly now pins
 the current committed adapter, not the superseded explicit source commit.
 Scout is verifying the failure and cleaning up; no successful score is claimed.
+
+## 2026-10-24 (14:38Z) - austin-adapter-smoke-002 failed at stream_baseline; root cause confirmed (adapter temp data/ 0700 under executor umask 077); worker destroyed and provider-confirmed
+002 ran the corrected image build to success (execution-copy Dockerfile pins the Hermes installer
+to HERMES_COMMIT d20a8e4; original f7eb0046/execution 4e2c848d recorded; image
+sha256:af7bf616...), built the REAL Austin derivative (train' 429,452 rows / 169,182 positives,
+dev 142,728 / 61,843, holdout bytes sha-identical to the published eval 241dee5e, zero
+cross-split identifiers, duplicates re-measured 18 with 4 differing labels) and PASSED the real
+gate 1.5 two-phase (report adb24957..., ACCEPTED), then failed at stage stream_baseline
+(714.7 s) with parent JSON {"error": "predictor exited before returning a committed prediction"}.
+
+Diagnosis on the owned worker within the original reservation, bounded: under the executor's
+umask 077 the adapter's temp whitelist data/ directory is created 0700 and is unreadable by the
+container's UID 1000 (files are chmodded 0444, the root 0755, data/ is missed); under a plain
+umask-022 shell the same invocation starts scoring instead of failing (adapter exit 124 at the
+120 s bound), which is why the original run's own shell context matters. The runner's baseline/
+source files at 0600 were never the mounted path. Fix merged in PR #24 (742fdf5): the adapter
+chmods the whitelist data/ 0755 and the real-container protocol probe shares the same staging
+helper, so the worker umask can no longer be masked by a probe-only chmod path.
+
+Successful image/gate/protocol receipts are preserved as valid partial evidence, not a
+completed integration result. Original failed receipt and the qualification report are
+preserved at .factory/austin-adapter-smoke-002/ (result.json, reports/gate-qualification-report.json,
+reports/stream-baseline-diagnosis.json). Worker 172210899 destroyed 14:38:13Z; provider
+read-back 404, zero servers. October conservative reservations now count EUR 9.30 including
+002 (deletion does not release them). Fresh 003 to be prepared from PR #24 main for review.
+
