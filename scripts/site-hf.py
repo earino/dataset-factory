@@ -63,23 +63,41 @@ def execute(payload):
     main = api.dataset_info(repo, revision="main", files_metadata=True)
     main_manifest = next((s for s in main.siblings if s.rfilename == "MANIFEST.json"), None)
     require(main_manifest is not None, "Hub default branch has no manifest")
-    current = json.loads(small_file("MANIFEST.json", main.sha, main_manifest.size))
-    current = from_manifest(current, strict=False)
+    current_raw = json.loads(small_file("MANIFEST.json", main.sha, main_manifest.size))
+    current = from_manifest(current_raw, strict=False)
     require(current.tag == tag and current.artifact_id == record["artifact_version"],
             "Hub default branch is a different release; reconcile that release instead")
     item = next((s for s in main.siblings if s.rfilename == "README.md"), None)
     require(item is not None, "Hub card is missing")
     original = small_file("README.md", main.sha, item.size).decode()
     updated = linked_readme(original, record)
-    if payload["action"] == "link" and updated != original:
+    updates = {"README.md": updated} if updated != original else {}
+    if record.get("suitability"):
+        for name in ("DATA_DICTIONARY.md", "RELEASE_NOTES.md", "VERIFICATION.md", "LOADING.md"):
+            item = next((s for s in main.siblings if s.rfilename == name), None)
+            if item is None:
+                continue
+            prior = small_file(name, main.sha, item.size).decode()
+            expected = current_raw.get("package_files", {}).get(name)
+            require(expected is None or hashlib.sha256(prior.encode()).hexdigest() == expected,
+                    f"Hub default-branch {name} disagrees with its manifest")
+            revised = linked_readme(prior, record)
+            if revised != prior:
+                updates[name] = revised
+                current_raw.setdefault("package_files", {})[name] = hashlib.sha256(revised.encode()).hexdigest()
+        if any(name != "README.md" for name in updates):
+            updates["MANIFEST.json"] = json.dumps(current_raw, indent=2, ensure_ascii=False) + "\n"
+    pending = bool(updates)
+    if payload["action"] == "link" and updates:
         result = api.create_commit(repo_id=repo, repo_type="dataset", revision="main", parent_commit=main.sha,
-            commit_message=f"Link dataset website for {tag}",
-            operations=[CommitOperationAdd(path_in_repo="README.md", path_or_fileobj=updated.encode())])
+            commit_message=f"Refresh dataset website and use notices for {tag}",
+            operations=[CommitOperationAdd(path_in_repo=name, path_or_fileobj=content.encode())
+                        for name, content in sorted(updates.items())])
         main_sha = result.oid
     else:
         main_sha = main.sha
     return {"private": info.private, "verified": True, "revision_commit": info.sha,
-            "main_commit": main_sha, "links_present": updated == original or payload["action"] == "link"}
+            "main_commit": main_sha, "links_present": not pending or payload["action"] == "link"}
 
 
 if __name__ == "__main__":

@@ -53,14 +53,23 @@ def docker_command(folder, image, name, threads):
 
 
 def receive(proc, deadline):
+    pending = getattr(proc, '_factory_pending', b'')
     with selectors.DefaultSelector() as selector:
         selector.register(proc.stdout, selectors.EVENT_READ)
-        if not selector.select(max(0, deadline - time.monotonic())):
-            raise TimeoutError('prediction protocol deadline exceeded')
-        line = proc.stdout.readline(65536)
-    if not line:
-        raise RuntimeError('predictor exited before returning a committed prediction')
-    return line.strip()
+        while b'\n' not in pending:
+            if len(pending) > 65536:
+                raise ValueError('oversized prediction response')
+            if not selector.select(max(0, deadline - time.monotonic())):
+                raise TimeoutError('prediction protocol deadline exceeded')
+            chunk = os.read(proc.stdout.fileno(), 65536)
+            if not chunk:
+                raise RuntimeError('predictor exited before returning a committed prediction')
+            pending += chunk
+    line, pending = pending.split(b'\n', 1)
+    proc._factory_pending = pending
+    if len(line) > 65536:
+        raise ValueError('oversized prediction response')
+    return line.decode().strip()
 
 
 def main():
@@ -96,7 +105,8 @@ def main():
         if os.environ.get('BENCH_IN_DOCKER'):
             raise ValueError('run scorer on worker host with its execution-copy venv, not nested Docker')
         command = docker_command(folder, os.environ.get('BENCH_IMAGE'), name, threads)
-        with tempfile.TemporaryFile() as logs:
+        # Candidate stderr is untrusted and must not fill worker disk.
+        with open(os.devnull, 'w') as logs:
             proc = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                     stderr=logs, text=True, bufsize=1)
             try:

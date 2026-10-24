@@ -35,3 +35,11 @@ class AdapterTests(unittest.TestCase):
             with self.assertRaises(TimeoutError):adapter.receive(proc,time.monotonic()+.02)
         finally:
             proc.kill();proc.wait();proc.stdin.close();proc.stdout.close()
+
+    def test_partial_line_cannot_bypass_protocol_deadline(self):
+        proc=subprocess.Popen([sys.executable,'-u','-c','import sys; sys.stdout.write("0."); sys.stdout.flush(); input()'],
+                              stdin=subprocess.PIPE,stdout=subprocess.PIPE,text=True)
+        try:
+            with self.assertRaises(TimeoutError):adapter.receive(proc,time.monotonic()+.2)
+        finally:
+            proc.kill();proc.wait();proc.stdin.close();proc.stdout.close()

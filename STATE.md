@@ -277,7 +277,7 @@ exposure rather than universally rejecting research data. Shared website/current
 are generated from suitability records. Existing harness adapter installs only into an external
 execution copy and streams chronological rows to a networkless inference container.
 
-Validation so far: local suite 635 tests, 6 existing skips; qualification selftest, candidate checks,
+Validation so far: local suite 639 tests, 6 existing skips; prior clean-clone suite 637 tests passed; qualification selftest, candidate checks,
 suitability checks, source-runtime inventory and doctor pass. No new dataset scores measured.
 Still required: clean-clone check, exact-commit CI, Scout deployment/readback, site plan review and
 live verification at all ten public destinations, real worker adapter smoke. Construction hold
