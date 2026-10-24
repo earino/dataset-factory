@@ -73,6 +73,10 @@ td{{border:1px solid #808080;padding:6px 9px;font:13px/1.5 "Courier New",monospa
 tr:nth-child(even) td{{background:#eef3ff}}
 .content th a, .content th a:visited{{color:#ff0}}
 th[scope="row"]{{white-space:nowrap}}
+.catalogue{{table-layout:fixed;min-width:760px}}
+.catalogue th[scope="row"]{{white-space:normal;vertical-align:top;overflow-wrap:anywhere}}
+.catalogue td:nth-child(3),.catalogue td:nth-child(4){{white-space:nowrap}}
+.catalogue .newbadge{{display:block;margin:6px 0 0}}
 .rainbow{{width:100%;height:6px;display:block;margin:6px 0}}
 pre{{background:#000;color:#0f0;font:13px/1.5 "Courier New",monospace;padding:12px;border:3px inset #808080;overflow-x:auto}}
 code{{font-family:"Courier New",monospace}}
@@ -298,7 +302,7 @@ def render(config, records, preview=False, editions=(), _historical=False):
 </tbody></table></div>
 <p>Who is it for? Teams that evaluate coding agents and prediction models. Anyone who needs honest, reproducible numbers.</p>
 <h2><img src="{gif_uri("flame")}" width="16" height="24" alt=""> Datasets <img src="{gif_uri("flame")}" width="16" height="24" alt=""></h2>
-<div class="tscroll"><table><thead><tr><th>Dataset</th><th>Field</th><th>Rows</th><th>Released</th><th>What it asks</th></tr></thead><tbody>{''.join(card_rows)}</tbody></table></div>
+<div class="tscroll"><table class="catalogue"><colgroup><col style="width:20%"><col style="width:17%"><col style="width:10%"><col style="width:13%"><col style="width:40%"></colgroup><thead><tr><th>Dataset</th><th>Field</th><th>Rows</th><th>Released</th><th>What it asks</th></tr></thead><tbody>{''.join(card_rows)}</tbody></table></div>
 <h2><img src="{gif_uri("flame")}" width="16" height="24" alt=""> The site log <img src="{gif_uri("flame")}" width="16" height="24" alt=""></h2><p class="note">Every release announcement, newest first. Permanent links never change.</p>{''.join(posts)}'''
         files["index.html"] = document(config["title"], intro, config, preview)
         files["catalog.json"] = canonical({"schema_version": 1, "releases": records})
