@@ -32,6 +32,23 @@ class RuntimeTests(unittest.TestCase):
             self.assertEqual((owned/'evidence').read_text(),'retain')
             self.assertEqual((foreign/'important').read_text(),'retain')
 
+    def test_failed_build_diagnostics_are_private_bounded_and_never_overwritten(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path=Path(tmp)/'diagnostic.log'
+            command=[sys.executable,'-c','import sys; print("x"*50000); print("build error",file=sys.stderr); raise SystemExit(2)']
+            with self.assertRaisesRegex(RuntimeError,'exit 2'):
+                runner.checked_run(command,3,diagnostic_path=path)
+            raw=path.read_bytes()
+            self.assertIn(b'build error',raw)
+            self.assertLessEqual(len(raw),65700)
+            self.assertEqual(path.stat().st_mode & 0o777,0o600)
+            with self.assertRaises(FileExistsError):
+                runner.checked_run(command,3,diagnostic_path=path)
+            self.assertEqual(path.read_bytes(),raw)
+            success=Path(tmp)/'success.log'
+            runner.checked_run([sys.executable,'-c','print("ok")'],3,diagnostic_path=success)
+            self.assertFalse(success.exists())
+
     def test_pinned_source_materialization_verifies_bytes_commit_and_path(self):
         with tempfile.TemporaryDirectory() as tmp:
             base=Path(tmp);(base/'source').mkdir();dest=base/'dest';dest.mkdir()

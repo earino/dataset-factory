@@ -74,6 +74,12 @@ caps runtime/lifetime at 120/180 minutes, disk at 30,000 MiB, individual reports
 compact reports retain full hashes, provenance, qualification acceptance,
 protocol checks and vector agreement. Confirm provider-side worker destruction.
 
+If the trusted image build fails, `smoke-build-diagnostic.log` retains at most
+32 KiB from each output stream, mode 0600, on the worker only. It is outside the
+uploaded output directory; the compact receipt records its size and hash. Retrieve
+only a bounded, credential-checked excerpt before destroying the failed worker.
+Candidate inference output is never opted into this diagnostic log.
+
 Software fixtures verify actual builder → qualify → accept behavior, and that
 mutation after qualification is refused. They are explicitly software tests,
 not substitute acceptance datasets. Passing tests alone does not close the real
