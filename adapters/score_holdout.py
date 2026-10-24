@@ -40,10 +40,16 @@ for line in sys.stdin:
 '''
 
 
-def docker_command(folder, image, name, threads):
+def docker_command(folder, image, name, threads, job_id=None):
     if not image or image.startswith('-') or any(c.isspace() for c in image):
         raise ValueError('explicit trusted BENCH_IMAGE required')
-    return ['docker', 'run', '--rm', '-i', '--init', '--name', name,
+    labels = []
+    if job_id is not None:
+        import re
+        if not re.fullmatch(r'[a-z0-9][a-z0-9_-]{0,80}', job_id):
+            raise ValueError('invalid worker job identity')
+        labels = ['--label', 'factory.smoke.job=' + job_id]
+    return ['docker', 'run', *labels, '--rm', '-i', '--init', '--name', name,
             '--network', 'none', '--read-only', '--cap-drop', 'ALL',
             '--security-opt', 'no-new-privileges', '--pids-limit', '128',
             '--cpus', str(threads), '--memory', '4g', '--user', '1000:1000',
@@ -129,7 +135,8 @@ def main():
         # Only worker-host execution is supported; nested host-path mappings are deliberately refused.
         if os.environ.get('BENCH_IN_DOCKER'):
             raise ValueError('run scorer on worker host with its execution-copy venv, not nested Docker')
-        command = docker_command(folder, os.environ.get('BENCH_IMAGE'), name, threads)
+        command = docker_command(folder, os.environ.get('BENCH_IMAGE'), name, threads,
+                                 job_id=os.environ.get('FACTORY_WORKER_JOB_ID'))
         # Candidate stderr is untrusted and must not fill worker disk.
         with open(os.devnull, 'w') as logs:
             proc = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE,

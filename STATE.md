@@ -7741,3 +7741,24 @@ Immutability re-verified after the deploy from the coordinator, metadata only:
 
 Receipts committed to main with this entry. The smoke integration patch remains on
 remediation/dataset-review-17 (commit 1f523d1) under review; nothing was launched.
+
+## 2026-10-24 — independent editorial closeout and worker adapter integration
+
+Codex independently verified all ten live dataset records and HTML notices, current
+GitHub documentation hashes/notices, public Hugging Face cards, unchanged frozen
+GitHub/HF tag identities, GitHub release asset SHA256/size metadata and unchanged
+Hub data blob identities. All ten reviewed records and cross-links also match the
+live catalogue; exact deployed commits have successful CI. Compact evidence is in
+`audits/remediation-2026-10-24/independent-live-verification.json` and
+`catalog-verification.json`; site plans now record deployed verification. These
+checks transferred no CSV assets and make no new byte-hashing claim for Hub data.
+
+Worker integration remains in progress, not accepted: the runtime now bounds
+subprocess output/time, preserves existing work directories, uses source-only
+pinned harness exports and the original dependency lock, separates public-source
+artifact construction from execution, and cleans dedicated-worker Docker children
+even after supervisor timeout. Real baseline agreement and actual container
+isolation/commitment probes still require the reviewed worker run. Scout owns
+artifact assembly plus gate-passing fixture tests; Codex owns the runtime and
+reviews the assembled job before launch. No final holdout is fetched. Construction
+hold stays active pending this acceptance; NHS and NZ-EA remain private/rebuild.

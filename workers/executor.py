@@ -226,7 +226,24 @@ def execute_host(base, job, operation, deadline):
         receipt = Path(temporary) / "result.json"
         command = [sys.executable, str(Path(__file__).resolve()), "--host-operation", operation,
                    "--base", str(base.resolve()), "--receipt", str(receipt.resolve())]
-        return supervise_host(base, job, command, receipt, deadline)
+        result = {"job_id": job["id"], "status": "failed", "uploaded": False,
+                  "host_cleanup_complete": False}
+        try:
+            result = supervise_host(base, job, command, receipt, deadline)
+        finally:
+            if operation == "smoke_adapter":
+                # Daemon children survive process-group termination. This sole job
+                # requires an initially empty daemon on its freshly provisioned VM.
+                try:
+                    try:
+                        from . import smoke_runner
+                    except ImportError:
+                        import smoke_runner
+                    result["supervisor_containers_removed"] = smoke_runner.cleanup_owned_docker(base, job)
+                except Exception:
+                    result.update(status="failed", host_cleanup_complete=False,
+                                  failure="smoke-container-cleanup-failed")
+        return result
 
 
 def host_child(base, operation, receipt):
@@ -242,7 +259,10 @@ def host_child(base, operation, receipt):
         elif operation == "smoke_adapter" and job.get("smoke_adapter"):
             # smoke_runner follows the same pattern as transfer/hf_publish:
             # a function that mutates the report in place and raises on failure.
-            import smoke_runner
+            try:
+                from . import smoke_runner
+            except ImportError:
+                import smoke_runner
             smoke_runner.smoke_run(base, job, report)
             report["status"] = "succeeded"
         else:

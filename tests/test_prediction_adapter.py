@@ -34,6 +34,12 @@ class AdapterTests(unittest.TestCase):
         self.assertNotIn('holdout', ' '.join(command))
         self.assertNotIn('TOKEN',' '.join(command))
 
+    def test_worker_label_is_scoped_to_valid_job(self):
+        command=adapter.docker_command('/worker/whitelist','trusted-image:local','test',2,job_id='smoke-001')
+        self.assertEqual(command[command.index('--label')+1],'factory.smoke.job=smoke-001')
+        with self.assertRaises(ValueError):
+            adapter.docker_command('/tmp','trusted:local','test',2,job_id='bad --privileged')
+
     def test_image_must_be_explicit(self):
         for value in (None,'--privileged','name --network host'):
             with self.assertRaises(ValueError):adapter.docker_command('/tmp',value,'x',1)
