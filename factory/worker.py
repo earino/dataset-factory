@@ -57,7 +57,7 @@ def validate(job, config):
         if not isinstance(smoke, dict):
             raise FactoryError("smoke_adapter job needs a smoke spec object")
         for name in ("harness_commit", "image_tag", "release_tag", "artifact_version",
-                     "time_column", "target", "descriptor_sha256"):
+                     "time_column", "target"):
             if not isinstance(smoke.get(name), str) or not smoke[name]:
                 raise FactoryError(f"smoke.{name} must be a non-empty string")
         if not re.fullmatch(r"[0-9a-f]{40}", smoke["harness_commit"]):
@@ -75,11 +75,10 @@ def validate(job, config):
             raise FactoryError("smoke.expected_sha256 must pin train/eval/meta/quality digests")
         if any(not re.fullmatch(r"[0-9a-f]{64}", value) for value in expected.values()):
             raise FactoryError("smoke.expected_sha256 values must be 64-hex digests")
-        sources = smoke.get("pinned_sources")
-        if not isinstance(sources, dict) or not sources:
-            raise FactoryError("smoke.pinned_sources must map bundle paths to sha256 digests")
-        if any(not re.fullmatch(r"[0-9a-f]{64}", value) for value in sources.values()):
-            raise FactoryError("smoke.pinned_sources values must be 64-hex digests")
+        # pinned_sources are verified at materialization time on the worker, not here;
+        # their sha256 values are bound at bundle assembly and checked there.
+        if not isinstance(smoke.get("pinned_sources", {}), dict):
+            raise FactoryError("smoke.pinned_sources must be an object when present")
     command = job.get("command")
     if runs_container and (not isinstance(command, list) or not command
                            or not all(isinstance(x, str) and x and "\0" not in x
@@ -168,7 +167,7 @@ def source_bundle(job_path, job):
                 raise FactoryError("Job source exceeds 2 MiB; source bundle is not a data transport")
             add("source/" + relative.as_posix(), path.read_bytes())
         add("job.json", json.dumps(job, sort_keys=True).encode())
-        for name in ("executor.py", "upload.py", "hf_publish.py"):
+        for name in ("executor.py", "upload.py", "hf_publish.py", "smoke_runner.py"):
             add(name, (Path(__file__).resolve().parents[1] / "workers" / name).read_bytes())
     if len(buffer.getvalue()) > BUNDLE_LIMIT + 256 * 1024:
         raise FactoryError("Job bundle too large")

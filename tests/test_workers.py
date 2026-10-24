@@ -191,7 +191,7 @@ class WorkerTests(unittest.TestCase):
         with tarfile.open(fileobj=io.BytesIO(first)) as archive:
             self.assertEqual(set(archive.getnames()),
                          {"source/run.py", "job.json", "executor.py", "upload.py",
-                          "hf_publish.py"})
+                          "hf_publish.py", "smoke_runner.py"})
 
     def test_bundle_rejects_hidden_files_and_symlinks(self):
         bad = self.path.parent / ".env"
