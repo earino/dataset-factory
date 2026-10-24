@@ -1,0 +1,13 @@
+{
+  "umask_077_reproduction": {
+    "invocation": "parent adapter, baseline cwd, BENCH_IMAGE=scout-harness-smoke-austin:1",
+    "umask_022_shell": "adapter exit 124 at 120s bound - score started (bug masked)",
+    "umask_077_explicit": "adapter exit 1 within seconds",
+    "parent_json_error": {
+      "error": "predictor exited before returning a committed prediction"
+    },
+    "temp_staging_evidence": "umask-022 run left /tmp/factory-prediction-*/data at 0755 with 0444 files; under the executor umask 077 the adapter-created data/ is 0700 and unreadable by the container's UID 1000",
+    "root_cause_confirmed": "adapter temp whitelist data/ directory created without explicit chmod; executor umask 077 made it 0700"
+  },
+  "fix": "PR #24 742fdf5: adapter chmods whitelist data/ 0755; protocol probe shares the same staging helper"
+}
