@@ -227,3 +227,8 @@ Gate 1.5 requires `evaluation_contract`; retrospective scope may retain explicit
 Historical forecasting requires full-row availability evidence. Every package has a version-bound
 `suitability/<dataset>.json`; run `python3 scripts/check-suitability.py` before publication.
 Keep current editorial corrections separate from frozen artifact bytes and tags.
+
+The experimental chronological scoring adapter is deferred in issue #25, with
+full real-data prediction agreement unverified. Do not schedule adapter retries
+or present it as a verified final-scoring interface. This separate experiment
+does not block ordinary construction once the core remediation hold in #17 closes.

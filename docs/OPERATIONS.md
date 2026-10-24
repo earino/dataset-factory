@@ -970,3 +970,11 @@ an evaluation_contract fail closed until reviewed and updated; do not edit froze
 or reissue historical reports. Retrospective research is an allowed scope with explicit timing
 limitations. Historical forecasts need a complete measured private availability ledger.
 Suitability notices are required for every release and generated consistently by the site pipeline.
+
+Core remediation #17 ends the broad construction hold when that issue closes.
+Resume ordinary budgeted work under the new gate and source-specific contracts;
+legacy builders still fail until reviewed. NHS and NZ-EA remain private/rebuild.
+The experimental chronological adapter is deferred separately in #25 after two
+worker attempts. Do not schedule retries or treat its unverified full scoring path
+as a prerequisite for ordinary construction. It must not be used as a verified
+final-scoring interface. Name the actual access protocol and limitations for scores.

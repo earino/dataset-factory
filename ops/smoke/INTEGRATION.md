@@ -1,5 +1,12 @@
 # Real-runner adapter verification
 
+**Deferred / not accepted:** see [issue #25](https://github.com/earino/dataset-factory/issues/25).
+The two attempts in core remediation #17 are closed and their workers deleted.
+The full real-data baseline agreement is still unverified; no third attempt or
+scheduled retry is authorized by this document. Resume only as a separately
+scoped task with a reviewed bounded plan. The procedures below describe that
+unfinished experiment, not an operationally verified scoring service.
+
 This job verifies the chronological scorer against the unchanged baseline from the
 existing harness. It is an integration check on a public-source derivative, not a
 new benchmark, published data version, or historical-availability certification.

@@ -116,6 +116,17 @@ See each exact-artifact record for evidence, limitations and prerequisites.
 
 ## Existing harness adapter
 
+**Status, 24 October 2026: experimental and deferred in
+[issue #25](https://github.com/earino/dataset-factory/issues/25).** The full worker
+artifact passed qualification/acceptance and the container protocol probe passed,
+but the real streamed baseline failed at startup. Its permissions fix is merged
+and software-tested; complete streamed/reference prediction agreement remains
+unverified. Two worker attempts ended and were deleted. There are no scheduled
+retries. This experiment does not block ordinary dataset construction under the
+contracts above. Do not use it as a verified final-scoring interface or describe
+historical scores as if they used it. Trusted baseline development experiments
+remain allowed with their actual protocol and limitations stated.
+
 `python3 scripts/install-prediction-adapter.py --source <read-only-harness> --destination <new-worker-execution-copy>`
 creates an owned execution clone and replaces only its holdout scoring entrypoint. It preserves
 the existing train.py/predict_proba contract, experiment loop and sklearn metrics. It never edits

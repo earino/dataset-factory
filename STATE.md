@@ -1,3 +1,26 @@
+## Current remediation closeout — 24 October 2026
+
+Core dataset/factory migration is complete: all ten public datasets have exact-version
+suitability decisions and verified current GitHub/Hugging Face/site notices; frozen
+assets/tags remain unchanged. Gate 1.5, source-specific timing/evidence review and
+Scout instructions are deployed. NHS and NZ-EA remain private/rebuild.
+
+The broad construction hold ends when issue #17 closes. This supersedes the older
+remediation-hold entries below; ordinary budgeted discovery/construction then resumes
+under the new contracts and qualification gates. No historical artifact is newly
+certified for operational forecasting, and legacy builders require explicit review.
+
+The scoring adapter is **experimental / deferred in issue #25**. Two attempts ended
+and both workers were deleted. Full real-data baseline agreement remains unverified;
+the last permissions fix has software/regression coverage only. No third attempt or
+automatic retry is authorized. The original plan's adapter-verification item was
+separated from core cleanup after the operator raised scope drift, not marked passed.
+Do not use this prototype as a verified final-scoring interface.
+
+Next action: final hosted readback of this closeout and exact-commit CI, then close
+#17. Normal advancement thereafter reviews the next candidate's source-specific
+prediction contract and updates its builder before construction; #25 remains deferred.
+
 ## 2026-10-24 - EU/EEA discovery tick: ec-merger-phase2-opening READY (go); Paris MoU and G-BA/IQTIG closed at triage
 
 Regional focus Europe - EU/EEA per the tick. Coverage before: 83 candidates, EU
