@@ -6,6 +6,8 @@ holdout file or label ledger is mounted. This does not verify historical feature
 """
 from __future__ import annotations
 import json
+import csv
+import hashlib
 import os
 from pathlib import Path
 import selectors
@@ -72,14 +74,37 @@ def receive(proc, deadline):
     return line.decode().strip()
 
 
+def assert_scoring_separate(scored, development, id_columns):
+    """Reject accidental test exposure, even when a file was renamed or reordered."""
+    if not id_columns:
+        raise ValueError('reviewed task.id_columns required for split separation')
+    def keys(path):
+        with Path(path).open(newline='') as stream:
+            reader = csv.DictReader(stream)
+            if not set(id_columns) <= set(reader.fieldnames or []):
+                raise ValueError('split separation ID columns missing')
+            for row in reader:
+                yield tuple(row[col] for col in id_columns)
+    scored_keys = set(keys(scored))
+    if not scored_keys:
+        raise ValueError('empty scoring split')
+    for path in development:
+        if Path(path).resolve() == Path(scored).resolve() or any(key in scored_keys for key in keys(path)):
+            raise ValueError('scoring rows overlap mounted development inputs')
+
+
 def main():
     import pandas as pd
     from sklearn.metrics import average_precision_score, roc_auc_score
+    started = time.monotonic()
     csv_path, target, positive = sys.argv[1], sys.argv[2], json.loads(sys.argv[3])
     time_col = os.environ.get('FACTORY_PREDICTION_TIME_COLUMN')
     if not time_col:
         raise ValueError('FACTORY_PREDICTION_TIME_COLUMN must name the reviewed ordering column')
     frame = pd.read_csv(csv_path)
+    dev_eval = Path(os.environ.get('FACTORY_DEV_EVAL', 'data/eval.csv'))
+    task = json.loads(Path('task.json').read_text())
+    assert_scoring_separate(csv_path, [Path('data/train.csv'), dev_eval], task.get('id_columns'))
     if time_col not in frame or frame[time_col].isna().any():
         raise ValueError('prediction ordering column missing or incomplete')
     times = pd.to_datetime(frame[time_col], utc=True, errors='raise')
@@ -95,7 +120,7 @@ def main():
     with tempfile.TemporaryDirectory(prefix='factory-prediction-') as tmp:
         folder = Path(tmp); folder.chmod(0o755); (folder/'data').mkdir()
         for rel in ('train.py', 'task.json', 'data/train.csv', 'data/eval.csv'):
-            source = Path(rel)
+            source = dev_eval if rel == 'data/eval.csv' else Path(rel)
             if source.is_symlink() or not source.is_file():
                 raise ValueError(f'non-regular development input: {rel}')
             shutil.copyfile(source, folder/rel); (folder/rel).chmod(0o444)
@@ -127,9 +152,16 @@ def main():
                 if proc.poll() is None:
                     proc.kill(); proc.wait()
                 subprocess.run(['docker','rm','-f',name], capture_output=True, timeout=30)
+    prediction_bytes = (json.dumps(predictions, separators=(',', ':')) + '\n').encode()
+    if os.environ.get('FACTORY_PREDICTIONS_OUTPUT'):
+        # Trusted parent output, written only after all predictions are committed; never mounted.
+        with open(os.environ['FACTORY_PREDICTIONS_OUTPUT'], 'xb') as output:
+            output.write(prediction_bytes)
     print(json.dumps({'auc':float(roc_auc_score(y,predictions)),
                       'ap':float(average_precision_score(y,predictions)), 'n':len(y),
                       'positives':int(y.sum()), 'protocol':'chronological-row-stream-v1',
+                      'seconds':round(time.monotonic()-started,1),
+                      'predictions_sha256':hashlib.sha256(prediction_bytes).hexdigest(),
                       'prediction_time_column':time_col}))
 
 if __name__ == '__main__':

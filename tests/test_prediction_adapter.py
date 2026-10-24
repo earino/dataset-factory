@@ -4,6 +4,7 @@ from pathlib import Path
 import sys
 import subprocess
 import time
+import tempfile
 import unittest
 
 PATH=Path(__file__).resolve().parents[1]/'adapters/score_holdout.py'
@@ -12,6 +13,18 @@ adapter=importlib.util.module_from_spec(spec)
 exec(compile(PATH.read_bytes(),str(PATH),'exec'),adapter.__dict__)
 
 class AdapterTests(unittest.TestCase):
+    def test_scored_rows_cannot_be_mounted_even_after_renaming(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            scored=Path(tmp)/'test.csv'; dev=Path(tmp)/'development.csv'
+            scored.write_text('id,x,target\na,1,0\nb,2,1\n')
+            dev.write_text('id,x,target\nb,2,1\na,1,0\n')
+            with self.assertRaisesRegex(ValueError,'overlap'):
+                adapter.assert_scoring_separate(scored,[dev],['id'])
+            dev.write_text('id,x,target\nc,3,0\n')
+            adapter.assert_scoring_separate(scored,[dev],['id'])
+            with self.assertRaisesRegex(ValueError,'id_columns'):
+                adapter.assert_scoring_separate(scored,[dev],[])
+
     def test_inference_has_no_network_or_holdout_mount(self):
         command=adapter.docker_command('/worker/whitelist','trusted-image:local','test',2)
         self.assertEqual(command[command.index('--network')+1],'none')

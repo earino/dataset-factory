@@ -136,3 +136,17 @@ Validate the adapter on a worker with the real runner before reporting it operat
 Software protocol tests are not acceptance-task benchmark runs. Record image ID, runner commit,
 adapter hash, exact data identity and protocol beside every new score; never compare protocols
 without naming the difference.
+
+`FACTORY_DEV_EVAL` optionally selects the development CSV mounted at `data/eval.csv`.
+The scorer refuses overlap between scored IDs and either mounted development split, including
+renamed or reordered copies. `task.json.id_columns` must be reviewed and identify the event.
+For an integration smoke using public validation as the test surface, derive disjoint train/dev
+splits from public training data and use original public validation only as scorer-owned test.
+Never mount the test surface as development data. Qualify this derivative artifact separately;
+it is not a new acceptance of the published artifact or a substitute benchmark.
+
+Generic probes deliberately exclude window/group-aggregate donation; add a reviewed source-specific
+probe for such histories. Threshold probes compare numeric operands, not equality of strings.
+For rounded operands, document precision and the resulting threshold uncertainty interval:
+report covered/ambiguous rows and mismatches, and do not interpret rounding-induced errors as
+proof that the outcome measurement is safe to expose.
