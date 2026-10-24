@@ -245,6 +245,10 @@ def remote(config, record, command, data=None, timeout=60):
 def plan(root, job_path, config):
     job = read_json(job_path)
     report = validate(job, config)
+    reserved = (Path(root) / ".factory" / job["id"]).resolve()
+    if Path(job_path).resolve().is_relative_to(reserved):
+        raise FactoryError("Job source overlaps the reserved runtime directory; "
+                           "use .factory/job-sources/<job-id>/job.json")
     bundle = source_bundle(Path(job_path).resolve(), job)
     return {**report, "source_bytes": len(bundle), "source_sha256": hashlib.sha256(bundle).hexdigest(),
             "cloud_calls": 0, "enabled": config.get("enabled") is True}

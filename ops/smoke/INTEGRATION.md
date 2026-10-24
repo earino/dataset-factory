@@ -37,7 +37,7 @@ pinned commit; it is never switched or modified. Source paths and SHA256 hashes
 are explicit, and both encoded and decoded payloads are bounded to 2 MiB. Only
 small metadata assets are downloaded during live source verification.
 
-Create a fresh job directory containing a copy of
+Create a fresh job directory such as `.factory/job-sources/<job-id>/` containing a copy of
 `ops/smoke/austin-adapter-smoke-001.job.json` named `job.json`, then run:
 
 ```sh
@@ -46,7 +46,8 @@ python3 -m factory worker plan <fresh-job-dir>/job.json
 ```
 
 The assembler writes `pinned.json` beside the copied job and updates its pins.
-That directory must contain only those two files. The worker's source bundle puts
+That directory must contain only those two files. Never use `.factory/<job-id>/`
+for source: the worker launcher reserves that path for runtime state. The worker's source bundle puts
 it at `source/pinned.json`. Keys in `expected_sha256` are logical names; Austin's
 actual release asset filenames are `train.csv`, `eval.csv`, `meta.json`, and
 `quality.json`. Data downloads and full-artifact qualification occur only on the
@@ -64,9 +65,11 @@ reuse rather than delete prior evidence.
 ## Launch, collect, and close
 
 Scout is the sole coordinator of the worker ledger. Review the computed allowance
-reservation (the template does not override pricing), then use the existing
+reservation (the template does not override pricing). Without `release: true`,
+the existing construction-reserve deduction still applies to this job; the
+reviewed EUR 0.32 plan fits that stricter cap. Then use the existing
 worker launch/status/collect/cleanup commands from `docs/OPERATIONS.md`. The job
-caps runtime/lifetime at 150/180 minutes, disk at 30,000 MiB, individual reports at
+caps runtime/lifetime at 120/180 minutes, disk at 30,000 MiB, individual reports at
 256 KiB, and collected output at 1 MiB. No bulk derivative or vectors are uploaded;
 compact reports retain full hashes, provenance, qualification acceptance,
 protocol checks and vector agreement. Confirm provider-side worker destruction.
