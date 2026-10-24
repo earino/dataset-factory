@@ -201,3 +201,18 @@ Provider references checked 2026-09-19:
 GitHub action versions are pinned to the commits resolved from their official
 repositories. Repository privacy does not imply Pages privacy, so a preview uses
 Actions artifacts rather than enabling an unapproved live site.
+
+## Editorial verification without bulk downloads
+
+The website adapter never downloads CSVs or other bulk data on the coordinator.
+It uses Hub LFS digests, bounded metadata, or collected worker verification receipts.
+New releases still require the ordinary artifact verification and publication procedure.
+
+For already published releases reviewed during the October 2026 remediation,
+`config/editorial-release-baselines.json` pins the previously verified Hub release commit,
+tag and artifact identity. An editorial update can inherit that release verification while
+checking the immutable tag, manifest identity, and equality of every current data blob to
+the pinned release. Its receipt explicitly says `prior_verified_immutable_release` and lists
+non-LFS assets whose previous verification was inherited. This is continuity evidence,
+not a claim that the coordinator freshly rehashed those data files. Unknown releases,
+changed tags, changed artifacts, or changed data blobs fail closed without worker evidence.
