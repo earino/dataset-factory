@@ -416,7 +416,6 @@ and any column shipped beyond the declared set.
 | A model AUC is quoted with no reference | Only one baseline was ever run, or the reference lives in a notes field nobody compares | Run the triad (persistence, calendar-only, full model) on identical rows; record all three beside the number |
 | The gate dies with `ValueError: labels and scores must align and be non-empty` | A split has a duplicate header or a ragged row, so one column's values no longer align with the labels | Fix the build's column list; the gate now reports `leakage.every_column_could_be_scored` naming the column and split instead of aborting - keep that behaviour, a bare traceback hides which column is malformed |
 | The model trails a one-line rule | The label is largely persistent, or the eval window shifts prevalence | Record it as a defect; re-target a change/onset label or report the task as persistence |
-| A future row in the same shipped file reveals a row's label source | The label is the future value of a shipped feature or lagged field, so a reverse-history join `same key, later timestamp` (including through `days_since_previous`-style back-references) reconstructs the label from later rows' lag columns | Run the blind cross-row join the attacker would run: for every row, look up every shipped row at the label's source instant (direct key+date, lag-ledger, and any back-reference arithmetic) and test whether thresholding the recovered operands reproduces the label; zero-mismatch recovery over a material fraction fails the gate. Digests, single-column sweeps and reference recomputation all pass on a dataset broken this way - the catalog audit of 2026-10-24 found 7 of 10 published datasets self-answering after every prior check had passed. The holdout inherits the defect by construction; passing this test is a publication precondition |
 
 ## Completion criteria
 
@@ -443,3 +442,22 @@ Qualified means all of the following are true and recorded:
   eval-rows-in-training-period false pass, `broken-single-class/` the eval-split-with-no-
   negatives false pass, `broken-duplicates/` and `broken-duplicate-labels/` the identifier
   claims, and `documented-repeats/` the measured-disagreement path.
+
+## Prediction contract and suitability (gate 1.5)
+
+Follow `docs/PREDICTION-CONTRACT.md` in the project before new construction or release.
+Read observation time, actual feature availability, label availability and revision/vintage
+separately. Labeled eval is development/validation, never an untouched final test.
+Declare every solver-visible file, including joint label matrices; exclude holdout outcomes
+from agent development. Run source-specific reverse-history probes on every full configuration
+on the worker and record coverage/mismatches. A demonstrated cross-row exposure requires an
+enforced restricted prediction protocol; it does not automatically make retrospective research
+data worthless. No historical forecasting certification without a full-row availability ledger
+and reviewed as-of evidence; unverified assumptions must remain unverified.
+
+New artifacts require `quality.json.evaluation_contract` and the current gate. Older reports
+remain historical evidence only. Never fill fields with invented evidence to obtain a pass.
+Before recommending or publishing, create/update the exact-artifact suitability record, run
+`python3 scripts/check-suitability.py`, and carry its public notice to GitHub, Hub and website.
+Current editorial corrections preserve frozen data/tags/checksums. A bounded audit PASS does
+not establish operational validity. See `docs/PREDICTION-CONTRACT.md` for the schema and probes.

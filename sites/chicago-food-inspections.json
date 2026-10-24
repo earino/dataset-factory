@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "site_revision": 2,
+  "site_revision": 4,
   "title": "Chicago food inspections",
-  "summary": "Predict whether a restaurant inspection will cite a given municipal code section - 40 binary task instances over 1.2 GB of Chicago's inspection record, with a frozen per-code split.",
+  "summary": "Research task: predict whether a restaurant inspection will cite a given municipal code section - 40 binary task instances over 1.2 GB of Chicago's inspection record, with a frozen per-code split.",
   "task_type": "binary-classification",
   "domain": "Public health and food safety",
   "release_date": "2026-10-20",
@@ -19,7 +19,9 @@
     "Two of 40 configs (code_14 and code_32) do not beat their persistence reference. Recorded in measurements.json rather than left to be discovered.",
     "Label prevalence spans 0.15% to 56.1% across configs. Score AUC; accuracy is misleading on the sparse configs.",
     "The holdout is labelled and downloadable. Keep its labels outside the evaluated agent's workspace during an evaluation.",
-    "The source is the live register: a future refresh will not reproduce this exact panel, which is why the artifact version is pinned in the manifest."
+    "The source is the live register: a future refresh will not reproduce this exact panel, which is why the artifact version is pinned in the manifest.",
+    "No claim of real-time or operational forecasting validity: historical feature and label availability at the prediction instant is assumed from a current source snapshot, not verified against release vintages.",
+    "The labeled eval split is development/validation. Final holdout scoring requires prediction-time access restrictions; the original scorer provided the complete feature frame. Downloadable holdout labels must stay outside model development."
   ],
   "baseline_scope": "baselines only, through the runner's own contract. No coding agent and no harness comparison was run, and none is implied."
 }

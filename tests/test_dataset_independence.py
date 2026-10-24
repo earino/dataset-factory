@@ -66,6 +66,11 @@ def synthetic_package(root: Path, levels=("alpha", "beta", "gamma"), hub_paths=F
                           "artifact_version": "c" * 64},
         "baseline": {},
     }
+    review = json.loads((ROOT / "suitability/austin-911-response.json").read_text())
+    review.update(dataset="synthetic", release_tag="v2099.01", artifact_version="c" * 64)
+    review["evidence"] = [{"claim": "test fixture", "source": "https://example.org/fixture", "detail": "synthetic software test"}]
+    (root / "suitability").mkdir(exist_ok=True)
+    (root / "suitability/synthetic.json").write_text(json.dumps(review))
     if hub_paths:
         # A dataset that keeps its own layout on the Hub, as the level-structured one does.
         manifest["hub_paths"] = {relative: relative for relative in files}

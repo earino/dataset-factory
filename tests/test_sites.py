@@ -274,7 +274,10 @@ class WebsiteTests(unittest.TestCase):
         editorial = copy.deepcopy(self.editorial)
         editorial.update({"title": "Second task fixture", "release_date": "2026-10-01"})
         other = self.root / "second"
-        prepare(package, editorial, self.config, other)
+        review = read(ROOT / "suitability/austin-911-response.json")
+        review.update(dataset="second-task", release_tag="v2026.10")
+        with patch("factory.site_model.load_suitability", return_value=review):
+            prepare(package, editorial, self.config, other)
         second = load_bundle(other)
         record = second["record"]
         gh.add_dataset(record)
@@ -388,7 +391,9 @@ class WebsiteTests(unittest.TestCase):
     def test_card_navigation_preserves_yaml_and_is_idempotent(self):
         original = "---\nlicense: cc0-1.0\n---\n\n# Card\nOriginal text\n"
         updated = linked_readme(original, self.record)
-        self.assertTrue(updated.startswith(original.rstrip()))
+        self.assertTrue(updated.startswith("---\nlicense: cc0-1.0\n---\n"))
+        self.assertIn("# Card\nOriginal text", updated)
+        self.assertLess(updated.index("Suitability and evaluation"), updated.index("# Card"))
         self.assertEqual(updated, linked_readme(updated, self.record))
         self.assertIn(links(self.record), updated)
 

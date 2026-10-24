@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
-  "site_revision": 3,
+  "site_revision": 4,
   "title": "MSHA enforcement citations",
-  "summary": "Predict whether a US mine safety inspection will cite a given 30 CFR section - one binary task instance per section, over 26 years of federal enforcement records.",
+  "summary": "Research task: predict whether a US mine safety inspection will cite a given 30 CFR section - one binary task instance per section, over 26 years of federal enforcement records.",
   "task_type": "binary-classification",
   "domain": "Workplace safety and regulation",
   "release_date": "2026-10-19",
   "post": {
     "title": "A citation-prediction task from MSHA's enforcement record",
     "paragraphs": [
-      "MSHA publishes its violations, inspections and mine records; anyone can download them. The contribution here is not access. It is the frozen panel of 497,897 inspections, the declaration that the prediction instant is the moment the visit begins, the prior-history features computed only from that mine's strictly-earlier inspections, the time-ordered partitions, and a leakage gate that held 45 per-section tasks to one contract.",
+      "This release packages 497,897 mine inspections into 45 per-section research tasks. Inspection start is the intended prediction instant. History is ordered by earlier inspection start dates, which does not establish that those inspections' citations were already available; current mine attributes also lack historical-vintage verification. The original leakage checks missed later-row outcome exposure, now documented in the suitability notice.",
       "The task is binary and per-section: will this inspection cite 30 CFR 56.12004? The label is the set of sections the inspector actually wrote, taken from the violation rows, so this is an enforcement outcome - what the inspector found - and not a hazard measurement. Each of the 45 shipped sections is a complete task instance over the identical pool: train 2001-2020, eval 2021-2023, holdout 2024-2025.",
       "The numbers are published with their floor. On the reference section sec_56_12004 the baseline reaches 0.8036 eval AUC, identical from the training path and an independent validation re-run. The persistence reference - the same model using only whether that section was cited at the mine's previous inspection - reaches 0.5831, so the full feature set clears it by 0.2205. Section prevalence ranges around 9-11% on the reference task; score AUC, not accuracy."
     ]
@@ -18,7 +18,9 @@
     "A derived research dataset from MSHA public-domain data, labelled as derived - not an official MSHA or Department of Labor product.",
     "The label is an enforcement outcome: what an inspector cited, not a measured hazard. Mines that are inspected more often generate more citations.",
     "Only sections cited in at least 1% of pooled inspections ship as configs, so this is not a census of 30 CFR.",
-    "A mine is the same entity across splits by design - prior history is the point of the task. The temporal split is what prevents leakage, and the holdout is labelled and downloadable: keep its labels outside an evaluated agent's workspace."
+    "A mine is the same entity across splits by design - prior history is the point of the task. The temporal split is what prevents leakage, and the holdout is labelled and downloadable: keep its labels outside an evaluated agent's workspace.",
+    "No claim of real-time or operational forecasting validity: historical feature and label availability at the prediction instant is assumed from a current source snapshot, not verified against release vintages.",
+    "The labeled eval split is development/validation. Final holdout scoring requires prediction-time access restrictions; the original scorer provided the complete feature frame. Downloadable holdout labels must stay outside model development."
   ],
   "baseline_scope": "One baseline through the runner's training and validation contract. No agent or harness comparison was run and none is implied."
 }

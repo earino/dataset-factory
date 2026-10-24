@@ -272,12 +272,13 @@ class Constructed(unittest.TestCase):
                 rate = sum(int(row[name]) for row in rows) / len(rows)
                 self.assertAlmostEqual(meta["positive_rate"][split], rate, places=6)
 
-    def test_every_config_passes_the_gate(self):
+    def test_legacy_configs_require_new_evaluation_contract(self):
         failures = []
         for code in self.manifest["floor_codes"]:
             name = f"code_{code:02d}"
             report = gate.qualify(self.out / name)
-            if not report.ok:
+            self.assertFalse(report.ok)
+            if report.failed_checks != ["contract.declared"]:
                 failures.append((name, report.failed_checks))
         self.assertEqual(failures, [])
 

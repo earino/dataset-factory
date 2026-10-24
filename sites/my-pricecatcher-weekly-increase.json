@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "site_revision": 2,
+  "site_revision": 4,
   "title": "Malaysian retail price increases",
-  "summary": "Predict whether an item's price at a Malaysian premise rises next week - 832,729 item-premise-weeks from the PriceCatcher daily price panel, state of Johor.",
+  "summary": "Research task: predict whether an item's price at a Malaysian premise rises next week - 832,729 item-premise-weeks from the PriceCatcher daily price panel, state of Johor.",
   "task_type": "binary-classification",
   "domain": "Retail prices and consumer economics",
   "release_date": "2026-10-22",
@@ -20,7 +20,9 @@
     "Pairs with fewer than three observations in a week are excluded at the prediction instant; a following week that is too sparse is counted as an unobserved outcome (143,978) rather than dropped silently.",
     "Missing lags are sentinel-coded -1.0, which is unambiguous only because prices are strictly positive.",
     "The holdout is labelled and ships with the release; keep its labels outside an evaluated agent's workspace.",
-    "The source feed revises monthly; a later rebuild will not reproduce these bytes."
+    "The source feed revises monthly; a later rebuild will not reproduce these bytes.",
+    "No claim of real-time or operational forecasting validity: historical feature and label availability at the prediction instant is assumed from a current source snapshot, not verified against release vintages.",
+    "The labeled eval split is development/validation. Final holdout scoring requires prediction-time access restrictions; the original scorer provided the complete feature frame. Downloadable holdout labels must stay outside model development."
   ],
   "baseline_scope": "One baseline through the runner's training and validation contract. No agent or harness comparison was run and none is implied."
 }

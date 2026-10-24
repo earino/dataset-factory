@@ -136,3 +136,5 @@ Final response: what advanced, evidence and scope of measured results, held/runn
 work, checks/commit/CI, and next action. Acknowledge blocked or partial outcomes
 directly. Completed-action claims require observed results; label proposed checks,
 worker deletion, commits and future outcomes as pending until verified. Sign `— Scout (Hermes)`.
+
+Apply docs/PREDICTION-CONTRACT.md before advancing a candidate. Do not launch construction while an explicit remediation hold in STATE.md is active. Review suitability by intended use and distinguish validation from final holdout.

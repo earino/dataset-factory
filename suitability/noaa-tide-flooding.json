@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "dataset": "noaa-tide-flooding",
+  "release_tag": "v2026.09",
+  "artifact_version": "fb49f932c7b4ea5ab532c20f7dce59a7d733de925d1e172054ff1d38abe1eeed",
+  "reviewed_on": "2026-10-24",
+  "reviewer": "Scout and Codex (code/document review; no new full-artifact scoring)",
+  "decision": "retain_restricted",
+  "summary": "Retained for retrospective model-development research with documented timing limitations. Later evaluation rows expose earlier outcomes; predictions require restricted access.",
+  "supported_uses": [
+    "Retrospective train/validation model-development experiments under the documented timing and selection limitations",
+    "Final evaluation only under a protocol that isolates holdout data from development and prevents later rows influencing earlier predictions"
+  ],
+  "unsupported_uses": [
+    "Claims of verified real-time or operational forecasting validity",
+    "Treating development/validation scores as untouched final-test results",
+    "Forecasting scores from unrestricted cross-row access to this artifact"
+  ],
+  "evaluation_access": "chronological",
+  "historical_availability": "assumed",
+  "training_label_timing": "unverified",
+  "vintage": "current_snapshot",
+  "selection": "unverified",
+  "cross_row_audit": {
+    "status": "recovery_demonstrated",
+    "scope": "Both split designs (temporal, station-disjoint) tested; temporal 88,915/89,038 covered AUC 0.99929 with 423 binary mismatches; station-disjoint 29,889/29,930 AUC 0.99922 with 191; a D+2 margin_ft variant still ranks ~0.9993, so deleting the obvious column is not a fix Holdout recovery was not tested by this audit.",
+    "evidence": [
+      "audits/2026-10-24-static-benchmark-leakage-audit.md"
+    ]
+  },
+  "limitations": [
+    "Near-perfect future-outcome ranking in both split designs (see cross_row_audit scope).",
+    "Dictionary/build day-definition conflict: release/noaa-tide-flooding/code/build.py assigns the official minFlag to date+1 while DATA_DICTIONARY.md describes the target-day value.",
+    "One calendar week straddles train/eval in each design (244 temporal, 82 station-disjoint eval rows).",
+    "Historical feature/label availability is assumed from current snapshots, not verified against release vintages.",
+    "The current scorer passes the complete feature frame; isolation is not mechanically enforced."
+  ],
+  "required_actions": [
+    "Use a prediction-time-restricted evaluator for future experiments; the historical scorer supplied the full frame. Do not relabel old scores as results from the revised protocol.",
+    "Keep the labelled holdout outside evaluated workspaces and never load later rows when scoring earlier targets",
+    "Correct the day-definition documentation conflict (editorial overlay; frozen bytes untouched) and state the raw-max/official-flag distinction on the public page.",
+    "Versioned rebuild with outcome-day measurements purged from solver-visible rows in both designs; re-run the blind join battery before stronger claims."
+  ],
+  "evidence": [
+    {
+      "claim": "Cross-row approximate recovery, both designs",
+      "source": "audits/2026-10-24-static-benchmark-leakage-audit.md",
+      "detail": "noaa rows in the overall table"
+    },
+    {
+      "claim": "Day-definition conflict",
+      "source": "release/noaa-tide-flooding/code/build.py",
+      "detail": "minFlag assigned to date+1; DATA_DICTIONARY.md describes the target-day value"
+    }
+  ],
+  "corrections": [
+    "For row date D, observed_max_ft is the measurement on D; margin_ft and trailing summaries use observations preceding D (through D-1 when consecutive). The label is NOAA’s official minor-flood flag for D+1. It is not the same-day flag and is not defined by simply thresholding observed_max_ft. Historical verification/publication timing remains unverified.",
+    "The original dictionary says carry columns are dropped. The bundled template excludes only target and id_columns; observed_max_ft and threshold_ft are therefore available to that baseline. This does not by itself expose its own D+1 label, but the documentation must not claim those columns were excluded."
+  ]
+}

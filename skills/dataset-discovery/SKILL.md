@@ -257,3 +257,22 @@ failed construction never leaves the queue empty.
 - `scripts/check-candidate.py` - mechanical completeness check over a candidate record.
 - `skills/dataset-qualification/` - the gate that runs after construction.
 - `skills/dataset-release/` - packaging and publication once a dataset is qualified.
+
+## Prediction contract and suitability (gate 1.5)
+
+Follow `docs/PREDICTION-CONTRACT.md` in the project before new construction or release.
+Read observation time, actual feature availability, label availability and revision/vintage
+separately. Labeled eval is development/validation, never an untouched final test.
+Declare every solver-visible file, including joint label matrices; exclude holdout outcomes
+from agent development. Run source-specific reverse-history probes on every full configuration
+on the worker and record coverage/mismatches. A demonstrated cross-row exposure requires an
+enforced restricted prediction protocol; it does not automatically make retrospective research
+data worthless. No historical forecasting certification without a full-row availability ledger
+and reviewed as-of evidence; unverified assumptions must remain unverified.
+
+New artifacts require `quality.json.evaluation_contract` and the current gate. Older reports
+remain historical evidence only. Never fill fields with invented evidence to obtain a pass.
+Before recommending or publishing, create/update the exact-artifact suitability record, run
+`python3 scripts/check-suitability.py`, and carry its public notice to GitHub, Hub and website.
+Current editorial corrections preserve frozen data/tags/checksums. A bounded audit PASS does
+not establish operational validity. See `docs/PREDICTION-CONTRACT.md` for the schema and probes.

@@ -66,6 +66,7 @@ class TimingGateTests(unittest.TestCase):
                                  observations=[{"period": "2026-08",
                                                 "period_end": "2026-08-31",
                                                 "published": "2026-09-10"}]))
+        self.assertFalse(results["timing.features_available_at_instant"]["ok"])
         self.assertEqual(10, results["timing.publication_lag_measured"]["evidence"]["measured_lag_days"])
 
     def test_selection_that_reaches_into_the_next_period_is_refused(self):

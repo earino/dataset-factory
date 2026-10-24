@@ -148,6 +148,11 @@ def write_dataset(root: Path, splits: dict[str, Path], rows: dict[str, list[dict
         shutil.rmtree(root)
     for name, relative in splits.items():
         write_csv(root / relative, rows[name], columns)
+    # Generated fixtures explicitly state synthetic retrospective scope.
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "tests"))
+    from prediction_fixtures import research_contract
+    quality["evaluation_contract"] = research_contract(columns, TARGET)
     quality = {**quality, "splits": {name: str(relative) for name, relative in splits.items()}}
     (root / "meta.json").write_text(json.dumps(meta_for(columns, rows), indent=1) + "\n")
     (root / "quality.json").write_text(json.dumps(quality, indent=1) + "\n")

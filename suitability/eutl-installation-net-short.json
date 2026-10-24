@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "dataset": "eutl-installation-net-short",
+  "release_tag": "v2026.10",
+  "artifact_version": "3540ad2180d8df8a9ff39f5f6c1326c5e487ed20e28f189b9528eeb71f799f66",
+  "reviewed_on": "2026-10-24",
+  "reviewer": "Scout and Codex (code/document review; no new full-artifact scoring)",
+  "decision": "retain_restricted",
+  "summary": "Retained for retrospective model-development research with documented timing limitations. Later evaluation rows expose earlier outcomes; predictions require restricted access.",
+  "supported_uses": [
+    "Retrospective train/validation model-development experiments under the documented timing and selection limitations",
+    "Final evaluation only under a protocol that isolates holdout data from development and prevents later rows influencing earlier predictions"
+  ],
+  "unsupported_uses": [
+    "Claims of verified real-time or operational forecasting validity",
+    "Treating development/validation scores as untouched final-test results",
+    "Forecasting scores from unrestricted cross-row access to this artifact"
+  ],
+  "evaluation_access": "chronological",
+  "historical_availability": "assumed",
+  "training_label_timing": "unverified",
+  "vintage": "current_snapshot",
+  "selection": "unverified",
+  "cross_row_audit": {
+    "status": "recovery_demonstrated",
+    "scope": "Independent operator-commissioned audit; predictions frozen before labels were opened; holdouts sealed; two AUC implementations in exact agreement",
+    "evidence": [
+      "audits/2026-10-24-static-benchmark-leakage-audit.md"
+    ]
+  },
+  "limitations": [
+    "join (installation, t) -> (installation, t+1): the next row's net_short_l1 is T's label",
+    "The labelled holdout is presumed to carry the same self-answering structure by construction; it was never opened by the audit and must be treated as compromisable by the same join class.",
+    "Historical feature/label availability at the declared instant is assumed from current snapshots, not verified against release vintages.",
+    "The current scorer passes the complete feature frame to predict_proba; prediction-time isolation is instructed but not mechanically enforced, so any framework score on these files is gameable."
+  ],
+  "required_actions": [
+    "Use a prediction-time-restricted evaluator for future experiments; the historical scorer supplied the full frame. Do not relabel old scores as results from the revised protocol.",
+    "Keep the labelled holdout outside evaluated workspaces and never load later rows when scoring earlier targets",
+    "Versioned rebuild (next release tag) at a common information cutoff, or a chronological as-of interface, with outcome-bearing later rows and lagged fields purged; re-run the blind join battery before any stronger claim.",
+    "Site page and Hub card must carry the suitability record's restrictions once Codex integrates them."
+  ],
+  "evidence": [
+    {
+      "claim": "Cross-row recovery with exact figures",
+      "source": "audits/2026-10-24-static-benchmark-leakage-audit.md",
+      "detail": "join (installation, t) -> (installation, t+1): the next row's net_short_l1 is T's label; 14,731/24,322 eval rows covered, zero mismatches, blind AUC 1.0"
+    },
+    {
+      "claim": "Task grain and prediction instant",
+      "source": "release/eutl-installation-net-short/README.md",
+      "detail": "task definition section"
+    }
+  ],
+  "corrections": [
+    "Public site page, Hub card and repository README must state the restricted suitability once rendered; no frozen package bytes change."
+  ]
+}

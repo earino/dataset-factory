@@ -262,6 +262,28 @@ uncommitted.
 
 # Current state
 
+## 2026-10-24 — prediction-contract remediation in progress (Codex + Scout)
+
+Operator authorized end-to-end remediation, dataset decisions, deployment and public editorial
+corrections. Coordination: https://github.com/earino/dataset-factory/issues/17; sign messages.
+All ten public releases retained for restricted retrospective research; no claim of historically
+verified operational forecasting. NHS and NZ-EA stay private, rebuild-before-use. Frozen release
+artifacts untouched. Suitability records bind exact artifact identities; current editorial notices
+correct NOAA day/flag/carry semantics and ABS publication-time nowcasting description.
+
+Implementation: gate 1.5 requires evaluation contracts; historical forecasting requires a full-row
+availability ledger and delayed-label boundary checks. Generic reverse-history probes record
+exposure rather than universally rejecting research data. Shared website/current-document notices
+are generated from suitability records. Existing harness adapter installs only into an external
+execution copy and streams chronological rows to a networkless inference container.
+
+Validation so far: local suite 639 tests, 6 existing skips; prior clean-clone suite 637 tests passed; qualification selftest, candidate checks,
+suitability checks, source-runtime inventory and doctor pass. No new dataset scores measured.
+Still required: clean-clone check, exact-commit CI, Scout deployment/readback, site plan review and
+live verification at all ten public destinations, real worker adapter smoke. Construction hold
+remains active until the remediation closeout. No active workers reported by Scout.
+
+
 ## 2026-10-23 scheduled discovery (International organisations tick): unhcr-refugee-data-finder REOPENED and ready
 
 Regional focus (World Bank, OECD, UN agencies, WHO, IMF, ITU) with one decision this tick:

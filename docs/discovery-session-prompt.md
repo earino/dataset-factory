@@ -143,3 +143,5 @@ CI as pending and leave a follow-up.
 Final response to the operator: leads opened/reopened, decisions and decisive evidence,
 strongest remaining uncertainty, checks/commit/CI, and next action. Report actual
 coverage, not quota compliance. Sign `— Scout (Hermes)`.
+
+Apply docs/PREDICTION-CONTRACT.md before advancing a candidate. Do not launch construction while an explicit remediation hold in STATE.md is active. Review suitability by intended use and distinguish validation from final holdout.

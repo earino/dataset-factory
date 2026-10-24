@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
-  "site_revision": 3,
+  "site_revision": 5,
   "title": "TSB railway occurrence casualty",
-  "summary": "Predict whether a Canadian railway occurrence will injure or kill someone, from the operating context known when it begins - 13,732 occurrences over eleven years of the Transportation Safety Board's RODSdb.",
+  "summary": "Retrospective casualty classification from recorded railway-occurrence context: 13,732 occurrences from Canada's Transportation Safety Board. Availability of these fields at occurrence onset is unverified.",
   "task_type": "binary-classification",
   "domain": "Transport safety",
   "release_date": "2026-10-22",
   "post": {
     "title": "A casualty-prediction task from Canada's rail occurrence record",
     "paragraphs": [
-      "The Transportation Safety Board of Canada publishes every railway occurrence it records: crossings, derailments, trespasser events, fires, collisions, movements exceeding authority. Access is not the contribution. The contribution is the frozen panel of 13,732 occurrences between January 2016 and August 2026, split 7,925 train / 3,831 eval / 1,976 holdout by time, and the declaration that the prediction instant is the moment the occurrence begins - before anyone knows whether it hurt somebody.",
+      "This release packages 13,732 recorded railway occurrences between January 2016 and August 2026, with temporal train, validation and holdout splits. Occurrence onset is the intended prediction instant, but the source is a later register snapshot: this release does not establish that each recorded context field was known at onset.",
       "The label is the occurrence's injury outcome: at least one casualty, 11.1% of train rows, 12.1% of eval, 14.1% of holdout. It is drawn from the injury totals and corroborated against the separate injuries table, which agreed on all 1,624 positives.",
-      "The baseline is a real signal, not a straw man. The harness's own XGBoost pass reaches 0.8126 eval AUC, reproduced identically through both scoring paths, and it clears the two references that matter: a single-column activity-type rule at 0.707 and a persistence-style reference at 0.527. A naive rule does not win here."
+      "The recorded XGBoost baseline achieved 0.8126 validation AUC under the original runner protocol, compared with a tested activity-type rule at 0.707 and a persistence-style reference at 0.527. These comparisons describe the tested references and protocol; they do not establish historical feature availability or optimal-model headroom."
     ]
   },
   "limitations": [
@@ -19,6 +19,8 @@
     "The panel begins in 2016 because that is where the publisher's activity taxonomy stabilises; earlier occurrences use different codes and are excluded rather than silently merged. 56,865 pre-panel records and 109 post-window records are excluded, with counts recorded.",
     "Positives are 11-14% of rows and cluster within a small number of occurrence types, so AUC is the honest score and accuracy is not.",
     "The holdout is labelled and ships with the release. Keep its labels outside an evaluated agent's workspace.",
-    "The source is a live register; a later rebuild will not reproduce these bytes, which is why the artifact version is pinned in the manifest."
+    "The source is a live register; a later rebuild will not reproduce these bytes, which is why the artifact version is pinned in the manifest.",
+    "No claim of real-time or operational forecasting validity; historical availability at the prediction instant is assumed, not vintage-verified.",
+    "The labeled eval split is development/validation. Final holdout scoring requires prediction-time access restrictions; the original scorer provided the complete feature frame. Downloadable holdout labels must stay outside model development."
   ]
 }

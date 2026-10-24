@@ -266,3 +266,14 @@ provenance, checking, and runner-integration details are useful references.
 This document captures the revised project direction and takes precedence where
 they differ: ongoing discovery by Hermes, monthly publication, public holdouts,
 and a small first release built for the research group.
+
+## Prediction-time contracts and suitability
+
+Read `docs/PREDICTION-CONTRACT.md` for new construction, qualification, dataset review and release work.
+Use purpose-specific suitability, not blanket withdrawal or universal leakage-free claims.
+`eval.csv` is labeled development/validation; holdout is final scoring. Check input availability,
+training/validation label availability, vintage and outcome-conditioned selection separately.
+Gate 1.5 requires `evaluation_contract`; retrospective scope may retain explicit assumptions.
+Historical forecasting requires full-row availability evidence. Every package has a version-bound
+`suitability/<dataset>.json`; run `python3 scripts/check-suitability.py` before publication.
+Keep current editorial corrections separate from frozen artifact bytes and tags.
