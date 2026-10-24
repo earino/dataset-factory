@@ -226,7 +226,24 @@ def execute_host(base, job, operation, deadline):
         receipt = Path(temporary) / "result.json"
         command = [sys.executable, str(Path(__file__).resolve()), "--host-operation", operation,
                    "--base", str(base.resolve()), "--receipt", str(receipt.resolve())]
-        return supervise_host(base, job, command, receipt, deadline)
+        result = {"job_id": job["id"], "status": "failed", "uploaded": False,
+                  "host_cleanup_complete": False}
+        try:
+            result = supervise_host(base, job, command, receipt, deadline)
+        finally:
+            if operation == "smoke_adapter":
+                # Daemon children survive process-group termination. This sole job
+                # requires an initially empty daemon on its freshly provisioned VM.
+                try:
+                    try:
+                        from . import smoke_runner
+                    except ImportError:
+                        import smoke_runner
+                    result["supervisor_containers_removed"] = smoke_runner.cleanup_owned_docker(base, job)
+                except Exception:
+                    result.update(status="failed", host_cleanup_complete=False,
+                                  failure="smoke-container-cleanup-failed")
+        return result
 
 
 def host_child(base, operation, receipt):
@@ -239,6 +256,15 @@ def host_child(base, operation, receipt):
         elif operation == "hf_publish" and job.get("hf_publish"):
             hf_publish(base, job, report)
             report["status"] = "succeeded" if not report["hf_publish"]["failures"] else "failed"
+        elif operation == "smoke_adapter" and job.get("smoke_adapter"):
+            # smoke_runner follows the same pattern as transfer/hf_publish:
+            # a function that mutates the report in place and raises on failure.
+            try:
+                from . import smoke_runner
+            except ImportError:
+                import smoke_runner
+            smoke_runner.smoke_run(base, job, report)
+            report["status"] = "succeeded"
         else:
             raise ValueError("Host operation does not match the job")
     except Exception as exc:
@@ -262,8 +288,10 @@ def execute(base, job):
     log.touch()
     # Host operations used to return before reaching any resource monitor.
     # Their outer deadline includes client bootstrap, downloads and retry waits.
-    if job.get("transfer") or job.get("hf_publish"):
-        operation = "transfer" if job.get("transfer") else "hf_publish"
+    if job.get("transfer") or job.get("hf_publish") or job.get("smoke_adapter"):
+        operation = ("transfer" if job.get("transfer")
+                     else "hf_publish" if job.get("hf_publish")
+                     else "smoke_adapter")
         report = execute_host(base, job, operation, started + job["timeout_minutes"] * 60)
         report["elapsed_seconds"] = round(time.monotonic() - started, 1)
         return report
@@ -358,7 +386,7 @@ def main(base=BASE):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--host-operation", choices=("transfer", "hf_publish"))
+    parser.add_argument("--host-operation", choices=("transfer", "hf_publish", "smoke_adapter"))
     parser.add_argument("--base", type=Path, default=BASE)
     parser.add_argument("--receipt", type=Path)
     args = parser.parse_args()

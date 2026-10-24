@@ -7741,3 +7741,38 @@ Immutability re-verified after the deploy from the coordinator, metadata only:
 
 Receipts committed to main with this entry. The smoke integration patch remains on
 remediation/dataset-review-17 (commit 1f523d1) under review; nothing was launched.
+
+## 2026-10-24 — independent editorial closeout and worker adapter integration
+
+Codex independently verified all ten live dataset records and HTML notices, current
+GitHub documentation hashes/notices, public Hugging Face cards, unchanged frozen
+GitHub/HF tag identities, GitHub release asset SHA256/size metadata and unchanged
+Hub data blob identities. All ten reviewed records and cross-links also match the
+live catalogue; exact deployed commits have successful CI. Compact evidence is in
+`audits/remediation-2026-10-24/independent-live-verification.json` and
+`catalog-verification.json`; site plans now record deployed verification. These
+checks transferred no CSV assets and make no new byte-hashing claim for Hub data.
+
+Worker integration remains in progress, not accepted: the runtime now bounds
+subprocess output/time, preserves existing work directories, uses source-only
+pinned harness exports and the original dependency lock, separates public-source
+artifact construction from execution, and cleans dedicated-worker Docker children
+even after supervisor timeout. Real baseline agreement and actual container
+isolation/commitment probes still require the reviewed worker run. Scout owns
+artifact assembly plus gate-passing fixture tests; Codex owns the runtime and
+reviews the assembled job before launch. No final holdout is fetched. Construction
+hold stays active pending this acceptance; NHS and NZ-EA remain private/rebuild.
+
+Adapter integration preparation at c75e923: 668 tests pass locally (six existing
+skips) and in a clean clone (13 skips, including seven requiring the absent
+private harness checkout). The seven real assembler tests passed here against
+read-only Git objects. A real 29-file source-only bundle was assembled, live small
+metadata digests confirmed, and the 880,640-byte transport bundle round-tripped
+through the worker materializer; every source hash matched. Receipt:
+`audits/remediation-2026-10-24/smoke-assembly-review.json`. The builder now records
+Austin's inherited response_time-not-null selection as outcome-conditioned.
+The runtime imports that builder from its verified source payload. Generated
+base64 payloads stay out of tracked source; each job is freshly assembled from
+committed code. Next: Scout prepares the actual allowance-backed plan, launches
+once the merged runtime is reviewed, collects qualification/protocol/agreement
+receipts, and proves provider-side cleanup. Real worker verification is pending.
