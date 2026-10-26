@@ -104,6 +104,26 @@ Next action: assemble the ec-merger baseline bundle (harness runner
 verbatim) and evaluate the full model on the identical eval rows; then
 package per dataset-release from staging release job-ec-merger-002.
 
+Watcher follow-up (2026-10-26, separate session holding the research
+mutex): receipts for both jobs re-verified from the collected reports,
+then acknowledged. ec-merger-002: exit 0; qualification report gate
+1.5.0 ok=true, 0 failed checks of 46; acceptance.txt names artifact
+2527012bcd34c543..., equal to the report's artifact_version; references
+report present (eval rows 1,770/46, train-fitted only). ec-merger-001:
+refusal confirmed as exactly the two recorded descriptor declarations
+(contract.label_availability, leakage.high_cardinality_declared); the
+one-rebuild recovery was ec-merger-002 and it succeeded, so no further
+recovery is owed. Durable copies re-proven by API readback: staging
+release job-ec-merger-002 (424210148) holds 14/14 assets and
+job-ec-merger-001 (424193994) holds 12/12; every size and sha256 digest
+equals the collected ledger, so no accepted asset was lost before
+worker deletion. Cleanup re-confirmed provider-side: Hetzner lists
+0 servers, 0 floating IPs and 0 primary IPs. CI for 7b802a1 green
+(push and schedule runs). Handled markers written under
+.factory/ec-merger-001/ and .factory/ec-merger-002/ after this record
+was committed and pushed. Next action unchanged, owned by advancement:
+baseline bundle, then packaging from staging release job-ec-merger-002.
+
 ## 2026-10-24 - EU/EEA discovery tick: ec-merger-phase2-opening READY (go); Paris MoU and G-BA/IQTIG closed at triage
 
 Regional focus Europe - EU/EEA per the tick. Coverage before: 83 candidates, EU
