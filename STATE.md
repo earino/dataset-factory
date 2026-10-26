@@ -7911,3 +7911,31 @@ reports/stream-baseline-diagnosis.json). Worker 172210899 destroyed 14:38:13Z; p
 read-back 404, zero servers. October conservative reservations now count EUR 9.30 including
 002 (deletion does not release them). Fresh 003 to be prepared from PR #24 main for review.
 
+## 2026-10-26 (08:06Z) - worker watcher follow-up: austin-adapter-smoke-001/002 re-verified handled; bookkeeping markers written; no new work
+
+The worker watcher re-fired for both finished smoke attempts because their .factory handled
+markers were missing. Both jobs were already collected, diagnosed and cleaned up on
+2026-10-24; this pass re-verified the preserved evidence and closed only the bookkeeping gap.
+
+- Staging receipts re-verified read-only (2026-10-26 08:06Z): draft release 422758299 (job
+  001) carries both expected assets at the recorded digests (source bundle 63796e99…,
+  manifest 770a2f1d…); draft release 422778016 (job 002) carries all three (gate 1.5
+  qualification report adb24957…, source bundle 48b6a70a…, manifest 044294e8…). Local
+  compact receipts remain at .factory/austin-adapter-smoke-001/{result.json,
+  reports/imagebuild-diagnostic.log} and .factory/austin-adapter-smoke-002/{result.json,
+  reports/gate-qualification-report.json, reports/stream-baseline-diagnosis.json}.
+- Cleanup re-confirmed provider-side: the Hetzner project lists zero servers and zero
+  primary IPs (read-only API read-back; the 2026-10-24 per-server 404 read-backs for
+  172207846 and 172210899 are recorded in the entries above).
+- The "fresh 003" plan in the 14:38Z entry above was superseded the same day by the
+  remediation closeout (top of this file): attempt cap 2 reached, no third attempt
+  authorized, adapter deferred to issue #25. No recovery, retry or 003 was launched here.
+  Job 002's gate 1.5 two-phase ACCEPT remains valid partial evidence only; no adapter
+  score is claimed.
+- Handled markers were written for both job IDs after this entry was committed. No job
+  record, candidate record or artifact changed; no worker launched; no figures beyond
+  the already-recorded receipts are quoted.
+
+Next action: unchanged - close #17, then ordinary source-specific candidate review; issue
+#25 owns any adapter retry. The watcher must not schedule adapter retries.
+
