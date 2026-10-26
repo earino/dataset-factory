@@ -23,6 +23,87 @@ commit 8512fd8). Close #17; ordinary advancement thereafter is source-specific
 candidate review - review the next candidate's source-specific prediction contract
 and update its builder before construction; #25 remains deferred.
 
+## 2026-10-26 - ec-merger-phase2-opening QUALIFIED on the worker (gate 1.5.0, 46/46, exact-byte accepted); references recorded; one failed descriptor attempt preserved
+
+Advancement session picked ec-merger-phase2-opening (operator list, "build";
+no actionable release work existed - all packaged candidates are published
+or awaiting nothing). Construction authored at
+candidates/ec-merger-phase2-opening/source/ and run on a Hetzner worker per
+the worked order construct -> qualify -> accept exact bytes -> references;
+build.py computes no performance number and score.py runs only after
+acceptance.
+
+Preflight (read-only probes on fresh coordinator fetches, copies deleted;
+scripts retained in the candidate dir) found and fixed three things before
+any worker spend:
+
+1. The discovery sector probe's "division" key was malformed
+   (last component of the internal code, not the NACE division), so the
+   recorded sector-conditional rates were grouped on a mixed key. The build
+   derives divisions from the label code part and re-measured the
+   inventory; the learnability claim stands under the corrected grouping.
+2. M.3333 carries a 2007-03-01 opener for its re-notified procedure, so the
+   exclusion rule does NOT flip its label; the record's split counts are
+   reproduced exactly (217/46/46 positives).
+3. The maturity rule needed "Art. 6(1)(a)" and "Art. 9(3) full referral" as
+   terminal decisions (omitting them would have censored 101 concluded
+   cases). Final censored set: 33 (26 live 2026 filings, 4 partial
+   referrals, 3 old zero-decision entries).
+4. Handoff item 7 closed with external evidence: M.4731's OJ prior notice
+   (OJ C 230, 2.10.2007, p. 12, CELEX C2007/230/08) documents the
+   notification-time activities, and the register's current-vintage coding
+   M.73.1 Advertising corresponds; pinned as a build fixture.
+
+ec-merger-001 (worker 172531049): build OK in 10.4 s, gate 1.5.0 refused on
+two descriptor truths - contract.label_availability (missing
+training_label_timing "unverified") and leakage.high_cardinality_declared
+(sector_divisions undeclared). Declaration-only fix; CSV bytes unchanged;
+fresh attempt id per the one-rebuild rule; worker deleted after verified
+collection; failure record preserved (.factory/ec-merger-001/ + staging
+release job-ec-merger-001).
+
+ec-merger-002 (worker 172536838, deleted 12:19:56Z after verified
+collection): succeeded. Fresh GET sha256 83463d00... (42,028,198 B,
+Last-Modified 2026-10-26T01:00:34Z); eligible 10,123 (= record), 33
+pending-censored, 10,090 shipped rows, 309 positives; splits train
+5,406/217, eval 1,770/46, holdout 2,914/46; distinct positive notification
+dates 45/44; fixtures M.877, M.4731, M.10188 asserted in-build. Gate 1.5.0:
+46/46 checks pass, 0 failed. Exact-byte --accept verified on the worker
+before any figure: artifact_version
+2527012bcd34c543b046c0e8ac1dbd856f2621288950bc5cfd65d6e32f6c52eb.
+Reports fetched to the coordinator with every digest matched against the
+staging manifest (release 424210148, tag job-ec-merger-002); copies under
+.factory/ec-merger-002/.
+
+Post-acceptance references (identical eval rows, 1,770/46, train-fitted
+only; full report in the record and .factory/ec-merger-002/):
+- sector-division rate (the required comparator, corrected grouping): AUC
+  0.7679; sector-combination 0.7051; party-title tokens 0.6644;
+  calendar/identity (regulation x month) 0.5606; recent-3-year rate 0.5;
+  majority accuracy 0.9740. Persistence recorded inapplicable (a newly
+  notified case has no prior same-entity observation).
+- Paired bootstrap on identical rows (1000 resamples): sector vs global
+  +0.2679 [0.2126, 0.3206]; sector vs calendar +0.2073 [0.1255, 0.2886];
+  title vs sector -0.1035 [-0.2050, -0.0207].
+- Per-year eval sector-rate AUC 0.69-0.84 (positives 7-12/year).
+- Prevalence shift recorded as an out-of-distribution property: train
+  4.01% / eval 2.60% / holdout 1.58%.
+- Corrected division rates (cases beyond eval): J.61 telecoms 6.22%,
+  C.20 chemicals 5.97%, K.65 insurance 0.24%, L.68 real estate 0.00%.
+The full model is NOT yet run; its figure must be quoted beside these
+references when the harness baseline job evaluates the same rows. Holdout
+is sealed until the design is frozen.
+
+Spend: two cx23 reservations of 0.04 EUR each (provider rate 0.01152
+EUR/h); both workers provider-confirmed deleted, no owned IP remains.
+Record: status qualified, construction evidence, jobs, artifact identity
+and next action (baseline + packaging) all updated; check-candidate.py
+--all exit 0.
+
+Next action: assemble the ec-merger baseline bundle (harness runner
+verbatim) and evaluate the full model on the identical eval rows; then
+package per dataset-release from staging release job-ec-merger-002.
+
 ## 2026-10-24 - EU/EEA discovery tick: ec-merger-phase2-opening READY (go); Paris MoU and G-BA/IQTIG closed at triage
 
 Regional focus Europe - EU/EEA per the tick. Coverage before: 83 candidates, EU

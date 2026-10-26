@@ -141,3 +141,92 @@ not decision PDFs.
    recorded). 7. Build-time fixture: verify one further pre-2008 case's
    sectors against its OJ prior notice (EUR-Lex) to strengthen the as-of
    note. 8. caseSimplified must stay out of features (upgrade leak).
+
+## 2026-10-26 - pre-construction verification (advancement session)
+
+Construction entrypoint authored at `source/` (build.py, score.py, run.sh,
+job.json, bundle.json; job id ec-merger-001). Preflight findings, all
+measured read-only on fresh coordinator fetches (probe scripts retained;
+fetched copies deleted after evidence extraction; snapshot sha256
+83463d0047cdf7aa0ace1a00a017fffaa5ba3eeedfd12ef104e8e02a9b81ceb1,
+42,028,198 bytes - the object rolls over daily as expected):
+
+1. **OJ prior-notice sector fixture (handoff item 7) - DONE.** M.4731
+   GOOGLE/DOUBLECLICK (notified 2007-09-21, pre-2008) OJ prior notice:
+   OJ C 230, 2.10.2007, p. 12 (CELEX C2007/230/08): Google "Internet search
+   engine and online advertising", DoubleClick "ad serving management and
+   reporting services". Register current-vintage coding: M.73.1 - Advertising
+   (code NaceSectorsM_73_1) - the coding corresponds to the
+   notification-documented activities. Pinned as a build fixture (exact code
+   set asserted); evidence citation in build.py and quality.json.
+2. **Discovery sector "division" grouping was malformed.**
+   probe_merger_sectors.py derives "div" as `code.rsplit("_", 1)[-1]` - the
+   LAST component of the internal code, which for 3- and 4-component codes
+   is the class group or subclass digit, not the division (NaceSectorsC_20_5
+   -> "5"; NaceSectorsH_51_1_0 -> "0"). The record's "div 0 n=1,523 / div 3
+   n=826 / div 20 n=256" table is therefore grouped on a mixed key, and the
+   recorded sector-conditional rates are not division-conditional. The build
+   derives divisions from the LABEL code part (C.20.5 -> C.20; K.64 -> K.64),
+   re-measures the division inventory in summary.json, and score.py's
+   required comparator uses the corrected grouping. Recorded in
+   quality.json limitations.
+3. **M.3333 exclusion rule does not flip the label.** The register carries
+   M.3333's 2004-02-12 opener AND a 2007-03-01 Art. 6(1)(c) opener for the
+   re-notified procedure (notif 2007-01-31), plus Art. 8(2) decisions
+   2004-07-19 and 2007-10-03. Under the rule (label decisions predating
+   notification do not count) the label stays positive on the 2007-03-01
+   basis; the record's split counts (train 217 positives incl. M.3333) are
+   reproduced exactly. The build asserts M.3333 is positive and is the only
+   pre-notification-opener case.
+4. **Terminal-decision list corrected.** First maturity draft missed
+   "Art. 6(1)(a)" (56 occurrences; Phase I clearance without doubts) and
+   "Art. 9(3) full referral" (51; whole case referred to member states ends
+   the EU procedure) - omitting them would have censored 101 concluded
+   cases. Pending-censored under the final rule: 33 cases (29 with no
+   decisions at all - 26 of them live 2020s filings; 3 with only Art. 9(3)
+   partial referral; 1 with only Art. 4(4) partial referral). Withdrawal
+   labels ("Withdrawal of Art. 6(1)(c)") are excluded from opener matching
+   (the substring "Art. 6(1)(c)" appears inside them).
+5. **Counts verified pre-launch** (probe_merger_buildcheck.py verdict OK):
+   eligible 10,123 (= record); shipped rows 10,090 after censoring;
+   positives 309; splits train 217 / eval 46 / holdout 46 positives;
+   distinct positive notification dates eval 45 / holdout 44 (gate minimum
+   20); fixtures M.877, M.4731, M.10188 all pass; missing sectors 79.
+   Exclusions 272 no-notification (244 Merger + 2 Consultation + 26
+   Additional Procedure) - matches the record.
+
+Timing/vintage stance (gate 1.5): prediction instant is the notification
+event (event_time, administrative record; features fixed at registration,
+fixture-verified against the OJ notice). The register is a current snapshot
+with no historical vintages (bulk feed since 2025-03-18, S3 objects expire
+under a 30-day rule), so a reverse-history probe is not performable; the
+evaluation contract declares retrospective_research over current_snapshot
+vintage, and no point-in-time reconstruction is claimed.
+
+## 2026-10-26 - ec-merger-001 (worker attempt 1): build OK, gate FAILED on two descriptor truths
+
+Worker 172531049, job ec-merger-001, 10.4 s container runtime, deleted after
+verified collection (assets digest-verified in staging release
+tag job-ec-merger-001, draft; local result + gate report + container log
+preserved under .factory/ec-merger-001/). Construction succeeded: fetch
+sha256 83463d00... (42,028,198 B, Last-Modified 2026-10-26T01:00:34Z),
+eligible 10,123, shipped 10,090 rows after 33 pending-censored
+(train 5 / eval 0 / holdout 28), positives 309, splits train 5,406/217,
+eval 1,770/46, holdout 2,914/46, distinct positive notification dates
+45/44, all fixtures pass, M.3333 positive on its 2007-03-01 opener.
+
+Gate 1.5.0 refused the artifact on exactly two checks; every other check
+passed (timing, contract probes, leakage, splits, runner):
+
+1. `contract.label_availability` - the contract lacked
+   `training_label_timing: "unverified"` (the gate's required declaration
+   for a retrospective_research artifact with no full-row availability
+   ledger).
+2. `leakage.high_cardinality_declared` - `sector_divisions` (the division
+   combination string) exceeds rows/5 levels per split and was not in
+   high_cardinality_columns.
+
+Both are descriptor-truth fixes, not construction defects; no check was
+weakened and the CSV bytes are unchanged. Fix applied to build.py
+(declaration only), fresh attempt id ec-merger-002 per the one-rebuild rule.
+The ec-merger-001 bundle and reports are preserved as the failure record.

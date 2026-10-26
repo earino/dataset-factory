@@ -1,0 +1,623 @@
+{
+  "job": {
+    "id": "ec-merger-001",
+    "candidate": "ec-merger-phase2-opening",
+    "image": "python:3.13-slim",
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 4096,
+    "timeout_minutes": 30,
+    "lifetime_minutes": 45,
+    "max_disk_mb": 15000,
+    "max_artifact_mb": 50,
+    "source_files": [
+      {
+        "bundled_as": "build.py",
+        "source": "candidates/ec-merger-phase2-opening/source/build.py",
+        "bytes": 54237,
+        "sha256": "8d0e7943f6c7d3d49a846f210aab9db52c73766b74b47d3bbef482c3e304fff1"
+      },
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/ec-merger-phase2-opening/source/run.sh",
+        "bytes": 1772,
+        "sha256": "bd6d07c5f59ad79cfb2d569323d54e8a27ab93d18f72f69ee046ae2cd1d543de"
+      },
+      {
+        "bundled_as": "score.py",
+        "source": "candidates/ec-merger-phase2-opening/source/score.py",
+        "bytes": 15728,
+        "sha256": "6ab0b7badc2bd84342b1feb881a7ac1c72d1ad199a4757d8e806b000315c2bcf"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 57029,
+        "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+      }
+    ]
+  },
+  "reservation_eur": "0.04",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 2,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 225280,
+  "source_sha256": "5e360cc12ea1ae891adf355255ead3ef3395b990d46ee3a7f6d7ec9e68a9e08b",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-10-26T11:56:58.550385+00:00",
+  "expires": 1793018518,
+  "budget_months": [
+    "2026-10"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 172531049,
+  "known_hosts": "/opt/data/dataset-factory/.factory/ec-merger-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "65.21.158.17",
+  "result": {
+    "job_id": "ec-merger-001",
+    "status": "failed",
+    "uploaded": true,
+    "image_id": "sha256:d98cc29d3266e535dd9da1099688d9cb3ca4753813571e071763d17725460962",
+    "image_digests": [
+      "python@sha256:d98cc29d3266e535dd9da1099688d9cb3ca4753813571e071763d17725460962"
+    ],
+    "exit_code": 1,
+    "oom_killed": false,
+    "elapsed_seconds": 10.4,
+    "summary": {
+      "name": "ec-merger-phase2-opening",
+      "stage": "construction (no performance metric computed anywhere here)",
+      "fetch": {
+        "url": "https://compcases-open-data-portal-files-prod.s3.eu-west-1.amazonaws.com/case-data-M.json",
+        "bytes": 42028198,
+        "sha256": "83463d0047cdf7aa0ace1a00a017fffaa5ba3eeedfd12ef104e8e02a9b81ceb1",
+        "last_modified": "Mon, 26 Oct 2026 01:00:34 GMT",
+        "etag": "\"629eb86ff2aca05e78aa93c9b8b53b46-9\"",
+        "fetched_at_utc": "2026-10-26T11:58:16.682260+00:00"
+      },
+      "eligible_cases": 10123,
+      "shipped_rows": 10090,
+      "excluded_cases": {
+        "caseType={\"code\":\"MergerCaseType1\",\"label\":\"Merger\"}+no_notification": 244,
+        "caseType={\"code\":\"MergerCaseType2\",\"label\":\"Consultation\"}+no_notification": 2,
+        "caseType={\"code\":\"MergerCaseType4\",\"label\":\"Additional Procedure\"}+no_notification": 26
+      },
+      "phase2_positives": 309,
+      "label_rule": "Art. 6(1)(c) decision adopted on/after notification, 'Withdrawal of Art. 6(1)(c)' decisions excluded; ever-adopted (later withdrawal does not undo the opener)",
+      "split_stats": {
+        "train": {
+          "rows": 5406,
+          "positives": 217,
+          "positive_rate": 0.040141,
+          "notification_years": [
+            1990,
+            2013
+          ],
+          "years_with_positives": 24,
+          "years_without_positives": []
+        },
+        "eval": {
+          "rows": 1770,
+          "positives": 46,
+          "positive_rate": 0.025989,
+          "notification_years": [
+            2014,
+            2018
+          ],
+          "years_with_positives": 5,
+          "years_without_positives": []
+        },
+        "holdout": {
+          "rows": 2914,
+          "positives": 46,
+          "positive_rate": 0.015786,
+          "notification_years": [
+            2019,
+            2026
+          ],
+          "years_with_positives": 8,
+          "years_without_positives": []
+        }
+      },
+      "positive_events": {
+        "eval": {
+          "positives": 46,
+          "distinct_events": 45
+        },
+        "holdout": {
+          "positives": 46,
+          "distinct_events": 44
+        }
+      },
+      "pending_censored": {
+        "by_split": {
+          "train": 5,
+          "eval": 0,
+          "holdout": 28
+        },
+        "by_notification_year": {
+          "1996": 2,
+          "2004": 1,
+          "2010": 2,
+          "2019": 2,
+          "2026": 26
+        }
+      },
+      "pre_notification_opener_cases": [
+        "M.3333"
+      ],
+      "art8_without_opener_anomalies": [],
+      "missing_sector_cases": 79,
+      "fixtures": [
+        {
+          "case": "M.877",
+          "ok": true,
+          "label": 1,
+          "sectors": [
+            "C.30.3"
+          ],
+          "source": "Commission decision PDF m877_19970730_600_fr.pdf + IP/97/729"
+        },
+        {
+          "case": "M.4731",
+          "ok": true,
+          "label": 1,
+          "sectors": [
+            "M.73.1"
+          ],
+          "source": "IP/07/1695 + IP/08/458; sector as-of fixture vs OJ prior notice C 230, 2.10.2007, p. 12 (CELEX C2007/230/08)"
+        },
+        {
+          "case": "M.10188",
+          "ok": true,
+          "label": 1,
+          "sectors": [
+            "C.21",
+            "C.27.9"
+          ],
+          "source": "IP/22/5364; 2024-09-06 post-ECJ withdrawal does not undo the opener under the ever-adopted rule"
+        }
+      ],
+      "decision_type_inventory": {
+        "Art. 6(1)(b)": 9169,
+        "Art. 6(1)(b) with conditions & obligations": 367,
+        "Art. 6(1)(c)": 309,
+        "Withdrawn": 202,
+        "Art. 4(5) - Referral": 159,
+        "Art. 8(2) with conditions & obligations": 152,
+        "Art. 18 (Statement of Objections)": 142,
+        "Purchaser approval": 112,
+        "Art. 10(3)": 72,
+        "Art. 6(1)(a)": 56,
+        "Art. 9(3) full referral": 51,
+        "Art. 7(3)": 50,
+        "Art. 9(3) partial referral": 49,
+        "Art. 8(1)": 40,
+        "Art. 22 Full referral": 37,
+        "Aborted / withdrawn": 35,
+        "Art. 8(3)": 33,
+        "Art. 8(2)": 26,
+        "Art. 4(4) - Partial referral": 23,
+        "Aborted / withdrawn (N/2)": 22,
+        "Art. 5(2) - Incompleteness": 20,
+        "Decision under remedy review clause": 17,
+        "Art. 9(3) refusal of referral": 16,
+        "Art. 22(4)": 8,
+        "Decision on the implementation of remedies": 7,
+        "Art. 8(4)": 4,
+        "Art. 4(4) - Full referral": 3,
+        "Modification of Art. 8(2) with conditions & obligations": 2,
+        "Art. 19 (Advisory Committee)": 2,
+        "Art. 14": 2,
+        "Withdrawal of Art. 6(1)(c) decision": 1,
+        "Withdrawal of Art. 8(3) decision": 1,
+        "Art. 4(4) - No referral": 1,
+        "Art. 21(3)": 1,
+        "Modification of Art. 6(1)(b) with conditions & obligations": 1,
+        "No substance": 1,
+        "Art. 21(4)": 1,
+        "Art. 5(3) - Emergence of new facts during procedure": 1,
+        "Art. 22 Refusal of referral": 1,
+        "Art. 7(3) refusal": 1,
+        "Art. 8(4)(b)": 1,
+        "Rejection of a request to act": 1
+      },
+      "sector_division_inventory_top15": {
+        "D.35": {
+          "cases": 765,
+          "positives": 15,
+          "rate": 0.019608
+        },
+        "G.46": {
+          "cases": 762,
+          "positives": 7,
+          "rate": 0.009186
+        },
+        "C.20": {
+          "cases": 637,
+          "positives": 38,
+          "rate": 0.059655
+        },
+        "G.47": {
+          "cases": 601,
+          "positives": 16,
+          "rate": 0.026622
+        },
+        "K.64": {
+          "cases": 538,
+          "positives": 5,
+          "rate": 0.009294
+        },
+        "H.52": {
+          "cases": 507,
+          "positives": 11,
+          "rate": 0.021696
+        },
+        "J.61": {
+          "cases": 434,
+          "positives": 27,
+          "rate": 0.062212
+        },
+        "K.65": {
+          "cases": 412,
+          "positives": 1,
+          "rate": 0.002427
+        },
+        "C.29": {
+          "cases": 410,
+          "positives": 5,
+          "rate": 0.012195
+        },
+        "L.68": {
+          "cases": 391,
+          "positives": 0,
+          "rate": 0.0
+        },
+        "J.62": {
+          "cases": 389,
+          "positives": 13,
+          "rate": 0.033419
+        },
+        "C.10": {
+          "cases": 381,
+          "positives": 10,
+          "rate": 0.026247
+        },
+        "C.28": {
+          "cases": 361,
+          "positives": 16,
+          "rate": 0.044321
+        },
+        "C.33": {
+          "cases": 342,
+          "positives": 13,
+          "rate": 0.038012
+        },
+        "C.24": {
+          "cases": 280,
+          "positives": 20,
+          "rate": 0.071429
+        }
+      },
+      "sector_division_levels": 122,
+      "per_notification_year": {
+        "1990": {
+          "rows": 11,
+          "positives": 2,
+          "pending": 0
+        },
+        "1991": {
+          "rows": 64,
+          "positives": 4,
+          "pending": 0
+        },
+        "1992": {
+          "rows": 59,
+          "positives": 5,
+          "pending": 0
+        },
+        "1993": {
+          "rows": 59,
+          "positives": 3,
+          "pending": 0
+        },
+        "1994": {
+          "rows": 95,
+          "positives": 6,
+          "pending": 0
+        },
+        "1995": {
+          "rows": 110,
+          "positives": 7,
+          "pending": 0
+        },
+        "1996": {
+          "rows": 129,
+          "positives": 7,
+          "pending": 2
+        },
+        "1997": {
+          "rows": 168,
+          "positives": 15,
+          "pending": 0
+        },
+        "1998": {
+          "rows": 220,
+          "positives": 7,
+          "pending": 0
+        },
+        "1999": {
+          "rows": 274,
+          "positives": 20,
+          "pending": 0
+        },
+        "2000": {
+          "rows": 329,
+          "positives": 17,
+          "pending": 0
+        },
+        "2001": {
+          "rows": 335,
+          "positives": 22,
+          "pending": 0
+        },
+        "2002": {
+          "rows": 277,
+          "positives": 9,
+          "pending": 0
+        },
+        "2003": {
+          "rows": 211,
+          "positives": 5,
+          "pending": 0
+        },
+        "2004": {
+          "rows": 245,
+          "positives": 7,
+          "pending": 1
+        },
+        "2005": {
+          "rows": 318,
+          "positives": 10,
+          "pending": 0
+        },
+        "2006": {
+          "rows": 355,
+          "positives": 13,
+          "pending": 0
+        },
+        "2007": {
+          "rows": 401,
+          "positives": 15,
+          "pending": 0
+        },
+        "2008": {
+          "rows": 350,
+          "positives": 12,
+          "pending": 0
+        },
+        "2009": {
+          "rows": 259,
+          "positives": 3,
+          "pending": 0
+        },
+        "2010": {
+          "rows": 272,
+          "positives": 5,
+          "pending": 2
+        },
+        "2011": {
+          "rows": 309,
+          "positives": 8,
+          "pending": 0
+        },
+        "2012": {
+          "rows": 282,
+          "positives": 9,
+          "pending": 0
+        },
+        "2013": {
+          "rows": 274,
+          "positives": 6,
+          "pending": 0
+        },
+        "2014": {
+          "rows": 298,
+          "positives": 9,
+          "pending": 0
+        },
+        "2015": {
+          "rows": 331,
+          "positives": 11,
+          "pending": 0
+        },
+        "2016": {
+          "rows": 358,
+          "positives": 7,
+          "pending": 0
+        },
+        "2017": {
+          "rows": 375,
+          "positives": 7,
+          "pending": 0
+        },
+        "2018": {
+          "rows": 408,
+          "positives": 12,
+          "pending": 0
+        },
+        "2019": {
+          "rows": 375,
+          "positives": 9,
+          "pending": 2
+        },
+        "2020": {
+          "rows": 358,
+          "positives": 7,
+          "pending": 0
+        },
+        "2021": {
+          "rows": 403,
+          "positives": 7,
+          "pending": 0
+        },
+        "2022": {
+          "rows": 367,
+          "positives": 8,
+          "pending": 0
+        },
+        "2023": {
+          "rows": 351,
+          "positives": 7,
+          "pending": 0
+        },
+        "2024": {
+          "rows": 389,
+          "positives": 1,
+          "pending": 0
+        },
+        "2025": {
+          "rows": 380,
+          "positives": 4,
+          "pending": 0
+        },
+        "2026": {
+          "rows": 291,
+          "positives": 3,
+          "pending": 26
+        }
+      },
+      "cross_check": {
+        "recorded_on": "2026-10-24 snapshot (sha 061027db...), candidate record",
+        "bands": {
+          "eligible_cases": [
+            10000,
+            10300
+          ],
+          "phase2_positives": [
+            290,
+            330
+          ],
+          "split_positives": {
+            "train": [
+              200,
+              232
+            ],
+            "eval": [
+              40,
+              52
+            ],
+            "holdout": [
+              38,
+              56
+            ]
+          },
+          "missing_sector_cases": [
+            60,
+            100
+          ],
+          "pending_censored": [
+            0,
+            150
+          ]
+        },
+        "measured": {
+          "eligible_cases": 10123,
+          "shipped_rows": 10090,
+          "phase2_positives": 309,
+          "split_positives": {
+            "train": 217,
+            "eval": 46,
+            "holdout": 46
+          },
+          "missing_sector_cases": 79,
+          "pending_censored": {
+            "train": 5,
+            "eval": 0,
+            "holdout": 28
+          }
+        },
+        "delta_note": "the live snapshot rotates daily; the record's counts were measured on 2026-10-24 (sha 061027db...) and this fetch is recorded in fetch. The record's '10,123 eligible' counts notified Merger cases before censoring; shipped_rows = eligible minus pending-censored cases whose register record does not establish the label (mostly live 2020s filings plus old entries with only partial referrals or no decisions). M.3333 stays positive: its label rests on the 2007-03-01 post-notification opener, not the excluded 2004-02-12 one."
+      }
+    },
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 424193994,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-31f272396539ba9070f5",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-31f272396539ba9070f5/manifest.json",
+    "assets": [
+      {
+        "id": 678030018,
+        "size": 692,
+        "sha256": "af4897e1ddf3965cdc4ed13e9e7606a8f05d7cf5a2a739b058a17b8f92a9e2c6"
+      },
+      {
+        "id": 678030079,
+        "size": 253580,
+        "sha256": "ff9b9d79688276c3f3a2e9b51a519985abda34983a705a5b8f74ea07fac445a2"
+      },
+      {
+        "id": 678030122,
+        "size": 155077,
+        "sha256": "4fb28c0908e4c79ccf194de3b27f2996c05efc0f01ec4074c953a7eb697f24f6"
+      },
+      {
+        "id": 678030188,
+        "size": 429048,
+        "sha256": "1619b6f4ad4a7dab0f437335c231f727f6f5c5f0ea02b3454366f5a71ab90a44"
+      },
+      {
+        "id": 678030236,
+        "size": 16511,
+        "sha256": "788d43e65834732e210790ac151644c4871150d9514a169b81d8f305e56f9455"
+      },
+      {
+        "id": 678030295,
+        "size": 9194,
+        "sha256": "d8bfb15f67ff7050fcae964360062aaa7d04697d0ee9ceaee387ffcec4165268"
+      },
+      {
+        "id": 678030344,
+        "size": 16427,
+        "sha256": "de2edf63401c448fbb8618577456dd6d6a1ecfd29586fd69da57ea625774a066"
+      },
+      {
+        "id": 678030409,
+        "size": 16427,
+        "sha256": "de2edf63401c448fbb8618577456dd6d6a1ecfd29586fd69da57ea625774a066"
+      },
+      {
+        "id": 678030446,
+        "size": 9194,
+        "sha256": "d8bfb15f67ff7050fcae964360062aaa7d04697d0ee9ceaee387ffcec4165268"
+      },
+      {
+        "id": 678030491,
+        "size": 225280,
+        "sha256": "5e360cc12ea1ae891adf355255ead3ef3395b990d46ee3a7f6d7ec9e68a9e08b"
+      },
+      {
+        "id": 678030537,
+        "size": 18784,
+        "sha256": "b0128fb4d40f575660c689fc78d030717f49ff94d0f3c6c7408398891107abd5"
+      },
+      {
+        "id": 678030612,
+        "size": 18321,
+        "sha256": "c3c4670c67a664c16f102a376d0e2392465c1b2166ced9d83d1d8953e767ab2f"
+      }
+    ],
+    "skipped_empty": []
+  },
+  "collected_at": "2026-10-26T12:12:40.756843+00:00",
+  "deleted_at": "2026-10-26T12:13:55.963518+00:00"
+}
