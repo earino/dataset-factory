@@ -72,3 +72,35 @@ checked this tick; the park stands.
 Conclusion: no event-grain channel appeared on either named path; the park remains
 correct and this check need not be repeated before the next Canada tick.
 
+## 2026-10-27 discovery session (tick region: Canada) - unpark checks re-run; park stands
+
+- open.canada.ca StatCan feed (CKAN package_search, org=statcan, sort
+  metadata_created desc, rows=30, anonymous HTTP 200): the 30 newest StatCan
+  packages are all aggregate tables or survey indicator files (postsecondary
+  expenditure per student 2023/2024, Supply Chain Services Price Index,
+  Transportation Services Index, minority-official-language health-services
+  indicator tables x7, Sector-based Producer Price Indexes, drug metabolites in
+  wastewater by collection month, new motor vehicle registrations by origin,
+  Shared Health Priorities indicators, home care indicators). None is
+  case/event-grain.
+- Keyword probes within org=statcan (CKAN package_search q=..., rows=5):
+  'incident' -> 99 packages, top hits incident-based crime/fire/cyber AGGREGATE
+  tables; 'occurrence' -> 19, deaths-by-place and divorce aggregates;
+  'record-level' -> 2,138 but top hits are phonograph-record/sound-recording
+  sales tables (the query matched 'records' of the vinyl kind); 'microdata' ->
+  13, the parked PUMF class (LFS, Canadian Housing Survey, CIUS, SHS, Visitor
+  Travel). No case/event-grain release with a documented schema and no
+  registration wall appeared.
+- WDS getChangedCubeList retried at the documented www150 path with a date
+  argument (getChangedCubeList/2026-10-20): 404. The 2026-10-22 note already
+  recorded the method as missing/renamed at its documented path while the REST
+  family answers (getCubeMetadata 405) - unchanged this tick, and cubes are
+  aggregate tables by definition, so this channel cannot surface the
+  case/event-grain release the unpark condition needs.
+
+Conclusion: unpark condition still not met by any new evidence; the source-class
+park stands. (Same-tick finding: the only event-grain Canadian release found
+through the open.canada.ca feed is provincial, not StatCan - see
+candidates/ns-bwa-advisory-lift-duration.)
+
+

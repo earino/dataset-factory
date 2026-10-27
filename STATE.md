@@ -23,6 +23,81 @@ commit 8512fd8). Close #17; ordinary advancement thereafter is source-specific
 candidate review - review the next candidate's source-specific prediction contract
 and update its builder before construction; #25 remains deferred.
 
+## 2026-10-27 - Canada discovery tick: ns-bwa-advisory-lift-duration READY (go); Canada Vigilance reopened on corrected access evidence, then dropped as a FAERS mirror; StatCan/shortage/ISC reopen conditions re-checked
+
+Regional focus Canada (StatCan, ECCC, Health Canada, open.canada.ca).
+Discovery-only session; no construction, no advancement, no worker launched.
+
+1. **ns-bwa-advisory-lift-duration (CA-NS, NEW) - READY (go), licence A (OGL-NS
+   v1.1, attribution statement quoted in record), novelty no_precedent.** The
+   provincial municipal-water channel named by the dropped isc-ltdwa record as
+   its reopen path HAS appeared: Nova Scotia "Boil Water Advisories"
+   (data.novascotia.ca Socrata 7t68-9xmm, quarterly, 2006-current, per-advisory
+   with Date Advisory Issued AND Date Advisory Removed). Task: at issuance
+   (America/Halifax calendar day), from features fixed that day (site name,
+   county, facility type, reason, season, as-of site/county history from
+   strictly earlier rows), will the advisory be lifted within 30 days? Measured
+   from the full pinned CSV (283,987 B, sha256 60f77ac4..., 2,649 rows; all
+   SoQL aggregate numbers reproduced locally, both probe sets retained in the
+   candidate dir): train 2008-2017 1,071 issued/1,069 labeled (lift30 66.9%),
+   eval 2018-2020 373/372 (60.5%), holdout 2021-2024 896/886 (58.2%); 73
+   censored active (publisher-documented "values are not provided for boil
+   advisories that are currently in effect"); 586/286/551 distinct sites per
+   window (clustered); hazards measured: 3 negative-duration rows (named), 5
+   zero-day, 30 unparseable issue dates, 57 missing facility type, reason
+   spelling variants, month-name date format, 2020-2022 duration regime shift
+   straddling the holdout. Publisher page row count (2,649) matches the fetch
+   exactly; dated example + two in-file fixtures verified. Prior art
+   descriptive only (PLOS Water 2024 Texas Uri; JWH 2021 Norway; MDPI 2025 WV
+   cost regression) - no predictive benchmark exists. Retrospective
+   single-vintage scope declared; construction re-pins the quarterly vintage.
+2. **hc-canada-vigilance-adverse-reactions - REOPENED then DROPPED (mirror).**
+   The 2026-10-21 park's access premise ("both packages list ONLY HTML
+   resources") was factually wrong: package 9cbaef00-b52c carries
+   extract_extrait.zip (313,578,432 B, HTTP 206 range-verified; 13 members,
+   ~2.9 GB uncompressed, cvponline_extract_20241130) plus a lookup REST API -
+   resources dated 2016/2018, so the channel was missed by the original probe,
+   not new. Extracts page: monthly updates, 1965 to 2026-06-30. With access
+   resolved, the standing novelty test decided: report-level
+   seriousness/outcome prediction and suspect-drug identification are already
+   published/ML-ready on the open US analogue (GCAP Commun Biol 2023 benchmark,
+   141,752 interactions, same 7-class scheme; ISPOR 2025 FAERS serious-outcome
+   classification, identical feature shape, AUC 0.916; Kaggle/GitHub FAERS
+   pipelines; openFDA's anonymous report API; Frontiers Pharmacology 2026 LLM
+   suspect-drug ID in FAERS). A Canadian re-issue changes jurisdiction, not
+   the task - same test that dropped hc-recalls and hc-cannabis. Access facts
+   corrected in the record so no future tick re-parks it on the wrong premise;
+   check-novelty verdict mirror recorded. Only reopen path left: a NEW
+   candidate formulation absent from the FAERS ecosystem (per-version
+   outcome-revision, only if a worker sample shows multiple VERSION_NO rows
+   per report - not measured here).
+3. **Reopen-condition re-checks (all named by prior records):** statcan-wds
+   park - the 30 newest StatCan packages plus incident/occurrence/microdata
+   keyword probes are all aggregate tables or the parked PUMF class; WDS
+   getChangedCubeList still 404 at its documented path (cubes are aggregate by
+   definition anyway) - park stands. hc-health-product-shortage - no bulk/CSV/
+   API resource on any of the 25 "drug shortage" packages (newest 2023) - drop
+   stands. isc-ltdwa - condition fired via the NS channel above; NL (no lift
+   column, measured), MB (current-only), QC (one city), ECCC CESI (aggregates)
+   are recorded negatives. hc-cannabis licence applications and ESDC
+   harassment-occurrence packages from the 90-day sweep were read and rejected
+   at read time (snapshot registry aggregates; explicitly aggregate form).
+
+Coverage after this session: 90 candidates, live 29, CA 13; ready buffer 4
+(ns-bwa-advisory-lift-duration joins ipo-trademark-registration-outcome,
+unhcr-refugee-data-finder, za-municipal-audit-opinion); live non-US 23/29 (79%).
+Checks: check-candidate.py --all exit 0 (90 records incl. the new one and the
+reopened-then-dropped Vigilance record); check-novelty.py recorded no_precedent
+(ns-bwa) and mirror (hc-canada-vigilance); discovery-coverage.py exit 0.
+Session scratch will be deleted; probe recipes live in the candidate
+directories.
+
+Next action: advancement constructs per the recorded handoffs - the ready
+queue is ipo-trademark-registration-outcome (GB), ns-bwa-advisory-lift-duration
+(CA), unhcr-refugee-data-finder (CH), za-municipal-audit-opinion (ZA);
+#17 close and #25 remain with the operator/adaptation track.
+
+
 ## 2026-10-27 - UK discovery tick: ipo-trademark-registration-outcome READY (go); bovine TB closed at triage; Companies House park re-checked, unchanged
 
 Regional focus United Kingdom (ONS, NHS Digital, Defra, Environment Agency,

@@ -99,3 +99,32 @@ Per-advisory lift dates exist only in narrative HTML (located by web search 2026
 Scratch files (isc_map.html, isc_ltdwa.txt, isc_active.html, isc_dwa.json) under
 /opt/data/cache/scratch (auto-pruned); measurement scripts (.factory/isc_extract.py,
 isc_fetch.py, isc_measure.py) deleted after use. No bulk data entered the repository.
+
+## 2026-10-27 discovery session (tick region: Canada) - the reopen condition fired
+
+This record's next_action named the reopen path: "If a per-advisory machine-readable
+advisory register WITH lift dates appears (provincial municipal-water channel, or
+ECCC's boil-water-advisory feed gaining event grain), open a new candidate for the
+duration-to-resolution task and cite this record for the formulation."
+
+That check ran this tick via the open.canada.ca CKAN ("boil water advisory" package
+searches, package_show on every hit):
+
+- Nova Scotia "Boil Water Advisories" (data.novascotia.ca Socrata 7t68-9xmm, OGL-NS
+  v1.1): per-advisory register, 2006-current, with Date Advisory Issued, Date
+  Advisory Removed, Length of Advisory in Days, Facility Type, Reason - 2,649
+  advisories, 2,576 with lift dates. The condition IS met by this channel.
+- NEW candidate opened per this record's instruction:
+  candidates/ns-bwa-advisory-lift-duration (status ready 2026-10-27). It executes
+  the duration-to-resolution formulation recorded here, on the NS municipal/
+  registered-supply population (a different population from ISC's First Nations
+  systems - the ISC record itself stays dropped on its measured ~14 lifts/year).
+- Measured negatives on the same condition: Newfoundland & Labrador's register
+  (opendata.gov.nl.ca file-id=17146) has issue dates and rich system features but
+  NO lift/rescinded date column; Manitoba's "Current BWAPWS" is current-only;
+  Quebec's federated package is one city (Repentigny); ECCC's CESI "Boil water
+  advisories" remains aggregate indicator CSVs - the ECCC feed has NOT gained
+  event grain.
+
+No ISC product was re-probed; this record remains dropped for its own reason.
+

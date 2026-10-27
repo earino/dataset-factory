@@ -1,7 +1,7 @@
 {
   "id": "hc-canada-vigilance-adverse-reactions",
-  "status": "parked",
-  "verdict": "park",
+  "status": "dropped",
+  "verdict": "reject",
   "jurisdiction": {
     "country": "CA",
     "region": "North America",
@@ -10,40 +10,133 @@
   },
   "created_at": "2026-10-21T08:09:19.167347+00:00",
   "domain": "pharmacovigilance - adverse drug reaction reports (Canada Vigilance database)",
-  "prediction_question": "Hypothetical task this source would support (parked): predict the outcome or seriousness of a reported adverse drug reaction (patient demographics, suspect drug, reaction) from the Canada Vigilance reports - the Canadian counterpart of FAERS/openFDA-style tasks.",
-  "prediction_time": "Would be the report's receipt by the Canada Vigilance Program; seriousness/outcome classification is assigned and updated later, so timing would be stateable - but the source never got that far (access blocker below).",
-  "target_definition": "Not fixed: report-level seriousness or outcome class. Moot given the park reason.",
+  "prediction_question": "Hypothetical task this source would support: predict the outcome or seriousness of a reported adverse drug reaction (patient demographics, suspect drug, reaction) from the Canada Vigilance reports - the Canadian counterpart of FAERS/openFDA-style tasks. Also considered at reopen: suspect-drug role identification (DRUGINVOLV) within multi-drug reports.",
+  "prediction_time": "Would be the report's initial receipt by the Canada Vigilance Program (DATINTRECEIVED), with seriousness/outcome as resolved in a pinned extract vintage - stateable on the reopen evidence below, but moot given the drop reason.",
+  "target_definition": "Not fixed: report-level seriousness or outcome class (OUTCOME_CODE, SERIOUSNESS_CODE + six criterion flags). Moot given the drop reason.",
   "sources": [
     {
-      "name": "Canada Vigilance Adverse Reaction Online Database (open.canada.ca packages 9cbaef00 / 98cad9a3)",
+      "name": "Canada Vigilance adverse reaction online database - query-form package (98cad9a3)",
       "url": "https://www.canada.ca/en/health-canada/services/drugs-health-products/medeffect-canada/adverse-reaction-database.html",
-      "api": "NONE - measured 2026-10-21 via anonymous CKAN package_show: both packages list ONLY HTML resources (the English and French database pages); no CSV, API or bulk resource exists on the records. The database itself is an interactive query form (search by drug, reaction, date range, with on-screen results).",
-      "license": "open.canada.ca records carry license_id ca-ogl-lgo (Open Government Licence - Canada 2.0); but licence on viewable database content does not create a bulk channel.",
-      "access": "measured 2026-10-21: CKAN package_show for 98cad9a3 answered anonymously (resources: 2 HTML links). Direct fetch of the database page from this coordinator timed out twice (90 s read timeout, two attempts on 2026-10-21) - recorded as coordinator-side network behaviour; the CKAN record itself is the evidence for the resource shape, so the access verdict does not rest on the page fetch."
+      "api": "Measured 2026-10-21 and re-measured 2026-10-27: package 98cad9a3 lists ONLY the two HTML query-form pages (en/fr) - this package alone never carried a bulk resource.",
+      "license": "ca-ogl-lgo (Open Government Licence - Canada).",
+      "access": "Anonymous CKAN package_show."
     },
     {
-      "name": "'Data on cannabis adverse reactions' (open.canada.ca package 371d84b2) - checked as a possible bulk side-channel",
-      "url": "https://open.canada.ca/data/en/dataset/371d84b2-e439-4c39-a4ef-8817d65a1485",
-      "api": "measured 2026-10-21 via CKAN package_show: resources are PDF annual reports only (rept_ocss-2020 through 2024-annual-report.pdf, English and French) - the 'data' package is a set of PDF reports, not machine-readable data.",
+      "name": "Canada Vigilance Adverse Reaction Online Database - data extract package (9cbaef00-b52c-4a70-9fed-d9aa8263ab74)",
+      "url": "https://open.canada.ca/data/en/dataset/9cbaef00-b52c-4a70-9fed-d9aa8263ab74",
+      "api": "REOPEN EVIDENCE, measured 2026-10-27 (contradicts the 2026-10-21 park premise 'both packages list ONLY HTML resources'): this package carries 40+ resources - extract_extrait.zip (bulk full-dataset ASCII extract: 313,578,432 bytes on the CKAN URL, Last-Modified 2025-05-28, HTTP 206 range fetch verified) plus JSON/XML REST endpoints at health-products.canada.ca/api/canada-vigilance/{drugproduct,drugproductingredient,gender,outcome,reaction,reportdrug,reportlink,reporttype,...} (measured: those endpoints are small lookup tables, e.g. outcome=457 B, gender=115 B). ZIP central directory parsed from a bounded 128 KiB tail range: 13 members under cvponline_extract_20241130/ - reports.txt 422,306,974 B uncompressed, report_drug.txt 953,170,175, reactions.txt 742,284,976, report_drug_indication.txt 340,006,407, report_links.txt 66,858,662, literature_reference.txt 15,470,173, drug_product_ingredients.txt 34,017,992, drug_products.txt 1,930,980, plus five *_lx lookup files - about 2.9 GB uncompressed ASCII, dollar-sign-delimited in quotes.",
       "license": "ca-ogl-lgo per the package record.",
-      "access": "CKAN package_show anonymous; resource list read back (12 PDF resources, no CSV/API)."
+      "access": "Anonymous: CKAN API, direct ZIP range requests (HTTP 206), and the health-products.canada.ca API all answer without a key from the coordinator."
+    },
+    {
+      "name": "Data extracts program page + data structure page (publisher documents grain, cadence, coverage, schema)",
+      "url": "https://www.canada.ca/en/health-canada/services/drugs-health-products/medeffect-canada/adverse-reaction-database/canada-vigilance-online-database-data-extract.html",
+      "api": "Extracts page (2026-10-27): 'The data set is updated on a monthly basis and currently covers the following time period: 1965 to 2026-06-30' with a ZIP ~344 MB (the CKAN resource lags at the 20241130 folder vintage). Data structure page (modified 2025-05-29) documents every field: reports.txt carries REPORT_ID/REPORT_NO, VERSION_NO, DATRECEIVED (latest) and DATINTRECEIVED (initial receipt), REPORT_TYPE, GENDER/AGE(+units), OUTCOME_CODE, WEIGHT/HEIGHT, SERIOUSNESS_CODE plus DEATH, DISABILITY, CONGENITAL_ANOMALY, LIFE_THREATENING, HOSP_REQUIRED, OTHER_MEDICALLY_IMP_COND, REPORTER_TYPE, SOURCE, E2B ids; reactions.txt carries MedDRA PT_NAME/SOC_NAME with MEDDRA_VERSION; report_drug.txt carries DRUGINVOLV (suspect/concomitant/interacting role), route, dose, therapy duration; report_drug_indication.txt carries indications; report_links.txt carries duplicate/linked reports.",
+      "license": "ca-ogl-lgo per the package records.",
+      "access": "Read 2026-10-27 via the extraction backend (www.canada.ca direct fetches hang from this coordinator)."
+    },
+    {
+      "name": "'Data on cannabis adverse reactions' (open.canada.ca package 371d84b2)",
+      "url": "https://open.canada.ca/data/en/dataset/371d84b2-e439-4c39-a4ef-8817d65a1485",
+      "api": "measured 2026-10-21: resources are PDF annual reports only. Unchanged 2026-10-27.",
+      "license": "ca-ogl-lgo per the package record.",
+      "access": "CKAN package_show anonymous."
     }
   ],
   "license_evidence": [
     {
-      "note": "open.canada.ca records list license_id ca-ogl-lgo for the Canada Vigilance packages (measured 2026-10-21). Licence is not the blocker; there is no machine-readable redistribution channel to license in the first place.",
-      "url": "https://open.canada.ca/data/en/dataset/98cad9a3-5b61-4c1e-965d-531804542560"
+      "note": "open.canada.ca records list license_id ca-ogl-lgo for the Canada Vigilance packages (re-verified 2026-10-27 for 9cbaef00). Licence was never the blocker; the 2026-10-21 park rested on an access measurement that the 2026-10-27 reopen evidence corrects.",
+      "url": "https://open.canada.ca/data/en/dataset/9cbaef00-b52c-4a70-9fed-d9aa8263ab74"
     }
   ],
   "construction_script": null,
-  "split_strategy": "Not built - no bulk access to measure a panel from. The query-form database returns on-screen results only; a panel would have to be assembled by scripted query traffic, which is exactly the kind of undocumented scraping the pipeline avoids as provenance.",
+  "split_strategy": "Not built. The reopen established that construction is feasible (a 1965-2026 monthly-updated bulk extract with documented per-report and per-drug fields trivially fills temporal windows), but feasibility is not contribution - see rejection_reason.",
   "measurements": {
-    "access_probe_2026_10_21": "CKAN package_show x3 (two Vigilance packages, one cannabis-ADR package): all resources are HTML (query-form pages) or PDF (annual reports). No CSV, no API, no bulk export on any of the three records. Database landing page: two fetch attempts timed out from the coordinator (90 s), recorded. Total probe cost: 3 small API calls + 2 failed page fetches.",
-    "task_family_comparison": "Even with access, differentiation would be uphill: the US counterpart (FDA FAERS via openFDA) ships event-level ADR data through a documented anonymous API and already exists in this bench's family (openfda-food-recall-classification is the recalls sibling; ADR-outcome prediction on FAERS is a heavily published literature). A Canadian ADR task's novelty would rest on the Canadian-only reporting population and the seriousness/outcome coding - a thin contribution against the public FAERS ecosystem."
+    "access_probe_2026_10_21": "CKAN package_show x3: at that time only 98cad9a3 was successfully shown (2 HTML links); the recorded claim that 'both packages' were HTML-only is now corrected by the 2026-10-27 package_show of 9cbaef00 (ZIP + JSON + XML + HTML resources, created 2016-09-25, resources dated 2016-12-01/2018-04-13, metadata_modified 2025-12-19 - i.e. the bulk channel predates the park measurement and was missed by it, not newly added since).",
+    "reopen_probe_2026_10_27": "One package_show (9cbaef00), one 128 KiB ZIP tail range fetch (HTTP 206; 13 members parsed, sizes above), four lookup-API GETs (outcome/reporttype/gender 200; severity 404), one ZIP HEAD (313,578,432 bytes; Last-Modified 2025-05-28), plus the extracts/structure pages via the extraction backend. No bulk download; the coordinator never held more than 128 KiB of the ZIP.",
+    "task_family_comparison": "Carried over and now decisive: the US counterpart (FDA FAERS via openFDA) ships event-level ADR data through a documented anonymous API, and the exact task shapes are published and mirrored - see rejection_reason."
   },
   "jobs": [],
   "artifacts": [],
-  "rejection_reason": "PARKED on access: the Canada Vigilance adverse reaction data has no bulk or API channel - the open.canada.ca records list HTML query-form resources only, and the related 'data on cannabis adverse reactions' package is PDF annual reports (a PDF-only publisher is a park, not a go). Assembling a panel would require undocumented scripted scraping of an interactive form, which this pipeline does not treat as acceptable provenance. Secondary reason: even unparked, the FAERS/openFDA ecosystem already serves the ADR-outcome task family publicly.",
+  "rejection_reason": "DROPPED (mirror) on the standing novelty test after the access premise was corrected and the candidate reopened. The natural tasks this source carries already exist in published/ML-ready form on the open US analogue: (1) GCAP, Communications Biology 2023 (s42003-023-05243-w): a released benchmark of 141,752 drug-ADR interactions with seriousness labels in the same 7-class FDA scheme (DE/LT/HO/DS/CA/RI/OT), built from FAERS + ADReCS with splits - report/drug-interaction seriousness prediction; (2) ISPOR 2025 (CTIME meeting poster): FAERS serious-outcome classification on 242,312 case-molecule observations using the identical feature shape this extract offers (age, sex, reporter type, indication bucket, molecule identity, MedDRA PT indicators; ROC-AUC 0.916); (3) Kaggle/GitHub FAERS seriousness pipelines (e.g. 528k-report serious-outcome predictors with released code) and openFDA's anonymous report-level API itself; (4) the suspect-drug identification variant is also published: Frontiers in Pharmacology 2026, 'Expert-Referenced Evaluation of Large Language Models for Primary Suspect Drug Identification in the FAERS Database' (LLM vs expert reference standard). A Canadian re-issue would change the jurisdiction, publisher and drug population, not the task - the same standing test that dropped hc-recalls-classification (US analogue prior art) and hc-cannabis-inspection-rating (same task, different jurisdiction). The 2026-10-21 secondary concern ('even unparked, differentiation would be uphill') is thereby resolved as a rejection, with the access facts corrected so no future tick re-parks this source on the wrong premise.",
   "review": null,
-  "next_action": "Parked. Unpark only if Health Canada publishes a machine-readable export of Canada Vigilance (watch the two open.canada.ca packages for a CSV/API resource appearing, e.g. on the next Canada tick), or the operator records a risk acceptance that a browser-captured query export is acceptable provenance - the UNHCR precedent (unhcr-refugee-data-finder) applies verbatim here."
+  "next_action": "None - dropped (mirror). Reopen only with a formulation that does not exist on the FAERS/openFDA ecosystem and names its own novelty case as a NEW candidate: e.g., if a worker-side bounded sample shows reports.txt carries MULTIPLE VERSION_NO rows per REPORT_ID, a follow-up/outcome-revision task ('will a follow-up version change the recorded outcome?') becomes constructible from per-version rows - that multiplicity was never measured here (the natural task was decisively mirrored, so the 313 MB extract was not downloaded).",
+  "novelty_check": {
+    "checked_at": "2026-10-27T08:35:01+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "FAERS adverse event seriousness prediction machine learning benchmark",
+      "adverse drug reaction outcome classification dataset"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "FAERS adverse event seriousness prediction machine learning benchmark",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "adverse drug reaction outcome classification dataset",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "FAERS adverse event seriousness prediction machine learning benchmark",
+          "hits": 490900,
+          "top": [
+            "AI-Based Pharmacovigilance Risk Detection Using FDA FAERS Data",
+            "From Data to Decisions: FAERS-Based Machine Learning for Predicting Severe Outcomes in Breast Cancer Treatment Reports",
+            "In situ development of an artificial intelligence (AI) model for early detection of adverse drug reactions (ADRs) to ensure drug safety",
+            "Estimation of dynamical instability (local Lyapunov exponents) for non-intrusive adaptive modelling",
+            "R Code for FAERS Disproportionality Analysis of GLP-1/GIP Weight-Loss Safety Signals"
+          ]
+        },
+        {
+          "query": "adverse drug reaction outcome classification dataset",
+          "hits": 585110,
+          "top": [
+            "ADR Profile of Covishield and Covaxin among Young Adults (18-45 Year) in a District in Northern India: A Comparative Study",
+            "DEEP LEARNING PREDICTION OF ADVERSE DRUG REACTION  ANALYSIS USING ARTIFICIAL NEURAL NETWORK MODEL",
+            "AI-Based Pharmacovigilance Risk Detection Using FDA FAERS Data",
+            "REVIEW ON ADVERSE DRUG REACTIONS: PREDISPOSING FACTORS, MODERN CLASSIFICATIONS AND CAUSALITY ASSESSMENT",
+            "ASSESSMENT OF MANAGEMENT OF ADVERSE DRUG REACTIONS REPORTED IN A TERTIARY CARE HOSPITAL IN CALICUT"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "FAERS adverse event seriousness prediction machine learning benchmark",
+          "hits": 5,
+          "top": [
+            "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+            "DOME: Recommendations for supervised machine learning validation in biology",
+            "A Benchmark Study of Machine Learning Models for Online Fake News Detection",
+            "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
+            "Active learning for data streams: a survey"
+          ]
+        },
+        {
+          "query": "adverse drug reaction outcome classification dataset",
+          "hits": 5,
+          "top": [
+            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+            "The Reaction RuleML Classification of the Event / Action / State Processing and Reasoning Space",
+            "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset",
+            "Detect adverse drug reactions for the drug Pravastatin",
+            "Multimodal Model with Text and Drug Embeddings for Adverse Drug Reaction Classification"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'FAERS adverse event seriousness prediction machine learning benchmark': 0 hit(s) - nothing notable\n- huggingface_datasets / 'adverse drug reaction outcome classification dataset': 0 hit(s) - nothing notable\n- zenodo_records / 'FAERS adverse event seriousness prediction machine learning benchmark': 490900 hit(s) - AI-Based Pharmacovigilance Risk Detection Using FDA FAERS Data, From Data to Decisions: FAERS-Based Machine Learning for Predicting Severe Outcomes in Breast Cancer Treatment Reports, In situ development of an artificial intelligence (AI) model for early detection of adverse drug reactions (ADRs) to ensure drug safety, Estimation of dynamical instability (local Lyapunov exponents) for non-intrusive adaptive modelling, R Code for FAERS Disproportionality Analysis of GLP-1/GIP Weight-Loss Safety Signals\n- zenodo_records / 'adverse drug reaction outcome classification dataset': 585110 hit(s) - ADR Profile of Covishield and Covaxin among Young Adults (18-45 Year) in a District in Northern India: A Comparative Study, DEEP LEARNING PREDICTION OF ADVERSE DRUG REACTION  ANALYSIS USING ARTIFICIAL NEURAL NETWORK MODEL, AI-Based Pharmacovigilance Risk Detection Using FDA FAERS Data, REVIEW ON ADVERSE DRUG REACTIONS: PREDISPOSING FACTORS, MODERN CLASSIFICATIONS AND CAUSALITY ASSESSMENT, ASSESSMENT OF MANAGEMENT OF ADVERSE DRUG REACTIONS REPORTED IN A TERTIARY CARE HOSPITAL IN CALICUT\n- arxiv_preprints / 'FAERS adverse event seriousness prediction machine learning benchmark': 5 hit(s) - Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, A Benchmark Study of Machine Learning Models for Online Fake News Detection, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Active learning for data streams: a survey\n- arxiv_preprints / 'adverse drug reaction outcome classification dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The Reaction RuleML Classification of the Event / Action / State Processing and Reasoning Space, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, Detect adverse drug reactions for the drug Pravastatin, Multimodal Model with Text and Drug Embeddings for Adverse Drug Reaction Classification",
+    "prior_art": [
+      "GCAP, Communications Biology 2023 (s42003-023-05243-w); ISPOR 2025 FAERS serious-outcome classification; Frontiers in Pharmacology 2026 primary suspect drug identification in FAERS; openFDA drug event API"
+    ],
+    "theirs": "GCAP benchmark (Commun Biol 2023): 141,752 drug-ADR interactions, 7-class seriousness labels from FAERS+ADReCS with released benchmark; ISPOR 2025: FAERS serious-outcome classification on 242,312 case-molecule observations (ROC-AUC 0.916) with the identical feature shape; Kaggle/GitHub FAERS seriousness pipelines; openFDA anonymous report-level API; Frontiers Pharmacology 2026: LLM primary-suspect-drug identification in FAERS",
+    "ours": "Nothing publishable: the Canadian ADR report panel would only re-issue report-level seriousness/outcome prediction (or suspect-drug identification) with jurisdiction changed",
+    "verdict": "mirror",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
 }

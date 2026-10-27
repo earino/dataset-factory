@@ -64,3 +64,21 @@ No CSV/JSON/API resource for the report database.
 Scratch files dsc_home.html / dsc_api.html / ckan_drugshortage.json under
 /opt/data/cache/scratch (auto-pruned). Measurement script (.factory/ckan_scan.py) deleted
 after use.
+
+## 2026-10-27 discovery session (tick region: Canada) - reopen condition re-checked; still closed
+
+The recorded reopen evidence ("publisher-side change: anonymous machine-readable extract
++ licence readable without registration") was re-checked via the open.canada.ca CKAN
+(anonymous package_search q='drug shortage', rows=25, full records - no fl parameter, so
+resource lists are complete):
+
+- All 25 returned packages are Health Canada informational/HTML pages and old
+  guidance records (newest created 2023-02-28: 'Guide to reporting drug shortages
+  and discontinuations'); none carries any CSV, API, JSON, XLSX or ZIP resource.
+- No package for the healthproductshortages.ca report database or its monthly
+  extract appeared on the federal portal.
+
+The registration-gated API and bot-wall posture of healthproductshortages.ca were not
+re-probed (they were measured 2026-10-22 in a real browser; nothing announced since).
+Reopen condition still not met; the drop stands.
+

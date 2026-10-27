@@ -70,3 +70,52 @@ for a machine-readable resource. Three channels were checked:
 Conclusion: the watch was performed; no machine-readable Vigilance resource
 appeared. The park stands, with the same unpark condition as before.
 
+## 2026-10-27 discovery session (tick region: Canada) - REOPENED on access, then DROPPED (mirror)
+
+The park's unpark condition ("watch the two open.canada.ca packages for a CSV/API
+resource appearing") was checked again, this time with package_show against BOTH
+package IDs. Result: the condition is met and always had been - the 2026-10-21/22
+probes only ever showed 98cad9a3 (the query-form package, 2 HTML resources).
+
+- `probe_extract_channel.py` (retained here): CKAN package_show for
+  9cbaef00-b52c-4a70-9fed-d9aa8263ab74 - resources: HTML, JSON, OTHER, XML, ZIP
+  (created 2016-09-25; resources dated 2016-12-01/2018-04-13; metadata_modified
+  2025-12-19). extract_extrait.zip HEAD: 313,578,432 bytes, Last-Modified
+  "Wed, 28 May 2025 17:41:31 GMT", HTTP 200 anonymous. Lookup API
+  (health-products.canada.ca/api/canada-vigilance/outcome/) answers 200 (457 B
+  code table).
+- `probe_extract_zip_tail.py` (retained here): bounded 128 KiB range fetch
+  (HTTP 206) of the ZIP tail; central directory lists 13 members under
+  cvponline_extract_20241130/: reports.txt 422,306,974 B uncompressed,
+  report_drug.txt 953,170,175, reactions.txt 742,284,976,
+  report_drug_indication.txt 340,006,407, report_links.txt 66,858,662,
+  literature_reference.txt 15,470,173, drug_product_ingredients.txt 34,017,992,
+  drug_products.txt 1,930,980 + five *_lx lookups (~2.9 GB uncompressed,
+  $-delimited in quotes per the data structure page).
+- Extracts page (extraction backend): "updated on a monthly basis", covers
+  1965 to 2026-06-30, ZIP ~344 MB (the CKAN resource lags at the 20241130
+  vintage). Data structure page (modified 2025-05-29) documents every field,
+  including DATINTRECEIVED/DATRECEIVED, VERSION_NO, OUTCOME_CODE, SERIOUSNESS_CODE
+  + six criterion flags, REPORTER/SOURCE, MedDRA PT/SOC with version, DRUGINVOLV
+  (suspect role), indications, duplicate/linked reports.
+
+So the access blocker in the 2026-10-21 park was factually wrong, and the reopen
+was executed. The novelty gate then decided: the natural tasks (report-level
+seriousness/outcome prediction; suspect-drug role identification) already exist
+published and ML-ready on the open US analogue - GCAP benchmark (Commun Biol
+2023, 141,752 drug-ADR interactions, same 7-class seriousness scheme, released
+splits), ISPOR 2025 (FAERS serious-outcome classification, identical feature
+shape, ROC-AUC 0.916), Kaggle/GitHub FAERS pipelines, openFDA's anonymous
+report-level API, and Frontiers Pharmacology 2026 (LLM primary-suspect-drug
+identification in FAERS). A Canadian re-issue changes jurisdiction, not the
+task - the same standing test that dropped hc-recalls-classification and
+hc-cannabis-inspection-rating.
+
+Decision: DROPPED (mirror), with the access evidence corrected in the record so
+no future tick re-parks this source on the HTML-only premise. The only reopen
+path left is a NEW candidate with a formulation absent from the FAERS ecosystem
+(see record next_action: per-version outcome-revision, only if a bounded worker
+sample shows reports.txt carries multiple VERSION_NO rows per REPORT_ID - never
+measured here because the natural task was decisively mirrored).
+
+
