@@ -1,0 +1,68 @@
+{
+  "id": "ecm-requal-001",
+  "candidate": "ec-merger-phase2-opening",
+  "note": "Re-qualify the audit-corrected descriptor on the exact accepted CSV bytes. Independent pre-flip audit 2026-10-27 returned PUBLISH WITH CONDITIONS; the corrections are descriptor/docs-only. CSVs are fetched from private staging release 425292628 at their audited digests; the corrected meta.json and quality.json are bundled and hashed. Nothing is rebuilt from the live register; no performance metric is computed. Gate two-phase only.",
+  "image": "python:3.13-slim",
+  "command": [
+    "sh",
+    "/workspace/run.sh"
+  ],
+  "server_type": "cx23",
+  "location": "hel1",
+  "cpus": 2,
+  "memory_mb": 4096,
+  "timeout_minutes": 20,
+  "lifetime_minutes": 40,
+  "max_disk_mb": 15000,
+  "max_artifact_mb": 10,
+  "fetch": {
+    "repo": "earino/dataset-factory-staging",
+    "release": 425292628,
+    "assets": [
+      {
+        "asset_id": 681210520,
+        "dest": "extract/public/train.csv",
+        "size": 429048,
+        "sha256": "1619b6f4ad4a7dab0f437335c231f727f6f5c5f0ea02b3454366f5a71ab90a44"
+      },
+      {
+        "asset_id": 681210472,
+        "dest": "extract/public/eval.csv",
+        "size": 155077,
+        "sha256": "4fb28c0908e4c79ccf194de3b27f2996c05efc0f01ec4074c953a7eb697f24f6"
+      },
+      {
+        "asset_id": 681210419,
+        "dest": "extract/private/holdout.csv",
+        "size": 253649,
+        "sha256": "5867e34f3ebf714b9ec0ef307989cb4296438148390a6a5ea2bcf88795f703fd"
+      }
+    ]
+  },
+  "source_files": [
+    {
+      "bundled_as": "run.sh",
+      "source": "candidates/ec-merger-phase2-opening/requal/run.sh",
+      "bytes": 2053,
+      "sha256": "e4f3490cbc6e5e738a04db5a284e7305ac4d15ef0095876f18b320a78d98a107"
+    },
+    {
+      "bundled_as": "meta.json",
+      "source": "release/ec-merger-phase2-opening/meta.json",
+      "bytes": 1342,
+      "sha256": "b139620d5f469c17faa974574220878f8c1f70accf6d975243a018049fae5ef9"
+    },
+    {
+      "bundled_as": "quality.json",
+      "source": "release/ec-merger-phase2-opening/quality.json",
+      "bytes": 21855,
+      "sha256": "0203fdf934a0564fdb8d2910372986424547f25448fd603a79e95d4ac02fb7ec"
+    },
+    {
+      "bundled_as": "qualify_dataset.py",
+      "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+      "bytes": 57029,
+      "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+    }
+  ]
+}
