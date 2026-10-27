@@ -23,6 +23,79 @@ commit 8512fd8). Close #17; ordinary advancement thereafter is source-specific
 candidate review - review the next candidate's source-specific prediction contract
 and update its builder before construction; #25 remains deferred.
 
+## 2026-10-27 - UK discovery tick: ipo-trademark-registration-outcome READY (go); bovine TB closed at triage; Companies House park re-checked, unchanged
+
+Regional focus United Kingdom (ONS, NHS Digital, Defra, Environment Agency,
+Companies House, data.gov.uk). Discovery-only session; no construction,
+advancement or worker launched.
+
+1. **ipo-trademark-registration-outcome (GB, NEW) - READY (go), licence A,
+   novelty differentiated.** The IPO's frozen Feb-2018 trade mark open-data
+   snapshot (one anonymous GET, 63,238,846 B, sha256 3b6063be..., one
+   817,350,108 B UTF-16LE pipe-separated member, 1,149,248 distinct marks,
+   full aggregate pass 4.8 s on the coordinator) is the only open bulk record
+   of UK trade mark applications, and it carries ALL applications from
+   2010-01-01 (publisher-documented; 2005-2009 measured as
+   registration-conditioned), so refused/withdrawn negatives exist at scale.
+   Task: at filing (Europe/London), from features fixed that day (mark text,
+   Nice classes, category/type/series, owner country/region/postcode-area),
+   will the application reach registration as resolved by the snapshot? Label
+   rule measured over the full file: Registered-date non-empty = positive;
+   Refused/Withdrawn = negative (3,187-8,206/year, 10.5-16.1%); still-pending
+   statuses = censored with per-cohort counts (2016: 631/61,648 = 1.02%; 2017+
+   out of eligibility, 16,386/75,024 censored). Splits computed from the
+   source: train 2010-2012 106,990 rows/14,322 neg; eval 2013-2014
+   97,258/15,569; holdout 2015-2016 115,130/15,785 - both classes in every
+   window and year. Register fidelity proven two ways: measured filed-year
+   cohorts match the publisher's own facts-and-figures National applications
+   within +-0.12% every year 2012-2016 (probe_crosscheck.py); named fixtures
+   verified (UK00000000001 BASS 1876 in-file identity; UK00003171385 "Brexit"
+   filed 2016-06-25 censored as Appealed at snapshot, live register now
+   Refused - read in the supported browser after plain clients got HTTP 403).
+   Licence class A: OGL v2 linked from the dataset's own section 5 + v3 footer.
+   Measured hazards recorded for construction: 94 pipe-in-Mark-Text rows, 53
+   bad-Filed rows, 3 shifted IR clones, 10 neg-status-with-regdate rows,
+   undocumented statuses (Deleted/Deemed Not Filed/Appealable), UTF-16LE BOM,
+   page-vs-file delimiter mismatch (documented tab, measured pipe). Posture: a
+   clearly-labelled RETROSPECTIVE single-snapshot task (one uniform 2018-02-13
+   vintage, sha256-pinned); no historical operational-availability claim;
+   owner-field vintage caveat declared. The fetch being trivially open is
+   exactly why the contribution is stated as formulation, censoring rules,
+   splits and fixtures. Prior art: USPTO distinctiveness (Wiley JELS) and
+   EUTMR pairwise confusion (TrademarkML) are different targets; IPO
+   Pre-Apply/Rocketeer publish no dataset; no ML-ready UK benchmark exists
+   (check-novelty.py, 2 queries, 2026-10-27T04:29Z). Probe scripts retained in
+   the candidate directory and re-run end-to-end with identical results.
+2. **Defra/APHA bovine TB - not opened; triaged closed on access shape.** The
+   granular channel (ibTB) is an ArcGIS viewer: 4 KB shell homepage, no bulk
+   download, no licence statement on its own instrument. data.gov.uk's bTB
+   datasets are region-month aggregates (NHI/test/herd counts, OGL) - the
+   persistence/seasonality territory the nhs-ae drop already covers. Reopen if
+   APHA publishes a herd-grain open extract with dates.
+3. **Companies House park condition re-checked - unchanged, no reopen.** The
+   2026-10-19 park (free bulk product = live register only, measured) is 8 days
+   old; its reopening condition (a free historical dissolution feed) has not
+   appeared.
+4. Named-agency coverage for the tick: ONS (parked; unpark condition is a
+   case-grain open product, none exists), NHS Digital (nhs-ae dropped on
+   persistence dominance; case-grain HES is DARS-restricted, not open),
+   Environment Agency (three live candidates owned by advancement/hold), FSA
+   FHRS dropped with its own recorded reopen condition. The IPO is in-region,
+   new, and was not previously covered.
+
+Coverage after this session: 89 candidates, live 28, GB 11; ready buffer 3
+(ipo-trademark-registration-outcome joins unhcr-refugee-data-finder and
+za-municipal-audit-opinion); live non-US 22/28 (79%). Checks:
+check-candidate.py --all exit 0 (89 records incl. the new one);
+check-novelty.py verdict differentiated; discovery-coverage.py exit 0.
+Session scratch deleted; probe recipes live in the candidate directory.
+
+Next action: advancement constructs ipo-trademark-registration-outcome on a
+worker per the recorded handoff - pin the zip sha256, freeze eligibility and
+censoring rules exactly as recorded, gate-1.5 evaluation_contract declaring
+the retrospective single-snapshot scope, in-build fixture and cross-check
+assertions, full qualification and exact-byte acceptance before any figure.
+
 ## 2026-10-27 - EU/EEA discovery tick: TED single-bid and RASFF risk-decision closed as mirrors (prior art named); infringement register has no machine-readable dataset
 
 Regional focus: Europe EU/EEA, started at data.europa.eu per the rotation. Discovery-only
