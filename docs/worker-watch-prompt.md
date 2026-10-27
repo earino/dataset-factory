@@ -119,26 +119,20 @@ are recorded. Include the commit/evidence path and remaining blocker in its one-
 summary. If collection, ownership or recording is unresolved, leave it unhandled.
 This marker acknowledges processing; it does not prove Telegram delivery.
 
-Final response — the operator's chat message — is a **signal, not an audit
-report**, and it is **suppressed entirely when nothing needs the operator**:
+Final response — the cron output, saved locally for audit — is a **compact
+signal, not an audit report**. The substance (figures, evidence paths, cleanup
+proof, next action) lives in STATE.md and the candidate record; that durable
+recording IS the report. The final response is at most four short lines:
 
-- **Nothing needs the operator** (the overwhelmingly common case: every finished
-  job was collected, verified, recorded in STATE.md, committed, cleaned up and
-  marked handled): end the final response with the marker `[SILENT]` on its own
-  line. Delivery is then suppressed — no chat message at all is sent — while the
-  full output is still saved locally for audit. STATE.md and the candidate record
-  are the durable report; nobody needs a chat message that says "I did my job".
-- **Something genuinely needs the operator** — a decision only the operator can
-  make (a publication flip, a scope change), a budget problem, or a job that
-  cannot proceed: deliver at most four short lines: one per finished job
-  (`<job_id>: <outcome>, recorded at <commit short-hash>`), then
-  `NEEDS YOU: <the single decision or problem>`. Never paste evidence tables,
-  digests, diff excerpts or multi-section reports into the chat message — the
-  operator who wants detail reads the commit.
+- one line per finished job: `<job_id>: <succeeded/failed>, recorded at <commit short-hash>`
+- then `NEEDS YOU: <the single decision or problem>` — ONLY when something genuinely
+  requires the operator (a decision, a budget problem, a job that cannot proceed) —
+  or `NEEDS YOU: nothing` when all is handled.
 
-No empty or one-word response for a finished job. Report only observed completion;
-planned recovery, deletion, commits and checks remain pending until verified.
-Sign `— Scout (Hermes)`.
+Never paste evidence tables, digests, diff excerpts or multi-section reports into
+the final response. No empty or one-word response for a finished job. Report only
+observed completion; planned recovery, deletion, commits and checks remain pending
+until verified. Sign `— Scout (Hermes)`.
 
 For cleanup, distinguish **planned**, **requested but unverified**, and **deletion
 confirmed by the provider**. Never write "cleanup done pending confirmation". An
