@@ -1,0 +1,30 @@
+{
+ "release_version": "2026.10",
+ "release_tag": "v2026.10",
+ "repository": "https://github.com/earino/ec-merger-phase2-opening",
+ "construction_commit": "54428d2",
+ "construction_commit_note": "54428d2 is the ec-merger-003 close-out commit carrying candidates/ec-merger-phase2-opening/source/build.py at sha256 a2828fd554d8542320df44e3d0bd6c1032fe6e2a67b2de28ad49c5626632a706, source/run.sh at bd6d07c5f59ad79cfb2d569323d54e8a27ab93d18f72f69ee046ae2cd1d543de and source/score.py at 6ab0b7badc2bd84342b1feb881a7ac1c72d1ad199a4757d8e806b000315c2bcf - the exact bytes worker job ec-merger-003 executed (its staging manifest records the same bundled digests), which produced the gated artifact e5a98dfc9c05d0b087ed2dead21004fbbd972e415d2174469371a908bcaf90ad from the 2026-10-27 daily vintage of the DG COMP merger case register bulk feed case-data-M.json (42,034,960 B, last-modified Tue 27 Oct 2026 01:23:54 GMT).",
+ "source": {
+  "name": "European Commission, Directorate-General for Competition - EU Competition: Merger case publications (open data, machine-readable case register, coverage from November 1990, updated daily)",
+  "landing_page": "https://data.europa.eu/data/datasets/cc7e224e-6569-40f0-8037-d3389aa0fae7",
+  "api": "https://compcases-open-data-portal-files-prod.s3.eu-west-1.amazonaws.com/case-data-M.json - anonymous bulk download, no key, stable URL; the register rolls over daily (publisher states one update per day)",
+  "accessed": "2026-10-27",
+  "licence": "European Commission reuse notice -> CC BY 4.0 (DG COMP news 'DG Competition's case data available as Open Data', 2025-03-18, and the Commission legal notice, both read 2026-10-24; evidence recorded in candidates/ec-merger-phase2-opening/record.json license_evidence). Attribution carries through; changes are indicated. Derived research dataset - not a Commission official product."
+ },
+ "commands": {
+  "gate": "python3 code/qualify_dataset.py ./task",
+  "baseline": "sh baseline/reproduce_baseline.sh ./task",
+  "get_dataset": "python3 get_dataset.py --dest ./task"
+ },
+ "layout": {
+  "public/train.csv": "public/train.csv",
+  "public/eval.csv": "public/eval.csv",
+  "private/holdout.csv": "private/holdout.csv",
+  "meta.json": "meta.json",
+  "quality.json": "quality.json"
+ },
+ "required_docs": [
+  "code/materialize.py"
+ ],
+ "note": "One task instance, one artifact. The five shipped files are the ec-merger-003 worker artifact e5a98dfc9c05d0b087ed2dead21004fbbd972e415d2174469371a908bcaf90ad (gate 1.5.0, 46/46 checks on the full artifact, exact-byte --accepted on the worker); the package's code/ carries the construction script, the runner-workdir materializer and the gate, baseline/ the runner-contract baseline. The holdout ships as an asset like the other splits; it is not copied into any runner workdir. The 2026-10-27 snapshot is a single current vintage: the register publishes no historical vintages, and the evaluation contract declares retrospective research over the current snapshot, never a point-in-time reconstruction."
+}

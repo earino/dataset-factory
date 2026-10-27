@@ -1,0 +1,658 @@
+{
+ "ok": true,
+ "dataset": "/output/extract",
+ "gate_version": "1.5.0",
+ "artifact": {
+  "train": {
+   "file": "public/train.csv",
+   "sha256": "1619b6f4ad4a7dab0f437335c231f727f6f5c5f0ea02b3454366f5a71ab90a44",
+   "bytes": 429048
+  },
+  "eval": {
+   "file": "public/eval.csv",
+   "sha256": "4fb28c0908e4c79ccf194de3b27f2996c05efc0f01ec4074c953a7eb697f24f6",
+   "bytes": 155077
+  },
+  "holdout": {
+   "file": "private/holdout.csv",
+   "sha256": "5867e34f3ebf714b9ec0ef307989cb4296438148390a6a5ea2bcf88795f703fd",
+   "bytes": 253649
+  },
+  "meta.json": {
+   "file": "meta.json",
+   "sha256": "011a4c0b989705ce2a8577e387e0cf96856cc8e9c65f7c51fbbffd699944d13d",
+   "bytes": 1233
+  },
+  "quality.json": {
+   "file": "quality.json",
+   "sha256": "ca07571caa43e1a0f6fd77c0ed28f535d7ed3c794f6441c6483ce0663acee23c",
+   "bytes": 17064
+  },
+  "artifact_version": {
+   "digest": "e5a98dfc9c05d0b087ed2dead21004fbbd972e415d2174469371a908bcaf90ad",
+   "components": [
+    "eval",
+    "holdout",
+    "meta.json",
+    "quality.json",
+    "train"
+   ]
+  }
+ },
+ "results": [
+  {
+   "check": "descriptor",
+   "ok": true,
+   "detail": "quality.json loaded for 'ec-merger-phase2-opening'",
+   "evidence": {}
+  },
+  {
+   "check": "contract.declared",
+   "ok": true,
+   "detail": "evaluation_contract required: intended use, access, vintage and evidence",
+   "evidence": {}
+  },
+  {
+   "check": "contract.scope",
+   "ok": true,
+   "detail": "use='retrospective_research'; access='isolated_rows'; eval is development, holdout is final",
+   "evidence": {}
+  },
+  {
+   "check": "contract.every_input_has_availability_evidence",
+   "ok": true,
+   "detail": "Every solver-visible non-target column needs availability evidence; missing: []",
+   "evidence": {}
+  },
+  {
+   "check": "contract.vintage_and_selection",
+   "ok": true,
+   "detail": "Vintage, selection and limitations must be explicit; declarations are not measurements",
+   "evidence": {}
+  },
+  {
+   "check": "contract.cross_row_review",
+   "ok": true,
+   "detail": "Document applicable cross-row probes and every solver-visible auxiliary file",
+   "evidence": {}
+  },
+  {
+   "check": "contract.cross_row_probe_0",
+   "ok": true,
+   "detail": "Outcome-bearing later-row exposure requires restricted evaluation access; mismatches are reported",
+   "evidence": {
+    "train": {
+     "rows": 5406,
+     "covered": 0,
+     "mismatches": 0,
+     "ambiguous_or_conflicting": 0
+    },
+    "eval": {
+     "rows": 1770,
+     "covered": 0,
+     "mismatches": 0,
+     "ambiguous_or_conflicting": 0
+    },
+    "holdout": {
+     "rows": 2915,
+     "covered": 0,
+     "mismatches": 0,
+     "ambiguous_or_conflicting": 0
+    }
+   }
+  },
+  {
+   "check": "contract.cross_row_probe_1",
+   "ok": true,
+   "detail": "Outcome-bearing later-row exposure requires restricted evaluation access; mismatches are reported",
+   "evidence": {
+    "train": {
+     "rows": 5406,
+     "covered": 0,
+     "mismatches": 0,
+     "ambiguous_or_conflicting": 0
+    },
+    "eval": {
+     "rows": 1770,
+     "covered": 0,
+     "mismatches": 0,
+     "ambiguous_or_conflicting": 0
+    },
+    "holdout": {
+     "rows": 2915,
+     "covered": 0,
+     "mismatches": 0,
+     "ambiguous_or_conflicting": 0
+    }
+   }
+  },
+  {
+   "check": "contract.label_availability",
+   "ok": true,
+   "detail": "No full-row availability ledger: training-label timing UNVERIFIED; retrospective use only",
+   "evidence": {}
+  },
+  {
+   "check": "leakage.declared_columns",
+   "ok": true,
+   "detail": "every shipped column is declared",
+   "evidence": {
+    "undeclared": []
+   }
+  },
+  {
+   "check": "leakage.answer_source_absent",
+   "ok": true,
+   "detail": "no answer source or post-hoc column is shipped",
+   "evidence": {
+    "shipped_forbidden": []
+   }
+  },
+  {
+   "check": "leakage.every_column_could_be_scored",
+   "ok": true,
+   "detail": "every column was scored for leakage",
+   "evidence": {
+    "unscorable": []
+   }
+  },
+  {
+   "check": "leakage.no_single_column_determines_the_target",
+   "ok": true,
+   "detail": "no shipped column separates the classes on its own",
+   "evidence": {
+    "offenders": [],
+    "high_cardinality": [
+     "case_number@eval",
+     "case_number@holdout",
+     "case_number@train",
+     "case_title@eval",
+     "case_title@holdout",
+     "case_title@train",
+     "notification_date@eval",
+     "notification_date@holdout",
+     "notification_date@train",
+     "sector_divisions@eval",
+     "sector_divisions@holdout"
+    ],
+    "missing_splits": []
+   }
+  },
+  {
+   "check": "leakage.high_cardinality_declared",
+   "ok": true,
+   "detail": "high-cardinality columns are declared as identifiers or free fields",
+   "evidence": {
+    "undeclared": [],
+    "declared": [
+     "case_number",
+     "case_title",
+     "notification_date",
+     "sector_divisions"
+    ]
+   }
+  },
+  {
+   "check": "timing.prediction_time_declared",
+   "ok": true,
+   "detail": "prediction instant is declared",
+   "evidence": {}
+  },
+  {
+   "check": "timing.no_post_hoc_feature",
+   "ok": true,
+   "detail": "no feature is documented as post-hoc",
+   "evidence": {
+    "overlap": []
+   }
+  },
+  {
+   "check": "timing.label_source_is_not_a_feature",
+   "ok": true,
+   "detail": "the label source is not a feature",
+   "evidence": {
+    "source_features": []
+   }
+  },
+  {
+   "check": "timing.every_feature_documented",
+   "ok": true,
+   "detail": "features documented as available 'prediction_time'",
+   "evidence": {
+    "features_documented_at": "prediction_time"
+   }
+  },
+  {
+   "check": "timing.instant_declared",
+   "ok": true,
+   "detail": "prediction instant kind='event_time' citation=True",
+   "evidence": {
+    "prediction_instant": {
+     "kind": "event_time",
+     "period": "the case's notification event",
+     "days_after_period_end": 0,
+     "citation": "The register records caseNotificationDate (the date the Commission received the notification; date-only, Brussels local) and the case attributes fixed at registration. The OJ prior notice for M.4731 (OJ C 230, 2.10.2007, p. 12, CELEX C2007/230/08) shows the reference number, parties, activities and notification date published within days of the event; the three known-event fixtures (M.877 1997, M.4731 2007, M.10188 2021) reproduce external notification-era sources exactly."
+    }
+   }
+  },
+  {
+   "check": "timing.publication_lag_measured",
+   "ok": true,
+   "detail": "0 of 0 observed period_end -> published dates are usable",
+   "evidence": {
+    "observations": [],
+    "measured_lag_days": null,
+    "source_kind": "administrative_record"
+   }
+  },
+  {
+   "check": "timing.features_available_at_instant",
+   "ok": true,
+   "detail": "features publish 0d after the period, instant is 0d after it",
+   "evidence": {
+    "features_lag_days": 0,
+    "instant_lag_days": 0,
+    "measured_lag_days": null
+   }
+  },
+  {
+   "check": "timing.instant_accounts_for_publication_lag",
+   "ok": true,
+   "detail": "instant kind is 'event_time' while features publish 0d after the period",
+   "evidence": {
+    "kind": "event_time",
+    "features_lag_days": 0
+   }
+  },
+  {
+   "check": "timing.selection_uses_only_available_data",
+   "ok": true,
+   "detail": "row selection declares its latest period as \"the case's notification event (caseNotificationDate; eligibility reads caseType and caseNotificationDate only)\"",
+   "evidence": {
+    "latest_period_used": "the case's notification event (caseNotificationDate; eligibility reads caseType and caseNotificationDate only)",
+    "fields": [
+     "caseType",
+     "caseNotificationDate",
+     "caseTitle",
+     "caseSectors",
+     "caseRegulation",
+     "decisions (label source, read afterwards to compute the label and label maturity)"
+    ]
+   }
+  },
+  {
+   "check": "units.measured_columns_declare_unit_and_frame",
+   "ok": true,
+   "detail": "10 measured column(s) declare unit and frame",
+   "evidence": {
+    "measurements": [
+     {
+      "column": "notification_date",
+      "unit": "ISO date (date-only, Brussels local)",
+      "frame": "the case's notification event; case attributes are fixed when the file is registered"
+     },
+     {
+      "column": "notification_year",
+      "unit": "calendar year (int)",
+      "frame": "calendar decomposition of the notification date"
+     },
+     {
+      "column": "notification_month",
+      "unit": "calendar month 1-12 (int)",
+      "frame": "calendar decomposition of the notification date"
+     },
+     {
+      "column": "regulation",
+      "unit": "EU merger regulation instrument (4064/89 or 139/2004)",
+      "frame": "the regulation in force, fixed by the notification date"
+     },
+     {
+      "column": "sector_divisions",
+      "unit": "sorted set of NACE Rev 2 division labels, '|'-joined, or NONE",
+      "frame": "current-vintage register coding of the parties' activities; the industries are notification-time facts (the M.4731 OJ prior notice documents them at notification), the taxonomy labels are current-vintage"
+     },
+     {
+      "column": "sector_count",
+      "unit": "count of caseSectors entries (int)",
+      "frame": "number of sector codes the register lists for the case"
+     },
+     {
+      "column": "has_sectors",
+      "unit": "flag 0/1",
+      "frame": "1 when the register carries sectors for the case; the discovery snapshot measured 79/10,123 without"
+     },
+     {
+      "column": "party_count",
+      "unit": "count of ' / '-separated title segments (int)",
+      "frame": "derived from caseTitle, fixed at registration; a proxy for deal complexity, not a verified party census (JV suffixes count as segments)"
+     },
+     {
+      "column": "title_has_jv",
+      "unit": "flag 0/1",
+      "frame": "derived from caseTitle: 1 when the title carries a 'JV' token, fixed at registration"
+     },
+     {
+      "column": "case_title",
+      "unit": "free text (the merging parties' names)",
+      "frame": "caseTitle, fixed at registration (the OJ prior notice for M.4731 names the same parties at notification)"
+     }
+    ]
+   }
+  },
+  {
+   "check": "units.known_event_fixture_recorded",
+   "ok": true,
+   "detail": "no external threshold, so no known-event fixture is required",
+   "evidence": {}
+  },
+  {
+   "check": "splits.time_column_declared",
+   "ok": true,
+   "detail": "split overlap is checked against 'notification_date'",
+   "evidence": {}
+  },
+  {
+   "check": "splits.machine_readable_windows",
+   "ok": true,
+   "detail": "train/eval/holdout windows are declared with start/end",
+   "evidence": {
+    "split_windows": {
+     "train": {
+      "start": "1990-01-01",
+      "end": "2014-01-01"
+     },
+     "eval": {
+      "start": "2014-01-01",
+      "end": "2019-01-01"
+     },
+     "holdout": {
+      "start": "2019-01-01",
+      "end": "2026-10-03"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.files_present",
+   "ok": true,
+   "detail": "all three split files exist",
+   "evidence": {
+    "missing": []
+   }
+  },
+  {
+   "check": "splits.non_empty",
+   "ok": true,
+   "detail": "every split has rows",
+   "evidence": {
+    "train": {
+     "rows": 5406,
+     "positives": 217,
+     "negatives": 5189,
+     "positive_rate": 0.040141
+    },
+    "eval": {
+     "rows": 1770,
+     "positives": 46,
+     "negatives": 1724,
+     "positive_rate": 0.025989
+    },
+    "holdout": {
+     "rows": 2915,
+     "positives": 46,
+     "negatives": 2869,
+     "positive_rate": 0.01578
+    }
+   }
+  },
+  {
+   "check": "splits.eval_and_holdout_have_both_classes",
+   "ok": true,
+   "detail": "eval and holdout each contain positives and negatives",
+   "evidence": {
+    "train": {
+     "rows": 5406,
+     "positives": 217,
+     "negatives": 5189,
+     "positive_rate": 0.040141
+    },
+    "eval": {
+     "rows": 1770,
+     "positives": 46,
+     "negatives": 1724,
+     "positive_rate": 0.025989
+    },
+    "holdout": {
+     "rows": 2915,
+     "positives": 46,
+     "negatives": 2869,
+     "positive_rate": 0.01578
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_declared",
+   "ok": true,
+   "detail": "eval and holdout declare positives and distinct events",
+   "evidence": {
+    "declared": {
+     "eval": {
+      "positives": 46,
+      "distinct_events": 45
+     },
+     "holdout": {
+      "positives": 46,
+      "distinct_events": 44
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_match_rows",
+   "ok": true,
+   "detail": "declared positive counts match the rows",
+   "evidence": {
+    "mismatched": []
+   }
+  },
+  {
+   "check": "splits.event_key_column_declared",
+   "ok": true,
+   "detail": "clustered events are counted by 'notification_date' (date part)",
+   "evidence": {}
+  },
+  {
+   "check": "splits.distinct_events_match_rows",
+   "ok": true,
+   "detail": "declared clustered event counts match the rows",
+   "evidence": {
+    "recomputed": {
+     "train": 209,
+     "eval": 45,
+     "holdout": 44
+    },
+    "declared": {
+     "eval": {
+      "positives": 46,
+      "distinct_events": 45
+     },
+     "holdout": {
+      "positives": 46,
+      "distinct_events": 44
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.enough_clustered_positives",
+   "ok": true,
+   "detail": "eval and holdout carry enough independent positive events to score",
+   "evidence": {
+    "thin": [],
+    "recomputed_events": {
+     "train": 209,
+     "eval": 45,
+     "holdout": 44
+    },
+    "minimums": {
+     "positives": 30,
+     "distinct_events": 20
+    }
+   }
+  },
+  {
+   "check": "splits.rates_not_uniform",
+   "ok": true,
+   "detail": "positive rates are between 0 and 1",
+   "evidence": {
+    "rates": [
+     0.040141,
+     0.025989,
+     0.01578
+    ]
+   }
+  },
+  {
+   "check": "splits.actual_ranges_computed",
+   "ok": true,
+   "detail": "row timestamps found for every split",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "1990-10-04",
+      "max": "2013-12-23"
+     },
+     "eval": {
+      "min": "2014-01-03",
+      "max": "2018-12-21"
+     },
+     "holdout": {
+      "min": "2019-01-03",
+      "max": "2026-10-02"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.actual_ranges_disjoint",
+   "ok": true,
+   "detail": "the rows of the three splits occupy disjoint periods",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "1990-10-04",
+      "max": "2013-12-23"
+     },
+     "eval": {
+      "min": "2014-01-03",
+      "max": "2018-12-21"
+     },
+     "holdout": {
+      "min": "2019-01-03",
+      "max": "2026-10-02"
+     }
+    },
+    "overlaps": []
+   }
+  },
+  {
+   "check": "splits.rows_within_declared_windows",
+   "ok": true,
+   "detail": "every row falls inside its split's declared window",
+   "evidence": {
+    "windows": {
+     "train": {
+      "start": "1990-01-01",
+      "end": "2014-01-01"
+     },
+     "eval": {
+      "start": "2014-01-01",
+      "end": "2019-01-01"
+     },
+     "holdout": {
+      "start": "2019-01-01",
+      "end": "2026-10-03"
+     }
+    },
+    "ranges": {
+     "train": {
+      "min": "1990-10-04",
+      "max": "2013-12-23"
+     },
+     "eval": {
+      "min": "2014-01-03",
+      "max": "2018-12-21"
+     },
+     "holdout": {
+      "min": "2019-01-03",
+      "max": "2026-10-02"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.no_cross_split_entities",
+   "ok": true,
+   "detail": "no case_number appears in more than one split",
+   "evidence": {
+    "shared_sample": [],
+    "shared_count": 0
+   }
+  },
+  {
+   "check": "splits.duplicate_entities_within_splits",
+   "ok": true,
+   "detail": "0 repeated-identifier rows within splits, at most the declared 0",
+   "evidence": {
+    "duplicate_rows": {},
+    "declared": 0
+   }
+  },
+  {
+   "check": "runner.layout",
+   "ok": true,
+   "detail": "holdout is private and train/eval are public",
+   "evidence": {}
+  },
+  {
+   "check": "runner.meta_json_keys",
+   "ok": true,
+   "detail": "meta.json carries the keys the runner reads",
+   "evidence": {
+    "keys": [
+     "columns",
+     "description",
+     "id_columns",
+     "name",
+     "positive_label",
+     "positive_rate",
+     "rows",
+     "split",
+     "split_description",
+     "target"
+    ]
+   }
+  },
+  {
+   "check": "runner.meta_matches_files",
+   "ok": true,
+   "detail": "meta.json agrees with the split files",
+   "evidence": {
+    "problems": []
+   }
+  },
+  {
+   "check": "runner.meta_counts_match_files",
+   "ok": true,
+   "detail": "meta rows and rates match the files",
+   "evidence": {}
+  },
+  {
+   "check": "runner.id_columns_are_not_features",
+   "ok": true,
+   "detail": "declared identifiers are not also listed as features",
+   "evidence": {}
+  }
+ ],
+ "failed_checks": []
+}

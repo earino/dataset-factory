@@ -23,6 +23,55 @@ commit 8512fd8). Close #17; ordinary advancement thereafter is source-specific
 candidate review - review the next candidate's source-specific prediction contract
 and update its builder before construction; #25 remains deferred.
 
+## 2026-10-27 (14:50Z) - worker watcher follow-up: ecm-publish-001 + ecm-hf-001 both succeeded; ec-merger-phase2-opening staged private on GitHub and Hub, verified, awaiting the operator's flip
+
+The advancement session that launched both release jobs recorded their outcomes and
+the destination evidence (record.json 14:44:34Z, DESTINATIONS.json 14:43Z) but was
+cut off before recording in STATE.md, committing, or writing handled markers. This
+pass re-verified every recorded check read-only, then recorded and committed. No
+worker, release, tag or published byte was changed; no recovery was needed.
+
+- ecm-publish-001 (transfer, release: true): copied the five accepted ec-merger-003
+  assets (artifact e5a98dfc9c05d0b0...) from private staging release 425292628 into
+  private GitHub repo earino/ec-merger-phase2-opening release v2026.10 (425556351),
+  each sha256 verified on arrival and against the server digest after upload;
+  failures: none (13.1 s, 856,071 bytes, never through the coordinator). Re-verified
+  live 14:50Z: anonymous repo API 404 (private), release non-draft, 5/5 assets match
+  the job ledger by server-side digest and size, tag v2026.10 == main ==
+  47190aa4b3bbafbc95436ee6f76960e2a3f33843, package SHA256SUMS == ledger digests.
+  Worker 172827698: Hetzner read-back 404; project lists zero servers.
+- ecm-hf-001 (hf_publish): uploaded the five data files to the private Hub dataset
+  repo earino/ec-merger-phase2-opening from the staged GitHub release, digest-verified
+  at both ends (uploads 5, skipped 0, failures 0), then the documented load_dataset
+  path against the uploaded bytes: ok=true, problems=[], train 5,406 rows / 217
+  positives, eval 1,770 / 46, holdout 2,915 / 46, 12 columns, label values
+  ['0','1'] - identical to the accepted artifact and the job's declared loading
+  contract. Hub commit 119d2efde7029c504e59babb9e4b0a5845eeb511 carries all five
+  files at the manifest digests with blob ids recorded in the collected result.
+  Re-verified live 14:50Z: anonymous Hub API 401 (private), repo private=true,
+  tag v2026.10 -> 119d2efd == main. Worker 172830524: Hetzner read-back 404;
+  project lists zero servers.
+- Destination evidence: release/ec-merger-phase2-opening/DESTINATIONS.json records
+  both destinations verified (github 14:33:30Z, huggingface 14:41:57Z), files_verified
+  as lists, artifact_version e5a98dfc... equal to the manifest's.
+  check-package.py release/ec-merger-phase2-opening: OK.
+  check-suitability.py: OK (13 reviews). check-candidate.py --all: exit 0, all
+  candidate records OK (this pass, before commit).
+- Candidate record: status packaged, packaged_at 2026-10-27T14:44:34Z,
+  awaiting_operator true; job outcomes and evidence paths recorded
+  (candidates/ec-merger-phase2-opening/{publish,hf}/job.json, jobs/ecm-*.json,
+  .factory/ecm-*/result.json).
+- Anonymous access is verified false on both destinations by design: GitHub repo API
+  404 and Hub API 401 without credentials. Nothing is public; no publication
+  approval is implied by worker completion.
+
+Next action: the flip is the operator's single act. After it, publication is
+automatic per the recorded sequence in candidates/ec-merger-phase2-opening/record.json
+next_action (flip GitHub + Hub, anonymous verification, record verified visibility in
+DESTINATIONS.json without regenerating the frozen manifest, re-run check-package,
+website pipeline with a new sites/ec-merger-phase2-opening.json editorial file,
+refresh status-bearing documents, carry the suitability notice to all three surfaces).
+
 ## 2026-10-27 (12:45Z) - Latin America discovery tick: conagua-dam-drought-onset (MX) READY (go); Chile MMA episode registry probed and left closed on PDF-only labels; ANVISA/imports and dengue not opened (family precedents)
 
 Regional focus Latin America (Mexico, Chile). Discovery-only session: no

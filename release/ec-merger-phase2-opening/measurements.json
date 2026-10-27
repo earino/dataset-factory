@@ -1,0 +1,80 @@
+{
+ "name": "ec-merger-phase2-opening",
+ "built_at_utc": "2026-10-27T10:14:03Z",
+ "source": {
+  "publisher": "European Commission, Directorate-General for Competition - EU Competition: Merger case publications (open data case register)",
+  "landing_page": "https://data.europa.eu/data/datasets/cc7e224e-6569-40f0-8037-d3389aa0fae7",
+  "mode": "http",
+  "files": 1,
+  "vintage_last_modified": "Tue, 27 Oct 2026 01:23:54 GMT (the register rolls over daily; this release pins the 2026-10-27 vintage)",
+  "bytes": 42034960,
+  "requests": 1,
+  "seconds": 0.87,
+  "requests_note": "one anonymous GET of the bulk case register case-data-M.json (42,034,960 B, sha256 420411333e9b9fc27e0c2e72cbbbb419f1ba4125e7f40d98a9bc5e0911316702); stable tokenless S3 URL, no key",
+  "fetch_provenance": "worker job ec-merger-003 (server 172772422, cx23/hel1) fetched the publisher directly; the bytes never passed through the coordinator. The panel was first measured at discovery on 2026-10-24 (42,025,677 B) and re-pinned at construction on 2026-10-27 (42,034,960 B) - the daily object grows as new cases arrive"
+ },
+ "grain": "one row per merger case notified to the European Commission under the EU Merger Regulation (caseType MergerCaseType1 with a recorded caseNotificationDate); 10,125 eligible cases in the pinned vintage, 10,091 shipped after censoring 33 pending cases",
+ "eligibility": {
+  "eligible_cases": 10125,
+  "shipped_rows": 10091,
+  "excluded_no_notification": 272,
+  "excluded_breakdown": "244 Merger + 2 Consultation + 26 Additional Procedure cases with no caseNotificationDate",
+  "pending_censored": 33,
+  "pending_censored_note": "29 cases with no decisions at all (26 are live 2020s filings), 3 Art. 9(3) partial referrals, 1 Art. 4(4) partial referral - counted per split, never labelled"
+ },
+ "label": {
+  "rule": "phase2_opened = 1 iff the case carries at least one 'Art. 6(1)(c)' decision adopted on/after its notification date; 'Withdrawal of Art. 6(1)(c)' decisions never match; ever-adopted (a later withdrawal does not undo the opener)",
+  "positives": 309,
+  "base_rate_overall": 0.0306,
+  "pre_notification_opener_cases": ["M.3333 (SONY/BMG re-notification; label decisions predating notification do not count - the case stays positive on its 2007-03-01 opener)"],
+  "decision_type_inventory_top": {"Art. 6(1)(b)": 9169, "Art. 6(1)(b) with conditions & obligations": 367, "Art. 6(1)(c)": 309, "Withdrawn": 202, "Art. 4(5) - Referral": 159, "Art. 8(2) with conditions & obligations": 152}
+ },
+ "splits": {
+  "train": {"window": "1990-2013", "rows": 5406, "positives": 217, "positive_rate": 0.040141},
+  "eval": {"window": "2014-2018", "rows": 1770, "positives": 46, "positive_rate": 0.025989, "distinct_positive_notification_dates": 45},
+  "holdout": {"window": "2019-snapshot", "rows": 2915, "positives": 46, "positive_rate": 0.015786, "distinct_positive_notification_dates": 44}
+ },
+ "fixtures": [
+  {"case": "M.877", "expect": "label 1, sectors C.30.3", "source": "Commission decision PDF m877_19970730_600_fr.pdf + IP/97/729"},
+  {"case": "M.4731 GOOGLE/DOUBLECLICK", "expect": "label 1, sectors M.73.1", "source": "IP/07/1695 + IP/08/458; as-of sector fixture against OJ prior notice C 230, 2.10.2007, p. 12 (CELEX C2007/230/08)"},
+  {"case": "M.10188", "expect": "label 1, sectors C.21 + C.27.9", "source": "IP/22/5364; the 2024-09-06 post-ECJ withdrawal does not undo the opener under the ever-adopted rule"}
+ ],
+ "hazards_measured": {
+  "missing_sector_cases": 79,
+  "sector_division_levels": 122,
+  "notification_to_opener_lag_months": "0 mo: 1, 1 mo: 201, 2 mo: 101, thin tail 3-18 mo (suspended-clock and extended cases)",
+  "register_corrections_note": "the register is a current snapshot and revises historical records (e.g. M.10188's post-ECJ withdrawal appears in history); no historical vintages are retained, so past availability cannot be probed"
+ },
+ "references_eval_1770_rows_46_positives": {
+  "full_model_stock_xgboost": {"auc": 0.6973, "brier": 0.025343, "source": "worker job ec-merger-baseline-001, benchmark runner verbatim"},
+  "sector_division_rate": {"auc": 0.767925, "brier": 0.025008, "source": "required comparator; train rate per NACE division"},
+  "sector_combo_rate": {"auc": 0.705084, "brier": 0.026192},
+  "title_text_token_rate": {"auc": 0.664449, "brier": 0.026111},
+  "calendar_identity": {"auc": 0.560615, "brier": 0.025295},
+  "recent_rate_constant": {"auc": 0.5, "brier": 0.025314, "definition": "train rate over the last three train years 2011-2013 (0.02659)"},
+  "global_rate_constant": {"auc": null, "brier": 0.025514, "note": "constant, no ranking information"},
+  "majority_class_accuracy_this_split": 0.974011,
+  "persistence": "inapplicable: each row is a newly notified case with no prior observation of the same entity; the nearest analogue is recent_rate"
+ },
+ "paired_differences_bootstrap1000": {
+  "full_model_minus_sector_division": {"diff": -0.0706, "ci95": [-0.1558, 0.0168], "reading": "interval contains zero (inconclusive difference); observed gap negative - the stock baseline trails the required comparator"},
+  "full_model_minus_calendar": {"diff": 0.1367, "ci95": [0.0419, 0.2321]},
+  "full_model_minus_recent_rate": {"diff": 0.1973, "ci95": [0.1068, 0.2745]},
+  "sector_division_minus_calendar": {"diff": 0.2073, "ci95": [0.1255, 0.2886]}
+ },
+ "per_year_eval": {
+  "2014": {"rows": 298, "positives": 9, "model_auc": 0.6724, "sector_auc": 0.7053},
+  "2015": {"rows": 331, "positives": 11, "model_auc": 0.7486, "sector_auc": 0.6862},
+  "2016": {"rows": 358, "positives": 7, "model_auc": 0.9113, "sector_auc": 0.8386},
+  "2017": {"rows": 375, "positives": 7, "model_auc": 0.6002, "sector_auc": 0.7552},
+  "2018": {"rows": 408, "positives": 12, "model_auc": 0.5921, "sector_auc": 0.8607}
+ },
+ "prevalence_shift_note": "train 4.01% -> eval 2.60% -> holdout 1.58%: the falling Phase II rate across the enforcement era makes the holdout an out-of-distribution test in prevalence as much as in time; reported as a property, not a construction fault",
+ "measurement_commands": {
+  "gate": "python3 skills/dataset-qualification/scripts/qualify_dataset.py <extract-dir>  (worker, full artifact)",
+  "accept": "python3 skills/dataset-qualification/scripts/qualify_dataset.py --accept <report.json> <extract-dir>  (worker, exact bytes)",
+  "references": "python3 source/score.py --data <extract-dir> --accepted-report <report.json> --report references.json  (post-acceptance)",
+  "baseline": "runner-contract baseline job ec-merger-baseline-001: gate --accept on fetched bytes, then python train.py + sh validate.sh unmodified, then report.py (model per-row scores via predict_proba + paired bootstrap vs the references)",
+  "majority_rule": "majority = int(train_positive_rate >= 0.5); accuracy measured against this split's labels"
+ }
+}

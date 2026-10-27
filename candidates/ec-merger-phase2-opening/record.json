@@ -1,6 +1,6 @@
 {
  "id": "ec-merger-phase2-opening",
- "status": "qualified",
+ "status": "packaged",
  "created_at": "2026-10-24T00:15:18.727242+00:00",
  "domain": "EU competition policy / merger-control procedure outcomes (EU institution publisher, DG COMP open data)",
  "prediction_question": "For a concentration notified to the European Commission under the EU Merger Regulation, using only case attributes fixed at notification (the parties as named in the case title, the case's NACE sector codes, the applicable regulation, and the notification date), will the Commission open an in-depth Phase II investigation (adopt an Art. 6(1)(c) decision) in this case?",
@@ -64,6 +64,16 @@
    "id": "ec-merger-baseline-001",
    "date": "2026-10-27",
    "outcome": "succeeded: fetched the five ec-merger-003 extract files from staging 425292628 (digest-verified on arrival), re-ACCEPTed through gate 1.5.0 ('ACCEPTED: ... e5a98dfc9c05d0b0'), materialized the runner workdir (public train+eval only; holdout never copied), ran the benchmark's verbatim train.py + validate.sh (runner_files verbatim=true), contract OK. FULL MODEL eval AUC 0.6973 (train.py and validate.py agree; recomputed via predict_proba 0.69735, Brier 0.025343) vs required comparator sector_division_rate 0.7679 on the identical 1,770 eval rows: paired difference -0.0706, bootstrap95 [-0.1558, +0.0168] - interval contains zero (inconclusive difference), observed gap NEGATIVE: the stock runner baseline trails the sector prior. Model beats calendar_identity 0.5606 (+0.1367, [0.0419, 0.2321]) and recent_rate 0.5 (+0.1973, [0.1068, 0.2745]). Per-year model AUC 2014 0.6724 / 2015 0.7486 / 2016 0.9113 / 2017 0.6002 / 2018 0.5921 (7-12 positives per year; noisy). All recomputed references agree exactly with the construction-run figures. train.py's stock cardinality rule did NOT drop sector_divisions (540 train levels < 1000 cutoff; case_title and notification_date were dropped), so the gap is not a feature-availability artefact: the simple marginal per-division prior generalizes better than the stock 540-level categorical fit at 217 train positives. Majority-class accuracy on this split 0.9740. Worker 172773775 destroyed 10:24:07Z after verified collection; result + logs preserved under .factory/ec-merger-baseline-001/; staging release 425299143. Holdout remains sealed; the benchmark score is holdout AUC by agents, and the eval-window comparison is the release evidence."
+  },
+  {
+   "id": "ecm-publish-001",
+   "date": "2026-10-27",
+   "outcome": "succeeded: destination-staging transfer (release: true). Copied the five accepted ec-merger-003 assets from private staging release 425292628 into private GitHub repo earino/ec-merger-phase2-opening draft release v2026.10 (425556351) under flat asset names, each sha256 verified on arrival and against the server digest after upload (13.1 s, 0.9 MB, bytes never through the coordinator). Readback: 5/5 assets match MANIFEST.json by name/size/server-side sha256; release published non-draft creating tag v2026.10, tag == main == 47190aa; get_dataset.py executed end-to-end against the private release (856,071 bytes, all digests verified, exit 0) and gate --accept on the downloaded tree returned ACCEPTED e5a98dfc9c05d0b0; anonymous API GET 404. Worker 172827698 collected 14:31:03Z, destroyed 14:34:50Z, provider read-back 404. Pre-launch job file candidates/ec-merger-phase2-opening/publish/job.json; evidence in release/ec-merger-phase2-opening/DESTINATIONS.json."
+  },
+  {
+   "id": "ecm-hf-001",
+   "date": "2026-10-27",
+   "outcome": "succeeded: hf_publish worker job. Uploaded the five data files to the private Hub dataset repo earino/ec-merger-phase2-opening from the staged GitHub release 425556351, digest-verified at both ends (114.2 s, uploads 5, skipped 0, failures 0), then ran the documented load_dataset path against the uploaded bytes: ok=true, problems=[], train 5,406/217, eval 1,770/46, holdout 2,915/46, 12 columns, label values ['0','1'] - identical to the accepted artifact. hf-publish --verify --worker-job ecm-hf-001: ok, 5/5 at manifest digests, 0 missing/mismatched; --tag LAST: Hub tag v2026.10 == main == 119d2efd, tag_matches_main true; DESTINATIONS.json records the Hub destination. Anonymous Hub API 401; cardData.license reads back 'other' / cc-by-4.0-source-plus-cc0-compilation. Worker 172830524 destroyed 14:39:43Z, provider read-back 404. Pre-launch job file candidates/ec-merger-phase2-opening/hf/job.json."
   }
  ],
  "artifacts": [
@@ -101,7 +111,9 @@
     "eval": 45,
     "holdout": 44
    },
-   "staging_release_tag": "job-ec-merger-002"
+   "staging_release_tag": "job-ec-merger-002",
+   "repo": "earino/dataset-factory-staging",
+   "tag": "job-ec-merger-002"
   },
   {
    "artifact_version": "e5a98dfc9c05d0b087ed2dead21004fbbd972e415d2174469371a908bcaf90ad",
@@ -138,12 +150,33 @@
     "holdout": 44
    },
    "staging_release_tag": "job-ec-merger-003",
-   "byte_diff_vs_002": "train.csv and eval.csv sha256 identical to the 002 artifact; holdout.csv +1 row (one new 2026 notification in the re-pinned daily snapshot, 10,125 eligible / 10,091 shipped / 309 positives); meta.json grew by the description/split keys; quality.json re-written for the new snapshot pin"
+   "byte_diff_vs_002": "train.csv and eval.csv sha256 identical to the 002 artifact; holdout.csv +1 row (one new 2026 notification in the re-pinned daily snapshot, 10,125 eligible / 10,091 shipped / 309 positives); meta.json grew by the description/split keys; quality.json re-written for the new snapshot pin",
+   "repo": "earino/dataset-factory-staging",
+   "tag": "job-ec-merger-003"
+  },
+  {
+   "kind": "destination_release",
+   "repo": "earino/ec-merger-phase2-opening",
+   "id": 425556351,
+   "tag": "v2026.10",
+   "commit": "47190aa4b3bbafbc95436ee6f76960e2a3f33843",
+   "private": true,
+   "note": "GitHub destination, staged private: 5/5 assets at the manifest digests (API readback, server-side sha256), release non-draft, tag == main == 47190aa, get_dataset.py executed end-to-end against the private release (token, 856,071 bytes, digests verified, runner layout restored) and qualify_dataset.py --accept ACCEPTED the downloaded tree (e5a98dfc9c05d0b0); anonymous API GET 404. The repository's initial docs commit c3eff13 (packaging session) was advanced to 47190aa by the review pass: the gate report ships as qualification.json and the manifest is regenerated from it. Evidence in release/ec-merger-phase2-opening/DESTINATIONS.json",
+   "artifact_version": "e5a98dfc9c05d0b087ed2dead21004fbbd972e415d2174469371a908bcaf90ad"
+  },
+  {
+   "kind": "destination_hub_repo",
+   "repo": "earino/ec-merger-phase2-opening",
+   "revision_tag": "v2026.10",
+   "commit": "119d2efde7029c504e59babb9e4b0a5845eeb511",
+   "private": true,
+   "note": "Hugging Face destination, staged private: 5/5 data files at the manifest digests (hf-publish --verify ok, 0 missing, 0 size-mismatched, 0 digest-unverified) plus 10 small files (card generated from the manifest, LOADING.md, MANIFEST.json, SHA256SUMS, licence texts, dictionary, VERIFICATION.md, measurements.json); the documented load_dataset path verified by the ecm-hf-001 worker loading check (ok: true, split rows/positives/columns/label all match); tag v2026.10 created last, tag_matches_main true; anonymous Hub API 401",
+   "artifact_version": "e5a98dfc9c05d0b087ed2dead21004fbbd972e415d2174469371a908bcaf90ad"
   }
  ],
  "rejection_reason": null,
  "review": "All five discovery contracts have measured evidence: redistribution (Commission reuse notice, CC BY 4.0, class A), timing (notification-date instant; 308/309 openers strictly post-instant, lag distribution measured; post-hoc and derived fields excluded by name), target (label from the decisions block, excludable; base rate 3.05% measured), splits (three disjoint windows, both classes everywhere, positives 217/46/46), not-a-mirror (novelty check differentiated: literature and proprietary compiled datasets exist; no public ML-ready formulation of this task with splits and a scored contract). The fetch is trivially open - the contribution is the formulation (notification-time contract, eligibility, label from the decision-type inventory, splits, fixtures, baselines) and validation, and the record states that explicitly.",
- "next_action": "Package per dataset-release from the accepted ec-merger-003 artifact (e5a98dfc9c05d0b0..., staging release 425292628): rebuild the tree from the manifest parts, re-verify digests, assemble release/ec-merger-phase2-opening with the baseline figures quoted beside the references (full model 0.6973 vs sector_division_rate 0.7679, paired diff -0.0706 [-0.1558, +0.0168], inconclusive/observed-negative; prevalence shift train 4.01% -> eval 2.60% -> holdout 1.58% recorded), check-package green, then private staging on GitHub and Hugging Face, awaiting the operator's flip. ec-merger-001 is the preserved failed-gate attempt; 002 is the preserved runner-contract-defect attempt; 003 is current. Watcher follow-up 2026-10-27: the package is already assembled by the packaging session (untracked at release/ec-merger-phase2-opening/, documents also committed at .factory/ecm-pack-20261027 commit c3eff13); its verification, check-package, private staging and the operator's flip remain advancement work.",
+ "next_action": "AWAITING OPERATOR FLIP (packaged 2026-10-27T14:44:34Z; awaiting_operator true) - the flip is the operator's single act and nothing is public. Both destinations staged, verified, private: GitHub earino/ec-merger-phase2-opening release v2026.10 (425556351, tag == main == 47190aa, 5/5 assets at manifest digests, get_dataset.py + gate --accept re-executed against the served bytes, anonymous API 404) and Hugging Face earino/ec-merger-phase2-opening (tag v2026.10 == main == 119d2efd, 5/5 data files at manifest digests, worker loading check ok, anonymous 401). After approval no further permission is needed; the recorded sequence: flip GitHub (gh api -X PATCH repos/earino/ec-merger-phase2-opening -F private=false) and Hub (HfApi.update_repo_settings(repo_id=..., repo_type='dataset', private=False) with the write credential), verify from a credential-less client (repo API 200, ranged GET on every release asset at tag v2026.10, Hub API private:false, ranged GETs at the tag revision), record verified visibility in DESTINATIONS.json (never regenerate the frozen manifest or move tags), re-run check-package.py, then the website pipeline (create the editorial file sites/ec-merger-phase2-opening.json, site-publish prepare, review the plan, publish, verify), and refresh status-bearing documents so nothing keeps claiming private (hf-publish --upload-small re-uploads the card/LOADING.md; apply the managed navigation block once DESTINATIONS records a verified site). The suitability record (suitability/ec-merger-phase2-opening.json, retain_restricted, retrospective research over the current snapshot, training-label timing unverified) must carry its public notice to GitHub, Hub and website at publication. ec-merger-001/002 are preserved failure records; 003 (e5a98dfc...) is the current artifact.",
  "jurisdiction": {
   "country": "EU",
   "region": "Europe",
@@ -259,9 +292,9 @@
   "verdict": "differentiated",
   "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
  },
- "updated_at": "2026-10-27T10:26:27Z",
+ "updated_at": "2026-10-27T14:44:34Z",
  "qualification": {
-  "qualified_at": "2026-10-27T10Tue21Tue13Z",
+  "qualified_at": "2026-10-27T10:16:23Z (corrected 2026-10-27: the prior value '2026-10-27T10Tue21Tue13Z' was a malformed strftime of the record-writing time; this value is the write time of the worker's gate report and acceptance files, evidenced by the collected file mtimes)",
   "gate_version": "1.5.0",
   "job": "ec-merger-003",
   "result": "passed; 0 failed checks of 46 on the full artifact on the worker (same check set as the 002 pass: leakage incl. declared high-cardinality sector_divisions, timing event_time instant, contract current_snapshot vintage with training_label_timing declared, splits incl. clustered positive events 45/44, runner meta counts)",
@@ -286,5 +319,7 @@
     "positive_rate": 0.015786
    }
   }
- }
+ },
+ "packaged_at": "2026-10-27T14:44:34Z",
+ "awaiting_operator": true
 }

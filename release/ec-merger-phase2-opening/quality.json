@@ -1,0 +1,302 @@
+{
+ "name": "ec-merger-phase2-opening",
+ "task": {
+  "question": "For a concentration notified to the European Commission under the EU Merger Regulation, using only case attributes fixed at notification (the parties as named in the case title, the case's NACE sector codes, the applicable regulation, and the notification date), will the Commission open an in-depth Phase II investigation (adopt an Art. 6(1)(c) decision) in this case?",
+  "prediction_time": "The notification date of the case (caseNotificationDate; date-only precision, Brussels local). All shipped features are case attributes fixed when the file is registered. The label event - an Art. 6(1)(c) decision opening Phase II - is adopted after notification (measured 308/309 strictly after; the single pre-notification opener M.3333 is excluded by rule). No feature's target window precedes the instant."
+ },
+ "target": "phase2_opened",
+ "positive_label": 1,
+ "time_column": "notification_date",
+ "event_key_column": "notification_date",
+ "event_key_note": "case_number is unique per row, so the conservative clustered unit shipped here is the notification DAY (cases notified the same day share enforcement conditions), following the chilecompra precedent. A weaker dependence - enforcement-era and sector acquisition waves - crosses day boundaries: per-notification-year positive counts are reported beside every score in the reference report and the wave dependence is recorded in evaluation_contract.limitations.",
+ "features": [
+  "notification_year",
+  "notification_month",
+  "regulation",
+  "sector_divisions",
+  "sector_count",
+  "has_sectors",
+  "party_count",
+  "title_has_jv",
+  "case_title"
+ ],
+ "features_documented_at": "prediction_time",
+ "feature_documentation": "every shipped feature is a case attribute fixed when the file is registered, read from the register's metadata block: case_title is caseTitle (the merging parties, an immutable historical fact; the OJ prior notice for M.4731 shows the parties and activities at notification); sector_divisions is the sorted set of NACE division labels derived from caseSectors (register codes sectors as current-vintage NACE Rev 2 {code,label}; division = first two components of the label's code part, e.g. 'C.20.5 - ...' -> 'C.20'; 'NONE' when the register carries no sectors - 79/10,123 measured on the discovery snapshot); sector_count is the number of caseSectors entries; has_sectors flags the missing-sector cases; regulation is caseRegulation (4064/89 or 139/2004); notification_year/month are calendar decompositions of caseNotificationDate; party_count is the number of ' / '-separated segments of caseTitle; title_has_jv flags titles carrying a 'JV' token. caseSimplified is EXCLUDED (upgrade leak: a simplified filing upgraded to Normal during review would make the current value post-hoc), as are caseInvestigationPhase, caseDeadlineDate, caseLastDecisionDate, caseLinks, caseCourtCases, caseRenotificationDate, caseInitiationDate and caseAttachments (post-hoc, mutable, or non-pinned).",
+ "carry_columns": [
+  "notification_date"
+ ],
+ "id_columns": [
+  "case_number"
+ ],
+ "high_cardinality_columns": [
+  "notification_date",
+  "sector_divisions",
+  "case_title"
+ ],
+ "high_cardinality_note": "notification_date is the time column and case_title is the free party-name text; sector_divisions is the fine-grained combination of the case's NACE divisions ('C.20|G.47.11'-style), whose level count exceeds rows/5 per split. A per-value AUC on any of these memorises rows, so all three are declared here rather than scored as candidate leaks; the division-level information stays recoverable by splitting the column on '|'. The register's own baseline runner drops string columns with more than 1000 levels; they remain available to agents.",
+ "label_source_columns": [
+  "decisions.decisionTypes",
+  "decisions.decisionAdoptionDate",
+  "decisions.decisionReferences"
+ ],
+ "post_hoc_columns": [
+  "caseSimplified",
+  "caseInvestigationPhase",
+  "caseDeadlineDate",
+  "caseLastDecisionDate",
+  "caseLinks",
+  "caseCourtCases",
+  "caseRenotificationDate",
+  "caseInitiationDate",
+  "caseAttachments"
+ ],
+ "measurements": [
+  {
+   "column": "notification_date",
+   "unit": "ISO date (date-only, Brussels local)",
+   "frame": "the case's notification event; case attributes are fixed when the file is registered"
+  },
+  {
+   "column": "notification_year",
+   "unit": "calendar year (int)",
+   "frame": "calendar decomposition of the notification date"
+  },
+  {
+   "column": "notification_month",
+   "unit": "calendar month 1-12 (int)",
+   "frame": "calendar decomposition of the notification date"
+  },
+  {
+   "column": "regulation",
+   "unit": "EU merger regulation instrument (4064/89 or 139/2004)",
+   "frame": "the regulation in force, fixed by the notification date"
+  },
+  {
+   "column": "sector_divisions",
+   "unit": "sorted set of NACE Rev 2 division labels, '|'-joined, or NONE",
+   "frame": "current-vintage register coding of the parties' activities; the industries are notification-time facts (the M.4731 OJ prior notice documents them at notification), the taxonomy labels are current-vintage"
+  },
+  {
+   "column": "sector_count",
+   "unit": "count of caseSectors entries (int)",
+   "frame": "number of sector codes the register lists for the case"
+  },
+  {
+   "column": "has_sectors",
+   "unit": "flag 0/1",
+   "frame": "1 when the register carries sectors for the case; the discovery snapshot measured 79/10,123 without"
+  },
+  {
+   "column": "party_count",
+   "unit": "count of ' / '-separated title segments (int)",
+   "frame": "derived from caseTitle, fixed at registration; a proxy for deal complexity, not a verified party census (JV suffixes count as segments)"
+  },
+  {
+   "column": "title_has_jv",
+   "unit": "flag 0/1",
+   "frame": "derived from caseTitle: 1 when the title carries a 'JV' token, fixed at registration"
+  },
+  {
+   "column": "case_title",
+   "unit": "free text (the merging parties' names)",
+   "frame": "caseTitle, fixed at registration (the OJ prior notice for M.4731 names the same parties at notification)"
+  }
+ ],
+ "split_windows": {
+  "train": {
+   "start": "1990-01-01",
+   "end": "2014-01-01"
+  },
+  "eval": {
+   "start": "2014-01-01",
+   "end": "2019-01-01"
+  },
+  "holdout": {
+   "start": "2019-01-01",
+   "end": "2026-10-03"
+  }
+ },
+ "split_boundaries": {
+  "train": "notification years 1990-2013 (Reg 4064/89 and early Reg 139/2004 era)",
+  "eval": "notification years 2014-2018",
+  "holdout": "notification years 2019-snapshot (recent-year positives 1/4/3 in 2024/25/26 on the discovery snapshot reflect maturing procedures; per-year reporting is mandatory when interpreting it)"
+ },
+ "positive_events": {
+  "eval": {
+   "positives": 46,
+   "distinct_events": 45
+  },
+  "holdout": {
+   "positives": 46,
+   "distinct_events": 44
+  }
+ },
+ "positive_events_note": "distinct_events counts distinct notification DATES among positive rows (the event key's date part), the clustered unit in event_key_note",
+ "expected_duplicate_ids": 0,
+ "id_columns_are_entity_keys": true,
+ "splits": {
+  "train": "public/train.csv",
+  "eval": "public/eval.csv",
+  "holdout": "private/holdout.csv"
+ },
+ "timing": {
+  "prediction_instant": {
+   "kind": "event_time",
+   "period": "the case's notification event",
+   "days_after_period_end": 0,
+   "citation": "The register records caseNotificationDate (the date the Commission received the notification; date-only, Brussels local) and the case attributes fixed at registration. The OJ prior notice for M.4731 (OJ C 230, 2.10.2007, p. 12, CELEX C2007/230/08) shows the reference number, parties, activities and notification date published within days of the event; the three known-event fixtures (M.877 1997, M.4731 2007, M.10188 2021) reproduce external notification-era sources exactly."
+  },
+  "features": {
+   "period": "the case's notification event",
+   "published_days_after_period_end": 0,
+   "source_kind": "administrative_record"
+  },
+  "row_selection": {
+   "latest_period_used": "the case's notification event (caseNotificationDate; eligibility reads caseType and caseNotificationDate only)",
+   "fields": [
+    "caseType",
+    "caseNotificationDate",
+    "caseTitle",
+    "caseSectors",
+    "caseRegulation",
+    "decisions (label source, read afterwards to compute the label and label maturity)"
+   ],
+   "basis": "membership requires only notification-time fields: caseType Merger and a notification date exist. Cases whose register record establishes neither an opener nor a terminal decision (Art. 6(1)(a)/(b), Art. 8 outcomes, withdrawals, full 9(3)/4(4) referrals) are missing outcome data at fetch time - live recent filings plus old entries with only partial referrals or no decisions: censored, counted per split and per notification year in summary.json as pending_censored, never used to decide another row's membership. A missing or thin later period never deletes an earlier row."
+  },
+  "observations": [],
+  "observations_note": "administrative record: the case attributes are recorded at the event, so no publication-lag observations are required. The register itself is a current snapshot (bulk feed since 2025-03-18, S3 objects expire after 30 days, regenerated daily); no historical vintages exist, which evaluation_contract.vintage records."
+ },
+ "evaluation_contract": {
+  "use": "retrospective_research",
+  "access": "isolated_rows",
+  "training_label_timing": "unverified",
+  "scope_note": "every feature is a same-row case attribute; no cross-row construction exists. Labeled eval is development/validation; the holdout is the final test and stays outside evaluated agents' workspaces. Training-label timing is UNVERIFIED: the register is a current snapshot with no historical vintages, so no full-row availability ledger can be constructed and the artifact is retrospective research only, never a certified historical forecasting setup.",
+  "feature_evidence": {
+   "case_number": {
+    "source": "register metadata caseNumber",
+    "availability": "assigned at notification; the OJ prior notice carries the reference COMP/M.4731 at notification",
+    "status": "verified"
+   },
+   "notification_date": {
+    "source": "register metadata caseNotificationDate",
+    "availability": "the notification event itself; verified against the M.4731 OJ prior notice (21 September 2007) and the M.877 decision PDF (18 February 1997)",
+    "status": "verified"
+   },
+   "notification_year": {
+    "source": "calendar decomposition of caseNotificationDate",
+    "availability": "derivable from the verified notification date at the instant",
+    "status": "verified"
+   },
+   "notification_month": {
+    "source": "calendar decomposition of caseNotificationDate",
+    "availability": "derivable from the verified notification date at the instant",
+    "status": "verified"
+   },
+   "regulation": {
+    "source": "register metadata caseRegulation",
+    "availability": "the regulation in force is fixed by the notification date; the M.4731 OJ notice cites Reg 139/2004, the M.877 decision cites Reg 4064/89",
+    "status": "verified"
+   },
+   "sector_divisions": {
+    "source": "register metadata caseSectors (current-vintage NACE Rev 2 {code,label})",
+    "availability": "the industries are notification-time facts; verified for M.4731 against its OJ prior notice activities and for M.877 against its decision PDF; the taxonomy labels are current-vintage (see vintage)",
+    "status": "verified"
+   },
+   "sector_count": {
+    "source": "count of caseSectors entries",
+    "availability": "derivable from the verified sector field at the instant",
+    "status": "verified"
+   },
+   "has_sectors": {
+    "source": "presence of caseSectors",
+    "availability": "derivable from the verified sector field at the instant",
+    "status": "verified"
+   },
+   "party_count": {
+    "source": "caseTitle split on ' / '",
+    "availability": "caseTitle is fixed at registration (M.4731 OJ notice names the same parties); the count is a deterministic derivation",
+    "status": "verified"
+   },
+   "title_has_jv": {
+    "source": "caseTitle JV token",
+    "availability": "caseTitle is fixed at registration; the flag is a deterministic derivation",
+    "status": "verified"
+   },
+   "case_title": {
+    "source": "register metadata caseTitle",
+    "availability": "fixed at registration; the M.4731 OJ prior notice names Google and DoubleClick at notification",
+    "status": "verified"
+   }
+  },
+  "vintage": {
+   "kind": "current_snapshot",
+   "evidence": "The bulk feed has existed since 2025-03-18 and its S3 objects expire after 30 days; no historical vintages of the register exist, so a reverse-history probe is not performable and point-in-time reconstruction is not claimed. The register's current values reproduce external notification-era sources for three fixtures spanning 1997-2022 (M.877, M.4731 incl. its OJ prior notice, M.10188), evidence that it preserves historical procedure facts. Sector coding is current-vintage NACE Rev 2 across all eras (M.877 notified 1997 coded C.30.3)."
+  },
+  "selection": {
+   "kind": "prediction_time",
+   "evidence": "eligibility reads only caseType (Merger) and caseNotificationDate, both fixed at registration. Label-maturity censoring excludes cases whose label cannot be observed at fetch time (no opener, no terminal decision) and counts them per split and per notification year in summary.json as pending_censored; it never decides another row's membership and never conditions on the label."
+  },
+  "limitations": [
+   "No historical vintages of the register exist; this is a retrospective research dataset over a current snapshot, not a certified historical forecasting setup.",
+   "Sector taxonomy labels are current-vintage NACE Rev 2 applied across all eras; the underlying industries are notification-time facts (fixture-verified for M.4731 and M.877).",
+   "Positives cluster by enforcement era and sector waves beyond the day-level event key; per-notification-year counts are reported beside every score.",
+   "79/10,123 cases (discovery snapshot) carry no sectors; the NONE bucket is a real category, not missing data to impute.",
+   "The ever-adopted label keeps M.10188 positive despite its 2024-09-06 post-ECJ withdrawal of the opener.",
+   "M.3333 stays positive through its 2007-03-01 post-re-notification opener; its 2004-02-12 opener from the annulled procedure is excluded as a label basis by rule.",
+   "Pending-censored cases (register record establishes neither an opener nor a terminal decision) include live recent filings and old incomplete entries; their labels are unobserved, not negative, and their counts are reported per split and year.",
+   "Recent-year positives reflect still-maturing procedures; the holdout window extends to the fetch snapshot.",
+   "The discovery probe's division-conditional rates were grouped on the last component of the register's internal sector code, a malformed key; this build re-measures division-conditional rates from label-derived divisions (summary.json) and the sector-conditional reference in score.py uses the corrected grouping."
+  ],
+  "cross_row_audit": {
+   "probes": [
+    {
+     "name": "unique_case_numbers",
+     "entity_columns": [
+      "case_number"
+     ],
+     "time_column": "notification_date",
+     "operation": "copy",
+     "left": "has_sectors",
+     "offset_days": 365,
+     "expectation": "case_number is unique per row, so no donor row can exist; any coverage would be a construction defect"
+    },
+    {
+     "name": "repeat_party_titles",
+     "entity_columns": [
+      "case_title"
+     ],
+     "time_column": "notification_date",
+     "operation": "copy",
+     "left": "has_sectors",
+     "offset_days": 365,
+     "expectation": "repeat acquirers exist in the register, but no shipped feature is constructed from another row; coverage would measure whether an exact-year same-title donor exists"
+    }
+   ],
+   "rationale": "rows are unique notified cases; every feature is a same-row attribute fixed at registration, so no outcome-bearing cross-row exposure is constructed. The probes measure that claim from the artifact itself.",
+   "auxiliary_files_review": "the artifact ships exactly the runner layout - public/train.csv, public/eval.csv, private/holdout.csv, meta.json, quality.json; no joint label matrices or other solver-visible files exist in the dataset directory"
+  }
+ },
+ "source_snapshot": {
+  "url": "https://compcases-open-data-portal-files-prod.s3.eu-west-1.amazonaws.com/case-data-M.json",
+  "bytes": 42034960,
+  "sha256": "420411333e9b9fc27e0c2e72cbbbb419f1ba4125e7f40d98a9bc5e0911316702",
+  "last_modified": "Tue, 27 Oct 2026 01:23:54 GMT",
+  "etag": "\"8d8a31bb6b6d1c6995943e60bfc1c184-9\"",
+  "fetched_at_utc": "2026-10-27T10:14:03.127666+00:00"
+ },
+ "built_at_utc": "2026-10-27T10:14:05.944096+00:00",
+ "shipped_columns": [
+  "case_number",
+  "phase2_opened",
+  "notification_date",
+  "notification_year",
+  "notification_month",
+  "regulation",
+  "sector_divisions",
+  "sector_count",
+  "has_sectors",
+  "party_count",
+  "title_has_jv",
+  "case_title"
+ ]
+}

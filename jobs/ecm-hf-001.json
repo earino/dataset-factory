@@ -1,0 +1,291 @@
+{
+  "job": {
+    "id": "ecm-hf-001",
+    "candidate": "ec-merger-phase2-opening",
+    "release": true,
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 2048,
+    "timeout_minutes": 25,
+    "lifetime_minutes": 45,
+    "max_disk_mb": 2000,
+    "max_artifact_mb": 8,
+    "what": "hf_publish worker job for ec-merger-phase2-opening: upload the five released data files to the private Hugging Face dataset repo earino/ec-merger-phase2-opening, downloading each from the staged private GitHub release (425556351) and verifying its sha256 against the manifest before and after transfer, then run the documented load_dataset path against the uploaded bytes (split rows, positives, columns and label values checked against the accepted artifact). The bytes never pass through the coordinator; peak worker disk is one asset.",
+    "hf_publish": {
+      "repo": "earino/ec-merger-phase2-opening",
+      "revision": "main",
+      "source_repo": "earino/ec-merger-phase2-opening",
+      "assets": [
+        {
+          "asset_id": 681816010,
+          "dest": "meta.json",
+          "target": "meta.json",
+          "size": 1233,
+          "sha256": "011a4c0b989705ce2a8577e387e0cf96856cc8e9c65f7c51fbbffd699944d13d"
+        },
+        {
+          "asset_id": 681816163,
+          "dest": "private-holdout.csv",
+          "target": "data/private-holdout.csv",
+          "size": 253649,
+          "sha256": "5867e34f3ebf714b9ec0ef307989cb4296438148390a6a5ea2bcf88795f703fd"
+        },
+        {
+          "asset_id": 681816261,
+          "dest": "public-eval.csv",
+          "target": "data/public-eval.csv",
+          "size": 155077,
+          "sha256": "4fb28c0908e4c79ccf194de3b27f2996c05efc0f01ec4074c953a7eb697f24f6"
+        },
+        {
+          "asset_id": 681816389,
+          "dest": "public-train.csv",
+          "target": "data/public-train.csv",
+          "size": 429048,
+          "sha256": "1619b6f4ad4a7dab0f437335c231f727f6f5c5f0ea02b3454366f5a71ab90a44"
+        },
+        {
+          "asset_id": 681816468,
+          "dest": "quality.json",
+          "target": "quality.json",
+          "size": 17064,
+          "sha256": "ca07571caa43e1a0f6fd77c0ed28f535d7ed3c794f6441c6483ce0663acee23c"
+        }
+      ],
+      "verify_loading": {
+        "splits": {
+          "train": {
+            "rows": 5406,
+            "positives": 217
+          },
+          "eval": {
+            "rows": 1770,
+            "positives": 46
+          },
+          "holdout": {
+            "rows": 2915,
+            "positives": 46
+          }
+        },
+        "columns": [
+          "case_number",
+          "phase2_opened",
+          "notification_date",
+          "notification_year",
+          "notification_month",
+          "regulation",
+          "sector_divisions",
+          "sector_count",
+          "has_sectors",
+          "party_count",
+          "title_has_jv",
+          "case_title"
+        ],
+        "label": "phase2_opened",
+        "label_values": [
+          0,
+          1
+        ]
+      }
+    }
+  },
+  "reservation_eur": "0.04",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 2,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 92160,
+  "source_sha256": "dc37055842966eb4d353467e4d8f229a939979d3ffe56665e815989880ed3d5b",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-10-27T14:35:03.320238+00:00",
+  "expires": 1793114403,
+  "budget_months": [
+    "2026-10"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 172830524,
+  "known_hosts": "/opt/data/dataset-factory/.factory/ecm-hf-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "65.21.158.17",
+  "result": {
+    "job_id": "ecm-hf-001",
+    "status": "succeeded",
+    "uploaded": true,
+    "venv": "/opt/scout/.hf-venv",
+    "pip_bootstrapped": true,
+    "hf_publish": {
+      "repo": "earino/ec-merger-phase2-opening",
+      "revision": "main",
+      "verify_only": false,
+      "uploads": [
+        {
+          "target": "meta.json",
+          "bytes": 1233,
+          "sha256": "011a4c0b989705ce2a8577e387e0cf96856cc8e9c65f7c51fbbffd699944d13d"
+        },
+        {
+          "target": "data/private-holdout.csv",
+          "bytes": 253649,
+          "sha256": "5867e34f3ebf714b9ec0ef307989cb4296438148390a6a5ea2bcf88795f703fd"
+        },
+        {
+          "target": "data/public-eval.csv",
+          "bytes": 155077,
+          "sha256": "4fb28c0908e4c79ccf194de3b27f2996c05efc0f01ec4074c953a7eb697f24f6"
+        },
+        {
+          "target": "data/public-train.csv",
+          "bytes": 429048,
+          "sha256": "1619b6f4ad4a7dab0f437335c231f727f6f5c5f0ea02b3454366f5a71ab90a44"
+        },
+        {
+          "target": "quality.json",
+          "bytes": 17064,
+          "sha256": "ca07571caa43e1a0f6fd77c0ed28f535d7ed3c794f6441c6483ce0663acee23c"
+        }
+      ],
+      "skipped": [],
+      "failures": [],
+      "bytes": 856071
+    },
+    "hf_verification": {
+      "schema_version": 1,
+      "repo": "earino/ec-merger-phase2-opening",
+      "commit": "119d2efde7029c504e59babb9e4b0a5845eeb511",
+      "files": {
+        "meta.json": {
+          "bytes": 1233,
+          "sha256": "011a4c0b989705ce2a8577e387e0cf96856cc8e9c65f7c51fbbffd699944d13d",
+          "blob_id": "ad2693993616680d85e59a7259c19d903885ee17"
+        },
+        "data/private-holdout.csv": {
+          "bytes": 253649,
+          "sha256": "5867e34f3ebf714b9ec0ef307989cb4296438148390a6a5ea2bcf88795f703fd",
+          "blob_id": "cbe7b6ea31b4ffc105f81990c0c03c4c5a3dfd7f"
+        },
+        "data/public-eval.csv": {
+          "bytes": 155077,
+          "sha256": "4fb28c0908e4c79ccf194de3b27f2996c05efc0f01ec4074c953a7eb697f24f6",
+          "blob_id": "988327b64fab619ca45cac77a3d5dccad5dd60e3"
+        },
+        "data/public-train.csv": {
+          "bytes": 429048,
+          "sha256": "1619b6f4ad4a7dab0f437335c231f727f6f5c5f0ea02b3454366f5a71ab90a44",
+          "blob_id": "61c172268db8f5f47149cf4af0b264d9194924ae"
+        },
+        "quality.json": {
+          "bytes": 17064,
+          "sha256": "ca07571caa43e1a0f6fd77c0ed28f535d7ed3c794f6441c6483ce0663acee23c",
+          "blob_id": "0c85fdace30eb0d4c363ab6ae6ac1c70361e7f41"
+        }
+      },
+      "ok": true,
+      "errors": []
+    },
+    "hf_loading": {
+      "splits": [
+        "eval",
+        "holdout",
+        "train"
+      ],
+      "checked": {
+        "eval": {
+          "rows": 1770,
+          "columns": [
+            "case_number",
+            "case_title",
+            "has_sectors",
+            "notification_date",
+            "notification_month",
+            "notification_year",
+            "party_count",
+            "phase2_opened",
+            "regulation",
+            "sector_count",
+            "sector_divisions",
+            "title_has_jv"
+          ],
+          "label_values": [
+            "0",
+            "1"
+          ],
+          "positives": 46
+        },
+        "holdout": {
+          "rows": 2915,
+          "columns": [
+            "case_number",
+            "case_title",
+            "has_sectors",
+            "notification_date",
+            "notification_month",
+            "notification_year",
+            "party_count",
+            "phase2_opened",
+            "regulation",
+            "sector_count",
+            "sector_divisions",
+            "title_has_jv"
+          ],
+          "label_values": [
+            "0",
+            "1"
+          ],
+          "positives": 46
+        },
+        "train": {
+          "rows": 5406,
+          "columns": [
+            "case_number",
+            "case_title",
+            "has_sectors",
+            "notification_date",
+            "notification_month",
+            "notification_year",
+            "party_count",
+            "phase2_opened",
+            "regulation",
+            "sector_count",
+            "sector_divisions",
+            "title_has_jv"
+          ],
+          "label_values": [
+            "0",
+            "1"
+          ],
+          "positives": 217
+        }
+      },
+      "problems": [],
+      "ok": true
+    },
+    "host_cleanup_complete": true,
+    "host_process_pid": 2688,
+    "elapsed_seconds": 114.2,
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 425579416,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-0151496b87ea9964ef1b",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-0151496b87ea9964ef1b/manifest.json",
+    "assets": [
+      {
+        "id": 681864979,
+        "size": 92160,
+        "sha256": "dc37055842966eb4d353467e4d8f229a939979d3ffe56665e815989880ed3d5b"
+      },
+      {
+        "id": 681865075,
+        "size": 8021,
+        "sha256": "221e1d1c4e8822ce0520026f8a7973732b1aeeb48a60970197007df27a2f398e"
+      }
+    ],
+    "skipped_empty": [
+      "container.log"
+    ]
+  },
+  "collected_at": "2026-10-27T14:39:07.328081+00:00",
+  "deleted_at": "2026-10-27T14:39:43.975518+00:00"
+}

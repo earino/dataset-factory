@@ -1,0 +1,531 @@
+{
+  "dataset": "ec-merger-phase2-opening",
+  "release_version": "2026.10",
+  "release_tag": "v2026.10",
+  "repository": "https://github.com/earino/ec-merger-phase2-opening",
+  "visibility": "private (publication requires explicit authorisation)",
+  "artifact_version": "e5a98dfc9c05d0b087ed2dead21004fbbd972e415d2174469371a908bcaf90ad",
+  "package_digest": null,
+  "artifact_job": "ec-merger-003",
+  "staging_release": 425292628,
+  "staging_release_tag": "job-ec-merger-003",
+  "staging_repo": "earino/dataset-factory-staging",
+  "construction_commit": "54428d2",
+  "gate_version": "1.5.0",
+  "gate_command": "python3 code/qualify_dataset.py ./task",
+  "measurements": {
+    "name": "ec-merger-phase2-opening",
+    "built_at_utc": "2026-10-27T10:14:03Z",
+    "source": {
+      "publisher": "European Commission, Directorate-General for Competition - EU Competition: Merger case publications (open data case register)",
+      "landing_page": "https://data.europa.eu/data/datasets/cc7e224e-6569-40f0-8037-d3389aa0fae7",
+      "mode": "http",
+      "files": 1,
+      "vintage_last_modified": "Tue, 27 Oct 2026 01:23:54 GMT (the register rolls over daily; this release pins the 2026-10-27 vintage)",
+      "bytes": 42034960,
+      "requests": 1,
+      "seconds": 0.87,
+      "requests_note": "one anonymous GET of the bulk case register case-data-M.json (42,034,960 B, sha256 420411333e9b9fc27e0c2e72cbbbb419f1ba4125e7f40d98a9bc5e0911316702); stable tokenless S3 URL, no key",
+      "fetch_provenance": "worker job ec-merger-003 (server 172772422, cx23/hel1) fetched the publisher directly; the bytes never passed through the coordinator. The panel was first measured at discovery on 2026-10-24 (42,025,677 B) and re-pinned at construction on 2026-10-27 (42,034,960 B) - the daily object grows as new cases arrive"
+    },
+    "grain": "one row per merger case notified to the European Commission under the EU Merger Regulation (caseType MergerCaseType1 with a recorded caseNotificationDate); 10,125 eligible cases in the pinned vintage, 10,091 shipped after censoring 33 pending cases",
+    "eligibility": {
+      "eligible_cases": 10125,
+      "shipped_rows": 10091,
+      "excluded_no_notification": 272,
+      "excluded_breakdown": "244 Merger + 2 Consultation + 26 Additional Procedure cases with no caseNotificationDate",
+      "pending_censored": 33,
+      "pending_censored_note": "29 cases with no decisions at all (26 are live 2020s filings), 3 Art. 9(3) partial referrals, 1 Art. 4(4) partial referral - counted per split, never labelled"
+    },
+    "label": {
+      "rule": "phase2_opened = 1 iff the case carries at least one 'Art. 6(1)(c)' decision adopted on/after its notification date; 'Withdrawal of Art. 6(1)(c)' decisions never match; ever-adopted (a later withdrawal does not undo the opener)",
+      "positives": 309,
+      "base_rate_overall": 0.0306,
+      "pre_notification_opener_cases": [
+        "M.3333 (SONY/BMG re-notification; label decisions predating notification do not count - the case stays positive on its 2007-03-01 opener)"
+      ],
+      "decision_type_inventory_top": {
+        "Art. 6(1)(b)": 9169,
+        "Art. 6(1)(b) with conditions & obligations": 367,
+        "Art. 6(1)(c)": 309,
+        "Withdrawn": 202,
+        "Art. 4(5) - Referral": 159,
+        "Art. 8(2) with conditions & obligations": 152
+      }
+    },
+    "splits": {
+      "train": {
+        "window": "1990-2013",
+        "rows": 5406,
+        "positives": 217,
+        "positive_rate": 0.040141
+      },
+      "eval": {
+        "window": "2014-2018",
+        "rows": 1770,
+        "positives": 46,
+        "positive_rate": 0.025989,
+        "distinct_positive_notification_dates": 45
+      },
+      "holdout": {
+        "window": "2019-snapshot",
+        "rows": 2915,
+        "positives": 46,
+        "positive_rate": 0.015786,
+        "distinct_positive_notification_dates": 44
+      }
+    },
+    "fixtures": [
+      {
+        "case": "M.877",
+        "expect": "label 1, sectors C.30.3",
+        "source": "Commission decision PDF m877_19970730_600_fr.pdf + IP/97/729"
+      },
+      {
+        "case": "M.4731 GOOGLE/DOUBLECLICK",
+        "expect": "label 1, sectors M.73.1",
+        "source": "IP/07/1695 + IP/08/458; as-of sector fixture against OJ prior notice C 230, 2.10.2007, p. 12 (CELEX C2007/230/08)"
+      },
+      {
+        "case": "M.10188",
+        "expect": "label 1, sectors C.21 + C.27.9",
+        "source": "IP/22/5364; the 2024-09-06 post-ECJ withdrawal does not undo the opener under the ever-adopted rule"
+      }
+    ],
+    "hazards_measured": {
+      "missing_sector_cases": 79,
+      "sector_division_levels": 122,
+      "notification_to_opener_lag_months": "0 mo: 1, 1 mo: 201, 2 mo: 101, thin tail 3-18 mo (suspended-clock and extended cases)",
+      "register_corrections_note": "the register is a current snapshot and revises historical records (e.g. M.10188's post-ECJ withdrawal appears in history); no historical vintages are retained, so past availability cannot be probed"
+    },
+    "references_eval_1770_rows_46_positives": {
+      "full_model_stock_xgboost": {
+        "auc": 0.6973,
+        "brier": 0.025343,
+        "source": "worker job ec-merger-baseline-001, benchmark runner verbatim"
+      },
+      "sector_division_rate": {
+        "auc": 0.767925,
+        "brier": 0.025008,
+        "source": "required comparator; train rate per NACE division"
+      },
+      "sector_combo_rate": {
+        "auc": 0.705084,
+        "brier": 0.026192
+      },
+      "title_text_token_rate": {
+        "auc": 0.664449,
+        "brier": 0.026111
+      },
+      "calendar_identity": {
+        "auc": 0.560615,
+        "brier": 0.025295
+      },
+      "recent_rate_constant": {
+        "auc": 0.5,
+        "brier": 0.025314,
+        "definition": "train rate over the last three train years 2011-2013 (0.02659)"
+      },
+      "global_rate_constant": {
+        "auc": null,
+        "brier": 0.025514,
+        "note": "constant, no ranking information"
+      },
+      "majority_class_accuracy_this_split": 0.974011,
+      "persistence": "inapplicable: each row is a newly notified case with no prior observation of the same entity; the nearest analogue is recent_rate"
+    },
+    "paired_differences_bootstrap1000": {
+      "full_model_minus_sector_division": {
+        "diff": -0.0706,
+        "ci95": [
+          -0.1558,
+          0.0168
+        ],
+        "reading": "interval contains zero (inconclusive difference); observed gap negative - the stock baseline trails the required comparator"
+      },
+      "full_model_minus_calendar": {
+        "diff": 0.1367,
+        "ci95": [
+          0.0419,
+          0.2321
+        ]
+      },
+      "full_model_minus_recent_rate": {
+        "diff": 0.1973,
+        "ci95": [
+          0.1068,
+          0.2745
+        ]
+      },
+      "sector_division_minus_calendar": {
+        "diff": 0.2073,
+        "ci95": [
+          0.1255,
+          0.2886
+        ]
+      }
+    },
+    "per_year_eval": {
+      "2014": {
+        "rows": 298,
+        "positives": 9,
+        "model_auc": 0.6724,
+        "sector_auc": 0.7053
+      },
+      "2015": {
+        "rows": 331,
+        "positives": 11,
+        "model_auc": 0.7486,
+        "sector_auc": 0.6862
+      },
+      "2016": {
+        "rows": 358,
+        "positives": 7,
+        "model_auc": 0.9113,
+        "sector_auc": 0.8386
+      },
+      "2017": {
+        "rows": 375,
+        "positives": 7,
+        "model_auc": 0.6002,
+        "sector_auc": 0.7552
+      },
+      "2018": {
+        "rows": 408,
+        "positives": 12,
+        "model_auc": 0.5921,
+        "sector_auc": 0.8607
+      }
+    },
+    "prevalence_shift_note": "train 4.01% -> eval 2.60% -> holdout 1.58%: the falling Phase II rate across the enforcement era makes the holdout an out-of-distribution test in prevalence as much as in time; reported as a property, not a construction fault",
+    "measurement_commands": {
+      "gate": "python3 skills/dataset-qualification/scripts/qualify_dataset.py <extract-dir>  (worker, full artifact)",
+      "accept": "python3 skills/dataset-qualification/scripts/qualify_dataset.py --accept <report.json> <extract-dir>  (worker, exact bytes)",
+      "references": "python3 source/score.py --data <extract-dir> --accepted-report <report.json> --report references.json  (post-acceptance)",
+      "baseline": "runner-contract baseline job ec-merger-baseline-001: gate --accept on fetched bytes, then python train.py + sh validate.sh unmodified, then report.py (model per-row scores via predict_proba + paired bootstrap vs the references)",
+      "majority_rule": "majority = int(train_positive_rate >= 0.5); accuracy measured against this split's labels"
+    }
+  },
+  "assets": {
+    "meta.json": {
+      "asset_name": "meta.json",
+      "bytes": 1233,
+      "sha256": "011a4c0b989705ce2a8577e387e0cf96856cc8e9c65f7c51fbbffd699944d13d"
+    },
+    "private/holdout.csv": {
+      "asset_name": "private-holdout.csv",
+      "bytes": 253649,
+      "sha256": "5867e34f3ebf714b9ec0ef307989cb4296438148390a6a5ea2bcf88795f703fd"
+    },
+    "public/eval.csv": {
+      "asset_name": "public-eval.csv",
+      "bytes": 155077,
+      "sha256": "4fb28c0908e4c79ccf194de3b27f2996c05efc0f01ec4074c953a7eb697f24f6"
+    },
+    "public/train.csv": {
+      "asset_name": "public-train.csv",
+      "bytes": 429048,
+      "sha256": "1619b6f4ad4a7dab0f437335c231f727f6f5c5f0ea02b3454366f5a71ab90a44"
+    },
+    "quality.json": {
+      "asset_name": "quality.json",
+      "bytes": 17064,
+      "sha256": "ca07571caa43e1a0f6fd77c0ed28f535d7ed3c794f6441c6483ce0663acee23c"
+    }
+  },
+  "package_files": {
+    "DATA_DICTIONARY.md": "1caa6a6adffe8a88c3549bb79cdeef2890b0f6ecbc9a7ce492a4f68ea1422903",
+    "LICENSE-CC0-1.0.txt": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+    "LICENSE-MIT.txt": "200f782f6b8bc23b926ea774cbacb4147826b3b2b59200917d8dc5ec68159535",
+    "LICENSE.md": "fa9fee9a841965ede2eb818360493b5685041a1760a0dc5de7bc2e32e1f0a45c",
+    "README.md": "b016e09cccb524f0616a27ab842f72064354b9cf7b1c55b32cd497c89556c375",
+    "RELEASE_NOTES.md": "95e9787b00b77ce5698a6df88178ff1562bd050c7d1cb32b394f7e39f05e43c6",
+    "REPRODUCE.md": "11034ad3b6034e5c988cc269313755e201be98cc314843bfb5c6784074f7e681",
+    "SHA256SUMS": "7215557a830383611c806be2a0f1725dc3c93860ad2707cac6457df576341cc1",
+    "VERIFICATION.md": "df86c203ee8e83884f14f8ebfeb88347a2628e9ec70c845c5a8c933985475cbd",
+    "baseline/README.md": "a5dbfde05cc5c54b846319b368d03c3b844b29eb8c5103987b980ac9657e5acb",
+    "baseline/reproduce_baseline.sh": "32de96032ab1b55d19fdcd1e04e0f5a6b10a187633aa280e9ee76aee9f03c584",
+    "baseline/train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+    "baseline/validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+    "baseline/validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d",
+    "code/build.py": "a2828fd554d8542320df44e3d0bd6c1032fe6e2a67b2de28ad49c5626632a706",
+    "code/materialize.py": "0aef7941b1a3ab113648a937ea0fd78fe1499d79b810c70ba0a32d46e817c209",
+    "code/qualify_dataset.py": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1",
+    "code/run.sh": "bd6d07c5f59ad79cfb2d569323d54e8a27ab93d18f72f69ee046ae2cd1d543de",
+    "get_dataset.py": "ab721a6d13c03c23a6a504219d8fd7dbc39ac55d76dcef2306f08c626ae92c44",
+    "measurements.json": "9ba81a7010e7982453eabf5fa80fd9ab1a403d53743c992d369e36fb421efa1d",
+    "meta.json": "011a4c0b989705ce2a8577e387e0cf96856cc8e9c65f7c51fbbffd699944d13d",
+    "qualification.json": "afc85455f0eeaa390170051b6f6808f7ccfd3bfae613c69dfa8b2593a35342ed",
+    "quality.json": "ca07571caa43e1a0f6fd77c0ed28f535d7ed3c794f6441c6483ce0663acee23c"
+  },
+  "baseline_command": "sh baseline/reproduce_baseline.sh ./task",
+  "get_dataset_command": "python3 get_dataset.py --dest ./task",
+  "source": {
+    "name": "European Commission, Directorate-General for Competition - EU Competition: Merger case publications (open data, machine-readable case register, coverage from November 1990, updated daily)",
+    "landing_page": "https://data.europa.eu/data/datasets/cc7e224e-6569-40f0-8037-d3389aa0fae7",
+    "api": "https://compcases-open-data-portal-files-prod.s3.eu-west-1.amazonaws.com/case-data-M.json - anonymous bulk download, no key, stable URL; the register rolls over daily (publisher states one update per day)",
+    "accessed": "2026-10-27",
+    "licence": "European Commission reuse notice -> CC BY 4.0 (DG COMP news 'DG Competition's case data available as Open Data', 2025-03-18, and the Commission legal notice, both read 2026-10-24; evidence recorded in candidates/ec-merger-phase2-opening/record.json license_evidence). Attribution carries through; changes are indicated. Derived research dataset - not a Commission official product.",
+    "licence_evidence": [
+      "DG COMP news 'DG Competition's case data available as Open Data' (https://competition-policy.ec.europa.eu/about/news/dg-competitions-case-data-available-open-data-2025-03-18_en, read 2026-10-24): 'We are releasing the data under the European Commission reuse notice, so that the machine-readable data sets can be processed in any way the users may wish, for commercial or non-commercial purposes, provided that the source is acknowledged.'",
+      "European Commission legal notice (https://ec.europa.eu/info/legal-notice_en, read 2026-10-24): 'The Commission's reuse policy is implemented by the Commission Decision of 12 December 2011 on the reuse of Commission documents... Unless otherwise indicated (e.g. in individual copyright notices), content owned by the EU on this website is licensed under the Creative Commons Attribution 4.0 International (CC BY 4.0) licence. This means that reuse is allowed, provided appropriate credit is given and changes are indicated.'",
+      "Scope note: the dataset ships register metadata (case numbers, dates, NACE codes with labels, decision-type labels, case titles). The EC notice adds 'You may be required to clear additional rights if a specific content depicts identifiable private individuals or includes third-party works' - the underlying decision PDFs (caseAttachments) are NOT shipped; only register fields are, and the same fields are the Commission's own published register data. caseTitle carries the parties' names, factual public register data."
+    ]
+  },
+  "layout": {
+    "public/train.csv": "public/train.csv",
+    "public/eval.csv": "public/eval.csv",
+    "private/holdout.csv": "private/holdout.csv",
+    "meta.json": "meta.json",
+    "quality.json": "quality.json"
+  },
+  "files": {
+    "public/train.csv": {
+      "bytes": 429048,
+      "sha256": "1619b6f4ad4a7dab0f437335c231f727f6f5c5f0ea02b3454366f5a71ab90a44"
+    },
+    "public/eval.csv": {
+      "bytes": 155077,
+      "sha256": "4fb28c0908e4c79ccf194de3b27f2996c05efc0f01ec4074c953a7eb697f24f6"
+    },
+    "private/holdout.csv": {
+      "bytes": 253649,
+      "sha256": "5867e34f3ebf714b9ec0ef307989cb4296438148390a6a5ea2bcf88795f703fd"
+    },
+    "meta.json": {
+      "bytes": 1233,
+      "sha256": "011a4c0b989705ce2a8577e387e0cf96856cc8e9c65f7c51fbbffd699944d13d"
+    },
+    "quality.json": {
+      "bytes": 17064,
+      "sha256": "ca07571caa43e1a0f6fd77c0ed28f535d7ed3c794f6441c6483ce0663acee23c"
+    }
+  },
+  "splits": {
+    "train": {
+      "rows": 5406,
+      "positives": 217,
+      "positive_rate": 0.040141
+    },
+    "eval": {
+      "rows": 1770,
+      "positives": 46,
+      "positive_rate": 0.025989
+    },
+    "holdout": {
+      "rows": 2915,
+      "positives": 46,
+      "positive_rate": 0.015786
+    }
+  },
+  "qualification": {
+    "gate_version": "1.5.0",
+    "ok": true,
+    "failed_checks": [],
+    "result": "PASSED",
+    "artifact_version": "e5a98dfc9c05d0b087ed2dead21004fbbd972e415d2174469371a908bcaf90ad",
+    "report": "qualification.json"
+  },
+  "baseline": {
+    "job": "ec-merger-baseline-001",
+    "purpose": "one baseline through the runner's existing training and validation contract, on the accepted ec-merger-phase2-opening artifact",
+    "artifact": {
+      "name": "ec-merger-phase2-opening",
+      "target": "phase2_opened",
+      "positive_label": 1,
+      "id_columns": [
+        "case_number"
+      ],
+      "rows": {
+        "train": 5406,
+        "eval": 1770,
+        "holdout": 2915
+      },
+      "positive_rate": {
+        "train": 0.040141,
+        "eval": 0.025989,
+        "holdout": 0.01578
+      },
+      "accepted_artifact_version": "e5a98dfc9c05d0b087ed2dead21004fbbd972e415d2174469371a908bcaf90ad",
+      "gate_version_of_accepted_report": "1.5.0"
+    },
+    "runner_files": {
+      "declared": {
+        "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+        "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+        "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      },
+      "actual": {
+        "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+        "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+        "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      },
+      "verbatim": true
+    },
+    "contract": {
+      "contract_ok": true,
+      "eval_auc_from_train_py": 0.6973,
+      "eval_auc_from_validate_py": 0.6973
+    },
+    "eval_rows": 1770,
+    "eval_positives": 46,
+    "full_model": {
+      "eval_auc_recomputed_via_predict_proba": 0.6973481791586804,
+      "eval_brier": 0.02534254373796426
+    },
+    "train_positive_rate": 0.040141,
+    "majority_class": {
+      "definition": "majority = int(train_positive_rate >= 0.5), measured against THIS split's labels",
+      "accuracy": 0.9740112994350283
+    },
+    "references_recomputed_on_identical_rows": {
+      "sector_division_rate": {
+        "auc": 0.7679246948451528,
+        "construction_run_auc": 0.7679246948451528,
+        "agrees_with_construction_run": true
+      },
+      "calendar_identity": {
+        "auc": 0.560614849187935,
+        "construction_run_auc": 0.560614849187935,
+        "agrees_with_construction_run": true
+      },
+      "title_text": {
+        "auc": 0.6644494603046505,
+        "construction_run_auc": 0.6644494603046505,
+        "agrees_with_construction_run": true
+      },
+      "recent_rate": {
+        "auc": 0.5,
+        "construction_run_auc": 0.5,
+        "agrees_with_construction_run": true
+      }
+    },
+    "paired_differences_full_model_vs_references": {
+      "full_model_vs_sector_division_rate": {
+        "observed_difference": -0.070577,
+        "auc_a": 0.697348,
+        "auc_b": 0.767925,
+        "ci95": [
+          -0.155751,
+          0.016776
+        ],
+        "bootstrap_samples": 1000,
+        "note": "paired row bootstrap on identical eval rows; an interval containing zero is an inconclusive difference, not parity"
+      },
+      "full_model_vs_calendar_identity": {
+        "observed_difference": 0.136733,
+        "auc_a": 0.697348,
+        "auc_b": 0.560615,
+        "ci95": [
+          0.041906,
+          0.23206
+        ],
+        "bootstrap_samples": 1000,
+        "note": "paired row bootstrap on identical eval rows; an interval containing zero is an inconclusive difference, not parity"
+      },
+      "full_model_vs_title_text": {
+        "observed_difference": 0.032899,
+        "auc_a": 0.697348,
+        "auc_b": 0.664449,
+        "ci95": [
+          -0.077024,
+          0.136729
+        ],
+        "bootstrap_samples": 1000,
+        "note": "paired row bootstrap on identical eval rows; an interval containing zero is an inconclusive difference, not parity"
+      },
+      "full_model_vs_recent_rate": {
+        "observed_difference": 0.197348,
+        "auc_a": 0.697348,
+        "auc_b": 0.5,
+        "ci95": [
+          0.106778,
+          0.274452
+        ],
+        "bootstrap_samples": 1000,
+        "note": "paired row bootstrap on identical eval rows; an interval containing zero is an inconclusive difference, not parity"
+      }
+    },
+    "per_year": {
+      "2014": {
+        "rows": 298,
+        "positives": 9,
+        "positive_rate": 0.030201,
+        "full_model_auc": 0.6724336793540946,
+        "sector_division_rate_auc": 0.7053056516724336
+      },
+      "2015": {
+        "rows": 331,
+        "positives": 11,
+        "positive_rate": 0.033233,
+        "full_model_auc": 0.7485795454545454,
+        "sector_division_rate_auc": 0.686221590909091
+      },
+      "2016": {
+        "rows": 358,
+        "positives": 7,
+        "positive_rate": 0.019553,
+        "full_model_auc": 0.9112739112739112,
+        "sector_division_rate_auc": 0.8386243386243386
+      },
+      "2017": {
+        "rows": 375,
+        "positives": 7,
+        "positive_rate": 0.018667,
+        "full_model_auc": 0.6001552795031055,
+        "sector_division_rate_auc": 0.7552406832298136
+      },
+      "2018": {
+        "rows": 408,
+        "positives": 12,
+        "positive_rate": 0.029412,
+        "full_model_auc": 0.5920664983164983,
+        "sector_division_rate_auc": 0.8606902356902357
+      }
+    },
+    "note": "persistence is recorded inapplicable for this task (each row is a newly notified case with no prior observation of the same entity); the nearest analogue, recent_rate, is carried instead. The holdout is sealed and was never copied into the workdir; nothing here touches it."
+  },
+  "scope": "One baseline through the runner's training and validation contract. No agent or harness comparison was run and none is implied.",
+  "published": false,
+  "publication_note": "Prepared for human review. Nothing here has been published.",
+  "licenses": {
+    "policy_version": "2026-09-19",
+    "decided": "2026-10-27",
+    "code": {
+      "spdx": "MIT",
+      "file": "LICENSE-MIT.txt",
+      "copyright": "Copyright (c) 2026 E. Arino de la Rubia (earino)",
+      "third_party": [
+        {
+          "file": "baseline/train.py, baseline/validate.py, baseline/validate.sh",
+          "terms": "MIT - the harness benchmark's own runner files, shipped verbatim and unmodified (bundled sha256 equal the benchmark's declared hashes, recorded in the baseline job result)",
+          "permission": "The benchmark checkout is read-only; permission to distribute verbatim copies of its runner files covers the distributed copies only"
+        }
+      ]
+    },
+    "data_compilation": {
+      "spdx": "CC0-1.0",
+      "file": "LICENSE-CC0-1.0.txt",
+      "scope": "Our contribution - the notified-case eligibility frame, the derived Phase II opener label, the notification-date feature derivations, the temporal partition, and the packaging - is dedicated to the public domain under CC0-1.0. The dedication covers only our contribution: the underlying merger case register keeps its own designation and remains subject to the Commission's CC BY 4.0 reuse terms, whose attribution condition carries through to every copy of the derived data. Nothing here relicenses the source or presents CC0 as the source's terms."
+    },
+    "source_data": {
+      "spdx": "CC-BY-4.0",
+      "status": "European Commission reuse policy, CC BY 4.0 unless otherwise indicated: applies to Commission-owned content, and DG COMP explicitly released the machine-readable merger case data sets under that reuse notice for commercial and non-commercial processing with acknowledgement of the source. Reuse is allowed provided appropriate credit is given and changes are indicated. The dataset's derived rows are indicated changes: a row selection, a derived binary label and derived features, not the Commission's own product.",
+      "evidence": [
+        "[https://competition-policy.ec.europa.eu/about/news/dg-competitions-case-data-available-open-data-2025-03-18_en, read 2026-10-24] 'We are releasing the data under the European Commission reuse notice, so that the machine-readable data sets can be processed in any way the users may wish, for commercial or non-commercial purposes, provided that the source is acknowledged.'",
+        "[https://ec.europa.eu/info/legal-notice_en, read 2026-10-24] 'The European Commission's reuse policy is implemented by the Commission Decision of 12 December 2011 on the reuse of Commission documents. Unless otherwise indicated (e.g. in individual copyright notices), content owned by the EU on this website is licensed under the Creative Commons Attribution 4.0 International (CC BY 4.0) licence. This means that reuse is allowed, provided that appropriate credit is given and changes are indicated.'"
+      ],
+      "attribution": "European Commission, Directorate-General for Competition - EU Competition: Merger case publications (open data case register), https://data.europa.eu/data/datasets/cc7e224e-6569-40f0-8037-d3389aa0fae7, vintage of 2026-10-27. Contains Commission-owned content licensed under CC BY 4.0.",
+      "citation": "European Commission, Directorate-General for Competition. EU Competition: Merger case publications (machine-readable case register, open data). https://competition-cases.ec.europa.eu/ . Licensed under CC BY 4.0 (Commission reuse notice). Derived dataset: EU merger Phase II opening prediction task (not a Commission official product).",
+      "derived_labelling": "Labelled as a derived research dataset throughout; it is not the European Commission's official product and the Commission has not reviewed or endorsed it. The publisher's own designation, attribution and suggested citation are preserved verbatim, and changes from the source are indicated (row selection, derived label, derived features)."
+    },
+    "rules": [
+      "Code and documentation: MIT by default.",
+      "Our rights in a derived compilation: CC0-1.0 by default.",
+      "The source's own terms are preserved and never relicensed; the compilation dedication covers only our contribution.",
+      "Each dataset must use terms compatible with its sources. CC0 is NOT a blanket override of upstream terms: attribution, share-alike and non-commercial requirements from a source are carried through unchanged.",
+      "A source whose licence terms cannot be read is not published at all.",
+      "The chosen terms are declared per dataset in candidates/<id>/license.json and recorded in the release manifest, so the manifest cannot drift from the decision."
+    ]
+  }
+}
