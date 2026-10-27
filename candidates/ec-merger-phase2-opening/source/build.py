@@ -565,14 +565,31 @@ def main() -> int:
     built_at = args.built_at or datetime.now(timezone.utc).isoformat()
 
     # ---- meta.json --------------------------------------------------------
+    # The benchmark's own bench/workdir.py materializes the agent workdir from
+    # this file and reads exactly ("name", "description", "target",
+    # "positive_label", "id_columns", "split", "columns", "rows") into
+    # task.json; render_program() also reads meta["description"] and
+    # meta["split"]. Missing keys are a KeyError in the real runner, so both
+    # must be written here, not inferred by the consumer. (Attempt 002 shipped
+    # "split_description" only, which the real workdir.py cannot read.)
     meta = {
         "name": NAME,
+        "description": "For a concentration notified to the European Commission "
+                       "under the EU Merger Regulation, using only case attributes "
+                       "fixed at notification (the parties as named in the case "
+                       "title, the case's NACE sector codes, the applicable "
+                       "regulation, and the notification date), will the "
+                       "Commission open an in-depth Phase II investigation "
+                       "(adopt an Art. 6(1)(c) decision) in this case?",
         "target": TARGET,
         "positive_label": POSITIVE_LABEL,
         "id_columns": ID_COLUMNS,
         "columns": COLUMNS,
         "rows": {split: stats[split]["rows"] for split in LAYOUT},
         "positive_rate": {split: stats[split]["positive_rate"] for split in LAYOUT},
+        "split": "temporal on the notification year: train 1990-2013, "
+                 "eval 2014-2018, holdout 2019-snapshot (full-era thirds, "
+                 "pinned in the candidate record)",
         "split_description": "temporal on the notification year: train 1990-2013, "
                              "eval 2014-2018, holdout 2019-snapshot (full-era thirds, "
                              "pinned in the candidate record)",

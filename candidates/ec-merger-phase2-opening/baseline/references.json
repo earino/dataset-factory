@@ -1,0 +1,141 @@
+{
+ "name": "ec-merger-phase2-opening",
+ "stage": "post-acceptance simple references (eval only, train-fitted)",
+ "rows": 1770,
+ "positives": 46,
+ "train_positive_rate": 0.040141,
+ "recent_train_years": [
+  2011,
+  2012,
+  2013
+ ],
+ "references": {
+  "persistence": {
+   "applicable": false,
+   "definition": "inapplicable: each row is a newly notified case with no prior observation of the same entity at the instant; the nearest analogue is recent_rate",
+   "auc": null
+  },
+  "recent_rate": {
+   "definition": "constant train positive rate over the last three train years [2011, 2012, 2013] (0.02659); regime-drift probe",
+   "auc": 0.5,
+   "brier": 0.02531364908248957
+  },
+  "sector_division_rate": {
+   "definition": "REQUIRED COMPARATOR: train-fitted positive rate per NACE division (corrected grouping), averaged over the case's divisions, global train rate fallback",
+   "auc": 0.7679246948451528,
+   "brier": 0.025007634836651343
+  },
+  "sector_combo_rate": {
+   "definition": "train rate per exact sector_divisions string, global fallback",
+   "auc": 0.7050842328255825,
+   "brier": 0.026192220672768482
+  },
+  "calendar_identity": {
+   "definition": "train rate per (regulation, notification month): era identity plus seasonal prior, training rows only",
+   "auc": 0.560614849187935,
+   "brier": 0.025294655488491562
+  },
+  "title_text": {
+   "definition": "train rate per party-name token (>=3 alphanumeric chars, >= 5 train rows), averaged, global fallback",
+   "auc": 0.6644494603046505,
+   "brier": 0.02611077849754666
+  },
+  "majority_class": {
+   "definition": "majority = int(train_positive_rate >= 0.5), measured against THIS split's labels",
+   "accuracy": 0.9740112994350283
+  },
+  "global_rate": {
+   "definition": "constant train positive rate; no ranking information",
+   "auc": null,
+   "brier": 0.02551356382783698
+  }
+ },
+ "full_model": "NOT computed at this stage: the harness runner's baseline job trains and evaluates the full model on these same eval rows; quote its figure beside these references when it exists",
+ "prevalence_shift": {
+  "note": "train 1990-2013 vs eval 2014-2018 vs holdout 2019-snapshot base rates, read from meta.json (gate-verified); a shift is an out-of-distribution property to report, not a construction fault",
+  "rates": {
+   "train": 0.040141,
+   "eval": 0.025989,
+   "holdout": 0.01578
+  }
+ },
+ "paired_differences": {
+  "sector_vs_global": {
+   "observed_difference": 0.267925,
+   "auc_a": 0.767925,
+   "auc_b": 0.5,
+   "ci95": [
+    0.212555,
+    0.320557
+   ],
+   "bootstrap_samples": 1000,
+   "note": "paired row bootstrap on identical eval rows; an interval containing zero is an inconclusive difference, not parity"
+  },
+  "sector_vs_calendar_identity": {
+   "observed_difference": 0.20731,
+   "auc_a": 0.767925,
+   "auc_b": 0.560615,
+   "ci95": [
+    0.125484,
+    0.288564
+   ],
+   "bootstrap_samples": 1000,
+   "note": "paired row bootstrap on identical eval rows; an interval containing zero is an inconclusive difference, not parity"
+  },
+  "title_text_vs_sector": {
+   "observed_difference": -0.103475,
+   "auc_a": 0.664449,
+   "auc_b": 0.767925,
+   "ci95": [
+    -0.205043,
+    -0.020674
+   ],
+   "bootstrap_samples": 1000,
+   "note": "paired row bootstrap on identical eval rows; an interval containing zero is an inconclusive difference, not parity"
+  }
+ },
+ "per_year": {
+  "2014": {
+   "rows": 298,
+   "positives": 9,
+   "positive_rate": 0.030201,
+   "sector_division_rate_auc": 0.7053056516724336,
+   "calendar_identity_auc": 0.5255670895809305,
+   "title_text_auc": 0.5886197616301423
+  },
+  "2015": {
+   "rows": 331,
+   "positives": 11,
+   "positive_rate": 0.033233,
+   "sector_division_rate_auc": 0.686221590909091,
+   "calendar_identity_auc": 0.5335227272727273,
+   "title_text_auc": 0.670596590909091
+  },
+  "2016": {
+   "rows": 358,
+   "positives": 7,
+   "positive_rate": 0.019553,
+   "sector_division_rate_auc": 0.8386243386243386,
+   "calendar_identity_auc": 0.6786731786731787,
+   "title_text_auc": 0.6632071632071632
+  },
+  "2017": {
+   "rows": 375,
+   "positives": 7,
+   "positive_rate": 0.018667,
+   "sector_division_rate_auc": 0.7552406832298136,
+   "calendar_identity_auc": 0.5702639751552795,
+   "title_text_auc": 0.6805124223602484
+  },
+  "2018": {
+   "rows": 408,
+   "positives": 12,
+   "positive_rate": 0.029412,
+   "sector_division_rate_auc": 0.8606902356902357,
+   "calendar_identity_auc": 0.5508207070707071,
+   "title_text_auc": 0.7065446127946128
+  }
+ },
+ "accepted_artifact_version": null,
+ "gate_version_of_accepted_report": "1.5.0"
+}

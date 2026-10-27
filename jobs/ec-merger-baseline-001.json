@@ -1,0 +1,139 @@
+{
+  "job": {
+    "id": "ec-merger-baseline-001",
+    "candidate": "ec-merger-phase2-opening",
+    "image": "python:3.13-slim",
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 3072,
+    "timeout_minutes": 45,
+    "lifetime_minutes": 90,
+    "max_disk_mb": 4096,
+    "max_artifact_mb": 16,
+    "what": "runner-contract baseline on the accepted ec-merger-003 artifact (e5a98dfc9c05d0b087ed2dead21004fbbd972e415d2174469371a908bcaf90ad), fetched from staging release 425292628 (not rebuilt): re-accept the five fetched files through the qualification gate against the gate's own collected report, materialize the runner workdir (public train+eval only; the private holdout is never copied into the workdir), then run the benchmark's own train.py and validate.sh unmodified and record both AUCs, the model's per-row scores and the paired comparison against the simple references (sector_division_rate 0.7679, calendar_identity, recent_rate) on the identical 1770 eval rows. This is the contract only, not the agent harness loop.",
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 425292628,
+      "assets": [
+        {
+          "asset_id": 681210367,
+          "dest": "extract/meta.json",
+          "size": 1233,
+          "sha256": "011a4c0b989705ce2a8577e387e0cf96856cc8e9c65f7c51fbbffd699944d13d"
+        },
+        {
+          "asset_id": 681210419,
+          "dest": "extract/private/holdout.csv",
+          "size": 253649,
+          "sha256": "5867e34f3ebf714b9ec0ef307989cb4296438148390a6a5ea2bcf88795f703fd"
+        },
+        {
+          "asset_id": 681210472,
+          "dest": "extract/public/eval.csv",
+          "size": 155077,
+          "sha256": "4fb28c0908e4c79ccf194de3b27f2996c05efc0f01ec4074c953a7eb697f24f6"
+        },
+        {
+          "asset_id": 681210520,
+          "dest": "extract/public/train.csv",
+          "size": 429048,
+          "sha256": "1619b6f4ad4a7dab0f437335c231f727f6f5c5f0ea02b3454366f5a71ab90a44"
+        },
+        {
+          "asset_id": 681210572,
+          "dest": "extract/quality.json",
+          "size": 17064,
+          "sha256": "ca07571caa43e1a0f6fd77c0ed28f535d7ed3c794f6441c6483ce0663acee23c"
+        }
+      ]
+    },
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "source_files": [
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/ec-merger-phase2-opening/baseline/run.sh",
+        "bytes": 3212,
+        "sha256": "e6d096d1f08fbd78ac973376dd7c7f6fd42c68b618cbf18e25207bc0a70af558"
+      },
+      {
+        "bundled_as": "materialize.py",
+        "source": "candidates/ec-merger-phase2-opening/baseline/materialize.py",
+        "bytes": 2252,
+        "sha256": "0aef7941b1a3ab113648a937ea0fd78fe1499d79b810c70ba0a32d46e817c209"
+      },
+      {
+        "bundled_as": "report.py",
+        "source": "candidates/ec-merger-phase2-opening/baseline/report.py",
+        "bytes": 12272,
+        "sha256": "f7b2d3f44001362ee0170440f9ade5e80e9e3904ad6e53a41878b7b9465c16e3"
+      },
+      {
+        "bundled_as": "score.py",
+        "source": "candidates/ec-merger-phase2-opening/source/score.py",
+        "bytes": 15728,
+        "sha256": "6ab0b7badc2bd84342b1feb881a7ac1c72d1ad199a4757d8e806b000315c2bcf"
+      },
+      {
+        "bundled_as": "qualification.json",
+        "source": "candidates/ec-merger-phase2-opening/baseline/qualification.json",
+        "bytes": 16385,
+        "sha256": "afc85455f0eeaa390170051b6f6808f7ccfd3bfae613c69dfa8b2593a35342ed"
+      },
+      {
+        "bundled_as": "references.json",
+        "source": "candidates/ec-merger-phase2-opening/baseline/references.json",
+        "bytes": 4539,
+        "sha256": "0ab41de5d7adecc8a865cb72fe22e93bf38773ac0d7e0e6dd4098db40620137e"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 57029,
+        "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+      },
+      {
+        "bundled_as": "train.py",
+        "source": "/opt/data/harness_benchmark/task_template/train.py",
+        "bytes": 2500,
+        "sha256": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8"
+      },
+      {
+        "bundled_as": "validate.py",
+        "source": "/opt/data/harness_benchmark/task_template/validate.py",
+        "bytes": 1277,
+        "sha256": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b"
+      },
+      {
+        "bundled_as": "validate.sh",
+        "source": "/opt/data/harness_benchmark/task_template/validate.sh",
+        "bytes": 482,
+        "sha256": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      }
+    ]
+  },
+  "reservation_eur": "0.06",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 3,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 225280,
+  "source_sha256": "991e18e0f145cab570306bef08031f751be7cb7b0e8ae2ed87d76fc9bc6e2c18",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "running",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-10-27T10:19:08.783537+00:00",
+  "expires": 1793101748,
+  "budget_months": [
+    "2026-10"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 172773775,
+  "known_hosts": "/opt/data/dataset-factory/.factory/ec-merger-baseline-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "65.21.158.17"
+}

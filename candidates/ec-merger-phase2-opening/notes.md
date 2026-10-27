@@ -230,3 +230,40 @@ Both are descriptor-truth fixes, not construction defects; no check was
 weakened and the CSV bytes are unchanged. Fix applied to build.py
 (declaration only), fresh attempt id ec-merger-002 per the one-rebuild rule.
 The ec-merger-001 bundle and reports are preserved as the failure record.
+
+## 2026-10-27 - ec-merger-003 (worker attempt 3): runner-contract defect found at baseline packaging, fixed, gate re-passed
+
+Found while preparing the baseline job: the 002 artifact's meta.json carried
+`split_description` but NOT the `description` and `split` keys the benchmark's
+own `bench/workdir.py` reads (`task = {k: meta[k] for k in ("name",
+"description", "target", "positive_label", "id_columns", "split", "columns",
+"rows")}`, and `render_program` reads `meta["description"]`/`meta["split"]`),
+so the real runner would KeyError at materialization - the packaged dataset
+would not be reproducible in the benchmark. The gate's
+`runner.meta_json_keys` check requires only
+target/positive_label/id_columns/columns/rows/positive_rate and passed 002;
+that gap is a checker defect to fix on its own reviewable branch (fixtures and
+corrected meta.json files all lack the keys too), recorded in STATE.md, not
+patched in this session.
+
+Candidate-scope fix (one rebuild for this structural defect): build.py now
+writes all eight workdir keys (description = the prediction question, split =
+the split description; split_description retained). ec-merger-003 rebuilt from
+the current daily snapshot (sha256 420411333e9b9fc27e0c2e72cbbbb419f1ba4125e7f40d98a9bc5e0911316702,
+42,034,960 B, Last-Modified 2026-10-27T01:23:54Z, re-pinned per the declared
+current_snapshot vintage): eligible 10,125 (was 10,123), shipped 10,091,
+positives 309 (unchanged), train 5,406/217 and eval 1,770/46 byte-identical to
+002 (train/eval sha256 match), holdout 2,915/46 (+1 new 2026 notification).
+Gate 1.5.0 passed 46/46 on the full artifact; exact-byte --accept on the
+worker ('ACCEPTED: ... e5a98dfc9c05d0b0'); references recomputed post-acceptance:
+sector_division_rate AUC 0.7679 on the identical eval rows (unchanged).
+Worker 172772422 deleted 10:16:42Z after verified collection; staging release
+425292628 (tag job-ec-merger-003); local reports at .factory/ec-merger-003/.
+
+Baseline: ec-merger-baseline-001 assembled (fetches the five 003 extract files
+from staging 425292628, re-accepts through the gate, materializes the runner
+workdir public-only, runs the benchmark's verbatim train.py/validate.sh) and
+launched on worker 172773775. report.py additionally recomputes the model's
+per-row scores through the runner's own predict_proba and the paired
+bootstrap comparison against sector_division_rate / calendar_identity /
+title_text / recent_rate on the identical 1,770 eval rows.
