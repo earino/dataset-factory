@@ -56,3 +56,13 @@ inspections, licences, per-establishment series). Do not re-verify the ODbL lice
 `probe_portal_census.py` in this directory re-runs the CKAN enumeration (package list,
 facets, per-org title census) and the AMMC file granularity check. Run:
 `python3 probe_portal_census.py`.
+
+## Reopen-condition check (2026-10-27)
+
+One CKAN call, exactly as the reopen condition specifies:
+`curl -s "https://www.data.gov.ma/data/api/3/action/package_search?rows=0"` ->
+`{"success": true, "result": {"count": 695, ...}}`.
+
+Count is 695, BELOW the 697 threshold (and below the 697 recorded on 2026-10-23);
+no new publisher org was observed. Reopen condition NOT met - stays parked, no
+further probes spent.

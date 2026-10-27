@@ -52,3 +52,19 @@ mirrors). Do not spend further coordinator-side ticks on it.
 `probe_access_licence.py` in this directory re-runs every probe above (DWS endpoints,
 NIWIS, legacy host, data.gov.za, Cape Town page, Wayback CDX queries) and prints the
 same evidence. Run: `python3 probe_access_licence.py`.
+
+## Coordinator re-test (2026-10-27, discovery session)
+
+The named worker-side access test was NOT run this session (the session's probe budget
+went to the Stats SA P0043.1 lead, which reached ready; the DWS worker test remains the
+recorded next action for a session with worker budget). Coordinator-side status
+re-checked instead, to keep the blocker evidence current:
+
+- `https://www.dws.gov.za/Hydrology/Weekly/WeeklyBulletins.aspx` -> HTTP 403 in 0.8 s,
+  generic Apache "403 Forbidden / You don't have permission to access this resource"
+  page (same as 2026-10-23; the 403 body names no blocker or geo rule)
+- `https://niwis.dws.gov.za/niwis2/` -> connection timeout after 25 s (code 000)
+
+Both coordinator-side blockers persist unchanged. Stays parked; next action unchanged
+(worker-side access test from the Hetzner network, then terms/archive probes only if
+reachable).

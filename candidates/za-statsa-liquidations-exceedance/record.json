@@ -1,0 +1,137 @@
+{
+  "id": "za-statsa-liquidations-exceedance",
+  "status": "ready",
+  "verdict": "go",
+  "created_at": "2026-10-27T16:24:32.591771+00:00",
+  "domain": "corporate insolvency / monthly liquidations panel (industry x entity-type x procedure)",
+  "prediction_question": "At the publication instant of the Stats SA P0043.1 'Statistics of liquidations' release for reference month M (published in the last week of month M+1, embargo lifting 14:30 SAST = 12:30 UTC; observed: 25 Mar 2026 for Feb issue, 27 May 2026 for Apr issue, 30 Sep 2026 14:30 for Aug issue, expected 28 Oct 2026 for Sep issue), will the number of liquidations in month M+2 for a given unit (companies/close-corporations x compulsory/voluntary x industry) exceed that unit's trailing 12-month median count over months M-11..M? Prospective users: credit and insurance exposure monitors, procurement/counterparty risk teams, and macro early-warning analysts, who get a ~1-month lead on industry-level insolvency pressure for provisioning and review decisions.",
+  "prediction_time": "Instant = the announced embargo lift of the P0043.1 monthly release for reference month M (date+time published in advance by Stats SA; observed publication dates all fall in the last week of month M+1 at 14:30 SAST, lag 25-34 days after month end). At that instant, the latest published reference month is M; month M+1 is partially elapsed (the instant falls inside it), so M+1 can be neither feature nor target; the target month M+2 begins after the instant (about 4 days after) and ends about 34 days after it. Features are the released series values for months <= M only (current-vintage policy; see measurements.restatement_2026 and measurements.intra_basis_revisions). Dated example (Africa/Johannesburg): instant 2026-10-28 14:30 (embargo of the Release 2026-09 issue); feature window 2000-01..2026-09 as released in that vintage (first-available version = the monthly release; values for months M-11..M used by the label's trailing median are the values published at or before the instant); eligibility cutoff = series values for months <= 2026-09 exist; prediction instant 2026-10-28 14:30; target window 2026-11-01 through 2026-11-30 (starts 3 days 9.5 hours after the instant; ends 33 days 9.5 hours after). No part of the target window precedes the instant.",
+  "target_definition": "Binary: count of liquidations for unit u in month M+2 (LIQ series value, 'Actual figures', number) > median of u's counts over months M-11..M (both operands from the same current-basis vintage; label source column = the unit's monthly count series itself, which is also the feature source - a row's shipped features are lagged values only, months <= M, never the target month's value). Alternative measured formulation: YoY direction (M+2 count > M-10 count). Trailing-median rows with median 0 (sparse series, all-zero window) are excluded as unlabelable; measured exclusion ~32% of unit-months under the 40-unit population.",
+  "sources": [
+    {
+      "name": "Stats SA ISIbalo Data Portal - Liquidations and Insolvencies (P0043.1) monthly time series export",
+      "url": "https://isibaloweb.statssa.gov.za/data/ETS/Monthly/Liquidations%20and%20InsolvenciesP0043_1/ASCII%20Liquidations.txt (ASCII, current vintage 'Release: 2026 09', 47 series blocks x 321 months 2000-01..2026-09; JSON variant P0043_1p.json in the same directory)",
+      "api": "Anonymous HTTPS GET; fronted by Imperva (x-cdn: Imperva): plain curl sometimes receives a 200 directly and sometimes a 302 'Loading' JS challenge - a real browser passes it; per-release vintage ZIPs also exist at https://www.statssa.gov.za/timeseriesdata/Ascii/P0043.1%20Liquidations%20(YYYYMM).zip but ONLY the latest issue's ZIP is kept (202608 = 200; 202607 and 17 older months probed = 404, probed 2026-10-27)",
+      "license": "Stats SA website 'Copyright and disclaimer': 'All Stats SA products are protected by copyright. Users may apply the information as they wish, provided that they acknowledge Stats SA as the source of the basic data wherever they process, apply, utilise, publish or distribute the data, and also that they specify that the relevant application and analysis (where applicable) result from their own processing of the data.' Publication copyright notices add: 'neither the basic data nor any reprocessed version or application thereof may be sold or offered for sale in any form whatsoever without prior permission from Stats SA' (observed on P0351/P0043 releases and Stats in Brief 2025).",
+      "access": "Measured 2026-10-27 from the coordinator: 1 HTTPS GET of the ASCII export = 59,645 bytes HTTP / 43,994 chars of content in 1.87 s (sha256 5054b35deceaf3a71975f3a645c2c588ded3a7dd4846c2770799673dff3adb2f); browser passage of the Imperva challenge also verified (identical bytes); per-issue PDFs P00431<Month><Year>.pdf (~470-500 KB each) are served to plain HTTP clients without the challenge; release ZIP 202608 = 10,551 B (sha256 of inner file 866ebe89d4593e627aa14da16bc3363ccd70820fe0302aeb007a4cf965a92bb7)"
+    },
+    {
+      "name": "Stats SA P0043.1 statistical release (monthly PDF) and publication page (embargo dates)",
+      "url": "https://www.statssa.gov.za/publications/P00431/P00431August2026.pdf (sha256 323fb9007c6e43815d721093d45f385115f9247dfe691a94ee12ed03a055009c); publication page https://www.statssa.gov.za/?page_id=1854&PPN=P0043.1&SCH=74348 states 'Publication date & time: 30 September 2026 @ 14:30' for the August 2026 issue; Wayback-archived older issues used as vintage evidence: P00431February2026.pdf (web.archive.org/web/20260402112827, sha256 36cf42ad0ab8b6a26c7bcb830a0e45126076006afb2a5c05cc026642b770da4e), P00431September2023.pdf (web.archive.org/web/20260711181608, sha256 833ec11d1e2f0749a29e56908fa7dfd893076077edb1a363be1731924bb0ffe6)",
+      "api": "Anonymous HTTPS GET to plain clients (PDFs bypass the Imperva HTML challenge)",
+      "license": "Same Stats SA copyright and disclaimer as above (the PDF releases carry the attribution + no-sale notice on their cover pages)",
+      "access": "Release PDFs carry per-issue 'Embargoed until: <date> 14:30' plus 'FORTHCOMING ISSUE ... EXPECTED RELEASE DATE' (Aug 2026 issue: embargo 30 Sep 2026 14:30, September issue expected 28 Oct 2026), giving a documented advance release calendar"
+    }
+  ],
+  "license_evidence": [
+    "Stats SA 'Copyright and disclaimer' page (https://www.statssa.gov.za/?page_id=425, read 2026-10-27): 'All Stats SA products are protected by copyright. Users may apply the information as they wish, provided that they acknowledge Stats SA as the source of the basic data wherever they process, apply, utilise, publish or distribute the data, and also that they specify that the relevant application and analysis (where applicable) result from their own processing of the data.' - redistribution and derivative publication of derived rows permitted with attribution.",
+    "P0043/P0351 release copyright notices (read 2026-10-27 on release covers and Stats in Brief 2025): '...provided Statistics South Africa (Stats SA) is acknowledged as the original source of the data; that it is specified that the application and/or analysis is the result of the user's independent processing of the data; and that neither the basic data nor any reprocessed version or application thereof may be sold or offered for sale in any form whatsoever without prior permission from Stats SA.' - a no-sale condition on the compilation; our releases are free of charge with attribution, satisfying it; condition to be carried into LICENSE.md.",
+    "Classification: class B - open with conditions (attribution + no-sale). Not an OGL/CC instrument; the website terms are the publisher's own instrument for this product."
+  ],
+  "construction_script": null,
+  "split_strategy": "Temporal, by target month, computed from the fetched Release-2026-09 panel (command: python3 candidates/za-statsa-liquidations-exceedance/probe_base_rates.py, scratch 2026-10-27): population = 40 industry-level units (companies x compulsory/voluntary x 9 industries, close corporations x compulsory/voluntary x 9 industries) plus the 4 group totals; target month = reference month + 2 (M+2 frame). Median-exceedance label (trailing 12-month median > 0 filter): train target years 2002-2016 = 3,910 rows / 1,537 positives (39.3%), 30/40 units with positives; eval 2017-2020 = 992 / 426 (42.9%), 25/40; holdout 2021-2026 = 1,415 / 574 (40.6%), 24/40. YoY-direction label: train 4,748 / 1,980 (41.7%) 40/40 units, eval 1,206 / 568 (47.1%) 39/40, holdout 1,706 / 739 (43.3%) 39/40. Both classes present in every window and in every year 2001-2026 (positive months per year = 9-12 of 12). Clustering: the independence scale is the MONTH, not the row - 40 units share each month's macro shock, so ~306 scorable monthly instants over 26 years (2002-01..2026-09 minus warmup) are the effective sample; confidence intervals must be clustered by target month. No cross-split entity leakage: splits are by time; units repeat across months by design (panel task, runner id_columns carry the unit code).",
+  "measurements": {
+    "panel_shape_2026_10_27": "Isibalo ASCII export 'Release: 2026 09': 47 series blocks (LIQ00000 total; companies: total/compulsory-total/voluntary-total + compulsory and voluntary per 9 SIC industries + unclassified; same structure for close corporations), each with 321 monthly values 2000-01..2026-09, no gaps (all 47 blocks have exactly 321 values, 15,087 numeric lines total). Column documentation from the export headers themselves (H04 survey, H05 entity type, H06 procedure, H07 industry, H16 'Actual figures', H17 'Number', H23 release, H24 start, H25 periodicity) plus the release PDF's explanatory notes and glossary.",
+    "cross_check_2026_10_27": "Publisher's own summary product: August 2026 release PDF Table A states Jan-Aug 2026 = 1,828 liquidations; the panel's LIQ00000 sums to exactly 1,828 over 2026-01..2026-08. The PDF's Table 2 (monthly totals 2020-01..2026-08) matches the panel value-for-value on all 80 months checked, including Aug 2026 = 227. (Observed minor inconsistency in the tertiary blog post 'Economic wrap-up for July 2026': states 1,361 for H1 2026 and simultaneously 1,299 voluntary + 132 compulsory = 1,431; the release PDF and panel agree on these months - the blog post is the outlier.)",
+    "restatement_2026": "DECISIVE vintage fact: the series was fully restated during 2026. The February 2026 issue (embargoed 25 Mar 2026, old basis) vs the current Release-2026-09 vintage: 73 of 74 overlapping months differ (2020-2026 values revised upward ~30-100%, e.g. Feb 2026: 135 published then -> 223 now; Nov 2023: 144 -> 287; only Apr 2020 = 0 is unchanged). The September 2023 issue (old basis) vs current vintage: 36 of 36 months of 2017-2019 differ, downward (2017 total: 1,868 published then -> 1,454 now; Jan 2017: 91 -> 66). The Feb 2026 issue itself announced this: 'Statistics South Africa regularly engages with the Companies and Intellectual Property Commission to ensure the accuracy of statistics... a revised time series is under development and will be published as soon as it becomes available.' The restated basis went live in the PDF releases between the Feb 2026 issue (old basis) and the August 2026 issue (new basis, matches Isibalo exactly).",
+    "intra_basis_revisions": "Within the restated basis, consecutive release vintages (issue 202608 ZIP 'Release: 2026 08' vs Isibalo 'Release: 2026 09'): 15,040 overlapping values compared, 19 differ (0.13%), ALL in the recent tail (2026-03, 2026-05, 2026-08) with magnitudes +1..+7 - late-registered cases trickling into recent months. Older history is stable within the basis. Construction must state: features and labels are both current-vintage at freeze; recent-month values at the historical prediction instants differed slightly from the frozen values (bounded by the observed +0..+7/month tail pattern).",
+    "as_of_policy": "Current-vintage retrospective task, clearly labelled: pre-restatement point-in-time vintages are NOT recoverable - the per-release ZIP archive keeps only the latest issue (17 older months probed, all 404), and no vintage archive exists; Wayback PDF snapshots exist for a few issues only. The task therefore makes NO claim of operational point-in-time availability for pre-restatement instants (2000-2026.09 history is the 2026-09 restated basis, which demonstrably differs from what was published at those instants - see restatement_2026). Forward operation from the restated basis is supported: the instant is the announced monthly embargo, and the intra-basis revision tail is measured and bounded.",
+    "pre_embargo_availability_caveat": "The Isibalo bulk export already carried Release-2026-09 values (through month 2026-09) when fetched 2026-10-27, one day before the announced 2026-10-28 embargo of the September issue, with HTTP Last-Modified 2026-10-16 - i.e. the bulk export refreshed up to ~12 days before the formal release. File mtime is not proof of first availability (recorded as an observation, not a bound). The announced embargo remains the task's prediction instant; a live operational solver could see values marginally early, which does not affect the fixed historical splits.",
+    "known_event_fixtures": "(1) April 2020 total liquidations = 0 - South Africa's hard COVID-19 lockdown closed the CIPC/Master's offices (verified in BOTH old-basis and restated vintages; expected verdict: any 'activity present' feature or count > 0 fails for 2020-04). (2) November 2020 = 261 restated / 272 old basis - post-lockdown backlog surge (expected: exceeds trailing median). (3) October 2024 = 312 on the restated basis, the highest 2024 month (expected: exceeds trailing median). All three verified directly in the fetched panel.",
+    "label_base_rates_2026_10_27": "See split_strategy. National-total series itself: median-exceedance 158/306 = 51.6% - the aggregate series is near-balanced, no degenerate label at any level.",
+    "extraction_cost_2026_10_27": "Coordinator: 1 HTTPS GET, 59,645 bytes HTTP / 43,994 chars content, 1.87 s wall clock (Imperva challenge intermittent; one retry with cookie jar or a real-browser fallback passes; per-issue PDFs ~470-500 KB each download without challenge). Full history is one file; no paging. Worker-side construction should fetch with retries + browser fallback and record the Imperva outcome; cost is negligible (<<1 MB, <10 s).",
+    "measured_on": "2026-10-27 via scripts candidates/za-statsa-liquidations-exceedance/probe_parse_panel.py, probe_base_rates.py, probe_revision_check.py and probe_vintage_diff.py; commands and outputs in notes.md"
+  },
+  "novelty_check": {
+    "checked_at": "2026-10-27T16:28:18+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "South Africa liquidations prediction",
+      "insolvency liquidations monthly counts forecasting benchmark"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "South Africa liquidations prediction",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "insolvency liquidations monthly counts forecasting benchmark",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "South Africa liquidations prediction",
+          "hits": 498777,
+          "top": [
+            "Eremohaplomydas desertorum Bequaert, 1959 - MZLU-2143:1",
+            "No. 53 of 2003: Broad-Based Black Economic Empowerment Act, 2003.",
+            "Eremohaplomydas desertorum Bequaert, 1959 - MZLU-2143:2",
+            "Skills Development Act No. 97 of 1998",
+            "Broad-Based Black Economic Empowerment Act No. 53 of 2003"
+          ]
+        },
+        {
+          "query": "insolvency liquidations monthly counts forecasting benchmark",
+          "hits": 132203,
+          "top": [
+            "Nowcasting and Forecasting Key Russian Macroeconomic Variables With the MFBVAR Model",
+            "A long-term multi-scale traffic safety dataset for Jordan (1985\u20132024)",
+            "A Time-Series Forecasting Model for Clinical Outcomes in Ugandan Urban Primary Care Networks: A Methodological Evaluation",
+            "Car Parts Dataset (with Missing Values)",
+            "Tourism Monthly Dataset"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "South Africa liquidations prediction",
+          "hits": 5,
+          "top": [
+            "Cross-cohort TB classification using clinical data gathered in Uganda and South Africa",
+            "Spatial analysis and prediction of COVID-19 spread in South Africa after lockdown",
+            "A national study of postdoctoral research fellows in South Africa",
+            "Clustering Residential Electricity Consumption Data to Create Archetypes that Capture Household Behaviour in South Afric",
+            "The stochastic nature of power-grid frequency in South Africa"
+          ]
+        },
+        {
+          "query": "insolvency liquidations monthly counts forecasting benchmark",
+          "hits": 5,
+          "top": [
+            "Determining Insolvency Regions in Banks: A Stochastic Dynamic Approach Integrating Liquidity and Credit Risk",
+            "Forecasting intermittent time series with Gaussian Processes and Tweedie likelihood",
+            "Quantile Regression for Qualifying Match of GEFCom2017 Probabilistic Load Forecasting",
+            "Lasso estimation for GEFCom2014 probabilistic electric load forecasting",
+            "Probabilistic Hierarchical Forecasting with Deep Poisson Mixtures"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'South Africa liquidations prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'insolvency liquidations monthly counts forecasting benchmark': 0 hit(s) - nothing notable\n- zenodo_records / 'South Africa liquidations prediction': 498777 hit(s) - Eremohaplomydas desertorum Bequaert, 1959 - MZLU-2143:1, No. 53 of 2003: Broad-Based Black Economic Empowerment Act, 2003., Eremohaplomydas desertorum Bequaert, 1959 - MZLU-2143:2, Skills Development Act No. 97 of 1998, Broad-Based Black Economic Empowerment Act No. 53 of 2003\n- zenodo_records / 'insolvency liquidations monthly counts forecasting benchmark': 132203 hit(s) - Nowcasting and Forecasting Key Russian Macroeconomic Variables With the MFBVAR Model, A long-term multi-scale traffic safety dataset for Jordan (1985\u20132024), A Time-Series Forecasting Model for Clinical Outcomes in Ugandan Urban Primary Care Networks: A Methodological Evaluation, Car Parts Dataset (with Missing Values), Tourism Monthly Dataset\n- arxiv_preprints / 'South Africa liquidations prediction': 5 hit(s) - Cross-cohort TB classification using clinical data gathered in Uganda and South Africa, Spatial analysis and prediction of COVID-19 spread in South Africa after lockdown, A national study of postdoctoral research fellows in South Africa, Clustering Residential Electricity Consumption Data to Create Archetypes that Capture Household Behaviour in South Afric, The stochastic nature of power-grid frequency in South Africa\n- arxiv_preprints / 'insolvency liquidations monthly counts forecasting benchmark': 5 hit(s) - Determining Insolvency Regions in Banks: A Stochastic Dynamic Approach Integrating Liquidity and Credit Risk, Forecasting intermittent time series with Gaussian Processes and Tweedie likelihood, Quantile Regression for Qualifying Match of GEFCom2017 Probabilistic Load Forecasting, Lasso estimation for GEFCom2014 probabilistic electric load forecasting, Probabilistic Hierarchical Forecasting with Deep Poisson Mixtures",
+    "prior_art": [
+      "Barboza et al. (2023) 'Benchmarking Machine Learning Models to Predict Corporate Bankruptcy' (US firm-years 1990-2019); Bragoli et al. Italian insolvency firm-level models (AIDA 2007-15); HF dataset sovai/bankruptcy (US public firms); no South African aggregate liquidations benchmark found"
+    ],
+    "theirs": "The publisher provides the raw monthly series (Isibalo export and PDF releases) but no prediction task, splits or evaluation; prior art in adjacent spaces is firm-level bankruptcy/distress prediction (US public-firm panels, Italian AIDA firm data, HF sovai bankruptcy predictions), which has a different population (individual listed/registered firms with financial covariates) and a different target (firm-level failure), not economy-wide monthly liquidation counts by industry",
+    "ours": "Industry x entity-type x procedure monthly liquidation-count exceedance panel for South Africa built from Stats SA P0043.1 (CIPC administrative data), with a documented publication-instant embargo calendar, a two-month-ahead target frame, current-vintage restatement evidence and temporal splits; no such aggregate-count panel benchmark exists in ML-ready form",
+    "verdict": "no_precedent",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": "All five discovery contracts reconciled against recorded evidence. (1) Redistribution: class B - Stats SA permits applying, publishing and distributing the data with attribution, plus a no-sale condition our free releases satisfy (quoted in license_evidence; to be carried into LICENSE.md). (2) Prediction timing: instant = the announced embargo (measured on four issues; always last week of M+1 at 14:30 SAST), M+2 target window entirely after the instant; feature meanings documented by the publisher (export headers + release explanatory notes); vintage contract handled explicitly - the 2026 restatement is measured (110/110 months checked differ from the old basis), pre-restatement vintages are unrecoverable, so the task is a clearly-labelled current-vintage retrospective panel with no operational point-in-time claim for history; intra-basis revision tail measured (19/15,040, all recent months, +1..+7). (3) Target: derived from the published count series itself; label source column excludable by shipping lagged features only; recent-tail revisions noted. (4) Split capacity: measured - both classes in all three windows and all 26 years; independence scale is the month (~306 instants), within-month cross-unit dependence documented as the cluster. (5) Contribution: no ML-ready formulation of SA liquidation counts at any grain found in catalog or literature searches; nearest prior art is firm-level bankruptcy prediction (US/Italian firm panels), a different population and target; novelty check recorded by script. Residual uncertainty: future restatements of the same scale would change future basis (publisher warning observed and quoted); the construction must enforce a restricted prediction protocol against the abs-oad-style cross-row self-answer join (a row's label operand count(M+2) is a feature window value of the row whose target is M+4).",
+  "next_action": "Hand to construction (worker): (1) fetch the Isibalo ASCII export with retry + real-browser fallback for the Imperva challenge and freeze it (record sha256 + release stamp); (2) ANTI-JOIN DESIGN: the panel is self-answering under row joins - a scored row with target month T carries features including count(T-2), which is another scored row's label (target T-2); construction must enforce the restricted prediction protocol per docs/PREDICTION-CONTRACT.md - ship pre-computed fixed-window feature matrices (or strip unit x month keys) so no solver-visible join can couple two scored rows, keep any joint label matrices outside solver inputs, and run the gate-1.5 reverse-history join probes on the exact artifact; (3) population decision: 40 industry-level units vs 4 group totals; trailing-median>0 filter measured (~32% of unit-months excluded as unlabelable); (4) label decision: median-exceedance vs YoY-direction (both measured, both balanced); (5) splits by target month: train 2002-2016 / eval 2017-2020 / holdout 2021-2026; (6) known-event fixtures asserted in-build (Apr 2020 = 0; Nov 2020 surge; Oct 2024 = 312); (7) LICENSE.md carries attribution wording ('Source: Statistics South Africa, P0043.1 Statistics of liquidations') plus the no-sale condition and the current-vintage/restatement notice; (8) current-vintage labeling with the restatement and revision-tail notes carried into the dataset card; full-worker qualification -> exact-byte acceptance -> baseline triad before any number is quoted.",
+  "jurisdiction": {
+    "country": "ZA",
+    "region": "Africa",
+    "publisher": "Statistics South Africa (Stats SA) - ISIbalo Data Portal / P0043.1 statistical release; administrative source: Companies and Intellectual Property Commission (CIPC) and Department of Trade, Industry and Competition (DTIC)",
+    "recorded_at": "2026-10-27"
+  },
+  "licence_class": "B",
+  "licence_note": "Class B: attribution ('Source: Statistics South Africa' / acknowledge Stats SA as the source of the basic data; state that derived analysis results from our own processing) + no-sale condition on the basic data and reprocessed versions (our releases are free); conditions carried into LICENSE.md.",
+  "updated_at": "2026-10-27T16:30:00+00:00"
+}

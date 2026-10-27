@@ -23,6 +23,70 @@ commit 8512fd8). Close #17; ordinary advancement thereafter is source-specific
 candidate review - review the next candidate's source-specific prediction contract
 and update its builder before construction; #25 remains deferred.
 
+## 2026-10-27 (16:45Z) - Africa-focus discovery: NEW ready candidate za-statsa-liquidations-exceedance (Stats SA P0043.1 panel); Ghana closed under class C standing policy; Morocco reopen condition not met; ZA DWS still blocked from coordinator
+
+Discovery-only session, regional focus Africa. One new ready candidate, one lead
+closed, one reopen condition checked and not met, one re-tested; no construction,
+no worker launched, no dataset asset touched.
+
+- NEW `ready`: candidates/za-statsa-liquidations-exceedance (verdict go, class B).
+  Stats SA P0043.1 "Statistics of liquidations" monthly panel from the ISIbalo
+  Data Portal: 47 series (companies/close corporations x compulsory/voluntary x 9
+  SIC industries + totals), 321 complete months 2000-01..2026-09, one anonymous
+  GET of ~44 KB. Task: at the P0043.1 release instant for reference month M
+  (embargo measured on four issues, always last week of M+1 at 14:30 SAST), predict
+  whether month M+2 liquidation counts per unit exceed the trailing 12-month median
+  (M+1 is partially elapsed at the instant, so the target is M+2 - verified against
+  measured embargo dates). Split capacity measured: train 2002-2016 = 3,910 rows /
+  39.3% positives, eval 2017-2020 = 992 / 42.9%, holdout 2021-2026 = 1,415 / 40.6%;
+  positives in every year; independence scale = the month (~306 instants).
+  Novelty: check-novelty.py verdict no_precedent (nearest prior art is firm-level
+  bankruptcy prediction - different population and target); check-candidate.py OK.
+  Decisive vintage finding, recorded with evidence: the series was FULLY RESTATED
+  during 2026 (Feb 2026 issue vs current vintage: 73/74 months differ, e.g. Feb
+  2026 135 -> 223; Sep 2023 issue 2017-2019: 36/36 differ downward, 2017 total
+  1,868 -> 1,454; the Feb 2026 issue itself announced the revised series). Only the
+  latest issue's vintage ZIP is kept (17 older months probed, all 404), so the task
+  is a clearly-labelled current-vintage retrospective panel: no operational
+  point-in-time claim for history; intra-basis revision tail measured (19/15,040
+  values between consecutive 2026-08/2026-09 vintages, all recent months, +1..+7).
+  Construction handoff includes the anti-self-join protocol: a scored row's label
+  operand is a feature of the row two months later - gate-1.5 reverse-history probes
+  mandatory on the exact artifact. Licence class B: attribution + no-sale notice
+  (quoted in record); our free releases satisfy it; conditions go to LICENSE.md.
+- gh-opendata-coverage: `dropped` (verdict drop). Per its own decision rule: no open
+  licence on record (class C standing policy decisive; NOT an access rejection),
+  corroborated by a 2026-10-27 re-probe: DNS resolves (197.253.124.4) but TCP 443
+  refused on all three endpoints while the same session reached data.gov.ma,
+  statssa.gov.za and isibaloweb fine (egress works; refusal is server-side).
+  Reopen conditions in record.json.
+- ma-datagovma-coverage: reopen condition checked - package_search count 695,
+  below the 697 threshold, no new publisher org; stays parked, zero further probes.
+- za-dws-dam-storage-exceedance: coordinator re-test 2026-10-27 - DWS 403 persists
+  (generic Apache page, no named blocker), niwis2 timeout persists. The worker-side
+  access test named in its next_action was NOT run this session (no worker budget
+  spent; the session prioritised the Stats SA lead). Stays parked; next action
+  unchanged.
+- Regional coverage probes without candidate opens: AfDB open-data portals are
+  CC BY 4.0 (terms quoted from projectsportal.afdb.org) but carry annual
+  aggregate indicators and project-operations data - annual aggregates cannot fill
+  our temporal split design at useful density, and macro-growth forecasting is
+  crowded prior art; the projects portal is unit-level but MDB project-outcome
+  prediction has existing literature (World Bank IEG rating models) - noted as a
+  possible future lead only. UNECA/ECAStats compiles aggregates from national
+  sources (mixed licences, no unit-level ongoing series found in this bounded
+  check). Kenya KNBS remains parked pending the operator's CC BY-NC decision (the
+  record's step 1); no further Kenya probes until decided. data.gov.za still
+  unreachable from the coordinator (code 000); SAPS still parked on written
+  licence confirmation (operator-side).
+- Ready buffer now holds 6 candidates (was 5); Africa coverage: ZA 4 (2 ready,
+  2 parked), GH dropped, KE parked, MA parked, NG dropped.
+
+Next action: construction session picks up za-statsa-liquidations-exceedance from
+its record next_action (worker fetch with Imperva retry/browser fallback, anti-join
+design, gate 1.5), or advances any of the other five ready candidates. The Kenya
+NC posture decision remains with the operator.
+
 ## 2026-10-27 (14:50Z) - worker watcher follow-up: ecm-publish-001 + ecm-hf-001 both succeeded; ec-merger-phase2-opening staged private on GitHub and Hub, verified, awaiting the operator's flip
 
 The advancement session that launched both release jobs recorded their outcomes and

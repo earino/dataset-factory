@@ -46,3 +46,21 @@ network-level.
 `probe_access.py` in this directory re-runs the two CKAN action-API probes and prints
 the refusal evidence. The browser failure is reproducible by loading
 https://data.gov.gh/ in any browser on this network.
+
+## Re-probe and closure (2026-10-27)
+
+Bounded re-probe from the coordinator (general egress verified working in the same
+session by successful fetches of data.gov.ma, statssa.gov.za and
+isibaloweb.statssa.gov.za):
+
+- `getent hosts data.gov.gh` -> `197.253.124.4` (DNS resolves)
+- `curl -sv https://data.gov.gh/` -> "Trying 197.253.124.4:443... connect ... failed:
+  Connection refused" (same for `/api/3/action/package_list` and
+  `/data/api/3/action/package_list`; HTTP code 000 in ~1.1 s on all three)
+
+Server-side refusal, not a coordinator egress problem and not a rendering problem, so
+the record's "do not retry from this coordinator" still stands and a browser retry adds
+nothing. Per the record's own decision rule, Ghana is closed under the class C standing
+policy with the licence absence as the decisive fact (no open licence on record; portal
+inoperative corroborates but is not the rejection). See record.json rejection_reason
+for the reopen conditions.
