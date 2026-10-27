@@ -1,0 +1,172 @@
+{
+  "id": "ted-procurement-single-bid",
+  "status": "dropped",
+  "created_at": "2026-10-27T00:35:25+00:00",
+  "domain": "EU public procurement / tender competition prediction",
+  "prediction_question": "At the TED publication of a contract notice (call for competition), will the linked award notice report that the procedure's lot received exactly one offer (single bid)?",
+  "prediction_time": "The TED publication instant of the contract notice (CN). The CN CSV export carries the buyer's dispatch date (DT_DISPATCH) and year; the exact publication date (PD) per notice is served by the anonymous TED Search API v3. Worked example in notes.md: CN 10-2023 dispatched 2022-12-28, published 2023-01-02+01:00 (Europe/Brussels); its linked award notice 371295-2023 was published 2023-06-21+02:00, i.e. the whole target window (award decision, offers received) follows the prediction instant.",
+  "target_definition": "Binary single-bid label per procedure lot: NUMBER_OFFERS = 1 in the linked contract award notice (CAN) row for that lot, vs NUMBER_OFFERS > 1. Label source columns: CAN's NUMBER_OFFERS (plus the FUTURE_CAN_ID join key); both excluded from any shipped features. Pre-eForms CANs also carry NUMBER_TENDERS_SME / NUMBER_TENDERS_OTHER_EU / NUMBER_TENDERS_NON_EU breakdowns of the same total.",
+  "sources": [
+    {
+      "name": "TED CSV subset - Tenders Electronic Daily public procurement notices (contract notices 2006-2023, contract award notices 2007-2023), data.europa.eu dataset ted-csv",
+      "url": "https://data.europa.eu/data/datasets/ted-csv",
+      "api": "annual zips at https://data.europa.eu/api/hub/store/data/ted-contract-notices-YYYY.zip and ted-contract-award-notices-YYYY.zip (measured: CN 2023 42,882,577 bytes; CAN 2023 111,181,340 bytes; ranged GET works, HEAD refused 401)",
+      "access": "anonymous direct download; CN export carries FUTURE_CAN_ID / FUTURE_CAN_ID_ESTIMATED - the Publications Office's own pre-computed CN->CAN link; measured populated 10/10 complete rows in the CN 2019 prefix and present in first CN 2023 rows; link fixtures verified against the Search API (notes.md)",
+      "licence": "Commission Decision 2011/833/EU per the TED legal notice copyright section (read 2026-10-27): procurement notices freely reusable for commercial and non-commercial purposes with attribution; class B"
+    },
+    {
+      "name": "TED Search API v3 (anonymous, no key), Publications Office of the EU",
+      "url": "https://api.ted.europa.eu/v3/notices/search",
+      "api": "POST JSON {query, limit, fields}; expert query grammar e.g. 'FT=3 AND PD>=20190601 AND PD<=20190630' (legacy form-3 award notices) or 'FT=\"CAN\" AND PD>=20240601 AND PD<=20240630' (eForms result notices); response carries totalNoticeCount and converted full-text content; a fields list is REQUIRED (400 without it); full-notice GET /v3/notices/{id} demands an Authorization header (API key) despite published-notice retrieval",
+      "access": "anonymous search; ~0.1 s per count query; politeness 1 req/s with UA + From headers observed",
+      "licence": "Commission Decision 2011/833/EU per the TED legal notice copyright section (read 2026-10-27): procurement notices freely reusable for commercial and non-commercial purposes with attribution; class B"
+    },
+    {
+      "name": "TED legal notice (publisher's own reuse terms), read 2026-10-27 in the supported browser after plain urllib got HTTP 429 from this host",
+      "url": "https://ted.europa.eu/en/legal-notice",
+      "api": null,
+      "access": "text quote recorded in license_evidence",
+      "licence": "Commission Decision 2011/833/EU per the TED legal notice copyright section (read 2026-10-27): procurement notices freely reusable for commercial and non-commercial purposes with attribution; class B"
+    }
+  ],
+  "license_evidence": [
+    "TED legal notice, Copyright notice (read 2026-10-27 via supported browser; direct urllib fetch from this host returned HTTP 429, so the browser was the evidence path): '© European Union, 1998-2026. The European Commission's reuse policy is implemented by the Commission Decision of 12 December 2011 on the reuse of Commission documents. Unless otherwise noted, the procurement notices published in the Supplement to the Official Journal of the European Union can be freely reused, for commercial or non-commercial purposes.'",
+    "Same notice: 'The copyright over the editorial content of the SIMAP websites (TED, TED eNotices2, TED Developer Docs and TED Developer Portal) is licensed under the Creative Commons Attribution 4.0 International (CC BY 4.0) license. This means that reuse is allowed provided appropriate credit is given and any changes made are indicated.'",
+    "Same notice, third-party caveat: 'You may be required to clear additional rights if specific content depicts identifiable private individuals or includes third-party works.'",
+    "Same notice, authenticity condition for any derived product: 'Only public tenders notices electronically signed published in the Supplement to the Official Journal of the European Union are authentic.' A derived dataset must be labelled derived and never as the Publications Office's official product.",
+    "data.europa.eu catalogue records ted-1 / ted-csv (read 2026-10-27): access_right PUBLIC, publisher 'Publications Office of the European Union'; distribution-level licence fields are null, so the publisher's legal notice and Commission Decision 2011/833/EU are the operative instruments; the ted-csv description notes eForms became the additional standard on 14 November 2022 and EC GROW (GROW-D2@ec.europa.eu) welcomes links to reuse research."
+  ],
+  "construction_script": null,
+  "split_strategy": "Not built - the mirror veto precedes construction. Measured anchors any future reformulation would build on: award-notice population by era (Search API totalNoticeCount, 2026-10-27): FT=3 (legacy award form) 38,898 in June 2019 alone; FT=\"CAN\" (eForms result notices) 0 in June 2015, 1,147 in June 2019, 723 in June 2022, 1,161 in June 2023, full-year 2023 34,699, 28,676 in June 2024, 33,463 in June 2025, 35,853 in September 2026. CSV prefix samples (first ~256 KiB per year file, early-January notices, NOT year-representative): NUMBER_OFFERS populated on 64.4% of rows (2019), 58.2% (2021), 72.3% (2023); single-bid share among populated rows 32.7% / 31.8% / 42.8%. Full-population eligible counts (CANs with offers populated AND linked CN) require bulk processing on a worker - recorded as a prerequisite, not measured here.",
+  "measurements": {
+    "bulk_inventory_2026_10_27": "data.europa.eu ted-csv catalogue: annual CN zips 2006-2023 and CAN zips 2007-2023 plus combined packages and a deprecated V1/V2.2 line; last catalogue update 2024-01-25; no 2024+ CSV distribution, so the CSV subset ends at 2023 while the Search API continues (measured 35,853 eForms CANs in Sept 2026). CAN 2023 zip = 111,181,340 bytes; CN 2023 zip = 42,882,577 bytes (Content-Range totals via ranged GET; HEAD returns 401).",
+    "can_csv_schema_2026_10_27": "74 columns incl. ID_NOTICE_CAN, DT_DISPATCH, CORRECTIONS, CAE_NAME/CAE_NATIONALID/CAE_TOWN, ISO_COUNTRY_CODE, CAE_TYPE, MAIN_ACTIVITY, TYPE_OF_CONTRACT (S/U/W), TAL_LOCATION_NUTS, CPV, ID_LOT, LOTS_NUMBER, VALUE_EURO, TOP_TYPE (procedure), B_ACCELERATED, CRIT_CODE/CRIT_PRICE_WEIGHT, B_ELECTRONIC_AUCTION, NUMBER_AWARDS, ID_AWARD, INFO_ON_NON_AWARD, B_CONTRACTOR_SME, TITLE, NUMBER_OFFERS, NUMBER_TENDERS_SME, NUMBER_TENDERS_OTHER_EU, NUMBER_TENDERS_NON_EU, NUMBER_OFFERS_ELECTR, AWARD_EST_VALUE_EURO, AWARD_VALUE_EURO, DT_AWARD. Header + leading rows recovered by a ranged 256 KiB read + partial inflate (262,144 bytes -> ~1.5 MB CSV, ~2,361 rows for 2023), recorded in probe/probe_csv_prefix.py.",
+    "cn_csv_schema_2026_10_27": "64 columns incl. ID_NOTICE_CN, DT_DISPATCH, FUTURE_CAN_ID, FUTURE_CAN_ID_ESTIMATED, buyer fields, TYPE_OF_CONTRACT, TAL_LOCATION_NUTS, CPV, ID_LOT, LOTS_NUMBER, B_VARIANTS, VALUE_EURO (estimated), B_OPTIONS, DURATION, CONTRACT_START/CONTRACT_COMPLETION, TOP_TYPE, B_ACCELERATED, ENV_OPERATORS/MIN/MAX, CRIT_CODE/CRIT_PRICE_WEIGHT, DT_APPLICATIONS (deadline), B_RECURRENT_PROCUREMENT.",
+    "link_verification_2026_10_27": "FUTURE_CAN_ID populated in 10/10 complete rows of the CN 2019 prefix (all ESTIMATED=0) and in the first CN 2023 rows. Two fixtures verified against the Search API: CN 10-2023 (PRT, Instituto Superior Tecnico, CPV 90910000, dispatched 2022-12-28, published 2023-01-02+01:00) -> FUTURE_CAN_ID 371295-2023, which the API returns as a CAN published 2023-06-21+02:00, CY=PRT, matching authority code; CN 2-2023 (ESP, Consejeria de Presidencia, dispatched 2022-12-28) -> 181795-2023, a CAN published 2023-03-27+02:00, CY=ESP. Both targets follow the prediction instant by months. Recorded in probe/probe_api_counts.py.",
+    "form_type_vocabulary_2026_10_27": "The expert query FT field distinguishes legacy standard-form families (FT=3 = award notices under the classic directives; 38,898 in June 2019) from eForms result notices (FT=\"CAN\"; 0 in June 2015 before eForms existed, 640 in January 2023 during the transition, 28,676-35,853 per month by 2024-2026). A full award population needs both families plus the other legacy award form codes; the CSV subset aggregates all families, which is why construction should count from the CSV/API pair rather than FT=\"CAN\" alone.",
+    "baserate_prefix_samples_2026_10_27": "CAN CSV year-file prefixes (first ~256 KiB compressed, ordered by notice ID = early-January notices; explicitly NOT year-representative): 2019: 3,343 rows / 706 notices, NUMBER_OFFERS populated 64.4%, single-bid 704 (32.7% of populated), multi 1,450, zero 0, INFO_ON_NON_AWARD set 9.5%; 2021: 4,049 rows / 568 notices, populated 58.2%, single 749 (31.8%); 2023: 2,361 rows / 722 notices, populated 72.3%, single 731 (42.8%). These match the ~30-40% single-bidding phenomenon published by the European Court of Auditors (SR 28/2023) and the Commission's Single Market Scoreboard, which is the cross-check against the publisher's own summary product.",
+    "fetch_cost_measured_2026_10_27": "ranged 256 KiB zip-prefix fetch 0.29-0.33 s each (three years measured); Search API count query 0.08-0.16 s; search response with converted full-text content ~5-10 KB per notice (multilingual). Full construction would download ~150 MiB compressed per CN+CAN year pair on a worker (~1.5 GiB for 2014-2023), well inside worker norms and far above coordinator limits - bulk stays on workers.",
+    "novelty_prior_art_2026_10_27": "The exact task exists in reproducible form: Acikalin, Gorgun, Kutlu & Tas, 'How you describe procurement calls matters: Predicting outcome of public procurement using call descriptions', Natural Language Engineering 30(6) 2024 (online 2023-08-10): four prediction tasks on THIS TED CSV subset (number of offers PNumOffers; single offer PSingleOffer; foreign-firm award; price overrun vs estimate), 333,832 notices, 80/20 train/test, scored transformers, and released code: github.com/utkuumur/HowYouDescribeProcurementCallsMatters. Adjacent prior art: Demiray, Ozbayoglu & Tas 2015 (bidder counts on TED); Gallego, Rivero & Martinez 2021; 'Intensifying Competition in Public Procurement' (Springer GIQ 2023, TED 2017-2020 offers modelling); ECA Special Report 28/2023 single-bidding dashboard (DG GROW TED CSV + DigiWhist opentender); MDPI Algorithms 2025 (SME winner + main activity, TED 2015-2023); Spanish bidder-recommender (Wiley 2020). ML-ready data compilations already public: PleIAs/TEDEUTenders (HF parquet by year), EUROPROCURE-10 (HF, 2016-2025), zalizedata TED+OCDS (HF/Kaggle, 6.3M notices - NC licensed, unusable for us, but demonstrates availability)."
+  },
+  "jobs": null,
+  "artifacts": null,
+  "rejection_reason": "Mirror with the precedent named. The task this source most naturally carries - predicting single bids / number of offers at call-for-competition publication on the TED CSV subset - already exists as a published, scored prediction study with released construction code (Acikalin et al., Natural Language Engineering 2024, tasks PSingleOffer/PNumOffers; github.com/utkuumur/HowYouDescribeProcurementCallsMatters), on the same data, same prediction instant, same population, with train/test splits and reported results. What we would add (temporal splits instead of random, structured CN features plus text, the official FUTURE_CAN_ID link, our qualification gate and published artifact) is engineering refinement of an existing task, not genuinely novel work; the operator's standing bar is to ship nothing rather than mirror. Related targets on this source are also taken: foreign-firm award and price overrun (NLE 2024), SME-winner and buyer main-activity (MDPI Algorithms 2025), winner/bidder recommendation (Wiley 2020), single-bidding rates as policy indicator (ECA SR 28/2023).",
+  "review": "The licence is clean (class B: Commission Decision 2011/833/EU reuse, attribution, no distortion, personal-data caveat handled by excluding contact-person fields), the access is unusually good for this bench (official annual CSV extracts plus an anonymous search API), and the official CN->CAN link column (FUTURE_CAN_ID) removes the main construction risk - which is precisely why the source is heavily mined. Both timing and target contracts are satisfiable, so this is not a weak-source rejection; it is a strong source whose obvious task is taken. Recorded so no future tick re-probes TED blind, and so the measured access map (CSV subset ends 2023; FT vocabulary split legacy/eForms; link fixtures) is reusable for any genuinely different formulation.",
+  "next_action": "Closed for any target that is a bucket of the number of offers received (incl. zero-offer / no-award / INFO_ON_NON_AWARD variants, which are thresholds of PNumOffers) and for foreign-winner, SME-winner, price-overrun, main-activity and bidder-recommendation targets - all covered by the named prior art. Reopen only with a task contract whose target is a different variable measured in this data product AND its own recorded novelty sweep that clears the mirror rule; the as-of/vintage question (CSV subset is a year-end export; corrections are separate notices) would then also need explicit as-of evidence per the prediction contract. Reusable measured facts are in measurements and probe/.",
+  "verdict": "reject",
+  "jurisdiction": {
+    "country": "EU",
+    "region": "Europe",
+    "publisher": "Publications Office of the European Union (European Commission), Luxembourg",
+    "recorded_at": "2026-10-27"
+  },
+  "licence_class": "B",
+  "licence_note": "Class B: Commission Decision of 12 December 2011 on the reuse of Commission documents (2011/833/EU) implements the reuse policy for the procurement notices - free reuse for commercial and non-commercial purposes, with attribution, no distortion of original meaning, and no false endorsement; editorial content CC BY 4.0. Conditions carry into any LICENSE.md unchanged; a derived dataset must be labelled derived and never as the Publications Office's official product; identifiable-private-individual content (e.g. named contact persons in notices) must not be redistributed.",
+  "novelty_check": {
+    "checked_at": "2026-10-27T00:39:21+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "TED public procurement single bid prediction",
+      "number of offers prediction public procurement dataset",
+      "TED contract award notices machine learning benchmark"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "TED public procurement single bid prediction",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "number of offers prediction public procurement dataset",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "TED contract award notices machine learning benchmark",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "TED public procurement single bid prediction",
+          "hits": 543812,
+          "top": [
+            "Recovered TED bidder counts and full-bid-set eForms tenderers for European public procurement",
+            "LLM-Classified European Public IT Procurement Awards: Digitization, Digitalization, and Digital Transformation in German TED Notices, 2024–2025",
+            "Wadium w postaci niepieniężnej – ustawowe formy. Zasady zwrotu zabezpieczenia wadialnego w kontekście elektronizacji zamówień publicznych",
+            "Sample Public Procurement Dataset for Reproducibility of the Simple Platform",
+            "Challenges in Procurement of Works in Design Bid Build Institutional Projects"
+          ]
+        },
+        {
+          "query": "number of offers prediction public procurement dataset",
+          "hits": 5705025,
+          "top": [
+            "State regulation of procurement activities",
+            "DiSSCo Prepare Deliverable D4.4 - Roadmap for the partnerships project within the EU PCP framework",
+            "\"PUBLIC PROCUREMENT: A TOOL FOR ECONOMIC SECURITY OR A SOURCE OF THREATS?\"",
+            "VULTURE public dataset",
+            "Digital Transformation in Public Procurement in Türkiye: A SWOT Analysis and International Comparison of the Transformation Process of the State Supply Office"
+          ]
+        },
+        {
+          "query": "TED contract award notices machine learning benchmark",
+          "hits": 418469,
+          "top": [
+            "BeauAMP : processing and consolidation of open data on public procurement in France (2015-2023)",
+            "Data covering European public procurement in Spain (2018)",
+            "FOPPA: A database of French Open Public Procurement Award notices",
+            "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
+            "BeauAMP-Daily: continuous processing and consolidation of French public procurement open data"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "TED public procurement single bid prediction",
+          "hits": 5,
+          "top": [
+            "A Decade of Public Procurement in Spain: A Longitudinal Open Dataset from the BOE (2014-2024)",
+            "Stealed-bid Auctions: Detecting Bid Leakage via Semi-Supervised Learning",
+            "Acceptance of e-procurement in organisations",
+            "Organized crime behavior of shell-company networks in procurement: prevention insights for policy and reform",
+            "Twelve Years of Education and Public Outreach with the Fermi Gamma-ray Space Telescope"
+          ]
+        },
+        {
+          "query": "number of offers prediction public procurement dataset",
+          "hits": 5,
+          "top": [
+            "A Decade of Public Procurement in Spain: A Longitudinal Open Dataset from the BOE (2014-2024)",
+            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+            "Acceptance of e-procurement in organisations",
+            "Twelve Years of Education and Public Outreach with the Fermi Gamma-ray Space Telescope"
+          ]
+        },
+        {
+          "query": "TED contract award notices machine learning benchmark",
+          "hits": 5,
+          "top": [
+            "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+            "DOME: Recommendations for supervised machine learning validation in biology",
+            "A Benchmark Study of Machine Learning Models for Online Fake News Detection",
+            "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
+            "Active learning for data streams: a survey"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'TED public procurement single bid prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'number of offers prediction public procurement dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'TED contract award notices machine learning benchmark': 0 hit(s) - nothing notable\n- zenodo_records / 'TED public procurement single bid prediction': 543812 hit(s) - Recovered TED bidder counts and full-bid-set eForms tenderers for European public procurement, LLM-Classified European Public IT Procurement Awards: Digitization, Digitalization, and Digital Transformation in German TED Notices, 2024–2025, Wadium w postaci niepieniężnej – ustawowe formy. Zasady zwrotu zabezpieczenia wadialnego w kontekście elektronizacji zamówień publicznych, Sample Public Procurement Dataset for Reproducibility of the Simple Platform, Challenges in Procurement of Works in Design Bid Build Institutional Projects\n- zenodo_records / 'number of offers prediction public procurement dataset': 5705025 hit(s) - State regulation of procurement activities, DiSSCo Prepare Deliverable D4.4 - Roadmap for the partnerships project within the EU PCP framework, \"PUBLIC PROCUREMENT: A TOOL FOR ECONOMIC SECURITY OR A SOURCE OF THREATS?\", VULTURE public dataset, Digital Transformation in Public Procurement in Türkiye: A SWOT Analysis and International Comparison of the Transformation Process of the State Supply Office\n- zenodo_records / 'TED contract award notices machine learning benchmark': 418469 hit(s) - BeauAMP : processing and consolidation of open data on public procurement in France (2015-2023), Data covering European public procurement in Spain (2018), FOPPA: A database of French Open Public Procurement Award notices, plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, BeauAMP-Daily: continuous processing and consolidation of French public procurement open data\n- arxiv_preprints / 'TED public procurement single bid prediction': 5 hit(s) - A Decade of Public Procurement in Spain: A Longitudinal Open Dataset from the BOE (2014-2024), Stealed-bid Auctions: Detecting Bid Leakage via Semi-Supervised Learning, Acceptance of e-procurement in organisations, Organized crime behavior of shell-company networks in procurement: prevention insights for policy and reform, Twelve Years of Education and Public Outreach with the Fermi Gamma-ray Space Telescope\n- arxiv_preprints / 'number of offers prediction public procurement dataset': 5 hit(s) - A Decade of Public Procurement in Spain: A Longitudinal Open Dataset from the BOE (2014-2024), The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, Acceptance of e-procurement in organisations, Twelve Years of Education and Public Outreach with the Fermi Gamma-ray Space Telescope\n- arxiv_preprints / 'TED contract award notices machine learning benchmark': 5 hit(s) - Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, A Benchmark Study of Machine Learning Models for Online Fake News Detection, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Active learning for data streams: a survey",
+    "prior_art": [
+      "Acikalin, Gorgun, Kutlu & Tas, Natural Language Engineering 30(6):1255-1276 (2024) + github.com/utkuumur/HowYouDescribeProcurementCallsMatters",
+      "European Court of Auditors Special Report 28/2023 single-bidding dashboard (DG GROW TED CSV + DigiWhist)"
+    ],
+    "theirs": "The exact task (PNumOffers single-offer prediction at call publication on this TED CSV subset) with 333,832 notices, 80/20 splits, scored multilingual transformers and released extraction code; plus ECA SR 28/2023 single-bidding dashboards, SME-winner/main-activity (MDPI 2025), bidder recommendation (Wiley 2020) and ML-ready HF compilations of the same data",
+    "ours": "Nothing that clears the mirror rule: temporal splits, structured CN features and our qualification gate are engineering refinements of an existing scored task; zero-offer/no-award variants are thresholds of the same number-of-offers target",
+    "verdict": "mirror",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
+}

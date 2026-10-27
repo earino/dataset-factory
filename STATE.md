@@ -23,6 +23,62 @@ commit 8512fd8). Close #17; ordinary advancement thereafter is source-specific
 candidate review - review the next candidate's source-specific prediction contract
 and update its builder before construction; #25 remains deferred.
 
+## 2026-10-27 - EU/EEA discovery tick: TED single-bid and RASFF risk-decision closed as mirrors (prior art named); infringement register has no machine-readable dataset
+
+Regional focus: Europe EU/EEA, started at data.europa.eu per the rotation. Discovery-only
+session; no construction, no candidate advancement, no worker launched.
+
+Shortlist probed, cheapest veto first:
+
+1. **ted-procurement-single-bid - DROPPED (mirror).** The task this source most naturally
+   carries (predict single bid / number of offers at contract-notice publication) already
+   exists in reproducible form: Acikalin et al., Natural Language Engineering 30(6) 2024,
+   four scored tasks on this same TED CSV subset (PNumOffers, PSingleOffer, foreign award,
+   price overrun), 333,832 notices, 80/20 splits, released extraction code
+   (github.com/utkuumur/HowYouDescribeProcurementCallsMatters). Adjacent targets also taken:
+   ECA SR 28/2023 single-bidding dashboard, MDPI Algorithms 2025 (SME/main activity),
+   Wiley 2020 bidder recommendation; ML-ready HF compilations of the same data exist
+   (PleIAs/TEDEUTenders, EUROPROCURE-10, zalizedata TED+OCDS). Evidence recorded before the
+   verdict: licence class B from the publisher's own legal notice (notices "freely reused,
+   for commercial or non-commercial purposes" under Commission Decision 2011/833/EU; read
+   in the supported browser because plain urllib gets HTTP 429 from this host); the CN
+   export's official FUTURE_CAN_ID link verified against the Search API with two dated
+   fixtures (CN 10-2023 published 2023-01-02 -> CAN 371295-2023 published 2023-06-21;
+   CN 2-2023 -> 181795-2023); CAN/CN 2023 zips measured (111,181,340 / 42,882,577 bytes);
+   single-bid share among offers-populated CAN prefix rows 32.7% (2019) / 31.8% (2021) /
+   42.8% (2023), consistent with ECA's published single-bidding indicator. Zero-offer and
+   no-award variants are thresholds of PNumOffers and do not clear the mirror either.
+   Reusable access map retained in the record and probe/ scripts (CSV subset ends 2023;
+   FT=3 legacy vs FT="CAN" eForms; CSV lacks publication dates - API provides PD;
+   full-notice GET needs an API key while search is anonymous).
+2. **rasff-notification-risk-decision - DROPPED (mirror).** The only official EU dataset is
+   real and machine-readable (DG SANTE datalake API + pre-2021 XLSX, catalogue id
+   restored_rasff), but the obvious task (serious/not-serious risk classification) is
+   published with chronological splits and scored models (Frontiers 2026, 22,643
+   notifications 2019-2025; Springer 2025, 61,350 entries), product/hazard/measure targets
+   are taken (arXiv 2009.06704), and a cleaned RASFF extract is already public as
+   supplementary material (MDPI 2026). Licence deliberately left unread: the mirror veto is
+   decisive regardless. The vintage problem is also unresolved on its face: the public
+   record is the consolidated notification; the risk decision is assigned post-circulation
+   and initial-notification vintage is not separately published.
+3. **EC infringement-procedure escalation - not opened.** data.europa.eu catalogue sweeps
+   found no official machine-readable infringement register (searches return only
+   irrelevant national datasets; the Commission publishes monthly decision packages as
+   HTML/PDF). Data-availability dead end recorded, not a candidate.
+
+Both new records pass scripts/check-candidate.py; novelty checks recorded via
+scripts/check-novelty.py (verdict mirror, run 2026-10-27T00:39Z); discovery-coverage now
+counts 88 candidates (EU 8), dropped 34, live non-US 21/27 (78%). No ready-candidate buffer
+change: unhcr-refugee-data-finder and za-municipal-audit-opinion remain the two ready
+candidates.
+
+Next action: next discovery tick rotates to the next region per
+skills/dataset-discovery/references/geographic-coverage.md; a future EU/EEA tick needs a
+source whose obvious task is not already published - the two strongest machine-readable EU
+leads were closed here with prior art named, so the region's next probe should start from
+EU agency registers not yet touched (EBA risk indicators, EIOPA, ECHA dossiers) rather than
+re-opening TED or RASFF.
+
 ## 2026-10-26 - ec-merger-phase2-opening QUALIFIED on the worker (gate 1.5.0, 46/46, exact-byte accepted); references recorded; one failed descriptor attempt preserved
 
 Advancement session picked ec-merger-phase2-opening (operator list, "build";

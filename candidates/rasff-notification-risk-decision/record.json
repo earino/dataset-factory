@@ -1,0 +1,147 @@
+{
+  "id": "rasff-notification-risk-decision",
+  "status": "dropped",
+  "created_at": "2026-10-27T00:35:25+00:00",
+  "domain": "EU food and feed safety rapid alerts / notification risk classification",
+  "prediction_question": "At the circulation of a new RASFF notification (product, origin country, notifying country, reason for notification, hazard signal), will the risk assessment classify the issue as a serious risk?",
+  "prediction_time": "Unresolved on its face, and moot under the mirror veto: the public RASFF window and the DG SANTE datalake API serve the current consolidated notification record (notification date is the only instant-like field); the risk decision is assigned during post-notification assessment, and the initial-notification vintage is not separately published, so feature availability at a stated instant cannot be evidenced from this source alone without further publisher documentation.",
+  "target_definition": "Binary: RISK_DECISION serious / potentially-serious (positive) vs not serious / no risk (negative); 'undecided' and 'potential risk' excluded by prior art when ambiguous. Label source column: the notification's risk-decision field.",
+  "sources": [
+    {
+      "name": "RASFF window + DG SANTE datalake API (Food and Feed Alert Notifications), data.europa.eu catalogue id restored_rasff",
+      "url": "https://webgate.ec.europa.eu/rasff-window/screen/search",
+      "api": "JSON API documented at https://developer.datalake.sante.service.ec.europa.eu/api-details#api=2955fdc1-9da2-4927-977f-40dc50db1128 (APIs User Guide PDF); plus XLSX 'RASFF notifications pre-2021 public information' at https://data.europa.eu/euodp/data/storage/f/2021-06-03T125456/RASFF%20notifications%20pre-2021%20public%20information.xlsx",
+      "access": "catalogue record read 2026-10-27 via the data.europa.eu hub search API: publisher 'Directorate-General for Health and Food Safety', issued 2015-08-18, modified 2025-03-07, 4 distributions (window search page HTML, API guide PDF, JSON API, pre-2021 XLSX); distribution-level licence fields null. The API itself was not called this session - the mirror veto landed first.",
+      "licence": "Not read this session - distribution-level licence fields are null on data.europa.eu; the DG SANTE datalake API terms and RASFF window legal notice are the instruments to read on any reopen. The mirror veto precedes licence work."
+    }
+  ],
+  "license_evidence": [
+    "Not read this session: the mirror veto precedes licence work. Observed 2026-10-27: the data.europa.eu distribution records for restored_rasff carry licence: null, so the DG SANTE datalake API terms of use and the RASFF window legal notice are the first instruments to read on any reopen; EU-institution reuse would presumptively follow Commission Decision 2011/833/EU, but that presumption was not verified here."
+  ],
+  "construction_script": null,
+  "split_strategy": "Not built - mirror veto. Prior art already built the panels this task would use: Frontiers Food Sci Technol 2026 uses 22,643 RASFF notifications 2019-2025 with a CHRONOLOGICAL training/calibration/test split; Springer Food Eng Rev/Technol 2025 uses 61,350 entries (serious 28.93%, not serious 22.42%, undecided 48.65%); arXiv 2009.06704 uses 2004-2018 with 80/20 splits; MDPI 2026 releases its cleaned 2020-2025 pesticide-alerts dataset (RASFF_enriched.csv) as supplementary material.",
+  "measurements": {
+    "catalogue_probe_2026_10_27": "data.europa.eu hub search: 'RASFF notifications food feed safety' and 'Rapid Alert System Food Feed RASFF portal data' both return restored_rasff 'Food and Feed Alert Notifications' (DG SANTE) as the only official EU dataset, alongside national mirrors (LT 'Urgent notifications of unsafe food and feed', FSA intensified-controls list, Safety Gate for non-food as a sibling system). Full dataset detail in probe/probe_rasff_catalogue.py output, notes.md.",
+    "prior_art_numbers_2026_10_27": "Frontiers in Food Science & Technology (2026) 10.3389/frfst.2026.1890831: binary serious/not-serious RASFF classification, 28,708 records 2019-2025 -> 22,643 after removing ambiguous risk decisions, serious base rate 79.1% (post-exclusion), chronological train/calibration/test split, XGBoost + Mondrian conformal prediction, accuracy 0.784. Springer (2025) 10.1007/s11947-025-03819-4: LR/SVM/RF/DT/NB/XGBoost/LightGBM/AdaBoost/ANN on 61,350 RASFF entries classifying serious/not-serious/undecided, with data enrichment and XAI. arXiv 2009.06704 (2020): categorical-embedding MLP/CNN predicting product category, hazard category and the action to be taken, RASFF 2004-2018, accuracy 74.08-93.06%. MDPI (2026) 2673-4532/6/3/36: 1,138 pesticide-residue RASFF alerts 2020-2025 with the cleaned dataset released as supplementary material."
+  },
+  "jobs": null,
+  "artifacts": null,
+  "rejection_reason": "Mirror with the precedent named. The obvious task on this source - classifying RASFF notification risk decisions - is a published, repeatedly-posed ML task with chronological splits and scored models (Frontiers 2026; Springer 2025), extended by prior art that already predicts the notification's product category, hazard category and required measures as well (arXiv 2009.06704), and at least one published cleaned dataset extract exists (MDPI 2026 supplementary). Under the operator's standing bar we ship nothing rather than mirror, and the timing contract is additionally unresolved (consolidated records without initial-notification vintage).",
+  "review": "The source is real and machine-readable (DG SANTE datalake API plus a pre-2021 public XLSX), so this is not a data-availability rejection; it is a saturated-task rejection, recorded so a future EU tick does not re-open RASFF risk classification. The licence was deliberately left unread because the mirror veto is decisive regardless of licence class.",
+  "next_action": "Closed for the risk-decision classification target and for product-category / hazard-category / required-measure targets (all covered by the named prior art). Reopen only with a task contract on this data whose target is a genuinely different variable, with (a) its own recorded novelty sweep, (b) an explicit resolution of the vintage/instant problem (initial-notification vs consolidated record, publisher documentation of the risk-decision assignment step), and (c) the DG SANTE API terms of use read and classified. Coverage note: RASFF notifications span EU/EEA (EU member states plus Norway, Liechtenstein, Iceland), so any reopened task would count as an EU/EEA-region candidate.",
+  "verdict": "reject",
+  "jurisdiction": {
+    "country": "EU",
+    "region": "Europe",
+    "publisher": "Directorate-General for Health and Food Safety, European Commission (RASFF window / DG SANTE datalake)",
+    "recorded_at": "2026-10-27"
+  },
+  "novelty_check": {
+    "checked_at": "2026-10-27T00:39:34+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "RASFF serious risk classification machine learning",
+      "RASFF notifications prediction dataset",
+      "food safety risk decision model EU alerts"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "RASFF serious risk classification machine learning",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "RASFF notifications prediction dataset",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "food safety risk decision model EU alerts",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "RASFF serious risk classification machine learning",
+          "hits": 632196,
+          "top": [
+            "ROAD ACCIDENT SEVERITY PREDICTION USING MACHINE LEARNING",
+            "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
+            "Traditional Regression Methods versus the Utility of Machine Learning Techniques in Forecasting Inmate Misconduct in the United States: An Exploration of the Prospects of the Techniques",
+            "RGB and RGNIR Plastic Waste Database",
+            "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI"
+          ]
+        },
+        {
+          "query": "RASFF notifications prediction dataset",
+          "hits": 378472,
+          "top": [
+            "Program Code and Test Dataset for the Rapid Alert Supply Network Extractor (RASNEX 1.0) tool to mine supply chain information from food and feed contamination notifications in Europe",
+            "POTENTIAL SOURCES OF LEAD EXPOSURE IN THE REPUBLIC OF MOLDOVA: RELEVANCE AND CHALLENGES FOR PUBLIC HEALTH",
+            "Food fraud data based on the European Rapid Alert System for Food and Feed (RASFF)",
+            "Unauthorised substances in food supplements - phosphodiesterase-5 inhibitors",
+            "Unauthorized substances in dietary supplements – example of minerals"
+          ]
+        },
+        {
+          "query": "food safety risk decision model EU alerts",
+          "hits": 920955,
+          "top": [
+            "EU Food Safety Almanac 2014 - Chapter on Greece",
+            "EFSA food safety crisis simulation exercise documents 2019",
+            "Incorporating Essential Criteria into Microbiological Risk Assessment: A Comprehensive Approach for the Food Industry",
+            "EU Almanac 2014",
+            "EU Food Safety Almanac"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "RASFF serious risk classification machine learning",
+          "hits": 5,
+          "top": [
+            "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+            "DOME: Recommendations for supervised machine learning validation in biology",
+            "Sequential Design and Spatial Modeling for Portfolio Tail Risk Measurement",
+            "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
+            "Active learning for data streams: a survey"
+          ]
+        },
+        {
+          "query": "RASFF notifications prediction dataset",
+          "hits": 5,
+          "top": [
+            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+            "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset",
+            "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
+            "Continuous Defect Prediction: The Idea and a Related Dataset"
+          ]
+        },
+        {
+          "query": "food safety risk decision model EU alerts",
+          "hits": 5,
+          "top": [
+            "Sequential Design and Spatial Modeling for Portfolio Tail Risk Measurement",
+            "The Rise of Blockchain Technology in Agriculture and Food Supply Chains",
+            "Spontaneous gelation of wheat gluten proteins in a food grade solvent",
+            "Application of Blockchain and Internet of Things to Ensure Tamper-Proof Data Availability for Food Safety",
+            "On the Selection of Loss Severity Distributions to Model Operational Risk"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'RASFF serious risk classification machine learning': 0 hit(s) - nothing notable\n- huggingface_datasets / 'RASFF notifications prediction dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'food safety risk decision model EU alerts': 0 hit(s) - nothing notable\n- zenodo_records / 'RASFF serious risk classification machine learning': 632196 hit(s) - ROAD ACCIDENT SEVERITY PREDICTION USING MACHINE LEARNING, plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, Traditional Regression Methods versus the Utility of Machine Learning Techniques in Forecasting Inmate Misconduct in the United States: An Exploration of the Prospects of the Techniques, RGB and RGNIR Plastic Waste Database, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI\n- zenodo_records / 'RASFF notifications prediction dataset': 378472 hit(s) - Program Code and Test Dataset for the Rapid Alert Supply Network Extractor (RASNEX 1.0) tool to mine supply chain information from food and feed contamination notifications in Europe, POTENTIAL SOURCES OF LEAD EXPOSURE IN THE REPUBLIC OF MOLDOVA: RELEVANCE AND CHALLENGES FOR PUBLIC HEALTH, Food fraud data based on the European Rapid Alert System for Food and Feed (RASFF), Unauthorised substances in food supplements - phosphodiesterase-5 inhibitors, Unauthorized substances in dietary supplements – example of minerals\n- zenodo_records / 'food safety risk decision model EU alerts': 920955 hit(s) - EU Food Safety Almanac 2014 - Chapter on Greece, EFSA food safety crisis simulation exercise documents 2019, Incorporating Essential Criteria into Microbiological Risk Assessment: A Comprehensive Approach for the Food Industry, EU Almanac 2014, EU Food Safety Almanac\n- arxiv_preprints / 'RASFF serious risk classification machine learning': 5 hit(s) - Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, Sequential Design and Spatial Modeling for Portfolio Tail Risk Measurement, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Active learning for data streams: a survey\n- arxiv_preprints / 'RASFF notifications prediction dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, Continuous Defect Prediction: The Idea and a Related Dataset\n- arxiv_preprints / 'food safety risk decision model EU alerts': 5 hit(s) - Sequential Design and Spatial Modeling for Portfolio Tail Risk Measurement, The Rise of Blockchain Technology in Agriculture and Food Supply Chains, Spontaneous gelation of wheat gluten proteins in a food grade solvent, Application of Blockchain and Internet of Things to Ensure Tamper-Proof Data Availability for Food Safety, On the Selection of Loss Severity Distributions to Model Operational Risk",
+    "prior_art": [
+      "Frontiers Food Sci Technol 2026 doi:10.3389/frfst.2026.1890831 (chronological splits, XGBoost, 22,643 notifications)",
+      "Springer 2025 doi:10.1007/s11947-025-03819-4 (61,350 entries, serious/not-serious/undecided)",
+      "arXiv 2009.06704 (product/hazard/measure prediction, RASFF 2004-2018)"
+    ],
+    "theirs": "Binary serious/not-serious RASFF classification is published with chronological splits and scored models (Frontiers 2026: 22,643 notifications 2019-2025; Springer 2025: 61,350 entries); product-category, hazard-category and required-measure targets are also taken (arXiv 2009.06704); a cleaned RASFF dataset extract is publicly released as supplementary material (MDPI 2026)",
+    "ours": "Nothing that clears the mirror rule; the licence was deliberately left unread because the mirror veto is decisive regardless of licence class",
+    "verdict": "mirror",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
+}
