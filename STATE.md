@@ -8620,3 +8620,30 @@ markers were missing. Both jobs were already collected, diagnosed and cleaned up
 Next action: unchanged - close #17, then ordinary source-specific candidate review; issue
 #25 owns any adapter retry. The watcher must not schedule adapter retries.
 
+## 2026-10-27T20:48Z - ec-merger pre-flip independent audit returned: PUBLISH WITH CONDITIONS; flip held until conditions applied
+
+The operator's independent auditor (Codex, no publisher contact, read-only) returned PUBLISH WITH
+CONDITIONS for ec-merger-phase2-opening v2026.10. Verdict preserved verbatim at
+audits/2026-10-27-ec-merger-pre-flip-audit.md and copied beside the candidate record. Integrity PASS
+(all five digests; artifact e5a98dfc...; independently downloaded source pin matches). Shortcut
+attacks PASS within the frozen search: 3,796 label-blind predictors per split, no AUC in {0,1},
+>=0.95 or <=0.05, zero cross-split identity recovery - the nz-ea failure class did not reproduce.
+References: stock 0.6973 and sector prior 0.7679 reproduce with the honest negative paired diff
+-0.0706; the exact published CI and calendar_identity 0.5606 are NOT VERIFIED because the recipes
+are absent from the release. The auditor's own logistic variant scored 0.8144 eval / 0.7767 holdout:
+the stock baseline is reproducible but not a ceiling, recorded as such.
+
+Conditions before publication: (1) retrospective-use limitation consistent across meta.json,
+quality.json and feature-evidence statuses (current-vintage NACE Rev. 2 sector coding is
+retrospective for the 2,904 notifications predating the taxonomy's 2006 publication - blanket
+'verified at notification' claims FAIL); (2) metadata corrections - 309/309 strictly-after (M.3333
+stays positive through its 2007-03-01 opener), 34 pending-censored (30 no-decision + 4
+referral-only) not 33, sector_divisions level counts 540/414/668 exceed rows/5 only in holdout,
+party_count splits on '/' with optional whitespace; (3) ship the comparator (score.py) and
+bootstrap recipes for exact reproduction; (4) disclose repeated-transaction dependence (IAG/AIR
+EUROPA M.9637 and M.11109, both positive, holdout) alongside notification-day clustering. Two
+arrays in the auditor's own contract.json were placeholders and are not zero-error checks.
+
+Corrections are being applied to the staged package and builder; the corrected package must
+re-qualify through the gate two-phase and re-stage to both private destinations before the
+operator's flip. awaiting_operator stays true; nothing is public.
