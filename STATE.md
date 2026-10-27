@@ -23,6 +23,81 @@ commit 8512fd8). Close #17; ordinary advancement thereafter is source-specific
 candidate review - review the next candidate's source-specific prediction contract
 and update its builder before construction; #25 remains deferred.
 
+## 2026-10-27 (11:13Z) - worker watcher follow-up: ec-merger-003 + ec-merger-baseline-001 handled, results verified, cleanup provider-confirmed; prior session's packaging work preserved for advancement
+
+Both jobs belong to candidate ec-merger-phase2-opening. The constructing session
+collected and deleted both workers before this pass; nothing was launched here.
+This pass verified the recorded claims against the collected reports, re-proved
+staging preservation, confirmed provider cleanup, and committed the recording.
+
+- **ec-merger-003 (build, worker 172772422)**: succeeded exit=0, 40.3 s.
+  Construct -> qualify (gate 1.5.0, 46/46 checks, failed_checks empty) ->
+  exact-byte --accept ("ACCEPTED: /output/extract matches the qualified artifact
+  e5a98dfc9c05d0b0") -> post-acceptance simple references only; the construction
+  stage computes no performance metric. Cross-check bands all in-range:
+  eligible 10,125 [10,000-10,300]; phase2 positives 309 [290-330]; split
+  positives 217/46/46; missing-sector 79 [60-100]; pending-censored 34 [0-150].
+  Reports: .factory/ec-merger-003/{acceptance.txt, qualification.json,
+  references.json, summary.json}; staging draft release 425292628
+  (tag job-ec-merger-003).
+- **ec-merger-baseline-001 (runner-contract baseline, worker 172773775)**:
+  succeeded exit=0, 78.5 s. The five extract files were fetched from staging
+  425292628 and digest-verified on arrival (train 1619b6f4..., eval 4fb28c09...,
+  holdout 5867e34f..., meta 011a4c0b..., quality ca07571c...), re-ACCEPTed
+  through the gate before any scoring, runner files verbatim (declared sha256
+  equals actual), CONTRACT OK. Full model eval AUC 0.6973 (train.py, validate.py
+  and a predict_proba recompute 0.69735 agree; Brier 0.025343) vs the required
+  comparator sector_division_rate 0.7679 on the identical 1,770 eval rows:
+  paired difference -0.0706, bootstrap95 [-0.1558, +0.0168] contains zero
+  (inconclusive), observed gap NEGATIVE - the stock runner baseline trails the
+  sector prior; recorded as a defect beside the number, not a headroom claim.
+  The model beats calendar_identity 0.5606 (+0.1367 [0.0419, 0.2321]) and
+  recent_rate 0.5 (+0.1973 [0.1068, 0.2745]); vs title_text 0.6644 the
+  difference is inconclusive (+0.0329 [-0.0770, +0.1367]). Majority-class
+  accuracy on this split 0.9740. All recomputed references agree exactly with
+  the construction-run figures. This pass independently re-verified the
+  cardinality diagnosis from the artifact bytes (digest-checked download of
+  train.csv from staging, deleted after counting): sector_divisions 540
+  distinct train levels (kept by train.py's <=1000 rule), case_title 5,374 and
+  notification_date 3,153 (dropped). The holdout never entered the workdir.
+  Reports: .factory/ec-merger-baseline-001/{accept.log, baseline_result.json,
+  train.log, validate.log}; staging draft release 425299143
+  (tag job-ec-merger-baseline-001).
+- **Preservation accounted before teardown was accepted as final**: the
+  accepted artifact (five files + gate report + references + acceptance +
+  summary) is on staging 425292628; read-only re-verification this pass
+  confirmed all 14 assets by id/size and that the manifest.json bytes hash to
+  the recorded sha256 7ff0e2d0...; the baseline evidence is on 425299143 (all
+  10 assets, manifest sha256 fb8cb3d0...); compact local copies remain under
+  .factory/ec-merger-003/ and .factory/ec-merger-baseline-001/.
+- **Cleanup confirmed by the provider** (read-only Hetzner read-back this
+  pass): servers 172772422 and 172773775 both answer 404; the project lists
+  zero servers of any status and zero primary IPs. Deletion confirmed, not
+  merely requested.
+- **Packaging state preserved, not taken over**: the prior session assembled
+  release/ec-merger-phase2-opening/ (untracked) and committed the package
+  documents durably at .factory/ecm-pack-20261027 (commit c3eff13); the licence
+  decision (candidates/ec-merger-phase2-opening/license.json: source CC BY 4.0
+  terms preserved, code MIT, compilation CC0-1.0, no operator acceptance
+  needed) and the release declaration (release.json, v2026.10) are untracked on
+  disk. This event did not verify, commit or alter the package: that remains
+  advancement work (review the package, check-package green, private staging
+  to GitHub and Hugging Face, then the operator's flip).
+- This pass committed only the event recording: the collected job ledger
+  (jobs/ec-merger-baseline-001.json), the candidate record and notes entries
+  for both jobs, the baseline evidence copies
+  (baseline/baseline_result.json, baseline/expected_artifact.json -
+  byte-identical to the collected reports), and this entry. The prior
+  session's unpushed commit 54428d2 went to origin together with this
+  recording. October worker reservations recomputed from the job ledger:
+  EUR 9.48 of the 20 ceiling across 70 jobs (this event's jobs: 0.04 + 0.06).
+
+Next action: unchanged for this candidate - advancement reviews the preserved
+package (release/ tree and .factory/ecm-pack-20261027 c3eff13), runs
+check-package, stages privately to both destinations and awaits the operator's
+flip. No recovery, retry or rebuild was needed or launched; both workers are
+provider-confirmed deleted. Handled markers written for both job IDs.
+
 ## 2026-10-27 - Canada discovery tick: ns-bwa-advisory-lift-duration READY (go); Canada Vigilance reopened on corrected access evidence, then dropped as a FAERS mirror; StatCan/shortage/ISC reopen conditions re-checked
 
 Regional focus Canada (StatCan, ECCC, Health Canada, open.canada.ca).

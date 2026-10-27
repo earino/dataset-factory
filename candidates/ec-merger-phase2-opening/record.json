@@ -59,6 +59,11 @@
    "id": "ec-merger-003",
    "date": "2026-10-27",
    "outcome": "succeeded: construct (daily snapshot re-pinned, sha256 42041133...) -> qualify (gate 1.5.0, ok, 0 failed) -> --accept exact bytes -> post-acceptance simple references (sector_division_rate 0.7679 on the identical 1,770 eval rows, unchanged from 002). meta.json now carries the eight keys bench/workdir.py reads. Worker 172772422 deleted 10:16:42Z after verified collection; reports preserved under .factory/ec-merger-003/; staging release 425292628 (tag job-ec-merger-003)."
+  },
+  {
+   "id": "ec-merger-baseline-001",
+   "date": "2026-10-27",
+   "outcome": "succeeded: fetched the five ec-merger-003 extract files from staging 425292628 (digest-verified on arrival), re-ACCEPTed through gate 1.5.0 ('ACCEPTED: ... e5a98dfc9c05d0b0'), materialized the runner workdir (public train+eval only; holdout never copied), ran the benchmark's verbatim train.py + validate.sh (runner_files verbatim=true), contract OK. FULL MODEL eval AUC 0.6973 (train.py and validate.py agree; recomputed via predict_proba 0.69735, Brier 0.025343) vs required comparator sector_division_rate 0.7679 on the identical 1,770 eval rows: paired difference -0.0706, bootstrap95 [-0.1558, +0.0168] - interval contains zero (inconclusive difference), observed gap NEGATIVE: the stock runner baseline trails the sector prior. Model beats calendar_identity 0.5606 (+0.1367, [0.0419, 0.2321]) and recent_rate 0.5 (+0.1973, [0.1068, 0.2745]). Per-year model AUC 2014 0.6724 / 2015 0.7486 / 2016 0.9113 / 2017 0.6002 / 2018 0.5921 (7-12 positives per year; noisy). All recomputed references agree exactly with the construction-run figures. train.py's stock cardinality rule did NOT drop sector_divisions (540 train levels < 1000 cutoff; case_title and notification_date were dropped), so the gap is not a feature-availability artefact: the simple marginal per-division prior generalizes better than the stock 540-level categorical fit at 217 train positives. Majority-class accuracy on this split 0.9740. Worker 172773775 destroyed 10:24:07Z after verified collection; result + logs preserved under .factory/ec-merger-baseline-001/; staging release 425299143. Holdout remains sealed; the benchmark score is holdout AUC by agents, and the eval-window comparison is the release evidence."
   }
  ],
  "artifacts": [
@@ -138,7 +143,7 @@
  ],
  "rejection_reason": null,
  "review": "All five discovery contracts have measured evidence: redistribution (Commission reuse notice, CC BY 4.0, class A), timing (notification-date instant; 308/309 openers strictly post-instant, lag distribution measured; post-hoc and derived fields excluded by name), target (label from the decisions block, excludable; base rate 3.05% measured), splits (three disjoint windows, both classes everywhere, positives 217/46/46), not-a-mirror (novelty check differentiated: literature and proprietary compiled datasets exist; no public ML-ready formulation of this task with splits and a scored contract). The fetch is trivially open - the contribution is the formulation (notification-time contract, eligibility, label from the decision-type inventory, splits, fixtures, baselines) and validation, and the record states that explicitly.",
- "next_action": "Baseline + packaging (advancement): assemble the baseline bundle with the harness runner's verbatim train.py/validate.py and evaluate the full model on the identical eval rows, quoting its figure beside the sector-division reference (AUC 0.7679); interpret with the prevalence-shift note (train 4.01% -> eval 2.60% -> holdout 1.58%) and per-year breakdown. Holdout stays sealed until the design is frozen. Then package per dataset-release from the accepted artifact (artifact_version 2527012bcd34c543..., staging release job-ec-merger-002): rebuild the tree from the manifest parts, re-verify digests, and stage privately. ec-merger-001 is the preserved failed-gate attempt (descriptor-only fix; one rebuild).",
+ "next_action": "Package per dataset-release from the accepted ec-merger-003 artifact (e5a98dfc9c05d0b0..., staging release 425292628): rebuild the tree from the manifest parts, re-verify digests, assemble release/ec-merger-phase2-opening with the baseline figures quoted beside the references (full model 0.6973 vs sector_division_rate 0.7679, paired diff -0.0706 [-0.1558, +0.0168], inconclusive/observed-negative; prevalence shift train 4.01% -> eval 2.60% -> holdout 1.58% recorded), check-package green, then private staging on GitHub and Hugging Face, awaiting the operator's flip. ec-merger-001 is the preserved failed-gate attempt; 002 is the preserved runner-contract-defect attempt; 003 is current. Watcher follow-up 2026-10-27: the package is already assembled by the packaging session (untracked at release/ec-merger-phase2-opening/, documents also committed at .factory/ecm-pack-20261027 commit c3eff13); its verification, check-package, private staging and the operator's flip remain advancement work.",
  "jurisdiction": {
   "country": "EU",
   "region": "Europe",
@@ -254,7 +259,7 @@
   "verdict": "differentiated",
   "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
  },
- "updated_at": "2026-10-27T10Tue21Tue13Z",
+ "updated_at": "2026-10-27T10:26:27Z",
  "qualification": {
   "qualified_at": "2026-10-27T10Tue21Tue13Z",
   "gate_version": "1.5.0",
@@ -263,6 +268,23 @@
   "artifact_version": "e5a98dfc9c05d0b087ed2dead21004fbbd972e415d2174469371a908bcaf90ad",
   "acceptance": "exact-byte --accept verified on the worker before any reference was computed: 'ACCEPTED: /output/extract matches the qualified artifact e5a98dfc9c05d0b0'",
   "report": "private staging release 425292628 (tag job-ec-merger-003, draft); local copies preserved at .factory/ec-merger-003/{qualification.json,references.json,acceptance.txt,summary.json}",
-  "superseded": "ec-merger-002 artifact 2527012bcd34c543... was a real runner-compatibility defect: its meta.json lacked the description/split keys the benchmark's bench/workdir.py reads (task.json generation and render_program both KeyError), which the gate's runner.meta_json_keys check did not test (gate requires only target/positive_label/id_columns/columns/rows/positive_rate). Fixed in build.py (meta.json now carries all eight workdir keys; CSV bytes unchanged: train/eval sha256 identical to 002); one rebuild for this structural defect. The gate gap (required-keys list omits name/description/split) is recorded in STATE.md for a separate reviewable gate change; not patched in this session."
+  "superseded": "ec-merger-002 artifact 2527012bcd34c543... was a real runner-compatibility defect: its meta.json lacked the description/split keys the benchmark's bench/workdir.py reads (task.json generation and render_program both KeyError), which the gate's runner.meta_json_keys check did not test (gate requires only target/positive_label/id_columns/columns/rows/positive_rate). Fixed in build.py (meta.json now carries all eight workdir keys; CSV bytes unchanged: train/eval sha256 identical to 002); one rebuild for this structural defect. The gate gap (required-keys list omits name/description/split) is recorded in STATE.md for a separate reviewable gate change; not patched in this session.",
+  "splits": {
+   "train": {
+    "rows": 5406,
+    "positives": 217,
+    "positive_rate": 0.040141
+   },
+   "eval": {
+    "rows": 1770,
+    "positives": 46,
+    "positive_rate": 0.025989
+   },
+   "holdout": {
+    "rows": 2915,
+    "positives": 46,
+    "positive_rate": 0.015786
+   }
+  }
  }
 }

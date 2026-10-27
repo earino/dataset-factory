@@ -267,3 +267,41 @@ launched on worker 172773775. report.py additionally recomputes the model's
 per-row scores through the runner's own predict_proba and the paired
 bootstrap comparison against sector_division_rate / calendar_identity /
 title_text / recent_rate on the identical 1,770 eval rows.
+
+## 2026-10-27 - ec-merger-baseline-001: full model 0.6973 trails the sector prior 0.7679 on identical eval rows (recorded defect, task keeps demonstrated signal above every other reference)
+
+Runner-contract baseline on the accepted e5a98dfc artifact, fetched from
+staging 425292628 and re-ACCEPTed through the gate before scoring. The
+benchmark's verbatim train.py/validate.sh completed cleanly (CONTRACT OK;
+runner file hashes match the benchmark's). On the identical 1,770 eval rows:
+
+- FULL MODEL (stock XGBoost baseline) eval AUC 0.6973 (train.py, validate.py
+  and an independent predict_proba recompute all agree); Brier 0.025343.
+- sector_division_rate (required comparator): 0.7679. Paired difference
+  model - sector: -0.0706, bootstrap95 [-0.1558, +0.0168] - contains zero
+  (inconclusive difference), observed gap NEGATIVE.
+- calendar_identity 0.5606: model - calendar +0.1367 [0.0419, 0.2321].
+- recent_rate 0.5: model - recent +0.1973 [0.1068, 0.2745].
+- majority-class accuracy on this split 0.9740 (base rate 2.60%).
+- per-year model AUC: 2014 0.6724, 2015 0.7486, 2016 0.9113, 2017 0.6002,
+  2018 0.5921 (7-12 positives/year; per-year numbers are noisy by design).
+- all references recomputed in the baseline job agree exactly with the
+  construction-run figures (sector 0.7679, calendar 0.5606, title 0.6644).
+
+Diagnosis within the bounded budget: the stock train.py cardinality rule did
+NOT exclude the sector signal (sector_divisions has 540 train levels, under
+the 1000 cutoff; case_title and notification_date were dropped), so the gap is
+not a feature-availability artefact. The likely mechanism is granularity: the
+stock model fits the 540-level combination categorical with only 217 train
+positives, while the comparator's marginal per-division rate (122 divisions)
+is the better-generalizing estimator at this sample size. One weak model does
+not establish that no useful prediction is possible - the comparator itself
+demonstrates real signal (sector vs calendar +0.207 [0.125, 0.289], excluding
+zero), and a solver is free to start from the per-division prior. No repair
+attempted: the runner must ship verbatim, the artifact is accepted, and the
+comparison is recorded beside the number so no reader quotes 0.6973 alone.
+The holdout stays sealed; the benchmark's score is holdout AUC.
+
+Worker 172773775 destroyed 10:24:07Z after verified collection; reports at
+.factory/ec-merger-baseline-001/ (baseline_result.json, train.log,
+validate.log, accept.log); staging release 425299143.
