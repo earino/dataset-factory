@@ -1,0 +1,171 @@
+{
+  "job": {
+    "id": "ecm-requal-001",
+    "candidate": "ec-merger-phase2-opening",
+    "note": "Re-qualify the audit-corrected descriptor on the exact accepted CSV bytes. Independent pre-flip audit 2026-10-27 returned PUBLISH WITH CONDITIONS; the corrections are descriptor/docs-only. CSVs are fetched from private staging release 425292628 at their audited digests; the corrected meta.json and quality.json are bundled and hashed. Nothing is rebuilt from the live register; no performance metric is computed. Gate two-phase only.",
+    "image": "python:3.13-slim",
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 4096,
+    "timeout_minutes": 20,
+    "lifetime_minutes": 40,
+    "max_disk_mb": 15000,
+    "max_artifact_mb": 10,
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 425292628,
+      "assets": [
+        {
+          "asset_id": 681210520,
+          "dest": "extract/public/train.csv",
+          "size": 429048,
+          "sha256": "1619b6f4ad4a7dab0f437335c231f727f6f5c5f0ea02b3454366f5a71ab90a44"
+        },
+        {
+          "asset_id": 681210472,
+          "dest": "extract/public/eval.csv",
+          "size": 155077,
+          "sha256": "4fb28c0908e4c79ccf194de3b27f2996c05efc0f01ec4074c953a7eb697f24f6"
+        },
+        {
+          "asset_id": 681210419,
+          "dest": "extract/private/holdout.csv",
+          "size": 253649,
+          "sha256": "5867e34f3ebf714b9ec0ef307989cb4296438148390a6a5ea2bcf88795f703fd"
+        }
+      ]
+    },
+    "source_files": [
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/ec-merger-phase2-opening/requal/run.sh",
+        "bytes": 2053,
+        "sha256": "e4f3490cbc6e5e738a04db5a284e7305ac4d15ef0095876f18b320a78d98a107"
+      },
+      {
+        "bundled_as": "meta.json",
+        "source": "release/ec-merger-phase2-opening/meta.json",
+        "bytes": 1342,
+        "sha256": "b139620d5f469c17faa974574220878f8c1f70accf6d975243a018049fae5ef9"
+      },
+      {
+        "bundled_as": "quality.json",
+        "source": "release/ec-merger-phase2-opening/quality.json",
+        "bytes": 21855,
+        "sha256": "0203fdf934a0564fdb8d2910372986424547f25448fd603a79e95d4ac02fb7ec"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 57029,
+        "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+      }
+    ],
+    "release": true
+  },
+  "reservation_eur": "0.04",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 2,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 92160,
+  "source_sha256": "1632b1419736e21213525bdac87aa13d824e5d471bf1cdb3576476877a686565",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-10-27T21:17:56.087130+00:00",
+  "expires": 1793138276,
+  "budget_months": [
+    "2026-10"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 172896998,
+  "known_hosts": "/opt/data/dataset-factory/.factory/ecm-requal-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "65.21.158.17",
+  "result": {
+    "job_id": "ecm-requal-001",
+    "status": "failed",
+    "uploaded": true,
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 425292628,
+      "fetched": [
+        {
+          "dest": "extract/public/train.csv",
+          "bytes": 429048,
+          "sha256": "1619b6f4ad4a7dab0f437335c231f727f6f5c5f0ea02b3454366f5a71ab90a44"
+        },
+        {
+          "dest": "extract/public/eval.csv",
+          "bytes": 155077,
+          "sha256": "4fb28c0908e4c79ccf194de3b27f2996c05efc0f01ec4074c953a7eb697f24f6"
+        },
+        {
+          "dest": "extract/private/holdout.csv",
+          "bytes": 253649,
+          "sha256": "5867e34f3ebf714b9ec0ef307989cb4296438148390a6a5ea2bcf88795f703fd"
+        }
+      ],
+      "failures": [],
+      "bytes": 837774
+    },
+    "image_id": "sha256:b3575dcf816cdacc5292df77a6e3e59b8941631078373a045efa2ac1e9c5c3b2",
+    "image_digests": [
+      "python@sha256:b3575dcf816cdacc5292df77a6e3e59b8941631078373a045efa2ac1e9c5c3b2"
+    ],
+    "exit_code": 2,
+    "oom_killed": false,
+    "elapsed_seconds": 8.0,
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 425996620,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-7775442a65ca034a145b",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-7775442a65ca034a145b/manifest.json",
+    "assets": [
+      {
+        "id": 682905751,
+        "size": 253649,
+        "sha256": "5867e34f3ebf714b9ec0ef307989cb4296438148390a6a5ea2bcf88795f703fd"
+      },
+      {
+        "id": 682905782,
+        "size": 155077,
+        "sha256": "4fb28c0908e4c79ccf194de3b27f2996c05efc0f01ec4074c953a7eb697f24f6"
+      },
+      {
+        "id": 682905846,
+        "size": 429048,
+        "sha256": "1619b6f4ad4a7dab0f437335c231f727f6f5c5f0ea02b3454366f5a71ab90a44"
+      },
+      {
+        "id": 682905923,
+        "size": 94,
+        "sha256": "c25a023083083462dfbdb19460e3c9b2ae7476a5946c50284d8e0d069b5bd8e3"
+      },
+      {
+        "id": 682906004,
+        "size": 92160,
+        "sha256": "1632b1419736e21213525bdac87aa13d824e5d471bf1cdb3576476877a686565"
+      },
+      {
+        "id": 682906074,
+        "size": 426,
+        "sha256": "992ef088de040333c2b0cfa49ba179de72fa877b6e7136fe1f80db28a6a25b13"
+      },
+      {
+        "id": 682906133,
+        "size": 6041,
+        "sha256": "42cae6ab60fcb4adb3d05e7bc301557e5263aecc303247e89529564aec9da055"
+      }
+    ],
+    "skipped_empty": []
+  },
+  "collected_at": "2026-10-27T21:32:04.656664+00:00",
+  "deleted_at": "2026-10-27T22:27:21.097381+00:00"
+}

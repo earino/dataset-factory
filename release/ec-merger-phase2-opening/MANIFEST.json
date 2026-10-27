@@ -4,7 +4,7 @@
   "release_tag": "v2026.10",
   "repository": "https://github.com/earino/ec-merger-phase2-opening",
   "visibility": "private (publication requires explicit authorisation)",
-  "artifact_version": "e5a98dfc9c05d0b087ed2dead21004fbbd972e415d2174469371a908bcaf90ad",
+  "artifact_version": "e96929efbbc4fcb84d2986a7e32f83f9c5fec5395124439fb3404faff2e9e662",
   "package_digest": null,
   "artifact_job": "ec-merger-003",
   "staging_release": 425292628,
@@ -28,14 +28,14 @@
       "requests_note": "one anonymous GET of the bulk case register case-data-M.json (42,034,960 B, sha256 420411333e9b9fc27e0c2e72cbbbb419f1ba4125e7f40d98a9bc5e0911316702); stable tokenless S3 URL, no key",
       "fetch_provenance": "worker job ec-merger-003 (server 172772422, cx23/hel1) fetched the publisher directly; the bytes never passed through the coordinator. The panel was first measured at discovery on 2026-10-24 (42,025,677 B) and re-pinned at construction on 2026-10-27 (42,034,960 B) - the daily object grows as new cases arrive"
     },
-    "grain": "one row per merger case notified to the European Commission under the EU Merger Regulation (caseType MergerCaseType1 with a recorded caseNotificationDate); 10,125 eligible cases in the pinned vintage, 10,091 shipped after censoring 33 pending cases",
+    "grain": "one row per merger case notified to the European Commission under the EU Merger Regulation (caseType MergerCaseType1 with a recorded caseNotificationDate); 10,125 eligible cases in the pinned vintage, 10,091 shipped after censoring 34 pending cases",
     "eligibility": {
       "eligible_cases": 10125,
       "shipped_rows": 10091,
       "excluded_no_notification": 272,
       "excluded_breakdown": "244 Merger + 2 Consultation + 26 Additional Procedure cases with no caseNotificationDate",
-      "pending_censored": 33,
-      "pending_censored_note": "29 cases with no decisions at all (26 are live 2020s filings), 3 Art. 9(3) partial referrals, 1 Art. 4(4) partial referral - counted per split, never labelled"
+      "pending_censored": 34,
+      "pending_censored_note": "30 cases with no decisions at all (26 are live 2020s filings), 3 Art. 9(3) partial referrals, 1 Art. 4(4) partial referral - 34 in total, counted per split, never labelled (count corrected from the previously stated 33 by the independent pre-flip audit, 2026-10-27)"
     },
     "label": {
       "rule": "phase2_opened = 1 iff the case carries at least one 'Art. 6(1)(c)' decision adopted on/after its notification date; 'Withdrawal of Art. 6(1)(c)' decisions never match; ever-adopted (a later withdrawal does not undo the opener)",
@@ -94,7 +94,15 @@
     ],
     "hazards_measured": {
       "missing_sector_cases": 79,
-      "sector_division_levels": 122,
+      "sector_division_levels": {
+        "distinct_nace_division_codes": 122,
+        "distinct_combinations": {
+          "train": 540,
+          "eval": 414,
+          "holdout": 668
+        },
+        "combination_note": "distinct sector_divisions values measured by the independent pre-flip audit (2026-10-27); combinations exceed rows/5 only in holdout, so the column is declared high-cardinality in quality.json for memorisation safety rather than under a uniform rows/5 claim"
+      },
       "notification_to_opener_lag_months": "0 mo: 1, 1 mo: 201, 2 mo: 101, thin tail 3-18 mo (suspended-clock and extended cases)",
       "register_corrections_note": "the register is a current snapshot and revises historical records (e.g. M.10188's post-ECJ withdrawal appears in history); no historical vintages are retained, so past availability cannot be probed"
     },
@@ -204,7 +212,11 @@
       "references": "python3 source/score.py --data <extract-dir> --accepted-report <report.json> --report references.json  (post-acceptance)",
       "baseline": "runner-contract baseline job ec-merger-baseline-001: gate --accept on fetched bytes, then python train.py + sh validate.sh unmodified, then report.py (model per-row scores via predict_proba + paired bootstrap vs the references)",
       "majority_rule": "majority = int(train_positive_rate >= 0.5); accuracy measured against this split's labels"
-    }
+    },
+    "limitations": [
+      "Repeated-transaction dependence: holdout contains two positive IAG / AIR EUROPA cases (M.9637, notified 2021-05-25, and M.11109, notified 2023-12-11); notification-day clustering does not capture dependence across a party's repeat filings.",
+      "The stock reference model (eval AUC 0.6973) is reproducible but a weak baseline, not an established ceiling: the independent audit's untuned logistic variant scored 0.8144 eval / 0.7767 holdout on the same rows. No performance claim beyond the recorded references."
+    ]
   },
   "assets": {
     "meta.json": {
@@ -234,29 +246,31 @@
     }
   },
   "package_files": {
-    "DATA_DICTIONARY.md": "1caa6a6adffe8a88c3549bb79cdeef2890b0f6ecbc9a7ce492a4f68ea1422903",
+    "DATA_DICTIONARY.md": "07d4058da25cf8a2e625afcdf72bad4f4cc14a954b25886d433371a70ba02a24",
     "LICENSE-CC0-1.0.txt": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
     "LICENSE-MIT.txt": "200f782f6b8bc23b926ea774cbacb4147826b3b2b59200917d8dc5ec68159535",
     "LICENSE.md": "fa9fee9a841965ede2eb818360493b5685041a1760a0dc5de7bc2e32e1f0a45c",
     "README.md": "b016e09cccb524f0616a27ab842f72064354b9cf7b1c55b32cd497c89556c375",
-    "RELEASE_NOTES.md": "95e9787b00b77ce5698a6df88178ff1562bd050c7d1cb32b394f7e39f05e43c6",
-    "REPRODUCE.md": "11034ad3b6034e5c988cc269313755e201be98cc314843bfb5c6784074f7e681",
+    "RELEASE_NOTES.md": "5e61dc9d80d3d95c89cf6587c3fca61464e2eab107ac0529e4573bb9fba6d277",
+    "REPRODUCE.md": "7b46d0fca1463549180fda58671de33e18475ebee45385d731818c9410aac04a",
     "SHA256SUMS": "7215557a830383611c806be2a0f1725dc3c93860ad2707cac6457df576341cc1",
-    "VERIFICATION.md": "df86c203ee8e83884f14f8ebfeb88347a2628e9ec70c845c5a8c933985475cbd",
+    "VERIFICATION.md": "76f55db23a7cdc8639fc54c7da593c961436a576302129dfc63aea3c9f674c2c",
     "baseline/README.md": "a5dbfde05cc5c54b846319b368d03c3b844b29eb8c5103987b980ac9657e5acb",
     "baseline/reproduce_baseline.sh": "32de96032ab1b55d19fdcd1e04e0f5a6b10a187633aa280e9ee76aee9f03c584",
     "baseline/train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
     "baseline/validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
     "baseline/validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d",
-    "code/build.py": "a2828fd554d8542320df44e3d0bd6c1032fe6e2a67b2de28ad49c5626632a706",
+    "code/build.py": "cd1c9f1a75850683087bbe8c5c3924493791c787366a87033190c2cfda769a75",
     "code/materialize.py": "0aef7941b1a3ab113648a937ea0fd78fe1499d79b810c70ba0a32d46e817c209",
     "code/qualify_dataset.py": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1",
+    "code/report.py": "f7b2d3f44001362ee0170440f9ade5e80e9e3904ad6e53a41878b7b9465c16e3",
     "code/run.sh": "bd6d07c5f59ad79cfb2d569323d54e8a27ab93d18f72f69ee046ae2cd1d543de",
+    "code/score.py": "6ab0b7badc2bd84342b1feb881a7ac1c72d1ad199a4757d8e806b000315c2bcf",
     "get_dataset.py": "ab721a6d13c03c23a6a504219d8fd7dbc39ac55d76dcef2306f08c626ae92c44",
-    "measurements.json": "9ba81a7010e7982453eabf5fa80fd9ab1a403d53743c992d369e36fb421efa1d",
-    "meta.json": "011a4c0b989705ce2a8577e387e0cf96856cc8e9c65f7c51fbbffd699944d13d",
-    "qualification.json": "afc85455f0eeaa390170051b6f6808f7ccfd3bfae613c69dfa8b2593a35342ed",
-    "quality.json": "ca07571caa43e1a0f6fd77c0ed28f535d7ed3c794f6441c6483ce0663acee23c"
+    "measurements.json": "d443b3b0d5ca732bdaa88b6e7f89b82277fa39fe15348a799da88be5e088ed7c",
+    "meta.json": "b139620d5f469c17faa974574220878f8c1f70accf6d975243a018049fae5ef9",
+    "qualification.json": "482fe90ba4d441e39c1167e8b399b229c05ac1309876bc80f905334cea0bc9f9",
+    "quality.json": "0203fdf934a0564fdb8d2910372986424547f25448fd603a79e95d4ac02fb7ec"
   },
   "baseline_command": "sh baseline/reproduce_baseline.sh ./task",
   "get_dataset_command": "python3 get_dataset.py --dest ./task",
@@ -323,7 +337,7 @@
     "ok": true,
     "failed_checks": [],
     "result": "PASSED",
-    "artifact_version": "e5a98dfc9c05d0b087ed2dead21004fbbd972e415d2174469371a908bcaf90ad",
+    "artifact_version": "e96929efbbc4fcb84d2986a7e32f83f9c5fec5395124439fb3404faff2e9e662",
     "report": "qualification.json"
   },
   "baseline": {

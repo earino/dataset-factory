@@ -74,6 +74,14 @@
       "id": "ecm-hf-001",
       "date": "2026-10-27",
       "outcome": "succeeded: hf_publish worker job. Uploaded the five data files to the private Hub dataset repo earino/ec-merger-phase2-opening from the staged GitHub release 425556351, digest-verified at both ends (114.2 s, uploads 5, skipped 0, failures 0), then ran the documented load_dataset path against the uploaded bytes: ok=true, problems=[], train 5,406/217, eval 1,770/46, holdout 2,915/46, 12 columns, label values ['0','1'] - identical to the accepted artifact. hf-publish --verify --worker-job ecm-hf-001: ok, 5/5 at manifest digests, 0 missing/mismatched; --tag LAST: Hub tag v2026.10 == main == 119d2efd, tag_matches_main true; DESTINATIONS.json records the Hub destination. Anonymous Hub API 401; cardData.license reads back 'other' / cc-by-4.0-source-plus-cc0-compilation. Worker 172830524 destroyed 14:39:43Z, provider read-back 404. Pre-launch job file candidates/ec-merger-phase2-opening/hf/job.json."
+    },
+    {
+      "id": "ecm-requal-001",
+      "outcome": "failed 8.0 s: the transport bundle carried only run.sh (source_bundle tars the job directory, not the source_files list); the gate never ran. Preserved on staging release 425996620. Lesson folded into the assembled-job-directory pattern that 002 used."
+    },
+    {
+      "id": "ecm-requal-002",
+      "outcome": "succeeded 9.4 s: gate 1.5.0 re-qualified the audit-corrected descriptor on the exact accepted CSV bytes (fetched from staging 425292628 at audited digests), ok=true with zero failed checks, exact-byte acceptance of the new artifact e96929efbbc4fcb8\u2026; qualification.json in the package now ships this report and the manifest is regenerated from it. Staging release 426055208."
     }
   ],
   "artifacts": [
@@ -116,7 +124,7 @@
       "tag": "job-ec-merger-002"
     },
     {
-      "artifact_version": "e5a98dfc9c05d0b087ed2dead21004fbbd972e415d2174469371a908bcaf90ad",
+      "artifact_version": "e96929efbbc4fcb84d2986a7e32f83f9c5fec5395124439fb3404faff2e9e662",
       "digest_of": "sha256 over train/eval/holdout CSVs + meta.json + quality.json (gate 1.5.0 artifact_version)",
       "gate_version": "1.5.0",
       "accepted": "exact-byte --accept on the worker: 'ACCEPTED: /output/extract matches the qualified artifact e5a98dfc9c05d0b0'",
@@ -152,7 +160,8 @@
       "staging_release_tag": "job-ec-merger-003",
       "byte_diff_vs_002": "train.csv and eval.csv sha256 identical to the 002 artifact; holdout.csv +1 row (one new 2026 notification in the re-pinned daily snapshot, 10,125 eligible / 10,091 shipped / 309 positives); meta.json grew by the description/split keys; quality.json re-written for the new snapshot pin",
       "repo": "earino/dataset-factory-staging",
-      "tag": "job-ec-merger-003"
+      "tag": "job-ec-merger-003",
+      "superseded_note": "supersedes e5a98dfc9c05d0b0\u2026 (descriptor/docs-only correction per the independent pre-flip audit 2026-10-27; CSV bytes identical)"
     },
     {
       "kind": "destination_release",
@@ -162,7 +171,8 @@
       "commit": "47190aa4b3bbafbc95436ee6f76960e2a3f33843",
       "private": true,
       "note": "GitHub destination, staged private: 5/5 assets at the manifest digests (API readback, server-side sha256), release non-draft, tag == main == 47190aa, get_dataset.py executed end-to-end against the private release (token, 856,071 bytes, digests verified, runner layout restored) and qualify_dataset.py --accept ACCEPTED the downloaded tree (e5a98dfc9c05d0b0); anonymous API GET 404. The repository's initial docs commit c3eff13 (packaging session) was advanced to 47190aa by the review pass: the gate report ships as qualification.json and the manifest is regenerated from it. Evidence in release/ec-merger-phase2-opening/DESTINATIONS.json",
-      "artifact_version": "e5a98dfc9c05d0b087ed2dead21004fbbd972e415d2174469371a908bcaf90ad"
+      "artifact_version": "e96929efbbc4fcb84d2986a7e32f83f9c5fec5395124439fb3404faff2e9e662",
+      "superseded_note": "supersedes e5a98dfc9c05d0b0\u2026 (descriptor/docs-only correction per the independent pre-flip audit 2026-10-27; CSV bytes identical)"
     },
     {
       "kind": "destination_hub_repo",
@@ -171,12 +181,13 @@
       "commit": "119d2efde7029c504e59babb9e4b0a5845eeb511",
       "private": true,
       "note": "Hugging Face destination, staged private: 5/5 data files at the manifest digests (hf-publish --verify ok, 0 missing, 0 size-mismatched, 0 digest-unverified) plus 10 small files (card generated from the manifest, LOADING.md, MANIFEST.json, SHA256SUMS, licence texts, dictionary, VERIFICATION.md, measurements.json); the documented load_dataset path verified by the ecm-hf-001 worker loading check (ok: true, split rows/positives/columns/label all match); tag v2026.10 created last, tag_matches_main true; anonymous Hub API 401",
-      "artifact_version": "e5a98dfc9c05d0b087ed2dead21004fbbd972e415d2174469371a908bcaf90ad"
+      "artifact_version": "e96929efbbc4fcb84d2986a7e32f83f9c5fec5395124439fb3404faff2e9e662",
+      "superseded_note": "supersedes e5a98dfc9c05d0b0\u2026 (descriptor/docs-only correction per the independent pre-flip audit 2026-10-27; CSV bytes identical)"
     }
   ],
   "rejection_reason": null,
   "review": "All five discovery contracts have measured evidence: redistribution (Commission reuse notice, CC BY 4.0, class A), timing (notification-date instant; 308/309 openers strictly post-instant, lag distribution measured; post-hoc and derived fields excluded by name), target (label from the decisions block, excludable; base rate 3.05% measured), splits (three disjoint windows, both classes everywhere, positives 217/46/46), not-a-mirror (novelty check differentiated: literature and proprietary compiled datasets exist; no public ML-ready formulation of this task with splits and a scored contract). The fetch is trivially open - the contribution is the formulation (notification-time contract, eligibility, label from the decision-type inventory, splits, fixtures, baselines) and validation, and the record states that explicitly.",
-  "next_action": "APPLY AUDIT CONDITIONS before the flip (auditor verdict PUBLISH WITH CONDITIONS, audits/2026-10-27-ec-merger-pre-flip-audit.md): (1) correct quality.json/meta.json/measurements/RELEASE_NOTES/DATA_DICTIONARY - 309/309 strictly after (M.3333 stays positive through its 2007-03-01 opener), 34 pending-censored (30 no-decision + 4 referral-only) not 33, sector_divisions level counts 540/414/668 (exceeds rows/5 only in holdout), party_count splits on '/' with optional whitespace; (2) replace blanket verified feature-evidence statuses: registration-time facts assumed from the register's own semantics, sector trio unverified (current-vintage NACE Rev. 2 coding, retrospective for the 2,904 pre-2006 notifications; Eurostat: NACE Rev. 2 published 2006); (3) ship source/score.py and the baseline bootstrap recipe in the package for exact reproduction; (4) add repeated-transaction dependence (IAG/AIR EUROPA M.9637 2021-05-25, M.11109 2023-12-11, both positive in holdout) to limitations. Then re-assemble the manifest, re-qualify the corrected package through the gate two-phase, re-accept, re-stage both private destinations, and the operator flips.",
+  "next_action": "AUDIT CONDITIONS APPLIED AND RE-QUALIFIED (ecm-requal-002, artifact e96929ef\u2026): push the corrected docs to the dataset repo main, re-point the private v2026.10 tag, replace the corrected meta/quality assets in the private GitHub release (transfer job) and the Hub data files (hf job), then the operator-approved flip (operator instruction 2026-10-27: 'when I wake up I hope this is published'), anonymous verification of both destinations, DESTINATIONS verified-visibility update, status-bearing document refresh and the site pipeline (new sites/ec-merger-phase2-opening.json), receipts to STATE.",
   "jurisdiction": {
     "country": "EU",
     "region": "Europe",
@@ -292,7 +303,7 @@
     "verdict": "differentiated",
     "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
   },
-  "updated_at": "2026-10-27T20:48:26+00:00",
+  "updated_at": "2026-10-27T22:43:29+00:00",
   "qualification": {
     "qualified_at": "2026-10-27T10:16:23Z (corrected 2026-10-27: the prior value '2026-10-27T10Tue21Tue13Z' was a malformed strftime of the record-writing time; this value is the write time of the worker's gate report and acceptance files, evidenced by the collected file mtimes)",
     "gate_version": "1.5.0",
