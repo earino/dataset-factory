@@ -1,0 +1,554 @@
+{
+  "dataset": "unhcr-refugee-data-finder",
+  "release_version": "2026.10",
+  "release_tag": "v2026.10",
+  "repository": "https://github.com/earino/unhcr-refugee-data-finder",
+  "visibility": "private (publication requires explicit authorisation)",
+  "artifact_version": "6fa7becdf32925b74522c81001dcfe802b6a389425fd6deb4af4fc25ba7f1f53",
+  "package_digest": null,
+  "artifact_job": "unhcr-001",
+  "staging_release": 425843785,
+  "staging_release_tag": "job-unhcr-001",
+  "staging_repo": "earino/dataset-factory-staging",
+  "construction_commit": "f90fd1b",
+  "gate_version": "1.5.0",
+  "gate_command": "python3 code/qualify_dataset.py ./task",
+  "measurements": {
+    "name": "unhcr-refugee-data-finder",
+    "built_at_utc": "2026-10-27T18:36:07Z",
+    "source": {
+      "publisher": "UNHCR, The UN Refugee Agency - asylum applications residing in each country of origin (annual), via the Humanitarian Data Exchange (HDX)",
+      "landing_page": "https://data.humdata.org/dataset/74cdbe77-0a0b-441b-9535-bacc263be2a8",
+      "mode": "http",
+      "files": 1,
+      "vintage_last_modified": "Thu, 20 Aug 2026 15:33:52 GMT (the HDX resource retains no historical vintages; this release pins the 2026-08-20 distribution, which carries complete data through year 2025)",
+      "bytes": 8669567,
+      "requests": 1,
+      "seconds": 3.6,
+      "requests_note": "one anonymous GET of asylum_applications_residing_world.csv (8,669,567 B, sha256 d5808616c3d10d33925d4df5a3182a2028dd574d111e843cc207455ba45fe950); tokenless HDX download URL, no key",
+      "fetch_provenance": "worker job unhcr-001 (server 172873699, cx23/hel1) fetched the publisher directly; the bytes never passed through the coordinator. The panel was first pinned at discovery on 2026-10-23 and the construction preflight re-fetched it on 2026-10-27 - byte-identical (same sha256), confirming the same vintage"
+    },
+    "grain": "one row per origin-asylum corridor label year T = D+1, for corridors eligible at the last fully published year D (year-D government/procedure persons total >= 500 AND a published year-D-1 corridor value); 7,212 shipped rows",
+    "eligibility": {
+      "eligible_corridor_years_pre_d1_rule": "7622",
+      "host_silent_unobserved_target": 33,
+      "missing_history": 377,
+      "shipped_rows": 7212,
+      "excluded_breakdown": "missing_history 377 (314 train: 192 panel-starts-2000 label-year-2001 rows + 122 no published year-D-1 cell; 31 eval; 32 holdout); host-files-no-gp-report unobserved_target 21 train / 7 eval / 5 holdout - censored, never labelled; live-edge target_year_beyond_vintage 496 counted separately",
+      "live_edge_note": "496 eligible corridors for label year 2026 sit beyond the fetched vintage (no published year-2026 data exists yet); they are excluded and counted, never labelled"
+    },
+    "label": {
+      "rule": "doubled = 1 iff the corridor's year-T (= D+1) G/P persons total is at least DOUBLING x its year-D total (DOUBLING = 2)",
+      "positives": 675,
+      "base_rate_overall": 0.0936,
+      "fixture_events": [
+        {
+          "corridor": "SYR->DEU",
+          "label_year": 2015,
+          "expect": "1",
+          "source": "the 2015 German asylum-application surge; asserted in-build from the fetched panel"
+        },
+        {
+          "corridor": "AFG->USA",
+          "label_year": 2022,
+          "expect": "1",
+          "source": "post-Aug-2021 Taliban takeover; asserted in-build"
+        },
+        {
+          "corridor": "AFG->DEU",
+          "label_year": 2022,
+          "expect": "0",
+          "source": "high 2021 base keeps the 2022 total below 2x; asserted in-build"
+        },
+        {
+          "corridor": "UKR->POL",
+          "label_year": 2022,
+          "expect": "below eligibility",
+          "source": "year-D (2021) corridor total 458 < MIN_APPS 500: the surge corridor is excluded by construction, not silently shipped"
+        }
+      ]
+    },
+    "splits": {
+      "train": {
+        "window": "2001-01-01 to 2017-01-01 (label years 2002-2016 shipped; label-year-2001 contributes no rows under the published-year-D-1 rule)",
+        "rows": 3363,
+        "positives": 283,
+        "positive_rate": 0.084151,
+        "distinct_positive_clusters": 183
+      },
+      "eval": {
+        "window": "2017-01-01 to 2022-01-01 (label years 2017-2021)",
+        "rows": 1887,
+        "positives": 165,
+        "positive_rate": 0.08744,
+        "distinct_positive_clusters": 109
+      },
+      "holdout": {
+        "window": "2022-01-01 to 2026-01-01 (label years 2022-2025)",
+        "rows": 1962,
+        "positives": 227,
+        "positive_rate": 0.115698,
+        "distinct_positive_clusters": 133
+      }
+    },
+    "hazards_measured": {
+      "panel_rows": 120597,
+      "gp_persons_rows": 99281,
+      "procedure_type_mix": {
+        "G": 105862,
+        "U": 13955,
+        "J": 780
+      },
+      "application_data_type_mix": {
+        "C": 6962,
+        "P": 113635
+      },
+      "cross_row_probe": "next_label_year_exposes_outcome declared to the gate and executed on every split: a label-year T+1 row's surged_recently equals the label-year T row's label; coverage 2439/1265/1239 rows (train/eval/holdout), 0 mismatches - the reason the evaluation contract fixes access to isolated_rows",
+      "publication_lag": "measured 232 days: the 2026-08-20 refresh carries complete data through year 2025 (max Year = 2025 on the fetched bytes), 232 days after the 2025 period end; HDX update history observed 2025-11-05, 2026-02-25, 2026-06-11, 2026-06-19, 2026-06-22, 2026-08-20"
+    },
+    "references_eval_1887_rows_165_positives": {
+      "full_model_stock_xgboost": {
+        "auc": 0.5393,
+        "brier": 0.085099,
+        "source": "worker job unhcr-baseline-001, benchmark runner verbatim (train.py and validate.py both print Eval AUC 0.5393; independent predict_proba recompute 0.53935)"
+      },
+      "persistence_momentum": {
+        "auc": 0.574165,
+        "source": "log_growth_d, the corridor's own momentum observed at the instant"
+      },
+      "persistence_surge_flag": {
+        "auc": 0.585619,
+        "source": "surged_recently, 1 when the corridor already doubled in year D"
+      },
+      "calendar_identity": {
+        "auc": 0.540927,
+        "source": "train-fitted rate per (origin, asylum) corridor, falling back to origin, then the global train rate"
+      },
+      "recent_rate_constant": {
+        "auc": 0.5,
+        "definition": "train rate over the last three train label years; a constant score carries no ranking information"
+      },
+      "majority_class_accuracy_this_split": 0.91256,
+      "majority_rule": "majority = int(train_positive_rate >= 0.5); accuracy measured against this split's labels"
+    },
+    "paired_differences_bootstrap1000": {
+      "full_model_minus_persistence_momentum": {
+        "diff": -0.034815,
+        "ci95": [
+          -0.105633,
+          0.04085
+        ],
+        "reading": "interval contains zero (inconclusive difference); observed gap negative - the stock baseline trails the corridor-momentum persistence reference"
+      },
+      "full_model_minus_persistence_surge_flag": {
+        "diff": -0.046269,
+        "ci95": [
+          -0.110322,
+          0.014362
+        ],
+        "reading": "inconclusive difference, observed gap negative"
+      },
+      "full_model_minus_calendar_identity": {
+        "diff": -0.001577,
+        "ci95": [
+          -0.059444,
+          0.058719
+        ],
+        "reading": "indistinguishable on this window"
+      },
+      "full_model_minus_recent_rate": {
+        "diff": 0.03935,
+        "ci95": [
+          -0.004657,
+          0.085904
+        ],
+        "reading": "inconclusive; a constant reference has no ranking information, so this is a degenerate control recorded as such"
+      }
+    },
+    "per_label_year_eval": {
+      "2017": {
+        "rows": 361,
+        "positives": 27,
+        "full_model_auc": 0.3938,
+        "persistence_momentum_auc": 0.7451
+      },
+      "2018": {
+        "rows": 386,
+        "positives": 41,
+        "full_model_auc": 0.5479,
+        "persistence_momentum_auc": 0.6568
+      },
+      "2019": {
+        "rows": 423,
+        "positives": 34,
+        "full_model_auc": 0.5635,
+        "persistence_momentum_auc": 0.6272
+      },
+      "2020": {
+        "rows": 414,
+        "positives": 6,
+        "full_model_auc": 0.8417,
+        "persistence_momentum_auc": 0.1164
+      },
+      "2021": {
+        "rows": 303,
+        "positives": 57,
+        "full_model_auc": 0.6127,
+        "persistence_momentum_auc": 0.5684
+      }
+    },
+    "prevalence_shift_note": "positive rate by eval label year swings 1.4% (2020, pandemic collapse) to 18.8% (2021, rebound); train 8.42% -> holdout 11.57% across splits. The pooled eval AUC blends very different regimes; per-year figures above are the honest grain. A constant-rate reference cannot rank within a year; the calendar prior absorbs identity only.",
+    "headroom_finding": "no demonstrated headroom over persistence under this protocol: the stock model trails both persistence references (0.5393 vs 0.5742/0.5856) and every paired interval contains zero. Recorded as the finding beside every model figure; one weak stock model does not establish that no solver can beat persistence, and no claim is made in either direction.",
+    "measurement_commands": {
+      "gate": "python3 skills/dataset-qualification/scripts/qualify_dataset.py <extract-dir>  (worker, full artifact, gate 1.5.0: 45/45)",
+      "accept": "python3 skills/dataset-qualification/scripts/qualify_dataset.py --accept <report.json> <extract-dir>  (worker, exact bytes: ACCEPTED 6fa7becdf32925b7)",
+      "references": "python3 source/score.py --data <extract-dir> --accepted-report <report.json> --report references.json  (post-acceptance)",
+      "baseline": "runner-contract baseline job unhcr-baseline-001: gate --accept on the fetched bytes (ACCEPTED 6fa7becdf32925b7), then python train.py + sh validate.sh unmodified, then report.py (model per-row scores via predict_proba + paired bootstrap vs the references)",
+      "majority_rule": "majority = int(train_positive_rate >= 0.5); accuracy measured against this split's labels"
+    }
+  },
+  "assets": {
+    "meta.json": {
+      "asset_name": "meta.json",
+      "bytes": 1250,
+      "sha256": "595aab31c00772d987a2436ea8f13d33bc2edd224aeb294731bcfa7579a65d19"
+    },
+    "private/holdout.csv": {
+      "asset_name": "private-holdout.csv",
+      "bytes": 202783,
+      "sha256": "54decaaaf74eac1ea362bf1acf711010069b1feb94ad2abfcb70a1fccff858bd"
+    },
+    "public/eval.csv": {
+      "asset_name": "public-eval.csv",
+      "bytes": 195252,
+      "sha256": "4b7f06c3afd9eec286652383d95797a5fbaccc3517e68b2c334c615026bc9393"
+    },
+    "public/train.csv": {
+      "asset_name": "public-train.csv",
+      "bytes": 343359,
+      "sha256": "c7ebd552f1158bd5f470c495b027c48fc17ea9195c34185a662a8620407bd167"
+    },
+    "quality.json": {
+      "asset_name": "quality.json",
+      "bytes": 18609,
+      "sha256": "e7517f8fbee8f15a7f667aa57fa398e8e880c8b55c91cee349f904580d1a4df2"
+    }
+  },
+  "package_files": {
+    "DATA_DICTIONARY.md": "11b09a9251f34f2d4fb81fa7c3c8f9c07669026b9fbe1de66b5d3c49b0a0ee11",
+    "LICENSE-CC0-1.0.txt": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+    "LICENSE-MIT.txt": "200f782f6b8bc23b926ea774cbacb4147826b3b2b59200917d8dc5ec68159535",
+    "LICENSE.md": "319e98caf4b74f108db69b283d389ad5373118595655fc6bf29c9c91e8c4c8ce",
+    "README.md": "a09b3cfcfe554f1d37cc69ce1f148e33846f749ab2b6d83cca7a415d97e42e3d",
+    "RELEASE_NOTES.md": "1725b8f42e114f7619db653d7c1afac9d041d03c4c12fc8f10090c38c0077cad",
+    "REPRODUCE.md": "34fa31d86f22fc3901908dfa7ad63883f7dfac77ccc1aaa025cef5549cc5cef6",
+    "SHA256SUMS": "4347f6519bb9b36df5d44549401f21d0d5376c661036714417a0084e6b602cd1",
+    "VERIFICATION.md": "7e611f26988d6778a4aa3b50a477f327de7148a9ad7d3d26139cca4f9606db91",
+    "baseline/README.md": "79d79b0e363644c862f2160398fbb5e1c10237754d15a400f840c973436e7c99",
+    "baseline/reproduce_baseline.sh": "32de96032ab1b55d19fdcd1e04e0f5a6b10a187633aa280e9ee76aee9f03c584",
+    "baseline/train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+    "baseline/validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+    "baseline/validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d",
+    "code/build.py": "ebc70f768ce9dc72e6af5138a449df643c24c87785df272b2f38379f8e7c46bf",
+    "code/materialize.py": "4d39977b6fcd5456bdde129ad535b2e0ee74d219517ee746575593db1cb0ba74",
+    "code/qualify_dataset.py": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1",
+    "code/run.sh": "8efc464cc09c92b4d9a4a6577d41e2ae900b70efa3f60782d614867835e82976",
+    "code/score.py": "a08ad0694c0f71833a605f335dd17d9612b83f015e8c2600279206ab77c653a3",
+    "get_dataset.py": "d91dd6a2cdbd1f6abf0947505e415dc3d68ea8746a796d11239f5d3018982954",
+    "measurements.json": "274031ffc16c4198ac80918c887a3e7ce80f7f07058be1bbadf4f24d3b8ba93c",
+    "meta.json": "595aab31c00772d987a2436ea8f13d33bc2edd224aeb294731bcfa7579a65d19",
+    "qualification.json": "a7e6787ebeb8d8bcf23ea548157927354ca2dc1c0705e17f0a51f194a5453f3f",
+    "quality.json": "e7517f8fbee8f15a7f667aa57fa398e8e880c8b55c91cee349f904580d1a4df2"
+  },
+  "baseline_command": "sh baseline/reproduce_baseline.sh ./task",
+  "get_dataset_command": "python3 get_dataset.py --dest ./task",
+  "source": {
+    "name": "UNHCR, The UN Refugee Agency - asylum applications residing in each country of origin (annual), distributed via the Humanitarian Data Exchange (HDX)",
+    "landing_page": "https://data.humdata.org/dataset/74cdbe77-0a0b-441b-9535-bacc263be2a8",
+    "api": "https://data.humdata.org/dataset/74cdbe77-0a0b-441b-9535-bacc263be2a8/resource/295cd9e4-8464-43ee-ad17-47196991a1f7/download/asylum_applications_residing_world.csv - anonymous CSV download, no key; HDX records refreshes (2025-11-05, 2026-02-25, 2026-06-11, 2026-06-19, 2026-06-22, 2026-08-20) and the resource carries no historical vintages",
+    "accessed": "2026-10-27",
+    "licence": "CC BY 3.0 IGO (HDX dataset record; attribution required, no implied endorsement). Derived research dataset - not a UNHCR product.",
+    "licence_evidence": [
+      {
+        "note": "RDF methodology page, read 2026-10-20 in a real browser (curl is WAF-blocked): 'Data terms and conditions of usage - Creative Commons Attribution 4.0 International Public License. Except where otherwise indicated, the datasets made available by UNHCR on UNHCR Refugee Population Statistics Database are licensed under the Creative Commons Attribution 4.0 International Public License.' followed by 'Please refer to the Terms of Use for Datasets'.",
+        "url": "https://www.unhcr.org/refugee-statistics/methodology"
+      },
+      {
+        "note": "Site-wide website terms (read 2026-10-20, same browser session): 'Extracts of the information on this website may be reviewed, reproduced or translated for research or private study but not for sale or for use in conjunction with commercial purposes. Any use of Content from the UNHCR website shall be accompanied by an acknowledgment of the source... Any use other than for personal or educational purposes, including reproduction, scraping by artificial intelligence (AI), or translation of substantial portions of the Content of the UNHCR website, requires the express prior written permission of UNHCR.' Recorded as the website-Content default; the dataset-specific CC BY 4.0 grant above is the operative licence for the statistics themselves, and this tension is flagged for the operator if this source is ever unparked.",
+        "url": "https://www.unhcr.org/contact-us/terms-and-conditions-use"
+      },
+      {
+        "note": "Legal code of the licence carried by the HDX dataset record, read 2026-10-23. Section 3 License Grant: 'the Licensor hereby grants You a worldwide, royalty-free, non-exclusive license... to Reproduce, Distribute and Publicly Perform the Work, to incorporate the Work into one or more Collections, and to Reproduce, Distribute and Publicly Perform the Work as incorporated in the Collections; and, to create, Reproduce, Distribute and Publicly Perform Adaptations, provided that You clearly label, demarcate or otherwise identify that changes were made to the original Work.' Redistribution and derivative works are expressly permitted; no share-alike, no non-commercial condition.",
+        "url": "https://creativecommons.org/licenses/by/3.0/igo/legalcode"
+      },
+      {
+        "note": "Same legal code, Section 4 conditions to carry into LICENSE.md verbatim: attribution ('keep intact all copyright notices for the Work and provide... any attributions that the Licensor indicates be associated with the Work'); no implied endorsement ('You may not implicitly or explicitly assert or imply any connection with, sponsorship or endorsement by the Licensor... without the separate, express prior written permission'); a moral-rights no-derogation clause; and no added restrictions or technological measures on the Work.",
+        "url": "https://creativecommons.org/licenses/by/3.0/igo/legalcode"
+      },
+      {
+        "note": "HDX package record read 2026-10-23 via anonymous CKAN package_show: license_id 'cc-by-igo', license_title 'Creative Commons Attribution for Intergovernmental Organisations (CC BY-IGO)'; organisation 'UNHCR - The UN Refugeal Agency'; dataset_source 'UNHCR'. The machine-fetchable distribution is the publisher's own channel under the publisher's own licence choice, not an aggregator relicence.",
+        "url": "https://data.humdata.org/api/3/action/package_show?id=unhcr-population-data-for-world"
+      },
+      {
+        "note": "Resolution of the tension flagged 2026-10-20 with unhcr.org site-wide terms: acquisition uses the documented HDX bulk resource (no scraping of unhcr.org); the RDF methodology page grants CC BY 4.0 on 'the datasets made available by UNHCR on UNHCR Refugee Population Statistics Database' and the HDX record carries CC BY 3.0 IGO for the same statistics. Both publisher instruments permit redistribution of derived rows; the restrictive website-Content terms govern website content. The flag stays visible here for the operator at review time.",
+        "url": "https://www.unhcr.org/refugee-statistics/methodology"
+      }
+    ]
+  },
+  "layout": {
+    "public/train.csv": "public/train.csv",
+    "public/eval.csv": "public/eval.csv",
+    "private/holdout.csv": "private/holdout.csv",
+    "meta.json": "meta.json",
+    "quality.json": "quality.json"
+  },
+  "files": {
+    "public/train.csv": {
+      "bytes": 343359,
+      "sha256": "c7ebd552f1158bd5f470c495b027c48fc17ea9195c34185a662a8620407bd167"
+    },
+    "public/eval.csv": {
+      "bytes": 195252,
+      "sha256": "4b7f06c3afd9eec286652383d95797a5fbaccc3517e68b2c334c615026bc9393"
+    },
+    "private/holdout.csv": {
+      "bytes": 202783,
+      "sha256": "54decaaaf74eac1ea362bf1acf711010069b1feb94ad2abfcb70a1fccff858bd"
+    },
+    "meta.json": {
+      "bytes": 1250,
+      "sha256": "595aab31c00772d987a2436ea8f13d33bc2edd224aeb294731bcfa7579a65d19"
+    },
+    "quality.json": {
+      "bytes": 18609,
+      "sha256": "e7517f8fbee8f15a7f667aa57fa398e8e880c8b55c91cee349f904580d1a4df2"
+    }
+  },
+  "splits": {
+    "train": {
+      "rows": 3363,
+      "positives": 283,
+      "positive_rate": 0.084151
+    },
+    "eval": {
+      "rows": 1887,
+      "positives": 165,
+      "positive_rate": 0.08744
+    },
+    "holdout": {
+      "rows": 1962,
+      "positives": 227,
+      "positive_rate": 0.115698
+    }
+  },
+  "qualification": {
+    "gate_version": "1.5.0",
+    "ok": true,
+    "failed_checks": [],
+    "result": "PASSED",
+    "artifact_version": "6fa7becdf32925b74522c81001dcfe802b6a389425fd6deb4af4fc25ba7f1f53",
+    "report": "qualification.json"
+  },
+  "baseline": {
+    "job": "unhcr-baseline-001",
+    "purpose": "one baseline through the runner's existing training and validation contract, on the accepted unhcr-refugee-data-finder artifact",
+    "artifact": {
+      "name": "unhcr-refugee-data-finder",
+      "target": "doubled",
+      "positive_label": 1,
+      "id_columns": [
+        "row_id"
+      ],
+      "rows": {
+        "train": 3363,
+        "eval": 1887,
+        "holdout": 1962
+      },
+      "positive_rate": {
+        "train": 0.084151,
+        "eval": 0.08744,
+        "holdout": 0.115698
+      },
+      "accepted_artifact_version": "6fa7becdf32925b74522c81001dcfe802b6a389425fd6deb4af4fc25ba7f1f53",
+      "gate_version_of_accepted_report": "1.5.0"
+    },
+    "runner_files": {
+      "declared": {
+        "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+        "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+        "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      },
+      "actual": {
+        "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+        "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+        "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      },
+      "verbatim": true
+    },
+    "contract": {
+      "contract_ok": true,
+      "eval_auc_from_train_py": 0.5393,
+      "eval_auc_from_validate_py": 0.5393
+    },
+    "eval_rows": 1887,
+    "eval_positives": 165,
+    "full_model": {
+      "eval_auc_recomputed_via_predict_proba": 0.5393499454475063,
+      "eval_brier": 0.08509893581142171
+    },
+    "train_positive_rate": 0.084151,
+    "majority_class": {
+      "definition": "majority = int(train_positive_rate >= 0.5), measured against THIS split's labels",
+      "accuracy": 0.9125596184419714
+    },
+    "references_recomputed_on_identical_rows": {
+      "persistence_momentum": {
+        "auc": 0.5741649948967023,
+        "construction_run_auc": 0.574165,
+        "agrees_with_construction_run": false
+      },
+      "persistence_surge_flag": {
+        "auc": 0.5856192587899905,
+        "construction_run_auc": 0.585619,
+        "agrees_with_construction_run": false
+      },
+      "calendar_identity": {
+        "auc": 0.5409266884876641,
+        "construction_run_auc": 0.540927,
+        "agrees_with_construction_run": false
+      },
+      "recent_rate": {
+        "auc": 0.5,
+        "construction_run_auc": null,
+        "agrees_with_construction_run": false
+      }
+    },
+    "paired_differences_full_model_vs_references": {
+      "full_model_vs_persistence_momentum": {
+        "observed_difference": -0.034815,
+        "auc_a": 0.53935,
+        "auc_b": 0.574165,
+        "ci95": [
+          -0.105633,
+          0.04085
+        ],
+        "bootstrap_samples": 1000,
+        "note": "paired row bootstrap on identical eval rows; an interval containing zero is an inconclusive difference, not parity"
+      },
+      "full_model_vs_persistence_surge_flag": {
+        "observed_difference": -0.046269,
+        "auc_a": 0.53935,
+        "auc_b": 0.585619,
+        "ci95": [
+          -0.110322,
+          0.014362
+        ],
+        "bootstrap_samples": 1000,
+        "note": "paired row bootstrap on identical eval rows; an interval containing zero is an inconclusive difference, not parity"
+      },
+      "full_model_vs_calendar_identity": {
+        "observed_difference": -0.001577,
+        "auc_a": 0.53935,
+        "auc_b": 0.540927,
+        "ci95": [
+          -0.059444,
+          0.058719
+        ],
+        "bootstrap_samples": 1000,
+        "note": "paired row bootstrap on identical eval rows; an interval containing zero is an inconclusive difference, not parity"
+      },
+      "full_model_vs_recent_rate": {
+        "observed_difference": 0.03935,
+        "auc_a": 0.53935,
+        "auc_b": 0.5,
+        "ci95": [
+          -0.004657,
+          0.085904
+        ],
+        "bootstrap_samples": 1000,
+        "note": "paired row bootstrap on identical eval rows; an interval containing zero is an inconclusive difference, not parity"
+      }
+    },
+    "per_label_year": {
+      "2017": {
+        "rows": 361,
+        "positives": 27,
+        "positive_rate": 0.074792,
+        "full_model_auc": 0.3938234641827456,
+        "persistence_momentum_auc": 0.7450654247061432
+      },
+      "2018": {
+        "rows": 386,
+        "positives": 41,
+        "positive_rate": 0.106218,
+        "full_model_auc": 0.5478967833156593,
+        "persistence_momentum_auc": 0.656769176387416
+      },
+      "2019": {
+        "rows": 423,
+        "positives": 34,
+        "positive_rate": 0.080378,
+        "full_model_auc": 0.56347346136398,
+        "persistence_momentum_auc": 0.6272493573264781
+      },
+      "2020": {
+        "rows": 414,
+        "positives": 6,
+        "positive_rate": 0.014493,
+        "full_model_auc": 0.8417075163398693,
+        "persistence_momentum_auc": 0.11642156862745098
+      },
+      "2021": {
+        "rows": 303,
+        "positives": 57,
+        "positive_rate": 0.188119,
+        "full_model_auc": 0.6126800741691627,
+        "persistence_momentum_auc": 0.5683925260305235
+      }
+    },
+    "note": "persistence here is the corridor's own momentum observed at the instant (log_growth_d and its binary form surged_recently) - the most recent observed analogue for a panel nowcast. The holdout is sealed and was never copied into the workdir; nothing here touches it."
+  },
+  "scope": "One baseline through the runner's training and validation contract. No agent or harness comparison was run and none is implied.",
+  "published": false,
+  "publication_note": "Prepared for human review. Nothing here has been published.",
+  "licenses": {
+    "policy_version": "2026-09-19",
+    "decided": "2026-10-27",
+    "code": {
+      "spdx": "MIT",
+      "file": "LICENSE-MIT.txt",
+      "copyright": "Copyright (c) 2026 E. Arino de la Rubia (earino)",
+      "third_party": [
+        {
+          "file": "baseline/train.py, baseline/validate.py, baseline/validate.sh",
+          "terms": "MIT - the harness benchmark's own runner files, shipped verbatim and unmodified (bundled sha256 equal the benchmark's declared hashes, recorded in the baseline job result as verbatim: true)",
+          "permission": "The benchmark checkout is read-only; permission to distribute verbatim copies of its runner files covers the distributed copies only"
+        }
+      ]
+    },
+    "data_compilation": {
+      "spdx": "CC0-1.0",
+      "file": "LICENSE-CC0-1.0.txt",
+      "scope": "Our contribution - the corridor-year eligibility frame, the derived doubled label, the published-year feature derivations, the temporal partition, and the packaging - is dedicated to the public domain under CC0-1.0. The dedication covers only our contribution: the underlying asylum-applications statistics keep their own designation and remain subject to UNHCR's CC BY 3.0 IGO terms, whose attribution condition carries through to every copy of the derived data. Nothing here relicenses the source or presents CC0 as the source's terms."
+    },
+    "source_data": {
+      "spdx": "CC-BY-3.0-IGO",
+      "status": "UNHCR asylum-applications statistics (asylum applications residing in each country of origin, annually, 2000-) distributed via the Humanitarian Data Exchange under CC BY 3.0 IGO. Redistribution and adaptation are permitted for any purpose with attribution. The licence does not and cannot imply UNHCR's endorsement of this derived task, and the derived dataset is labelled as such throughout.",
+      "evidence": [
+        "[HDX dataset page https://data.humdata.org/dataset/74cdbe77-0a0b-441b-9535-bacc263be2a8, read 2026-10-23] licence field: 'Creative Commons Attribution 3.0 IGO license' with the UNHCR data portal as the source.",
+        "[HDX resource 295cd9e4-8464-43ee-ad17-47196991a1f7 download asylum_applications_residing_world.csv, fetched 2026-10-27 by worker job unhcr-001] sha256 d5808616c3d10d33925d4df5a3182a2028dd574d111e843cc207455ba45fe950, 8,669,567 bytes, last-modified 2026-08-20 - the same distribution the licence covers."
+      ],
+      "attribution": "UNHCR, The UN Refugee Agency - asylum applications residing in each country of origin (annual), via the Humanitarian Data Exchange (HDX), dataset 74cdbe77-0a0b-441b-9535-bacc263be2a8, vintage of 2026-08-20. Licensed under CC BY 3.0 IGO.",
+      "citation": "UNHCR. Asylum applications residing in each country of origin (annual, 2000-). Distributed via the Humanitarian Data Exchange, https://data.humdata.org/dataset/74cdbe77-0a0b-441b-9535-bacc263be2a8 . Licensed under CC BY 3.0 IGO. Derived dataset: UNHCR corridor application-doubling prediction task (not a UNHCR product).",
+      "derived_labelling": "Labelled as a derived research dataset throughout; it is not UNHCR's official product and UNHCR has not reviewed or endorsed it. The publisher's own designation, attribution statement and suggested citation are preserved, and changes from the source are indicated (row selection, derived label, derived features, partition)."
+    },
+    "rules": [
+      "Code and documentation: MIT by default.",
+      "Our rights in a derived compilation: CC0-1.0 by default.",
+      "The source's own terms are preserved and never relicensed; the compilation dedication covers only our contribution.",
+      "Each dataset must use terms compatible with its sources. CC0 is NOT a blanket override of upstream terms: attribution, share-alike and non-commercial requirements from a source are carried through unchanged.",
+      "A source whose licence terms cannot be read is not published at all.",
+      "The chosen terms are declared per dataset in candidates/<id>/license.json and recorded in the release manifest, so the manifest cannot drift from the decision."
+    ]
+  }
+}

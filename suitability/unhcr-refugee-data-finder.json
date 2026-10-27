@@ -1,0 +1,76 @@
+{
+ "schema_version": 1,
+ "dataset": "unhcr-refugee-data-finder",
+ "release_tag": "v2026.10",
+ "artifact_version": "6fa7becdf32925b74522c81001dcfe802b6a389425fd6deb4af4fc25ba7f1f53",
+ "reviewed_on": "2026-10-27",
+ "reviewer": "Scout, advancement session 2026-10-27 (document and code review over the accepted unhcr-001 artifact, its gate 1.5.0 qualification report and the unhcr-baseline-001 runner-contract baseline; the figures cited are from the collected worker reports)",
+ "decision": "retain_restricted",
+ "summary": "Retained for retrospective model-development research under an isolated-rows protocol. Every feature reads only published years <= D and eligibility is decidable at the publication instant, but the HDX resource publishes one current distribution with no historical vintages, so training-label timing and full-row historical availability are unverified. A measured cross-row exposure exists by construction (a corridor's surged_recently in label year T+1 equals its label in label year T); the gate executed the declared probe on every split with zero mismatches, and the artifact is usable only under the restricted protocol the evaluation contract enforces.",
+ "supported_uses": [
+  "Retrospective train/validation model-development experiments under the documented timing, vintage and selection limitations",
+  "Final evaluation only under a protocol that isolates the labeled holdout from agent development and prevents any later row (in particular the same corridor's next label year) from informing an earlier prediction"
+ ],
+ "unsupported_uses": [
+  "Claims of verified real-time, operational or point-in-time forecasting validity",
+  "Treating development/validation (eval-split) scores as untouched final-test results",
+  "Consuming rows without the isolated-rows restriction (the panel self-answers across adjacent label years of the same corridor)",
+  "Presenting the current-vintage panel values as the values an analyst at each past publication instant would have seen",
+  "Quoting the full-model eval AUC without the persistence references and their paired intervals beside it"
+ ],
+ "evaluation_access": "isolated_rows",
+ "historical_availability": "unverified",
+ "training_label_timing": "unverified",
+ "vintage": "current_snapshot",
+ "selection": "prediction_time",
+ "cross_row_audit": {
+  "status": "recovery_demonstrated",
+  "scope": "Gate 1.5.0 executed the declared probe next_label_year_exposes_outcome on the full artifact on the worker across all three splits: 2,439 train / 1,265 eval / 1,239 holdout rows covered, 0 mismatches - a label-year T+1 row's surged_recently equals the label-year T row's label. The exposure is a property of the panel's construction (one row per corridor per year, momentum features recomputed each year), is declared in quality.json's evaluation_contract, and is the reason access is fixed to isolated_rows. No broader attack search was run; the probe is the declared mechanism, not a proof of absence.",
+  "evidence": [
+   "release/unhcr-refugee-data-finder/quality.json",
+   "release/unhcr-refugee-data-finder/VERIFICATION.md",
+   "jobs/unhcr-001.json"
+  ]
+ },
+ "limitations": [
+  "The HDX resource retains no historical vintages (update history observed 2025-11-05, 2026-02-25, 2026-06-11, 2026-06-19, 2026-06-22, 2026-08-20), so a reverse-history probe is not performable: this is retrospective research over the pinned 2026-08-20 distribution, never a certified historical forecasting setup.",
+  "Training-label timing is unverified: the 232-day publication lag is an observed release fact (the 2026-08-20 refresh carries complete data through year 2025), not a row-by-row availability ledger, and publications can slip.",
+  "Label-observability censoring excludes corridors whose host files no G/P report at all in the label year (33 rows counted, never labelled) and live-edge label-year-2026 corridors (496 counted); the observed panel is a censored sample of the eligible frame, reported not hidden.",
+  "Prevalence is not stationary across the panel (eval label years swing 1.4% to 18.8% positives; train 8.42% -> holdout 11.57%): pooled eval AUC blends regimes, and per-label-year figures are the honest grain.",
+  "The runner-contract stock baseline trails both persistence references on the identical eval rows (0.5393 vs 0.5742 momentum and 0.5856 surge flag; paired intervals contain zero, observed gaps negative): no headroom over persistence is demonstrated under this protocol, and the comparison is recorded beside every model figure."
+ ],
+ "evidence": [
+  {
+   "claim": "Qualification of the exact artifact: gate 1.5.0 passed 45/45 on the full artifact on the worker, exact-byte acceptance before any figure was computed",
+   "source": "release/unhcr-refugee-data-finder/VERIFICATION.md",
+   "detail": "sections 'Bytes identity' and 'What was run' item 1 (worker unhcr-001; ACCEPTED: ... 6fa7becdf32925b7); the packaged tree re-accepted locally on 2026-10-27 against the same report"
+  },
+  {
+   "claim": "Evaluation contract: retrospective research, isolated rows, current snapshot, prediction-time selection, training-label timing unverified",
+   "source": "release/unhcr-refugee-data-finder/quality.json",
+   "detail": "evaluation_contract block (use, access, vintage, selection, limitations, cross_row_audit) verified by gate 1.5.0"
+  },
+  {
+   "claim": "Baseline triad on identical eval rows with paired dependence-aware intervals and per-label-year breakdown; negative headroom finding recorded",
+   "source": "release/unhcr-refugee-data-finder/measurements.json",
+   "detail": "worker job unhcr-baseline-001 (staging release 425870998): full model 0.5393 / momentum 0.574165 / surge flag 0.585619 / calendar 0.540927 on 1,887 rows / 165 positives"
+  },
+  {
+   "claim": "Runner-contract baseline report (verbatim harness train.py/validate.py, CONTRACT OK, predict_proba recompute, references agreeing with the construction run to 6 dp)",
+   "source": "candidates/unhcr-refugee-data-finder/baseline/baseline_result.json",
+   "detail": "collected report of worker job unhcr-baseline-001: contract_ok true, eval AUC 0.5393 from both entrypoints, holdout never copied into the workdir"
+  },
+  {
+   "claim": "Timing declaration with measured publication lag and row-selection basis",
+   "source": "release/unhcr-refugee-data-finder/quality.json",
+   "detail": "timing block: publication instant kind, 232 days after period end (observed 2026-08-20 refresh carrying complete 2025 data), selection reads only published years <= D"
+  }
+ ],
+ "required_actions": [
+  "Keep the labeled holdout outside every evaluated agent's workspace; the benchmark's score is holdout AUC on a frozen design.",
+  "Enforce the isolated-rows access posture: no solver may read a corridor's later label-year row to inform an earlier one; the declared probe quantifies exactly this exposure.",
+  "Quote the full-model figure only beside both persistence references and their paired intervals; never quote any of the three numbers alone.",
+  "Re-run the gate's cross-row probe in every future re-qualification before making any stronger claim."
+ ],
+ "corrections": []
+}

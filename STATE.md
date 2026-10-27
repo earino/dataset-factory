@@ -23,6 +23,58 @@ commit 8512fd8). Close #17; ordinary advancement thereafter is source-specific
 candidate review - review the next candidate's source-specific prediction contract
 and update its builder before construction; #25 remains deferred.
 
+## 2026-10-27 (20:02Z) - worker-watch follow-up: unhcr-001/unhcr-baseline-001 closed and verified; unhcr-refugee-data-finder PACKAGED (private); exit-1 session's uncommitted work rescued and committed
+
+Watcher tick with both jobs terminal under the follow-up runner's mutex. The 19:49Z
+advancement session exited 1 AFTER collecting unhcr-baseline-001, destroying its
+worker, updating the candidate record and building the release package, but BEFORE
+committing anything or writing STATE. Its uncommitted tree was inspected against the
+collected worker reports, found accurate, and is committed by this session; no
+unrelated edits existed in the tree.
+
+- unhcr-001 (build/qualify): already collected, verified and recorded at commit
+  f90fd1b (STATE 19:00Z entry). Re-verified this pass: reports present under
+  .factory/unhcr-001/reports/ (gate 1.5.0 report ok, 46 ok-fields/0 failed),
+  staging release 425843785 intact (14 assets), server 172873699 Hetzner read-back
+  404 (provider-confirmed deletion, re-checked 2026-10-27T19:57Z).
+- unhcr-baseline-001 (runner-contract baseline, worker 172877033, 49.8 s, exit 0,
+  staging release 425870998, 10 assets): fetched the five accepted assets from
+  staging release 425843785 at digests identical to the unhcr-001 release; gate
+  --accept on the fetched bytes (accept.log: "ACCEPTED: /data/extract matches the
+  qualified artifact 6fa7becdf32925b7..."); harness runner files verbatim
+  (train.py/validate.py/validate.sh sha256 equal declared == actual); train.py and
+  validate.py both print Eval AUC 0.5393, validate.sh prints CONTRACT OK;
+  predict_proba recompute 0.53935, Brier 0.085099; holdout never copied into the
+  workdir (materialize.log). References recomputed on the identical 1,887 eval rows
+  agree with the construction run to 6 dp (the job's 1e-9 agreement flag reads false
+  only because references.json stores 6-dp rounded values). Majority-class accuracy
+  measured on this split's labels: 0.91256. Worker destroyed: Hetzner read-back 404
+  (server 172877033, re-checked 2026-10-27T19:57Z); ledger status "deleted".
+- Finding recorded beside every model figure (record.measurements
+  .baseline_triad_2026_10_27, release measurements.json, suitability limitations):
+  NO demonstrated headroom over persistence under this protocol - stock XGBoost
+  0.5393 trails momentum 0.574165 and surge flag 0.585619 on identical rows; all
+  paired intervals contain zero (inconclusive differences, observed gaps negative);
+  2020 (6 positives) inverts momentum. Degenerate recent-rate control (AUC 0.5)
+  recorded as such.
+- Candidate is now "packaged" (packaged_at 2026-10-27T19:44:51Z), private, not
+  staged: DESTINATIONS.json says github/huggingface verified=false staged=false.
+  Package v2026.10 check-package.py exit 0; check-candidate.py --all exit 0.
+- Suitability record fixed for schema only (two defects, no evidence values
+  changed): cross_row_audit.status "measured_exposure_restricted_protocol" ->
+  enum value "recovery_demonstrated" (matching the measured probe: T+1
+  surged_recently equals the T label, 0 mismatches on covered rows, mitigated by
+  the enforced isolated_rows protocol); one evidence item carried two paths in one
+  "source" string, split into two valid entries. check-suitability.py exit 0 after.
+- Handoff to advancement (record.next_action): private staging of
+  release/unhcr-refugee-data-finder v2026.10 to both destinations, then
+  awaiting_operator for the flip. GAP FOUND: next_action and DESTINATIONS.json name
+  the transfer job spec candidates/unhcr-refugee-data-finder/publish/job.json
+  (unhcr-publish-001), but that directory does not exist - the exit-1 session never
+  wrote it. Advancement must create the spec before launching the transfer; all
+  other prepared inputs are committed. No scoring is authorized before the flip
+  decision.
+
 ## 2026-10-27 (19:00Z) - unhcr-refugee-data-finder QUALIFIED on the worker (unhcr-001 green: gate 1.5.0 45/45, exact-byte accepted, references recorded); runner-contract baseline is the prepared next step
 
 Advancement session, one primary candidate (from the operator's actionable list; no

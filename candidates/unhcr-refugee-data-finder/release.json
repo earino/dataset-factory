@@ -1,0 +1,30 @@
+{
+ "release_version": "2026.10",
+ "release_tag": "v2026.10",
+ "repository": "https://github.com/earino/unhcr-refugee-data-finder",
+ "construction_commit": "f90fd1b",
+ "construction_commit_note": "f90fd1b is the unhcr-001 close-out commit carrying candidates/unhcr-refugee-data-finder/source/build.py at sha256 ebc70f768ce9dc72e6af5138a449df643c24c87785df272b2f38379f8e7c46bf, source/run.sh at 8efc464cc09c92b4d9a4a6577d41e2ae900b70efa3f60782d614867835e82976 and source/score.py at a08ad0694c0f71833a605f335dd17d9612b83f015e8c2600279206ab77c653a3 - the exact bytes worker job unhcr-001 executed (its staging manifest records the same bundled digests), which produced the gated artifact 6fa7becdf32925b74522c81001dcfe802b6a389425fd6deb4af4fc25ba7f1f53 from the 2026-08-20 vintage of the HDX asylum-applications-residing-world distribution (8,669,567 B, sha256 d5808616c3d10d33925d4df5a3182a2028dd574d111e843cc207455ba45fe950, last-modified Thu 20 Aug 2026 15:33:52 GMT).",
+ "source": {
+  "name": "UNHCR, The UN Refugee Agency - asylum applications residing in each country of origin (annual), distributed via the Humanitarian Data Exchange (HDX)",
+  "landing_page": "https://data.humdata.org/dataset/74cdbe77-0a0b-441b-9535-bacc263be2a8",
+  "api": "https://data.humdata.org/dataset/74cdbe77-0a0b-441b-9535-bacc263be2a8/resource/295cd9e4-8464-43ee-ad17-47196991a1f7/download/asylum_applications_residing_world.csv - anonymous CSV download, no key; HDX records refreshes (2025-11-05, 2026-02-25, 2026-06-11, 2026-06-19, 2026-06-22, 2026-08-20) and the resource carries no historical vintages",
+  "accessed": "2026-10-27",
+  "licence": "CC BY 3.0 IGO (HDX dataset record; attribution required, no implied endorsement). Derived research dataset - not a UNHCR product."
+ },
+ "commands": {
+  "gate": "python3 code/qualify_dataset.py ./task",
+  "baseline": "sh baseline/reproduce_baseline.sh ./task",
+  "get_dataset": "python3 get_dataset.py --dest ./task"
+ },
+ "layout": {
+  "public/train.csv": "public/train.csv",
+  "public/eval.csv": "public/eval.csv",
+  "private/holdout.csv": "private/holdout.csv",
+  "meta.json": "meta.json",
+  "quality.json": "quality.json"
+ },
+ "required_docs": [
+  "code/score.py"
+ ],
+ "note": "One task instance, one artifact. The five shipped files are the unhcr-001 worker artifact 6fa7becdf32925b74522c81001dcfe802b6a389425fd6deb4af4fc25ba7f1f53 (gate 1.5.0, 45/45 checks on the full artifact, exact-byte --accepted on the worker); the package's code/ carries the construction script, the reference implementation, the runner-workdir materializer and the gate, baseline/ the runner-contract baseline. The holdout ships as an asset like the other splits; it is not copied into any runner workdir. The HDX resource publishes one current distribution (no historical vintages), and the evaluation contract declares retrospective research over the current snapshot with an isolated-rows access posture, never a point-in-time reconstruction."
+}

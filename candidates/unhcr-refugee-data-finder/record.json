@@ -1,339 +1,461 @@
 {
-  "id": "unhcr-refugee-data-finder",
-  "status": "qualified",
-  "verdict": "go",
-  "created_at": "2026-10-20T20:18:13+00:00",
-  "domain": "forced displacement - corridor-level asylum-application surge prediction (international organisation publisher)",
-  "prediction_question": "For an asylum corridor (country of origin O, country of asylum H) whose total government-procedure asylum applications in year D are at least 500 (persons, all application types summed), will that corridor's total government-procedure asylum applications in year D+1 be at least twice the year-D value? Annual grain, measured 2000-2025; a useful prediction enables humanitarian reception planning and resettlement budgeting ahead of the surge year rather than after it.",
-  "prediction_time": "Annual publication-lag NOWCAST - the accepted abs-visitor-arrivals-direction pattern, and it must not be described as a future-event forecast. The prediction instant is the publication of year-D complete annual data on the machine-fetchable channel: UNHCR's annual statistical cycle lands mid-year in D+1 (Global Trends), and the HDX distribution of this dataset was observed refreshing on 2025-11-05, 2026-02-25, 2026-06-11, 2026-06-19, 2026-06-22 and 2026-08-20, with the 2026-08-20 resource carrying complete data through 2025. At that instant every feature is a corridor-year total for years <= D. The target year D+1 has PARTIALLY ELAPSED at the instant (the 2026-08-20 instant lies inside target year 2026, which started 2026-01-01) but its value is entirely UNPUBLISHED: on this channel no D+1 value exists until ~mid-D+2, and for most non-EU hosts no public monthly corridor data exists at all (Eurostat monthly data covers EU hosts only and is outside this channel's shipped features). So the claim recorded here is value-unavailability at the instant, not that the target window follows the instant. A strictly-future variant (at the same instant, predict year D+2 >= 2x the last PUBLISHED year D) was considered and rejected at discovery: the doubling baseline must be published at the instant, so a strict future window forces a two-year-back comparison, a different label and different measured base rates - a different task. The HDX archive is revised in place (current-vintage), so construction pins the fetched snapshot by sha256 and states values as construction-time vintage - the same documented posture as abs-visitor-arrivals-direction. Dated example in notes.md.",
-  "target_definition": "Binary exceedance: label 1 iff the corridor-year (D+1, O, H) government-procedure persons total (sum of all application-type rows; a missing corridor row with the host still reporting counted as 0 applications) is >= 2 x the corridor-year (D, O, H) total. Label source: the same 'Number of Applications' column of the HDX CSV at year D+1; the year-D+1 value and everything derived from it are excluded from shipped features. Censoring: corridors whose host reports no G/P rows at all in D+1 (33 of 7,622 eligible rows, 0.43%) are excluded as unobserved targets, not counted as 0. Note what the target does NOT measure: temporary-protection registrations (e.g. Ukrainians in the EU from 2022) are not asylum applications and do not enter this stream.",
-  "sources": [
-    {
-      "name": "UNHCR Refugee Data Finder (RDF) - the publisher's current statistics channel, replacing the retired popstats.unhcr.org",
-      "url": "https://www.unhcr.org/refugee-statistics/",
-      "api": "none documented: the RDF is an interactive Symfony UX application; bulk exports are produced by the app's own Download control (form POST of the current filters); the homepage links five deep-link exports at opaque hashed URLs (e.g. https://www.unhcr.org/refugee-statistics/download/?v2url=dc36b6 'Refugees, asylum-seekers and other people in need of international protection by country of origin'); the app's data_finder controller JS contains no public API route (measured)",
-      "license": "CC BY 4.0 for the datasets, per the methodology page's 'Data terms and conditions of usage' (see license_evidence); the site-wide website terms are more restrictive for website Content but the dataset licence is the specific grant",
-      "access": "measured 2026-10-20: https://www.unhcr.org/refugee-statistics/ -> HTTP 403 to curl (182,520-byte challenge page); loads only in a real browser. An in-page same-origin fetch() of the deep-link export URL also returns 403 (222,964 bytes) - the WAF distinguishes XHR from navigation. Real navigation to the deep link opens the interactive Data Finder app, not a file. The Download control is JS-driven (dialog form POST); an attempted click produced no file in the browser download dir during this session. Old channels are dead: popstats.unhcr.org -> HTTP 000; data.unhcr.org/en/index -> HTTP 404"
-    },
-    {
-      "name": "HDX (OCHA Centre for Humanitarian Data) - UNHCR organisation catalog",
-      "url": "https://data.humdata.org/api/3/action/package_search?q=unhcr+population&rows=5",
-      "api": "anonymous CKAN v3 API; used to check whether the RDF population series is mirrored with a stable resource URL",
-      "license": "UNHCR datasets on HDX carry licence metadata 'Creative Commons Attribution International (CC BY)' / 'CC BY-IGO' (e.g. unhcr-statistical-yearbooks, unhcr-situations)",
-      "access": "measured 2026-10-20: CKAN API HTTP 200 (84,789 B for 8 results). The full origin-year population series is NOT mirrored on HDX - only per-country extracts (afg/bgd 'forcibly displaced population by origin', updated 2026-08-17) and reference/geodata layers. So the HDX path does not unblock the full series. CORRECTION 2026-10-23: the 2026-10-20 search-visibility conclusion was wrong - the full global series IS distributed on HDX by the UNHCR organisation account as package 'unhcr-population-data-for-world' (metadata_created 2020-08-27), in five per-phenomenon CSVs (end-year population, demographics, asylum applications, asylum decisions, solutions). The ranked full-text search results showed per-country extracts first and the global package was missed."
-    },
-    {
-      "name": "HDX (OCHA Centre for Humanitarian Data) - UNHCR global package 'Data on forcibly displaced populations and stateless persons (Global)', asylum-applications resource (the machine-fetchable bulk path that reopens this lead)",
-      "url": "https://data.humdata.org/dataset/unhcr-population-data-for-world",
-      "api": "anonymous CKAN v3 (package_show) plus five stable resource CSV download URLs; asylum applications: https://data.humdata.org/dataset/74cdbe77-0a0b-441b-9535-bacc263be2a8/resource/295cd9e4-8464-43ee-ad17-47196991a1f7/download/asylum_applications_residing_world.csv (HTTP 302 to a signed download; curl -L needed). Measured 2026-10-23 from the coordinator: HTTP 200, 8,669,567 bytes, 2.06 s, sha256 d5808616c3d10d33925d4df5a3182a2028dd574d111e843cc207455ba45fe950, identical across two fetches. Sibling resources measured in the package record: decisions 8,833,586 B, end-year population 7,281,295 B, demographics 29,504,789 B, solutions 1,016,821 B.",
-      "license": "CC BY 3.0 IGO, from the dataset record's machine-readable licence metadata (license_id 'cc-by-igo'); grant and restrictions quoted in license_evidence",
-      "access": "Resource last modified 2026-08-20T15:33:49Z, carrying data through 2025 (the applications file's maximum Year is 2025). 120,597 data rows; 13 columns; no month column - annual corridor grain only in this extract (the RDF's monthly grain remains browser-only behind the WAF)."
-    }
-  ],
-  "license_evidence": [
-    {
-      "note": "RDF methodology page, read 2026-10-20 in a real browser (curl is WAF-blocked): 'Data terms and conditions of usage - Creative Commons Attribution 4.0 International Public License. Except where otherwise indicated, the datasets made available by UNHCR on UNHCR Refugee Population Statistics Database are licensed under the Creative Commons Attribution 4.0 International Public License.' followed by 'Please refer to the Terms of Use for Datasets'.",
-      "url": "https://www.unhcr.org/refugee-statistics/methodology"
-    },
-    {
-      "note": "Site-wide website terms (read 2026-10-20, same browser session): 'Extracts of the information on this website may be reviewed, reproduced or translated for research or private study but not for sale or for use in conjunction with commercial purposes. Any use of Content from the UNHCR website shall be accompanied by an acknowledgment of the source... Any use other than for personal or educational purposes, including reproduction, scraping by artificial intelligence (AI), or translation of substantial portions of the Content of the UNHCR website, requires the express prior written permission of UNHCR.' Recorded as the website-Content default; the dataset-specific CC BY 4.0 grant above is the operative licence for the statistics themselves, and this tension is flagged for the operator if this source is ever unparked.",
-      "url": "https://www.unhcr.org/contact-us/terms-and-conditions-use"
-    },
-    {
-      "note": "Legal code of the licence carried by the HDX dataset record, read 2026-10-23. Section 3 License Grant: 'the Licensor hereby grants You a worldwide, royalty-free, non-exclusive license... to Reproduce, Distribute and Publicly Perform the Work, to incorporate the Work into one or more Collections, and to Reproduce, Distribute and Publicly Perform the Work as incorporated in the Collections; and, to create, Reproduce, Distribute and Publicly Perform Adaptations, provided that You clearly label, demarcate or otherwise identify that changes were made to the original Work.' Redistribution and derivative works are expressly permitted; no share-alike, no non-commercial condition.",
-      "url": "https://creativecommons.org/licenses/by/3.0/igo/legalcode"
-    },
-    {
-      "note": "Same legal code, Section 4 conditions to carry into LICENSE.md verbatim: attribution ('keep intact all copyright notices for the Work and provide... any attributions that the Licensor indicates be associated with the Work'); no implied endorsement ('You may not implicitly or explicitly assert or imply any connection with, sponsorship or endorsement by the Licensor... without the separate, express prior written permission'); a moral-rights no-derogation clause; and no added restrictions or technological measures on the Work.",
-      "url": "https://creativecommons.org/licenses/by/3.0/igo/legalcode"
-    },
-    {
-      "note": "HDX package record read 2026-10-23 via anonymous CKAN package_show: license_id 'cc-by-igo', license_title 'Creative Commons Attribution for Intergovernmental Organisations (CC BY-IGO)'; organisation 'UNHCR - The UN Refugeal Agency'; dataset_source 'UNHCR'. The machine-fetchable distribution is the publisher's own channel under the publisher's own licence choice, not an aggregator relicence.",
-      "url": "https://data.humdata.org/api/3/action/package_show?id=unhcr-population-data-for-world"
-    },
-    {
-      "note": "Resolution of the tension flagged 2026-10-20 with unhcr.org site-wide terms: acquisition uses the documented HDX bulk resource (no scraping of unhcr.org); the RDF methodology page grants CC BY 4.0 on 'the datasets made available by UNHCR on UNHCR Refugee Population Statistics Database' and the HDX record carries CC BY 3.0 IGO for the same statistics. Both publisher instruments permit redistribution of derived rows; the restrictive website-Content terms govern website content. The flag stays visible here for the operator at review time.",
-      "url": "https://www.unhcr.org/refugee-statistics/methodology"
-    }
-  ],
-  "construction_script": "candidates/unhcr-refugee-data-finder/source/build.py",
-  "split_strategy": "Temporal split on corridor-year label windows (Government procedure, persons, sum of all application-type rows; eligibility: year-D corridor total >= 500 and host active in D+1). Candidate partition, counts computed from the source 2026-10-23: train label-years 2001-2016: n=3,677 rows, 302 positives (x2 prevalence 8.2%), 198 distinct (origin, label-year) positive clusters; eval label-years 2017-2021: n=1,918, 166 positives (8.7%), 109 clusters; holdout label-years 2022-2025: n=1,994, 234 positives (11.7%), 135 clusters. Both classes present in every label-year of every window (positives per label-year range 2-92). Surge origins differ across windows (train: SYR/AFG/IRQ; eval: VEN/AFG/COD; holdout: TUR/VEN/IND/AFG/CUB). Construction may adjust boundaries inside this measured envelope but must recompute and record counts on the frozen artifact; the prevalence drift (more surges later) is a property of the period, to document at construction.",
-  "measurements": {
-    "waf_probe_2026_10_20": "curl https://www.unhcr.org/refugee-statistics/ -> HTTP 403, 182,520 B (challenge page); the same URL loads normally in a real browser (title 'Refugee Data Finder - Key Indicators'). In-page same-origin fetch of the export deep link -> HTTP 403, 222,964 B. Both measured from the coordinator.",
-    "deep_links_2026_10_20": "The homepage's five export deep links (extracted from the rendered page): population by country of origin (?v2url=dc36b6), population by host country (?v2url=bd1059), demographics of refugees (?v2url=d3e49d), solutions 2015-2024 (?v2url=d63e73), new asylum applications during 2024 (?v2url=1e3087). Navigating a real tab to the origin deep link opens the interactive Data Finder app with that dataset preselected - the URL is a view selector, not a file.",
-    "app_internals_2026_10_20": "The app is a Symfony/UX live-component application (assets under /refugee-statistics/assets/, controllers incl. data_finder_controller-*.js, turbo/stimulus bundles); the data_finder controller submits a FormData via Turbo form POST; no JSON/CSV API route appears in the controller source or in the page's network resource entries. The Download control is an <a> with no href (JS-driven dialog form); a programmatic click produced no downloaded file in this session.",
-    "dead_channels_2026_10_20": "http://popstats.unhcr.org/en/overview -> HTTP 000 (host gone); https://data.unhcr.org/en/index -> HTTP 404. The pre-RDF population database channel no longer exists.",
-    "hdx_mirrors_2026_10_20": "HDX CKAN search 'unhcr population' -> 860 results, of which the full origin-year population series is absent; only per-country extracts (CC BY) and GIS reference layers. 'refugee data finder' search -> 3,427 results, none the full series. HDX does not unblock the bulk data.",
-    "recency_2026_10_20": "The RDF homepage reports 'Forcibly displaced people worldwide at end-2025: 117.8 million' with charts spanning 2000-2025, so the series is maintained to end-2025 (annual grain) - current and republished on a rolling schedule.",
-    "hdx_bulk_path_2026_10_23": "HDX package unhcr-population-data-for-world (created 2020-08-27, maintained by the UNHCR organisation account) carries the full global corridor panel in five CSVs. Applications resource: 1 GET (HTTP 302 -> signed URL, curl -L), 200 OK, 8,669,567 bytes, 2.06 s from the coordinator (1.9 GiB class); sha256 d5808616c3d10d33925d4df5a3182a2028dd574d111e843cc207455ba45fe950 identical across two fetches. This resolves the 2026-10-20 access blocker: the 2026-10-20 note 'HDX does not unblock the bulk data' was a search-visibility miss and is corrected here with the package URL.",
-    "panel_shape_measured_2026_10_23": "Applications CSV: 120,597 data rows, 13 columns, years 2000-2025 (26), 215 origin codes, 130 asylum-country codes. Columns: Year, Country of Origin Code/Name, Country of Asylum Code/Name, Procedure Type/Name, Application Type Code/Name, Application Data Type/Data, Application Average Persons Per Case (all zero), Number of Applications (all integer). No month column. Provenance mix (skill requirement): Procedure G=105,862 / U=13,955 / J=780 rows; Data Type P=113,635 / C=6,962. The task is defined on the G/P stream only (99,281 rows, 6,936 distinct corridors, 33.7M applications); the UNHCR-procedure stream (13,640 persons rows) is a separate RSD population, not summed in, and the task does not cover corridors served only by UNHCR procedure.",
-    "duplicate_rows_resolved_2026_10_23": "20,851 of 73,051 G/P corridor-year cells (28.5%) carry multiple rows with the same (Year, Origin, Asylum, Procedure, ApplicationType, DataType) key but different counts (e.g. 2000 AFG->DEU G/V/P: 5,380 vs 5,756; 2000 AFG->AUS G/V/C: 90 vs 1,326). Identical rows in all other columns; present in every year incl. 2025 (35 groups), and identical in the per-country extracts (verified on asylum_applications_residing_deu.csv). Resolution rule: SUM all G/P rows per corridor-year. Basis: cross-checks against the primary national publisher's own published host-year totals (BAMF, which is UNHCR's source for Germany) match the sum-all rule to within 0.005-0.09% in four different years, while the max-rule matches BAMF's first-application figure - i.e. the duplicate rows are disjoint components (first vs follow-up applications) exported under one type code, so summing reconstructs the total. See bamf_cross_check_2026_10_23.",
-    "bamf_cross_check_2026_10_23": "Sum-all G/P host-year totals vs BAMF's published totals (Erst- und Folgeantraege): DEU 2000: 117,600 vs 117,648 (-0.04%); DEU 2010: 48,544 vs 48,589 (-0.09%); DEU 2015: 476,630 vs 476,649 (-0.004%); DEU 2016: 745,510 vs 745,545 (-0.005%). The max-rule matches BAMF first applications for the same years (441,898 vs 441,899 in 2015), confirming the duplicates are first/follow-up pairs. BAMF figures from bamf.de Asylgeschaeftsstatistik / Bundesamt in Zahlen (searched and read 2026-10-23); UNHCR's Germany data is sourced from BAMF. This is the publisher-total cross-check for the panel construction rule.",
-    "label_family_measured_2026_10_23": "On eligible corridor-years (G/P sum-all >= 500 at D, host active in D+1; n=7,589 across 2000-2024): decline (D+1 < D) 57.3%; growth >25% 27.4%; growth >50% 18.5%; >=2x 9.3%; >=3x 4.2%. Chosen label: >=2x (doubling), a ~9% prevalence exceedance target in the house family of the other published exceedance tasks. Alternatives measured and recorded; construction must not re-tune the threshold after seeing scores.",
-    "split_window_counts_2026_10_23": "x2 label, computed from the source: train label-years 2001-2016 n=3,677 / 302 positives / 198 (origin, label-year) positive clusters; eval 2017-2021 n=1,918 / 166 / 109; holdout 2022-2025 n=1,994 / 234 / 135. Positives per label-year: train 2-53, eval 6-57, holdout 26-92; every label-year of every window carries both classes. For comparison, the parked annual origin-grain derivative (unicef-sdmx-refugee-origin-growth) carried only 34 positive origin-years in eval.",
-    "censoring_measured_2026_10_23": "Host-year activity: 67 hosts report in 2000 growing to ~110 in recent years; among 7,622 eligible corridor-years, 7,589 (99.57%) have an active host in D+1 (missing corridor row = observed zero) and 33 (0.43%) have a host reporting nothing at all in D+1 (unobserved target; excluded). Absence of a row is treated as zero applications only when the host is still reporting.",
-    "reporting_model_mix_2026_10_23": "Two reporting models inside the G/P stream: split-type codes (N/R/A/J/...) vs unsplit 'V' rows. Measured on eligible corridor-years: train window 1,238 V-model / 2,439 split-model; eval 1,918/0 V-model; holdout 1,994/0 V-model. The eval and holdout windows are 100% split-model; V-model ambiguity therefore touches only training-era rows, and the sum-all rule is cross-checked against BAMF in exactly that era. Type coexistence measured: V never coexists with N/R/A in the same corridor-year (0 of 73,051), so V is an unsplit total, not an additive category; N-with-NR/RA/SP coexistence is rare (646 cells differ between sum-all and a V/NR-preferring rule; 196 eligible).",
-    "update_cadence_observed_2026_10_23": "HDX package activity (CKAN package_activity_list, 60 entries read 2026-10-23): resource/dataset updates on 2025-11-05, 2026-02-25, 2026-06-11, 2026-06-19, 2026-06-22, 2026-08-20 - a several-times-a-year refresh pattern aligned with UNHCR's annual statistical cycle (Global Trends lands ~June of D+1). The 2026-08-20 applications resource carries complete data through 2025, so year-D data is machine-observable at latest ~August of D+1; the conservative instant is the first observed mid-year-or-later refresh carrying year D.",
-    "known_event_fixtures_2026_10_23": "Reproduced by candidates/unhcr-refugee-data-finder/probe_hdx_asylum_fixture.py (exit 0): SYR->DEU 2014->2015 41,100 -> 162,510 x2 label TRUE (2015 Syrian surge into Germany); AFG->USA 2021->2022 533 -> 25,082 TRUE (post-Aug-2021 Taliban takeover, Afghan asylum filings in the US); AFG->DEU 2021->2022 37,245 -> 48,602 FALSE (large growth, sub-doubling). Anti-fixture recorded: UKR->POL 2021->2022 458 -> 1,593 is below the 500 eligibility at D, and Ukrainians in the EU mostly registered temporary protection rather than asylum applications - the target does not measure temporary-protection registrations."
+ "id": "unhcr-refugee-data-finder",
+ "status": "packaged",
+ "verdict": "go",
+ "created_at": "2026-10-20T20:18:13+00:00",
+ "domain": "forced displacement - corridor-level asylum-application surge prediction (international organisation publisher)",
+ "prediction_question": "For an asylum corridor (country of origin O, country of asylum H) whose total government-procedure asylum applications in year D are at least 500 (persons, all application types summed), will that corridor's total government-procedure asylum applications in year D+1 be at least twice the year-D value? Annual grain, measured 2000-2025; a useful prediction enables humanitarian reception planning and resettlement budgeting ahead of the surge year rather than after it.",
+ "prediction_time": "Annual publication-lag NOWCAST - the accepted abs-visitor-arrivals-direction pattern, and it must not be described as a future-event forecast. The prediction instant is the publication of year-D complete annual data on the machine-fetchable channel: UNHCR's annual statistical cycle lands mid-year in D+1 (Global Trends), and the HDX distribution of this dataset was observed refreshing on 2025-11-05, 2026-02-25, 2026-06-11, 2026-06-19, 2026-06-22 and 2026-08-20, with the 2026-08-20 resource carrying complete data through 2025. At that instant every feature is a corridor-year total for years <= D. The target year D+1 has PARTIALLY ELAPSED at the instant (the 2026-08-20 instant lies inside target year 2026, which started 2026-01-01) but its value is entirely UNPUBLISHED: on this channel no D+1 value exists until ~mid-D+2, and for most non-EU hosts no public monthly corridor data exists at all (Eurostat monthly data covers EU hosts only and is outside this channel's shipped features). So the claim recorded here is value-unavailability at the instant, not that the target window follows the instant. A strictly-future variant (at the same instant, predict year D+2 >= 2x the last PUBLISHED year D) was considered and rejected at discovery: the doubling baseline must be published at the instant, so a strict future window forces a two-year-back comparison, a different label and different measured base rates - a different task. The HDX archive is revised in place (current-vintage), so construction pins the fetched snapshot by sha256 and states values as construction-time vintage - the same documented posture as abs-visitor-arrivals-direction. Dated example in notes.md.",
+ "target_definition": "Binary exceedance: label 1 iff the corridor-year (D+1, O, H) government-procedure persons total (sum of all application-type rows; a missing corridor row with the host still reporting counted as 0 applications) is >= 2 x the corridor-year (D, O, H) total. Label source: the same 'Number of Applications' column of the HDX CSV at year D+1; the year-D+1 value and everything derived from it are excluded from shipped features. Censoring: corridors whose host reports no G/P rows at all in D+1 (33 of 7,622 eligible rows, 0.43%) are excluded as unobserved targets, not counted as 0. Note what the target does NOT measure: temporary-protection registrations (e.g. Ukrainians in the EU from 2022) are not asylum applications and do not enter this stream.",
+ "sources": [
+  {
+   "name": "UNHCR Refugee Data Finder (RDF) - the publisher's current statistics channel, replacing the retired popstats.unhcr.org",
+   "url": "https://www.unhcr.org/refugee-statistics/",
+   "api": "none documented: the RDF is an interactive Symfony UX application; bulk exports are produced by the app's own Download control (form POST of the current filters); the homepage links five deep-link exports at opaque hashed URLs (e.g. https://www.unhcr.org/refugee-statistics/download/?v2url=dc36b6 'Refugees, asylum-seekers and other people in need of international protection by country of origin'); the app's data_finder controller JS contains no public API route (measured)",
+   "license": "CC BY 4.0 for the datasets, per the methodology page's 'Data terms and conditions of usage' (see license_evidence); the site-wide website terms are more restrictive for website Content but the dataset licence is the specific grant",
+   "access": "measured 2026-10-20: https://www.unhcr.org/refugee-statistics/ -> HTTP 403 to curl (182,520-byte challenge page); loads only in a real browser. An in-page same-origin fetch() of the deep-link export URL also returns 403 (222,964 bytes) - the WAF distinguishes XHR from navigation. Real navigation to the deep link opens the interactive Data Finder app, not a file. The Download control is JS-driven (dialog form POST); an attempted click produced no file in the browser download dir during this session. Old channels are dead: popstats.unhcr.org -> HTTP 000; data.unhcr.org/en/index -> HTTP 404"
   },
-  "jobs": [
-    {
-      "id": "unhcr-001",
-      "date": "2026-10-27",
-      "outcome": "succeeded (worker 172873699, container run 16.2 s, exit 0): construct -> qualify (gate 1.5.0, ok, 45 checks, no failed checks) -> --accept exact bytes ('ACCEPTED: /output/extract matches the qualified artifact 6fa7becdf32925b7') -> post-acceptance simple references (eval-only; holdout sealed). Fetched panel sha256 identical to the discovery pin d5808616c3d10d33925d4df5a3182a2028dd574d111e843cc207455ba45fe950 (8,669,567 bytes). All four known-event fixtures asserted in-build, including UKR->POL below-eligibility. Worker deleted after verified collection (Hetzner read-back 404); reports preserved under .factory/unhcr-001/reports/; staging release 425843785 tag job-unhcr-001. Local full dry run on the coordinator-class machine produced byte-identical split CSVs and meta.json (train c7ebd552f1158bd5..., eval 4b7f06c3afd9eec2..., holdout 54decaaaf74eac1e...); only quality.json differs (fetch mode, built_at)."
-    }
-  ],
-  "artifacts": [
-    {
-      "artifact_version": "6fa7becdf32925b74522c81001dcfe802b6a389425fd6deb4af4fc25ba7f1f53",
-      "digest_of": "sha256 over train/eval/holdout CSVs + meta.json + quality.json (gate 1.5.0 artifact_version)",
-      "gate_version": "1.5.0",
-      "accepted": "exact-byte --accept on the worker: 'ACCEPTED: /output/extract matches the qualified artifact 6fa7becdf32925b7'",
-      "job": "unhcr-001",
-      "source_snapshot": {
-        "url": "https://data.humdata.org/dataset/74cdbe77-0a0b-441b-9535-bacc263be2a8/resource/295cd9e4-8464-43ee-ad17-47196991a1f7/download/asylum_applications_residing_world.csv",
-        "sha256": "d5808616c3d10d33925d4df5a3182a2028dd574d111e843cc207455ba45fe950",
-        "bytes": 8669567,
-        "matches_discovery_pin": true
-      },
-      "splits": {
-        "train": {
-          "rows": 3363,
-          "positives": 283,
-          "distinct_positive_clusters": 183
-        },
-        "eval": {
-          "rows": 1887,
-          "positives": 165,
-          "distinct_positive_clusters": 109
-        },
-        "holdout": {
-          "rows": 1962,
-          "positives": 227,
-          "distinct_positive_clusters": 133
-        }
-      },
-      "split_windows_label_years": {
-        "train": "2001-2016 (rows land 2002-2016)",
-        "eval": "2017-2021",
-        "holdout": "2022-2025"
-      },
-      "exclusions_counted": {
-        "missing_history_no_published_prior_year": 377,
-        "unobserved_target_host_files_no_gp_report_d1": 33,
-        "unobserved_target_label_year_beyond_vintage": 496,
-        "note": "preflight measured 386 eligible corridor-years lacking a published year-D-1 value across all splits (5.0%); 9 of them were already censored as host-silent first, so the build's missing_history bucket counts 377"
-      },
-      "cross_row_probe": {
-        "name": "next_label_year_exposes_outcome",
-        "kind": "copy of surged_recently from the same corridor 12 months later",
-        "gate_executed": {
-          "train": {
-            "rows": 3363,
-            "covered": 2439,
-            "mismatches": 0
-          },
-          "eval": {
-            "rows": 1887,
-            "covered": 1265,
-            "mismatches": 0
-          },
-          "holdout": {
-            "rows": 1962,
-            "covered": 1239,
-            "mismatches": 0
-          }
-        },
-        "consequence": "cross-row outcome exposure is measured and recorded; access=isolated_rows with restricted-protocol retrospective-research posture, no historical forecasting claim"
-      },
-      "references_post_acceptance_eval_only": {
-        "rows": 1887,
-        "positives": 165,
-        "train_positive_rate": 0.084151,
-        "persistence_momentum_auc": 0.574165,
-        "persistence_surge_flag_auc": 0.585619,
-        "calendar_identity_auc": 0.540927,
-        "recent_rate_brier": 0.083273,
-        "global_rate_brier": 0.079805,
-        "comparisons": {
-          "momentum_vs_calendar_identity": {
-            "diff": 0.033238,
-            "ci95": [
-              -0.033548,
-              0.106532
-            ]
-          },
-          "surge_flag_vs_calendar_identity": {
-            "diff": 0.044693,
-            "ci95": [
-              -0.01072,
-              0.105755
-            ]
-          }
-        },
-        "per_label_year_note": "2020 inverts momentum (AUC 0.116, 6 positives - pandemic-year applications collapsed); 2017 momentum 0.745; differences vs calendar identity are inconclusive at 95% (intervals contain zero)",
-        "note": "simple references only; the full-model member of the triad is the harness runner baseline job, not yet run; no performance figure was computed before acceptance"
-      },
-      "recorded_at": "2026-10-27T18:51:56Z"
-    }
-  ],
-  "rejection_reason": null,
-  "review": "Five contracts reconciled 2026-10-23 on written evidence: (1) Redistribution SUPPORTED - publisher's own instruments (HDX package record CC BY 3.0 IGO with grant and Section 4 quoted; RDF methodology CC BY 4.0), class A, conditions carried to LICENSE.md. (2) Timing SUPPORTED with documented current-vintage assumption - annual instant = first refresh carrying year-D data (observed cadence; 2026-08-20 file carries data through 2025); the task is an explicitly-labelled publication-lag NOWCAST (abs-visitor-arrivals-direction precedent): the target value is unpublished and unavailable on the channel at the instant, while the target year itself has partially elapsed - no 'window follows the instant' claim is made; the archive is revised in place, so values are construction-time vintage, sha256-pinned, the same accepted posture as abs-visitor-arrivals-direction; a future standing vintage collector is NOT needed for the annual task but would strengthen the as-of claim if ever added. (3) Target SUPPORTED - label from the same source column at D+1, excluded from features; observed absence (missing row, active host) = 0; host-silent rows (0.43%) excluded as censored. (4) Split capacity SUPPORTED - disjoint windows with both classes in every label-year, counts and clustered (origin, label-year) counts computed from the source. (5) Not a mirror SUPPORTED - no ML-ready corridor-grain UNHCR benchmark with fixed temporal splits and a scored contract found; prior art is origin-level or EU-bilateral monthly forecasting papers and raw-panel repackages. LIMITATION recorded: the machine-fetchable extract is annual; the RDF's monthly grain stays browser-only behind the WAF, so no monthly variant is buildable from this path. The old park reason (no machine-fetchable bulk path) is resolved by the HDX global package; the correction of the 2026-10-20 search miss is recorded in both sources[1].access and measurements.",
-  "next_action": "Runner-contract baseline job unhcr-baseline-001 (the full-model member of the triad), launchable with no further design work: baseline/ directory already carries run.sh, materialize.py, report.py (paired model-vs-reference comparison on identical eval rows), the collected qualification.json (gate 1.5.0, artifact 6fa7becdf32925b74522c81001dcfe802b6a389425fd6deb4af4fc25ba7f1f53), references.json and summary.json. Remaining mechanical steps: write baseline/job.json with the fetch block pinning staging release 425843785 asset ids/sha256s from .factory/unhcr-001/reports/manifest.json (meta.json 595aab31c00772d9, holdout.csv 54decaaaf74eac1e, eval.csv 4b7f06c3afd9eec2, train.csv c7ebd552f1158bd5, quality.json e7517f8fbee8f15a) and baseline/bundle.json mirroring ec-merger-baseline (bundle score.py + runner_files train.py/validate.py/validate.sh), then assemble-job -> worker plan -> launch -> wait-job -> record. After the baseline: interpret model-vs-momentum with per-label-year breakdown (2020 inversion documented), then package per dataset-release. The construction session measured NO full-model figure; nothing may quote one until the baseline job lands.",
-  "jurisdiction": {
-    "country": "CH",
-    "region": "International organisations",
-    "publisher": "United Nations High Commissioner for Refugees (UNHCR), headquartered in Geneva, Switzerland",
-    "convention": "The publisher's HQ country is recorded because 'international' is not a country; UNHCR is a UN programme headquartered in Geneva, Switzerland.",
-    "recorded_at": "2026-10-20"
+  {
+   "name": "HDX (OCHA Centre for Humanitarian Data) - UNHCR organisation catalog",
+   "url": "https://data.humdata.org/api/3/action/package_search?q=unhcr+population&rows=5",
+   "api": "anonymous CKAN v3 API; used to check whether the RDF population series is mirrored with a stable resource URL",
+   "license": "UNHCR datasets on HDX carry licence metadata 'Creative Commons Attribution International (CC BY)' / 'CC BY-IGO' (e.g. unhcr-statistical-yearbooks, unhcr-situations)",
+   "access": "measured 2026-10-20: CKAN API HTTP 200 (84,789 B for 8 results). The full origin-year population series is NOT mirrored on HDX - only per-country extracts (afg/bgd 'forcibly displaced population by origin', updated 2026-08-17) and reference/geodata layers. So the HDX path does not unblock the full series. CORRECTION 2026-10-23: the 2026-10-20 search-visibility conclusion was wrong - the full global series IS distributed on HDX by the UNHCR organisation account as package 'unhcr-population-data-for-world' (metadata_created 2020-08-27), in five per-phenomenon CSVs (end-year population, demographics, asylum applications, asylum decisions, solutions). The ranked full-text search results showed per-country extracts first and the global package was missed."
   },
-  "licence_class": "A",
-  "licence_note": "CC BY 3.0 IGO (HDX dataset record) for the machine-fetchable distribution; CC BY 4.0 (RDF methodology page) for the same statistics via the publisher's interactive channel. Class A: attribution-only open licence permitting redistribution and derivatives. Conditions carried through unchanged to LICENSE.md: attribution, no implied UNHCR endorsement/sponsorship, label the dataset as derived (never an official UNHCR product), no derogatory modification, no added restrictions on the source data.",
-  "novelty_check": {
-    "checked_at": "2026-10-23T20:20:51+00:00",
-    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
-    "queries": [
-      "asylum applications prediction benchmark",
-      "refugee flow forecasting dataset",
-      "bilateral asylum seeker flows machine learning",
-      "UNHCR corridor dataset huggingface"
-    ],
-    "evidence": {
-      "huggingface_datasets": [
-        {
-          "query": "asylum applications prediction benchmark",
-          "hits": 0,
-          "top": []
-        },
-        {
-          "query": "refugee flow forecasting dataset",
-          "hits": 0,
-          "top": []
-        },
-        {
-          "query": "bilateral asylum seeker flows machine learning",
-          "hits": 0,
-          "top": []
-        },
-        {
-          "query": "UNHCR corridor dataset huggingface",
-          "hits": 0,
-          "top": []
-        }
-      ],
-      "zenodo_records": [
-        {
-          "query": "asylum applications prediction benchmark",
-          "hits": 288046,
-          "top": [
-            "Drought Risk Profile for Karamoja Cross-Border Area: Strengthening Capacity of IGAD to Increase Drought Resilience in the Horn of Africa",
-            "CONFER Second Policy Brief",
-            "Safeguarding Lives, Livelihoods, and Infrastructure through Enhanced Flood Early Warning",
-            "Report on the Climate Services Developed and the Steps Taken in their Co-Development",
-            "Report on Enhancing the Usability of ICPAC Products and Feedback Channels in the Eastern Africa Region"
-          ]
-        },
-        {
-          "query": "refugee flow forecasting dataset",
-          "hits": 406474,
-          "top": [
-            "Data to support the publication \"Unknown risk: assessing refugee camp flood risk in Ethiopia\"",
-            "Machine Learning Models for Vessel Traffic Flow Forecasting: An Experimental Comparison",
-            "Wikidata Refugee Camps Dataset (WRCD): A Curated Linked Open Dataset of Global Refugee Camps",
-            "FLODCAST: Flow and depth forecasting via multimodal recurrent architectures",
-            "Data from: A refugee camp in the center of Europe: clinical characteristics of asylum seekers arriving in brussels"
-          ]
-        },
-        {
-          "query": "bilateral asylum seeker flows machine learning",
-          "hits": 355738,
-          "top": [
-            "Politica în materie de azil în Uniunea Europeană şi Australia: repere comparative",
-            "The Legal Configuration of Refugees and Asylum Seekers in East Africa: A Comparative Analysis in Kenya 2003",
-            "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
-            "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI",
-            "RGB and RGNIR Plastic Waste Database"
-          ]
-        },
-        {
-          "query": "UNHCR corridor dataset huggingface",
-          "hits": 312608,
-          "top": [
-            "unhcrwash: WASH Data From Refugee Camps and Settlements (UNHCR)",
-            "GUÍA PRÁCTICA DE DIVORCIO INTERNACIONAL Y SU RECONOCIMIENTO EN ESPAÑA",
-            "GUÍA PRÁCTICA DE DIVORCIO INTERNACIONAL Y SU RECONOCIMIENTO EN ESPAÑA",
-            "GUÍA PRÁCTICA DE DIVORCIO INTERNACIONAL Y SU RECONOCIMIENTO EN ESPAÑA",
-            "Disparities in the Issuance of Refugee Cards by the UNHCR in Indonesia: Vulnerability and Risk Mitigation"
-          ]
-        }
-      ],
-      "arxiv_preprints": [
-        {
-          "query": "asylum applications prediction benchmark",
-          "hits": 5,
-          "top": [
-            "The Statistical and Econometric Analysis of Asylum Application Trends and their relationship to GDP in the EEA",
-            "Distributional Forecasting of EU Asylum Applications with Dynamic Multivariate Count Models",
-            "An Impossible Asylum",
-            "QUEST: A Query and Extraction System for Topics in Asylum Law Application Decisions",
-            "Forecasting asylum-related migration flows with machine learning and data at scale"
-          ]
-        },
-        {
-          "query": "refugee flow forecasting dataset",
-          "hits": 5,
-          "top": [
-            "SDWPF: A Dataset for Spatial Dynamic Wind Power Forecasting Challenge at KDD Cup 2022",
-            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
-            "Forecasting intermittent time series with Gaussian Processes and Tweedie likelihood",
-            "Quantile Regression for Qualifying Match of GEFCom2017 Probabilistic Load Forecasting",
-            "Lasso estimation for GEFCom2014 probabilistic electric load forecasting"
-          ]
-        },
-        {
-          "query": "bilateral asylum seeker flows machine learning",
-          "hits": 5,
-          "top": [
-            "Changing Data Sources in the Age of Machine Learning for Official Statistics",
-            "DOME: Recommendations for supervised machine learning validation in biology",
-            "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
-            "Active learning for data streams: a survey",
-            "Physics-Inspired Interpretability Of Machine Learning Models"
-          ]
-        },
-        {
-          "query": "UNHCR corridor dataset huggingface",
-          "hits": 5,
-          "top": [
-            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
-            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
-            "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset",
-            "HuggingFace's Transformers: State-of-the-art Natural Language Processing",
-            "SDWPF: A Dataset for Spatial Dynamic Wind Power Forecasting Challenge at KDD Cup 2022"
-          ]
-        }
-      ]
-    },
-    "evidence_summary": "- huggingface_datasets / 'asylum applications prediction benchmark': 0 hit(s) - nothing notable\n- huggingface_datasets / 'refugee flow forecasting dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'bilateral asylum seeker flows machine learning': 0 hit(s) - nothing notable\n- huggingface_datasets / 'UNHCR corridor dataset huggingface': 0 hit(s) - nothing notable\n- zenodo_records / 'asylum applications prediction benchmark': 288046 hit(s) - Drought Risk Profile for Karamoja Cross-Border Area: Strengthening Capacity of IGAD to Increase Drought Resilience in the Horn of Africa, CONFER Second Policy Brief, Safeguarding Lives, Livelihoods, and Infrastructure through Enhanced Flood Early Warning, Report on the Climate Services Developed and the Steps Taken in their Co-Development, Report on Enhancing the Usability of ICPAC Products and Feedback Channels in the Eastern Africa Region\n- zenodo_records / 'refugee flow forecasting dataset': 406474 hit(s) - Data to support the publication \"Unknown risk: assessing refugee camp flood risk in Ethiopia\", Machine Learning Models for Vessel Traffic Flow Forecasting: An Experimental Comparison, Wikidata Refugee Camps Dataset (WRCD): A Curated Linked Open Dataset of Global Refugee Camps, FLODCAST: Flow and depth forecasting via multimodal recurrent architectures, Data from: A refugee camp in the center of Europe: clinical characteristics of asylum seekers arriving in brussels\n- zenodo_records / 'bilateral asylum seeker flows machine learning': 355738 hit(s) - Politica în materie de azil în Uniunea Europeană şi Australia: repere comparative, The Legal Configuration of Refugees and Asylum Seekers in East Africa: A Comparative Analysis in Kenya 2003, plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database\n- zenodo_records / 'UNHCR corridor dataset huggingface': 312608 hit(s) - unhcrwash: WASH Data From Refugee Camps and Settlements (UNHCR), GUÍA PRÁCTICA DE DIVORCIO INTERNACIONAL Y SU RECONOCIMIENTO EN ESPAÑA, GUÍA PRÁCTICA DE DIVORCIO INTERNACIONAL Y SU RECONOCIMIENTO EN ESPAÑA, GUÍA PRÁCTICA DE DIVORCIO INTERNACIONAL Y SU RECONOCIMIENTO EN ESPAÑA, Disparities in the Issuance of Refugee Cards by the UNHCR in Indonesia: Vulnerability and Risk Mitigation\n- arxiv_preprints / 'asylum applications prediction benchmark': 5 hit(s) - The Statistical and Econometric Analysis of Asylum Application Trends and their relationship to GDP in the EEA, Distributional Forecasting of EU Asylum Applications with Dynamic Multivariate Count Models, An Impossible Asylum, QUEST: A Query and Extraction System for Topics in Asylum Law Application Decisions, Forecasting asylum-related migration flows with machine learning and data at scale\n- arxiv_preprints / 'refugee flow forecasting dataset': 5 hit(s) - SDWPF: A Dataset for Spatial Dynamic Wind Power Forecasting Challenge at KDD Cup 2022, The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, Forecasting intermittent time series with Gaussian Processes and Tweedie likelihood, Quantile Regression for Qualifying Match of GEFCom2017 Probabilistic Load Forecasting, Lasso estimation for GEFCom2014 probabilistic electric load forecasting\n- arxiv_preprints / 'bilateral asylum seeker flows machine learning': 5 hit(s) - Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Active learning for data streams: a survey, Physics-Inspired Interpretability Of Machine Learning Models\n- arxiv_preprints / 'UNHCR corridor dataset huggingface': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, HuggingFace's Transformers: State-of-the-art Natural Language Processing, SDWPF: A Dataset for Spatial Dynamic Wind Power Forecasting Challenge at KDD Cup 2022",
-    "prior_art": [
-      "arXiv:2505.06249 An Early Warning Model for Forced Displacement (2025)",
-      "arXiv:2405.06857 Bayesian Projection of Extant Refugee and Asylum Seeker Populations (2024)",
-      "Journal of Economic Geography 25(1):3 (2025) Forecasting bilateral asylum seeker flows",
-      "JRC122178 EU asylum application forecasting system"
-    ],
-    "theirs": "forecasting papers exist on adjacent grains: origin-country monthly early-warning classification (arXiv:2505.06249, 2020-2024 window, UNHCR nowcast inputs), Bayesian origin-stock projections (arXiv:2405.06857), EU-bilateral monthly Eurostat flow forecasting with RF/XGB (J. Econ. Geography 2025), JRC EU 4-week nowcasting system, Cambridge Data&Policy 2024 Italy case study; UNHCR and third parties distribute the raw panels (HDX; HF 'africa-unhcr-population-data-for-*' cc-by-igo repackages) but no prediction task, splits or scored contract",
-    "ours": "corridor-grain (origin x host) annual doubling-exceedance task on UNHCR government-procedure asylum applications, global hosts, 26-year history (2000-2025), fixed disjoint temporal splits with measured counts (eval 1,918 rows/166 positives/109 origin-year clusters; holdout 1,994/234/135), documented eligibility and censoring rules, publisher-total cross-checked panel construction, scored binary contract on redistribution-clean CC BY 3.0 IGO data - no published benchmark or ML-ready dataset with splits exists for this task",
-    "verdict": "differentiated",
-    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
-  },
-  "qualification": {
-    "qualified_at": "2026-10-27T18:44:04Z (the worker collect/verify time recorded in the staging manifest; acceptance and gate reports were written seconds earlier in the 16.2 s container run)",
-    "gate_version": "1.5.0",
-    "job": "unhcr-001",
-    "result": "passed; 0 failed checks of 45 on the full artifact on the worker (leakage incl. declared high-cardinality row_id/surge_cluster, timing publication instant with measured 232-day lag, evaluation_contract retrospective_research/isolated_rows with training_label_timing unverified, current_snapshot vintage, cross-row probe executed on all splits with 0 mismatches, splits disjoint and both-classed, runner layout/meta agreement)",
-    "accepted": "exact-byte --accept on the worker against artifact_version 6fa7becdf32925b74522c81001dcfe802b6a389425fd6deb4af4fc25ba7f1f53",
-    "report": ".factory/unhcr-001/reports/file-0007-part-0000 (qualification-unhcr-refugee-data-finder.json)",
-    "acceptance_report": ".factory/unhcr-001/reports/file-0000-part-0000",
-    "references_report": ".factory/unhcr-001/reports/file-0009-part-0000 (post-acceptance, eval-only)"
+  {
+   "name": "HDX (OCHA Centre for Humanitarian Data) - UNHCR global package 'Data on forcibly displaced populations and stateless persons (Global)', asylum-applications resource (the machine-fetchable bulk path that reopens this lead)",
+   "url": "https://data.humdata.org/dataset/unhcr-population-data-for-world",
+   "api": "anonymous CKAN v3 (package_show) plus five stable resource CSV download URLs; asylum applications: https://data.humdata.org/dataset/74cdbe77-0a0b-441b-9535-bacc263be2a8/resource/295cd9e4-8464-43ee-ad17-47196991a1f7/download/asylum_applications_residing_world.csv (HTTP 302 to a signed download; curl -L needed). Measured 2026-10-23 from the coordinator: HTTP 200, 8,669,567 bytes, 2.06 s, sha256 d5808616c3d10d33925d4df5a3182a2028dd574d111e843cc207455ba45fe950, identical across two fetches. Sibling resources measured in the package record: decisions 8,833,586 B, end-year population 7,281,295 B, demographics 29,504,789 B, solutions 1,016,821 B.",
+   "license": "CC BY 3.0 IGO, from the dataset record's machine-readable licence metadata (license_id 'cc-by-igo'); grant and restrictions quoted in license_evidence",
+   "access": "Resource last modified 2026-08-20T15:33:49Z, carrying data through 2025 (the applications file's maximum Year is 2025). 120,597 data rows; 13 columns; no month column - annual corridor grain only in this extract (the RDF's monthly grain remains browser-only behind the WAF)."
   }
+ ],
+ "license_evidence": [
+  {
+   "note": "RDF methodology page, read 2026-10-20 in a real browser (curl is WAF-blocked): 'Data terms and conditions of usage - Creative Commons Attribution 4.0 International Public License. Except where otherwise indicated, the datasets made available by UNHCR on UNHCR Refugee Population Statistics Database are licensed under the Creative Commons Attribution 4.0 International Public License.' followed by 'Please refer to the Terms of Use for Datasets'.",
+   "url": "https://www.unhcr.org/refugee-statistics/methodology"
+  },
+  {
+   "note": "Site-wide website terms (read 2026-10-20, same browser session): 'Extracts of the information on this website may be reviewed, reproduced or translated for research or private study but not for sale or for use in conjunction with commercial purposes. Any use of Content from the UNHCR website shall be accompanied by an acknowledgment of the source... Any use other than for personal or educational purposes, including reproduction, scraping by artificial intelligence (AI), or translation of substantial portions of the Content of the UNHCR website, requires the express prior written permission of UNHCR.' Recorded as the website-Content default; the dataset-specific CC BY 4.0 grant above is the operative licence for the statistics themselves, and this tension is flagged for the operator if this source is ever unparked.",
+   "url": "https://www.unhcr.org/contact-us/terms-and-conditions-use"
+  },
+  {
+   "note": "Legal code of the licence carried by the HDX dataset record, read 2026-10-23. Section 3 License Grant: 'the Licensor hereby grants You a worldwide, royalty-free, non-exclusive license... to Reproduce, Distribute and Publicly Perform the Work, to incorporate the Work into one or more Collections, and to Reproduce, Distribute and Publicly Perform the Work as incorporated in the Collections; and, to create, Reproduce, Distribute and Publicly Perform Adaptations, provided that You clearly label, demarcate or otherwise identify that changes were made to the original Work.' Redistribution and derivative works are expressly permitted; no share-alike, no non-commercial condition.",
+   "url": "https://creativecommons.org/licenses/by/3.0/igo/legalcode"
+  },
+  {
+   "note": "Same legal code, Section 4 conditions to carry into LICENSE.md verbatim: attribution ('keep intact all copyright notices for the Work and provide... any attributions that the Licensor indicates be associated with the Work'); no implied endorsement ('You may not implicitly or explicitly assert or imply any connection with, sponsorship or endorsement by the Licensor... without the separate, express prior written permission'); a moral-rights no-derogation clause; and no added restrictions or technological measures on the Work.",
+   "url": "https://creativecommons.org/licenses/by/3.0/igo/legalcode"
+  },
+  {
+   "note": "HDX package record read 2026-10-23 via anonymous CKAN package_show: license_id 'cc-by-igo', license_title 'Creative Commons Attribution for Intergovernmental Organisations (CC BY-IGO)'; organisation 'UNHCR - The UN Refugeal Agency'; dataset_source 'UNHCR'. The machine-fetchable distribution is the publisher's own channel under the publisher's own licence choice, not an aggregator relicence.",
+   "url": "https://data.humdata.org/api/3/action/package_show?id=unhcr-population-data-for-world"
+  },
+  {
+   "note": "Resolution of the tension flagged 2026-10-20 with unhcr.org site-wide terms: acquisition uses the documented HDX bulk resource (no scraping of unhcr.org); the RDF methodology page grants CC BY 4.0 on 'the datasets made available by UNHCR on UNHCR Refugee Population Statistics Database' and the HDX record carries CC BY 3.0 IGO for the same statistics. Both publisher instruments permit redistribution of derived rows; the restrictive website-Content terms govern website content. The flag stays visible here for the operator at review time.",
+   "url": "https://www.unhcr.org/refugee-statistics/methodology"
+  }
+ ],
+ "construction_script": "candidates/unhcr-refugee-data-finder/source/build.py",
+ "split_strategy": "Temporal split on corridor-year label windows (Government procedure, persons, sum of all application-type rows; eligibility: year-D corridor total >= 500 and host active in D+1). Candidate partition, counts computed from the source 2026-10-23: train label-years 2001-2016: n=3,677 rows, 302 positives (x2 prevalence 8.2%), 198 distinct (origin, label-year) positive clusters; eval label-years 2017-2021: n=1,918, 166 positives (8.7%), 109 clusters; holdout label-years 2022-2025: n=1,994, 234 positives (11.7%), 135 clusters. Both classes present in every label-year of every window (positives per label-year range 2-92). Surge origins differ across windows (train: SYR/AFG/IRQ; eval: VEN/AFG/COD; holdout: TUR/VEN/IND/AFG/CUB). Construction may adjust boundaries inside this measured envelope but must recompute and record counts on the frozen artifact; the prevalence drift (more surges later) is a property of the period, to document at construction.",
+ "measurements": {
+  "waf_probe_2026_10_20": "curl https://www.unhcr.org/refugee-statistics/ -> HTTP 403, 182,520 B (challenge page); the same URL loads normally in a real browser (title 'Refugee Data Finder - Key Indicators'). In-page same-origin fetch of the export deep link -> HTTP 403, 222,964 B. Both measured from the coordinator.",
+  "deep_links_2026_10_20": "The homepage's five export deep links (extracted from the rendered page): population by country of origin (?v2url=dc36b6), population by host country (?v2url=bd1059), demographics of refugees (?v2url=d3e49d), solutions 2015-2024 (?v2url=d63e73), new asylum applications during 2024 (?v2url=1e3087). Navigating a real tab to the origin deep link opens the interactive Data Finder app with that dataset preselected - the URL is a view selector, not a file.",
+  "app_internals_2026_10_20": "The app is a Symfony/UX live-component application (assets under /refugee-statistics/assets/, controllers incl. data_finder_controller-*.js, turbo/stimulus bundles); the data_finder controller submits a FormData via Turbo form POST; no JSON/CSV API route appears in the controller source or in the page's network resource entries. The Download control is an <a> with no href (JS-driven dialog form); a programmatic click produced no downloaded file in this session.",
+  "dead_channels_2026_10_20": "http://popstats.unhcr.org/en/overview -> HTTP 000 (host gone); https://data.unhcr.org/en/index -> HTTP 404. The pre-RDF population database channel no longer exists.",
+  "hdx_mirrors_2026_10_20": "HDX CKAN search 'unhcr population' -> 860 results, of which the full origin-year population series is absent; only per-country extracts (CC BY) and GIS reference layers. 'refugee data finder' search -> 3,427 results, none the full series. HDX does not unblock the bulk data.",
+  "recency_2026_10_20": "The RDF homepage reports 'Forcibly displaced people worldwide at end-2025: 117.8 million' with charts spanning 2000-2025, so the series is maintained to end-2025 (annual grain) - current and republished on a rolling schedule.",
+  "hdx_bulk_path_2026_10_23": "HDX package unhcr-population-data-for-world (created 2020-08-27, maintained by the UNHCR organisation account) carries the full global corridor panel in five CSVs. Applications resource: 1 GET (HTTP 302 -> signed URL, curl -L), 200 OK, 8,669,567 bytes, 2.06 s from the coordinator (1.9 GiB class); sha256 d5808616c3d10d33925d4df5a3182a2028dd574d111e843cc207455ba45fe950 identical across two fetches. This resolves the 2026-10-20 access blocker: the 2026-10-20 note 'HDX does not unblock the bulk data' was a search-visibility miss and is corrected here with the package URL.",
+  "panel_shape_measured_2026_10_23": "Applications CSV: 120,597 data rows, 13 columns, years 2000-2025 (26), 215 origin codes, 130 asylum-country codes. Columns: Year, Country of Origin Code/Name, Country of Asylum Code/Name, Procedure Type/Name, Application Type Code/Name, Application Data Type/Data, Application Average Persons Per Case (all zero), Number of Applications (all integer). No month column. Provenance mix (skill requirement): Procedure G=105,862 / U=13,955 / J=780 rows; Data Type P=113,635 / C=6,962. The task is defined on the G/P stream only (99,281 rows, 6,936 distinct corridors, 33.7M applications); the UNHCR-procedure stream (13,640 persons rows) is a separate RSD population, not summed in, and the task does not cover corridors served only by UNHCR procedure.",
+  "duplicate_rows_resolved_2026_10_23": "20,851 of 73,051 G/P corridor-year cells (28.5%) carry multiple rows with the same (Year, Origin, Asylum, Procedure, ApplicationType, DataType) key but different counts (e.g. 2000 AFG->DEU G/V/P: 5,380 vs 5,756; 2000 AFG->AUS G/V/C: 90 vs 1,326). Identical rows in all other columns; present in every year incl. 2025 (35 groups), and identical in the per-country extracts (verified on asylum_applications_residing_deu.csv). Resolution rule: SUM all G/P rows per corridor-year. Basis: cross-checks against the primary national publisher's own published host-year totals (BAMF, which is UNHCR's source for Germany) match the sum-all rule to within 0.005-0.09% in four different years, while the max-rule matches BAMF's first-application figure - i.e. the duplicate rows are disjoint components (first vs follow-up applications) exported under one type code, so summing reconstructs the total. See bamf_cross_check_2026_10_23.",
+  "bamf_cross_check_2026_10_23": "Sum-all G/P host-year totals vs BAMF's published totals (Erst- und Folgeantraege): DEU 2000: 117,600 vs 117,648 (-0.04%); DEU 2010: 48,544 vs 48,589 (-0.09%); DEU 2015: 476,630 vs 476,649 (-0.004%); DEU 2016: 745,510 vs 745,545 (-0.005%). The max-rule matches BAMF first applications for the same years (441,898 vs 441,899 in 2015), confirming the duplicates are first/follow-up pairs. BAMF figures from bamf.de Asylgeschaeftsstatistik / Bundesamt in Zahlen (searched and read 2026-10-23); UNHCR's Germany data is sourced from BAMF. This is the publisher-total cross-check for the panel construction rule.",
+  "label_family_measured_2026_10_23": "On eligible corridor-years (G/P sum-all >= 500 at D, host active in D+1; n=7,589 across 2000-2024): decline (D+1 < D) 57.3%; growth >25% 27.4%; growth >50% 18.5%; >=2x 9.3%; >=3x 4.2%. Chosen label: >=2x (doubling), a ~9% prevalence exceedance target in the house family of the other published exceedance tasks. Alternatives measured and recorded; construction must not re-tune the threshold after seeing scores.",
+  "split_window_counts_2026_10_23": "x2 label, computed from the source: train label-years 2001-2016 n=3,677 / 302 positives / 198 (origin, label-year) positive clusters; eval 2017-2021 n=1,918 / 166 / 109; holdout 2022-2025 n=1,994 / 234 / 135. Positives per label-year: train 2-53, eval 6-57, holdout 26-92; every label-year of every window carries both classes. For comparison, the parked annual origin-grain derivative (unicef-sdmx-refugee-origin-growth) carried only 34 positive origin-years in eval.",
+  "censoring_measured_2026_10_23": "Host-year activity: 67 hosts report in 2000 growing to ~110 in recent years; among 7,622 eligible corridor-years, 7,589 (99.57%) have an active host in D+1 (missing corridor row = observed zero) and 33 (0.43%) have a host reporting nothing at all in D+1 (unobserved target; excluded). Absence of a row is treated as zero applications only when the host is still reporting.",
+  "reporting_model_mix_2026_10_23": "Two reporting models inside the G/P stream: split-type codes (N/R/A/J/...) vs unsplit 'V' rows. Measured on eligible corridor-years: train window 1,238 V-model / 2,439 split-model; eval 1,918/0 V-model; holdout 1,994/0 V-model. The eval and holdout windows are 100% split-model; V-model ambiguity therefore touches only training-era rows, and the sum-all rule is cross-checked against BAMF in exactly that era. Type coexistence measured: V never coexists with N/R/A in the same corridor-year (0 of 73,051), so V is an unsplit total, not an additive category; N-with-NR/RA/SP coexistence is rare (646 cells differ between sum-all and a V/NR-preferring rule; 196 eligible).",
+  "update_cadence_observed_2026_10_23": "HDX package activity (CKAN package_activity_list, 60 entries read 2026-10-23): resource/dataset updates on 2025-11-05, 2026-02-25, 2026-06-11, 2026-06-19, 2026-06-22, 2026-08-20 - a several-times-a-year refresh pattern aligned with UNHCR's annual statistical cycle (Global Trends lands ~June of D+1). The 2026-08-20 applications resource carries complete data through 2025, so year-D data is machine-observable at latest ~August of D+1; the conservative instant is the first observed mid-year-or-later refresh carrying year D.",
+  "known_event_fixtures_2026_10_23": "Reproduced by candidates/unhcr-refugee-data-finder/probe_hdx_asylum_fixture.py (exit 0): SYR->DEU 2014->2015 41,100 -> 162,510 x2 label TRUE (2015 Syrian surge into Germany); AFG->USA 2021->2022 533 -> 25,082 TRUE (post-Aug-2021 Taliban takeover, Afghan asylum filings in the US); AFG->DEU 2021->2022 37,245 -> 48,602 FALSE (large growth, sub-doubling). Anti-fixture recorded: UKR->POL 2021->2022 458 -> 1,593 is below the 500 eligibility at D, and Ukrainians in the EU mostly registered temporary protection rather than asylum applications - the target does not measure temporary-protection registrations.",
+  "baseline_triad_2026_10_27": {
+   "source": "worker job unhcr-baseline-001 (baseline_result.json), post-acceptance, eval-only, holdout sealed",
+   "rows": 1887,
+   "positives": 165,
+   "full_model_stock_xgboost": {
+    "eval_auc": 0.5393,
+    "brier": 0.085099
+   },
+   "persistence_momentum_log_growth_d": {
+    "eval_auc": 0.574165
+   },
+   "persistence_surge_flag": {
+    "eval_auc": 0.585619
+   },
+   "calendar_identity": {
+    "eval_auc": 0.540927
+   },
+   "recent_rate_constant": {
+    "eval_auc": 0.5,
+    "note": "constant score, no ranking information; degenerate control"
+   },
+   "majority_class_accuracy_this_split": 0.91256,
+   "paired_differences_full_model_vs": {
+    "persistence_momentum": {
+     "diff": -0.034815,
+     "ci95": [
+      -0.105633,
+      0.04085
+     ]
+    },
+    "persistence_surge_flag": {
+     "diff": -0.046269,
+     "ci95": [
+      -0.110322,
+      0.014362
+     ]
+    },
+    "calendar_identity": {
+     "diff": -0.001577,
+     "ci95": [
+      -0.059444,
+      0.058719
+     ]
+    },
+    "recent_rate": {
+     "diff": 0.03935,
+     "ci95": [
+      -0.004657,
+      0.085904
+     ]
+    }
+   },
+   "per_label_year": {
+    "2017": {
+     "rows": 361,
+     "positives": 27,
+     "model": 0.3938,
+     "momentum": 0.7451
+    },
+    "2018": {
+     "rows": 386,
+     "positives": 41,
+     "model": 0.5479,
+     "momentum": 0.6568
+    },
+    "2019": {
+     "rows": 423,
+     "positives": 34,
+     "model": 0.5635,
+     "momentum": 0.6272
+    },
+    "2020": {
+     "rows": 414,
+     "positives": 6,
+     "model": 0.8417,
+     "momentum": 0.1164
+    },
+    "2021": {
+     "rows": 303,
+     "positives": 57,
+     "model": 0.6127,
+     "momentum": 0.5684
+    }
+   },
+   "finding": "no demonstrated headroom over persistence under this protocol: the stock model 0.5393 trails momentum 0.5742 and the surge flag 0.5856 on identical rows; all paired intervals contain zero (inconclusive differences, observed gaps negative). Recorded beside every model figure; one weak stock model does not establish that no solver can beat persistence, and no claim is made in either direction. 2020 (6 positives) inverts momentum; 2017-2019 belong to it."
+  }
+ },
+ "jobs": [
+  {
+   "id": "unhcr-001",
+   "date": "2026-10-27",
+   "outcome": "succeeded (worker 172873699, container run 16.2 s, exit 0): construct -> qualify (gate 1.5.0, ok, 45 checks, no failed checks) -> --accept exact bytes ('ACCEPTED: /output/extract matches the qualified artifact 6fa7becdf32925b7') -> post-acceptance simple references (eval-only; holdout sealed). Fetched panel sha256 identical to the discovery pin d5808616c3d10d33925d4df5a3182a2028dd574d111e843cc207455ba45fe950 (8,669,567 bytes). All four known-event fixtures asserted in-build, including UKR->POL below-eligibility. Worker deleted after verified collection (Hetzner read-back 404); reports preserved under .factory/unhcr-001/reports/; staging release 425843785 tag job-unhcr-001. Local full dry run on the coordinator-class machine produced byte-identical split CSVs and meta.json (train c7ebd552f1158bd5..., eval 4b7f06c3afd9eec2..., holdout 54decaaaf74eac1e...); only quality.json differs (fetch mode, built_at)."
+  },
+  {
+   "id": "unhcr-baseline-001",
+   "what": "runner-contract baseline on the accepted unhcr-001 artifact (6fa7becdf32925b74522c81001dcfe802b6a389425fd6deb4af4fc25ba7f1f53), fetched from staging release 425843785 (not rebuilt): gate --accept on the fetched bytes, benchmark train.py + validate.sh verbatim (runner_files verbatim: true), paired model-vs-reference comparison on the identical 1887 eval rows",
+   "server": 172877033,
+   "server_type": "cx23",
+   "elapsed_seconds": 49.8,
+   "exit_code": 0,
+   "staging_release": 425870998,
+   "destroyed": "provider read-back 404 at 2026-10-27T19:23:06Z",
+   "result": "CONTRACT OK; train.py and validate.py both print Eval AUC 0.5393; predict_proba recompute 0.53935, Brier 0.085099; references recomputed on the same rows agree with the construction run to 6 dp (the job's 1e-9 agreement flag reads false only because references.json stores 6-dp rounded values)"
+  }
+ ],
+ "artifacts": [
+  {
+   "artifact_version": "6fa7becdf32925b74522c81001dcfe802b6a389425fd6deb4af4fc25ba7f1f53",
+   "digest_of": "sha256 over train/eval/holdout CSVs + meta.json + quality.json (gate 1.5.0 artifact_version)",
+   "repo": "earino/dataset-factory-staging",
+   "tag": "job-unhcr-001",
+   "package_repo_pending": "earino/unhcr-refugee-data-finder (private staging not yet run; see next_action)",
+   "gate_version": "1.5.0",
+   "accepted": "exact-byte --accept on the worker: 'ACCEPTED: /output/extract matches the qualified artifact 6fa7becdf32925b7'",
+   "job": "unhcr-001",
+   "source_snapshot": {
+    "url": "https://data.humdata.org/dataset/74cdbe77-0a0b-441b-9535-bacc263be2a8/resource/295cd9e4-8464-43ee-ad17-47196991a1f7/download/asylum_applications_residing_world.csv",
+    "sha256": "d5808616c3d10d33925d4df5a3182a2028dd574d111e843cc207455ba45fe950",
+    "bytes": 8669567,
+    "matches_discovery_pin": true
+   },
+   "splits": {
+    "train": {
+     "rows": 3363,
+     "positives": 283,
+     "distinct_positive_clusters": 183
+    },
+    "eval": {
+     "rows": 1887,
+     "positives": 165,
+     "distinct_positive_clusters": 109
+    },
+    "holdout": {
+     "rows": 1962,
+     "positives": 227,
+     "distinct_positive_clusters": 133
+    }
+   },
+   "split_windows_label_years": {
+    "train": "2001-2016 (rows land 2002-2016)",
+    "eval": "2017-2021",
+    "holdout": "2022-2025"
+   },
+   "exclusions_counted": {
+    "missing_history_no_published_prior_year": 377,
+    "unobserved_target_host_files_no_gp_report_d1": 33,
+    "unobserved_target_label_year_beyond_vintage": 496,
+    "note": "preflight measured 386 eligible corridor-years lacking a published year-D-1 value across all splits (5.0%); 9 of them were already censored as host-silent first, so the build's missing_history bucket counts 377"
+   },
+   "cross_row_probe": {
+    "name": "next_label_year_exposes_outcome",
+    "kind": "copy of surged_recently from the same corridor 12 months later",
+    "gate_executed": {
+     "train": {
+      "rows": 3363,
+      "covered": 2439,
+      "mismatches": 0
+     },
+     "eval": {
+      "rows": 1887,
+      "covered": 1265,
+      "mismatches": 0
+     },
+     "holdout": {
+      "rows": 1962,
+      "covered": 1239,
+      "mismatches": 0
+     }
+    },
+    "consequence": "cross-row outcome exposure is measured and recorded; access=isolated_rows with restricted-protocol retrospective-research posture, no historical forecasting claim"
+   },
+   "references_post_acceptance_eval_only": {
+    "rows": 1887,
+    "positives": 165,
+    "train_positive_rate": 0.084151,
+    "persistence_momentum_auc": 0.574165,
+    "persistence_surge_flag_auc": 0.585619,
+    "calendar_identity_auc": 0.540927,
+    "recent_rate_brier": 0.083273,
+    "global_rate_brier": 0.079805,
+    "comparisons": {
+     "momentum_vs_calendar_identity": {
+      "diff": 0.033238,
+      "ci95": [
+       -0.033548,
+       0.106532
+      ]
+     },
+     "surge_flag_vs_calendar_identity": {
+      "diff": 0.044693,
+      "ci95": [
+       -0.01072,
+       0.105755
+      ]
+     }
+    },
+    "per_label_year_note": "2020 inverts momentum (AUC 0.116, 6 positives - pandemic-year applications collapsed); 2017 momentum 0.745; differences vs calendar identity are inconclusive at 95% (intervals contain zero)",
+    "note": "simple references only; the full-model member of the triad is the harness runner baseline job, not yet run; no performance figure was computed before acceptance"
+   },
+   "recorded_at": "2026-10-27T18:51:56Z"
+  }
+ ],
+ "rejection_reason": null,
+ "review": "Five contracts reconciled 2026-10-23 on written evidence: (1) Redistribution SUPPORTED - publisher's own instruments (HDX package record CC BY 3.0 IGO with grant and Section 4 quoted; RDF methodology CC BY 4.0), class A, conditions carried to LICENSE.md. (2) Timing SUPPORTED with documented current-vintage assumption - annual instant = first refresh carrying year-D data (observed cadence; 2026-08-20 file carries data through 2025); the task is an explicitly-labelled publication-lag NOWCAST (abs-visitor-arrivals-direction precedent): the target value is unpublished and unavailable on the channel at the instant, while the target year itself has partially elapsed - no 'window follows the instant' claim is made; the archive is revised in place, so values are construction-time vintage, sha256-pinned, the same accepted posture as abs-visitor-arrivals-direction; a future standing vintage collector is NOT needed for the annual task but would strengthen the as-of claim if ever added. (3) Target SUPPORTED - label from the same source column at D+1, excluded from features; observed absence (missing row, active host) = 0; host-silent rows (0.43%) excluded as censored. (4) Split capacity SUPPORTED - disjoint windows with both classes in every label-year, counts and clustered (origin, label-year) counts computed from the source. (5) Not a mirror SUPPORTED - no ML-ready corridor-grain UNHCR benchmark with fixed temporal splits and a scored contract found; prior art is origin-level or EU-bilateral monthly forecasting papers and raw-panel repackages. LIMITATION recorded: the machine-fetchable extract is annual; the RDF's monthly grain stays browser-only behind the WAF, so no monthly variant is buildable from this path. The old park reason (no machine-fetchable bulk path) is resolved by the HDX global package; the correction of the 2026-10-20 search miss is recorded in both sources[1].access and measurements.",
+ "next_action": "Private staging of release/unhcr-refugee-data-finder v2026.10 (both destinations), then the operator holds the flip. Mechanical steps, mirroring ec-merger-phase2-opening: (1) create private repo earino/unhcr-refugee-data-finder and commit the package documents at main (the package tree is complete and check-package-verified); (2) create draft release v2026.10 and launch the prepared transfer job candidates/unhcr-refugee-data-finder/publish/job.json (unhcr-publish-001: copies the five accepted unhcr-001 assets from staging release 425843785 into the repo release under flat asset names, digest-verified at both ends; bytes never pass through the coordinator); (3) publish the release non-draft, verify tag == main, run get_dataset.py end-to-end + gate --accept on the downloaded tree; (4) Hugging Face: small files from the coordinator (card generated from the manifest), then a worker hf_publish job for the five data files with the documented load_dataset check; (5) write DESTINATIONS.json per destination with verified file lists, re-run check-package.py, then set awaiting_operator: true. Baseline is complete and recorded; no further scoring is authorized before the flip decision.",
+ "jurisdiction": {
+  "country": "CH",
+  "region": "International organisations",
+  "publisher": "United Nations High Commissioner for Refugees (UNHCR), headquartered in Geneva, Switzerland",
+  "convention": "The publisher's HQ country is recorded because 'international' is not a country; UNHCR is a UN programme headquartered in Geneva, Switzerland.",
+  "recorded_at": "2026-10-20"
+ },
+ "licence_class": "A",
+ "licence_note": "CC BY 3.0 IGO (HDX dataset record) for the machine-fetchable distribution; CC BY 4.0 (RDF methodology page) for the same statistics via the publisher's interactive channel. Class A: attribution-only open licence permitting redistribution and derivatives. Conditions carried through unchanged to LICENSE.md: attribution, no implied UNHCR endorsement/sponsorship, label the dataset as derived (never an official UNHCR product), no derogatory modification, no added restrictions on the source data.",
+ "novelty_check": {
+  "checked_at": "2026-10-23T20:20:51+00:00",
+  "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+  "queries": [
+   "asylum applications prediction benchmark",
+   "refugee flow forecasting dataset",
+   "bilateral asylum seeker flows machine learning",
+   "UNHCR corridor dataset huggingface"
+  ],
+  "evidence": {
+   "huggingface_datasets": [
+    {
+     "query": "asylum applications prediction benchmark",
+     "hits": 0,
+     "top": []
+    },
+    {
+     "query": "refugee flow forecasting dataset",
+     "hits": 0,
+     "top": []
+    },
+    {
+     "query": "bilateral asylum seeker flows machine learning",
+     "hits": 0,
+     "top": []
+    },
+    {
+     "query": "UNHCR corridor dataset huggingface",
+     "hits": 0,
+     "top": []
+    }
+   ],
+   "zenodo_records": [
+    {
+     "query": "asylum applications prediction benchmark",
+     "hits": 288046,
+     "top": [
+      "Drought Risk Profile for Karamoja Cross-Border Area: Strengthening Capacity of IGAD to Increase Drought Resilience in the Horn of Africa",
+      "CONFER Second Policy Brief",
+      "Safeguarding Lives, Livelihoods, and Infrastructure through Enhanced Flood Early Warning",
+      "Report on the Climate Services Developed and the Steps Taken in their Co-Development",
+      "Report on Enhancing the Usability of ICPAC Products and Feedback Channels in the Eastern Africa Region"
+     ]
+    },
+    {
+     "query": "refugee flow forecasting dataset",
+     "hits": 406474,
+     "top": [
+      "Data to support the publication \"Unknown risk: assessing refugee camp flood risk in Ethiopia\"",
+      "Machine Learning Models for Vessel Traffic Flow Forecasting: An Experimental Comparison",
+      "Wikidata Refugee Camps Dataset (WRCD): A Curated Linked Open Dataset of Global Refugee Camps",
+      "FLODCAST: Flow and depth forecasting via multimodal recurrent architectures",
+      "Data from: A refugee camp in the center of Europe: clinical characteristics of asylum seekers arriving in brussels"
+     ]
+    },
+    {
+     "query": "bilateral asylum seeker flows machine learning",
+     "hits": 355738,
+     "top": [
+      "Politica \u00een materie de azil \u00een Uniunea European\u0103 \u015fi Australia: repere comparative",
+      "The Legal Configuration of Refugees and Asylum Seekers in East Africa: A Comparative Analysis in Kenya 2003",
+      "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
+      "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI",
+      "RGB and RGNIR Plastic Waste Database"
+     ]
+    },
+    {
+     "query": "UNHCR corridor dataset huggingface",
+     "hits": 312608,
+     "top": [
+      "unhcrwash: WASH Data From Refugee Camps and Settlements (UNHCR)",
+      "GU\u00cdA PR\u00c1CTICA DE DIVORCIO INTERNACIONAL Y SU RECONOCIMIENTO EN ESPA\u00d1A",
+      "GU\u00cdA PR\u00c1CTICA DE DIVORCIO INTERNACIONAL Y SU RECONOCIMIENTO EN ESPA\u00d1A",
+      "GU\u00cdA PR\u00c1CTICA DE DIVORCIO INTERNACIONAL Y SU RECONOCIMIENTO EN ESPA\u00d1A",
+      "Disparities in the Issuance of Refugee Cards by the UNHCR in Indonesia: Vulnerability and Risk Mitigation"
+     ]
+    }
+   ],
+   "arxiv_preprints": [
+    {
+     "query": "asylum applications prediction benchmark",
+     "hits": 5,
+     "top": [
+      "The Statistical and Econometric Analysis of Asylum Application Trends and their relationship to GDP in the EEA",
+      "Distributional Forecasting of EU Asylum Applications with Dynamic Multivariate Count Models",
+      "An Impossible Asylum",
+      "QUEST: A Query and Extraction System for Topics in Asylum Law Application Decisions",
+      "Forecasting asylum-related migration flows with machine learning and data at scale"
+     ]
+    },
+    {
+     "query": "refugee flow forecasting dataset",
+     "hits": 5,
+     "top": [
+      "SDWPF: A Dataset for Spatial Dynamic Wind Power Forecasting Challenge at KDD Cup 2022",
+      "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+      "Forecasting intermittent time series with Gaussian Processes and Tweedie likelihood",
+      "Quantile Regression for Qualifying Match of GEFCom2017 Probabilistic Load Forecasting",
+      "Lasso estimation for GEFCom2014 probabilistic electric load forecasting"
+     ]
+    },
+    {
+     "query": "bilateral asylum seeker flows machine learning",
+     "hits": 5,
+     "top": [
+      "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+      "DOME: Recommendations for supervised machine learning validation in biology",
+      "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
+      "Active learning for data streams: a survey",
+      "Physics-Inspired Interpretability Of Machine Learning Models"
+     ]
+    },
+    {
+     "query": "UNHCR corridor dataset huggingface",
+     "hits": 5,
+     "top": [
+      "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+      "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+      "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset",
+      "HuggingFace's Transformers: State-of-the-art Natural Language Processing",
+      "SDWPF: A Dataset for Spatial Dynamic Wind Power Forecasting Challenge at KDD Cup 2022"
+     ]
+    }
+   ]
+  },
+  "evidence_summary": "- huggingface_datasets / 'asylum applications prediction benchmark': 0 hit(s) - nothing notable\n- huggingface_datasets / 'refugee flow forecasting dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'bilateral asylum seeker flows machine learning': 0 hit(s) - nothing notable\n- huggingface_datasets / 'UNHCR corridor dataset huggingface': 0 hit(s) - nothing notable\n- zenodo_records / 'asylum applications prediction benchmark': 288046 hit(s) - Drought Risk Profile for Karamoja Cross-Border Area: Strengthening Capacity of IGAD to Increase Drought Resilience in the Horn of Africa, CONFER Second Policy Brief, Safeguarding Lives, Livelihoods, and Infrastructure through Enhanced Flood Early Warning, Report on the Climate Services Developed and the Steps Taken in their Co-Development, Report on Enhancing the Usability of ICPAC Products and Feedback Channels in the Eastern Africa Region\n- zenodo_records / 'refugee flow forecasting dataset': 406474 hit(s) - Data to support the publication \"Unknown risk: assessing refugee camp flood risk in Ethiopia\", Machine Learning Models for Vessel Traffic Flow Forecasting: An Experimental Comparison, Wikidata Refugee Camps Dataset (WRCD): A Curated Linked Open Dataset of Global Refugee Camps, FLODCAST: Flow and depth forecasting via multimodal recurrent architectures, Data from: A refugee camp in the center of Europe: clinical characteristics of asylum seekers arriving in brussels\n- zenodo_records / 'bilateral asylum seeker flows machine learning': 355738 hit(s) - Politica \u00een materie de azil \u00een Uniunea European\u0103 \u015fi Australia: repere comparative, The Legal Configuration of Refugees and Asylum Seekers in East Africa: A Comparative Analysis in Kenya 2003, plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database\n- zenodo_records / 'UNHCR corridor dataset huggingface': 312608 hit(s) - unhcrwash: WASH Data From Refugee Camps and Settlements (UNHCR), GU\u00cdA PR\u00c1CTICA DE DIVORCIO INTERNACIONAL Y SU RECONOCIMIENTO EN ESPA\u00d1A, GU\u00cdA PR\u00c1CTICA DE DIVORCIO INTERNACIONAL Y SU RECONOCIMIENTO EN ESPA\u00d1A, GU\u00cdA PR\u00c1CTICA DE DIVORCIO INTERNACIONAL Y SU RECONOCIMIENTO EN ESPA\u00d1A, Disparities in the Issuance of Refugee Cards by the UNHCR in Indonesia: Vulnerability and Risk Mitigation\n- arxiv_preprints / 'asylum applications prediction benchmark': 5 hit(s) - The Statistical and Econometric Analysis of Asylum Application Trends and their relationship to GDP in the EEA, Distributional Forecasting of EU Asylum Applications with Dynamic Multivariate Count Models, An Impossible Asylum, QUEST: A Query and Extraction System for Topics in Asylum Law Application Decisions, Forecasting asylum-related migration flows with machine learning and data at scale\n- arxiv_preprints / 'refugee flow forecasting dataset': 5 hit(s) - SDWPF: A Dataset for Spatial Dynamic Wind Power Forecasting Challenge at KDD Cup 2022, The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, Forecasting intermittent time series with Gaussian Processes and Tweedie likelihood, Quantile Regression for Qualifying Match of GEFCom2017 Probabilistic Load Forecasting, Lasso estimation for GEFCom2014 probabilistic electric load forecasting\n- arxiv_preprints / 'bilateral asylum seeker flows machine learning': 5 hit(s) - Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Active learning for data streams: a survey, Physics-Inspired Interpretability Of Machine Learning Models\n- arxiv_preprints / 'UNHCR corridor dataset huggingface': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, HuggingFace's Transformers: State-of-the-art Natural Language Processing, SDWPF: A Dataset for Spatial Dynamic Wind Power Forecasting Challenge at KDD Cup 2022",
+  "prior_art": [
+   "arXiv:2505.06249 An Early Warning Model for Forced Displacement (2025)",
+   "arXiv:2405.06857 Bayesian Projection of Extant Refugee and Asylum Seeker Populations (2024)",
+   "Journal of Economic Geography 25(1):3 (2025) Forecasting bilateral asylum seeker flows",
+   "JRC122178 EU asylum application forecasting system"
+  ],
+  "theirs": "forecasting papers exist on adjacent grains: origin-country monthly early-warning classification (arXiv:2505.06249, 2020-2024 window, UNHCR nowcast inputs), Bayesian origin-stock projections (arXiv:2405.06857), EU-bilateral monthly Eurostat flow forecasting with RF/XGB (J. Econ. Geography 2025), JRC EU 4-week nowcasting system, Cambridge Data&Policy 2024 Italy case study; UNHCR and third parties distribute the raw panels (HDX; HF 'africa-unhcr-population-data-for-*' cc-by-igo repackages) but no prediction task, splits or scored contract",
+  "ours": "corridor-grain (origin x host) annual doubling-exceedance task on UNHCR government-procedure asylum applications, global hosts, 26-year history (2000-2025), fixed disjoint temporal splits with measured counts (eval 1,918 rows/166 positives/109 origin-year clusters; holdout 1,994/234/135), documented eligibility and censoring rules, publisher-total cross-checked panel construction, scored binary contract on redistribution-clean CC BY 3.0 IGO data - no published benchmark or ML-ready dataset with splits exists for this task",
+  "verdict": "differentiated",
+  "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+ },
+ "qualification": {
+  "qualified_at": "2026-10-27T18:44:04Z (the worker collect/verify time recorded in the staging manifest; acceptance and gate reports were written seconds earlier in the 16.2 s container run)",
+  "gate_version": "1.5.0",
+  "job": "unhcr-001",
+  "result": "passed; 0 failed checks of 45 on the full artifact on the worker (leakage incl. declared high-cardinality row_id/surge_cluster, timing publication instant with measured 232-day lag, evaluation_contract retrospective_research/isolated_rows with training_label_timing unverified, current_snapshot vintage, cross-row probe executed on all splits with 0 mismatches, splits disjoint and both-classed, runner layout/meta agreement)",
+  "accepted": "exact-byte --accept on the worker against artifact_version 6fa7becdf32925b74522c81001dcfe802b6a389425fd6deb4af4fc25ba7f1f53",
+  "report": ".factory/unhcr-001/reports/file-0007-part-0000 (qualification-unhcr-refugee-data-finder.json)",
+  "acceptance_report": ".factory/unhcr-001/reports/file-0000-part-0000",
+  "references_report": ".factory/unhcr-001/reports/file-0009-part-0000 (post-acceptance, eval-only)",
+  "splits": {
+   "train": {
+    "rows": 3363,
+    "positives": 283,
+    "positive_rate": 0.084151,
+    "distinct_positive_clusters": 183
+   },
+   "eval": {
+    "rows": 1887,
+    "positives": 165,
+    "positive_rate": 0.08744,
+    "distinct_positive_clusters": 109
+   },
+   "holdout": {
+    "rows": 1962,
+    "positives": 227,
+    "positive_rate": 0.115698,
+    "distinct_positive_clusters": 133
+   }
+  }
+ },
+ "packaged_at": "2026-10-27T19:44:51Z",
+ "updated_at": "2026-10-27T19:44:51Z"
 }

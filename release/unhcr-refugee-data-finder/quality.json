@@ -1,0 +1,360 @@
+{
+ "name": "unhcr-refugee-data-finder",
+ "task": {
+  "question": "The UNHCR asylum-applications distribution has just been refreshed to carry complete data for year D. For an asylum corridor (country of origin O, country of asylum H) whose government-procedure applications in year D are at least 500 and whose year-D-1 value is published, will the corridor's year-D+1 government-procedure application total reach at least twice the year-D total?",
+  "prediction_time": "The publication instant of the UNHCR asylum-applications annual data for year D on the machine-fetchable HDX channel: an observed refresh cycle (2025-11-05, 2026-02-25, 2026-06-11, 2026-06-19, 2026-06-22, 2026-08-20) whose 2026-08-20 refresh carries complete data through year 2025 (max Year = 2025 measured on the fetched bytes), 232 days after the 2025 period end; UNHCR's Global Trends cycle lands mid-D+1. At that instant every feature is a corridor-year total for years <= D. The target year D+1 has partially elapsed at the instant but its value is entirely unpublished on this channel (first available ~mid D+2), so this is an annual publication-lag nowcast, not a future-event forecast."
+ },
+ "target": "doubled",
+ "positive_label": 1,
+ "time_column": "target_date",
+ "event_key_column": "surge_cluster",
+ "event_key_note": "surge_cluster = origin|label-year: one displacement event hits many corridors in one year (SYR->many hosts 2015), so the conservative independent-event count is the distinct (origin, label-year) pair among positives",
+ "features": [
+  "origin",
+  "asylum",
+  "target_year",
+  "apps_d",
+  "apps_d1",
+  "log_growth_d",
+  "surged_recently",
+  "host_apps_d",
+  "host_growth_d",
+  "origin_apps_d",
+  "origin_growth_d",
+  "corridor_age"
+ ],
+ "features_documented_at": "prediction_time",
+ "feature_documentation": "every shipped feature is a corridor-year or context total for published years <= D, or a corridor/calendar identity: origin and asylum are the publisher's ISO-3-style codes; target_year is the label year's calendar identity; apps_d/apps_d1 are the corridor's government-procedure persons totals for years D and D-1 (the year-D value is the doubling baseline, published at the instant); log_growth_d is ln(apps_d+1)-ln(apps_d1+1); surged_recently flags apps_d >= 2*apps_d1 (the corridor already doubled into D); host_apps_d/host_growth_d and origin_apps_d/origin_growth_d are the same-year host-country and origin-country all-corridor totals and their log growth (reception-capacity and displacement-pressure context); corridor_age is years since the corridor first appears in the fetched panel. The year-D+1 value (the label operand) and every year > D value are excluded from the shipped columns.",
+ "carry_columns": [
+  "target_date",
+  "surge_cluster"
+ ],
+ "id_columns": [
+  "row_id"
+ ],
+ "high_cardinality_columns": [
+  "row_id",
+  "surge_cluster"
+ ],
+ "high_cardinality_note": "row_id is unique per row and surge_cluster (origin|label-year) carries more levels than rows/5 in the narrower splits; both are declared rather than scored, and their information is fully recoverable from origin, asylum and target_year",
+ "label_source_columns": [
+  "year-D+1 corridor G/P total (source column 'Number of Applications' at Year=D+1, all application types summed)"
+ ],
+ "post_hoc_columns": [],
+ "measurements": [
+  {
+   "column": "apps_d",
+   "unit": "persons (integer applications)",
+   "frame": "corridor government-procedure persons applications in year D, summed over all application types, current-vintage"
+  },
+  {
+   "column": "apps_d1",
+   "unit": "persons (integer applications)",
+   "frame": "the same corridor total for year D-1"
+  },
+  {
+   "column": "log_growth_d",
+   "unit": "log (natural) point difference",
+   "frame": "ln(apps_d+1) - ln(apps_d1+1), the observed momentum at D"
+  },
+  {
+   "column": "surged_recently",
+   "unit": "binary flag 0/1",
+   "frame": "apps_d >= 2 x apps_d1, the corridor's own last-step doubling observed at D"
+  },
+  {
+   "column": "host_apps_d",
+   "unit": "persons (integer applications)",
+   "frame": "all-corridor government-procedure total received by the host country in year D"
+  },
+  {
+   "column": "host_growth_d",
+   "unit": "log (natural) point difference",
+   "frame": "ln(host total D + 1) - ln(host total D-1 + 1)"
+  },
+  {
+   "column": "origin_apps_d",
+   "unit": "persons (integer applications)",
+   "frame": "all-host government-procedure total from the origin country in year D"
+  },
+  {
+   "column": "origin_growth_d",
+   "unit": "log (natural) point difference",
+   "frame": "ln(origin total D + 1) - ln(origin total D-1 + 1)"
+  },
+  {
+   "column": "corridor_age",
+   "unit": "years (integer)",
+   "frame": "D minus the corridor's first year in the fetched panel (>= 1 by the eligibility rule)"
+  },
+  {
+   "column": "target_year",
+   "unit": "calendar year (integer)",
+   "frame": "the label year D+1"
+  },
+  {
+   "column": "target_date",
+   "unit": "ISO date (year-end of the label year)",
+   "frame": "calendar identity of the outcome window; used as the split time column"
+  },
+  {
+   "column": "surge_cluster",
+   "unit": "origin|label-year string",
+   "frame": "event key for clustered positive counting"
+  },
+  {
+   "column": "origin",
+   "unit": "publisher ISO-3-style code",
+   "frame": "country of origin identity"
+  },
+  {
+   "column": "asylum",
+   "unit": "publisher ISO-3-style code",
+   "frame": "country of asylum identity"
+  },
+  {
+   "column": "row_id",
+   "unit": "origin-asylum-labelyear string",
+   "frame": "row identifier; unique per row"
+  },
+  {
+   "column": "doubled",
+   "unit": "binary 0/1",
+   "frame": "1 iff year-D+1 corridor total >= 2 x year-D total; a missing corridor row with the host still reporting counts as 0 applications"
+  }
+ ],
+ "external_threshold": false,
+ "known_event": {
+  "name": "2015 Syrian surge into Germany (SYR->DEU 2014->2015)",
+  "expected_verdict": "exceeds",
+  "detail": "41,100 -> 162,510, x2 label TRUE - asserted in-build with the AFG->USA 2021->2022 TRUE and AFG->DEU 2021->2022 FALSE fixtures and the UKR->POL below-eligibility case",
+  "source": "UNHCR asylum statistics via HDX (the fetched panel itself; values verified at discovery against the publisher's own interactive Data Finder)"
+ },
+ "timing": {
+  "prediction_instant": {
+   "kind": "publication",
+   "period": "Y",
+   "days_after_period_end": 232,
+   "citation": "HDX resource update history observed 2026-10-23: refreshes 2025-11-05, 2026-02-25, 2026-06-11, 2026-06-19, 2026-06-22 and 2026-08-20; the 2026-08-20 refresh carries complete data through year 2025 (max Year = 2025 measured on the fetched bytes, 232 days after the 2025 period end); UNHCR's Global Trends cycle lands mid-D+1"
+  },
+  "features": {
+   "period": "Y",
+   "published_days_after_period_end": 232,
+   "source_kind": "statistical_release"
+  },
+  "row_selection": {
+   "latest_period_used": "Y (year D, the last fully published year)",
+   "fields": [
+    "apps_d (year-D corridor total >= 500)",
+    "apps_d1 (published year-D-1 corridor value)"
+   ],
+   "basis": "eligibility reads only published years <= D: the corridor's year-D government-procedure total >= 500 and a published year-D-1 corridor value. Label-observability censoring excludes corridors whose host files no G/P report at all in D+1 (label undefined, never counted as zero) and live-edge label years beyond the fetched vintage; both are counted per split in summary.json and never condition on the label value. The target year D+1 never enters eligibility."
+  },
+  "observations": [
+   {
+    "period": "2025",
+    "period_end": "2025-12-31",
+    "published": "2026-08-20"
+   }
+  ]
+ },
+ "split_windows": {
+  "train": {
+   "start": "2001-01-01",
+   "end": "2017-01-01"
+  },
+  "eval": {
+   "start": "2017-01-01",
+   "end": "2022-01-01"
+  },
+  "holdout": {
+   "start": "2022-01-01",
+   "end": "2026-01-01"
+  }
+ },
+ "split_boundaries": {
+  "train": "label years 2001-2016 (window end exclusive; label-year 2001 contributes no rows: the panel starts 2000 so no corridor has a published 1999 value - counted in summary.json)",
+  "eval": "label years 2017-2021 (window end exclusive)",
+  "holdout": "label years 2022-2025 (window end exclusive; through the last year the fetched vintage carries; 2025 on the pinned snapshot)"
+ },
+ "positive_events": {
+  "train": {
+   "positives": 283,
+   "distinct_events": 183
+  },
+  "eval": {
+   "positives": 165,
+   "distinct_events": 109
+  },
+  "holdout": {
+   "positives": 227,
+   "distinct_events": 133
+  }
+ },
+ "positive_events_note": "positives and distinct (origin, label-year) surge clusters per split, recomputed from the written rows; the gate re-verifies",
+ "expected_duplicate_ids": 0,
+ "id_columns_are_entity_keys": true,
+ "id_columns_note": "row_id = origin-asylum-labelyear names one corridor-year with one label; the corridor itself recurs across label years by design (a panel task), which is why the corridor pair ships as features and only row_id is the identifier",
+ "splits": {
+  "train": "public/train.csv",
+  "eval": "public/eval.csv",
+  "holdout": "private/holdout.csv"
+ },
+ "evaluation_contract": {
+  "use": "retrospective_research",
+  "access": "isolated_rows",
+  "training_label_timing": "unverified",
+  "scope_note": "each row is a corridor-year whose features read published years <= D only; the runner predicts row-wise from the shipped columns. Labeled eval is development/validation; the holdout is the final test and stays outside evaluated agents' workspaces. Training-label timing is UNVERIFIED: HDX distributes one in-place-revised resource with no historical vintages, so no full-row availability ledger can be constructed and the artifact is retrospective research only, never a certified historical forecasting setup.",
+  "feature_evidence": {
+   "row_id": {
+    "source": "row key origin-asylum-labelyear",
+    "availability": "identity of the row; corridor and label year are both known at the instant",
+    "status": "verified"
+   },
+   "origin": {
+    "source": "source column 'Country of Origin Code'",
+    "availability": "publisher-assigned corridor identity, constant across the panel",
+    "status": "verified"
+   },
+   "asylum": {
+    "source": "source column 'Country of Asylum Code'",
+    "availability": "publisher-assigned corridor identity, constant across the panel",
+    "status": "verified"
+   },
+   "target_year": {
+    "source": "row key (year D + 1)",
+    "availability": "calendar arithmetic on the instant's last published year",
+    "status": "verified"
+   },
+   "apps_d": {
+    "source": "sum of 'Number of Applications' over G/P application-type rows at Year D",
+    "availability": "the year-D refresh is the instant itself (observed 2026-08-20 carrying complete data through 2025)",
+    "status": "assumed",
+    "assumption": "current-vintage value; the value published at past instants is unverifiable (no historical vintages)"
+   },
+   "apps_d1": {
+    "source": "the same summed panel at Year D-1",
+    "availability": "published one refresh before the instant, so available at it",
+    "status": "assumed",
+    "assumption": "current-vintage value (see apps_d)"
+   },
+   "log_growth_d": {
+    "source": "deterministic function of apps_d and apps_d1",
+    "availability": "derivable at the instant from published years <= D",
+    "status": "assumed",
+    "assumption": "inherits the current-vintage assumption"
+   },
+   "surged_recently": {
+    "source": "deterministic flag on apps_d >= 2 x apps_d1",
+    "availability": "derivable at the instant",
+    "status": "assumed",
+    "assumption": "inherits the current-vintage assumption"
+   },
+   "host_apps_d": {
+    "source": "all-corridor sum of the same G/P stream at (Year D, asylum)",
+    "availability": "published at the instant (same refresh as apps_d)",
+    "status": "assumed",
+    "assumption": "inherits the current-vintage assumption"
+   },
+   "host_growth_d": {
+    "source": "deterministic function of host totals at D and D-1",
+    "availability": "derivable at the instant",
+    "status": "assumed",
+    "assumption": "inherits the current-vintage assumption"
+   },
+   "origin_apps_d": {
+    "source": "all-host sum of the same G/P stream at (Year D, origin)",
+    "availability": "published at the instant",
+    "status": "assumed",
+    "assumption": "inherits the current-vintage assumption"
+   },
+   "origin_growth_d": {
+    "source": "deterministic function of origin totals at D and D-1",
+    "availability": "derivable at the instant",
+    "status": "assumed",
+    "assumption": "inherits the current-vintage assumption"
+   },
+   "corridor_age": {
+    "source": "D minus the corridor's first year in the fetched panel",
+    "availability": "derivable at the instant from published years <= D",
+    "status": "assumed",
+    "assumption": "panel start 2000 truncates true corridor age for pre-2000 corridors; age is 'years since first observed in the fetched panel'"
+   },
+   "target_date": {
+    "source": "calendar year-end of the label year",
+    "availability": "calendar arithmetic; the carry column is the split time column, not an observation",
+    "status": "verified"
+   },
+   "surge_cluster": {
+    "source": "origin + label year (event key)",
+    "availability": "identity of the row's cluster; both parts known at the instant",
+    "status": "verified"
+   }
+  },
+  "vintage": {
+   "kind": "current_snapshot",
+   "evidence": "HDX distributes one in-place-revised resource: the record observed refreshes 2025-11-05, 2026-02-25, 2026-06-11, 2026-06-19, 2026-06-22, 2026-08-20 and no archived vintages are retained, so a reverse-history probe is not performable on this channel. The fetched snapshot is pinned by sha256 and the build asserts the recorded known-event fixtures against it; values are construction-time current-vintage and no historical point-in-time availability is claimed. Same documented posture as abs-visitor-arrivals-direction."
+  },
+  "selection": {
+   "kind": "prediction_time",
+   "evidence": "eligibility reads only published years <= D (year-D corridor total >= 500 and a published year-D-1 value). Label-observability censoring - host files no G/P report at all in D+1, or the label year lies beyond the fetched vintage - excludes rows whose label is undefined and counts them per split in summary.json; it never conditions on the label value and never decides another row's membership (the same pending-censored pattern the accepted ec-merger-phase2-opening artifact uses)"
+  },
+  "limitations": [
+   "Annual grain only on the machine-fetchable channel; a monthly variant would need the WAF-gated UNHCR Data Finder app or an operator decision on browser-captured exports.",
+   "Current-vintage panel with no historical vintages: this is retrospective research, not certified historical forecasting; intra-basis revision size is unmeasurable without archived vintages.",
+   "The prediction instant lies inside the target year (publication-lag nowcast): the target year has partially elapsed at the instant; what is claimed is value-unavailability on this channel, not that the window follows the instant.",
+   "Temporary-protection registrations (Ukrainians in the EU from 2022) are not asylum applications and do not enter the stream - the 2022 Ukraine displacement is largely absent from this task by construction (UKR->POL fixture).",
+   "Prevalence drifts across splits (more surges in later years; recorded 8.2% train / 8.7% eval / 11.7% holdout before the year-D-1 refinement) - a property of the period, reported beside every score.",
+   "Positives cluster by (origin, label-year) surge events beyond the row count; clustered counts are reported beside every score.",
+   "386 rows (5.0% of eligible corridor-years on the pinned snapshot) lack a published year-D-1 value and are excluded with per-split counts (mostly label-year 2001, where the panel start makes every prior year unpublished).",
+   "Unsplit-V application-type rows live mostly in the training era (1,238 of 3,677 recorded train rows); the sum-across-types rule is what the BAMF cross-check validates.",
+   "Corridor age is measured from the fetched panel's 2000 start, truncating true age for older corridors."
+  ],
+  "cross_row_audit": {
+   "probes": [
+    {
+     "name": "next_label_year_exposes_outcome",
+     "entity_columns": [
+      "origin",
+      "asylum"
+     ],
+     "time_column": "target_date",
+     "operation": "copy",
+     "left": "surged_recently",
+     "offset_months": 12,
+     "expectation": "the donor row (same corridor, label year T+1) carries surged_recently = (year-T total >= 2 x year-T-1 total), which is exactly the earlier row's label: a panel is self-answering across rows one year apart. Coverage therefore measures the cross-row outcome exposure inherent to the task; it requires the restricted prediction protocol and is why access is isolated_rows with this audit recorded - not a construction defect"
+    }
+   ],
+   "rationale": "rows are corridor-years on a self-answering panel: a row with label year T+1 ships the year-T corridor total as apps_d, which is the label operand of the row with label year T. The probe measures that exposure from the artifact itself on every full configuration (train, eval, holdout); covered rows make this restricted retrospective research under an enforced protocol, and no historical forecasting claim is made.",
+   "auxiliary_files_review": "the extract ships exactly the runner layout - public/train.csv, public/eval.csv, private/holdout.csv, meta.json, quality.json; the fetched source CSV, the panel and all diagnostics stay outside the artifact; no joint label matrices or other solver-visible files exist in the dataset directory",
+   "reverse_history": "not performable: HDX retains no archived vintages of this resource (observed in-place revision 2025-11-05 through 2026-08-20), so no as-of reconstruction can be probed; the current-vintage posture above is the recorded consequence"
+  }
+ },
+ "source_snapshot": {
+  "url": "https://data.humdata.org/dataset/74cdbe77-0a0b-441b-9535-bacc263be2a8/resource/295cd9e4-8464-43ee-ad17-47196991a1f7/download/asylum_applications_residing_world.csv",
+  "bytes": 8669567,
+  "last_modified": "Thu, 20 Aug 2026 15:33:52 GMT",
+  "seconds": 3.6,
+  "sha256": "d5808616c3d10d33925d4df5a3182a2028dd574d111e843cc207455ba45fe950",
+  "mode": "worker fetch"
+ },
+ "built_at_utc": "2026-10-27T18:36:07Z",
+ "shipped_columns": [
+  "row_id",
+  "origin",
+  "asylum",
+  "target_year",
+  "apps_d",
+  "apps_d1",
+  "log_growth_d",
+  "surged_recently",
+  "host_apps_d",
+  "host_growth_d",
+  "origin_apps_d",
+  "origin_growth_d",
+  "corridor_age",
+  "target_date",
+  "surge_cluster",
+  "doubled"
+ ]
+}

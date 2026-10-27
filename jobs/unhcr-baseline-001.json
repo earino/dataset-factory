@@ -1,0 +1,243 @@
+{
+  "job": {
+    "id": "unhcr-baseline-001",
+    "candidate": "unhcr-refugee-data-finder",
+    "image": "python:3.13-slim",
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 3072,
+    "timeout_minutes": 45,
+    "lifetime_minutes": 90,
+    "max_disk_mb": 4096,
+    "max_artifact_mb": 16,
+    "what": "runner-contract baseline on the accepted unhcr-001 artifact (6fa7becdf32925b74522c81001dcfe802b6a389425fd6deb4af4fc25ba7f1f53), fetched from staging release 425843785 (not rebuilt): re-accept the five fetched files through the qualification gate against the gate's own collected report, materialize the runner workdir (public train+eval only; the private holdout is never copied into the workdir), then run the benchmark's own train.py and validate.sh unmodified and record both AUCs, the model's per-row scores and the paired comparison against the simple references (persistence momentum 0.5742, surge flag 0.5856, calendar identity 0.5409) on the identical 1887 eval rows. This is the contract only, not the agent harness loop.",
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 425843785,
+      "assets": [
+        {
+          "asset_id": 682504589,
+          "dest": "extract/meta.json",
+          "size": 1250,
+          "sha256": "595aab31c00772d987a2436ea8f13d33bc2edd224aeb294731bcfa7579a65d19"
+        },
+        {
+          "asset_id": 682504669,
+          "dest": "extract/private/holdout.csv",
+          "size": 202783,
+          "sha256": "54decaaaf74eac1ea362bf1acf711010069b1feb94ad2abfcb70a1fccff858bd"
+        },
+        {
+          "asset_id": 682504735,
+          "dest": "extract/public/eval.csv",
+          "size": 195252,
+          "sha256": "4b7f06c3afd9eec286652383d95797a5fbaccc3517e68b2c334c615026bc9393"
+        },
+        {
+          "asset_id": 682504802,
+          "dest": "extract/public/train.csv",
+          "size": 343359,
+          "sha256": "c7ebd552f1158bd5f470c495b027c48fc17ea9195c34185a662a8620407bd167"
+        },
+        {
+          "asset_id": 682504872,
+          "dest": "extract/quality.json",
+          "size": 18609,
+          "sha256": "e7517f8fbee8f15a7f667aa57fa398e8e880c8b55c91cee349f904580d1a4df2"
+        }
+      ]
+    },
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "source_files": [
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/unhcr-refugee-data-finder/baseline/run.sh",
+        "bytes": 3195,
+        "sha256": "8c28ba85f042ae5c5021154aaf958209e85a3b554f55fa426256c57669d8e435"
+      },
+      {
+        "bundled_as": "materialize.py",
+        "source": "candidates/unhcr-refugee-data-finder/baseline/materialize.py",
+        "bytes": 2253,
+        "sha256": "4d39977b6fcd5456bdde129ad535b2e0ee74d219517ee746575593db1cb0ba74"
+      },
+      {
+        "bundled_as": "report.py",
+        "source": "candidates/unhcr-refugee-data-finder/baseline/report.py",
+        "bytes": 11620,
+        "sha256": "29573521e4b2156831527cc54f074b9444533a09c23dd517353ffd8796d56967"
+      },
+      {
+        "bundled_as": "score.py",
+        "source": "candidates/unhcr-refugee-data-finder/source/score.py",
+        "bytes": 14234,
+        "sha256": "a08ad0694c0f71833a605f335dd17d9612b83f015e8c2600279206ab77c653a3"
+      },
+      {
+        "bundled_as": "qualification.json",
+        "source": "candidates/unhcr-refugee-data-finder/baseline/qualification.json",
+        "bytes": 16088,
+        "sha256": "a7e6787ebeb8d8bcf23ea548157927354ca2dc1c0705e17f0a51f194a5453f3f"
+      },
+      {
+        "bundled_as": "references.json",
+        "source": "candidates/unhcr-refugee-data-finder/baseline/references.json",
+        "bytes": 4098,
+        "sha256": "bee6c1b315e00ff4808ff98ab768f7d5bab4e6646152d8f0408aad2cbfbdc315"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 57029,
+        "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+      },
+      {
+        "bundled_as": "train.py",
+        "source": "/opt/data/harness_benchmark/task_template/train.py",
+        "bytes": 2500,
+        "sha256": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8"
+      },
+      {
+        "bundled_as": "validate.py",
+        "source": "/opt/data/harness_benchmark/task_template/validate.py",
+        "bytes": 1277,
+        "sha256": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b"
+      },
+      {
+        "bundled_as": "validate.sh",
+        "source": "/opt/data/harness_benchmark/task_template/validate.sh",
+        "bytes": 482,
+        "sha256": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      }
+    ]
+  },
+  "reservation_eur": "0.06",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 3,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 215040,
+  "source_sha256": "d84b4ed9bd8a0434c41ec55b908e3527657728fee1f24ad2126ca9f6fb7035bf",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-10-27T19:02:42.270579+00:00",
+  "expires": 1793133162,
+  "budget_months": [
+    "2026-10"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 172877033,
+  "known_hosts": "/opt/data/dataset-factory/.factory/unhcr-baseline-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "65.21.158.17",
+  "result": {
+    "job_id": "unhcr-baseline-001",
+    "status": "succeeded",
+    "uploaded": true,
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 425843785,
+      "fetched": [
+        {
+          "dest": "extract/meta.json",
+          "bytes": 1250,
+          "sha256": "595aab31c00772d987a2436ea8f13d33bc2edd224aeb294731bcfa7579a65d19"
+        },
+        {
+          "dest": "extract/private/holdout.csv",
+          "bytes": 202783,
+          "sha256": "54decaaaf74eac1ea362bf1acf711010069b1feb94ad2abfcb70a1fccff858bd"
+        },
+        {
+          "dest": "extract/public/eval.csv",
+          "bytes": 195252,
+          "sha256": "4b7f06c3afd9eec286652383d95797a5fbaccc3517e68b2c334c615026bc9393"
+        },
+        {
+          "dest": "extract/public/train.csv",
+          "bytes": 343359,
+          "sha256": "c7ebd552f1158bd5f470c495b027c48fc17ea9195c34185a662a8620407bd167"
+        },
+        {
+          "dest": "extract/quality.json",
+          "bytes": 18609,
+          "sha256": "e7517f8fbee8f15a7f667aa57fa398e8e880c8b55c91cee349f904580d1a4df2"
+        }
+      ],
+      "failures": [],
+      "bytes": 761253
+    },
+    "image_id": "sha256:b3575dcf816cdacc5292df77a6e3e59b8941631078373a045efa2ac1e9c5c3b2",
+    "image_digests": [
+      "python@sha256:b3575dcf816cdacc5292df77a6e3e59b8941631078373a045efa2ac1e9c5c3b2"
+    ],
+    "exit_code": 0,
+    "oom_killed": false,
+    "elapsed_seconds": 49.8,
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 425870998,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-8bf09b9d2b3bec96f07f",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-8bf09b9d2b3bec96f07f/manifest.json",
+    "assets": [
+      {
+        "id": 682573575,
+        "size": 72,
+        "sha256": "126edeeddc9d42dc5640a823e26e4cd568f51a0ee53d73c4f2ff0390800fd9c4"
+      },
+      {
+        "id": 682573703,
+        "size": 4799,
+        "sha256": "b772de84cbea2cc7e55943d3e2a0d01554234479579ed3ce43a7e062a2968b27"
+      },
+      {
+        "id": 682573814,
+        "size": 247,
+        "sha256": "537a9baa07d3c84efad6c96f255ad117cd03e804047afdc19a570bcb74f1739a"
+      },
+      {
+        "id": 682573876,
+        "size": 192,
+        "sha256": "2fcf31b84daacda0dda2701928230862b56879a7d8bb2139336b1506decab399"
+      },
+      {
+        "id": 682573943,
+        "size": 364,
+        "sha256": "abd6f7249a473f07f501069dde0fe2436ada294e0816606ef6d35309752ff944"
+      },
+      {
+        "id": 682574009,
+        "size": 53,
+        "sha256": "26692c98af7050bb585ef69e79393d50142d04f0ebf6c4915eb63deb00b30494"
+      },
+      {
+        "id": 682574086,
+        "size": 178,
+        "sha256": "b3354e843b119d8bce8e5208d90e8afa03ce4cb811e96064358ea0f940e48448"
+      },
+      {
+        "id": 682574146,
+        "size": 215040,
+        "sha256": "d84b4ed9bd8a0434c41ec55b908e3527657728fee1f24ad2126ca9f6fb7035bf"
+      },
+      {
+        "id": 682574240,
+        "size": 5842,
+        "sha256": "66069d94cfebf31ea15aeae9a531dbec21d70c3b2cfe719aff8f59930d141d57"
+      },
+      {
+        "id": 682574309,
+        "size": 9604,
+        "sha256": "ef09675783e09e7ac6d48066265d0b4f49ecd0f4e77ff6201bb213070942ffe1"
+      }
+    ],
+    "skipped_empty": []
+  },
+  "collected_at": "2026-10-27T19:20:33.867012+00:00",
+  "deleted_at": "2026-10-27T19:23:06.022460+00:00"
+}

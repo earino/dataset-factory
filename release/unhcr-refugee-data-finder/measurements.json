@@ -1,0 +1,80 @@
+{
+ "name": "unhcr-refugee-data-finder",
+ "built_at_utc": "2026-10-27T18:36:07Z",
+ "source": {
+  "publisher": "UNHCR, The UN Refugee Agency - asylum applications residing in each country of origin (annual), via the Humanitarian Data Exchange (HDX)",
+  "landing_page": "https://data.humdata.org/dataset/74cdbe77-0a0b-441b-9535-bacc263be2a8",
+  "mode": "http",
+  "files": 1,
+  "vintage_last_modified": "Thu, 20 Aug 2026 15:33:52 GMT (the HDX resource retains no historical vintages; this release pins the 2026-08-20 distribution, which carries complete data through year 2025)",
+  "bytes": 8669567,
+  "requests": 1,
+  "seconds": 3.6,
+  "requests_note": "one anonymous GET of asylum_applications_residing_world.csv (8,669,567 B, sha256 d5808616c3d10d33925d4df5a3182a2028dd574d111e843cc207455ba45fe950); tokenless HDX download URL, no key",
+  "fetch_provenance": "worker job unhcr-001 (server 172873699, cx23/hel1) fetched the publisher directly; the bytes never passed through the coordinator. The panel was first pinned at discovery on 2026-10-23 and the construction preflight re-fetched it on 2026-10-27 - byte-identical (same sha256), confirming the same vintage"
+ },
+ "grain": "one row per origin-asylum corridor label year T = D+1, for corridors eligible at the last fully published year D (year-D government/procedure persons total >= 500 AND a published year-D-1 corridor value); 7,212 shipped rows",
+ "eligibility": {
+  "eligible_corridor_years_pre_d1_rule": "7622",
+  "host_silent_unobserved_target": 33,
+  "missing_history": 377,
+  "shipped_rows": 7212,
+  "excluded_breakdown": "missing_history 377 (314 train: 192 panel-starts-2000 label-year-2001 rows + 122 no published year-D-1 cell; 31 eval; 32 holdout); host-files-no-gp-report unobserved_target 21 train / 7 eval / 5 holdout - censored, never labelled; live-edge target_year_beyond_vintage 496 counted separately",
+  "live_edge_note": "496 eligible corridors for label year 2026 sit beyond the fetched vintage (no published year-2026 data exists yet); they are excluded and counted, never labelled"
+ },
+ "label": {
+  "rule": "doubled = 1 iff the corridor's year-T (= D+1) G/P persons total is at least DOUBLING x its year-D total (DOUBLING = 2)",
+  "positives": 675,
+  "base_rate_overall": 0.0936,
+  "fixture_events": [
+   {"corridor": "SYR->DEU", "label_year": 2015, "expect": "1", "source": "the 2015 German asylum-application surge; asserted in-build from the fetched panel"},
+   {"corridor": "AFG->USA", "label_year": 2022, "expect": "1", "source": "post-Aug-2021 Taliban takeover; asserted in-build"},
+   {"corridor": "AFG->DEU", "label_year": 2022, "expect": "0", "source": "high 2021 base keeps the 2022 total below 2x; asserted in-build"},
+   {"corridor": "UKR->POL", "label_year": 2022, "expect": "below eligibility", "source": "year-D (2021) corridor total 458 < MIN_APPS 500: the surge corridor is excluded by construction, not silently shipped"}
+  ]
+ },
+ "splits": {
+  "train": {"window": "2001-01-01 to 2017-01-01 (label years 2002-2016 shipped; label-year-2001 contributes no rows under the published-year-D-1 rule)", "rows": 3363, "positives": 283, "positive_rate": 0.084151, "distinct_positive_clusters": 183},
+  "eval": {"window": "2017-01-01 to 2022-01-01 (label years 2017-2021)", "rows": 1887, "positives": 165, "positive_rate": 0.08744, "distinct_positive_clusters": 109},
+  "holdout": {"window": "2022-01-01 to 2026-01-01 (label years 2022-2025)", "rows": 1962, "positives": 227, "positive_rate": 0.115698, "distinct_positive_clusters": 133}
+ },
+ "hazards_measured": {
+  "panel_rows": 120597,
+  "gp_persons_rows": 99281,
+  "procedure_type_mix": {"G": 105862, "U": 13955, "J": 780},
+  "application_data_type_mix": {"C": 6962, "P": 113635},
+  "cross_row_probe": "next_label_year_exposes_outcome declared to the gate and executed on every split: a label-year T+1 row's surged_recently equals the label-year T row's label; coverage 2439/1265/1239 rows (train/eval/holdout), 0 mismatches - the reason the evaluation contract fixes access to isolated_rows",
+  "publication_lag": "measured 232 days: the 2026-08-20 refresh carries complete data through year 2025 (max Year = 2025 on the fetched bytes), 232 days after the 2025 period end; HDX update history observed 2025-11-05, 2026-02-25, 2026-06-11, 2026-06-19, 2026-06-22, 2026-08-20"
+ },
+ "references_eval_1887_rows_165_positives": {
+  "full_model_stock_xgboost": {"auc": 0.5393, "brier": 0.085099, "source": "worker job unhcr-baseline-001, benchmark runner verbatim (train.py and validate.py both print Eval AUC 0.5393; independent predict_proba recompute 0.53935)"},
+  "persistence_momentum": {"auc": 0.574165, "source": "log_growth_d, the corridor's own momentum observed at the instant"},
+  "persistence_surge_flag": {"auc": 0.585619, "source": "surged_recently, 1 when the corridor already doubled in year D"},
+  "calendar_identity": {"auc": 0.540927, "source": "train-fitted rate per (origin, asylum) corridor, falling back to origin, then the global train rate"},
+  "recent_rate_constant": {"auc": 0.5, "definition": "train rate over the last three train label years; a constant score carries no ranking information"},
+  "majority_class_accuracy_this_split": 0.91256,
+  "majority_rule": "majority = int(train_positive_rate >= 0.5); accuracy measured against this split's labels"
+ },
+ "paired_differences_bootstrap1000": {
+  "full_model_minus_persistence_momentum": {"diff": -0.034815, "ci95": [-0.105633, 0.04085], "reading": "interval contains zero (inconclusive difference); observed gap negative - the stock baseline trails the corridor-momentum persistence reference"},
+  "full_model_minus_persistence_surge_flag": {"diff": -0.046269, "ci95": [-0.110322, 0.014362], "reading": "inconclusive difference, observed gap negative"},
+  "full_model_minus_calendar_identity": {"diff": -0.001577, "ci95": [-0.059444, 0.058719], "reading": "indistinguishable on this window"},
+  "full_model_minus_recent_rate": {"diff": 0.03935, "ci95": [-0.004657, 0.085904], "reading": "inconclusive; a constant reference has no ranking information, so this is a degenerate control recorded as such"}
+ },
+ "per_label_year_eval": {
+  "2017": {"rows": 361, "positives": 27, "full_model_auc": 0.3938, "persistence_momentum_auc": 0.7451},
+  "2018": {"rows": 386, "positives": 41, "full_model_auc": 0.5479, "persistence_momentum_auc": 0.6568},
+  "2019": {"rows": 423, "positives": 34, "full_model_auc": 0.5635, "persistence_momentum_auc": 0.6272},
+  "2020": {"rows": 414, "positives": 6, "full_model_auc": 0.8417, "persistence_momentum_auc": 0.1164},
+  "2021": {"rows": 303, "positives": 57, "full_model_auc": 0.6127, "persistence_momentum_auc": 0.5684}
+ },
+ "prevalence_shift_note": "positive rate by eval label year swings 1.4% (2020, pandemic collapse) to 18.8% (2021, rebound); train 8.42% -> holdout 11.57% across splits. The pooled eval AUC blends very different regimes; per-year figures above are the honest grain. A constant-rate reference cannot rank within a year; the calendar prior absorbs identity only.",
+ "headroom_finding": "no demonstrated headroom over persistence under this protocol: the stock model trails both persistence references (0.5393 vs 0.5742/0.5856) and every paired interval contains zero. Recorded as the finding beside every model figure; one weak stock model does not establish that no solver can beat persistence, and no claim is made in either direction.",
+ "measurement_commands": {
+  "gate": "python3 skills/dataset-qualification/scripts/qualify_dataset.py <extract-dir>  (worker, full artifact, gate 1.5.0: 45/45)",
+  "accept": "python3 skills/dataset-qualification/scripts/qualify_dataset.py --accept <report.json> <extract-dir>  (worker, exact bytes: ACCEPTED 6fa7becdf32925b7)",
+  "references": "python3 source/score.py --data <extract-dir> --accepted-report <report.json> --report references.json  (post-acceptance)",
+  "baseline": "runner-contract baseline job unhcr-baseline-001: gate --accept on the fetched bytes (ACCEPTED 6fa7becdf32925b7), then python train.py + sh validate.sh unmodified, then report.py (model per-row scores via predict_proba + paired bootstrap vs the references)",
+  "majority_rule": "majority = int(train_positive_rate >= 0.5); accuracy measured against this split's labels"
+ }
+}
