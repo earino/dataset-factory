@@ -20,7 +20,7 @@ vintage of 2026-10-27). 10,091 shipped rows of 10,125 eligible; 33 pending cases
 | `sector_divisions` | feature | Sorted set of NACE division labels for the parties' activities, `'\|'`-joined, or `NONE` when the register carries no sectors (79 cases measured). Derived from `caseSectors`; division = first two components of the label's code part (e.g. `C.20.5 - ...` -> `C.20`). Register coding is the current-vintage NACE Rev 2 taxonomy (see the vintage note in the README). |
 | `sector_count` | feature | Number of `caseSectors` entries on the case. |
 | `has_sectors` | feature | 1 when the case carries sectors, 0 for the `NONE` cases. |
-| `party_count` | feature | Number of ` / `-separated segments of the case title. |
+| `party_count` | feature | Number of segments of the case title split on `/` with optional surrounding whitespace. |
 | `title_has_jv` | feature | 1 when the title carries a `JV` token (joint ventures). |
 | `case_title` | feature | The case title (`caseTitle`): the merging parties as named by the register, an immutable historical fact (the OJ prior notice for M.4731 GOOGLE/DOUBLECLICK documents the parties and their activities at notification). High-cardinality free text. |
 

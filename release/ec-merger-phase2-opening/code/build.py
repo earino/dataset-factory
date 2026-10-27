@@ -422,6 +422,12 @@ def main() -> int:
     pending_total = sum(pending_by_split.values())
     check_band(pending_total, CROSS_CHECK["pending_censored"],
                "pending-censored cases (register does not establish the label)")
+    if eligible != len(rows) + pending_total:
+        raise SystemExit(
+            f"census drift: {eligible} eligible != {len(rows)} shipped + "
+            f"{pending_total} pending. The 2026-10-27 independent audit found "
+            f"exactly this class of mismatch (33 counted vs 34 actual omitted); "
+            f"reconcile the pending bucket before shipping.")
     positives = sum(1 for r in rows if r[TARGET] == 1)
     check_band(positives, CROSS_CHECK["phase2_positives"], "Phase II positives")
     missing_sector = sum(1 for r in rows if r["has_sectors"] == 0)
@@ -611,10 +617,14 @@ def main() -> int:
                                "date-only precision, Brussels local). All shipped features "
                                "are case attributes fixed when the file is registered. The "
                                "label event - an Art. 6(1)(c) decision opening Phase II - "
-                               "is adopted after notification (measured 308/309 strictly "
-                               "after; the single pre-notification opener M.3333 is "
-                               "excluded by rule). No feature's target window precedes "
-                               "the instant.",
+                               "is adopted after notification: all 309 shipped positives open "
+                               "strictly after their case's notification (measured "
+                               "309/309; minimum lag 24 days, maximum 556; M.3333's "
+                               "2004-02-12 pre-notification opener from the annulled "
+                               "procedure is excluded as a label basis by rule and the "
+                               "case stays positive through its 2007-03-01 "
+                               "post-re-notification opener). No feature's target "
+                               "window precedes the instant.",
         },
         "target": TARGET,
         "positive_label": POSITIVE_LABEL,
@@ -633,8 +643,13 @@ def main() -> int:
         "features": FEATURES,
         "features_documented_at": "prediction_time",
         "feature_documentation": (
-            "every shipped feature is a case attribute fixed when the file is "
-            "registered, read from the register's metadata block: case_title is "
+            "shipped features are of two kinds: registration-time case "
+            "attributes (case_title, regulation, the notification fields and their "
+            "decompositions) and register-derived sector attributes "
+            "(sector_divisions, sector_count, has_sectors) coded in the register's "
+            "CURRENT-VINTAGE NACE Rev. 2 taxonomy, which is retrospective for "
+            "notifications predating that taxonomy's 2006 publication (2,904 rows) "
+            "- see the evaluation contract and limitations. case_title is "
             "caseTitle (the merging parties, an immutable historical fact; the OJ "
             "prior notice for M.4731 shows the parties and activities at "
             "notification); sector_divisions is the sorted set of NACE division "
@@ -646,7 +661,8 @@ def main() -> int:
             "entries; has_sectors flags the missing-sector cases; regulation is "
             "caseRegulation (4064/89 or 139/2004); notification_year/month are "
             "calendar decompositions of caseNotificationDate; party_count is the "
-            "number of ' / '-separated segments of caseTitle; title_has_jv flags "
+            "number of segments of caseTitle split on '/' with optional "
+            "surrounding whitespace; title_has_jv flags "
             "titles carrying a 'JV' token. caseSimplified is EXCLUDED (upgrade "
             "leak: a simplified filing upgraded to Normal during review would "
             "make the current value post-hoc), as are caseInvestigationPhase, "
@@ -660,8 +676,11 @@ def main() -> int:
                                  "case_title is the free party-name text; "
                                  "sector_divisions is the fine-grained "
                                  "combination of the case's NACE divisions "
-                                 "('C.20|G.47.11'-style), whose level count "
-                                 "exceeds rows/5 per split. A per-value AUC on "
+                                 "('C.20|G.47.11'-style), with 540 train / 414 eval / "
+                                 "668 holdout distinct levels - exceeding rows/5 only "
+                                 "in holdout, and declared here as fine-grained free "
+                                 "text in every split regardless, because a per-value "
+                                 "AUC on "
                                  "any of these memorises rows, so all three are "
                                  "declared here rather than scored as candidate "
                                  "leaks; the division-level information stays "
@@ -693,8 +712,9 @@ def main() -> int:
             {"column": "has_sectors", "unit": "flag 0/1",
              "frame": "1 when the register carries sectors for the case; the "
                       "discovery snapshot measured 79/10,123 without"},
-            {"column": "party_count", "unit": "count of ' / '-separated title "
-                                              "segments (int)",
+            {"column": "party_count", "unit": "count of title segments "
+                                              "split on '/' with optional whitespace "
+                                              "(int)",
              "frame": "derived from caseTitle, fixed at registration; a proxy for "
                       "deal complexity, not a verified party census (JV suffixes "
                       "count as segments)"},
@@ -839,7 +859,7 @@ def main() -> int:
                                     "at the instant",
                     "status": "verified"},
                 "party_count": {
-                    "source": "caseTitle split on ' / '",
+                    "source": "caseTitle split on '/' with optional whitespace",
                     "availability": "caseTitle is fixed at registration "
                                     "(M.4731 OJ notice names the same parties); "
                                     "the count is a deterministic derivation",
@@ -951,6 +971,38 @@ def main() -> int:
         "built_at_utc": built_at,
         "shipped_columns": COLUMNS,
     }
+    # Independent pre-flip audit (2026-10-27): blanket "verified" statuses
+    # overclaim availability at the notification instant. Registration-time
+    # attributes are ASSUMED available from the register's own semantics
+    # (current-snapshot reproduction is verified for every row); the sector
+    # trio is UNVERIFIED - current-vintage NACE Rev. 2 coding is retrospective
+    # for notifications predating the taxonomy's 2006 publication.
+    _registration_time = {"case_number", "notification_date",
+                          "notification_year", "notification_month",
+                          "regulation", "case_title", "party_count",
+                          "title_has_jv"}
+    _fe = quality["evaluation_contract"]["feature_evidence"]
+    for _name, _entry in _fe.items():
+        if _name in _registration_time:
+            _entry["status"] = "assumed"
+        else:
+            _entry["status"] = "unverified"
+            _entry["availability"] = _entry["availability"] + (
+                " Current-vintage NACE Rev. 2 coding is retrospective for "
+                "notifications predating the taxonomy's 2006 publication "
+                "(2,904 rows); historical availability at notification is "
+                "not verified - retrospective research use only.")
+    quality["evaluation_contract"]["limitations"] = list(
+        quality["evaluation_contract"].get("limitations", [])) + [
+        "Dependence across repeated transactions is not captured by "
+        "notification-day clustering: holdout contains two positive IAG / AIR "
+        "EUROPA cases (M.9637, notified 2021-05-25, and M.11109, notified "
+        "2023-12-11).",
+        "The stock reference model (0.6973 eval AUC) is a reproducible but weak "
+        "baseline, not an established performance ceiling (the independent "
+        "audit's untuned logistic variant scored 0.8144 eval / 0.7767 holdout "
+        "on the same rows).",
+    ]
     (out / "quality.json").write_text(json.dumps(quality, indent=1) + "\n")
 
     # ---- summary.json (construction diagnostics; no performance numbers) --

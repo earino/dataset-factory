@@ -26,8 +26,9 @@ on arrival before anything else was done.
    `ACCEPTED: /output/extract matches the qualified artifact e5a98dfc9c05d0b0`
    before any performance figure was computed. The construction stage computes
    no performance metric; the post-acceptance reference scores were computed only
-   after acceptance by `source/score.py` (shipped in the factory repository, byte
-   digest recorded in `MANIFEST.json`).
+   after acceptance by `code/score.py` (shipped in this release, byte
+   digest recorded in `MANIFEST.json`; the paired-bootstrap recipe is
+   `code/report.py`, same digest discipline).
 2. **Runner-contract baseline (worker, 2026-10-27).** Worker job
    `ec-merger-baseline-001` (server 172773775, 78.5 s, exit 0) fetched the five
    accepted files from the private staging release (digest-verified on arrival),

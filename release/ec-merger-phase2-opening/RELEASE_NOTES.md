@@ -83,7 +83,8 @@ benchmark's score is holdout AUC.
 - One pre-notification opener case (M.3333 SONY/BMG re-notification) is handled
   by a recorded rule: label decisions predating the notification do not count;
   the case stays positive on its 2007-03-01 opener.
-- 33 pending cases are censored (counted per split in the build summary; 26 of
-  them are live 2026 filings - recent-year labels are still maturing).
+- 34 pending cases are censored (counted per split in the build summary; 26 of
+  them are live 2026 filings - recent-year labels are still maturing; the count
+  was corrected from 33 by the independent pre-flip audit, 2026-10-27).
 - Eval positives are thin (46 over five years); the per-year AUCs above are
   correspondingly uncertain.

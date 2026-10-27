@@ -47,6 +47,30 @@ Expect both to print **Eval AUC: 0.6973** on the 1,770 eval rows (the exact figu
 measured on these bytes are in `VERIFICATION.md`; a materially different number means
 the bytes or the runner were changed).
 
+## 3b. Re-run the reference scores and the paired bootstrap
+
+The comparator recipes that produced every reference figure (sector-division prior,
+sector-combination rate, calendar identity, title-token rate, recent rate) and the
+paired row-bootstrap differences are shipped in this release: `code/score.py`
+(references + `paired_bootstrap_difference`, the exact RNG recipe and draw count
+used for the published intervals) and `code/report.py` (the worker-side report
+assembly that calls it):
+
+```bash
+python3 code/qualify_dataset.py ./task --report gate-report.json
+python3 code/score.py --data ./task --report references.json --accepted-report gate-report.json
+```
+
+`score.py` refuses to score unless the gate report passed and binds its output to
+the artifact digest. Expect the reference AUCs recorded in `measurements.json`
+(sector_division_rate 0.7679, calendar_identity 0.5606, recent_rate 0.5000,
+full-model stock 0.6973) and the paired bootstrap intervals recorded there.
+The independent pre-flip audit (2026-10-27) reproduced the stock and
+sector-prior figures from these bytes with its own frozen recipes and confirmed
+the honest negative paired difference; its untuned logistic variant scored
+0.8144 eval / 0.7767 holdout, so the stock figure is a reproducible weak
+baseline, not a ceiling.
+
 ## 4. Rebuild from source (optional)
 
 `code/build.py` is the construction script. It fetches the publisher's current daily
