@@ -315,3 +315,37 @@ python3 candidates/unhcr-refugee-data-finder/probe_hdx_asylum_fixture.py     # k
 ```
 Each probe's `--csv` defaults to the scratch download; re-fetch with the curl command
 above to reproduce.
+
+## Construction design decision (2026-10-27, pre-launch preflight)
+
+The 2026-10-23 scratch download was pruned, so a bounded preflight re-fetched the
+pinned CSV once (sha256 d5808616c3d10d33925d4df5a3182a2028dd574d111e843cc207455ba45fe950,
+byte-identical to the discovery pin, 8,669,567 bytes) and measured population
+structure only - no label, no rate, no model anywhere. Measured on eligible
+corridor-years (year-D G/P total >= 500):
+
+- host-silent-in-D+1 rows: train 21, eval 7, holdout 5 - subtracting these from
+  eligible reproduces the recorded split counts exactly (3,698-21=3,677,
+  1,925-7=1,918, 1,999-5=1,994), confirming the same vintage.
+- published year-D-1 cell present: train 3,377/3,698, eval 1,893/1,925,
+  holdout 1,966/1,999. The train gap is dominated by label-year 2001 (D=2000:
+  193 eligible corridors, none has a published 1999 value because the panel
+  starts 2000).
+
+Decision recorded before launch: the build requires a published year-D-1
+corridor value as part of eligibility (decidable at the instant; the momentum
+feature family needs it), and counts every excluded row per split with reason.
+Impact vs the recorded no-D-1 counts, measured in the local full dry run and
+re-measured by the worker build: train 3,363 rows / 283 positives / 183
+clusters (recorded 3,677/302/198), eval 1,887/165/109 (1,918/166/109),
+holdout 1,962/227/133 (1,994/234/135). Eval and holdout stay far above the
+gate minimums (30 positives / 20 distinct events).
+
+Features frozen (all published years <= D): origin, asylum, target_year,
+apps_d, apps_d1, log_growth_d, surged_recently, host_apps_d, host_growth_d,
+origin_apps_d, origin_growth_d, corridor_age; carry target_date (split time
+column) and surge_cluster (origin|label-year event key); id row_id; target
+doubled. The year-D+1 value never ships. Cross-row probe declared to the gate:
+next_label_year_exposes_outcome (copy of surged_recently from the same corridor
+12 months later - exactly the earlier row's label), executed by gate 1.5.0 on
+the worker across all splits.

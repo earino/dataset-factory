@@ -23,6 +23,73 @@ commit 8512fd8). Close #17; ordinary advancement thereafter is source-specific
 candidate review - review the next candidate's source-specific prediction contract
 and update its builder before construction; #25 remains deferred.
 
+## 2026-10-27 (19:00Z) - unhcr-refugee-data-finder QUALIFIED on the worker (unhcr-001 green: gate 1.5.0 45/45, exact-byte accepted, references recorded); runner-contract baseline is the prepared next step
+
+Advancement session, one primary candidate (from the operator's actionable list; no
+actionable packaged release exists - ec-merger-phase2-opening is awaiting_operator, a
+human wait). Construct -> qualify -> accept -> references ran in the fixed order on one
+worker; NO performance figure was computed before acceptance, and no full-model figure
+exists yet.
+
+- Pre-launch preflight (bounded, no labels/scores): re-fetched the pinned HDX applications
+  CSV once - byte-identical to the discovery pin (sha256 d5808616c3d10d33925d4df5a3182a
+  2028dd574d111e843cc207455ba45fe950, 8,669,567 B). Population structure confirmed the
+  recorded split counts exactly (3,698-21=3,677 / 1,925-7=1,918 / 1,999-5=1,994) and
+  measured published-year-D-1 presence (train 91.3%, eval/holdout 98.3%), which decided
+  the one design refinement: eligibility now requires a published year-D-1 corridor value
+  (decidable at the instant; the momentum feature family needs it). Every excluded row is
+  counted per split with reason (missing_history 377, host-silent unobserved_target 33,
+  live-edge label-year-2026 496); preflight details in the candidate notes.
+- unhcr-001 (worker 172873699, cx23, container run 16.2 s, exit 0, staging release
+  425843785 tag job-unhcr-001): build.py fetched the pinned CSV (worker fetch sha256
+  matches the pin), asserted all four known-event fixtures in-build (SYR->DEU 2015 TRUE,
+  AFG->USA 2022 TRUE, AFG->DEU 2022 FALSE, UKR->POL below-eligibility), built the
+  corridor-year panel (G/P persons, all application types summed), and wrote the runner
+  layout + quality.json with timing (publication instant, measured 232-day lag from the
+  observed 2026-08-20 refresh carrying complete 2025 data), evaluation_contract
+  (retrospective_research / isolated_rows / training_label_timing unverified /
+  current_snapshot vintage / prediction_time selection with counted label-observability
+  censoring) and a cross-row probe. The split CSVs are byte-identical to the
+  coordinator-class dry run (train c7ebd552f1158bd5..., eval 4b7f06c3afd9eec2...,
+  holdout 54decaaaf74eac1e..., meta 595aab31c00772d9...) - deterministic construction.
+- Gate 1.5.0 on the full artifact on the worker: ok, 45 checks, 0 failed. Exact-byte
+  --accept: ACCEPTED, artifact_version
+  6fa7becdf32925b74522c81001dcfe802b6a389425fd6deb4af4fc25ba7f1f53. The gate executed the
+  declared cross-row probe on every split: coverage 2439/1265/1239 rows
+  (train/eval/holdout), 0 mismatches - the panel's self-answering exposure (a label-year
+  T+1 row's surged_recently equals the label-year T row's label) is measured and
+  recorded, which is why access is isolated_rows under a restricted-protocol
+  retrospective-research posture, with no historical-forecasting claim.
+- Artifact: train 3,363 rows / 283 positives / 183 (origin,label-year) clusters, eval
+  1,887 / 165 / 109, holdout 1,962 / 227 / 133 (label-year windows 2001-2016 rows land
+  2002-2016, 2017-2021, 2022-2025; both classes everywhere; far above the 30/20 gate
+  minimums). Features are published-years-<=D only: corridor levels and log growth at D,
+  host/origin context, corridor age, identity and calendar; the year-D+1 value never
+  ships.
+- Post-acceptance simple references (eval-only, train-fitted, holdout sealed): momentum
+  0.5742 AUC, surge-flag 0.5856, calendar-identity 0.5409 (rows 1,887, positives 165,
+  train rate 0.0842). Paired differences vs calendar identity are inconclusive at 95%
+  (momentum diff +0.0332, CI [-0.0335, +0.1065]; surge-flag +0.0447, CI [-0.0107,
+  +0.1058]). Per-label-year: 2020 inverts momentum (AUC 0.116 with only 6 positives -
+  pandemic-year application collapse); 2017 momentum 0.745. The full model (the triad's
+  third member) is NOT computed yet - that is the baseline job.
+- Cleanup: worker destroyed and provider-confirmed (Hetzner read-back 404, server
+  172873699); reports collected and verified against the staging manifest
+  (.factory/unhcr-001/reports/); qualification/references/summary copied into
+  candidates/unhcr-refugee-data-finder/baseline/ for the baseline bundle.
+- Gate --selftest passed before launch (broken fixtures still rejected); local full dry
+  run used only to fix two construction bugs pre-worker (string formatting in fmt_num,
+  exclusive split-window ends) - the authoritative gate/accept ran on the worker.
+
+Next action: launch unhcr-baseline-001 - the runner-contract baseline (harness
+train.py/validate.py/validate.sh verbatim) against the accepted artifact fetched from
+staging release 425843785. baseline/ already carries run.sh, materialize.py, report.py
+(paired model-vs-reference comparison on identical eval rows), qualification.json,
+references.json, summary.json; the only mechanical steps left (job.json fetch block
+from the staging manifest, bundle.json mirroring ec-merger-baseline, assemble, plan,
+launch) are written out in the candidate record's next_action. After it lands: interpret
+model-vs-momentum with the per-label-year breakdown, then package per dataset-release.
+
 ## 2026-10-27 (16:45Z) - Africa-focus discovery: NEW ready candidate za-statsa-liquidations-exceedance (Stats SA P0043.1 panel); Ghana closed under class C standing policy; Morocco reopen condition not met; ZA DWS still blocked from coordinator
 
 Discovery-only session, regional focus Africa. One new ready candidate, one lead

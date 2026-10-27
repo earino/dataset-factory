@@ -1,0 +1,131 @@
+{
+ "name": "unhcr-refugee-data-finder",
+ "stage": "post-acceptance simple references (eval only, train-fitted)",
+ "artifact": {
+  "accepted_report_ok": true,
+  "artifact_sha256": null,
+  "gate_version": "1.5.0"
+ },
+ "rows": 1887,
+ "positives": 165,
+ "train_positive_rate": 0.084151,
+ "recent_train_label_years": [
+  2014,
+  2015,
+  2016
+ ],
+ "references": {
+  "persistence_momentum": {
+   "applicable": true,
+   "definition": "score = log_growth_d = ln(apps_d+1)-ln(apps_d1+1), the corridor's own last-step growth observed at the instant (the most recent observed analogue)",
+   "auc": 0.574165,
+   "brier": null,
+   "note": "rank reference; Brier needs calibrated probabilities which a growth score is not"
+  },
+  "persistence_surge_flag": {
+   "applicable": true,
+   "definition": "score = surged_recently = apps_d >= 2 x apps_d1: did the corridor already double into year D?",
+   "auc": 0.585619,
+   "brier": 0.216216
+  },
+  "calendar_identity": {
+   "applicable": true,
+   "definition": "train-estimated positive rate per (origin, asylum) corridor, per-origin fallback, global train-rate fallback; identity-only prior from training rows",
+   "auc": 0.540927,
+   "brier": 0.115635,
+   "coverage": {
+    "corridor_known": 1457,
+    "origin_fallback": 377,
+    "global_fallback": 53
+   }
+  },
+  "recent_rate": {
+   "applicable": true,
+   "definition": "constant train positive rate over the last three train label-years [2014, 2015, 2016]: the era-drift analogue for a task with no same-entity persistence at a longer horizon",
+   "rate": 0.146421,
+   "brier": 0.083273,
+   "note": "constant: AUC null (no ranking information)"
+  },
+  "majority_class": {
+   "applicable": true,
+   "definition": "majority label fitted on train, measured against this split's labels",
+   "prediction": 0,
+   "accuracy": 0.9125596184419714,
+   "note": "constant: AUC null (no ranking information)"
+  },
+  "global_rate": {
+   "applicable": true,
+   "definition": "constant train positive rate",
+   "rate": 0.084151,
+   "brier": 0.079805,
+   "note": "constant: AUC null (no ranking information)"
+  }
+ },
+ "comparisons": {
+  "momentum_vs_calendar_identity": {
+   "observed_difference": 0.033238,
+   "auc_a": 0.574165,
+   "auc_b": 0.540927,
+   "ci95": [
+    -0.033548,
+    0.106532
+   ],
+   "bootstrap_samples": 1000,
+   "note": "paired row bootstrap on identical eval rows; an interval containing zero is an inconclusive difference, not parity"
+  },
+  "surge_flag_vs_calendar_identity": {
+   "observed_difference": 0.044693,
+   "auc_a": 0.585619,
+   "auc_b": 0.540927,
+   "ci95": [
+    -0.01072,
+    0.105755
+   ],
+   "bootstrap_samples": 1000,
+   "note": "paired row bootstrap on identical eval rows; an interval containing zero is an inconclusive difference, not parity"
+  }
+ },
+ "per_label_year": {
+  "2017": {
+   "rows": 361,
+   "positives": 27,
+   "positive_rate": 0.074792,
+   "momentum_auc": 0.7450654247061432,
+   "surge_flag_auc": 0.6475382568196939,
+   "calendar_identity_auc": 0.5553892215568862
+  },
+  "2018": {
+   "rows": 386,
+   "positives": 41,
+   "positive_rate": 0.106218,
+   "momentum_auc": 0.656769176387416,
+   "surge_flag_auc": 0.6276069282431955,
+   "calendar_identity_auc": 0.5134676564156946
+  },
+  "2019": {
+   "rows": 423,
+   "positives": 34,
+   "positive_rate": 0.080378,
+   "momentum_auc": 0.6272493573264781,
+   "surge_flag_auc": 0.6644488129442008,
+   "calendar_identity_auc": 0.6108800846816875
+  },
+  "2020": {
+   "rows": 414,
+   "positives": 6,
+   "positive_rate": 0.014493,
+   "momentum_auc": 0.11642156862745098,
+   "surge_flag_auc": 0.41911764705882354,
+   "calendar_identity_auc": 0.5759803921568627
+  },
+  "2021": {
+   "rows": 303,
+   "positives": 57,
+   "positive_rate": 0.188119,
+   "momentum_auc": 0.5683925260305235,
+   "surge_flag_auc": 0.5329482242190843,
+   "calendar_identity_auc": 0.49575666809299673
+  }
+ },
+ "interpretation_note": "one weak or strong reference does not establish the task's usefulness or impossibility; the full model is the harness runner's job and its figure is quoted beside these when it exists. The holdout is sealed until the design is frozen."
+}
