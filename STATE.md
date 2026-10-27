@@ -23,6 +23,65 @@ commit 8512fd8). Close #17; ordinary advancement thereafter is source-specific
 candidate review - review the next candidate's source-specific prediction contract
 and update its builder before construction; #25 remains deferred.
 
+## 2026-10-27 (21:20Z) - South/South-East Asia discovery tick: Malaysia river access contract solved by portal redesign, but history reduced to a 7-day window (operator decision required); IMD network blocker resolved, free inventory confirmed aggregate-only; BMKG historical felt catalogue found behind captcha gate; data.gov.in probe prepared, launch blocked by release-work guard
+
+Regional tick (India, Indonesia, Malaysia, Philippines, Thailand, Vietnam, Singapore).
+Four parked regional candidates re-probed from the coordinator; one new probe worker
+prepared but not launched. No verdicts changed to ready or dropped; all four stay parked
+with sharper, measured blockers and explicit operator decisions.
+
+- malaysia-river-danger-exceedance: portal REDESIGNED between 2026-10-20 and 2026-10-28.
+  The recorded unpark step (reverse-engineer the old WordPress trend XHRs) is obsolete -
+  those endpoints now 404. New anonymous JSON API documented and measured: POST
+  /api/detailstation serves per-station current level plus the official
+  normal/alert/warning/danger thresholds, so the label definition is the publisher's own.
+  National cost measured: 15 requests -> 563 stations, 241,534 bytes, 43.6 s
+  (probe/poll_states.py committed). Decisive negative: the only historical series on the
+  public web is a 7-DAY rolling per-station graph (5-min cadence; date params ignored,
+  measured twice); data.gov.my's catalogue (355 datasets enumerated) carries no river
+  telemetry; archive.data.gov.my unreachable from the coordinator (timeout, recorded as
+  access failure); MyWater exposes only a station inventory, with history application-gated
+  via SPRHIN. Licence: still no terms text anywhere on the portal. Retrospective panel is
+  not buildable anonymously; only a forward-collection cohort remains (daily polls,
+  monsoon Nov-Mar generates positives) - needs operator authorization AND licence
+  resolution before publication.
+- imd-station-observation-series: network blocker resolved without a worker - both
+  mausam.imd.gov.in and dsp.imdpune.gov.in now answer HTTP 200 from the coordinator
+  (2026-10-20 HTTP 000 finding stale). Free Data Access page read from the publisher's
+  own instrument: exactly three free products, all national aggregates (all-India
+  monthly/seasonal temperature, rainfall, cyclonic-system frequency); no free
+  station-level series; enrolment + charges policy unchanged. mausam enumerated as a
+  forecast/bulletin portal. Stays parked on the operator's paid-enrolment decision;
+  quarterly watch = one GET of the free-data page.
+- bmkg-earthquake-felt: unpark question ANSWERED - a historical Significant/Felt
+  Earthquakes Catalog exists at repogempa.bmkg.go.id/eventcatalog (EQ Repository, linked
+  from InaTEWS/Satu Peta MKG). But retrieval is captcha-gated with 30-day windows and
+  e-mail/institution capture (hundreds of protected requests for a multi-year pull), and
+  the licence posture is all-rights-reserved + attribution-mandate with no named licence.
+  Both blockers are operator decisions (formal catalogue request with republish
+  permission, or the 12-month live-feed loop). Stays parked.
+- india-datagovin-portal + cpcb-aqi-exceedance: coordinator TCP-refusal persists
+  (re-measured; the fetch backend gets an Akamai edge error, so the origin is up).
+  Worker probe prepared and plan-verified (india-portal-probe-001, cx23/hel1, EUR 0.04
+  reservation, source committed at candidates/india-datagovin-portal/probe/), but launch
+  was REFUSED by the release_work_pending guard: unhcr-refugee-data-finder is packaged and
+  waiting on the factory, so all non-release jobs are blocked. Shipping that release is
+  advancement work and was not attempted from this discovery session; no worker was
+  created, no spend occurred (plan is offline). Next action is one launch command once
+  the release ships; the same probe reads api.data.gov.in from hel1, which also settles
+  the cpcb GODL-India claim recorded as unverified-from-here.
+
+No new candidates opened: every probed regional family (IN portals, ID earthquake, MY
+river, PH/TH/VN/SG previously closed or parked) had a record; the Malaysia probe scripts
+are committed for reproducibility. All 92 records pass check-candidate.py --all.
+
+Local test suite at close-out: 671/672 pass. The one failure
+(test_runtime_audit.test_committed_recovery_inventory_matches_all_sources, "ACCEPT FAILED:
+report was produced by gate 0.9.0, this gate is 1.5.0") was re-run on the parent commit with
+this session's changes stashed and fails identically there - pre-existing, owned by the
+ec-merger re-qualification work (latest commits ecm-requal-001), not by this diff. CI on
+this commit is expected to show that same failure; the fix belongs to advancement.
+
 ## 2026-10-27 (20:02Z) - worker-watch follow-up: unhcr-001/unhcr-baseline-001 closed and verified; unhcr-refugee-data-finder PACKAGED (private); exit-1 session's uncommitted work rescued and committed
 
 Watcher tick with both jobs terminal under the follow-up runner's mutex. The 19:49Z

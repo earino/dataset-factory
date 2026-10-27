@@ -37,3 +37,12 @@ exceedance prediction task dataset". Found: research papers with private splits
 (arXiv 2404.08702 22-station study; Discover AI 2026 hybrid DL; city-level studies),
 Kaggle data mirrors (2010-2023 CC BY-SA, 487 MB), OpenAQ/XKDR archives, Vayuayan archive.
 No packaged train/eval/holdout task with a scored contract -> differentiated.
+
+## 2026-10-28 observation (regional tick: South & South-East Asia)
+
+No reopening: CPCB's own terms remain unread. api.data.gov.in is still TCP-refused from
+the coordinator (re-measured today, HTTP 000), so the GODL-India claim recorded as
+"unverified-from-here" cannot be read from this network. The prepared worker probe
+candidates/india-datagovin-portal/probe/ (india-portal-probe-001, currently blocked by the
+release-work guard, see that record) would read api.data.gov.in from hel1 and settle
+this evidence if launched. Status unchanged: dropped, licence_class C.
