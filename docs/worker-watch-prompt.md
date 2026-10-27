@@ -119,10 +119,20 @@ are recorded. Include the commit/evidence path and remaining blocker in its one-
 summary. If collection, ownership or recording is unresolved, leave it unhandled.
 This marker acknowledges processing; it does not prove Telegram delivery.
 
-Final response: job/candidate, verified result (only qualified numbers), recorded
-commit/check status, cleanup evidence, next action/owner. No empty or one-word
-response for a finished job. Report only observed completion; planned recovery,
-deletion, commits and checks remain pending until verified. Sign `— Scout (Hermes)`.
+Final response — the operator's chat message — is a **compact signal, not an audit
+report**. The substance (figures, evidence paths, cleanup proof, next action) lives
+in STATE.md and the candidate record; that durable recording IS the report. The chat
+message is at most four short lines:
+
+- one line per finished job: `<job_id>: <succeeded/failed>, recorded at <commit short-hash>`
+- then `NEEDS YOU: <the single decision or problem>` — ONLY when something genuinely
+  requires the operator (a decision, a budget problem, a job that cannot proceed) —
+  or `NEEDS YOU: nothing` when all is handled.
+
+Never paste evidence tables, digests, diff excerpts or multi-section reports into
+the chat message. No empty or one-word response for a finished job — brevity, not
+silence. Report only observed completion; planned recovery, deletion, commits and
+checks remain pending until verified. Sign `— Scout (Hermes)`.
 
 For cleanup, distinguish **planned**, **requested but unverified**, and **deletion
 confirmed by the provider**. Never write "cleanup done pending confirmation". An
