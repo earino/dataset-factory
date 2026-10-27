@@ -217,7 +217,18 @@ release work sits for hours.
 
 When it is approved:
 
-1. **Flip both destinations, then prove it anonymously.** GitHub: `gh api -X PATCH repos/<owner>/<repo>
+0. **Offer the independent pre-flip audit.** Before the flip, generate the
+   adversarial audit prompt from
+   `templates/pre-flip-audit-prompt.md` (placeholders filled programmatically
+   from the frozen manifest and candidate record — digests never hand-copied)
+   and hand it to the operator for an independent agent. This is the standing
+   practice since the operator endorsed it on 2026-10-27: it exists because
+   blind-join label recovery has repeatedly passed every internal gate
+   (nz-ea at AUC 1.0; 7 of 10 in the catalog-wide audit). The flip waits for
+   the auditor's verdict unless the operator waves it. The auditor must be
+   independent of the sessions that built and staged the release.
+
+1. **Flip both destinations, then prove it anonymously.** GitHub: `gh api -X PATCH repos/<owner>/<repo>`
    -F private=false`. Hugging Face: `HfApi.update_repo_settings(repo_id=..., repo_type="dataset",
    private=False)` with the **write** credential (the `/settings` REST path is not the endpoint;
    asking for it returns 404). Then verify from a client with no credential at all: the repository
