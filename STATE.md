@@ -23,6 +23,75 @@ commit 8512fd8). Close #17; ordinary advancement thereafter is source-specific
 candidate review - review the next candidate's source-specific prediction contract
 and update its builder before construction; #25 remains deferred.
 
+## 2026-10-27 (12:45Z) - Latin America discovery tick: conagua-dam-drought-onset (MX) READY (go); Chile MMA episode registry probed and left closed on PDF-only labels; ANVISA/imports and dengue not opened (family precedents)
+
+Regional focus Latin America (Mexico, Chile). Discovery-only session: no
+construction, no advancement, no worker launched. Queue after this tick: 91
+candidates, 30 live, 5 ready.
+
+1. **conagua-dam-drought-onset (MX, NEW) - READY (go), licence A (CC BY 4.0
+   per the publisher's own resource record on datos.gob.mx, quoted in
+   license_evidence), novelty differentiated.** This sources the dam
+   drought-onset shape that two parked candidates failed to source
+   (tw-reservoir-drought-storage: no anonymous history; za-dws: publisher
+   blocked) - CONAGUA SIH publishes per-dam daily CSVs, one stable URL per dam,
+   210 dams, 26 states, VolumenAlm(Mm3) populated ~1990s to present, latest
+   row D-1 at fetch (files weekly-updated per publisher; one sampled dam
+   lagged 29 days, so T is measured per dam). Access: Incapsula-fronted -
+   plain urllib 403/302-loops, cookie-jar curl passes (recipe retained in
+   probe_access.py; caught it in the real browser first per the blocked-page
+   rule). Task: at fetch instant with latest row T, from rows Fecha <= T only
+   (volume, level, precip, releases), will VolumenAlm fall below 25% of the
+   dam's reference capacity within 30 days? Split capacity measured on a
+   26-dam stratified sample: 357 onset events, train<=2010 202 / eval
+   2011-2018 84 / holdout 2019-2026 71, both classes every window, 271
+   (dam,year) clusters; the full-panel count is the first worker
+   construction step (~200 MB harvest, never extrapolated). Fixture: SIH
+   Cuchillo 2024-06-09 = 363.541 Mm3 vs press-reported CONAGUA figure
+   363 hm3 / 32.3% (official capacity 1,123) - exact corroboration;
+   2022-08-27 and 2024-03-27 crossings match the documented Monterrey
+   crises. Two parse traps recorded (column order varies per file; repeated
+   header blocks - a naive fixed-index parse reads Evaporation as storage).
+   Vintage: current-vintage archive, portal warns of retroactive updates,
+   1990s partial backfill - no historical operational-availability claim
+   (same treatment as the published abs record). The weekly-report PDF
+   cross-check is inconclusive at discovery (scrambled text layer), redo at
+   construction from the FTP archive, which also carries official capacities
+   (preferred threshold frame; observed-max proxy is the strictly harder
+   threshold, so capacity holds under both). Advancement builds via worker
+   job conagua-dams-001 per the record's next_action.
+
+2. **Chile MMA GEC episode declarations - probed, not opened.** The label
+   registry (dated decrees per season, e.g. GEC 2023: 36 alertas / 18
+   preemergencias / 2 emergencias) is published only inside annual PDF
+   reports (Informe GEC); SINCA exposes no machine-readable decree history.
+   Same PDF-only blocker that dropped sag-residuos-plaguicidas (CL), and the
+   air-quality family is already declined three times for concentration
+   targets. Reopen condition (machine-readable GEC registry) recorded in the
+   candidate notes of conagua-dam-drought-onset s8; no record created to
+   avoid a third CL PDF-only duplicate.
+
+3. **Not opened, with reasons:** ANVISA food-import rejections (BR) - the
+   RASFF mirror family (rasff record dropped with named prior art;
+   population novelty is not task novelty per ar-ecobici). DATASUS/SINAN
+   dengue - saturated forecasting family. Regional coverage this tick:
+   Mexico (deep, productive), Chile (one probe, PDF-only labels). Brazil,
+   Colombia, Argentina not newly probed this tick beyond the existing
+   camara/inpe/ideam/denue records - recorded as actual coverage, not as
+   "nothing exists".
+
+Checks this tick: check-candidate --all OK; check-novelty recorded
+(differentiated, 3 catalogue sources, 0 task-form hits); unittest discover
+672 OK; factory doctor no problems; check-runtime --source-only OK.
+check-suitability exits 1 locally ONLY because advancement's untracked
+release/ec-merger-phase2-opening/ files sit on this working tree (missing
+suitability review is advancement's open item, pre-existing; CI on base
+commit c86b957 is green because the clean checkout has no such package).
+
+Next action: advancement picks up conagua-dam-drought-onset construction
+(worker harvest of all 210 dams per record next_action) or ships the
+preserved ec-merger package; both are outside this session.
+
 ## 2026-10-27 (11:13Z) - worker watcher follow-up: ec-merger-003 + ec-merger-baseline-001 handled, results verified, cleanup provider-confirmed; prior session's packaging work preserved for advancement
 
 Both jobs belong to candidate ec-merger-phase2-opening. The constructing session

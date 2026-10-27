@@ -1,0 +1,237 @@
+{
+  "id": "conagua-dam-drought-onset",
+  "status": "ready",
+  "created_at": "2026-10-27T12:00:00+00:00",
+  "domain": "water resources / national dam-storage daily panel",
+  "prediction_question": "For a Mexican dam in the CONAGUA SIH reservoir network (210 catalogued dams, 26 states) whose published stored volume VolumenAlm on the latest available day T is at or above the drought threshold (25 percent of the dam's reference capacity), will VolumenAlm fall below that threshold on at least one day in the 30 calendar days after T (a drought-onset event)? A useful prediction supports water-allocation planning, drought-monitoring inputs (the official Monitor de Sequia en Mexico uses reservoir availability as an index), and urban supply outlooks (Monterrey 2022, Tijuana 2019-2022, Falcon 2002 crises all crossed this threshold in this panel).",
+  "prediction_time": "The instant is a fetch of CONAGUA SIH's per-dam historical CSV after its weekly update (publisher statement, SIH homepage: 'La actualizacion de los archivos se realiza semanalmente' - files are updated weekly). T is the latest Fecha row present in the file at fetch. Observed 2026-10-27: the Cuchillo, La Amistad, Falcon, Solis and Infiernillo files each carried rows through 2026-10-26 (T = yesterday); one sampled dam (LDCVC) lagged at 2026-09-28, so T is measured per dam per fetch. All feature rows are Fecha <= T; every target row is Fecha in (T, T+30]. The SIH files are the publisher's cumulative current-vintage archive, not point-in-time snapshots: the portal warns 'Algunas bases de datos pueden incluir actualizaciones retroactivos por lo que la informacion historica puede cambiar en actualizaciones posteriores', and the 1990s show partial backfill (ALRBN volume column 50 percent populated 1990-1999, 100 percent from 2000). Features are therefore stated as current-vintage values, same treatment as the published abs-visitor-arrivals-direction record; no claim of historical operational availability is made (see review). The daily observation cutoff time within a day is not documented by the publisher; the contract uses whole calendar days (America/Mexico_City), features <= T, target > T, so no intra-day ordering is assumed.",
+  "target_definition": "Binary: 1 if VolumenAlm(Mm3) < threshold on at least one day with Fecha in (T, T+30] in the dam's SIH series, else 0. Label source column: VolumenAlm(Mm3) (the same column as the target variable), excluded from features by the Fecha <= T filter; no other column carries the answer. Threshold frame, two candidates measured in the sample: (a) discovery-time proxy = 25 percent of the dam's own observed maximum VolumenAlm (the SIH catalog carries no capacity column); (b) construction-time preferred frame = 25 percent of official capacity, published per dam in CONAGUA's weekly 'Almacenamiento de las Principales Presas del Pais' report (columns CAPACIDAD MUERTA / CAP. UTIL DISENO Mm3; archive at ftp://ftp.conagua.gob.mx/Gobmx/DisponibilidadenPresas/) and in the press-percentage frame (e.g. El Cuchillo capacity 1,123 Mm3 vs observed max 1,765.7 Mm3 including flood surcharge; the proxy threshold 441.4 Mm3 equals 39 percent of the official frame, so the proxy is the conservative/higher threshold and events under it are a subset of events under the official frame). Eligibility at T, from information available at prediction: dam has >= 365 prior daily VolumenAlm rows and VolumenAlm(T) >= threshold (onset formulation; days already below threshold are not prediction rows).",
+  "sources": [
+    {
+      "name": "CONAGUA Sistema de Informacion Hidrologica (SIH) - Estaciones en Presas: per-dam daily historical CSVs (Estacion, Fecha, Precipitacion(mm), Nivel(m), ObraToma(m3/s), Vertedor(m3/s), Derrame(m3/s), Evaporacion(mm), VolumenAlm(Mm3); column order varies per file and files contain repeated header/preamble blocks)",
+      "url": "https://sih.conagua.gob.mx/presas.html",
+      "api": "https://sih.conagua.gob.mx/basedatos/Presas/<CLAVE>.csv (one stable URL per dam, e.g. CCHNL.csv; catalog 0_Catalogo_de_presas.csv, 210 dams); Incapsula-fronted: plain urllib gets 403 or a 302 cookie-redirect loop, a cookie-jar client passes (recipe in candidates/conagua-dam-drought-onset/probe_access.py)",
+      "access": "anonymous; measured 2026-10-27 from the hosted coordinator: catalog 25,023 B in 2.48 s; 26 dam files 24.8 MB in ~90 s total (0.58-1.23 MB per dam, 2.2-4.9 s each)",
+      "licence": "CC BY 4.0 per the publisher's own national-portal resource record (see license_evidence)"
+    },
+    {
+      "name": "Plataforma Nacional de Datos Abiertos (datos.gob.mx) - record 'Estaciones del Sistema de Informacion Hidrologica' (CONAGUA), resource 'Presas'",
+      "url": "https://www.datos.gob.mx/dataset/estaciones_sistema_informacion_hidrologica/resource/35e8d001-6195-45c7-9a1c-58a8594fb3a1",
+      "access": "anonymous HTML; resource metadata read 2026-10-27; also carries the portal's retroactive-update warning",
+      "licence": "resource metadata field: 'Licencia | Creative Commons Attribution 4.0' (https://creativecommons.org/licenses/by/4.0/)"
+    },
+    {
+      "name": "CONAGUA weekly report 'Almacenamiento de las Principales Presas del Pais' (official capacities + weekly storage)",
+      "url": "https://www.gob.mx/conagua/documentos/almacenamiento-de-las-principales-presas-del-pais",
+      "access": "public PDFs per week since 2019 on the page; archive at ftp://ftp.conagua.gob.mx/Gobmx/DisponibilidadenPresas/ (construction-time source for official per-dam capacities)",
+      "licence": "Gobierno de Mexico public-sector publication; used for capacity metadata, not for derived rows"
+    }
+  ],
+  "license_evidence": [
+    {
+      "quote": "Licencia | Creative Commons Attribution 4.0 (https://creativecommons.org/licenses/by/4.0/)",
+      "url": "https://www.datos.gob.mx/dataset/estaciones_sistema_informacion_hidrologica/resource/35e8d001-6195-45c7-9a1c-58a8594fb3a1",
+      "text": "The publisher's own per-resource record on the national open-data platform for the SIH 'Presas' data (the series distributed at sih.conagua.gob.mx/basedatos/Presas/), read 2026-10-27. CC BY 4.0 permits redistribution and derivatives with attribution. CONAGUA publishes under the federal open-data framework (Decreto que establece la Regulacion en Materia de Datos Abiertos, DOF 20-feb-2015; CONAGUA's institutional designation letter is published at datos.conagua.gob.mx/docs/DatosAbiertos/Designacion_datosabiertos2020.pdf, read 2026-10-27)."
+    },
+    {
+      "quote": "Algunas bases de datos pueden incluir actualizaciones retroactivos por lo que la informacion historica puede cambiar en actualizaciones posteriores.",
+      "url": "https://www.datos.gob.mx/dataset/estaciones_sistema_informacion_hidrologica",
+      "text": "The portal's own warning that historical values may be revised retroactively - recorded as the vintage caveat for this source, not as a licence term.",
+      "note": "vintage caveat evidence"
+    },
+    {
+      "quote": "El modulo denominado Monitoreo de presas presenta el volumen almacenado, actualizado diariamente, de 210 presas del pais; cuenta con datos historicos desde el ano 2007. ... mismos que pueden descargarse libremente en formatos CSV, shapefile, KML o geojson.",
+      "url": "https://sinav30.conagua.gob.mx:8080/",
+      "text": "SINA (CONAGUA's statistics system) confirms the same dam-monitoring series: 210 dams, daily-updated stored volume, free download; suggested citation 'CONAGUA, Gerencia de Planificacion Hidrica, Sistema Nacional de Informacion del Agua (SINA), sitio web accedido el [dd/mm/aaaa]'. The SIH historical CSVs carry longer depth than SINA's 2007 module (per-dam daily rows from 1929 for ALRBN, volume column populated ~1990s onward)."
+    }
+  ],
+  "construction_script": null,
+  "split_strategy": "Dam-day panel, temporal windows on the prediction instant: candidate partition train T<=2010 / eval 2011-2018 / holdout 2019-2026 (all three windows observed to carry both classes in the 26-dam stratified sample: 202 / 84 / 71 onset events; construction recomputes on the full 210-dam panel, which is monotone - additional dams can only add events, never empty a window). Events cluster by dam-season: 357 events over 26 dams = 271 distinct (dam, year) clusters; clustered counts must be reported beside raw counts. Dams with zero historical onsets at the chosen threshold (4 of the 26 sampled) are an eligibility choice for construction: either exclude or keep as all-negative rows, decided and documented at build time.",
+  "measurements": {
+    "catalog_measured": "0_Catalogo_de_presas.csv: 210 dams, 26 states, columns Numero/Clave/Nombre/Latitud/Longitud/Altitud/Estado/Municipio/cuenca/region hidrologica; no capacity column (capacity comes from the weekly report archive or SISP inventory at construction)",
+    "schema_measured": "per-dam CSV header: Estacion,Fecha,Precipitacion(mm),Nivel(m),ObraToma(m3/s),Vertedor(m3/s),Derrame(m3/s),Evaporacion(mm),VolumenAlm(Mm3); two parse quirks measured and handled: (1) column ORDER VARIES per file (e.g. VolumenAlm is index 8 in ALRBN, index 4 in CCHNL/INFMC, index 5 in CILAAMSMX/CILAFLCMX) - parse by header name, never fixed index; (2) files contain repeated header + preamble blocks (multi-block layout) - split at 'Estacion,' lines and merge blocks; a naive fixed-index parse silently reads Evaporacion as storage and produces wrong volumes by 2 orders of magnitude",
+    "coverage_measured": "ALRBN daily rows 1929-01-01..2026-10-26 (33,881 rows) with VolumenAlm populated 50 percent in the 1990s, 100 percent from 2000; the 26-dam sample: 23 of 26 dams have volume rows from 1993-1995 onward, earliest starts 2002-03-20 (ELOSL) and 2006-07-14 (CJNNR); latest row 2026-10-26 for 25 of 26 dams, 2026-09-28 for LDCVC",
+    "access_block_measured": "Incapsula fronting on sih.conagua.gob.mx: plain python urllib = HTTP 403 (catalog) or 302-to-self redirect loop (station files); curl with cookie jar + one redirect hop = HTTP 200 on first retry (measured 2026-10-27); TLS chain valid (GlobalSign Atlas R46 DV, verify ok)",
+    "fetch_cost_measured": "hosted coordinator (4 vCPU), 2026-10-27: catalog 25,023 B / 2.48 s; 6-dam probe 5.6 MB / 21.6 s; 20-dam stratified probe ~19.2 MB / ~70 s; total 26 dams 24.8 MB / ~90 s, all 200 OK, zero failures after cookie jar. Extrapolated full panel: ~210 dams x ~0.96 MB ~= 200 MB, ~13-20 min single-threaded - a worker-scale one-shot harvest, NOT to be done on the coordinator (coordinator rule)",
+    "split_windows_sample_26dams": {
+      "onset_events_at_25pct_of_observed_max": 357,
+      "train_T<=2010": 202,
+      "eval_2011-2018": 84,
+      "holdout_2019-2026": 71,
+      "clusters_dam_year": 271,
+      "note": "stratified sample (1 dam per state where available + 7 named large/drought-prone dams); per-dam counts in notes.md; full-panel counts are the first construction measurement (worker job), never extrapolated from this sample"
+    },
+    "per_dam_sample_events": {
+      "CCHNL El Cuchillo NL (vmax 1765.7)": "6 onsets: 1996-01-22, 2001-11-14, 2002-02-20, 2012-12-06, 2022-08-27, 2024-03-27",
+      "CILAAMSMX La Amistad Coah (vmax 2254.2)": "13 onsets (first: 1995-01-07, 1997-05-02, 1997-05-07, 1998-05-02, 2005-03-19...)",
+      "CILAFLCMX Falcon Tamps (vmax 1742.5)": "16 onsets (first: 1994-04-16, 1995-01-07, 2002-12-21, 2002-12-25, 2006-05-06...); observed minimum 0.8 Mm3 on 1995-05-05",
+      "IALGJ Ignacio Allende Gto (vmax 233.7)": "24 onsets 1993-2002+",
+      "INFMC Infiernillo Mich (vmax 10441.0)": "2 onsets: 2018-05-30, 2023-06-20 (large dam rarely below 25 percent)",
+      "SLSGJ Solis Gto (vmax 985.3)": "7 onsets 1995-2012",
+      "no-event dams in sample": "CDOOX, CJNNR, LDACM, NGRAG (0 onsets at 25 percent of observed max); ANGCP 2, PSANL 3, CBRDR 6, ELZBN 6, ELOSL 7"
+    },
+    "known_event_fixtures": [
+      {
+        "event": "El Cuchillo (Monterrey's main supply) at critical low during the national drought; press-reported CONAGUA figure",
+        "expected_verdict": "SIH VolumenAlm on 2024-06-09 ~= 363 Mm3 (~32 percent of official 1,123 Mm3 capacity); source Excelsior 2024-06: 'tan solo 363 hectometros cubicos... 32.3 por ciento de su capacidad'",
+        "measured": "SIH CCHNL 2024-06-09 = 363.541 Mm3 (363.5/1123 = 32.4 percent) - matches the independently reported figure within 0.2 percent; adjacent days monotone (366.148 on 06-07, 361.586 on 06-11)"
+      },
+      {
+        "event": "Monterrey 2022 emergency hidrica (Cuchillo trajectory); and spring-2024 pre-Alberto low",
+        "expected_verdict": "SIH shows the 2022 decline crossing the 441.4 Mm3 proxy threshold on 2022-08-27 and the 2024 crossing on 2024-03-27, followed by the reported refill to ~100 percent after Tropical Storm Alberto (late June 2024, press)",
+        "measured": "CCHNL 2022-06-15 508.809 -> 2022-08-26 441.756 -> 2022-08-27 441.105 (crossing) -> 2022-09-15 still below; 2024-03-27 onset then June 2024 values ~363"
+      }
+    ],
+    "cross_check_summary": "Against the publisher's own weekly summary product: INCONCLUSIVE at discovery time - the 'Periodo del 4 al 11 de Marzo de 2019' PDF's machine text extraction is column-scrambled (e.g. elevation 2047.57 m listed for the Tijuana dam), so no clean cell-level match could be made; redo at construction with a proper PDF table parse of that archive (ftp://ftp.conagua.gob.mx/Gobmx/DisponibilidadenPresas/). Against independently reported CONAGUA figures (press, June 2024 El Cuchillo): exact corroboration (363.541 vs 363 hm3, 32.4 vs 32.3 percent).",
+    "as_of_policy": "features = rows with Fecha <= T from the file as fetched at the weekly-updated archive; T = max(Fecha) present per dam at fetch; current-vintage values (publisher warns of retroactive updates; 1990s backfill observed); no point-in-time historical snapshots exist, so no historical operational-availability claim is made - same current-vintage treatment as the published abs-visitor-arrivals-direction dataset",
+    "measured_on": "2026-10-27, hosted coordinator, scripts retained at candidates/conagua-dam-drought-onset/probe_*.py; raw sample files in ephemeral scratch (opt/data/cache/scratch), JSON summaries conagua_sample_summary2.json + conagua_splits_sample.json"
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": "Five contracts, reconciled against written evidence: (1) Redistribution SUPPORTED - CC BY 4.0 on the publisher's own resource record (class A), quoted with URL; attribution 'CONAGUA, SIH' carried into LICENSE.md at release. (2) Prediction timing SUPPORTED with documented vintage limitation - the instant is stateable and observed (weekly-updated file; T = latest Fecha, measured 2026-10-26 on a 2026-10-27 fetch; one sampled dam lagged 29 days, so T is measured per dam per fetch); every feature row is Fecha <= T, the whole target window is Fecha > T; current-vintage treatment documented because the publisher warns of retroactive updates and the archive is cumulative (partial 1990s backfill observed) - no historical operational-availability claim, which is what the evaluation contract must state. (3) Target SUPPORTED - label from VolumenAlm(Mm3) rows after T, excludable by date filter; eligibility defined only from information at T (>= 365 prior rows, volume at/above threshold); censoring: missing days recorded as absent rows (no fabricated zero volumes), and right-edge truncation only affects the last 30 days; threshold frame ambiguity identified and bounded - two frames measured, the proxy is the strictly harder threshold, so events under the proxy are a subset of events under the official-capacity frame and capacity holds under both. (4) Split capacity SUPPORTED - 26-dam stratified sample measured from the source: 357 onset events, 202/84/71 across train/eval/holdout, both classes in every window, 271 (dam, year) clusters recorded; the full-panel count is a worker measurement recorded as the first construction step (monotone in dams: additional dams cannot empty a window). (5) Not a mirror SUPPORTED - novelty check recorded with verdict differentiated: prior art ships raw series (ResOpsUS 679 US dams; GROWL 4,134 global series) or closed-data studies (T\u00fcrkiye, data 'under official permission and commercial terms'); no ML-ready public dam-storage drought-onset prediction task with an as-of policy, splits and a scored contract exists for Mexico or any jurisdiction; this task shape was probed twice before on this bench (tw-reservoir-drought-storage, za-dws-dam-storage-exceedance) and both died on ACCESS, never sourcing the shape - this candidate sources it. Unresolved, recorded: full-panel split counts (worker prerequisite); official per-dam capacities need a proper parse of the weekly-report archive (the PDF text layer is scrambled); intra-day observation cutoff undocumented (contract avoids assuming one); the weekly-summary cell-level cross-check is deferred to construction with the press-figure corroboration standing in its place.",
+  "next_action": "Construction on a worker (the 200 MB harvest must not run on the coordinator): (1) job conagua-dams-001: harvest all 210 station CSVs with the cookie-jar recipe from probe_access.py, robust-parse (block-split + by-name columns), record per-dam coverage and the full-panel split counts at BOTH threshold frames (25 percent of observed max; 25 percent of official capacity from the weekly-report archive) - expected artifact: per-dam-day panel with per-window onset counts and clustered counts; (2) assert the two recorded fixtures in-build (CCHNL 2024-06-09 = 363.541 Mm3; CCHNL crossing 2022-08-27; Falcon 2002-12-21 onset); (3) construct per docs/PREDICTION-CONTRACT.md with evaluation_contract declaring the current-vintage as-of policy; (4) dataset-qualification gate on the worker, exact-byte acceptance, then reference baselines (persistence and seasonality references measured on written rows). Check that decides success: full-panel split counts keep both classes in all three windows at the chosen threshold frame, and fixtures pass.",
+  "jurisdiction": {
+    "country": "MX",
+    "region": "Latin America",
+    "publisher": "Comision Nacional del Agua (CONAGUA), Gobierno de Mexico",
+    "recorded_at": "2026-10-27"
+  },
+  "licence_class": "A",
+  "licence_note": "CC BY 4.0 per the CONAGUA resource record on datos.gob.mx; attribution 'Source: CONAGUA SIH (Sistema de Informacion Hidrologica), sih.conagua.gob.mx' carried verbatim into LICENSE.md; SINA's suggested citation format preserved. Federal open-data framework: Decreto en Materia de Datos Abiertos (DOF 20-feb-2015).",
+  "verdict": "go",
+  "novelty_check": {
+    "checked_at": "2026-10-27T12:33:38+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "reservoir storage prediction",
+      "dam water level forecasting",
+      "drought onset prediction dataset",
+      "CONAGUA presas"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "reservoir storage prediction",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "dam water level forecasting",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "drought onset prediction dataset",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "CONAGUA presas",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "reservoir storage prediction",
+          "hits": 151591,
+          "top": [
+            "ds153/TRABUS_Reservoir_ML_Data: Latest Release",
+            "Global Reservoir Sedimentation Rate (GRSR) dataset",
+            "Global Reservoir Sedimentation Rate (GRSR) dataset",
+            "Tools for assessing hydrologic challenges and restoration potential of reservoir deltas: case studies from Southern California",
+            "Bleaching Mechanisms and Reservoir Quality in Buntsandstein Sandstones: Limitations of Outcrop Analogue Use"
+          ]
+        },
+        {
+          "query": "dam water level forecasting",
+          "hits": 493898,
+          "top": [
+            "Smart monitoring system of Najran dam",
+            "Solar Based Dam Water Level Automation",
+            "Modelling outputs of the AWESOME water supply model of the Nile River Basin",
+            "Evaluation of CHIRPS Data for Hydrological Modeling in Data-Scarce West African Basins and Deep Learning Inflow Prediction",
+            "USE OF MODERN TECHNOLOGIES IN DETERMINATION OF HYDRAULIC AND HYDROLOGICAL PARAMETERS OF WATER RESERVOIRS"
+          ]
+        },
+        {
+          "query": "drought onset prediction dataset",
+          "hits": 400418,
+          "top": [
+            "Flash drought monitor (FDM) datasets",
+            "Spectral reflectance of a zoysiagrass mapping population in response to drought",
+            "NESTLER - Drought Prediction Dataset",
+            "mosman01/Flash_Droughts: Flash Droughts - SMVI",
+            "A global drought monitoring system and dataset based on ERA5 reanalysis: A focus on crop-growing regions"
+          ]
+        },
+        {
+          "query": "CONAGUA presas",
+          "hits": 781,
+          "top": [
+            "BioclimaMX Stations: Mexican Climate Station Records (CONAGUA), Augmented with NASA POWER",
+            "O uso de algemas em parturientes de acordo com o ordenamento jur\u00eddico brasileiro",
+            "bioclimamx/conagua-etl: v0.1.1",
+            "AS MEM\u00d3RIAS DAS PRESAS POL\u00cdTICAS DA TORRE EM UMA DIMENS\u00c3O P\u00daBLICA",
+            "Fig. 4 in Diversity of Scarabaeinae Dung Beetles (Coleoptera: Scarabaeidae) on Cattle Ranches of Tabasco, Mexico"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "reservoir storage prediction",
+          "hits": 5,
+          "top": [
+            "Reservoir-Engineered Low-Threshold Quantum Energy Storage",
+            "Privacy-Preserving Distributed Control for a Networked Battery Energy Storage System",
+            "A Substrate-Independent Framework to Characterise Reservoir Computers",
+            "A Spectral Interpretation of Redundancy in a Graph Reservoir",
+            "Neuromorphic Electronic Systems for Reservoir Computing"
+          ]
+        },
+        {
+          "query": "dam water level forecasting",
+          "hits": 5,
+          "top": [
+            "Urban Water Consumption Forecasting Using Deep Learning and Correlated District Metered Areas",
+            "Maximal dissipation and shallow water flow -- the dam-break problem",
+            "Probabilistic Multi-Step-Ahead Short-Term Water Demand Forecasting with Lasso",
+            "Forecasting intermittent time series with Gaussian Processes and Tweedie likelihood",
+            "Quantile Regression for Qualifying Match of GEFCom2017 Probabilistic Load Forecasting"
+          ]
+        },
+        {
+          "query": "drought onset prediction dataset",
+          "hits": 5,
+          "top": [
+            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+            "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset",
+            "Focal onset seizure prediction using convolutional networks",
+            "A Machine Learning Approach to Long-Term Drought Prediction using Normalized Difference Indices Computed on a Spatiotemp"
+          ]
+        },
+        {
+          "query": "CONAGUA presas",
+          "hits": 5,
+          "top": [
+            "PRESAS: Block-Structured Preconditioning of Iterative Solvers within a Primal Active-Set Method for fast MPC",
+            "A class of non-fillable contact structures",
+            "Geometric decompositions of almost contact manifolds",
+            "Almost contact 5-folds are contact",
+            "A simple construction of positive loops of Legendrians"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'reservoir storage prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'dam water level forecasting': 0 hit(s) - nothing notable\n- huggingface_datasets / 'drought onset prediction dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'CONAGUA presas': 0 hit(s) - nothing notable\n- zenodo_records / 'reservoir storage prediction': 151591 hit(s) - ds153/TRABUS_Reservoir_ML_Data: Latest Release, Global Reservoir Sedimentation Rate (GRSR) dataset, Global Reservoir Sedimentation Rate (GRSR) dataset, Tools for assessing hydrologic challenges and restoration potential of reservoir deltas: case studies from Southern California, Bleaching Mechanisms and Reservoir Quality in Buntsandstein Sandstones: Limitations of Outcrop Analogue Use\n- zenodo_records / 'dam water level forecasting': 493898 hit(s) - Smart monitoring system of Najran dam, Solar Based Dam Water Level Automation, Modelling outputs of the AWESOME water supply model of the Nile River Basin, Evaluation of CHIRPS Data for Hydrological Modeling in Data-Scarce West African Basins and Deep Learning Inflow Prediction, USE OF MODERN TECHNOLOGIES IN DETERMINATION OF HYDRAULIC AND HYDROLOGICAL PARAMETERS OF WATER RESERVOIRS\n- zenodo_records / 'drought onset prediction dataset': 400418 hit(s) - Flash drought monitor (FDM) datasets, Spectral reflectance of a zoysiagrass mapping population in response to drought, NESTLER - Drought Prediction Dataset, mosman01/Flash_Droughts: Flash Droughts - SMVI, A global drought monitoring system and dataset based on ERA5 reanalysis: A focus on crop-growing regions\n- zenodo_records / 'CONAGUA presas': 781 hit(s) - BioclimaMX Stations: Mexican Climate Station Records (CONAGUA), Augmented with NASA POWER, O uso de algemas em parturientes de acordo com o ordenamento jur\u00eddico brasileiro, bioclimamx/conagua-etl: v0.1.1, AS MEM\u00d3RIAS DAS PRESAS POL\u00cdTICAS DA TORRE EM UMA DIMENS\u00c3O P\u00daBLICA, Fig. 4 in Diversity of Scarabaeinae Dung Beetles (Coleoptera: Scarabaeidae) on Cattle Ranches of Tabasco, Mexico\n- arxiv_preprints / 'reservoir storage prediction': 5 hit(s) - Reservoir-Engineered Low-Threshold Quantum Energy Storage, Privacy-Preserving Distributed Control for a Networked Battery Energy Storage System, A Substrate-Independent Framework to Characterise Reservoir Computers, A Spectral Interpretation of Redundancy in a Graph Reservoir, Neuromorphic Electronic Systems for Reservoir Computing\n- arxiv_preprints / 'dam water level forecasting': 5 hit(s) - Urban Water Consumption Forecasting Using Deep Learning and Correlated District Metered Areas, Maximal dissipation and shallow water flow -- the dam-break problem, Probabilistic Multi-Step-Ahead Short-Term Water Demand Forecasting with Lasso, Forecasting intermittent time series with Gaussian Processes and Tweedie likelihood, Quantile Regression for Qualifying Match of GEFCom2017 Probabilistic Load Forecasting\n- arxiv_preprints / 'drought onset prediction dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, Focal onset seizure prediction using convolutional networks, A Machine Learning Approach to Long-Term Drought Prediction using Normalized Difference Indices Computed on a Spatiotemp\n- arxiv_preprints / 'CONAGUA presas': 5 hit(s) - PRESAS: Block-Structured Preconditioning of Iterative Solvers within a Primal Active-Set Method for fast MPC, A class of non-fillable contact structures, Geometric decompositions of almost contact manifolds, Almost contact 5-folds are contact, A simple construction of positive loops of Legendrians",
+    "prior_art": [
+      "ResOpsUS (Steyaert et al. 2022; Zenodo 10.5281/zenodo.15978041 ResOpsUS+CARS 2025), GROWL (Sci Data 2026), Reservoir Storage Forecasting Troy Region T\u00fcrkiye (Sustainability 18(18):9407)"
+    ],
+    "theirs": "ResOpsUS/ResOpsUS+CARS and GROWL publish raw reservoir daily series (US and global) for model calibration and satellite validation, not a prediction task with splits and a scored contract; T\u00fcrkiye studies forecast storage on closed, permission-only data; CONAGUA publishes the raw series with no task",
+    "ours": "first ML-ready dam-storage drought-onset prediction task on Mexico's CONAGUA SIH panel (210 dams, daily 1990s-2026): binary 30-day onset from strictly-prior daily rows (volume, level, precip, releases), weekly-archive as-of policy, temporal dam-day splits with clustered counts, fixtures anchored to press-reported CONAGUA figures",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
+}
