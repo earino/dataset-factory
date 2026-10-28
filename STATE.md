@@ -23,6 +23,68 @@ commit 8512fd8). Close #17; ordinary advancement thereafter is source-specific
 candidate review - review the next candidate's source-specific prediction contract
 and update its builder before construction; #25 remains deferred.
 
+## 2026-10-28 (00:18Z) - worker-watch follow-up: ecm-requal-001/002, ecm-publish-002/003, ecm-hf-002 handled; corrected e96929ef bytes verified live on both private destinations; all five workers provider-confirmed deleted; package checksum docs still describe the superseded artifact - flip blocked
+
+The advancement session that ran the pre-flip audit corrections was cut off after
+collecting ecm-hf-002 (23:23Z), leaving the three release-job specs and ledger
+updates uncommitted and no STATE recording. This pass, under the follow-up mutex,
+rescued and verified that work; it changed no release byte, tag, manifest or
+published artifact. Its only mutation was destroying the last worker.
+
+- ecm-requal-001 (gate two-phase, worker 172896998): failed exit=2 - the gate
+  refused the first audit-corrected descriptor over the exact accepted CSV bytes
+  (fetched from staging 425292628 at digests 1619b6f4/4fb28c09/5867e34f).
+  Superseded by ecm-requal-002; diagnostics preserved on staging 425996620.
+  Ledger/spec already committed (fc12100, 1778485).
+- ecm-requal-002 (worker 172908028): succeeded exit=0. Gate 1.5.0 report ok,
+  failed_checks empty, artifact e96929ef: meta.json b139620d (1342 B),
+  quality.json 0203fdf9 (21855 B), CSVs unchanged. The accepted report ships in
+  the package (release/qualification.json, commit 7d3d180). Accepted bytes
+  durable on staging 426055208 (11 assets).
+- ecm-publish-002 (worker 172912083): failed - the transfer overwrite guard
+  correctly refused to replace the differing existing meta.json/quality.json
+  assets in private GitHub release 425556351 (transferred 0, no data lost). An
+  infrastructure guard behaving as designed, superseded by publish-003 after the
+  stale pre-correction assets were removed from the private, never-public release.
+- ecm-publish-003 (worker 172913082): succeeded. Live readback this pass: repo
+  private=true, release 425556351 non-draft, exactly 5 assets, every server-side
+  digest matches the accepted artifact - meta b139620d/1342, quality
+  0203fdf9/21855, train 1619b6f4/429048, eval 4fb28c09/155077, holdout
+  5867e34f/253649.
+- ecm-hf-002 (worker 172914463): succeeded. Uploaded corrected meta/quality to
+  Hub main; receipt binds sha256 and blob ids (meta 43509f5e, quality db133a1c) at
+  commit 91fd22bc; documented load ok=true (train 5406/217, eval 1770/46,
+  holdout 2915/46, label values ['0','1']). Live readback this pass: repo
+  private=true, main=91fd22bc, both corrected files present at the receipt blob
+  ids. CSV blob ids were not re-hashed this pass; ecm-hf-001 verified their
+  sha256 and hf-002's loading check re-exercised them at main.
+- Cleanup confirmed by the provider: all five servers (172896998, 172908028,
+  172912083, 172913082, 172914463) answer 404 on read-back; 172914463 was
+  destroyed by this pass (00:16:58Z), the other four by the advancement session.
+  Reservations: 5 x EUR 0.04.
+- DEFECT (flip blocker, belongs to advancement): the package checksum documents
+  are stale. MANIFEST.json assets/files blocks and SHA256SUMS still describe the
+  superseded meta.json (011a4c0b, 1233 B) and quality.json (ca07571c, 17064 B),
+  contradicting the accepted e96929ef report and the staged bytes;
+  check-package.py passes only because it does not re-hash those files, but
+  sha256sum -c against the release fails on both. Also stale: Hub main small
+  docs (MANIFEST 26279 B / SHA256SUMS from the 14:41Z upload), Hub tag v2026.10
+  still at pre-correction 119d2efd, and DESTINATIONS.json still records the
+  superseded e5a98dfc staging as the verified evidence (14:43Z). The dataset repo
+  main advanced to 3c004b43 and tag v2026.10 moved to be5d41ed after 14:50Z;
+  the tag-to-commit resolution was not verified this pass.
+
+Next action (advancement, before the operator's flip): regenerate MANIFEST
+assets/files + SHA256SUMS from the corrected files, re-run check-package and the
+consumer verification against the staged bytes, push the corrected docs to the
+dataset repo main and the Hub small files, re-point the Hub v2026.10 tag, update
+DESTINATIONS.json from the corrected evidence, then the operator's flip,
+anonymous verification of both destinations, status-bearing document refresh and
+the site pipeline. The candidate record cites an operator instruction ("when I
+wake up I hope this is published") as flip approval; this watcher pass did not
+treat it as authorization - worker completion grants no publication approval,
+and the watcher brief does not authorize publication.
+
 ## 2026-10-27 (21:20Z) - South/South-East Asia discovery tick: Malaysia river access contract solved by portal redesign, but history reduced to a 7-day window (operator decision required); IMD network blocker resolved, free inventory confirmed aggregate-only; BMKG historical felt catalogue found behind captcha gate; data.gov.in probe prepared, launch blocked by release-work guard
 
 Regional tick (India, Indonesia, Malaysia, Philippines, Thailand, Vietnam, Singapore).

@@ -1,352 +1,352 @@
 {
-  "id": "ec-merger-phase2-opening",
-  "status": "packaged",
-  "created_at": "2026-10-24T00:15:18.727242+00:00",
-  "domain": "EU competition policy / merger-control procedure outcomes (EU institution publisher, DG COMP open data)",
-  "prediction_question": "For a concentration notified to the European Commission under the EU Merger Regulation, using only case attributes fixed at notification (the parties as named in the case title, the case's NACE sector codes, the applicable regulation, and the notification date), will the Commission open an in-depth Phase II investigation (adopt an Art. 6(1)(c) decision) in this case?",
-  "prediction_time": "The notification date of the case (caseNotificationDate; date-only precision, Brussels local). All shipped features are case attributes fixed when the file is registered: caseTitle (the merging parties, an immutable historical fact), caseSectors (NACE codes of the parties' activities; current-vintage register coding, see revision_note), caseRegulation (4064/89 or 139/2004), caseNotificationDate. The label event - an Art. 6(1)(c) decision opening Phase II - is adopted after notification: measured 308/309 openers strictly follow the notification date (302/309 within 2 months; single documented exception M.3333, see anomalies). Fields that can change after notification are excluded from features and recorded below. No feature's target window precedes the instant.",
-  "target_definition": "Binary: the case record carries at least one decision of type 'Art. 6(1)(c)' (the decision by which the Commission initiates proceedings because of serious doubts - the Phase II opener, same article number under Reg 4064/89 and Reg 139/2004). Label source: the decisions[] block of the register record (decisionTypes, decisionAdoptionDate), which is excluded wholesale from shipped features. Measured: 309 positives / 10,123 eligible cases = 3.05%. Measured alternative recorded for construction: any-intervention union (Phase II opener OR Phase I remedies 'Art. 6(1)(b) with conditions & obligations') = 673 / 10,123 = 6.65% (remedies-only 367 = 3.63%).",
-  "sources": [
-    {
-      "name": "European Commission, Directorate-General for Competition - EU Competition: Merger case publications (open data, machine-readable case register, coverage from November 1990, updated daily)",
-      "url": "https://data.europa.eu/data/datasets/cc7e224e-6569-40f0-8037-d3389aa0fae7",
-      "api": "https://compcases-open-data-portal-files-prod.s3.eu-west-1.amazonaws.com/case-data-M.json",
-      "access": "anonymous bulk download; measured 2026-10-24: HTTP 200, 1 GET, 42,025,677 bytes, 0.87 s wall on the coordinator; publisher states the data sets are updated once a day (observed snapshot Last-Modified 2026-10-23T00:48:26Z); dataset landing page at competition-cases.ec.europa.eu is the interactive register",
-      "licence": "European Commission reuse notice -> CC BY 4.0 (see license_evidence)"
-    }
-  ],
-  "license_evidence": [
-    "DG COMP news 'DG Competition's case data available as Open Data' (https://competition-policy.ec.europa.eu/about/news/dg-competitions-case-data-available-open-data-2025-03-18_en, read 2026-10-24): 'We are releasing the data under the European Commission reuse notice, so that the machine-readable data sets can be processed in any way the users may wish, for commercial or non-commercial purposes, provided that the source is acknowledged.'",
-    "European Commission legal notice (https://ec.europa.eu/info/legal-notice_en, read 2026-10-24): 'The Commission's reuse policy is implemented by the Commission Decision of 12 December 2011 on the reuse of Commission documents... Unless otherwise indicated (e.g. in individual copyright notices), content owned by the EU on this website is licensed under the Creative Commons Attribution 4.0 International (CC BY 4.0) licence. This means that reuse is allowed, provided appropriate credit is given and changes are indicated.'",
-    "Scope note: the dataset ships register metadata (case numbers, dates, NACE codes with labels, decision-type labels, case titles). The EC notice adds 'You may be required to clear additional rights if a specific content depicts identifiable private individuals or includes third-party works' - the underlying decision PDFs (caseAttachments) are NOT shipped; only register fields are, and the same fields are the Commission's own published register data. caseTitle carries the parties' names, factual public register data."
-  ],
-  "construction_script": "candidates/ec-merger-phase2-opening/source/build.py",
-  "split_strategy": "Temporal splits on notification year, measured from the full register. Candidate partitions (both classes present in every window): full-era thirds train 1990-2013 (5,411 cases / 217 Phase II), eval 2014-2018 (1,770 / 46), holdout 2019-2026 (2,942 / 46); or post-reform (Reg 139/2004 from 2005-09): train 2005-2015 (3,451 / 101), eval 2016-2020 (1,876 / 42), holdout 2021-2026 (2,207 / 30). Construction picks one and documents it; the Art. 6(1)(c) label is the same legal instrument under both regulations. Positive cases cluster weakly by acquisition wave; intervals on any score use notification-year clusters (positives per notification year measured 1-22, median ~8). Pending cases (41 live investigation-phase cases at fetch, concentrated 2025-2026) are censored like the ABS live-month rows: scorable when their procedure concludes.",
-  "measurements": {
-    "panel_shape_measured": "case-data-M.json 2026-10-24 (sha256 in notes.md): 10,395 case records keyed by case number; 10,123 eligible (caseType=MergerCaseType1 'Merger' AND has caseNotificationDate); excluded with recorded mix: 272 no-notification-date cases (decision mix: 219 Art. 4(4)-Full referral, 17 Art. 18 SO, 15 Art. 14, 6 Art. 7(3), 4 Art. 22 Refusal, plus singletons - referral/Art. 22 procedures that never produce an EU notification), 26 'Additional Procedure' (.AP purchaser-approval records), 2 'Consultation'. Notifications per year 1990: 11 rising to 2018: 408, then 350-400/yr to 2026: 317.",
-    "label_base_rate_measured": "Phase II opener (Art. 6(1)(c) present) 309/10,123 = 3.05% of notified cases; per notification year ranges 1 (2024) to 22 (2001); Phase I remedies ('Art. 6(1)(b) with conditions & obligations') 367/10,123 = 3.63%; union any-intervention 673 = 6.65%. Decision-type inventory across all records measured and recorded in notes.md (Art. 6(1)(b) 9,170 occurrences, referrals Art. 4(4)/4(5)/9(3)/22, Art. 8(1)/(2)/(3) outcomes, Withdrawn 263, etc.).",
-    "label_timing_measured": "notification -> first opener lag in months: 1 mo 201, 2 mo 101, 0 mo 1, plus a thin tail 3-18 mo (suspended-clock and extended cases); openers dated BEFORE notification: 1 (M.3333 SONY/BMG re-notification carrying the 2004-02-12 opener of the original procedure under its 2007-01-31 re-notification - exclusion rule: drop label decisions predating notification, or drop the case). Post-hoc withdrawal of an adopted opener: 1 case (M.10188, withdrawn 2024-09-06 after the ECJ Illumina judgment) - label stays 'opened' under the ever-adopted rule; recorded.",
-    "split_window_counts_phase2_label": {
-      "train 1990-2013": "5,411 notified / 217 positive (4.01%) / 24 years, all carry both classes",
-      "eval 2014-2018": "1,770 notified / 46 positive (2.60%) / 5 years, all carry both classes",
-      "holdout 2019-2026": "2,942 notified / 46 positive (1.56%) / 8 years, all carry both classes (2024-2026 positives 1/4/3 reflect still-maturing recent procedures, not zero)"
-    },
-    "feature_coverage_measured": "caseSectors missing on 79/10,123 eligible cases (0.78%, concentrated 1997-2004); caseTitle and caseRegulation present on 100%; caseSimplified present but EXCLUDED as a feature (a simplified filing upgraded to Normal during review would make the current value post-hoc; using it leaks the upgrade); caseInvestigationPhase (41 live cases) and caseDeadlineDate/caseLastDecisionDate/caseLinks/caseCourtCases/caseRenotificationDate excluded as post-hoc or derived.",
-    "learnability_evidence_measured": "Sector-conditional Phase II rates vary well above/below the 3.05% base rate (top divisions by volume: div 20 rate 6.25% (n=256), div 61 5.23% (n=363), div 64 0.85% (n=351), div 65 0.00% (n=230), div 0 4.20% (n=1,523)) - a sector-conditional reference baseline is the required comparator, as with the matrix-stratified bvl reference.",
-    "known_event_fixtures": [
-      "M.877 BOEING / McDONNELL DOUGLAS: register shows notif 1997-02-18, opener Art. 6(1)(c) 1997-03-19, Art. 8(2) with conditions & obligations 1997-07-30, Reg 4064/89 - matches the Commission's own decision PDF (ec.europa.eu/competition/mergers/cases/decisions/m877_19970730_600_fr.pdf: notification received 18 February 1997; proceedings opened by decision of 19 March 1997) and press release IP/97/729 (30 July 1997, cleared 'under conditions and obligations'). Expected verdict: positive; observed: positive.",
-      "M.4731 GOOGLE / DOUBLECLICK: register shows notif 2007-09-21, opener Art. 6(1)(c) 2007-11-13, Art. 8(1) 2008-03-11 - matches press release IP/07/1695 (Commission opens in-depth investigation, 13 November 2007) and IP/08/458 (clearance, 11 March 2008). Expected verdict: positive; observed: positive.",
-      "M.10188 ILLUMINA / GRAIL: register shows notif 2021-06-16, Art. 22 Full referral 2021-04-19, opener Art. 6(1)(c) 2021-07-22, Art. 8(3) prohibition 2022-09-06 - matches press release IP/22/5364 (6 September 2022 prohibition, register case number M.10188), including the 2024-09-06 withdrawals after the ECJ judgment. Expected verdict: positive; observed: positive. Also demonstrates the post-hoc-withdrawal caveat."
-    ],
-    "revision_note": "The register is a current snapshot (bulk feed since 2025-03-18; interactive register earlier). Three fixtures spanning 1997-2022 reproduce external sources exactly, evidence that the register preserves historical procedure facts; features are nevertheless stated as current-vintage register values (precedent: ABS revision note). caseSectors uses NACE Rev 2 codes for all eras including pre-2008 notifications (M.877, notified 1997, coded C.30.3 'Manufacture of air and spacecraft') - the taxonomy label is current-vintage even where the underlying industries are notification-time facts; construction records this in the feature documentation and verifies one further old case's sectors against its OJ prior notice as a build-time fixture.",
-    "dated_example": "M.10188 ILLUMINA / GRAIL, all dates Brussels local (register carries date-only precision): feature event window = case attributes fixed at registration on 2021-06-16 (title 'ILLUMINA / GRAIL', sectors C.27.9 + C.21, Reg 139/2004); eligibility cutoff = caseType Merger and a notification date exists; prediction instant = 2021-06-16; target window = 2021-06-16 until the procedure's Phase I decision (by EUMR Art. 10(3) at most ~25-35 working days later, extendable); observed outcome = opener adopted 2021-07-22, 36 days after the instant, label positive. Downstream events (Art. 8(3) 2022-09-06, withdrawals 2024-09-06) are outside the label. No part of the target window precedes the instant; the same-month opener case (0-month lag) is still dated after its notification date.",
-    "fetch_cost_measured": "1 anonymous GET, 42,025,677 bytes, 0.87 s wall on the coordinator (whole-register fetch is trivial; no worker needed for discovery). S3 objects carry a 30-day expiry rule with daily regeneration - the distribution URL from the data.europa.eu record is the stable channel; construction records fetch date + sha256.",
-    "measured_on": "2026-10-24 via scripts retained in candidates/ec-merger-phase2-opening/probe_merger_*.py, commands and outputs in notes.md",
-    "qualification_measured_2026_10_26": "Full artifact built on worker ec-merger-002 from a fresh register GET (sha256 83463d00..., 42,028,198 B): eligible 10,123 notified Merger cases (= record), 33 pending-censored (register establishes neither an opener nor a terminal decision; 26 are live 2026 filings), 10,090 shipped rows, 309 positives. Gate 1.5.0 passed with no failed checks (report .factory/ec-merger-002/qualification.json); exact-byte acceptance verified. Post-acceptance references on identical eval rows (1,770 rows / 46 positives; .factory/ec-merger-002/references.json): sector-division rate AUC 0.7679 (the required comparator; corrected division grouping), sector-combination 0.7051, party-title tokens 0.6644, calendar/identity (regulation x month) 0.5606, recent-3-train-year rate 0.5 (constant), majority-class accuracy 0.9740. Paired bootstrap differences on identical eval rows (1000 resamples): sector vs global +0.2679 [0.2126, 0.3206]; sector vs calendar +0.2073 [0.1255, 0.2886]; title vs sector -0.1035 [-0.2050, -0.0207]. Persistence recorded inapplicable (each row is a newly notified case; no prior same-entity observation exists at the instant). Per-year eval sector-rate AUC 0.69-0.84 with positives 7-12/year. Prevalence shift train 4.01% / eval 2.60% / holdout 1.58% recorded as an out-of-distribution property. Corrected division inventory (train+beyond): J.61 telecoms 6.22% (27/434), C.20 chemicals 5.97% (38/637), K.65 insurance 0.24% (1/412), L.68 real estate 0.00% (0/391) - the learnability claim stands under the corrected grouping (the discovery probe's division key was malformed; see notes.md). The full model is NOT yet run: its figure must be quoted beside these references when the harness baseline job evaluates the same rows."
-  },
-  "jobs": [
-    {
-      "id": "ec-merger-001",
-      "date": "2026-10-26",
-      "outcome": "build succeeded; gate 1.5.0 refused on two descriptor truths (contract.label_availability missing training_label_timing: 'unverified'; sector_divisions undeclared high-cardinality). Declaration-only fix; CSV bytes unchanged. Worker 172531049 deleted after verified collection; bundle + gate report + container log preserved under .factory/ec-merger-001/; staging release tag job-ec-merger-001."
-    },
-    {
-      "id": "ec-merger-002",
-      "date": "2026-10-26",
-      "outcome": "succeeded: construct -> qualify (gate 1.5.0, ok, no failed checks) -> --accept exact bytes -> post-acceptance simple references. Worker 172536838 deleted after verified collection; reports preserved under .factory/ec-merger-002/; staging release tag job-ec-merger-002 (draft, assets digest-verified)."
-    },
-    {
-      "id": "ec-merger-003",
-      "date": "2026-10-27",
-      "outcome": "succeeded: construct (daily snapshot re-pinned, sha256 42041133...) -> qualify (gate 1.5.0, ok, 0 failed) -> --accept exact bytes -> post-acceptance simple references (sector_division_rate 0.7679 on the identical 1,770 eval rows, unchanged from 002). meta.json now carries the eight keys bench/workdir.py reads. Worker 172772422 deleted 10:16:42Z after verified collection; reports preserved under .factory/ec-merger-003/; staging release 425292628 (tag job-ec-merger-003)."
-    },
-    {
-      "id": "ec-merger-baseline-001",
-      "date": "2026-10-27",
-      "outcome": "succeeded: fetched the five ec-merger-003 extract files from staging 425292628 (digest-verified on arrival), re-ACCEPTed through gate 1.5.0 ('ACCEPTED: ... e5a98dfc9c05d0b0'), materialized the runner workdir (public train+eval only; holdout never copied), ran the benchmark's verbatim train.py + validate.sh (runner_files verbatim=true), contract OK. FULL MODEL eval AUC 0.6973 (train.py and validate.py agree; recomputed via predict_proba 0.69735, Brier 0.025343) vs required comparator sector_division_rate 0.7679 on the identical 1,770 eval rows: paired difference -0.0706, bootstrap95 [-0.1558, +0.0168] - interval contains zero (inconclusive difference), observed gap NEGATIVE: the stock runner baseline trails the sector prior. Model beats calendar_identity 0.5606 (+0.1367, [0.0419, 0.2321]) and recent_rate 0.5 (+0.1973, [0.1068, 0.2745]). Per-year model AUC 2014 0.6724 / 2015 0.7486 / 2016 0.9113 / 2017 0.6002 / 2018 0.5921 (7-12 positives per year; noisy). All recomputed references agree exactly with the construction-run figures. train.py's stock cardinality rule did NOT drop sector_divisions (540 train levels < 1000 cutoff; case_title and notification_date were dropped), so the gap is not a feature-availability artefact: the simple marginal per-division prior generalizes better than the stock 540-level categorical fit at 217 train positives. Majority-class accuracy on this split 0.9740. Worker 172773775 destroyed 10:24:07Z after verified collection; result + logs preserved under .factory/ec-merger-baseline-001/; staging release 425299143. Holdout remains sealed; the benchmark score is holdout AUC by agents, and the eval-window comparison is the release evidence."
-    },
-    {
-      "id": "ecm-publish-001",
-      "date": "2026-10-27",
-      "outcome": "succeeded: destination-staging transfer (release: true). Copied the five accepted ec-merger-003 assets from private staging release 425292628 into private GitHub repo earino/ec-merger-phase2-opening draft release v2026.10 (425556351) under flat asset names, each sha256 verified on arrival and against the server digest after upload (13.1 s, 0.9 MB, bytes never through the coordinator). Readback: 5/5 assets match MANIFEST.json by name/size/server-side sha256; release published non-draft creating tag v2026.10, tag == main == 47190aa; get_dataset.py executed end-to-end against the private release (856,071 bytes, all digests verified, exit 0) and gate --accept on the downloaded tree returned ACCEPTED e5a98dfc9c05d0b0; anonymous API GET 404. Worker 172827698 collected 14:31:03Z, destroyed 14:34:50Z, provider read-back 404. Pre-launch job file candidates/ec-merger-phase2-opening/publish/job.json; evidence in release/ec-merger-phase2-opening/DESTINATIONS.json."
-    },
-    {
-      "id": "ecm-hf-001",
-      "date": "2026-10-27",
-      "outcome": "succeeded: hf_publish worker job. Uploaded the five data files to the private Hub dataset repo earino/ec-merger-phase2-opening from the staged GitHub release 425556351, digest-verified at both ends (114.2 s, uploads 5, skipped 0, failures 0), then ran the documented load_dataset path against the uploaded bytes: ok=true, problems=[], train 5,406/217, eval 1,770/46, holdout 2,915/46, 12 columns, label values ['0','1'] - identical to the accepted artifact. hf-publish --verify --worker-job ecm-hf-001: ok, 5/5 at manifest digests, 0 missing/mismatched; --tag LAST: Hub tag v2026.10 == main == 119d2efd, tag_matches_main true; DESTINATIONS.json records the Hub destination. Anonymous Hub API 401; cardData.license reads back 'other' / cc-by-4.0-source-plus-cc0-compilation. Worker 172830524 destroyed 14:39:43Z, provider read-back 404. Pre-launch job file candidates/ec-merger-phase2-opening/hf/job.json."
-    },
-    {
-      "id": "ecm-requal-001",
-      "outcome": "failed 8.0 s: the transport bundle carried only run.sh (source_bundle tars the job directory, not the source_files list); the gate never ran. Preserved on staging release 425996620. Lesson folded into the assembled-job-directory pattern that 002 used."
-    },
-    {
-      "id": "ecm-requal-002",
-      "outcome": "succeeded 9.4 s: gate 1.5.0 re-qualified the audit-corrected descriptor on the exact accepted CSV bytes (fetched from staging 425292628 at audited digests), ok=true with zero failed checks, exact-byte acceptance of the new artifact e96929efbbc4fcb8\u2026; qualification.json in the package now ships this report and the manifest is regenerated from it. Staging release 426055208."
-    }
-  ],
-  "artifacts": [
-    {
-      "artifact_version": "2527012bcd34c543b046c0e8",
-      "digest_of": "sha256 over train/eval/holdout CSVs + meta.json + quality.json (gate 1.5.0 artifact_version)",
-      "gate_version": "1.5.0",
-      "accepted": "exact-byte --accept on the worker: 'ACCEPTED: /output/extract matches the qualified artifact 2527012bcd34c543'",
-      "source_snapshot": {
-        "sha256": "83463d0047cdf7aa0ace1a00a017fffaa5ba3eeedfd12ef104e8e02a9b81ceb1",
-        "bytes": 42028198,
-        "last_modified": "Mon, 26 Oct 2026 01:00:34 GMT",
-        "fetched_at_utc": "2026-10-26T11:58:16Z"
-      },
-      "splits": {
-        "train": {
-          "rows": 5406,
-          "positives": 217
-        },
-        "eval": {
-          "rows": 1770,
-          "positives": 46
-        },
-        "holdout": {
-          "rows": 2914,
-          "positives": 46
-        }
-      },
-      "pending_censored": {
-        "train": 5,
-        "eval": 0,
-        "holdout": 28
-      },
-      "distinct_positive_notification_dates": {
-        "eval": 45,
-        "holdout": 44
-      },
-      "staging_release_tag": "job-ec-merger-002",
-      "repo": "earino/dataset-factory-staging",
-      "tag": "job-ec-merger-002"
-    },
-    {
-      "artifact_version": "e96929efbbc4fcb84d2986a7e32f83f9c5fec5395124439fb3404faff2e9e662",
-      "digest_of": "sha256 over train/eval/holdout CSVs + meta.json + quality.json (gate 1.5.0 artifact_version)",
-      "gate_version": "1.5.0",
-      "accepted": "exact-byte --accept on the worker: 'ACCEPTED: /output/extract matches the qualified artifact e5a98dfc9c05d0b0'",
-      "source_snapshot": {
-        "sha256": "420411333e9b9fc27e0c2e72cbbbb419f1ba4125e7f40d98a9bc5e0911316702",
-        "bytes": 42034960,
-        "last_modified": "Tue, 27 Oct 2026 01:23:54 GMT",
-        "fetched_at_utc": "2026-10-27T10:14:03Z"
-      },
-      "splits": {
-        "train": {
-          "rows": 5406,
-          "positives": 217
-        },
-        "eval": {
-          "rows": 1770,
-          "positives": 46
-        },
-        "holdout": {
-          "rows": 2915,
-          "positives": 46
-        }
-      },
-      "pending_censored": {
-        "train": 5,
-        "eval": 0,
-        "holdout": 28
-      },
-      "distinct_positive_notification_dates": {
-        "eval": 45,
-        "holdout": 44
-      },
-      "staging_release_tag": "job-ec-merger-003",
-      "byte_diff_vs_002": "train.csv and eval.csv sha256 identical to the 002 artifact; holdout.csv +1 row (one new 2026 notification in the re-pinned daily snapshot, 10,125 eligible / 10,091 shipped / 309 positives); meta.json grew by the description/split keys; quality.json re-written for the new snapshot pin",
-      "repo": "earino/dataset-factory-staging",
-      "tag": "job-ec-merger-003",
-      "superseded_note": "supersedes e5a98dfc9c05d0b0\u2026 (descriptor/docs-only correction per the independent pre-flip audit 2026-10-27; CSV bytes identical)"
-    },
-    {
-      "kind": "destination_release",
-      "repo": "earino/ec-merger-phase2-opening",
-      "id": 425556351,
-      "tag": "v2026.10",
-      "commit": "47190aa4b3bbafbc95436ee6f76960e2a3f33843",
-      "private": true,
-      "note": "GitHub destination, staged private: 5/5 assets at the manifest digests (API readback, server-side sha256), release non-draft, tag == main == 47190aa, get_dataset.py executed end-to-end against the private release (token, 856,071 bytes, digests verified, runner layout restored) and qualify_dataset.py --accept ACCEPTED the downloaded tree (e5a98dfc9c05d0b0); anonymous API GET 404. The repository's initial docs commit c3eff13 (packaging session) was advanced to 47190aa by the review pass: the gate report ships as qualification.json and the manifest is regenerated from it. Evidence in release/ec-merger-phase2-opening/DESTINATIONS.json",
-      "artifact_version": "e96929efbbc4fcb84d2986a7e32f83f9c5fec5395124439fb3404faff2e9e662",
-      "superseded_note": "supersedes e5a98dfc9c05d0b0\u2026 (descriptor/docs-only correction per the independent pre-flip audit 2026-10-27; CSV bytes identical)"
-    },
-    {
-      "kind": "destination_hub_repo",
-      "repo": "earino/ec-merger-phase2-opening",
-      "revision_tag": "v2026.10",
-      "commit": "119d2efde7029c504e59babb9e4b0a5845eeb511",
-      "private": true,
-      "note": "Hugging Face destination, staged private: 5/5 data files at the manifest digests (hf-publish --verify ok, 0 missing, 0 size-mismatched, 0 digest-unverified) plus 10 small files (card generated from the manifest, LOADING.md, MANIFEST.json, SHA256SUMS, licence texts, dictionary, VERIFICATION.md, measurements.json); the documented load_dataset path verified by the ecm-hf-001 worker loading check (ok: true, split rows/positives/columns/label all match); tag v2026.10 created last, tag_matches_main true; anonymous Hub API 401",
-      "artifact_version": "e96929efbbc4fcb84d2986a7e32f83f9c5fec5395124439fb3404faff2e9e662",
-      "superseded_note": "supersedes e5a98dfc9c05d0b0\u2026 (descriptor/docs-only correction per the independent pre-flip audit 2026-10-27; CSV bytes identical)"
-    }
-  ],
-  "rejection_reason": null,
-  "review": "All five discovery contracts have measured evidence: redistribution (Commission reuse notice, CC BY 4.0, class A), timing (notification-date instant; 308/309 openers strictly post-instant, lag distribution measured; post-hoc and derived fields excluded by name), target (label from the decisions block, excludable; base rate 3.05% measured), splits (three disjoint windows, both classes everywhere, positives 217/46/46), not-a-mirror (novelty check differentiated: literature and proprietary compiled datasets exist; no public ML-ready formulation of this task with splits and a scored contract). The fetch is trivially open - the contribution is the formulation (notification-time contract, eligibility, label from the decision-type inventory, splits, fixtures, baselines) and validation, and the record states that explicitly.",
-  "next_action": "AUDIT CONDITIONS APPLIED AND RE-QUALIFIED (ecm-requal-002, artifact e96929ef\u2026): push the corrected docs to the dataset repo main, re-point the private v2026.10 tag, replace the corrected meta/quality assets in the private GitHub release (transfer job) and the Hub data files (hf job), then the operator-approved flip (operator instruction 2026-10-27: 'when I wake up I hope this is published'), anonymous verification of both destinations, DESTINATIONS verified-visibility update, status-bearing document refresh and the site pipeline (new sites/ec-merger-phase2-opening.json), receipts to STATE.",
-  "jurisdiction": {
-    "country": "EU",
-    "region": "Europe",
-    "publisher": "Directorate-General for Competition, European Commission",
-    "recorded_at": "2026-10-24"
-  },
-  "licence_class": "A",
-  "licence_note": "CC BY 4.0 via the European Commission reuse notice (Commission Decision 2011/833); attribution 'European Commission, Directorate-General for Competition' and indicating changes; conditions carried into LICENSE.md at release. Decision PDFs (potential third-party content) are not redistributed - register fields only.",
-  "verdict": "go",
-  "novelty_check": {
-    "checked_at": "2026-10-24T00:17:20+00:00",
-    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
-    "queries": [
-      "EU merger Phase II prediction dataset",
-      "merger clearance prediction European Commission benchmark",
-      "EC merger decision outcome machine learning task"
-    ],
-    "evidence": {
-      "huggingface_datasets": [
-        {
-          "query": "EU merger Phase II prediction dataset",
-          "hits": 0,
-          "top": []
-        },
-        {
-          "query": "merger clearance prediction European Commission benchmark",
-          "hits": 0,
-          "top": []
-        },
-        {
-          "query": "EC merger decision outcome machine learning task",
-          "hits": 0,
-          "top": []
-        }
-      ],
-      "zenodo_records": [
-        {
-          "query": "EU merger Phase II prediction dataset",
-          "hits": 777421,
-          "top": [
-            "Spamming the regulator: Exploring a new lobbying strategy in EU competition procedures",
-            "European Size of Transaction Tests within the EUMR's Case Referral System and the German-Austrian Guidance Paper",
-            "Cooperation in Multijurisdictional Merger Filings: the ECA Notice Mechanism",
-            "The EU Merger Working Group: Looking Through the Rear View Mirror",
-            "Results of white lupin (Lupinus albus) variety trials in Switzerland from 2017 to 2024"
-          ]
-        },
-        {
-          "query": "merger clearance prediction European Commission benchmark",
-          "hits": 862088,
-          "top": [
-            "The plight of migrant women nightworkers in the Irish night-time economy",
-            "The Role of Expertise in EU Law on Digital Markets \u2013 dataset",
-            "Better Connected: European Co-operation in Telecoms Cases",
-            "Sanitation-service conditions in water-utility merger approvals: a comparative competition-law analysis linking merger-condition silence to service-quality remedies for affected customers",
-            "Mega Mergers in the Seeds & Agro-chem Industry"
-          ]
-        },
-        {
-          "query": "EC merger decision outcome machine learning task",
-          "hits": 492321,
-          "top": [
-            "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
-            "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI",
-            "RGB and RGNIR Plastic Waste Database",
-            "Training Coordination Proxy Agents.",
-            "A Data-Efficient and Explainable Machine Learning Framework for Predictiing Microbial Contamination Risk in Groundwater of Resource-Constrained Regions"
-          ]
-        }
-      ],
-      "arxiv_preprints": [
-        {
-          "query": "EU merger Phase II prediction dataset",
-          "hits": 5,
-          "top": [
-            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
-            "Measurement of the integrated luminosity of the Phase 2 data of the Belle II experiment",
-            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
-            "The Belle II Experiment at SuperKEKB -- Input to the European Particle Physics Strategy",
-            "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset"
-          ]
-        },
-        {
-          "query": "merger clearance prediction European Commission benchmark",
-          "hits": 5,
-          "top": [
-            "Response by the Montreal AI Ethics Institute to the European Commission's Whitepaper on AI",
-            "ERAnets Evaluation of Collaboration Among Participants of IST Research and their Evolution to Collaborations in the Euro",
-            "Physics Briefing Book",
-            "The Accuracy Paradox: Empirical Diagnostic of Default Decision Thresholds in Multi-Label Enzyme Commission Prediction [W",
-            "Corrigendum to \"On subgroup perfect codes in Cayley graphs\" [European J. Combin. 91 (2021) 103228]"
-          ]
-        },
-        {
-          "query": "EC merger decision outcome machine learning task",
-          "hits": 5,
-          "top": [
-            "DOME: Recommendations for supervised machine learning validation in biology",
-            "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
-            "Changing Data Sources in the Age of Machine Learning for Official Statistics",
-            "Physics-Inspired Interpretability Of Machine Learning Models",
-            "Active learning for data streams: a survey"
-          ]
-        }
-      ]
-    },
-    "evidence_summary": "- huggingface_datasets / 'EU merger Phase II prediction dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'merger clearance prediction European Commission benchmark': 0 hit(s) - nothing notable\n- huggingface_datasets / 'EC merger decision outcome machine learning task': 0 hit(s) - nothing notable\n- zenodo_records / 'EU merger Phase II prediction dataset': 777421 hit(s) - Spamming the regulator: Exploring a new lobbying strategy in EU competition procedures, European Size of Transaction Tests within the EUMR's Case Referral System and the German-Austrian Guidance Paper, Cooperation in Multijurisdictional Merger Filings: the ECA Notice Mechanism, The EU Merger Working Group: Looking Through the Rear View Mirror, Results of white lupin (Lupinus albus) variety trials in Switzerland from 2017 to 2024\n- zenodo_records / 'merger clearance prediction European Commission benchmark': 862088 hit(s) - The plight of migrant women nightworkers in the Irish night-time economy, The Role of Expertise in EU Law on Digital Markets \u2013 dataset, Better Connected: European Co-operation in Telecoms Cases, Sanitation-service conditions in water-utility merger approvals: a comparative competition-law analysis linking merger-condition silence to service-quality remedies for affected customers, Mega Mergers in the Seeds & Agro-chem Industry\n- zenodo_records / 'EC merger decision outcome machine learning task': 492321 hit(s) - plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database, Training Coordination Proxy Agents., A Data-Efficient and Explainable Machine Learning Framework for Predictiing Microbial Contamination Risk in Groundwater of Resource-Constrained Regions\n- arxiv_preprints / 'EU merger Phase II prediction dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, Measurement of the integrated luminosity of the Phase 2 data of the Belle II experiment, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, The Belle II Experiment at SuperKEKB -- Input to the European Particle Physics Strategy, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset\n- arxiv_preprints / 'merger clearance prediction European Commission benchmark': 5 hit(s) - Response by the Montreal AI Ethics Institute to the European Commission's Whitepaper on AI, ERAnets Evaluation of Collaboration Among Participants of IST Research and their Evolution to Collaborations in the Euro, Physics Briefing Book, The Accuracy Paradox: Empirical Diagnostic of Default Decision Thresholds in Multi-Label Enzyme Commission Prediction [W, Corrigendum to \"On subgroup perfect codes in Cayley graphs\" [European J. Combin. 91 (2021) 103228]\n- arxiv_preprints / 'EC merger decision outcome machine learning task': 5 hit(s) - DOME: Recommendations for supervised machine learning validation in biology, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Changing Data Sources in the Age of Machine Learning for Official Statistics, Physics-Inspired Interpretability Of Machine Learning Models, Active learning for data streams: a survey",
-    "prior_art": [
-      "Gupta/Parikh/Patel EEL 2025 doi 10.52783/eel.v15i2.3347 (non-public compiled dataset); Compass Lexecon EC merger decisions dataset (proprietary); Stiebale & Szucs 2026 DG COMP ex-post study (unpublished database); modernlegal/eurlex HF corpus"
-    ],
-    "theirs": "Publisher provides the case register as bulk open data (since 2025-03-18) and decision documents; researchers compiled proprietary/manual datasets (Compass Lexecon 7,823 cases; EEL 2025 paper's non-public sample; DG COMP internal ex-post EU Merger Database); a decision-text corpus exists on Hugging Face. No public task formulation, label contract, splits or scored benchmark.",
-    "ours": "First public ML-ready formulation of the EC merger Phase II referral-risk task: notification-time prediction instant over the full public register (1990-2026, 10,123 notified cases), label contract from the decision-type inventory (Art. 6(1)(c) opener), measured split windows with both classes, external known-event fixtures, documented feature as-of policy.",
-    "verdict": "differentiated",
-    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
-  },
-  "updated_at": "2026-10-27T22:43:29+00:00",
-  "qualification": {
-    "qualified_at": "2026-10-27T10:16:23Z (corrected 2026-10-27: the prior value '2026-10-27T10Tue21Tue13Z' was a malformed strftime of the record-writing time; this value is the write time of the worker's gate report and acceptance files, evidenced by the collected file mtimes)",
-    "gate_version": "1.5.0",
-    "job": "ec-merger-003",
-    "result": "passed; 0 failed checks of 46 on the full artifact on the worker (same check set as the 002 pass: leakage incl. declared high-cardinality sector_divisions, timing event_time instant, contract current_snapshot vintage with training_label_timing declared, splits incl. clustered positive events 45/44, runner meta counts)",
-    "artifact_version": "e5a98dfc9c05d0b087ed2dead21004fbbd972e415d2174469371a908bcaf90ad",
-    "acceptance": "exact-byte --accept verified on the worker before any reference was computed: 'ACCEPTED: /output/extract matches the qualified artifact e5a98dfc9c05d0b0'",
-    "report": "private staging release 425292628 (tag job-ec-merger-003, draft); local copies preserved at .factory/ec-merger-003/{qualification.json,references.json,acceptance.txt,summary.json}",
-    "superseded": "ec-merger-002 artifact 2527012bcd34c543... was a real runner-compatibility defect: its meta.json lacked the description/split keys the benchmark's bench/workdir.py reads (task.json generation and render_program both KeyError), which the gate's runner.meta_json_keys check did not test (gate requires only target/positive_label/id_columns/columns/rows/positive_rate). Fixed in build.py (meta.json now carries all eight workdir keys; CSV bytes unchanged: train/eval sha256 identical to 002); one rebuild for this structural defect. The gate gap (required-keys list omits name/description/split) is recorded in STATE.md for a separate reviewable gate change; not patched in this session.",
-    "splits": {
-      "train": {
-        "rows": 5406,
-        "positives": 217,
-        "positive_rate": 0.040141
-      },
-      "eval": {
-        "rows": 1770,
-        "positives": 46,
-        "positive_rate": 0.025989
-      },
-      "holdout": {
-        "rows": 2915,
-        "positives": 46,
-        "positive_rate": 0.015786
-      }
-    }
-  },
-  "packaged_at": "2026-10-27T14:44:34Z",
-  "awaiting_operator": true,
-  "audits": {
-    "independent_pre_flip_2026_10_27": {
-      "auditor": "Codex (independent, read-only, no publisher contact)",
-      "verdict": "PUBLISH WITH CONDITIONS",
-      "report": "audits/2026-10-27-ec-merger-pre-flip-audit.md",
-      "integrity": "PASS (all five digests; artifact e5a98dfc...; source pin match)",
-      "shortcut_attacks": "PASS within frozen search (3,796 label-blind predictors; no AUC in {0,1}, >=0.95 or <=0.05; zero cross-split identity recovery)",
-      "references": "stock 0.6973 and sector prior 0.7679 reproduce (paired diff -0.0706); calendar_identity and the published CI NOT VERIFIED (recipes absent)",
-      "conditions": [
-        "retrospective-use limitation consistent throughout meta.json, quality.json, feature-evidence statuses",
-        "correct metadata contradictions (309/309 strictly-after; 34 censored not 33; sector level counts; party-count split rule)",
-        "supply the missing comparator and bootstrap recipes for exact reproduction",
-        "disclose dependence across repeated transactions alongside notification-day clustering"
-      ]
-    }
+ "id": "ec-merger-phase2-opening",
+ "status": "packaged",
+ "created_at": "2026-10-24T00:15:18.727242+00:00",
+ "domain": "EU competition policy / merger-control procedure outcomes (EU institution publisher, DG COMP open data)",
+ "prediction_question": "For a concentration notified to the European Commission under the EU Merger Regulation, using only case attributes fixed at notification (the parties as named in the case title, the case's NACE sector codes, the applicable regulation, and the notification date), will the Commission open an in-depth Phase II investigation (adopt an Art. 6(1)(c) decision) in this case?",
+ "prediction_time": "The notification date of the case (caseNotificationDate; date-only precision, Brussels local). All shipped features are case attributes fixed when the file is registered: caseTitle (the merging parties, an immutable historical fact), caseSectors (NACE codes of the parties' activities; current-vintage register coding, see revision_note), caseRegulation (4064/89 or 139/2004), caseNotificationDate. The label event - an Art. 6(1)(c) decision opening Phase II - is adopted after notification: measured 308/309 openers strictly follow the notification date (302/309 within 2 months; single documented exception M.3333, see anomalies). Fields that can change after notification are excluded from features and recorded below. No feature's target window precedes the instant.",
+ "target_definition": "Binary: the case record carries at least one decision of type 'Art. 6(1)(c)' (the decision by which the Commission initiates proceedings because of serious doubts - the Phase II opener, same article number under Reg 4064/89 and Reg 139/2004). Label source: the decisions[] block of the register record (decisionTypes, decisionAdoptionDate), which is excluded wholesale from shipped features. Measured: 309 positives / 10,123 eligible cases = 3.05%. Measured alternative recorded for construction: any-intervention union (Phase II opener OR Phase I remedies 'Art. 6(1)(b) with conditions & obligations') = 673 / 10,123 = 6.65% (remedies-only 367 = 3.63%).",
+ "sources": [
+  {
+   "name": "European Commission, Directorate-General for Competition - EU Competition: Merger case publications (open data, machine-readable case register, coverage from November 1990, updated daily)",
+   "url": "https://data.europa.eu/data/datasets/cc7e224e-6569-40f0-8037-d3389aa0fae7",
+   "api": "https://compcases-open-data-portal-files-prod.s3.eu-west-1.amazonaws.com/case-data-M.json",
+   "access": "anonymous bulk download; measured 2026-10-24: HTTP 200, 1 GET, 42,025,677 bytes, 0.87 s wall on the coordinator; publisher states the data sets are updated once a day (observed snapshot Last-Modified 2026-10-23T00:48:26Z); dataset landing page at competition-cases.ec.europa.eu is the interactive register",
+   "licence": "European Commission reuse notice -> CC BY 4.0 (see license_evidence)"
   }
+ ],
+ "license_evidence": [
+  "DG COMP news 'DG Competition's case data available as Open Data' (https://competition-policy.ec.europa.eu/about/news/dg-competitions-case-data-available-open-data-2025-03-18_en, read 2026-10-24): 'We are releasing the data under the European Commission reuse notice, so that the machine-readable data sets can be processed in any way the users may wish, for commercial or non-commercial purposes, provided that the source is acknowledged.'",
+  "European Commission legal notice (https://ec.europa.eu/info/legal-notice_en, read 2026-10-24): 'The Commission's reuse policy is implemented by the Commission Decision of 12 December 2011 on the reuse of Commission documents... Unless otherwise indicated (e.g. in individual copyright notices), content owned by the EU on this website is licensed under the Creative Commons Attribution 4.0 International (CC BY 4.0) licence. This means that reuse is allowed, provided appropriate credit is given and changes are indicated.'",
+  "Scope note: the dataset ships register metadata (case numbers, dates, NACE codes with labels, decision-type labels, case titles). The EC notice adds 'You may be required to clear additional rights if a specific content depicts identifiable private individuals or includes third-party works' - the underlying decision PDFs (caseAttachments) are NOT shipped; only register fields are, and the same fields are the Commission's own published register data. caseTitle carries the parties' names, factual public register data."
+ ],
+ "construction_script": "candidates/ec-merger-phase2-opening/source/build.py",
+ "split_strategy": "Temporal splits on notification year, measured from the full register. Candidate partitions (both classes present in every window): full-era thirds train 1990-2013 (5,411 cases / 217 Phase II), eval 2014-2018 (1,770 / 46), holdout 2019-2026 (2,942 / 46); or post-reform (Reg 139/2004 from 2005-09): train 2005-2015 (3,451 / 101), eval 2016-2020 (1,876 / 42), holdout 2021-2026 (2,207 / 30). Construction picks one and documents it; the Art. 6(1)(c) label is the same legal instrument under both regulations. Positive cases cluster weakly by acquisition wave; intervals on any score use notification-year clusters (positives per notification year measured 1-22, median ~8). Pending cases (41 live investigation-phase cases at fetch, concentrated 2025-2026) are censored like the ABS live-month rows: scorable when their procedure concludes.",
+ "measurements": {
+  "panel_shape_measured": "case-data-M.json 2026-10-24 (sha256 in notes.md): 10,395 case records keyed by case number; 10,123 eligible (caseType=MergerCaseType1 'Merger' AND has caseNotificationDate); excluded with recorded mix: 272 no-notification-date cases (decision mix: 219 Art. 4(4)-Full referral, 17 Art. 18 SO, 15 Art. 14, 6 Art. 7(3), 4 Art. 22 Refusal, plus singletons - referral/Art. 22 procedures that never produce an EU notification), 26 'Additional Procedure' (.AP purchaser-approval records), 2 'Consultation'. Notifications per year 1990: 11 rising to 2018: 408, then 350-400/yr to 2026: 317.",
+  "label_base_rate_measured": "Phase II opener (Art. 6(1)(c) present) 309/10,123 = 3.05% of notified cases; per notification year ranges 1 (2024) to 22 (2001); Phase I remedies ('Art. 6(1)(b) with conditions & obligations') 367/10,123 = 3.63%; union any-intervention 673 = 6.65%. Decision-type inventory across all records measured and recorded in notes.md (Art. 6(1)(b) 9,170 occurrences, referrals Art. 4(4)/4(5)/9(3)/22, Art. 8(1)/(2)/(3) outcomes, Withdrawn 263, etc.).",
+  "label_timing_measured": "notification -> first opener lag in months: 1 mo 201, 2 mo 101, 0 mo 1, plus a thin tail 3-18 mo (suspended-clock and extended cases); openers dated BEFORE notification: 1 (M.3333 SONY/BMG re-notification carrying the 2004-02-12 opener of the original procedure under its 2007-01-31 re-notification - exclusion rule: drop label decisions predating notification, or drop the case). Post-hoc withdrawal of an adopted opener: 1 case (M.10188, withdrawn 2024-09-06 after the ECJ Illumina judgment) - label stays 'opened' under the ever-adopted rule; recorded.",
+  "split_window_counts_phase2_label": {
+   "train 1990-2013": "5,411 notified / 217 positive (4.01%) / 24 years, all carry both classes",
+   "eval 2014-2018": "1,770 notified / 46 positive (2.60%) / 5 years, all carry both classes",
+   "holdout 2019-2026": "2,942 notified / 46 positive (1.56%) / 8 years, all carry both classes (2024-2026 positives 1/4/3 reflect still-maturing recent procedures, not zero)"
+  },
+  "feature_coverage_measured": "caseSectors missing on 79/10,123 eligible cases (0.78%, concentrated 1997-2004); caseTitle and caseRegulation present on 100%; caseSimplified present but EXCLUDED as a feature (a simplified filing upgraded to Normal during review would make the current value post-hoc; using it leaks the upgrade); caseInvestigationPhase (41 live cases) and caseDeadlineDate/caseLastDecisionDate/caseLinks/caseCourtCases/caseRenotificationDate excluded as post-hoc or derived.",
+  "learnability_evidence_measured": "Sector-conditional Phase II rates vary well above/below the 3.05% base rate (top divisions by volume: div 20 rate 6.25% (n=256), div 61 5.23% (n=363), div 64 0.85% (n=351), div 65 0.00% (n=230), div 0 4.20% (n=1,523)) - a sector-conditional reference baseline is the required comparator, as with the matrix-stratified bvl reference.",
+  "known_event_fixtures": [
+   "M.877 BOEING / McDONNELL DOUGLAS: register shows notif 1997-02-18, opener Art. 6(1)(c) 1997-03-19, Art. 8(2) with conditions & obligations 1997-07-30, Reg 4064/89 - matches the Commission's own decision PDF (ec.europa.eu/competition/mergers/cases/decisions/m877_19970730_600_fr.pdf: notification received 18 February 1997; proceedings opened by decision of 19 March 1997) and press release IP/97/729 (30 July 1997, cleared 'under conditions and obligations'). Expected verdict: positive; observed: positive.",
+   "M.4731 GOOGLE / DOUBLECLICK: register shows notif 2007-09-21, opener Art. 6(1)(c) 2007-11-13, Art. 8(1) 2008-03-11 - matches press release IP/07/1695 (Commission opens in-depth investigation, 13 November 2007) and IP/08/458 (clearance, 11 March 2008). Expected verdict: positive; observed: positive.",
+   "M.10188 ILLUMINA / GRAIL: register shows notif 2021-06-16, Art. 22 Full referral 2021-04-19, opener Art. 6(1)(c) 2021-07-22, Art. 8(3) prohibition 2022-09-06 - matches press release IP/22/5364 (6 September 2022 prohibition, register case number M.10188), including the 2024-09-06 withdrawals after the ECJ judgment. Expected verdict: positive; observed: positive. Also demonstrates the post-hoc-withdrawal caveat."
+  ],
+  "revision_note": "The register is a current snapshot (bulk feed since 2025-03-18; interactive register earlier). Three fixtures spanning 1997-2022 reproduce external sources exactly, evidence that the register preserves historical procedure facts; features are nevertheless stated as current-vintage register values (precedent: ABS revision note). caseSectors uses NACE Rev 2 codes for all eras including pre-2008 notifications (M.877, notified 1997, coded C.30.3 'Manufacture of air and spacecraft') - the taxonomy label is current-vintage even where the underlying industries are notification-time facts; construction records this in the feature documentation and verifies one further old case's sectors against its OJ prior notice as a build-time fixture.",
+  "dated_example": "M.10188 ILLUMINA / GRAIL, all dates Brussels local (register carries date-only precision): feature event window = case attributes fixed at registration on 2021-06-16 (title 'ILLUMINA / GRAIL', sectors C.27.9 + C.21, Reg 139/2004); eligibility cutoff = caseType Merger and a notification date exists; prediction instant = 2021-06-16; target window = 2021-06-16 until the procedure's Phase I decision (by EUMR Art. 10(3) at most ~25-35 working days later, extendable); observed outcome = opener adopted 2021-07-22, 36 days after the instant, label positive. Downstream events (Art. 8(3) 2022-09-06, withdrawals 2024-09-06) are outside the label. No part of the target window precedes the instant; the same-month opener case (0-month lag) is still dated after its notification date.",
+  "fetch_cost_measured": "1 anonymous GET, 42,025,677 bytes, 0.87 s wall on the coordinator (whole-register fetch is trivial; no worker needed for discovery). S3 objects carry a 30-day expiry rule with daily regeneration - the distribution URL from the data.europa.eu record is the stable channel; construction records fetch date + sha256.",
+  "measured_on": "2026-10-24 via scripts retained in candidates/ec-merger-phase2-opening/probe_merger_*.py, commands and outputs in notes.md",
+  "qualification_measured_2026_10_26": "Full artifact built on worker ec-merger-002 from a fresh register GET (sha256 83463d00..., 42,028,198 B): eligible 10,123 notified Merger cases (= record), 33 pending-censored (register establishes neither an opener nor a terminal decision; 26 are live 2026 filings), 10,090 shipped rows, 309 positives. Gate 1.5.0 passed with no failed checks (report .factory/ec-merger-002/qualification.json); exact-byte acceptance verified. Post-acceptance references on identical eval rows (1,770 rows / 46 positives; .factory/ec-merger-002/references.json): sector-division rate AUC 0.7679 (the required comparator; corrected division grouping), sector-combination 0.7051, party-title tokens 0.6644, calendar/identity (regulation x month) 0.5606, recent-3-train-year rate 0.5 (constant), majority-class accuracy 0.9740. Paired bootstrap differences on identical eval rows (1000 resamples): sector vs global +0.2679 [0.2126, 0.3206]; sector vs calendar +0.2073 [0.1255, 0.2886]; title vs sector -0.1035 [-0.2050, -0.0207]. Persistence recorded inapplicable (each row is a newly notified case; no prior same-entity observation exists at the instant). Per-year eval sector-rate AUC 0.69-0.84 with positives 7-12/year. Prevalence shift train 4.01% / eval 2.60% / holdout 1.58% recorded as an out-of-distribution property. Corrected division inventory (train+beyond): J.61 telecoms 6.22% (27/434), C.20 chemicals 5.97% (38/637), K.65 insurance 0.24% (1/412), L.68 real estate 0.00% (0/391) - the learnability claim stands under the corrected grouping (the discovery probe's division key was malformed; see notes.md). The full model is NOT yet run: its figure must be quoted beside these references when the harness baseline job evaluates the same rows."
+ },
+ "jobs": [
+  {
+   "id": "ec-merger-001",
+   "date": "2026-10-26",
+   "outcome": "build succeeded; gate 1.5.0 refused on two descriptor truths (contract.label_availability missing training_label_timing: 'unverified'; sector_divisions undeclared high-cardinality). Declaration-only fix; CSV bytes unchanged. Worker 172531049 deleted after verified collection; bundle + gate report + container log preserved under .factory/ec-merger-001/; staging release tag job-ec-merger-001."
+  },
+  {
+   "id": "ec-merger-002",
+   "date": "2026-10-26",
+   "outcome": "succeeded: construct -> qualify (gate 1.5.0, ok, no failed checks) -> --accept exact bytes -> post-acceptance simple references. Worker 172536838 deleted after verified collection; reports preserved under .factory/ec-merger-002/; staging release tag job-ec-merger-002 (draft, assets digest-verified)."
+  },
+  {
+   "id": "ec-merger-003",
+   "date": "2026-10-27",
+   "outcome": "succeeded: construct (daily snapshot re-pinned, sha256 42041133...) -> qualify (gate 1.5.0, ok, 0 failed) -> --accept exact bytes -> post-acceptance simple references (sector_division_rate 0.7679 on the identical 1,770 eval rows, unchanged from 002). meta.json now carries the eight keys bench/workdir.py reads. Worker 172772422 deleted 10:16:42Z after verified collection; reports preserved under .factory/ec-merger-003/; staging release 425292628 (tag job-ec-merger-003)."
+  },
+  {
+   "id": "ec-merger-baseline-001",
+   "date": "2026-10-27",
+   "outcome": "succeeded: fetched the five ec-merger-003 extract files from staging 425292628 (digest-verified on arrival), re-ACCEPTed through gate 1.5.0 ('ACCEPTED: ... e5a98dfc9c05d0b0'), materialized the runner workdir (public train+eval only; holdout never copied), ran the benchmark's verbatim train.py + validate.sh (runner_files verbatim=true), contract OK. FULL MODEL eval AUC 0.6973 (train.py and validate.py agree; recomputed via predict_proba 0.69735, Brier 0.025343) vs required comparator sector_division_rate 0.7679 on the identical 1,770 eval rows: paired difference -0.0706, bootstrap95 [-0.1558, +0.0168] - interval contains zero (inconclusive difference), observed gap NEGATIVE: the stock runner baseline trails the sector prior. Model beats calendar_identity 0.5606 (+0.1367, [0.0419, 0.2321]) and recent_rate 0.5 (+0.1973, [0.1068, 0.2745]). Per-year model AUC 2014 0.6724 / 2015 0.7486 / 2016 0.9113 / 2017 0.6002 / 2018 0.5921 (7-12 positives per year; noisy). All recomputed references agree exactly with the construction-run figures. train.py's stock cardinality rule did NOT drop sector_divisions (540 train levels < 1000 cutoff; case_title and notification_date were dropped), so the gap is not a feature-availability artefact: the simple marginal per-division prior generalizes better than the stock 540-level categorical fit at 217 train positives. Majority-class accuracy on this split 0.9740. Worker 172773775 destroyed 10:24:07Z after verified collection; result + logs preserved under .factory/ec-merger-baseline-001/; staging release 425299143. Holdout remains sealed; the benchmark score is holdout AUC by agents, and the eval-window comparison is the release evidence."
+  },
+  {
+   "id": "ecm-publish-001",
+   "date": "2026-10-27",
+   "outcome": "succeeded: destination-staging transfer (release: true). Copied the five accepted ec-merger-003 assets from private staging release 425292628 into private GitHub repo earino/ec-merger-phase2-opening draft release v2026.10 (425556351) under flat asset names, each sha256 verified on arrival and against the server digest after upload (13.1 s, 0.9 MB, bytes never through the coordinator). Readback: 5/5 assets match MANIFEST.json by name/size/server-side sha256; release published non-draft creating tag v2026.10, tag == main == 47190aa; get_dataset.py executed end-to-end against the private release (856,071 bytes, all digests verified, exit 0) and gate --accept on the downloaded tree returned ACCEPTED e5a98dfc9c05d0b0; anonymous API GET 404. Worker 172827698 collected 14:31:03Z, destroyed 14:34:50Z, provider read-back 404. Pre-launch job file candidates/ec-merger-phase2-opening/publish/job.json; evidence in release/ec-merger-phase2-opening/DESTINATIONS.json."
+  },
+  {
+   "id": "ecm-hf-001",
+   "date": "2026-10-27",
+   "outcome": "succeeded: hf_publish worker job. Uploaded the five data files to the private Hub dataset repo earino/ec-merger-phase2-opening from the staged GitHub release 425556351, digest-verified at both ends (114.2 s, uploads 5, skipped 0, failures 0), then ran the documented load_dataset path against the uploaded bytes: ok=true, problems=[], train 5,406/217, eval 1,770/46, holdout 2,915/46, 12 columns, label values ['0','1'] - identical to the accepted artifact. hf-publish --verify --worker-job ecm-hf-001: ok, 5/5 at manifest digests, 0 missing/mismatched; --tag LAST: Hub tag v2026.10 == main == 119d2efd, tag_matches_main true; DESTINATIONS.json records the Hub destination. Anonymous Hub API 401; cardData.license reads back 'other' / cc-by-4.0-source-plus-cc0-compilation. Worker 172830524 destroyed 14:39:43Z, provider read-back 404. Pre-launch job file candidates/ec-merger-phase2-opening/hf/job.json."
+  },
+  {
+   "id": "ecm-requal-001",
+   "outcome": "failed 8.0 s: the transport bundle carried only run.sh (source_bundle tars the job directory, not the source_files list); the gate never ran. Preserved on staging release 425996620. Lesson folded into the assembled-job-directory pattern that 002 used."
+  },
+  {
+   "id": "ecm-requal-002",
+   "outcome": "succeeded 9.4 s: gate 1.5.0 re-qualified the audit-corrected descriptor on the exact accepted CSV bytes (fetched from staging 425292628 at audited digests), ok=true with zero failed checks, exact-byte acceptance of the new artifact e96929efbbc4fcb8\u2026; qualification.json in the package now ships this report and the manifest is regenerated from it. Staging release 426055208."
+  }
+ ],
+ "artifacts": [
+  {
+   "artifact_version": "2527012bcd34c543b046c0e8",
+   "digest_of": "sha256 over train/eval/holdout CSVs + meta.json + quality.json (gate 1.5.0 artifact_version)",
+   "gate_version": "1.5.0",
+   "accepted": "exact-byte --accept on the worker: 'ACCEPTED: /output/extract matches the qualified artifact 2527012bcd34c543'",
+   "source_snapshot": {
+    "sha256": "83463d0047cdf7aa0ace1a00a017fffaa5ba3eeedfd12ef104e8e02a9b81ceb1",
+    "bytes": 42028198,
+    "last_modified": "Mon, 26 Oct 2026 01:00:34 GMT",
+    "fetched_at_utc": "2026-10-26T11:58:16Z"
+   },
+   "splits": {
+    "train": {
+     "rows": 5406,
+     "positives": 217
+    },
+    "eval": {
+     "rows": 1770,
+     "positives": 46
+    },
+    "holdout": {
+     "rows": 2914,
+     "positives": 46
+    }
+   },
+   "pending_censored": {
+    "train": 5,
+    "eval": 0,
+    "holdout": 28
+   },
+   "distinct_positive_notification_dates": {
+    "eval": 45,
+    "holdout": 44
+   },
+   "staging_release_tag": "job-ec-merger-002",
+   "repo": "earino/dataset-factory-staging",
+   "tag": "job-ec-merger-002"
+  },
+  {
+   "artifact_version": "e96929efbbc4fcb84d2986a7e32f83f9c5fec5395124439fb3404faff2e9e662",
+   "digest_of": "sha256 over train/eval/holdout CSVs + meta.json + quality.json (gate 1.5.0 artifact_version)",
+   "gate_version": "1.5.0",
+   "accepted": "exact-byte --accept on the worker: 'ACCEPTED: /output/extract matches the qualified artifact e5a98dfc9c05d0b0'",
+   "source_snapshot": {
+    "sha256": "420411333e9b9fc27e0c2e72cbbbb419f1ba4125e7f40d98a9bc5e0911316702",
+    "bytes": 42034960,
+    "last_modified": "Tue, 27 Oct 2026 01:23:54 GMT",
+    "fetched_at_utc": "2026-10-27T10:14:03Z"
+   },
+   "splits": {
+    "train": {
+     "rows": 5406,
+     "positives": 217
+    },
+    "eval": {
+     "rows": 1770,
+     "positives": 46
+    },
+    "holdout": {
+     "rows": 2915,
+     "positives": 46
+    }
+   },
+   "pending_censored": {
+    "train": 5,
+    "eval": 0,
+    "holdout": 28
+   },
+   "distinct_positive_notification_dates": {
+    "eval": 45,
+    "holdout": 44
+   },
+   "staging_release_tag": "job-ec-merger-003",
+   "byte_diff_vs_002": "train.csv and eval.csv sha256 identical to the 002 artifact; holdout.csv +1 row (one new 2026 notification in the re-pinned daily snapshot, 10,125 eligible / 10,091 shipped / 309 positives); meta.json grew by the description/split keys; quality.json re-written for the new snapshot pin",
+   "repo": "earino/dataset-factory-staging",
+   "tag": "job-ec-merger-003",
+   "superseded_note": "supersedes e5a98dfc9c05d0b0\u2026 (descriptor/docs-only correction per the independent pre-flip audit 2026-10-27; CSV bytes identical)"
+  },
+  {
+   "kind": "destination_release",
+   "repo": "earino/ec-merger-phase2-opening",
+   "id": 425556351,
+   "tag": "v2026.10",
+   "commit": "47190aa4b3bbafbc95436ee6f76960e2a3f33843",
+   "private": true,
+   "note": "GitHub destination, staged private: 5/5 assets at the manifest digests (API readback, server-side sha256), release non-draft, tag == main == 47190aa, get_dataset.py executed end-to-end against the private release (token, 856,071 bytes, digests verified, runner layout restored) and qualify_dataset.py --accept ACCEPTED the downloaded tree (e5a98dfc9c05d0b0); anonymous API GET 404. The repository's initial docs commit c3eff13 (packaging session) was advanced to 47190aa by the review pass: the gate report ships as qualification.json and the manifest is regenerated from it. Evidence in release/ec-merger-phase2-opening/DESTINATIONS.json",
+   "artifact_version": "e96929efbbc4fcb84d2986a7e32f83f9c5fec5395124439fb3404faff2e9e662",
+   "superseded_note": "supersedes e5a98dfc9c05d0b0\u2026 (descriptor/docs-only correction per the independent pre-flip audit 2026-10-27; CSV bytes identical)"
+  },
+  {
+   "kind": "destination_hub_repo",
+   "repo": "earino/ec-merger-phase2-opening",
+   "revision_tag": "v2026.10",
+   "commit": "119d2efde7029c504e59babb9e4b0a5845eeb511",
+   "private": true,
+   "note": "Hugging Face destination, staged private: 5/5 data files at the manifest digests (hf-publish --verify ok, 0 missing, 0 size-mismatched, 0 digest-unverified) plus 10 small files (card generated from the manifest, LOADING.md, MANIFEST.json, SHA256SUMS, licence texts, dictionary, VERIFICATION.md, measurements.json); the documented load_dataset path verified by the ecm-hf-001 worker loading check (ok: true, split rows/positives/columns/label all match); tag v2026.10 created last, tag_matches_main true; anonymous Hub API 401",
+   "artifact_version": "e96929efbbc4fcb84d2986a7e32f83f9c5fec5395124439fb3404faff2e9e662",
+   "superseded_note": "supersedes e5a98dfc9c05d0b0\u2026 (descriptor/docs-only correction per the independent pre-flip audit 2026-10-27; CSV bytes identical)"
+  }
+ ],
+ "rejection_reason": null,
+ "review": "All five discovery contracts have measured evidence: redistribution (Commission reuse notice, CC BY 4.0, class A), timing (notification-date instant; 308/309 openers strictly post-instant, lag distribution measured; post-hoc and derived fields excluded by name), target (label from the decisions block, excludable; base rate 3.05% measured), splits (three disjoint windows, both classes everywhere, positives 217/46/46), not-a-mirror (novelty check differentiated: literature and proprietary compiled datasets exist; no public ML-ready formulation of this task with splits and a scored contract). The fetch is trivially open - the contribution is the formulation (notification-time contract, eligibility, label from the decision-type inventory, splits, fixtures, baselines) and validation, and the record states that explicitly.",
+ "next_action": "AUDIT-CORRECTED ARTIFACT e96929ef STAGED AND LIVE-VERIFIED ON BOTH PRIVATE DESTINATIONS (ecm-publish-003: GitHub release 425556351, 5/5 server-side digests; ecm-hf-002: Hub main 91fd22bc, loading ok). Remaining before the flip: regenerate MANIFEST assets/files + SHA256SUMS from the corrected files (they still describe superseded meta 011a4c0b / quality ca07571c), re-run check-package and consumer verification, push corrected docs to the dataset repo main and Hub small files, re-point the Hub v2026.10 tag (still 119d2efd), update DESTINATIONS.json from corrected evidence (still records e5a98dfc), then the operator's flip, anonymous verification, status-bearing document refresh and the site pipeline. Watcher follow-up 2026-10-28T00:18Z recorded all five job outcomes in STATE.md; workers provider-confirmed deleted.",
+ "jurisdiction": {
+  "country": "EU",
+  "region": "Europe",
+  "publisher": "Directorate-General for Competition, European Commission",
+  "recorded_at": "2026-10-24"
+ },
+ "licence_class": "A",
+ "licence_note": "CC BY 4.0 via the European Commission reuse notice (Commission Decision 2011/833); attribution 'European Commission, Directorate-General for Competition' and indicating changes; conditions carried into LICENSE.md at release. Decision PDFs (potential third-party content) are not redistributed - register fields only.",
+ "verdict": "go",
+ "novelty_check": {
+  "checked_at": "2026-10-24T00:17:20+00:00",
+  "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+  "queries": [
+   "EU merger Phase II prediction dataset",
+   "merger clearance prediction European Commission benchmark",
+   "EC merger decision outcome machine learning task"
+  ],
+  "evidence": {
+   "huggingface_datasets": [
+    {
+     "query": "EU merger Phase II prediction dataset",
+     "hits": 0,
+     "top": []
+    },
+    {
+     "query": "merger clearance prediction European Commission benchmark",
+     "hits": 0,
+     "top": []
+    },
+    {
+     "query": "EC merger decision outcome machine learning task",
+     "hits": 0,
+     "top": []
+    }
+   ],
+   "zenodo_records": [
+    {
+     "query": "EU merger Phase II prediction dataset",
+     "hits": 777421,
+     "top": [
+      "Spamming the regulator: Exploring a new lobbying strategy in EU competition procedures",
+      "European Size of Transaction Tests within the EUMR's Case Referral System and the German-Austrian Guidance Paper",
+      "Cooperation in Multijurisdictional Merger Filings: the ECA Notice Mechanism",
+      "The EU Merger Working Group: Looking Through the Rear View Mirror",
+      "Results of white lupin (Lupinus albus) variety trials in Switzerland from 2017 to 2024"
+     ]
+    },
+    {
+     "query": "merger clearance prediction European Commission benchmark",
+     "hits": 862088,
+     "top": [
+      "The plight of migrant women nightworkers in the Irish night-time economy",
+      "The Role of Expertise in EU Law on Digital Markets \u2013 dataset",
+      "Better Connected: European Co-operation in Telecoms Cases",
+      "Sanitation-service conditions in water-utility merger approvals: a comparative competition-law analysis linking merger-condition silence to service-quality remedies for affected customers",
+      "Mega Mergers in the Seeds & Agro-chem Industry"
+     ]
+    },
+    {
+     "query": "EC merger decision outcome machine learning task",
+     "hits": 492321,
+     "top": [
+      "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
+      "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI",
+      "RGB and RGNIR Plastic Waste Database",
+      "Training Coordination Proxy Agents.",
+      "A Data-Efficient and Explainable Machine Learning Framework for Predictiing Microbial Contamination Risk in Groundwater of Resource-Constrained Regions"
+     ]
+    }
+   ],
+   "arxiv_preprints": [
+    {
+     "query": "EU merger Phase II prediction dataset",
+     "hits": 5,
+     "top": [
+      "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+      "Measurement of the integrated luminosity of the Phase 2 data of the Belle II experiment",
+      "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+      "The Belle II Experiment at SuperKEKB -- Input to the European Particle Physics Strategy",
+      "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset"
+     ]
+    },
+    {
+     "query": "merger clearance prediction European Commission benchmark",
+     "hits": 5,
+     "top": [
+      "Response by the Montreal AI Ethics Institute to the European Commission's Whitepaper on AI",
+      "ERAnets Evaluation of Collaboration Among Participants of IST Research and their Evolution to Collaborations in the Euro",
+      "Physics Briefing Book",
+      "The Accuracy Paradox: Empirical Diagnostic of Default Decision Thresholds in Multi-Label Enzyme Commission Prediction [W",
+      "Corrigendum to \"On subgroup perfect codes in Cayley graphs\" [European J. Combin. 91 (2021) 103228]"
+     ]
+    },
+    {
+     "query": "EC merger decision outcome machine learning task",
+     "hits": 5,
+     "top": [
+      "DOME: Recommendations for supervised machine learning validation in biology",
+      "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
+      "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+      "Physics-Inspired Interpretability Of Machine Learning Models",
+      "Active learning for data streams: a survey"
+     ]
+    }
+   ]
+  },
+  "evidence_summary": "- huggingface_datasets / 'EU merger Phase II prediction dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'merger clearance prediction European Commission benchmark': 0 hit(s) - nothing notable\n- huggingface_datasets / 'EC merger decision outcome machine learning task': 0 hit(s) - nothing notable\n- zenodo_records / 'EU merger Phase II prediction dataset': 777421 hit(s) - Spamming the regulator: Exploring a new lobbying strategy in EU competition procedures, European Size of Transaction Tests within the EUMR's Case Referral System and the German-Austrian Guidance Paper, Cooperation in Multijurisdictional Merger Filings: the ECA Notice Mechanism, The EU Merger Working Group: Looking Through the Rear View Mirror, Results of white lupin (Lupinus albus) variety trials in Switzerland from 2017 to 2024\n- zenodo_records / 'merger clearance prediction European Commission benchmark': 862088 hit(s) - The plight of migrant women nightworkers in the Irish night-time economy, The Role of Expertise in EU Law on Digital Markets \u2013 dataset, Better Connected: European Co-operation in Telecoms Cases, Sanitation-service conditions in water-utility merger approvals: a comparative competition-law analysis linking merger-condition silence to service-quality remedies for affected customers, Mega Mergers in the Seeds & Agro-chem Industry\n- zenodo_records / 'EC merger decision outcome machine learning task': 492321 hit(s) - plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database, Training Coordination Proxy Agents., A Data-Efficient and Explainable Machine Learning Framework for Predictiing Microbial Contamination Risk in Groundwater of Resource-Constrained Regions\n- arxiv_preprints / 'EU merger Phase II prediction dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, Measurement of the integrated luminosity of the Phase 2 data of the Belle II experiment, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, The Belle II Experiment at SuperKEKB -- Input to the European Particle Physics Strategy, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset\n- arxiv_preprints / 'merger clearance prediction European Commission benchmark': 5 hit(s) - Response by the Montreal AI Ethics Institute to the European Commission's Whitepaper on AI, ERAnets Evaluation of Collaboration Among Participants of IST Research and their Evolution to Collaborations in the Euro, Physics Briefing Book, The Accuracy Paradox: Empirical Diagnostic of Default Decision Thresholds in Multi-Label Enzyme Commission Prediction [W, Corrigendum to \"On subgroup perfect codes in Cayley graphs\" [European J. Combin. 91 (2021) 103228]\n- arxiv_preprints / 'EC merger decision outcome machine learning task': 5 hit(s) - DOME: Recommendations for supervised machine learning validation in biology, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Changing Data Sources in the Age of Machine Learning for Official Statistics, Physics-Inspired Interpretability Of Machine Learning Models, Active learning for data streams: a survey",
+  "prior_art": [
+   "Gupta/Parikh/Patel EEL 2025 doi 10.52783/eel.v15i2.3347 (non-public compiled dataset); Compass Lexecon EC merger decisions dataset (proprietary); Stiebale & Szucs 2026 DG COMP ex-post study (unpublished database); modernlegal/eurlex HF corpus"
+  ],
+  "theirs": "Publisher provides the case register as bulk open data (since 2025-03-18) and decision documents; researchers compiled proprietary/manual datasets (Compass Lexecon 7,823 cases; EEL 2025 paper's non-public sample; DG COMP internal ex-post EU Merger Database); a decision-text corpus exists on Hugging Face. No public task formulation, label contract, splits or scored benchmark.",
+  "ours": "First public ML-ready formulation of the EC merger Phase II referral-risk task: notification-time prediction instant over the full public register (1990-2026, 10,123 notified cases), label contract from the decision-type inventory (Art. 6(1)(c) opener), measured split windows with both classes, external known-event fixtures, documented feature as-of policy.",
+  "verdict": "differentiated",
+  "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+ },
+ "updated_at": "2026-10-27T22:43:29+00:00",
+ "qualification": {
+  "qualified_at": "2026-10-27T10:16:23Z (corrected 2026-10-27: the prior value '2026-10-27T10Tue21Tue13Z' was a malformed strftime of the record-writing time; this value is the write time of the worker's gate report and acceptance files, evidenced by the collected file mtimes)",
+  "gate_version": "1.5.0",
+  "job": "ec-merger-003",
+  "result": "passed; 0 failed checks of 46 on the full artifact on the worker (same check set as the 002 pass: leakage incl. declared high-cardinality sector_divisions, timing event_time instant, contract current_snapshot vintage with training_label_timing declared, splits incl. clustered positive events 45/44, runner meta counts)",
+  "artifact_version": "e5a98dfc9c05d0b087ed2dead21004fbbd972e415d2174469371a908bcaf90ad",
+  "acceptance": "exact-byte --accept verified on the worker before any reference was computed: 'ACCEPTED: /output/extract matches the qualified artifact e5a98dfc9c05d0b0'",
+  "report": "private staging release 425292628 (tag job-ec-merger-003, draft); local copies preserved at .factory/ec-merger-003/{qualification.json,references.json,acceptance.txt,summary.json}",
+  "superseded": "ec-merger-002 artifact 2527012bcd34c543... was a real runner-compatibility defect: its meta.json lacked the description/split keys the benchmark's bench/workdir.py reads (task.json generation and render_program both KeyError), which the gate's runner.meta_json_keys check did not test (gate requires only target/positive_label/id_columns/columns/rows/positive_rate). Fixed in build.py (meta.json now carries all eight workdir keys; CSV bytes unchanged: train/eval sha256 identical to 002); one rebuild for this structural defect. The gate gap (required-keys list omits name/description/split) is recorded in STATE.md for a separate reviewable gate change; not patched in this session.",
+  "splits": {
+   "train": {
+    "rows": 5406,
+    "positives": 217,
+    "positive_rate": 0.040141
+   },
+   "eval": {
+    "rows": 1770,
+    "positives": 46,
+    "positive_rate": 0.025989
+   },
+   "holdout": {
+    "rows": 2915,
+    "positives": 46,
+    "positive_rate": 0.015786
+   }
+  }
+ },
+ "packaged_at": "2026-10-27T14:44:34Z",
+ "awaiting_operator": true,
+ "audits": {
+  "independent_pre_flip_2026_10_27": {
+   "auditor": "Codex (independent, read-only, no publisher contact)",
+   "verdict": "PUBLISH WITH CONDITIONS",
+   "report": "audits/2026-10-27-ec-merger-pre-flip-audit.md",
+   "integrity": "PASS (all five digests; artifact e5a98dfc...; source pin match)",
+   "shortcut_attacks": "PASS within frozen search (3,796 label-blind predictors; no AUC in {0,1}, >=0.95 or <=0.05; zero cross-split identity recovery)",
+   "references": "stock 0.6973 and sector prior 0.7679 reproduce (paired diff -0.0706); calendar_identity and the published CI NOT VERIFIED (recipes absent)",
+   "conditions": [
+    "retrospective-use limitation consistent throughout meta.json, quality.json, feature-evidence statuses",
+    "correct metadata contradictions (309/309 strictly-after; 34 censored not 33; sector level counts; party-count split rule)",
+    "supply the missing comparator and bootstrap recipes for exact reproduction",
+    "disclose dependence across repeated transactions alongside notification-day clustering"
+   ]
+  }
+ }
 }
