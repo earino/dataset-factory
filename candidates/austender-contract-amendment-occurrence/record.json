@@ -1,0 +1,213 @@
+{
+  "id": "austender-contract-amendment-occurrence",
+  "status": "ready",
+  "verdict": "go",
+  "created_at": "2026-10-28T00:00:00+00:00",
+  "updated_at": "2026-10-28T00:00:00+00:00",
+  "domain": "public procurement / post-award contract lifecycle outcome prediction",
+  "prediction_question": "For an Australian Government contract whose original Contract Notice is published on AusTender at instant T (the award-notice publication date, which follows the award itself within the ~42-day contract reporting window), will the contract receive its first published amendment notice (Contract Notice Type 'Amendment', CN ID suffix '-A<n>') within 12 months after T? Features are the published notice fields fixed at T: agency, supplier (name/ABN/location), committed value, UNSPSC category, procurement method, description text, planned start/end dates and derived duration, panel/SON/ATM linkage, consultancy and confidentiality flags.",
+  "prediction_time": "The instant is the parent Contract Notice's Publish Date (in-row, publisher-documented as 'the date the CN was published on AusTender'; the amendments-report channel carries it as a datetime with second precision, e.g. parent CN3439382 published 2017-07-07 15:48:21). Reporting follows the Commonwealth Procurement Rules: non-corporate entities must report contracts at or above $10,000 (inc. GST) and prescribed corporate entities at or above $400,000, within the ~42-day contract reporting window (Finance's statistics page states FY data is extracted after 42 days 'to allow for the 42-day contract reporting window'), so the award precedes the instant by at most ~6 weeks and every shipped feature is a published-notice field. The target window (T, T+365 days] begins strictly after the instant; amendment notices are separate later publication events with their own publish dates.",
+  "target_definition": "Binary: 1 if any Contract Notice with Parent Contract ID == this CN ID (equivalently CN ID == '<parent>-A<n>' per the publisher's documented convention) is published with Amendment Publish Date in (T, T+365d]; 0 otherwise. The label source columns are the parent/amendment linkage, Contract Notice Type and Amendment Publish Date - all excluded from shipped features (only parent-row fields plus strictly-earlier aggregates ship). Amendments of every published reason (value increase, end-date extension, supplier change, cancellation) count as events; the 'Amendment Reason' field allows construction to state and test reason-specific variants. Censoring: parents whose 12-month window extends past the data cutoff are excluded, not imputed (live-edge rows counted per window).",
+  "sources": [
+    {
+      "name": "AusTender Contract Notice and Amendments Published report (bulk download endpoint, any date window, anonymous)",
+      "url": "https://www.tenders.gov.au/Reports/CnAndAmendmentsDownload?AgencyStatus=0&DateType=Publish%20Date&DateStart=01-Jul-2017&DateEnd=31-Jul-2017",
+      "landing_page": "https://www.tenders.gov.au/Reports/CnAndAmendmentsForm",
+      "format": "XLSX with a criteria block, the publisher's own statistics block (contract notices count/value, amendments count/value for the query window) and one row per published notice; amendment rows carry the parent CN ID with '-A<n>' suffix and their own Publish Date (Excel serial, second precision). Measured: Jul-2017 window 722,303 bytes in 35.7-43.2 s; 12-month follow-up window (Aug 2017-Jul 2018) 6,424,822 bytes in 49.8-50.2 s.",
+      "license": "CC BY 3.0 AU per AusTender Terms of Use clause 5.1"
+    },
+    {
+      "name": "Historical Australian Government Contract Notice Data (Department of Finance on data.gov.au) - annual FY files 2014-15 to 2019-20, publication-stream CSV/XLSX with Parent/Amendment rows and full notice fields",
+      "url": "https://data.gov.au/data/dataset/historical-australian-government-contract-data",
+      "api": "https://data.gov.au/data/api/3/action/package_show?id=historical-australian-government-contract-data",
+      "measured": "17-18 FY dataset.csv: 30,999,835 bytes in 4.2 s (one anonymous GET); header and parent/amendment row structure verified in-fetch. Companion data dictionary PDF (202,757 bytes) documents every field. Companion snapshots: 'AusTender CNs published up to 30 August 2019' XLSX 271,711,723 bytes; 'up to 28 August 2018' zip 73,471,815 bytes.",
+      "license": "cc-by (data.gov.au dataset licence) and CC BY 3.0 AU (AusTender Terms of Use 5.1) - same data"
+    },
+    {
+      "name": "AusTender Contract Notice Export (weekly XLSX, rolling 18-month retention, anonymous GUID downloads)",
+      "url": "https://www.tenders.gov.au/Reports/CnWeeklyExportList",
+      "api": "https://www.tenders.gov.au/Reports/CnWeeklyExportDownload/c8dc039a-82ed-4e36-b185-519fbe6cf009",
+      "measured": "Latest week (file AusTender-Contract-Notice-Export_20261028_152242.xlsx): 259,538 bytes, 1,427 rows, fetched anonymously 2026-10-28; current schema carries Parent CN ID / CN ID / Publish Date / Amendment Publish Date / Status / Value / Amendment Reason / Procurement Method etc.",
+      "license": "CC BY 3.0 AU per AusTender Terms of Use clause 5.1"
+    },
+    {
+      "name": "OCP Data Registry publication 19 - Department of Finance (AusTender in OCDS), per-year JSONL/CSV/XLSX 2007-2026",
+      "url": "https://data.open-contracting.org/en/publication/19",
+      "measured": "2018.jsonl.gz 13,576,090 bytes: 50,990 contracting processes, one contract per process, contracts[].amendments empty everywhere - the OCDS compilation does NOT expose amendment events (three 'amendment' string hits are description text), and the registry's own quality notes say amendment values overwrite contract properties. UNUSABLE as the label source; usable only for parent-field cross-checks. Sizes: 2019.jsonl.gz 13.6 MB, 2023.csv.tar.gz 98.2 MB, 2026.jsonl.gz 20.3 MB (HEAD).",
+      "license": "CC BY 4.0 per the OCP data registry publication page (publisher: Department of Finance)"
+    }
+  ],
+  "license_evidence": [
+    {
+      "quote": "5.1 With the exception of the Commonwealth Coat of Arms, Approach to Market (ATM) material and where otherwise noted, all materials on AusTender are licensed under a Creative Commons Attribution 3.0 Australia licence (CC BY 3.0 AU).",
+      "source": "AusTender Terms of Use, https://www.tenders.gov.au/infolinks/termsofuse (read 2026-10-28, clause 5.1). Contract notices are not ATM material (clause 5.4 excludes only Approaches to Market), so they fall under the CC BY 3.0 AU grant."
+    },
+    {
+      "quote": "6.1 Except where otherwise noted, any reference to, reuse or distribution of all or part of the AusTender materials must include the following attribution: AusTender materials are released by the Department of Finance. AusTender materials are subject to change and should be verified on the AusTender website to ensure the information is up to date and correct: www.tenders.gov.au.",
+      "source": "AusTender Terms of Use clause 6.1 (attribution statement to carry into LICENSE.md), https://www.tenders.gov.au/infolinks/termsofuse, read 2026-10-28"
+    },
+    {
+      "quote": "license_id: cc-by (dataset 'historical-australian-government-contract-data', organization 'department-of-finance'), fetched via https://data.gov.au/data/api/3/action/package_show?id=historical-australian-government-contract-data on 2026-10-28",
+      "source": "data.gov.au dataset record for the historical contract notice archive; corroborates the publisher's own instrument. Third-party commercial reuse sites (tenders.plus) also cite 'Built on data from AusTender, licensed under the Creative Commons Attribution 3.0 Australia Licence'."
+    }
+  ],
+  "construction_script": null,
+  "split_strategy": "Temporal by parent publish date, all windows with both classes by construction from measured rates and volumes: train 2014-07-01..2018-06-30 (FY CSVs on data.gov.au; 60,590 parents in FY2017-18 alone, 110 agencies), eval 2018-07-01..2022-06-30 (data.gov.au FY files 2018-19/2019-20 + CnAndAmendmentsDownload windows for 2020-21..2021-22), holdout 2022-07-01..2025-09-30 (CnAndAmendmentsDownload windows + weekly export; every parent's 12-month label window closes by 2026-09-30, before the current data edge 2026-10-28). Measured basis (Jul-2017 cohort, n=6,285 parents published 01-31 Jul 2017, follow-up through 31-Jul-2018): first-amendment within 30d 0.38% / 90d 2.39% / 180d 5.62% / 365d 10.96% (689 positives in the cohort month). At ~5-6k parents/month and ~11% per year, each multi-year window carries tens of thousands of positives; per-window exact counts are the FIRST construction measurement on the worker (measured sample here, not extrapolated to a claimed total). Independence: contracts cluster by agency and publication month, so intervals must be clustered on (agency, publish-month); the independence scale is the publication month, not the row. Both channels (FY CSVs, amendments report) describe the same publication stream and cross-check each other; construction asserts channel-consistency in-build on overlapping windows.",
+  "measurements": {
+    "fy_panel_2026_10_28": "17-18-fy-dataset.csv (data.gov.au): 30,999,835 bytes in 4.2 s, 73,458 rows = 60,590 Parent + 12,868 Amendment notices published in FY2017-18; 110 distinct agencies (top: Defence 29,135; Home Affairs 3,223; Human Services 3,013; Health 2,840; ATO 2,536); procurement methods Open tender 31,515 / Limited tender 36,944 / Prequalified tender 4,999; parents published Jul-Dec 2017 in-file: 29,190, of which 9.1% carry >=1 amendment row anywhere in the FY file and 6.4% amended within 6 months (lower bounds - later amendments sit in later FY files).",
+    "cohort_12m_rate_2026_10_28": "CnAndAmendmentsDownload windows '01-Jul-2017..31-Jul-2017' (722,303 B) and '01-Aug-2017..31-Jul-2018' (6,424,822 B): 6,285 parents published in Jul 2017; first-amendment rates 30d 24 (0.38%), 90d 150 (2.39%), 180d 353 (5.62%), 365d 689 (10.96%). 14,243 amendment rows across the two files. Dated examples with second-precision publication datetimes (report channel, Excel serial): CN3439382 (Austrade, 'Temporary Personnel: Marketing Advisor') parent 2017-07-07 15:48:21 -> CN3439382-A1 2017-09-06 16:10:18 (60.9 d); CN3441078 (ACIAR review) parent 2017-07-14 10:16:37 -> -A1 2017-09-01 09:37:22 (48.9 d); CN3444589 (ABS, Printing Services) parent 2017-07-25 11:44:26 -> -A1 2018-02-19 13:50:05 (208.9 d); CN3438465 (ACIAR, Temporary Employment Services) parent 2017-07-06 08:58:03 -> -A1 2018-03-27 15:57:59 (264.2 d).",
+    "channels_2026_10_28": "(1) data.gov.au FY files 2014-15..2019-20 (CSV/XLSX 'cn-parent-and-amendments'); (2) CnAndAmendmentsDownload: any anonymous date-window GET, XLSX with per-query statistics block (Sep-2023 week: 175,446 B, 1,735 sheet rows, statistics block 'Amendments Value (AUD) 758,567,364.78' - publisher's own aggregate, the cross-check fixture); (3) weekly export XLSX, 18-month rolling retention, 1,427 notices in the 2026-10-28 week file; (4) OCDS registry per-year 2007-2026 - NO amendment events (measured negative). Server latency on the report endpoint is high (35-50 s per window request); FY CSVs are much faster (31 MB in 4.2 s).",
+    "extraction_cost_2026_10_28": "Measured from the coordinator: FY17-18 CSV 31.0 MB / 4.2 s (one GET); amendments-report windows 0.72 MB / 35.7-43.2 s (one month) and 6.4 MB / 49.8-50.2 s (12 months). Full harvest estimate (labelled estimate, not measured): FY CSVs give 2014-20 directly (~150-250 MB total); 2020-2026 amendment/parent stream via report windows needs ~80-150 requests at ~40-50 s each (order 1-2 h wall clock, order 30-80 MB) - a single worker job, EUR well inside the standard reservation.",
+    "schema_2026_10_28": "Data dictionary PDF (202,757 B, data.gov.au) documents every field, quoting: CN ID ('Where a contract amendment has been reported, the CN ID will be used with an amendment reference immediately following the CN ID. For example, CN1234-A1 would represent the first reported amendment to CN1234'); Publish Date ('the date the CN was published on AusTender'); Contract Value ('total (AUD) $ value committed for the life of the contract including GST. The initial contract value should not include amendments'); Amendment Published Date; Limited Tender exemption taxonomy (Appendix A). FY CSV header verified: Agency Name, Contract Notice Type, Parent Contract ID, Contract ID, Publish Date, Amendment Date, Start Date, Amendment Start Date, End Date, Contract Value, Amendments Value, Description, Amendment Reason, Agency Ref ID, UNSPSC, UNSPSC Title, Procurement Method, ATM ID, SON ID, Panel Arrangement, Confidentiality Contract Flag/Reason, Confidentiality Outputs Flag/Reason, Consultancy Flag/Reason, Supplier Name/Address/Suburb/Postcode/State/Country/ABN Exempt/ABN, Contact, Branch, Division, Office Postcode.",
+    "vintage_caveats_2026_10_28": "Finance's statistics page: 'Contract data can be amended, varied and updated by entities over time.' OCP registry quality notes: cancelled amendments overwrite status/period/value in OCDS compilations; item identifiers differ between original and amendment rows; supplier renames create duplicate supplier parties. Consequence recorded for construction: labels must be derived from amendment NOTICE rows (events), never from compiled/overwritten contract properties, and the FY/report files must be pinned by sha256 at harvest. The report and FY channels are publication-stream snapshots (each row a notice as published), so event rows are as-of honest; corrections/deletions of already-published notices cannot be ruled out for the most recent window and the holdout cutoff must keep a documented tail. GaPS-sourced rows (1999-2006-07, different schema) are excluded from the task era.",
+    "known_event_fixtures": "(1) CN3350299 'Provision of new air combat capability' (Department of Defence): parent published 14/06/2016; amendment CN3350299-A16 published 19/10/2017 with Amendments Value 6,284,067,617 and Amendment Reason '<p>Contract Variation = CN3462418</p>' - a 16-month follow-up TRUE at the 18-month horizon and FALSE at 12 months (boundary case, verified in the FY17-18 CSV fetch). (2) Cohort TRUE examples CN3439382/CN3441078/CN3444589/CN3438465 (see cohort_12m_rate). (3) The 2026-10-28 weekly file carries CN4203477 and CN4203477-A2 published the same week (immediate-amendment edge case; target window opens strictly after T).",
+    "measured_on": "2026-10-28 from the coordinator, anonymous HTTPS only; scripts: candidates/austender-contract-amendment-occurrence/probe_channels.py, probe_fy_panel.py, probe_cohort_rate.py (each reproduces the quoted numbers)"
+  },
+  "novelty_check": {
+    "checked_at": "2026-10-28T04:51:09+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "government contract amendment prediction",
+      "contract modification prediction dataset",
+      "AusTender machine learning",
+      "public procurement contract renegotiation prediction benchmark"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "government contract amendment prediction",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "contract modification prediction dataset",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "AusTender machine learning",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "public procurement contract renegotiation prediction benchmark",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "government contract amendment prediction",
+          "hits": 202784,
+          "top": [
+            "Further work on the state (municipal) contract: problems of legal regulation",
+            "Global Forest Fire Emissions Prediction System (GFFEPS)",
+            "The Political Dynamics and Legal Framework of Waqf and How it Influences the Protection of Rights and Welfare of Marginalized Muslim Communities in India:A Critical Analysis",
+            "Termination of Master-Servant Contract of Employment in Nigeria: An Evaluation of  Judicial Activism on National Industrial Court of Nigeria",
+            "A process for developing a regulatory framework for the certification of Marine Autonomous Systems (MAS)"
+          ]
+        },
+        {
+          "query": "contract modification prediction dataset",
+          "hits": 413340,
+          "top": [
+            "Extracted Ethereum transactions for July 2019 from the Ethereum in BigQuery public dataset",
+            "ABOUT THE NEW CZECH LEGAL REGULATION OF THE CONTRACT FOR WORK",
+            "Protein Structure Datasets for Protein Workshop",
+            "Evaluation of a numerically efficient aerosol activation scheme by using cloud data from multiple aircraft campaigns in continental and marine regions",
+            "Naive Bayes modification for intrusion detection system classification with zero probability"
+          ]
+        },
+        {
+          "query": "AusTender machine learning",
+          "hits": 326962,
+          "top": [
+            "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
+            "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI",
+            "RGB and RGNIR Plastic Waste Database",
+            "mushrooms",
+            "DisMo: Disentangled Motion Representations for Open-World Motion Transfer"
+          ]
+        },
+        {
+          "query": "public procurement contract renegotiation prediction benchmark",
+          "hits": 380234,
+          "top": [
+            "A Minimum Two-Bidder Mandate for Public Procurement",
+            "Procurement and Contract Management in Public Agencies: A Comparative Study of Rivers State Independent Electoral Commission and Nigerian Electricity Management Services Agency",
+            "Features of Legal Regulation of Procurement Contract",
+            "Contract Management and Procurement Performance of State Corporation in Kenya",
+            "Digitalizing Public Procurement in Ghana: A GGPA Governance Intelligence Assessment"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "government contract amendment prediction",
+          "hits": 5,
+          "top": [
+            "An Amendment to \"Control Contraction Metrics: Convex and Intrinsic Criteria for Nonlinear Feedback Design\"",
+            "Hiring for An Uncertain Task: Joint Design of Information and Contracts",
+            "VeriSign: A Secure Contract Consensus Platform on the Blockchain with Amendment Functionality",
+            "Classification of Contract-Amendment Relationships",
+            "Digital Democracy: Episode IV -- A New Hope, How a Corporation for Public Software Could Transform Digital Engagement fo"
+          ]
+        },
+        {
+          "query": "contract modification prediction dataset",
+          "hits": 5,
+          "top": [
+            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+            "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset",
+            "Hiring for An Uncertain Task: Joint Design of Information and Contracts",
+            "AI-assisted German Employment Contract Review: A Benchmark Dataset"
+          ]
+        },
+        {
+          "query": "AusTender machine learning",
+          "hits": 5,
+          "top": [
+            "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+            "DOME: Recommendations for supervised machine learning validation in biology",
+            "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
+            "Active learning for data streams: a survey",
+            "Physics-Inspired Interpretability Of Machine Learning Models"
+          ]
+        },
+        {
+          "query": "public procurement contract renegotiation prediction benchmark",
+          "hits": 5,
+          "top": [
+            "A Decade of Public Procurement in Spain: A Longitudinal Open Dataset from the BOE (2014-2024)",
+            "Organized crime behavior of shell-company networks in procurement: prevention insights for policy and reform",
+            "Acceptance of e-procurement in organisations",
+            "Renegotiation and recursion in Bitcoin contracts",
+            "A machine learning model to identify corruption in M\u00e9xico's public procurement contracts"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'government contract amendment prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'contract modification prediction dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'AusTender machine learning': 0 hit(s) - nothing notable\n- huggingface_datasets / 'public procurement contract renegotiation prediction benchmark': 0 hit(s) - nothing notable\n- zenodo_records / 'government contract amendment prediction': 202784 hit(s) - Further work on the state (municipal) contract: problems of legal regulation, Global Forest Fire Emissions Prediction System (GFFEPS), The Political Dynamics and Legal Framework of Waqf and How it Influences the Protection of Rights and Welfare of Marginalized Muslim Communities in India:A Critical Analysis, Termination of Master-Servant Contract of Employment in Nigeria: An Evaluation of  Judicial Activism on National Industrial Court of Nigeria, A process for developing a regulatory framework for the certification of Marine Autonomous Systems (MAS)\n- zenodo_records / 'contract modification prediction dataset': 413340 hit(s) - Extracted Ethereum transactions for July 2019 from the Ethereum in BigQuery public dataset, ABOUT THE NEW CZECH LEGAL REGULATION OF THE CONTRACT FOR WORK, Protein Structure Datasets for Protein Workshop, Evaluation of a numerically efficient aerosol activation scheme by using cloud data from multiple aircraft campaigns in continental and marine regions, Naive Bayes modification for intrusion detection system classification with zero probability\n- zenodo_records / 'AusTender machine learning': 326962 hit(s) - plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database, mushrooms, DisMo: Disentangled Motion Representations for Open-World Motion Transfer\n- zenodo_records / 'public procurement contract renegotiation prediction benchmark': 380234 hit(s) - A Minimum Two-Bidder Mandate for Public Procurement, Procurement and Contract Management in Public Agencies: A Comparative Study of Rivers State Independent Electoral Commission and Nigerian Electricity Management Services Agency, Features of Legal Regulation of Procurement Contract, Contract Management and Procurement Performance of State Corporation in Kenya, Digitalizing Public Procurement in Ghana: A GGPA Governance Intelligence Assessment\n- arxiv_preprints / 'government contract amendment prediction': 5 hit(s) - An Amendment to \"Control Contraction Metrics: Convex and Intrinsic Criteria for Nonlinear Feedback Design\", Hiring for An Uncertain Task: Joint Design of Information and Contracts, VeriSign: A Secure Contract Consensus Platform on the Blockchain with Amendment Functionality, Classification of Contract-Amendment Relationships, Digital Democracy: Episode IV -- A New Hope, How a Corporation for Public Software Could Transform Digital Engagement fo\n- arxiv_preprints / 'contract modification prediction dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, Hiring for An Uncertain Task: Joint Design of Information and Contracts, AI-assisted German Employment Contract Review: A Benchmark Dataset\n- arxiv_preprints / 'AusTender machine learning': 5 hit(s) - Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Active learning for data streams: a survey, Physics-Inspired Interpretability Of Machine Learning Models\n- arxiv_preprints / 'public procurement contract renegotiation prediction benchmark': 5 hit(s) - A Decade of Public Procurement in Spain: A Longitudinal Open Dataset from the BOE (2014-2024), Organized crime behavior of shell-company networks in procurement: prevention insights for policy and reform, Acceptance of e-procurement in organisations, Renegotiation and recursion in Bitcoin contracts, A machine learning model to identify corruption in M\u00e9xico's public procurement contracts",
+    "prior_art": [
+      "IDA/DoD 'Evaluating and Predicting Contract Performance Using ML' (2020, internal EDA files, 149 contracts); ifo/CESifo 'Targeted Bidders in Government Tenders' (FPDS FY2008-2018, amendments as outcomes); Acikalin et al. NLE 30(6) 2024 (TED pre-award tasks); Latvia IUB open data (raw modification notices, no task)"
+    ],
+    "theirs": "The publisher provides raw contract notice streams (AusTender reports, data.gov.au bulk, OCDS compilation) and annual statistics; US-adjacent literature uses contract modifications as documents to classify (IDA/DoD naive Bayes) or as treatment outcomes in policy analysis (ifo FPDS set-aside); pre-award notice-text tasks exist for TED (offers/single-bid/overrun); no ML-ready amendment-occurrence benchmark with publication-gated timing exists for any jurisdiction in these searches",
+    "ours": "Publication-gated post-award amendment-occurrence benchmark on Australian Government contracts: instant = award-notice publication on AusTender, target = first amendment notice within 12 months, ~11% measured base rate, temporal splits over 2014-2025, publisher statistics-block cross-checks, runner-compatible binary contract with mandatory reverse-history probes",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": "All five discovery contracts reconciled against recorded evidence. (1) Redistribution: SUPPORTED - licence class A, CC BY 3.0 AU quoted from AusTender's own Terms of Use clause 5.1 (contract notices are not ATM material), attribution statement clause 6.1 recorded for LICENSE.md; data.gov.au dataset licence cc-by corroborates; third parties commercially republish under the same grant. (2) Prediction timing: SUPPORTED - instant = parent CN Publish Date (publisher-documented, second-precision timestamps in the report channel); all feature fields are published-notice fields documented in the publisher's data dictionary; target window strictly after the instant; award-to-publication lag bounded by the 42-day reporting window; vintage caveats recorded (late corrections, cancelled-amendment overwrite behaviour in OCDS, GaPS era excluded) and handled by pinning sha256 at harvest plus a documented holdout tail. (3) Obtainable target: SUPPORTED - the amendment event stream is published by the same source as the parents, anonymous, any window; label source columns excludable (ship parent-row fields only); reverse-history exposure (a parent's label is a later row in the same stream) must be probed and mitigated by construction protocol, as with unhcr/abs. (4) Split capacity: SUPPORTED by measurement - 60,590 parents in FY2017-18 alone, 12-month first-amendment rate 10.96% on a measured Jul-2017 cohort (689/6,285); windows spanning 2014-2025 with both classes are evidenced by volume x measured rate; exact per-window counts are the first construction step on the worker (sample here, no claimed totals). (5) Contribution beyond a mirror: SUPPORTED - novelty verdict differentiated (no ML-ready amendment-occurrence benchmark found; nearest prior art differs in stage, population or purpose). Residual uncertainties: the 12-month rate is measured on one cohort month (per-era variation is the construction measurement); report-endpoint latency makes the 2020+ harvest slow but cheap; publication-timestamp timezone is assumed Australia/Sydney (server time) and must be confirmed at construction; amendments published the same instant as the parent are excluded by the strict-inequality window (edge cases counted in-build).",
+  "next_action": "Construction (worker job austender-amd-001): (1) harvest parent+amendment notice rows for parent publish dates 2014-07-01..2025-09-30 - FY CSVs from data.gov.au for 2014-15..2019-20, CnAndAmendmentsDownload windows for 2020-01-01..2026-10-28 (or the whole era via report windows), pin every fetched file by sha256; (2) build the panel: one row per parent CN, features from the parent notice fields plus strictly-earlier aggregates (agency/supplier/UNSPSC history), label = first amendment notice in (T, T+365d], exclude live-edge rows with counted reasons, derive per-window row/positive counts (the measured-rate extrapolation ends here); (3) assert the four dated cohort fixtures and the CN3350299 boundary case in-build; assert channel consistency on an overlap window (FY CSV vs report); (4) mandatory gate-1.5 reverse-history probe on the exact artifact: verify no shipped field answers another row's label (the abs-visitor defect), declare the restricted-protocol retrospective posture; (5) qualification + exact-byte acceptance before any score; references = agency-rate prior, recent-rate, calendar/identity baselines (persistence baseline does not exist for a new contract - same reasoning as ec-merger's 'inapplicable persistence'); (6) report the negative-space finding honestly: if the stock model fails to beat the agency x UNSPSC rate prior on eval (chilecompra pattern), that is a result, not a defect to hide.",
+  "jurisdiction": {
+    "country": "AU",
+    "region": "Oceania",
+    "publisher": "AusTender / Department of Finance (Commonwealth of Australia)",
+    "recorded_at": "2026-10-28"
+  },
+  "licence_class": "A",
+  "licence_note": "Class A: CC BY 3.0 AU on the publisher's own instrument (AusTender Terms of Use clause 5.1; contract notices are not the excluded ATM material). Attribution statement per clause 6.1 carried into LICENSE.md; source terms preserved, never relicensed; our contribution dedicated CC0-1.0 per the standing policy."
+}

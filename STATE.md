@@ -23,6 +23,92 @@ commit 8512fd8). Close #17; ordinary advancement thereafter is source-specific
 candidate review - review the next candidate's source-specific prediction contract
 and update its builder before construction; #25 remains deferred.
 
+## 2026-10-28 (04:55Z) - Oceania discovery tick: NEW ready candidate austender-contract-amendment-occurrence (federal AU, CC BY 3.0 AU, measured 10.96% 12-month amendment rate); epbc-referral-controlled-action opened (investigating, licence unread); NZ search attempted, no lead
+
+Regional tick (Australia data.gov.au/ABS/BoM priorities, New Zealand data.govt.nz/
+Stats NZ). One new ready candidate, one new investigating lead, no verdict changes
+on the three existing AU records (all re-read, not re-probed: abs-visitor published
+with recorded rework; atsb + bom-cyclone + melbourne-pedestrian dropped on their
+recorded blockers, reopen conditions unchanged and not met). No worker launched,
+no construction, no dataset asset touched.
+
+- austender-contract-amendment-occurrence (NEW, ready/go, licence class A):
+  task = at the instant an Australian Government contract award notice is
+  PUBLISHED on AusTender (the ~42-day reporting window bounds award-to-
+  publication lag), will the contract receive its first published amendment
+  notice within 12 months? Features are the parent notice's own documented
+  fields; the target is a strictly-later publication event. Licence quoted from
+  the publisher's own instrument (AusTender ToU clause 5.1: CC BY 3.0 AU; only
+  Coat of Arms + ATM material excluded - contract notices are covered;
+  attribution clause 6.1 recorded for LICENSE.md; data.gov.au dataset cc-by
+  corroborates). Measured, anonymous, from the coordinator: FY2017-18 CSV
+  31.0 MB / 4.2 s = 73,458 rows (60,590 Parent + 12,868 Amendment, 110
+  agencies); DECISIVE cohort measurement via the anonymous any-window
+  CnAndAmendmentsDownload report (Jul-2017 parents, n=6,285, follow-up through
+  Jul-2018): first amendment within 30d 0.38% / 90d 2.39% / 180d 5.62% / 365d
+  10.96% (689 positives in one cohort month). Four dated TRUE fixtures with
+  second-precision publication datetimes (CN3439382, CN3441078, CN3444589,
+  CN3438465) + the CN3350299 16-month boundary case. Channel map measured,
+  including the NEGATIVE finding that the OCP/OCDS bulk compilation carries NO
+  amendment events (2018 file: 50,990 processes, contracts[].amendments empty
+  everywhere - amendments overwrite values in OCDS, so labels must come from
+  notice rows): FY CSVs 2014-15..2019-20 + report endpoint (any window, slow
+  ~40-50 s/request) + weekly XLSX (18-month retention, 1,427 notices in the
+  2026-10-28 week file). Novelty: check-novelty differentiated (nearest prior
+  art: IDA/DoD document-classification study; ifo amendments-as-treatment-
+  outcomes; Acikalin TED pre-award tasks - different stage/population/purpose;
+  no ML-ready amendment-occurrence benchmark found for any jurisdiction).
+  Split windows 2014-2025 by publication date, both classes evidenced by
+  measured rate x volume; exact per-window counts are the first worker step
+  (cohort sample, not an extrapolated total). Construction handoff includes
+  mandatory gate-1.5 reverse-history probes (abs-visitor lesson: a parent's
+  amendment outcome is a later row in the same stream). Ready buffer now 6.
+- epbc-referral-controlled-action (NEW, investigating): EPBC Act referral
+  screening decision (controlled action or not, due within 20 business days
+  of validation) as a per-project outcome task. Access measured: the portal's
+  All-referrals grid is a JS-rendered PCF control (browser-only pagination,
+  '5000 records' shown - cap vs full population unresolved); per-project
+  summary pages fetch anonymously (static HTML, status + stage timeline
+  verified on 2024/10023 and 2026/10600); no bulk CSV/JSON found (spatial
+  database is WMS-only). LICENCE UNREAD: dcceew/nationalepa copyright pages
+  time out from this coordinator (bounded attempts), portal /terms-conditions/
+  404s - classification deferred, next probe is the supported-browser terms
+  read; sibling catalogue record cc-by-4.0 is explicitly NOT treated as the
+  register's instrument. Exact unpark/open path recorded in the record.
+- New Zealand coverage: data.govt.nz is Incapsula-walled to plain clients but
+  loads in the supported browser; three targeted catalogue queries
+  (food-safety-enforcement, crash-analysis, inspection-outcomes) all returned
+  the same unfiltered default result list (the search URL scheme does not
+  apply the query server-side as tried) - recorded as attempted coverage, no
+  lead opened, zero further budget spent. NZ's only live record remains
+  nz-ea-wholesale-price-exceedance (awaiting the operator's flip).
+- State licences (brief asked for per-state checks): probed within the
+  data.gov.au aggregate - NSW Register of Penalty Notices (Food Authority) is
+  cc-by but the register is an HTML search tool, no bulk resource (the Revenue
+  NSW XLSX sibling is an aggregate table); SA Health enforcement-action slices
+  are cc-by annual aggregates. No state unit-level channel worth a record was
+  found in the bounded sweep; QLD/WA/VIC/TAS portals were not individually
+  probed this tick - recorded as actual coverage, not as "nothing exists".
+- ABS/BoM specifically: ABS monthly/annual statistical-table panels are the
+  family with live members (abs-visitor published; za-statsa ready) - a second
+  member is an operator decision per the recorded precedents, not opened. BoM
+  cyclone/best-track is a recorded drop (reopen condition: a CC BY statement
+  on the cyclone database's own page); BoM river/flood families have parked
+  members (malaysia-river, ea-flood-alert) - same family rule.
+
+Checks this session: check-candidate.py --all exit 0 (96 records OK, both new
+records pass); discovery-coverage.py exit 0: 96 candidates, live 33, ready 6,
+AU 6, Oceania 7, live non-US 27/33 (82%). Scratch probe files deleted; the
+three retained probe scripts live in the candidate directory and reproduce the
+quoted numbers.
+
+Next action: (construction queue is unchanged for advancement) the ready
+buffer's AU addition is constructed per its record next_action (worker job:
+FY CSV harvest + report-window harvest 2020-2026, sha256 pinning, reverse-
+history probes, gate 1.5); the EPBC lead's cheapest next probe is the
+supported-browser licence read + grid XHR replay, which a future Oceania tick
+or an idle slot can run.
+
 ## 2026-10-28 (02:35Z) - East Asia discovery tick: new lead jp-moe-pollen-exceedance (investigating, PDL 1.0 class A, retrospective benchmark, split counts unmeasured); japan-estat-portal dropped at triage; Taiwan PCC procurement skipped on the chilecompra family precedent; two pre-existing CI failures recorded, not caused by this session
 
 Regional tick (Japan e-Stat/JMA, South Korea KOSIS/KMA, Taiwan, Hong Kong, Singapore).

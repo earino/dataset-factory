@@ -1,0 +1,55 @@
+{
+  "id": "epbc-referral-controlled-action",
+  "status": "investigating",
+  "verdict": "investigate",
+  "created_at": "2026-10-28T00:00:00+00:00",
+  "updated_at": "2026-10-28T00:00:00+00:00",
+  "domain": "environmental regulation / referral screening outcome prediction",
+  "prediction_question": "For a development referred under the Environment Protection and Biodiversity Conservation Act 1999 (EPBC Act), at the instant the referral is validated and published on the EPBC Act Public Portal (with its title, proponent, industry type, location and primary jurisdiction visible), will the delegate's referral decision (due within 20 business days of validation) declare the action a controlled action (requiring formal assessment and approval) rather than 'not a controlled action' or 'not a controlled action - particular manner'? Prospective users: proponents and their environmental consultants (screening and budgeting for assessment before lodging), and oversight researchers studying what drives regulatory thresholds. A useful prediction prices assessment risk at referral time instead of waiting the ~4 weeks for the decision.",
+  "prediction_time": "Instant = the referral's validation/publication on the EPBC Act Public Portal (per-project pages show a stage timeline Lodgement -> Validation -> Referral Decision -> Assessment -> Final Decision; the portal's list carries a 'Valid Date' column). Features fixed at that instant: project title, proponent name, industry type, location (address string and primary jurisdiction), and referral document metadata. The referral decision (the label) is published later on the same project page as a decision notice, within the statutory 20-business-day window - the outcome cannot exist at the instant.",
+  "target_definition": "Binary: 1 if the referral decision declares a controlled action (assessment approach determined on the project page; decision notice 'Controlled Action'), 0 for 'Not a controlled action' / 'particular manner' decisions. Label source = the per-project decision field/notice on the portal, excludable from shipped features (features are referral-time fields only). Population: all referrals in the portal's All-referrals list; still-open referrals at the data edge are censored, not imputed.",
+  "sources": [
+    {
+      "name": "EPBC Act Public Portal - All referrals list (Microsoft Dynamics/Power Apps portal, ~5000 records shown, 10 rows/page grid, filterable)",
+      "url": "https://epbcpublicportal.environment.gov.au/all-referrals/",
+      "api": "https://epbcpublicportal.environment.gov.au/_services/entity-grid-data.json/2ab10dab-d681-4911-b881-cc99413f07b6",
+      "measured": "Grid columns observed in a real browser session 2026-10-28: EPBC Number, Project, Proposer/Approval Holder, Location, Industry Type, Valid Date, Project Status, Primary Jurisdiction; list reports '5000 records'; first 3 rows fetched anonymously (2026/10641 Mercy Education; 2025/10184 Schiavello; 2026/10680 Elimbah Residential). PCF data-grid loads rows via XHR - plain urllib cannot paginate the grid (direct guesses at the grid endpoint 404); the /all-referrals HTML defers load. Per-project summary pages ARE static-fetchable anonymously (project-referral-summary/?id=..., ~236 KB, carries EPBC number, status, stage timeline).",
+      "license": "not yet read - see license_evidence and next_action"
+    },
+    {
+      "name": "EPBC Referrals Spatial Database (DCCEEW on data.gov.au) - WMS only, no bulk attributes",
+      "url": "https://data.gov.au/data/dataset/referrals-spatial-database",
+      "measured": "Resources are OGC WMS + department links only; the catalogue record is cc-by-4.0 (dcceew). A possible geometry side-channel for location features, not the decision register.",
+      "license": "cc-by-4.0 on the spatial-database catalogue record (NOT the register's own instrument; the portal task source remains unclassified)"
+    }
+  ],
+  "license_evidence": [
+    {
+      "note": "The referral register's own licence has NOT been read yet: dcceew.gov.au and nationalepa.gov.au copyright/terms pages time out from this coordinator (three bounded attempts 2026-10-28, socket timeouts, not HTTP refusals), and the portal itself has no terms link discovered at /terms-conditions/ (404). Licence class is intentionally left unassigned (investigating may be unclassified). The nearest instrument found so far is the department's data.gov.au catalogue record for the sibling Referrals Spatial Database (cc-by-4.0), which suggests but does not establish the register's posture - the skill requires classifying from the publisher's own instrument for the dataset itself.",
+      "source": "Bounded licence probes 2026-10-28: https://www.dcceew.gov.au/about/copyright (timeout), https://www.nationalepa.gov.au/copyright-information (timeout), https://epbcpublicportal.environment.gov.au/terms-conditions/ (404). Next probe: read the terms in the supported browser (which passes where plain clients time out) before any deeper investment."
+    }
+  ],
+  "construction_script": null,
+  "split_strategy": "Not yet computed - depends on measured referral volumes and outcome vocabulary. Prior expectation (labelled as such, not measured): ~500-800 referrals/year since 2000, controlled-action share historically a large minority (decisive construction measurement). Whether the portal's '5000 records' is the full historical population or a display cap is an OPEN measurement (grid XHR replay needed); per-year coverage must be established before split windows can be designed.",
+  "measurements": {
+    "access_2026_10_28": "Portal list: anonymous, JS-rendered PCF grid, 10 rows/page, '5000 records' shown; XHR-driven pagination not reproducible by plain urllib (grid endpoint guesses 404); static per-project pages fetch anonymously. One decided project page read anonymously: EPBC 2024/10023 (Princes Highway upgrade program - Milton Ulladulla bypass) status 'Assessment Approach Determined' with the full stage timeline rendered in static HTML. Extraction is therefore browser-automation shaped (grid pagination ~500 XHR calls + optional per-project pages), feasible on a worker with a headless browser; no bulk CSV/JSON channel was found in the bounded sweep.",
+    "portal_fields_2026_10_28": "List row fields (verified in browser): EPBC Number, Project, Proposer/Approval Holder, Location, Industry Type, Valid Date, Project Status (observed value 'Referral Decision - Open for Public Comment'), Primary Jurisdiction. Whether the terminal referral-decision outcome is exposed in the LIST (status string) or only on per-project pages is unresolved - the label-derivation cost differs by an order of magnitude between the two.",
+    "ecosystem_note_2026_10_28": "The EPBC Act is administered by Australia's National EPA (nationalepa.gov.au, portal still on environment.gov.au domain). No machine-readable bulk referral-decision dataset was found on data.gov.au in the bounded catalogue sweep (nearest: referrals spatial database, WMS-only)."
+  },
+  "novelty_check": {
+    "note": "not yet run - the novelty search is required before 'ready', and the access/licence blockers are cheaper to resolve first"
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": "Investigating, opened 2026-10-28 (Oceania tick). Contracts status: (1) Redistribution UNRESOLVED - the register's own licence is unread (publisher pages time out from this host; browser read is the named next probe); the sibling spatial-database catalogue record is cc-by-4.0, which is suggestive, not evidence for the register. (2) Prediction timing SUPPORTED in structure - validation/publication instant, 20-business-day decision window, decision published later on the same page; per-project stage timelines observed. (3) Target SUPPORTED in structure - controlled-action decision observable per project; the open question is whether it is derivable from the list (cheap) or needs per-project fetches (expensive). (4) Split capacity UNMEASURED - the true referral population is unknown ('5000 records' may be a cap) and per-year outcome counts are unmeasured. (5) Contribution UNMEASURED - no novelty search yet; the task is unfamiliar to this bench (no EPBC benchmark known), but the rule is to check mechanically before any ready claim.",
+  "next_action": "Cheapest-uncertainty order: (1) read the licence from the publisher's own instrument in the supported browser (dcceew/nationalepa copyright page or the portal's terms link) - a class C posture would close this lead under standing policy; (2) bounded grid XHR replay from a real browser session (capture the grid-data call the PCF control makes, replay it with page offsets) to measure the TRUE population: is it ~5000 total or a cap over ~12k+ referrals since 2000? per-year counts, and whether the list's Project Status carries terminal referral-decision values ('Not a controlled action' etc.) - this decides the label-derivation cost; (3) if licence is A/B and the list carries outcomes, measure the outcome mix per year on a bounded sample and only then run check-novelty.py (prior art: EPBC screening literature search) and decide ready/park. If the list does not carry outcomes, re-estimate cost as ~per-project HTML fetches on a worker before any further investment.",
+  "jurisdiction": {
+    "country": "AU",
+    "region": "Oceania",
+    "publisher": "Department of Climate Change, Energy, the Environment and Water / National EPA (EPBC Act Public Portal)",
+    "recorded_at": "2026-10-28"
+  },
+  "licence_class": null,
+  "licence_note": "Unclassified (investigating): publisher terms pages unreachable from this coordinator by plain client; classify from the instrument in the supported browser before any deeper probing. Do not treat the sibling spatial-database catalogue licence as the register's."
+}
