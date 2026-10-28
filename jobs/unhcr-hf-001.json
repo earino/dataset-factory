@@ -1,0 +1,307 @@
+{
+  "job": {
+    "id": "unhcr-hf-001",
+    "candidate": "unhcr-refugee-data-finder",
+    "release": true,
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 2048,
+    "timeout_minutes": 25,
+    "lifetime_minutes": 45,
+    "max_disk_mb": 2000,
+    "max_artifact_mb": 8,
+    "what": "hf_publish worker job for unhcr-refugee-data-finder: upload the five released data files to the private Hugging Face dataset repo earino/unhcr-refugee-data-finder, downloading each from the staged private GitHub release (426752344) and verifying its sha256 against the manifest before and after transfer, then run the documented load_dataset path against the uploaded bytes (split rows, positives, columns and label values checked against the accepted artifact 6fa7becdf32925b7). The bytes never pass through the coordinator; peak worker disk is one asset (0.75 MB total).",
+    "hf_publish": {
+      "repo": "earino/unhcr-refugee-data-finder",
+      "revision": "main",
+      "source_repo": "earino/unhcr-refugee-data-finder",
+      "assets": [
+        {
+          "asset_id": 685205392,
+          "dest": "meta.json",
+          "target": "meta.json",
+          "size": 1250,
+          "sha256": "595aab31c00772d987a2436ea8f13d33bc2edd224aeb294731bcfa7579a65d19"
+        },
+        {
+          "asset_id": 685205466,
+          "dest": "private-holdout.csv",
+          "target": "data/private-holdout.csv",
+          "size": 202783,
+          "sha256": "54decaaaf74eac1ea362bf1acf711010069b1feb94ad2abfcb70a1fccff858bd"
+        },
+        {
+          "asset_id": 685205564,
+          "dest": "public-eval.csv",
+          "target": "data/public-eval.csv",
+          "size": 195252,
+          "sha256": "4b7f06c3afd9eec286652383d95797a5fbaccc3517e68b2c334c615026bc9393"
+        },
+        {
+          "asset_id": 685205627,
+          "dest": "public-train.csv",
+          "target": "data/public-train.csv",
+          "size": 343359,
+          "sha256": "c7ebd552f1158bd5f470c495b027c48fc17ea9195c34185a662a8620407bd167"
+        },
+        {
+          "asset_id": 685205719,
+          "dest": "quality.json",
+          "target": "quality.json",
+          "size": 18609,
+          "sha256": "e7517f8fbee8f15a7f667aa57fa398e8e880c8b55c91cee349f904580d1a4df2"
+        }
+      ],
+      "verify_loading": {
+        "splits": {
+          "train": {
+            "rows": 3363,
+            "positives": 283
+          },
+          "eval": {
+            "rows": 1887,
+            "positives": 165
+          },
+          "holdout": {
+            "rows": 1962,
+            "positives": 227
+          }
+        },
+        "columns": [
+          "row_id",
+          "origin",
+          "asylum",
+          "target_year",
+          "apps_d",
+          "apps_d1",
+          "log_growth_d",
+          "surged_recently",
+          "host_apps_d",
+          "host_growth_d",
+          "origin_apps_d",
+          "origin_growth_d",
+          "corridor_age",
+          "target_date",
+          "surge_cluster",
+          "doubled"
+        ],
+        "label": "doubled",
+        "label_values": [
+          0,
+          1
+        ]
+      }
+    }
+  },
+  "reservation_eur": "0.04",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 2,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 92160,
+  "source_sha256": "94a659493090b8ff7b294768335d2a4a475cb9e10be47d81b1a5c5471fce1c0e",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-10-28T14:25:33.681242+00:00",
+  "expires": 1793200233,
+  "budget_months": [
+    "2026-10"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 173094551,
+  "known_hosts": "/opt/data/dataset-factory/.factory/unhcr-hf-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "65.21.158.17",
+  "result": {
+    "job_id": "unhcr-hf-001",
+    "status": "succeeded",
+    "uploaded": true,
+    "venv": "/opt/scout/.hf-venv",
+    "pip_bootstrapped": true,
+    "hf_publish": {
+      "repo": "earino/unhcr-refugee-data-finder",
+      "revision": "main",
+      "verify_only": false,
+      "uploads": [
+        {
+          "target": "meta.json",
+          "bytes": 1250,
+          "sha256": "595aab31c00772d987a2436ea8f13d33bc2edd224aeb294731bcfa7579a65d19"
+        },
+        {
+          "target": "data/private-holdout.csv",
+          "bytes": 202783,
+          "sha256": "54decaaaf74eac1ea362bf1acf711010069b1feb94ad2abfcb70a1fccff858bd"
+        },
+        {
+          "target": "data/public-eval.csv",
+          "bytes": 195252,
+          "sha256": "4b7f06c3afd9eec286652383d95797a5fbaccc3517e68b2c334c615026bc9393"
+        },
+        {
+          "target": "data/public-train.csv",
+          "bytes": 343359,
+          "sha256": "c7ebd552f1158bd5f470c495b027c48fc17ea9195c34185a662a8620407bd167"
+        },
+        {
+          "target": "quality.json",
+          "bytes": 18609,
+          "sha256": "e7517f8fbee8f15a7f667aa57fa398e8e880c8b55c91cee349f904580d1a4df2"
+        }
+      ],
+      "skipped": [],
+      "failures": [],
+      "bytes": 761253
+    },
+    "hf_verification": {
+      "schema_version": 1,
+      "repo": "earino/unhcr-refugee-data-finder",
+      "commit": "89485538d3dc9ec176d8f7211e562b1aa04dc0ed",
+      "files": {
+        "meta.json": {
+          "bytes": 1250,
+          "sha256": "595aab31c00772d987a2436ea8f13d33bc2edd224aeb294731bcfa7579a65d19",
+          "blob_id": "94a7a40d4f39d5f0b6dac0c6c63aec18901d7e71"
+        },
+        "data/private-holdout.csv": {
+          "bytes": 202783,
+          "sha256": "54decaaaf74eac1ea362bf1acf711010069b1feb94ad2abfcb70a1fccff858bd",
+          "blob_id": "1379d1cf2b936340e15ebc6804b0c3461ccea1d9"
+        },
+        "data/public-eval.csv": {
+          "bytes": 195252,
+          "sha256": "4b7f06c3afd9eec286652383d95797a5fbaccc3517e68b2c334c615026bc9393",
+          "blob_id": "c0493315aea5b4f62dd842a1ae457f79f072e49c"
+        },
+        "data/public-train.csv": {
+          "bytes": 343359,
+          "sha256": "c7ebd552f1158bd5f470c495b027c48fc17ea9195c34185a662a8620407bd167",
+          "blob_id": "11c6162ff3353938a1100a7a49a7caa5e83fb189"
+        },
+        "quality.json": {
+          "bytes": 18609,
+          "sha256": "e7517f8fbee8f15a7f667aa57fa398e8e880c8b55c91cee349f904580d1a4df2",
+          "blob_id": "374ac974e739d03cd7ba52edfaf7298788d620e8"
+        }
+      },
+      "ok": true,
+      "errors": []
+    },
+    "hf_loading": {
+      "splits": [
+        "eval",
+        "holdout",
+        "train"
+      ],
+      "checked": {
+        "eval": {
+          "rows": 1887,
+          "columns": [
+            "apps_d",
+            "apps_d1",
+            "asylum",
+            "corridor_age",
+            "doubled",
+            "host_apps_d",
+            "host_growth_d",
+            "log_growth_d",
+            "origin",
+            "origin_apps_d",
+            "origin_growth_d",
+            "row_id",
+            "surge_cluster",
+            "surged_recently",
+            "target_date",
+            "target_year"
+          ],
+          "label_values": [
+            "0",
+            "1"
+          ],
+          "positives": 165
+        },
+        "holdout": {
+          "rows": 1962,
+          "columns": [
+            "apps_d",
+            "apps_d1",
+            "asylum",
+            "corridor_age",
+            "doubled",
+            "host_apps_d",
+            "host_growth_d",
+            "log_growth_d",
+            "origin",
+            "origin_apps_d",
+            "origin_growth_d",
+            "row_id",
+            "surge_cluster",
+            "surged_recently",
+            "target_date",
+            "target_year"
+          ],
+          "label_values": [
+            "0",
+            "1"
+          ],
+          "positives": 227
+        },
+        "train": {
+          "rows": 3363,
+          "columns": [
+            "apps_d",
+            "apps_d1",
+            "asylum",
+            "corridor_age",
+            "doubled",
+            "host_apps_d",
+            "host_growth_d",
+            "log_growth_d",
+            "origin",
+            "origin_apps_d",
+            "origin_growth_d",
+            "row_id",
+            "surge_cluster",
+            "surged_recently",
+            "target_date",
+            "target_year"
+          ],
+          "label_values": [
+            "0",
+            "1"
+          ],
+          "positives": 283
+        }
+      },
+      "problems": [],
+      "ok": true
+    },
+    "host_cleanup_complete": true,
+    "host_process_pid": 2534,
+    "elapsed_seconds": 82.2,
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 426774972,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-962cdea8bd4913a5dd7d",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-962cdea8bd4913a5dd7d/manifest.json",
+    "assets": [
+      {
+        "id": 685253616,
+        "size": 92160,
+        "sha256": "94a659493090b8ff7b294768335d2a4a475cb9e10be47d81b1a5c5471fce1c0e"
+      },
+      {
+        "id": 685253682,
+        "size": 8334,
+        "sha256": "6001da3aece06608e1cc4157f7295b89a2eabcfe14c02163800bde7532314684"
+      }
+    ],
+    "skipped_empty": [
+      "container.log"
+    ]
+  },
+  "collected_at": "2026-10-28T14:30:40.930199+00:00",
+  "deleted_at": "2026-10-28T14:31:29.897529+00:00"
+}

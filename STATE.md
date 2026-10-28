@@ -24,6 +24,64 @@ candidate review - review the next candidate's source-specific prediction contra
 and update its builder before construction; #25 remains deferred.
 
 
+## 2026-10-28 (14:50Z) - unhcr-refugee-data-finder STAGED PRIVATE on both destinations (unhcr-publish-001 + unhcr-hf-001 both green, workers provider-confirmed deleted); pre-flip audit prompt prepared; awaiting_operator set; pre-existing test_runtime_audit failure repaired (inventory now covers the pre-flip-audit template)
+
+Release work outranked construction, so this advancement session executed the candidate's
+recorded next_action: private staging of release/unhcr-refugee-data-finder v2026.10 to GitHub
+and Hugging Face, then the operator holds the flip. The packaged bytes, manifest, digests and
+tags were never regenerated; every asset moved is the accepted artifact
+6fa7becdf32925b74522c81001dcfe802b6a389425fd6deb4af4fc25ba7f1f53.
+
+- GitHub destination (private, complete): repo earino/unhcr-refugee-data-finder created private
+  with the 25 package document files as the initial commit on main (tip d932d03d, API readback),
+  draft release v2026.10 (426752344) created, then worker job unhcr-publish-001 (server 173091128,
+  cx23/hel1, 12.1 s, EUR 0.04 reservation, staging result release 426754786) copied the five
+  accepted unhcr-001 assets from staging release 425843785 - transferred 5, failures 0, 761,253
+  bytes, each sha256-verified on arrival and against the server digest after upload; bytes never
+  passed through the coordinator. Release published non-draft; API readback: exactly 5 assets at
+  the manifest digests, tag v2026.10 == main == d932d03d. get_dataset.py executed end-to-end from
+  the coordinator (5 files, 761,253 bytes, all digests verified, exit 0, rows train 3,363 /
+  eval 1,887 / holdout 1,962) and the gate --accept on the downloaded tree returned ACCEPTED for
+  artifact 6fa7becdf32925b7. Anonymous client (no credential): repo API 404 - private by design.
+  Worker destroyed: Hetzner read-back 404 at 14:18Z.
+- Hugging Face destination (private, complete): hf-publish.py --create --upload-small created
+  earino/unhcr-refugee-data-finder private with 10 small files (card authored at
+  candidates/unhcr-refugee-data-finder/card.md, generated from the manifest with the placeholder
+  system; cardData.license reads back 'other' / license_name cc-by-3.0-igo-source-plus-cc0-
+  compilation), then worker job unhcr-hf-001 (server 173094551, 82.2 s, EUR 0.04 reservation,
+  staging result release 426774972) uploaded the five data files from the staged GitHub release
+  with digest verification at both ends (uploads 5, skipped 0, failures 0) and ran the
+  documented load_dataset path: ok=true, problems=[], train 3,363/283, eval 1,887/165, holdout
+  1,962/227, 16 columns, label values ['0','1'] - identical to the accepted artifact. Hub main
+  89485538 carries all five files at the manifest sha256 (blob ids in the collected receipt);
+  hf-publish.py --verify --worker-job unhcr-hf-001: all five digest-verified; tag v2026.10
+  created at main (tag == main == 89485538). Anonymous Hub API: 401 - private by design. Worker
+  destroyed: Hetzner read-back 404 at 14:31Z.
+- Destination evidence: release/unhcr-refugee-data-finder/DESTINATIONS.json now records both
+  destinations verified+staged with per-destination verified_at, files_verified as lists
+  (logical manifest paths for GitHub, Hub target paths for the Hub), artifact_version equal to
+  the manifest's, and dated notes. check-package.py exit 0; check-candidate.py --all exit 0;
+  check-suitability OK (14 reviews). Candidate record: status packaged, awaiting_operator true
+  (flip only), jobs/artifacts updated, jobs/ ledger pushed (both servers status deleted).
+- Pre-flip audit prepared per the standing practice: candidates/unhcr-refugee-data-finder/
+  pre-flip-audit-prompt.md, generated from the 2026-10-27 operator-endorsed template with every
+  digest/size/count/figure filled programmatically from MANIFEST.json, meta.json and the record
+  (nothing hand-transcribed); it flags the declared surged_recently cross-row exposure for the
+  auditor to attack. The flip waits for the auditor's verdict unless the operator waives it.
+- Test-suite repair (the defect the 12:29Z tick recorded as "belongs to advancement"):
+  test_runtime_audit.test_committed_recovery_inventory_matches_all_sources failed because the
+  ec-merger pre-flip-audit skill edits (f721347, 8865349) added
+  skills/dataset-release/templates/pre-flip-audit-prompt.md and changed SKILL.md without updating
+  the committed recovery inventory ops/runtime-files.json. Repaired mechanically (template added
+  at its on-disk digest, SKILL.md digest refreshed); the failure was re-shown on clean main with
+  this session's changes stashed before the fix. Full suite now 673/673 OK.
+
+Next action: the operator hands candidates/unhcr-refugee-data-finder/pre-flip-audit-prompt.md to
+an independent auditor; on an approving verdict (or a waiver) the flip sequence per
+dataset-release runs (flip both destinations, prove anonymously, refresh status-bearing
+documents, website pipeline). Nothing is public; staging completion is not publication approval.
+
+
 ## 2026-10-28 (12:29Z) - EU/EEA discovery tick: NEW ready candidate eu-transparency-register-removal (EU Transparency Register, Decision 2011/833 class A, measured 9.8-18.5% removal rates across eras); ec-state-aid-investigation-opening and ec-infringement-case-escalation opened (investigating); EU agency closed avenues left un-reprobed
 
 Regional tick (EU/EEA: data.europa.eu first, EU agencies, sector regulators). One new

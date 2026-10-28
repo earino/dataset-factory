@@ -3,19 +3,51 @@
   "destinations": {
     "github": {
       "repo": "earino/unhcr-refugee-data-finder",
+      "release_id": 426752344,
       "release_tag": "v2026.10",
+      "target_commit": "d932d03d6c9872369d446f6d588e432cb2c1a442",
       "private": true,
-      "verified": false,
-      "staged": false,
-      "note": "private staging not yet run: the package is assembled and check-package-verified in the factory repository; the transfer job spec is candidates/unhcr-refugee-data-finder/publish/job.json (copies the five accepted unhcr-001 assets from staging release 425843785 into the private repo's release under the flat asset names the download helper restores)"
+      "verified": true,
+      "staged": true,
+      "verified_at": "2026-10-28T14:35:17Z",
+      "files_verified": [
+        "meta.json",
+        "private/holdout.csv",
+        "public/eval.csv",
+        "public/train.csv",
+        "quality.json"
+      ],
+      "checks": [
+        "private repository earino/unhcr-refugee-data-finder created 2026-10-28 with the 25 package document files as the initial commit on main (tip d932d03d6c9872369d446f6d588e432cb2c1a442, read back through the API); DESTINATIONS.json stays factory-side and is not part of the repository tree",
+        "worker job unhcr-publish-001 (server 173091128, launched 14:09:22Z, collected 14:17:29Z, destroyed 14:17:56Z, Hetzner read-back 404) copied the five accepted unhcr-001 assets (artifact 6fa7becdf32925b7...) from private staging release 425843785 into draft release 426752344 under the flat asset names the download helper restores: transferred 5, failures 0, 761,253 bytes, each verified against its recorded sha256 on arrival and against the server's own digest after upload; the bytes never passed through the coordinator",
+        "GitHub API readback after upload: exactly 5 assets, every name/size/server-side sha256 digest matches package MANIFEST.json (meta.json 595aab31.../1250, private-holdout.csv 54decaaa.../202783, public-eval.csv 4b7f06c3.../195252, public-train.csv c7ebd552.../343359, quality.json e7517f8f.../18609)",
+        "release published non-draft, creating tag v2026.10; git-refs API readback: tag v2026.10 and main both resolve to d932d03d6c9872369d446f6d588e432cb2c1a442",
+        "get_dataset.py executed end-to-end against the private release from the coordinator (5 files, 761,253 bytes, every size and sha256 verified, exit 0, row counts train 3363 / eval 1887 / holdout 1962) and the full gate re-ran --accept on the downloaded tree: ACCEPTED, matches the qualified artifact 6fa7becdf32925b7",
+        "anonymous client with no credential: repository API answers 404 (private by design); nothing public, no publication approval implied"
+      ],
+      "note": "Private staging of v2026.10 complete and verified 2026-10-28. The flip to public is the operator's single act; before it, the independent pre-flip audit prompt (candidates/unhcr-refugee-data-finder/pre-flip-audit-prompt.md) is prepared for an independent agent per the standing practice."
     },
     "huggingface": {
       "repo": "earino/unhcr-refugee-data-finder",
       "revision": "v2026.10",
       "private": true,
-      "verified": false,
-      "staged": false,
-      "note": "Hub staging not yet run; follows the GitHub destination (small files from the coordinator, data files via a worker hf_publish job with digest verification at both ends)"
+      "verified": true,
+      "staged": true,
+      "note": "Private Hub staging complete 2026-10-28: 10 small files uploaded from the coordinator (card generated from the manifest, LOADING.md, MANIFEST.json, SHA256SUMS, licence texts, dictionary, VERIFICATION.md, measurements.json), then worker job unhcr-hf-001 (server 173094551, launched 14:25:33Z, collected 14:30:40Z, destroyed 14:31:29Z, Hetzner read-back 404) uploaded the five data files from the staged GitHub release with digest verification at both ends (uploads 5, skipped 0, failures 0, 761,253 bytes) and ran the documented load_dataset path against the uploaded bytes: ok=true, problems=[], train 3,363/283, eval 1,887/165, holdout 1,962/227, 16 columns, label values ['0','1'] - identical to the accepted artifact. Tag v2026.10 created at Hub main 89485538 (tag == main); hf-publish.py --verify --worker-job unhcr-hf-001: all five files digest-verified at that commit. Anonymous Hub API readback: HTTP 401 (private by design). cardData.license reads back as 'other' with license_name cc-by-3.0-igo-source-plus-cc0-compilation.",
+      "commit": "89485538d3dc9ec176d8f7211e562b1aa04dc0ed",
+      "verified_at": "2026-10-28T14:33:02+00:00",
+      "files_verified": [
+        "data/private-holdout.csv",
+        "data/public-eval.csv",
+        "data/public-train.csv",
+        "meta.json",
+        "quality.json"
+      ],
+      "missing": [],
+      "size_mismatch": [],
+      "digest_unverified": [],
+      "loading_check": "verified by collected worker job unhcr-hf-001",
+      "worker_job": "unhcr-hf-001"
     }
   },
   "artifact_version": "6fa7becdf32925b74522c81001dcfe802b6a389425fd6deb4af4fc25ba7f1f53"

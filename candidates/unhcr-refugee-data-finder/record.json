@@ -178,6 +178,26 @@
    "staging_release": 425870998,
    "destroyed": "provider read-back 404 at 2026-10-27T19:23:06Z",
    "result": "CONTRACT OK; train.py and validate.py both print Eval AUC 0.5393; predict_proba recompute 0.53935, Brier 0.085099; references recomputed on the same rows agree with the construction run to 6 dp (the job's 1e-9 agreement flag reads false only because references.json stores 6-dp rounded values)"
+  },
+  {
+   "id": "unhcr-publish-001",
+   "what": "destination-staging transfer: copy the five accepted unhcr-001 assets (artifact 6fa7becdf32925b74522c81001dcfe802b6a389425fd6deb4af4fc25ba7f1f53) from private staging release 425843785 into the private dataset repository earino/unhcr-refugee-data-finder draft release v2026.10 (426752344) under the flat asset names the download helper restores",
+   "server": 173091128,
+   "server_type": "cx23",
+   "elapsed_seconds": 12.1,
+   "staging_release": 426754786,
+   "destroyed": "provider read-back 404 at 2026-10-28T14:18Z",
+   "result": "succeeded; transferred 5, failures 0, 761,253 bytes, each asset sha256-verified on arrival and against the server digest after upload; after collection the release was published non-draft and the API readback confirmed 5/5 assets at the manifest digests, tag v2026.10 == main == d932d03d; get_dataset.py executed end-to-end from the coordinator (5 files, 761,253 bytes, all digests verified, exit 0) and the gate --accept on the downloaded tree returned ACCEPTED for artifact 6fa7becdf32925b7; anonymous client answers 404 (private)"
+  },
+  {
+   "id": "unhcr-hf-001",
+   "what": "hf_publish worker job: upload the five data files to the private Hugging Face dataset repo earino/unhcr-refugee-data-finder from the staged private GitHub release (426752344), digest-verified at both ends, then run the documented load_dataset path against the uploaded bytes",
+   "server": 173094551,
+   "server_type": "cx23",
+   "elapsed_seconds": 82.2,
+   "staging_release": 426774972,
+   "destroyed": "provider read-back 404 at 2026-10-28T14:31Z",
+   "result": "succeeded; uploads 5, skipped 0, failures 0, 761,253 bytes at the manifest sha256 with Hub blob ids recorded (receipt pinned at commit 89485538); documented load ok=true, problems=[], train 3363/283, eval 1887/165, holdout 1962/227, 16 columns, label values ['0','1']; hf-publish.py --verify --worker-job unhcr-hf-001 verified all five files at that commit; tag v2026.10 created at Hub main 89485538 (tag == main); anonymous Hub API 401 (private)"
   }
  ],
  "artifacts": [
@@ -186,7 +206,6 @@
    "digest_of": "sha256 over train/eval/holdout CSVs + meta.json + quality.json (gate 1.5.0 artifact_version)",
    "repo": "earino/dataset-factory-staging",
    "tag": "job-unhcr-001",
-   "package_repo_pending": "earino/unhcr-refugee-data-finder (private staging not yet run; see next_action)",
    "gate_version": "1.5.0",
    "accepted": "exact-byte --accept on the worker: 'ACCEPTED: /output/extract matches the qualified artifact 6fa7becdf32925b7'",
    "job": "unhcr-001",
@@ -274,12 +293,13 @@
     "per_label_year_note": "2020 inverts momentum (AUC 0.116, 6 positives - pandemic-year applications collapsed); 2017 momentum 0.745; differences vs calendar identity are inconclusive at 95% (intervals contain zero)",
     "note": "simple references only; the full-model member of the triad is the harness runner baseline job, not yet run; no performance figure was computed before acceptance"
    },
-   "recorded_at": "2026-10-27T18:51:56Z"
+   "recorded_at": "2026-10-27T18:51:56Z",
+   "package_repo": "earino/unhcr-refugee-data-finder (GitHub private release v2026.10 id 426752344, tag == main == d932d03d, 5/5 assets at manifest digests, get_dataset.py + gate --accept verified on the downloaded bytes 2026-10-28); Hugging Face earino/unhcr-refugee-data-finder (private, main 89485538 carries the five data files at manifest digests, tag v2026.10 == main)"
   }
  ],
  "rejection_reason": null,
  "review": "Five contracts reconciled 2026-10-23 on written evidence: (1) Redistribution SUPPORTED - publisher's own instruments (HDX package record CC BY 3.0 IGO with grant and Section 4 quoted; RDF methodology CC BY 4.0), class A, conditions carried to LICENSE.md. (2) Timing SUPPORTED with documented current-vintage assumption - annual instant = first refresh carrying year-D data (observed cadence; 2026-08-20 file carries data through 2025); the task is an explicitly-labelled publication-lag NOWCAST (abs-visitor-arrivals-direction precedent): the target value is unpublished and unavailable on the channel at the instant, while the target year itself has partially elapsed - no 'window follows the instant' claim is made; the archive is revised in place, so values are construction-time vintage, sha256-pinned, the same accepted posture as abs-visitor-arrivals-direction; a future standing vintage collector is NOT needed for the annual task but would strengthen the as-of claim if ever added. (3) Target SUPPORTED - label from the same source column at D+1, excluded from features; observed absence (missing row, active host) = 0; host-silent rows (0.43%) excluded as censored. (4) Split capacity SUPPORTED - disjoint windows with both classes in every label-year, counts and clustered (origin, label-year) counts computed from the source. (5) Not a mirror SUPPORTED - no ML-ready corridor-grain UNHCR benchmark with fixed temporal splits and a scored contract found; prior art is origin-level or EU-bilateral monthly forecasting papers and raw-panel repackages. LIMITATION recorded: the machine-fetchable extract is annual; the RDF's monthly grain stays browser-only behind the WAF, so no monthly variant is buildable from this path. The old park reason (no machine-fetchable bulk path) is resolved by the HDX global package; the correction of the 2026-10-20 search miss is recorded in both sources[1].access and measurements.",
- "next_action": "Private staging of release/unhcr-refugee-data-finder v2026.10 (both destinations), then the operator holds the flip. Mechanical steps, mirroring ec-merger-phase2-opening: (1) create private repo earino/unhcr-refugee-data-finder and commit the package documents at main (the package tree is complete and check-package-verified); (2) create draft release v2026.10 and launch the prepared transfer job candidates/unhcr-refugee-data-finder/publish/job.json (unhcr-publish-001: copies the five accepted unhcr-001 assets from staging release 425843785 into the repo release under flat asset names, digest-verified at both ends; bytes never pass through the coordinator); (3) publish the release non-draft, verify tag == main, run get_dataset.py end-to-end + gate --accept on the downloaded tree; (4) Hugging Face: small files from the coordinator (card generated from the manifest), then a worker hf_publish job for the five data files with the documented load_dataset check; (5) write DESTINATIONS.json per destination with verified file lists, re-run check-package.py, then set awaiting_operator: true. Baseline is complete and recorded; no further scoring is authorized before the flip decision.",
+ "next_action": "Private staging of release/unhcr-refugee-data-finder v2026.10 is COMPLETE on both destinations (GitHub release 426752344 and Hugging Face main 89485538, both verified and private; DESTINATIONS.json carries the per-destination evidence). Nothing is public and no publication approval is implied by staging. The flip is the operator's single act: hand candidates/unhcr-refugee-data-finder/pre-flip-audit-prompt.md (digests filled programmatically from the frozen manifest) to an independent auditor; the flip waits for the auditor's verdict unless the operator waives it. After an approving verdict (or a waiver), flip both destinations, prove them anonymously, refresh the status-bearing documents and run the website pipeline per dataset-release.",
  "jurisdiction": {
   "country": "CH",
   "region": "International organisations",
@@ -457,5 +477,8 @@
   }
  },
  "packaged_at": "2026-10-27T19:44:51Z",
- "updated_at": "2026-10-27T19:44:51Z"
+ "updated_at": "2026-10-28T14:39:24Z",
+ "awaiting_operator": true,
+ "awaiting_operator_since": "2026-10-28T14:39:24Z",
+ "awaiting_operator_scope": "the private-to-public flip of earino/unhcr-refugee-data-finder on both destinations; both are staged, verified and private; the independent pre-flip audit prompt is prepared at candidates/unhcr-refugee-data-finder/pre-flip-audit-prompt.md and the flip waits for the auditor's verdict unless the operator waives it"
 }
