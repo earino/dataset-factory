@@ -91,6 +91,33 @@ candidate review - review the next candidate's source-specific prediction contra
 and update its builder before construction; #25 remains deferred.
 
 
+## 2026-10-28 (20:31Z) - operator directive on unhcr: the benchmark framing was illustrative, never an enforced protocol; reopen path fixed to honest re-description; harness changes dropped as a precondition
+
+The operator stated in session, recorded verbatim: "for the record, i never wanted
+to ship any scoring code. i didn't even realize we were shipping scoring code, and
+the point of the benchmark was just illustrative so people understood what was
+possible with a dataset."
+
+Consequences, applied to the record's next_action:
+- The 20:19Z reopen menu collapses to one path: honest re-description. The
+  harness-side enforcement change ((a)) and the package-side enforcing contract
+  ((b)) are not preconditions; the candidate is not dropped.
+- The audit's blocker was the package's own false claim ("the restricted protocol
+  the evaluation contract enforces") - not the operator's intent and not the rows.
+  The illustrative runner ships in all 11 published packages per the packaging
+  rule (reproducible baseline on the published bytes); only this one claimed
+  enforcement, so no published package carries the false claim.
+- Correction sequence now queued (Scout work up to packaged): remove enforcement
+  claims (protocol stated as a requirement with the audit-measured recoveries
+  quoted so unrestricted scores are visibly meaningless); the three descriptor
+  corrections (exclusions 377, target_date calendar identifier, 14 declared
+  inputs); illustrative framing in README/RELEASE_NOTES/VERIFICATION/card;
+  gate re-qualification over the exact CSV bytes; re-stage; fresh independent
+  audit; then the operator's flip decision.
+
+Next action: execute the correction sequence. The flip remains the operator's.
+
+
 ## 2026-10-28 (20:19Z) - unhcr pre-flip audit verdict: DO NOT PUBLISH in its present form; flip blocked, both destinations stay private; suitability decision rebuild_before_use; enforcement gap diagnosed at the shared benchmark template
 
 The operator relayed the independent auditor's verdict (Codex, read-only, signed
