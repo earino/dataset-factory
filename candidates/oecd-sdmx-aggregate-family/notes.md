@@ -54,3 +54,23 @@ cases or transactions anywhere in the sample.
 
 Four HTTP requests (~13 MB total, all deleted from scratch). Total catalogue access verified
 anonymous, documented, no key - recorded as clean so a future session does not re-derive it.
+
+## 2026-10-28 — reopen-condition re-check (International-organisations tick)
+
+The record's reopen condition was "the OECD ships a row-level product that is neither an aggregate
+panel nor a mirror of national datasets". Re-checked this session (bounded catalogue/news read,
+no data pulled):
+
+- oecd.org/en/data/datasets.html (read 2026-10-28): 1,521 datasets, described as "Discover and
+  access the OECD's datasets"; the Data Explorer (data-explorer.oecd.org) is "the organisation's
+  data warehouse, providing access to all OECD statistical data" - the statistical-aggregate
+  catalogue already measured in this record.
+- OECD Data Explorer platform-status news, 2025 through 2026-10 (read 2026-10-28): infrastructure
+  upgrades, search/navigation improvements, Euro-area (21 countries) code changes, cloud-replica
+  availability changes for CRS/TiVA - no new row-level or event-level release.
+- recalls.oecd.org remains, as far as this bounded check shows, the only row-level public product
+  and it mirrors national recall datasets already on the bench.
+
+Verdict: reopen condition NOT met as of 2026-10-28. This is a bounded catalogue check recorded for
+coverage, not a claim that no row-level product exists anywhere on OECD properties. Cost: 2 web reads.
+

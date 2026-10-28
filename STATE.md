@@ -24,6 +24,80 @@ candidate review - review the next candidate's source-specific prediction contra
 and update its builder before construction; #25 remains deferred.
 
 
+## 2026-10-28 (10:50Z) - International-organisations discovery tick: NEW ready candidate wb-loan-disbursement-completion (World Bank, CC BY 4.0, measured 68.7% completion base rate); ITU satellite-filings reopen hook closed on paid access; OECD row-level condition re-checked, still unmet; iaea-pris-outage-events opened and dropped (class C, no public event channel)
+
+Regional tick (World Bank, OECD, UN agencies, WHO, IMF, ITU). One new ready
+candidate, one new dropped record for an unprobed UN-agency source, and the two
+recorded reopen hooks in this region resolved with dated evidence. No worker
+launched, no construction, no dataset asset touched. WHO (class C posture; the
+recorded flunet operator risk acceptance is candidate-specific and not
+extendable) and IMF (public catalogue is aggregate panels; the one row-level
+product, lending arrangements, is too thin and crisis-clustered) were assessed
+from recorded evidence and not re-probed; UNODC stays closed class D.
+
+- wb-loan-disbursement-completion (NEW, ready/go, licence class A): task = at
+  the instant the World Bank Board approves an IBRD loan (documented
+  board_approval_date column), will the loan disburse at least 90% of its
+  original principal over its life (near-balanced >=99% alternative measured)?
+  Source: WBG Finances One DS00047, CC BY 4.0 on the dataset page and in the
+  metadata API, documented anonymous API, 35 per-column documented meanings.
+  Measured on the full 2026-09-30 snapshot (10 API requests, 12.8 MB, 5.5 s,
+  probe script retained): 8,474 labeled rows (disbursement-closed, original>0);
+  base rate 68.72% at >=90% and 51.52% at >=99%; 312 genuine zero-outcome rows
+  documented by in-row cancelled_amount; splits train<=1999 6,180 rows
+  (4,086 pos/1,855 neg), eval 2000-2009 1,166 (774/369), holdout 2010-2017 934
+  (614/303), all windows with hundreds of independent country-year clusters;
+  censoring measured per approval year so the labeled population is cut at
+  2017 approvals; worked dated example IBRD00010 (France 1947) read back from
+  the fetched data. Novelty differentiated (mechanical catalogue search plus
+  web): prior art targets IEG outcome ratings - Geli/Kraay/Nobakht 2014, the
+  different task our own wb-ieg candidate already measured as no-headroom -
+  while no ML-ready disbursement-completion benchmark exists. Record states
+  the honest open risk: headroom is unmeasured until construction; deciding
+  check = qualification gate + baseline triad, with constructed-no-headroom
+  as a legitimate outcome. IDA extension excluded pending label-semantics
+  verification (7,575/9,298 closed IDA rows fail the d+u+c==original
+  identity); the monthly vintage archive (DS00975) exists but per-month API
+  slicing is unconfirmed (all filter formats tried were silently ignored) -
+  both recorded as access details, and the region current-vintage caveat is
+  disclosed in the publisher's own column description.
+- ITU reopen hook closed: the satellite-filings registry, named in the itu
+  record as the only row-level family, was probed - Space Explorer SNS
+  technical data requires a TIES login or annual subscription, the BR IFIC
+  (which carries filing outcomes) is a paid subscription, and the free
+  as-received list carries raw submissions without outcomes. Evidence and
+  reopen triggers recorded in the itu record; no change to its dropped status.
+- OECD reopen condition re-checked 2026-10-28 and still unmet: the Data
+  Explorer remains the statistical warehouse (1,521 datasets) and platform news
+  through 2026-10 shows no row-level or event-level release; bounded-check
+  coverage recorded in the oecd record, which stays dropped.
+- iaea-pris-outage-events (NEW, dropped, class C closed under standing
+  policy): PRIS outage/operational-event data is described by the publisher
+  but (a) the licence instrument is ambiguous for a published derived dataset
+  (content clause permissive, database clause "free of charge for educational
+  and informational use", no dataset-level licence, All rights reserved) and
+  (b) after the August 2026 revamp the public channel is embedded Power BI
+  dashboards with no documented bulk/API, and no outage-events dashboard is
+  among the 15 listed; old per-reactor ASPX pages redirect away. Reopen
+  triggers recorded: an explicit PRIS open licence, the announced early-2027
+  second release exposing documented bulk access including the outage tables,
+  or a candidate-specific operator risk acceptance (which alone would not fix
+  access).
+
+Checks this tick: scripts/check-candidate.py --all exit 0 (98 records OK);
+full unittest suite 672/673 pass with only the pre-existing recorded
+runtime-audit failure, verified identical on a clean tree (git stash) before
+restoring this session's changes; scripts/discovery-coverage.py: International
+organisations now 9 candidates, live 34 of which non-US 27/34 (79%). Zero bulk
+data beyond two full statement snapshots (12.8 + 15.1 MB) through the
+coordinator; the >300 MB historical archive was only metadata-sampled.
+
+Next action: advancement owns the wb-sol-001 construction handoff in the
+recorded order (construction -> full-worker qualification -> exact-byte
+acceptance -> reference/model scoring -> reporting); adapter retries stay
+deferred in issue #25; ordinary source-specific candidate review continues.
+
+
 
 ## 2026-10-28 (08:00Z) - ec-merger-phase2-opening FLIPPED AND PUBLISHED: both destinations public and proven anonymously; site page live and verified; card/LOADING/navigation refreshed; record status published, awaiting_operator cleared
 

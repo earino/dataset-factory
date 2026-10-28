@@ -1,0 +1,227 @@
+{
+  "id": "wb-loan-disbursement-completion",
+  "status": "ready",
+  "created_at": "2026-10-28T10:16:58.708421+00:00",
+  "domain": "sovereign lending / loan-lifecycle execution outcome prediction (World Bank Group)",
+  "prediction_question": "At the instant the World Bank Board approves an IBRD loan (board_approval_date, a documented column: 'The date the World Bank approves the loan'), will that loan disburse at least 90% of its original principal amount over its life? (Alternative near-balanced threshold >=99% is measured and recorded; construction picks one and documents it.) A useful prediction enables disbursement-risk scoring at commitment time for portfolio management, borrower-side planning and development-finance research: roughly a third of IBRD lending historically fails to move 90% of its commitment, and that gap is the operational quantity WB cash planning and aid-delivery studies care about.",
+  "prediction_time": "The instant is the Board Approval Date, published by the World Bank at approval time (the same-day press release and projects.worldbank.org record carry it; the dataset column is documented as 'The date the World Bank approves the loan'). Features are the approval-time attributes documented by the publisher: country/economy + code, borrower, guarantor, loan_type, original_principal_amount, currency_of_commitment, project_id/project_name, board approval fiscal/calendar year. CAVEAT (documented by the publisher itself): the `region` column description reads 'Country/Economy lending is grouped into regions based on the current World Bank administrative (rather than geographic) region' - i.e. current-vintage coding, so for pre-2011 approvals region may be back-coded; the shipped task must either drop `region` or carry this as a disclosed current-vintage limitation (both options stated; construction decides, qualification enforces). All other shipped features are static attributes fixed at approval. The label resolves later, at the end of the loan's disbursement window (closed_date_most_recent / terminal loan_status), so the whole target window follows the prediction instant. Censoring is measured: approvals through 2017 are >=94% disbursement-closed by the 2026-09-30 snapshot (2010-2017: 0-6 open per approval year), so the labeled population is censored at 2017 approvals and this cutoff is recorded in the shipped rows.",
+  "target_definition": "Binary completion label: final_disbursed_ratio = disbursed_amount / original_principal_amount >= 0.90 (primary) or >= 0.99 (near-balanced alternative, base rate 51.5%), computed only on instruments whose disbursement phase is closed (terminal loan_status - Fully Repaid/Cancelled/Disbursed/Transferred, Terminated - or Repaying, or closed_date <= data-as-of; 'Repaying' with undisbursed>0 occurs on 2/9538 rows and is excluded by construction). Label source columns (disbursed_amount, undisbursed_amount, cancelled_amount, closed_date_most_recent, last_disbursement_date, loan_status, all repayment fields) are excluded from shipped features. Zero ratio (312 IBRD rows, fully cancelled/terminated with cancelled_amount = original) is a genuine negative (no disbursement ever made), distinguished from missing data by the in-row cancelled_amount. Population: IBRD instruments from DS00047 with original_principal_amount > 0, excluding guarantees (loan_number prefixes IBRDB/IBRDG, 113 rows) and B-loan/guarantee-facility types (BLNR 18, BLNC 2, GURB 84, GUBF 9); the type mix is recorded so construction can scope further with evidence.",
+  "sources": [
+    {
+      "name": "WBG Finances One - IBRD Statement of Loans and Guarantees, Latest Available Snapshot (DS00047)",
+      "landing_page": "https://financesone.worldbank.org/d/DS00047",
+      "url": "https://financesone.worldbank.org/ibrd-statement-of-loans-and-guarantees-latest-available-snapshot/DS00047",
+      "api": "https://datacatalogapi.worldbank.org/dexapps/fone/api/apiservice?datasetId=DS00047&resourceId=RS00049&top=1000&skip=0&type=json (documented anonymous API, 1000 rows/page; default Python User-Agent gets HTTP 403, a descriptive UA works; bulk CSV 2.85 MB / JSON 9.98 MB also offered)",
+      "api_docs": "https://financesone.worldbank.org/api-explorer?id=DS00047",
+      "format": "JSON API pages (or CSV/JSON bulk download), 35 documented columns with per-column business names and descriptions on the dataset page and in the metadata API",
+      "license": "Creative Commons Attribution 4.0 International (stated on the dataset page and in the metadata API response)",
+      "retrieved": "2026-10-28 (data as of 2026-09-30 snapshot; page last updated 2026-10-28)"
+    },
+    {
+      "name": "WBG Finances One - IBRD Statement Of Loans and Guarantees, Historical Data (DS00975) - monthly vintages for an optional as-of-cohort",
+      "landing_page": "https://financesone.worldbank.org/ibrd-statement-of-loans-and-guarantees-historical-data/DS00975",
+      "api": "https://datacatalogapi.worldbank.org/dexapps/fone/api/apiservice?datasetId=DS00975&resourceId=RS00905&top=1000&type=json",
+      "format": "Monthly statement snapshots from April 2011 onward, 1,585,498 rows total (>300 MB bulk; worker scope). PROBE FINDING 2026-10-28: the apiservice GET silently ignores end_of_period filter values in all four formats tried (30-APR-2011, 30-Apr-2011, 30-Jun-2015 - server count stays 1,585,498 and returned rows are unsorted by end_of_period), so per-month slicing syntax is UNCONFIRMED; construction must establish the supported filter (or use the bulk file) before relying on vintages",
+      "license": "Creative Commons Attribution 4.0 International (dataset page + metadata API)",
+      "retrieved": "2026-10-28 (metadata and 5-row sample; no bulk download performed)"
+    },
+    {
+      "name": "WBG Finances One - IDA Statement of Credits, Grants and Guarantees, Latest Available Snapshot (DS00001) - optional extension, NOT in v1 scope",
+      "landing_page": "https://financesone.worldbank.org/ida-statement-of-credits-grants-and-guarantees-latest-available-snapshot/DS00001",
+      "api": "https://datacatalogapi.worldbank.org/dexapps/fone/api/apiservice?datasetId=DS00001&resourceId=RS00001&top=1000&type=json (IDA column names differ: credit_number, credit_status, *_us_ amount columns)",
+      "format": "11,486 instruments (8,739 credits, 2,686 grants, 61 guarantees), approvals 1961-2026",
+      "license": "Creative Commons Attribution 4.0 International",
+      "retrieved": "2026-10-28 (full snapshot paged and analysed; excluded from v1 because disbursed+undisbursed+cancelled != original on 7,575/9,298 closed rows - IDA label semantics (grant/credit accounting, exchange adjustment) require their own verification before any use)"
+    }
+  ],
+  "license_evidence": [
+    {
+      "note": "DS00047 dataset page, read 2026-10-28 via financesone.worldbank.org/d/DS00047: 'Licensing and Attribution - License: Creative Commons Attribution 4.0 International' with a link to http://creativecommons.org/licenses/by/4.0/legalcode; the same statement appears on the DS00975 and DS00001 pages and in the machine-readable metadata API (https://datacatalogapi.worldbank.org/dexapps/fone/api/metadata?assetId=DS00047 returns \"license\": \"Creative Commons Attribution 4.0 International\").",
+      "url": "https://financesone.worldbank.org/d/DS00047"
+    },
+    {
+      "note": "The Finances One site interstitial (read 2026-10-28) binds use to the World Bank Group General Terms & Conditions (worldbank.org/en/about/legal/terms-and-conditions); the dataset-level CC BY 4.0 statement above is the publisher's own instrument for these tables and governs the derived rows, with attribution carried into LICENSE.md at release.",
+      "url": "https://financesone.worldbank.org/terms"
+    }
+  ],
+  "jurisdiction": {
+    "country": "US",
+    "region": "International organisations",
+    "publisher": "World Bank Group (IBRD lending records via WBG Finances One), headquartered in Washington, DC, United States",
+    "convention": "The publisher's HQ country is recorded because 'international' is not a country; the World Bank Group is an international financial institution headquartered in Washington, DC. In this session's assigned region (international organisations); the HQ convention keeps the measured jurisdiction explicit.",
+    "recorded_at": "2026-10-28"
+  },
+  "licence_class": "A",
+  "licence_note": "CC BY 4.0 International stated by the publisher on each dataset page and in the metadata API; attribution 'Source: World Bank Group Finances One' carried into LICENSE.md at release. Class A: explicit open licence permitting redistribution and derivatives.",
+  "split_strategy": "Temporal splits on board_approval calendar year, labeled population censored at 2017 approvals (measured: >=94% of 2010-2017 approvals are disbursement-closed in the 2026-09-30 snapshot, 0-6 open rows per year; 2018+ approvals are 12-96% still open and are excluded as censored, per-year counts recorded in measurements). Candidate windows at the >=90% label, all three carrying both classes with hundreds of independent country-year clusters: train approvals <=1999: 6,180 rows (4,086 pos / 1,855 neg; 1,611 distinct country-year positives across 129 countries), eval 2000-2009: 1,166 rows (774 / 369; 319 country-year clusters), holdout 2010-2017: 934 rows (614 / 303; 271 country-year clusters). Positives cluster by project (a project_id can carry several loans: 3,302 distinct projects behind 4,086 train positives) and by country-year; construction must keep multiple loans of one project_id on one side of every split boundary and report both row and cluster counts.",
+  "novelty_check": {
+    "checked_at": "2026-10-28T10:23:54+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "World Bank loan disbursement prediction",
+      "statement of loans machine learning dataset",
+      "disbursement completion benchmark",
+      "World Bank project disbursement delay dataset"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "World Bank loan disbursement prediction",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "statement of loans machine learning dataset",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "disbursement completion benchmark",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "World Bank project disbursement delay dataset",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "World Bank loan disbursement prediction",
+          "hits": 493941,
+          "top": [
+            "Digital Transformation in Banking with TOGAF Framework: Promoting Innovative Loan Disbursement System",
+            "Performance Review of the Bank of Agriculture in Katsina State, Nigeria",
+            "The Effect of Selected Financial Indicators on Formal Agricultural Credit Supply in Nigeria",
+            "UNLOCKING FINANCIAL DOORS: EVALUATING INCLUSION STRATEGIES FOR WOMEN ENTREPRENEURS IN INDIA",
+            "Opening the Black Box: Disbursement Delays Impacts on Growth in Asian Development Bank (ADB) Loan Projects in Indonesia"
+          ]
+        },
+        {
+          "query": "statement of loans machine learning dataset",
+          "hits": 5716143,
+          "top": [
+            "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
+            "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI",
+            "RGB and RGNIR Plastic Waste Database",
+            "Missing data handling for machine learning models",
+            "Predicting non-performing loans in Vietnam's financial sector: a deep Q-learning approach"
+          ]
+        },
+        {
+          "query": "disbursement completion benchmark",
+          "hits": 63617,
+          "top": [
+            "PROMISING OUTCOMES: INSTITUTIONAL IMPACT ON FULL-TIME, LOW-INCOME, AND FIRST-TIME LATINX COLLEGE STUDENTS",
+            "Community-Based Trauma Rehabilitation Therapist Allocation Ratios and Mental Health Recovery in Post-Conflict Liberia: An Instrumental-Variable Analysis of Mental Health Funding Disbursement Timing",
+            "Corrupted Point Cloud Completion Dataset(CPCCD)",
+            "CoDEx: A Comprehensive Knowledge Graph Completion Benchmark",
+            "ACCELERATING VILLAGE FUND DISTRIBUTION STUDY TO SUPPORT THE ACHIEVEMENT OF THE 4+1 PRIORITY PROGRAM IN WEST SULAWESI"
+          ]
+        },
+        {
+          "query": "World Bank project disbursement delay dataset",
+          "hits": 928920,
+          "top": [
+            "Feasibility Assessment versus Real-World Performance: A Case Study of the Karnaphuli River Tunnel Project and Its Economic Implications for Bangladesh",
+            "Support for the World Bank Syria Economic Monitor",
+            "Data and Code for \"Global Socio-economic Resilience to Disasters\"",
+            "Digital Transformation in Banking with TOGAF Framework: Promoting Innovative Loan Disbursement System",
+            "BMWE-Datenbank Investitionsgesetz Kohleregionen (InvKG): F\u00f6rderma\u00dfnahmen im Kohleausstieg"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "World Bank loan disbursement prediction",
+          "hits": 5,
+          "top": [
+            "Predicting Bank Loan Default with Extreme Gradient Boosting",
+            "Bank Loan Prediction Using Machine Learning Techniques",
+            "The Impact of LIBOR Linked Borrowing to Cover Venture Bank Investment Loans Creates a New Systemic Risk",
+            "AgiBot World Colosseo: A Large-scale Manipulation Platform for Scalable and Intelligent Embodied Systems",
+            "On Lenglart's Theory of Meyer-sigma-fields and El Karoui's Theory of Optimal Stopping"
+          ]
+        },
+        {
+          "query": "statement of loans machine learning dataset",
+          "hits": 5,
+          "top": [
+            "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+            "DOME: Recommendations for supervised machine learning validation in biology",
+            "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
+            "Active learning for data streams: a survey",
+            "A Benchmark Study of Machine Learning Models for Online Fake News Detection"
+          ]
+        },
+        {
+          "query": "disbursement completion benchmark",
+          "hits": 5,
+          "top": [
+            "Towards Better Benchmark Datasets for Inductive Knowledge Graph Completion",
+            "PPTC Benchmark: Evaluating Large Language Models for PowerPoint Task Completion",
+            "PPTC-R benchmark: Towards Evaluating the Robustness of Large Language Models for PowerPoint Task Completion",
+            "MLPerf Tiny Benchmark",
+            "Benchmark Radar: A Living Database and Search Engine for AI Benchmarks and Evaluation"
+          ]
+        },
+        {
+          "query": "World Bank project disbursement delay dataset",
+          "hits": 5,
+          "top": [
+            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+            "The Araucaria Project: Improving the cosmic distance scale",
+            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+            "AgiBot World Colosseo: A Large-scale Manipulation Platform for Scalable and Intelligent Embodied Systems",
+            "Chinese vs. World Bank Development Projects: Insights from Earth Observation and Computer Vision on Wealth Gains in Afri"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'World Bank loan disbursement prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'statement of loans machine learning dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'disbursement completion benchmark': 0 hit(s) - nothing notable\n- huggingface_datasets / 'World Bank project disbursement delay dataset': 0 hit(s) - nothing notable\n- zenodo_records / 'World Bank loan disbursement prediction': 493941 hit(s) - Digital Transformation in Banking with TOGAF Framework: Promoting Innovative Loan Disbursement System, Performance Review of the Bank of Agriculture in Katsina State, Nigeria, The Effect of Selected Financial Indicators on Formal Agricultural Credit Supply in Nigeria, UNLOCKING FINANCIAL DOORS: EVALUATING INCLUSION STRATEGIES FOR WOMEN ENTREPRENEURS IN INDIA, Opening the Black Box: Disbursement Delays Impacts on Growth in Asian Development Bank (ADB) Loan Projects in Indonesia\n- zenodo_records / 'statement of loans machine learning dataset': 5716143 hit(s) - plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database, Missing data handling for machine learning models, Predicting non-performing loans in Vietnam's financial sector: a deep Q-learning approach\n- zenodo_records / 'disbursement completion benchmark': 63617 hit(s) - PROMISING OUTCOMES: INSTITUTIONAL IMPACT ON FULL-TIME, LOW-INCOME, AND FIRST-TIME LATINX COLLEGE STUDENTS, Community-Based Trauma Rehabilitation Therapist Allocation Ratios and Mental Health Recovery in Post-Conflict Liberia: An Instrumental-Variable Analysis of Mental Health Funding Disbursement Timing, Corrupted Point Cloud Completion Dataset(CPCCD), CoDEx: A Comprehensive Knowledge Graph Completion Benchmark, ACCELERATING VILLAGE FUND DISTRIBUTION STUDY TO SUPPORT THE ACHIEVEMENT OF THE 4+1 PRIORITY PROGRAM IN WEST SULAWESI\n- zenodo_records / 'World Bank project disbursement delay dataset': 928920 hit(s) - Feasibility Assessment versus Real-World Performance: A Case Study of the Karnaphuli River Tunnel Project and Its Economic Implications for Bangladesh, Support for the World Bank Syria Economic Monitor, Data and Code for \"Global Socio-economic Resilience to Disasters\", Digital Transformation in Banking with TOGAF Framework: Promoting Innovative Loan Disbursement System, BMWE-Datenbank Investitionsgesetz Kohleregionen (InvKG): F\u00f6rderma\u00dfnahmen im Kohleausstieg\n- arxiv_preprints / 'World Bank loan disbursement prediction': 5 hit(s) - Predicting Bank Loan Default with Extreme Gradient Boosting, Bank Loan Prediction Using Machine Learning Techniques, The Impact of LIBOR Linked Borrowing to Cover Venture Bank Investment Loans Creates a New Systemic Risk, AgiBot World Colosseo: A Large-scale Manipulation Platform for Scalable and Intelligent Embodied Systems, On Lenglart's Theory of Meyer-sigma-fields and El Karoui's Theory of Optimal Stopping\n- arxiv_preprints / 'statement of loans machine learning dataset': 5 hit(s) - Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Active learning for data streams: a survey, A Benchmark Study of Machine Learning Models for Online Fake News Detection\n- arxiv_preprints / 'disbursement completion benchmark': 5 hit(s) - Towards Better Benchmark Datasets for Inductive Knowledge Graph Completion, PPTC Benchmark: Evaluating Large Language Models for PowerPoint Task Completion, PPTC-R benchmark: Towards Evaluating the Robustness of Large Language Models for PowerPoint Task Completion, MLPerf Tiny Benchmark, Benchmark Radar: A Living Database and Search Engine for AI Benchmarks and Evaluation\n- arxiv_preprints / 'World Bank project disbursement delay dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The Araucaria Project: Improving the cosmic distance scale, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, AgiBot World Colosseo: A Large-scale Manipulation Platform for Scalable and Intelligent Embodied Systems, Chinese vs. World Bank Development Projects: Insights from Earth Observation and Computer Vision on Wealth Gains in Afri",
+    "prior_art": [
+      "Geli, Kraay & Nobakht (2014) PRWP 7001 (IEG outcome ratings); lukesjordan/worldbank-project-documents (Hugging Face, documents); Legovini, Di Maro & Piza (2015) planned-vs-actual disbursement gaps (descriptive)"
+    ],
+    "theirs": "publisher ships raw monthly statements with no prediction task, splits or labels; IEG outcome-rating prediction (Geli/Kraay/Nobakht 2014) targets evaluation ratings, not cash-flow completion; HF worldbank-project-documents ships documents with no splits or scored contract",
+    "ours": "first scored, split, gated binary benchmark for sovereign-loan execution completion at the approval instant: IBRD instruments, label = final disbursed/commitment ratio >= threshold, measured base rates (68.7% at >=90%, 51.5% at >=99%), temporal windows with cluster-aware counts, approval-time-only feature set, censoring rule and current-vintage caveats recorded",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  },
+  "measurements": {
+    "probe_2026_10_28": {
+      "command": "python3 candidates/wb-loan-disbursement-completion/probe_statement_of_loans.py (coordinator, 2026-10-28; output in probe_output.json beside it)",
+      "ibrd_snapshot": "9,538 rows / 9,538 distinct loan numbers (matches the page's 'Rows: 9,538' and the API server count), approvals 1947-2026; 8,785 disbursement-closed, 753 still open; 314 rows with original_principal_amount = 0 (excluded); 8,474 closed rows with positive original carry the label",
+      "ibrd_label_base_rates_closed": ">=50%: 87.51%; >=70%: 81.10%; >=80%: 76.12%; >=90%: 68.72% (5,823/8,474); >=99%: 51.52% (4,366/8,474); ratio 0 (fully cancelled/terminated): 312 rows (3.7%)",
+      "ibrd_status_mix": "Fully Repaid 6,634; Repaying 1,209; Disbursing 531; Fully Disbursed 265; Fully Cancelled 220; Fully Transferred 210; Disbursing&Repaying 204; Terminated 79; Approved 74; Effective 61; Signed 51",
+      "ibrd_loan_type_mix": "FSL 2,936; CPL 2,345; NPL 2,013; SCL 1,255; SCPD 691; SCPM 172; GURB 84; BLNR 18; SCPY 13; GUBF 9; BLNC 2",
+      "ibrd_censoring_per_year": "approvals 2010-2017 are essentially all closed (open per year: 0,0,0,0,2,1,3,6); 2018: 13 open; 2019: 44; 2020: 45; 2021: 61; 2022: 77; 2023: 113; 2024: 110; 2025: 142; 2026: 135 - labeled population is censored at 2017 approvals",
+      "ibrd_consistency": "disbursed+undisbursed+cancelled == original within 1 USD/1e-6 on 7,711/8,474 closed rows; 763 mismatches concentrate in sold_3rd_party / Fully Transferred instruments (e.g. IBRD00010 France 1947: 250M disbursed, 249.962M sold 3rd party) - not label-affecting since the label uses disbursed/original directly, but construction must document the accounting identities",
+      "ida_extension_findings": "DS00001: 11,486 instruments (8,739 credits, 2,686 grants, 61 guarantees), 9,396 closed; base rates among closed >=90%: 74.77%, >=99%: 45.21%; BUT disbursed+undisbursed+cancelled != original on 7,575/9,298 closed rows - IDA grant/credit accounting (and the *_us_ exchange semantics) needs its own verification before IDA can join the task; recorded as an extension prerequisite, not a v1 blocker",
+      "vintage_archive_finding": "DS00975 monthly snapshots exist (1,585,498 rows per metadata; licence CC BY 4.0) but the apiservice GET ignored every end_of_period filter format tried (count unchanged, rows unsorted) - per-month slicing syntax UNCONFIRMED; if construction wants genuine as-of vintages for a 2011+ cohort it must first establish the supported filter or use the >300MB bulk on a worker"
+    },
+    "extraction_cost_2026_10_28": {
+      "latest_snapshot_ibrd": "10 API requests, 12,797,416 bytes, 5.5 s wall for the full 9,538-row snapshot (hosted coordinator, 4 vCPU, Python urllib with a descriptive User-Agent; the default Python UA is refused with HTTP 403)",
+      "latest_snapshot_ida": "12 requests, 15,082,010 bytes, 9.1 s for 11,486 rows",
+      "worker_scale_note": "a full build needs only the IBRD snapshot (bulk CSV 2.85 MB or the 10 API pages); the historical archive (>300 MB) is needed only for the optional as-of cohort and is worker-scope"
+    },
+    "worked_dated_example_2026_10_28": {
+      "instrument": "IBRD00010 - France, 'RECONSTRUCTION' (P037383), the first IBRD loan",
+      "timezone_convention": "all dates are the publisher's calendar dates (World Bank Board records, Washington DC, US Eastern Time)",
+      "feature_event_window": "attributes fixed at approval: borrower CREDIT NATIONAL, country France, guarantor France, type NPL, original principal USD 250,000,000",
+      "prediction_instant": "1947-05-09 (board_approval_date; the approval instant, US Eastern)",
+      "eligibility_cutoff": "IBRD instruments with board_approval_date <= instant and original_principal_amount > 0; not guarantees/B-loans",
+      "target_start": "1947-06-09 (effective date - first day the loan can disburse)",
+      "target_end": "1947-12-31 (closed_date_most_recent; disbursement window closes)",
+      "label_operands": "disbursed_amount 250,000,000 / original 250,000,000 = 100% -> positive at both thresholds; verified in the fetched snapshot row (agreement_signing_date 09-May-1947, last_repayment_date 01-May-1977, status Fully Repaid)",
+      "no_external_threshold_fixture_note": "the label is an internal ratio of two publisher columns, so the known-event fixture requirement for external thresholds does not apply; IBRD00010 is recorded as the named worked example and its values were read back from the fetched data"
+    }
+  },
+  "jobs": [],
+  "artifacts": [],
+  "review": "All five discovery contracts have measured evidence. (1) Redistribution: CC BY 4.0 stated on the dataset page and metadata API - class A. (2) Prediction timing: instant is the documented board_approval_date; all shipped features are static approval-time attributes, with one disclosed current-vintage caveat (region, flagged in the publisher's own column description) that construction must either drop or carry as a limitation; the whole label window follows the instant; censoring is measured and the population cutoff at 2017 approvals is explicit. (3) Target: ratio of two in-row columns, label sources excludable, zero-ratio instruments are genuine negatives (cancelled_amount documents them), not missing data. (4) Split capacity: both classes in all three windows with hundreds of independent country-year clusters; clustering by project_id and country-year is measured and the split rule accounts for it. (5) Not a mirror: no ML-ready disbursement-completion benchmark exists; prior art targets IEG ratings (different target, different table, already measured as no-headroom by our own dropped wb-ieg candidate). Headroom is the known open risk of this source family (the IEG task failed it) - that is a construction/qualification measurement, and the near-balanced >=99% variant plus the approval-time-only feature contract are the mitigations; the honest posture is to build and let the measured baselines decide, not to claim headroom now.",
+  "verdict": "go",
+  "next_action": "Construction (worker job wb-sol-001): (1) fetch DS00047 via the 10 documented API pages (or the 2.85 MB CSV), pin bytes by sha256; (2) scope to IBRD loans (drop guarantee prefixes IBRDB/IBRDG and types BLNR/BLNC/GURB/GUBF, drop original<=0), compute the completion label at the chosen threshold (>=90% primary, >=99% near-balanced alternative - decide and document), censor at 2017 approvals; (3) ship approval-time features only, decide the region current-vintage question (drop the column or ship with the disclosed limitation), keep project_id groupings within split sides; (4) hand off IN ORDER: construction -> full-worker qualification gate -> exact-byte acceptance -> reference/model scoring -> reporting, with any scoring inside the build script behind the gate. Expected artifact: one row per matured IBRD loan (~8.4k rows), three temporal windows. The check that decides success: the qualification gate (leakage, timing, splits, units) plus the baseline triad measured on the written rows - if a trivial baseline (e.g. country or era prior) matches the reference model on eval and holdout, the task has no headroom and the candidate is recorded as constructed-no-headroom rather than published, exactly as happened to wb-ieg-project-outcome.",
+  "construction_script": null,
+  "rejection_reason": null
+}

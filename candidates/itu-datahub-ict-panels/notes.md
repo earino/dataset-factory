@@ -45,3 +45,26 @@ with access date. Class B; NC and SA would carry through unchanged to any releas
 - NC-SA licence additionally limits a benchmark meant for commercial AI evaluation.
 
 Cost of this verdict: six plain-client fetches + one real-browser read. No bulk data pulled.
+
+## 2026-10-28 — reopen-hook probe: the satellite-filings registry (International-organisations tick)
+
+The record's reopen condition named the ITU Radiocommunication satellite-filings registry as the only known
+row-level family. Probed this session (bounded: publisher pages only, no data pulled):
+
+- ITU Space Explorer (https://www.itu.int/itu-r/space/apps/public/spaceexplorer/, read 2026-10-28):
+  "Access to the SNS technical data in ITU SpaceExplorer requires a login. It is granted to ITU members
+  having a TIES User account, or to those with an annual subscription to the Space Network System (SNS)."
+- ITU FAQ on satellite filings (PDF, March 2025, itu.int/en/ITU-R/Documents/FAQs on ITU satellite Fillings-March 2025.pdf,
+  read 2026-10-28): filings "Processed and published: Published in BR IFIC" and "The BR IFIC is available for
+  viewing through a paid subscription." The e-submission FAQ states as-received filings are publicly listed
+  (https://www.itu.int/net4/itu-r/res55asreceived/) once published "as-received".
+- Conclusion: the outcome data (processed status, bring-into-use, published in BR IFIC) and the bulk
+  technical characteristics (Space Explorer SNS database) both sit behind a paid subscription or a TIES
+  member login - an authorisation we do not hold. The free public part (as-received list) carries raw
+  submissions, not the later outcomes a prediction task needs.
+
+Verdict: the reopen hook resolves CLOSED on access terms (authorisation not held - class D posture for that
+family). Cost: 6 web reads, 0 data requests. What would reopen it: ITU publishing a documented anonymous
+bulk/API channel for filings including their processing outcomes under open terms, or the operator supplying
+a subscription and an explicit candidate-specific risk acceptance.
+

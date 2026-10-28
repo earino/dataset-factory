@@ -1,0 +1,54 @@
+{
+  "id": "iaea-pris-outage-events",
+  "status": "dropped",
+  "created_at": "2026-10-28T10:25:46.509061+00:00",
+  "domain": "nuclear power operations / reactor-level outage and performance events",
+  "prediction_question": "Candidate task (not reachable): at the start of a reactor outage event (or at a reactor-year boundary), predict an operational outcome such as outage duration or unplanned energy loss, from PRIS per-reactor operational records (monthly production/power-loss data since 1970, outage and operational event information). Prospective users: grid operators balancing supply, IAEA/industry benchmarking analysts. The task could not be carried to a probe because the event-level data is not in the public channel and the licence instrument is ambiguous - closed under the standing class C policy, recorded so future sessions do not re-derive it.",
+  "prediction_time": "Would have been the outage start / reactor-year boundary, but no documented public channel to the event-level tables was found in this session, so the timing contract was never reachable.",
+  "target_definition": "Not defined - the would-be label (outage duration exceedance or energy-loss threshold) sits in PRIS outage/operational event tables that the new public Data Browser does not list.",
+  "sources": [
+    {
+      "name": "IAEA Power Reactor Information System (PRIS) - pris.iaea.org / pris-stats.iaea.org",
+      "landing_page": "https://pris.iaea.org/pris/home.aspx",
+      "url": "https://pris-stats.iaea.org/",
+      "api": "none documented - the August 2026 revamp exposes data through embedded Microsoft Power BI dashboards ('PRIS Data Browser', browser pages at /browser/<uuid>) with 'Sign in to view this report' panels; no bulk CSV/API documented",
+      "format": "Power BI embedded dashboards; listed public dashboards: reactor status at year-end, historical trends, design characteristics, project milestones, contractual strategy, manufacturers, lifetime electricity production, RUP revisions, electricity production, reactors by age, performance indicators, reactor years, decommissioning status/milestones, non-electric applications - NO outage-events dashboard among them; the old per-reactor ASPX URLs (e.g. ReactorDetails.aspx?current=1074) now redirect to the new analytics homepage",
+      "retrieved": "2026-10-28 (about page, data-browser index, a redirected reactor-details URL, IAEA revamp news story)"
+    }
+  ],
+  "license_evidence": [
+    {
+      "note": "IAEA Terms and Conditions of Use of the IAEA's Websites (nucleus.iaea.org/Pages/Others/Disclaimer.aspx, read 2026-10-28), copyright section: 'the IAEA is committed to making its content freely available and encourages the use, reproduction and dissemination of the text, multimedia and data presented. Content may be adapted, translated, copied, printed and downloaded for private study, research and teaching purposes, and for use in commercial and non-commercial products or services, provided that appropriate acknowledgement of the IAEA as the source is given' - but the same page's database section states: 'The data in the IAEA digital repositories and databases is provided free of charge for educational and informational use.' The two clauses pull in different directions for a published derived ML dataset, and 'Specific restrictions and/or conditions may apply to specific Materials within this Site.' PRIS pages carry '(c) 1998-2026 IAEA, All rights reserved.' No dataset-level open licence is stated anywhere on the PRIS properties.",
+      "url": "https://nucleus.iaea.org/Pages/Others/Disclaimer.aspx"
+    },
+    {
+      "note": "IAEA Rights and Permissions page (iaea.org/publications/rights-and-permissions, read 2026-10-28): 'Permission may be required to use whole or parts of texts contained in IAEA publications' and, for AI usage: 'Usage is subject to a licensing agreement and attribution. Unauthorized usage is prohibited.' - restrictive posture for publications; no PRIS-specific grant found.",
+      "url": "https://www.iaea.org/publications/rights-and-permissions"
+    }
+  ],
+  "jurisdiction": {
+    "country": "AT",
+    "region": "International organisations",
+    "publisher": "International Atomic Energy Agency (IAEA), a UN specialised agency headquartered in Vienna, Austria",
+    "convention": "The publisher's HQ country is recorded because 'international' is not a country; the IAEA is headquartered at the Vienna International Centre, Austria. In this session's assigned region (international organisations).",
+    "recorded_at": "2026-10-28"
+  },
+  "licence_class": "C",
+  "licence_note": "Unstated/ambiguous for the database: the general T&C grants use, adaptation and dissemination of IAEA content with attribution (even commercially), but the database clause narrows the frame to 'educational and informational use' and reserves PRIS-specific restrictions; no named open licence exists for PRIS data. Under the standing policy (build only on sources already clean; close new unresolved class C leads rather than email or wait), this is closed, not parked.",
+  "split_strategy": null,
+  "measurements": {
+    "access_probe_2026_10_28": {
+      "public_data_channel": "PRIS Data Browser = embedded Power BI reports (pris-stats.iaea.org/data-browser, 15 listed dashboards, none outage/event-level); Power BI panels read 'Sign in to view this report'; no documented bulk CSV or API on any PRIS page read this session",
+      "old_url_check": "https://pris.iaea.org/PRIS/CountryStatistics/ReactorDetails.aspx?current=1074 returns the new analytics homepage - the pre-revamp per-reactor ASPX pages are gone",
+      "scale_context_from_publisher": "PRIS describes monthly production and power-loss data since 1970 plus outage and operational event information; PRIS nuclear power status counters (read 2026-10-28): 417 reactors in operation (31 countries), 78 under construction (17 countries), 21 suspended (2 countries) - the event-level source of the would-be task is described but not publicly exposed in the new browser",
+      "platform_migration": "IAEA news 2026-08-21 ('IAEA Revamps Major Nuclear Power Database'): first of two planned releases; a second release 'scheduled for early 2027 will introduce additional analytical capabilities and complete the modernization of the PRIS statistical applications'"
+    }
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "Closed under the standing class C policy, on two recorded grounds. (1) Licence: no dataset-level licence for PRIS; the IAEA's own terms are ambiguous for a published derived dataset (content clause encourages adaptation and dissemination with attribution; database clause says data is 'provided free of charge for educational and informational use'; PRIS pages say All rights reserved) - class C, and the standing policy closes new unresolved class C sources rather than seeking permission or waiting. (2) Access: after the August 2026 revamp the public channel is Power BI embedded dashboards with no documented bulk/API, and the outage/operational event tables the task needed are not among the 15 listed public dashboards; the old per-reactor pages redirect away. A prediction task cannot be built from an undocumented scraping path against an ambiguous licence.",
+  "review": "A promising-looking row-level UN-agency source (reactor outage events since 1970) that fails the two cheapest contracts before any task design is worth measuring. The evidence is publisher-read, dated, and preserved so the re-probe is cheap when the reopen triggers fire.",
+  "verdict": "stop",
+  "next_action": "Closed. Reopen triggers (any one): (a) IAEA states an explicit dataset-level open licence for PRIS data (e.g. CC BY) on the PRIS properties; (b) the PRIS second release (announced for early 2027) exposes a documented anonymous bulk/API channel that includes the outage/operational event tables; (c) the operator records a candidate-specific risk acceptance for PRIS, which would resolve the licence ambiguity as a risk acceptance (never a grant) - and the access question would still need (b). Until then no further probing is warranted.",
+  "construction_script": null
+}
