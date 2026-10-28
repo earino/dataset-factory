@@ -1,0 +1,38 @@
+{
+  "id": "ec-infringement-case-escalation",
+  "status": "investigating",
+  "created_at": "2026-10-28T12:34:27.192617+00:00",
+  "domain": "EU law enforcement / infringement procedures against Member States (case-level escalation)",
+  "prediction_question": "For an open European Commission infringement case against a Member State at a decision instant (e.g. the date a letter of formal notice is decided), will the case escalate to the next procedural stage (reasoned opinion, then referral to the Court of Justice) or be closed without escalation within a stated horizon?",
+  "prediction_time": "The publication instant of the Commission's monthly infringement package / the register entry for the decision in question (to be pinned against the register's actual channel; the monthly packages are dated presscorner publications). Features would be the case's stage reached, policy area, topic, Member State, case age and the case's decision history - all published register fields; the future decisions are the label and must be excluded.",
+  "target_definition": "Binary label derived from the case's decision history in the register: escalation to the next stage (or a named later stage) vs closure without escalation, within a stated horizon after the instant. Label source = later decision entries for the same case number (INFR(YYYY)NNNN), excludable from features.",
+  "sources": [
+    {
+      "name": "European Commission infringement register / 'Implementing EU law' site (interactive maps, graphs and per-case register search by decision, status, type, Member State, policy area)",
+      "url": "https://ec.europa.eu/implementing-eu-law/home/en",
+      "landing_page": "https://ec.europa.eu/implementing-eu-law/member-state-infringement-cases_en",
+      "access": "public web application, read 2026-10-28; NO documented bulk export or API found in this tick's bounded search. The monthly infringement packages are PDFs on the Commission presscorner (e.g. INF_25_2077 of 2025-10-08, INF_26_1084 of 2026-06-04). A third-party scraping API exists (brubru.beresol.eu /api/v2/commission/infringements) but is NOT the publisher's channel and is not evidence of one.",
+      "licence": "official Commission web content under the Commission reuse policy; per-case licence not yet read - classify only after the access channel is settled"
+    }
+  ],
+  "license_evidence": [
+    "ec.europa.eu 'Implementing EU law' pages (read 2026-10-28): public register of infringement decisions, search by 'decision, status, type, number, Member State, policy area or title' per the publisher's own page text. The pages are Commission web content (reuse policy: Commission Decision 2011/833/EU / CC BY 4.0 default), but no machine-readable distribution is documented on the page itself - recorded as observed, licence classification deferred with the access question."
+  ],
+  "construction_script": null,
+  "split_strategy": null,
+  "measurements": {
+    "what_is_measured": "Nothing in this tick beyond the channel search. Case volume context from the publisher's own monthly packages (read 2026-10-28): a typical monthly package opens and closes dozens of cases (e.g. the 2025-10-08 package closes 59 cases and opens multiple letters of formal notice per policy area; case numbers of the form INFR(2025)2129). Population per year is hundreds of new cases across 27 Member States - enough volume in principle for staged-escalation labels, IF a row-level channel exists."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": "Institutional-decision task distinct from this bench's published ec-merger task (different procedure, population = Member States, staged labels). The single decisive uncertainty is ACCESS: everything observable this tick is a web application plus PDF packages. A PDF-only publisher is a park, not a go (geographic-coverage reference). Before parking, one bounded probe is owed: inspect the register application for a documented JSON/XHR endpoint or export control, in the supported browser. If none exists after a bounded attempt, park on the access blocker with the ec-tdi-case-outcome precedent (parked, not dropped, when the task shape is promising and only the channel is missing).",
+  "next_action": "Next probe (bounded, a later tick): in the supported browser, open https://ec.europa.eu/implementing-eu-law/home/en, trigger a register search, and record whether any documented machine-readable endpoint or export produces row-level case data (case number, Member State, policy area, decision type, decision date). If yes: measure per-year case counts and stage-transition base rates, then read the licence instrument and run the novelty sweep. If no: set status parked with the access blocker named exactly ('no documented bulk/API channel; PDF monthly packages only') and the reopen hook ('a documented export or API on the implementing-eu-law register').",
+  "jurisdiction": {
+    "country": "EU",
+    "region": "Europe",
+    "publisher": "European Commission (Secretariat-General infringement register; 'Implementing EU law' site)",
+    "recorded_at": "2026-10-28"
+  },
+  "verdict": "hold"
+}

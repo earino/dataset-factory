@@ -24,6 +24,58 @@ candidate review - review the next candidate's source-specific prediction contra
 and update its builder before construction; #25 remains deferred.
 
 
+## 2026-10-28 (12:29Z) - EU/EEA discovery tick: NEW ready candidate eu-transparency-register-removal (EU Transparency Register, Decision 2011/833 class A, measured 9.8-18.5% removal rates across eras); ec-state-aid-investigation-opening and ec-infringement-case-escalation opened (investigating); EU agency closed avenues left un-reprobed
+
+Regional tick (EU/EEA: data.europa.eu first, EU agencies, sector regulators). One new
+ready candidate from the Transparency Register, two investigating records with their
+decisive uncertainties named, and no re-probing of the closed EU avenues (ECDC
+surveillance activity-exceedance = flunet mirror; RASFF risk-decision; TED offer-count;
+EFSA sample-positivity = bvl second instance; all recorded terminal earlier). No worker
+launched, no construction, no dataset asset touched.
+
+- eu-transparency-register-removal (NEW, ready/go, licence class A): task = at the
+  in-file export instant of a semi-annual Transparency Register snapshot (2015-01 ..
+  2026-06, 24 snapshots all verified downloadable), will an organisation listed as
+  registered still be listed in the next semi-annual snapshot, or removed by then.
+  Removal is documented by the publisher (annual update compulsory; missed deadline ->
+  suspended -> automatic removal two weeks later; reactivation possible only within two
+  years) and cross-checked against the Secretariat's own reports ("87% complying timely
+  ... 1 496 registrants removed"). Measured on 6 snapshots fetched this tick (80-113 MB
+  XML each, streaming-parsed on the coordinator): removal rates 16.1% (2016->2017, old
+  era), 9.76% (2023-01->2023-06), 18.5% (2023->2024), 13.85% (2024->2024-12-31),
+  15.6% (2024-12-31->2026-06); reactivations 13-200/window; survivors virtually all
+  updated; label NOT mechanically derivable from lastUpdateDate (removals at every
+  lastUpdate age; deadline keys off the last ANNUAL update). Licence: per-distribution
+  Commission Decision 2011/833/EU (Art. 4: reuse for commercial/non-commercial, free,
+  no individual application) + EU-wide CC BY 4.0 default. Novelty differentiated
+  (check-novelty recorded): no ML-ready formulation; nearest = EU-LOB data extracts and
+  Berkhout & Lowery 2011-style descriptive demography. Honest risks for construction:
+  deadline-proximity baseline may be strong (headroom is the deciding check), the 2021
+  IIA transition may break identificationCode continuity, 14.6% of the 2024-12-31
+  export has empty lastUpdateDate (itself predictive). Access recipe recorded: the
+  2025/2026 snapshot store URLs 401 to plain clients but 200 with browser UA + dataset
+  Referer (the blocked-page policy applied before recording anything inaccessible).
+- ec-state-aid-investigation-opening (NEW, investigating/hold): DG COMP's state aid
+  register is now published as a machine-readable JSON dataset on data.europa.eu
+  ("EU Competition: State Aid case publications", public, updated 2026-10-11); task
+  shape = Article 108(2) formal-investigation opening vs ordinary handling, at case
+  registration. Decisive next facts: JSON schema/base rates (bounded sample),
+  publisher's own licence instrument, novelty sweep (merger-prediction prior art is
+  adjacent), and a live-database vintage policy.
+- ec-infringement-case-escalation (NEW, investigating/hold): Commission infringement
+  register is a web application (per-case search) plus PDF monthly packages; no
+  documented bulk export or API found in this tick's bounded search (the only API seen
+  is a third-party scraper, not the publisher's channel). One bounded browser probe of
+  the register app is owed; if no row-level channel, park on access (ec-tdi precedent).
+- Queue after tick: ready = 8, live = 37, live non-US 30/37 (81%); EU now carries
+  11 candidates (Europe region 25). check-candidate --all passes (101/101).
+
+Next action: advancement constructs eu-transparency-register-removal on a worker per its
+record (snapshot download + join, qualification gate, baseline triad with a
+deadline-proximity-only headroom reference); the two investigating leads wait for their
+named probes.
+
+
 ## 2026-10-28 (10:50Z) - International-organisations discovery tick: NEW ready candidate wb-loan-disbursement-completion (World Bank, CC BY 4.0, measured 68.7% completion base rate); ITU satellite-filings reopen hook closed on paid access; OECD row-level condition re-checked, still unmet; iaea-pris-outage-events opened and dropped (class C, no public event channel)
 
 Regional tick (World Bank, OECD, UN agencies, WHO, IMF, ITU). One new ready

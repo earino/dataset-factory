@@ -1,0 +1,38 @@
+{
+  "id": "ec-state-aid-investigation-opening",
+  "status": "investigating",
+  "created_at": "2026-10-28T12:34:26.776799+00:00",
+  "domain": "EU competition policy / state aid control (DG COMP case register)",
+  "prediction_question": "At the instant the European Commission registers a state aid case (SA case number assigned on notification/registration, per the register's documented case fields), will the measure be handled under the ordinary/simplified procedure or will the Commission open a formal investigation under Article 108(2) TFEU before deciding?",
+  "prediction_time": "The case's notification/registration date as published in the case record (to be verified in the JSON distribution's schema at the next probe). Features would be the fields fixed at notification: Member State, legal basis, aid instrument, sector, title text - all documented register fields; the decision-type/-date fields are post-hoc and must be excluded from features.",
+  "target_definition": "Binary label derived from the case's decision record: a decision opening proceedings under Article 108(2) TFEU (formal investigation) vs decisions taken without opening (no-objection, block-exemption compatibility). Label source = the case's decision fields, excludable from features. Base rate unknown until the distribution is measured.",
+  "sources": [
+    {
+      "name": "EU Competition: State Aid case publications (DG COMP state aid register republished as a data.europa.eu dataset; JSON)",
+      "url": "https://data.europa.eu/data/datasets/fa8d67be-d050-42a4-97ff-9e849805acf9~~1",
+      "landing_page": "https://competition-cases.ec.europa.eu/search",
+      "access": "portal record read 2026-10-28: access rights public, created 2025-03-13, latest JSON distribution modified 2026-10-11; coverage 'starts in June 1993 (some cases) but more systematic publication began in the early 2000' per the publisher's description; case fields per the description: Title, notification/registration date, legal basis, aid instrument, links to public decisions and factsheets",
+      "licence": "not yet verified on the publisher's own page (competition-cases.ec.europa.eu); the portal record states public access; classify only after reading the publisher's reuse notice"
+    }
+  ],
+  "license_evidence": [
+    "data.europa.eu dataset 'EU Competition: State Aid case publications' (read 2026-10-28 via the portal search API and dataset page): access rights 'public'; no per-distribution licence value captured in this tick's bounded read - the licence must be read from the publisher's own instrument (competition-cases.ec.europa.eu legal notice / the underlying Commission reuse notice) before any build decision; recorded as unknown, not assumed."
+  ],
+  "construction_script": null,
+  "split_strategy": null,
+  "measurements": {
+    "what_is_measured": "Nothing yet - this record was opened from the EU/EEA discovery tick's channel search only. No data was downloaded. The register's own long-standing web application (online since 2001, updated daily, per DG COMP's State aid Scoreboard documentation) is now additionally published as a machine-readable JSON dataset on data.europa.eu - that channel is the discovery."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": "Promising institutional-decision task in a procedure family this bench knows well (ec-merger-phase2-opening is published for merger control; state aid control is a different procedure, different population (SA.xxxxx cases, ~2 decades, tens of thousands of measures) and a different label). The cheapest unresolved fact that could change the verdict: whether the JSON distribution actually carries per-case row-level fields (registration date, legal basis, instrument, decision type/dates) with usable coverage, and what the Article 108(2)-opening base rate per year is. Second: the publisher's own licence instrument. A third check, novel to this family: the register is a live database, so historical vintages/as-of evidence for the case fields must be stated (case records carry their own decision dates, which mitigates, but feature-vintage claims need evidence).",
+  "next_action": "Next probe (a later discovery/advancement tick, bounded): (1) pull the JSON distribution URL from the portal record and measure per-case schema, per-year case counts and the share of cases with an Article 108(2) decision, via a bounded sample (no bulk download on the coordinator); (2) read the publisher's own reuse notice on competition-cases.ec.europa.eu and classify A/B/C/D; (3) only then a novelty sweep for state-aid decision prediction (note for that sweep: DG COMP publishes aggregate Scoreboard statistics, and prior art on merger-decision prediction exists - the state-aid opening target must be shown distinct); (4) reconcile timing (registration-date instant vs decision dates, vintage policy).",
+  "jurisdiction": {
+    "country": "EU",
+    "region": "Europe",
+    "publisher": "European Commission, Directorate-General for Competition (state aid register), republished via data.europa.eu",
+    "recorded_at": "2026-10-28"
+  },
+  "verdict": "hold"
+}

@@ -1,0 +1,177 @@
+{
+  "id": "eu-transparency-register-removal",
+  "status": "ready",
+  "created_at": "2026-10-28T12:29:03.481124+00:00",
+  "domain": "EU lobbying regulation / interest-representative register lifecycle (semi-annual snapshot panel)",
+  "prediction_question": "For an organisation listed as registered in the EU Transparency Register at the instant of a semi-annual register snapshot (the export timestamp stamped inside the snapshot file), will it still be listed in the next semi-annual snapshot, or will it have been removed from the register by then?",
+  "prediction_time": "The export instant of semi-annual snapshot t, i.e. the <exportDate> timestamp carried inside the snapshot XML (observed exports 2015-01-21T19:30 CET ... 2026-06-30T20:00 UTC; the publisher states the organisation lists are 'published twice a year' and the live register lists are 'updated daily'). Features are the organisation's fields as published in snapshot t only (identity, registration category, country, declared goals/interests, members and FTEs, declared financial data for the closed financial year, EP-accredited-person count, networking, EU legislative proposals listed, lastUpdateDate as at t). The target window is (t, t+1] where t+1 is the next snapshot's export instant, strictly after the prediction instant.",
+  "target_definition": "Binary label: identificationCode of the organisation is ABSENT from the next semi-annual snapshot's export (removed from the register) vs PRESENT. Label source is presence in a different file (snapshot t+1), which is excludable from features by construction. Removal mixes automatic removal for a missed compulsory annual update (documented rule: deadline one year after registration and then one year after each annual update; missed deadline -> suspended, then 'automatically removed two weeks after the deadline'), voluntary deregistration, and rare enforcement removals; the publisher's own mapping report counts '87% complying timely ... and 1 496 registrants removed' for its reporting period. The label is state-based, not absorbing: a small measured share (92-200 per measured window, some of it validation-lagged new registrations) reappears in later snapshots; the label stays 'absent at t+1' regardless of later reactivation.",
+  "sources": [
+    {
+      "name": "EU Open Data Portal dataset 'Transparency Register' (publisher: Secretariat-General of the European Commission; register operated jointly by the European Parliament, the Council of the EU and the European Commission under the Interinstitutional Agreement of 20 May 2021, OJ L 207, 11.6.2021, p. 1)",
+      "url": "https://data.europa.eu/data/datasets/transparency-register",
+      "api": "portal search API record: https://data.europa.eu/api/hub/search/datasets/transparency-register (49 distributions enumerated 2026-10-28)",
+      "access": "semi-annual organisation snapshots 2015-01 .. 2026-06 in XML and XLS; 2015-01..2024-06 files at data.europa.eu/euodp/en/data/storage/... answer HTTP 200 to anonymous curl; 2025-01..2026-06 files at data.europa.eu/data-management/store/api/data/sg/... answer 401 to plain curl but HTTP 200 with a browser-like User-Agent plus Referer: https://data.europa.eu/data/datasets/transparency-register (measured 2026-10-28, 112656126 bytes for the 2026-06 file)",
+      "licence": "each distribution carries licence http://data.europa.eu/eli/dec/2011/833/oj (Commission Decision 2011/833/EU)"
+    },
+    {
+      "name": "Transparency Register live daily exports (current-state edge used for deployment; same schema as the semi-annual snapshots)",
+      "url": "https://transparency-register.europa.eu/odplastorganisationxml_en",
+      "api": "companion XLS: .../odplastorganisationxls_en; accredited persons: .../odplastaccreditedxml_en",
+      "access": "anonymous HTTP 200 (measured 2026-10-28); range request read metaData: exportDate 2026-10-27T21:00:00Z, numberOfIR 18050",
+      "licence": "official europa.eu site under the Commission reuse policy (Decision 2011/833/EU) and the EU-wide CC BY 4.0 default notice"
+    },
+    {
+      "name": "Transparency Register guidelines and FAQs (documented rule mechanics and every form field's meaning)",
+      "url": "https://transparency-register.europa.eu/guidelines_en",
+      "api": "FAQ: https://transparency-register.europa.eu/faqs-and-contact_en",
+      "access": "public web pages, read 2026-10-28; key rules quoted in license_evidence and notes.md",
+      "licence": "official europa.eu content"
+    }
+  ],
+  "license_evidence": [
+    "data.europa.eu dataset 'Transparency Register', distribution licence field, read 2026-10-28 via https://data.europa.eu/api/hub/search/datasets/transparency-register: every distribution carries 'http://data.europa.eu/eli/dec/2011/833/oj' (Commission Decision 2011/833/EU on the reuse of Commission documents).",
+    "Commission Decision 2011/833/EU, Article 4 'General principle' (EUR-Lex CELEX:32011D0833, read 2026-10-28): 'All documents shall be available for reuse: (a) for commercial or non-commercial purposes under the conditions laid down in Article 6; (b) without charge, subject to the provisions laid down in Article 9; and (c) without the need to make an individual application, unless otherwise provided in Article 7.' Article 6 conditions are attribution-style (acknowledgement of source, no misrepresentation of meaning, no implication of Commission endorsement); Article 2.2 excludes third-party-IP documents - the register exports are the publisher's own compilation published as open data.",
+    "EU site-wide copyright notice (https://european-union.europa.eu/legal-notice_en, read 2026-10-28): 'Unless otherwise indicated (e.g. in individual copyright notices), content owned by the EU on this website is licensed under the Creative Commons Attribution 4.0 International (CC BY 4.0) licence.' No individual copyright notice restricting reuse is present on the Transparency Register dataset page or the register site.",
+    "Registrants' own declaration (EUR-Lex summary of the Interinstitutional Agreement, read 2026-10-28): by registering, organisations 'agree that the information which they provide shall be public'. The register is a public database whose contents are published for reuse through the Commission's open-data portal."
+  ],
+  "construction_script": null,
+  "split_strategy": "Temporal windows on the semi-annual snapshot panel (24 snapshots 2015-01..2026-06, all verified downloadable; 2025/2026 files need the Referer recipe recorded in sources). Candidate partition: train = windows starting 2015-01..2019-06 (10 windows), eval = 2020-01..2022-06 (6 windows), holdout = 2023-01..2026-06 (7 windows); every measured window carries both classes at 9.8-18.5% positive rate. Windows that straddle the 2021 IIA transition (old -> new register migration, mid-2021) must be checked for identificationCode continuity at construction; measured here only within-era windows. Repeated organisations across windows are the panel's clustering structure; positives additionally cluster by annual-deadline position (measured lastUpdate-age bucket distribution in notes.md).",
+  "measurements": {
+    "snapshot_inventory": "portal API enumerates 49 distributions: semi-annual 'Organisations in Transparency Register' snapshots 2015-01 .. 2026-06 in XML + XLS, live daily exports (XML/XLS organisations, XML accredited persons). In-file metaData exportDate + numberOfIR match parsed rows exactly in all six files parsed (e.g. 2024-01 file: declared 12430 = parsed 12430).",
+    "measured_windows_positive_rate_absent_next_snapshot": {
+      "2016-01-21 -> 2017-01-21 (365d, old era)": "1471/9120 removed (16.1%); reactivations 13; survivors updated 7647/7649",
+      "2023-01-21 -> 2023-06-21 (150d, new era)": "1212/12418 removed (9.76%); reactivations 99",
+      "2023-01-21 -> 2024-01-21 (365d, new era)": "2294/12418 removed (18.5%); reactivations 92",
+      "2024-01-21 -> 2024-12-31 (345d, new era; file labelled '2025 - JANUARY', in-file export 2024-12-31)": "1722/12430 removed (13.85%); reactivations 118",
+      "2024-12-31 -> 2026-06-30 (545d, new era)": "2051/13119 removed (15.6%); reactivations 200"
+    },
+    "label_mechanics": "Practically all survivors updated within a 12-month window (10116/10124 and 7647/7649), so survival == 'performed at least one update in the window'. Removals occur at every lastUpdateDate age (21 removals even with lastUpdate 0-60 days before the 2023-01 instant), so the label is NOT mechanically derivable from lastUpdateDate: the documented deadline keys off the last ANNUAL update while lastUpdateDate is bumped by any update (partial updates do not move the deadline; a full update does). Deadline proximity is an informative feature, not a shortcut.",
+    "schema_inventory": "per-organisation elements (all 12430 rows in the 2024-01 file): identificationCode, registrationDate, lastUpdateDate, name/originalName, acronym, entityForm, webSiteURL, registrationCategory, headOffice{address,postCode,city,country,phone}, EUOffice{...}, goals, levelsOfInterest (50918 entries), interests (125167 entries), isMemberOf, members (bands 100/75/50/25/10 percent + membersFTE), organisationMembers, interOrUnofficalGroupings, financialData{costs/absoluteCost+ranges, closedYear, currentYear, amount, fundingSource(s), grant(s), contribution(s), revenue, representationCosts, totalBudget, totalAnnualRevenue, source}, interestRepresented/clients/intermediaries (consultancies), EULegislativeProposals (3148), EUSupportedForumsAndPlatforms, communicationActivities, infoMembers, EPAccreditedNumber, newOrganisation, complementaryInformation, structure. Old-era files (20141104 namespace) additionally carry <status>active</status> and category mainCategory/subCategory; every exported row in parsed old-era files is status=active. Column meanings are documented by the register's Guidelines and IIPA Annex I (registration form).",
+    "publisher_cross_check": "Secretariat of the Transparency Register, 'Mapping of the implementation of the 2021 interinstitutional agreement' (register website, read 2026-10-28): 'requirements resulting from the IIA (with 87% thereof complying timely with that requirement and 1 496 registrants removed)' and 'more than 14 000 registrants' (2025). Annual report 2021: '13 366 registrants on 31 December 2021'. Measured snapshot sizes: 9120 (2016-01), 11010 (2017-01), 12418 (2023-01), 12430 (2024-01), 13119 (2024-12-31), 17424 (2026-06-30), 18050 (live 2026-10-27) - consistent growth trajectory.",
+    "data_quality_quirks": "the 2024-12-31 export has 1916/13119 (14.6%) entries with EMPTY lastUpdateDate; among orgs removed by 2026-06, 593 had empty lastUpdateDate (31% removal vs 15.6% overall - missingness itself is predictive and must be a first-class feature, not dropped rows). Two snapshot files (2025-01-labelled, 2026-06) contain XML character references to control characters (e.g. &#x1d;) invalid under XML 1.0; the retained probe scripts sanitise these; 2026-06 uses an XML 1.1 declaration.",
+    "known_event_fixtures": "dated worked example in notes.md: 'Hope For Children' CRC Policy Center (REG 483924815151-12) present at the 2023-01-21 19:30 CET instant with lastUpdateDate 2022-04-26 (annual-update deadline ~2023-04-26 under the documented rule), absent at 2023-06-21 19:30 CEST -> positive; contrast CloudFerro (REG 095284146845-67) present at both -> negative. Regime event: 2021 IIA transition (old -> new register mid-2021) is a construction-level discontinuity to verify via cross-era join.",
+    "fetch_cost_measured_on_coordinator": "6 XML snapshots downloaded 2026-10-28 (51.7-112.7 MB each; ~5-40 s per file over https); streaming parse of one 80 MB file with stdlib XMLPullParser: 40-90 s on the 4-vCPU coordinator. Full 24-snapshot series is ~1.8 GB in ~24 requests (~15 min sequential) - a small worker job. Requests counted per file: 1 GET (+1 for the portal API record enumeration).",
+    "probe_scripts": "probe_portal_dataset.py (enumerate all 49 distributions), probe_snapshot_parse.py (field inventory), probe_snapshot_transitions.py (window joins, removal/reactivation/update counts; includes XML control-char sanitiser), probe_examples.py (worked dated examples), probe_lu_missingness.py (empty-lastUpdateDate count). All retained in this candidate directory; commands and outputs in notes.md."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": "Five contracts reconciled on 2026-10-28 against written evidence. (1) Redistribution SUPPORTED - publisher's own instruments: per-distribution licence Decision 2011/833/EU (Art. 4 reuse for commercial/non-commercial purposes, without charge, no individual application; Art. 6 attribution-style conditions) plus the EU-wide CC BY 4.0 default notice; registrants declared their information public; class A, attribution carried to a future LICENSE.md. (2) Timing SUPPORTED - the prediction instant is the in-file snapshot export timestamp (exact, named timezone); features are snapshot-t fields documented by the register's Guidelines/IIPA Annex I; the label is presence in the strictly-later snapshot t+1; each snapshot is the publisher's own dated vintage (no back-revision of past files observed: the 2016 file still carries only pre-2016 lastUpdateDates); recorded caveat: the historical series' first-publication dates on the portal are batch upload dates (2023-05-11 for 2015-2022, 2024-05-14 for 2023-01..2024-01, per-distribution for later files), so operational claims are stated against the snapshot instants and the live daily channel, not per-file historical downloadability. (3) Target SUPPORTED - absence from t+1 is fully obtainable from the archive; label source (a different file) excludable; censoring handled: absence is state-based, reactivation within 2 years is documented and measured (92-200/window); eligibility = presence in snapshot t, no future knowledge. (4) Split capacity SUPPORTED - 24 semi-annual snapshots 2015-2026, all anonymously downloadable (2025/2026 with the Referer recipe); measured positive rates 9.8-18.5% across eras and horizons; three disjoint windows train/eval/holdout each carry hundreds-to-thousands of positives; both classes in every measured window; panel-level clustering (repeated orgs, deadline-position clustering) recorded for construction. (5) Not a mirror SUPPORTED - mechanical catalogue sweep (Hugging Face, Zenodo, arXiv) plus literature search recorded in novelty_check: no ML-ready formulation of this prediction task exists; nearest items are data extracts (EU-LOB consolidated database; a 2023 meta-organisations extract) and descriptive political-science survival studies (Berkhout & Lowery 2011 EU interest-community vital rates; a Bundestag-register event-history study), none with splits and a scored contract. Honest open risks recorded for construction: deadline-proximity (lastUpdateDate age) may be a strong single feature - headroom over a deadline-only baseline is the deciding check; the 2021 IIA transition may break identificationCode continuity across the mid-2021 windows; empty-lastUpdateDate entries in some snapshots; label mixes compliance removal (majority), voluntary exit and enforcement.",
+  "next_action": "Hand to advancement for construction on a worker: (1) download all 24 snapshots (euodp URLs for 2015-01..2024-06; Referer recipe for 2025-01..2026-06, see sources/access), verify in-file exportDate/numberOfIR per file, join on identificationCode, enumerate every semi-annual window's removal counts per proposed split; (2) verify the 2021 transition join continuity and confine cross-era windows if broken; (3) build features from snapshot-t fields (keep lastUpdateDate-missingness as a feature), label = absent at t+1; (4) gate: dataset-qualification two-phase, then baseline triad - a deadline-proximity-only baseline is the headroom reference; full-feature model leg on the runner contract. Deciding check: qualification gate + measured headroom over the deadline-only baseline on holdout; constructed-no-headroom is a legitimate outcome (same honest-risk framing as wb-loan-disbursement-completion).",
+  "jurisdiction": {
+    "country": "EU",
+    "region": "Europe",
+    "publisher": "Secretariat of the Transparency Register - European Parliament, Council of the European Union and European Commission (data published via the EU Open Data Portal, data.europa.eu, publisher authority 'Secretariat-General')",
+    "recorded_at": "2026-10-28"
+  },
+  "licence_class": "A",
+  "licence_note": "Class A: Commission Decision 2011/833/EU (explicit open reuse for commercial and non-commercial purposes, free, no individual application) declared per-distribution by the publisher on data.europa.eu; EU site-wide default CC BY 4.0 where 2011/833 is not displayed. Conditions for LICENSE.md: acknowledge the source (European Union Transparency Register via data.europa.eu), no misrepresentation of the data's meaning, no implication of Commission endorsement, label the dataset as derived - never as the register's official product.",
+  "verdict": "go",
+  "novelty_check": {
+    "checked_at": "2026-10-28T12:34:02+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "EU transparency register removal prediction",
+      "lobbying registration lapse prediction",
+      "lobbying register survival benchmark"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "EU transparency register removal prediction",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "lobbying registration lapse prediction",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "lobbying register survival benchmark",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "EU transparency register removal prediction",
+          "hits": 212472,
+          "top": [
+            "2023 EU Transparency Register - Meta-organizations",
+            "Our Coasts, Resiliency, and Carbon Dioxide Removal",
+            "EU Transparency Register 2023: Standardized Datasets on Registered Interest Groups",
+            "AI-Based Consumer Behaviour Modelling Under Algorithmic Transparency and Regulatory Constraints: A Governance-by-Design Framework Using the EU AI Act and Digital Services Act as Benchmarks",
+            "TESF C19 Research Report Somalia/Somaliland"
+          ]
+        },
+        {
+          "query": "lobbying registration lapse prediction",
+          "hits": 103072,
+          "top": [
+            "Features of lobbyism development in Ukraine",
+            "LOBBYING AS DEMOCRACY BUILDING OR BUYING INFLUENCE",
+            "Smoke and Mirrors: Lobbying by Vaping Companies",
+            "Raw data: Jiang et al. Plos Computational Biology",
+            "Models of Lobbying Practices in Maritime Affairs of USA and European Countries"
+          ]
+        },
+        {
+          "query": "lobbying register survival benchmark",
+          "hits": 111300,
+          "top": [
+            "2023 EU Transparency Register - Meta-organizations",
+            "Diasporas as Conflict Actors: Remittances, Lobbying, and the Internationalization of Civil War in South Sudan",
+            "Diasporas as Conflict Actors: Remittances, Lobbying, and the Internationalization of Civil War in South Sudan",
+            "Features of lobbyism development in Ukraine",
+            "LOBBYING AS DEMOCRACY BUILDING OR BUYING INFLUENCE"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "EU transparency register removal prediction",
+          "hits": 5,
+          "top": [
+            "Computational Register Analysis and Synthesis",
+            "Embracing Annotation Efficient Learning (AEL) for Digital Pathology and Natural Images",
+            "Combinatorial proofs of Petrie Pieri rule and Plethystic Pieri rule",
+            "Signed Mahonian polynomials for major and sorting indices",
+            "Hadronization and Color Transparency"
+          ]
+        },
+        {
+          "query": "lobbying registration lapse prediction",
+          "hits": 5,
+          "top": [
+            "On the lapse contour in the gravitational path integral",
+            "Deep learning based registration using spatial gradients and noisy segmentation labels",
+            "Cortical surface registration using unsupervised learning",
+            "Which bills are lobbied? Predicting and interpreting lobbying activity in the US",
+            "Mamba? Catch The Hype Or Rethink What Really Helps for Image Registration"
+          ]
+        },
+        {
+          "query": "lobbying register survival benchmark",
+          "hits": 5,
+          "top": [
+            "Computational Register Analysis and Synthesis",
+            "A Unified Survival Benchmark for Temporal Dropout Risk Prediction in Learning Analytics",
+            "Crossing points in survival analysis sensitively depend on system conditions",
+            "Register Bias in Complexity-Based Large Language Model Routing",
+            "Stochastic Survival near Swampland Boundaries"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'EU transparency register removal prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'lobbying registration lapse prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'lobbying register survival benchmark': 0 hit(s) - nothing notable\n- zenodo_records / 'EU transparency register removal prediction': 212472 hit(s) - 2023 EU Transparency Register - Meta-organizations, Our Coasts, Resiliency, and Carbon Dioxide Removal, EU Transparency Register 2023: Standardized Datasets on Registered Interest Groups, AI-Based Consumer Behaviour Modelling Under Algorithmic Transparency and Regulatory Constraints: A Governance-by-Design Framework Using the EU AI Act and Digital Services Act as Benchmarks, TESF C19 Research Report Somalia/Somaliland\n- zenodo_records / 'lobbying registration lapse prediction': 103072 hit(s) - Features of lobbyism development in Ukraine, LOBBYING AS DEMOCRACY BUILDING OR BUYING INFLUENCE, Smoke and Mirrors: Lobbying by Vaping Companies, Raw data: Jiang et al. Plos Computational Biology, Models of Lobbying Practices in Maritime Affairs of USA and European Countries\n- zenodo_records / 'lobbying register survival benchmark': 111300 hit(s) - 2023 EU Transparency Register - Meta-organizations, Diasporas as Conflict Actors: Remittances, Lobbying, and the Internationalization of Civil War in South Sudan, Diasporas as Conflict Actors: Remittances, Lobbying, and the Internationalization of Civil War in South Sudan, Features of lobbyism development in Ukraine, LOBBYING AS DEMOCRACY BUILDING OR BUYING INFLUENCE\n- arxiv_preprints / 'EU transparency register removal prediction': 5 hit(s) - Computational Register Analysis and Synthesis, Embracing Annotation Efficient Learning (AEL) for Digital Pathology and Natural Images, Combinatorial proofs of Petrie Pieri rule and Plethystic Pieri rule, Signed Mahonian polynomials for major and sorting indices, Hadronization and Color Transparency\n- arxiv_preprints / 'lobbying registration lapse prediction': 5 hit(s) - On the lapse contour in the gravitational path integral, Deep learning based registration using spatial gradients and noisy segmentation labels, Cortical surface registration using unsupervised learning, Which bills are lobbied? Predicting and interpreting lobbying activity in the US, Mamba? Catch The Hype Or Rethink What Really Helps for Image Registration\n- arxiv_preprints / 'lobbying register survival benchmark': 5 hit(s) - Computational Register Analysis and Synthesis, A Unified Survival Benchmark for Temporal Dropout Risk Prediction in Learning Analytics, Crossing points in survival analysis sensitively depend on system conditions, Register Bias in Complexity-Based Large Language Model Routing, Stochastic Survival near Swampland Boundaries",
+    "prior_art": [
+      "EU-LOB (Zenodo record 19334783, 2026); Berkhout & Lowery 2011, J. Eur. Public Policy 18(3), EU interest-community volatility; Bundestag lobbying-register survival study (event history, 1974-2012); mteb/legalbench_corporate_lobbying (US LDA)"
+    ],
+    "theirs": "The publisher ships raw data only: semi-annual snapshot files (data.europa.eu) and live daily exports, plus descriptive reports. EU-LOB (Zenodo 2026) is a consolidated current-state database of EU/national lobbying registries - data extracts, not a prediction task. Political-science literature (Berkhout & Lowery 2011; Bundestag-register event-history study) describes exit rates descriptively without splits or scored models. LegalBench corporate-lobbying and HF 'lobbying' hits are US LDA text/classification tasks on different populations and labels.",
+    "ours": "The first ML-ready prediction task on the EU Transparency Register's own semi-annual snapshot archive: at a snapshot's in-file export instant, predict whether an active registration is removed by the next semi-annual snapshot (missed annual update / voluntary exit / enforcement), with temporal splits over the 2015-2026 panel and a scored benchmark contract. No existing dataset or paper ships this task; the archive itself (24 dated snapshots) is the contribution's evidence base.",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
+}
