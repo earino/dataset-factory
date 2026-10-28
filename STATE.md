@@ -24,6 +24,31 @@ candidate review - review the next candidate's source-specific prediction contra
 and update its builder before construction; #25 remains deferred.
 
 
+## 2026-10-28 (18:11Z) - watcher re-fire for unhcr-publish-001/unhcr-hf-001: outcome already recorded at 23967af; receipts re-verified, cleanup re-confirmed, handled markers written
+
+The worker watcher re-fired for both finished unhcr staging jobs because their .factory
+handled markers were missing. Both jobs were already collected, verified and cleaned up in
+the 14:50Z entry below (commit 23967af). This pass re-verified the recorded evidence
+read-only and closed only the bookkeeping gap. No candidate, package, manifest, tag or
+worker changed; no figures are quoted beyond the recorded receipts.
+
+- Receipts re-verified (18:05-18:10Z): .factory/unhcr-publish-001/result.json (transferred
+  5, failures 0, 761,253 bytes, every sha256 verified; staging result release 426754786) and
+  .factory/unhcr-hf-001/result.json (uploads 5, skipped 0, failures 0; Hub readback ok=true,
+  errors=[]; load_dataset ok=true with train 3,363 / eval 1,887 / holdout 1,962 rows; staging
+  result release 426774972). Every listed digest matches release/unhcr-refugee-data-finder
+  MANIFEST.json and DESTINATIONS.json for artifact 6fa7becdf32925b7.
+- Cleanup re-confirmed provider-side (read-only Hetzner API, 18:10Z): servers 173091128 and
+  173094551 both answer 404; the jobs ledger records both deleted (collected 14:17Z/14:30Z).
+- Push and CI: origin/main already at 23967af; exact-commit CI green - "Local checks" (run
+  40709303267) and "Website pipeline preview" (run 40709303498) both completed success.
+- Handled markers written for both job IDs after this entry was committed.
+
+Next action: unchanged - the operator hands
+candidates/unhcr-refugee-data-finder/pre-flip-audit-prompt.md to an independent auditor; the
+flip waits for the auditor's verdict unless the operator waives it.
+
+
 ## 2026-10-28 (14:50Z) - unhcr-refugee-data-finder STAGED PRIVATE on both destinations (unhcr-publish-001 + unhcr-hf-001 both green, workers provider-confirmed deleted); pre-flip audit prompt prepared; awaiting_operator set; pre-existing test_runtime_audit failure repaired (inventory now covers the pre-flip-audit template)
 
 Release work outranked construction, so this advancement session executed the candidate's
