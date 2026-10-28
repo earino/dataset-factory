@@ -1,0 +1,42 @@
+{
+  "id": "japan-estat-portal",
+  "status": "dropped",
+  "created_at": "2026-10-28T02:35:58.707567+00:00",
+  "domain": "national statistics portal (Japan) - assessed as a task source for the East Asia tick; no candidate task survived triage",
+  "prediction_question": "None formed. The portal's products are aggregate statistical tables (census, labour force, vital statistics, prices - survey outputs aggregated by publisher design); every candidate task shape they could carry (monthly panel exceedance, e.g. monthly deaths/liquidations/arrivals by region x category) is already a covered bench family with live members: za-statsa-liquidations-exceedance (ready), who-flunet-activity-exceedance (published), abs-visitor-arrivals-direction (published). No event-grain register is published on e-Stat (survey microdata requires a separate official application, not the portal).",
+  "prediction_time": "Not applicable at portal level; monthly/annual statistical tables would state release calendar dates, but no task was formed.",
+  "target_definition": "Not applicable; no target formed. The drop is at the task level plus the access instrument, before any target was proposed.",
+  "sources": [
+    {
+      "name": "政府統計の総合窓口 e-Stat (government statistics portal, Statistics Bureau / Statistics Center)",
+      "url": "https://www.e-stat.go.jp/",
+      "api": "documented API at https://www.e-stat.go.jp/api/api-info/api-guide - MEASURED 2026-10-28: guide page states 'API機能をご利用いただくには、政府統計の総合窓口(e-Stat)のユーザ登録が必要です' (API use requires user registration); API terms-of-use https://www.e-stat.go.jp/api/terms-of-use (HTTP 200) 第2条: '本機能は、利用登録をした利用者のみ利用することができます' and 第3条 issues an Application ID after registration. Anonymous access = web-table browsing/CSV via the web UI only, which is the same scraping-the-UI shape rejected in the kr-kosis-kma-access park.",
+      "license": "e-Stat site/API terms require adherence to the portal's utilisation guide; government statistics are generally free to reuse with source attribution (出典), but the API instrument itself is registration-gated for this pipeline's purposes",
+      "access": "measured 2026-10-28 from the coordinator: api-guide and api root pages HTTP 200; /api/terms-of-use HTTP 200 with the quoted clauses; guessed URLs /terms and /help/main/help-riyou returned 404 (recorded as wrong guesses, not absent terms)"
+    }
+  ],
+  "license_evidence": [
+    {
+      "quote": "第２条（利用登録） １．本機能は、利用登録をした利用者のみ利用することができます。",
+      "url": "https://www.e-stat.go.jp/api/terms-of-use",
+      "note": "e-Stat API機能利用規約, read 2026-10-28: the documented programmatic path is available only to registered users; registration is a free personal signup. Not a licence refusal - a registration gate like KOSIS. Kept unclassified (dropped before licence triage mattered); the standing policy treats undocumented anonymous programmatic paths as fragile UI scraping, per the kr-kosis-kma-access precedent."
+    }
+  ],
+  "construction_script": null,
+  "split_strategy": null,
+  "measurements": {
+    "probe_2026_10_28": "Two anonymous fetches: api-guide page (HTTP 200, appId/user-registration requirement text captured) and api terms-of-use (HTTP 200, 第2条/第3条 quoted). Two guessed terms URLs returned 404 (bad guesses, recorded). No catalogue enumeration spent: the portal's product type (aggregate statistical tables) is its stated purpose, and no event-grain register exists on it; a task-level match with an uncovered family was not found, so the access question never became decisive."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "Dropped at triage, in the cheapest order: (1) TASK LEVEL - e-Stat publishes aggregate statistical tables; the task shapes it supports (monthly/annual panel exceedance by category x region) are already covered bench families with live members (za-statsa-liquidations-exceedance ready; who-flunet-activity-exceedance published; abs-visitor-arrivals-direction published), and the bench publishes nothing that mirrors an existing task, so a new family member needs an operator decision (air4thai/chilecompra precedents), not a discovery probe; (2) ACCESS - the documented API is gated behind a free personal user registration (quoted), identical in shape to the parked KOSIS record; the anonymous path is web-UI scraping, which the pipeline does not take. No source was probed beyond the terms/access pages.",
+  "review": "Cheapest-uncertainty-first worked as intended: the source was closed before any schema reading or volume measurement was spent. This is a portal-level drop recorded so a future East Asia tick does not re-open e-Stat blind: (a) it is a task-source mismatch for the bench's uncovered families, and (b) its programmatic access has the same personal-registration shape as KOSIS. Reopen only if the operator names a monthly/annual panel family member for Japan and provisions an e-Stat user registration per the KOSIS precedent, or if e-Stat starts publishing an event-grain register with an anonymous documented API.",
+  "next_action": "Terminal for discovery. Reopening condition stated in rejection_reason; no further probe planned.",
+  "jurisdiction": {
+    "country": "JP",
+    "region": "East Asia",
+    "publisher": "Statistics Bureau of Japan / National Statistics Center (総務省統計局・統計センター) via e-Stat portal",
+    "recorded_at": "2026-10-28"
+  },
+  "verdict": "drop"
+}

@@ -23,6 +23,71 @@ commit 8512fd8). Close #17; ordinary advancement thereafter is source-specific
 candidate review - review the next candidate's source-specific prediction contract
 and update its builder before construction; #25 remains deferred.
 
+## 2026-10-28 (02:35Z) - East Asia discovery tick: new lead jp-moe-pollen-exceedance (investigating, PDL 1.0 class A, retrospective benchmark, split counts unmeasured); japan-estat-portal dropped at triage; Taiwan PCC procurement skipped on the chilecompra family precedent; two pre-existing CI failures recorded, not caused by this session
+
+Regional tick (Japan e-Stat/JMA, South Korea KOSIS/KMA, Taiwan, Hong Kong, Singapore).
+One new lead opened, one named source dropped at triage, no worker launched, no
+construction. All existing EA candidates were re-checked first and stay on their
+recorded operator-decision/credential parks (no new evidence to re-probe).
+
+- jp-moe-pollen-exceedance (NEW, investigating): MOE Hanako-san automatic pollen
+  counter archive (env.go.jp), 2003-2021, station-day high-pollen exceedance from
+  a terminated publisher network - a labelled retrospective benchmark, no
+  operational-availability claim. Measured anonymously: 113 pollen files + 110
+  paired AMEDAS feature files (publisher pairs label and weather itself);
+  Kanto 2021 = 3,600 hourly rows = 150 days, one count column per station,
+  in-file documented missing codes; -9996 proves post-hoc clean-up (recorded as
+  the vintage caveat); national 2021 = 7 requests / 1.74 MB / 4.0 s, >=94
+  stations (literature ~120). Licence class A: PDL 1.0 quoted from the MOE's own
+  terms page; archive carries no rights notice. Novelty verdict recorded
+  (differentiated; closest prior art is single-city minimal sets). Blocking
+  before ready: full per-season station-day/positive counts (bulk, worker),
+  threshold + base rates, taxon semantics (sugi vs sugi+hinoki), trailing-window
+  station eligibility. Current-era MOE files are Durham 個/cm2 - regime break,
+  excluded from the target. Dated example in the candidate notes.
+- japan-estat-portal (NEW, dropped): named in the tick brief; closed at triage
+  before schema work. Task level: aggregate statistical tables only, and the
+  monthly/annual-panel families they could carry have live members
+  (za-statsa liquidations ready; who-flunet, abs-visitor published) - a second
+  family member is an operator decision per the air4thai/chilecompra precedents.
+  Access: documented API gated behind free personal registration (quoted from
+  the API terms 第2条), same shape as the parked kr-kosis-kma-access.
+- Taiwan PCC procurement: considered and NOT probed - chilecompra-tender-outcome
+  (dropped 2026-10-23, operator-directed, measured no-headroom 0.4752 vs 0.5707
+  category prior) is the family precedent; reopening belongs to the operator.
+  Recorded so a future EA tick does not open it blind.
+- JMA beyond the recorded families: the jma-typhoon note stands (earthquake
+  felt-intensity = bmkg family, river = malaysia family; reopen needs an
+  operator decision naming the family). KOSIS/KMA, Singapore, HK parks, TW
+  reservoir: re-probed 2026-10-20, unchanged, no new evidence.
+
+Checks this session: check-candidate.py --all exit 0 (94 records OK, both new
+records pass); discovery-coverage: East Asia 6 -> 8, JP 1 -> 3, live 31, non-US
+25/31 (81%).
+
+PRE-EXISTING CI FAILURES (recorded as a concurrent-writer conflict, NOT fixed
+here - both belong to the advancement/release track and predate this session's
+diff, which adds only the two candidate directories):
+- check-runtime.py --source-only exit 1 + tests/test_runtime_audit failure:
+  ops/runtime-files.json does not cover skills/dataset-release/templates/
+  pre-flip-audit-prompt.md (on disk, not in inventory) and the
+  skills/dataset-release/SKILL.md digest differs from the reviewed inventory -
+  left behind by the advancement session's pre-flip-audit skill edit. Repair
+  belongs to whoever edits those skills (fill digests programmatically into
+  ops/runtime-files.json); this session did not touch skills/ or ops/.
+- check-suitability.py exit 1: ec-merger-phase2-opening artifact_version
+  mismatch - the already-recorded flip blocker in the 00:18Z entry below.
+Local unittest: 671/672 pass, the one failure is the runtime-audit test above.
+Expect CI on this session's commit to be RED for those two pre-existing
+failures; the candidate checks themselves pass.
+
+Next action: (advancement track owns the repair) refresh ops/runtime-files.json
+for the pre-flip-audit skill change, then the ec-merger checksum/suitability
+regeneration already queued in the 00:18Z entry. (discovery) the next
+advancement pass on jp-moe-pollen-exceedance runs the bounded bulk count
+(223 requests, ~55 MB, worker-side .xls parsing for 2008-2016) and sets the
+threshold before a ready review; no construction started.
+
 ## 2026-10-28 (00:18Z) - worker-watch follow-up: ecm-requal-001/002, ecm-publish-002/003, ecm-hf-002 handled; corrected e96929ef bytes verified live on both private destinations; all five workers provider-confirmed deleted; package checksum docs still describe the superseded artifact - flip blocked
 
 The advancement session that ran the pre-flip audit corrections was cut off after
