@@ -24,6 +24,54 @@ candidate review - review the next candidate's source-specific prediction contra
 and update its builder before construction; #25 remains deferred.
 
 
+## 2026-10-28 (20:19Z) - unhcr pre-flip audit verdict: DO NOT PUBLISH in its present form; flip blocked, both destinations stay private; suitability decision rebuild_before_use; enforcement gap diagnosed at the shared benchmark template
+
+The operator relayed the independent auditor's verdict (Codex, read-only, signed
+2026-10-28, report at audits/2026-10-28-unhcr-pre-flip-audit.md). The standing
+practice worked as designed: the flip waited for the verdict, and the verdict is
+DO NOT PUBLISH in its present form as a benchmark with an "enforced isolated-rows"
+protocol. Nothing was published; both destinations remain private.
+
+What the audit confirmed (PASS): all five digests and 25 package files; full
+independent source reconstruction (120,597 source rows -> all 7,212 shipped rows,
+16 fields, zero mismatches); grain, counts, derivations, temporal splits; every
+reference figure and all four paired bootstrap intervals reproduce; the honest
+negative finding (no headroom over persistence) is confirmed.
+
+What failed (the blocker):
+- Isolation enforcement. The shipped validator passes the entire eval feature
+  table to the predictor (validate.py line 23), so the declared isolated_rows
+  mitigation is unenforced at runtime. Frozen label-blind cross-row attacks:
+  eval AUC 0.975325 (eval donors), holdout 0.983034 (holdout donors), 0.996970
+  (all splits, one error, AFG-TJK-2021); count recovery from next-year apps_d /
+  two-years-later apps_d1 exact on 1,625 eval and 1,259 holdout labels.
+- Three descriptor truths: missing-history exclusions 377 not 386 (314/31/32);
+  target_date values are December-31 calendar identifiers, not publication
+  timestamps; the runner consumes 14 inputs while quality.json declares 12
+  features (target_date, surge_cluster undeclared).
+
+Diagnosis this session added: release/unhcr-refugee-data-finder/baseline/validate.py
+is byte-identical (sha256 b597e7f8...) to /opt/data/harness_benchmark/task_template/
+validate.py, a read-only harness file marked DO NOT EDIT. The whole-table predict
+call is the shared benchmark contract, so no package-side descriptor edit can make
+the enforcement claim true; the defect is at the template level and the same
+contract ships in every release package (the other ten datasets' suitability
+records document their own exposures rather than claiming enforcement).
+
+Actions taken: audit report recorded; record audits block written;
+awaiting_operator cleared (the flip is no longer the sole remaining step);
+suitability decision revised retain_restricted -> rebuild_before_use with the
+audit's findings and reopen conditions; next_action carries the four reopen paths
+(harness-side enforcement change, package-side enforcing contract, honest
+re-description as unmitigated retrospective research data, or drop) for the
+operator's decision. The staged bytes, tags and digests are untouched; the
+corrections are required before any requalification, and a fresh independent
+audit precedes any flip.
+
+Next action: operator decision on the reopen path. No flip, no restaging, no
+scoring without it.
+
+
 ## 2026-10-28 (18:11Z) - watcher re-fire for unhcr-publish-001/unhcr-hf-001: outcome already recorded at 23967af; receipts re-verified, cleanup re-confirmed, handled markers written
 
 The worker watcher re-fired for both finished unhcr staging jobs because their .factory

@@ -299,7 +299,7 @@
  ],
  "rejection_reason": null,
  "review": "Five contracts reconciled 2026-10-23 on written evidence: (1) Redistribution SUPPORTED - publisher's own instruments (HDX package record CC BY 3.0 IGO with grant and Section 4 quoted; RDF methodology CC BY 4.0), class A, conditions carried to LICENSE.md. (2) Timing SUPPORTED with documented current-vintage assumption - annual instant = first refresh carrying year-D data (observed cadence; 2026-08-20 file carries data through 2025); the task is an explicitly-labelled publication-lag NOWCAST (abs-visitor-arrivals-direction precedent): the target value is unpublished and unavailable on the channel at the instant, while the target year itself has partially elapsed - no 'window follows the instant' claim is made; the archive is revised in place, so values are construction-time vintage, sha256-pinned, the same accepted posture as abs-visitor-arrivals-direction; a future standing vintage collector is NOT needed for the annual task but would strengthen the as-of claim if ever added. (3) Target SUPPORTED - label from the same source column at D+1, excluded from features; observed absence (missing row, active host) = 0; host-silent rows (0.43%) excluded as censored. (4) Split capacity SUPPORTED - disjoint windows with both classes in every label-year, counts and clustered (origin, label-year) counts computed from the source. (5) Not a mirror SUPPORTED - no ML-ready corridor-grain UNHCR benchmark with fixed temporal splits and a scored contract found; prior art is origin-level or EU-bilateral monthly forecasting papers and raw-panel repackages. LIMITATION recorded: the machine-fetchable extract is annual; the RDF's monthly grain stays browser-only behind the WAF, so no monthly variant is buildable from this path. The old park reason (no machine-fetchable bulk path) is resolved by the HDX global package; the correction of the 2026-10-20 search miss is recorded in both sources[1].access and measurements.",
- "next_action": "Private staging of release/unhcr-refugee-data-finder v2026.10 is COMPLETE on both destinations (GitHub release 426752344 and Hugging Face main 89485538, both verified and private; DESTINATIONS.json carries the per-destination evidence). Nothing is public and no publication approval is implied by staging. The flip is the operator's single act: hand candidates/unhcr-refugee-data-finder/pre-flip-audit-prompt.md (digests filled programmatically from the frozen manifest) to an independent auditor; the flip waits for the auditor's verdict unless the operator waives it. After an approving verdict (or a waiver), flip both destinations, prove them anonymously, refresh the status-bearing documents and run the website pipeline per dataset-release.",
+ "next_action": "FLIP BLOCKED BY THE INDEPENDENT PRE-FLIP AUDIT (2026-10-28T20:19Z, Codex verdict: DO NOT PUBLISH in its present form). Both private destinations stay private; awaiting_operator cleared because the flip is no longer the sole remaining step. Diagnosis: the enforced isolated-rows claim is not deliverable by the shipped runner contract - baseline/validate.py is byte-identical to the read-only benchmark task template (sha256 b597e7f8...), whose line 23 passes the whole eval table to the predictor, enabling frozen label-blind recoveries at eval AUC 0.975325 / holdout 0.983034 / 0.996970 and exact count recovery. Descriptor corrections also required: exclusion count 377 not 386; target_date is a calendar identifier; 14 runner inputs vs 12 declared features. Reopen path (operator decision): (a) harness-side change - the benchmark template enforces per-row/restricted predictor access, then this package re-qualifies and re-audits; (b) package-side - ship an enforcing evaluation path inside the package (no longer the verbatim template contract); (c) re-describe honestly without any enforcement claim, as retrospective research data with a documented unmitigated exposure, and re-audit; or (d) drop. Any path except drop requires a new artifact version, full re-qualification, re-staging and a fresh independent audit before the operator's flip.",
  "jurisdiction": {
   "country": "CH",
   "region": "International organisations",
@@ -478,7 +478,27 @@
  },
  "packaged_at": "2026-10-27T19:44:51Z",
  "updated_at": "2026-10-28T14:39:24Z",
- "awaiting_operator": true,
+ "awaiting_operator": false,
  "awaiting_operator_since": "2026-10-28T14:39:24Z",
- "awaiting_operator_scope": "the private-to-public flip of earino/unhcr-refugee-data-finder on both destinations; both are staged, verified and private; the independent pre-flip audit prompt is prepared at candidates/unhcr-refugee-data-finder/pre-flip-audit-prompt.md and the flip waits for the auditor's verdict unless the operator waives it"
+ "awaiting_operator_scope": "the private-to-public flip of earino/unhcr-refugee-data-finder on both destinations; both are staged, verified and private; the independent pre-flip audit prompt is prepared at candidates/unhcr-refugee-data-finder/pre-flip-audit-prompt.md and the flip waits for the auditor's verdict unless the operator waives it",
+ "audits": {
+  "independent_pre_flip_2026_10_28": {
+   "auditor": "Codex (independent, read-only, no publisher contact)",
+   "verdict": "DO NOT PUBLISH in its present form as a benchmark with an enforced isolated-rows protocol",
+   "report": "audits/2026-10-28-unhcr-pre-flip-audit.md",
+   "integrity": "PASS (all five digests and all 25 package files; recomputed artifact identity 6fa7becd...; full independent source reconstruction of all 7,212 rows and 16 fields)",
+   "construction": "PASS (grain, counts, derivations, temporal splits, reference figures and paired intervals all reproduce; honest negative finding confirmed)",
+   "critical_finding": "FAIL isolation enforcement: the shipped validator (byte-identical to the benchmark task template) passes the whole eval table to the predictor, so the declared isolated_rows protocol is unenforced at runtime; frozen label-blind attacks reached eval AUC 0.975325 (eval donors), holdout 0.983034 (holdout donors), 0.996970 (all splits, one error), and exact count recovery (1,625 eval / 1,259 holdout labels, zero errors)",
+   "descriptor_fails": [
+    "missing-history exclusion count is 377 (314/31/32), not 386",
+    "target_date values are December-31 calendar identifiers, not publication timestamps",
+    "runner consumes 14 inputs (target_date, surge_cluster undeclared) vs 12 declared features"
+   ],
+   "evidence_held_by": "auditor: /tmp/unhcr-independent-audit-20261028-rIv2q7-evidence.zip",
+   "required_changes": [
+    "demonstrable runtime isolation in the shipped runner contract",
+    "corrected timing, count and feature-inventory statements"
+   ]
+  }
+ }
 }
