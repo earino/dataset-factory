@@ -1,3 +1,70 @@
+## 2026-10-28 21:26Z - wb-loan-disbursement-completion construction in flight (wb-sol-002 running); preemption repaired with operator_decision_pending (unhcr waits on the operator's reopen-path decision, not on us)
+
+Release work outranked construction, and the one packaged candidate (unhcr) is blocked on the
+operator's choice among the four recorded reopen paths after the DO-NOT-PUBLISH audit verdict -
+a human wait the preemption check did not exempt, because `awaiting_operator` was correctly
+cleared (the flip is no longer the sole remaining step) and nothing covered "waiting on an
+operator decision". That starved the whole construction queue, exactly what the release skill
+forbids. Repaired the mechanism, not the record:
+
+- factory/worker.py release_work_pending now exempts records carrying
+  `operator_decision_pending: true`; docstring updated. New guard
+  test_a_candidate_waiting_on_an_operator_decision_does_not_block_construction was written
+  first and shown to FAIL against the unpatched check ("Release work is pending for
+  awaiting-decision"), then to pass after the fix; tests.test_workers 33/33 OK.
+- candidates/unhcr-refugee-data-finder/record.json carries operator_decision_pending: true
+  with the four paths named; awaiting_operator stays false (no flip-ready notification can
+  fire - notify-release only reads awaiting_operator). Staged bytes, tags, digests untouched.
+- skills/dataset-release/SKILL.md documents the second marker and the distinction from
+  awaiting_operator.
+
+Construction advanced on wb-loan-disbursement-completion (the actionable candidate with the
+smallest measured source: 2.85 MB-class CSV via 10 pinned API pages):
+
+- Builder written per the recorded handoff: candidates/.../source/build.py (construct-only,
+  no performance metric anywhere) + run.sh fixed order construct -> qualify -> --accept ->
+  score.py references; bundle assembled with the canonical gate (sha256 4fab8a34...).
+  Decisions recorded with evidence: >=0.90 threshold shipped (>=99% measured, not shipped);
+  region NOT shipped (publisher-documented current-vintage coding);
+  currency_of_commitment NOT shipped (empty on 100% of scoped rows, measured);
+  interest_rate/signing/effective dates excluded as post-instant; project_id ships as an
+  id/cluster column with ALL 83 boundary-straddling projects dropped (172 rows) so no project
+  spans two splits, which also removes the cross-split label-join exposure; splits train
+  <=1999 / eval 2000-2009 / holdout 2010-2017, censoring at 2017 approvals.
+- Pre-launch verification found and resolved one real defect: 18 zero-disbursement rows are
+  NOT documented cancellations (cancelled_amount=0, status Fully Repaid/Terminated,
+  succession-era records) - excluded as unverified outcomes with the rule asserted in-build
+  and declared in quality.json (outcome-observability, never label-value conditioning).
+- Gate --selftest PASSED; a synthetic-row smoke of build.py + the real gate exercised every
+  structural check of the descriptor (timing block, evaluation_contract with empty-probe
+  note, runner checks, split windows) before any worker spend.
+- wb-sol-001 (first attempt) failed at 13.2 s: infrastructure defect, not a scientific
+  verdict - check_fixtures read the _ratio key after main() stripped it. Fetch and scoping
+  matched every measured constant (9,538 rows; 7,929 matured approved<=2017). Diagnosed,
+  ordering fixed, fix re-verified on synthetic rows; worker destroyed after verified
+  collection (container.log + result.json in the staging release; jobs/wb-sol-001.json
+  deleted 21:23Z).
+- wb-sol-002 SUCCEEDED in 21.2 s (server 173186371, EUR 0.04 reservation, identical
+  construction plan plus the fixture-ordering fix only), collected and provider-confirmed
+  deleted. VERIFIED OUTCOME: construct -> gate 1.5.0 PASSED (44/44 checks, 0 failed, full
+  artifact on the worker) -> --accept ACCEPTED for artifact c9ac51b846f7b1ee -> references on
+  identical eval rows. Shipped splits: train 5,874 (69.10% positive; 3,290 positive projects;
+  1,609 positive country-years), eval 1,034 (67.80%; 654; 305), holdout 831 (68.83%; 549;
+  264); exclusions measured: 172 straddle rows, 18 unverified-zero rows (6 train / 12 eval),
+  13 censored-open. References (eval rows only, holdout sealed): majority accuracy 0.6779;
+  persistence-country-last AUC 0.4771; country identity prior AUC 0.5364; loan-type prior
+  0.5156; paired bootstrap (1000, seed 23): country prior beats persistence by 0.059
+  [0.012, 0.107] (interval excludes zero), country vs loan-type inconclusive
+  [-0.021, 0.065]. Every simple reference sits near the AUC null - the full model has NOT
+  been run, so no headroom claim is made in either direction; the recorded IEG-family
+  headroom risk stays open. Candidate status -> qualified with the gate report recorded.
+
+Next action: run the harness baseline worker job on c9ac51b846f7b1ee to put the full-model
+figure beside these references, then interpret the triad before any packaging (a full model
+that fails to beat the 0.536 country prior by more than its uncertainty means
+constructed-no-headroom and stop, as happened to wb-ieg-project-outcome). The operator still
+owes unhcr the reopen-path decision (a-d).
+
 ## Current remediation closeout — 24 October 2026
 
 Core dataset/factory migration is complete: all ten public datasets have exact-version

@@ -213,7 +213,13 @@ session spends its tick on it. Two mechanisms, both needed:
 not block anything - otherwise a slow approval freezes every build behind it. That is exactly why
 the record carries `awaiting_operator`: preemption applies to work *you* can do, never to work waiting
 on a person. Surface the wait as an ageing item on the dashboard instead, and alarm when actionable
-release work sits for hours.
+release work sits for hours. A human wait is not only the flip: a release blocked on an operator
+**decision** - a DO-NOT-PUBLISH audit verdict whose reopen path (repair, re-describe or drop) is the
+operator's to choose - carries `operator_decision_pending: true`, which preemption exempts the same
+way. Keep the two markers distinct: `awaiting_operator` still means "the flip is the sole remaining
+step" (the notifier tells the operator they can reply `flip ...`), while `operator_decision_pending`
+means "the next step is the operator's choice among recorded paths" and must never trigger a
+flip-ready notification.
 
 When it is approved:
 

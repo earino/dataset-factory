@@ -170,6 +170,19 @@ class WorkerTests(unittest.TestCase):
         self.launch()
         self.assertEqual(self.cloud.created, 1)
 
+    def test_a_candidate_waiting_on_an_operator_decision_does_not_block_construction(self):
+        # A packaged release can be blocked on an operator DECISION rather than
+        # the flip (unhcr after the DO-NOT-PUBLISH audit verdict: the reopen
+        # path a-d is the operator's choice). Preemption applies to work we
+        # can do, never to work waiting on a person, or the queue starves.
+        folder = self.root / "candidates" / "awaiting-decision"
+        folder.mkdir(parents=True, exist_ok=True)
+        write_json(folder / "record.json",
+                   {"id": "awaiting-decision", "status": "packaged",
+                    "operator_decision_pending": True})
+        self.launch()
+        self.assertEqual(self.cloud.created, 1)
+
     def test_the_release_reserve_is_held_back_from_construction_only(self):
         self.config["monthly_budget_eur"] = "0.10"
         self.config["release_reserve_eur"] = "0.09"

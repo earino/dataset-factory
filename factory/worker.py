@@ -258,7 +258,11 @@ def release_work_pending(root):
     """Candidates that are packaged and waiting on *us*, not on the operator.
 
     A candidate with `awaiting_operator: true` is blocked on the private-to-public flip;
-    blocking construction for it would starve the queue on a human.
+    blocking construction for it would starve the queue on a human. The same starvation
+    applies to a release blocked on an operator DECISION rather than the flip - e.g. a
+    DO-NOT-PUBLISH audit verdict whose reopen path (repair, re-describe or drop) is the
+    operator's to choose - so such records carry `operator_decision_pending: true` and
+    are exempt here too. Preemption applies to work we can do, never to a human wait.
     """
     pending = []
     candidates_dir = Path(root) / "candidates"
@@ -269,7 +273,7 @@ def release_work_pending(root):
             continue  # check-candidate owns record validity; a broken record must not block work
         if not isinstance(record, dict) or record.get("status") != "packaged":
             continue
-        if record.get("awaiting_operator"):
+        if record.get("awaiting_operator") or record.get("operator_decision_pending"):
             continue
         pending.append(record.get("id") or path.parent.name)
     return pending
