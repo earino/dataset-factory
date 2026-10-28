@@ -25,6 +25,47 @@ and update its builder before construction; #25 remains deferred.
 
 
 
+## 2026-10-28 (08:00Z) - ec-merger-phase2-opening FLIPPED AND PUBLISHED: both destinations public and proven anonymously; site page live and verified; card/LOADING/navigation refreshed; record status published, awaiting_operator cleared
+
+Executed under the operator's standing flip approval recorded in this session
+("flip it when it was ready"; the 00:18Z watcher had correctly declined to
+treat the earlier recorded remark as authorization while the blocker stood -
+this session cleared the blocker first, then flipped).
+
+- FLIP: GitHub PATCH private=false and Hub update_repo_settings(private=False)
+  with the write credential. Anonymous proof with no credential: repo API/page/
+  release 200; all five release assets ranged GET 206 after the signed-URL
+  redirect; Hub API private:false; all five data files ranged GET 206 at
+  revision v2026.10; anonymous full meta.json downloads hash to b139620d on
+  both platforms. Release bytes, tags and digests unchanged by the flip.
+- Frozen-manifest doctrine held: the generator validated and refused to
+  rewrite the published manifest; visibility truth lives in
+  DESTINATIONS.json (github 2b2b37d tag==main, Hub revision 6a17f925
+  tag==main, both verified with per-destination file lists).
+- Publication-state derivation added to factory.release_schema.from_manifest:
+  published = every destination recorded verified, timestamped, located and
+  public (the recorded evidence), with the frozen manifest field unchanged;
+  regression-tested (incomplete evidence stays unpublished - the synthetic
+  suite caught the first, looser rule). Card and LOADING regenerated with
+  public status (no-token loading); anonymous load_dataset at v2026.10 ok
+  (train 5406/217, eval 1770/46, holdout 2915/46); the card's stale
+  "private" claim on the public Hub is gone.
+- Suitability record re-bound to the exact shipped artifact e96929ef
+  (reviewer field records what the re-review did and did not re-run;
+  correction recorded; check-suitability 14/14 OK).
+- Website: editorial sites/ec-merger-phase2-opening.json (site_revision 1),
+  plan 0438ca79... published and verified - dataset page
+  https://earino.github.io/ec-merger-phase2-opening/versions/v2026.10/ and
+  catalogue live, HTTPS enforced on both Pages sites, cross-links verified,
+  navigation blocks present on the GitHub README and the Hub card (read back
+  anonymously). Site destination recorded in DESTINATIONS.json at 07:54:34Z.
+- Full unittest suite at the pre-existing baseline: only the recorded
+  runtime-audit defect fails (recorded 03:03Z, unrelated to this release).
+- Record: status published, awaiting_operator false, published_at
+  2026-10-28T07:58Z. The catalogue now lists 11 datasets. No scoring was run
+  before or for the flip.
+
+
 ## 2026-10-28 (07:35Z) - ec-merger flip-blocker cleared: checksum docs regenerated from the corrected artifact e96929ef; both private destinations re-verified and re-tagged; consumer re-verification ACCEPTED; the flip is the sole remaining step
 
 The 00:18Z flip blocker (package checksum documents still describing the

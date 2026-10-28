@@ -407,6 +407,19 @@ def from_manifest(data, *, path="<manifest>", destinations=None, split_sources=(
     if type(published) is not bool:
         problem("published", "expected a boolean")
         published = False
+    # Publication state is read from recorded evidence, never a regenerated assertion. A
+    # package flipped public after its manifest froze keeps the frozen bytes (the generator
+    # refuses to rewrite a published manifest), so the frozen "published" field stays False
+    # forever while DESTINATIONS.json - written after anonymous verification - records that
+    # every destination is verified and public. That recorded state IS publication: deriving
+    # it here keeps generated documents (card, LOADING, site) from re-asserting "private"
+    # for a release that is already public. The evidence must be complete - verified,
+    # timestamped and located, exactly what the published validation below demands - or the
+    # package stays unpublished: a bare private:false flag is not publication.
+    if not published and dest and all(
+            d.verified and d.verified_at and d.locator is not None and d.private is False
+            for d in dest.values()):
+        published = True
     if published and baseline and baseline.artifact_id and not identity.startswith(baseline.artifact_id):
         problem("baseline", "evaluation belongs to a different artifact")
     if published and not any(d.verified and d.verified_at and d.locator for d in dest.values()):

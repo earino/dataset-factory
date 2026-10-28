@@ -1,80 +1,82 @@
 {
- "schema_version": 1,
- "dataset": "ec-merger-phase2-opening",
- "release_tag": "v2026.10",
- "artifact_version": "e5a98dfc9c05d0b087ed2dead21004fbbd972e415d2174469371a908bcaf90ad",
- "reviewed_on": "2026-10-27",
- "reviewer": "Scout, advancement session 2026-10-27 (document and code review over the accepted ec-merger-003 artifact, its gate 1.5.0 qualification report and the ec-merger-baseline-001 runner-contract baseline; no new full-artifact scoring was run for this review)",
- "decision": "retain_restricted",
- "summary": "Retained for retrospective model-development research. Every shipped feature is a same-row case attribute fixed at notification (an administrative record), and eligibility reads only notification-time fields, but the register publishes a single current snapshot with no historical vintages, so training-label timing and full-row historical availability are unverified and no operational or point-in-time forecasting claim is supported.",
- "supported_uses": [
-  "Retrospective train/validation model-development experiments under the documented timing, vintage and selection limitations",
-  "Final evaluation only under a protocol that isolates the labeled holdout from agent development and prevents any later row influencing an earlier prediction"
- ],
- "unsupported_uses": [
-  "Claims of verified real-time, operational or point-in-time forecasting validity",
-  "Treating development/validation (eval-split) scores as untouched final-test results",
-  "Presenting current-vintage register values (notably the NACE Rev 2 sector coding) as the values an analyst at notification time would have seen"
- ],
- "evaluation_access": "isolated_rows",
- "historical_availability": "partial",
- "training_label_timing": "unverified",
- "vintage": "current_snapshot",
- "selection": "prediction_time",
- "cross_row_audit": {
-  "status": "bounded_no_recovery",
-  "scope": "Gate 1.5.0 executed its two declared probes on the full artifact on the worker across all three splits (unique case_number donor; repeat case_title with a 365-day offset): 0 rows covered, 0 mismatches, 0 ambiguous on both probes and all splits. Rows are unique notified cases and every feature is a same-row attribute, so no outcome-bearing cross-row exposure is constructed; the probes are a bounded mechanism, not a proof, and no broader attack search was run.",
+  "schema_version": 1,
+  "dataset": "ec-merger-phase2-opening",
+  "release_tag": "v2026.10",
+  "artifact_version": "e96929efbbc4fcb84d2986a7e32f83f9c5fec5395124439fb3404faff2e9e662",
+  "reviewed_on": "2026-10-28",
+  "reviewer": "Scout, advancement session 2026-10-27 (document and code review over the accepted ec-merger-003 artifact, its gate 1.5.0 qualification report and the ec-merger-baseline-001 runner-contract baseline; no new full-artifact scoring was run for that review); re-bound to the corrected artifact e96929ef on 2026-10-28 by the release session: the independent pre-flip audit required descriptor corrections (meta.json, quality.json regenerated; the three CSVs are byte-identical to the reviewed build), worker job ecm-requal-002 re-ran gate 1.5.0 two-phase over the exact accepted CSV bytes with the corrected descriptor (ok, failed_checks empty) and its accepted report ships as release/ec-merger-phase2-opening/qualification.json; the substance of the review (task structure, features, timing, censoring, cross-row probes, prevalence, baseline comparison) is unchanged by the descriptor correction, so the decision and limitations carry over without re-scoring",
+  "decision": "retain_restricted",
+  "summary": "Retained for retrospective model-development research. Every shipped feature is a same-row case attribute fixed at notification (an administrative record), and eligibility reads only notification-time fields, but the register publishes a single current snapshot with no historical vintages, so training-label timing and full-row historical availability are unverified and no operational or point-in-time forecasting claim is supported.",
+  "supported_uses": [
+    "Retrospective train/validation model-development experiments under the documented timing, vintage and selection limitations",
+    "Final evaluation only under a protocol that isolates the labeled holdout from agent development and prevents any later row influencing an earlier prediction"
+  ],
+  "unsupported_uses": [
+    "Claims of verified real-time, operational or point-in-time forecasting validity",
+    "Treating development/validation (eval-split) scores as untouched final-test results",
+    "Presenting current-vintage register values (notably the NACE Rev 2 sector coding) as the values an analyst at notification time would have seen"
+  ],
+  "evaluation_access": "isolated_rows",
+  "historical_availability": "partial",
+  "training_label_timing": "unverified",
+  "vintage": "current_snapshot",
+  "selection": "prediction_time",
+  "cross_row_audit": {
+    "status": "bounded_no_recovery",
+    "scope": "Gate 1.5.0 executed its two declared probes on the full artifact on the worker across all three splits (unique case_number donor; repeat case_title with a 365-day offset): 0 rows covered, 0 mismatches, 0 ambiguous on both probes and all splits. Rows are unique notified cases and every feature is a same-row attribute, so no outcome-bearing cross-row exposure is constructed; the probes are a bounded mechanism, not a proof, and no broader attack search was run.",
+    "evidence": [
+      "release/ec-merger-phase2-opening/VERIFICATION.md",
+      "jobs/ec-merger-003.json"
+    ]
+  },
+  "limitations": [
+    "The register retains no historical vintages (bulk feed since 2025-03-18; S3 objects expire after 30 days), so a reverse-history probe is not performable: this is retrospective research over the pinned 2026-10-27 snapshot, never a certified historical forecasting setup.",
+    "Feature availability is fixture-verified at three cross-era points (M.877 1997, M.4731 2007 with its OJ prior notice, M.10188 2021) but not verified row-by-row against notification-era vintages; the sector taxonomy labels are current-vintage NACE Rev 2 applied across all eras.",
+    "Training-label timing is unverified: labels are the register's current values, observed as of the fetch snapshot, with no availability ledger.",
+    "Positives cluster by enforcement era and sector acquisition waves beyond the day-level event key; per-notification-year positive counts (1-22, median about 8) are reported beside every score.",
+    "Prevalence falls across splits (train 4.01%, eval 2.60%, holdout 1.58%): the eval and holdout windows are prevalence-shifted relative to training, an out-of-distribution property reported, not hidden.",
+    "Pending cases with neither an opener nor a terminal decision at fetch (33, overwhelmingly live 2020s filings) are censored and counted per split and year; their labels are unobserved, not negative, and censoring never decides another row's membership.",
+    "The ever-adopted label keeps M.10188 positive despite its 2024-09-06 post-ECJ withdrawal of the opener; M.3333 stays positive on its 2007-03-01 opener with the 2004 pre-notification opener excluded by rule.",
+    "The stock runner baseline trails the required sector-division comparator on the identical eval rows (0.6973 vs 0.7679; paired difference -0.0706, 95% CI [-0.1558, +0.0168], inconclusive with the observed gap negative). Headroom above that prior is NOT demonstrated by the packaged evidence; both numbers must be quoted together."
+  ],
+  "required_actions": [
+    "Keep the labeled holdout outside every evaluated agent's workspace; the benchmark's score is holdout AUC on a frozen design.",
+    "Quote the full-model figure only beside the sector-division comparator and its dependence-aware interval; never quote either number alone.",
+    "Re-run the gate's cross-row battery (and review its probes) in every future re-qualification before making any stronger claim."
+  ],
   "evidence": [
-   "release/ec-merger-phase2-opening/VERIFICATION.md",
-   "jobs/ec-merger-003.json"
+    {
+      "claim": "Qualification of the exact artifact: gate 1.5.0 accepted the corrected package (failed_checks empty), exact-byte acceptance recorded before any figure was computed",
+      "source": "release/ec-merger-phase2-opening/qualification.json",
+      "detail": "the shipped accepted gate 1.5.0 report for artifact e96929ef (worker job ecm-requal-002 over the exact accepted CSV bytes fetched from staging 425292628; build-time acceptance of the byte-identical CSVs recorded in VERIFICATION.md as ACCEPTED: ... e5a98dfc9c05d0b0)"
+    },
+    {
+      "claim": "Evaluation contract: retrospective research, isolated rows, current snapshot, prediction-time selection, training-label timing unverified",
+      "source": "release/ec-merger-phase2-opening/quality.json",
+      "detail": "evaluation_contract block (use, access, vintage.kind current_snapshot with evidence, selection.kind prediction_time with evidence, training_label_timing, limitations)"
+    },
+    {
+      "claim": "Cross-row audit executed on the full artifact with zero coverage and zero mismatches on both declared probes",
+      "source": "release/ec-merger-phase2-opening/qualification.json",
+      "detail": "the shipped gate 1.5.0 report for e96929ef, checks contract.cross_row_probe_0 and contract.cross_row_probe_1 (train/eval/holdout: 0 covered, 0 mismatches, 0 ambiguous on both probes and all splits; originally executed on the byte-identical CSVs by worker ec-merger-003 and re-run with the corrected descriptor by ecm-requal-002)"
+    },
+    {
+      "claim": "Baseline comparison on identical eval rows: full model 0.6973 vs sector-division prior 0.7679, paired difference inconclusive with negative observed gap",
+      "source": "release/ec-merger-phase2-opening/RELEASE_NOTES.md",
+      "detail": "section 'Measured evidence (eval window, 1,770 rows / 46 positives, after acceptance)' with the paired row-bootstrap intervals"
+    },
+    {
+      "claim": "Measured construction facts: 10,125 eligible cases, 33 pending-censored, 309 positives, per-split windows and rates",
+      "source": "release/ec-merger-phase2-opening/measurements.json",
+      "detail": "eligibility, label and splits blocks, built at 2026-10-27T10:14:03Z from the pinned vintage"
+    },
+    {
+      "claim": "Selection reads only notification-time fields and censored cases are counted, never membership-deciding",
+      "source": "release/ec-merger-phase2-opening/quality.json",
+      "detail": "timing.row_selection.basis (caseType Merger and a notification date exist; pending-censored counted per split and year)"
+    }
+  ],
+  "corrections": [
+    "2026-10-27/28 descriptor correction per the independent pre-flip audit (PUBLISH WITH CONDITIONS): meta.json and quality.json regenerated (retrospective-use honesty, metadata contradiction fixes, recipes shipped, repeated-transaction dependence disclosed); superseded artifact e5a98dfc9c05d0b0..., CSVs byte-identical; re-qualified as e96929ef by worker job ecm-requal-002 before any public visibility"
   ]
- },
- "limitations": [
-  "The register retains no historical vintages (bulk feed since 2025-03-18; S3 objects expire after 30 days), so a reverse-history probe is not performable: this is retrospective research over the pinned 2026-10-27 snapshot, never a certified historical forecasting setup.",
-  "Feature availability is fixture-verified at three cross-era points (M.877 1997, M.4731 2007 with its OJ prior notice, M.10188 2021) but not verified row-by-row against notification-era vintages; the sector taxonomy labels are current-vintage NACE Rev 2 applied across all eras.",
-  "Training-label timing is unverified: labels are the register's current values, observed as of the fetch snapshot, with no availability ledger.",
-  "Positives cluster by enforcement era and sector acquisition waves beyond the day-level event key; per-notification-year positive counts (1-22, median about 8) are reported beside every score.",
-  "Prevalence falls across splits (train 4.01%, eval 2.60%, holdout 1.58%): the eval and holdout windows are prevalence-shifted relative to training, an out-of-distribution property reported, not hidden.",
-  "Pending cases with neither an opener nor a terminal decision at fetch (33, overwhelmingly live 2020s filings) are censored and counted per split and year; their labels are unobserved, not negative, and censoring never decides another row's membership.",
-  "The ever-adopted label keeps M.10188 positive despite its 2024-09-06 post-ECJ withdrawal of the opener; M.3333 stays positive on its 2007-03-01 opener with the 2004 pre-notification opener excluded by rule.",
-  "The stock runner baseline trails the required sector-division comparator on the identical eval rows (0.6973 vs 0.7679; paired difference -0.0706, 95% CI [-0.1558, +0.0168], inconclusive with the observed gap negative). Headroom above that prior is NOT demonstrated by the packaged evidence; both numbers must be quoted together."
- ],
- "required_actions": [
-  "Keep the labeled holdout outside every evaluated agent's workspace; the benchmark's score is holdout AUC on a frozen design.",
-  "Quote the full-model figure only beside the sector-division comparator and its dependence-aware interval; never quote either number alone.",
-  "Re-run the gate's cross-row battery (and review its probes) in every future re-qualification before making any stronger claim."
- ],
- "evidence": [
-  {
-   "claim": "Qualification of the exact artifact: gate 1.5.0 passed 46/46 on the full artifact on the worker, exact-byte acceptance before any figure was computed",
-   "source": "release/ec-merger-phase2-opening/VERIFICATION.md",
-   "detail": "sections 'Bytes identity' and 'What was run' item 1 (worker ec-merger-003; ACCEPTED: ... e5a98dfc9c05d0b0)"
-  },
-  {
-   "claim": "Evaluation contract: retrospective research, isolated rows, current snapshot, prediction-time selection, training-label timing unverified",
-   "source": "release/ec-merger-phase2-opening/quality.json",
-   "detail": "evaluation_contract block (use, access, vintage.kind current_snapshot with evidence, selection.kind prediction_time with evidence, training_label_timing, limitations)"
-  },
-  {
-   "claim": "Cross-row audit executed on the full artifact with zero coverage and zero mismatches",
-   "source": "release/ec-merger-phase2-opening/VERIFICATION.md",
-   "detail": "gate 1.5.0 qualification report, checks contract.cross_row_probe_0 and contract.cross_row_probe_1 (train/eval/holdout: 0 covered, 0 mismatches), collected from worker ec-merger-003"
-  },
-  {
-   "claim": "Baseline comparison on identical eval rows: full model 0.6973 vs sector-division prior 0.7679, paired difference inconclusive with negative observed gap",
-   "source": "release/ec-merger-phase2-opening/RELEASE_NOTES.md",
-   "detail": "section 'Measured evidence (eval window, 1,770 rows / 46 positives, after acceptance)' with the paired row-bootstrap intervals"
-  },
-  {
-   "claim": "Measured construction facts: 10,125 eligible cases, 33 pending-censored, 309 positives, per-split windows and rates",
-   "source": "release/ec-merger-phase2-opening/measurements.json",
-   "detail": "eligibility, label and splits blocks, built at 2026-10-27T10:14:03Z from the pinned vintage"
-  },
-  {
-   "claim": "Selection reads only notification-time fields and censored cases are counted, never membership-deciding",
-   "source": "release/ec-merger-phase2-opening/quality.json",
-   "detail": "timing.row_selection.basis (caseType Merger and a notification date exist; pending-censored counted per split and year)"
-  }
- ],
- "corrections": []
 }

@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "site_revision": 1,
+  "title": "EC merger Phase II opening",
+  "summary": "Research task: at a merger case's notification date, from case attributes fixed that day, predict whether the European Commission opens an in-depth Phase II investigation - a retrospective research task over the DG COMP machine-readable merger case register.",
+  "task_type": "binary-classification",
+  "domain": "Competition policy / merger control",
+  "release_date": "2026-10-28",
+  "post": {
+    "title": "Will the Commission open Phase II? A frozen snapshot for retrospective research",
+    "paragraphs": [
+      "The European Commission publishes a machine-readable register of merger cases, updated as one current snapshot. The contribution here is not access: it is the frozen 2026-10-27 vintage, the declaration that the prediction instant is the notification date, and the derived label - whether an in-depth Phase II investigation (Art. 6(1)(c)) was opened. 10,125 eligible notified cases with 309 positives, split into train, labeled eval and a labeled holdout that ships but is never scored in development.",
+      "The release ships a reproducible runner-contract baseline at eval AUC 0.6973, with every comparison published beside it because the comparisons decide what the number means. A sector-division prior reaches 0.7679 on the identical 1,770 eval rows: the paired difference is -0.0706 with a 95% dependence-aware interval of [-0.1558, +0.0168] - inconclusive, and the observed gap is negative. The stock baseline does not beat the prior; headroom above it is not demonstrated by the packaged evidence. Both numbers are quoted together or not at all.",
+      "Before publication an independent adversarial audit was run against the staged package. It passed integrity, temporal separation and 3,796 frozen shortcut predictors (no label-blind AUC in the extreme bands, zero cross-split identity recovery), and returned PUBLISH WITH CONDITIONS: retrospective-use honesty throughout the metadata, corrected census and censoring counts, shipped comparator and bootstrap recipes, and disclosed dependence across repeated transactions. All four conditions were applied, the corrected package was re-qualified through gate 1.5.0 over the exact accepted bytes, and only then was anything made public.",
+      "This is retrospective research over a pinned snapshot, nothing more. The register retains no historical vintages, so point-in-time reconstruction is impossible to verify and no operational or forecasting claim is made: the sector coding is the register's current-vintage NACE Rev. 2 taxonomy applied across all eras, and label timing is observed as of the fetch, not as of notification."
+    ]
+  },
+  "limitations": [
+    "Derived research dataset, not an official European Commission product; the Commission has not reviewed, authorised or endorsed it.",
+    "Retrospective research only. The register publishes a single current snapshot with no historical vintages, so no point-in-time, real-time or operational forecasting claim is supported.",
+    "Sector taxonomy labels are current-vintage NACE Rev. 2 applied across all eras; presenting them as notification-era coding is an unsupported claim.",
+    "Training-label timing is unverified: labels are the register's current values, observed at the fetch snapshot, with no availability ledger.",
+    "Feature availability is fixture-verified at three cross-era points, not row-by-row against notification-era vintages; the sector trio is unverified for the 2,904 pre-2006 notifications.",
+    "Prevalence falls across splits (train 4.01%, eval 2.60%, holdout 1.58%); eval and holdout are prevalence-shifted relative to training - an out-of-distribution property, reported not hidden.",
+    "34 pending cases (no opener and no terminal decision at fetch) are censored and counted, never treated as negative; censoring never decides another row's membership.",
+    "The stock baseline trails the required sector-division comparator on identical eval rows (0.6973 vs 0.7679, paired difference -0.0706, 95% CI [-0.1558, +0.0168], inconclusive with a negative observed gap); headroom above the prior is not demonstrated.",
+    "Positives cluster by enforcement era and acquisition waves beyond the day-level event key; per-notification-year positive counts are reported beside every score.",
+    "The labeled holdout is downloadable by design; keep it and its labels outside every evaluated agent's workspace.",
+    "The dataset ships register metadata only (case numbers, dates, NACE codes, decision types, case titles); underlying decision documents are not redistributed.",
+    "Source data is the Commission's published open data under its own terms (CC BY 4.0, attribution preserved); our compilation is dedicated CC0-1.0 and code MIT."
+  ]
+}

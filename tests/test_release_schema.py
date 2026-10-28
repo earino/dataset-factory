@@ -172,6 +172,33 @@ class ShapeFailuresTests(unittest.TestCase):
         with self.assertRaisesRegex(ReleaseShapeError, 'destinations'):
             from_manifest(self.data)
 
+    def test_publication_state_derives_from_verified_public_destinations(self):
+        """A package flipped public after its manifest froze records visibility in DESTINATIONS.json.
+
+        The frozen manifest keeps published=False by design (published bytes are never
+        regenerated), so a derived read that ignored destinations would make every generated
+        document re-assert "private" for a release that is already public - the exact defect
+        the card/LOADING refresh exists to prevent. Recorded evidence, not a field, decides.
+        """
+        self.data['published'] = False
+        public = {'destinations': {kind: {'repo': f'earino/{kind}', 'private': False,
+                                          'verified': True,
+                                          'verified_at': '2026-10-28T07:39:00+00:00'}
+                                   for kind in ('github', 'huggingface')}}
+        release = from_manifest(self.data, destinations=public)
+        self.assertTrue(release.published)
+        # Any destination still private or unverified keeps the release unpublished.
+        for patch_ in ({'private': True}, {'verified': False}):
+            mutated = copy.deepcopy(public)
+            mutated['destinations']['github'].update(patch_)
+            with self.subTest(patch=patch_):
+                self.assertFalse(from_manifest(self.data, destinations=mutated).published)
+        # A destination record absent entirely is not publication either.
+        self.assertFalse(from_manifest(self.data, destinations={}).published)
+        # The manifest's own recorded publication still wins without contradiction.
+        self.data['published'] = True
+        self.assertTrue(from_manifest(self.data, destinations=public).published)
+
     def test_legacy_site_receipt_is_read_without_inventing_verification(self):
         raw = {'publication': {'site': {'version_page': 'https://example.org/v1/',
                'status': 'verified', 'verified_at': '2026-10-22T00:00:00Z'}}}
