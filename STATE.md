@@ -78,8 +78,12 @@ diff, which adds only the two candidate directories):
 - check-suitability.py exit 1: ec-merger-phase2-opening artifact_version
   mismatch - the already-recorded flip blocker in the 00:18Z entry below.
 Local unittest: 671/672 pass, the one failure is the runtime-audit test above.
-Expect CI on this session's commit to be RED for those two pre-existing
-failures; the candidate checks themselves pass.
+OBSERVED CI RESULT for this session's commit 3f41b98 (run 40624048696, checked
+via gh api): completed/failure at the FIRST step, unittest - i.e. the same
+pre-existing runtime-audit failure; factory doctor, check-runtime and
+check-suitability steps were SKIPPED (never reached), so the second pre-existing
+failure did not even run in CI. This session's diff (STATE.md + two candidate
+directories) does not touch skills/ or ops/ and is not implicated.
 
 Next action: (advancement track owns the repair) refresh ops/runtime-files.json
 for the pre-flip-audit skill change, then the ec-merger checksum/suitability
