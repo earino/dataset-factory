@@ -68,7 +68,12 @@ on arrival before anything else was done.
   evaluation contract declares retrospective research over the pinned current
   snapshot with `access: isolated_rows`; the 232-day publication lag is an
   observed release fact (2026-08-20 refresh carrying complete 2025 data), not a
-  guarantee for every row of every year.
+  guarantee for every row of every year. The isolated-rows protocol is a declared
+  requirement, not an enforced property: the shipped runner contract passes the
+  whole eval feature table to the predictor, and the independent pre-flip audit
+  (2026-10-28) measured frozen label-blind recoveries from that access (eval AUC
+  0.975325, holdout AUC 0.983034). The shipped runner is illustrative - it
+  demonstrates the contract shape, it does not enforce the restriction.
 - **Headroom over persistence.** The stock baseline trails both persistence
   references (0.5393 vs 0.5742 and 0.5856; paired differences -0.0348
   [-0.1056, +0.0409] and -0.0463 [-0.1103, +0.0144] - inconclusive, observed

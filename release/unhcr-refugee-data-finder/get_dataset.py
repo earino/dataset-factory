@@ -52,10 +52,10 @@ EXPECTED = {
                          "sha256": "4b7f06c3afd9eec286652383d95797a5fbaccc3517e68b2c334c615026bc9393"},
     "private-holdout.csv": {"bytes": 202783,
                          "sha256": "54decaaaf74eac1ea362bf1acf711010069b1feb94ad2abfcb70a1fccff858bd"},
-    "meta.json": {"bytes": 1250,
-                         "sha256": "595aab31c00772d987a2436ea8f13d33bc2edd224aeb294731bcfa7579a65d19"},
-    "quality.json": {"bytes": 18609,
-                         "sha256": "e7517f8fbee8f15a7f667aa57fa398e8e880c8b55c91cee349f904580d1a4df2"},
+    "meta.json": {"bytes": 1404,
+                         "sha256": "6620bdc91fdbc71b2d3fad6fb879076243e6f697d5e51d5c700a0c881c0c515c"},
+    "quality.json": {"bytes": 19904,
+                         "sha256": "df419622d98ef2c8d084cb8c62a039c405069ee5e5dd4006f9937ad51929ff06"},
 }
 URL = "https://github.com/{repo}/releases/download/{tag}/{name}"
 

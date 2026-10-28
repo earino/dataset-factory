@@ -42,7 +42,7 @@ shipped feature reads published years <= D only.
 
 | split | rows | target years | positives | positive rate |
 | --- | ---: | --- | ---: | ---: |
-| `train` | 3,363 | 2001-2016 | 283 | 8.42% |
+| `train` | 3,363 | 2002-2016 | 283 | 8.42% |
 | `eval` | 1,887 | 2017-2021 | 165 | 8.74% |
 | `holdout` | 1,962 | 2022-2025 | 227 | 11.57% |
 
@@ -95,12 +95,18 @@ data through 2025, 232 days after the 2025 period end). The publisher keeps **no
 historical vintages** - one in-place-revised resource - so training-label timing
 and full-row historical availability are **unverified** and the evaluation
 contract is **retrospective research over the pinned 2026-08-20 vintage** with
-an **isolated-rows access posture**: never a certified point-in-time
+an **isolated-rows requirement for honest evaluation**: never a certified point-in-time
 reconstruction and never an operational-forecasting claim. A measured cross-row
 exposure is declared and handled rather than hidden: on this panel a corridor's
 `surged_recently` at T+1 equals its T label (0 mismatches on covered rows), so
-the enforced restricted protocol keeps rows isolated in any evaluated agent's
-workspace. Labeled eval is development/validation; the holdout is the final
+honest evaluation requires isolated rows - one row presented to the solver at a
+time. The shipped illustrative runner does **not** enforce this: it passes the
+whole eval feature table to the predictor, and the independent pre-flip audit
+(2026-10-28) measured frozen label-blind recoveries from that access (eval AUC
+0.9753 from eval features alone, holdout AUC 0.9830, 0.9970 across all splits),
+so scores under unrestricted access are meaningless. The shipped baseline is
+illustrative - it shows one way to work with the panel, not a scoring protocol.
+Labeled eval is development/validation; the holdout is the final
 test and ships outside evaluated agents' workspaces.
 
 ## Source and provenance

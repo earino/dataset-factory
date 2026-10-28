@@ -2,20 +2,19 @@
   "schema_version": 1,
   "dataset": "unhcr-refugee-data-finder",
   "release_tag": "v2026.10",
-  "artifact_version": "6fa7becdf32925b74522c81001dcfe802b6a389425fd6deb4af4fc25ba7f1f53",
+  "artifact_version": "6bd0c307d15d750085a77d4d6e131f3ab9d84b6485ba267ac23415620c9f55c2",
   "reviewed_on": "2026-10-28",
-  "reviewer": "Scout, advancement session 2026-10-27 (document and code review over the accepted unhcr-001 artifact, its gate 1.5.0 qualification report and the unhcr-baseline-001 runner-contract baseline); decision revised 2026-10-28 by the release session on the independent pre-flip audit verdict (Codex, DO NOT PUBLISH in its present form): the audit demonstrated the claimed enforced isolated-rows protocol is not enforced by the shipped runner contract, with frozen label-blind recoveries; the reviewer re-decided from the audit findings without re-running any measurement",
-  "decision": "rebuild_before_use",
-  "summary": "Not published and not flippable in its present form as a benchmark with an enforced isolated-rows protocol. The independent pre-flip audit (2026-10-28, DO NOT PUBLISH) confirmed the construction and every published figure reproduce, but demonstrated that the shipped runner contract passes the whole eval feature table to the predictor (validate.py line 23, byte-identical to the benchmark task template), so the declared isolated_rows mitigation is not enforced at runtime: a frozen label-blind cross-row join (corridor year T -> T+1, copy surged_recently) recovers eval AUC 0.975325 from eval features alone, holdout AUC 0.983034 from holdout features alone, and 0.996970 using all splits with exactly one error; a second frozen attack recovers the target-year count from next-year apps_d / two-years-later apps_d1 exactly (1,625 eval, 1,259 holdout labels, zero errors; full-split AUCs 0.999541 and 0.977654). Descriptor corrections are also required: the missing-history exclusion count is 377 (314/31/32), not 386; target_date values are December-31 calendar identifiers of the outcome year, not publication timestamps; the runner consumes 14 inputs including target_date and surge_cluster while quality.json declares 12 features. Reopen conditions: demonstrable runtime isolation in the shipped contract plus the corrected timing/count/feature statements, re-qualified and re-audited before any flip.",
+  "reviewer": "Scout, advancement session 2026-10-27 (review over the accepted unhcr-001 artifact 6fa7becd); re-decided 2026-10-28 on the independent audit (DO NOT PUBLISH in its enforced-protocol form) and the operator directive (illustrative framing, no enforcement claims); re-bound to the corrected artifact 6bd0c307 by the release session: the descriptor corrections (377 exclusions, target_date calendar identifier, 14 declared inputs, shipped label years 2002-2016, enforcement claims removed with the audit-measured recoveries quoted) were re-qualified through gate 1.5.0 by worker job unhcr-requal-002 over the exact accepted CSV bytes; no new measurement was run beyond the gate two-phase",
+  "decision": "retain_restricted",
+  "summary": "Retained for retrospective model-development research under an isolated-rows protocol that is STATED AS A REQUIREMENT, not enforced by the shipped runner: the illustrative runner contract passes the whole eval feature table to the predictor, and the independent pre-flip audit (2026-10-28) measured frozen label-blind recoveries from that access (eval AUC 0.975325 from eval features alone, holdout AUC 0.983034, 0.996970 across all splits; exact count recovery from next-year apps_d / two-years-later apps_d1), so scores under unrestricted access are meaningless and every shipped document says so. Every feature reads published years <= D and eligibility is decidable at the publication instant, but the HDX resource publishes one current distribution with no historical vintages, so training-label timing and full-row historical availability are unverified. The corrected descriptor ships the audit-verified truths: 377 missing-history exclusions (314/31/32), target_date as a December-31 calendar identifier, all 14 runner inputs declared, shipped train label years 2002-2016.",
   "supported_uses": [
     "Retrospective train/validation model-development experiments under the documented timing, vintage and selection limitations",
     "Final evaluation only under a protocol that isolates the labeled holdout from agent development and prevents any later row (in particular the same corridor's next label year) from informing an earlier prediction"
   ],
   "unsupported_uses": [
-    "Use as a benchmark under the claimed enforced isolated-rows protocol: the shipped contract passes the full eval table to the predictor, so the mitigation is unenforced",
+    "Any score produced without enforced isolated-row access: the panel self-answers across adjacent label years of the same corridor, and nothing shipped enforces the restriction",
     "Claims of verified real-time, operational or point-in-time forecasting validity",
     "Treating development/validation (eval-split) scores as untouched final-test results",
-    "Consuming rows without isolation (the panel self-answers across adjacent label years of the same corridor)",
     "Presenting the current-vintage panel values as the values an analyst at each past publication instant would have seen",
     "Quoting the full-model eval AUC without the persistence references and their paired intervals beside it"
   ],
@@ -68,12 +67,13 @@
     }
   ],
   "required_actions": [
-    "Do not flip either private destination in this form; the audit verdict stands.",
-    "Before any requalification: enforce isolated rows in the shipped runner contract (per-row or otherwise restricted predictor access) or withdraw the enforcement claim and re-describe the protocol honestly.",
-    "Correct the three descriptor truths (exclusion count 377; target_date calendar identifier; 14 runner inputs declared) and re-run the gate over the corrected artifact.",
-    "Re-run the independent adversarial audit on the corrected package before any flip decision."
+    "Fresh independent adversarial audit on the corrected package before any flip; the flip remains the operator's.",
+    "Any consumer scoring this panel must enforce isolated-row access themselves; unrestricted scores are meaningless.",
+    "Keep the labeled holdout outside every evaluated agent's workspace.",
+    "Quote the full-model figure only beside the persistence references and their dependence-aware intervals."
   ],
   "corrections": [
-    "2026-10-28 independent pre-flip audit (Codex, read-only): DO NOT PUBLISH in its present form. Required changes, not performed by the audit: demonstrable runtime isolation in the shipped contract; missing-history exclusion count corrected 386 -> 377 (314 train, 31 eval, 32 holdout); target_date described as a calendar identifier, not the prediction instant; the two undeclared solver-visible inputs (target_date, surge_cluster) added to the declared feature inventory. No public visibility was ever granted; both destinations remain private."
+    "2026-10-28 independent pre-flip audit (Codex, read-only): DO NOT PUBLISH in its present form. Required changes, not performed by the audit: demonstrable runtime isolation in the shipped contract; missing-history exclusion count corrected 386 -> 377 (314 train, 31 eval, 32 holdout); target_date described as a calendar identifier, not the prediction instant; the two undeclared solver-visible inputs (target_date, surge_cluster) added to the declared feature inventory. No public visibility was ever granted; both destinations remain private.",
+    "2026-10-28 corrected package 6bd0c307 (operator directive: illustrative benchmark framing, no enforcement claims): enforcement language removed from meta.json, quality.json, VERIFICATION.md, README.md, RELEASE_NOTES.md and the card; isolated rows stated as a requirement with the audit-measured recoveries quoted; exclusion count 386 -> 377 (314/31/32); target_date documented as a calendar identifier; all 14 runner inputs declared; shipped label years 2002-2016; builder corrected in both copies so regeneration reproduces the corrections; re-qualified (gate 1.5.0, unhcr-requal-002, failed_checks empty) and re-staged on both private destinations; nothing public at any point"
   ]
 }

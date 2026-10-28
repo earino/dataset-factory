@@ -91,6 +91,58 @@ candidate review - review the next candidate's source-specific prediction contra
 and update its builder before construction; #25 remains deferred.
 
 
+## 2026-10-28 (22:35Z) - unhcr audit-corrected package complete: illustrative re-description applied in both copies, re-qualified 6bd0c307, re-staged on both private destinations with tags == main, re-audit prompt regenerated; nothing public
+
+Executed the operator's correction directive end to end. The corrected artifact is
+6bd0c307d15d7500... (gate 1.5.0, worker unhcr-requal-002 over the exact accepted CSV
+bytes from staging 425843785, failed_checks empty; CSVs byte-identical to the
+audited artifact - meta 6620bdc9/1404 B and quality df419622/19904 B carry the
+corrections).
+
+Corrections applied (package + builder, so a rebuild reproduces them):
+- Enforcement claims removed everywhere (quality.json scope_note/probe
+  expectation/rationale, VERIFICATION.md, README.md, RELEASE_NOTES.md, card):
+  isolated rows is now a stated REQUIREMENT with the audit-measured recoveries
+  quoted (eval AUC 0.975325, holdout 0.983034, 0.996970 all-splits, exact count
+  recovery), and the baseline is labeled ILLUSTRATIVE.
+- The three auditor descriptor corrections: exclusions 377 (314/31/32) not 386;
+  target_date documented as a December-31 calendar identifier, not a publication
+  timestamp; all 14 runner inputs declared (target_date, surge_cluster moved
+  into the declared feature inventory, carry_columns now empty).
+- Two further truths found and fixed during the pass: shipped train label
+  years are 2002-2016 (meta split text said 2001-2016; verified against the
+  bytes - train min target_year 2002), and get_dataset.py EXPECTED carried the
+  superseded meta/quality digests (the ec-merger defect class) - realigned
+  from the accepted report and exercised.
+- unhcr-requal-001 failed because its bundle carried only run.sh (the
+  transport requires every bundled file beside the spec) - superseded by
+  unhcr-requal-002, the same failure class ecm-requal-001 hit.
+
+Restaged and verified: GitHub release 426752344 serves the corrected five
+assets (stale pair removed first, unhcr-publish-002 uploaded the corrected
+pair, server digests match the accepted report); repo main ac57a69 with
+annotated tag v2026.10 == main; consumer path green (get_dataset.py 5 files
+762,702 bytes, sha256sum -c 5/5, gate --accept ACCEPTED 6bd0c307). Hub: small
+docs re-uploaded from the corrected manifest; unhcr-hf-002 pinned all five
+assets at the manifest digests with the documented load check (train 3363/283,
+eval 1887/165, holdout 1962/227); the stale pre-correction tag was deleted
+pre-publication and re-created by the verified tagging pass; Hub main 77aa1fad
+with tag v2026.10 == main. All workers provider-confirmed destroyed. DESTINATIONS
+records the corrected evidence; suitability re-bound to 6bd0c307
+(retain_restricted, corrections and required actions updated).
+
+Sole remaining step: the re-audit. The pre-flip prompt was regenerated from the
+corrected manifest (digests verified programmatically, no placeholders) and
+mandates: reproduce the 2026-10-28 frozen attacks and check every published
+number describing them; hunt for exposures beyond the disclosed ones; verify
+the 377/14-input/target_date/2002-2016 corrections; and search the whole
+package for residual enforcement claims. Hand it to an independent auditor;
+the flip waits for that verdict and the operator's decision. Nothing is public.
+
+Next action: operator relays the re-audit prompt; no flip, no scoring before
+the verdict.
+
+
 ## 2026-10-28 (20:31Z) - operator directive on unhcr: the benchmark framing was illustrative, never an enforced protocol; reopen path fixed to honest re-description; harness changes dropped as a precondition
 
 The operator stated in session, recorded verbatim: "for the record, i never wanted

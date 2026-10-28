@@ -30,13 +30,17 @@ total applications **double** in year D+1 (reach at least twice its year-D level
 - **Known cross-row exposure, measured and declared:** a corridor's `surged_recently` feature
   in label year T+1 equals its label in label year T. The gate executed the declared probe
   across all splits (2,439 / 1,265 / 1,239 train/eval/holdout rows covered, 0 mismatches);
-  the artifact is usable only under the restricted protocol the contract states.
+  the artifact is usable only under the restricted protocol the contract states - a
+  requirement for honest evaluation that the shipped illustrative runner does not
+  enforce: it passes the whole eval feature table to the predictor, and the independent
+  pre-flip audit (2026-10-28) measured label-blind recoveries at eval AUC 0.9753 with
+  unrestricted table access. Any real evaluation must enforce the restriction itself.
 
 ## Measured evidence (identical eval rows, after gate acceptance)
 
 | Reference / model | Eval AUC (1,887 rows, 165 positives) |
 | --- | --- |
-| Full model - the benchmark's stock XGBoost baseline, verbatim runner | **0.5393** |
+| Full model - the illustrative stock XGBoost baseline, verbatim runner | **0.5393** |
 | Persistence: corridor momentum (`log_growth_d`, observed at the instant) | **0.5742** |
 | Persistence: surge flag (`surged_recently`) | **0.5856** |
 | Calendar/identity prior (train rate per origin-asylum corridor, then origin) | 0.5409 |

@@ -1,0 +1,95 @@
+{
+  "id": "unhcr-hf-002",
+  "candidate": "unhcr-refugee-data-finder",
+  "release": true,
+  "server_type": "cx23",
+  "location": "hel1",
+  "cpus": 2,
+  "memory_mb": 2048,
+  "timeout_minutes": 25,
+  "lifetime_minutes": 45,
+  "max_disk_mb": 2000,
+  "max_artifact_mb": 8,
+  "what": "Complete pinned verification of the corrected unhcr-refugee-data-finder artifact 6bd0c307 on the private Hugging Face repo earino/unhcr-refugee-data-finder: fetch all five released files from the private GitHub release (426752344) at the corrected asset ids, verify each sha256 against the accepted report, upload (idempotent - files already at the manifest digest are skipped), verify the digests the Hub reports, and run the documented load_dataset path against the uploaded bytes. The bytes never pass through the coordinator; peak worker disk is one asset.",
+  "hf_publish": {
+    "repo": "earino/unhcr-refugee-data-finder",
+    "revision": "main",
+    "source_repo": "earino/unhcr-refugee-data-finder",
+    "assets": [
+      {
+        "asset_id": 686513631,
+        "dest": "meta.json",
+        "target": "meta.json",
+        "size": 1404,
+        "sha256": "6620bdc91fdbc71b2d3fad6fb879076243e6f697d5e51d5c700a0c881c0c515c"
+      },
+      {
+        "asset_id": 685205466,
+        "dest": "private-holdout.csv",
+        "target": "data/private-holdout.csv",
+        "size": 202783,
+        "sha256": "54decaaaf74eac1ea362bf1acf711010069b1feb94ad2abfcb70a1fccff858bd"
+      },
+      {
+        "asset_id": 685205564,
+        "dest": "public-eval.csv",
+        "target": "data/public-eval.csv",
+        "size": 195252,
+        "sha256": "4b7f06c3afd9eec286652383d95797a5fbaccc3517e68b2c334c615026bc9393"
+      },
+      {
+        "asset_id": 685205627,
+        "dest": "public-train.csv",
+        "target": "data/public-train.csv",
+        "size": 343359,
+        "sha256": "c7ebd552f1158bd5f470c495b027c48fc17ea9195c34185a662a8620407bd167"
+      },
+      {
+        "asset_id": 686513691,
+        "dest": "quality.json",
+        "target": "quality.json",
+        "size": 19904,
+        "sha256": "df419622d98ef2c8d084cb8c62a039c405069ee5e5dd4006f9937ad51929ff06"
+      }
+    ],
+    "verify_loading": {
+      "splits": {
+        "train": {
+          "rows": 3363,
+          "positives": 283
+        },
+        "eval": {
+          "rows": 1887,
+          "positives": 165
+        },
+        "holdout": {
+          "rows": 1962,
+          "positives": 227
+        }
+      },
+      "columns": [
+        "row_id",
+        "origin",
+        "asylum",
+        "target_year",
+        "apps_d",
+        "apps_d1",
+        "log_growth_d",
+        "surged_recently",
+        "host_apps_d",
+        "host_growth_d",
+        "origin_apps_d",
+        "origin_growth_d",
+        "corridor_age",
+        "target_date",
+        "surge_cluster",
+        "doubled"
+      ],
+      "label": "doubled",
+      "label_values": [
+        0,
+        1
+      ]
+    }
+  }
+}

@@ -10,8 +10,9 @@ year-D data, for an eligible origin-asylum corridor, predict whether its total
 applications will double in year D+1. The HDX resource publishes one current
 distribution with no historical vintages, so training-label timing and full-row
 historical availability are unverified; the evaluation contract declares retrospective
-research over the pinned 2026-08-20 vintage with an isolated-rows access posture, and
-makes no point-in-time or operational-forecasting claim.
+research over the pinned 2026-08-20 vintage with an isolated-rows requirement for
+honest evaluation (a declared requirement - the shipped illustrative runner does not
+enforce it), and makes no point-in-time or operational-forecasting claim.
 
 ## Artifact identity
 
@@ -68,7 +69,10 @@ that doubled into 2019's baseline were the ones that collapsed in 2020), and the
 handles that year far better - but on 6 positives that is fragile evidence, not a
 capability claim. The negative finding stands: this release documents a qualified task
 whose stock baseline does not beat persistence, and the benchmark's real question -
-whether a solver can - remains open and unclaimed.
+whether a solver can, under an honestly enforced isolated-rows protocol - remains
+open and unclaimed. Without the restriction the panel self-answers: the independent
+pre-flip audit measured label-blind recoveries at 0.97+ AUC from unrestricted table
+access, so only enforced-isolation scores mean anything.
 
 ## What is not claimed
 

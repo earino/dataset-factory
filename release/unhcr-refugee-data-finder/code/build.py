@@ -28,7 +28,7 @@ Frame rules (each measured at discovery and re-asserted here)
 * Grain: one row per (origin, asylum, label year T = D+1). Eligibility reads
   only published years <= D: corridor year-D total >= 500 AND a published
   year-D-1 corridor value (the momentum feature family needs it; corridors
-  without one - 386 rows, 5.0% - are counted per split with reason, never
+  without one - 377 rows, 4.9% - are counted per split with reason, never
   silently dropped). Label-observability censoring, counted per split and
   never a value-conditioned decision: the host files no G/P report at all in
   D+1 (33 rows on the pinned snapshot; the label is undefined, not zero), and
@@ -48,7 +48,8 @@ Frame rules (each measured at discovery and re-asserted here)
   unpublished on this channel until ~mid D+2; no part of "the target window
   follows the instant" is claimed. For most non-EU hosts no public monthly
   corridor data exists at all in the interim.
-* Splits (label years): train 2001-2016, eval 2017-2021, holdout
+* Splits (label years): train 2002-2016 shipped (window start 2001; label-year 2001
+  contributes no rows), eval 2017-2021, holdout
   2022..last year in the vintage (2025 on the pinned snapshot). With the
   year-D-1 requirement, label-year 2001 contributes no rows (the panel
   starts 2000; all 193 eligible corridors lack a published 1999 value) -
@@ -130,8 +131,9 @@ ID_COLUMNS = ["row_id"]
 FEATURES = ["origin", "asylum", "target_year",
             "apps_d", "apps_d1", "log_growth_d", "surged_recently",
             "host_apps_d", "host_growth_d",
-            "origin_apps_d", "origin_growth_d", "corridor_age"]
-CARRY_COLUMNS = ["target_date", "surge_cluster"]
+            "origin_apps_d", "origin_growth_d", "corridor_age",
+            "target_date", "surge_cluster"]
+CARRY_COLUMNS = []
 HIGH_CARDINALITY = ["row_id", "surge_cluster"]
 COLUMNS = ID_COLUMNS + FEATURES + CARRY_COLUMNS + [TARGET]
 LAYOUT = {"train": "public/train.csv", "eval": "public/eval.csv",
@@ -466,7 +468,14 @@ def quality_document(out: Path, stats: dict, fetch_info: dict, panel_diag: dict,
             "and their log growth (reception-capacity and displacement-pressure "
             "context); corridor_age is years since the corridor first appears "
             "in the fetched panel. The year-D+1 value (the label operand) and "
-            "every year > D value are excluded from the shipped columns."),
+            "every year > D value are excluded from the shipped columns. "
+            "target_date is December 31 of the label year - a calendar "
+            "identifier derived from target_year, not a publication "
+            "timestamp (the prediction instant is the HDX refresh "
+            "publication; see timing); surge_cluster is the "
+            "origin|label-year surge-event grouping used for clustered "
+            "counting. Both are runner-visible inputs and are declared "
+            "in the feature inventory."),
         "carry_columns": CARRY_COLUMNS,
         "id_columns": ID_COLUMNS,
         "high_cardinality_columns": HIGH_CARDINALITY,
@@ -580,7 +589,8 @@ def quality_document(out: Path, stats: dict, fetch_info: dict, panel_diag: dict,
                         "end": f"{holdout_end_year + 1}-01-01"},
         },
         "split_boundaries": {
-            "train": "label years 2001-2016 (window end exclusive; label-year "
+            "train": "label years 2002-2016 shipped (window start 2001-01-01, "
+                   "end exclusive; label-year "
                      "2001 contributes no rows: the panel starts 2000 so no "
                      "corridor has a published 1999 value - counted in "
                      "summary.json)",
@@ -607,8 +617,18 @@ def quality_document(out: Path, stats: dict, fetch_info: dict, panel_diag: dict,
             "training_label_timing": "unverified",
             "scope_note": (
                 "each row is a corridor-year whose features read published "
-                "years <= D only; the runner predicts row-wise from the "
-                "shipped columns. Labeled eval is development/validation; "
+                "years <= D only. Honest evaluation requires isolated rows "
+                "- one row presented to the solver at a time - because the "
+                "panel is self-answering across adjacent label years (see "
+                "the declared cross-row probe). The shipped illustrative "
+                "runner does NOT enforce this: it passes the whole eval "
+                "feature table to the predictor in one call, and the "
+                "independent pre-flip audit (2026-10-28) measured frozen "
+                "label-blind recoveries from that access (eval AUC 0.9753 "
+                "from eval features alone, holdout AUC 0.9830, 0.9970 "
+                "across all splits, plus exact count recovery from "
+                "next-year apps_d), so scores under unrestricted access "
+                "are meaningless. Labeled eval is development/validation; "
                 "the holdout is the final test and stays outside evaluated "
                 "agents' workspaces. Training-label timing is UNVERIFIED: HDX "
                 "distributes one in-place-revised resource with no "
@@ -762,10 +782,12 @@ def quality_document(out: Path, stats: dict, fetch_info: dict, panel_diag: dict,
                 "Positives cluster by (origin, label-year) surge events "
                 "beyond the row count; clustered counts are reported beside "
                 "every score.",
-                "386 rows (5.0% of eligible corridor-years on the pinned "
+                "377 rows (4.9% of eligible corridor-years on the pinned "
                 "snapshot) lack a published year-D-1 value and are excluded "
-                "with per-split counts (mostly label-year 2001, where the "
-                "panel start makes every prior year unpublished).",
+                "with per-split counts (314 train - 192 panel-start "
+                "label-year-2001 rows plus 122 with no published year-D-1 "
+                "cell; 31 eval; 32 holdout; mostly label-year 2001, where "
+                "the panel start makes every prior year unpublished).",
                 "Unsplit-V application-type rows live mostly in the "
                 "training era (1,238 of 3,677 recorded train rows); the "
                 "sum-across-types rule is what the BAMF cross-check "
@@ -788,9 +810,13 @@ def quality_document(out: Path, stats: dict, fetch_info: dict, panel_diag: dict,
                          "row's label: a panel is self-answering across rows "
                          "one year apart. Coverage therefore measures the "
                          "cross-row outcome exposure inherent to the task; "
-                         "it requires the restricted prediction protocol and "
-                         "is why access is isolated_rows with this audit "
-                         "recorded - not a construction defect")},
+                         "the isolated-rows protocol is the required "
+                         "mitigation for honest evaluation, declared here "
+                         "as a requirement - the shipped illustrative "
+                         "runner does not enforce it, and the independent "
+                         "pre-flip audit (2026-10-28) measured the "
+                         "unrestricted recoveries (eval AUC 0.975325, "
+                         "holdout 0.983034, 0.996970 across all splits)")},
                 ],
                 "rationale": (
                     "rows are corridor-years on a self-answering panel: a "
@@ -799,9 +825,10 @@ def quality_document(out: Path, stats: dict, fetch_info: dict, panel_diag: dict,
                     "label year T. The probe measures that exposure from "
                     "the artifact itself on every full configuration "
                     "(train, eval, holdout); covered rows make this "
-                    "restricted retrospective research under an enforced "
-                    "protocol, and no historical forecasting claim is "
-                    "made."),
+                    "restricted retrospective research under a protocol "
+                    "that any honest evaluation must enforce and that "
+                    "nothing in this package enforces, and no historical "
+                    "forecasting claim is made."),
                 "auxiliary_files_review": (
                     "the extract ships exactly the runner layout - "
                     "public/train.csv, public/eval.csv, "
@@ -900,12 +927,16 @@ def main(argv=None) -> int:
         "columns": COLUMNS,
         "rows": {split: stats[split]["rows"] for split in LAYOUT},
         "positive_rate": {split: stats[split]["positive_rate"] for split in LAYOUT},
-        "split": (f"temporal on the label year: train {TRAIN_YEARS[0]}-"
-                  f"{TRAIN_YEARS[1]}, eval {EVAL_YEARS[0]}-{EVAL_YEARS[1]}, "
+        "split": (f"temporal on the label year: train 2002-{TRAIN_YEARS[1]} "
+                  f"shipped (window start {TRAIN_YEARS[0]}; label-year "
+                  f"{TRAIN_YEARS[0]} contributes no rows under the "
+                  f"year-D-1 rule), eval {EVAL_YEARS[0]}-{EVAL_YEARS[1]}, "
                   f"holdout {HOLDOUT_START_YEAR}-{holdout_end_year}"),
         "split_description": (
-            f"temporal on the label year (D+1): train {TRAIN_YEARS[0]}-"
-            f"{TRAIN_YEARS[1]}, eval {EVAL_YEARS[0]}-{EVAL_YEARS[1]}, "
+            f"temporal on the label year (D+1): train 2002-{TRAIN_YEARS[1]} "
+            f"shipped (window start {TRAIN_YEARS[0]}; label-year "
+            f"{TRAIN_YEARS[0]} contributes no rows), "
+            f"eval {EVAL_YEARS[0]}-{EVAL_YEARS[1]}, "
             f"holdout {HOLDOUT_START_YEAR}-{holdout_end_year}; eligibility "
             f"requires a published year-D corridor total >= {MIN_APPS} "
             "persons and a published year-D-1 value"),

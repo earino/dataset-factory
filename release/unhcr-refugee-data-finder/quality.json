@@ -21,14 +21,13 @@
   "host_growth_d",
   "origin_apps_d",
   "origin_growth_d",
-  "corridor_age"
- ],
- "features_documented_at": "prediction_time",
- "feature_documentation": "every shipped feature is a corridor-year or context total for published years <= D, or a corridor/calendar identity: origin and asylum are the publisher's ISO-3-style codes; target_year is the label year's calendar identity; apps_d/apps_d1 are the corridor's government-procedure persons totals for years D and D-1 (the year-D value is the doubling baseline, published at the instant); log_growth_d is ln(apps_d+1)-ln(apps_d1+1); surged_recently flags apps_d >= 2*apps_d1 (the corridor already doubled into D); host_apps_d/host_growth_d and origin_apps_d/origin_growth_d are the same-year host-country and origin-country all-corridor totals and their log growth (reception-capacity and displacement-pressure context); corridor_age is years since the corridor first appears in the fetched panel. The year-D+1 value (the label operand) and every year > D value are excluded from the shipped columns.",
- "carry_columns": [
+  "corridor_age",
   "target_date",
   "surge_cluster"
  ],
+ "features_documented_at": "prediction_time",
+ "feature_documentation": "every shipped feature is a corridor-year or context total for published years <= D, or a corridor/calendar identity: origin and asylum are the publisher's ISO-3-style codes; target_year is the label year's calendar identity; apps_d/apps_d1 are the corridor's government-procedure persons totals for years D and D-1 (the year-D value is the doubling baseline, published at the instant); log_growth_d is ln(apps_d+1)-ln(apps_d1+1); surged_recently flags apps_d >= 2*apps_d1 (the corridor already doubled into D); host_apps_d/host_growth_d and origin_apps_d/origin_growth_d are the same-year host-country and origin-country all-corridor totals and their log growth (reception-capacity and displacement-pressure context); corridor_age is years since the corridor first appears in the fetched panel. The year-D+1 value (the label operand) and every year > D value are excluded from the shipped columns. target_date is December 31 of the label year - a calendar identifier derived from target_year, not a publication timestamp (the prediction instant is the HDX refresh publication; see timing); surge_cluster is the origin|label-year surge-event grouping used for clustered counting. Both are runner-visible inputs and are declared in the feature inventory.",
+ "carry_columns": [],
  "id_columns": [
   "row_id"
  ],
@@ -173,7 +172,7 @@
   }
  },
  "split_boundaries": {
-  "train": "label years 2001-2016 (window end exclusive; label-year 2001 contributes no rows: the panel starts 2000 so no corridor has a published 1999 value - counted in summary.json)",
+  "train": "label years 2002-2016 shipped (window start 2001-01-01, end exclusive; label-year 2001 contributes no rows: the panel starts 2000 so no corridor has a published 1999 value - counted in summary.json)",
   "eval": "label years 2017-2021 (window end exclusive)",
   "holdout": "label years 2022-2025 (window end exclusive; through the last year the fetched vintage carries; 2025 on the pinned snapshot)"
  },
@@ -204,7 +203,7 @@
   "use": "retrospective_research",
   "access": "isolated_rows",
   "training_label_timing": "unverified",
-  "scope_note": "each row is a corridor-year whose features read published years <= D only; the runner predicts row-wise from the shipped columns. Labeled eval is development/validation; the holdout is the final test and stays outside evaluated agents' workspaces. Training-label timing is UNVERIFIED: HDX distributes one in-place-revised resource with no historical vintages, so no full-row availability ledger can be constructed and the artifact is retrospective research only, never a certified historical forecasting setup.",
+  "scope_note": "each row is a corridor-year whose features read published years <= D only. Honest evaluation requires isolated rows - one row presented to the solver at a time - because the panel is self-answering across adjacent label years (see the declared cross-row probe). The shipped illustrative runner does NOT enforce this: it passes the whole eval feature table to the predictor in one call, and the independent pre-flip audit (2026-10-28) measured frozen label-blind recoveries from that access (eval AUC 0.9753 from eval features alone, holdout AUC 0.9830, 0.9970 across all splits, plus exact count recovery from next-year apps_d), so scores under unrestricted access are meaningless. Labeled eval is development/validation; the holdout is the final test and stays outside evaluated agents' workspaces. Training-label timing is UNVERIFIED: HDX distributes one in-place-revised resource with no historical vintages, so no full-row availability ledger can be constructed and the artifact is retrospective research only, never a certified historical forecasting setup.",
   "feature_evidence": {
    "row_id": {
     "source": "row key origin-asylum-labelyear",
@@ -306,7 +305,7 @@
    "Temporary-protection registrations (Ukrainians in the EU from 2022) are not asylum applications and do not enter the stream - the 2022 Ukraine displacement is largely absent from this task by construction (UKR->POL fixture).",
    "Prevalence drifts across splits (more surges in later years; recorded 8.2% train / 8.7% eval / 11.7% holdout before the year-D-1 refinement) - a property of the period, reported beside every score.",
    "Positives cluster by (origin, label-year) surge events beyond the row count; clustered counts are reported beside every score.",
-   "386 rows (5.0% of eligible corridor-years on the pinned snapshot) lack a published year-D-1 value and are excluded with per-split counts (mostly label-year 2001, where the panel start makes every prior year unpublished).",
+   "377 rows (4.9% of eligible corridor-years on the pinned snapshot) lack a published year-D-1 value and are excluded with per-split counts (314 train - 192 panel-start label-year-2001 rows plus 122 with no published year-D-1 cell; 31 eval; 32 holdout; mostly label-year 2001, where the panel start makes every prior year unpublished).",
    "Unsplit-V application-type rows live mostly in the training era (1,238 of 3,677 recorded train rows); the sum-across-types rule is what the BAMF cross-check validates.",
    "Corridor age is measured from the fetched panel's 2000 start, truncating true age for older corridors."
   ],
@@ -322,10 +321,10 @@
      "operation": "copy",
      "left": "surged_recently",
      "offset_months": 12,
-     "expectation": "the donor row (same corridor, label year T+1) carries surged_recently = (year-T total >= 2 x year-T-1 total), which is exactly the earlier row's label: a panel is self-answering across rows one year apart. Coverage therefore measures the cross-row outcome exposure inherent to the task; it requires the restricted prediction protocol and is why access is isolated_rows with this audit recorded - not a construction defect"
+     "expectation": "the donor row (same corridor, label year T+1) carries surged_recently = (year-T total >= 2 x year-T-1 total), which is exactly the earlier row's label: a panel is self-answering across rows one year apart. Coverage therefore measures the cross-row outcome exposure inherent to the task; the isolated-rows protocol is the required mitigation for honest evaluation, declared here as a requirement - the shipped illustrative runner does not enforce it, and the independent pre-flip audit (2026-10-28) measured the unrestricted recoveries (eval AUC 0.975325, holdout 0.983034, 0.996970 across all splits)"
     }
    ],
-   "rationale": "rows are corridor-years on a self-answering panel: a row with label year T+1 ships the year-T corridor total as apps_d, which is the label operand of the row with label year T. The probe measures that exposure from the artifact itself on every full configuration (train, eval, holdout); covered rows make this restricted retrospective research under an enforced protocol, and no historical forecasting claim is made.",
+   "rationale": "rows are corridor-years on a self-answering panel: a row with label year T+1 ships the year-T corridor total as apps_d, which is the label operand of the row with label year T. The probe measures that exposure from the artifact itself on every full configuration (train, eval, holdout); covered rows make this restricted retrospective research under a protocol that any honest evaluation must enforce and that nothing in this package enforces, and no historical forecasting claim is made.",
    "auxiliary_files_review": "the extract ships exactly the runner layout - public/train.csv, public/eval.csv, private/holdout.csv, meta.json, quality.json; the fetched source CSV, the panel and all diagnostics stay outside the artifact; no joint label matrices or other solver-visible files exist in the dataset directory",
    "reverse_history": "not performable: HDX retains no archived vintages of this resource (observed in-place revision 2025-11-05 through 2026-08-20), so no as-of reconstruction can be probed; the current-vintage posture above is the recorded consequence"
   }
