@@ -16,7 +16,12 @@ register's current-vintage taxonomy).
 ## Artifact identity
 
 - Artifact version (gate 1.5.0 digest over the five shipped files):
-  `e5a98dfc9c05d0b087ed2dead21004fbbd972e415d2174469371a908bcaf90ad`
+  `e96929efbbc4fcb84d2986a7e32f83f9c5fec5395124439fb3404faff2e9e662`
+- Pre-publication correction: the independent pre-flip audit (2026-10-27)
+  required descriptor corrections; `meta.json` and `quality.json` were
+  regenerated and the package re-qualified (gate 1.5.0, `failed_checks: []`,
+  worker job `ecm-requal-002`) before release. The three CSVs are
+  byte-identical to the worker build `ec-merger-003`.
 - Source snapshot: `case-data-M.json`, 42,034,960 B, sha256 `420411333e9b9fc27e0c2e72cbbbb419f1ba4125e7f40d98a9bc5e0911316702`,
   last-modified Tue 27 Oct 2026 01:23:54 GMT.
 - Construction commit: `54428d2` (worker job `ec-merger-003`; the exact

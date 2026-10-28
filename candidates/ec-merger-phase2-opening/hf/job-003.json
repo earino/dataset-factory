@@ -1,0 +1,91 @@
+{
+  "id": "ecm-hf-003",
+  "candidate": "ec-merger-phase2-opening",
+  "release": true,
+  "server_type": "cx23",
+  "location": "hel1",
+  "cpus": 2,
+  "memory_mb": 2048,
+  "timeout_minutes": 25,
+  "lifetime_minutes": 45,
+  "max_disk_mb": 2000,
+  "max_artifact_mb": 8,
+  "what": "Complete pinned verification of the corrected ec-merger artifact e96929ef on the private Hugging Face repo earino/ec-merger-phase2-opening: fetch all five released files from the staged private GitHub release (425556351) at their corrected asset ids, verify each sha256 against the accepted report, upload (idempotent - files already at the manifest digest are skipped), verify the digests the Hub reports, and run the documented load_dataset path against the uploaded bytes. The bytes never pass through the coordinator; peak worker disk is one asset.",
+  "hf_publish": {
+    "repo": "earino/ec-merger-phase2-opening",
+    "revision": "main",
+    "source_repo": "earino/ec-merger-phase2-opening",
+    "assets": [
+      {
+        "asset_id": 683157370,
+        "dest": "meta.json",
+        "target": "meta.json",
+        "size": 1342,
+        "sha256": "b139620d5f469c17faa974574220878f8c1f70accf6d975243a018049fae5ef9"
+      },
+      {
+        "asset_id": 681816163,
+        "dest": "private-holdout.csv",
+        "target": "data/private-holdout.csv",
+        "size": 253649,
+        "sha256": "5867e34f3ebf714b9ec0ef307989cb4296438148390a6a5ea2bcf88795f703fd"
+      },
+      {
+        "asset_id": 681816261,
+        "dest": "public-eval.csv",
+        "target": "data/public-eval.csv",
+        "size": 155077,
+        "sha256": "4fb28c0908e4c79ccf194de3b27f2996c05efc0f01ec4074c953a7eb697f24f6"
+      },
+      {
+        "asset_id": 681816389,
+        "dest": "public-train.csv",
+        "target": "data/public-train.csv",
+        "size": 429048,
+        "sha256": "1619b6f4ad4a7dab0f437335c231f727f6f5c5f0ea02b3454366f5a71ab90a44"
+      },
+      {
+        "asset_id": 683157394,
+        "dest": "quality.json",
+        "target": "quality.json",
+        "size": 21855,
+        "sha256": "0203fdf934a0564fdb8d2910372986424547f25448fd603a79e95d4ac02fb7ec"
+      }
+    ],
+    "verify_loading": {
+      "splits": {
+        "train": {
+          "rows": 5406,
+          "positives": 217
+        },
+        "eval": {
+          "rows": 1770,
+          "positives": 46
+        },
+        "holdout": {
+          "rows": 2915,
+          "positives": 46
+        }
+      },
+      "columns": [
+        "case_number",
+        "phase2_opened",
+        "notification_date",
+        "notification_year",
+        "notification_month",
+        "regulation",
+        "sector_divisions",
+        "sector_count",
+        "has_sectors",
+        "party_count",
+        "title_has_jv",
+        "case_title"
+      ],
+      "label": "phase2_opened",
+      "label_values": [
+        0,
+        1
+      ]
+    }
+  }
+}

@@ -6,13 +6,25 @@ not restated from memory.
 
 ## Bytes identity
 
-The five shipped files are the worker-built artifact `ec-merger-003`, gate-1.5.0
-artifact version
-`e5a98dfc9c05d0b087ed2dead21004fbbd972e415d2174469371a908bcaf90ad`
+The five shipped files are the corrected, re-qualified artifact of worker build
+`ec-merger-003`, gate-1.5.0 artifact version
+`e96929efbbc4fcb84d2986a7e32f83f9c5fec5395124439fb3404faff2e9e662`
 (sha256 over `public/train.csv`, `public/eval.csv`, `private/holdout.csv`,
 `meta.json`, `quality.json`). The packaged tree was rebuilt from the private
 staging release parts (tag `job-ec-merger-003`) with every part's sha256 verified
 on arrival before anything else was done.
+
+**Pre-publication correction.** The build-time artifact was
+`e5a98dfc9c05d0b0...`. The independent pre-flip audit (2026-10-27, PUBLISH WITH
+CONDITIONS) required descriptor corrections; `meta.json` and `quality.json`
+were regenerated (1,342 B / 21,855 B) with the three CSVs byte-identical to the
+build. The corrected package was re-qualified by worker job `ecm-requal-002`
+(gate 1.5.0, two-phase, over the exact accepted CSV bytes fetched from private
+staging release 425292628) with `failed_checks: []`, and its accepted report
+ships in this package as `qualification.json`. Both private destinations were
+re-verified against the corrected bytes (GitHub release 425556351: 5/5
+server-side digests; Hugging Face `main`: corrected files present with a
+documented `load_dataset` check) before any public visibility was granted.
 
 ## What was run
 
@@ -48,6 +60,14 @@ on arrival before anything else was done.
    packaged tree re-verified through the same gate's `--accept` against the
    worker's collected qualification report, and `check-package.py` verified
    every document present and every manifest hash matching the bytes on disk.
+4. **Corrected-bytes consumer re-verification (coordinator, 2026-10-28T07:22Z).**
+   After the descriptor correction, `get_dataset.py` was executed end-to-end
+   against the private GitHub release (token download via the API asset path,
+   5 files, 860,971 bytes, every digest verified, runner layout restored),
+   `sha256sum -c SHA256SUMS` passed on all five restored files, and
+   `qualify_dataset.py --accept` against the accepted report returned
+   `ACCEPTED: ... matches the qualified artifact e96929efbbc4fcb8`.
+   `check-package.py` exit 0 on the regenerated manifest.
 
 ## What was NOT covered
 

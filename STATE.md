@@ -23,6 +23,47 @@ commit 8512fd8). Close #17; ordinary advancement thereafter is source-specific
 candidate review - review the next candidate's source-specific prediction contract
 and update its builder before construction; #25 remains deferred.
 
+
+
+## 2026-10-28 (07:35Z) - ec-merger flip-blocker cleared: checksum docs regenerated from the corrected artifact e96929ef; both private destinations re-verified and re-tagged; consumer re-verification ACCEPTED; the flip is the sole remaining step
+
+The 00:18Z flip blocker (package checksum documents still describing the
+superseded meta.json/quality.json) is cleared this pass, on the operator's
+recorded flip approval. No release byte, CSV, tag name or qualification result
+changed; the corrections are descriptor/docs-only, as the audit required.
+
+- expected_artifact.json re-based on the accepted qualification report
+  (artifact e96929ef, meta b139620d/1342, quality 0203fdf9/21855; CSVs
+  asserted byte-identical to the build); release-manifest.py regenerated
+  MANIFEST.json + SHA256SUMS from it; check-package.py exit 0.
+- Same defect class found in get_dataset.py: its EXPECTED block still pinned
+  the superseded digests and would have refused the corrected downloads -
+  realigned from the accepted report and exercised live.
+- Consumer re-verification against the private GitHub release: get_dataset.py
+  5 files, 860,971 bytes, all digests verified, layout restored;
+  sha256sum -c SHA256SUMS 5/5 OK (the previously failing check);
+  qualify_dataset.py --accept: ACCEPTED e96929efbbc4fcb8.
+- GitHub dataset repo: corrected docs pushed (main 3c004b43 -> 2b2b37d, only
+  MANIFEST/SHA256SUMS/VERIFICATION/RELEASE_NOTES/get_dataset.py differ);
+  annotated tag v2026.10 re-pointed to 2b2b37d == main; release 425556351
+  untouched (non-draft, 5 assets at the accepted digests).
+- Hub: small docs re-uploaded from the corrected manifest (main -> 6a17f925);
+  stale pre-correction tag deleted pre-publication and re-created by the
+  verified tagging pass at main; worker job ecm-hf-003 (server 172986961,
+  cx23, 95 s, EUR 0.04 reservation) verified all five assets at the manifest
+  digests and re-ran the documented load_dataset path (ok=true, problems=[],
+  train 5406/217, eval 1770/46, holdout 2915/46); server destroyed,
+  provider read-back 404. Neither ecm-hf-001 (old descriptor digests) nor
+  ecm-hf-002 (two files) could pin all five corrected assets, so the
+  complete receipt came from this job.
+- DESTINATIONS.json now records the corrected evidence: artifact_version
+  e96929ef, GitHub verified at 2b2b37d, Hub verified at 6a17f925, both
+  private, per-destination files_verified lists intact.
+
+Next action: the operator's flip (standing approval recorded in session
+2026-10-28), then anonymous verification of both destinations, visibility
+recording, the status-bearing document refresh and the site pipeline. No
+scoring is authorized before the flip.
 ## 2026-10-28 (04:55Z) - Oceania discovery tick: NEW ready candidate austender-contract-amendment-occurrence (federal AU, CC BY 3.0 AU, measured 10.96% 12-month amendment rate); epbc-referral-controlled-action opened (investigating, licence unread); NZ search attempted, no lead
 
 Regional tick (Australia data.gov.au/ABS/BoM priorities, New Zealand data.govt.nz/
