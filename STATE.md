@@ -1,3 +1,39 @@
+## 2026-10-29 23:52Z - finished-worker event close-out: ns-bwa-publish-001 + ns-bwa-hf-002 succeeded, ns-bwa-hf-001 failed (superseded); all three verified from records and handled
+
+The watcher re-fired the three ns-bwa staging jobs after the 23:37Z advancement session had
+already collected, verified and recorded them at dcbd324 (pushed; CI for that exact commit
+green: runs 40974381910 and 40974382176, completed/success). Holding the research mutex, this
+follow-up verified the durable state from existing records instead of re-collecting:
+
+- ns-bwa-publish-001 (succeeded): result.json transfer 5/5 assets, every sha256 verified on
+  arrival and against the server digest after upload (meta 6b43e4ea/1555, holdout 78b62dd3/121058,
+  eval ec1f7335/50575, train beacb229/133840, quality 7a61f6fa/21707); GitHub release 428463645
+  non-draft, tag v2026.10 == main == 23952346.
+- ns-bwa-hf-002 (succeeded): uploads 0 / skipped 5 (already at the manifest digest), failures 0;
+  documented load_dataset path ok (train 1069/715, eval 372/225, holdout 884/514, labels
+  ['0','1']); Hub tag v2026.10 == main == aaef1488; DESTINATIONS.json huggingface block shows
+  missing / size_mismatch / digest_unverified all empty and loading_check verified by this job.
+- ns-bwa-hf-001 (failed): all five data files uploaded at the manifest digests; the only failed
+  check is the loading path, on a diagnosed job-spec defect (verify_loading lacked the label
+  column name and used string label values). Classification: verification-spec failure, not a
+  data, infrastructure or scientific defect. The one diagnosed recovery was already spent by
+  the staging session as the fresh superseding job hf-002 (green on the same artifact
+  e8ed2a53eaf0453c8ed52aea336edb994d888ad11e7b76f7898b663f017180a8); no further retry.
+
+Cleanup: servers 173431357 / 173435457 / 173436545 destroyed at 22:50:14Z and in the 23:35Z
+window with Hetzner read-back 0 servers / 0 primary IPs recorded at destroy time in the
+DESTINATIONS.json checks; candidate job records show (deleted). This invocation did not re-poll
+the provider (live read-only re-confirm skipped under the invocation time budget), so cleanup
+stands on that recorded provider-side evidence, not a fresh observation. Durable bytes:
+GitHub release 428463645 and Hub earino/ns-bwa-advisory-lift-duration at v2026.10, both
+verified private - the accepted artifact exists at two durable destinations, so no
+preservation blocker exists.
+
+Nothing was published and no manifest, tag, digest, destination or qualification check changed.
+awaiting_operator stays true: the flip (preceded by the independent pre-flip audit, prompt at
+candidates/ns-bwa-advisory-lift-duration/pre-flip-audit-prompt.md) remains the operator's single
+decision. Handled markers written for all three jobs under .factory/<job>/.
+
 ## 2026-10-29 23:37Z - ns-bwa-advisory-lift-duration staged PRIVATE on both destinations (ns-bwa-publish-001 + ns-bwa-hf-002 green, 5/5 assets at the accepted digests on GitHub release 428463645 and Hub v2026.10; consumer + gate --accept re-verified); awaiting_operator set with the pre-flip audit prompt generated programmatically
 
 Release work outranked construction, so this advancement session executed the packaged
