@@ -1,3 +1,39 @@
+## 2026-10-29 10:1xZ - ns-bwa baseline measured: full model 0.5086 trails site persistence 0.6124 on the same eval rows - no demonstrated headroom, advancement decision next; both ns-bwa workers cleaned up
+
+Watcher follow-up for the two finished ns-bwa jobs. ns-bwa-001 itself was already closed out durably
+at f8ba545 (STATE 08:4xZ: gate 1.5.0 46/46, accept e8ed2a53eaf0453c, worker destroyed, provider
+read-back 0/0); this pass only verified that record and wrote its missing handled marker.
+
+ns-bwa-baseline-001 (server 173309283, 51.7 s, reservation EUR 0.06) VERIFIED before any figure was
+recorded: the five input files fetched from private staging release 427616218 with 0 failures; the
+gate's --accept re-ran against the bundled report (byte-identical to the collected ns-bwa-001 gate
+report, sha256 a6f0090d) and printed ACCEPTED for artifact e8ed2a53eaf0453c8ed52aea336edb994d888ad11e7b76f7898b663f017180a8
+BEFORE scoring; materialize copied public train+eval only (holdout never enters a workdir); the
+runner's own train.py and validate.sh ran unmodified (digests match the read-only clone) and exited 0
+with CONTRACT OK.
+
+MEASURED (same 372 eval rows as every reference): full runner-contract model eval AUC 0.5086 -
+train.py's print and validate.py's independent predict_proba recompute agree exactly - vs site
+persistence 0.6124, calendar/identity (county x month) 0.5075, reason prior 0.4307, majority-class
+accuracy 0.6048. The model trails the one-line persistence rule (a shipped feature) by 0.1038 and
+sits at the calendar control (+0.0011). Paired interval note: ns-bwa-001's bootstrap covers
+persistence-vs-calendar (+0.1014 [0.0144, 0.1739]) but not model-vs-persistence - the runner contract
+preserves no per-row scores; the -0.1038 gap is an observed difference, precision and generality
+uncertain. FINDING per dataset-qualification: NO demonstrated headroom under this protocol; a model
+below persistence is a recorded defect, not an encouraging result. The decision - re-scope to a
+change target (user need and protocol first, then qualify and compare anew) or drop with the
+negative finding preserved - is a scientific decision and is handed to advancement with the
+cheapest discriminating check (one bounded worker diagnostic preserving per-row scores for a
+model-vs-persistence paired interval and per-year AUCs against the 2018-2020 prevalence shift
+0.744 -> 0.415) recorded in the candidate's next_action. No packaging step may quote a figure from
+this artifact without this comparison beside it. The unhcr operator relay is unchanged.
+
+Cleanup: all expected assets accounted for BEFORE deletion - the accepted artifact's five files in
+staging release 427616218 (digest-verified by the job's own fetch) and the job's 10 report assets in
+release 427629948 (fetched into .factory/ns-bwa-baseline-001/reports/, every digest verified).
+Worker destroyed 2026-10-29T10:08:32Z; provider read-back 0 servers / 0 primary IPs at
+2026-10-29T10:08:41Z.
+
 ## 2026-10-29 08:4xZ - ns-bwa-advisory-lift-duration qualified end to end (ns-bwa-001: gate 1.5.0 46/46, accept e8ed2a53eaf0453c, references measured); unhcr release still the operator's relay
 
 Release work first: the one packaged candidate (unhcr) is unchanged - `operator_decision_pending: true`,

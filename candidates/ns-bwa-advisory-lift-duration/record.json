@@ -1,370 +1,393 @@
 {
- "id": "ns-bwa-advisory-lift-duration",
- "status": "qualified",
- "verdict": "go",
- "created_at": "2026-10-27T08:28:26.804105+00:00",
- "title": "Nova Scotia boil water advisory lift-within-30-days (duration to resolution)",
- "domain": "drinking water regulation - boil water advisory duration to lift (Nova Scotia, Canada)",
- "jurisdiction": {
-  "country": "CA",
-  "region": "North America",
-  "publisher": "Open Data Nova Scotia / Nova Scotia Department of Environment and Climate Change (Environment and Energy portal category)",
-  "recorded_at": "2026-10-27"
- },
- "prediction_question": "At the moment a boil water advisory is issued for a public registered or municipal drinking water supply in Nova Scotia - known then: site name, county, facility type, reason for the report, calendar season, and the prior advisory history of the same site/county computed only from earlier advisories - will the advisory be lifted within 30 days?",
- "prediction_time": "The advisory issue date (register column 'Date Advisory Issued', calendar day, America/Halifax). Every shipped feature must be a value fixed at or before that day: the issuing row's own site name, county, facility type, reason for the report, and derived calendar features; site/county history features may only use rows with an earlier issue date. The label window is the 30 days that follow the issue date. No part of the target window precedes the instant.",
- "target_definition": "Binary: advisory lifted within N days of issuance, N=30 primary (N=14 secondary; both base rates measured below). Label source columns: 'Date Advisory Removed' and 'Length of Advisory in Days' - label-only, excluded from shipped features. Publisher documents the censoring semantics on the dataset page: 'Values are not provided for boil advisories that are currently in effect.' (blank removal date = active). Scored rows require a removal date at the pinned vintage; censored rows are counted per window and excluded from scored sets, not treated as observed non-lifts.",
- "eligibility": {
-  "rule": "Advisory has a parseable issue date; issued no later than the labeling cutoff (vintage date 2026-06-16 minus 30 days = 2026-05-17) so an unlabeled advisory cannot masquerade as a negative; scored windows: train 2008-2017, eval 2018-2020, holdout 2021-2024. Rows without a removal date at the vintage are censored and counted, never scored. 30 rows have no parseable issue date and are excluded (counted as hazards).",
-  "vintage": "Register content current as of 2026-06-16 (dataset page 'Current as of June 16, 2026'; CSV Last-Modified 'Tue, 16 Jun 2026 13:58:42 GMT'; changelog shows full refresh 'Inserted 2649 rows, Deleted 0' on that date). Discovery vintage fetched 2026-10-27: CSV 283,987 bytes, sha256 60f77ac4945ca824700f5bcd3eaf564f4e5c5d4ec3f08496e8dd796e7184a30a. Publisher updates quarterly; construction must re-fetch, pin the fresh vintage and sha256, and re-measure every count below."
- },
- "sources": [
-  {
-   "name": "Boil Water Advisories - Open Data Nova Scotia (Socrata 7t68-9xmm)",
-   "url": "https://data.novascotia.ca/datasets/7t68-9xmm",
-   "api": "Anonymous Socrata resource API: https://data.novascotia.ca/resource/7t68-9xmm.json (SoQL aggregates verified 2026-10-27: count, group-by year, count distinct site, censoring counts). Full CSV: https://data.novascotia.ca/api/views/7t68-9xmm/rows.csv?accessType=DOWNLOAD - 283,987 bytes, 2,649 rows x 7 columns, fetched and verified locally 2026-10-27.",
-   "license": "Nova Scotia Open Government Licence v1.1 (ns-oglns), linked from the dataset page.",
-   "access": "Anonymous; no key; all probes measured from the coordinator (12 SoQL calls ~1-2 s each, one 284 KB CSV GET). CSV Content-Length is chunked (no header size); Last-Modified header present."
+  "id": "ns-bwa-advisory-lift-duration",
+  "status": "qualified",
+  "verdict": "go",
+  "created_at": "2026-10-27T08:28:26.804105+00:00",
+  "title": "Nova Scotia boil water advisory lift-within-30-days (duration to resolution)",
+  "domain": "drinking water regulation - boil water advisory duration to lift (Nova Scotia, Canada)",
+  "jurisdiction": {
+    "country": "CA",
+    "region": "North America",
+    "publisher": "Open Data Nova Scotia / Nova Scotia Department of Environment and Climate Change (Environment and Energy portal category)",
+    "recorded_at": "2026-10-27"
   },
-  {
-   "name": "Dataset page metadata (publisher's own instrument for grain, coverage, censoring)",
-   "url": "https://data.novascotia.ca/datasets/7t68-9xmm",
-   "api": "Documented columns: Site Name, County, Date Advisory Issued, Date Advisory Removed, Facility Type (Registered or Municipal), Length of Advisory in Days, Reason for the Report. 'This dataset includes boil water advisories from 2006 - current.' Frequency: Quarterly. Time Period Coverage: 2006-01-01 - present. Usage Considerations: 'Current as of June 16, 2026. Blank cells indicate that the data was not available. Values are not provided for boil advisories that are currently in effect.' Publisher row count on the page (2,649) matches the fetched CSV exactly.",
-   "license": "License row on the page: 'Nova Scotia Open Government Licence' -> http://novascotia.ca/opendata/licence.asp",
-   "access": "Anonymous HTML; fetched via extraction backend 2026-10-27 (novascotia.ca direct fetch times out from this coordinator - recorded as coordinator-side network behaviour; the licence page was read through the extraction backend, not guessed)."
+  "prediction_question": "At the moment a boil water advisory is issued for a public registered or municipal drinking water supply in Nova Scotia - known then: site name, county, facility type, reason for the report, calendar season, and the prior advisory history of the same site/county computed only from earlier advisories - will the advisory be lifted within 30 days?",
+  "prediction_time": "The advisory issue date (register column 'Date Advisory Issued', calendar day, America/Halifax). Every shipped feature must be a value fixed at or before that day: the issuing row's own site name, county, facility type, reason for the report, and derived calendar features; site/county history features may only use rows with an earlier issue date. The label window is the 30 days that follow the issue date. No part of the target window precedes the instant.",
+  "target_definition": "Binary: advisory lifted within N days of issuance, N=30 primary (N=14 secondary; both base rates measured below). Label source columns: 'Date Advisory Removed' and 'Length of Advisory in Days' - label-only, excluded from shipped features. Publisher documents the censoring semantics on the dataset page: 'Values are not provided for boil advisories that are currently in effect.' (blank removal date = active). Scored rows require a removal date at the pinned vintage; censored rows are counted per window and excluded from scored sets, not treated as observed non-lifts.",
+  "eligibility": {
+    "rule": "Advisory has a parseable issue date; issued no later than the labeling cutoff (vintage date 2026-06-16 minus 30 days = 2026-05-17) so an unlabeled advisory cannot masquerade as a negative; scored windows: train 2008-2017, eval 2018-2020, holdout 2021-2024. Rows without a removal date at the vintage are censored and counted, never scored. 30 rows have no parseable issue date and are excluded (counted as hazards).",
+    "vintage": "Register content current as of 2026-06-16 (dataset page 'Current as of June 16, 2026'; CSV Last-Modified 'Tue, 16 Jun 2026 13:58:42 GMT'; changelog shows full refresh 'Inserted 2649 rows, Deleted 0' on that date). Discovery vintage fetched 2026-10-27: CSV 283,987 bytes, sha256 60f77ac4945ca824700f5bcd3eaf564f4e5c5d4ec3f08496e8dd796e7184a30a. Publisher updates quarterly; construction must re-fetch, pin the fresh vintage and sha256, and re-measure every count below."
   },
-  {
-   "name": "Open Government Licence - Nova Scotia v1.1 (the publisher's own licence instrument)",
-   "url": "https://novascotia.ca/opendata/licence.asp",
-   "api": "n/a - licence text",
-   "license": "'The Information Provider grants you a worldwide, royalty-free, perpetual, non-exclusive licence to use the Information, including for commercial purposes'; 'You are free to: Copy, modify, publish, translate, adapt, distribute or otherwise use the Information in any medium, mode or format for any lawful purpose'; attribution required: 'Contains information licensed under the Open Government Licence - Nova Scotia'. Versioning: v1.1, governed by the laws of Nova Scotia and Canada.",
-   "access": "Fetched via extraction backend 2026-10-27."
-  },
-  {
-   "name": "open.canada.ca federated record (where the lead was found; confirms licence id ns-oglns)",
-   "url": "https://open.canada.ca/data/en/dataset/cc06d839-c26a-19f1-2428-4b5464670f8a",
-   "api": "CKAN package_show answered anonymously 2026-10-27: license_id ns-oglns, resources CSV/TSV/RDF/RSS/XML from data.novascotia.ca, metadata_modified 2026-04-17.",
-   "license": "ns-oglns per the CKAN record.",
-   "access": "Anonymous CKAN API."
-  }
- ],
- "licence_class": "A",
- "license_evidence": [
-  {
-   "note": "Open Government Licence - Nova Scotia v1.1 (ns-oglns) on the dataset's own page: free to copy, modify, publish, adapt, distribute for any lawful purpose, including commercially; worldwide, royalty-free, perpetual, non-exclusive. Required attribution statement: 'Contains information licensed under the Open Government Licence - Nova Scotia'; source terms must be preserved verbatim in LICENSE.md (attribution statement + link to the licence) and the dataset labelled as derived, never as the province's official product. OGL-NS exempts personal information, third-party rights and official symbols - none present in the register's columns beyond PID-style site addresses.",
-   "url": "https://novascotia.ca/opendata/licence.asp"
-  }
- ],
- "construction_script": "candidates/ns-bwa-advisory-lift-duration/source/build.py (construct-only; no performance metric) + source/score.py (references, post-acceptance only) + source/run.sh (fixed order construct -> qualify -> --accept -> references); bundle assembled by scripts/assemble-job.py with the canonical gate sha256 4fab8a34...",
- "split_strategy": "Cohort split on advisory issue year (disjoint calendar-year windows, both classes in every window). Computed from the full fetched CSV (sha256 60f77ac4...) and cross-checked against independent SoQL aggregates run against the live API (identical numbers). Censored rows excluded from scored sets with per-window counts. Clustered (site-repeat) counts recorded because advisories cluster by site: 586 / 286 / 551 distinct sites per window.",
- "splits": {
-  "train": {
-   "issue_years": "2008-2017",
-   "issued": 1071,
-   "labeled": 1069,
-   "censored": 2,
-   "distinct_sites": 586,
-   "lift14_rate": 0.4509,
-   "lift30_rate": 0.6688
-  },
-  "eval": {
-   "issue_years": "2018-2020",
-   "issued": 373,
-   "labeled": 372,
-   "censored": 1,
-   "distinct_sites": 286,
-   "lift14_rate": 0.3952,
-   "lift30_rate": 0.6048
-  },
-  "holdout": {
-   "issue_years": "2021-2024",
-   "issued": 896,
-   "labeled": 886,
-   "censored": 10,
-   "distinct_sites": 551,
-   "lift14_rate": 0.3995,
-   "lift30_rate": 0.5824
-  },
-  "out_of_eligibility": {
-   "issue_years": "2025-2026",
-   "issued": 279,
-   "labeled": 249,
-   "censored": 30,
-   "note": "Recent cohorts, mostly still active at vintage; excluded from the three scored windows."
-  },
-  "per_year_issued": {
-   "2008": 3,
-   "2009": 45,
-   "2010": 120,
-   "2011": 136,
-   "2012": 126,
-   "2013": 141,
-   "2014": 113,
-   "2015": 135,
-   "2016": 117,
-   "2017": 135,
-   "2018": 129,
-   "2019": 125,
-   "2020": 119,
-   "2021": 215,
-   "2022": 221,
-   "2023": 240,
-   "2024": 220,
-   "2025": 208,
-   "2026": 71,
-   "unparseable_or_missing_issue_date": 30
-  },
-  "independence": "Positives are spread over 19 issue years and both facility types; they cluster by site (2,649 advisories over 1,116 distinct site names; repeat advisories per site ~2.4x), so window independence is temporal and site-repeat must be reported in construction. A measured regime shift exists: mean advisory duration 47-65 days (2009-2018) vs 218 days (2020), 143 (2021), 101 (2022), 64 (2023) - the holdout window straddles the 2020-2022 duration spike, an honest distribution-shift difficulty that must be reported, not smoothed away."
- },
- "measurements": {
-  "fetch_2026_10_27": "Full CSV: one GET, 283,987 bytes, sha256 60f77ac4945ca824700f5bcd3eaf564f4e5c5d4ec3f08496e8dd796e7184a30a, 2,649 rows x 7 columns. Machine class: hosted coordinator (2 vCPU container). Local parse + all aggregates: < 5 s. SoQL aggregates: 12 anonymous calls, ~1-2 s each. No API key. Probe scripts retained in this directory and re-runnable.",
-  "register_totals": "2,649 advisories; 2,576 resolved (removal date present); 73 active/censored (removal blank); 1,116 distinct site names; facility types: Registered 2,491, Municipal 101, missing 57; reasons: Total Coliform Present 1,816, Chemical Exceedance 389, Other 186, E. Coli Present 83 + E.Coli Present 52 (spelling variants - same category), Lack of Disinfection 50, Failure of Treatment Processes 42, Ineffective Disinfection 14, others 13, missing 5.",
-  "hazards_measured": "CSV dates are month-name text ('October 02 2025'), not ISO. 3 rows have NEGATIVE duration (removal date before issue): McIntyre's H. Cottages (Baddeck) -1, PID 50323732 -52, Naugler's Ultramar - Italy Cross -7 (construction must define the handling rule and record the row counts). 5 rows have 0-day duration. 30 rows have no parseable issue date. 57 rows missing facility type. 5 rows missing reason. Duration range -52 to 1,668 days. Site identity is messy by design (name variants for the same facility, PID-addressed sites) - no clean entity key; site-history features must be built with an as-of filter and a stated identity rule.",
-  "censoring_by_issue_year": "73 unresolved: 2013:1, 2017:1, 2020:1, 2021:4, 2022:1, 2024:5, 2025:11, 2026:19 + 30 rows with missing issue date (unknown vintage exposure). Publisher documents the semantics: blanks are advisories currently in effect.",
-  "dated_example": "Named timezone America/Halifax (register records calendar days). Prediction instant 2024-08-31 (Maple Meadows Campground Inc, INVERNESS COUNTY, Registered, 'Total Coliform Present' - row verified in the pinned CSV: issued August 31 2024). Feature event window: all register rows with issue date < 2024-08-31 (site's and county's earlier advisories only). First-available version: the single pinned vintage, content current as of 2026-06-16, fetched 2026-10-27, sha256 60f77ac4.... Target window: the 30 days following 2024-08-31, i.e. through 2024-09-30 (no part precedes the instant). Measured outcome: Date Advisory Removed = July 04 2025, 307 days -> lift30 label NEGATIVE. Second fixture (positive class): 'Canning, NS' (Municipal, Total Coliform Present), issued October 02 2025, removed October 03 2025, 1 day -> lift30 POSITIVE. Both rows verified in-file; fixture commands in notes.md.",
-  "cross_check": "Publisher's own dataset page reports 'Rows: 2,649, Columns: 7' - exactly matches the fetched CSV (no missing rows). Page documents grain, 2006-current coverage, quarterly frequency and the blank-means-active censoring rule that the 73 measured censored rows follow. Changelog shows dated full refreshes (2025-10-14, 2026-06-16 'Inserted 2649 rows, Deleted 0'); whether Socrata restore points/revisions expose prior vintages is a construction-time check that would strengthen (not rescue) the as-of story - the task is declared retrospective on the pinned vintage regardless.",
-  "sibling_channels_checked_2026_10_27": "Newfoundland & Labrador 'Boil Water Advisories' (opendata.gov.nl.ca file-id=17146, nl-oglnl, 53,342 bytes, bounded header+rows sample read): carries BOIL_ADVISORY_ISSUE_DATE and rich system features (SUPPLY_TYPE, SOURCE_TYPE, NUM_OF_WELLS, CHLORINATION, POPULATION_SERVICED, REGION_*) but NO lift/rescinded date column - cannot support the duration task (measured negative). Manitoba 'Current BWAPWS' (mb-omb): current advisories only, no lifts. Quebec (donneesquebec.ca, qc-cc-by): one city (Repentigny). ECCC/CESI 'Boil water advisories' (ca-ogl-lgo): national aggregate indicator CSVs only. The NS register is the only per-advisory machine-readable channel with lift dates found this tick - the provincial municipal-water channel the isc-ltdwa record named as its reopening condition.",
-  "extraction_cost": "One 284 KB CSV GET plus 12 small SoQL calls; full local aggregate pass < 5 s on the coordinator. Construction needs no worker for the fetch; qualification runs on a worker per the standing order.",
-  "construction_2026_10_29": {
-   "job": "ns-bwa-001 (worker, 12.0 s, EUR 0.04 reservation)",
-   "register": "byte-identical to discovery: sha256 60f77ac4945ca824700f5bcd3eaf564f4e5c5d4ec3f08496e8dd796e7184a30a, 283,987 bytes, Last-Modified 2026-06-16; every recorded window count and lift30 rate reproduced exactly",
-   "scored": "train 1,069 (66.88% lift30, 715 positives, 569 positive issue dates), eval 372 (60.48%, 225, 176), holdout 884 (58.14%, 514, 367); 2,325 scored rows total",
-   "exclusions": "censored (blank removal, active at vintage): 2/1/10 per window; negative-duration invalid outcomes: 3 total (the known McIntyre's / PID 50323732 / Naugler's rows, asserted by site+date); 30 blank issue dates; 279 out-of-window (2025: 208, 2026: 71)",
-   "newly_measured_hazards": "113 rows with blank county (shipped as the explicit \"unknown\" level; never pooled into county history); 19 same-(site, issue date) row pairs + 1 triple, of which 16 pairs have two valid durations (scored as separate register records with identical features - label noise, counted); 16 rows at duration exactly 30 (label 1) and 6 at 31 (label 0); 5 zero-duration rows; 0 disagreements between the register Length column and the recomputed duration; reason merge measured: \"e. coli present\" 135 = 83 \"E. Coli Present\" + 52 \"E.Coli Present\"",
-   "cross_row_exposure_measured": "the gate executed both declared probes on the full artifact: site-level reverse-history covers 369 train / 56 eval / 217 holdout rows (a later same-site row's site_prior_lift30_rate equals the earlier row's label when that prior is its only resolved one; 1 mismatch in train), county-level covers 109/18/3 with more mismatches. Covered rows are why evaluation_contract declares access=isolated_rows; the descriptor states it as the row-wise design intent, NOT a runtime-enforced protocol (the shipped validator passes the whole table - the unhcr audit lesson is applied here at construction time, before any packaging claim exists)"
-  },
-  "references_2026_10_29_post_acceptance": {
-   "scope": "identical eval rows (n=372), computed after gate PASS + exact-byte --accept; holdout sealed",
-   "majority_class_accuracy": 0.6048,
-   "global_rate_brier": 0.2431,
-   "persistence_site_prior": {
-    "auc": 0.6124,
-    "brier": 0.2819,
-    "definition": "the site's as-of lift30 rate over earlier same-site advisories resolved strictly before the instant (shipped feature)"
-   },
-   "calendar_county_month": {
-    "auc": 0.5075,
-    "brier": 0.3101,
-    "definition": "train-estimated (county, month) rate with backoffs"
-   },
-   "reason_prior": {
-    "auc": 0.4307,
-    "brier": 0.244,
-    "definition": "train-estimated rate per normalised reason"
-   },
-   "facility_prior": {
-    "auc": null,
-    "brier": 0.2429,
-    "definition": "train-estimated rate per facility type - constant scores on eval, no ranking information"
-   },
-   "paired_bootstrap_1000_seed23": {
-    "persistence_vs_calendar": {
-     "mean_auc_diff": 0.1014,
-     "ci95": [
-      0.0144,
-      0.1739
-     ]
+  "sources": [
+    {
+      "name": "Boil Water Advisories - Open Data Nova Scotia (Socrata 7t68-9xmm)",
+      "url": "https://data.novascotia.ca/datasets/7t68-9xmm",
+      "api": "Anonymous Socrata resource API: https://data.novascotia.ca/resource/7t68-9xmm.json (SoQL aggregates verified 2026-10-27: count, group-by year, count distinct site, censoring counts). Full CSV: https://data.novascotia.ca/api/views/7t68-9xmm/rows.csv?accessType=DOWNLOAD - 283,987 bytes, 2,649 rows x 7 columns, fetched and verified locally 2026-10-27.",
+      "license": "Nova Scotia Open Government Licence v1.1 (ns-oglns), linked from the dataset page.",
+      "access": "Anonymous; no key; all probes measured from the coordinator (12 SoQL calls ~1-2 s each, one 284 KB CSV GET). CSV Content-Length is chunked (no header size); Last-Modified header present."
     },
-    "calendar_vs_reason": {
-     "mean_auc_diff": 0.0779,
-     "ci95": [
-      0.0072,
-      0.1492
-     ]
+    {
+      "name": "Dataset page metadata (publisher's own instrument for grain, coverage, censoring)",
+      "url": "https://data.novascotia.ca/datasets/7t68-9xmm",
+      "api": "Documented columns: Site Name, County, Date Advisory Issued, Date Advisory Removed, Facility Type (Registered or Municipal), Length of Advisory in Days, Reason for the Report. 'This dataset includes boil water advisories from 2006 - current.' Frequency: Quarterly. Time Period Coverage: 2006-01-01 - present. Usage Considerations: 'Current as of June 16, 2026. Blank cells indicate that the data was not available. Values are not provided for boil advisories that are currently in effect.' Publisher row count on the page (2,649) matches the fetched CSV exactly.",
+      "license": "License row on the page: 'Nova Scotia Open Government Licence' -> http://novascotia.ca/opendata/licence.asp",
+      "access": "Anonymous HTML; fetched via extraction backend 2026-10-27 (novascotia.ca direct fetch times out from this coordinator - recorded as coordinator-side network behaviour; the licence page was read through the extraction backend, not guessed)."
     },
-    "persistence_vs_reason": {
-     "mean_auc_diff": 0.1793,
-     "ci95": [
-      0.1136,
-      0.2482
-     ]
+    {
+      "name": "Open Government Licence - Nova Scotia v1.1 (the publisher's own licence instrument)",
+      "url": "https://novascotia.ca/opendata/licence.asp",
+      "api": "n/a - licence text",
+      "license": "'The Information Provider grants you a worldwide, royalty-free, perpetual, non-exclusive licence to use the Information, including for commercial purposes'; 'You are free to: Copy, modify, publish, translate, adapt, distribute or otherwise use the Information in any medium, mode or format for any lawful purpose'; attribution required: 'Contains information licensed under the Open Government Licence - Nova Scotia'. Versioning: v1.1, governed by the laws of Nova Scotia and Canada.",
+      "access": "Fetched via extraction backend 2026-10-27."
+    },
+    {
+      "name": "open.canada.ca federated record (where the lead was found; confirms licence id ns-oglns)",
+      "url": "https://open.canada.ca/data/en/dataset/cc06d839-c26a-19f1-2428-4b5464670f8a",
+      "api": "CKAN package_show answered anonymously 2026-10-27: license_id ns-oglns, resources CSV/TSV/RDF/RSS/XML from data.novascotia.ca, metadata_modified 2026-04-17.",
+      "license": "ns-oglns per the CKAN record.",
+      "access": "Anonymous CKAN API."
     }
-   },
-   "per_issue_year_eval": {
-    "2018": {
-     "rows": 129,
-     "rate": 0.7442,
-     "persistence_auc": 0.6084
-    },
-    "2019": {
-     "rows": 125,
-     "rate": 0.64,
-     "persistence_auc": 0.6203
-    },
-    "2020": {
-     "rows": 118,
-     "rate": 0.4153,
-     "persistence_auc": 0.5991
-    }
-   },
-   "prevalence_shift": "within-eval prevalence falls 0.7442 (2018) -> 0.4153 (2020), the measured COVID-era duration regime shift; per-year figures are the mandatory reading beside the pooled AUC; prevalence drift does not by itself determine AUC",
-   "full_model": "NOT computed in this job; the harness runner baseline job (a separate worker job on the staged artifact, as with wb-sol-baseline-001) is the next measured step; no headroom claim exists until it is compared against persistence on identical rows",
-   "artifact_version_echo_gap": "score.py echoed report.artifact.version, which does not exist in the 1.5.0 report schema (the digest lives at report.artifact.artifact_version.digest), so the staged references JSON prints artifact_version: null; fixed in source for future runs, numbers unaffected, artifact identity recorded from the qualification + acceptance reports"
-  }
- },
- "novelty_check": {
-  "checked_at": "2026-10-27T08:32:47+00:00",
-  "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
-  "queries": [
-   "boil water advisory duration prediction machine learning",
-   "drinking water advisory lift duration model"
   ],
-  "evidence": {
-   "huggingface_datasets": [
+  "licence_class": "A",
+  "license_evidence": [
     {
-     "query": "boil water advisory duration prediction machine learning",
-     "hits": 0,
-     "top": []
-    },
-    {
-     "query": "drinking water advisory lift duration model",
-     "hits": 0,
-     "top": []
+      "note": "Open Government Licence - Nova Scotia v1.1 (ns-oglns) on the dataset's own page: free to copy, modify, publish, adapt, distribute for any lawful purpose, including commercially; worldwide, royalty-free, perpetual, non-exclusive. Required attribution statement: 'Contains information licensed under the Open Government Licence - Nova Scotia'; source terms must be preserved verbatim in LICENSE.md (attribution statement + link to the licence) and the dataset labelled as derived, never as the province's official product. OGL-NS exempts personal information, third-party rights and official symbols - none present in the register's columns beyond PID-style site addresses.",
+      "url": "https://novascotia.ca/opendata/licence.asp"
     }
-   ],
-   "zenodo_records": [
-    {
-     "query": "boil water advisory duration prediction machine learning",
-     "hits": 611488,
-     "top": [
-      "Campus Placement Prediction System using  Machine Learning",
-      "Forecasting water quality through machine learning and hyperparameter optimization",
-      "Smart Farm Price Advisor: A Machine Learning Approach to Crop Price Prediction and Farmer Decision Support",
-      "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
-      "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI"
-     ]
-    },
-    {
-     "query": "drinking water advisory lift duration model",
-     "hits": 749557,
-     "top": [
-      "Extracted Data From: EPA PFAS Analyses in Drinking Water, SAB",
-      "Associations between chlorophyll a and various microcystin health advisory concentrations",
-      "Associations between chlorophyll a and various microcystin-LR",
-      "ZeroPM workshop The Way Forward. The scale and struggle with PMT substances",
-      "ENERWAT-GLOB  - Outputs"
-     ]
-    }
-   ],
-   "arxiv_preprints": [
-    {
-     "query": "boil water advisory duration prediction machine learning",
-     "hits": 5,
-     "top": [
-      "Changing Data Sources in the Age of Machine Learning for Official Statistics",
-      "DOME: Recommendations for supervised machine learning validation in biology",
-      "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
-      "Active learning for data streams: a survey",
-      "Privacy-preserving machine learning for healthcare: open challenges and future perspectives"
-     ]
-    },
-    {
-     "query": "drinking water advisory lift duration model",
-     "hits": 5,
-     "top": [
-      "Uncertainty-aware demand management of water distribution networks in deregulated energy markets",
-      "Water Bridging Dynamics of Polymerase Chain Reaction in the Gauge Theory Paradigm of Quantum Fields",
-      "Graph Neural Networks for Pressure Estimation in Water Distribution Systems",
-      "Where are the Water Worlds?: Self-Consistent Models of Water-Rich Exoplanet Atmospheres",
-      "Drinking water contamination as a population-wide determinant of mortality in California"
-     ]
-    }
-   ]
-  },
-  "evidence_summary": "- huggingface_datasets / 'boil water advisory duration prediction machine learning': 0 hit(s) - nothing notable\n- huggingface_datasets / 'drinking water advisory lift duration model': 0 hit(s) - nothing notable\n- zenodo_records / 'boil water advisory duration prediction machine learning': 611488 hit(s) - Campus Placement Prediction System using  Machine Learning, Forecasting water quality through machine learning and hyperparameter optimization, Smart Farm Price Advisor: A Machine Learning Approach to Crop Price Prediction and Farmer Decision Support, plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI\n- zenodo_records / 'drinking water advisory lift duration model': 749557 hit(s) - Extracted Data From: EPA PFAS Analyses in Drinking Water, SAB, Associations between chlorophyll a and various microcystin health advisory concentrations, Associations between chlorophyll a and various microcystin-LR, ZeroPM workshop The Way Forward. The scale and struggle with PMT substances, ENERWAT-GLOB  - Outputs\n- arxiv_preprints / 'boil water advisory duration prediction machine learning': 5 hit(s) - Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Active learning for data streams: a survey, Privacy-preserving machine learning for healthcare: open challenges and future perspectives\n- arxiv_preprints / 'drinking water advisory lift duration model': 5 hit(s) - Uncertainty-aware demand management of water distribution networks in deregulated energy markets, Water Bridging Dynamics of Polymerase Chain Reaction in the Gauge Theory Paradigm of Quantum Fields, Graph Neural Networks for Pressure Estimation in Water Distribution Systems, Where are the Water Worlds?: Self-Consistent Models of Water-Rich Exoplanet Atmospheres, Drinking water contamination as a population-wide determinant of mortality in California",
-  "prior_art": [
-   "PLOS Water 2024 Texas Winter Storm Uri geospatial analysis; J Water Health 19(5) 2021 Norway 2008-2019 descriptive series; MDPI Water 18(7) 2025 West Virginia utility-cost regression; decision-tree study on advisory issuance (not duration); in-repo isc-ltdwa-advisory-lift-timing defined the formulation and named this channel as its reopening condition"
   ],
-  "theirs": "Publisher ships the raw NS register only (no splits, no censoring policy, no scored contract); descriptive literature models correlates of advisory duration (PLOS Water 2024 Texas Uri; JWH 2021 Norway) or uses duration as an explanatory cost variable (MDPI Water 2025 WV)",
-  "ours": "First per-advisory duration-to-lift prediction task: at issuance, 30-day lift label with publisher-documented censoring, as-of site/county history features, disjoint issue-year windows with measured base rates (66.9/60.5/58.2% lift30) - on the only public Canadian per-advisory register with lift dates found",
-  "verdict": "no_precedent",
-  "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
- },
- "contracts": {
-  "redistribution": "SUPPORTED - Open Government Licence - Nova Scotia v1.1 on the dataset's own page: copy, modify, publish, adapt, distribute for any lawful purpose including commercially; class A with the required attribution statement 'Contains information licensed under the Open Government Licence - Nova Scotia' to be carried verbatim in LICENSE.md; source terms preserved, dataset labelled as derived.",
-  "prediction_timing": "SUPPORTED AS A DECLARED RETROSPECTIVE TASK - the instant (issue date) precedes the entire 30-day label window for every scored row; every shipped feature is fixed at issuance (register columns of the issuing row + as-of history from strictly earlier rows). One pinned quarterly vintage (content as of 2026-06-16, sha256 recorded); the publisher documents blanks-as-active; no historical operational-availability claim is made; the register is revised in place, so a future re-fetch measures churn, not historical vintages. Socrata changelog/restore points are recorded as a construction-time check only.",
-  "target": "SUPPORTED - label from 'Date Advisory Removed'/'Length of Advisory in Days' (excludable columns), measured on 2,576 resolved rows; censoring (73 active) is publisher-documented, counted per window, and separated from observed non-lift; eligibility cutoff (vintage minus 30 days) prevents recent unresolved advisories entering scored windows as false negatives.",
-  "split_capacity": "SUPPORTED - measured from the full source: train 1,069 / eval 372 / holdout 886 labeled rows in disjoint issue-year windows with both classes in every window and year (lift30 rates 66.9 / 60.5 / 58.2%); clustered counts recorded (586 / 286 / 551 distinct sites); the 2020-2022 duration regime shift inside the holdout is a declared difficulty.",
-  "not_a_mirror": "SUPPORTED (novelty_check verdict: no_precedent) - no ML-ready BWA-duration task exists anywhere found; prior art is descriptive; the in-repo ISC record defined and wanted this task but its source lacked lift dates; this candidate exists because the NS register carries them."
- },
- "construction_handoff": {
-  "step": "On a worker: re-fetch rows.csv (quarterly updates - pin the fresh sha256, re-measure and re-record every count and base rate against this record's numbers; if the vintage changed, re-derive the eligibility cutoff from the new 'Current as of' date), parse month-name dates, verify the 2,649-row cross-check, apply eligibility (issue date <= vintage minus 30 days; three scored windows 2008-2017 / 2018-2020 / 2021-2024), recompute duration from the two date columns (treat the 3 measured negative-duration rows per a stated rule and count them), build features fixed at issuance (site name, county, facility type, reason with variant normalisation, calendar/season, and as-of site/county history from strictly earlier rows with a stated messy-identity rule), exclude both label columns, write quality.json with evaluation_contract declaring the retrospective single-vintage scope and the as-of feature policy, assert the two in-file fixtures (Maple Meadows Campground Inc 2024-08-31 -> 307 days -> lift30 negative; Canning, NS 2025-10-02 -> 1 day -> lift30 positive), then full qualification, exact-byte acceptance and reference/model scoring before any figure is reported.",
-  "expected_artifact": "train/eval/holdout CSVs of one row per issued advisory (labeled), features as above, plus a hazards appendix (negative durations, zero durations, missing facility/reason, unparseable issue dates, site-repeat counts, 2020-2022 regime shift).",
-  "success_check": "check-candidate and the qualification gate pass on the exact artifact; measured split counts and base rates within the recorded bounds (or re-recorded against the fresh vintage); as-of feature policy verified leak-free by the gate's timing checks; no site-history feature reads a row issued on or after the scored row's issue date."
- },
- "jobs": [
-  {
-   "id": "ns-bwa-001",
-   "status": "succeeded (deleted)",
-   "server_id": 173305072,
-   "launched": "2026-10-29T08:29Z",
-   "reservation_eur": "0.04",
-   "expected": "construct from the pinned register (sha 60f77ac4..., vintage 2026-06-16) -> full-artifact qualification on the worker -> exact-byte --accept -> score.py references on identical eval rows; expected scored rows ~1069/~372/~884 from the discovery probe minus the negative-duration exclusions",
-   "next_acceptance_check": "require the passing qualification report for this exact artifact then --accept before quoting any figure; destroy the worker after verified collection",
-   "outcome": "exit 0 in 12.0 s: construct -> gate 1.5.0 PASSED (46/46 checks, 0 failed) -> --accept ACCEPTED for artifact e8ed2a53eaf0453c... -> references on identical eval rows. Register byte-identical to discovery (sha256 60f77ac4..., 283,987 bytes, Last-Modified 2026-06-16); every recorded count and rate reproduced exactly (labeled 1069/372/886/249, censored 2/1/10/30, lift30 0.6688/0.6048/0.5824, negative-duration rows exactly the 3 known). Worker destroyed after verified collection; provider read-back 0 servers / 0 primary IPs (2026-10-29T08:38Z). Reports + extract in private staging release 427616218; compact copies in candidates/ns-bwa-advisory-lift-duration/reports/.",
-   "elapsed_seconds": 12.0
-  }
- ],
- "artifacts": [
-  {
-   "artifact_version": "e8ed2a53eaf0453c8ed52aea336edb994d888ad11e7b76f7898b663f017180a8",
-   "gate_version": "1.5.0",
-   "built_by_job": "ns-bwa-001",
-   "register_sha256": "60f77ac4945ca824700f5bcd3eaf564f4e5c5d4ec3f08496e8dd796e7184a30a",
-   "register_vintage": "2026-06-16 (eligibility cutoff 2026-05-17 = vintage minus 30 days)",
-   "built_at_pin": "2026-10-29T00:00:00Z",
-   "layout": "public/train.csv, public/eval.csv, private/holdout.csv, meta.json, quality.json",
-   "split_stats": {
+  "construction_script": "candidates/ns-bwa-advisory-lift-duration/source/build.py (construct-only; no performance metric) + source/score.py (references, post-acceptance only) + source/run.sh (fixed order construct -> qualify -> --accept -> references); bundle assembled by scripts/assemble-job.py with the canonical gate sha256 4fab8a34...",
+  "split_strategy": "Cohort split on advisory issue year (disjoint calendar-year windows, both classes in every window). Computed from the full fetched CSV (sha256 60f77ac4...) and cross-checked against independent SoQL aggregates run against the live API (identical numbers). Censored rows excluded from scored sets with per-window counts. Clustered (site-repeat) counts recorded because advisories cluster by site: 586 / 286 / 551 distinct sites per window.",
+  "splits": {
     "train": {
-     "rows": 1069,
-     "positives": 715,
-     "rate": 0.668849,
-     "distinct_sites": 585,
-     "positive_sites": 447,
-     "positive_issue_dates": 569
+      "issue_years": "2008-2017",
+      "issued": 1071,
+      "labeled": 1069,
+      "censored": 2,
+      "distinct_sites": 586,
+      "lift14_rate": 0.4509,
+      "lift30_rate": 0.6688
     },
     "eval": {
-     "rows": 372,
-     "positives": 225,
-     "rate": 0.604839,
-     "distinct_sites": 286,
-     "positive_sites": 183,
-     "positive_issue_dates": 176
+      "issue_years": "2018-2020",
+      "issued": 373,
+      "labeled": 372,
+      "censored": 1,
+      "distinct_sites": 286,
+      "lift14_rate": 0.3952,
+      "lift30_rate": 0.6048
     },
     "holdout": {
-     "rows": 884,
-     "positives": 514,
-     "rate": 0.581448,
-     "distinct_sites": 547,
-     "positive_sites": 343,
-     "positive_issue_dates": 367
+      "issue_years": "2021-2024",
+      "issued": 896,
+      "labeled": 886,
+      "censored": 10,
+      "distinct_sites": 551,
+      "lift14_rate": 0.3995,
+      "lift30_rate": 0.5824
+    },
+    "out_of_eligibility": {
+      "issue_years": "2025-2026",
+      "issued": 279,
+      "labeled": 249,
+      "censored": 30,
+      "note": "Recent cohorts, mostly still active at vintage; excluded from the three scored windows."
+    },
+    "per_year_issued": {
+      "2008": 3,
+      "2009": 45,
+      "2010": 120,
+      "2011": 136,
+      "2012": 126,
+      "2013": 141,
+      "2014": 113,
+      "2015": 135,
+      "2016": 117,
+      "2017": 135,
+      "2018": 129,
+      "2019": 125,
+      "2020": 119,
+      "2021": 215,
+      "2022": 221,
+      "2023": 240,
+      "2024": 220,
+      "2025": 208,
+      "2026": 71,
+      "unparseable_or_missing_issue_date": 30
+    },
+    "independence": "Positives are spread over 19 issue years and both facility types; they cluster by site (2,649 advisories over 1,116 distinct site names; repeat advisories per site ~2.4x), so window independence is temporal and site-repeat must be reported in construction. A measured regime shift exists: mean advisory duration 47-65 days (2009-2018) vs 218 days (2020), 143 (2021), 101 (2022), 64 (2023) - the holdout window straddles the 2020-2022 duration spike, an honest distribution-shift difficulty that must be reported, not smoothed away."
+  },
+  "measurements": {
+    "fetch_2026_10_27": "Full CSV: one GET, 283,987 bytes, sha256 60f77ac4945ca824700f5bcd3eaf564f4e5c5d4ec3f08496e8dd796e7184a30a, 2,649 rows x 7 columns. Machine class: hosted coordinator (2 vCPU container). Local parse + all aggregates: < 5 s. SoQL aggregates: 12 anonymous calls, ~1-2 s each. No API key. Probe scripts retained in this directory and re-runnable.",
+    "register_totals": "2,649 advisories; 2,576 resolved (removal date present); 73 active/censored (removal blank); 1,116 distinct site names; facility types: Registered 2,491, Municipal 101, missing 57; reasons: Total Coliform Present 1,816, Chemical Exceedance 389, Other 186, E. Coli Present 83 + E.Coli Present 52 (spelling variants - same category), Lack of Disinfection 50, Failure of Treatment Processes 42, Ineffective Disinfection 14, others 13, missing 5.",
+    "hazards_measured": "CSV dates are month-name text ('October 02 2025'), not ISO. 3 rows have NEGATIVE duration (removal date before issue): McIntyre's H. Cottages (Baddeck) -1, PID 50323732 -52, Naugler's Ultramar - Italy Cross -7 (construction must define the handling rule and record the row counts). 5 rows have 0-day duration. 30 rows have no parseable issue date. 57 rows missing facility type. 5 rows missing reason. Duration range -52 to 1,668 days. Site identity is messy by design (name variants for the same facility, PID-addressed sites) - no clean entity key; site-history features must be built with an as-of filter and a stated identity rule.",
+    "censoring_by_issue_year": "73 unresolved: 2013:1, 2017:1, 2020:1, 2021:4, 2022:1, 2024:5, 2025:11, 2026:19 + 30 rows with missing issue date (unknown vintage exposure). Publisher documents the semantics: blanks are advisories currently in effect.",
+    "dated_example": "Named timezone America/Halifax (register records calendar days). Prediction instant 2024-08-31 (Maple Meadows Campground Inc, INVERNESS COUNTY, Registered, 'Total Coliform Present' - row verified in the pinned CSV: issued August 31 2024). Feature event window: all register rows with issue date < 2024-08-31 (site's and county's earlier advisories only). First-available version: the single pinned vintage, content current as of 2026-06-16, fetched 2026-10-27, sha256 60f77ac4.... Target window: the 30 days following 2024-08-31, i.e. through 2024-09-30 (no part precedes the instant). Measured outcome: Date Advisory Removed = July 04 2025, 307 days -> lift30 label NEGATIVE. Second fixture (positive class): 'Canning, NS' (Municipal, Total Coliform Present), issued October 02 2025, removed October 03 2025, 1 day -> lift30 POSITIVE. Both rows verified in-file; fixture commands in notes.md.",
+    "cross_check": "Publisher's own dataset page reports 'Rows: 2,649, Columns: 7' - exactly matches the fetched CSV (no missing rows). Page documents grain, 2006-current coverage, quarterly frequency and the blank-means-active censoring rule that the 73 measured censored rows follow. Changelog shows dated full refreshes (2025-10-14, 2026-06-16 'Inserted 2649 rows, Deleted 0'); whether Socrata restore points/revisions expose prior vintages is a construction-time check that would strengthen (not rescue) the as-of story - the task is declared retrospective on the pinned vintage regardless.",
+    "sibling_channels_checked_2026_10_27": "Newfoundland & Labrador 'Boil Water Advisories' (opendata.gov.nl.ca file-id=17146, nl-oglnl, 53,342 bytes, bounded header+rows sample read): carries BOIL_ADVISORY_ISSUE_DATE and rich system features (SUPPLY_TYPE, SOURCE_TYPE, NUM_OF_WELLS, CHLORINATION, POPULATION_SERVICED, REGION_*) but NO lift/rescinded date column - cannot support the duration task (measured negative). Manitoba 'Current BWAPWS' (mb-omb): current advisories only, no lifts. Quebec (donneesquebec.ca, qc-cc-by): one city (Repentigny). ECCC/CESI 'Boil water advisories' (ca-ogl-lgo): national aggregate indicator CSVs only. The NS register is the only per-advisory machine-readable channel with lift dates found this tick - the provincial municipal-water channel the isc-ltdwa record named as its reopening condition.",
+    "extraction_cost": "One 284 KB CSV GET plus 12 small SoQL calls; full local aggregate pass < 5 s on the coordinator. Construction needs no worker for the fetch; qualification runs on a worker per the standing order.",
+    "construction_2026_10_29": {
+      "job": "ns-bwa-001 (worker, 12.0 s, EUR 0.04 reservation)",
+      "register": "byte-identical to discovery: sha256 60f77ac4945ca824700f5bcd3eaf564f4e5c5d4ec3f08496e8dd796e7184a30a, 283,987 bytes, Last-Modified 2026-06-16; every recorded window count and lift30 rate reproduced exactly",
+      "scored": "train 1,069 (66.88% lift30, 715 positives, 569 positive issue dates), eval 372 (60.48%, 225, 176), holdout 884 (58.14%, 514, 367); 2,325 scored rows total",
+      "exclusions": "censored (blank removal, active at vintage): 2/1/10 per window; negative-duration invalid outcomes: 3 total (the known McIntyre's / PID 50323732 / Naugler's rows, asserted by site+date); 30 blank issue dates; 279 out-of-window (2025: 208, 2026: 71)",
+      "newly_measured_hazards": "113 rows with blank county (shipped as the explicit \"unknown\" level; never pooled into county history); 19 same-(site, issue date) row pairs + 1 triple, of which 16 pairs have two valid durations (scored as separate register records with identical features - label noise, counted); 16 rows at duration exactly 30 (label 1) and 6 at 31 (label 0); 5 zero-duration rows; 0 disagreements between the register Length column and the recomputed duration; reason merge measured: \"e. coli present\" 135 = 83 \"E. Coli Present\" + 52 \"E.Coli Present\"",
+      "cross_row_exposure_measured": "the gate executed both declared probes on the full artifact: site-level reverse-history covers 369 train / 56 eval / 217 holdout rows (a later same-site row's site_prior_lift30_rate equals the earlier row's label when that prior is its only resolved one; 1 mismatch in train), county-level covers 109/18/3 with more mismatches. Covered rows are why evaluation_contract declares access=isolated_rows; the descriptor states it as the row-wise design intent, NOT a runtime-enforced protocol (the shipped validator passes the whole table - the unhcr audit lesson is applied here at construction time, before any packaging claim exists)"
+    },
+    "references_2026_10_29_post_acceptance": {
+      "scope": "identical eval rows (n=372), computed after gate PASS + exact-byte --accept; holdout sealed",
+      "majority_class_accuracy": 0.6048,
+      "global_rate_brier": 0.2431,
+      "persistence_site_prior": {
+        "auc": 0.6124,
+        "brier": 0.2819,
+        "definition": "the site's as-of lift30 rate over earlier same-site advisories resolved strictly before the instant (shipped feature)"
+      },
+      "calendar_county_month": {
+        "auc": 0.5075,
+        "brier": 0.3101,
+        "definition": "train-estimated (county, month) rate with backoffs"
+      },
+      "reason_prior": {
+        "auc": 0.4307,
+        "brier": 0.244,
+        "definition": "train-estimated rate per normalised reason"
+      },
+      "facility_prior": {
+        "auc": null,
+        "brier": 0.2429,
+        "definition": "train-estimated rate per facility type - constant scores on eval, no ranking information"
+      },
+      "paired_bootstrap_1000_seed23": {
+        "persistence_vs_calendar": {
+          "mean_auc_diff": 0.1014,
+          "ci95": [
+            0.0144,
+            0.1739
+          ]
+        },
+        "calendar_vs_reason": {
+          "mean_auc_diff": 0.0779,
+          "ci95": [
+            0.0072,
+            0.1492
+          ]
+        },
+        "persistence_vs_reason": {
+          "mean_auc_diff": 0.1793,
+          "ci95": [
+            0.1136,
+            0.2482
+          ]
+        }
+      },
+      "per_issue_year_eval": {
+        "2018": {
+          "rows": 129,
+          "rate": 0.7442,
+          "persistence_auc": 0.6084
+        },
+        "2019": {
+          "rows": 125,
+          "rate": 0.64,
+          "persistence_auc": 0.6203
+        },
+        "2020": {
+          "rows": 118,
+          "rate": 0.4153,
+          "persistence_auc": 0.5991
+        }
+      },
+      "prevalence_shift": "within-eval prevalence falls 0.7442 (2018) -> 0.4153 (2020), the measured COVID-era duration regime shift; per-year figures are the mandatory reading beside the pooled AUC; prevalence drift does not by itself determine AUC",
+      "full_model": "NOT computed in this job; the harness runner baseline job (a separate worker job on the staged artifact, as with wb-sol-baseline-001) is the next measured step; no headroom claim exists until it is compared against persistence on identical rows",
+      "artifact_version_echo_gap": "score.py echoed report.artifact.version, which does not exist in the 1.5.0 report schema (the digest lives at report.artifact.artifact_version.digest), so the staged references JSON prints artifact_version: null; fixed in source for future runs, numbers unaffected, artifact identity recorded from the qualification + acceptance reports"
+    },
+    "baseline_2026_10_29": {
+      "job": "ns-bwa-baseline-001",
+      "command": "runner-contract baseline through the benchmark's own train.py + validate.sh, unmodified (bundled digests match the read-only clone: train.py a3c6bcf1, validate.py b597e7f8, validate.sh 3f06ca48), on the accepted artifact fetched from private staging release 427616218 (5/5 files, digests match; failures: 0)",
+      "order": "re-accept BEFORE scoring: qualify_dataset.py --accept against the bundled report (byte-identical to the collected ns-bwa-001 gate report, sha256 a6f0090d...) -> ACCEPTED for artifact e8ed2a53eaf0453c8ed52aea336edb994d888ad11e7b76f7898b663f017180a8; only then materialize (public train+eval only, the private holdout was never copied into a workdir) and run the contract",
+      "contract": "train.py exit 0, validate.sh exit 0, '[validate] CONTRACT OK'; both eval AUCs agree exactly (train.py print 0.5086, validate.py's independent predict_proba recompute 0.5086)",
+      "full_model_eval_auc": 0.5086,
+      "model": "benchmark template XGBClassifier, n_estimators=30, max_depth=6, lr=0.1, seed 42, categorical encoding for object columns with <=1000 train levels; every non-id column is input, per the runner contract",
+      "dependencies": "python 3.13.18, pandas 2.3.3, numpy 2.5.4, xgboost 3.4.1, scikit-learn 1.9.1",
+      "rows": "the same 372 eval rows as every reference (n=372, eval positive rate 0.604839); holdout sealed, not scored",
+      "comparison_on_identical_eval_rows": {
+        "full_model": 0.5086,
+        "persistence_site_prior": 0.6124,
+        "calendar_county_month": 0.5075,
+        "reason_prior": 0.4307,
+        "majority_class_accuracy": 0.6048,
+        "model_minus_persistence": -0.1038,
+        "model_minus_calendar": 0.0011,
+        "paired_interval_note": "the paired bootstrap from job ns-bwa-001 covers persistence vs calendar (+0.1014 [0.0144, 0.1739], 1000 resamples, seed 23) but NOT model vs persistence: the runner contract emits only the aggregate AUC and per-row model scores were not preserved. The -0.1038 gap is an observed difference; its precision and generality are uncertain and no interval is claimed."
+      },
+      "finding": "NO demonstrated headroom under this protocol. The runner's own baseline does not beat the best simple reference - it trails the one-line site-persistence rule (a shipped feature) by 0.1038 AUC and sits exactly at the calendar/identity control (+0.0011). Per dataset-qualification, a model below persistence is a recorded defect, not an encouraging result. This does not prove every competent model must lose: an agent that follows the shipped site-persistence feature starts at ~0.61, so the benchmark's baseline-to-reference gap is agent-visible - but the task's discriminative claim above simple references is not demonstrated.",
+      "worker": "server 173309283, elapsed 51.7 s, reservation EUR 0.06; destroyed 2026-10-29T10:08:32Z, provider read-back 0 servers / 0 primary IPs at 2026-10-29T10:08:41Z",
+      "evidence": ".factory/ns-bwa-baseline-001/reports/ (all 10 staging assets fetched and digest-verified 2026-10-29) and private staging release 427629948; inputs from release 427616218"
     }
-   },
-   "exclusions_measured": {
-    "censored_active_at_vintage": {
-     "train": 2,
-     "eval": 1,
-     "holdout": 10
+  },
+  "novelty_check": {
+    "checked_at": "2026-10-27T08:32:47+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "boil water advisory duration prediction machine learning",
+      "drinking water advisory lift duration model"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "boil water advisory duration prediction machine learning",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "drinking water advisory lift duration model",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "boil water advisory duration prediction machine learning",
+          "hits": 611488,
+          "top": [
+            "Campus Placement Prediction System using  Machine Learning",
+            "Forecasting water quality through machine learning and hyperparameter optimization",
+            "Smart Farm Price Advisor: A Machine Learning Approach to Crop Price Prediction and Farmer Decision Support",
+            "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
+            "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI"
+          ]
+        },
+        {
+          "query": "drinking water advisory lift duration model",
+          "hits": 749557,
+          "top": [
+            "Extracted Data From: EPA PFAS Analyses in Drinking Water, SAB",
+            "Associations between chlorophyll a and various microcystin health advisory concentrations",
+            "Associations between chlorophyll a and various microcystin-LR",
+            "ZeroPM workshop The Way Forward. The scale and struggle with PMT substances",
+            "ENERWAT-GLOB  - Outputs"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "boil water advisory duration prediction machine learning",
+          "hits": 5,
+          "top": [
+            "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+            "DOME: Recommendations for supervised machine learning validation in biology",
+            "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
+            "Active learning for data streams: a survey",
+            "Privacy-preserving machine learning for healthcare: open challenges and future perspectives"
+          ]
+        },
+        {
+          "query": "drinking water advisory lift duration model",
+          "hits": 5,
+          "top": [
+            "Uncertainty-aware demand management of water distribution networks in deregulated energy markets",
+            "Water Bridging Dynamics of Polymerase Chain Reaction in the Gauge Theory Paradigm of Quantum Fields",
+            "Graph Neural Networks for Pressure Estimation in Water Distribution Systems",
+            "Where are the Water Worlds?: Self-Consistent Models of Water-Rich Exoplanet Atmospheres",
+            "Drinking water contamination as a population-wide determinant of mortality in California"
+          ]
+        }
+      ]
     },
-    "negative_duration_invalid": {
-     "holdout": 2,
-     "other": 1
-    },
-    "blank_issue_dates": 30,
-    "out_of_window_2025_2026": "279 (208 in 2025 + 71 in 2026, of which 15 after the eligibility cutoff)"
-   },
-   "qualification": "PASSED on the full artifact on the worker; --accept re-verified exact bytes"
+    "evidence_summary": "- huggingface_datasets / 'boil water advisory duration prediction machine learning': 0 hit(s) - nothing notable\n- huggingface_datasets / 'drinking water advisory lift duration model': 0 hit(s) - nothing notable\n- zenodo_records / 'boil water advisory duration prediction machine learning': 611488 hit(s) - Campus Placement Prediction System using  Machine Learning, Forecasting water quality through machine learning and hyperparameter optimization, Smart Farm Price Advisor: A Machine Learning Approach to Crop Price Prediction and Farmer Decision Support, plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI\n- zenodo_records / 'drinking water advisory lift duration model': 749557 hit(s) - Extracted Data From: EPA PFAS Analyses in Drinking Water, SAB, Associations between chlorophyll a and various microcystin health advisory concentrations, Associations between chlorophyll a and various microcystin-LR, ZeroPM workshop The Way Forward. The scale and struggle with PMT substances, ENERWAT-GLOB  - Outputs\n- arxiv_preprints / 'boil water advisory duration prediction machine learning': 5 hit(s) - Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Active learning for data streams: a survey, Privacy-preserving machine learning for healthcare: open challenges and future perspectives\n- arxiv_preprints / 'drinking water advisory lift duration model': 5 hit(s) - Uncertainty-aware demand management of water distribution networks in deregulated energy markets, Water Bridging Dynamics of Polymerase Chain Reaction in the Gauge Theory Paradigm of Quantum Fields, Graph Neural Networks for Pressure Estimation in Water Distribution Systems, Where are the Water Worlds?: Self-Consistent Models of Water-Rich Exoplanet Atmospheres, Drinking water contamination as a population-wide determinant of mortality in California",
+    "prior_art": [
+      "PLOS Water 2024 Texas Winter Storm Uri geospatial analysis; J Water Health 19(5) 2021 Norway 2008-2019 descriptive series; MDPI Water 18(7) 2025 West Virginia utility-cost regression; decision-tree study on advisory issuance (not duration); in-repo isc-ltdwa-advisory-lift-timing defined the formulation and named this channel as its reopening condition"
+    ],
+    "theirs": "Publisher ships the raw NS register only (no splits, no censoring policy, no scored contract); descriptive literature models correlates of advisory duration (PLOS Water 2024 Texas Uri; JWH 2021 Norway) or uses duration as an explanatory cost variable (MDPI Water 2025 WV)",
+    "ours": "First per-advisory duration-to-lift prediction task: at issuance, 30-day lift label with publisher-documented censoring, as-of site/county history features, disjoint issue-year windows with measured base rates (66.9/60.5/58.2% lift30) - on the only public Canadian per-advisory register with lift dates found",
+    "verdict": "no_precedent",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  },
+  "contracts": {
+    "redistribution": "SUPPORTED - Open Government Licence - Nova Scotia v1.1 on the dataset's own page: copy, modify, publish, adapt, distribute for any lawful purpose including commercially; class A with the required attribution statement 'Contains information licensed under the Open Government Licence - Nova Scotia' to be carried verbatim in LICENSE.md; source terms preserved, dataset labelled as derived.",
+    "prediction_timing": "SUPPORTED AS A DECLARED RETROSPECTIVE TASK - the instant (issue date) precedes the entire 30-day label window for every scored row; every shipped feature is fixed at issuance (register columns of the issuing row + as-of history from strictly earlier rows). One pinned quarterly vintage (content as of 2026-06-16, sha256 recorded); the publisher documents blanks-as-active; no historical operational-availability claim is made; the register is revised in place, so a future re-fetch measures churn, not historical vintages. Socrata changelog/restore points are recorded as a construction-time check only.",
+    "target": "SUPPORTED - label from 'Date Advisory Removed'/'Length of Advisory in Days' (excludable columns), measured on 2,576 resolved rows; censoring (73 active) is publisher-documented, counted per window, and separated from observed non-lift; eligibility cutoff (vintage minus 30 days) prevents recent unresolved advisories entering scored windows as false negatives.",
+    "split_capacity": "SUPPORTED - measured from the full source: train 1,069 / eval 372 / holdout 886 labeled rows in disjoint issue-year windows with both classes in every window and year (lift30 rates 66.9 / 60.5 / 58.2%); clustered counts recorded (586 / 286 / 551 distinct sites); the 2020-2022 duration regime shift inside the holdout is a declared difficulty.",
+    "not_a_mirror": "SUPPORTED (novelty_check verdict: no_precedent) - no ML-ready BWA-duration task exists anywhere found; prior art is descriptive; the in-repo ISC record defined and wanted this task but its source lacked lift dates; this candidate exists because the NS register carries them."
+  },
+  "construction_handoff": {
+    "step": "On a worker: re-fetch rows.csv (quarterly updates - pin the fresh sha256, re-measure and re-record every count and base rate against this record's numbers; if the vintage changed, re-derive the eligibility cutoff from the new 'Current as of' date), parse month-name dates, verify the 2,649-row cross-check, apply eligibility (issue date <= vintage minus 30 days; three scored windows 2008-2017 / 2018-2020 / 2021-2024), recompute duration from the two date columns (treat the 3 measured negative-duration rows per a stated rule and count them), build features fixed at issuance (site name, county, facility type, reason with variant normalisation, calendar/season, and as-of site/county history from strictly earlier rows with a stated messy-identity rule), exclude both label columns, write quality.json with evaluation_contract declaring the retrospective single-vintage scope and the as-of feature policy, assert the two in-file fixtures (Maple Meadows Campground Inc 2024-08-31 -> 307 days -> lift30 negative; Canning, NS 2025-10-02 -> 1 day -> lift30 positive), then full qualification, exact-byte acceptance and reference/model scoring before any figure is reported.",
+    "expected_artifact": "train/eval/holdout CSVs of one row per issued advisory (labeled), features as above, plus a hazards appendix (negative durations, zero durations, missing facility/reason, unparseable issue dates, site-repeat counts, 2020-2022 regime shift).",
+    "success_check": "check-candidate and the qualification gate pass on the exact artifact; measured split counts and base rates within the recorded bounds (or re-recorded against the fresh vintage); as-of feature policy verified leak-free by the gate's timing checks; no site-history feature reads a row issued on or after the scored row's issue date."
+  },
+  "jobs": [
+    {
+      "id": "ns-bwa-001",
+      "status": "succeeded (deleted)",
+      "server_id": 173305072,
+      "launched": "2026-10-29T08:29Z",
+      "reservation_eur": "0.04",
+      "expected": "construct from the pinned register (sha 60f77ac4..., vintage 2026-06-16) -> full-artifact qualification on the worker -> exact-byte --accept -> score.py references on identical eval rows; expected scored rows ~1069/~372/~884 from the discovery probe minus the negative-duration exclusions",
+      "next_acceptance_check": "require the passing qualification report for this exact artifact then --accept before quoting any figure; destroy the worker after verified collection",
+      "outcome": "exit 0 in 12.0 s: construct -> gate 1.5.0 PASSED (46/46 checks, 0 failed) -> --accept ACCEPTED for artifact e8ed2a53eaf0453c... -> references on identical eval rows. Register byte-identical to discovery (sha256 60f77ac4..., 283,987 bytes, Last-Modified 2026-06-16); every recorded count and rate reproduced exactly (labeled 1069/372/886/249, censored 2/1/10/30, lift30 0.6688/0.6048/0.5824, negative-duration rows exactly the 3 known). Worker destroyed after verified collection; provider read-back 0 servers / 0 primary IPs (2026-10-29T08:38Z). Reports + extract in private staging release 427616218; compact copies in candidates/ns-bwa-advisory-lift-duration/reports/.",
+      "elapsed_seconds": 12.0
+    }
+  ],
+  "artifacts": [
+    {
+      "artifact_version": "e8ed2a53eaf0453c8ed52aea336edb994d888ad11e7b76f7898b663f017180a8",
+      "gate_version": "1.5.0",
+      "built_by_job": "ns-bwa-001",
+      "register_sha256": "60f77ac4945ca824700f5bcd3eaf564f4e5c5d4ec3f08496e8dd796e7184a30a",
+      "register_vintage": "2026-06-16 (eligibility cutoff 2026-05-17 = vintage minus 30 days)",
+      "built_at_pin": "2026-10-29T00:00:00Z",
+      "layout": "public/train.csv, public/eval.csv, private/holdout.csv, meta.json, quality.json",
+      "split_stats": {
+        "train": {
+          "rows": 1069,
+          "positives": 715,
+          "rate": 0.668849,
+          "distinct_sites": 585,
+          "positive_sites": 447,
+          "positive_issue_dates": 569
+        },
+        "eval": {
+          "rows": 372,
+          "positives": 225,
+          "rate": 0.604839,
+          "distinct_sites": 286,
+          "positive_sites": 183,
+          "positive_issue_dates": 176
+        },
+        "holdout": {
+          "rows": 884,
+          "positives": 514,
+          "rate": 0.581448,
+          "distinct_sites": 547,
+          "positive_sites": 343,
+          "positive_issue_dates": 367
+        }
+      },
+      "exclusions_measured": {
+        "censored_active_at_vintage": {
+          "train": 2,
+          "eval": 1,
+          "holdout": 10
+        },
+        "negative_duration_invalid": {
+          "holdout": 2,
+          "other": 1
+        },
+        "blank_issue_dates": 30,
+        "out_of_window_2025_2026": "279 (208 in 2025 + 71 in 2026, of which 15 after the eligibility cutoff)"
+      },
+      "qualification": "PASSED on the full artifact on the worker; --accept re-verified exact bytes"
+    }
+  ],
+  "rejection_reason": null,
+  "review": null,
+  "next_action": "BASELINE MEASURED 2026-10-29 (job ns-bwa-baseline-001): full runner-contract model 0.5086 eval AUC vs site persistence 0.6124 / calendar-identity 0.5075 on the same 372 rows - no demonstrated headroom under this protocol; see measurements.baseline_2026_10_29. ADVANCEMENT DECISION (not the watcher's): per dataset-qualification, either re-scope to a substantively useful change target (onset/transition/sustained-change label, user need and protocol specified FIRST, then qualify and compare anew - never re-target because it improves a held-out score), or drop the candidate with this negative finding preserved. Cheapest discriminating next check if wanted before that call: one bounded worker diagnostic on the same accepted artifact that preserves per-row model scores, so model-vs-persistence gets a dependence-aware paired interval and per-year AUCs against the documented 2018-2020 prevalence shift (0.744 -> 0.415). Do not re-tune this label, threshold or these splits. No packaging step may quote any figure from this artifact without this comparison beside it.",
+  "updated_at": "2026-10-29T10:09:50.888343+00:00",
+  "qualification": {
+    "gate": "skills/dataset-qualification/scripts/qualify_dataset.py (canonical copy, sha256 4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1)",
+    "gate_version": "1.5.0",
+    "result": "PASSED - 46 checks, 0 failed, on the full artifact on the worker (job ns-bwa-001); --accept re-verified the report against the exact bytes",
+    "artifact_version": "e8ed2a53eaf0453c8ed52aea336edb994d888ad11e7b76f7898b663f017180a8",
+    "note": "First attempt (ns-bwa-001) succeeded. Gate --selftest passed before the launch; a synthetic-register smoke on the coordinator exercised build.py + the real gate (every structural check incl. the timing block, evaluation_contract with the two cross-row probes, split windows, both-classes minimums) before any worker spend; the as-of history semantics were spot-verified on synthetic rows (strictly-earlier only; same-(site,issue) rows never see each other; blank-county rows never pool). Reports preserved at candidates/ns-bwa-advisory-lift-duration/reports/ and in the private staging release 427616218."
   }
- ],
- "rejection_reason": null,
- "review": null,
- "next_action": "QUALIFIED 2026-10-29 (job ns-bwa-001): construct -> gate 1.5.0 PASSED (46/46) -> --accept ACCEPTED for artifact e8ed2a53eaf0453c8ed52aea336edb994d888ad11e7b76f7898b663f017180a8 -> references on identical eval rows; register byte-identical to discovery; worker destroyed, provider read-back 0 servers/0 IPs. References measured: site persistence AUC 0.6124 vs calendar/identity 0.5075 (paired diff +0.1014, CI [0.0144, 0.1739]) and reason prior 0.4307; within-eval prevalence 0.744 -> 0.415 across 2018-2020 (regime shift - per-year reporting is mandatory). The full model is NOT yet measured: the next step is the harness runner baseline worker job on the staged artifact (the wb-sol-baseline-001 pattern) to train/evaluate the runner model on the same eval rows and compare against the site-persistence reference; interpret per dataset-qualification (a model below persistence is a recorded defect; one weak model does not establish impossibility), then package per dataset-release. The reverse-history cross-row exposure is measured (56 eval rows covered by the site probe) and covered by the declared isolated_rows access - any release card must state it as design intent, never as an enforced protocol. No figure beyond the references above is quoted from this artifact until the baseline job exists.",
- "updated_at": "2026-10-29T08:39:07+00:00",
- "qualification": {
-  "gate": "skills/dataset-qualification/scripts/qualify_dataset.py (canonical copy, sha256 4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1)",
-  "gate_version": "1.5.0",
-  "result": "PASSED - 46 checks, 0 failed, on the full artifact on the worker (job ns-bwa-001); --accept re-verified the report against the exact bytes",
-  "artifact_version": "e8ed2a53eaf0453c8ed52aea336edb994d888ad11e7b76f7898b663f017180a8",
-  "note": "First attempt (ns-bwa-001) succeeded. Gate --selftest passed before the launch; a synthetic-register smoke on the coordinator exercised build.py + the real gate (every structural check incl. the timing block, evaluation_contract with the two cross-row probes, split windows, both-classes minimums) before any worker spend; the as-of history semantics were spot-verified on synthetic rows (strictly-earlier only; same-(site,issue) rows never see each other; blank-county rows never pool). Reports preserved at candidates/ns-bwa-advisory-lift-duration/reports/ and in the private staging release 427616218."
- }
 }
