@@ -9449,3 +9449,37 @@ arrays in the auditor's own contract.json were placeholders and are not zero-err
 Corrections are being applied to the staged package and builder; the corrected package must
 re-qualify through the gate two-phase and re-stage to both private destinations before the
 operator's flip. awaiting_operator stays true; nothing is public.
+
+## 2026-10-29 02:2xZ - wb-loan-disbursement-completion baseline measured: no headroom over an identity prior, candidate dropped
+
+The recorded next action for the only actionable qualified candidate was the harness baseline on
+the accepted artifact c9ac51b846f7b1ee. It ran and it settled the candidate.
+
+- Evidence re-read before launch, not taken on trust: staging release 427207251's manifest was
+  read directly (the previous pass's fetcher missed the entry list under `assets[].file`) and the
+  gate report cad5d763…, acceptance 0939cccf…, references d1521987…, meta 6e841f63…, quality
+  4728e210… were fetched and digest-matched. Gate 1.5.0, ok, 44 results, failed_checks [].
+- New baseline bundle candidates/wb-loan-disbursement-completion/baseline/ (bundle.json, job.json,
+  run.sh, materialize.py, report.py, qualification.json= the collected gate report). Order is
+  pip install -> gate --accept -> materialize -> train.py -> validate.sh -> report.py; the first
+  metric anywhere is train.py's own Eval AUC, after acceptance. Local preflight on the fetched
+  bytes: --accept ACCEPTED c9ac51b846f7b1ee, materialize produced the bench/workdir.py key set
+  (target completed90, id_columns [loan_number, project_id]).
+- Job wb-sol-baseline-001 (cx23, reservation EUR 0.06, server 173237051, created 02:13:07Z,
+  deleted 02:23:39Z, exit 0). Staging release 427393678; reports collected and digest-verified.
+  Worker --accept line: ACCEPTED c9ac51b846f7b1ee; runner files unmodified.
+- Measured on 1,034 eval rows: full model 0.5452 (train.py and validate.py agree) vs country
+  identity prior 0.5364, loan-type prior 0.5156, persistence 0.4771. Observed gap +0.0088; marginal
+  AUC SEs 0.0189/0.0190, conservative independent-sum difference SE 0.0268 (gap/SE 0.33). No
+  paired bootstrap is possible because the runner contract writes no per-row scores - stated as
+  a limitation, not smoothed over. Inconclusive difference, no demonstrated headroom.
+- Decision: candidate DROPPED with the negative finding preserved in the record and in staging
+  427393678. Holdout never scored. Reopen only as a new task instance carrying approval-instant
+  information this table does not have, or as a change target; no re-tuning of this label.
+- Cleanup verified provider-side: zero servers in the Hetzner project.
+
+Next action: the actionable queue is now construction/release only. unhcr-refugee-data-finder
+stays packaged and blocked on the operator relaying its regenerated pre-flip audit prompt
+(operator_decision_pending); preemption exempts it. Next unblocked candidate from the tick list:
+austender-contract-amendment-occurrence or conagua-dam-drought-onset (build), each needing its
+own evidence re-read before any launch.

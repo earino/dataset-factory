@@ -1,0 +1,625 @@
+{
+ "ok": true,
+ "dataset": "/output/extract",
+ "gate_version": "1.5.0",
+ "artifact": {
+  "train": {
+   "file": "public/train.csv",
+   "sha256": "b1e7f26ba8adc8f9f9a59111ce86d246f45f396c02dc559eb8dde2867234f1e9",
+   "bytes": 619818
+  },
+  "eval": {
+   "file": "public/eval.csv",
+   "sha256": "9813b282b80e30d1fa9c6f61bac917a892217d8b8b7e4756fb4f10e178a8567e",
+   "bytes": 109484
+  },
+  "holdout": {
+   "file": "private/holdout.csv",
+   "sha256": "a6328a8dc7d23c0c853cd6eb0a20074c98c70696fb124b8710a3bd531727ac90",
+   "bytes": 86378
+  },
+  "meta.json": {
+   "file": "meta.json",
+   "sha256": "6e841f63261936dc683bec0ed98c72506ed80ed8a66cb0804a36f5252491e1aa",
+   "bytes": 1551
+  },
+  "quality.json": {
+   "file": "quality.json",
+   "sha256": "4728e210877e736329caf73dd42b68c6b08515be29ce986a069650b1ec07389d",
+   "bytes": 23309
+  },
+  "artifact_version": {
+   "digest": "c9ac51b846f7b1eef7693129514290e837446cc8e72dbdacf562b43d5e1b4c1f",
+   "components": [
+    "eval",
+    "holdout",
+    "meta.json",
+    "quality.json",
+    "train"
+   ]
+  }
+ },
+ "results": [
+  {
+   "check": "descriptor",
+   "ok": true,
+   "detail": "quality.json loaded for 'wb-loan-disbursement-completion'",
+   "evidence": {}
+  },
+  {
+   "check": "contract.declared",
+   "ok": true,
+   "detail": "evaluation_contract required: intended use, access, vintage and evidence",
+   "evidence": {}
+  },
+  {
+   "check": "contract.scope",
+   "ok": true,
+   "detail": "use='retrospective_research'; access='isolated_rows'; eval is development, holdout is final",
+   "evidence": {}
+  },
+  {
+   "check": "contract.every_input_has_availability_evidence",
+   "ok": true,
+   "detail": "Every solver-visible non-target column needs availability evidence; missing: []",
+   "evidence": {}
+  },
+  {
+   "check": "contract.vintage_and_selection",
+   "ok": true,
+   "detail": "Vintage, selection and limitations must be explicit; declarations are not measurements",
+   "evidence": {}
+  },
+  {
+   "check": "contract.cross_row_review",
+   "ok": true,
+   "detail": "Document applicable cross-row probes and every solver-visible auxiliary file",
+   "evidence": {}
+  },
+  {
+   "check": "contract.label_availability",
+   "ok": true,
+   "detail": "No full-row availability ledger: training-label timing UNVERIFIED; retrospective use only",
+   "evidence": {}
+  },
+  {
+   "check": "leakage.declared_columns",
+   "ok": true,
+   "detail": "every shipped column is declared",
+   "evidence": {
+    "undeclared": []
+   }
+  },
+  {
+   "check": "leakage.answer_source_absent",
+   "ok": true,
+   "detail": "no answer source or post-hoc column is shipped",
+   "evidence": {
+    "shipped_forbidden": []
+   }
+  },
+  {
+   "check": "leakage.every_column_could_be_scored",
+   "ok": true,
+   "detail": "every column was scored for leakage",
+   "evidence": {
+    "unscorable": []
+   }
+  },
+  {
+   "check": "leakage.no_single_column_determines_the_target",
+   "ok": true,
+   "detail": "no shipped column separates the classes on its own",
+   "evidence": {
+    "offenders": [],
+    "high_cardinality": [
+     "board_approval_date@eval",
+     "board_approval_date@holdout",
+     "board_approval_date@train",
+     "loan_number@eval",
+     "loan_number@holdout",
+     "loan_number@train",
+     "project_id@eval",
+     "project_id@holdout",
+     "project_id@train"
+    ],
+    "missing_splits": []
+   }
+  },
+  {
+   "check": "leakage.high_cardinality_declared",
+   "ok": true,
+   "detail": "high-cardinality columns are declared as identifiers or free fields",
+   "evidence": {
+    "undeclared": [],
+    "declared": [
+     "board_approval_date",
+     "borrower",
+     "loan_number",
+     "project_id"
+    ]
+   }
+  },
+  {
+   "check": "timing.prediction_time_declared",
+   "ok": true,
+   "detail": "prediction instant is declared",
+   "evidence": {}
+  },
+  {
+   "check": "timing.no_post_hoc_feature",
+   "ok": true,
+   "detail": "no feature is documented as post-hoc",
+   "evidence": {
+    "overlap": []
+   }
+  },
+  {
+   "check": "timing.label_source_is_not_a_feature",
+   "ok": true,
+   "detail": "the label source is not a feature",
+   "evidence": {
+    "source_features": []
+   }
+  },
+  {
+   "check": "timing.every_feature_documented",
+   "ok": true,
+   "detail": "features documented as available 'prediction_time'",
+   "evidence": {
+    "features_documented_at": "prediction_time"
+   }
+  },
+  {
+   "check": "timing.instant_declared",
+   "ok": true,
+   "detail": "prediction instant kind='event_time' citation=True",
+   "evidence": {
+    "prediction_instant": {
+     "kind": "event_time",
+     "period": "day",
+     "days_after_period_end": 0,
+     "citation": "DS00047 column description, read 2026-10-28: board_approval_date is 'The date the World Bank approves the loan' (financesone.worldbank.org/d/DS00047 and the metadata API); the same-day press release and projects.worldbank.org record publish it at the event"
+    }
+   }
+  },
+  {
+   "check": "timing.publication_lag_measured",
+   "ok": true,
+   "detail": "0 of 0 observed period_end -> published dates are usable",
+   "evidence": {
+    "observations": [],
+    "measured_lag_days": null,
+    "source_kind": "administrative_record"
+   }
+  },
+  {
+   "check": "timing.features_available_at_instant",
+   "ok": true,
+   "detail": "features publish 0d after the period, instant is 0d after it",
+   "evidence": {
+    "features_lag_days": 0,
+    "instant_lag_days": 0,
+    "measured_lag_days": null
+   }
+  },
+  {
+   "check": "timing.instant_accounts_for_publication_lag",
+   "ok": true,
+   "detail": "instant kind is 'event_time' while features publish 0d after the period",
+   "evidence": {
+    "kind": "event_time",
+    "features_lag_days": 0
+   }
+  },
+  {
+   "check": "timing.selection_uses_only_available_data",
+   "ok": true,
+   "detail": "row selection declares its latest period as '2017 (approval-date censoring)'",
+   "evidence": {
+    "latest_period_used": "2017 (approval-date censoring)",
+    "fields": [
+     "loan_number prefix",
+     "loan_type",
+     "original_principal_amount",
+     "board_approval_date",
+     "loan_status",
+     "closed_date_most_recent",
+     "undisbursed_amount"
+    ]
+   }
+  },
+  {
+   "check": "units.measured_columns_declare_unit_and_frame",
+   "ok": true,
+   "detail": "12 measured column(s) declare unit and frame",
+   "evidence": {
+    "measurements": [
+     {
+      "column": "original_principal_amount",
+      "unit": "USD (current dollars as recorded in the register)",
+      "frame": "the Board-approved commitment at the instant; positive by the scoping rule"
+     },
+     {
+      "column": "board_approval___calendar_year",
+      "unit": "calendar year (integer)",
+      "frame": "the year of the approval event; equals the year of board_approval_date"
+     },
+     {
+      "column": "board_approval_date",
+      "unit": "ISO date",
+      "frame": "the prediction instant itself (carry column and split time column)"
+     },
+     {
+      "column": "country",
+      "unit": "publisher country/economy name",
+      "frame": "borrower country identity at approval"
+     },
+     {
+      "column": "country_code",
+      "unit": "publisher country code",
+      "frame": "borrower country identity at approval"
+     },
+     {
+      "column": "guarantor",
+      "unit": "publisher guarantor name",
+      "frame": "guarantor identity at approval (often the state itself)"
+     },
+     {
+      "column": "guarantor_country_code",
+      "unit": "publisher code",
+      "frame": "guarantor identity at approval"
+     },
+     {
+      "column": "borrower",
+      "unit": "free text (contracting entity)",
+      "frame": "the entity named as borrower at approval"
+     },
+     {
+      "column": "loan_type",
+      "unit": "publisher instrument code",
+      "frame": "the approved instrument type; guarantees and B-loan/guarantee-facility types are excluded by the scoping rule"
+     },
+     {
+      "column": "loan_number",
+      "unit": "publisher instrument number",
+      "frame": "row identifier; unique per instrument"
+     },
+     {
+      "column": "project_id",
+      "unit": "publisher project code",
+      "frame": "the World Bank project the loan finances; the cluster key for independent-event counting"
+     },
+     {
+      "column": "completed90",
+      "unit": "binary 0/1",
+      "frame": "1 iff final disbursed_amount / original_principal_amount >= 0.9; measured on the matured (disbursement-closed) population only; ratio 0 is a genuine negative only when cancelled_amount == original (a documented full cancellation; asserted in-build on every shipped ratio-0 row); zero-disbursement rows without that documentation are excluded as unverified and counted in summary.json (18 rows measured 2026-10-28)"
+     }
+    ]
+   }
+  },
+  {
+   "check": "units.known_event_fixture_recorded",
+   "ok": true,
+   "detail": "no external threshold, so no known-event fixture is required",
+   "evidence": {}
+  },
+  {
+   "check": "splits.time_column_declared",
+   "ok": true,
+   "detail": "split overlap is checked against 'board_approval_date'",
+   "evidence": {}
+  },
+  {
+   "check": "splits.machine_readable_windows",
+   "ok": true,
+   "detail": "train/eval/holdout windows are declared with start/end",
+   "evidence": {
+    "split_windows": {
+     "train": {
+      "start": "1947-01-01",
+      "end": "2000-01-01"
+     },
+     "eval": {
+      "start": "2000-01-01",
+      "end": "2010-01-01"
+     },
+     "holdout": {
+      "start": "2010-01-01",
+      "end": "2018-01-01"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.files_present",
+   "ok": true,
+   "detail": "all three split files exist",
+   "evidence": {
+    "missing": []
+   }
+  },
+  {
+   "check": "splits.non_empty",
+   "ok": true,
+   "detail": "every split has rows",
+   "evidence": {
+    "train": {
+     "rows": 5874,
+     "positives": 4059,
+     "negatives": 1815,
+     "positive_rate": 0.691011
+    },
+    "eval": {
+     "rows": 1034,
+     "positives": 701,
+     "negatives": 333,
+     "positive_rate": 0.67795
+    },
+    "holdout": {
+     "rows": 831,
+     "positives": 572,
+     "negatives": 259,
+     "positive_rate": 0.688327
+    }
+   }
+  },
+  {
+   "check": "splits.eval_and_holdout_have_both_classes",
+   "ok": true,
+   "detail": "eval and holdout each contain positives and negatives",
+   "evidence": {
+    "train": {
+     "rows": 5874,
+     "positives": 4059,
+     "negatives": 1815,
+     "positive_rate": 0.691011
+    },
+    "eval": {
+     "rows": 1034,
+     "positives": 701,
+     "negatives": 333,
+     "positive_rate": 0.67795
+    },
+    "holdout": {
+     "rows": 831,
+     "positives": 572,
+     "negatives": 259,
+     "positive_rate": 0.688327
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_declared",
+   "ok": true,
+   "detail": "eval and holdout declare positives and distinct events",
+   "evidence": {
+    "declared": {
+     "train": {
+      "positives": 4059,
+      "distinct_events": 3290
+     },
+     "eval": {
+      "positives": 701,
+      "distinct_events": 654
+     },
+     "holdout": {
+      "positives": 572,
+      "distinct_events": 549
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_match_rows",
+   "ok": true,
+   "detail": "declared positive counts match the rows",
+   "evidence": {
+    "mismatched": []
+   }
+  },
+  {
+   "check": "splits.event_key_column_declared",
+   "ok": true,
+   "detail": "clustered events are counted by 'project_id' (date part)",
+   "evidence": {}
+  },
+  {
+   "check": "splits.distinct_events_match_rows",
+   "ok": true,
+   "detail": "declared clustered event counts match the rows",
+   "evidence": {
+    "recomputed": {
+     "train": 3290,
+     "eval": 654,
+     "holdout": 549
+    },
+    "declared": {
+     "train": {
+      "positives": 4059,
+      "distinct_events": 3290
+     },
+     "eval": {
+      "positives": 701,
+      "distinct_events": 654
+     },
+     "holdout": {
+      "positives": 572,
+      "distinct_events": 549
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.enough_clustered_positives",
+   "ok": true,
+   "detail": "eval and holdout carry enough independent positive events to score",
+   "evidence": {
+    "thin": [],
+    "recomputed_events": {
+     "train": 3290,
+     "eval": 654,
+     "holdout": 549
+    },
+    "minimums": {
+     "positives": 30,
+     "distinct_events": 20
+    }
+   }
+  },
+  {
+   "check": "splits.rates_not_uniform",
+   "ok": true,
+   "detail": "positive rates are between 0 and 1",
+   "evidence": {
+    "rates": [
+     0.691011,
+     0.67795,
+     0.688327
+    ]
+   }
+  },
+  {
+   "check": "splits.actual_ranges_computed",
+   "ok": true,
+   "detail": "row timestamps found for every split",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "1947-05-09",
+      "max": "1999-12-22"
+     },
+     "eval": {
+      "min": "2000-01-06",
+      "max": "2009-12-22"
+     },
+     "holdout": {
+      "min": "2010-01-12",
+      "max": "2017-12-20"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.actual_ranges_disjoint",
+   "ok": true,
+   "detail": "the rows of the three splits occupy disjoint periods",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "1947-05-09",
+      "max": "1999-12-22"
+     },
+     "eval": {
+      "min": "2000-01-06",
+      "max": "2009-12-22"
+     },
+     "holdout": {
+      "min": "2010-01-12",
+      "max": "2017-12-20"
+     }
+    },
+    "overlaps": []
+   }
+  },
+  {
+   "check": "splits.rows_within_declared_windows",
+   "ok": true,
+   "detail": "every row falls inside its split's declared window",
+   "evidence": {
+    "windows": {
+     "train": {
+      "start": "1947-01-01",
+      "end": "2000-01-01"
+     },
+     "eval": {
+      "start": "2000-01-01",
+      "end": "2010-01-01"
+     },
+     "holdout": {
+      "start": "2010-01-01",
+      "end": "2018-01-01"
+     }
+    },
+    "ranges": {
+     "train": {
+      "min": "1947-05-09",
+      "max": "1999-12-22"
+     },
+     "eval": {
+      "min": "2000-01-06",
+      "max": "2009-12-22"
+     },
+     "holdout": {
+      "min": "2010-01-12",
+      "max": "2017-12-20"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.no_cross_split_entities",
+   "ok": true,
+   "detail": "no loan_number appears in more than one split",
+   "evidence": {
+    "shared_sample": [],
+    "shared_count": 0
+   }
+  },
+  {
+   "check": "splits.duplicate_entities_within_splits",
+   "ok": true,
+   "detail": "0 repeated-identifier rows within splits, at most the declared 0",
+   "evidence": {
+    "duplicate_rows": {},
+    "declared": 0
+   }
+  },
+  {
+   "check": "runner.layout",
+   "ok": true,
+   "detail": "holdout is private and train/eval are public",
+   "evidence": {}
+  },
+  {
+   "check": "runner.meta_json_keys",
+   "ok": true,
+   "detail": "meta.json carries the keys the runner reads",
+   "evidence": {
+    "keys": [
+     "columns",
+     "description",
+     "id_columns",
+     "name",
+     "positive_label",
+     "positive_rate",
+     "rows",
+     "split",
+     "split_description",
+     "target"
+    ]
+   }
+  },
+  {
+   "check": "runner.meta_matches_files",
+   "ok": true,
+   "detail": "meta.json agrees with the split files",
+   "evidence": {
+    "problems": []
+   }
+  },
+  {
+   "check": "runner.meta_counts_match_files",
+   "ok": true,
+   "detail": "meta rows and rates match the files",
+   "evidence": {}
+  },
+  {
+   "check": "runner.id_columns_are_not_features",
+   "ok": true,
+   "detail": "declared identifiers are not also listed as features",
+   "evidence": {}
+  }
+ ],
+ "failed_checks": []
+}

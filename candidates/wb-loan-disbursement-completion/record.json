@@ -1,6 +1,6 @@
 {
  "id": "wb-loan-disbursement-completion",
- "status": "qualified",
+ "status": "dropped",
  "created_at": "2026-10-28T10:16:58.708421+00:00",
  "domain": "sovereign lending / loan-lifecycle execution outcome prediction (World Bank Group)",
  "prediction_question": "At the instant the World Bank Board approves an IBRD loan (board_approval_date, a documented column: 'The date the World Bank approves the loan'), will that loan disburse at least 90% of its original principal amount over its life? (Alternative near-balanced threshold >=99% is measured and recorded; construction picks one and documents it.) A useful prediction enables disbursement-risk scoring at commitment time for portfolio management, borrower-side planning and development-finance research: roughly a third of IBRD lending historically fails to move 90% of its commitment, and that gap is the operational quantity WB cash planning and aid-delivery studies care about.",
@@ -238,7 +238,25 @@
     "persistence_vs_country_prior": "mean -0.059062, ci95 [-0.106581, -0.011679] - the country identity prior beats the persistence analogue; interval excludes zero",
     "country_prior_vs_loan_type_prior": "mean 0.022545, ci95 [-0.021048, 0.064545] - inconclusive, not parity"
    },
-   "interpretation": "every simple reference sits near the AUC null on eval; the full model (harness baseline job) has NOT been run yet, so no headroom claim is made in either direction. The IEG-family headroom risk recorded at review stays open until the full-model figure exists beside these references."
+   "interpretation": "every simple reference sits near the AUC null on eval. SUPERSEDED by measurements.baseline_2026_10_29 (2026-10-29): the harness baseline reached 0.5452 on these same rows, +0.0088 over the country prior with a conservative difference SE of 0.0268 - an inconclusive difference, so no headroom is claimed in either direction and the candidate is dropped with the negative finding preserved."
+  },
+  "baseline_2026_10_29": {
+   "command": "worker job wb-sol-baseline-001 (cx23, 45-min timeout) - fetched the accepted artifact from staging release 427207251, re-ran gate 1.5.0 --accept against the bundled report (ACCEPTED c9ac51b846f7b1ee), materialized the runner workdir (public train+eval only) and ran the harness task_template train.py + validate.sh unmodified",
+   "artifact_version": "c9ac51b846f7b1eef7693129514290e837446cc8e72dbdacf562b43d5e1b4c1f",
+   "gate_report_sha256": "cad5d763c34a9a5938193c58bc03375fa194a01bb5946c5a04320781cea4c644",
+   "eval_rows": 1034,
+   "full_model_eval_auc": 0.5452,
+   "full_model_eval_auc_validate_recompute": 0.5452,
+   "references_same_rows": {
+    "persistence_country_last": 0.47708336010761115,
+    "country_prior": 0.5364280114636748,
+    "loan_type_prior": 0.5155526425141261,
+    "majority_class_accuracy": 0.6779497098646035
+   },
+   "observed_gap_model_minus_country_prior": 0.0088,
+   "uncertainty": "NOT a paired test. Per-row model scores were not written by the runner contract, so no paired bootstrap on identical rows is possible from this run. Marginal Hanley-McNeil AUC standard errors are 0.0189 (model) and 0.0190 (country prior) at 701 positives / 333 negatives; a conservative independent-sum difference SE is 0.0268, giving gap/SE = 0.33. Label it an inconclusive difference.",
+   "scope": "Eval split only (2000-2009). The sealed holdout was not evaluated and no holdout figure exists or is implied. Runner contract only, no agent harness loop.",
+   "evidence": ".factory/wb-sol-baseline-001/reports/{baseline_result.json,train.log,validate.log,accept.log,manifest.json}; staging release 427393678 (tag job-wb-sol-baseline-001)"
   }
  },
  "jobs": [
@@ -258,6 +276,16 @@
    "expected": "construct -> full-artifact qualification on the worker -> exact-byte --accept -> score.py references on identical eval rows; expected rows ~5.9k train / ~1.0k eval / ~0.8k holdout at the 0.90 threshold (measured base rate ~68.8%)",
    "next_acceptance_check": "sh scripts/scout-factory worker collect wb-sol-002; require the passing qualification report for this exact artifact then qualify_dataset.py --accept before quoting any figure; destroy the worker after verified collection",
    "outcome": "exit 0 in 21.2 s: construct -> gate 1.5.0 PASSED (44/44 checks, 0 failed) -> --accept ACCEPTED for artifact c9ac51b846f7b1ee -> references on identical eval rows. Worker destroyed after verified collection (server 173186371). Reports in the private staging release (job wb-sol-002): qualification json/txt, acceptance txt, summary, references, extract CSVs at recorded sha256s (train b1e7f26ba8adc8f9...)."
+  },
+  {
+   "status": "deleted",
+   "server_id": 173237051,
+   "created_at": "2026-10-29T02:13:07Z",
+   "deleted_at": "2026-10-29T02:23:39Z",
+   "reservation_eur": "0.06",
+   "staging_release": 427393678,
+   "id": "wb-sol-baseline-001",
+   "outcome": "exit 0; contract OK; eval AUC 0.5452 from both train.py and validate.py"
   }
  ],
  "artifacts": [
@@ -302,10 +330,10 @@
   }
  ],
  "review": "All five discovery contracts have measured evidence. (1) Redistribution: CC BY 4.0 stated on the dataset page and metadata API - class A. (2) Prediction timing: instant is the documented board_approval_date; all shipped features are static approval-time attributes, with one disclosed current-vintage caveat (region, flagged in the publisher's own column description) that construction must either drop or carry as a limitation; the whole label window follows the instant; censoring is measured and the population cutoff at 2017 approvals is explicit. (3) Target: ratio of two in-row columns, label sources excludable, zero-ratio instruments are genuine negatives (cancelled_amount documents them), not missing data. (4) Split capacity: both classes in all three windows with hundreds of independent country-year clusters; clustering by project_id and country-year is measured and the split rule accounts for it. (5) Not a mirror: no ML-ready disbursement-completion benchmark exists; prior art targets IEG ratings (different target, different table, already measured as no-headroom by our own dropped wb-ieg candidate). Headroom is the known open risk of this source family (the IEG task failed it) - that is a construction/qualification measurement, and the near-balanced >=99% variant plus the approval-time-only feature contract are the mitigations; the honest posture is to build and let the measured baselines decide, not to claim headroom now.",
- "verdict": "go",
- "next_action": "Run the harness baseline worker job on the accepted artifact c9ac51b846f7b1ee (assemble the baseline bundle: harness train.py/validate.py/validate.sh verbatim per scripts/assemble-job.py) to get the full-model eval/holdout figure beside the recorded references, then interpret the triad per dataset-qualification before any packaging: if the full model does not beat the country identity prior (0.536 AUC) by more than its uncertainty, record constructed-no-headroom and stop, as happened to wb-ieg-project-outcome. Holdout stays sealed until that design is frozen. No figure may be quoted outside this record before the baseline job exists.",
+ "verdict": "No demonstrated headroom under this protocol. The harness runner's own baseline reached eval AUC 0.5452 on the accepted artifact (train.py and validate.py agree exactly), against a train-estimated country identity prior of 0.5364, an instrument-type prior of 0.5156 and a country-persistence reference of 0.4771 on the same 1,034 eval rows. The observed gap over the country prior is +0.0088; the marginal standard errors are about 0.019 each, so the difference is far inside sampling noise - an inconclusive difference, not parity and not a demonstrated edge. Nothing here proves the question is unanswerable; it says this source's approval-instant fields do not carry it.",
+ "next_action": "None (dropped 2026-10-29). Negative finding preserved in measurements.baseline_2026_10_29 and in staging release 427393678. Reopen only as a NEW task instance with approval-instant information the source table does not carry (e.g. a verified as-of country/macro covariate join with its own availability ledger), or a change target; do not re-tune this label, threshold or these splits.",
  "construction_script": "candidates/wb-loan-disbursement-completion/source/build.py (worker job wb-sol-002 in flight; construct-only, no performance metric computed anywhere in the build; gate + --accept + score.py references run in the fixed run.sh order)",
- "rejection_reason": null,
+ "rejection_reason": "Measured no headroom over an identity prior at the Board-approval instant. Diagnosis, bounded: the shipped features at the instant are the instrument's static attributes (loan_type, original_principal_amount, borrower/guarantor identity, country) plus identifiers; the label is highly persistent (68-69% positive in every split) and country identity carries nearly all of the observable signal. There is no within-row history and no macro/country-year covariate in DS00047 at the approval instant, so the tested model has little beyond the prior to learn from. The negative finding is preserved: artifact c9ac51b846f7b1ee, gate 1.5.0 report cad5d763, worker job wb-sol-baseline-001 (staging release 427393678). Holdout was never scored (no holdout evaluation ran), so the sealed split remains unused.",
  "qualification": {
   "gate": "skills/dataset-qualification/scripts/qualify_dataset.py (canonical copy, sha256 4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1)",
   "gate_version": "1.5.0",

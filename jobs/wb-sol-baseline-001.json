@@ -1,0 +1,231 @@
+{
+  "job": {
+    "id": "wb-sol-baseline-001",
+    "candidate": "wb-loan-disbursement-completion",
+    "image": "python:3.13-slim",
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 3072,
+    "timeout_minutes": 45,
+    "lifetime_minutes": 90,
+    "max_disk_mb": 4096,
+    "max_artifact_mb": 16,
+    "what": "runner-contract baseline on the accepted wb-loan-disbursement-completion artifact c9ac51b846f7b1ee (gate 1.5.0, 44/44 checks, --accept ACCEPTED), fetched from private staging release 427207251 rather than rebuilt: re-accept the five fetched files against the gate's own collected report, materialize the runner workdir (public train+eval only; the private holdout is never copied), then run the benchmark's own train.py and validate.sh unmodified and record both eval AUCs. Contract only, no agent loop. Construction-time references already measured on the same eval rows: persistence_country_last 0.4771, country_prior 0.5364, loan_type_prior 0.5156, majority-class accuracy 0.6779.",
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 427207251,
+      "assets": [
+        {
+          "asset_id": 686388950,
+          "dest": "extract/meta.json",
+          "size": 1551,
+          "sha256": "6e841f63261936dc683bec0ed98c72506ed80ed8a66cb0804a36f5252491e1aa"
+        },
+        {
+          "asset_id": 686389015,
+          "dest": "extract/private/holdout.csv",
+          "size": 86378,
+          "sha256": "a6328a8dc7d23c0c853cd6eb0a20074c98c70696fb124b8710a3bd531727ac90"
+        },
+        {
+          "asset_id": 686389071,
+          "dest": "extract/public/eval.csv",
+          "size": 109484,
+          "sha256": "9813b282b80e30d1fa9c6f61bac917a892217d8b8b7e4756fb4f10e178a8567e"
+        },
+        {
+          "asset_id": 686389143,
+          "dest": "extract/public/train.csv",
+          "size": 619818,
+          "sha256": "b1e7f26ba8adc8f9f9a59111ce86d246f45f396c02dc559eb8dde2867234f1e9"
+        },
+        {
+          "asset_id": 686389202,
+          "dest": "extract/quality.json",
+          "size": 23309,
+          "sha256": "4728e210877e736329caf73dd42b68c6b08515be29ce986a069650b1ec07389d"
+        }
+      ]
+    },
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "source_files": [
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/wb-loan-disbursement-completion/baseline/run.sh",
+        "bytes": 2432,
+        "sha256": "65cb88adea064ead1cc9ac915cace54810f6053a84f21e2c32dc89c590f2d476"
+      },
+      {
+        "bundled_as": "materialize.py",
+        "source": "candidates/wb-loan-disbursement-completion/baseline/materialize.py",
+        "bytes": 2093,
+        "sha256": "c0aec77aae733d379df10e9fb8f0e04154301f63a09537a46ba9c3a86eb8dbb7"
+      },
+      {
+        "bundled_as": "report.py",
+        "source": "candidates/wb-loan-disbursement-completion/baseline/report.py",
+        "bytes": 5137,
+        "sha256": "205eeccaca276e148a9dd65d43b00dc015b64f86e48d38db418a83519b35cec5"
+      },
+      {
+        "bundled_as": "qualification.json",
+        "source": "candidates/wb-loan-disbursement-completion/baseline/qualification.json",
+        "bytes": 15251,
+        "sha256": "cad5d763c34a9a5938193c58bc03375fa194a01bb5946c5a04320781cea4c644"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 57029,
+        "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+      },
+      {
+        "bundled_as": "train.py",
+        "source": "/opt/data/harness_benchmark/task_template/train.py",
+        "bytes": 2500,
+        "sha256": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8"
+      },
+      {
+        "bundled_as": "validate.py",
+        "source": "/opt/data/harness_benchmark/task_template/validate.py",
+        "bytes": 1277,
+        "sha256": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b"
+      },
+      {
+        "bundled_as": "validate.sh",
+        "source": "/opt/data/harness_benchmark/task_template/validate.sh",
+        "bytes": 482,
+        "sha256": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      }
+    ]
+  },
+  "reservation_eur": "0.06",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 3,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 194560,
+  "source_sha256": "6803d266171d3e94ab9bbb421aefe65d7aa10e1c6dd58f1aca5249d869dd92d6",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-10-29T02:13:07.956115+00:00",
+  "expires": 1793245387,
+  "budget_months": [
+    "2026-10"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 173237051,
+  "known_hosts": "/opt/data/dataset-factory/.factory/wb-sol-baseline-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "65.21.158.17",
+  "result": {
+    "job_id": "wb-sol-baseline-001",
+    "status": "succeeded",
+    "uploaded": true,
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 427207251,
+      "fetched": [
+        {
+          "dest": "extract/meta.json",
+          "bytes": 1551,
+          "sha256": "6e841f63261936dc683bec0ed98c72506ed80ed8a66cb0804a36f5252491e1aa"
+        },
+        {
+          "dest": "extract/private/holdout.csv",
+          "bytes": 86378,
+          "sha256": "a6328a8dc7d23c0c853cd6eb0a20074c98c70696fb124b8710a3bd531727ac90"
+        },
+        {
+          "dest": "extract/public/eval.csv",
+          "bytes": 109484,
+          "sha256": "9813b282b80e30d1fa9c6f61bac917a892217d8b8b7e4756fb4f10e178a8567e"
+        },
+        {
+          "dest": "extract/public/train.csv",
+          "bytes": 619818,
+          "sha256": "b1e7f26ba8adc8f9f9a59111ce86d246f45f396c02dc559eb8dde2867234f1e9"
+        },
+        {
+          "dest": "extract/quality.json",
+          "bytes": 23309,
+          "sha256": "4728e210877e736329caf73dd42b68c6b08515be29ce986a069650b1ec07389d"
+        }
+      ],
+      "failures": [],
+      "bytes": 840540
+    },
+    "image_id": "sha256:2d44738ebf4ce5f63b9d9ea871e9c7cfdc0426f7b0c97cac915fd88ded1d86bb",
+    "image_digests": [
+      "python@sha256:2d44738ebf4ce5f63b9d9ea871e9c7cfdc0426f7b0c97cac915fd88ded1d86bb"
+    ],
+    "exit_code": 0,
+    "oom_killed": false,
+    "elapsed_seconds": 40.8,
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 427393678,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-cdfa2ec914f7d52f290a",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-cdfa2ec914f7d52f290a/manifest.json",
+    "assets": [
+      {
+        "id": 687068422,
+        "size": 72,
+        "sha256": "a6d6df01863850f848e32c9872d9368cffdca00101796e69f7bfbf9dcf822ac8"
+      },
+      {
+        "id": 687068497,
+        "size": 2341,
+        "sha256": "24ad4fe86ff64b8d4aff9fa4692a447572a218713d8c1850f07758c38b2adb93"
+      },
+      {
+        "id": 687068551,
+        "size": 247,
+        "sha256": "8492eec404b6f3e172546c0bc4cd4c26699a8a7e8a1f50fda8ea18ee431dfbf6"
+      },
+      {
+        "id": 687068603,
+        "size": 214,
+        "sha256": "53a1fc4fc0b342ced68f3e88bb0c03b278bf8efb9dc89ff23c7e0e78fde0cd0c"
+      },
+      {
+        "id": 687068664,
+        "size": 364,
+        "sha256": "abd6f7249a473f07f501069dde0fe2436ada294e0816606ef6d35309752ff944"
+      },
+      {
+        "id": 687068799,
+        "size": 53,
+        "sha256": "81e7ee9ba32af64d7513fcb0ba390f086680f35b34d893cb197569851e27736c"
+      },
+      {
+        "id": 687068862,
+        "size": 178,
+        "sha256": "3d60fd9916268ebd213b739a6249c72c274440b995d8fe006f55e367b6e586da"
+      },
+      {
+        "id": 687068915,
+        "size": 194560,
+        "sha256": "6803d266171d3e94ab9bbb421aefe65d7aa10e1c6dd58f1aca5249d869dd92d6"
+      },
+      {
+        "id": 687068972,
+        "size": 1113,
+        "sha256": "88ec59cfb17b58a31c966fc2bd1f010f69dbd11c08d4d80e771b8277d228a814"
+      },
+      {
+        "id": 687069023,
+        "size": 9103,
+        "sha256": "f86e8a0cc680d325506087a2e9dbb1167efee9827c2c0cbfa2eb5e2f75b9ce57"
+      }
+    ],
+    "skipped_empty": []
+  },
+  "collected_at": "2026-10-29T02:23:00.828539+00:00",
+  "deleted_at": "2026-10-29T02:23:39.093636+00:00"
+}

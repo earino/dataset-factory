@@ -91,3 +91,59 @@ the qualification gate + baseline triad; a trivial-baseline match means construc
 
 No bulk data passed through the coordinator beyond the two full snapshots (12.8 MB + 15.1 MB, 22 requests
 total); the >300 MB historical archive was only metadata/sampled.
+
+## 2026-10-29 02:1xZ — baseline preflight and worker job wb-sol-baseline-001
+
+Decision: the recorded next action is the harness baseline on the accepted artifact
+c9ac51b846f7b1ee, so that is what was advanced (no construction, no re-qualification).
+
+Evidence re-read before launch (not taken on trust from the record):
+- Staging release 427207251 (draft, tag job-wb-sol-002) serves 13 logical files as parts plus
+  manifest.json; manifest.json lists each logical path, size and sha256.
+- Fetched and digest-checked against that manifest: qualification.json cad5d763…, meta.json
+  6e841f63…, quality.json 4728e210…, references d1521987…, acceptance 0939cccf…, summary
+  651c6be2… . qualification.json: gate 1.5.0, ok=true, 44 results, failed_checks []. acceptance
+  text: "ACCEPTED: /output/extract matches the qualified artifact c9ac51b846f7b1ee".
+- References on the eval split (1034 rows, 701 pos): persistence_country_last 0.4771 (coverage
+  0.9739), country_prior 0.5364, loan_type_prior 0.5156, majority accuracy 0.6779. All near
+  chance — recorded as the comparison the full model must beat, not as a verdict.
+
+Entrypoint preflight (candidates/wb-loan-disbursement-completion/baseline/):
+- run.sh order: pip install → gate --accept against the bundled gate report → materialize →
+  train.py → validate.sh → report.py. First metric computed anywhere is train.py's own
+  `Eval AUC`, i.e. after acceptance. No reference or metric exists before that line.
+- materialize.py copies only public train/eval into the workdir; the private holdout is fetched
+  for the --accept digest check and never copied (holdout stays sealed).
+- runner files train.py/validate.py/validate.sh taken verbatim from the read-only clone by
+  scripts/assemble-job.py, digests recorded in runner_files.json.
+- Local preflight on the fetched bytes: `--accept` → ACCEPTED c9ac51b846f7b1ee (rc 0);
+  materialize → task.json keys match bench/workdir.py, target completed90, positive_label 1,
+  id_columns [loan_number, project_id], rows train 5874 / eval 1034.
+- Job wb-sol-baseline-001: reservation EUR 0.06, cx23, 45-min timeout, 90-min lifetime.
+
+### Outcome — wb-sol-baseline-001: full model 0.5452 eval AUC; no demonstrated headroom; candidate dropped
+
+Job wb-sol-baseline-001 (server 173237051, created 02:13:07Z, deleted 02:23:39Z, reservation
+EUR 0.06) ran the benchmark's own contract on the accepted artifact, fetched from staging
+release 427207251 rather than rebuilt. Reports collected from staging release 427393678 and
+digest-verified against its manifest (accept.log a6d6df01…, baseline_result.json 24ad4fe8…,
+train.log 81e7ee9b…, validate.log 3d60fd99…, dependency-versions.txt 8492eec4…).
+
+- Gate 1.5.0 --accept on the worker: "ACCEPTED: /data/extract matches the qualified artifact
+  c9ac51b846f7b1ee" — the scored bytes are the qualified bytes; the bundled report digest
+  (cad5d763…) is the one collected from wb-sol-002.
+- Runner files unmodified (all three bundled digests equal the clone's); dependencies recorded
+  (python 3.13.18, pandas 2.3.3, numpy 2.5.4, xgboost 3.4.1, scikit-learn 1.9.1).
+- Result on the 1,034 eval rows (2000-2009), identical rows as the references:
+  full model 0.5452 (train.py and validate.py agree exactly) vs country identity prior 0.5364,
+  loan-type prior 0.5156, country-persistence 0.4771; majority-class accuracy 0.6779.
+- Observed gap over the country prior: +0.0088. Not a paired test: the contract writes no
+  per-row scores, so no paired bootstrap is possible from this run. Marginal Hanley-McNeil AUC
+  SEs are 0.0189 / 0.0190 (701 pos, 333 neg); the conservative independent-sum difference SE is
+  0.0268, gap/SE = 0.33. Inconclusive difference — not parity, not a demonstrated edge.
+- Decision: dropped with the negative finding preserved (same shape as wb-ieg-project-outcome).
+  Diagnosis is bounded and stated in the record: at the approval instant this table offers only
+  the instrument's static attributes and identifiers; the label is highly persistent (68-69%
+  positive per split) and country identity carries nearly all observable signal. No holdout was
+  scored, so the sealed split is still unused.
+- Cleanup: worker destroyed; provider read-back shows zero servers in the project.
