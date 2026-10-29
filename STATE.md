@@ -1,3 +1,77 @@
+## 2026-10-29 18:32Z - Oceania discovery tick: EPBC referral register closed on licence (portal's own terms prohibit redistribution; true population 8,296 measured and preserved); FWC agreement-approval lead opened and closed on licence; NZ catalogue checked, no new lead
+
+Discovery-only session (Oceania regional focus). Two licence-first verdicts, both measured;
+no build, qualification, packaging, publication, advancement or worker launch; all probes
+anonymous (coordinator + supported browser only).
+
+- epbc-referral-controlled-action (existing investigating lead, unclassified licence):
+  RESOLVED and DROPPED (class D). The publisher's instruments read in the supported browser
+  (plain clients time out on dcceew/nationalepa): both the DCCEEW and National EPA copyright
+  notices default to CC BY 4.0 'unless otherwise specified', and both exclude 'content that is
+  specified as being subject to ... some other licence terms'. DECISIVE: the register's own
+  pages - the all-referrals list AND per-project pages - link 'Terms and Conditions' ->
+  onlineservices.environment.gov.au/terms-and-conditions in their footers (the 2026-10-28
+  session's 404 was a guessed /terms-conditions/ path and missed the footer link). Those terms
+  prohibit 'reproducing Our Material; reselling or distributing Our Material; re-transmitting
+  ...; uploading and/or reposting Our Material to any other site' and allow download 'solely
+  for your own use'; no Creative Commons licence appears anywhere in them. Both scope readings
+  fail the redistribution contract: governed -> prohibited; not governed -> the register then
+  has no licence instrument at all (unstated posture, closed under standing policy).
+  Measurements preserved in the record for any reopening: true register 8,296 referrals since
+  2000 (3,403 for 2000-09, 3,067 for 2010-19, 1,826 for 2020-26; the unfiltered list caps at
+  exactly '5000 records', pager 500 pages x 10 rows), the Valid-Date filter recipe that
+  returns true counts under the cap, per-project GUID link pattern, list status vocabulary
+  (decision-exists and withdrawn statuses in the list; the controlled-action outcome itself
+  only via per-project notice grids), 223 KB anonymous static project pages. Reopen only on an
+  explicit open-licence instrument for the register, an open channel (e.g. a data.gov.au record
+  naming the register), or an operator-level decision; not generalized to other DCCEEW/NEPA
+  material where no restrictive terms are linked from the material itself.
+- fwc-enterprise-agreement-approval-duration (NEW): opened and DROPPED (class D) in the same
+  tick, licence-first. Task shape recorded for reopening: FWC publishes each
+  enterprise-agreement approval application in 'Agreements in progress' ~2 business days after
+  lodgement (title, industry, application type visible); the approval decision follows
+  (publisher-quoted median 15 days for 2021-22 approvals; standard timing 20 days simple /
+  45 complex; ~5-6k applications per year around 2022; bulk Excel lists cover 1994-2026,
+  2026 updated weekly). Veto: FWC's site copyright permits reproduction 'in unaltered form
+  only ... for your personal, non-commercial use or use within your organisation', reserves
+  all other rights, and states its CC review is only 'progressive'; the dataset's own page
+  carries no CC/licence marking (verified in the browser); data.gov.au has no open
+  per-agreement dataset (the DEWR Workplace Agreements Database record is 'Other (unpublished)'
+  and aggregate-only). A survivorship caveat is also recorded: the bulk lists are the
+  approved-agreements register, so a duration task from them is conditioned on eventual
+  approval unless refusals/withdrawals are recovered from decision records. fwc.gov.au also
+  403s plain clients (one bounded attempt). Reopen: CC licence applied to these materials, an
+  open channel, or written authorisation.
+- NZ coverage this tick: catalogue.data.govt.nz is reachable only in the supported browser from
+  this coordinator (the CKAN v3 API path no longer returns JSON; plain-client API probes
+  failed). A 'food safety notices' sweep found 77 datasets, mostly MPI registers, licence mix
+  dominated by Creative Commons (63/77) - no task-shaped register with future-dated outcomes
+  was opened. No NZ state-sector source was probed this tick; NZ remains represented by
+  nz-ea-wholesale-price-exceedance (advancement-owned rework, do not touch in discovery).
+- Tooling note for the next session: the working data.gov.au CKAN endpoint is
+  https://data.gov.au/data/api/3/action/package_search (the /api/3 root returns 404 on this
+  host).
+
+Checks at close-out (2026-10-29, working tree): check-candidate.py passes on both records
+touched this tick (epbc OK/dropped, fwc OK/dropped); the repository test suite has ONE
+failure, PRE-EXISTING at HEAD 77112020 and not from this diff: unittest
+test_artifact_checks.test_every_committed_candidate_record_passes, because
+ns-bwa-advisory-lift-duration (packaged by the 16:10Z session) carries artifacts[0] with
+'no url/tag/repo' - its private staging step (that session's recorded next action, owned by
+advancement) has not run yet. CI run 40909127568 ('Local checks') on 77112020 already failed
+for exactly this reason before this session pushed anything. factory doctor rc=0,
+check-runtime --source-only rc=0, check-suitability rc=0 (15 reviews) on this working tree.
+This session does not repair another session's in-flight candidate record; advancement's
+staging step is the fix that completes artifacts[0].
+
+Regional coverage reported honestly: AU federal sources probed this tick (EPBC portal, FWC)
+both closed on publisher-terms evidence; ABS/BoM already represented by existing candidates
+(abs-visitor-arrivals-direction published; bom-cyclone-best-track dropped class D; BoM's
+default terms prohibit redistribution, so no new BoM lead was opened); NZ checked at portal
+level only. No AU state portal (NSW/VIC/QLD/WA/SA/TAS) was probed this tick - their licences
+are NOT recorded from this session and must be read per-source before any state lead is
+advanced. The ready buffer is unchanged (7 ready candidates; none consumed).
+
 ## 2026-10-29 16:10Z - ns-bwa-diag-001 close-out: per-row diagnostic verified (persistence dominance now with zero-excluding intervals), worker cleanup reconfirmed 0/0, packaged ns-bwa records committed; next: private staging to both destinations
 
 Watcher follow-up for the finished diagnostic job (succeeded, exit 0, 40.5 s, 9 report assets in

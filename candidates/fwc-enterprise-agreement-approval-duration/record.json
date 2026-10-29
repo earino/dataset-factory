@@ -1,0 +1,65 @@
+{
+ "id": "fwc-enterprise-agreement-approval-duration",
+ "status": "dropped",
+ "created_at": "2026-10-29T18:30:36.916760+00:00",
+ "domain": "employment relations / regulatory approval timing",
+ "prediction_question": "For an enterprise agreement approval application lodged with the Fair Work Commission (FWC) - published in the FWC 'Agreements in progress' list about 2 business days after lodgement, with agreement title, industry and application type visible - will the Commission approve it within a fixed window of lodgement (e.g. the 21-day standard timeframe; the publisher's own statistics report a 15-day median for 2021-22 approvals) rather than later? Prospective users: employers, unions and bargaining consultants timing pay-increase commencement (agreements start 7 days after approval unless a later date is set) and IR researchers studying administrative approval friction. A useful prediction prices the delay at lodgement instead of waiting the ~2-6 weeks for the decision.",
+ "prediction_time": "Instant = the application's publication in the FWC 'Agreements in progress' list (per the publisher: 'When you apply to us to approve an enterprise agreement or a section 210 variation... we add details to Agreements in progress. This is usually 2 business days after we receive the application.'). Features visible then: agreement title, industry, application type (new approval vs s.210 variation), status. The approval decision is published later - the agreement register records an approval date, and FWC statistics report approval-time distributions, so the outcome cannot exist at the instant. NOT ASSESSED beyond structure: the licence veto (class D) came first, and no historical archive of the in-progress list was verified.",
+ "target_definition": "Binary on approval latency: 1 if approval date is within N days of lodgement (N fixed from the measured latency distribution), 0 if later; withdrawn/refused applications would be censored, not negative. Label source: approval date and lodgement date in the FWC bulk agreement Excel lists. POPULATION CAVEAT measured at discovery: the bulk lists are the approved-agreements register ('Search by agreement title to find all agreements approved by the Fair Work Commission'); the in-progress list is live-only; refused/withdrawn applications surface only through decision records. A duration task built from the bulk lists alone is therefore conditioned on eventual approval (survivorship) unless non-approved applications are recovered from decisions - a design problem for any reopening, on top of the licence blocker.",
+ "sources": [
+  {
+   "name": "FWC Find an enterprise agreement - bulk agreement lists (Excel)",
+   "url": "https://www.fwc.gov.au/work-conditions/enterprise-agreements/find-enterprise-agreement",
+   "api": "Direct .xlsx links: /documents/agreements/resources/agreementsfrom1994.xlsx (all agreements since 1994), agreements2017..2026.xlsx (by year, 2026 updated weekly), terminated_agreements_list.xlsx (updated monthly, title + matter number + date ended)",
+   "license": "Class D (read 2026-10-29): FWC site copyright permits reproduction 'in unaltered form only... for your personal, non-commercial use or use within your organisation' with 'all other rights are reserved'; the dataset page carries no Creative Commons or other licence marking (verified in the supported browser 2026-10-29)."
+  },
+  {
+   "name": "FWC Agreements in progress (live applications list)",
+   "url": "https://www.fwc.gov.au/work-conditions/enterprise-agreements/find-enterprise-agreement/agreements-progress",
+   "measured": "Publisher statement: applications added 'usually 2 business days after we receive the application'; list shows industry, application type and status; live list only - no historical archive verified.",
+   "license": "Same restrictive FWC site copyright (class D)."
+  },
+  {
+   "name": "Workplace Agreements Database: Trends in Enterprise Bargaining (DEWR, data.gov.au)",
+   "url": "https://data.gov.au/data/dataset/workplace-agreements-database-trends-enterprise-bargaining",
+   "api": "data.gov.au CKAN: https://data.gov.au/data/api/3/action/package_search (id edf51ce6-ae7b-4c1a-8a7f-b45a04a7ede8)",
+   "measured": "Catalogue record licence 'Other (unpublished)'; single HTML resource pointing to jobs.gov.au aggregate quarterly reports - aggregate tables only, no per-agreement microdata.",
+   "license": "Other (unpublished) on the catalogue record - not an open channel."
+  }
+ ],
+ "license_evidence": [
+  {
+   "note": "FWC copyright notice (https://www.fwc.gov.au/about-us/legal-and-freedom-information/about-website/copyright, read in the supported browser 2026-10-29 because plain clients get HTTP 403): 'The content of the Fair Work Commission's website is copyright... You may download, display, print and reproduce this material in unaltered form only (retaining this notice) for your personal, non-commercial use or use within your organisation. Apart from any use as permitted under the Copyright Act 1968, or unless otherwise explicitly indicated on particular material, all other rights are reserved... The Commission is progressively reviewing its website material to license it for public reuse under a Creative Commons (CC) licence. When done, the appropriate CC logo, licence summary and attribution, and copyright notice will be applied to the relevant website material.' A derived benchmark redistributing rows is (a) altered, (b) public, (c) outside personal/organisational use - not permitted. The dataset's own page (find-enterprise-agreement) was read in the browser the same day and carries NO Creative Commons, licence, attribution or open-data marking, so no 'otherwise explicitly indicated' instrument exists for these materials.",
+   "source": "Browser reads 2026-10-29: fwc.gov.au/about-us/legal-and-freedom-information/about-website/copyright and fwc.gov.au/work-conditions/enterprise-agreements/find-enterprise-agreement (licence marking searched and absent); plain-client probe of fwc.gov.au 403 (one bounded attempt)."
+  },
+  {
+   "note": "No open alternative channel found (bounded sweep 2026-10-29): data.gov.au package_search (working CKAN endpoint https://data.gov.au/data/api/3/action/package_search) returns no FWC per-agreement dataset; the only related record is the DEWR 'Workplace Agreements Database: Trends in Enterprise Bargaining' with licence 'Other (unpublished)' and an aggregate HTML resource. No third-party lawful open mirror was searched further because any mirror of the same rows carries the same FWC copyright.",
+   "source": "data.gov.au CKAN queries 2026-10-29: 'enterprise agreements', 'Workplace Agreements Database', 'Fair Work Commission', 'workplace agreements database'."
+  }
+ ],
+ "construction_script": null,
+ "split_strategy": "Not computed - licence veto came first. Volume signals (publisher-quoted ~5-6k applications per year around 2022, 30+ years of history) suggest ample temporal split capacity, but per-year counts, latency distribution and outcome mix were never measured.",
+ "measurements": {
+  "channel_2026_10_29": "Bulk channel identified before the licence veto: direct .xlsx URLs on fwc.gov.au - agreementsfrom1994.xlsx (all agreements 1994-2026), agreements2017..2026.xlsx by year (2026 list updated weekly per the publisher), terminated_agreements_list.xlsx (updated monthly). Plain-client HTTP GET to fwc.gov.au returns 403 (one bounded attempt, 2026-10-29); the supported browser loads pages normally. Excel files were NOT downloaded: the licence veto made their contents moot for this tick.",
+  "volume_2026_10_29": "Publisher-quoted volumes (FWC statistical report, fortnight ending 2022-12-16, fetched from fwc.gov.au search snippet): 199 and 238 agreement approval applications lodged in two successive fortnights (i.e. roughly 5-6k/year at that time); median approval time 15 days for agreements approved in 2021-22; standard approval timing '20 days for simple agreements, 45 days if they are complex' (FWC approval page). 30+ years of history since 1994. Split capacity NOT computed - the licence veto came first.",
+  "population_caveat_2026_10_29": "The bulk lists are the approved-agreements register; the FWC 'find a decision' service covers 'approved or refused' but refused/withdrawn applications are not in the bulk Excel lists, and the in-progress list is live-only. Any duration task from bulk lists is conditioned on eventual approval unless non-approved applications are recovered from decision records (unmeasured cost)."
+ },
+ "jobs": [],
+ "artifacts": [],
+ "rejection_reason": "Licence class D: the FWC site copyright for these materials permits reproduction 'in unaltered form only (retaining this notice) for your personal, non-commercial use or use within your organisation' and reserves 'all other rights'; the publisher's CC review is explicitly 'progressive' and the dataset's own page carries no licence marking; data.gov.au has no open FWC per-agreement dataset (only an 'Other (unpublished)' aggregate record). A derived, publicly redistributed benchmark is not permitted by the only instrument that governs this register. What would reopen it: (a) FWC completes its stated CC review for these materials or otherwise marks the agreement lists with a Creative Commons licence; (b) FWC or another Commonwealth agency publishes the per-agreement register on an open channel (e.g. data.gov.au under CC BY); (c) a statutory right (e.g. a specific authorisation obtained in writing from FWC). The task design (approval-latency prediction at the in-progress publication instant) and the population caveat are recorded for any reopening.",
+ "review": "DROPPED on licence (2026-10-29), first discovery pass; no novelty search run because the licence veto is cheaper and decisive. Contracts at close: (1) Redistribution FAILED - class D instrument quoted above; no alternative open channel found in a bounded sweep. (2) Prediction timing SUPPORTED in structure only (in-progress publication ~2 business days after lodgement; approval published later) - no historical archive of the in-progress list verified. (3) Target obtainable in principle with a measured survivorship caveat: bulk lists cover approved agreements only; refusals/withdrawals need decision records. (4) Split capacity UNMEASURED (licence veto first); volume signals ample. (5) Contribution UNMEASURED - no novelty search; note the bench already carries one regulatory duration task (ns-bwa-advisory-lift-duration, packaged) as a family comparator, and IR economists study WAD aggregates, so a reopened lead must run check-novelty.py before any ready claim.",
+ "next_action": "Closed. Reopen ONLY if FWC publishes these materials under an open licence (their stated progressive CC review, or an open channel such as data.gov.au), or a written authorisation is obtained. On reopening, next probes in cost order: (1) re-read the instrument for the specific material; (2) measure the latency distribution and per-year counts from the bulk Excel (on a worker - the all-years file was not size-probed and the coordinator must not download it); (3) resolve the survivorship caveat by sampling decision records for refused/withdrawn applications; (4) run check-novelty.py. Do not generalize this rejection beyond FWC website material.",
+ "verdict": "reject",
+ "updated_at": "2026-10-29T18:55:00Z",
+ "licence_class": "D",
+ "licence_note": "Class D: the only bulk channel for the register is FWC website material under an all-rights-reserved copyright (unaltered form only; personal, non-commercial or intra-organisational use only); the publisher states a CC review is 'progressive' (not done) and the dataset page carries no CC marking; no open mirror channel exists. Scope: this rejection is about FWC's website material and does not generalize to other Commonwealth agencies, several of which publish under CC BY on data.gov.au.",
+ "jurisdiction": {
+  "country": "AU",
+  "region": "Oceania",
+  "publisher": "Fair Work Commission (Commonwealth of Australia)",
+  "recorded_at": "2026-10-29"
+ },
+ "novelty_check": {
+  "note": "not run - the class D licence veto is decisive for construction and cheaper than the novelty search; a reopened lead must run check-novelty.py (prior art to check: approval-time studies in the IR literature, FWC/DEWR aggregate reports, any public per-agreement ML dataset)."
+ }
+}

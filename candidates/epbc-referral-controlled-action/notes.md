@@ -69,3 +69,63 @@ data.gov.au sweep.
   with both classes over enough years → novelty check → ready review.
 - Licence A/B + list does NOT carry outcomes → cost re-estimate (per-project
   fetch on a worker) before further investment.
+
+
+## 2026-10-29 - licence decisive: portal's own terms prohibit redistribution; candidate DROPPED (class D)
+
+All probes anonymous (supported browser + plain-client fetches), coordinator only.
+
+### Licence chain (decisive)
+
+- Supported browser (plain clients time out on dcceew/nationalepa): https://www.dcceew.gov.au/about/copyright
+  -> "Unless otherwise specified, you can use our material under a Creative Commons
+  Attribution (CC-BY) 4.0 International licence." Exclusions include "content that is
+  specified as being subject to third party copyright limitations or some other licence terms".
+  Its "No circumvention of terms" clause: "You must check and comply with the licensing
+  information for each set of material you wish to use."
+- https://www.nationalepa.gov.au/about/copyright -> identical CC BY 4.0 default (National EPA,
+  administering agency since 1 July 2026).
+- environment.gov.au/about/copyright redirects into dcceew.gov.au (observed in browser), so
+  the portal's domain is covered by the DCCEEW instrument.
+- DECISIVE: the register's own pages link their terms in the footer. Verified by fetching:
+  - all-referrals list: `curl -A 'Mozilla/5.0' https://epbcpublicportal.environment.gov.au/all-referrals/`
+    (336,501 bytes) contains `href="https://onlineservices.environment.gov.au/terms-and-conditions"`.
+  - per-project page (2019/8566): `/all-referrals/project-referral-summary/?id=780a25c3-02ef-e911-b26f-005056842ad1`
+    (223,247 bytes, 3.23 s, anonymous) carries the same footer link. (The 2026-10-28 session
+    probed /terms-conditions/ on the portal host - 404 - and missed the footer link.)
+- https://onlineservices.environment.gov.au/terms-and-conditions (44,808 bytes, plain fetch):
+  "Subject to paragraph 2(b), you are prohibited from: reproducing Our Material; reselling or
+  distributing Our Material; re-transmitting the Our Material by any medium of communication;
+  uploading and/or reposting Our Material to any other site on the Internet" and
+  "You may access and download Our Material from the Portal solely for your own use".
+  Text search of the full page: no "Creative Commons" anywhere; the only IP licence section
+  ("Licence to use Intellectual Property") is the Department's licence OVER USER-SUBMITTED
+  material, not a grant to users.
+- Verdict: both scope readings of the linked terms fail the redistribution contract - governed
+  -> prohibited; not governed -> the register has no licence instrument at all. Class D with
+  the clause quoted; see record.json licence_note/rejection_reason for reopen conditions.
+
+### Population measurements (preserved for any reopening)
+
+- Grid mechanics: rows load via `POST /_services/entity-grid-data.json/2ab10dab-d681-4911-b881-cc99413f07b6`
+  with an opaque `base64SecureConfiguration` body (captured by hooking XHR in page context);
+  offsets are inside the encrypted blob, so no plain-client pagination replay. Date filters +
+  Apply Filter drive the same grid server-side and report true counts.
+- Valid Date From/To + Apply Filter, reading the rendered "N records found":
+  - 2000-01-01..2009-12-31 -> 3,403
+  - 2010-01-01..2019-12-31 -> 3,067
+  - 2020-01-01..2026-12-31 -> 1,826
+  - 2019-01-01..2019-12-31 -> 177
+  - unfiltered -> "5000 records found", pager 1..500 at 10 rows/page -> 5,000 is a display cap.
+  - True register: 3,403 + 3,067 + 1,826 = 8,296 referrals since 2000.
+- Filtered-row samples show the list's Project Status vocabulary: 'Referral Decision - Open
+  for Public Comment' (open), 'Referral Decision Made', 'Advice Not Required', 'Approval
+  Decision made', 'Condition variation being considered', 'Project Withdrawn'. The list says
+  whether a decision exists / the referral was withdrawn (censoring flag), but NOT the
+  controlled-action outcome; that lives in per-project 'Decision notices' XHR grids / PDFs.
+- Per-project static page fetch: project 2019/8566 -> 223,247 bytes in 3.23 s, anonymous;
+  renders stage timeline; the decisions grid itself is XHR.
+- Export button on the list produced no download in one bounded attempt.
+
+Scratch copies of fetched evidence (24h-pruned scratch, recipes above reproduce them):
+/opt/data/cache/scratch/epbc/{all_referrals.html, botany_2019_8566.html, terms.html}.
