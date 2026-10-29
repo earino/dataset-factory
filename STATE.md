@@ -1,3 +1,44 @@
+## 2026-10-29 00:16Z - follow-up pass over the six watched worker jobs: evidence verified, cleanup provider-confirmed, watcher markers written
+
+The six outcomes were recorded by the finishing sessions (entries of 2026-10-28 21:26Z and
+22:35Z). This pass re-verified the evidence behind them, confirmed cleanup with a fresh
+provider read-back, and closed the watcher bookkeeping with per-job handled markers under
+`.factory/<job>/handled`. No new job was launched; no published byte, tag, digest or
+destination changed.
+
+- wb-sol-002 (exit 0): staging release 427207251 (tag job-wb-sol-002, 14 assets) confirmed
+  present with the recorded asset inventory. The finishing session's verified collection
+  recorded gate 1.5.0 PASSED (44/44 checks) and --accept ACCEPTED for artifact
+  c9ac51b846f7b1ee, cross-checked against the candidate record. The bounded report re-fetch
+  into `.factory/wb-sol-002/reports/` did not complete inside this pass's budget (the
+  staging manifest's entry list sits under a key the fetcher did not read); the compact gate
+  and acceptance reports remain preserved in staging 427207251, and the candidate's
+  next_action already requires the accepted report before any figure is quoted. wb-sol-001
+  remains the diagnosed infrastructure failure (fixture-check ordering), superseded.
+  Candidate stays qualified; next action unchanged: harness baseline worker job on
+  c9ac51b846f7b1ee (advancement, not launched here).
+- unhcr chain: requal-002 gate report (`release/unhcr-refugee-data-finder/qualification.json`)
+  read directly - gate 1.5.0, ok, failed_checks empty; artifact identity
+  6bd0c307d15d7500... matches DESTINATIONS.json artifact_version, both destinations
+  private/staged/verified (GitHub release 426752344 at commit ac57a69; Hub commit 77aa1fad
+  with all five files at manifest digests and the documented loading check ok: train
+  3363/283, eval 1887/165, holdout 1962/227). publish-002's result shows the corrected pair
+  meta.json 6620bdc9 + quality.json df419622 transferred to the private GitHub release with
+  arrival+upload digest verification; hf-002's result shows the same digests pinned on the
+  Hub. requal-001 remains the superseded transport failure (bundle carried only run.sh).
+  check-package.py on release/unhcr-refugee-data-finder: OK. check-suitability: OK (14
+  version-bound reviews).
+- Cleanup: fresh Hetzner read-back this pass: 0 servers, 0 primary IPs in the project; job
+  ledger has no non-terminal entries. All six workers were already destroyed by the
+  finishing sessions.
+- Record: unhcr operator_decision_note realigned to the executed reopen path (c) - the
+  pending operator step is relaying the regenerated pre-flip audit prompt
+  (candidates/unhcr-refugee-data-finder/pre-flip-audit-prompt.md) to an independent auditor;
+  the flip waits for that verdict unless waived.
+
+Next action: unchanged - the operator relays the unhcr re-audit prompt; advancement runs the
+wb-sol baseline job on c9ac51b846f7b1ee (re-reading the preserved gate evidence first).
+
 ## 2026-10-28 21:26Z - wb-loan-disbursement-completion construction in flight (wb-sol-002 running); preemption repaired with operator_decision_pending (unhcr waits on the operator's reopen-path decision, not on us)
 
 Release work outranked construction, and the one packaged candidate (unhcr) is blocked on the
