@@ -231,16 +231,56 @@
       "order": "fetch the 5 accepted assets from staging 427616218 (digests verified, 0 failures) -> gate --accept ACCEPTED for e8ed2a53eaf0453c BEFORE any score -> validate.sh re-run: CONTRACT OK, both AUC prints 0.5086 -> diag.py per-row predict_proba (validate.py's exact call) -> intervals; holdout never copied into the workdir; nothing re-tuned (label, threshold, splits, model config frozen)",
       "model_eval_auc": 0.5086,
       "model_eval_auc_detail": "sklearn 0.508617 / midrank 0.5086168 / train.py print 0.5086 / validate.py recompute 0.5086; Brier 0.3609; dependencies identical to ns-bwa-baseline-001 (python 3.13.18, pandas 2.3.3, numpy 2.5.4, xgboost 3.4.1, scikit-learn 1.9.1)",
-      "observed_gaps": {"model_minus_persistence": -0.103825, "model_minus_calendar": 0.001119},
+      "observed_gaps": {
+        "model_minus_persistence": -0.103825,
+        "model_minus_calendar": 0.001119
+      },
       "paired_intervals_bootstrap1000_seed23": {
-        "model_vs_persistence_row": {"mean": -0.103464, "ci95": [-0.169273, -0.035679]},
-        "model_vs_persistence_site_cluster": {"mean": -0.102819, "ci95": [-0.170629, -0.038288], "clusters": 286},
-        "model_vs_calendar_row": {"mean": -0.00207, "ci95": [-0.086631, 0.072312]}
+        "model_vs_persistence_row": {
+          "mean": -0.103464,
+          "ci95": [
+            -0.169273,
+            -0.035679
+          ]
+        },
+        "model_vs_persistence_site_cluster": {
+          "mean": -0.102819,
+          "ci95": [
+            -0.170629,
+            -0.038288
+          ],
+          "clusters": 286
+        },
+        "model_vs_calendar_row": {
+          "mean": -0.00207,
+          "ci95": [
+            -0.086631,
+            0.072312
+          ]
+        }
       },
       "per_issue_year_model": {
-        "2018": {"rows": 129, "rate": 0.7442, "model_auc": 0.5554, "model_brier": 0.2298, "persistence_auc": 0.6084},
-        "2019": {"rows": 125, "rate": 0.64, "model_auc": 0.5018, "model_brier": 0.3479, "persistence_auc": 0.6203},
-        "2020": {"rows": 118, "rate": 0.4153, "model_auc": 0.4886, "model_brier": 0.5178, "persistence_auc": 0.5991}
+        "2018": {
+          "rows": 129,
+          "rate": 0.7442,
+          "model_auc": 0.5554,
+          "model_brier": 0.2298,
+          "persistence_auc": 0.6084
+        },
+        "2019": {
+          "rows": 125,
+          "rate": 0.64,
+          "model_auc": 0.5018,
+          "model_brier": 0.3479,
+          "persistence_auc": 0.6203
+        },
+        "2020": {
+          "rows": 118,
+          "rate": 0.4153,
+          "model_auc": 0.4886,
+          "model_brier": 0.5178,
+          "persistence_auc": 0.5991
+        }
       },
       "replication": "a second implementation (pandas-based diag.py, independent of the construction score.py) recomputed every reference from the shipped bytes: persistence 0.6124, calendar 0.5075, reason 0.4307, majority 0.6048 and the model 0.5086 all match the recorded figures to 4 dp",
       "finding_confirmed": "NO demonstrated headroom, now with intervals excluding zero: the model trails site persistence by 0.1038 with row-level CI [-0.1693, -0.0357] and site-clustered CI [-0.1706, -0.0383] (both exclude zero); model-vs-calendar +0.0011 with CI containing zero (inconclusive, not parity); persistence dominates every issue year and the model's Brier degrades 0.23 -> 0.52 across the prevalence shift while persistence holds 0.22-0.36. Recorded defect per dataset-qualification; the comparison is carried in the package beside every figure.",
@@ -359,6 +399,38 @@
       "next_acceptance_check": "gate --accept before any score (done: ACCEPTED for e8ed2a53eaf0453c); destroy the worker after verified collection",
       "outcome": "exit 0 in 40.5 s: re-accept ACCEPTED, validate.sh CONTRACT OK (both AUC prints 0.5086), per-row predict_proba scores preserved; model-vs-persistence -0.1038 with row CI [-0.1693, -0.0357] and site-cluster CI [-0.1706, -0.0383] (both exclude zero); model-vs-calendar +0.0011 [-0.0866, +0.0723]; per-year model AUC 0.5554/0.5018/0.4886 vs persistence 0.6084/0.6203/0.5991; every recorded reference figure replicated to 4 dp by the second implementation. Worker destroyed after verified collection; provider read-back 0 servers / 0 primary IPs (2026-10-29T14:13:48Z). Reports in private staging release 427950656; compact copies in .factory/ns-bwa-diag-001/reports/.",
       "elapsed_seconds": 40.5
+    },
+    {
+      "id": "ns-bwa-publish-001",
+      "status": "succeeded (deleted)",
+      "server_id": 173431357,
+      "launched": "2026-10-29T22:39:09Z",
+      "collected": "2026-10-29T22:43:07Z",
+      "deleted": "2026-10-29T22:50:14Z",
+      "reservation_eur": "0.04",
+      "expected": "transfer the five accepted assets from staging release 427616218 into draft release 428463645 under the flat names get_dataset.py restores",
+      "result": "transferred 5, failures 0, 328,735 bytes, digests verified on arrival and after upload; release then published non-draft, tag v2026.10 == main; provider read-back 0 servers / 0 primary IPs"
+    },
+    {
+      "id": "ns-bwa-hf-002",
+      "status": "succeeded (deleted)",
+      "server_id": 173436545,
+      "launched": "2026-10-29T23:25:50Z",
+      "collected": "2026-10-29T23:34Z",
+      "deleted": "2026-10-29T23:35:53Z",
+      "reservation_eur": "0.04",
+      "expected": "upload the five released data files to the private Hub repo with digest verification and run the documented load_dataset path",
+      "result": "uploads 0, skipped 5 (all already at manifest digests from ns-bwa-hf-001), failures 0; loading ok=true train 1069/715, eval 372/225, holdout 884/514, 19 columns, labels ['0','1']; tag v2026.10 == main aaef1488; provider read-back 0/0"
+    },
+    {
+      "id": "ns-bwa-hf-001",
+      "status": "failed (deleted)",
+      "server_id": 173435457,
+      "launched": "2026-10-29T23:15:25Z",
+      "deleted": "2026-10-29T23:25:09Z",
+      "reservation_eur": "0.04",
+      "expected": "first hf_publish attempt",
+      "result": "all five uploads verified at the manifest digests, but the loading check failed on a job-spec defect (verify_loading lacked the label column name and used string label values); superseded by ns-bwa-hf-002"
     }
   ],
   "artifacts": [
@@ -409,23 +481,44 @@
         "blank_issue_dates": 30,
         "out_of_window_2025_2026": "279 (208 in 2025 + 71 in 2026, of which 15 after the eligibility cutoff)"
       },
-      "qualification": "PASSED on the full artifact on the worker; --accept re-verified exact bytes"
+      "qualification": "PASSED on the full artifact on the worker; --accept re-verified exact bytes",
+      "url": "https://github.com/earino/ns-bwa-advisory-lift-duration",
+      "tag": "v2026.10",
+      "repo": "earino/ns-bwa-advisory-lift-duration",
+      "release_id": 428463645
     }
   ],
   "rejection_reason": null,
   "review": null,
-  "next_action": "PACKAGED 2026-10-29 14:17Z (operator-selected step from the 2026-10-29 advancement brief): release/ns-bwa-advisory-lift-duration v2026.10 built, check-package.py exit 0, suitability record written, check-suitability + check-candidate exit 0. The per-row diagnostic (ns-bwa-diag-001, measurements.diagnostic_2026_10_29) completed the comparison the record required before packaging: model 0.5086 vs site persistence 0.6124, paired intervals EXCLUDING ZERO at both row and site-cluster level - the no-headroom finding is preserved in measurements.json, RELEASE_NOTES.md, VERIFICATION.md and the suitability record, beside every figure. NEXT: private staging of v2026.10 to both destinations (GitHub: create private repo earino/ns-bwa-advisory-lift-duration with the package documents, then a transfer worker job copying the five accepted assets from staging release 427616218 into a draft release under the flat names get_dataset.py restores; Hugging Face: hf-publish.py --plan, --create --upload-small, hf_publish worker job, --verify --worker-job, --tag), then awaiting_operator: true with the pre-flip audit prompt generated from skills/dataset-release/templates/pre-flip-audit-prompt.md (digests filled programmatically). The flip remains the operator's single act and waits for the independent auditor's verdict unless waived. No figure from this artifact may be quoted without the persistence comparison beside it.",
+  "next_action": "STAGED PRIVATE on both destinations 2026-10-29 (GitHub release 428463645, tag v2026.10 == main == 23952346eeadb4b25ac5887da0ff2ceae45d6293; Hub private at aaef14881a13e0ad4dafb525f133cd708e7b4801, tag v2026.10 == main; 5/5 assets at the accepted digests on both; get_dataset.py + gate --accept re-verified the downloaded bytes). awaiting_operator is TRUE: the sole remaining step is the private-to-public flip, the operator's single act. Before it, relay candidates/ns-bwa-advisory-lift-duration/pre-flip-audit-prompt.md to an independent auditor per the standing practice; the flip waits for that verdict unless the operator waives it. No figure from this artifact may be quoted without the persistence comparison beside it (model 0.5086 trails site persistence 0.6124, intervals excluding zero).",
   "updated_at": "2026-10-29T14:17:14.000000+00:00",
   "qualification": {
     "gate": "skills/dataset-qualification/scripts/qualify_dataset.py (canonical copy, sha256 4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1)",
     "gate_version": "1.5.0",
     "splits": {
-      "train": {"rows": 1069, "positives": 715, "positive_rate": 0.668849, "distinct_sites": 585},
-      "eval": {"rows": 372, "positives": 225, "positive_rate": 0.604839, "distinct_sites": 286},
-      "holdout": {"rows": 884, "positives": 514, "positive_rate": 0.581448, "distinct_sites": 547}
+      "train": {
+        "rows": 1069,
+        "positives": 715,
+        "positive_rate": 0.668849,
+        "distinct_sites": 585
+      },
+      "eval": {
+        "rows": 372,
+        "positives": 225,
+        "positive_rate": 0.604839,
+        "distinct_sites": 286
+      },
+      "holdout": {
+        "rows": 884,
+        "positives": 514,
+        "positive_rate": 0.581448,
+        "distinct_sites": 547
+      }
     },
     "result": "PASSED - 46 checks, 0 failed, on the full artifact on the worker (job ns-bwa-001); --accept re-verified the report against the exact bytes",
     "artifact_version": "e8ed2a53eaf0453c8ed52aea336edb994d888ad11e7b76f7898b663f017180a8",
     "note": "First attempt (ns-bwa-001) succeeded. Gate --selftest passed before the launch; a synthetic-register smoke on the coordinator exercised build.py + the real gate (every structural check incl. the timing block, evaluation_contract with the two cross-row probes, split windows, both-classes minimums) before any worker spend; the as-of history semantics were spot-verified on synthetic rows (strictly-earlier only; same-(site,issue) rows never see each other; blank-county rows never pool). Reports preserved at candidates/ns-bwa-advisory-lift-duration/reports/ and in the private staging release 427616218."
-  }
+  },
+  "awaiting_operator": true,
+  "operator_decision_pending": false
 }

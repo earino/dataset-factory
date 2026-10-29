@@ -1,3 +1,69 @@
+## 2026-10-29 23:37Z - ns-bwa-advisory-lift-duration staged PRIVATE on both destinations (ns-bwa-publish-001 + ns-bwa-hf-002 green, 5/5 assets at the accepted digests on GitHub release 428463645 and Hub v2026.10; consumer + gate --accept re-verified); awaiting_operator set with the pre-flip audit prompt generated programmatically
+
+Release work outranked construction, so this advancement session executed the packaged
+candidate's recorded next_action: private staging of release/ns-bwa-advisory-lift-duration
+v2026.10 to GitHub and Hugging Face, then the operator holds the flip. The packaged bytes,
+manifest, digests and tag names were never regenerated; every asset moved is the accepted
+artifact e8ed2a53eaf0453c8ed52aea336edb994d888ad11e7b76f7898b663f017180a8. (The other
+release-track candidate, unhcr-refugee-data-finder, is unchanged on
+`operator_decision_pending: true` - the operator's move is the audit-prompt relay; no byte,
+tag, digest or destination of any release changed.)
+
+- GitHub destination (private, complete): repo earino/ns-bwa-advisory-lift-duration created
+  private with the 24 package document files as the initial commit on main (tip 23952346,
+  API readback; anonymous API 404 = private by design), draft release v2026.10 (428463645)
+  created, then worker job ns-bwa-publish-001 (server 173431357, cx23/hel1, launched
+  22:39:09Z, collected 22:43:07Z, EUR 0.04 reservation) copied the five accepted ns-bwa-001
+  assets from private staging release 427616218 - transferred 5, failures 0, 328,735 bytes,
+  each sha256-verified on arrival and against the server digest after upload; bytes never
+  passed through the coordinator (the job spec's asset ids were resolved by digest match,
+  not hand-copied). Release published non-draft; API readback: exactly 5 assets at the
+  manifest digests (meta 6b43e4ea/1555, holdout 78b62dd3/121058, eval ec1f7335/50575,
+  train beacb229/133840, quality 7a61f6fa/21707), tag v2026.10 == main == 23952346.
+  get_dataset.py executed end-to-end from the coordinator (5 files, 328,735 bytes, every
+  digest verified, rows train 1069 / eval 372 / holdout 884) and the gate re-ran --accept
+  on the downloaded tree: ACCEPTED for e8ed2a53eaf0453c. Worker destroyed 22:50:14Z;
+  provider read-back 0 servers / 0 primary IPs.
+- Hugging Face destination (private, complete): hf-publish.py --create --upload-small
+  created earino/ns-bwa-advisory-lift-duration private with 10 small files (card authored at
+  candidates/ns-bwa-advisory-lift-duration/card.md; the Hub's YAML validator refused the
+  http licence_link - the publisher's https redirect target does not answer this coordinator
+  - so the licence link lives in LICENSE.md and the card prose instead). ns-bwa-hf-001
+  (server 173435457) uploaded all five data files at the manifest digests but FAILED its
+  loading check on a job-spec defect (verify_loading lacked the label column name and used
+  string label values) - diagnosed from its own hf_loading error, fixed, superseded by
+  ns-bwa-hf-002 (server 173436545, launched 23:25:50Z, EUR 0.04): uploads 0, skipped 5
+  (already at digest), failures 0, and the documented load_dataset path: ok=true, train
+  1,069/715, eval 372/225, holdout 884/514, 19 columns, labels ['0','1']. hf-publish.py
+  --verify/--tag --worker-job ns-bwa-hf-002: all five files digest-verified at commit
+  aaef1488; tag v2026.10 created at Hub main (tag == main). Both workers destroyed;
+  provider read-back 0/0 at 23:35Z.
+- Destination evidence: release/ns-bwa-advisory-lift-duration/DESTINATIONS.json now records
+  both destinations verified+staged with per-destination verified_at, files_verified as
+  lists, artifact_version equal to the manifest's, and the checks above. Candidate record:
+  artifacts[0] now carries url/tag/repo/release_id (this clears the pre-existing suite
+  failure test_artifact_checks.test_every_committed_candidate_record_passes), jobs list
+  extended, status packaged, awaiting_operator true, the flip the sole remaining step.
+- Pre-flip audit prepared per the standing practice: candidates/ns-bwa-advisory-lift-duration/
+  pre-flip-audit-prompt.md, generated from the operator-endorsed template with every
+  digest/size/count/figure filled programmatically from MANIFEST.json, meta.json and
+  measurements.json (0 placeholders left; generator retention not committed - the saved
+  prompt is the artefact). It names the package's own honest finding for the auditor to
+  attack: model 0.5086 trails site persistence 0.6124 on identical eval rows with paired
+  intervals excluding zero, plus the measured reverse-history exposure (369/56/217 rows)
+  declared as isolated_rows design intent, not runtime enforcement.
+
+Checks at close-out (2026-10-29, working tree): check-package.py rc=0 (no longer reports an
+unverified destination), check-candidate.py --all rc=0, check-suitability.py rc=0 (15
+version-bound reviews), tests.test_artifact_checks 26/26 OK (the previously failing
+committed-record test now passes). Nothing is public; staging completion is not publication
+approval.
+
+Next action: the operator relays candidates/ns-bwa-advisory-lift-duration/pre-flip-audit-prompt.md
+to an independent auditor; on an approving verdict (or a waiver) the flip sequence per
+dataset-release runs (flip both destinations, prove anonymously, refresh status-bearing
+documents, website pipeline). The unhcr relay is unchanged and still the operator's.
+
 ## 2026-10-29 20:50Z - International-organisations discovery tick: OCHA FTS appeal-funding-coverage lead READY (launch-vintage formulation, vintage trap measured and fenced); IMF publisher coverage closed on task shape; region now fully probed
 
 Discovery-only session (International-organisations regional focus: World Bank,

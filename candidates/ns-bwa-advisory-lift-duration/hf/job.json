@@ -1,0 +1,98 @@
+{
+    "id": "ns-bwa-hf-002",
+    "candidate": "ns-bwa-advisory-lift-duration",
+    "release": true,
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 2048,
+    "timeout_minutes": 25,
+    "lifetime_minutes": 45,
+    "max_disk_mb": 2000,
+    "max_artifact_mb": 8,
+    "what": "Retry of ns-bwa-hf-001 (uploads verified at manifest digests; its loading check failed on a job-spec defect: verify_training lacked the label column name and used string label values). hf_publish worker job for ns-bwa-advisory-lift-duration: upload the five released data files to the private Hugging Face dataset repo earino/ns-bwa-advisory-lift-duration, downloading each from the staged private GitHub release (428463645) and verifying its sha256 against the manifest before and after transfer, then run the documented load_dataset path against the uploaded bytes (split rows, positives, columns and label values checked against the accepted artifact e8ed2a53eaf0453c...). The bytes never pass through the coordinator; peak worker disk is one asset (0.3 MB total).",
+    "hf_publish": {
+        "repo": "earino/ns-bwa-advisory-lift-duration",
+        "revision": "main",
+        "source_repo": "earino/ns-bwa-advisory-lift-duration",
+        "assets": [
+            {
+                "asset_id": 690133005,
+                "dest": "meta.json",
+                "target": "meta.json",
+                "size": 1555,
+                "sha256": "6b43e4eaf1020ba3436a91c1c2c926af7af0b03fd79104a01bd45d944737e260"
+            },
+            {
+                "asset_id": 690133064,
+                "dest": "private-holdout.csv",
+                "target": "data/private-holdout.csv",
+                "size": 121058,
+                "sha256": "78b62dd3bd5923f67c014010eede2e6f7c778bd0b79d4265c9f8ef4299328a37"
+            },
+            {
+                "asset_id": 690133132,
+                "dest": "public-eval.csv",
+                "target": "data/public-eval.csv",
+                "size": 50575,
+                "sha256": "ec1f733558558d4c30c2c50bf93408817d0936df4517c126a6d7965f02c5c5c5"
+            },
+            {
+                "asset_id": 690133179,
+                "dest": "public-train.csv",
+                "target": "data/public-train.csv",
+                "size": 133840,
+                "sha256": "beacb2292ca0a045610662bd02ba85d89fde18b652e43d4ff44276979a3babc5"
+            },
+            {
+                "asset_id": 690133270,
+                "dest": "quality.json",
+                "target": "quality.json",
+                "size": 21707,
+                "sha256": "7a61f6fa1bd17f01804428b939ab7cf620cacbf066c95837f6d9166d7a78258e"
+            }
+        ],
+        "verify_loading": {
+            "splits": {
+                "train": {
+                    "rows": 1069,
+                    "positives": 715
+                },
+                "eval": {
+                    "rows": 372,
+                    "positives": 225
+                },
+                "holdout": {
+                    "rows": 884,
+                    "positives": 514
+                }
+            },
+            "columns": [
+                "advisory_id",
+                "issue_date",
+                "site_name",
+                "county",
+                "facility_type",
+                "reason",
+                "issue_month",
+                "issue_dow",
+                "site_prior_advisories",
+                "site_days_since_last",
+                "site_prior_resolved",
+                "site_prior_lift30_rate",
+                "site_active_prior",
+                "county_prior_advisories",
+                "county_days_since_last",
+                "county_prior_resolved",
+                "county_prior_lift30_rate",
+                "county_active_prior",
+                "lift30"
+            ],
+            "label_values": [
+                0,
+                1
+            ],
+            "label": "lift30"
+        }
+    }
+}
