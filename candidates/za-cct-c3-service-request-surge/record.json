@@ -1,0 +1,158 @@
+{
+  "id": "za-cct-c3-service-request-surge",
+  "status": "ready",
+  "verdict": "go",
+  "created_at": "2026-10-29T05:30:00+00:00",
+  "updated_at": "2026-10-29T06:40:00+00:00",
+  "domain": "municipal operations / weekly service-request (C3 notification) time series",
+  "prediction_question": "For a City of Cape Town C3 complaint category (city-level primary formulation; suburb x category expansion), at the weekly prediction instant (Tuesday 06:00 SAST), will the number of service-request notifications CREATED in the coming 7-day window (whole SAST days Wednesday..Tuesday) exceed 1.25x the median of the trailing 8 weekly counts?",
+  "prediction_time": "Tuesday 06:00 SAST (UTC+2), weekly. Publisher-documented update cadence is daily Mon-Fri with daily incremental inserts keyed on Notification ID; measured availability at 2026-10-29T08:31:51 SAST: rows created 2026-10-28 (D-1) present (3,853 rows), rows created 2026-10-29 (same day) not yet present. Features therefore use created-dates through Sunday (D-2, guaranteed posted by Monday's update); the target window (created-dates Wed..Tue) begins the day after the instant's day, so no part of the target window precedes the prediction instant and no target-window row is queryable at the instant. CreatedOnDT carries day granularity only (SAP DD.MM.YYYY), which is why whole-day windows are used.",
+  "target_definition": "Binary surge label: 1 iff created-notification count for the (category [, suburb]) unit in the target window Wed..Tue exceeds 1.25x the median of that unit's counts for the 8 weeks ending before the prediction instant. Label source columns: CreatedOnDT (created date) with C3_Complaint_Type (and Suburb for the expansion); target-window rows are excluded from every shipped feature. Post-hoc columns (ChangedOnDT, CompletedDT) and the monthly-reconciled Suburb_Clean for weeks inside the reconciliation lag are excluded as features; Suburb_Clean backfill lag measured at 9.0% NULL pre-2026 vs 46.5% NULL for rows created since 2026-09-01.",
+  "sources": [
+    {
+      "name": "City of Cape Town Open Data Portal - Service Requests Jan 2023 to Present (SAP C3 Notifications, complete tabular record)",
+      "url": "https://odp-cctegis.opendata.arcgis.com/datasets/da3b6d46845e4671bde500e8de7e1d3e/about",
+      "api": "https://services6.arcgis.com/nyYfO9SxHU2ChQd9/arcgis/rest/services/schema_jan2023_iso/FeatureServer/0/query (anonymous ArcGIS REST; paged group-by aggregates measured 2026-10-29)",
+      "access": "Anonymous REST, no registration (publisher-documented and measured); 4,509,409 rows, CreatedOnDT 2022-12-31..2026-10-28 as of 2026-10-29; full-panel extraction is worker-side construction (coordinator keeps aggregates only)",
+      "licence": "City of Cape Town Open Data License per the item description; Open Data Terms of Use page is disclaimer-only (no reuse restriction); Council-approved Open Data Policy 27781 defines the data as freely used, shared and built-on (see license_evidence)"
+    }
+  ],
+  "license_evidence": [
+    "Open Data Policy, Policy Number 27781, revised and approved by Council 03 December 2020 (https://www.capetown.gov.za/media/vg2plaql/open_data_policy.pdf, read 2026-10-29), Definitions: \"'Open data' means data that can be freely used, shared and built-on by anyone, anywhere, for any purpose.\"",
+    "Same policy, clause 7.1.5: \"Access to open data will be free by default. The widespread use of data for innovation will be encouraged...\"; clause 7.6: \"The use of the Open Data Portal will be subject to its Terms of Use. The Terms of Use will conform with open data principles.\"; clause 7.7: \"Access to the Portal will be free of charge and will not require prior registration by users.\"; clause 7.5.3 encourages users to \"contribute to or add value to City data\".",
+    "City of Cape Town Open Data terms of use (https://www.capetown.gov.za/general/city-of-cape-town-open-data-terms-of-use/, read 2026-10-29): \"The following terms of use apply to visitors and users of the Open Data Portal section of the City of Cape Town's website.\" The page contains a disclaimer (as-is, no warranty, no liability), the Esri master-agreement reference and the Open Data Policy download - it imposes NO restriction on reuse, redistribution or derivatives for the portal data.",
+    "The dataset item's own documentation (ArcGIS item da3b6d46845e4671bde500e8de7e1d3e, read 2026-10-29) states: \"License : City of Cape Town Open Data License\".",
+    "Counter-signal recorded for the reviewer: the general City website copyright statement (https://www.capetown.gov.za/general/terms-of-use) says \"Any redistribution or reproduction of part or all of the contents in any form is prohibited\" for website content - read as scoped to the general website, because the Open Data terms of use are the section-specific instrument for the Open Data Portal and the Council policy binds those terms to open data principles; the Hub page footer line \"Copyright 2026 Corporate GIS, City of Cape Town. All rights reserved.\" is site chrome, not a dataset licence.",
+    "Residual ambiguity, recorded honestly: the publisher uses no named standard licence (no CC/ODbL instrument); the redistribution permission rests on the Council-approved policy definition plus disclaimer-only section terms. Flagged for the standing release-stage licence review (candidates/<id>/license.json); no operator risk acceptance is claimed."
+  ],
+  "licence_class": "A",
+  "licence_note": "Council-approved Open Data Policy defines portal data as freely usable, shareable and buildable-on by anyone for any purpose; section-specific Terms of Use are disclaimer-only; access free and anonymous. No named standard licence - flagged for release-stage licence review.",
+  "jurisdiction": {
+    "country": "ZA",
+    "region": "Africa",
+    "publisher": "City of Cape Town (Open Data Team / Corporate GIS) - metropolitan municipality in South Africa; operational source: SAP C3 Notifications; published via ArcGIS Hub (odp-cctegis.opendata.arcgis.com)",
+    "recorded_at": "2026-10-29"
+  },
+  "construction_script": null,
+  "split_strategy": "Temporal weekly splits on the created-count panel: train = scorable weeks starting <= 2024-12-31 (98 weeks per category at city level), eval = 2025 (43-47 weeks), holdout = 2026 to date (43 weeks). Measured city-level surge counts (label: week > 1.25x trailing-8-week median), probe_c3.py --surge, snapshot weekly_series_5cats.json: No Power 15/98 train, 15/47 eval, 8/43 holdout; SEW: Blocked/Overflow 9/98, 6/47, 4/43; Street Lights - All Lights Out 17/98, 13/47, 9/43; Illegal Dumping 14/98, 9/43, 7/43; Damaged Bin - 240L 10/98, 9/43, 8/43 - both classes present in every window for every probed category. Positives cluster in category-level regime waves (week-level counts above are the clustered evidence). The suburb x category expansion (>=26 weeks history per unit) multiplies units by hundreds; its full counts are a construction-time measurement on the worker and are not claimed here.",
+  "measurements": {
+    "panel_shape_measured": "4,509,409 notifications; CreatedOnDT day-granular 2022-12-31..2026-10-28 (196 weeks, no month gaps at week level); >1,000 distinct C3_Complaint_Type values (group-by hit the 1000-row cap); top categories measured: No Power 463,757; SEW: Blocked/Overflow 463,307; Street Lights - All Lights Out 193,973; Street Lights - Single Light Out 183,787; Damaged Bin - 240L 120,889; hygiene labels present (Duplicate 68,370; DO NOT USE (Tree Complaint) 26,081) and must be excluded from the curated category set; ~28% of rows lack coordinates (tabular item used, spatial twin not)",
+    "provenance_mix_measured": "Every row is one C3 notification from the SAP C3 Notifications system (single provenance stream; no sentinel/non-sentinel mixture). Suburb_Clean NULL (unreconciled): 9.0% pre-2026 vs 46.5% for rows created since 2026-09-01 - the publisher's monthly reconciliation backfills it with a lag of weeks",
+    "publication_lag_measured": "At 2026-10-29T08:31:51 SAST: created-dates through 2026-10-28 present (3,853 rows), created-date 2026-10-29 absent (0 rows); publisher-documented cadence: daily Mon-Fri; weekend rows post with the Monday update",
+    "surge_base_rates_measured": "City-level, 5 categories, label = week > 1.25x trailing-8-week median: train 9.2-17.3%, eval 12.8-31.9%, holdout 9.3-20.9% per category (full counts in split_strategy); snapshot weekly_series_5cats.json",
+    "aggregation_cost_measured": "Day-level group-by count series per category: 2 pages x <=1000 rows, 0.6-1.5 s/page measured from this coordinator (5-category full-range series = 10 requests, ~65 KB JSON). Sibling-service fetch-rate measurement on the same host: 49,947 rows in 27.2 s at 1000 rows/page with 2 small fields = 0.55 s/page; full 4.5M-row panel extraction DERIVED from that measured page rate: ~4,509 pages, ~40-75 min single-threaded (estimate, clearly labelled; worker construction must re-measure with the real field set). Bulk CSV via the Hub Download button exists but is unmeasured",
+    "related_items": "Spatial twin 6e8f77f27ea84763abbc11023561a406 (excludes ~28% of rows - not used); deprecated predecessor 90711027d33940b5a06e96ad8a8f7ede frozen 2026-10-06 with publisher deprecation notice; 14 per-year historic item ids (2011-2024) extracted in notes.md for optional train-window extension",
+    "measured_on": "2026-10-29 via probe_c3.py from the hosted coordinator; commands and outputs in notes.md"
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": "All five discovery contracts have recorded evidence. (1) Redistribution: class A on the Council-approved Open Data Policy definition ('freely used, shared and built-on by anyone, anywhere, for any purpose') with disclaimer-only section-specific Terms of Use; residual no-named-licence caveat flagged for release-stage review. (2) Prediction timing: weekly Tuesday 06:00 SAST instant with measured same-day-absent / D-1-present availability, day-granular whole-day target window starting after the instant's day; the publisher's own revision policy (monthly reconciliation of completion fields and Suburb_Clean) is documented and its feature-exclusion consequences are recorded. (3) Target: created-count surge vs trailing median, source column CreatedOnDT excludable from shipped features (target-window rows must not ship - the abs-visitor-arrivals cross-row-join defect class is recorded as a construction constraint). (4) Split capacity: measured both-classes-present in train/eval/holdout for all 5 probed categories at city level (9-17% train surge base rate); suburb-level full counts are a worker prerequisite, recorded as such. (5) Not a mirror: NYC 311 forecasting is the named comparator (task family), StreetSignal ships only descriptive aggregates of this source; no ML-ready Cape Town C3 prediction task found.",
+  "next_action": "READY (go). Handoff to advancement: worker-side extraction of the (created-date x category [x suburb]) panel from the live FeatureServer (full-panel fetch never on the coordinator), curated category list excluding hygiene types, Tuesday-06:00-SAST instant contract per notes.md, temporal splits per split_strategy, then the standing order construction -> full-worker qualification -> exact-byte acceptance -> reference/model scoring -> reporting. Construction success check: full-panel suburb x category counts with both classes in all three windows, blind cross-row-join probe negative (no shipped row exposes a scored week's outcome), known-event fixtures asserted (load-shedding-era No Power surges; named Cape Town storm week -> SEW surge).",
+  "novelty_check": {
+    "checked_at": "2026-10-29T06:35:34+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "Cape Town C3 service requests prediction machine learning",
+      "Cape Town municipal complaints forecasting dataset benchmark",
+      "service request surge prediction weekly benchmark municipal"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "Cape Town C3 service requests prediction machine learning",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "Cape Town municipal complaints forecasting dataset benchmark",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "service request surge prediction weekly benchmark municipal",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "Cape Town C3 service requests prediction machine learning",
+          "hits": 570301,
+          "top": [
+            "Campus Placement Prediction System using  Machine Learning",
+            "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
+            "Machine Learning Models in Climate Prediction and Adaptation Planning for Cape Verde: A Methodological Approach",
+            "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI",
+            "RGB and RGNIR Plastic Waste Database"
+          ]
+        },
+        {
+          "query": "Cape Town municipal complaints forecasting dataset benchmark",
+          "hits": 438424,
+          "top": [
+            "Does \"local health\" make \"healthy locals\"?",
+            "BQEB ForecastBench: Benchmarking AI Models for Smart Grid Forecasting Using BQEB-Data v1",
+            "BQEB-Data BIO-Quantum Energy Brain Benchmark Dataset for Smart Grid Intelligence, Renewable Forecasting, Storage Optimization, and Cyber Resilience",
+            "WaterBench-Iowa: A Large-scale Benchmark Dataset for Data-Driven Streamflow Forecasting",
+            "Municipal Corporation Complaint Management System in Online Platform"
+          ]
+        },
+        {
+          "query": "service request surge prediction weekly benchmark municipal",
+          "hits": 306199,
+          "top": [
+            "Reproducibility Package for Point-in-Time Validity in Municipal 311 Service-Time Prediction: A Multi-City Benchmark of Outcome Construction, Information Availability, and Temporal Evaluation",
+            "HieraMind-DAG: A Domainized Intent-to-Workflow Dataset for Service Orchestration",
+            "Customers' Loyalty Prediction Model for E-Hailing Mobility Service Companies in Nigeria",
+            "ECCOS: Event-Driven Computing Continuum Orchestration Solver \u2014 Benchmark Simulation Traces and Placement Dataset",
+            "Development of an Integrated Natural and Socioeconomic Indicators Monitoring System for Bulacan Using Earth Intelligence Tools"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "Cape Town C3 service requests prediction machine learning",
+          "hits": 5,
+          "top": [
+            "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+            "DOME: Recommendations for supervised machine learning validation in biology",
+            "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
+            "Privacy-preserving machine learning for healthcare: open challenges and future perspectives",
+            "Active learning for data streams: a survey"
+          ]
+        },
+        {
+          "query": "Cape Town municipal complaints forecasting dataset benchmark",
+          "hits": 5,
+          "top": [
+            "SDWPF: A Dataset for Spatial Dynamic Wind Power Forecasting Challenge at KDD Cup 2022",
+            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+            "Quantile Regression for Qualifying Match of GEFCom2017 Probabilistic Load Forecasting",
+            "Benchmark Dataset for Precipitation Forecasting by Post-Processing the Numerical Weather Prediction",
+            "Lasso estimation for GEFCom2014 probabilistic electric load forecasting"
+          ]
+        },
+        {
+          "query": "service request surge prediction weekly benchmark municipal",
+          "hits": 5,
+          "top": [
+            "A Composite Design Pattern for Service Injection and Composition of Web Services for Peer-To-Peer Computing with Service",
+            "Councils in Action: Automating the Curation of Municipal Governance Data for Research",
+            "A Constrained Shortest Path Scheme for Virtual Network Service Management",
+            "A Software-Defined Networking Solution for Transparent Session and Service Continuity in Dynamic Multi-Access Edge Compu",
+            "MuST2-Learn: Multi-view Spatial-Temporal-Type Learning for Heterogeneous Municipal Service Time Estimation"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'Cape Town C3 service requests prediction machine learning': 0 hit(s) - nothing notable\n- huggingface_datasets / 'Cape Town municipal complaints forecasting dataset benchmark': 0 hit(s) - nothing notable\n- huggingface_datasets / 'service request surge prediction weekly benchmark municipal': 0 hit(s) - nothing notable\n- zenodo_records / 'Cape Town C3 service requests prediction machine learning': 570301 hit(s) - Campus Placement Prediction System using  Machine Learning, plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, Machine Learning Models in Climate Prediction and Adaptation Planning for Cape Verde: A Methodological Approach, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database\n- zenodo_records / 'Cape Town municipal complaints forecasting dataset benchmark': 438424 hit(s) - Does \"local health\" make \"healthy locals\"?, BQEB ForecastBench: Benchmarking AI Models for Smart Grid Forecasting Using BQEB-Data v1, BQEB-Data BIO-Quantum Energy Brain Benchmark Dataset for Smart Grid Intelligence, Renewable Forecasting, Storage Optimization, and Cyber Resilience, WaterBench-Iowa: A Large-scale Benchmark Dataset for Data-Driven Streamflow Forecasting, Municipal Corporation Complaint Management System in Online Platform\n- zenodo_records / 'service request surge prediction weekly benchmark municipal': 306199 hit(s) - Reproducibility Package for Point-in-Time Validity in Municipal 311 Service-Time Prediction: A Multi-City Benchmark of Outcome Construction, Information Availability, and Temporal Evaluation, HieraMind-DAG: A Domainized Intent-to-Workflow Dataset for Service Orchestration, Customers' Loyalty Prediction Model for E-Hailing Mobility Service Companies in Nigeria, ECCOS: Event-Driven Computing Continuum Orchestration Solver \u2014 Benchmark Simulation Traces and Placement Dataset, Development of an Integrated Natural and Socioeconomic Indicators Monitoring System for Bulacan Using Earth Intelligence Tools\n- arxiv_preprints / 'Cape Town C3 service requests prediction machine learning': 5 hit(s) - Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Privacy-preserving machine learning for healthcare: open challenges and future perspectives, Active learning for data streams: a survey\n- arxiv_preprints / 'Cape Town municipal complaints forecasting dataset benchmark': 5 hit(s) - SDWPF: A Dataset for Spatial Dynamic Wind Power Forecasting Challenge at KDD Cup 2022, The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, Quantile Regression for Qualifying Match of GEFCom2017 Probabilistic Load Forecasting, Benchmark Dataset for Precipitation Forecasting by Post-Processing the Numerical Weather Prediction, Lasso estimation for GEFCom2014 probabilistic electric load forecasting\n- arxiv_preprints / 'service request surge prediction weekly benchmark municipal': 5 hit(s) - A Composite Design Pattern for Service Injection and Composition of Web Services for Peer-To-Peer Computing with Service, Councils in Action: Automating the Curation of Municipal Governance Data for Research, A Constrained Shortest Path Scheme for Virtual Network Service Management, A Software-Defined Networking Solution for Transparent Session and Service Continuity in Dynamic Multi-Access Edge Compu, MuST2-Learn: Multi-view Spatial-Temporal-Type Learning for Heterogeneous Municipal Service Time Estimation",
+    "prior_art": [
+      "NYC 311 Service Requests forecasting: github.com/rab175/311_Project (SARIMA/LSTM volume), BigQuery ML 311 forecasting codelabs, Zenodo 311 spatiotemporal studies; StreetSignal descriptive profiles of Cape Town C3 (checked 2026-10-29)"
+    ],
+    "theirs": "The publisher ships only the raw notification table (no prediction task, no splits, no scored contract); StreetSignal (streetsignal.co.za) computes descriptive suburb aggregates from this same source (volume percentiles, resolution-time medians, complaint rates) with no forecasting; NYC 311 volume/resolution-time forecasting is abundant prior art on a different publisher, country, category ontology and regime drivers (named comparator for the task family).",
+    "ours": "First scored, split, publication-instant-anchored prediction task on the City of Cape Town C3 service-request records: weekly surge exceedance (created-count > 1.25x trailing-8-week median) at a Tuesday 06:00 SAST instant, city-level primary with suburb x category expansion, on 4.5M unit-level notifications (Dec 2022-present) with the publisher's daily Mon-Fri update and monthly-reconciliation policy documented as part of the contract.",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
+}

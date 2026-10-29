@@ -64,3 +64,16 @@ nothing. Per the record's own decision rule, Ghana is closed under the class C s
 policy with the licence absence as the decisive fact (no open licence on record; portal
 inoperative corroborates but is not the rejection). See record.json rejection_reason
 for the reopen conditions.
+
+## 2026-10-29 re-check (Africa tick)
+
+- `http://data.gov.gh/` now ANSWERS (HTTP 200, 0.2 s, ip 197.253.124.4) - but serves
+  a default nginx/1.14.0 welcome page; the CKAN application is gone:
+  `/api/3/action/package_list` and `/api/3/action/package_search` return nginx 404,
+  `/dataset` and `/group/datagovgh` return 404. HTTPS refuses (code 000).
+- Reopen conditions re-evaluated: (a) the SERVER answers but the PORTAL does not - no
+  dataset, no licence text, nothing measurable; (b) and (c) remain unmeasurable.
+- Decision unchanged: stays dropped/closed under the class C standing policy. New
+  fact recorded: the portal application itself is offline (worse than the previously
+  observed intermittent refusal); any future reopen still requires a working portal
+  with per-dataset licences.

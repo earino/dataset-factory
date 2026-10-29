@@ -68,3 +68,18 @@ re-checked instead, to keep the blocker evidence current:
 Both coordinator-side blockers persist unchanged. Stays parked; next action unchanged
 (worker-side access test from the Hetzner network, then terms/archive probes only if
 reachable).
+
+## 2026-10-29 re-check (Africa tick)
+
+- `https://www.dws.gov.za/Disclaimer.aspx` -> 403 again from this coordinator (0.68 s,
+  ip 164.151.129.108); `data.gov.za` still has no DNS resolution (getent empty). Both
+  coordinator-side blockers persist unchanged; the recorded worker-side access test
+  remains the unpark path and was NOT run in this discovery-only session.
+- New context from the same tick's City of Cape Town portal census
+  (za-capetown-odp-coverage): the CCT Hub republishes Western Cape dam-level series
+  ("Dam Levels from 2000", "Dam levels Jan 2012 to April 2026") under the City's open
+  data terms - but both Hub items are stale (latest data April 2026, ~5-6 months old
+  at probe time), so they cannot carry the weekly storage-exceedance task either.
+  A future redesign could use the City's live daily dam-levels page as the publisher
+  channel; that would be a new candidate with its own licence/novelty check, not a
+  reopen of the DWS source.

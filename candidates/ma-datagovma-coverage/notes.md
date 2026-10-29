@@ -66,3 +66,11 @@ One CKAN call, exactly as the reopen condition specifies:
 Count is 695, BELOW the 697 threshold (and below the 697 recorded on 2026-10-23);
 no new publisher org was observed. Reopen condition NOT met - stays parked, no
 further probes spent.
+
+## 2026-10-29 re-check (Africa tick)
+
+- `curl -sS "https://www.data.gov.ma/data/api/3/action/package_search?rows=0"` ->
+  `{"success": true, "result": {"count": 694, ...}}` (one request, ~0.6 s).
+- Count 694: below 697 again (697 on 2026-10-23, 695 on the earlier re-check, 694 now);
+  no new publisher org observed. Reopen condition (count materially above 697 or a new
+  org) still NOT met. Stays parked; no further probes spent this tick.

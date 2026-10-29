@@ -1,0 +1,44 @@
+{
+  "id": "za-capetown-odp-coverage",
+  "status": "parked",
+  "verdict": "park",
+  "created_at": "2026-10-29T06:40:00+00:00",
+  "updated_at": "2026-10-29T06:40:00+00:00",
+  "domain": "country/portal coverage record - City of Cape Town Open Data Portal (Africa tick)",
+  "prediction_question": "No task carried to formulation for the parked datasets: this is a portal-coverage record for the Africa tick. The portal's one live unit-grain prediction task found this session was carried to its own record: za-cct-c3-service-request-surge (ready).",
+  "prediction_time": "n/a (coverage record)",
+  "target_definition": "n/a (coverage record)",
+  "sources": [
+    {
+      "name": "City of Cape Town Open Data Portal (ArcGIS Hub) - odp-cctegis.opendata.arcgis.com, 265 datasets, DCAT-US feed census",
+      "url": "https://odp-cctegis.opendata.arcgis.com/api/feed/dcat-us/1.1.json",
+      "api": "DCAT-US catalog feed (anonymous); per-item ArcGIS REST endpoints; per-dataset licence field links to the City's Open Data terms of use",
+      "access": "Anonymous; catalog census measured 2026-10-29 (265 datasets); several per-item aggregate queries measured same day",
+      "licence": "City of Cape Town Open Data terms of use (disclaimer-only) + Council-approved Open Data Policy 27781 (see za-cct-c3-service-request-surge license_evidence for the quoted instruments)"
+    }
+  ],
+  "license_evidence": [
+    "Per-dataset licence field across the portal links to https://www.capetown.gov.za/General/Terms-of-use-open-data (per the DCAT license property); the live terms page is https://www.capetown.gov.za/general/city-of-cape-town-open-data-terms-of-use/ (read 2026-10-29, disclaimer-only). Council-approved Open Data Policy 27781 defines portal data as 'freely used, shared and built-on by anyone, anywhere, for any purpose'. Full quotes in candidates/za-cct-c3-service-request-surge/record.json license_evidence."
+  ],
+  "licence_class": "A",
+  "licence_note": "Same instruments as za-cct-c3-service-request-surge: Council-approved Open Data Policy definition + disclaimer-only section terms; no named standard licence; flagged for release-stage review wherever a specific dataset is carried forward.",
+  "jurisdiction": {
+    "country": "ZA",
+    "region": "Africa",
+    "publisher": "City of Cape Town (Corporate GIS / Open Data Team), metropolitan municipality, South Africa; portal hosted on Esri ArcGIS Hub",
+    "recorded_at": "2026-10-29"
+  },
+  "construction_script": null,
+  "split_strategy": "n/a (coverage record)",
+  "measurements": {
+    "catalog_census_2026_10_29": "265 datasets in the DCAT-US feed. Task-shaped highlights: Service Requests Jan 2023 to Present (4.5M rows, live daily - carried to za-cct-c3-service-request-surge, ready); Suburb Level Water Billing 2021 to September 2026 (219,184 rows, 787 suburbs x 69 months x 6 billing classes); Suburb Level Electricity Billing (102,809 rows, same shape); Prepaid Electricity by Suburbs and Tariffs Jan 2024 to Sep 2026; Municipal Arrears Suburbs and Service Type 2025 to Sep 2026 (historic items back to 2018); Dam Levels from 2000 / Jan 2012 to April 2026 (stale ~5-6 months on the Hub vs the City's live daily dam-levels page); Rainfall Jan 2000 until April 2026 (stale ~6 months on the Hub); Traffic Accidents (Crash Data) Statistics 2019 to 2024; Fire Incidence 2009 to 2016 + Jan 2017 to July 2022 (ended); Electricity Voltage dips up to Sep 2026; Library circulation/membership monthly to Sep-Oct 2026; Air Quality NO2/O3/PM10/SO2 2022 to 2024; Emergency response times; Inland Water Quality Results (Raw).",
+    "billing_mask_veto_2026_10_29": "DECISIVE for the suburb-level water/electricity billing panel: the entire billing family is ~98-100% '*' masked for every month before April 2026 and fully unmasked only from 2026-04 onward (measured on water Domestic: 44,713/49,947 rows masked across 63 months 2020-12..2026-02, 0% masked 2026-04..2026-09, 2026-03 absent; electricity Domestic: 100% masked 2020-12..2026-02, 0% 2026-04..09; water non-Domestic classes 92.7-100% masked in 2023-06 vs 0% in 2026-09). The unmask regime change coincides with the item republish dates (April 2026). Quantity semantics resolved before the veto: litres (Amount/Quantity = 0.044 ZAR/L ~= R44/kl, the CCT tariff band; Quantity/record ~2,775 L). Split capacity for a billing-direction task is therefore nil today.",
+    "portal_hygiene_observations": "The publisher freezes deprecated datasets with in-page deprecation notices pointing at successors (Service Requests item deprecated 2026-10-06); per-year historic items are linked from live items (C3 back to 2011); the Hub footer carries boilerplate 'Copyright ... All rights reserved.' while per-dataset licence fields point at the Open Data terms; old ASPX portal (web1.capetown.gov.za) 302s to an error page.",
+    "unprobed_leftovers": "Emergency response times, Electricity Voltage dips, Library statistics, Inland Water Quality (Raw), Prepaid Electricity and Municipal Arrears (mask regime unmeasured) - none carried to formulation this session."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "PARK (coverage, not a rejection of the data): the portal's licence posture is workable (class A, quoted instruments) and it hosts real unit-grain series, but the most task-shaped family (suburb-level water/electricity billing) is decisively masked before 2026-04, leaving ~6 unmasked months - no split capacity; one live unit-grain task (C3 service requests) was carried to its own ready record this session; remaining datasets are either stale on the Hub (dam levels, rainfall: ~5-6 months behind the City's live pages), ended (fire incidence July 2022), or unprobed.",
+  "review": "Coverage record preserving a full portal census and the billing-mask veto so a future tick does not re-derive it. The billing task becomes viable only after the unmasked regime accumulates ~18+ months (>= ~Q3 2027), or if the publisher backfills history unmasked.",
+  "next_action": "Reopen the suburb-level billing task ONLY when the unmasked window (since 2026-04) covers roughly 18+ months, i.e. check again from ~2027-10, or earlier on evidence the publisher backfilled pre-2026-04 history unmasked. Re-census the DCAT feed only when a new task-shaped unit-grain series appears (Emergency response times, Voltage dips, Library stats and Water Quality remain the unprobed candidates; probe them in a later Africa tick before opening new portals). za-cct-c3-service-request-surge (ready) is this portal's contribution to the queue."
+}

@@ -1,4 +1,60 @@
-## 2026-10-29 00:16Z - follow-up pass over the six watched worker jobs: evidence verified, cleanup provider-confirmed, watcher markers written
+## 2026-10-29 07:0xZ - Africa discovery tick: Cape Town C3 service-request surge READY; billing family vetoed on masking; Ghana/Morocco/DWS re-checks recorded
+
+Discovery-only session (Africa regional focus). One new candidate carried to READY, one new
+coverage record, three existing records re-checked with dated evidence. Nothing was built,
+qualified, packaged, published or advanced; no worker was launched.
+
+NEW READY CANDIDATE: za-cct-c3-service-request-surge (City of Cape Town Open Data Portal,
+ArcGIS Hub). The portal census (265 datasets, DCAT feed) found the live "Service Requests
+Jan 2023 to Present" table: 4,509,409 SAP C3 notifications, created-dates 2022-12-31..2026-10-28,
+daily Mon-Fri updates, publisher-documented field list and revision policy. Task: weekly surge
+exceedance (created-count > 1.25x trailing-8-week median) at a Tuesday 06:00 SAST instant,
+city-level primary with suburb x category expansion. Five contracts all evidenced: licence
+class A (Council-approved Open Data Policy 27781 defines portal data as "freely used, shared
+and built-on by anyone, anywhere, for any purpose"; section-specific Terms of Use are
+disclaimer-only; no named standard licence - flagged for release-stage review); measured
+availability (at 2026-10-29T08:31 SAST, D-1 created-rows present, same-day absent); target on
+append-only CreatedOnDT with the completion fields' monthly reconciliation excluded as features
+(Suburb_Clean NULL 9.0% pre-2026 vs 46.5% since 2026-09 - the reconciliation lag is measured);
+split capacity measured at city level for 5 categories (surge weeks: train 9-17/98, eval 6-15/43-47,
+holdout 4-9/43 - both classes everywhere); novelty differentiated (NYC 311 forecasting named as
+the family comparator; StreetSignal aggregates this source descriptively only; no ML-ready
+Cape Town C3 task found). check-novelty.py recorded the verdict; check-candidate.py passes
+(status=ready). Full-panel extraction is worker-side construction; per-record probe recipes
+retained at candidates/za-cct-c3-service-request-surge/.
+
+DECISIVE NEGATIVE (preserved): the portal's suburb-level water/electricity billing family
+(219,184 water rows, 787 suburbs x 69 months x 6 classes; 102,809 electricity rows) is ~98-100%
+'*'-masked for every month before 2026-04 and unmasked only from 2026-04 onward - the unmask
+regime change coincides with the items' April 2026 republish. Quantity semantics were resolved
+before the veto (litres: 0.044 ZAR/L ~= R44/kl tariff band). With ~6 unmasked months there is
+no split capacity; recorded in new coverage record za-capetown-odp-coverage (parked, reopen
+from ~2027-10 or on evidence of unmasked backfill). Dam levels and rainfall Hub items are
+stale (April 2026); fire incidence ended 2022; crash data ends 2024.
+
+RE-CHECKS ON EXISTING RECORDS (verdicts unchanged): gh-opendata-coverage - data.gov.gh now
+answers plain HTTP but serves a default nginx page; the CKAN app is gone (API paths 404);
+stays dropped/closed under class C policy. ma-datagovma-coverage - portal count 694 (< 697
+reopen threshold, third consecutive non-growth reading); stays parked. za-dws-dam-storage-
+exceedance - dws.gov.za still 403 from this coordinator, data.gov.za still no DNS; CCT Hub
+dam items are stale to April 2026 so they do not unblock the task either; stays parked with
+the worker-side access test as the unpark path. Kenya untouched (KNBS CC BY-NC posture still
+awaits the operator decision recorded there).
+
+AfDB/UNECA (scheduler-named): dataportal.afdb.org has no DNS; opendataforafrica.org 403s a
+plain client and hangs a real browser's navigation twice - recorded as inaccessible evidence,
+proving neither content nor terms; UNECA's data channel identified as ecastats.uneca.org
+(HTTP 200; SDG/national aggregates, no unit-grain series surfaced; no candidate opened).
+No US sources were substituted for the empty leads; the region's yield this tick came from
+South Africa (Cape Town).
+
+Next action: advancement owns za-cct-c3-service-request-surge construction on a worker
+(evidence re-read first; construction -> full-worker qualification -> exact-byte acceptance
+-> reference/model scoring -> reporting). The ready buffer now holds 8 candidates; the
+operator's pending items (unhcr audit-prompt relay, KNBS NC decision, ec-merger conditions)
+are unchanged.
+
+
 
 The six outcomes were recorded by the finishing sessions (entries of 2026-10-28 21:26Z and
 22:35Z). This pass re-verified the evidence behind them, confirmed cleanup with a fresh
