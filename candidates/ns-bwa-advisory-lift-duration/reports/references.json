@@ -1,0 +1,124 @@
+{
+ "name": "ns-bwa-advisory-lift-duration",
+ "stage": "simple references on identical eval rows (post-acceptance)",
+ "accepted_report": "qualification-ns-bwa-advisory-lift-duration.json",
+ "artifact_version": null,
+ "rows": {
+  "train": 1069,
+  "eval": 372
+ },
+ "train_positive_rate": 0.668849,
+ "eval_positive_rate": 0.604839,
+ "references": {
+  "majority_class": {
+   "definition": "majority label fitted on train, measured against this split's labels",
+   "prediction": 1,
+   "accuracy": 0.6048387096774194
+  },
+  "global_rate": {
+   "definition": "constant train positive rate; no ranking information, AUC degenerate by construction",
+   "rate": 0.668849,
+   "brier": 0.24310621239882774,
+   "auc": null
+  },
+  "persistence_site_prior": {
+   "definition": "the site's as-of lift30 rate over earlier same-site advisories resolved strictly before the instant (the shipped site_prior_lift30_rate feature); global train rate fallback",
+   "covered_rows": 231,
+   "coverage": 0.621,
+   "auc": 0.6124414210128496,
+   "brier": 0.2818656910340113
+  },
+  "calendar_county_month": {
+   "definition": "train-estimated (county, issue month) rate with >=5 train rows, county rate then global train rate backoff (identity + seasonal control)",
+   "train_counties": 35,
+   "unseen_county_rows": 25,
+   "auc": 0.5074981103552532,
+   "brier": 0.3100867628398012
+  },
+  "reason_prior": {
+   "definition": "train-estimated positive rate per normalised reason, global rate fallback",
+   "train_reasons": [
+    "e. coli present",
+    "failure of treatment processes",
+    "ineffective disinfection",
+    "lack of disinfection",
+    "other",
+    "public health risk i.e. giardia, crypto",
+    "total coliform present",
+    "use of emergency water supply"
+   ],
+   "auc": 0.4306575963718821,
+   "brier": 0.24404174663204806
+  },
+  "facility_prior": {
+   "definition": "train-estimated positive rate per facility type, global rate fallback",
+   "train_types": [
+    "municipal",
+    "registered",
+    "unknown"
+   ],
+   "auc": null,
+   "brier": 0.24291359797110337
+  }
+ },
+ "paired_differences": {
+  "persistence_vs_calendar": {
+   "resamples": 1000,
+   "mean": 0.101394,
+   "ci95_low": 0.014429,
+   "ci95_high": 0.173883,
+   "note": "paired bootstrap on identical rows; an interval containing zero is inconclusive, not parity"
+  },
+  "calendar_vs_reason": {
+   "resamples": 1000,
+   "mean": 0.077946,
+   "ci95_low": 0.007156,
+   "ci95_high": 0.149222,
+   "note": "paired bootstrap on identical rows; an interval containing zero is inconclusive, not parity"
+  },
+  "persistence_vs_reason": {
+   "resamples": 1000,
+   "mean": 0.17934,
+   "ci95_low": 0.113629,
+   "ci95_high": 0.248222,
+   "note": "paired bootstrap on identical rows; an interval containing zero is inconclusive, not parity"
+  }
+ },
+ "per_issue_year": {
+  "2018": {
+   "rows": 129,
+   "positives": 96,
+   "positive_rate": 0.7442,
+   "persistence_auc": 0.6084280303030303,
+   "calendar_auc": 0.5402462121212122,
+   "reason_auc": 0.5642361111111112,
+   "persistence_brier": 0.2172756555244248
+  },
+  "2019": {
+   "rows": 125,
+   "positives": 80,
+   "positive_rate": 0.64,
+   "persistence_auc": 0.6202777777777778,
+   "calendar_auc": 0.47791666666666666,
+   "reason_auc": 0.4741666666666667,
+   "persistence_brier": 0.2747882759927489
+  },
+  "2020": {
+   "rows": 118,
+   "positives": 49,
+   "positive_rate": 0.4153,
+   "persistence_auc": 0.5990831115054718,
+   "calendar_auc": 0.5113871635610766,
+   "reason_auc": 0.3114463176574978,
+   "persistence_brier": 0.3599740932449814
+  }
+ },
+ "notes": [
+  "persistence is the site's own as-of outcome history (the shipped site_prior_lift30_rate); it may embed strictly-earlier eval-era outcomes, which is exactly its information set at the instant - unlike the train-only references",
+  "calendar_county_month, reason_prior and facility_prior are estimated only from training-era rows",
+  "constant global_rate scores carry no ranking information; its AUC is reported null, not zero",
+  "the full model (harness runner baseline) is quoted beside these references when its job exists; it is not computed here",
+  "the holdout is sealed: no reference or model in this file reads private/holdout.csv",
+  "per-issue-year figures are mandatory reading beside the pooled ones: duration has a measured regime shift around 2020"
+ ]
+}

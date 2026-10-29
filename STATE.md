@@ -1,3 +1,63 @@
+## 2026-10-29 08:4xZ - ns-bwa-advisory-lift-duration qualified end to end (ns-bwa-001: gate 1.5.0 46/46, accept e8ed2a53eaf0453c, references measured); unhcr release still the operator's relay
+
+Release work first: the one packaged candidate (unhcr) is unchanged - `operator_decision_pending: true`,
+the operator's move is relaying candidates/unhcr-refugee-data-finder/pre-flip-audit-prompt.md to an
+independent auditor, and the flip waits for that verdict unless waived. Nothing in this session could
+advance it; no byte, tag, digest or destination of any release changed. Construction therefore advanced
+the actionable candidate with the smallest fully-pinned source: ns-bwa-advisory-lift-duration.
+
+VERIFIED OUTCOME (worker job ns-bwa-001, server 173305072, EUR 0.04 reservation, 12.0 s, worker
+destroyed and provider read-back 0 servers / 0 primary IPs): construct -> gate 1.5.0 PASSED (46/46
+checks, 0 failed, full artifact on the worker) -> --accept ACCEPTED for artifact
+e8ed2a53eaf0453c8ed52aea336edb994d888ad11e7b76f7898b663f017180a8 -> references on identical eval
+rows. The register was byte-identical to discovery (sha256 60f77ac4..., 283,987 bytes, Last-Modified
+2026-06-16) and every recorded number reproduced exactly: labeled 1069/372/886/249, censored 2/1/10/30,
+lift30 0.6688/0.6048/0.5824, the 3 known negative-duration rows. Shipped: train 1,069 (66.88%, 715
+positives, 569 positive issue dates), eval 372 (60.48%, 225, 176), holdout 884 (58.14%, 514, 367);
+2,325 rows. Both in-file fixtures asserted (Maple Meadows 307 d -> 0 in holdout; Canning 1 d -> 1 on
+the register, out of window by the frozen design). Reports fetched from staging release 427616218
+with per-file digest checks and preserved at candidates/ns-bwa-advisory-lift-duration/reports/.
+
+Pre-launch verification (no worker spend until it passed): gate --selftest PASSED; a synthetic-register
+smoke ran build.py + the REAL gate + --accept + references on the coordinator, exercising every
+structural check including the timing block, the evaluation_contract with both cross-row probes, split
+windows and both-classes minimums; the only smoke failure found (synthetic positives below the gate's
+clustered minimum) was a data-volume artefact, fixed and re-run to green. As-of history semantics
+spot-verified row by row: strictly-earlier events only, same-(site, issue date) rows never see each
+other, blank-county rows never pool, boundary durations 30->1 / 31->0. Builder decisions all recorded
+in the record: negative-duration rows excluded as unverified outcomes (the 3 known rows asserted by
+site+date), censored blank-removal rows counted per window and never labeled, advisory_id constructed
+from the pinned CSV row position (unique, no cross-split ids), site_name stays a declared
+high-cardinality FEATURE (site recurrence is signal, not an entity-key claim), history events
+de-duplicated per (key, issue date) with a stated representative rule.
+
+Newly measured (in the record's measurements): 113 blank-county rows; 19 same-(site, issue) pairs + 1
+triple, 16 pairs valid-valid (identical features, counted label noise); 16 rows at duration exactly 30
+and 6 at 31; 0 Length-column disagreements; the e-coli variant merge (83 + 52 = 135). Cross-row
+exposure MEASURED by the gate's own probes: site-level reverse-history covers 369 train / 56 eval /
+217 holdout rows - a later same-site row's prior-lift-rate equals the earlier row's label when that
+prior is its only resolved one. evaluation_contract therefore declares access=isolated_rows as the
+row-wise DESIGN INTENT with the explicit unhcr-lesson caveat (the shipped validator passes the whole
+table; no enforcement claim exists anywhere in the descriptor).
+
+REFERENCES (post-acceptance, identical eval rows, n=372; holdout sealed): site persistence AUC 0.6124
+(Brier 0.2819) vs calendar/identity (county x month) 0.5075 (0.3101) and reason prior 0.4307 (0.2440);
+majority-class accuracy 0.6048; facility-type prior degenerate (constant scores). Paired bootstrap
+(1000, seed 23): persistence vs calendar +0.1014 [0.0144, 0.1739]; calendar vs reason +0.0779
+[0.0072, 0.1492]; persistence vs reason +0.1793 [0.1136, 0.2482]. Per-issue-year (mandatory): eval
+prevalence 0.7442 (2018) -> 0.6400 (2019) -> 0.4153 (2020) - the measured COVID-era duration regime
+shift - while persistence AUC holds ~0.60-0.62 each year. The FULL MODEL is not yet measured: no
+headroom claim exists. One cosmetic defect found and fixed in source: score.py echoed
+report.artifact.version, absent from the 1.5.0 schema, so the staged references JSON prints
+artifact_version: null; the digest is recorded from the qualification + acceptance reports instead
+(numbers unaffected; future runs fixed).
+
+Next action: harness runner baseline worker job on the staged artifact (the wb-sol-baseline-001
+pattern) to measure the full model on the same eval rows and compare against the site-persistence
+reference; interpret per dataset-qualification before any packaging step. The unhcr operator relay is
+unchanged and still the only move on the release side.
+
+
 ## 2026-10-29 07:0xZ - Africa discovery tick: Cape Town C3 service-request surge READY; billing family vetoed on masking; Ghana/Morocco/DWS re-checks recorded
 
 Discovery-only session (Africa regional focus). One new candidate carried to READY, one new
