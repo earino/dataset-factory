@@ -1,3 +1,69 @@
+## 2026-10-29 20:50Z - International-organisations discovery tick: OCHA FTS appeal-funding-coverage lead READY (launch-vintage formulation, vintage trap measured and fenced); IMF publisher coverage closed on task shape; region now fully probed
+
+Discovery-only session (International-organisations regional focus: World Bank,
+OECD, UN agencies, WHO, IMF, ITU). One new lead carried to READY, one publisher
+coverage record; no build, qualification, packaging, publication, advancement
+or worker launch; all probes anonymous (coordinator HTTP + search only).
+
+- ocha-fts-appeal-funding-trajectory (NEW): READY. UN OCHA Financial Tracking
+  Service - per-plan-year humanitarian appeal funding coverage. Prediction at a
+  plan's public launch (requirements first published, GHO early December):
+  will the plan reach >=50% of its ORIGINAL (launch-vintage) requirements by
+  plan-year close. Licence class A: the dataset's own page answers "Can I use
+  and republish the data and information published on FTS website/API?" "Yes"
+  with a citation request, and the publisher's HDX record for the identical
+  data carries CC BY-IGO. Anonymous API (no auth): plan endpoint
+  (origRequirements/revisedRequirements) + flow endpoint (dated flows,
+  per-plan-year fundingTotal; YEM HRP 2023 and AFG HRP 2023 API totals equal
+  the HDX CSV to the dollar). DECISIVE VINTAGE FINDING, measured: 54% of
+  836 plans were revised post-launch (286 up, 166 down) and today's HDX CSV
+  'requirements' column carries revised values - unusable as a launch feature
+  (Afghanistan HRP 2023 fixture: orig 4,627,363,573 == the 2022-12-01 GHO ask;
+  final funding 1,678,347,238 = 36% of orig = label 0; the CSV's revised
+  3,227,372,908 would flip it to 1 - forbidden-column fixture recorded).
+  Launch-vintage split counts measured by full 877-plan sweep (0 errors,
+  401 s, plan_orig_sweep.jsonl retained): primary population 782 single-
+  country plan-years 2000-2025; train 2000-2016: 437 (282/155), eval
+  2017-2020: 139 (81/58), holdout 2021-2025: 182 (96/86); both classes every
+  window; clustered count 83 country series, max 28; prevalence drift
+  68%->43% across windows is a measured property (GHO coverage 50%->38%).
+  Regional plans excluded from primary (measured slice gap 0.78, Burundi RRP
+  2021). Novelty differentiated (raw-table mirrors exist on HDX/HAPI/HF; no
+  ML-ready per-plan-year coverage task with instant, splits, scored contract).
+  NAMED RISK for construction: the WB instrument-outcome drops
+  (identity-dominated, no persistence headroom) - prior-year same-country
+  coverage is the primary reference and decides the task's value; not beating
+  it is a reportable result. Next: worker job fts-appeal-001 per
+  record.next_action (construction -> qualification -> acceptance -> scores).
+- imf-statistical-catalogue (NEW): DROPPED (licence class A; task shape
+  decisive) - closes the one named regional publisher with no prior candidate.
+  IMF's Special Terms for Statistical Data explicitly permit download,
+  derivative works, publication, distribution with attribution/integrity
+  conditions (quoted); the general site terms stay restrictive, so any future
+  IMF lead classifies from the dataset's own instrument. Catalogue (108
+  datasets) is the aggregate-panel family already closed on measured evidence
+  at OECD (A) and ITU (B); the one row-level register (lending arrangements,
+  1,693 since 1952, ~23/year) is the third sibling of the WB
+  instrument-outcome family, built and dropped twice on this bench
+  (identity-dominated, no headroom over a country rate-table). Reopen triggers
+  recorded.
+- Region coverage: with IMF now recorded, every named publisher in the tick's
+  focus has a candidate record: WHO (who-flunet published; C via recorded
+  operator acceptance), UNHCR (packaged), WB x2 (built, measured, dropped),
+  OECD (dropped), ITU (dropped), UNODC (dropped class D), IAEA (dropped C),
+  UNICEF (parked, split capacity), OCHA (READY this tick), IMF (dropped this
+  tick). No familiar-source padding was needed; the region produced the
+  session's strongest lead. Ready buffer: 8 (was 7).
+
+Checks at close-out (2026-10-29, working tree): check-candidate.py OK on both
+new records and --all rc=0; check-novelty verdict differentiated recorded.
+Repository test suite: 674 tests, ONE failure, PRE-EXISTING at HEAD (and in
+CI run 40909127568): test_artifact_checks.
+test_every_committed_candidate_record_passes, because ns-bwa-advisory-lift-duration
+(packaged by the 16:10Z session) carries artifacts[0] with no url/tag/repo -
+advancement's pending private staging step owns the fix, not this session.
+factory doctor rc=0 on this tree.
+
 ## 2026-10-29 18:32Z - Oceania discovery tick: EPBC referral register closed on licence (portal's own terms prohibit redistribution; true population 8,296 measured and preserved); FWC agreement-approval lead opened and closed on licence; NZ catalogue checked, no new lead
 
 Discovery-only session (Oceania regional focus). Two licence-first verdicts, both measured;

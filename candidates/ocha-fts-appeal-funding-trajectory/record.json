@@ -1,0 +1,214 @@
+{
+  "id": "ocha-fts-appeal-funding-trajectory",
+  "created_at": "2026-10-29T20:12:32.403245+00:00",
+  "status": "ready",
+  "verdict": "ready",
+  "domain": "humanitarian financing / per-plan-year appeal funding coverage (UN OCHA Financial Tracking Service) - funding-outcome task family; first humanitarian-appeal financing register assessed on the bench",
+  "prediction_question": "For a UN-coordinated humanitarian appeal or response plan (HRP/CAP/flash appeal/HNRP/SRP and similar single-country plans) at its public launch instant (requirements first published - GHO early December for the following year, or the plan's own release, whichever the record dates), will the plan receive funding equal to at least 50% of its ORIGINAL (launch-vintage) requirements by the close of its plan year? Features are launch-time attributes (original requirements, plan type, GHO membership, country/region, emergency linkage) plus strictly-prior-year history for the same country (prior-year plan coverage, funding levels, series length). A useful prediction identifies, months ahead, which appeals will end the year underfunded - the quantity GHO gap analysis reports after the fact - enabling donor advocacy and fundraising prioritization.",
+  "prediction_time": "The plan's public launch: the instant its requirements are first published (GHO publication in early December for the following plan year, or the plan's own release for late-launched plans). Dated example (all UTC): Afghanistan HRP 2023 (plan id 1117) - GHO 2023 launched 2022-12-01 with Afghanistan at $4.6B; the HRP itself launched end of December 2022 / early January 2023; prediction instant pinned at 2023-01-01T00:00Z. Every feature is fixed by that instant: original requirements (plan endpoint origRequirements = 4,627,363,573, matching the December 2022 GHO ask), plan type, country, and strictly-prior plan-years (all closed years, final values). The target window is the plan year 2023-01-01..2023-12-31, strictly after the instant. VINTAGE POLICY (the decisive timing finding): the HDX CSV 'requirements' column is CURRENT-vintage - of 836 plans with requirements, 286 were revised up and 166 down after launch, and the CSV shows the revised value in revised cases - so it must never be used as a launch feature; the plan endpoint's origRequirements is the launch-vintage denominator, verified against the December 2022 GHO on the Afghanistan fixture. Prior-year funding totals used as features are current-vintage final values for closed years, approximating what was knowable at launch (late-reported flows are the measured gap - flow records carry firstReportedDate and decisionDate; 94.5% decisionDate coverage in a 200-flow sample); this retrospective approximation is declared as the restricted protocol and probed at gate 1.5, not assumed to be operational forecasting.",
+  "target_definition": "Binary: the plan's FTS funding total for its plan year (usage year = plan year; commitments + paid contributions, pledges excluded, USD, publisher's own attribution including boundary flows) divided by its ORIGINAL requirements (launch vintage) is >= 0.50 -> 1, else 0. Label source: per-plan-year funding totals (FTS flow endpoint incoming.fundingTotal with planId+year filter; equal to the publisher's HDX distribution on single-country rows - measured: Yemen HRP 2023 1,774,327,599, Afghanistan HRP 2023 1,678,347,238, both API==CSV to the dollar) and origRequirements from the plan endpoint; both excludable from features by construction (features carry launch attributes and strictly-prior years only). Censoring: plan-years whose year has not closed are excluded and counted (2026 live edge: 24 primary rows), never imputed. Zero-funding rows are the publisher's recorded outcome (empty funding fields in the HDX CSV counted at construction, not dropped silently). Population: PRIMARY = single-country plan-years with origRequirements > 0, 2000-2025 (782 rows; 60 multi-country regional plans excluded from the primary task because the HDX CSV splits them into country slices whose funding sum covers only ~78% of the plan total - measured on Burundi RRP 2021: slices 14,978,233 vs API plan total 19,282,778; regional plans can be a secondary population with flow-endpoint totals if construction wants them). Appeal-linked funding only; the country rows without plan linkage (2,678 HDX CSV rows, 'Not specified' plans) are outside the task population, so the label's meaning is single-population throughout.",
+  "sources": [
+    {
+      "name": "HDX: Global - Requirements and Funding Data (FTS bulk distribution)",
+      "url": "https://data.humdata.org/dataset/global-requirements-and-funding-data",
+      "resource": "https://data.humdata.org/dataset/b2bbb33c-2cfb-4809-8dd3-6bbdc080cbb9/resource/b3232da8-f1e4-41ab-9642-b22dae10a1d7/download/fts_requirements_funding_global.csv",
+      "license": "cc-by-igo (publisher's HDX record, read 2026-10-29)",
+      "note": "3,874 rows, 279,849 bytes; plan x country attribution; requirements column is current-vintage (do not use as launch feature)"
+    },
+    {
+      "name": "OCHA HPC API v2 (public, anonymous) - plan records with origRequirements/revisedRequirements",
+      "api": "https://api.hpc.tools/v2/public/plan/year/{year} and https://api.hpc.tools/v2/public/plan/{planId}",
+      "license": "FTS republish permission (see license_evidence)",
+      "note": "plan-years enumerated 2000-2026 (17-62 plans/year); plan detail carries origRequirements (launch vintage), revisedRequirements, dates, isPartOfGHO, locations"
+    },
+    {
+      "name": "OCHA HPC API v1 FTS flow endpoint (public, anonymous) - dated flows and per-plan-year funding totals",
+      "api": "https://api.hpc.tools/v1/public/fts/flow?planId={id}&year={year} (paging via page=N, 200 flows/page)",
+      "license": "FTS republish permission (see license_evidence)",
+      "note": "flow records carry decisionDate, firstReportedDate, amountUSD, status (commitment/paid), source/destination objects; incoming.fundingTotal on the first page equals the plan-year total"
+    },
+    {
+      "name": "FTS 'About FTS / Using FTS data' (publisher's own use-and-republish instrument)",
+      "url": "https://fts.unocha.org/content/about-fts-using-fts-data",
+      "license": "publisher permission text (quoted in license_evidence)"
+    },
+    {
+      "name": "GHO 2023 (publisher's own summary product; external cross-check source)",
+      "url": "https://reliefweb.int/report/world/un-launches-record-515-billion-humanitarian-appeal-2023-enar (1 December 2022) and https://reliefweb.int/report/world/global-humanitarian-overview-2023-december-update-snapshot-31-december-2023",
+      "note": "launch ask $51.5B with Afghanistan $4.6B (2022-12-01); year-end snapshot requirements $56.7B, funding $21.8B, coverage 38%"
+    }
+  ],
+  "jurisdiction": {
+    "country": "CH",
+    "region": "International organisations",
+    "publisher": "UN OCHA - Financial Tracking Service (FTS), a UN Secretariat office administered from Geneva",
+    "note": "A UN organ is not a country jurisdiction; recorded as CH per the FTS service location (Geneva), matching the who-flunet WHO-Geneva precedent on this bench. Subject matter is global: 83 distinct country series in the primary population."
+  },
+  "licence_class": "A",
+  "license_evidence": [
+    {
+      "quote": "Can I use and republish the data and information published on FTS website/API? Yes. FTS encourages the fair use of its data, graphs and reports. When directly copying and re-using graphs, tables, charts or data as published by FTS on this site, please cite the Financial Tracking Service (FTS), the publication date of the figures used and the relevant URL. If any amends are made to the data that you download or use via the API, or if the data is combined with another source ... we suggest the following citation: '[YOU/YOUR ORGANIZATION]...based on Financial Tracking Service (FTS) data, [DATE], [URL].'",
+      "url": "https://fts.unocha.org/content/about-fts-using-fts-data",
+      "read": "2026-10-29",
+      "note": "The dataset's own page grants use, API reuse and republishing, explicitly contemplating amended/derived data, with a citation request"
+    },
+    {
+      "quote": "license_id: cc-by-igo, license_title: 'Creative Commons Attribution for Intergovernmental Organisations (CC BY-IGO)', organization: 'OCHA Financial Tracking Service (FTS)'",
+      "url": "https://data.humdata.org/api/3/action/package_show?id=global-requirements-and-funding-data",
+      "read": "2026-10-29",
+      "note": "The publisher's own HDX record for the identical FTS requirements/funding data carries CC BY-IGO, which permits reproduction, distribution and derivative works with attribution; attribution and the no-endorsement condition carry into LICENSE.md, dataset labelled derived, never an official OCHA product"
+    }
+  ],
+  "construction_script": null,
+  "split_strategy": "Temporal, on the primary population (782 single-country plan-years with origRequirements>0, 2000-2025), measured from the source on 2026-10-29 at the >=50%-of-ORIGINAL-requirements threshold: train 2000-2016: 437 rows, pos 282 / neg 155 (64.5%), 78 distinct countries; eval 2017-2020: 139 rows, pos 81 / neg 58 (58.3%), 51 countries; holdout 2021-2025: 182 rows, pos 96 / neg 86 (52.7%), 43 countries. Both classes present in every window. 2026 live-edge rows (24) excluded until their year closes. CLUSTERED COUNT (the honest sample size): 83 distinct country series in the primary population, max 28 plan-years for one country; positives also cluster by year through global funding cycles - measured positive rate at the 50% threshold drifts 68.3% (2000-2013) -> 52.3% (2014-2018) -> 63.8% (2019-2022) -> 42.5% (2023-2025), and GHO coverage fell from ~50% (2022) to 38% (2023) per the publisher's own snapshot; intervals and baselines must be country-clustered and year-aware. The final window cut is construction's choice; these three windows are the measured default.",
+  "measurements": {
+    "population_2026_10_29": "HDX CSV: 3,874 rows 1999-2031 (future-dated rows are multiyear-plan usage-year extensions); 2,678 rows without requirements (country funding outside appeals - outside the task population); 1,196 rows with plan id + requirements = plan x country attribution; 877 distinct (plan, plan-year) pairs; 782 primary single-country plan-years with origRequirements>0 (2000-2025), 60 multi-country regional plans, 41 plan-years with no recorded original requirements (excluded, counted).",
+    "plan_endpoint_sweep_2026_10_29": "probe_plan_sweep.py: 877 plan-record fetches, 0 errors, 401 s, 296 KB jsonl (candidates/ocha-fts-appeal-funding-trajectory/plan_orig_sweep.jsonl). Revisions measured on 836 plans with orig>0: 286 revised up, 166 revised down, 384 unchanged (54% revised) - the CSV requirements column matches the revised value in revised cases (2016 cohort: matches orig 21 / revised 14; 2023 cohort: matches orig 23 / revised 15, with 8 country-slice mismatches), so the CSV column is unusable as a launch feature.",
+    "class_balance_orig_basis_2026_10_29": "probe_split_counts.py on the sweep: >=50% of orig by window: 2000-2013: 347 rows 237/110 (68.3%); 2014-2018: 153 rows 80/73 (52.3%); 2019-2022: 152 rows 97/55 (63.8%); 2023-2025: 106 rows 45/61 (42.5%). Threshold chosen for interpretability (half the launch ask) and global balance (funding/orig over all closed windows: 459 pos / 299 neg = 60.5%).",
+    "flow_schema_2026_10_29": "YEM country-year sample (first page, n=200): decisionDate present 189/200 (94.5%), firstReportedDate 200/200; status: commitment 125 / paid 75; flowType: Standard 129 / Parked 68 / Pass through 2 / Carryover 1; multiyear parked flows span usage years (one 2018-decision flow covers 2019-2023). Plan-level attribution is the publisher's own (report3 boundary handling): planId 1116 year 2023 -> 986 flows, incoming.fundingTotal 1,774,327,599, exactly equal to the HDX CSV single-country row; AFG 1117 year 2023 -> 683 flows, 1,678,347,238, exactly equal to CSV.",
+    "vintage_flip_fixture_2026_10_29": "Afghanistan HRP 2023: origRequirements 4,627,363,573 (launch ask, matches GHO 2022-12-01 '$4.6 billion' and UNICEF sitrep 'US$4.62 billion is required'); final funding 1,678,347,238 = 36.3% of orig -> label 0. The same plan in today's HDX CSV: requirements 3,227,372,908 (down-revised post-launch) and percentFunded 52 -> using the CSV column would flip the label to 1 and leak the post-launch revision. Recorded as the construction's forbidden-column fixture.",
+    "regional_slice_gap_2026_10_29": "Burundi RRP 2021 (plan 1017): HDX CSV country slices sum to 14,978,233 funding vs API plan total 19,282,778 (ratio 0.78) - regional plans excluded from the primary population; the flow endpoint carries the authoritative plan total.",
+    "provenance_mix_2026_10_29": "Primary population by typeName: Humanitarian response plan 212, Consolidated appeals process 152, Flash appeal 122, Other 117, Consolidated inter-agency appeal 69, Humanitarian needs and response plan 49, Strategic response plan 45, Regional response plan 16; isPartOfGHO true 703/782. Type is a documented feature, not a population shift: all types share the appeal-launch contract.",
+    "extraction_cost_2026_10_29": "HDX CSV: 1 request, 279,849 bytes, 2.0 s (coordinator). Plan sweep: 877 requests, 401 s, 296 KB output (coordinator, acceptable). Flow endpoint: ~383 KB/page, first page carries the plan-year fundingTotal (YEM 2023 full flow list = 5 pages = 1.9 MB); a full-panel harvest needs ~900 flow requests ~= 340 MB -> worker job, never the coordinator. Machine class: hosted coordinator (4 vCPU, ~1.9 GiB RAM).",
+    "publisher_summary_crosscheck_2026_10_29": "GHO 2023 December update (publisher's snapshot): requirements $56.7B, funding $21.8B, coverage 38% at 2023-12-31; launch ask was $51.5B (2022-12-01). My CSV-basis 2023 aggregate (55.8B requirements / 25.2B funding / 45.1%) differs because it includes non-GHO plans and mixed-vintage requirements - composition, explained; per-plan origRequirements + isPartOfGHO reconcile at construction."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": "All five discovery contracts reconciled against recorded evidence (2026-10-29). (1) Redistribution: SUPPORTED - the dataset's own page grants use/republish with citation (quote in license_evidence), and the publisher's HDX distribution of the same data is CC BY-IGO; licence_class A; attribution and no-endorsement conditions carry into LICENSE.md. (2) Prediction timing: SUPPORTED with a declared restricted retrospective protocol - launch instant dated and verified on the Afghanistan fixture (GHO 2022-12-01 ask == origRequirements to 3 significant figures); the decisive vintage finding is measured (54% of plans revised post-launch; HDX CSV column carries revised values; the flip demonstrator is recorded); construction uses origRequirements only; prior-year features are current-vintage finals for closed years with the late-reporting gap measured on flows (firstReportedDate lags decisionDate; 94.5% decisionDate coverage); gate-1.5 reverse-history probes on the exact artifact are mandatory in the handoff - the label is a later aggregation of the same stream, so the retrospective posture must be declared, exactly as on unhcr/abs. (3) Obtainable target: SUPPORTED - per-plan-year funding totals from the publisher's API, equal to its own HDX distribution on measured single-country fixtures; label source columns excludable; censoring rule and zero-funding rows pinned; regional-plan slices excluded with the measured 0.78 gap. (4) Split capacity: SUPPORTED by full-population measurement - 782 primary plan-years, three disjoint windows with both classes (table in split_strategy), clustered count recorded (83 country series; year-clustered prevalence drift 68%->43% is a measured phenomenon property, not a defect). (5) Contribution beyond a mirror: SUPPORTED - novelty verdict differentiated (recorded by check-novelty): the publisher and third parties distribute the raw requirements/funding tables (HDX, HAPI, HF per-country mirrors), but no ML-ready per-plan-year coverage task with an instant, splits and a scored contract exists; our contribution is the launch-vintage-denominator formulation, the vintage trap evidence, the dated fixture set and the persistence-referenced evaluation. Residual uncertainties, stated: (a) the WB instrument-outcome drops (identity-dominated, no headroom over persistence) are the named risk for this family - the prior-year same-country coverage rule is the primary reference and decides whether headroom stands; (b) origRequirements is verified launch-vintage on one external December source (Afghanistan 2023) plus internal orig/revised separation on 836 plans - construction asserts the GHO cross-check on sampled cohorts; (c) the ~6% of flows lacking decisionDate only affects the optional within-year trajectory variant, not the primary launch-instant formulation; (d) exact per-window counts on final construction data may shift slightly when empty-funding rows are pinned.",
+  "next_action": "Construction (worker job fts-appeal-001), after the current advancement pipeline frees capacity: (1) harvest plan records for all plan-years (origRequirements, revisedRequirements, dates, GHO, type, locations) plus per-plan-year funding totals from flow-endpoint first pages (~900 requests, ~340 MB, pin sha256 of every fetched file); (2) build the launch-instant panel: one row per primary plan-year, features = launch attributes + strictly-prior same-country history, label = final funding >= 0.5 x origRequirements, excluded rows counted (41 no-orig, 60 regional, 24 live-edge); (3) assert the dated fixtures in-build: AFG 2023 (orig 4,627,363,573, funding 1,678,347,238, label 0; CSV revised 3,227,372,908 must not appear), YEM 2023 (1,774,327,599), Burundi RRP 2021 slice gap (14,978,233 vs 19,282,778); (4) mandatory gate-1.5 reverse-history probe on the exact artifact and the declared restricted retrospective protocol; (5) qualification + exact-byte acceptance BEFORE any score; references = prior-year same-country coverage persistence, country rate-table, majority, calendar - the persistence comparison decides the task's value; (6) report honestly: if the model does not beat the persistence reference with country-clustered intervals, that is the result (the WB instrument-outcome pattern), not a defect to hide. Expected artifact: binary classification panel ~758 scored rows (train 2000-2016 / eval 2017-2020 / holdout 2021-2025) with full label provenance and pinned source files; success decided by the qualification pass plus the persistence-reference comparison.",
+  "novelty_check": {
+    "checked_at": "2026-10-29T20:43:46+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "humanitarian appeal funding prediction",
+      "FTS funding coverage prediction dataset",
+      "humanitarian response plan funding machine learning",
+      "appeal funding gap forecast OCHA"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "humanitarian appeal funding prediction",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "FTS funding coverage prediction dataset",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "humanitarian response plan funding machine learning",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "appeal funding gap forecast OCHA",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "humanitarian appeal funding prediction",
+          "hits": 169487,
+          "top": [
+            "Navigating Resilience: The Role of Nigeria's Inland Waterways Infrastructure in Disaster Response Along Major River Routes in Rivers State",
+            "Prioritising humanitarian aid funding for multi-risk disasters in an era of climatic damage",
+            "SMAA model in paper Prioritising humanitarian aid funding for multi-risk disasters in an era of climatic damage",
+            "Why and How to Research the Political Economies of Camps - 2nd Module - Educational toolkit - camPEconomies project",
+            "Humanitarianism: Emergency, Migration Governance and Labor - 3rd Module - Educational Toolkit camPEconomies Project"
+          ]
+        },
+        {
+          "query": "FTS funding coverage prediction dataset",
+          "hits": 467387,
+          "top": [
+            "A Neuro-Fuzzy Hybridized Approach for Software Reliability Prediction",
+            "Force/Torque Sensor Measurements for Estimating the Mass Center of an Unknown Robot End Effector",
+            "Wind power forecasting under nonlinear conditions using fuzzy  time series and long-short term memory models",
+            "\"Nos fuimos a Colombia\": organizaci\u00f3n, articulaciones y trayectoria grupal musical de la Orquesta Latinoamericana Casita de los Pibes (La Plata, Buenos Aires)",
+            "New FTS: FTS 3"
+          ]
+        },
+        {
+          "query": "humanitarian response plan funding machine learning",
+          "hits": 565006,
+          "top": [
+            "Future cost of climate change for humanitarian crises",
+            "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
+            "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI",
+            "RGB and RGNIR Plastic Waste Database",
+            "MEDIC: A Multi-Task Learning Dataset for Disaster Image Classification"
+          ]
+        },
+        {
+          "query": "appeal funding gap forecast OCHA",
+          "hits": 183989,
+          "top": [
+            "Navigating Resilience: The Role of Nigeria's Inland Waterways Infrastructure in Disaster Response Along Major River Routes in Rivers State",
+            "The 2026 Strong El Ni\u00f1o Triggers a Compounding Drought-to-Flood Cascade, Elevating Multisectoral Risks to East African Agriculture and Public Health",
+            "Trew's Law: Automatic review of convictions linked to imprisoned police officers",
+            "Comparison On Taste, Brand And Purchase Decision Between Teh Botol Sosro And Ichi Ocha",
+            "DIHNET\u2013 Deliverable 2.1 \u2013 Report on the Collaboration platform for DIHs"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "humanitarian appeal funding prediction",
+          "hits": 5,
+          "top": [
+            "Under the Radar -- Auditing Fairness in ML for Humanitarian Mapping",
+            "Fair navigation planning: a humanitarian robot use case",
+            "Proceedings of KDD 2020 Workshop on Data-driven Humanitarian Mapping: Harnessing Human-Machine Intelligence for High-Sta",
+            "From experimentation to engagement: on the paradox of participatory AI and power in contexts of forced displacement and ",
+            "Proceedings of KDD 2021 Workshop on Data-driven Humanitarian Mapping: Harnessing Human-Machine Intelligence for High-Sta"
+          ]
+        },
+        {
+          "query": "FTS funding coverage prediction dataset",
+          "hits": 5,
+          "top": [
+            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+            "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset",
+            "Adaptive Coverage Policies in Conformal Prediction",
+            "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer"
+          ]
+        },
+        {
+          "query": "humanitarian response plan funding machine learning",
+          "hits": 5,
+          "top": [
+            "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+            "DOME: Recommendations for supervised machine learning validation in biology",
+            "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
+            "Active learning for data streams: a survey",
+            "Physics-Inspired Interpretability Of Machine Learning Models"
+          ]
+        },
+        {
+          "query": "appeal funding gap forecast OCHA",
+          "hits": 5,
+          "top": [
+            "On the coalgebra description of OCHA",
+            "A Deep Convolutional Neural Network Model for improving WRF Forecasts",
+            "OCHA and the swiss-cheese operad",
+            "Extending the Black-Scholes Option Pricing Theory to Account for an Option Market Maker's Funding Costs",
+            "OCHA and Leibniz Pairs, towards a Koszul duality"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'humanitarian appeal funding prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'FTS funding coverage prediction dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'humanitarian response plan funding machine learning': 0 hit(s) - nothing notable\n- huggingface_datasets / 'appeal funding gap forecast OCHA': 0 hit(s) - nothing notable\n- zenodo_records / 'humanitarian appeal funding prediction': 169487 hit(s) - Navigating Resilience: The Role of Nigeria's Inland Waterways Infrastructure in Disaster Response Along Major River Routes in Rivers State, Prioritising humanitarian aid funding for multi-risk disasters in an era of climatic damage, SMAA model in paper Prioritising humanitarian aid funding for multi-risk disasters in an era of climatic damage, Why and How to Research the Political Economies of Camps - 2nd Module - Educational toolkit - camPEconomies project, Humanitarianism: Emergency, Migration Governance and Labor - 3rd Module - Educational Toolkit camPEconomies Project\n- zenodo_records / 'FTS funding coverage prediction dataset': 467387 hit(s) - A Neuro-Fuzzy Hybridized Approach for Software Reliability Prediction, Force/Torque Sensor Measurements for Estimating the Mass Center of an Unknown Robot End Effector, Wind power forecasting under nonlinear conditions using fuzzy  time series and long-short term memory models, \"Nos fuimos a Colombia\": organizaci\u00f3n, articulaciones y trayectoria grupal musical de la Orquesta Latinoamericana Casita de los Pibes (La Plata, Buenos Aires), New FTS: FTS 3\n- zenodo_records / 'humanitarian response plan funding machine learning': 565006 hit(s) - Future cost of climate change for humanitarian crises, plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database, MEDIC: A Multi-Task Learning Dataset for Disaster Image Classification\n- zenodo_records / 'appeal funding gap forecast OCHA': 183989 hit(s) - Navigating Resilience: The Role of Nigeria's Inland Waterways Infrastructure in Disaster Response Along Major River Routes in Rivers State, The 2026 Strong El Ni\u00f1o Triggers a Compounding Drought-to-Flood Cascade, Elevating Multisectoral Risks to East African Agriculture and Public Health, Trew's Law: Automatic review of convictions linked to imprisoned police officers, Comparison On Taste, Brand And Purchase Decision Between Teh Botol Sosro And Ichi Ocha, DIHNET\u2013 Deliverable 2.1 \u2013 Report on the Collaboration platform for DIHs\n- arxiv_preprints / 'humanitarian appeal funding prediction': 5 hit(s) - Under the Radar -- Auditing Fairness in ML for Humanitarian Mapping, Fair navigation planning: a humanitarian robot use case, Proceedings of KDD 2020 Workshop on Data-driven Humanitarian Mapping: Harnessing Human-Machine Intelligence for High-Sta, From experimentation to engagement: on the paradox of participatory AI and power in contexts of forced displacement and , Proceedings of KDD 2021 Workshop on Data-driven Humanitarian Mapping: Harnessing Human-Machine Intelligence for High-Sta\n- arxiv_preprints / 'FTS funding coverage prediction dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, Adaptive Coverage Policies in Conformal Prediction, Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer\n- arxiv_preprints / 'humanitarian response plan funding machine learning': 5 hit(s) - Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Active learning for data streams: a survey, Physics-Inspired Interpretability Of Machine Learning Models\n- arxiv_preprints / 'appeal funding gap forecast OCHA': 5 hit(s) - On the coalgebra description of OCHA, A Deep Convolutional Neural Network Model for improving WRF Forecasts, OCHA and the swiss-cheese operad, Extending the Black-Scholes Option Pricing Theory to Account for an Option Market Maker's Funding Costs, OCHA and Leibniz Pairs, towards a Koszul duality",
+    "prior_art": [
+      "HDX Global Requirements and Funding Data (raw); OCHA HAPI funding endpoint (raw); electricsheepafrica HF per-country mirrors of the HDX CSVs (raw extract, no splits); GHO 2023 December update (descriptive snapshot)"
+    ],
+    "theirs": "OCHA FTS/HDX/HAPI publish the raw requirements-and-funding tables (and HF user accounts mirror the same per-country CSVs); the GHO reports after-the-fact coverage aggregates; academic aid-allocation studies run panel regressions on similar data - none ship an ML-ready task with a prediction instant, splits and a scored contract",
+    "ours": "per-plan-year binary funding-coverage task at the plan-launch instant with launch-vintage (original) requirements denominators, temporal splits over 782 plan-years 2000-2025, dated label provenance from the publisher's own API, the measured vintage-trap evidence (54% of plans revised post-launch; today's bulk CSV carries revised values), and a persistence-referenced scored contract",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
+}
