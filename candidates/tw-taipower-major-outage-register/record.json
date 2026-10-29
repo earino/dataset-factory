@@ -1,0 +1,71 @@
+{
+  "id": "tw-taipower-major-outage-register",
+  "created_at": "2026-10-29T12:22:32.241447+00:00",
+  "status": "parked",
+  "verdict": "park",
+  "domain": "utility outage / per-incident major distribution outage register (Taiwan Power Company) - restoration-duration task family; first utility-outage register assessed on the bench",
+  "prediction_question": "For a major distribution outage in the Taipower flash-report register (occurrence time t, Asia/Taipei), will restoration (復電時間) take more than 60 minutes from t? Retrospective only: the register is published yearly, months after the events, so no operational real-time claim is possible.",
+  "prediction_time": "NOT SUPPORTED as an operational instant - the decisive timing finding. The publisher's own dataset-page replies state the register is updated once a year with the previous year's data, deliberately delayed to limit reuse (quote in license_evidence and notes.md). Within a clearly-labelled retrospective formulation the instant is the row's 發生時間 (occurrence) itself: features are the register fields fixed at occurrence (occurrence datetime, 事故名稱 incident name, 停電戶數 households as final-register vintage values - a documented-vintage caveat), and the target window is (occurrence, restoration]. Measured publication evidence: resource last updated 2025-06-16 carrying 2024 events only; a Wayback capture from 2026-09-29 still carried the 2024 vintage, so the 2025 update had not landed 15 months after year end - the yearly channel is not dependable either.",
+  "target_definition": "Binary: restoration duration = 復電時間 - 發生時間 > 60 minutes (2024 vintage class balance at that threshold: 50/102 = 49.0%; 2023 archived vintage: 51/91 = 56.0%). Label source columns 復電時間 (and 發生時間), excludable from features by construction. Register-level defect measured in the 2023 archived vintage: 6/91 rows have 復電時間 earlier than 發生時間 (systematic ~12-hour clock misentries on the same date, listed in notes.md); the 2024 vintage has 0. Population censoring: the register is not all outages - it carries only cases meeting the four published major-incident criteria (quoted in notes.md), so an occurrence formulation has no enumerable negative population from this source; duration on reported cases is the only derivable label.",
+  "sources": [
+    {
+      "name": "data.gov.tw dataset 122741 台灣電力公司配電系統重大事故停電速報案件記錄 (Taipower distribution-system major outage flash-report case records)",
+      "url": "https://data.gov.tw/dataset/122741",
+      "api": "Anonymous quality-mirror CSV: https://quality.data.gov.tw/dq_download_csv.php?nid=122741&md5_url=8f7d7b0af4d16c3074393c7afba36244 (HTTP 200, 9,559 bytes, 1.0 s, measured 2026-10-29). Metadata via https://data.gov.tw/api/front/dataset/detail?nid=122741 (front API, anonymous, JSON, 5,351 bytes). Original resource URL https://service.taipower.com.tw/data/opendata/apply/file/d077011/001.csv does not resolve from the coordinator's DNS (measured NXDOMAIN for all *.taipower.com.tw hosts; any host with normal DNS resolves it).",
+      "access": "Anonymous, no key. The portal is a Nuxt SPA that returns a 500 shell to plain HTTP clients; the browser reaches it and the front API answers plain fetches from page context. The dataset search that found this register used rft=停電事故 and rft=速報.",
+      "licence": "政府資料開放授權條款-第1版 (Open Government Data License 1.0), stated on the dataset page and in the front-API metadata; 免費 (free)."
+    },
+    {
+      "name": "Wayback Machine vintages of the same register file",
+      "url": "http://web.archive.org/cdx/search/cdx?url=service.taipower.com.tw/data/opendata/apply/file/d077011*",
+      "api": "CDX: 3 captures total - 20241004143131 (91 rows, all 2023, ISO datetimes like 2023-12-30T06:18:00), 20241004144522 (duplicate crawl same day), 20260929233634 (102 rows, all 2024, identical coverage to the live file). Both distinct vintages fetched via web.archive.org: 8,847 and 9,665 bytes.",
+      "access": "Anonymous; the only route to any pre-2024 vintage. CDX has no captures before 2024-10 at this URL, so the 2019-2022 content the publisher said existed in 2022 is not archived here.",
+      "licence": "The same ODDL 1.0 dataset licence covers the data; the copies are archived fetches of Taipower's own open-data file."
+    }
+  ],
+  "license_evidence": [
+    "Dataset page https://data.gov.tw/dataset/122741 (read 2026-10-29): 授權方式 政府資料開放授權條款-第1版, 計費方式 免費. ODDL 1.0 permits free redistribution, commercial and non-commercial, with attribution. Class B (attribution).",
+    "Front API /api/front/dataset/detail?nid=122741 (2026-10-29): license_name 政府資料開放授權條款-第1版, charge 免費, updatefreq_desc 每1年, dataset_status 已上架.",
+    "Publisher's own reply on the dataset page (read 2026-10-29): 考量停電事故資訊恐遭有心人士不當引用或作為商業應用，產生誤導民眾錯誤印象之狀況，及可能間接影響地方經濟投資與發展之虞，故目前採每年更新前1年度資料辦理 - the publisher deliberately delays and single-years the data. Recorded as a publication-timing and future-availability fact, not as a licence restriction on the rows once published.",
+    "Publisher reply (2022-03-11, same page): the 2021-05-13 Xingda plant trip is a generation-system event and this register covers distribution-system cases only; a 2021 upload interruption was acknowledged and repaired (2021-07-21 reply)."
+  ],
+  "construction_script": null,
+  "split_strategy": "Not computable defensibly on available content: the register is a single-year replacement file (live = 2024 only, 102 events; archived 2023 vintage = 91 events). Three disjoint multi-month windows cannot be filled from 2 years of events, and future years depend on the slipped yearly channel. Class balance is fine (49-56% at >60 min in both vintages) - volume is the blocker, and positives cluster (2024: 17 in September, typhoon season).",
+  "measurements": {
+    "register_content_live_2026_10_29": "102 rows, 發生時間 all within 2024; 0 missing occurrence, 0 missing restoration, 0 negative durations; households 1..22,421 (median 1,153), 0 missing; category mix by incident-name keywords: substation/feeder 60, water-utility 16, park/industrial 13, hospital 6, transport 3, other 4; by month, September max (17); >30 min 70.6%, >60 min 49.0%, >120 min 22.5%, >240 min 7.8%.",
+    "register_content_archived_2023_vintage": "91 rows, all 2023 (ISO datetime format); >60 min 51/91 (56.0%); 6/91 rows with restoration earlier than occurrence (all same-date, ~11-12 h apart - register clock-entry defects listed in notes.md); all 12 months present, October max (14).",
+    "history_depth_decisive": "Obtainable event-grain history = 2 years (2023 via Wayback, 2024 live). The 2022 publisher reply said the file then contained 2019-2021, but the current file replaces rather than accumulates, and CDX shows no capture of the 2019-2022 vintages at this URL. Taipower's own portal page claims 186 open datasets as of 2026-04-09 (service.taipower.com.tw/smartgrid/DataAnalytics/Index) - unenumerated from this host (DNS), recorded as the named worker-side next probe.",
+    "fetch_cost_measured": "1 request, 9,559 bytes, 1.00 s for the live CSV via the quality mirror (coordinator, 2026-10-29); Wayback vintages 8,847 / 9,665 bytes; front API metadata 5,351 bytes. Extraction cost is negligible - the blocker is content depth, not transfer.",
+    "sibling_dataset_check": "data.gov.tw search rft=事故停電 returns only dataset 122741; rft=速報 returns no other per-incident outage register; the related 166643 台灣電力公司配電線路事故分析 resolves to a single annual PDF report (its file-listing CSV fetched: one row, pointing to 001.pdf, which has no Wayback capture). No multi-year per-incident sibling exists on the portal."
+  },
+  "rejection_reason": "Parked on measured content depth plus family crowding - not on licence (clean ODDL 1.0, class B), not on access (anonymous mirror, 1 request), not on schema (5 documented columns, event grain, both datetimes). (1) SPLIT CAPACITY FAILS ON MEASURED CONTENT: the register is a single-year replacement file - live file = 2024 only (102 events), the only archived prior vintage = 2023 only (91 events, 6 corrupted restoration times), and the 2025 update had not landed by the 2026-09-29 Wayback capture, so the yearly channel has already slipped >= 15 months; three disjoint windows cannot be defended on 193 events over 2 years with September/October clustering. (2) TIMING: publication is yearly and months-behind by the publisher's own statement, so only a clearly-labelled retrospective task is possible - acceptable as a redesign, but it cannot rescue volume. (3) CONTRIBUTION IS CROWDED AT FAMILY LEVEL even if volume accumulated: Taiwan village-level typhoon outage prediction was run as a public Taipower challenge (2018, 停電通報系統 2014-2016 data, held-out village outage-count targets) with public participant code (github.com/frankbrkao/PFPC); outage-duration/restoration prediction has public US datasets (Purdue-style major-outages register, 1,534 events; PG&E Q4-2019 scrape) and an active literature (Turkish-utility XGBoost duration classes 2024; NY 6-year restoration-time study arXiv:2112.11374; ETR longitudinal-transformer study arXiv:2505.00225; EAGLE-I county-level outage records 2014-2024 used for county-hourly prediction). A Taiwan major-outage duration benchmark would be differentiated mainly by source and geography - an operator family decision, not a discovery-queue default.",
+  "next_action": "Two concrete reopen paths, cheapest first. (a) Standing vintage collector: fetch the register monthly (quality-mirror URL, 1 request ~9.6 KB, or the service.taipower.com.tw URL from any host with working DNS), store each distinct yearly vintage in private staging with its fetch date and byte digest; reopen for a ready-review when >= 4 distinct yearly vintages exist (e.g. 2023-2026) and per-vintage corruption checks (negative durations) pass - the tw-reservoir standing-collector pattern, and because the file replaces yearly, skipping a vintage loses it permanently. (b) Worker-side enumeration of service.taipower.com.tw open data (~186 datasets claimed) to check for a richer per-incident outage channel (cause codes, longer history) - named next probe for whenever a worker is up; the host does not resolve from the coordinator. Independently of both, any use of this source for a new family member needs the operator decision recorded in rejection_reason (family crowding).",
+  "review": "The five contracts: redistribution SUPPORTED (ODDL 1.0, class B, quoted); prediction timing UNSUPPORTED for operational claims and only retrospectively stateable (publisher's own yearly-prior-year statement, plus the measured 15-month slip) - an essential unresolved contract, hence not ready; target DERIVABLE (restoration datetime) with measured register defects (6/91 in the 2023 vintage) and a censored negative population (four published major-incident inclusion criteria); split capacity UNSUPPORTED on 2 obtainable years; not-a-mirror SUPPORTED for this exact source/task but the family is crowded (Taipower 2018 challenge, public US outage datasets, active restoration-prediction literature). Park, with the standing collector as the only route to more history.",
+  "jobs": [],
+  "artifacts": [],
+  "jurisdiction": {
+    "country": "TW",
+    "region": "East Asia",
+    "publisher": "Taiwan Power Company (台灣電力股份有限公司) via data.gov.tw (數位發展部 Government Data Open Platform)",
+    "recorded_at": "2026-10-29"
+  },
+  "licence_class": "B",
+  "licence_note": "ODDL 1.0 on the dataset (attribution, free, commercial and non-commercial redistribution). The publisher's stated reason for yearly delayed updates (limiting misuse) is a publication-timing fact, not a licence term on published rows. Archived Wayback copies are fetches of the same licensed file.",
+  "novelty_check": {
+    "checked_at": "2026-10-29T12:45:00+00:00",
+    "method": "web search for ML-ready outage prediction benchmarks and Taiwan-specific prior art (2 queries, evidence in notes.md)",
+    "queries": [
+      "power outage restoration time prediction dataset benchmark machine learning",
+      "Taiwan Taipower outage dataset 停電 machine learning prediction"
+    ],
+    "evidence": {
+      "occurrence_family_taiwan": "Taipower ran a public 停電預測挑戰賽 (2017-2018): village-level typhoon outage counts 2014-2016 from the 停電通報系統 with held-out typhoon targets (Megi/Nesat/Haitang); public participant code at github.com/frankbrkao/PFPC uses Taipower pole coordinates (data.gov.tw 33305), village population (32973) and Taipower sales data.",
+      "duration_family_global": "Turkish-utility outage-duration classification (95,454 events, XGBoost, PMC11244009, 2024); NY 6-year utility restoration-time study (16,000 outages, arXiv:2112.11374); ETR prediction with longitudinal tabular transformers (34,000 storm outages, arXiv:2505.00225); EAGLE-I ORNL county-level outage records 2014-2024 used for county-hourly outage prediction (arXiv:2512.22699); public US course datasets: Purdue-style major-outages register (1,534 events, 57 columns), PG&E Q4-2019 outage scrape.",
+      "this_exact_task": "No ML-ready benchmark found for per-incident major-outage restoration duration on Taiwan's Taipower flash-report register; the register itself (data.gov.tw 122741) is the only per-incident outage dataset on the portal (measured by catalog search)."
+    },
+    "verdict": "differentiated",
+    "ours": "The only per-incident Taiwan major-outage register with occurrence and restoration datetimes, licence-clean (ODDL 1.0), anonymous access, documented inclusion criteria; no packaged task with splits exists on it.",
+    "theirs": "Village-level Taiwan typhoon outage OCCURRENCE was already a Taipower-run public challenge with data and public code; outage-DURATION prediction is an active literature family with public US datasets (major-outages register, PG&E) and utility studies (Turkey, NY, ETR).",
+    "prior_art": "Taipower 停電預測挑戰賽 (2018); frankbrkao/PFPC; PMC11244009 (2024); arXiv:2112.11374; arXiv:2505.00225; arXiv:2512.22699 (EAGLE-I); Purdue major-outages dataset"
+  }
+}

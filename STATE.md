@@ -1,3 +1,60 @@
+## 2026-10-29 12:28Z - East Asia discovery tick: Taipower major-outage register found (new utility-outage family) and PARKED on measured content depth - 2 obtainable years, replacement-file publication; KR/JP/SG/HK re-checks unnecessary, no new evidence
+
+Discovery-only session (East Asia regional focus). One new source carried to a
+measured PARK; no build, qualification, packaging, publication, advancement or
+worker launch; all probes anonymous (coordinator + supported browser only).
+
+NEW LEAD PARKED: tw-taipower-major-outage-register (data.gov.tw 122741, 台灣電力公司
+配電系統重大事故停電速報案件記錄 - Taiwan Power Company distribution-system major outage
+flash-report case records). The first per-incident utility-outage register assessed on
+the bench: event grain with 發生時間 (occurrence) and 復電時間 (restoration) datetimes,
+ODDL 1.0 (class B), anonymous quality-mirror download (1 request, 9,559 bytes, 1.0 s),
+5 documented columns, publisher-quoted four major-incident inclusion criteria. The
+candidate task shape: restoration > 60 min, retrospective only. PARKED on three
+measured grounds: (1) SPLIT CAPACITY - the register is a single-year replacement file:
+live = 2024 only (102 events; >60 min 49.0%), the only archived prior vintage = 2023
+only (91 events via one Wayback capture, 2024-10-04; >60 min 56.0%; 6/91 rows with
+restoration BEFORE occurrence - systematic ~12 h register clock misentries, rows
+listed in notes.md), CDX has no earlier captures, so obtainable history is 2 years /
+193 events with September/October clustering; (2) TIMING - the publisher states the
+register updates yearly with prior-year data only, deliberately delayed to limit
+misuse (quoted), and the 2025 update had NOT landed by the 2026-09-29 Wayback capture
+(>= 15 months past year end; the same channel silently failed once before, per their
+2021 reply), so only a clearly-labelled retrospective task is stateable and the future
+channel is undependable; (3) FAMILY CROWDING - Taipower itself ran a public village-level
+typhoon outage prediction challenge (2018, 停電通報系統 data) with public participant code
+(frankbrkao/PFPC), and outage-duration/restoration prediction carries public US datasets
+(Purdue major-outages 1,534 events; PG&E) and an active literature (Turkish XGBoost
+duration classes 2024; NY 6-year restoration study arXiv:2112.11374; ETR transformers
+arXiv:2505.00225; EAGLE-I county records 2014-2024). novelty_check recorded as
+differentiated for this exact register (nothing ML-ready on it) with the family
+comparators named; check-candidate.py OK; retained probe script reproduces every
+recorded number exactly (probe_fetch_and_stats.py, re-run green).
+
+Reopen paths (record.next_action): (a) standing monthly vintage collector into private
+staging - the file REPLACES yearly, so a skipped vintage is lost permanently;
+ready-review at >= 4 distinct vintages; (b) worker-side enumeration of
+service.taipower.com.tw open data (~186 datasets claimed; the host does not resolve
+from the coordinator, measured NXDOMAIN for all *.taipower.com.tw) for a richer
+per-incident channel; (c) the family question is an operator decision either way.
+
+Regional coverage this tick, per the standing no-padding rule: the tick's named sources
+were all triaged this month with recorded blockers and no new evidence arrived, so no
+probe was spent on them - e-Stat (dropped: registration-gated API + covered families),
+JMA (dropped: TCRISI/TCBench mirror), KOSIS/KMA (parked: operator credential), SG + HK
+catalogs (parked: fully enumerated, family duplication), jp-moe-pollen and
+tw-typhoon-closure remain investigating with advancement-owned next actions. The one
+new-source search in the region (data.gov.tw event-grain sweep for 停電/速報) produced
+the Taipower register above; the 重大土石災情 sediment-disaster lead was visible in the
+same search but not opened (needs a CWA rainfall join; CWA opendata is key-gated -
+recorded here so the next tick does not treat it as unexamined). Geography after this
+session: 104 candidates, TW 3, East Asia 9, live non-US 31/37 (84%); discovery-coverage
+exits 0.
+
+Checks at close-out: check-candidate.py --all rc=0; unittest 674 tests OK; check-candidate
+and novelty re-verified for the new record. No release, tag, digest or destination changed;
+the unhcr operator relay is unchanged and still the only move on the release side.
+
 ## 2026-10-29 10:1xZ - ns-bwa baseline measured: full model 0.5086 trails site persistence 0.6124 on the same eval rows - no demonstrated headroom, advancement decision next; both ns-bwa workers cleaned up
 
 Watcher follow-up for the two finished ns-bwa jobs. ns-bwa-001 itself was already closed out durably
