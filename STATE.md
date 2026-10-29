@@ -9483,3 +9483,20 @@ stays packaged and blocked on the operator relaying its regenerated pre-flip aud
 (operator_decision_pending); preemption exempts it. Next unblocked candidate from the tick list:
 austender-contract-amendment-occurrence or conagua-dam-drought-onset (build), each needing its
 own evidence re-read before any launch.
+
+## 2026-10-29 02:35Z - correction: `worker collect` never fetches report files; the 2026-10-29 00:16Z note misdiagnosed it as a fetcher bug
+
+Read `factory.worker.collect`: it reconciles the record, checks the staging release tag, verifies
+every uploaded asset's size and `digest` against the job's manifest, writes `result.json` and marks
+the record `collected`. It does **not** download any report into `.factory/<job>/reports/`. So the
+earlier entry's "the bounded report re-fetch did not complete ... the fetcher did not read the key"
+described behaviour that does not exist; the reports were never fetched because nothing fetches
+them. Both wb jobs were closed the same way: open the staging release's `manifest.json` (its
+`assets[].file` field names the logical path), then download the named assets by their **numeric**
+asset id from `GET /repos/<repo>/releases` (a draft release is not addressable by tag, and `gh
+release view --json` returns only node ids), verifying each sha256 against the manifest. That is how
+wb-sol-baseline-001's reports were collected and verified this session.
+
+Not repaired here (it is a tooling change, not a candidate repair): `collect` either should fetch
+the declared report files or stop implying it does; whichever way, the docs should say that report
+retrieval is a manual step. Recorded so the next session does not re-derive it.
