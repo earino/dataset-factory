@@ -9500,3 +9500,21 @@ wb-sol-baseline-001's reports were collected and verified this session.
 Not repaired here (it is a tooling change, not a candidate repair): `collect` either should fetch
 the declared report files or stop implying it does; whichever way, the docs should say that report
 retrieval is a manual step. Recorded so the next session does not re-derive it.
+
+## 2026-10-29 04:08Z - wb-sol-baseline-001 event close-out: CI read back, cleanup re-confirmed, marker written
+
+The watcher re-fired the finished-worker event for wb-sol-baseline-001 after the 02:2xZ session
+had already collected, verified and recorded it (entries above; commits a4d9947 and f0743d3,
+both pushed). No new handling was needed; this session verified the durable state instead:
+
+- CI read back for the exact commits that carry the outcome: a4d9947 push completed/success
+  (run 40806304535), f0743d3 push completed/success (run 40806656378).
+- Provider cleanup re-confirmed read-only at 04:08:12Z: 0 servers and 0 primary_ips in the
+  Hetzner project (job record already showed server 173237051 deleted 02:23:39Z).
+- Collected evidence re-read, not trusted: gate 1.5.0 ok, failed_checks []; --accept ACCEPTED
+  c9ac51b846f7b1ee before the first metric; train.py/validate.py agree at 0.5452 eval AUC on
+  the same 1,034 eval rows as the references (country prior 0.5364); runner files digest-match
+  the read-only clone; `check-candidate.py --all` passes at f0743d3.
+
+Decision unchanged: candidate dropped, no demonstrated headroom, holdout never scored.
+`.factory/wb-sol-baseline-001/handled` written; no remaining blocker for this job.
