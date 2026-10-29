@@ -1,0 +1,31 @@
+{
+ "release_version": "2026.10",
+ "release_tag": "v2026.10",
+ "repository": "https://github.com/earino/ns-bwa-advisory-lift-duration",
+ "construction_commit": "f8ba545",
+ "construction_commit_note": "f8ba545 is the ns-bwa-001 close-out commit carrying candidates/ns-bwa-advisory-lift-duration/source/build.py at sha256 cd23315c7ee82cb20c87a2accb97ba98aeae3fd3a9d0469911c963d1d93466a2 and source/run.sh at sha256 219f66bbc02b5bc37151a81c1c750efe3f047010a53de190894a508b98343f30 - the exact bytes worker job ns-bwa-001 executed (its bundle-owner record lists the same digests), which produced the gated artifact e8ed2a53eaf0453c8ed52aea336edb994d888ad11e7b76f7898b663f017180a8 from the pinned register vintage (rows.csv sha256 60f77ac4945ca824700f5bcd3eaf564f4e5c5d4ec3f08496e8dd796e7184a30a, 283,987 bytes, Last-Modified 2026-06-16, content current as of June 16, 2026). The worker executed score.py at sha256 e6f0e9532447d578522e2905d4bbbd920a9cf0e48dc7af25d3b327954bfeb44b (pre-cosmetic-fix); the shipped source/score.py b674f5b5cbc2d0e1378f7b26f6a54c620439ddb6fc60086a863ff29bba2c1f0b is the same computation with the corrected report-field echo (the ns-bwa-001 references JSON printed artifact_version: null; every number is unaffected). Both digests are recorded so the difference is visible.",
+ "source": {
+  "name": "Boil Water Advisories - Open Data Nova Scotia (Nova Scotia Department of Environment and Climate Change; Socrata dataset 7t68-9xmm; per-advisory register with issue and removal dates, 2006-)",
+  "landing_page": "https://data.novascotia.ca/datasets/7t68-9xmm",
+  "api": "https://data.novascotia.ca/api/views/7t68-9xmm/rows.csv?accessType=DOWNLOAD - anonymous full-CSV download, no key; SoQL resource API verified at discovery (counts, group-bys, censoring counts). Publisher updates quarterly; the register is revised in place and retains no historical vintages.",
+  "accessed": "2026-10-29",
+  "licence": "Open Government Licence - Nova Scotia v1.1 (linked from the dataset's own page; evidence recorded in candidates/ns-bwa-advisory-lift-duration/record.json license_evidence). Required attribution carries through: 'Contains information licensed under the Open Government Licence - Nova Scotia'. Derived research dataset - not a Government of Nova Scotia product."
+ },
+ "commands": {
+  "gate": "python3 code/qualify_dataset.py ./task",
+  "baseline": "sh baseline/reproduce_baseline.sh ./task",
+  "get_dataset": "python3 get_dataset.py --dest ./task"
+ },
+ "layout": {
+  "public/train.csv": "public/train.csv",
+  "public/eval.csv": "public/eval.csv",
+  "private/holdout.csv": "private/holdout.csv",
+  "meta.json": "meta.json",
+  "quality.json": "quality.json"
+ },
+ "required_docs": [
+  "code/score.py",
+  "code/materialize.py"
+ ],
+ "note": "One task instance, one artifact. The five shipped files are the ns-bwa-001 worker artifact e8ed2a53eaf0453c... (gate 1.5.0, 46/46 checks on the full artifact, exact-byte --accepted on the worker and re-accepted in jobs ns-bwa-baseline-001 and ns-bwa-diag-001); the package's code/ carries the construction script, the reference implementation, the runner-workdir materializer and the gate, baseline/ the runner-contract baseline. The holdout ships as an asset like the other splits; it is not copied into any runner workdir and was never evaluated. The register publishes one revised-in-place current vintage with no historical vintages, and the evaluation contract declares retrospective research over the pinned snapshot under an isolated-rows access posture, never a point-in-time reconstruction. Recorded finding carried in measurements.json, RELEASE_NOTES.md and VERIFICATION.md: the stock runner baseline (eval AUC 0.5086) trails the shipped site-persistence reference (0.6124) with paired intervals excluding zero - no demonstrated headroom under this protocol; no figure may be quoted without that comparison beside it."
+}

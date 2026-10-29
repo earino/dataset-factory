@@ -1,0 +1,50 @@
+{
+  "id": "ns-bwa-diag-001",
+  "candidate": "ns-bwa-advisory-lift-duration",
+  "image": "python:3.13-slim",
+  "server_type": "cx23",
+  "location": "hel1",
+  "cpus": 2,
+  "memory_mb": 3072,
+  "timeout_minutes": 45,
+  "lifetime_minutes": 90,
+  "max_disk_mb": 4096,
+  "max_artifact_mb": 16,
+  "what": "bounded diagnostic on the accepted ns-bwa-advisory-lift-duration artifact e8ed2a53eaf0453c... (gate 1.5.0, 46/46, --accept ACCEPTED in ns-bwa-001 and re-ACCEPTED in ns-bwa-baseline-001), fetched from private staging release 427616218 rather than rebuilt: re-accept the five fetched files against the gate's own collected report, materialize the runner workdir (public train+eval only; the private holdout is never copied), re-run the benchmark's own validate.sh contract, then preserve PER-ROW model scores (predict_proba on the eval rows, validate.py's exact call) and compute the comparison the baseline job could not: model-vs-persistence and model-vs-calendar paired bootstrap intervals (1000 resamples, seed 23, same implementation as the construction references) plus a site-clustered paired bootstrap for model-vs-persistence (rows cluster by site: 2.4x repeat advisories), and per-issue-year model AUC/Brier against the measured 2018-2020 prevalence shift. No re-tuning of label, threshold or splits; no agent loop; holdout stays sealed.",
+  "fetch": {
+    "repo": "earino/dataset-factory-staging",
+    "release": 427616218,
+    "assets": [
+      {
+        "asset_id": 687882015,
+        "dest": "extract/meta.json",
+        "size": 1555,
+        "sha256": "6b43e4eaf1020ba3436a91c1c2c926af7af0b03fd79104a01bd45d944737e260"
+      },
+      {
+        "asset_id": 687882066,
+        "dest": "extract/private/holdout.csv",
+        "size": 121058,
+        "sha256": "78b62dd3bd5923f67c014010eede2e6f7c778bd0b79d4265c9f8ef4299328a37"
+      },
+      {
+        "asset_id": 687882117,
+        "dest": "extract/public/eval.csv",
+        "size": 50575,
+        "sha256": "ec1f733558558d4c30c2c50bf93408817d0936df4517c126a6d7965f02c5c5c5"
+      },
+      {
+        "asset_id": 687882151,
+        "dest": "extract/public/train.csv",
+        "size": 133840,
+        "sha256": "beacb2292ca0a045610662bd02ba85d89fde18b652e43d4ff44276979a3babc5"
+      },
+      {
+        "asset_id": 687882208,
+        "dest": "extract/quality.json",
+        "size": 21707,
+        "sha256": "7a61f6fa1bd17f01804428b939ab7cf620cacbf066c95837f6d9166d7a78258e"
+      }
+    ]
+  }
+}

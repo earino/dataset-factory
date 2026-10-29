@@ -1,0 +1,42 @@
+{
+ "name": "ns-bwa-advisory-lift-duration",
+ "description": "At the moment a boil water advisory is issued for a public registered or municipal drinking water supply in Nova Scotia - known then: site name, county, facility type, reason for the report, calendar season, and the prior advisory history of the same site/county computed only from earlier advisories - will the advisory be lifted within 30 days?",
+ "target": "lift30",
+ "positive_label": 1,
+ "id_columns": [
+  "advisory_id"
+ ],
+ "columns": [
+  "advisory_id",
+  "issue_date",
+  "site_name",
+  "county",
+  "facility_type",
+  "reason",
+  "issue_month",
+  "issue_dow",
+  "site_prior_advisories",
+  "site_days_since_last",
+  "site_prior_resolved",
+  "site_prior_lift30_rate",
+  "site_active_prior",
+  "county_prior_advisories",
+  "county_days_since_last",
+  "county_prior_resolved",
+  "county_prior_lift30_rate",
+  "county_active_prior",
+  "lift30"
+ ],
+ "rows": {
+  "train": 1069,
+  "eval": 372,
+  "holdout": 884
+ },
+ "positive_rate": {
+  "train": 0.668849,
+  "eval": 0.604839,
+  "holdout": 0.581448
+ },
+ "split": "temporal on advisory issue year: train 2008-2017, eval 2018-2020, holdout 2021-2024",
+ "split_description": "temporal on advisory issue year: train 2008-2017, eval 2018-2020, holdout 2021-2024; population is advisories with a parseable issue date inside a window, issue date on or before the register vintage minus 30 days, and an observed non-negative duration at the pinned vintage; blank removal (still in effect) and negative-duration rows are excluded and counted per window"
+}

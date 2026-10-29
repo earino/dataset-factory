@@ -1,3 +1,38 @@
+## 2026-10-29 16:10Z - ns-bwa-diag-001 close-out: per-row diagnostic verified (persistence dominance now with zero-excluding intervals), worker cleanup reconfirmed 0/0, packaged ns-bwa records committed; next: private staging to both destinations
+
+Watcher follow-up for the finished diagnostic job (succeeded, exit 0, 40.5 s, 9 report assets in
+private staging release 427950656). The job was collected and its worker destroyed by the
+advancement session that launched it (collected 14:11:56Z; destroyed 14:13:28Z, provider read-back
+0 servers / 0 primary IPs at 14:13:48Z); this pass re-verified the result from the collected evidence
+and reconfirmed the provider independently: 0 servers / 0 primary IPs at 16:08:15Z.
+
+Every required check re-verified from .factory/ns-bwa-diag-001/reports/ (all fetched files re-hash to
+the job record's staging asset digests): gate --accept printed ACCEPTED for artifact e8ed2a53eaf0453c
+BEFORE any score; materialize copied public train+eval only (holdout never enters a workdir);
+validate.sh ran the bundled runner files unmodified (digests match the read-only clone) and printed
+CONTRACT OK with both AUC prints 0.5086; per-row predict_proba scores preserved (372 eval rows). The
+comparison the record required before packaging: model 0.5086 vs site persistence 0.6124;
+model-vs-persistence -0.1038, row CI [-0.1693, -0.0357] and site-clustered CI [-0.1706, -0.0383]
+(286 clusters), both EXCLUDING zero; model-vs-calendar +0.0011 [-0.0866, +0.0723] (contains zero:
+inconclusive, not parity); persistence dominates every issue year (0.6084/0.6203/0.5991 vs model
+0.5554/0.5018/0.4886) while the model's Brier degrades 0.23 -> 0.52 across the 2018-2020 prevalence
+shift; every recorded reference figure (persistence 0.6124, calendar 0.5075, reason 0.4307, majority
+0.6048, model 0.5086) replicated to 4 dp by the second implementation. NO demonstrated headroom
+stands, now with dependence-aware intervals; the comparison is carried in the package beside every
+figure.
+
+The advancement session left the candidate's packaged state uncommitted with a documented handoff
+(record.next_action). Ownership check: the research mutex is this follow-up's; every uncommitted path
+belongs to this named candidate (record.json, diag/ and baseline evidence JSONs, license.json,
+release.json, jobs/ns-bwa-diag-001.json, release/ns-bwa-advisory-lift-duration v2026.10, suitability
+record) - no unrelated edits found, so this pass committed them as this job's intended changes;
+check-candidate --all, check-suitability and check-package all rc=0 on the working tree committed
+here. Preservation: the accepted artifact's five files in staging release 427616218 (fetch digests
+verified, 0 failures) and the job's 9 report assets in 427950656. NEXT (advancement's, unchanged):
+private staging of v2026.10 to both destinations, then awaiting_operator: true with the pre-flip
+audit prompt generated from the frozen manifest; the flip remains the operator's single act. The
+.factory/ns-bwa-diag-001/handled marker carries this close-out's commit and remaining blocker.
+
 ## 2026-10-29 12:28Z - East Asia discovery tick: Taipower major-outage register found (new utility-outage family) and PARKED on measured content depth - 2 obtainable years, replacement-file publication; KR/JP/SG/HK re-checks unnecessary, no new evidence
 
 Discovery-only session (East Asia regional focus). One new source carried to a

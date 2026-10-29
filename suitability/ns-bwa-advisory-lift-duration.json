@@ -1,0 +1,66 @@
+{
+ "schema_version": 1,
+ "dataset": "ns-bwa-advisory-lift-duration",
+ "release_tag": "v2026.10",
+ "artifact_version": "e8ed2a53eaf0453c8ed52aea336edb994d888ad11e7b76f7898b663f017180a8",
+ "reviewed_on": "2026-10-29",
+ "reviewer": "Scout, advancement session 2026-10-29 (review over the accepted ns-bwa-001 artifact e8ed2a53eaf0453c, gate 1.5.0 46/46, re-accepted in jobs ns-bwa-baseline-001 and ns-bwa-diag-001; every reference and model figure replicated by the ns-bwa-diag-001 second implementation)",
+ "decision": "retain_restricted",
+ "summary": "Retained for retrospective model-development research under an isolated-rows protocol that is STATED AS A REQUIREMENT, not enforced by the shipped runner: the illustrative runner contract passes the whole eval feature table to the predictor, and the gate's own declared probes measured the cross-row exposure (site-level reverse-history covers 369 train / 56 eval / 217 holdout rows - a later same-site row's site_prior_lift30_rate equals the earlier row's label when that prior is its only resolved one), so unrestricted-access scores are not meaningful for this artifact. The register is revised in place and publishes no historical vintages, so training-label timing and full-row historical availability are unverified; the vintage is the pinned 2026-06-16 snapshot and the task is declared retrospective, never a point-in-time reconstruction. Measured finding carried beside every figure: the stock runner baseline (eval AUC 0.5086) trails the shipped site-persistence reference (0.6124) by 0.1038 with paired intervals excluding zero at both the row and site-cluster level - no demonstrated headroom under this protocol; the comparison, not the top-line AUC, is the release's scientific content.",
+ "supported_uses": [
+  "Retrospective research and method comparison on the pinned 2026-06-16 vintage under an enforced isolated-rows protocol (one row predicted without any other row)",
+  "Agent evaluation under the same enforced protocol, with the labeled eval split as development/validation data and the holdout kept outside agent development until a design is frozen",
+  "Study of advisory-duration regime shift (the measured 2020-2022 spike) and of prevalence drift under a temporal split"
+ ],
+ "unsupported_uses": [
+  "Operational or real-time forecasting claims: no historical-vintage availability evidence exists and none is claimed",
+  "Point-in-time historical reconstruction: the publisher revises in place; a future re-fetch measures churn, not past knowability",
+  "Any evaluation that gives the predictor whole-table access to eval or holdout features: the measured same-site label recovery makes such scores meaningless",
+  "Quoting the model AUC (0.5086) without the persistence comparison (0.6124, intervals excluding zero) beside it"
+ ],
+ "evaluation_access": "isolated_rows",
+ "historical_availability": "unverified",
+ "training_label_timing": "unverified",
+ "vintage": "current_snapshot",
+ "selection": "prediction_time",
+ "cross_row_audit": {
+  "status": "recovery_demonstrated",
+  "scope": "gate-executed reverse-history probes on the full artifact: site-level coverage 369 train / 56 eval / 217 holdout rows (a later same-site row's prior-lift-rate equals the earlier row's label when that prior is its only resolved one; 1 mismatch in train), county-level 109/18/3 with more mismatches; mitigated only by the declared isolated-rows protocol, which the shipped runner does not enforce",
+  "evidence": [
+   "The gate's own qualification report for this artifact records both declared probes executed with their measured per-split coverage (46/46 checks passed, including evaluation_contract and both probes).",
+   "Job ns-bwa-diag-001 preserved per-row model and persistence scores on the accepted bytes and computed the model-vs-persistence paired intervals (row -0.1035 [-0.1693, -0.0357]; site-cluster -0.1028 [-0.1706, -0.0383]), both excluding zero, on the same 372 eval rows."
+  ]
+ },
+ "limitations": [
+  "Single pinned vintage (register content current as of 2026-06-16); the publisher updates quarterly and revises in place, so no historical operational-availability claim is possible",
+  "The measured cross-row exposure means eval scores under unrestricted table access are not meaningful; the isolated-rows requirement must be enforced by the evaluator",
+  "No demonstrated headroom: the stock baseline trails the site-persistence reference with intervals excluding zero; the task's discriminative claim above simple references is not established by the runner's own baseline",
+  "Prevalence shift inside eval (0.744 in 2018 to 0.415 in 2020) and the 2020-2022 duration-regime spike inside holdout make pooled figures unrepresentative; per-issue-year tables are mandatory reading",
+  "Site identity is register free text with variants (no clean entity key); history features use a stated normalisation rule and 19 same-(site, issue date) pairs + 1 triple exist (16 pairs with two valid durations - label noise, counted)",
+  "The holdout was never evaluated; no holdout figure exists and its first use must follow a frozen design"
+ ],
+ "evidence": [
+  {
+   "claim": "The artifact passed the full-artifact qualification gate (1.5.0, 46/46 checks) and was exact-byte accepted, including the evaluation contract with both declared cross-row probes and their measured per-split coverage",
+   "source": "release/ns-bwa-advisory-lift-duration/qualification.json",
+   "detail": "The gate's collected report for job ns-bwa-001, shipped with the package: ok=true, gate_version 1.5.0, artifact e8ed2a53eaf0453c8ed52aea336edb994d888ad11e7b76f7898b663f017180a8; jobs ns-bwa-baseline-001 and ns-bwa-diag-001 re-ran --accept against the fetched bytes (ACCEPTED) before any score was computed."
+  },
+  {
+   "claim": "Every reference figure and the model AUC were replicated by a second implementation, and the model-vs-persistence comparison carries dependence-aware intervals excluding zero",
+   "source": "release/ns-bwa-advisory-lift-duration/measurements.json",
+   "detail": "measurements.json records the full triad on identical eval rows (persistence 0.6124, calendar 0.5075, reason 0.4307, majority 0.6048, model 0.5086), the per-row diagnostic's paired intervals (row [-0.1693, -0.0357]; site-cluster [-0.1706, -0.0383]), the per-issue-year table against the prevalence shift, and the replication flags (all true to 4 dp)."
+  },
+  {
+   "claim": "The publisher documents the register's quarterly refresh, in-place revision and blank-means-active censoring, and the dataset page carries the licence and row count the construction cross-checked",
+   "source": "https://data.novascotia.ca/datasets/7t68-9xmm",
+   "detail": "Dataset page read at discovery (2026-10-27): 'This dataset includes boil water advisories from 2006 - current', Frequency: Quarterly, 'Current as of June 16, 2026', 'Values are not provided for boil advisories that are currently in effect', Rows: 2,649 - matching the fetched CSV exactly (sha256 60f77ac4..., 283,987 bytes)."
+  }
+ ],
+ "required_actions": [
+  "Before any evaluation: enforce the isolated-rows protocol at the harness level (one row predicted without any other row); do not treat the shipped illustrative runner's whole-table access as the protocol",
+  "Before the flip to public: run the independent adversarial pre-flip audit over the frozen package (standing practice since 2026-10-27); the flip waits for the auditor's verdict unless the operator waives it",
+  "Before any holdout use: freeze the design (features, protocol, metric) first; the holdout has never been evaluated and no holdout figure exists",
+  "A re-fetch after the publisher's next quarterly refresh is a new artifact version: re-measure every count, re-qualify, and re-issue as a new reviewed version; never regenerate this package in place"
+ ],
+ "corrections": []
+}

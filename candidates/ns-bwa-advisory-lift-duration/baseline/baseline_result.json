@@ -1,0 +1,59 @@
+{
+  "job": "ns-bwa-baseline-001",
+  "purpose": "one baseline through the runner's existing training and validation contract, on the accepted ns-bwa-advisory-lift-duration artifact",
+  "artifact": {
+    "name": "ns-bwa-advisory-lift-duration",
+    "target": "lift30",
+    "positive_label": 1,
+    "id_columns": [
+      "advisory_id"
+    ],
+    "rows": {
+      "train": 1069,
+      "eval": 372,
+      "holdout": 884
+    },
+    "positive_rate": {
+      "train": 0.668849,
+      "eval": 0.604839,
+      "holdout": 0.581448
+    },
+    "split_description": "temporal on advisory issue year: train 2008-2017, eval 2018-2020, holdout 2021-2024; population is advisories with a parseable issue date inside a window, issue date on or before the register vintage minus 30 days, and an observed non-negative duration at the pinned vintage; blank removal (still in effect) and negative-duration rows are excluded and counted per window"
+  },
+  "qualification_report": {
+    "bundled": "qualification.json",
+    "sha256": "a6f0090dcb9746af417d00b7679588538831fb398b8ca66aa7823ae4bb9fd42f",
+    "gate_version": "1.5.0",
+    "gate_ok": true,
+    "gate_failed_checks": [],
+    "accepted_before_scoring": true,
+    "accepted_artifact_version": "e8ed2a53eaf0453c",
+    "qualified_artifact_version": "e8ed2a53eaf0453c8ed52aea336edb994d888ad11e7b76f7898b663f017180a8"
+  },
+  "contract": {
+    "contract_ok": true,
+    "eval_auc_from_train_py": 0.5086,
+    "eval_auc_from_validate_py": 0.5086
+  },
+  "runner_files": {
+    "bundled_sha256": {
+      "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+      "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+      "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+    },
+    "expected_sha256": {
+      "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+      "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+      "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+    },
+    "unmodified": true
+  },
+  "dependencies": {
+    "python": "3.13.18",
+    "pandas": "2.3.3",
+    "numpy": "2.5.4",
+    "xgboost": "3.4.1",
+    "scikit-learn": "1.9.1"
+  },
+  "scope": "runner-contract baseline only; no agent loop, no holdout evaluation. Holdout stays sealed until the design is frozen."
+}

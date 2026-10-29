@@ -1,0 +1,226 @@
+{
+  "job": {
+    "id": "ns-bwa-diag-001",
+    "candidate": "ns-bwa-advisory-lift-duration",
+    "image": "python:3.13-slim",
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 3072,
+    "timeout_minutes": 45,
+    "lifetime_minutes": 90,
+    "max_disk_mb": 4096,
+    "max_artifact_mb": 16,
+    "what": "bounded diagnostic on the accepted ns-bwa-advisory-lift-duration artifact e8ed2a53eaf0453c... (gate 1.5.0, 46/46, --accept ACCEPTED in ns-bwa-001 and re-ACCEPTED in ns-bwa-baseline-001), fetched from private staging release 427616218 rather than rebuilt: re-accept the five fetched files against the gate's own collected report, materialize the runner workdir (public train+eval only; the private holdout is never copied), re-run the benchmark's own validate.sh contract, then preserve PER-ROW model scores (predict_proba on the eval rows, validate.py's exact call) and compute the comparison the baseline job could not: model-vs-persistence and model-vs-calendar paired bootstrap intervals (1000 resamples, seed 23, same implementation as the construction references) plus a site-clustered paired bootstrap for model-vs-persistence (rows cluster by site: 2.4x repeat advisories), and per-issue-year model AUC/Brier against the measured 2018-2020 prevalence shift. No re-tuning of label, threshold or splits; no agent loop; holdout stays sealed.",
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 427616218,
+      "assets": [
+        {
+          "asset_id": 687882015,
+          "dest": "extract/meta.json",
+          "size": 1555,
+          "sha256": "6b43e4eaf1020ba3436a91c1c2c926af7af0b03fd79104a01bd45d944737e260"
+        },
+        {
+          "asset_id": 687882066,
+          "dest": "extract/private/holdout.csv",
+          "size": 121058,
+          "sha256": "78b62dd3bd5923f67c014010eede2e6f7c778bd0b79d4265c9f8ef4299328a37"
+        },
+        {
+          "asset_id": 687882117,
+          "dest": "extract/public/eval.csv",
+          "size": 50575,
+          "sha256": "ec1f733558558d4c30c2c50bf93408817d0936df4517c126a6d7965f02c5c5c5"
+        },
+        {
+          "asset_id": 687882151,
+          "dest": "extract/public/train.csv",
+          "size": 133840,
+          "sha256": "beacb2292ca0a045610662bd02ba85d89fde18b652e43d4ff44276979a3babc5"
+        },
+        {
+          "asset_id": 687882208,
+          "dest": "extract/quality.json",
+          "size": 21707,
+          "sha256": "7a61f6fa1bd17f01804428b939ab7cf620cacbf066c95837f6d9166d7a78258e"
+        }
+      ]
+    },
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "source_files": [
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/ns-bwa-advisory-lift-duration/diag/run.sh",
+        "bytes": 2821,
+        "sha256": "24c8fa7376fcdc46deabf0a3523809c7e616e14b4710fa047debf9c97b6251b5"
+      },
+      {
+        "bundled_as": "materialize.py",
+        "source": "candidates/ns-bwa-advisory-lift-duration/baseline/materialize.py",
+        "bytes": 2091,
+        "sha256": "0c345e1182b0dfd42b2043d2f88c5d4d892bb902b5fcc25e24a8418e0f9bfc2e"
+      },
+      {
+        "bundled_as": "diag.py",
+        "source": "candidates/ns-bwa-advisory-lift-duration/diag/diag.py",
+        "bytes": 18554,
+        "sha256": "28449e3a69969619e95e996237bf12470dedd8d1fc3b4cbf6d818a8e3209cc5b"
+      },
+      {
+        "bundled_as": "qualification.json",
+        "source": "candidates/ns-bwa-advisory-lift-duration/baseline/qualification.json",
+        "bytes": 17937,
+        "sha256": "a6f0090dcb9746af417d00b7679588538831fb398b8ca66aa7823ae4bb9fd42f"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 57029,
+        "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+      },
+      {
+        "bundled_as": "train.py",
+        "source": "/opt/data/harness_benchmark/task_template/train.py",
+        "bytes": 2500,
+        "sha256": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8"
+      },
+      {
+        "bundled_as": "validate.py",
+        "source": "/opt/data/harness_benchmark/task_template/validate.py",
+        "bytes": 1277,
+        "sha256": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b"
+      },
+      {
+        "bundled_as": "validate.sh",
+        "source": "/opt/data/harness_benchmark/task_template/validate.sh",
+        "bytes": 482,
+        "sha256": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      }
+    ]
+  },
+  "reservation_eur": "0.06",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 3,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 204800,
+  "source_sha256": "936edd118a435e3b09088176b90bf05b29e9717eac6de0bfabe5a0518effbce3",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-10-29T14:09:55.143169+00:00",
+  "expires": 1793288395,
+  "budget_months": [
+    "2026-10"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 173363866,
+  "known_hosts": "/opt/data/dataset-factory/.factory/ns-bwa-diag-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "65.21.158.17",
+  "result": {
+    "job_id": "ns-bwa-diag-001",
+    "status": "succeeded",
+    "uploaded": true,
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 427616218,
+      "fetched": [
+        {
+          "dest": "extract/meta.json",
+          "bytes": 1555,
+          "sha256": "6b43e4eaf1020ba3436a91c1c2c926af7af0b03fd79104a01bd45d944737e260"
+        },
+        {
+          "dest": "extract/private/holdout.csv",
+          "bytes": 121058,
+          "sha256": "78b62dd3bd5923f67c014010eede2e6f7c778bd0b79d4265c9f8ef4299328a37"
+        },
+        {
+          "dest": "extract/public/eval.csv",
+          "bytes": 50575,
+          "sha256": "ec1f733558558d4c30c2c50bf93408817d0936df4517c126a6d7965f02c5c5c5"
+        },
+        {
+          "dest": "extract/public/train.csv",
+          "bytes": 133840,
+          "sha256": "beacb2292ca0a045610662bd02ba85d89fde18b652e43d4ff44276979a3babc5"
+        },
+        {
+          "dest": "extract/quality.json",
+          "bytes": 21707,
+          "sha256": "7a61f6fa1bd17f01804428b939ab7cf620cacbf066c95837f6d9166d7a78258e"
+        }
+      ],
+      "failures": [],
+      "bytes": 328735
+    },
+    "image_id": "sha256:2d44738ebf4ce5f63b9d9ea871e9c7cfdc0426f7b0c97cac915fd88ded1d86bb",
+    "image_digests": [
+      "python@sha256:2d44738ebf4ce5f63b9d9ea871e9c7cfdc0426f7b0c97cac915fd88ded1d86bb"
+    ],
+    "exit_code": 0,
+    "oom_killed": false,
+    "elapsed_seconds": 40.5,
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 427950656,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-fc06513be4627ee813c8",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-fc06513be4627ee813c8/manifest.json",
+    "assets": [
+      {
+        "id": 688771974,
+        "size": 72,
+        "sha256": "b74813c73a60a710dda91f77252edc72070c59af0a19199fa478d2f3294ca7ae"
+      },
+      {
+        "id": 688772043,
+        "size": 247,
+        "sha256": "3ab68eb2a8f9ae624128394490d8a6906155326a6b868a966bd85fdb6af8ce4a"
+      },
+      {
+        "id": 688772106,
+        "size": 50544,
+        "sha256": "d723a2ba00508b2606b466e8d4dea4bc2f40a303f9353c9a1de1bbae90396164"
+      },
+      {
+        "id": 688772165,
+        "size": 194,
+        "sha256": "b65d9cdcf0aec609256281c222681ffe000fc34bc84769ff2fae3b751de5a776"
+      },
+      {
+        "id": 688772246,
+        "size": 364,
+        "sha256": "abd6f7249a473f07f501069dde0fe2436ada294e0816606ef6d35309752ff944"
+      },
+      {
+        "id": 688772364,
+        "size": 178,
+        "sha256": "f027350556353ae2ef770acbd1749b80ab7a7e58db0f451d293ac4ce9aad3b94"
+      },
+      {
+        "id": 688772426,
+        "size": 204800,
+        "sha256": "936edd118a435e3b09088176b90bf05b29e9717eac6de0bfabe5a0518effbce3"
+      },
+      {
+        "id": 688772513,
+        "size": 1567,
+        "sha256": "29ff722b4095f7a917059e3fb5deae7798848daf4a6b599679361ae9cb889aa1"
+      },
+      {
+        "id": 688772595,
+        "size": 9072,
+        "sha256": "ad4b3d2eab8627709eae2f150499a4d36bee2281017a5670f74795233c7c36f8"
+      }
+    ],
+    "skipped_empty": []
+  },
+  "collected_at": "2026-10-29T14:11:56.444087+00:00",
+  "deleted_at": "2026-10-29T14:13:44.020501+00:00"
+}

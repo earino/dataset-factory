@@ -1,0 +1,407 @@
+{
+  "dataset": "ns-bwa-advisory-lift-duration",
+  "release_version": "2026.10",
+  "release_tag": "v2026.10",
+  "repository": "https://github.com/earino/ns-bwa-advisory-lift-duration",
+  "visibility": "private (publication requires explicit authorisation)",
+  "artifact_version": "e8ed2a53eaf0453c8ed52aea336edb994d888ad11e7b76f7898b663f017180a8",
+  "package_digest": null,
+  "artifact_job": "ns-bwa-001",
+  "staging_release": 427616218,
+  "staging_release_tag": "job-ns-bwa-001",
+  "staging_repo": "earino/dataset-factory-staging",
+  "construction_commit": "f8ba545",
+  "gate_version": "1.5.0",
+  "gate_command": "python3 code/qualify_dataset.py ./task",
+  "measurements": {
+    "name": "ns-bwa-advisory-lift-duration",
+    "built_at_utc": "2026-10-29T00:00:00Z",
+    "source": {
+      "register": "Boil Water Advisories, Open Data Nova Scotia (Socrata 7t68-9xmm)",
+      "vintage": "content current as of 2026-06-16 (dataset page; CSV Last-Modified Tue, 16 Jun 2026 13:58:42 GMT)",
+      "register_sha256": "60f77ac4945ca824700f5bcd3eaf564f4e5c5d4ec3f08496e8dd796e7184a30a",
+      "register_bytes": 283987,
+      "register_rows": 2649,
+      "fetched_by_job": "ns-bwa-001 (byte-identical re-fetch of the discovery vintage)"
+    },
+    "grain": "one row per issued boil water advisory (labeled; censored and invalid-outcome rows excluded and counted)",
+    "eligibility": "parseable issue date; issue date on or before the vintage minus 30 days (2026-05-17) so an unresolved advisory cannot masquerade as a negative; observed non-negative duration at the pinned vintage; three scored windows on issue year (train 2008-2017, eval 2018-2020, holdout 2021-2024)",
+    "label": "lift30: advisory lifted within 30 days of issuance, from 'Date Advisory Removed'/'Length of Advisory in Days' (label-only columns, absent from the shipped files)",
+    "splits": {
+      "train": {
+        "rows": 1069,
+        "positives": 715,
+        "lift30_rate": 0.668849,
+        "distinct_sites": 585,
+        "censored": 2
+      },
+      "eval": {
+        "rows": 372,
+        "positives": 225,
+        "lift30_rate": 0.604839,
+        "distinct_sites": 286,
+        "censored": 1
+      },
+      "holdout": {
+        "rows": 884,
+        "positives": 514,
+        "lift30_rate": 0.581448,
+        "distinct_sites": 547,
+        "censored": 10
+      },
+      "out_of_window_2025_2026": {
+        "issued": 279,
+        "labeled": 249,
+        "censored": 30
+      }
+    },
+    "hazards_measured": {
+      "negative_duration_invalid_outcomes": 3,
+      "blank_issue_dates": 30,
+      "blank_county_rows": 113,
+      "same_site_issue_date_pairs": "19 pairs + 1 triple; 16 pairs have two valid durations (identical features, label noise, counted)",
+      "duration_boundary": "16 rows at exactly 30 days (label 1), 6 at 31 (label 0), 5 zero-duration rows",
+      "reason_variant_merge": "e. coli present 135 = 83 'E. Coli Present' + 52 'E.Coli Present'",
+      "length_column_agreement": "0 disagreements between the register Length column and the recomputed duration",
+      "regime_shift": "mean advisory duration 47-65 days (2009-2018) vs 218 (2020), 143 (2021), 101 (2022), 64 (2023); the holdout window straddles the spike"
+    },
+    "references_eval_372_rows_225_positives": {
+      "scope": "identical eval rows (n=372), computed after gate PASS (46/46) and exact-byte --accept; holdout sealed",
+      "majority_class_accuracy": 0.6048,
+      "persistence_site_prior": {
+        "auc": 0.6124,
+        "brier": 0.2819,
+        "covered_rows": 231,
+        "coverage": 0.621,
+        "definition": "the site's as-of lift30 rate over earlier same-site advisories resolved strictly before the instant (the shipped site_prior_lift30_rate feature); global train rate fallback"
+      },
+      "calendar_county_month": {
+        "auc": 0.5075,
+        "brier": 0.3101,
+        "definition": "train-estimated (county, issue month) rate with >=5 train rows, county then global train rate backoff"
+      },
+      "reason_prior": {
+        "auc": 0.4307,
+        "brier": 0.244,
+        "definition": "train-estimated positive rate per normalised reason"
+      },
+      "facility_prior": {
+        "auc": null,
+        "brier": 0.2429,
+        "definition": "train-estimated rate per facility type - constant scores on eval, no ranking information"
+      }
+    },
+    "full_model_baseline": {
+      "job": "ns-bwa-baseline-001",
+      "definition": "the benchmark template XGBClassifier (n_estimators=30, max_depth=6, lr=0.1, seed 42) through the runner's own train.py + validate.sh, unmodified, on the accepted artifact",
+      "eval_auc": 0.5086,
+      "eval_brier": 0.3609,
+      "dependencies": "python 3.13.18, pandas 2.3.3, numpy 2.5.4, xgboost 3.4.1, scikit-learn 1.9.1",
+      "replicated_by": "ns-bwa-diag-001: eval AUC 0.5086 (sklearn 0.508617 / midrank 0.508617 / train.py print 0.5086 / validate.py recompute 0.5086)"
+    },
+    "per_row_diagnostic_ns_bwa_diag_001": {
+      "purpose": "per-row model scores preserved, so the model-vs-reference comparison gets dependence-aware intervals (the aggregate-only runner contract could not carry them)",
+      "order": "gate --accept on the fetched bytes BEFORE any score; runner files verbatim (digests equal the benchmark clone's); holdout never copied into the workdir",
+      "observed_gaps": {
+        "model_minus_persistence": -0.103825,
+        "model_minus_calendar": 0.001119
+      },
+      "paired_differences_bootstrap1000_seed23": {
+        "model_vs_persistence_row": {
+          "mean": -0.103464,
+          "ci95": [
+            -0.169273,
+            -0.035679
+          ]
+        },
+        "model_vs_persistence_site_cluster": {
+          "mean": -0.102819,
+          "ci95": [
+            -0.170629,
+            -0.038288
+          ],
+          "note": "286 site clusters resampled; rows of a resampled site stay together"
+        },
+        "model_vs_calendar_row": {
+          "mean": -0.00207,
+          "ci95": [
+            -0.086631,
+            0.072312
+          ]
+        }
+      },
+      "replication_against_recorded": {
+        "persistence_auc": true,
+        "calendar_auc": true,
+        "reason_auc": true,
+        "majority_accuracy": true,
+        "model_auc": true,
+        "note": "a second implementation (pandas-based, independent of the construction score.py) recomputed every reference from the shipped bytes; all agree to 4 decimal places with the figures recorded by jobs ns-bwa-001 and ns-bwa-baseline-001"
+      }
+    },
+    "per_issue_year_eval": {
+      "2018": {
+        "rows": 129,
+        "positives": 96,
+        "positive_rate": 0.7442,
+        "model_auc": 0.5554,
+        "model_brier": 0.2298,
+        "persistence_auc": 0.6084,
+        "persistence_brier": 0.2173,
+        "calendar_auc": 0.5402
+      },
+      "2019": {
+        "rows": 125,
+        "positives": 80,
+        "positive_rate": 0.64,
+        "model_auc": 0.5018,
+        "model_brier": 0.3479,
+        "persistence_auc": 0.6203,
+        "persistence_brier": 0.2748,
+        "calendar_auc": 0.4779
+      },
+      "2020": {
+        "rows": 118,
+        "positives": 49,
+        "positive_rate": 0.4153,
+        "model_auc": 0.4886,
+        "model_brier": 0.5178,
+        "persistence_auc": 0.5991,
+        "persistence_brier": 0.36,
+        "calendar_auc": 0.5114
+      }
+    },
+    "prevalence_shift_note": "within-eval prevalence falls 0.7442 (2018) -> 0.64 (2019) -> 0.4153 (2020), the measured COVID-era duration regime shift; per-issue-year figures are mandatory reading beside the pooled AUC; the model's Brier degrades 0.23 -> 0.52 across the shift while persistence holds 0.22-0.36; prevalence drift does not by itself determine AUC",
+    "headroom_finding": "NO demonstrated headroom under this protocol. The runner-contract model (0.5086) trails the one-line site-persistence reference (0.6124) by 0.1038 AUC on identical rows; the paired row-level interval [-0.1693, -0.0357] and the site-clustered interval [-0.1706, -0.0383] both EXCLUDE ZERO, so the deficit is not a resampling artefact. The model sits at the calendar/identity control (model minus calendar +0.0011, interval contains zero). Per issue year the model never beats persistence (0.5554/0.5018/0.4886 vs 0.6084/0.6203/0.5991). Per dataset-qualification this is a recorded defect, not an encouraging result: no figure from this artifact may be quoted without this comparison beside it. It does not prove every competent model must lose - the persistence feature is shipped and agent-visible, so an agent that starts from it enters at ~0.61 - but the task's discriminative claim above simple references is not demonstrated by the runner's own baseline.",
+    "measurement_commands": [
+      "worker job ns-bwa-001: construct from the pinned register -> qualify_dataset.py (gate 1.5.0, 46/46) on the full artifact -> --accept (artifact e8ed2a53eaf0453c...) -> code/score.py --data <extract> --accepted-report qualification.json --report references.json",
+      "worker job ns-bwa-baseline-001: fetch the five accepted assets from private staging -> qualify_dataset.py --accept -> materialize (public train+eval only) -> the benchmark's own train.py + validate.sh -> eval AUC 0.5086 (CONTRACT OK)",
+      "worker job ns-bwa-diag-001: same fetch and --accept -> validate.sh (CONTRACT OK, 0.5086) -> per-row predict_proba scores -> paired row and site-cluster bootstrap intervals (1000 resamples, seed 23) and per-issue-year AUC/Brier; every recorded reference figure replicated by a second implementation"
+    ]
+  },
+  "assets": {
+    "meta.json": {
+      "asset_name": "meta.json",
+      "bytes": 1555,
+      "sha256": "6b43e4eaf1020ba3436a91c1c2c926af7af0b03fd79104a01bd45d944737e260"
+    },
+    "private/holdout.csv": {
+      "asset_name": "private-holdout.csv",
+      "bytes": 121058,
+      "sha256": "78b62dd3bd5923f67c014010eede2e6f7c778bd0b79d4265c9f8ef4299328a37"
+    },
+    "public/eval.csv": {
+      "asset_name": "public-eval.csv",
+      "bytes": 50575,
+      "sha256": "ec1f733558558d4c30c2c50bf93408817d0936df4517c126a6d7965f02c5c5c5"
+    },
+    "public/train.csv": {
+      "asset_name": "public-train.csv",
+      "bytes": 133840,
+      "sha256": "beacb2292ca0a045610662bd02ba85d89fde18b652e43d4ff44276979a3babc5"
+    },
+    "quality.json": {
+      "asset_name": "quality.json",
+      "bytes": 21707,
+      "sha256": "7a61f6fa1bd17f01804428b939ab7cf620cacbf066c95837f6d9166d7a78258e"
+    }
+  },
+  "package_files": {
+    "DATA_DICTIONARY.md": "b0a3e7187435faf6e16f9fefe2d3a83af2d35da4e46fc07de446d954b2165332",
+    "LICENSE-CC0-1.0.txt": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+    "LICENSE-MIT.txt": "200f782f6b8bc23b926ea774cbacb4147826b3b2b59200917d8dc5ec68159535",
+    "LICENSE.md": "78df6b2aa9cb290e10fe2d28e959f8e29819a74853d4a9187db45ba08aa9f527",
+    "README.md": "59da05f80a8c37689eb02e79fbe5d455ce2466c4ed509dfc829f3cf5f74d6906",
+    "RELEASE_NOTES.md": "df3947ec05cbad1dc7b9d9f57b9a9484ef8cd1209e9080052e111dbdc90cb584",
+    "REPRODUCE.md": "2f8eaa4a4f1abc43c00d6a15b0f29b1cb1be6b982fffc76daa134179ae5c6427",
+    "VERIFICATION.md": "5550c3bab34c304e4d883363abc3141c9edca9aaa9848508a4be348ec9fc2ee3",
+    "baseline/README.md": "38a442d1be869c0d14e93a59af2f7a406f4ea99545f0c08c283cf797a026f18b",
+    "baseline/reproduce_baseline.sh": "32de96032ab1b55d19fdcd1e04e0f5a6b10a187633aa280e9ee76aee9f03c584",
+    "baseline/train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+    "baseline/validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+    "baseline/validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d",
+    "code/build.py": "cd23315c7ee82cb20c87a2accb97ba98aeae3fd3a9d0469911c963d1d93466a2",
+    "code/materialize.py": "0c345e1182b0dfd42b2043d2f88c5d4d892bb902b5fcc25e24a8418e0f9bfc2e",
+    "code/qualify_dataset.py": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1",
+    "code/run.sh": "219f66bbc02b5bc37151a81c1c750efe3f047010a53de190894a508b98343f30",
+    "code/score.py": "b674f5b5cbc2d0e1378f7b26f6a54c620439ddb6fc60086a863ff29bba2c1f0b",
+    "get_dataset.py": "4fb99563e24144614e4fb1ea9954f96439abcd5cab995e859ecef670d95a8924",
+    "measurements.json": "131611fc018fcb0964611cb59c6b337e90d1d7cb0925829ee8a94f70a2a7db61",
+    "meta.json": "6b43e4eaf1020ba3436a91c1c2c926af7af0b03fd79104a01bd45d944737e260",
+    "qualification.json": "a6f0090dcb9746af417d00b7679588538831fb398b8ca66aa7823ae4bb9fd42f",
+    "quality.json": "7a61f6fa1bd17f01804428b939ab7cf620cacbf066c95837f6d9166d7a78258e",
+    "SHA256SUMS": "b293eee065ecd49b07992355c224b7678e842210b036d042a31ce5124fa87d0d"
+  },
+  "baseline_command": "sh baseline/reproduce_baseline.sh ./task",
+  "get_dataset_command": "python3 get_dataset.py --dest ./task",
+  "source": {
+    "name": "Boil Water Advisories - Open Data Nova Scotia (Nova Scotia Department of Environment and Climate Change; Socrata dataset 7t68-9xmm; per-advisory register with issue and removal dates, 2006-)",
+    "landing_page": "https://data.novascotia.ca/datasets/7t68-9xmm",
+    "api": "https://data.novascotia.ca/api/views/7t68-9xmm/rows.csv?accessType=DOWNLOAD - anonymous full-CSV download, no key; SoQL resource API verified at discovery (counts, group-bys, censoring counts). Publisher updates quarterly; the register is revised in place and retains no historical vintages.",
+    "accessed": "2026-10-29",
+    "licence": "Open Government Licence - Nova Scotia v1.1 (linked from the dataset's own page; evidence recorded in candidates/ns-bwa-advisory-lift-duration/record.json license_evidence). Required attribution carries through: 'Contains information licensed under the Open Government Licence - Nova Scotia'. Derived research dataset - not a Government of Nova Scotia product.",
+    "licence_evidence": [
+      {
+        "note": "Open Government Licence - Nova Scotia v1.1 (ns-oglns) on the dataset's own page: free to copy, modify, publish, adapt, distribute for any lawful purpose, including commercially; worldwide, royalty-free, perpetual, non-exclusive. Required attribution statement: 'Contains information licensed under the Open Government Licence - Nova Scotia'; source terms must be preserved verbatim in LICENSE.md (attribution statement + link to the licence) and the dataset labelled as derived, never as the province's official product. OGL-NS exempts personal information, third-party rights and official symbols - none present in the register's columns beyond PID-style site addresses.",
+        "url": "https://novascotia.ca/opendata/licence.asp"
+      }
+    ]
+  },
+  "layout": {
+    "public/train.csv": "public/train.csv",
+    "public/eval.csv": "public/eval.csv",
+    "private/holdout.csv": "private/holdout.csv",
+    "meta.json": "meta.json",
+    "quality.json": "quality.json"
+  },
+  "files": {
+    "public/train.csv": {
+      "bytes": 133840,
+      "sha256": "beacb2292ca0a045610662bd02ba85d89fde18b652e43d4ff44276979a3babc5"
+    },
+    "public/eval.csv": {
+      "bytes": 50575,
+      "sha256": "ec1f733558558d4c30c2c50bf93408817d0936df4517c126a6d7965f02c5c5c5"
+    },
+    "private/holdout.csv": {
+      "bytes": 121058,
+      "sha256": "78b62dd3bd5923f67c014010eede2e6f7c778bd0b79d4265c9f8ef4299328a37"
+    },
+    "meta.json": {
+      "bytes": 1555,
+      "sha256": "6b43e4eaf1020ba3436a91c1c2c926af7af0b03fd79104a01bd45d944737e260"
+    },
+    "quality.json": {
+      "bytes": 21707,
+      "sha256": "7a61f6fa1bd17f01804428b939ab7cf620cacbf066c95837f6d9166d7a78258e"
+    }
+  },
+  "splits": {
+    "train": {
+      "rows": 1069,
+      "positives": 715,
+      "positive_rate": 0.668849
+    },
+    "eval": {
+      "rows": 372,
+      "positives": 225,
+      "positive_rate": 0.604839
+    },
+    "holdout": {
+      "rows": 884,
+      "positives": 514,
+      "positive_rate": 0.581448
+    }
+  },
+  "qualification": {
+    "gate_version": "1.5.0",
+    "ok": true,
+    "failed_checks": [],
+    "result": "PASSED",
+    "artifact_version": "e8ed2a53eaf0453c8ed52aea336edb994d888ad11e7b76f7898b663f017180a8",
+    "report": "qualification.json"
+  },
+  "baseline": {
+    "job": "ns-bwa-baseline-001",
+    "purpose": "one baseline through the runner's existing training and validation contract, on the accepted ns-bwa-advisory-lift-duration artifact",
+    "artifact": {
+      "name": "ns-bwa-advisory-lift-duration",
+      "target": "lift30",
+      "positive_label": 1,
+      "id_columns": [
+        "advisory_id"
+      ],
+      "rows": {
+        "train": 1069,
+        "eval": 372,
+        "holdout": 884
+      },
+      "positive_rate": {
+        "train": 0.668849,
+        "eval": 0.604839,
+        "holdout": 0.581448
+      },
+      "split_description": "temporal on advisory issue year: train 2008-2017, eval 2018-2020, holdout 2021-2024; population is advisories with a parseable issue date inside a window, issue date on or before the register vintage minus 30 days, and an observed non-negative duration at the pinned vintage; blank removal (still in effect) and negative-duration rows are excluded and counted per window"
+    },
+    "qualification_report": {
+      "bundled": "qualification.json",
+      "sha256": "a6f0090dcb9746af417d00b7679588538831fb398b8ca66aa7823ae4bb9fd42f",
+      "gate_version": "1.5.0",
+      "gate_ok": true,
+      "gate_failed_checks": [],
+      "accepted_before_scoring": true,
+      "accepted_artifact_version": "e8ed2a53eaf0453c",
+      "qualified_artifact_version": "e8ed2a53eaf0453c8ed52aea336edb994d888ad11e7b76f7898b663f017180a8"
+    },
+    "contract": {
+      "contract_ok": true,
+      "eval_auc_from_train_py": 0.5086,
+      "eval_auc_from_validate_py": 0.5086
+    },
+    "runner_files": {
+      "bundled_sha256": {
+        "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+        "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+        "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      },
+      "expected_sha256": {
+        "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+        "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+        "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      },
+      "unmodified": true
+    },
+    "dependencies": {
+      "python": "3.13.18",
+      "pandas": "2.3.3",
+      "numpy": "2.5.4",
+      "xgboost": "3.4.1",
+      "scikit-learn": "1.9.1"
+    },
+    "scope": "runner-contract baseline only; no agent loop, no holdout evaluation. Holdout stays sealed until the design is frozen."
+  },
+  "scope": "One baseline through the runner's training and validation contract. No agent or harness comparison was run and none is implied.",
+  "published": false,
+  "publication_note": "Prepared for human review. Nothing here has been published.",
+  "licenses": {
+    "policy_version": "2026-09-19",
+    "decided": "2026-10-29",
+    "code": {
+      "spdx": "MIT",
+      "file": "LICENSE-MIT.txt",
+      "copyright": "Copyright (c) 2026 E. Ari\u00f1o de la Rubia (earino)",
+      "third_party": [
+        {
+          "file": "baseline/train.py, baseline/validate.py, baseline/validate.sh",
+          "terms": "MIT - the harness benchmark's own runner files, shipped verbatim and unmodified (bundled sha256 equal the benchmark clone's hashes, recorded as unmodified: true in the baseline and diagnostic job results)",
+          "permission": "The benchmark checkout is read-only; permission to distribute verbatim copies of its runner files covers the distributed copies only"
+        }
+      ]
+    },
+    "data_compilation": {
+      "spdx": "CC0-1.0",
+      "file": "LICENSE-CC0-1.0.txt",
+      "scope": "Our contribution - the eligibility frame (parseable issue date, issue date at or before the vintage minus 30 days), the derived lift-within-30-days label, the as-of site/county history feature derivations, the reason-category normalisation, the disjoint issue-year partition, and the packaging - is dedicated to the public domain under CC0-1.0. The dedication covers only our contribution: the underlying boil water advisory register keeps its own designation and remains subject to the Open Government Licence - Nova Scotia v1.1, whose attribution condition carries through to every copy of the derived data. Nothing here relicenses the source or presents CC0 as the source's terms."
+    },
+    "source_data": {
+      "spdx": "OGL-NS-1.1",
+      "status": "Boil Water Advisories register (Nova Scotia Department of Environment and Climate Change, distributed by Open Data Nova Scotia, Socrata dataset 7t68-9xmm) under the Open Government Licence - Nova Scotia v1.1: free to copy, modify, publish, adapt and distribute for any lawful purpose, including commercially, with the required attribution statement. OGL-NS exempts personal information, third-party rights and official symbols; the register's columns carry none beyond PID-style site addresses. The derived dataset is labelled as such throughout and is not the province's official product.",
+      "evidence": [
+        "[Open Data Nova Scotia dataset page https://data.novascotia.ca/datasets/7t68-9xmm, read 2026-10-27] licence row: 'Nova Scotia Open Government Licence' -> http://novascotia.ca/opendata/licence.asp; page documents grain, 2006-current coverage, quarterly frequency and the blank-means-active censoring rule.",
+        "[Licence text http://novascotia.ca/opendata/licence.asp, fetched 2026-10-27 via the extraction backend] Open Government Licence - Nova Scotia v1.1: 'The Information Provider grants you a worldwide, royalty-free, perpetual, non-exclusive licence to use the Information, including for commercial purposes'; 'You are free to: Copy, modify, publish, translate, adapt, distribute or otherwise use the Information in any medium, mode or format for any lawful purpose'; required attribution: 'Contains information licensed under the Open Government Licence - Nova Scotia'.",
+        "[open.canada.ca federated CKAN record https://open.canada.ca/data/en/dataset/cc06d839-c26a-19f1-2428-4b5464670f8a, queried anonymously 2026-10-27] license_id ns-oglns, resources served from data.novascotia.ca."
+      ],
+      "attribution": "Contains information licensed under the Open Government Licence - Nova Scotia. Source: Boil Water Advisories, Open Data Nova Scotia (Nova Scotia Department of Environment and Climate Change), dataset 7t68-9xmm, register content current as of 2026-06-16.",
+      "citation": "Nova Scotia Department of Environment and Climate Change. Boil Water Advisories (2006-). Open Data Nova Scotia, dataset 7t68-9xmm, https://data.novascotia.ca/datasets/7t68-9xmm . Licensed under the Open Government Licence - Nova Scotia v1.1. Derived dataset: Nova Scotia boil water advisory lift-within-30-days prediction task (not a Government of Nova Scotia product).",
+      "derived_labelling": "Labelled as a derived research dataset throughout; it is not the Government of Nova Scotia's official product and the province has not reviewed or endorsed it. The publisher's own designation, required attribution statement and suggested citation are preserved, and changes from the source are indicated (row selection, derived label, derived as-of features, partition)."
+    },
+    "rules": [
+      "Code and documentation: MIT by default.",
+      "Our rights in a derived compilation: CC0-1.0 by default.",
+      "The source's own terms are preserved and never relicensed; the compilation dedication covers only our contribution.",
+      "Each dataset must use terms compatible with its sources. CC0 is NOT a blanket override of upstream terms: attribution, share-alike and non-commercial requirements from a source are carried through unchanged.",
+      "A source whose licence terms cannot be read is not published at all.",
+      "The chosen terms are declared per dataset in candidates/<id>/license.json and recorded in the release manifest, so the manifest cannot drift from the decision."
+    ]
+  }
+}
