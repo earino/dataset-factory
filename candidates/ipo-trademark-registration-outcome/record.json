@@ -324,19 +324,21 @@
   "verdict": "differentiated",
   "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
  },
- "next_action": "Construction IN FLIGHT: worker job ipo-tm-001 (server 173462544, launched 2026-10-30T03:17Z) runs the frozen handoff on the worker - construct from the sha256-pinned 2018-02-13 snapshot (right-anchored pipe recovery, string-key dedup 16,909 rows, eligibility 2010-2016, registered-by-snapshot label, cohort splits with the record counts asserted in-build, three in-file fixtures, publisher cross-check +-1%), then the current qualification gate on the full artifact, exact-byte --accept, then the eval-row references (nice_class_rate the required comparator; persistence recorded not-applicable). Next session: reconcile the finished job (collect -> verify gate passed and --accept ACCEPTED -> read references), then the runner-contract baseline job for the full-model eval AUC and the model-vs-nice_class_rate paired comparison; packaging only after that comparison is recorded. If the job failed: diagnose from its own logs, fix within candidate scope, relaunch under a fresh attempt id (ipo-tm-002).",
+ "next_action": "CONSTRUCTION FAILED AND DIAGNOSED (ipo-tm-001; watcher follow-up 2026-10-30 03:54Z): build.py check_fixtures (line 422) calls iter_records(zip_path, Counter()), but iter_records requires a hazards dict with a field_counts mapping, so line 253 hazards[\"field_counts\"][len(fields)] += 1 raised TypeError at 7.3 s, before any parse. The pinned snapshot fetch verified OK first (63,238,846 B, sha256 3b6063bed36a78e8a04f10a5383f2881f4072a1be13e706a81ab097fb56ee571), so worker, bundle and source are sound; the defect is construction code and belongs to advancement. Advancement: pass the same hazards shape build_rows uses into check_fixtures, re-verify the fixtures stage on bounded synthetic rows on the coordinator (no bulk download), assemble a fresh bundle and relaunch as ipo-tm-002 (fresh attempt id linked to parent ipo-tm-001) in the same construct -> gate -> exact-byte --accept -> references order. No figure exists; nothing was qualified, accepted or scored.",
  "jobs": [
-  {
-   "id": "ipo-tm-001",
-   "launched_utc": "2026-10-30T03:17:20Z",
-   "status": "running",
-   "server_id": 173462544,
-   "server_type": "cpx32",
-   "reservation_eur": "0.24",
-   "bundle": "candidates/ipo-trademark-registration-outcome/source/bundle.json (assembled .factory/jobs/ipo-tm-001, source_sha256 935aaa3756e54de3b674078ec08e2b974ab49a51d6e700adde04ef8b3a9a5a31)",
-   "what": "full construction -> gate -> exact-byte accept -> eval-row references on the worker; expected outputs qualification-ipo-trademark-registration-outcome.json (gate 1.5, must pass), acceptance txt, references json, summary json, staging upload of the five artifact files",
-   "note": "build.py was syntax-checked and its parsing/classification logic mirrors the two full-file probes, but it has never executed end to end; the worker run is its first execution and a failed run is diagnosable from the collected logs (fresh attempt id required for any relaunch)"
-  }
+   {
+     "id": "ipo-tm-001",
+     "launched_utc": "2026-10-30T03:17:20Z",
+     "status": "failed",
+     "outcome": "exit 1 after 7.3 s, construction defect: check_fixtures passes Counter() as iter_records' hazards argument (build.py line 422), so line 253 hazards[\"field_counts\"][len(fields)] += 1 subscripted the int a Counter returns for a missing key (TypeError). Pinned source fetch verified OK before the crash: 63,238,846 B, sha256 3b6063bed36a78e8a04f10a5383f2881f4072a1be13e706a81ab097fb56ee571. No artifact, gate run, acceptance or score exists.",
+     "evidence": ".factory/ipo-tm-001/reports/container.log (866 B, sha256 01abc7e380b3e31f7ca804af9eeade00ad7bdc5474dec7a8b5aa853bd1fbf871) and manifest.json (33e7e96503a8bb37e862dd60d5cbfe24f595d1d9a516b608be769f16fc9d12d8), fetched from private staging release 428619019 and re-hashed to the job record's asset digests; source.tar input bundle remains in that release at 935aaa3756e54de3b674078ec08e2b974ab49a51d6e700adde04ef8b3a9a5a31. Worker destroyed 2026-10-30T03:54:28Z, Hetzner read-back 0 servers / 0 primary IPs.",
+     "server_id": 173462544,
+     "server_type": "cpx32",
+     "reservation_eur": "0.24",
+     "bundle": "candidates/ipo-trademark-registration-outcome/source/bundle.json (assembled .factory/jobs/ipo-tm-001, source_sha256 935aaa3756e54de3b674078ec08e2b974ab49a51d6e700adde04ef8b3a9a5a31)",
+     "what": "full construction -> gate -> exact-byte accept -> eval-row references on the worker; expected outputs qualification-ipo-trademark-registration-outcome.json (gate 1.5, must pass), acceptance txt, references json, summary json, staging upload of the five artifact files",
+     "note": "build.py was syntax-checked and its parsing/classification logic mirrors the two full-file probes, but it has never executed end to end; the worker run was its first execution and the failure is diagnosed from the collected log (fresh attempt id ipo-tm-002 required for any relaunch)"
+   }
  ],
- "updated_at": "2026-10-30T03:25:00+00:00"
+ "updated_at": "2026-10-30T03:54:28+00:00"
 }

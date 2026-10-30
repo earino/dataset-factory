@@ -1,3 +1,36 @@
+## 2026-10-30 03:54Z - watcher follow-up: ipo-tm-001 failed (construction defect in build.py, diagnosed; pinned source verified; worker destroyed 0/0); fix + fresh attempt ipo-tm-002 handed to advancement
+
+Holding the follow-up mutex, this pass collected the bounded diagnostics, diagnosed the
+failure, cleaned up the worker and recorded the handoff. Nothing was qualified, accepted,
+scored or published; no release byte, tag, digest or destination changed; the two operator
+waits (ns-bwa flip, unhcr audit-prompt relay) are unchanged.
+
+- ipo-tm-001 (cpx32 server 173462544, launched 03:17:20Z, EUR 0.24 reservation) failed
+  exit 1 after 7.3 s. Infrastructure is sound: the pinned IPO 2018-02-13 snapshot fetched
+  63,238,846 B and hash-verified (sha256 3b6063be..., "pinned OK") before the crash. The
+  failure is a CONSTRUCTION defect in build.py: check_fixtures (line 422) calls
+  iter_records(zip_path, Counter()), but iter_records requires a hazards dict with a
+  field_counts mapping, so line 253 hazards["field_counts"][len(fields)] += 1 subscripted
+  the int a Counter returns for a missing key (TypeError). Per the watcher brief,
+  construction changes belong to advancement; this pass made no source edit and launched
+  no replacement.
+- Evidence preserved and digest-verified: container.log (866 B, 01abc7e3...) and the
+  release manifest.json (3,935 B, 33e7e965...) fetched from private staging release
+  428619019 into .factory/ipo-tm-001/reports/, both re-hashed to the job record's asset
+  digests; the source.tar input bundle (935aaa37...) remains in the release. No accepted
+  artifact existed (the failure precedes qualification), so teardown carried no
+  preservation risk and no unverified backup is claimed.
+- Cleanup: `worker destroy ipo-tm-001` at 03:54:28Z (job record status deleted,
+  deleted_at recorded); provider read-back immediately after: 0 servers / 0 primary IPs
+  in the project. Deletion confirmed by the provider, not requested-only.
+- Handoff to advancement (record.next_action): pass the hazards shape build_rows uses
+  into check_fixtures, re-verify the fixtures stage on bounded synthetic rows on the
+  coordinator (no bulk download), assemble a fresh bundle and relaunch as ipo-tm-002
+  (fresh attempt id linked to ipo-tm-001), same construct -> gate -> exact-byte --accept
+  -> references order. No figure exists to quote. Unrelated untracked working-tree edits
+  (candidates/ec-state-aid-investigation-opening/probe/) were preserved untouched and
+  are not part of this commit.
+
 ## 2026-10-30 03:2xZ - ipo-trademark-registration-outcome construction launched on a worker (ipo-tm-001, cpx32 server 173462544); release track remains operator-gated (ns-bwa flip, unhcr re-audit relay)
 
 Release work outranked construction, but both release-track candidates are in recorded human
