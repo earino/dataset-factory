@@ -1,3 +1,59 @@
+## 2026-10-30 18:30Z - ipo-tm-diag-002 VALID: the permitted recovery relaunch returned resampler_alignment_ok true with paired intervals excluding zero on all three model-vs-reference comparisons; diag attempt chain closed; worker destroyed 0/0; packaging is now the recorded next action
+
+Release track first, unchanged: unhcr-refugee-data-finder keeps `operator_decision_pending: true`
+(the operator relays the regenerated pre-flip audit prompt; no verdict or waiver recorded) and
+ns-bwa-advisory-lift-duration keeps `awaiting_operator: true` (the flip). No recorded publication
+approval exists, so no release byte, tag, digest or destination changed. The session brief named
+ipo-trademark-registration-outcome (package) as the actionable release-rank item; its recorded
+next action was the single permitted recovery relaunch, which this session executed end to end.
+
+- ipo-tm-diag-002 (cx23, server 173582959, EUR 0.06 reservation, launched 18:06:59Z, exit 0
+  after 93.6 s, staging release 429342825): the fixed diag.py (sha256 f30347a64221, 26,074 B,
+  counts-based bootstrap weights so each drawn row carries its own label + the
+  resampler_alignment_ok invariant required for exit 0) ran on the same accepted artifact
+  fetched from private staging 428923481 (all five sha256 verified on arrival, 59,738,122 B,
+  0 failures). VERIFIED from the fetched reports, each check read individually and not from the
+  exit code: exact-byte --accept printed ACCEPTED for artifact 2c1dade2913d0a8b BEFORE any
+  metric; materialize copied public train+eval only (holdout never enters a workdir);
+  validate.sh ran the bundled runner files unmodified (digests match the read-only clone) and
+  printed CONTRACT OK with both AUC prints 0.6224; the pandas second implementation replicated
+  all 10 recorded reference figures (all_match true); resampler_alignment_ok TRUE with every
+  bootstrap mean centering on its observed gap.
+- THE COMPARISON (97,274 identical eval rows, holdout sealed): model eval AUC 0.6224 (sklearn
+  0.622376 / midrank 0.6223756 / train.py print / validate recompute - four ways), Brier
+  0.1318, vs mark_type_rate 0.5650 (dominant simple reference) gap +0.0574 CI95 [0.0533,
+  0.0605]; vs nice_class_rate 0.5421 (required comparator) +0.0803 [0.0748, 0.0862]; vs
+  calendar_month_rate 0.4972 (calendar control) +0.1252 [0.1174, 0.1315]. All three paired
+  row-level intervals EXCLUDE zero. Per-filing-year (2013 46,293 rows, 2014 50,981 - sums to
+  eval exactly): model advantage holds both years (0.6233/0.6216 vs mark_type 0.5639/0.5660),
+  prevalence flat 0.8409 -> 0.8390; only two eval years, recorded as limited by-year coverage.
+  Persistence recorded not-applicable (every scored row is a new application); majority-class
+  accuracy 0.8399. Limitations recorded beside the figures: row-level intervals only (no
+  dependence cluster measurable from the shipped columns - tm_number unique, no owner/series
+  identity), one model configuration, no re-tuning. Interpretation: demonstrated headroom over
+  every measured simple reference under this protocol - an observed result with the stated
+  scope, not a bound on other models.
+- Determinism cross-check (measured): per_row_scores.csv is byte-identical to diag-001's
+  (sha256 380756fcacfbe5d4..., 5,641,986 B; assets 692357266 / 692973148) - the fix touches
+  only the resampler, not the model fit or the rate tables; accept.log, materialize.log,
+  pip-install.log and dependency-versions.txt are also byte-identical; validate.log differs
+  only in wall-clock timings with identical substantive lines.
+- Evidence: 8 report files fetched from release 429342825 by numeric asset id and re-hashed
+  against the collected ledger (all OK), preserved at .factory/ipo-tm-diag-002/reports/;
+  per_row_scores.csv stays in the staging release as its durable copy (not fetched to the
+  coordinator). Record: measurements.diag_2026_10_30_ipo_tm_diag_002 added (diag-001's block
+  stays as the historical record of the invalid intervals), jobs entry 7/7, next_action now
+  packaging per dataset-release, updated_at 2026-10-30T18:33:55Z.
+- Cleanup: worker destroyed 18:26:01Z after verified collection; Hetzner provider read-back
+  0 servers / 0 primary IPs. October conservative reservations now EUR 11.74 of 20.
+- Checks: check-candidate.py ipo-trademark-registration-outcome OK (qualified); --all rc=0;
+  full local suite 683 tests OK in 26 s. Nothing is public; no packaging byte exists yet.
+
+Next action: packaging per dataset-release (license.json declaration, release/ assembly from the
+accepted bytes, MANIFEST + SHA256SUMS + VERIFICATION.md carrying the diag-002 comparison beside
+every figure, check-package + check-suitability, then private staging only). The two operator
+waits (ns-bwa flip, unhcr audit-prompt relay) are unchanged.
+
 ## 2026-10-30 14:39Z - watcher follow-up: ipo-tm-baseline-001 verified+recorded; ipo-tm-diag-001 exit 0 but its paired-bootstrap block is INVALID (resampler defect diagnosed, fix committed); workers provider-confirmed 0/0; one permitted recovery (diag-002) handed to advancement
 
 Two finished-worker events for candidate ipo-trademark-registration-outcome. The 14:0x-14:3xZ
