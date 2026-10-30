@@ -1,3 +1,54 @@
+## 2026-10-30 11:1xZ - ipo-tm-003/004 close-out: construction VALIDATED, gate 1.5.0 PASSED + exact-byte ACCEPTED, references recorded (nice_class_rate 0.5421, mark_type_rate 0.5650 dominant); candidate QUALIFIED; workers destroyed, provider 0/0
+
+Watcher event for both jobs. The 003 failure was already recorded at 22db582
+(CI green, run 41044204945): all construction assertions passed for the first
+time, five artifact files written (staging 428902203), and the only failure was
+the one-line latent int/str key defect in the summary block, fixed as build.py
+cross_check_measured() with a red/green regression test. ipo-tm-004 (rebuild 4,
+linked to 003, server 173520161) then ran the full pipeline green: exit 0
+after 83 s, construct (319,436 scored rows) -> qualification gate 1.5.0 on the
+full artifact (ok, 45 results, failed_checks []) -> exact-byte --accept
+("ACCEPTED: /output/extract matches the qualified artifact 2c1dade2913d0a8b")
+BEFORE any metric -> simple references on 97,274 eval rows only (holdout
+sealed). Staging release 428923481; reports fetched by numeric asset id, every
+sha256 verified against the release manifest; determinism proven - all five
+artifact files byte-identical to 003's staging digests (the fix touches only
+the post-write summary block). Evidence: .factory/ipo-tm-004/reports/.
+
+References (eval-only, post-acceptance, holdout sealed): nice_class_rate 0.5421
+(required comparator), mark_type_rate 0.5650 dominant simple reference (paired
+diff -0.0231, CI95 [-0.0293, -0.0173] excluding zero - the cheapest comparator
+a model must beat), owner_country_rate 0.5191, calendar_month_rate 0.4972,
+category_rate 0.5031, series_flag_rate 0.5213, majority accuracy 0.8399,
+persistence recorded not-applicable (every scored row is a new application),
+global_rate recorded degenerate, per-year AUC/Brier recorded, prevalence shift
+train 0.8661 vs eval 0.8399 recorded, 150-resample paired bootstrap recorded.
+No full-model figure yet - that is the harness baseline job's, not this run's.
+
+Record updates: candidate status ready -> qualified; jobs entry for 004;
+qualification block (gate 1.5.0, artifact 2c1dade2913d0a8b...); artifacts block
+(staging 428923481, tag job-ipo-tm-004); references measured block; the stale
+machine-readable splits/contract/novelty row counts (old probe table:
+eval 97,258 / holdout 115,130) aligned to the corrected, in-build-asserted
+numbers (106,990/97,274/115,172; per-year 2013 46,362 and 2016 61,681 equal the
+IPO workbook exactly); construction_script added (check-candidate requires it
+at qualified). check-candidate --all OK.
+
+Cleanup: worker 173516828 (003) destroyed 10:43:43Z, worker 173520161 (004)
+destroyed 10:59:01Z per the ledger; Hetzner provider read-back 0 servers /
+0 primary IPs at 2026-10-30T11:10:30Z. The ~60 MB of bulk CSV parts the
+earlier tick fetched into .factory/ipo-tm-004/reports/ were digest-verified
+against the release manifest and deleted from the coordinator; the durable
+copy is staging release 428923481 (assets 691814613/691814737/691814848).
+
+Next action (advancement's): the harness runner baseline job on the accepted
+artifact (eval rows only, holdout sealed) to measure the full model against
+mark_type_rate 0.5650 on identical rows; then interpret the comparison; only
+then packaging per dataset-release. Nothing is public; no release steps were
+taken. The two operator waits (ns-bwa flip, unhcr audit-prompt relay) are
+unchanged.
+
+
 ## 2026-10-30 08:30Z - discovery (Canada focus): hc-canada-vigilance reopen path measured and CLOSED; statcan park re-checked (one endpoint correction); new lead iaac-registry-assessment-termination opened (investigating)
 
 Canada regional tick, discovery only. No construction, qualification, packaging,
