@@ -1,4 +1,60 @@
-## 2026-10-30 11:1xZ - ipo-tm-003/004 close-out: construction VALIDATED, gate 1.5.0 PASSED + exact-byte ACCEPTED, references recorded (nice_class_rate 0.5421, mark_type_rate 0.5650 dominant); candidate QUALIFIED; workers destroyed, provider 0/0
+## 2026-10-30 12:26Z - discovery (Latin America tick): new lead ibama-auto-infracao-recidivism opened (investigating, novelty differentiated); tcu-obra-paralisacao opened+parked (TCU blocks this egress; structure unverified); DATASUS assessed not opened (dengue benchmark mirror confirmed)
+
+Discovery only. No construction, qualification, packaging, publication or scoring ran; no
+worker launched, no release byte/tag/digest/destination changed; the two operator waits
+(ns-bwa flip, unhcr audit-prompt relay) and all advancement-owned work are unchanged. No
+remediation hold is active (issue #17 closed 2026-10-24, verified this session). Region:
+Latin America (operator tick). Existing LatAm leads were not re-opened: camara-bill-advancement
+and inpe-foco-municipal-onset are on verdict `hold` with advancement-owned next actions;
+ideam-rio-nivel-exceedance needs a bulk Wayback IHD harvest (worker, advancement).
+
+- ibama-auto-infracao-recidivism (BR, investigating, NEW): IBAMA publishes the full per-auto
+  infraction table (1980+, daily export, 123,283,033-byte CSV zip measured by HEAD, anonymous
+  Azure blob; aux tables plain Range-able CSVs). Licence class A reasoning recorded: Decreto
+  8.777/2016 art. 2 III + art. 3/4 (as amended 9.903/2019) - open licence, attribution of
+  source only; dataset marked "Outra (Aberta)". NEGATIVE probe recorded: the per-auto
+  julgamento outcome is NOT published (the "Julgamentos de Auto de Infração" dataset is a
+  per-state volume summary; process content is per-case SEI access), so the adjudication task
+  is dead and the task is infractor-level re-autuação within 12 months of lavratura (label
+  needs only CPF_CNPJ_INFRACAO + lavratura dates; keys to be hashed for LGPD posture). Full
+  publisher data dictionary captured; IN Ibama 19/2023 supplies the documented post-instant
+  process timeline; novelty recorded `differentiated` with mechanical check output (prior art
+  = ANPEC 2018 + JQCR 39(4) 2023 causal survival analyses of IBAMA flora 2000-2010, no
+  ML-ready benchmark). Next: ONE streaming worker-side aggregate probe (bulk stays off the
+  coordinator) for per-year counts, entity-key coverage, base rates and clustered positives;
+  then reconcile contracts and re-verdict. Retained probe script:
+  candidates/ibama-auto-infracao-recidivism/probe_ibama_sample.py.
+- tcu-obra-paralisacao (BR, parked, NEW): public-works stall prediction from the TCU Painel
+  de Obras Paralisadas. PARKED on three recorded blockers: (1) portal.tcu.gov.br serves its
+  security block page to this egress even in the supported browser ("Acesso Bloqueado"), and
+  no machine-readable distribution was locatable (dados.gov.br API 401 unauthenticated);
+  (2) only a handful of levantamento vintages documented (2018/2020/2022-Apr 2025) with
+  changing base composition (27,126 -> 21,007 -> 22,621 obras), so cross-vintage work
+  identity and transition windows are unproven; (3) target-level prior art exists (UnB 2023
+  dissertation, Proinfância/FNDE stall-risk ML, 94.79% acc, no public benchmark). Licence
+  unread, unclassified - explicitly NOT a class-C closure. Reopen trigger recorded.
+- DATASUS assessed, not opened (operator named it): the flagship DATASUS-adjacent task
+  (municipal dengue forecasting) is already shipped in ML-ready, scored form by others - the
+  Infodengue-Mosqlimate Dengue Challenge (2024/2025/2026 sprints) publishes full Brazil
+  dengue datasets (Zenodo 13328231 etc.) with validation splits, forecast targets and scored
+  results repos; a SINAN-based dengue task would be a mirror. Other DATASUS angles fall to
+  standing rules: clinical outcome microdata is a saturated family with LGPD constraints;
+  CNES establishment-exit duplicates the parked entity-exit family (denue precedent needs an
+  explicit operator decision for a second same-family task); SIH/SIM aggregate exceedance
+  duplicates the crowded exceedance family. Assessment recorded here, not as a candidate.
+- Region coverage this tick: Brazil probed in depth (IBAMA open-data platform; TCU;
+  DATASUS assessed). Mexico/Chile/Colombia/Argentina: no new source opened this session;
+  existing coverage unchanged (MX conagua ready + denue parked; CO ideam investigating;
+  CL two dropped on format/licence; AR ecobici dropped on mirror). Known regional
+  licence-posture risk repeated: Chilean agencies showed non-commercial licences in prior
+  probes (sag-residuos class C) - any Chile lead must triage licence first.
+
+Checks: check-candidate --all OK (111 records, exit 0); check-novelty recorded for the new
+lead; full local suite 679 tests OK in 27 s (python3 -m unittest discover -s tests, run
+2026-10-30 12:28Z). Next action: ibama worker-side aggregate probe (discovery-owned) or
+advancement's queue, whichever the operator prioritizes.
+
+
 
 Watcher event for both jobs. The 003 failure was already recorded at 22db582
 (CI green, run 41044204945): all construction assertions passed for the first
