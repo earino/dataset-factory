@@ -1,3 +1,38 @@
+## 2026-10-30 07:17Z - watcher re-fire for ipo-tm-002: outcome already recorded at ed6151a; evidence re-verified, provider cleanup re-confirmed 0/0, handled marker written
+
+The worker watcher re-fired ipo-tm-002 (failed exit 1, 19.1 s, staging release
+428706741) because its `.factory/ipo-tm-002/handled` marker was missing; the
+07:0xZ follow-up pass had already collected, diagnosed, recorded and cleaned it
+up at ed6151a (pushed; exact-commit CI run 41018471189 completed/success).
+Holding the research mutex, this pass verified the durable state from existing
+records read-only and closed only the bookkeeping gap. Nothing was qualified,
+accepted, scored or published; no release byte, tag, digest or destination
+changed; the two operator waits (ns-bwa flip, unhcr audit-prompt relay) are
+unchanged.
+
+- Evidence re-verified: `.factory/ipo-tm-002/reports/container.log` (2,045 B,
+  sha256 6ae61127...) and `manifest.json` (4,261 B, bc1dcf13...) re-hash to the
+  job ledger's staging asset digests (asset ids 691143016 / 691143053). The
+  container log confirms the recorded construction defect unchanged: pinned
+  fetch OK (63,238,846 B, 3b6063be...), all three in-file fixtures OK,
+  1,189,004 rows / dup 16,909 / pipe-recovered 94, then assert_expectations
+  refused the artifact (eval 97,274 vs 97,258; holdout 115,172 vs 115,130;
+  blank/bad-filed 34 vs 52; cohorts 2010-2012 exact). No gate run, acceptance
+  or score exists for this artifact; no figure is quoted beyond these counts.
+- Cleanup re-confirmed provider-side this pass (read-only): 0 servers / 0
+  primary IPs in the account, matching the 07:08:13Z destroy-time read-back.
+  Deletion confirmed by the provider, not requested-only. No accepted artifact
+  existed (the failure precedes qualification), so teardown carried no
+  preservation risk; diagnostics remain in staging release 428706741 and
+  locally under `.factory/ipo-tm-002/reports/`.
+- Ownership: the research mutex is this invocation's; the only working-tree
+  edit is the unrelated untracked `candidates/ec-state-aid-investigation-opening/probe/`,
+  preserved untouched and not part of this commit.
+- Handoff unchanged: advancement owns the bounded probe-vs-build
+  reconciliation (record.next_action: corrected probe pass over the pinned
+  snapshot before any rebuild); a relaunch is ipo-tm-003, rebuild #3. Release
+  waits remain the operator's.
+
 ## 2026-10-30 07:1xZ - ipo-tm-002 failed at a NEW construction defect (probe-vs-build EXPECTED divergence diagnosed, evidence preserved); ipo-tm-001 hazards fix proven; worker destroyed, provider read-back 0/0
 
 Release track first, unchanged: unhcr-refugee-data-finder keeps
