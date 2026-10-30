@@ -1,3 +1,49 @@
+## 2026-10-30 14:39Z - watcher follow-up: ipo-tm-baseline-001 verified+recorded; ipo-tm-diag-001 exit 0 but its paired-bootstrap block is INVALID (resampler defect diagnosed, fix committed); workers provider-confirmed 0/0; one permitted recovery (diag-002) handed to advancement
+
+Two finished-worker events for candidate ipo-trademark-registration-outcome. The 14:0x-14:3xZ
+session had already collected both jobs, destroyed both workers, recorded the baseline into the
+candidate record, then diagnosed the diag defect and fixed the script - but ended before writing
+STATE.md, committing or relaunching. This session (holds the research mutex for the whole
+invocation) verified, recorded and committed that work:
+
+- ipo-tm-baseline-001 (cx23, server 173546680, EUR 0.06 reservation, exit 0 after 43.4 s,
+  staging 429107092): fetched artifact sha256s verified on arrival; exact-byte --accept
+  ACCEPTED 2c1dade2913d0a8b before the first metric; the benchmark's own train.py and
+  validate.sh unmodified (digests match the read-only clone), CONTRACT OK, both eval AUCs
+  0.6224 on the same 97,274 eval rows as the construction references. The record block the
+  prior session wrote was re-read against the collected evidence and matches. VALID, recorded.
+- ipo-tm-diag-001 (cx23, server 173548479, EUR 0.06 reservation, exit 0 after 78.3 s,
+  staging 429120865): --accept ACCEPTED again; validate.sh CONTRACT OK. VALID: the pandas
+  second implementation replicated all 10 recorded reference figures (all_match true); model
+  eval AUC 0.6224 confirmed four ways (sklearn 0.622376, midrank 0.6223756, train.py print,
+  validate.py recompute); per-filing-year AUC/Brier recorded. INVALID: the three paired
+  row-level bootstrap intervals. The pre-fix resampler built weights with
+  np.bincount(idx, weights=y): weights pair with draw positions, so the label of position k
+  was added to drawn row idx[k], scrambling label-row alignment; every AUC difference
+  collapsed to noise (means ~1e-4 against observed gaps ~5.7e-2, so the printed intervals
+  are noise and must not be quoted). The pre-fix script had no alignment invariant, so its
+  exit 0 certified nothing about the intervals - read each required check's result, not the
+  exit code.
+- Fix verified and committed: diag/diag.py rebuilt (sha256 f30347a64221, 26,074 B) with
+  counts-based weights (each drawn row carries its own label) and a resampler_alignment_ok
+  invariant now required for exit 0 (|bootstrap mean - observed gap| < 0.05 per comparison);
+  tests/test_ipo_tm_diag.py mirrors the fixed and defective resamplers in pure Python and
+  fails on the defective construction - 4/4 pass on the coordinator; the numpy path itself
+  stays guarded on the worker (the invariant plus the 10/10 replication gate).
+- Observed point gaps (valid; uncertainty pending): model - mark_type_rate +0.0574,
+  - nice_class_rate +0.0803, - calendar_month_rate +0.1252. No headroom claim until
+  ipo-tm-diag-002 returns valid intervals.
+- Cleanup: both workers were destroyed by the prior session (14:17:51Z and 14:27:08Z); this
+  session re-confirmed provider-side at 14:39Z: 0 servers, 0 primary IPs in the Hetzner
+  project. Staging releases 429107092 / 429120865 retain the collected reports; the diag
+  per-row scores (per_row_scores.csv, asset 692357266) are preserved in 429120865.
+- Next action (advancement): the single permitted recovery for this attempt chain -
+  relaunch ipo-tm-diag-002 with the fixed diag.py (fresh attempt id linked to
+  ipo-tm-diag-001, same staging 428923481 fetch, run.sh/runner files unchanged), then
+  interpret the model-vs-reference comparison. Not launched here: the follow-up runner's
+  wall clock could not fit a blocking relaunch plus close-out. No release step, tag,
+  manifest or published byte was touched; the holdout stays sealed.
+
 ## 2026-10-30 12:26Z - discovery (Latin America tick): new lead ibama-auto-infracao-recidivism opened (investigating, novelty differentiated); tcu-obra-paralisacao opened+parked (TCU blocks this egress; structure unverified); DATASUS assessed not opened (dengue benchmark mirror confirmed)
 
 Discovery only. No construction, qualification, packaging, publication or scoring ran; no

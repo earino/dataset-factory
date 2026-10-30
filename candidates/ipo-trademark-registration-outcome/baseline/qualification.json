@@ -1,0 +1,865 @@
+{
+ "ok": true,
+ "dataset": "/output/extract",
+ "gate_version": "1.5.0",
+ "artifact": {
+  "train": {
+   "file": "public/train.csv",
+   "sha256": "f4bb622df6e985ea3bd85d8e962a90022e029588bf56ae3a4d89721877a25a51",
+   "bytes": 20048573
+  },
+  "eval": {
+   "file": "public/eval.csv",
+   "sha256": "54e06a89d7f565ba690f5abe0fd8cdce5a91c55aaa50738690f8efeee474c520",
+   "bytes": 18142219
+  },
+  "holdout": {
+   "file": "private/holdout.csv",
+   "sha256": "26cfc5a8a2131bac4d700ee4733a79eee6eae327dc7c6aa5ed93cf1a0589fa41",
+   "bytes": 21503483
+  },
+  "meta.json": {
+   "file": "meta.json",
+   "sha256": "caf2a4d916611470ca1f1535113acf179efa2ef71d497a88f4e79f2e5bcb1011",
+   "bytes": 1993
+  },
+  "quality.json": {
+   "file": "quality.json",
+   "sha256": "efa5b4d3d9b68f07ba8cdffee484a9c6e51b80323851158786a01fdaef7d1bd6",
+   "bytes": 41854
+  },
+  "artifact_version": {
+   "digest": "2c1dade2913d0a8b643c89e628095a18e03223a6167beb9363316389486a544d",
+   "components": [
+    "eval",
+    "holdout",
+    "meta.json",
+    "quality.json",
+    "train"
+   ]
+  }
+ },
+ "results": [
+  {
+   "check": "descriptor",
+   "ok": true,
+   "detail": "quality.json loaded for 'ipo-trademark-registration-outcome'",
+   "evidence": {}
+  },
+  {
+   "check": "contract.declared",
+   "ok": true,
+   "detail": "evaluation_contract required: intended use, access, vintage and evidence",
+   "evidence": {}
+  },
+  {
+   "check": "contract.scope",
+   "ok": true,
+   "detail": "use='retrospective_research'; access='isolated_rows'; eval is development, holdout is final",
+   "evidence": {}
+  },
+  {
+   "check": "contract.every_input_has_availability_evidence",
+   "ok": true,
+   "detail": "Every solver-visible non-target column needs availability evidence; missing: []",
+   "evidence": {}
+  },
+  {
+   "check": "contract.vintage_and_selection",
+   "ok": true,
+   "detail": "Vintage, selection and limitations must be explicit; declarations are not measurements",
+   "evidence": {}
+  },
+  {
+   "check": "contract.cross_row_review",
+   "ok": true,
+   "detail": "Document applicable cross-row probes and every solver-visible auxiliary file",
+   "evidence": {}
+  },
+  {
+   "check": "contract.cross_row_probe_0",
+   "ok": true,
+   "detail": "Outcome-bearing later-row exposure requires restricted evaluation access; mismatches are reported",
+   "evidence": {
+    "train": {
+     "rows": 106990,
+     "covered": 0,
+     "mismatches": 0,
+     "ambiguous_or_conflicting": 0
+    },
+    "eval": {
+     "rows": 97274,
+     "covered": 0,
+     "mismatches": 0,
+     "ambiguous_or_conflicting": 0
+    },
+    "holdout": {
+     "rows": 115172,
+     "covered": 0,
+     "mismatches": 0,
+     "ambiguous_or_conflicting": 0
+    }
+   }
+  },
+  {
+   "check": "contract.label_availability",
+   "ok": true,
+   "detail": "No full-row availability ledger: training-label timing UNVERIFIED; retrospective use only",
+   "evidence": {}
+  },
+  {
+   "check": "leakage.declared_columns",
+   "ok": true,
+   "detail": "every shipped column is declared",
+   "evidence": {
+    "undeclared": []
+   }
+  },
+  {
+   "check": "leakage.answer_source_absent",
+   "ok": true,
+   "detail": "no answer source or post-hoc column is shipped",
+   "evidence": {
+    "shipped_forbidden": []
+   }
+  },
+  {
+   "check": "leakage.every_column_could_be_scored",
+   "ok": true,
+   "detail": "every column was scored for leakage",
+   "evidence": {
+    "unscorable": []
+   }
+  },
+  {
+   "check": "leakage.no_single_column_determines_the_target",
+   "ok": true,
+   "detail": "no shipped column separates the classes on its own",
+   "evidence": {
+    "offenders": [],
+    "high_cardinality": [
+     "mark_text@eval",
+     "mark_text@holdout",
+     "mark_text@train",
+     "tm_number@eval",
+     "tm_number@holdout",
+     "tm_number@train"
+    ],
+    "missing_splits": []
+   }
+  },
+  {
+   "check": "leakage.high_cardinality_declared",
+   "ok": true,
+   "detail": "high-cardinality columns are declared as identifiers or free fields",
+   "evidence": {
+    "undeclared": [],
+    "declared": [
+     "mark_text",
+     "owner_postcode_area",
+     "tm_number"
+    ]
+   }
+  },
+  {
+   "check": "timing.prediction_time_declared",
+   "ok": true,
+   "detail": "prediction instant is declared",
+   "evidence": {}
+  },
+  {
+   "check": "timing.no_post_hoc_feature",
+   "ok": true,
+   "detail": "no feature is documented as post-hoc",
+   "evidence": {
+    "overlap": []
+   }
+  },
+  {
+   "check": "timing.label_source_is_not_a_feature",
+   "ok": true,
+   "detail": "the label source is not a feature",
+   "evidence": {
+    "source_features": []
+   }
+  },
+  {
+   "check": "timing.every_feature_documented",
+   "ok": true,
+   "detail": "features documented as available 'prediction_time'",
+   "evidence": {
+    "features_documented_at": "prediction_time"
+   }
+  },
+  {
+   "check": "timing.instant_declared",
+   "ok": true,
+   "detail": "prediction instant kind='event_time' citation=True",
+   "evidence": {
+    "prediction_instant": {
+     "kind": "event_time",
+     "period": "day",
+     "days_after_period_end": 0,
+     "citation": "register column 'Filed' is the application's filing date - the event time documented in the publisher's own guide (ipo-data-explained-2016, section 5, and the dataset landing page 'IPO trade mark data release', last updated 13 Feb 2018); the question is resolved at the filing event, and the snapshot is an administrative record of applications"
+    }
+   }
+  },
+  {
+   "check": "timing.publication_lag_measured",
+   "ok": true,
+   "detail": "0 of 0 observed period_end -> published dates are usable",
+   "evidence": {
+    "observations": [],
+    "measured_lag_days": null,
+    "source_kind": "administrative_record"
+   }
+  },
+  {
+   "check": "timing.features_available_at_instant",
+   "ok": true,
+   "detail": "features publish 0d after the period, instant is 0d after it",
+   "evidence": {
+    "features_lag_days": 0,
+    "instant_lag_days": 0,
+    "measured_lag_days": null
+   }
+  },
+  {
+   "check": "timing.instant_accounts_for_publication_lag",
+   "ok": true,
+   "detail": "instant kind is 'event_time' while features publish 0d after the period",
+   "evidence": {
+    "kind": "event_time",
+    "features_lag_days": 0
+   }
+  },
+  {
+   "check": "timing.selection_uses_only_available_data",
+   "ok": true,
+   "detail": "row selection declares its latest period as '2016-12-31 (scored cohorts are filings 2010-01-01..2016-12-31; the 2017-2018 cohorts exist in the snapshot and are excluded by eligibility, never by outcome)'",
+   "evidence": {
+    "latest_period_used": "2016-12-31 (scored cohorts are filings 2010-01-01..2016-12-31; the 2017-2018 cohorts exist in the snapshot and are excluded by eligibility, never by outcome)",
+    "fields": [
+     "Filed (filing date: cohort membership)"
+    ]
+   }
+  },
+  {
+   "check": "units.measured_columns_declare_unit_and_frame",
+   "ok": true,
+   "detail": "57 measured column(s) declare unit and frame",
+   "evidence": {
+    "measurements": [
+     {
+      "column": "tm_number",
+      "unit": "register trade mark number (spaces stripped; letter-suffixed series sub-marks stay distinct records)",
+      "frame": "the application's own number as recorded in the snapshot; id column, not a model input"
+     },
+     {
+      "column": "mark_text",
+      "unit": "register free text (whitespace collapsed)",
+      "frame": "the mark as filed; declared high-cardinality (near-unique per row), dropped by the runner's >1000-level rule"
+     },
+     {
+      "column": "category",
+      "unit": "register level, column 'Category of Mark' (blank -> 'unknown')",
+      "frame": "the category recorded for the application (e.g. Standard)"
+     },
+     {
+      "column": "mark_type",
+      "unit": "register level, column 'Mark Type' (blank -> 'unknown')",
+      "frame": "the mark's type recorded for the application (e.g. Word, Figurative)"
+     },
+     {
+      "column": "series_flag",
+      "unit": "register level, column 'Series' (blank -> 'unknown')",
+      "frame": "whether the application is part of a series"
+     },
+     {
+      "column": "series_marks_count",
+      "unit": "integer, column 'No of Marks in Series' (0 when blank/unparseable)",
+      "frame": "the number of marks in the series as recorded at filing"
+     },
+     {
+      "column": "nice_class_count",
+      "unit": "count of assigned Nice classes (0-45)",
+      "frame": "sum of the row's class booleans as recorded in the snapshot"
+     },
+     {
+      "column": "owner_country",
+      "unit": "register text, column 'Country' (blank -> 'unknown')",
+      "frame": "the owner's country as recorded in the snapshot"
+     },
+     {
+      "column": "owner_region",
+      "unit": "register text, column 'Region' (blank -> 'unknown')",
+      "frame": "the owner's region as recorded in the snapshot (UK owners)"
+     },
+     {
+      "column": "owner_postcode_area",
+      "unit": "register text, column 'Postcode' - the outward area code for UK owners (blank -> 'unknown'); declared high-cardinality",
+      "frame": "the owner's postcode area as recorded in the snapshot; blank for non-UK owners by the source's grain"
+     },
+     {
+      "column": "filed_date",
+      "unit": "ISO calendar date (Europe/London)",
+      "frame": "the prediction instant itself (carry column, split time column and clustered-event key)"
+     },
+     {
+      "column": "registered",
+      "unit": "0/1 (1 = Registered date non-empty in the snapshot)",
+      "frame": "the label: registered-by-snapshot"
+     },
+     {
+      "column": "class1",
+      "unit": "0/1 - Nice class 1 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class2",
+      "unit": "0/1 - Nice class 2 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class3",
+      "unit": "0/1 - Nice class 3 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class4",
+      "unit": "0/1 - Nice class 4 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class5",
+      "unit": "0/1 - Nice class 5 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class6",
+      "unit": "0/1 - Nice class 6 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class7",
+      "unit": "0/1 - Nice class 7 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class8",
+      "unit": "0/1 - Nice class 8 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class9",
+      "unit": "0/1 - Nice class 9 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class10",
+      "unit": "0/1 - Nice class 10 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class11",
+      "unit": "0/1 - Nice class 11 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class12",
+      "unit": "0/1 - Nice class 12 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class13",
+      "unit": "0/1 - Nice class 13 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class14",
+      "unit": "0/1 - Nice class 14 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class15",
+      "unit": "0/1 - Nice class 15 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class16",
+      "unit": "0/1 - Nice class 16 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class17",
+      "unit": "0/1 - Nice class 17 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class18",
+      "unit": "0/1 - Nice class 18 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class19",
+      "unit": "0/1 - Nice class 19 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class20",
+      "unit": "0/1 - Nice class 20 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class21",
+      "unit": "0/1 - Nice class 21 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class22",
+      "unit": "0/1 - Nice class 22 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class23",
+      "unit": "0/1 - Nice class 23 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class24",
+      "unit": "0/1 - Nice class 24 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class25",
+      "unit": "0/1 - Nice class 25 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class26",
+      "unit": "0/1 - Nice class 26 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class27",
+      "unit": "0/1 - Nice class 27 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class28",
+      "unit": "0/1 - Nice class 28 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class29",
+      "unit": "0/1 - Nice class 29 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class30",
+      "unit": "0/1 - Nice class 30 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class31",
+      "unit": "0/1 - Nice class 31 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class32",
+      "unit": "0/1 - Nice class 32 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class33",
+      "unit": "0/1 - Nice class 33 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class34",
+      "unit": "0/1 - Nice class 34 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class35",
+      "unit": "0/1 - Nice class 35 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class36",
+      "unit": "0/1 - Nice class 36 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class37",
+      "unit": "0/1 - Nice class 37 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class38",
+      "unit": "0/1 - Nice class 38 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class39",
+      "unit": "0/1 - Nice class 39 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class40",
+      "unit": "0/1 - Nice class 40 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class41",
+      "unit": "0/1 - Nice class 41 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class42",
+      "unit": "0/1 - Nice class 42 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class43",
+      "unit": "0/1 - Nice class 43 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class44",
+      "unit": "0/1 - Nice class 44 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     },
+     {
+      "column": "class45",
+      "unit": "0/1 - Nice class 45 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+      "frame": "the class coverage recorded for the application"
+     }
+    ]
+   }
+  },
+  {
+   "check": "units.known_event_fixture_recorded",
+   "ok": true,
+   "detail": "no external threshold, so no known-event fixture is required",
+   "evidence": {}
+  },
+  {
+   "check": "splits.time_column_declared",
+   "ok": true,
+   "detail": "split overlap is checked against 'filed_date'",
+   "evidence": {}
+  },
+  {
+   "check": "splits.machine_readable_windows",
+   "ok": true,
+   "detail": "train/eval/holdout windows are declared with start/end",
+   "evidence": {
+    "split_windows": {
+     "train": {
+      "start": "2010-01-01",
+      "end": "2013-01-01"
+     },
+     "eval": {
+      "start": "2013-01-01",
+      "end": "2015-01-01"
+     },
+     "holdout": {
+      "start": "2015-01-01",
+      "end": "2017-01-01"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.files_present",
+   "ok": true,
+   "detail": "all three split files exist",
+   "evidence": {
+    "missing": []
+   }
+  },
+  {
+   "check": "splits.non_empty",
+   "ok": true,
+   "detail": "every split has rows",
+   "evidence": {
+    "train": {
+     "rows": 106990,
+     "positives": 92668,
+     "negatives": 14322,
+     "positive_rate": 0.866137
+    },
+    "eval": {
+     "rows": 97274,
+     "positives": 81699,
+     "negatives": 15575,
+     "positive_rate": 0.839885
+    },
+    "holdout": {
+     "rows": 115172,
+     "positives": 99385,
+     "negatives": 15787,
+     "positive_rate": 0.862927
+    }
+   }
+  },
+  {
+   "check": "splits.eval_and_holdout_have_both_classes",
+   "ok": true,
+   "detail": "eval and holdout each contain positives and negatives",
+   "evidence": {
+    "train": {
+     "rows": 106990,
+     "positives": 92668,
+     "negatives": 14322,
+     "positive_rate": 0.866137
+    },
+    "eval": {
+     "rows": 97274,
+     "positives": 81699,
+     "negatives": 15575,
+     "positive_rate": 0.839885
+    },
+    "holdout": {
+     "rows": 115172,
+     "positives": 99385,
+     "negatives": 15787,
+     "positive_rate": 0.862927
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_declared",
+   "ok": true,
+   "detail": "eval and holdout declare positives and distinct events",
+   "evidence": {
+    "declared": {
+     "train": {
+      "positives": 92668,
+      "distinct_events": 1040
+     },
+     "eval": {
+      "positives": 81699,
+      "distinct_events": 720
+     },
+     "holdout": {
+      "positives": 99385,
+      "distinct_events": 730
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_match_rows",
+   "ok": true,
+   "detail": "declared positive counts match the rows",
+   "evidence": {
+    "mismatched": []
+   }
+  },
+  {
+   "check": "splits.event_key_column_declared",
+   "ok": true,
+   "detail": "clustered events are counted by 'filed_date' (date part)",
+   "evidence": {}
+  },
+  {
+   "check": "splits.distinct_events_match_rows",
+   "ok": true,
+   "detail": "declared clustered event counts match the rows",
+   "evidence": {
+    "recomputed": {
+     "train": 1040,
+     "eval": 720,
+     "holdout": 730
+    },
+    "declared": {
+     "train": {
+      "positives": 92668,
+      "distinct_events": 1040
+     },
+     "eval": {
+      "positives": 81699,
+      "distinct_events": 720
+     },
+     "holdout": {
+      "positives": 99385,
+      "distinct_events": 730
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.enough_clustered_positives",
+   "ok": true,
+   "detail": "eval and holdout carry enough independent positive events to score",
+   "evidence": {
+    "thin": [],
+    "recomputed_events": {
+     "train": 1040,
+     "eval": 720,
+     "holdout": 730
+    },
+    "minimums": {
+     "positives": 30,
+     "distinct_events": 20
+    }
+   }
+  },
+  {
+   "check": "splits.rates_not_uniform",
+   "ok": true,
+   "detail": "positive rates are between 0 and 1",
+   "evidence": {
+    "rates": [
+     0.866137,
+     0.839885,
+     0.862927
+    ]
+   }
+  },
+  {
+   "check": "splits.actual_ranges_computed",
+   "ok": true,
+   "detail": "row timestamps found for every split",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "2010-01-01",
+      "max": "2012-12-31"
+     },
+     "eval": {
+      "min": "2013-01-01",
+      "max": "2014-12-31"
+     },
+     "holdout": {
+      "min": "2015-01-01",
+      "max": "2016-12-31"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.actual_ranges_disjoint",
+   "ok": true,
+   "detail": "the rows of the three splits occupy disjoint periods",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "2010-01-01",
+      "max": "2012-12-31"
+     },
+     "eval": {
+      "min": "2013-01-01",
+      "max": "2014-12-31"
+     },
+     "holdout": {
+      "min": "2015-01-01",
+      "max": "2016-12-31"
+     }
+    },
+    "overlaps": []
+   }
+  },
+  {
+   "check": "splits.rows_within_declared_windows",
+   "ok": true,
+   "detail": "every row falls inside its split's declared window",
+   "evidence": {
+    "windows": {
+     "train": {
+      "start": "2010-01-01",
+      "end": "2013-01-01"
+     },
+     "eval": {
+      "start": "2013-01-01",
+      "end": "2015-01-01"
+     },
+     "holdout": {
+      "start": "2015-01-01",
+      "end": "2017-01-01"
+     }
+    },
+    "ranges": {
+     "train": {
+      "min": "2010-01-01",
+      "max": "2012-12-31"
+     },
+     "eval": {
+      "min": "2013-01-01",
+      "max": "2014-12-31"
+     },
+     "holdout": {
+      "min": "2015-01-01",
+      "max": "2016-12-31"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.no_cross_split_entities",
+   "ok": true,
+   "detail": "no tm_number appears in more than one split",
+   "evidence": {
+    "shared_sample": [],
+    "shared_count": 0
+   }
+  },
+  {
+   "check": "splits.duplicate_entities_within_splits",
+   "ok": true,
+   "detail": "0 repeated-identifier rows within splits, at most the declared 0",
+   "evidence": {
+    "duplicate_rows": {},
+    "declared": 0
+   }
+  },
+  {
+   "check": "runner.layout",
+   "ok": true,
+   "detail": "holdout is private and train/eval are public",
+   "evidence": {}
+  },
+  {
+   "check": "runner.meta_json_keys",
+   "ok": true,
+   "detail": "meta.json carries the keys the runner reads",
+   "evidence": {
+    "keys": [
+     "columns",
+     "description",
+     "id_columns",
+     "name",
+     "positive_label",
+     "positive_rate",
+     "rows",
+     "split",
+     "split_description",
+     "target"
+    ]
+   }
+  },
+  {
+   "check": "runner.meta_matches_files",
+   "ok": true,
+   "detail": "meta.json agrees with the split files",
+   "evidence": {
+    "problems": []
+   }
+  },
+  {
+   "check": "runner.meta_counts_match_files",
+   "ok": true,
+   "detail": "meta rows and rates match the files",
+   "evidence": {}
+  },
+  {
+   "check": "runner.id_columns_are_not_features",
+   "ok": true,
+   "detail": "declared identifiers are not also listed as features",
+   "evidence": {}
+  }
+ ],
+ "failed_checks": []
+}

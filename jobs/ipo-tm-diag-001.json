@@ -1,0 +1,231 @@
+{
+  "job": {
+    "id": "ipo-tm-diag-001",
+    "candidate": "ipo-trademark-registration-outcome",
+    "image": "python:3.13-slim",
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 3072,
+    "timeout_minutes": 45,
+    "lifetime_minutes": 90,
+    "max_disk_mb": 4096,
+    "max_artifact_mb": 16,
+    "what": "bounded diagnostic on the accepted ipo-trademark-registration-outcome artifact 2c1dade2913d0a8b... (gate 1.5.0, 45 results, 0 failed checks, --accept ACCEPTED in job ipo-tm-004 and re-ACCEPTED in job ipo-tm-baseline-001, eval AUC 0.6224 with validate.py's predict_proba recompute agreeing), fetched from private staging release 428923481 rather than rebuilt: re-accept the five fetched files against the gate's own collected report, materialize the runner workdir (public train+eval only; the private holdout is never copied), re-run the benchmark's own validate.sh contract, then preserve PER-ROW model scores (predict_proba on the eval rows, validate.py's exact call) and compute the comparison the baseline job could not carry: model-vs-mark_type_rate (dominant simple reference, the cheapest comparator a model must beat), model-vs-nice_class_rate (required comparator) and model-vs-calendar_month_rate (calendar control) paired row-level bootstrap intervals (150 resamples, seed 31, the construction references' own protocol), plus per-filing-year model AUC/Brier beside the references against the measured cohort prevalence. References are recomputed from the shipped bytes by a second implementation (pandas re-derivation, not by running score.py) and must replicate the recorded ipo-tm-004 figures within tolerance or the job exits 5. No dependence cluster is measurable from the shipped columns (tm_number unique per row, no owner or series identity), so intervals are row-level only and that limitation is recorded. No re-tuning of label, threshold or splits; no agent loop; holdout stays sealed.",
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 428923481,
+      "assets": [
+        {
+          "asset_id": 691814549,
+          "dest": "extract/meta.json",
+          "size": 1993,
+          "sha256": "caf2a4d916611470ca1f1535113acf179efa2ef71d497a88f4e79f2e5bcb1011"
+        },
+        {
+          "asset_id": 691814613,
+          "dest": "extract/private/holdout.csv",
+          "size": 21503483,
+          "sha256": "26cfc5a8a2131bac4d700ee4733a79eee6eae327dc7c6aa5ed93cf1a0589fa41"
+        },
+        {
+          "asset_id": 691814737,
+          "dest": "extract/public/eval.csv",
+          "size": 18142219,
+          "sha256": "54e06a89d7f565ba690f5abe0fd8cdce5a91c55aaa50738690f8efeee474c520"
+        },
+        {
+          "asset_id": 691814848,
+          "dest": "extract/public/train.csv",
+          "size": 20048573,
+          "sha256": "f4bb622df6e985ea3bd85d8e962a90022e029588bf56ae3a4d89721877a25a51"
+        },
+        {
+          "asset_id": 691814932,
+          "dest": "extract/quality.json",
+          "size": 41854,
+          "sha256": "efa5b4d3d9b68f07ba8cdffee484a9c6e51b80323851158786a01fdaef7d1bd6"
+        }
+      ]
+    },
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "source_files": [
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/ipo-trademark-registration-outcome/diag/run.sh",
+        "bytes": 3104,
+        "sha256": "ee344b9ff7394e331cec8ba7c323b08e4c7249b663223885732296184b57abc9"
+      },
+      {
+        "bundled_as": "materialize.py",
+        "source": "candidates/ipo-trademark-registration-outcome/baseline/materialize.py",
+        "bytes": 2096,
+        "sha256": "fdad9aed9bbbed38e2221998fdcb93667c07db468cbdaf5b56c9cdb180a60b9b"
+      },
+      {
+        "bundled_as": "diag.py",
+        "source": "candidates/ipo-trademark-registration-outcome/diag/diag.py",
+        "bytes": 23934,
+        "sha256": "20fe947947feff9dac734f917ad9785948303634a70ef3cdc4bcc7fce0e8dba3"
+      },
+      {
+        "bundled_as": "qualification.json",
+        "source": "candidates/ipo-trademark-registration-outcome/baseline/qualification.json",
+        "bytes": 25461,
+        "sha256": "33855b34580d0f6f6c1f8f70fc048ab53bb45eed4ec9cbe8bf8ceebd86a332de"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 57029,
+        "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+      },
+      {
+        "bundled_as": "train.py",
+        "source": "/opt/data/harness_benchmark/task_template/train.py",
+        "bytes": 2500,
+        "sha256": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8"
+      },
+      {
+        "bundled_as": "validate.py",
+        "source": "/opt/data/harness_benchmark/task_template/validate.py",
+        "bytes": 1277,
+        "sha256": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b"
+      },
+      {
+        "bundled_as": "validate.sh",
+        "source": "/opt/data/harness_benchmark/task_template/validate.sh",
+        "bytes": 482,
+        "sha256": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      }
+    ]
+  },
+  "reservation_eur": "0.06",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 3,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 225280,
+  "source_sha256": "c005f3f89f5be49486be2ea4211ac806dfa8312a1d589c9ce87e4e88d0339bdd",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-10-30T14:18:09.007452+00:00",
+  "expires": 1793375289,
+  "budget_months": [
+    "2026-10"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 173548479,
+  "known_hosts": "/opt/data/dataset-factory/.factory/ipo-tm-diag-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "65.21.158.17",
+  "result": {
+    "job_id": "ipo-tm-diag-001",
+    "status": "succeeded",
+    "uploaded": true,
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 428923481,
+      "fetched": [
+        {
+          "dest": "extract/meta.json",
+          "bytes": 1993,
+          "sha256": "caf2a4d916611470ca1f1535113acf179efa2ef71d497a88f4e79f2e5bcb1011"
+        },
+        {
+          "dest": "extract/private/holdout.csv",
+          "bytes": 21503483,
+          "sha256": "26cfc5a8a2131bac4d700ee4733a79eee6eae327dc7c6aa5ed93cf1a0589fa41"
+        },
+        {
+          "dest": "extract/public/eval.csv",
+          "bytes": 18142219,
+          "sha256": "54e06a89d7f565ba690f5abe0fd8cdce5a91c55aaa50738690f8efeee474c520"
+        },
+        {
+          "dest": "extract/public/train.csv",
+          "bytes": 20048573,
+          "sha256": "f4bb622df6e985ea3bd85d8e962a90022e029588bf56ae3a4d89721877a25a51"
+        },
+        {
+          "dest": "extract/quality.json",
+          "bytes": 41854,
+          "sha256": "efa5b4d3d9b68f07ba8cdffee484a9c6e51b80323851158786a01fdaef7d1bd6"
+        }
+      ],
+      "failures": [],
+      "bytes": 59738122
+    },
+    "image_id": "sha256:2d44738ebf4ce5f63b9d9ea871e9c7cfdc0426f7b0c97cac915fd88ded1d86bb",
+    "image_digests": [
+      "python@sha256:2d44738ebf4ce5f63b9d9ea871e9c7cfdc0426f7b0c97cac915fd88ded1d86bb"
+    ],
+    "exit_code": 0,
+    "oom_killed": false,
+    "elapsed_seconds": 78.3,
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 429120865,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-1a3548aeeaec58e18cd7",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-1a3548aeeaec58e18cd7/manifest.json",
+    "assets": [
+      {
+        "id": 692351543,
+        "size": 72,
+        "sha256": "81519235f055d3b36a5bfd896fd1597b64eb07bc518dbe5ebc7ade18683a4593"
+      },
+      {
+        "id": 692351608,
+        "size": 247,
+        "sha256": "3ab68eb2a8f9ae624128394490d8a6906155326a6b868a966bd85fdb6af8ce4a"
+      },
+      {
+        "id": 692351705,
+        "size": 6755,
+        "sha256": "e8ea86cb6f52604c606caf334fc41f2670ee5ecf48fe1e3deab3304cf602616c"
+      },
+      {
+        "id": 692357119,
+        "size": 203,
+        "sha256": "836fb12e8df509600b0e72b82dbe4f55982ace0f85487522dec2436eb2f90fc5"
+      },
+      {
+        "id": 692357266,
+        "size": 5641986,
+        "sha256": "380756fcacfbe5d4c57563b0580a4823e2833d9202ad1eb162db61a00ae01101"
+      },
+      {
+        "id": 692357537,
+        "size": 364,
+        "sha256": "abd6f7249a473f07f501069dde0fe2436ada294e0816606ef6d35309752ff944"
+      },
+      {
+        "id": 692357829,
+        "size": 178,
+        "sha256": "cb0aeecaebc20e6f7f3877e14fa01ab2abe3b52b4c76ce710ccd0bf17e196af7"
+      },
+      {
+        "id": 692357979,
+        "size": 225280,
+        "sha256": "c005f3f89f5be49486be2ea4211ac806dfa8312a1d589c9ce87e4e88d0339bdd"
+      },
+      {
+        "id": 692358107,
+        "size": 1552,
+        "sha256": "f9c66fccd57f239f1eb2cb92892e772e6dc2a841ac616454d0f1a29903c28d72"
+      },
+      {
+        "id": 692358309,
+        "size": 10048,
+        "sha256": "a72ff9964d49875dda6bfe7f7d20631c9e31f7a62da9436f4d21312c0b548636"
+      }
+    ],
+    "skipped_empty": []
+  },
+  "collected_at": "2026-10-30T14:26:14.785280+00:00",
+  "deleted_at": "2026-10-30T14:27:08.871959+00:00"
+}
