@@ -1,3 +1,61 @@
+## 2026-10-30 08:30Z - discovery (Canada focus): hc-canada-vigilance reopen path measured and CLOSED; statcan park re-checked (one endpoint correction); new lead iaac-registry-assessment-termination opened (investigating)
+
+Canada regional tick, discovery only. No construction, qualification, packaging,
+publication or scoring ran; no worker, no release byte, tag, digest or destination
+changed; the two operator waits (ns-bwa flip, unhcr audit-prompt relay) are
+unchanged; ipo-tm-002 remains advancement's. check-candidate --all OK; full local
+suite 678 tests OK in 27 s.
+
+- hc-canada-vigilance-adverse-reactions (dropped, mirror): the recorded reopen
+  path ("per-version outcome-revision task IF reports.txt carries multiple
+  VERSION_NO rows per REPORT_ID") is now measured FALSE on the full 20241130
+  archive. Bounded range fetches only (HEAD + 128 KiB central-directory tail +
+  8x4 MiB covering reports.txt's whole 32.9 MB compressed span; output discarded,
+  aggregate counters kept, nothing retained): 1,154,017 rows, 42 fields every
+  row, 0 duplicate-adjacent REPORT_IDs over a strictly ID-sorted file - exactly
+  ONE row per report. VERSION_NO is a per-report follow-up count (0=70.3%,
+  >=1=29.7%; 0% pre-2000, 26-43% from a 2008 system change, 2024 35.8% and
+  right-censored). The outcome-revision task is not constructible; a
+  follow-up-arrival task is also not viable (the row carries only the LATEST
+  version's values per the publisher's schema, so initial-receipt features do
+  not exist in the extract). Extracts page (modified 2026-10-23) confirms the
+  monthly cadence, coverage 1965..2026-06-30, current ZIP ~344 MB; no
+  historical vintages. Probe scripts retained in the candidate dir; dropped
+  verdict stands with the reopen path closed by measurement.
+- statcan-wds-aggregate-series (parked): the record's stale next_action (checks
+  named as undone though 2026-10-22/27 sessions had run them) is fixed. Re-run
+  anyway this tick: (a) CORRECTION - WDS getChangedCubeList DOES answer at
+  www150.statcan.gc.ca/t1/wds/rest/getChangedCubeList/<date> (99 changed
+  products 2026-10-29), correcting the 10-27 note's 404; grain is aggregate
+  cubes, so the verdict is unchanged; (b) 500 most-recently-modified of the
+  10,268 statcan packages scanned - all aggregate tables/indicator series, no
+  case/event-grain release. Park stands; future ticks re-check only the
+  open.canada.ca feed, not the WDS change feed.
+- NEW LEAD candidates/iaac-registry-assessment-termination (investigating,
+  hold, licence_class A): predict, at an assessment's registry start date,
+  whether the process terminates before any determination/decision (proponent
+  withdrawal / process termination). Source: Canadian Impact Assessment Registry
+  (IAAC), open.canada.ca package f4c51eaa (ca-ogl-lgo) + live ESRI MapServer
+  (measured 2026-10-30: 6,600 projects = 5,079 completed / 1,173 in progress /
+  348 terminated; full attribute fetch 9 requests / 1.01 MB / 6.6 s) + registry
+  pages with dated terminal events (3/3 sampled: termination line, determination
+  line with outcome wording, key-document tables). Volume era 2019+ (~750-1,000
+  starts/yr), both classes every year; recent cohorts right-censored (2026
+  in-progress 55%). Dated worked examples recorded (proj 81027: start
+  2020-09-29, terminated 2022-01-18, 476 days; proj 84411: start 2023-03-15,
+  determination 2023-08-29, 167 days). AU analogue epbc-referral died on
+  licence D, not task shape, so the family slot is open; no ML-ready Canadian
+  registry-outcome benchmark found (preliminary search; formal check-novelty.py
+  deferred to the next bounded probe). Named next probe: stratified ~60-100-page
+  sample to measure the dated-event share, per-page cost, determination-outcome
+  wording mix, bulk-export capability; then novelty check; then the terminal-lag
+  distribution to fix censoring rules and the holdout boundary. NO construction
+  this session.
+
+Next action: a Canada-tick or advancement session runs the bounded IAAC
+registry-page sample + formal novelty check; release waits remain the
+operator's.
+
 ## 2026-10-30 07:17Z - watcher re-fire for ipo-tm-002: outcome already recorded at ed6151a; evidence re-verified, provider cleanup re-confirmed 0/0, handled marker written
 
 The worker watcher re-fired ipo-tm-002 (failed exit 1, 19.1 s, staging release

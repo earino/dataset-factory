@@ -118,4 +118,55 @@ path left is a NEW candidate with a formulation absent from the FAERS ecosystem
 sample shows reports.txt carries multiple VERSION_NO rows per REPORT_ID - never
 measured here because the natural task was decisively mirrored).
 
+## 2026-10-30 Canada tick - reopen path measured and CLOSED (full archive)
+
+The recorded reopen condition was never measured, so this tick measured it on
+the full 20241130-vintage CKAN ZIP with bounded range fetches (no bulk
+download; the coordinator never held more than ~33 MB compressed transiently
+and retained only aggregate counters).
+
+Commands (scripts retained in this directory):
+- probe_reports_grain_tail.py    - HEAD + 128 KiB central-directory tail:
+  13 members, reports.txt csize 32,884,931 / usize 422,306,974 / method 8,
+  data offset 280,690,987 (matches the 2026-10-27 record's member sizes).
+- probe_reports_grain_prefix.py  - piecewise 4 MiB range fetch + incremental
+  inflate, first 104,857,600 B of text: 316,684 rows / 316,684 distinct
+  REPORT_IDs / 0 with >1 row; all rows 42 fields; IDs strictly increasing.
+- probe_reports_grain_full.py    - full-member pass (8 x 4 MiB covering the
+  whole compressed span), output discarded, counters kept:
+    rows 1,154,017, bad 0, field count 42 on every row
+    duplicate-adjacent REPORT_ID rows: 0; non-increasing ID transitions: 0
+    => exactly ONE row per REPORT_ID across the entire archive
+    VERSION_NO: 0=810,975 (70.3%), 1=178,622 (15.5%), 2=63,226, 3=29,751,
+       4=17,157, 5=11,213, 6=7,882, 7=5,827, 8=4,325, 9=3,451, 10=2,729,
+       11=2,312, 12=1,870, 13=1,619, 14=1,361, 15=1,154, 16=1,025, 17=953,
+       18=753, 19=649, ... (long tail)
+    follow-up (VERSION>=1) rate by DATINTRECEIVED year: 0% through 2000,
+       1.7% 2001, ~1.3% 2002-2006, 6.5% 2007, 27.1% 2008, 29.5% 2010,
+       34.5% 2015, 40.7% 2018, 43.8% 2022, 42.3% 2023, 35.8% 2024
+       (recent years right-censored - follow-ups may still arrive)
+    seriousness col25: 01=781,425 / 02=372,592
+
+Interpretation (recorded in the record next_action): VERSION_NO is a
+per-report version/follow-up count, not per-version rows. The
+follow-up/outcome-revision task is NOT constructible from this extract
+(no intermediate outcomes are published). A follow-up-arrival task on
+VERSION_NO alone is also not viable: the row carries the LATEST version's
+values (DATRECEIVED='latest' per the publisher's data-structure page), so
+initial-receipt-time features beyond DATINTRECEIVED do not exist in the
+extract, and the count is right-censored for recent reports.
+
+Extracts page re-read via extraction backend (modified 2026-10-23): "The
+data set is updated on a monthly basis and currently covers the following
+time period: 1965 to 2026-06-30", ZIP ~344 MB at
+www.canada.ca/content/dam/hc-sc/migration/hc-sc/dhp-mps/alt_formats/zip/medeff/databasdon/extract_extrait.zip
+(the CKAN resource lags at the 20241130 folder vintage). No historical
+vintages are archived, so no as-of reconstruction is possible from this
+channel either.
+
+Decision: the dropped verdict stands with the reopen path CLOSED by
+measurement. Any future formulation on this source must come from a
+publisher-side per-version export or a dated vintage archive, as a NEW
+candidate with its own novelty check.
+
 

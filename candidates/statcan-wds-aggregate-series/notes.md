@@ -103,4 +103,37 @@ park stands. (Same-tick finding: the only event-grain Canadian release found
 through the open.canada.ca feed is provincial, not StatCan - see
 candidates/ns-bwa-advisory-lift-duration.)
 
+## 2026-10-30 Canada tick - checks re-run; one endpoint correction; park stands
+
+(The record's next_action still named these checks as undone even though the
+2026-10-22 and 2026-10-27 sessions had run them - next_action is now updated
+to reflect that. This tick re-ran both, adding one correction and a broader
+feed scan.)
+
+- WDS getChangedCubeList: ANSWERS at
+  https://www150.statcan.gc.ca/t1/wds/rest/getChangedCubeList/<ISO date>
+  (found via the WDS user guide's example 'getChangedCubeList/2017-12-07').
+  Measured 2026-10-30: 2026-10-29 -> 99 changed products (productId +
+  releaseTime), 2026-10-28 -> 36, 2026-10-30 -> 45 B / empty (not yet posted).
+  This CORRECTS the 2026-10-27 note that recorded the method as missing/404 at
+  its documented path; the earlier attempt evidently used a different URL.
+  Grain is the aggregate table/cube, so the correction changes the endpoint
+  record only, not the verdict: this channel cannot surface a case/event-grain
+  release.
+- open.canada.ca StatCan feed, broader than the 10-27 scan: org 'statcan'
+  holds 10,268 packages (CKAN q=organization:statcan); the 500 most recently
+  modified packages (2026-09-23..2026-10-22) scanned via package_search
+  sorted by metadata_modified desc. All are aggregate tables or indicator
+  series; every 'case'/'incident'/'claim'/'licence' title hit is an aggregate
+  cross-tab (youth/adult criminal court case-count tables updated 2026-10-01,
+  police-reported cybercrime and hate-crime counts, EI claims by province,
+  cyber-security-incident survey aggregates, vehicles entering Canada by
+  licence-plate type). No case/event-grain release with a documented schema
+  and no registration wall.
+
+Conclusion: the unpark condition remains unmet. Same-tick corollary: the
+Canadian Impact Assessment Registry (IAAC) DID surface as an open
+project-grain source with dated lifecycle events - opened as a NEW candidate,
+candidates/iaac-registry-assessment-termination (investigating).
+
 

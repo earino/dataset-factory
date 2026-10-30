@@ -1,0 +1,60 @@
+{
+  "id": "iaac-registry-assessment-termination",
+  "status": "investigating",
+  "created_at": "2026-10-30T08:22:04.071972+00:00",
+  "domain": "environmental regulation - federal impact-assessment lifecycle outcome (Canadian Impact Assessment Registry)",
+  "prediction_question": "For a project assessment posted to the Canadian Impact Assessment Registry, at its registry start date, will the assessment process terminate before any determination or decision is issued (proponent withdrawal / process termination), rather than run to a determination?",
+  "prediction_time": "The assessment's registry start date (published per project on the registry page and in the MapServer layer as start_date). Features available at that instant: the inventory attributes published with the posting (project category, province, responsible authority(ies), location type, coordinates, description text, start date). The terminal state and its dated event (Latest update line: termination date, or Notice-of-Determination date + outcome wording) and the layer's current project_state_en/updated_at are post-hoc label sources and never ship as features. The registry is a live current archive: no historical vintages of pages are published, so the task is retrospective-within-current-archive, anchored on the dated events the current pages preserve; it cannot claim historical operational availability.",
+  "target_definition": "Binary: the assessment's terminal state is 'Terminated' (MapServer layer 2 membership; registry page 'Assessment status: Terminated' plus a dated termination line in 'Latest update', e.g. proj 81027 'January 18, 2022 - The assessment process has been terminated') vs 'Completed' with a dated determination (e.g. proj 84411 'August 29, 2023 - ... determined that the project is not likely to cause significant adverse environmental effects'). Label source columns: project_state_en, the page Latest-update text/date and Assessment status - all excluded from shipped features. Assessments still 'In progress' at fetch time are censored and must be handled by an explicit censoring rule, not dropped silently.",
+  "sources": [
+    {
+      "name": "Canadian Impact Assessment Registry - Assessment Inventory (open.canada.ca package f4c51eaa-a6ca-48b9-a1fc-b0651da20509)",
+      "url": "https://open.canada.ca/data/en/dataset/f4c51eaa-a6ca-48b9-a1fc-b0651da20509",
+      "api": "CKAN package_show read 2026-10-30: license_id ca-ogl-lgo; resources = ESRI REST (EN/FR) + registry HTML. Package notes: 'The assessments layer represents all assessments undertaken under the Impact Assessment Act, including those that continue under the provisions of the Canadian Environmental Assessment Act, 2012... as posted on the Canadian Impact Assessment Registry Internet site.'",
+      "license": "ca-ogl-lgo (Open Government Licence - Canada 2.0) per the package record",
+      "access": "Anonymous CKAN API (measured 2026-10-30)."
+    },
+    {
+      "name": "IAAC assessment_inventory_en MapServer (live ESRI REST service)",
+      "url": "https://maps-cartes.services.geo.ca/server_serveur/rest/services/IAAC/assessment_inventory_en/MapServer",
+      "api": "Anonymous, measured live 2026-10-30: 3 layers - 0 'Completed' (5,079), 1 'In progress' (1,173), 2 'Terminated' (348); total 6,600 projects. Fields: project_id, project_cat_en, project_name_en, proponent_en, province_codes, location_en, responsible_authority_en, project_url_en, start_date, project_state_en, location_type_en, coordinates, latitude, longitude, updated_at, description_en. Full attribute fetch (no geometry): 9 requests, 1,010,024 bytes, 6.58 s on the coordinator (measured 2026-10-30).",
+      "license": "ca-ogl-lgo per the parent package record",
+      "access": "Anonymous REST queries (f=json, paginated 1,000/req)."
+    },
+    {
+      "name": "Canadian Impact Assessment Registry per-project pages (dated lifecycle events)",
+      "url": "https://iaac-aeic.gc.ca/050/evaluations/proj/<project_id>?culture=en-CA",
+      "api": "Sampled 2026-10-30 (4 pages across all three states): each page carries a dated 'Latest update' line with the terminal or most-recent event (termination: proj 81027 'January 18, 2022 - The assessment process has been terminated'; determination: proj 84411 'August 29, 2023 - The National Capital Commission issued its Notice of Determination and determined that the project is not likely to cause significant adverse environmental effects'; designated-project decision: proj 80175 key-documents table with Notice of Commencement 2019-07-05 and Environmental Assessment Decision Statement 2021-01-11), plus a fixed metadata block (Assessment status, Start date, Proponent, Authorities, Assessment type, Nature of activity). Pages also link an 'All records' exploration view (iaac-aeic.gc.ca/050/evaluations/exploration?projDocs=<id>) - bulk-export capability NOT yet probed.",
+      "license": "Open web publication of the Impact Assessment Agency of Canada; registry content falls under the OGL-Canada family per the package record that serves this registry inventory",
+      "access": "Anonymous HTML; www.iaac-aeic.gc.ca fetches work via the extraction backend (direct curl from this coordinator untested for this domain; canada.ca main-site fetches hang, see hc-canada-vigilance notes). Per-page clean text 8.6-150 KB (4 pages measured)."
+    }
+  ],
+  "license_evidence": [
+    "open.canada.ca package f4c51eaa-a6ca-48b9-a1fc-b0651da20509 (package_show, 2026-10-30): license_id 'ca-ogl-lgo' - the Open Government Licence - Canada 2.0, which permits commercial and non-commercial use, copying, modification and redistribution with attribution ('Where you reproduce, modify or distribute the Information, you must give appropriate acknowledgement of the source of the Information'). Attribution carries into LICENSE.md at release per repo licensing policy; our compilation is dedicated CC0, source terms preserved.",
+    "Bench convention (cra-charity-filing-exit, npri-facility-reporting-exit, hc-canada-vigilance records): OGL-Canada 2.0 = explicit open licence permitting redistribution and derivatives with attribution = licence_class A."
+  ],
+  "construction_script": null,
+  "split_strategy": "Temporal by registry start year. Volume era measured 2019+ (the IAA came into force 2019-08; pre-2019 rows in the layer are sparse backfill: 2006-2018 totals about 200 rows across 13 years). Measured starts/terminal counts per start year (state at 2026-10-30): 2019 215/16, 2020 836/48, 2021 968/51, 2022 907/47, 2023 956/48, 2024 917/32, 2025 944/29, 2026 650/7 (in-progress shares 5%, 8.5%, 9.4%, 12.2%, 15.7%, 17.6%, 22.0%, 55.1% - recent cohorts heavily right-censored). Candidate windows train 2019-2022 (2,926 starts / 162 terminal, 5.5%), eval 2023-2024 (1,873 / 80, 4.3%), holdout 2025-2026 (1,594 / 36, 2.3% BUT censored) - a holdout this recent needs an explicit censoring rule (e.g. fixed horizon from start date with unresolved rows excluded by rule, or push the holdout back once terminal-event lag is measured); pre-2019 rows usable only as documented partial backfill. Both classes present every year 2019-2026.",
+  "measurements": {
+    "mapserver_probe_2026_10_30": "Service info + per-layer counts + 8-record samples per layer (fields listed in sources). Total 6,600 projects: Completed 5,079, In progress 1,173, Terminated 348 (5.3%).",
+    "full_layer_fetch_2026_10_30": "All 6,600 attribute rows (project_id, project_cat_en, province_codes, start_date, project_state_en; no geometry): 9 requests, 1,010,024 bytes, 6.58 s wall clock on the coordinator container. Retained probe script probe/iaac_layer_probe.py.",
+    "start_year_histogram": "By start year (Completed/InProg/Terminated): 2006 2/0/0, 2007 0/0/1, 2009 1/0/0, 2010 12/1/5, 2011 10/0/7, 2012 24/1/22, 2013 22/2/7, 2014 12/3/8, 2015 14/1/6, 2016 11/3/4, 2017 7/0/3, 2018 10/1/7, 2019 188/11/16, 2020 717/71/48, 2021 826/91/51, 2022 749/111/47, 2023 758/150/48, 2024 724/161/32, 2025 707/208/29, 2026 285/358/7. Category mix (top): Construction 2,593, Transport Industry 1,879, Water Management 440, Tourism 331, Waste Management 286, Environmental Management 281, Petroleum Industry 279, Energy 149, Mining Industry 144. Province mix (top): ON 1,322, BC 1,232, AB 1,038, QC 886, SK 566, NS 373, MB 355, NL 306.",
+    "registry_page_samples_2026_10_30": "4 pages via extraction backend: 81027 Terminated (dated termination line 2022-01-18; non-designated project on federal lands), 84411 Completed (dated determination 2023-08-29, outcome wording 'not likely to cause significant adverse environmental effects'; clean text 149.8 KB mostly 'nearby assessments' nav noise), 80175 Completed designated CEAA-2012 project (key-documents table: Notice of Commencement 2019-07-05, EA Decision Statement 2021-01-11; 8.6 KB), 87425 In progress (dated latest update 2024-04-17, key-documents table with dates; 12.2 KB). Dated terminal events verified for 3/3 terminal-or-completed samples; sample size too small to generalize - the share of pages with parseable dated terminal events across the full cohort is the named next measurement.",
+    "novelty_search_preliminary_2026_10_30": "Web search (queries: 'machine learning predicting environmental impact assessment outcome Canada decisions dataset', plus browsing of top results): no ML-ready benchmark or dataset found for predicting Canadian Impact Assessment Registry outcomes; results were CO2-emissions/LCA ML noise plus one Tandfonline review of AI-in-EIA literature (no registry-outcome task). A 2024 review of AI in EIA surfaced no outcome-prediction benchmark. Formal check-novelty.py with recorded verdict deferred until the bounded page-sample resolves extraction feasibility (investigating status).",
+    "cost_unknown_page_extraction": "Per-page extraction cost at cohort scale (6,600 pages) NOT yet measured - named as the next bounded measurement before any ready verdict."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": null,
+  "next_action": "Bounded stratified sample of ~60-100 registry pages (states x start-years 2019-2026) on the coordinator or a worker: measure (a) share of pages exposing a dated, machine-parseable terminal event line (generalizing the 3/3 sample), (b) per-page fetch cost (bytes, seconds) and the total for 6,600 pages, (c) the determination-outcome wording mix - how often 'likely to cause significant adverse environmental effects' appears (decides whether the substantively richer label is ever frequent enough to be a secondary column or its own task; expected rare), (d) whether the 'All records' exploration view or the registry listing offers a bulk export that would replace per-page scraping. Then run scripts/check-novelty.py with recorded queries and a verdict. Timing contract needs the measured terminal-event lag distribution (start -> termination/determination) to fix the censoring rule and the holdout boundary. All cohort-scale extraction is a worker prerequisite, not coordinator work. NO construction was started in this session.",
+  "verdict": "hold",
+  "jurisdiction": {
+    "country": "CA",
+    "region": "North America",
+    "publisher": "Impact Assessment Agency of Canada / Agence d'evaluation d'impact du Canada (registry + MapServer served under open.canada.ca package f4c51eaa)",
+    "recorded_at": "2026-10-30"
+  },
+  "licence_class": "A",
+  "licence_note": "Open Government Licence - Canada 2.0 (ca-ogl-lgo) per the package record; attribution ('Source: Impact Assessment Agency of Canada' / appropriate acknowledgement) carries through to any release; our contribution dedicated CC0, source terms preserved."
+}
