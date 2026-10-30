@@ -49,7 +49,22 @@ next action was the single permitted recovery relaunch, which this session execu
 - Checks: check-candidate.py ipo-trademark-registration-outcome OK (qualified); --all rc=0;
   full local suite 683 tests OK in 26 s. Nothing is public; no packaging byte exists yet.
 
-Next action: packaging per dataset-release (license.json declaration, release/ assembly from the
+Packaging started after the close-out commit (f641af2, CI run 41109370552 completed/success):
+candidates/ipo-trademark-registration-outcome/license.json is declared - source OGL-UK-3.0
+with the three recorded licence quotes plus the pinned snapshot (sha256 3b6063be...,
+2018-02-13), our code MIT with the verbatim runner files credited, compilation CC0-1.0
+scoped to our contribution, the required attribution statement and citation preserved, and
+the shipped-columns statement written from build.py's actual design (applicant-name and
+hyperlink columns EXCLUDED_BY_DESIGN; owner_country/owner_region/owner_postcode_area and
+mark_text redistributed exactly as published; nothing added beyond the derived label, class
+indicators/count derivations, the eligibility frame and the partition). No operator
+acceptance needed (explicit open licence). check-candidate OK after the edit. Remaining for
+packaging: release/ assembly from the accepted bytes, MANIFEST + SHA256SUMS + VERIFICATION.md
+carrying the diag-002 comparison beside every figure, reproduction instructions executed on
+the published bytes in a fresh environment, check-package + check-suitability, then private
+staging only.
+
+Next action: packaging per dataset-release (license.json DONE; release/ assembly from the
 accepted bytes, MANIFEST + SHA256SUMS + VERIFICATION.md carrying the diag-002 comparison beside
 every figure, check-package + check-suitability, then private staging only). The two operator
 waits (ns-bwa flip, unhcr audit-prompt relay) are unchanged.
