@@ -10582,3 +10582,43 @@ licence-gated (CBK, KMD posture) or access-gated (DWS). The Africa bench remains
 the three ZA ready candidates. Next Africa tick: KRA/NTSA only if a stated-terms channel is
 visible; re-check data.gov.ma only against the 699 baseline; do not re-probe DWS/CBK/KMD
 from the recorded evidence.
+
+## 2026-10-30 - South/South-East Asia discovery tick: India portal block corroborated from the EU network; PAGASA GeoRisk unpark question answered (negative)
+
+Regional focus South and South-East Asia; both verdicts in-region, no US substitution. One worker
+job (india-portal-probe-001, EUR 0.04 reserved; job exited 0 in 15.7 s; server 173603408 destroyed
+21:38:53Z, sweep finds nothing left). No construction, qualification, packaging or publication; no
+candidate advanced.
+
+- `india-datagovin-portal` (IN, parked, re-measured): the recorded unpark step ran. The worker
+  probe (cx23, hel1, egress 65.21.158.17) got connection refused for data.gov.in, api.data.gov.in
+  and /catalog.json, and HTTP 503 from www.data.gov.in with an Akamai edge body ("Reference #102",
+  "Service Unavailable - Fail to connect" on robots/sitemap/catalogs) - the edge cannot reach its
+  origin. The coordinator re-measured the same refusal the same day; DNS is identical locally and
+  via dns.google (164.100.61.218 / 164.100.61.198), so this is NOT the CBK-style resolver artifact.
+  Both controlled networks are blocked; the block is publisher/edge side. Reopen only on (a) an
+  Indian-routing vantage, (b) independent evidence the portal is publicly reachable again, or (c) a
+  licence-bearing mirror - then enumerate API datasets (excluding station-level air quality) and
+  read the GODL-India claim for CPCB resources on api.data.gov.in. Do not re-run the reachability
+  probe from the coordinator or hel1. Report kept at staging release 429480874 (sha256-verified).
+  The probe recipe is candidates/india-datagovin-portal/probe/ (run.py + coordinator_reach_2026-10-30.sh).
+- `ph-pagasa-climate-station-data` (PH, parked, updated): the recorded unpark probe ran from the
+  coordinator. philida.pagasa.dost.gov.ph is still NXDOMAIN (getent + dns.google Status 3, SOA
+  awsdns). portal.georisk.gov.ph/arcgis/rest/services/PAGASA enumerates Rainfall_Forecast_Observed
+  as a MapServer whose five layers are static monthly polygons (January-May, no year) with fields
+  objectid/id/gridcode/shape only, and with empty serviceDescription and empty copyrightText - a
+  forecast-visualisation product, not a station-observation archive, and no readable terms. The
+  unpark question is answered negatively; the candidate stays parked. Reopen only on an anonymous
+  bulk station archive with readable terms, or an operator decision to use the FOI/CADS-01A request
+  route. Probe scripts kept in candidates/ph-pagasa-climate-station-data/probe/.
+- Not probed this tick (recorded, no new lead opened): Malaysia DOSM/OpenDOSM was identified as the
+  only named-country source with no existing record, but the tick's budget closed before even the
+  licence-first check ran. It remains unassessed (not a rejection). Next in-region openings:
+  DOSM licence read (class A/B/C/D before any task probe), Malaysia river-danger forward-collection
+  decision (operator), BMKG quarterly watch (due ~2027-01), Singapore catalog quarterly diff.
+
+Session hygiene: `check-candidate.py --all` exit 0 (112 records); unittest suite 683/683 OK;
+job india-portal-probe-001 collected with the report sha256-verified against the staging manifest
+and the worker destroyed; `worker sweep` on earino-dataset-factory returns no leftovers. Untracked
+candidates/ec-state-aid-investigation-opening/probe/ belongs to a parallel session - left
+untouched and excluded from this session's commit.

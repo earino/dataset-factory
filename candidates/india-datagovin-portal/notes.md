@@ -66,3 +66,37 @@ After the pending release ships, run:
     sh scripts/scout-factory worker destroy  india-portal-probe-001
 The same probe report also settles the cpcb-aqi-exceedance reopening evidence (reading the
 GODL-India licence claim on api.data.gov.in from a reachable network) - see that record.
+
+## 2026-10-30 — worker reachability probe exeuted; block corroborated from the EU network
+
+Guard state had changed since the 2026-10-28 refusal: unhcr-refugee-data-finder now carries
+operator_decision_pending=true, so release_work_pending exempts it; no active jobs existed.
+
+    sh scripts/scout-factory worker launch candidates/india-datagovin-portal/probe/job.json
+    -> running; server 173603408, cx23, hel1, ipv4 65.21.158.17, reservation EUR 0.04
+    sh scripts/scout-factory worker collect india-portal-probe-001
+    -> succeeded, exit 0, elapsed 15.7 s, staging release 429480874
+    report output/probe_report.json downloaded by numeric asset id 693394656,
+    sha256 daa217c4a8381c918c87e7fba45eb23e8141b142a1c064c6c4c8e748624fa07b (matches manifest)
+    sh scripts/scout-factory worker destroy india-portal-probe-001
+    -> deleted, deleted_at 2026-10-30T21:38:53Z
+
+Result (EU vantage, api.ipify.org -> {"ip":"65.21.158.17"}):
+    https://www.data.gov.in/            -> 503, Akamai edge body "An error occurred while
+        processing your request. Reference #102..." (edge cannot reach origin), 1.48 s
+    https://www.data.gov.in/robots.txt  -> 503 "Service Unavailable - Fail to connect"
+    https://www.data.gov.in/sitemap.xml -> 503, 1.28 s
+    https://www.data.gov.in/catalogs    -> 503, 1.26 s
+    https://data.gov.in/                -> URLError [Errno 111] Connection refused, 1.34 s
+    https://api.data.gov.in/            -> URLError [Errno 111] Connection refused, 1.90 s
+    https://api.data.gov.in/catalog.json-> URLError [Errno 111] Connection refused, 1.85 s
+
+Coordinator re-measured the same day (02:4xZ, coordinator_reach_2026-10-30.sh): HTTP 000 at
+0.55 s / 0.95 s; DNS identical locally and via dns.google (164.100.61.218 / 164.100.61.198) -
+NOT a resolver artifact like the CBK case.
+
+Verdict: portal inaccessible from both networks this project controls; the block is
+publisher/edge side. Candidate stays parked (access failure is not a scientific rejection).
+Reopen on an Indian-routing vantage, independent public-reachability evidence, or a
+licence-bearing mirror; the GODL-India licence read for CPCB resources is still unverified and
+cpcb-aqi-exceedance remains dropped until it is read.
