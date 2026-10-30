@@ -1,3 +1,44 @@
+## 2026-10-30 05:08Z - discovery (UK focus): ofsted-childrens-home-next-rating opened and set ready - dated inspection-level history 2014-2026 confirmed across three OGL-v3.0 bulk products; 16,760 deduped full inspections measured; novelty differentiated
+
+UK regional tick. No construction, qualification, packaging, publication or scoring ran;
+no worker, no release byte, tag, digest or destination changed; the two operator waits
+(ns-bwa flip, unhcr audit-prompt relay) are unchanged; ipo-tm-002 remains advancement's.
+
+- Candidate ofsted-childrens-home-next-rating (Ofsted, England, licence_class A, GB):
+  predict a children's home's next FULL inspection will be rated below Good, from
+  vintage-anchored published history + registry + organisation attributes. Prediction
+  instants = documented GOV.UK vintage release dates (Europe/London); targets dated
+  strictly after the instant; dated worked example in notes.md (T = 13 Feb 2020).
+- The FHRS blocker does NOT apply: dated per-inspection history is published as
+  inspection-level rows in three overlapping products (quarterly MI Dec 2014 - Jun 2024;
+  annual transparency 2024/2025; SFR in-year full-year sheets, 2026 edition verified).
+  Cross-product dedupe by inspection number verified twice (708/708 and 2,356-new cases).
+- Measured on the source (23 anonymous GETs, 7.78 MB, ~7 s): 16,760 deduped children's-home
+  full inspections 2016-2026; splits train 2017-2019 5,523/1,200 pos (21.7%), eval 2021-2023
+  4,409/1,210 (27.4%), holdout 2024-2026 6,100/1,196 (19.6%); both classes every year;
+  2020 = zero full inspections (COVID suspension, recorded). Publisher cross-check: SFR
+  2026 main findings denominator 4,430 vs my 4,440 same-window count (0.2% residual,
+  recorded as unresolved detail). Coverage gaps recorded honestly (Q1 quarters 2019-2024,
+  Oct 2024 - Mar 2025 in the not-yet-pulled 2025 SFR, .xls-era 2014-2016 worker-side).
+- Novelty: differentiated (check-novelty.py ok=true; nearest prior art is explanatory
+  ownership-vs-quality regressions on the same source (PubMed 36201866, 2022) and Ofsted
+  SCHOOL outcome ML (QMUL EMAP 2025) - different population; no ML-ready children's-home
+  inspection benchmark exists).
+- Named headroom risk for advancement (the defra-recycling/nhs-ae failure mode): the
+  persistence reference must be the FIRST construction measurement (last-rating ->
+  next-rating transition table) before any model figure; ship only if headroom over it is
+  demonstrable, else park on the measured finding. Vintage immutability not assumed
+  (sibling series had a documented post-release correction): sha256-pin every asset.
+- Checks at close-out: check-candidate.py ofsted-childrens-home-next-rating OK (ready);
+  --all rc=0; full unittest suite 674 tests OK locally in 26 s. Probe scripts + measured
+  aggregates preserved under candidates/ofsted-childrens-home-next-rating/probe/. The
+  untracked candidates/ec-state-aid-investigation-opening/probe/ edits are unrelated and
+  left untouched.
+
+Next action: advancement owns construction of ofsted-childrens-home-next-rating (worker-side
+panel assembly, persistence-reference headroom first), while ipo-tm-002 remains the pending
+construction fix. No ready-buffer work was blocked this session.
+
 ## 2026-10-30 03:54Z - watcher follow-up: ipo-tm-001 failed (construction defect in build.py, diagnosed; pinned source verified; worker destroyed 0/0); fix + fresh attempt ipo-tm-002 handed to advancement
 
 Holding the follow-up mutex, this pass collected the bounded diagnostics, diagnosed the

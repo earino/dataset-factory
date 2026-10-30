@@ -1,0 +1,183 @@
+{
+  "id": "ofsted-childrens-home-next-rating",
+  "status": "ready",
+  "created_at": "2026-10-30T04:52:01.859726+00:00",
+  "updated_at": "2026-10-30T05:10:00+00:00",
+  "domain": "children's social care regulation / recurrent regulatory-inspection outcome prediction",
+  "prediction_question": "For a children's home registered in England, given everything published about it in Ofsted bulk vintages released on or before instant T (prior full/monitoring inspection history with dates and judgements, registration attributes, and its owning organisation's portfolio outcomes in the same vintage), will the home's next FULL inspection after T be rated below Good (Requires improvement to be good, or Inadequate)?",
+  "prediction_time": "The documented GOV.UK release date of an Ofsted bulk vintage (Europe/London). Features may include only what a vintage released on or before that date contains: prior inspections, judgements and registry attributes. Per-event 'Inspection publication date' columns exist in the 2024+ products; pre-2024 availability is anchored to vintage release dates from the GOV.UK 'Updates to this page' log (e.g. the Dec-2019 quarterly file, released 13 Feb 2020, is the first bulk source of Sep-Dec 2019 inspection outcomes). The target inspection is dated strictly after T, so no part of the target window precedes the prediction instant.",
+  "target_definition": "Binary label from the overall judgement of the home's next full inspection after T: 1 = 'Requires improvement to be good' or 'Inadequate' (old 2016-2017 wording 'Requires Improvement' mapped identically), 0 = 'Good' or 'Outstanding'. Source column: 'Overall Effectiveness' (quarterly MI files 2016-2023) / 'Overall experiences and progress of children and young people' (annual 2024+ files and SFR files); this column is the label source and is excluded from shipped features. Homes that deregister before their next full inspection are censored, not labelled 0. Population: provision type children's home (incl. short-break-only, multi-building; 'children' in provider type), Active or Suspended in the feature vintage, with at least one prior graded full inspection visible in vintages released <= T.",
+  "sources": [
+    {
+      "name": "Ofsted - Inspection outcomes of children's homes (quarterly management information, Dec 2014 - Jun 2024, discontinued Jan 2025)",
+      "url": "https://www.gov.uk/government/publications/inspection-outcomes-of-childrens-homes",
+      "api": "per-quarter CSV/ODS/XLS assets on assets.publishing.service.gov.uk; Inspection_level_data table = one row per inspection event in the period (verified Dec 2019, Jun 2024); 20 readable-format asset URLs recorded in probe/pull_series.py",
+      "access": "anonymous GETs; measured 2026-10-30",
+      "licence": "Open Government Licence v3.0 (GOV.UK page footer)"
+    },
+    {
+      "name": "Ofsted - Inspection and regulation of children's social care providers (annual transparency dataset, 2024 and 2025 editions)",
+      "url": "https://www.gov.uk/government/publications/inspection-and-regulation-of-childrens-social-care-providers",
+      "api": "ODS ~2 MB per edition; Provider_level_in_year_* sheet = inspection-level events 1 Apr - 30 Sep of the year with per-event Inspection publication date; Provider_level_at_* sheet = most recent inspection per active provider",
+      "access": "anonymous GETs; measured 2026-10-30",
+      "licence": "Open Government Licence v3.0 (GOV.UK page footer)"
+    },
+    {
+      "name": "Ofsted - Children's social care in England (annual accredited statistics SFR, editions 2020-2026)",
+      "url": "https://www.gov.uk/government/statistics/childrens-social-care-in-england-2026",
+      "api": "underlying-data ODS ~3 MB per edition (2026: 3,179,394 bytes); Provider_level_in_year sheet = inspection-level events for the FULL regulatory year 1 Apr - 31 Mar with Inspection publication date; closes the Oct-Mar windows the transparency dataset never publishes",
+      "access": "anonymous GETs; 2026 edition measured 2026-10-30; prior editions listed in the gov.uk collection",
+      "licence": "Open Government Licence v3.0 (GOV.UK page footer)"
+    }
+  ],
+  "license_evidence": [
+    "GOV.UK publication page footer for 'Inspection and regulation of children's social care providers' (read 2026-10-30): 'Open Government Licence v3.0' linking to https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/ (verified with: curl -sS <page> | grep -io \"open government licence[^<]*\").",
+    "Same footer on 'Inspection outcomes of children's homes' and 'Children's social care in England 2026' pages (read 2026-10-30). OGL v3.0 permits copying, publication, distribution, transmission, adaptation and commercial use, with attribution of the source (Ofsted) and of the licence.",
+    "licence_class A: explicit open licence permitting redistribution and derivatives. Classify from the publisher's own instrument (page-level OGL statement on every dataset page probed)."
+  ],
+  "jurisdiction": {
+    "country": "GB",
+    "region": "Europe",
+    "publisher": "Ofsted (Office for Standards in Education, Children's Services and Skills - England)",
+    "recorded_at": "2026-10-30"
+  },
+  "licence_class": "A",
+  "licence_note": "OGL v3.0; attribution carries through to the release per repo licensing policy (source terms preserved, our compilation dedicated CC0).",
+  "construction_script": null,
+  "split_strategy": "Temporal splits on inspection dates of the deduped full-inspection event set (train 2017-2019 / eval 2021-2023 / holdout 2024-2026, 2020 excluded - COVID suspension with zero full inspections published). Both classes present in every year. Events cluster by home (repeat inspections, up to 3 within a quarter) and by owning organisation (multi-home providers) - clustered counts (distinct homes) recorded per year in notes.md; org-level clustering must be reported alongside event counts in qualification.",
+  "measurements": {
+    "history_available": "Dated per-inspection history IS published - the fsa-fhrs-next-rating blocker does not apply. Three overlapping bulk products all carry inspection-level rows with inspection number + inspection date + judgement: quarterly MI (Dec 2014 - Jun 2024), annual transparency (2024-2025), SFR annual full-year (2020-2026 editions; 2026 verified). Cross-product dedupe by inspection number verified twice: Jun-2024 quarterly file's 708 full inspections all re-keyed inside the 2024 annual file (708/708); SFR-2026 shared 2,084 events with the 2025 annual file and added 2,356 new.",
+    "event_volume_measured_2026_10_30": "16,760 deduped children's-home FULL inspections across the readable (CSV/ODS/XLSX-free) products, 2016-2026; per-year table in notes.md and probe/per_year_counts.json (2016: 728 / 2017: 2,122 / 2018: 2,195 / 2019: 1,206 / 2020: 0 / 2021: 1,466 / 2022: 1,302 / 2023: 1,641 / 2024: 1,660 / 2025: 3,268 / 2026 Q1: 1,172).",
+    "split_window_counts_measured": "train 2017-2019: 5,523 full inspections, 1,200 positives (21.7%); eval 2021-2023: 4,409, 1,210 positives (27.4%); holdout 2024-2026: 6,100, 1,196 positives (19.6%). Prevalence drift documented (COVID-era deterioration 2021-2023, recovery 2025-2026).",
+    "label_mix_measured": "Deduped full-inspection overall judgements 2016-2026: Good 10,916 / Requires improvement (both wordings) 2,811 / Outstanding 1,947 / Inadequate 1,085 / blank 1. Publisher cross-check: SFR 2026 main findings give 11% Outstanding / 71% Good / 13% RI / 5% Inadequate for 4,430 full inspections of homes of all types, 1 Apr 2025 - 31 Mar 2026; my deduped count over the same window is 4,440 (within 10 events, 0.2%; residual to resolve in construction).",
+    "publication_timing_measured": "Per-event publication dates exist from the 2024+ products: children's-home events lag p50 41 days (min 15, max 127; n=2,399, 2025 file) and p50 40 (min 17, max 133; n=1,892, 2024 file). Pre-2024 files carry inspection dates only; the as-of policy anchors first bulk availability to vintage release dates recorded in the GOV.UK update log.",
+    "coverage_gaps_measured": "Q1 quarters 2019-2024 unpublished in the quarterly series (partially recoverable via most-recent-inspection sheets and SFR full-year in-year sheets); Oct 2024 - Mar 2025 sits in the 2025 SFR (not yet pulled; same family); 2020 = zero full inspections (COVID); Dec 2014 - Sep 2016 editions are .xls (worker-side xlrd; not needed for splits).",
+    "extraction_cost_measured": "Full readable series on the coordinator class: 22-23 anonymous GETs, 7,784,646 bytes (~7.4 MB), 5.1-9.5 s wall clock (probe/pull_series.py, probe/aggregate_years.py). Construction adds the .xls era and prior SFR editions: still < 25 MB total, coordinator-trivial; the labelled panel build belongs on a worker per repo convention.",
+    "schema_measured": "Columns (2025 annual in-year sheet, 37): URN, provision type, registration date/status, region, LA, sector, places, supported-accommodation/short-break/multi-building flags, owning organisation, event type, inspection date, inspection publication date, event number, overall judgement + 4 domain judgements. Quarterly-era files (2016-2023): provider URN/status/type, sector, organisation, LA, region, inspection number, inspection date, type group, overall + 2-3 domain judgements. Provider name/address redacted in recent files; URN is the stable join key.",
+    "novelty_context": "QMUL EMAP working paper (2025) predicts Ofsted SCHOOL inspection outcomes (state secondary schools, DfE attainment features) - different population/product. 'Outsourcing and children's social care' (PubMed 36201866, 2022) assembled 13k+ children's-home inspections 2014-2021 for explanatory regression on ownership vs quality - not a prediction benchmark, no splits, not released ML-ready. No ML-ready children's-home inspection-outcome prediction task found in web or mechanical searches (novelty_check below).",
+    "measured_on": "2026-10-30, coordinator (1.9 GiB class), scripts in probe/ (pull_series.py, aggregate_years.py, verify_dec2019.py, probe_ods.py) with outputs probe/series_summary.json, probe/per_year_counts.json"
+  },
+  "novelty_check": {
+    "checked_at": "2026-10-30T05:03:49+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "children's home inspection outcome prediction",
+      "Ofsted children's home rating machine learning",
+      "residential child care inspection prediction dataset"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "children's home inspection outcome prediction",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "Ofsted children's home rating machine learning",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "residential child care inspection prediction dataset",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "children's home inspection outcome prediction",
+          "hits": 197426,
+          "top": [
+            "Decentralisation of Election Processes in Developing Nations",
+            "Exploring the Influence of Home Numeracy Environments on Children's Mathematical Skills",
+            "Scores on independence, quality of life, and satisfaction on visual mapping software intervention in children with Down syndrome",
+            "Scores on independence, quality of life, and satisfaction on visual mapping software intervention in children with Down syndrome",
+            "Process monitoring and outcome inspection"
+          ]
+        },
+        {
+          "query": "Ofsted children's home rating machine learning",
+          "hits": 384298,
+          "top": [
+            "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
+            "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI",
+            "RGB and RGNIR Plastic Waste Database",
+            "Causal Effects of Changes in Ofsted School Ratings on Local Housing Sale and Rent Prices",
+            "mushrooms"
+          ]
+        },
+        {
+          "query": "residential child care inspection prediction dataset",
+          "hits": 525850,
+          "top": [
+            "Child care services, children and hourly fees by area, Greater Sydney and Melbourne, 2012-13 to 2015-16",
+            "Adolescence and mental health in residential care: portrait of a decade in Portugal",
+            "Effectiveness of a mobile App intervention to prevent dating violence in residential child care",
+            "Role of Civil Society Organizations in Social Adjustment of Orphans in Lahore",
+            "Specialized foster home care for traumatized and abused children Analysis of Child protection systems in Norway"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "children's home inspection outcome prediction",
+          "hits": 5,
+          "top": [
+            "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
+            "TICL+: A Case Study On Speech In-Context Learning for Children's Speech Recognition",
+            "Visual-Inertial Teach and Repeat for Aerial Inspection",
+            "ChatHome: Development and Evaluation of a Domain-Specific Language Model for Home Renovation",
+            "The inspection paradox in stochastic resetting"
+          ]
+        },
+        {
+          "query": "Ofsted children's home rating machine learning",
+          "hits": 5,
+          "top": [
+            "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+            "DOME: Recommendations for supervised machine learning validation in biology",
+            "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
+            "Active learning for data streams: a survey",
+            "Physics-Inspired Interpretability Of Machine Learning Models"
+          ]
+        },
+        {
+          "query": "residential child care inspection prediction dataset",
+          "hits": 5,
+          "top": [
+            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+            "Conversational Document Prediction to Assist Customer Care Agents",
+            "Patients, Primary Care, and Policy: Simulation Modeling for Health Care Decision Support",
+            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+            "CCQ: A Multi-State Child Care Quality Dataset to Support AI for Children's Health Research"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'children's home inspection outcome prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'Ofsted children's home rating machine learning': 0 hit(s) - nothing notable\n- huggingface_datasets / 'residential child care inspection prediction dataset': 0 hit(s) - nothing notable\n- zenodo_records / 'children's home inspection outcome prediction': 197426 hit(s) - Decentralisation of Election Processes in Developing Nations, Exploring the Influence of Home Numeracy Environments on Children's Mathematical Skills, Scores on independence, quality of life, and satisfaction on visual mapping software intervention in children with Down syndrome, Scores on independence, quality of life, and satisfaction on visual mapping software intervention in children with Down syndrome, Process monitoring and outcome inspection\n- zenodo_records / 'Ofsted children's home rating machine learning': 384298 hit(s) - plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database, Causal Effects of Changes in Ofsted School Ratings on Local Housing Sale and Rent Prices, mushrooms\n- zenodo_records / 'residential child care inspection prediction dataset': 525850 hit(s) - Child care services, children and hourly fees by area, Greater Sydney and Melbourne, 2012-13 to 2015-16, Adolescence and mental health in residential care: portrait of a decade in Portugal, Effectiveness of a mobile App intervention to prevent dating violence in residential child care, Role of Civil Society Organizations in Social Adjustment of Orphans in Lahore, Specialized foster home care for traumatized and abused children Analysis of Child protection systems in Norway\n- arxiv_preprints / 'children's home inspection outcome prediction': 5 hit(s) - Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, TICL+: A Case Study On Speech In-Context Learning for Children's Speech Recognition, Visual-Inertial Teach and Repeat for Aerial Inspection, ChatHome: Development and Evaluation of a Domain-Specific Language Model for Home Renovation, The inspection paradox in stochastic resetting\n- arxiv_preprints / 'Ofsted children's home rating machine learning': 5 hit(s) - Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Active learning for data streams: a survey, Physics-Inspired Interpretability Of Machine Learning Models\n- arxiv_preprints / 'residential child care inspection prediction dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, Conversational Document Prediction to Assist Customer Care Agents, Patients, Primary Care, and Policy: Simulation Modeling for Health Care Decision Support, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, CCQ: A Multi-State Child Care Quality Dataset to Support AI for Children's Health Research",
+    "prior_art": [
+      "Outsourcing and children's social care, BMJ-quality journal article (PubMed 36201866, 2022); QMUL EMAP Working Paper 2025 (Ofsted school inspection outcome prediction); no HuggingFace/Zenodo/arXiv ML-ready children's-home inspection benchmark found by the mechanical searches recorded in novelty_check."
+    ],
+    "theirs": "The publisher ships raw inspection-level rows (that is expected and fine). Academic use of the same source is explanatory, not predictive: 'Outsourcing and children's social care' (PubMed 36201866, 2022) built a longitudinal 13k-inspection panel 2014-2021 for ownership-vs-quality regressions, unreleased as ML-ready; a QMUL EMAP 2025 working paper predicts Ofsted SCHOOL inspection outcomes for state secondary schools from DfE attainment data (different population, features, product).",
+    "ours": "The prediction task itself: a vintage-anchored, next-full-inspection below-Good binary classification for English children's homes, built from three Ofsted bulk products (quarterly MI 2014-2024, annual transparency 2024+, SFR full-year in-year sheets), with documented as-of policy anchored to GOV.UK vintage release dates, temporal train/eval/holdout on 16,760 measured events, censoring for deregistration, and scored baselines incl. the persistence reference. No one ships this task in ML-ready form.",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": null,
+  "verdict": {
+    "status": "ready",
+    "contracts": {
+      "redistribution": "supported - OGL v3.0 on every dataset page probed (licence_class A), quoted in license_evidence",
+      "prediction_timing": "supported - prediction instants are documented GOV.UK vintage release dates; features are vintage-visible; targets are inspections dated after the instant; per-event publication dates from 2024+ and vintage-log bounds pre-2024; dated worked example in notes.md (T = 13 Feb 2020)",
+      "obtainable_target": "supported - overall judgement of the next full inspection, from inspection-level rows published continuously since 2014; label source column named and excludable; censoring policy for deregistration stated",
+      "split_capacity": "supported - measured 16,760 deduped full inspections 2016-2026; three disjoint windows each carry >4,000 events and >1,100 positives; both classes every year",
+      "not_a_mirror": "supported - no existing ML-ready children's-home inspection-outcome prediction task; publisher ships raw data only; nearest prior art is explanatory (ownership-vs-quality regressions) or a different population (schools); see novelty_check"
+    },
+    "uncertainty": "Persistence-baseline headroom is unmeasured (needs consecutive-inspection linkage = construction): homes rated below Good are re-inspected sooner and may persist below Good, the exact failure mode that killed defra-la-household-recycling-rate (rule solves task) and nhs-ae-four-hour-decline (rule beats model). A last-rating -> next-rating transition table and persistence reference must be the FIRST construction measurement, before any model figure is quoted. Secondary: label-vocabulary mapping across 2016-2027 frameworks; the 10-event (0.2%) residual vs the SFR denominator; Q1-quarter gaps (design already avoids conditioning on them).",
+    "next_action": "Advancement owns construction: assemble the vintage-anchored event panel on a worker (pull all listed assets + .xls era with xlrd + prior SFR editions, pin sha256 per asset - the sibling 'Regulatory activity' series had a documented post-release correction, so vintage immutability is not assumed), then FIRST measure the last-rating -> next-rating transition table and persistence reference AUC. Ship only if headroom over the persistence reference is demonstrable; otherwise record the headroom finding and park. Expected artifact: train/eval/holdout CSVs on the next-full-inspection contract, vintage-anchored as-of ledger, fixtures asserting the SFR cross-check (4,430) and the COVID-2020 zero-full-inspection property."
+  },
+  "next_action": "Advancement owns construction: worker-side assembly of the vintage-anchored inspection-event panel (all products + .xls era + prior SFR editions, sha256-pinned), then the persistence-reference headroom measurement FIRST (last-rating -> next-rating transitions) before any model figure; ship only if headroom over persistence is demonstrable."
+}
