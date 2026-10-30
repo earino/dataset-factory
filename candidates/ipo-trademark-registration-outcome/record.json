@@ -53,7 +53,7 @@
    "note": "Live trade mark register page footer, read in the supported browser 2026-10-27 (plain clients get HTTP 403). Register content is not redistributed by us; quoted for the fixture verification only."
   }
  ],
- "split_strategy": "Cohort split on filing year (disjoint calendar-year windows, both classes in every window; scored rows exclude censored marks): train 2010-2012, eval 2013-2014, holdout 2015-2016. Computed from the full source by probe_aggregate.py (candidates/ipo-trademark-registration-outcome/probe_aggregate.py), run 2026-10-27 on the coordinator.",
+ "split_strategy": "Cohort split on filing year (disjoint calendar-year windows, both classes in every window; scored rows exclude censored marks): train 2010-2012, eval 2013-2014, holdout 2015-2016. Counts CORRECTED 2026-10-30 by probe_reconcile_pipe_rows.py (see measurements.pipe_row_reconciliation_2026_10_30): train 106,990 scored rows / 92,668 pos / 14,322 neg / 21 censored; eval 97,274 / 81,699 pos / 15,575 neg / 172 censored; holdout 115,172 / 99,385 pos / 15,787 neg / 809 censored. The original 2026-10-27 table (eval 97,258 / 81,689; holdout 115,130 / 99,345) was a probe-measurement error: probe_aggregate.py read the 94 embedded-pipe rows at shifted positions and under-counted cohorts 2013-2016 by exactly the 58 recovered in-window pipe rows.",
  "splits": {
   "train": {
    "filed_years": "2010-2012",
@@ -232,6 +232,14 @@
    },
    "wall_s": 5.0,
    "consequence": "construction dedups on the stripped mark-number string (first occurrence); all in-build assertions target the string-key numbers, which equal the recorded cohort table"
+  },
+  "pipe_row_reconciliation_2026_10_30": {
+   "probe": "candidates/ipo-trademark-registration-outcome/probe_reconcile_pipe_rows.py",
+   "evidence": "candidates/ipo-trademark-registration-outcome/ipo_tm_reconciliation.json",
+   "verdict": "RECONCILIATION CLOSED; the build's right-anchored recovery is the correct reading; the frozen EXPECTED table was a probe-measurement error",
+   "what_was_measured": "Over the same sha256-pinned snapshot (3b6063be...): pass A reproduces the frozen ipo_tm_aggregates.json exactly (all numeric keys), proving the old table's provenance; pass C (build.py's exact pipeline, cross-checked against an imported build.iter_records) matches every number the ipo-tm-002 worker measured: data rows 1,189,004, distinct 1,172,095, dup 16,909, letter-suffixed 22,812/17, blank/bad-filed 34, neg_with_regdate 8 eligible / 10 post2010, per-year cohorts. Per-row attribution closes every delta exactly: +58 scored rows = the 58 recovered pipe rows filed 2013-2016 (2013 +5 pos +2 neg; 2014 +5 pos +4 neg; 2015 +9 pos; 2016 +31 pos +2 neg); -18 blank/bad-filed = pipe rows whose shifted read ('No'x11/'Yes'x4/'Word'x2/'Figurative'x1) failed the 4-digit check; the remaining pipe rows were excluded via bogus year keys ('0'x67, '2'x6, '3'x2, '5'x1) or int-key dups (x2); 17 non-pipe diffs are letter-suffixed repeated-owner rows filed 1928-2003 (out of window, zero cohort effect). The handoff's '3 unparseable (3/5) filed rows' was the same shifted-read artifact (UK00003033672/UK00003112662/UK00003154878, all recovered with parseable dates); the correct-column unparseable count is 0.",
+   "correctness_evidence": "All 94 recovered rows: Status in the publisher's documented vocabulary 94/94 (shifted status reads: 0/94 - they read Country/Mark-Type values); recovered Filed dates parse 94/94; class columns binary 94/94. Corrected cohorts 2013 (46,362) and 2016 (61,681) now equal the IPO workbook's published National applications EXACTLY (old table was low by exactly the mis-read pipe rows).",
+   "scope": "Aggregate counts only; no feature panel, no aligned labels, no model, no AUC."
   }
  },
  "contracts": {
@@ -324,7 +332,7 @@
   "verdict": "differentiated",
   "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
  },
- "next_action": "CONSTRUCTION FAILED AGAIN, NEW DEFECT (ipo-tm-002, 2026-10-30; parent ipo-tm-001): assert_expectations refused the artifact - the build scores 58 more rows than the frozen EXPECTED cohort table (eval +16, holdout +42; censored identical; train exact; blank/bad-filed 34 vs 52). The ipo-tm-001 hazards-shape defect is fixed and proven (fixtures OK on the real bytes; tests/test_ipo_tm_build.py red/green; suite 678 OK). NEXT STEP for advancement (bounded reconciliation BEFORE any rebuild, no new attempt yet): decide with measurements which pipeline is correct - probe_aggregate.py (source of EXPECTED) reads the 94 embedded-pipe rows at SHIFTED positions and dedups on the int key AFTER the filed check; build.py recovers them right-anchored and dedups on the string key BEFORE it. Run a corrected probe pass over the pinned snapshot (same right-anchored recovery + string-key dedup position as build) and attribute the +58: verify the recovered pipe rows' cohort/label distribution accounts for eval +16 / holdout +42 (and the 18 blank/bad-filed difference via the dedup-order interaction). If the recovered reading is confirmed correct - it follows the publisher's own last-45-class column structure - re-derive the EXPECTED cohort table from the corrected probe, record the old table as probe-measurement error (never as build output tuning), update the pinned counts in build.py EXPECTED/summary, and relaunch as ipo-tm-003 (fresh attempt id linked to ipo-tm-002) in the same construct -> gate -> exact-byte --accept -> references order. If the attribution does not close exactly, stop and record the blocker instead of relaxing the assertions. Attempt cap warning: this would be rebuild #3 of the construction (001 crashed pre-parse, 002 diverged) - if ipo-tm-003 fails on a further defect, the honest move per dataset-qualification is re-target or drop.",
+ "next_action": "RECONCILIATION COMPLETE 2026-10-30 (probe_reconcile_pipe_rows.py, RECONCILIATION CLOSED): the build's right-anchored pipe-row recovery is measured correct and the frozen EXPECTED table was the probe's shifted-read error; build.py EXPECTED re-derived (cohorts 2013-2016, eval 97,274/81,699, holdout 115,172/99,385, blank 34, unparseable 0 now asserted; old table preserved as probe-measurement error). NEXT: launch ipo-tm-003 (rebuild 3, linked to ipo-tm-002) in the unchanged construct -> gate -> exact-byte --accept -> references order, collect and verify the reports, then record and package per dataset-release. Attempt cap: a further defect on ipo-tm-003 means re-target or drop per dataset-qualification, not ipo-tm-004.",
  "jobs": [
   {
    "id": "ipo-tm-001",
@@ -355,5 +363,5 @@
    "note": "The ipo-tm-001 hazards defect is FIXED and now proven on the real snapshot: both iter_records call sites share one new_hazards() shape; tests/test_ipo_tm_build.py (4 tests) verifies the fixtures stage, the hazards shape, the pipe recovery and the classify loop on bounded synthetic rows - red on the pre-fix code (the exact ipo-tm-001 TypeError), green on the fix; full local suite 678 tests OK. Operational lesson recorded for the next session: worker status shows the SERVER record, which stays 'running' until destroy - the job result appears only via collect; poll collect (or ssh docker ps) instead of polling status."
   }
  ],
- "updated_at": "2026-10-30T07:10:00Z"
+ "updated_at": "2026-10-30T12:05:00Z"
 }

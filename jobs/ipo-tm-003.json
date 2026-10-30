@@ -1,0 +1,67 @@
+{
+  "job": {
+    "id": "ipo-tm-003",
+    "candidate": "ipo-trademark-registration-outcome",
+    "image": "python:3.13-slim",
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "server_type": "cpx32",
+    "location": "hel1",
+    "cpus": 4,
+    "memory_mb": 6144,
+    "timeout_minutes": 45,
+    "lifetime_minutes": 90,
+    "max_disk_mb": 4096,
+    "max_artifact_mb": 200,
+    "what": "Rebuild 3, linked to ipo-tm-002, which failed assert_expectations: the build scored +58 rows vs the frozen EXPECTED table (eval +16, holdout +42; censored identical, train exact; blank/bad-filed 34 vs 52). Root cause measured on the coordinator by probe_reconcile_pipe_rows.py (2026-10-30, RECONCILIATION CLOSED): the discovery probe read the 94 embedded-pipe rows at SHIFTED positions (left-anchored fields[7]/[12]/[14]) and deduped on the int key after the filed check; build.py's right-anchored recovery is the correct reading (94/94 recovered statuses in the publisher's documented vocabulary, shifted reads 0/94; 94/94 recovered filed dates parse; 94/94 class columns binary; corrected cohorts 2013 n=46,362 and 2016 n=61,681 now equal the IPO workbook's published National applications exactly). EXPECTED re-derived from the corrected probe (per-year 2013-2016 updated; eval 97,274 rows / 81,699 pos; holdout 115,172 / 99,385; blank/bad-filed 34; unparseable 0 now asserted; old table preserved in ipo_tm_aggregates.json and git history as a probe-measurement error, never tuned against build output). Construction is otherwise unchanged: stream-parse UTF-16LE pipe-separated with right-anchored recovery, dedup first occurrence per stripped mark-number string (16,909 rows removed; 22,812 letter-suffixed series sub-marks stay distinct), eligibility filed 2010-01-01..2016-12-31, label registered-by-snapshot with per-cohort censored counts, three in-file fixtures asserted, publisher cross-check +-1% vs Trade_marks_2016.xlsx National applications (values pinned); then the dataset-qualification gate on the full artifact, exact-byte --accept, and only then the simple references on eval rows (nice_class_rate required comparator, mark_type_rate, owner_country_rate, calendar_month_rate, category_rate, series_flag_rate, majority/global-rate degenerate controls, persistence recorded not-applicable, per-year AUC/Brier, prevalence shift, 150-resample paired bootstrap). No performance metric is computed before acceptance. cpx32 sized for the gate's column-wise read of ~320k scored rows x 57 columns. Attempt cap noted: a further defect on this build means re-target or drop per dataset-qualification.",
+    "source_files": [
+      {
+        "bundled_as": "build.py",
+        "source": "candidates/ipo-trademark-registration-outcome/source/build.py",
+        "bytes": 55707,
+        "sha256": "80b371ab9bdd6cd8eac2ffcca06fece3e3b2696798d3e5e8c46a85d1b893cc5f"
+      },
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/ipo-trademark-registration-outcome/source/run.sh",
+        "bytes": 1872,
+        "sha256": "39bd461b75119e9bdec368c556605ee5cfbc348582672d8d21ad4aa54ee3df19"
+      },
+      {
+        "bundled_as": "score.py",
+        "source": "candidates/ipo-trademark-registration-outcome/source/score.py",
+        "bytes": 16463,
+        "sha256": "9f39ff5b985c14b177af4edfb1df85d44f548656a32266c60432b4fc03ec827f"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 57029,
+        "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+      }
+    ]
+  },
+  "reservation_eur": "0.24",
+  "rate_ceiling_eur": "0.08",
+  "reserved_hours": 3,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 225280,
+  "source_sha256": "9c8377d44bb654dc019c961ee18bbf49a97616f398850b3f96cf4773e3575bcb",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "running",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-10-30T10:29:07.029861+00:00",
+  "expires": 1793361547,
+  "budget_months": [
+    "2026-10"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0692400000000000",
+  "server_id": 173516828,
+  "known_hosts": "/opt/data/dataset-factory/.factory/ipo-tm-003/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "65.21.158.17"
+}

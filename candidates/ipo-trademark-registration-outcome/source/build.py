@@ -42,9 +42,14 @@ probe retained in the candidate's notes):
     keys on the Registered date (asserted, per the discovery probe's ten
     rows on the wider post-2010 population);
   * splits: cohort split on filing year - train 2010-2012, eval 2013-2014,
-    holdout 2015-2016 - with the discovery-measured counts asserted exactly:
-    train 106,990 scored rows / 14,322 negatives, eval 97,258 / 15,569,
-    holdout 115,130 / 15,785; censored 21 / 172 / 809;
+    holdout 2015-2016 - with counts asserted exactly as re-derived by the
+    corrected 2026-10-30 reconciliation probe
+    (probe_reconcile_pipe_rows.py; RECONCILIATION CLOSED): the discovery
+    probe's table under-counted cohorts 2013-2016 because it read the 94
+    embedded-pipe rows at shifted positions - a probe-measurement error,
+    corrected here, never tuned against build output:
+    train 106,990 scored rows / 14,322 negatives, eval 97,274 / 15,575,
+    holdout 115,172 / 15,787; censored 21 / 172 / 809;
   * features: filing-time attributes only (mark text, class booleans +
     class count, category, mark type, series flag/count, owner
     country/region/postcode area, filed date). Status, Published,
@@ -124,31 +129,47 @@ F_CATEGORY, F_MARKTYPE, F_SERIES, F_NSERIES = 8, 9, 10, 11
 F_FILED, F_PUBLISHED, F_REGISTERED, F_EXPIRED, F_RENEWAL = 12, 13, 14, 15, 16
 F_CLASS_BASE = 17
 
-# Discovery-measured expectations (probe_aggregate.py 2026-10-27 and the
-# 2026-10-30 dedup-key reconciliation probe; the bytes are sha256-pinned, so
-# every count below is deterministic and asserted).
+# Expectations pinned from measured source metadata. The ORIGINAL frozen table
+# (probe_aggregate.py 2026-10-27 plus the 2026-10-30 dedup-key probe) mis-read
+# the 94 embedded-pipe rows at shifted positions (fields[7]/[12]/[14]
+# left-anchored) and deduped late on the int key. The corrected table below is
+# re-derived from the same sha256-pinned snapshot by
+# probe_reconcile_pipe_rows.py (pass C == this build's pipeline, verified
+# against the ipo-tm-002 worker's measured numbers; per-row attribution of
+# every delta closed exactly; all 94 recovered rows verified against the
+# publisher's own last-45-class column structure). The old table is preserved
+# in git history and in ipo_tm_aggregates.json as a recorded probe-measurement
+# error. The bytes are pinned, so every count below is deterministic and
+# asserted.
 EXPECTED = {
     "data_rows": 1_189_004,
     "field_count_distribution": {62: 1_188_910, 63: 76, 64: 15, 65: 3},
     "dup_rows_string_key": 16_909,
     "letter_suffix_rows": 22_812,
     "letter_suffix_dup_rows": 17,
-    "blank_or_bad_filed_head": 52,   # rows whose Filed value fails a 4-digit year check
+    "blank_or_bad_filed_head": 34,   # rows whose (correct) Filed value fails
+                                     # a 4-digit year check; the old 52
+                                     # included 18 pipe rows whose SHIFTED
+                                     # read ('No'/'Yes'/'Word'/'Figurative')
+                                     # failed the check
+    "unparseable_filed": 0,          # correct-column count; the old "3" was
+                                     # the shifted read '3'/'5' of three pipe
+                                     # rows whose recovered dates parse
     "neg_with_regdate_eligible": 8,
     "neg_with_regdate_post2010": 10,
     "per_year": {
         "2010": {"n": 30_372, "pos": 27_181, "neg": 3_187, "cens": 4},
         "2011": {"n": 36_364, "pos": 31_015, "neg": 5_338, "cens": 11},
         "2012": {"n": 40_275, "pos": 34_472, "neg": 5_797, "cens": 6},
-        "2013": {"n": 46_355, "pos": 38_923, "neg": 7_363, "cens": 69},
-        "2014": {"n": 51_075, "pos": 42_766, "neg": 8_206, "cens": 103},
-        "2015": {"n": 54_291, "pos": 46_160, "neg": 7_953, "cens": 178},
-        "2016": {"n": 61_648, "pos": 53_185, "neg": 7_832, "cens": 631},
+        "2013": {"n": 46_362, "pos": 38_928, "neg": 7_365, "cens": 69},
+        "2014": {"n": 51_084, "pos": 42_771, "neg": 8_210, "cens": 103},
+        "2015": {"n": 54_300, "pos": 46_169, "neg": 7_953, "cens": 178},
+        "2016": {"n": 61_681, "pos": 53_216, "neg": 7_834, "cens": 631},
     },
     "splits": {
         "train": {"rows": 106_990, "positives": 92_668, "censored": 21},
-        "eval": {"rows": 97_258, "positives": 81_689, "censored": 172},
-        "holdout": {"rows": 115_130, "positives": 99_345, "censored": 809},
+        "eval": {"rows": 97_274, "positives": 81_699, "censored": 172},
+        "holdout": {"rows": 115_172, "positives": 99_385, "censored": 809},
     },
 }
 
@@ -501,6 +522,9 @@ def assert_expectations(diag: dict, out_rows: dict) -> None:
     if diag["hazards"]["blank_or_bad_filed"] != EXPECTED["blank_or_bad_filed_head"]:
         problems.append(f"blank/bad filed {diag['hazards']['blank_or_bad_filed']} "
                         f"!= {EXPECTED['blank_or_bad_filed_head']}")
+    if diag["hazards"]["unparseable_filed"] != EXPECTED["unparseable_filed"]:
+        problems.append(f"unparseable filed {diag['hazards']['unparseable_filed']} "
+                        f"!= {EXPECTED['unparseable_filed']}")
     if diag["neg_with_regdate"]["eligible"] != EXPECTED["neg_with_regdate_eligible"]:
         problems.append(f"eligible neg-with-Registered-date rows "
                         f"{diag['neg_with_regdate']['eligible']} != "

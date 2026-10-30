@@ -87,38 +87,49 @@ censored, with per-cohort counts asserted.
 
 Eligible cohorts (filed 2010-2016; complete-population coverage documented from
 2010-01-01, 2005-2009 measured as registration-conditioned: 2009 shows only 499
-never-registered of 25,163):
+never-registered of 25,163). CORRECTED 2026-10-30 by the reconciliation probe
+(see the reconciliation section below) - the original table under-counted
+2013-2016:
 
 | Year | marks | pos | neg | censored |
 |---|---|---|---|---|
 | 2010 | 30,372 | 27,181 | 3,187 | 4 |
 | 2011 | 36,364 | 31,015 | 5,338 | 11 |
 | 2012 | 40,275 | 34,472 | 5,797 | 6 |
-| 2013 | 46,355 | 38,923 | 7,363 | 69 |
-| 2014 | 51,075 | 42,766 | 8,206 | 103 |
-| 2015 | 54,291 | 46,160 | 7,953 | 178 |
-| 2016 | 61,648 | 53,185 | 7,832 | 631 |
+| 2013 | 46,362 | 38,928 | 7,365 | 69 |
+| 2014 | 51,084 | 42,771 | 8,210 | 103 |
+| 2015 | 54,300 | 46,169 | 7,953 | 178 |
+| 2016 | 61,681 | 53,216 | 7,834 | 631 |
 
 Splits (scored rows = pos+neg): **train 2010-2012 = 106,990 rows / 14,322 neg
-(13.4%)**; **eval 2013-2014 = 97,258 / 15,569 (16.0%)**; **holdout 2015-2016 =
-115,130 / 15,785 (13.7%)**. Both classes in every window and every year;
+(13.4%)**; **eval 2013-2014 = 97,274 / 15,575 (16.0%)**; **holdout 2015-2016 =
+115,172 / 15,787 (13.7%)**. Both classes in every window and every year;
 negatives arrive as 3-8k per year across all months (no event clustering).
 2017+ is out of eligibility: 16,386/75,024 censored at snapshot.
+
+The ORIGINAL (wrong) 2026-10-27 table - eval 97,258 / 15,569, holdout
+115,130 / 15,785, cohorts 2013-2016 = 46,355 / 51,075 / 54,291 / 61,648 - is
+preserved verbatim in `ipo_tm_aggregates.json` and in git history as a
+recorded probe-measurement error.
 
 ## Publisher cross-check (probe_crosscheck.py, 2026-10-27)
 
 IPO facts-and-figures workbook "Trade_marks_2016.xlsx", "Summary of trade mark
-activity", National UK applications vs my distinct-mark filed-year cohorts:
+activity", National UK applications vs my distinct-mark filed-year cohorts
+(measured values updated 2026-10-30 to the corrected cohort counts; the
+corrected 2013 and 2016 counts now match the published figures EXACTLY,
+which is independent corroboration that the right-anchored recovery reads
+the pipe rows the way the publisher structured them):
 
 | Year | Published National applications | Measured distinct marks | rel. diff |
 |---|---|---|---|
 | 2012 | 40,238 | 40,275 | +0.09% |
-| 2013 | 46,362 | 46,355 | -0.02% |
-| 2014 | 51,016 | 51,075 | +0.12% |
-| 2015 | 54,320 | 54,291 | -0.05% |
-| 2016 | 61,681 | 61,648 | -0.05% |
+| 2013 | 46,362 | 46,362 | 0.00% |
+| 2014 | 51,016 | 51,084 | +0.13% |
+| 2015 | 54,320 | 54,300 | -0.04% |
+| 2016 | 61,681 | 61,681 | 0.00% |
 
-Register fidelity corroborated within 0.12% every year. (The PDF facts-and-
+Register fidelity corroborated within 0.13% every year. (The PDF facts-and-
 figures "Applications 58,627" figure for 2016 is the National+IR Total column -
 not the domestic series - which resolves the apparent mismatch.)
 
@@ -215,3 +226,65 @@ The worker run is `build.py`'s first execution: it was syntax-checked and its
 parse/classify logic mirrors the two measured probes, but no local full run
 was performed (construction belongs on the worker). Outcome and any repair
 are the next session's first step.
+
+## Pipe-row reconciliation (2026-10-30, advancement; probe_reconcile_pipe_rows.py - RECONCILIATION CLOSED)
+
+ipo-tm-002's build scored +58 rows vs the frozen EXPECTED table (eval +16,
+holdout +42; censored identical, train exact; blank/bad-filed 34 vs 52). The
+recorded bounded reconciliation ran on the coordinator over the same
+sha256-pinned snapshot (63,238,846 B, `3b6063be...`; one anonymous GET to
+scratch, deleted after the run). Aggregate counts only - no feature panel,
+no labels aligned, no model, no AUC. Evidence: `ipo_tm_reconciliation.json`
+(pass A = probe_aggregate.py verbatim, pass C = build.py's exact pipeline
+including an imported `build.iter_records` cross-check, per-row diff
+attribution, and the full 94-row pipe census).
+
+**Which pipeline is correct - decided by measurement.** The discovery probe
+read the 94 embedded-pipe rows at SHIFTED positions (left-anchored
+fields[7]/[12]/[14], so it read the Country / series-count / Mark-Type
+columns as Status/Filed/Registered) and deduped on the int key AFTER the
+filed check. build.py's right-anchored recovery (the 45 class columns are
+the LAST 45 fields, so the extra pipes belong to Mark Text) is the correct
+reading:
+
+- All 94 recovered rows: Status in the publisher's documented vocabulary
+  (94/94); shifted status reads in vocabulary: 0/94 (they read country and
+  mark-type values). Recovered Filed dates parse: 94/94. Class columns
+  binary: 94/94.
+- Corrected cohorts 2013 (46,362) and 2016 (61,681) equal the IPO's own
+  published National applications EXACTLY (the old table was low by exactly
+  the mis-read pipe rows).
+
+**Attribution of every delta (closes exactly; probe checks all green):**
+
+- +58 scored rows = the 58 recovered pipe rows filed 2013-2016:
+  2013 +5 pos +2 neg; 2014 +5 pos +4 neg (eval +16);
+  2015 +9 pos; 2016 +31 pos +2 neg (holdout +42). Every one of the 58 rows
+  is named, with its recovered fields, in `ipo_tm_reconciliation.json`.
+- -18 blank/bad-filed (52 -> 34) = the 18 pipe rows whose SHIFTED filed
+  read ('No' x11, 'Yes' x4, 'Word' x2, 'Figurative' x1) failed the 4-digit
+  check. The other pipe rows were excluded via bogus year keys ('0' x67,
+  '2' x6, '3' x2, '5' x1) or as int-key dups (x2).
+- 17 non-pipe classification diffs = letter-suffixed series sub-marks with
+  repeated owner rows (e.g. UK0002338781A x3), ALL filed 1928-2003
+  (out of window) - the string-key dedup change alone moves no cohort,
+  confirming the 2026-10-30 dedup-key reconciliation's "identical per-year
+  table" claim.
+- The "3 unparseable ('3'/'5') filed rows" in the 2026-10-30 handoff note
+  was the SAME shifted-read artifact: rows UK00003033672 (recovered filed
+  2013-12-05, Withdrawn -> 2013 negative), UK00003112662 (2015-06-10,
+  Registered -> positive), UK00003154878 (2016-03-14, Registered ->
+  positive). Correct-column unparseable count: 0. The worker build never
+  printed or asserted this count; it is now asserted as 0.
+- Pass A reproduces the frozen `ipo_tm_aggregates.json` exactly (all
+  numeric keys), proving the frozen EXPECTED table's provenance is the
+  shifted-read probe and nothing else.
+
+**Actions taken:** EXPECTED in `source/build.py` re-derived from the
+corrected probe (cohorts 2013-2016, eval/holdout split counts, blank 34,
+unparseable 0 now asserted); the old table preserved in git history and
+`ipo_tm_aggregates.json` as a probe-measurement error, never tuned against
+build output. Relaunch: ipo-tm-003 (rebuild 3, linked to ipo-tm-002) in the
+unchanged construct -> gate -> exact-byte --accept -> references order.
+Attempt cap: a further defect on ipo-tm-003 means re-target or drop per
+dataset-qualification, not ipo-tm-004.
