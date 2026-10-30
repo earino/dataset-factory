@@ -1,3 +1,67 @@
+## 2026-10-30 07:1xZ - ipo-tm-002 failed at a NEW construction defect (probe-vs-build EXPECTED divergence diagnosed, evidence preserved); ipo-tm-001 hazards fix proven; worker destroyed, provider read-back 0/0
+
+Release track first, unchanged: unhcr-refugee-data-finder keeps
+`operator_decision_pending: true` (the operator relays the regenerated pre-flip
+audit prompt; no verdict or waiver recorded) and ns-bwa-advisory-lift-duration
+keeps `awaiting_operator: true` (the flip). No recorded publication approval
+exists, so this session advanced the highest-priority unblocked item instead:
+the ipo-tm-002 fix handed to advancement after ipo-tm-001's crash.
+
+- Fix applied and proven locally: build.py's check_fixtures passed a bare
+  Counter() as iter_records' hazards (ipo-tm-001's TypeError at 7.3 s). Both
+  iter_records call sites now share one new_hazards() shape (a single
+  constructor, so the shape cannot drift). tests/test_ipo_tm_build.py (4 new
+  tests) verifies the fixtures stage, the hazards shape, the embedded-pipe
+  recovery and the classify loop on bounded synthetic rows - RED on the
+  pre-fix build.py from git HEAD (2 tests fail with the exact ipo-tm-001
+  `TypeError: 'int' object is not subscriptable`) and GREEN on the fix; full
+  local suite 678 tests OK in 26 s.
+- ipo-tm-002 launched 06:10:46Z (cpx32 server 173481207, reservation EUR
+  0.24, bundle source_sha256 56f6dea1..., October conservative reservations
+  now EUR 11.04 of 20). Failed exit 1 after 19.1 s. The hazards fix WORKED on
+  the real snapshot: pinned fetch OK (63,238,846 B, 3b6063be...), all three
+  in-file fixtures asserted OK, parse+classify streamed 1,189,004 rows with
+  dup 16,909 / letter-suffix / field-count tallies all matching. The failure
+  is a NEW defect: assert_expectations refused the artifact because the build
+  classifies 58 more scored rows than the frozen discovery record - eval
+  97,274/81,699/15,575 vs expected 97,258/81,689/15,569, holdout
+  115,172/99,385/15,787 vs 115,130/99,345/15,785, censored identical in every
+  cohort, train exact, blank/bad-filed 34 vs 52. No gate run, acceptance or
+  score exists; no figure is quoted beyond these counts.
+- Diagnosis (code read, recorded in the candidate record): probe_aggregate.py -
+  the script that produced the frozen EXPECTED cohort table - reads the 94
+  embedded-pipe rows at SHIFTED column positions (never recovers them) and
+  counts blank/bad-filed BEFORE deduplicating on the integer tm key, while
+  build.py recovers the pipe rows right-anchored (publisher's last-45-class
+  structure) and dedups first-occurrence per stripped string key BEFORE the
+  filed check. Consistent with +58 scored rows and the 18-row blank/bad-filed
+  gap, but the exact attribution is NOT yet measured - the reconciliation is
+  the next session's bounded step, and the assertions must not be relaxed to
+  match build output.
+- Evidence preserved and digest-verified into .factory/ipo-tm-002/reports/:
+  container.log (6ae61127...) and manifest.json (bc1dcf13...) fetched from
+  private staging release 428706741 by numeric asset id, re-hashed to the
+  collect result. Worker destroyed 07:08:13Z; provider read-back via
+  scripts/provider-inventory.py: 0 servers / 0 primary IPs. Job record marked
+  collected; jobs/ipo-tm-002.json pushed with the ledger.
+- Operational lesson (same failure class as the 2026-10-29 collect note):
+  `worker status` shows the SERVER record, which stays "running" until
+  destroy; the job result surfaces only via `worker collect`. This session
+  polled status for ~50 min while the container had already failed at 19 s.
+  Poll collect (or ssh `docker ps`) instead.
+- Attempt ledger for this construction: 001 crashed pre-parse (hazards shape,
+  fixed), 002 diverged from EXPECTED (pipeline reconciliation pending). A
+  relaunch is ipo-tm-003, fresh attempt id linked to 002 - and it is rebuild
+  #3, so a further defect means re-target or drop per dataset-qualification.
+
+Next action: advancement runs the bounded reconciliation (corrected probe pass
+over the pinned snapshot: right-anchored recovery + string-key dedup at build's
+position; attribute eval +16 / holdout +42 and the blank/bad-filed 18), then
+either re-derives EXPECTED from the corrected probe with the old table recorded
+as probe-measurement error and relaunches ipo-tm-003, or records the blocker if
+the attribution does not close exactly. Release waits unchanged and remain the
+operator's.
+
 ## 2026-10-30 05:08Z - discovery (UK focus): ofsted-childrens-home-next-rating opened and set ready - dated inspection-level history 2014-2026 confirmed across three OGL-v3.0 bulk products; 16,760 deduped full inspections measured; novelty differentiated
 
 UK regional tick. No construction, qualification, packaging, publication or scoring ran;

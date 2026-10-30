@@ -278,14 +278,25 @@ def parse_date(value: str) -> date | None:
         return None
 
 
+def new_hazards() -> dict:
+    """The single hazards shape every iter_records caller must pass.
+
+    check_fixtures once passed a bare Counter(), which made iter_records
+    subscript the int a Counter returns for a missing key (ipo-tm-001,
+    TypeError at line 253). Both call sites now share this constructor so
+    the shape cannot drift between the fixture stage and the main build.
+    """
+    return {"field_counts": Counter(), "short_rows": 0,
+            "pipe_recovered": 0, "trailing_partial_line": 0,
+            "dup_rows": 0, "letter_suffix_rows": 0,
+            "letter_suffix_dups": 0, "blank_or_bad_filed": 0,
+            "unparseable_filed": 0, "class_value_anomalies": 0,
+            "series_count_unparseable": 0}
+
+
 def build_rows(zip_path: Path) -> tuple[dict, dict]:
     """Classify every distinct mark; return scored rows per split and diagnostics."""
-    hazards = {"field_counts": Counter(), "short_rows": 0,
-               "pipe_recovered": 0, "trailing_partial_line": 0,
-               "dup_rows": 0, "letter_suffix_rows": 0,
-               "letter_suffix_dups": 0, "blank_or_bad_filed": 0,
-               "unparseable_filed": 0, "class_value_anomalies": 0,
-               "series_count_unparseable": 0}
+    hazards = new_hazards()
     seen: set[str] = set()
     out_rows: dict[str, list[dict]] = {split: [] for split in LAYOUT}
     per_year: dict[str, Counter] = defaultdict(
@@ -419,7 +430,7 @@ def check_fixtures(zip_path: Path) -> list[dict]:
     """The three recorded in-file fixtures, asserted against the fetched bytes."""
     fixtures = []
     seen = {}
-    for fields in iter_records(zip_path, Counter()):
+    for fields in iter_records(zip_path, new_hazards()):
         tm = fields[F_TM].strip().replace(" ", "")
         if tm in ("UK00000000001", "UK00003171385", "UK00003041794"):
             seen[tm] = fields
