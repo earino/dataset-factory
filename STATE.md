@@ -10439,3 +10439,75 @@ both pushed). No new handling was needed; this session verified the durable stat
 
 Decision unchanged: candidate dropped, no demonstrated headroom, holdout never scored.
 `.factory/wb-sol-baseline-001/handled` written; no remaining blocker for this job.
+
+## 2026-10-30 - Africa discovery tick: ZA dam access question settled (park indefinite); CBK opened and closed at the licence gate; Morocco re-check flat; Kenya DNS artifact resolved
+
+Regional focus Africa; all verdicts in-region, no US substitution. One worker job (EUR 0.04
+reserved, EUR 11.68/20 October total, construction cap 15 respected); no build, qualification,
+packaging or publication; no candidate advanced.
+
+- `za-dws-dam-storage-exceedance` (ZA, parked -> PARKED INDEFINITELY by its own pre-recorded
+  rule): the recorded next probe - a worker-side access test - ran as job za-dws-access-001
+  (cx23 Helsinki, egress 65.21.158.17 AS24940, general egress verified 200 via ipinfo inside
+  the job; exit 0, 48.8 s, 7 requests). Result: dws.gov.za answers 403 to the Hetzner network
+  on root https+http, /Hydrology/Weekly/WeeklyBulletins.aspx and /Disclaimer (bare Apache
+  403 bodies, browser UA), and niwis.dws.gov.za/niwis2/ times out at 30 s - identical to the
+  coordinator. The block is NOT coordinator-specific, so no schema, history or terms
+  instrument is measurable first-hand from any network this project controls. Reopen
+  conditions recorded: a different network class (e.g. operator-provided SA/residential
+  vantage point - one fetch answers it), a licence-bearing third-party mirror, or new Wayback
+  captures. Do not re-run the access test from the two known-blocked networks. Recipe retained
+  as probe_worker_access_001.py; job record jobs/za-dws-access-001.json.
+- `gh-opendata-coverage` (GH, dropped, verdict unchanged): the same job carried the single
+  recorded control fetch for reopen condition (a): https://data.gov.gh/ -> connection refused
+  from the Hetzner network (5.13 s) as from the coordinator. The refusal is server-side,
+  now corroborated from a second independent network; all three reopen conditions remain
+  unmet. Not probed further.
+- `cbk-tbill-auction-rate-direction` (KE, NEW -> dropped at the licence gate): the 10-23
+  "CBK unreachable" was a coordinator DNS artifact (resolver NXDOMAINs centralbank.go.ke;
+  dns.google resolves it; all fetches 200 via curl --resolve to 192.124.249.9). CBK publishes
+  the complete weekly Treasury bill auction-results archive: 2,134 PDF links, 601 dated
+  auctions 2013-04-07..2026 (latest auction 2705 dated 26-10-2026), unit-level per-tenor
+  schema (ISIN, amounts offered/received, performance rate, accepted amounts,
+  competitive/non-competitive split, bid-to-cover, rollover/new-borrowing, market and accepted
+  weighted average rates, price per 100; full schema in record). The proposed task (next
+  auction's 91-day rate direction from all published results, publication-instant contract)
+  is the strongest task-shaped Kenyan source found to date - and it dies at the cheapest
+  gate: every live licence channel is silent (footer "© 2017 Central Bank of Kenya",
+  /privacypolicy/ "Copyright 2016 ... All rights reserved." with monitoring-only terms, nine
+  terms-path 404s, robots without sitemap, no notice inside the auction PDF, no API metadata
+  channel, no live national harvest catalogue; Wayback CDX outage this tick recorded as
+  channel-not-consultable, not absence) -> class C -> closed under the 2026-10-21 standing
+  policy. Reopen: publisher terms, an operator risk acceptance (this candidate only), or an
+  operator-authorized enquiry with a dated fall-off. probe_cbk.py retained; a "2020-Updated"
+  filename records that results are occasionally revised (as-of policy needed on reopen).
+- `kenya-opendata-knbs` (KE, parked, updated): measurements + next_action updated. CBK probe
+  step DONE (closed in its own record, DNS workaround documented); KMD (meteo.go.ke) checked
+  the same way: reachable via IP pinning, forecast products only, no anonymous observation
+  archive, bare "© Kenya Meteorological Department" -> same class C posture, no record opened;
+  KRA/NTSA remain unprobed. The operator NC decision on the KNBS repository channel is
+  unchanged and still blocking it.
+- `ma-datagovma-coverage` (MA, parked, verdict unchanged): the portal was REBUILT - Drupal
+  front end, CKAN action API moved to /data/api/3/action/* (old paths 404; /fr/guide-api
+  documents the moved endpoints). Growth re-check per the recorded trigger: package_search
+  count = 699 vs 697 censused 2026-10-23; the newest metadata_modified entries are Bank
+  Al-Maghrib financial-corporations accounts (odc-odbl), most likely migration re-stamps.
+  Not material growth; no new publisher org; next re-check baseline 699.
+- Coverage after this session (discovery-coverage.py): 112 candidates, 40 live; Africa 11
+  (ZA 6, KE 2, GH 1, MA 1, NG 1); live non-US 34/40 (85%); dropped 43; ready buffer
+  unchanged (8 ready overall, 3 of them ZA).
+
+Session hygiene: `check-candidate.py --all` exit 0 (112 records, including the new cbk
+record); unittest suite 683/683 OK; worker job collected with every uploaded asset
+sha256-verified (staging release 429234156), server 173566369 destroyed 16:37:14Z and
+provider re-checked: 0 servers; this session's scratch fetches deleted after the recipes
+were copied into candidate directories. Concurrent-writer note: the untracked
+candidates/ec-state-aid-investigation-opening/probe/ and scratch stateaid_*/sa_* files belong
+to a parallel session's EC state-aid work; left untouched and excluded from this session's
+commits.
+
+No new ready candidate this tick: every in-region path that carried real task material was
+licence-gated (CBK, KMD posture) or access-gated (DWS). The Africa bench remains anchored by
+the three ZA ready candidates. Next Africa tick: KRA/NTSA only if a stated-terms channel is
+visible; re-check data.gov.ma only against the 699 baseline; do not re-probe DWS/CBK/KMD
+from the recorded evidence.

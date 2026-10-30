@@ -1,0 +1,155 @@
+{
+  "job": {
+    "id": "za-dws-access-001",
+    "candidate": "za-dws-dam-storage-exceedance",
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 1024,
+    "timeout_minutes": 12,
+    "lifetime_minutes": 30,
+    "max_disk_mb": 1000,
+    "max_artifact_mb": 8,
+    "image": "python:3.12-slim",
+    "command": [
+      "python3",
+      "/workspace/probe.py"
+    ],
+    "what": "Read-only access probe from the Hetzner network (discovery, no construction): (1) fetch https://www.dws.gov.za/ root, the weekly dam-bulletin page and https://niwis.dws.gov.za/niwis2/ to learn whether the coordinator's 403/timeout is coordinator-specific; (2) if the bulletin page answers, enumerate the weekly bulletin archive (count, earliest/latest file dates) and download at most one recent weekly file (<=15 MB) to record its schema (header + sample rows + row count) and sha256; (3) fetch up to two DWS terms/disclaimer pages to quote the licence instrument; (4) one control fetch of https://data.gov.gh/ (Ghana reopen condition (a)) and egress-IP context. Bounds: <=40 HTTP requests, <=30 MB total download, 30 s per request, 8-minute hard deadline. No credentials in the container; results to stdout and /output/summary.json."
+  },
+  "reservation_eur": "0.04",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 2,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 102400,
+  "source_sha256": "9bb96e700178cd87079bc4e9a702c193c50d70aa07122264c7f7bce08f159ea5",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-10-30T16:08:37.808359+00:00",
+  "expires": 1793378317,
+  "budget_months": [
+    "2026-10"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 173566369,
+  "known_hosts": "/opt/data/dataset-factory/.factory/za-dws-access-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "65.21.158.17",
+  "result": {
+    "job_id": "za-dws-access-001",
+    "status": "succeeded",
+    "uploaded": true,
+    "image_id": "sha256:aa943ce411423c7582288f18707ff66eddcbaeb510502d747a72aeb34f30d159",
+    "image_digests": [
+      "python@sha256:aa943ce411423c7582288f18707ff66eddcbaeb510502d747a72aeb34f30d159"
+    ],
+    "exit_code": 0,
+    "oom_killed": false,
+    "elapsed_seconds": 48.8,
+    "summary": {
+      "started_utc": "2026-10-30T16:09:56Z",
+      "steps": [
+        {
+          "step": "egress_context",
+          "url": "https://ipinfo.io/json",
+          "status": 200,
+          "final_url": "https://ipinfo.io/json",
+          "content_type": "application/json",
+          "server": null,
+          "content_length_header": "317",
+          "bytes_downloaded": 317,
+          "truncated": false,
+          "elapsed_s": 0.18,
+          "body_sha256": "94a9632b5cc3edfc1165369c10ec40609114f09bd02fa8c441776d980b999834",
+          "egress": {
+            "ip": "65.21.158.17",
+            "city": "Helsinki",
+            "region": "Uusimaa",
+            "country": "FI",
+            "org": "AS24940 Hetzner Online GmbH"
+          }
+        },
+        {
+          "step": "dws_root_https",
+          "url": "https://www.dws.gov.za/",
+          "status": 403,
+          "error": "HTTPError",
+          "elapsed_s": 0.87,
+          "body_head": "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">\n<html><head>\n<title>403 Forbidden</title>\n</head><body>\n<h1>Forbidden</h1>\n<p>You don't have permission to access this resource.</p>\n</body></html>\n"
+        },
+        {
+          "step": "dws_root_http",
+          "url": "http://www.dws.gov.za/",
+          "status": 403,
+          "error": "HTTPError",
+          "elapsed_s": 1.31
+        },
+        {
+          "step": "dws_weekly_bulletins_page",
+          "url": "https://www.dws.gov.za/Hydrology/Weekly/WeeklyBulletins.aspx",
+          "status": 403,
+          "error": "HTTPError",
+          "elapsed_s": 0.88,
+          "body_head": "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">\n<html><head>\n<title>403 Forbidden</title>\n</head><body>\n<h1>Forbidden</h1>\n<p>You don't have permission to access this resource.</p>\n</body></html>\n"
+        },
+        {
+          "step": "niwis2_root",
+          "url": "https://niwis.dws.gov.za/niwis2/",
+          "error": "URLError: <urlopen error timed out>",
+          "elapsed_s": 30.26
+        },
+        {
+          "step": "terms_page_fallback_disclaimer",
+          "url": "https://www.dws.gov.za/Disclaimer",
+          "status": 403,
+          "error": "HTTPError",
+          "elapsed_s": 0.87
+        },
+        {
+          "step": "data_gov_gh",
+          "url": "https://data.gov.gh/",
+          "error": "URLError: <urlopen error [Errno 111] Connection refused>",
+          "elapsed_s": 5.13
+        }
+      ],
+      "totals": {
+        "requests": 7,
+        "bytes_downloaded": 317,
+        "elapsed_s": 39.5
+      },
+      "deadline_hit": false
+    },
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 429234156,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-35780a67897ca843bea2",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-35780a67897ca843bea2/manifest.json",
+    "assets": [
+      {
+        "id": 692647239,
+        "size": 2189,
+        "sha256": "820aaf9e765e9af902c0adf98a658df607486b1b6aa1424d6fb9b46cc8fd3246"
+      },
+      {
+        "id": 692647306,
+        "size": 102400,
+        "sha256": "9bb96e700178cd87079bc4e9a702c193c50d70aa07122264c7f7bce08f159ea5"
+      },
+      {
+        "id": 692647367,
+        "size": 1843,
+        "sha256": "505993f579d23781bc2eb1dc080c32098583f59ca29b881a30fbab5c5861e850"
+      },
+      {
+        "id": 692647455,
+        "size": 5519,
+        "sha256": "50e2bf198cd756e0bb05d3c330622894ba5666a1a0a5182b1a24d136ad24f82d"
+      }
+    ],
+    "skipped_empty": []
+  },
+  "collected_at": "2026-10-30T16:25:58.581632+00:00",
+  "deleted_at": "2026-10-30T16:37:14.428577+00:00"
+}

@@ -1,0 +1,51 @@
+{
+  "id": "cbk-tbill-auction-rate-direction",
+  "status": "dropped",
+  "created_at": "2026-10-30T16:19:57.467315+00:00",
+  "domain": "public debt markets / weekly Treasury bill auction outcomes (Kenya)",
+  "prediction_question": "For the next weekly Kenya Treasury bill auction after the latest published results (auction N+1), will the 91-day tenor's weighted average interest rate of accepted bids exceed auction N's 91-day weighted average rate? (Same formulation extends to the 182- and 364-day tenors.)",
+  "prediction_time": "The publication instant of auction N's dated results PDF on the CBK Treasury Bills page (auction 2705, dated 2026-10-26, was live on the page when fetched 2026-10-30, so the observed publication lag is at most ~4 days; not yet pinned to a precise hour). Features: all published auction results up to and including N; target: auction N+1's outcome, revealed when its results PDF is published. The auction calendar (weekly Monday auctions) is documented by CBK's own Auction Rules and Guidelines (2024, fetched via the same page).",
+  "target_definition": "Binary direction label: auction N+1's 'Weighted Average Interest Rate of accepted bids' for the 91-day tenor > auction N's value for the same tenor. Label source columns: the per-auction result PDFs (one PDF per auction covering all tenors); both operands excludable from shipped features.",
+  "sources": [
+    {
+      "name": "Central Bank of Kenya - Treasury Bills page with complete historical auction-results archive",
+      "url": "https://www.centralbank.go.ke/bills-bonds/treasury-bills/",
+      "api": "no API; WordPress uploads archive. Per-auction PDFs live in /uploads/91_day_historical_treasury_bill_results/, /uploads/182_day_historical_treasury_bill_results/, /uploads/364_day_historical_treasury_bill_results/ and /images/docs/tbillsresults/YYYY/ (all linked from the page above)",
+      "access": "anonymous HTTP 200 to a plain client, but the coordinator's DNS resolver returns NXDOMAIN for www.centralbank.go.ke; public DNS (dns.google) resolves it to 192.124.249.9 and fetches work with --resolve IP pinning (measured 2026-10-30)",
+      "license": "no licence stated anywhere on the site; bare copyright notices only (see license_evidence)"
+    }
+  ],
+  "license_evidence": [
+    "Site-wide rights statements, verbatim: footer div '© 2017 Central Bank of Kenya' on every page read (home, treasury-bills, treasury-bills result pages, fetched 2026-10-30); Privacy Policy page (https://www.centralbank.go.ke/privacypolicy/, fetched 2026-10-30, HTTP 200): 'Copyright 2016 © Copyright Central Bank of Kenya. All rights reserved.' followed by monitoring/cookie/privacy text only - its 'Access to or use of the Website constitutes consent to these terms' refers to monitoring and privacy, not to data redistribution. No grant of any reuse/redistribution right, and no prohibition of data reuse either.",
+    "Terms-path sweep (all fetched 2026-10-30 via IP-pinned GET, all HTTP 404): /terms, /terms-of-use, /disclaimer, /privacy-policy, /legal, /access-to-information, /about-us, /sitemap.xml, /sitemap_index.xml. The real privacy instrument lives at /privacypolicy/ (no hyphen) and contains no data terms. The site's own nav 'Metadata' link (/?page_id=889) is dead (404).",
+    "robots.txt (fetched 2026-10-30): only 'Disallow: /wp-admin/', 'Disallow: /author/'; no sitemap, no terms pointer.",
+    "The auction-results document itself (auction 2705 PDF, 1 page, full text extracted with pypdf on 2026-10-30): no copyright, licence, disclaimer, attribution or reproduction notice anywhere in the document text.",
+    "No API/metadata channel exists that could carry per-dataset licence metadata (plain WordPress uploads archive; not a CKAN-style portal; no open-data page linked anywhere on the site).",
+    "National harvest catalogue: Kenya has no live national open-data portal (open.data.go.ke NXDOMAIN, recorded in kenya-opendata-knbs 2026-10-21); no harvest value exists for CBK datasets.",
+    "Wayback check for historical terms pages: Internet Archive CDX answered 'Temporarily Offline' on two attempts 2026-10-30 ~16:10-16:20Z - channel not consultable this tick, recorded as attempted, NOT as evidence of absence. The live-instrument silence above is what classifies the posture.",
+    "Coordination check: web search 'Central Bank of Kenya website terms of use data copyright licence' (2026-10-30) surfaces only the /privacypolicy/ instrument above and bank-licensing regulation pages; no data licence statement exists in the search index."
+  ],
+  "construction_script": null,
+  "split_strategy": "Not reached (licence veto). For scale planning on any reopen: ~600 dated weekly auctions 2013..2026 (earliest parseable filename date 2013-04-07) plus older undated-named files back to auction numbers ~1900s; temporal thirds would be roughly 2013-2017 / 2018-2022 / 2023-2026 with the auction-rate regime shifts (2023-2024 Kenya rate spike) spanning eval/holdout - both classes present in every window would need a measured count before any ready verdict.",
+  "measurements": {
+    "archive_page_fetch_2026_10_30": "GET https://www.centralbank.go.ke/bills-bonds/treasury-bills/ : HTTP 200, 1,945,083 bytes, 0.028 s wall (Sucuri CDN edge; IP-pinned via --resolve to 192.124.249.9 because the coordinator resolver NXDOMAINs the host). 2,134 distinct .pdf hrefs on the page.",
+    "archive_span_measured": "601 unique auction dates parseable from filenames, earliest 2013-04-07, latest 2026-11-02 (filename-date format mixes dd-mm-yyyy and dd.mm.yyyy; the 2026-11-02 name may be a pre-dated or tap-related file - unresolved, low-stakes). Auction numbers visible in filenames run from ~1900s to 2705 (2705 = auction DATED 26-10-2026, the latest); at a weekly cadence that implies a continuous series since ~2010-2011.",
+    "archive_layout_measured": "Per-tenor directories /uploads/{91,182,364}_day_historical_treasury_bill_results/ each listing the SAME per-auction PDF (one PDF covers all three tenors), plus an older /images/docs/tbillsresults/YYYY/ path used for <=2016 files.",
+    "auction_pdf_schema_2026_10_30": "Auction 2705 (91/182/364-day, DATED 26-10-2026), 1 page, text extracted (pypdf): per tenor - ISIN, Due Date, Amount Offered (Kshs M), Bids Received, Performance Rate (%), Total Amount Accepted, Competitive bids, Non-competitive bids, Bid-to-Cover Ratio, Rollover/Redemptions, New Borrowing/Net Repayment, Market Weighted Average Interest Rate, Weighted Average Interest Rate of accepted bids, Price per Kshs 100; plus a comparative-rates block (previous auction). No notice or terms text in the document.",
+    "sample_pdf_fetch_2026_10_30": "1 request, 220,389 bytes for auction 2705's results PDF (filename ends .xlsx.pdf but the bytes are a real PDF, not a zip).",
+    "dns_artifact_measured": "Coordinator resolver: NXDOMAIN for www.centralbank.go.ke and meteo.go.ke while dns.google resolves them (192.124.249.9 and 196.202.217.199). The 2026-10-23 kenya record's 'CBK unreachable from the coordinator' was this resolver artifact, not a server-side refusal. All CBK fetches this tick used --resolve pinning.",
+    "revision_note": "At least one historical results file carries an 'Updated' suffix in its filename ('26.10.2020-Updated.pdf'), so auction results are occasionally revised - an as-of policy would be required before any historical-availability claim."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "jurisdiction": {
+    "country": "KE",
+    "region": "Africa",
+    "publisher": "Central Bank of Kenya (centralbank.go.ke)",
+    "recorded_at": "2026-10-30"
+  },
+  "licence_class": "C",
+  "rejection_reason": "Licence veto (class C, closed under the 2026-10-21 standing policy): the publisher states no terms for its data on any live channel - every instrument read (site pages, footer, privacy policy, robots, terms-path sweep, the auction PDF itself, search index) shows only bare copyright ('© 2017 Central Bank of Kenya', 'Copyright 2016 ... All rights reserved.') with no redistribution grant and no data-reuse prohibition. Unresolved new class C leads are closed, not parked. This is NOT a scientific rejection of the data: the archive is the strongest task-shaped Kenyan source found to date (unit-level weekly auctions, ~600 dated results 2013..2026, ongoing, decision-relevant rate/subscription outcomes), and novelty and timing were never reached. What is missing is a redistribution permission, and the standing policy forbids unsolicited permission email and indefinite parking.",
+  "review": "The task would be: predict next week's 91-day auction rate direction from all published auction history (publication-instant contract, like abs-visitor-arrivals-direction). Strong data, cheap extraction (one page listing all PDFs), rich per-auction features (subscription/performance rates, accepted amounts, rollover mix). Killed at the cheapest gate - licence - before any construction spend, exactly as the triage policy intends.",
+  "next_action": "Closed 2026-10-30. Reopen ONLY if one of these holds: (a) CBK publishes an open licence or terms permitting redistribution of derived rows (re-check the treasury-bills page and a fresh terms-path sweep; the 2026-10-30 channel list is in license_evidence and need not be re-derived); (b) the operator records an explicit risk acceptance per skills/dataset-discovery/references/licence-posture.md - one candidate, never extendable to sibling Kenyan sources; or (c) the operator authorizes a written enquiry to CBK (comms@centralbank.go.ke) with a dated fall-off. On reopen, the next steps in order are: pin the publication instant and revision policy (the 'Updated' file above), then check-novelty.py positioned against Kenya T-bill rate econometrics and any ML-ready auction mirrors, then split-window counts - all before any ready verdict. Related Kenya findings this tick (recorded in kenya-opendata-knbs observations, not separate records): meteo.go.ke is reachable via the same IP-pinning workaround but publishes forecast products, no anonymous observation archive, and the same bare-copyright silence (class C posture); do not re-derive the DNS artifact next tick."
+}
