@@ -288,3 +288,32 @@ build output. Relaunch: ipo-tm-003 (rebuild 3, linked to ipo-tm-002) in the
 unchanged construct -> gate -> exact-byte --accept -> references order.
 Attempt cap: a further defect on ipo-tm-003 means re-target or drop per
 dataset-qualification, not ipo-tm-004.
+
+## ipo-tm-003 outcome and the ipo-tm-004 rebuild (2026-10-30, advancement)
+
+ipo-tm-003 (server 173516828, 23.1 s, exit 1, staging release 428902203)
+VALIDATED the construction for the first time and then crashed after the
+write: with the re-derived EXPECTED, every in-build assertion passed
+(cohorts, splits, fixtures, publisher cross-check, hazards, label-source
+absence, exact column set) and all five artifact files were written
+(train 106,990/92,668; eval 97,274/81,699; holdout 115,172/99,385). The
+crash is a one-line latent defect in the never-reached summary tail of
+main(): the publisher cross-check comprehension looked the pinned INT year
+keys of PUBLISHED_NATIONAL_APPLICATIONS up in the STRING-keyed
+`diag["per_year"]` dict (KeyError: 2012), before summary.json was written.
+
+Cap reasoning (recorded in the candidate record): this is a mechanical
+post-artifact code defect, not the structural/timing/population class the
+dataset-qualification rebuild cap guards against, and the 2026-10-29 cap
+note anticipated a further DIVERGENCE - what happened is the opposite, the
+construction verifying green end to end. One bounded rebuild is therefore
+justified: ipo-tm-004 (launched 10:52:44Z, server 173520161) with the fix
+(build.py `cross_check_measured()`, red/green regression test in
+tests/test_ipo_tm_build.py - red on a pre-fix variant reproducing
+KeyError: 2012, green on the fix). Hard cap now: ANY further code defect on
+ipo-tm-004 means re-target or drop; no ipo-tm-005. Determinism check at
+collect: 004's CSVs/meta/quality must be byte-identical to 003's staging
+digests (the fix touches only the post-write summary block); summary.json
+is the only new file. Local suite 679 tests OK, with one unreproduced
+single failure in one of five full runs (recorded in STATE.md; CI runs at
+the exact commit).

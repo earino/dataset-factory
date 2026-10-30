@@ -187,6 +187,24 @@ class FixturesStageTest(unittest.TestCase):
         self.assertNotIn("UK00003171385", scored)
         self.assertNotIn("UK00003041794", scored)
 
+    def test_cross_check_measured_keys_match_pinned_int_years(self):
+        """ipo-tm-003 regression: the summary cross-check once looked the
+        pinned INT years up in the STRING-keyed per_year dict (KeyError:
+        2012) after every construction assertion had passed and the five
+        artifact files were already written."""
+        per_year = {str(y): {"n": 40_000 + y} for y in range(2010, 2017)}
+        got = ipo_build.cross_check_measured(per_year)
+        self.assertEqual(sorted(got),
+                         sorted(str(y) for y in
+                                ipo_build.PUBLISHED_NATIONAL_APPLICATIONS))
+        for year, n in got.items():
+            self.assertEqual(n, 40_000 + int(year))
+        # the pre-fix expression shape (int keys into the string-keyed dict)
+        # is the crash this guard exists for
+        with self.assertRaises(KeyError):
+            {y: per_year[y]["n"]
+             for y in ipo_build.PUBLISHED_NATIONAL_APPLICATIONS}
+
 
 if __name__ == "__main__":
     unittest.main()

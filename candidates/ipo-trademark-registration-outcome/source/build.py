@@ -965,6 +965,21 @@ def quality_document(out: Path, stats: dict, diag: dict, built_at: str) -> None:
     (out / "quality.json").write_text(json.dumps(quality, indent=1) + "\n")
 
 
+def cross_check_measured(per_year: dict) -> dict:
+    """Measured cohort sizes keyed to match the pinned published values.
+
+    per_year is keyed by filing-year STRINGS ("2012"); the pinned workbook
+    values in PUBLISHED_NATIONAL_APPLICATIONS are keyed by INT years. The
+    ipo-tm-003 build crashed writing summary.json because the inline
+    comprehension looked the int keys up in the string-keyed dict
+    (KeyError: 2012) - AFTER every construction assertion had passed and
+    all five artifact files were already written. Guarded by
+    tests/test_ipo_tm_build.py (red on the pre-fix expression).
+    """
+    return {str(year): per_year[str(year)]["n"]
+            for year in PUBLISHED_NATIONAL_APPLICATIONS}
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--out", required=True)
@@ -1073,8 +1088,7 @@ def main(argv=None) -> int:
                         "read; +-1% asserted in-build)",
             "published": {str(k): v for k, v in
                           PUBLISHED_NATIONAL_APPLICATIONS.items()},
-            "measured": {y: diag["per_year"][y]["n"] for y in
-                         PUBLISHED_NATIONAL_APPLICATIONS},
+            "measured": cross_check_measured(diag["per_year"]),
         },
         "split_stats": stats,
         "fixtures": fixtures,

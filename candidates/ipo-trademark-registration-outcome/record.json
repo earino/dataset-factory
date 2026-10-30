@@ -332,7 +332,7 @@
   "verdict": "differentiated",
   "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
  },
- "next_action": "RECONCILIATION COMPLETE 2026-10-30 (probe_reconcile_pipe_rows.py, RECONCILIATION CLOSED): the build's right-anchored pipe-row recovery is measured correct and the frozen EXPECTED table was the probe's shifted-read error; build.py EXPECTED re-derived (cohorts 2013-2016, eval 97,274/81,699, holdout 115,172/99,385, blank 34, unparseable 0 now asserted; old table preserved as probe-measurement error). NEXT: launch ipo-tm-003 (rebuild 3, linked to ipo-tm-002) in the unchanged construct -> gate -> exact-byte --accept -> references order, collect and verify the reports, then record and package per dataset-release. Attempt cap: a further defect on ipo-tm-003 means re-target or drop per dataset-qualification, not ipo-tm-004.",
+ "next_action": "ipo-tm-003 outcome recorded 2026-10-30: the corrected EXPECTED table is verified on the worker (all construction assertions green for the first time; five artifact files written; staging release 428902203 preserves them), and the only failure is a one-line latent int/str key defect in the summary-writing block (KeyError: 2012), fixed as build.py cross_check_measured() with a red/green regression test (tests/test_ipo_tm_build.py). Attempt-cap reasoning recorded: the defect is mechanical and post-artifact, not the structural class dataset-qualification's rebuild cap guards; the 2026-10-29 cap note assumed a further DIVERGENCE, and what happened instead is the construction validating. ONE more bounded rebuild: ipo-tm-004 (launched 2026-10-30T10:52:44Z, server 173520161) in the unchanged construct -> gate -> exact-byte --accept -> references order. Determinism check at collect: 004's CSVs/meta/quality must be byte-identical to 003's staging digests (the fix touches only the post-write summary block); summary.json is the only new file. If ipo-tm-004 fails on ANY further code defect: re-target or drop, no ipo-tm-005. If it succeeds: verify gate pass + ACCEPT line before the references, record the reference numbers (nice_class_rate is the required comparator), then baseline/packaging per the standard flow.",
  "jobs": [
   {
    "id": "ipo-tm-001",
@@ -361,7 +361,22 @@
    "bundle": "candidates/ipo-trademark-registration-outcome/source/bundle.json (assembled .factory/jobs/ipo-tm-002, source_sha256 56f6dea173c60d6b6d8700bd1a1e23dd99f4d53c3c0dd54ff3942dc9ec1a30b0)",
    "what": "full construction -> gate -> exact-byte accept -> eval-row references on the worker; expected outputs qualification-ipo-trademark-registration-outcome.json (gate 1.5, must pass), acceptance txt, references json, summary json, staging upload of the five artifact files",
    "note": "The ipo-tm-001 hazards defect is FIXED and now proven on the real snapshot: both iter_records call sites share one new_hazards() shape; tests/test_ipo_tm_build.py (4 tests) verifies the fixtures stage, the hazards shape, the pipe recovery and the classify loop on bounded synthetic rows - red on the pre-fix code (the exact ipo-tm-001 TypeError), green on the fix; full local suite 678 tests OK. Operational lesson recorded for the next session: worker status shows the SERVER record, which stays 'running' until destroy - the job result appears only via collect; poll collect (or ssh docker ps) instead of polling status."
+  },
+  {
+   "id": "ipo-tm-003",
+   "launched_utc": "2026-10-30T10:29:07Z",
+   "status": "failed",
+   "parent_attempt": "ipo-tm-002",
+   "outcome": "exit 1 after 23.1 s, and the first attempt to validate the construction end to end: with the re-derived EXPECTED table, ALL in-build assertions passed for the first time (corrected cohorts 2013-2016 exact, splits exact, three fixtures, publisher cross-check +-1%, hazards, label-source columns absent, column set exact) and all five artifact files were written to the extract (train 106,990/92,668 pos; eval 97,274/81,699; holdout 115,172/99,385). The crash came AFTER the write, in the summary-writing block: build.py's publisher cross-check comprehension looked the pinned INT year keys of PUBLISHED_NATIONAL_APPLICATIONS up in the STRING-keyed diag['per_year'] dict (KeyError: 2012), before summary.json was written. Pinned source fetch verified OK first (63,238,846 B, sha256 3b6063be...). No gate run, acceptance or score exists for this attempt; the five extract files are preserved in private staging release 428902203.",
+   "diagnosis": "A one-line latent defect in code no previous attempt had ever reached: ipo-tm-001 crashed in the fixtures stage and ipo-tm-002 in assert_expectations, both strictly before write_splits, so the summary tail of main() had never executed. The construction itself is now verified correct twice over: the coordinator reconciliation probe (probe_reconcile_pipe_rows.py, RECONCILIATION CLOSED) and this run's all-green assertions. Not a structural, timing, population or leakage defect of the kind the dataset-qualification rebuild cap exists for.",
+   "evidence": ".factory/ipo-tm-003/reports/container.log (1,751 B, sha256 a997a797a592792e157a... verified against the release manifest) and manifest.json fetched from private staging release 428902203 by numeric asset id (signed-URL redirect followed without the auth header); extract assets train/eval/holdout CSVs + meta.json + quality.json at manifest digests. Worker server 173516828 destroyed 10:43:43Z.",
+   "server_id": 173516828,
+   "server_type": "cpx32",
+   "reservation_eur": "0.24",
+   "bundle": "assembled .factory/jobs/ipo-tm-003, source_sha256 9c8377d44bb654dc019c961ee18bbf49a97616f398850b3f96cf4773e3575bcb",
+   "what": "full construction -> gate -> exact-byte accept -> eval-row references; expected outputs qualification json (gate 1.5, must pass), acceptance txt, references json, summary json, staging upload of the five artifact files",
+   "note": "Fix landed for ipo-tm-004: the expression is extracted into build.py cross_check_measured() with str-key alignment, guarded by tests/test_ipo_tm_build.py (red on a pre-fix variant reproducing KeyError: 2012, green on the fix; suite 679 tests OK locally with one unreproduced single failure in one of five full runs, recorded in STATE.md). Attempt-cap decision recorded in next_action: one mechanical post-artifact defect does not trigger the re-target-or-drop rule, but ANY further code defect on ipo-tm-004 does - no ipo-tm-005."
   }
  ],
- "updated_at": "2026-10-30T12:05:00Z"
+ "updated_at": "2026-10-30T10:55:00Z"
 }
