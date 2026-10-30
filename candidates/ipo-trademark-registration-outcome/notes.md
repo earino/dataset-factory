@@ -173,3 +173,45 @@ cross-check tolerance (+-1% vs National applications), the 94 pipe rows and the
 10 neg_with_regdate rows, per-split counts equal to this record; then the full
 qualification gate on the worker, exact-byte acceptance, and only then the
 reference baselines (class-conditional rate is the required comparator).
+
+## Construction handoff executed (2026-10-30)
+
+The frozen `construction_handoff` was implemented as
+`source/build.py` + `source/score.py` + `source/run.sh` and launched as
+worker job **ipo-tm-001** (cpx32, server 173462544, 2026-10-30T03:17Z,
+reservation EUR 0.24) through `scripts/assemble-job.py` (bundle
+`ipo-trademark-registration-outcome`; source digest
+935aaa3756e54de3b674078ec08e2b974ab49a51d6e700adde04ef8b3a9a5a31).
+
+**Dedup-key reconciliation, measured 2026-10-30 (full-file source-metadata
+probe, counts only - no panel, no labels, no model).** The discovery probe
+deduped by the parsed integer mark number, which silently skipped the 22,812
+letter-suffixed series sub-marks (e.g. UK0000000052A/B) out of both dedup and
+the distinct-mark count. Re-measured under the stripped-string key:
+
+| Fact | Integer key (discovery) | String key (construction) |
+|---|---|---|
+| distinct marks, all years | 1,149,248 | 1,172,043 |
+| duplicate rows removed | 16,892 | 16,909 (17 are letter-suffixed) |
+| per-year 2010-2016 n/pos/neg/cens | (record table) | **identical to the record table** |
+
+So the recorded cohort table stands; construction dedups on the stripped mark
+number string and asserts the record's numbers exactly, plus data rows
+1,189,004, the field-count distribution 62/63/64/65 = 1,188,910/76/15/3, the
+52 blank/bad-filed data rows, the 3 unparseable ('3'/'5') filed rows, and the
+8 eligible rows whose negative status still carries a Registered date (10 on
+the wider post-2010 population, matching the discovery note).
+
+Build-time assertions also cover the three in-file fixtures (BASS 1876,
+"Brexit" 2016-06-25 censored, UK00003041794 censored), the publisher
+cross-check (+-1% against the pinned Trade_marks_2016.xlsx National UK
+applications values 2012-2016) and per-split positives/rows. Adopted source fields
+from the 2026-10-30 header read confirm the 62-column order used by the
+builder (Trade Mark, Hyperlink, Mark Text, Name, Postcode, Region, Country,
+Status, Category of Mark, Mark Type, Series, No of Marks in Series, Filed,
+Published, Registered, Expired, Renewal Due Date, Class1..Class45).
+
+The worker run is `build.py`'s first execution: it was syntax-checked and its
+parse/classify logic mirrors the two measured probes, but no local full run
+was performed (construction belongs on the worker). Outcome and any repair
+are the next session's first step.

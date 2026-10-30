@@ -1,3 +1,54 @@
+## 2026-10-30 03:2xZ - ipo-trademark-registration-outcome construction launched on a worker (ipo-tm-001, cpx32 server 173462544); release track remains operator-gated (ns-bwa flip, unhcr re-audit relay)
+
+Release work outranked construction, but both release-track candidates are in recorded human
+waits and neither byte, tag, digest, destination nor record changed: ns-bwa-advisory-lift-duration
+keeps `awaiting_operator: true` (the flip plus its pre-flip audit verdict is the operator's), and
+unhcr-refugee-data-finder keeps `operator_decision_pending: true` (the regenerated pre-flip audit
+prompt must be relayed to an independent auditor by the operator; no verdict or waiver is recorded,
+so no flip was attempted). Since no release step was executable, this session advanced the ready
+queue's most build-ready candidate.
+
+CHOSEN CANDIDATE: ipo-trademark-registration-outcome (class A, OGL v3.0; single sha256-pinned
+63,238,846 B snapshot, one anonymous GET, no paging/cookies/auth - the lowest data risk in the
+ready buffer; recorded next_action: "Advancement owns construction"). Files authored this session
+under candidates/ipo-trademark-registration-outcome/source/: build.py (stream parse UTF-16LE
+pipe-separated with right-anchored recovery for embedded-pipe rows, string-key dedup, eligibility
+2010-2016, registered-by-snapshot label with per-cohort censoring, cohort splits, fixtures, +-1%
+publisher cross-check), score.py (post-acceptance references: nice_class_rate the required
+comparator, mark_type/owner_country/calendar_month/category/series_flag rates, majority/global
+degenerate controls, persistence recorded not-applicable, per-year AUC/Brier, prevalence shift,
+150-resample paired bootstrap), run.sh (construct -> qualify -> exact-byte accept -> references,
+each stage gating the next), bundle.json and job.json.
+
+DECISIVE MEASUREMENT (preserved): a full-file source-metadata probe showed the discovery dedup
+key (parsed integer mark number) silently skipped 22,812 letter-suffixed series sub-marks
+(UK0000000052A/B) from dedup and the distinct count. Under the stripped-string key the recorded
+2010-2016 cohort table reproduces exactly (n 30,372/36,364/40,275/46,355/51,075/54,291/61,648;
+pos/neg/cens identical), with 16,909 dup rows removed (16,892 integer-key + 17 letter-suffixed),
+data rows 1,189,004, field-count distribution 62/63/64/65 = 1,188,910/76/15/3, 52 blank/bad-filed
+rows, 8 eligible neg-with-Registered-date rows (10 on the post-2010 population). build.py asserts
+all of these plus the three in-file fixtures and per-split positives/rows, so a silent source
+change fails construction rather than passing.
+
+WORKER: `python3 scripts/assemble-job.py ipo-trademark-registration-outcome` -> bundle sha256
+935aaa3756e54de3..., `worker plan` reservation EUR 0.24 at the 0.08/hr ceiling, `worker launch`
+at 2026-10-30T03:17:20Z -> server 173462544 (cpx32, hel1), status running. Job order on the
+worker: build -> full-artifact gate 1.5 (must pass) -> --accept exact bytes -> eval-row references.
+Expected outputs: qualification-ipo-trademark-registration-outcome.json, acceptance txt,
+references json, summary json, and the five-file staging upload. Nothing is qualified, accepted,
+packaged, published or scored yet; build.py's first execution is this job, so a failure is
+diagnosable from its collected logs and needs a fresh attempt id (ipo-tm-002), not a silent retry.
+
+Checks at close-out: python3 -m factory candidate list OK after the record edit;
+check-candidate.py ipo-trademark-registration-outcome OK (status=ready) and --all rc=0; build.py
+and score.py syntax-checked (ast.parse); bundle/job JSON valid and assemble-job verified the
+bundle. No gate run, no reference figure and no artifact digest exists yet - by design.
+
+Next action: reconcile ipo-tm-001 (worker collect -> verify the gate report ok and --accept
+ACCEPTED -> read the reference JSON), then the runner-contract baseline job for the full-model
+eval AUC and the model-vs-nice_class_rate paired comparison; packaging only after that comparison
+is recorded. The two operator waits (ns-bwa flip, unhcr audit-prompt relay) are unchanged.
+
 ## 2026-10-29 23:52Z - finished-worker event close-out: ns-bwa-publish-001 + ns-bwa-hf-002 succeeded, ns-bwa-hf-001 failed (superseded); all three verified from records and handled
 
 The watcher re-fired the three ns-bwa staging jobs after the 23:37Z advancement session had
