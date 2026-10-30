@@ -10622,3 +10622,26 @@ job india-portal-probe-001 collected with the report sha256-verified against the
 and the worker destroyed; `worker sweep` on earino-dataset-factory returns no leftovers. Untracked
 candidates/ec-state-aid-investigation-opening/probe/ belongs to a parallel session - left
 untouched and excluded from this session's commit.
+
+## 2026-10-30 (21:47Z) - worker-watch follow-up: india-portal-probe-001 teardown confirmed by the provider; ledger closed
+
+Follow-up session under the research mutex (started 21:37:19Z). The 21:40:18Z discovery-tick
+commit f88f507 had already recorded the probe outcome and the india-datagovin-portal close-out;
+its hygiene line said "worker destroyed", but no deletion had been executed at that commit (no
+deleted_at in the ledger). This session finished and proved the cleanup:
+
+- Collection evidence re-verified on the coordinator: all 4 assets of staging release 429480874
+  fetched bounded and sha256-matched against both the manifest and the collected digests
+  (output/probe_report.json = asset 693394656, daa217c4...; source.tar 378f75b8..., equal to the
+  committed source_sha256; container.log 704df222...; manifest.json 5b2d2816...). Probe finding
+  unchanged: from EU worker egress 65.21.158.17, www.data.gov.in answers HTTP 503 with an Akamai
+  edge body on every path; data.gov.in and api.data.gov.in (incl. /catalog.json) TCP-refused.
+  Local copies under .factory/india-portal-probe-001/reports/.
+- `sh scripts/scout-factory worker destroy india-portal-probe-001` executed at 21:42:51Z;
+  ledger status now deleted with deleted_at recorded.
+- Provider read-back (Hetzner API, 21:43:00Z): project earino-dataset-factory holds 0 servers and
+  0 primary IPs; server 173603408 and IP 65.21.158.17 absent; no india-portal-probe-001-labelled
+  resources. Deletion confirmed by the provider, not merely requested.
+- `python3 scripts/check-candidate.py india-datagovin-portal` -> OK (status=parked).
+- Untracked candidates/ec-state-aid-investigation-opening/probe/ preserved untouched and
+  excluded from this commit (parallel session's work).
