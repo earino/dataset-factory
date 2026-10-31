@@ -1,3 +1,68 @@
+## 2026-10-31 (18:35Z) - pins runner contract verified: the one permitted rebuild landed (probe settles the category question - predict ACCEPTS category dtypes; the 6 prose cells were the only breaker), train.py/validate.sh CONTRACT OK at eval AUC 0.6108, model beats every simple reference with intervals excluding zero; unhcr stays operator-gated and untouched
+
+Scheduled advancement tick. Release work outranks construction, but the only release item
+(unhcr-refugee-data-finder) is operator-gated: operator_decision_pending true, no recorded
+verdict or waiver, all pre-flip prep completed by the 10:05Z session - so per the standing
+rule it stays private and untouched, and the actionable work was the operator-listed build
+item with the diagnosed defect and a pre-authorized single rebuild: pins-planning-appeal-outcome.
+No remediation hold is active (#17 closed 2026-10-24). No other candidate was advanced and no
+discovery ran; the 16:22Z discovery tick's ready buffer (pins) was the same candidate.
+
+pins-planning-002 (the ONE permitted rebuild, runner-compatibility class, commit d6a51a0
+pre-launch; server 173816674, cx23/hel1, EUR 0.04 reserved, launched 18:20:31Z, collected
+18:24:40Z, destroyed 18:26:05Z, staging release 430108320):
+
+- The worker-side minimal probe (probe_category_predict.py, synthetic frames, the verbatim
+  train.py idiom under the baseline's own dependency ranges) SETTLED the question
+  baseline-001 left open: predict_on_category_dtype = ok under xgboost 3.4.1 / pandas 2.3.3 -
+  fit, predict on seen levels and predict on an unseen level (NaN category) all pass. 001's
+  rejection listing the nine category columns was xgboost's dtype validator naming every
+  non-basic column; the ONLY real breaker was the object-dtype floor_space_sqm (publisher
+  prose 'Under 200 sq m floorspace', 6 eval rows). The build therefore shipped string levels
+  verbatim (the integer-coding writer path exists, probe-driven, pinned by 7 new tests) with
+  the single real fix: num() maps unparseable prose to missing.
+- Byte evidence vs 001: train.csv and private/holdout.csv sha256-IDENTICAL (299e5af4...,
+  3f65dc80...), eval.csv differs only in those 6 cells (43cc768e... -> 2ab9271f..., 150 B
+  smaller), meta.json identical, quality.json + the categorical_coding block (applied false,
+  probe evidence recorded). Gate 1.5.0 on the full artifact: failed_checks empty; --accept
+  ACCEPTED c861bd8f4acd9bbe... before any figure. Post-acceptance references reproduce 001's
+  figures EXACTLY (procedure_type 0.55506072071053, lpa_hist 0.5414410163425604, persistence
+  0.504458138089444, degenerate calendar, majority 0.6987); splits identical
+  (54,834/28,104/56,326 rows, 17,048/8,469/17,705 positives).
+- Pre-launch de-risking: bounded local smoke on the pinned bytes (both probe modes build,
+  split counts equal 001 exactly, local gate 0 failed checks, --accept ACCEPTED, scratch
+  bulk copies deleted); tests/test_pins_build.py pins the num() fix and the coding
+  declaration contract; suite 697/697; check-candidate OK.
+
+pins-planning-baseline-002 (server 173817662, EUR 0.06 reserved, launched 18:26:52Z,
+collected 18:32:42Z, destroyed 18:33:08Z, staging release 430112422) - THE RUNNER CONTRACT
+NOW PASSES END TO END, every stage verified from its collected report:
+
+- --accept printed ACCEPTED c861bd8f4acd9bbe for the fetched staging-430108320 bytes;
+  materialize copied public train+eval only (holdout fetched for --accept, never copied).
+- The benchmark's own train.py and validate.sh ran UNMODIFIED (all three runner sha256
+  match): train.py Eval AUC 0.6108; validate.sh CONTRACT OK, same 0.6108 via predict_proba
+  on the target-dropped frame.
+- Derived evidence (model_intervals.py, second implementation, identical 28,104 eval rows;
+  holdout never opened): model 0.6108 vs procedure_type_rate 0.5551 diff +0.0558
+  (row CI [0.0467, 0.0626]; LPA-cluster CI [0.0462, 0.0654]); vs lpa_hist_rate 0.5414 diff
+  +0.0694 (CI [0.0622, 0.0766]; clustered [0.0597, 0.0792]); vs shipped_rate_feature 0.5422
+  diff +0.0686. EVERY interval excludes zero on BOTH protocols: demonstrated headroom over
+  every measured simple reference (persistence 0.5045; calendar control degenerate, collapsed
+  onto lpa_hist exactly, recorded as such). The second implementation reproduces the build
+  job's reference figures exactly. The model AUC may not be quoted without these
+  comparisons beside it.
+- Cleanup provider-confirmed on api.hetzner.cloud: servers 173816674 and 173817662 both read
+  back 404, zero project servers, zero primary IPs. EUR 0.10 reserved this session
+  (0.04 + 0.06).
+
+Record updated (jobs += 002/baseline-002, measurements += rebuild/baseline blocks, next_action
+= packaging with dataset-release on the accepted c861bd8f artifact; holdout stays sealed; no
+further rebuild of this construction is permitted - the one rebuild is spent). Checks at
+close-out: suite 697/697, check-candidate pins OK (ready) and --all rc=0. unhcr: no byte,
+tag, destination or visibility touched; operator_decision_pending stays true.
+
+
 ## 2026-10-31 (16:22Z) - UK discovery tick: pins-planning-appeal-outcome READY (OGL v3.0, 186,785 measured decided appeals 2016-2026, novelty differentiated); ea-permit-compliance-breach dropped at licence triage (EA Conditional Licence, class D)
 
 Scheduled discovery tick, regional focus United Kingdom (ONS, NHS Digital, Defra,

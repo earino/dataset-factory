@@ -1,0 +1,242 @@
+{
+  "job": {
+    "id": "pins-planning-baseline-002",
+    "candidate": "pins-planning-appeal-outcome",
+    "image": "python:3.13-slim",
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 3072,
+    "timeout_minutes": 45,
+    "lifetime_minutes": 90,
+    "max_disk_mb": 4096,
+    "max_artifact_mb": 16,
+    "what": "Runner-contract baseline on the REBUILT pins-planning-appeal-outcome artifact c861bd8f4acd9bbe... (job pins-planning-002, gate 1.5.0 failed_checks empty, exact-byte --accept ACCEPTED on the worker), fetched from private staging release 430108320 rather than rebuilt: re-accept the five fetched files against the gate's own collected report, materialize the runner workdir (public train+eval only; the private holdout is fetched for --accept over the full artifact but never copied into a workdir), run the benchmark's own train.py and validate.sh unmodified and record both eval AUCs, then the DERIVED evidence step (model_intervals.py, not the runner): same model configuration retrained for per-row eval scores, paired row-level and LPA-clustered bootstrap intervals vs second-implementation references (LPA historical allow rate, procedure/casework-type rate, shipped rate feature cross-check) on the identical 28,104 eval rows. The rebuild fixed the one measured runner-contract breaker: num() now maps the publisher's prose ('Under 200 sq m floorspace', 6 eval rows) to missing, so floor_space_sqm is float64 in train AND eval (001's defect; train.csv/holdout.csv are byte-identical to 001, eval.csv differs only in those cells). The worker-side probe in pins-planning-002 settled the previously unresolved category question: the verbatim predict path ACCEPTS category dtypes under xgboost 3.4.1 (fit, seen-level predict and unseen-level-NaN predict all pass), so string levels ship unchanged and no coding was applied - 001's error listing the nine category columns was xgboost's dtype validator naming every non-basic column, with the object column the actual breaker. References already measured post-acceptance in pins-planning-002 and identical to 001's: procedure_type_rate 0.5551 (strongest), lpa_hist_rate 0.5414, persistence_last_outcome 0.5045, calendar_identity degenerate (collapsed onto lpa_hist exactly), majority-class accuracy 0.6987. No holdout score, no agent loop. Stopping condition: any failed stage exits non-zero and leaves its logs; a failure of the SAME runner-contract class here means stop and re-target (no pins-planning-003).",
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 430108320,
+      "assets": [
+        {
+          "asset_id": 696134459,
+          "dest": "extract/meta.json",
+          "size": 2518,
+          "sha256": "4e7a31048bb77372cbc42bcf3f8a341e2eeeed0afdce920fb678164f2f6c76b2"
+        },
+        {
+          "asset_id": 696134649,
+          "dest": "extract/public/eval.csv",
+          "size": 7688640,
+          "sha256": "2ab9271f70c74f857f0c1a7b696fa299427754a5fb0167a7ee6ab11480dd6e72"
+        },
+        {
+          "asset_id": 696134717,
+          "dest": "extract/public/train.csv",
+          "size": 14799462,
+          "sha256": "299e5af47610af833bec33e15e8a5d8a242f6edebfd401388714b819593c2f65"
+        },
+        {
+          "asset_id": 696134523,
+          "dest": "extract/private/holdout.csv",
+          "size": 14976119,
+          "sha256": "3f65dc801e0819bd6e828a101065deb7cfc68b764db339a08b2442deddc6fc96"
+        },
+        {
+          "asset_id": 696134819,
+          "dest": "extract/quality.json",
+          "size": 44632,
+          "sha256": "9203accc06369f3d2468b8740ac84c293d5e1222907d2daa1d7bb486b437ae33"
+        }
+      ]
+    },
+    "source_files": [
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/pins-planning-appeal-outcome/baseline/run.sh",
+        "bytes": 2982,
+        "sha256": "1d9bdc059f85b4c65b8eb7608c4e70f4377cc29252423f98ae238dfe031d9ac4"
+      },
+      {
+        "bundled_as": "materialize.py",
+        "source": "candidates/pins-planning-appeal-outcome/baseline/materialize.py",
+        "bytes": 2090,
+        "sha256": "99fa787ebbff5dadee7154489171551df6a2f9debd36d6973da816b44a219f13"
+      },
+      {
+        "bundled_as": "model_intervals.py",
+        "source": "candidates/pins-planning-appeal-outcome/baseline/model_intervals.py",
+        "bytes": 9002,
+        "sha256": "69427c70be53c10e808ff382ebd928306a194941f18050975813786a73737c31"
+      },
+      {
+        "bundled_as": "report.py",
+        "source": "candidates/pins-planning-appeal-outcome/baseline/report.py",
+        "bytes": 5398,
+        "sha256": "b2c06b5134575f8b795e31f0f0dc4c05129b30c3c3bb705754eac48e350b3031"
+      },
+      {
+        "bundled_as": "qualification.json",
+        "source": "candidates/pins-planning-appeal-outcome/baseline/qualification.json",
+        "bytes": 17480,
+        "sha256": "f2d33fcaf593bdaf812f11ebf40ce904125e7867969c6a882ae1c5c4f7719abf"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 57029,
+        "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+      },
+      {
+        "bundled_as": "train.py",
+        "source": "/opt/data/harness_benchmark/task_template/train.py",
+        "bytes": 2500,
+        "sha256": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8"
+      },
+      {
+        "bundled_as": "validate.py",
+        "source": "/opt/data/harness_benchmark/task_template/validate.py",
+        "bytes": 1277,
+        "sha256": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b"
+      },
+      {
+        "bundled_as": "validate.sh",
+        "source": "/opt/data/harness_benchmark/task_template/validate.sh",
+        "bytes": 482,
+        "sha256": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      }
+    ]
+  },
+  "reservation_eur": "0.06",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 3,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 204800,
+  "source_sha256": "6cdbc8bd0290b9b229d26f6addee643c66c7a3a95ff1906dac26ce7f80ca9f13",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-10-31T18:26:52.128725+00:00",
+  "expires": 1793476612,
+  "budget_months": [
+    "2026-10"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 173817662,
+  "known_hosts": "/opt/data/dataset-factory/.factory/pins-planning-baseline-002/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "65.21.158.17",
+  "result": {
+    "job_id": "pins-planning-baseline-002",
+    "status": "succeeded",
+    "uploaded": true,
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 430108320,
+      "fetched": [
+        {
+          "dest": "extract/meta.json",
+          "bytes": 2518,
+          "sha256": "4e7a31048bb77372cbc42bcf3f8a341e2eeeed0afdce920fb678164f2f6c76b2"
+        },
+        {
+          "dest": "extract/public/eval.csv",
+          "bytes": 7688640,
+          "sha256": "2ab9271f70c74f857f0c1a7b696fa299427754a5fb0167a7ee6ab11480dd6e72"
+        },
+        {
+          "dest": "extract/public/train.csv",
+          "bytes": 14799462,
+          "sha256": "299e5af47610af833bec33e15e8a5d8a242f6edebfd401388714b819593c2f65"
+        },
+        {
+          "dest": "extract/private/holdout.csv",
+          "bytes": 14976119,
+          "sha256": "3f65dc801e0819bd6e828a101065deb7cfc68b764db339a08b2442deddc6fc96"
+        },
+        {
+          "dest": "extract/quality.json",
+          "bytes": 44632,
+          "sha256": "9203accc06369f3d2468b8740ac84c293d5e1222907d2daa1d7bb486b437ae33"
+        }
+      ],
+      "failures": [],
+      "bytes": 37511371
+    },
+    "image_id": "sha256:2d44738ebf4ce5f63b9d9ea871e9c7cfdc0426f7b0c97cac915fd88ded1d86bb",
+    "image_digests": [
+      "python@sha256:2d44738ebf4ce5f63b9d9ea871e9c7cfdc0426f7b0c97cac915fd88ded1d86bb"
+    ],
+    "exit_code": 0,
+    "oom_killed": false,
+    "elapsed_seconds": 192.6,
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 430112422,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-4e8aebe66a346eb8b576",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-4e8aebe66a346eb8b576/manifest.json",
+    "assets": [
+      {
+        "id": 696150842,
+        "size": 72,
+        "sha256": "3369c1d537593ded2dcb8b4824ff2b31a510a69f0116ff742910d1c5f7293095"
+      },
+      {
+        "id": 696150886,
+        "size": 5436,
+        "sha256": "e3756dabe592928ac836645fde7c217997f1cefae04f7136f7940159bbbb9017"
+      },
+      {
+        "id": 696150932,
+        "size": 247,
+        "sha256": "3ab68eb2a8f9ae624128394490d8a6906155326a6b868a966bd85fdb6af8ce4a"
+      },
+      {
+        "id": 696150974,
+        "size": 195,
+        "sha256": "01ea17c83936a6839534e6bcc45562637f1926963f304a1cc623ded35a5546cc"
+      },
+      {
+        "id": 696151053,
+        "size": 2177,
+        "sha256": "647dd5b196b50642b8908d05118c48673f10c5960dcfbda16421eee87a4476b3"
+      },
+      {
+        "id": 696151113,
+        "size": 364,
+        "sha256": "abd6f7249a473f07f501069dde0fe2436ada294e0816606ef6d35309752ff944"
+      },
+      {
+        "id": 696151166,
+        "size": 53,
+        "sha256": "fcee747864a661a37d2bf1cb6905202d8082d1e3db2a8eee3f4ed8ad1289aaeb"
+      },
+      {
+        "id": 696151213,
+        "size": 178,
+        "sha256": "7b6692a3f9e8c5fee1895cf2285b32f29d908d492bd6f188f986c12824aa2509"
+      },
+      {
+        "id": 696151290,
+        "size": 204800,
+        "sha256": "6cdbc8bd0290b9b229d26f6addee643c66c7a3a95ff1906dac26ce7f80ca9f13"
+      },
+      {
+        "id": 696151363,
+        "size": 1717,
+        "sha256": "6a31e2f450f49b0debda75339e0f169ca86064c62972076ce668021a76fcc483"
+      },
+      {
+        "id": 696151398,
+        "size": 11229,
+        "sha256": "166ed012d9c8335ac05c2d1bb841e03f8c441ddaa6b03d5533395ae154059b82"
+      }
+    ],
+    "skipped_empty": []
+  },
+  "collected_at": "2026-10-31T18:32:42.286417+00:00",
+  "deleted_at": "2026-10-31T18:33:08.438656+00:00"
+}

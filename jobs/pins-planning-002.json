@@ -1,0 +1,833 @@
+{
+  "job": {
+    "id": "pins-planning-002",
+    "candidate": "pins-planning-appeal-outcome",
+    "image": "python:3.13-slim",
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 4096,
+    "timeout_minutes": 30,
+    "lifetime_minutes": 45,
+    "max_disk_mb": 6000,
+    "max_artifact_mb": 120,
+    "what": "THE ONE PERMITTED REBUILD (runner-compatibility defect class, diagnosed in pins-planning-baseline-001): stage 0 runs the worker-side minimal probe probe_category_predict.py (synthetic frames, the same dependency ranges the baseline job installs) to settle whether the verbatim train.py predict path accepts category dtypes under the installed xgboost - baseline-001 measured xgboost 3.4.1 inplace_predict rejecting all nine category-dtype columns AND the object-dtype floor_space_sqm at model.predict_proba even though enable_categorical=True was set at fit. Writer changes only, both fixes in the same rebuild: (1) num() maps unparseable publisher prose ('Under 200 sq m floorspace', 6 eval rows) to '' missing, so no numeric column can arrive object-dtype; (2) if the probe verdict is rejected, the nine string-categorical columns (lpa_name, ons_lpa_code, casework_type, procedure, development_type, appeal_type_reason, appeal_reason, type_detail, link_status) ship as integer codes 1..N over the pooled eligible panel's sorted distinct non-blank values, blank stays missing - codes documented in quality.json categorical_coding/measurements/feature_evidence, full value->code table in the collected summary.json. Everything else is byte-for-byte unchanged from pins-planning-001: same pinned GOV.UK Excel bytes, same frame and dedup, same splits on the validation instant (train < 2020 valid, eval 2020-2021, holdout >= 2022), same per-decision-year fixture, same LPA-history construction - so split counts must equal 001 exactly (train 54,834/17,048; eval 28,104/8,469; holdout 56,326/17,705) and references must reproduce 001's figures (procedure_type 0.5551, lpa_hist 0.5414, persistence 0.5045, degenerate calendar control). Full worker order: probe -> construct -> qualify (gate 1.5.0, full artifact) -> exact-byte accept -> simple references (score.py, post-acceptance, eval rows only, holdout never opened). Stopping condition: a second failure of this defect class after this rebuild means stop and re-target - no pins-planning-003.",
+    "source_files": [
+      {
+        "bundled_as": "build.py",
+        "source": "candidates/pins-planning-appeal-outcome/source/build.py",
+        "bytes": 70976,
+        "sha256": "dc0b3ddeff3ec7efa3fe5f5a587189f2a481cfcb591a8f5444c5034f7d51b86f"
+      },
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/pins-planning-appeal-outcome/source/run.sh",
+        "bytes": 3429,
+        "sha256": "1852faaab7684cc81150a38c346b0f15524b1b2f609acce372e1602797fca908"
+      },
+      {
+        "bundled_as": "score.py",
+        "source": "candidates/pins-planning-appeal-outcome/source/score.py",
+        "bytes": 14710,
+        "sha256": "3b8298c7ddbb4a886da8a299f265ddf45c0968c8827348fc4b9f0bb68941ca30"
+      },
+      {
+        "bundled_as": "probe_category_predict.py",
+        "source": "candidates/pins-planning-appeal-outcome/source/probe_category_predict.py",
+        "bytes": 6843,
+        "sha256": "02d02cb9d245513682504bc40a76a549b1df26872ae6d2eb514fac72d1a60c63"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 57029,
+        "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+      }
+    ]
+  },
+  "reservation_eur": "0.04",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 2,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 256000,
+  "source_sha256": "fdd515dc8e0666ec8a5a293a2b7601428e386292cf35e298b882100fc8a5caa6",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-10-31T18:20:31.099725+00:00",
+  "expires": 1793473531,
+  "budget_months": [
+    "2026-10"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 173816674,
+  "known_hosts": "/opt/data/dataset-factory/.factory/pins-planning-002/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "65.21.158.17",
+  "result": {
+    "job_id": "pins-planning-002",
+    "status": "succeeded",
+    "uploaded": true,
+    "image_id": "sha256:2d44738ebf4ce5f63b9d9ea871e9c7cfdc0426f7b0c97cac915fd88ded1d86bb",
+    "image_digests": [
+      "python@sha256:2d44738ebf4ce5f63b9d9ea871e9c7cfdc0426f7b0c97cac915fd88ded1d86bb"
+    ],
+    "exit_code": 0,
+    "oom_killed": false,
+    "elapsed_seconds": 110.5,
+    "summary": {
+      "name": "pins-planning-appeal-outcome",
+      "built_at_utc": "2026-10-31T00:00:00Z",
+      "relax_expected": false,
+      "categorical_coding": {
+        "applied": false,
+        "probe_result": {
+          "predict_on_category_dtype": "ok",
+          "purpose": "does the verbatim benchmark train.py predict path accept category-dtype columns at predict under the installed xgboost",
+          "subtests": {
+            "fit": "fit ok",
+            "predict_seen_levels": "ok",
+            "predict_unseen_level_nan": "ok"
+          },
+          "model_config": "XGBClassifier n_estimators=10 max_depth=3 lr=0.1 hist enable_categorical=True seed 42 - the verbatim train.py configuration modulo tree size",
+          "versions": {
+            "python": "3.13.18",
+            "pandas": "2.3.3",
+            "numpy": "2.5.4",
+            "xgboost": "3.4.1"
+          },
+          "note": "verdict rejected means build.py integer-codes the nine string-categorical columns so the shipped frame is int/float/bool only; no dataset row was read and no metric computed"
+        },
+        "scheme": null,
+        "vocab_sizes": null,
+        "code_maps": null
+      },
+      "source_pins": [
+        {
+          "kind": "casework",
+          "url": "https://assets.publishing.service.gov.uk/media/6ad9fcc1c818345ad8aca325/Casework_Database_-_2610.xlsx",
+          "bytes": 22207115,
+          "sha256": "dff80bd0f17cbc640dc205009a9411269c8e58462b6df71af903c592af3c20fa"
+        },
+        {
+          "kind": "older",
+          "url": "https://assets.publishing.service.gov.uk/media/6ad9fcd12263175ac2aca2f7/Older_Casework_Data_-_2610.xlsx",
+          "bytes": 12325866,
+          "sha256": "baf28d80c5cd5ad266f8a9e62c25517b2ec9d4c5d951239ab0638666bc092a4b"
+        }
+      ],
+      "rows_per_file": {
+        "casework": 91216,
+        "older": 95569
+      },
+      "s78_binary_rows_per_file": {
+        "casework": 69451,
+        "older": 75682
+      },
+      "eligible_rows": 139264,
+      "kept_by_decision_year": {
+        "2016": [
+          3664,
+          1288
+        ],
+        "2017": [
+          15013,
+          4951
+        ],
+        "2018": [
+          14372,
+          4703
+        ],
+        "2019": [
+          16431,
+          4674
+        ],
+        "2020": [
+          12793,
+          3572
+        ],
+        "2021": [
+          13186,
+          4030
+        ],
+        "2022": [
+          13000,
+          3930
+        ],
+        "2023": [
+          13732,
+          4294
+        ],
+        "2024": [
+          13680,
+          4189
+        ],
+        "2025": [
+          14433,
+          4685
+        ],
+        "2026": [
+          8960,
+          2906
+        ]
+      },
+      "exclusions": {
+        "non_binary_decision": 2757,
+        "cross_file_duplicate": 3110,
+        "decided_before_valid": 2
+      },
+      "exclusions_by_decision_year": {
+        "2021": {
+          "non_binary_decision": 336,
+          "cross_file_duplicate": 119
+        },
+        "2022": {
+          "non_binary_decision": 390,
+          "cross_file_duplicate": 148
+        },
+        "2023": {
+          "non_binary_decision": 310,
+          "cross_file_duplicate": 229
+        },
+        "2024": {
+          "non_binary_decision": 247,
+          "cross_file_duplicate": 136
+        },
+        "2025": {
+          "non_binary_decision": 260,
+          "cross_file_duplicate": 204
+        },
+        "2026": {
+          "cross_file_duplicate": 122,
+          "non_binary_decision": 158
+        },
+        "2016": {
+          "non_binary_decision": 59,
+          "cross_file_duplicate": 62,
+          "decided_before_valid": 1
+        },
+        "2017": {
+          "non_binary_decision": 218,
+          "cross_file_duplicate": 355,
+          "decided_before_valid": 1
+        },
+        "2018": {
+          "non_binary_decision": 228,
+          "cross_file_duplicate": 512
+        },
+        "2019": {
+          "non_binary_decision": 243,
+          "cross_file_duplicate": 907
+        },
+        "2020": {
+          "non_binary_decision": 308,
+          "cross_file_duplicate": 316
+        }
+      },
+      "split_stats": {
+        "train": {
+          "rows": 54834,
+          "positives": 17048,
+          "negatives": 37786,
+          "positive_rate": 0.3109019951125214
+        },
+        "eval": {
+          "rows": 28104,
+          "positives": 8469,
+          "negatives": 19635,
+          "positive_rate": 0.30134500426985483
+        },
+        "holdout": {
+          "rows": 56326,
+          "positives": 17705,
+          "negatives": 38621,
+          "positive_rate": 0.3143308596385328
+        }
+      },
+      "valid_date_ranges": {
+        "train": [
+          "2012-06-01",
+          "2019-12-31"
+        ],
+        "eval": [
+          "2020-01-01",
+          "2021-12-31"
+        ],
+        "holdout": [
+          "2022-01-01",
+          "2026-08-21"
+        ]
+      },
+      "sparse_valid_year_tails": {
+        "train-2012": [
+          3,
+          3
+        ],
+        "train-2013": [
+          4,
+          2
+        ],
+        "train-2014": [
+          9,
+          7
+        ]
+      },
+      "positive_events": {
+        "train": {
+          "positives": 17048,
+          "distinct_events": 1430
+        },
+        "eval": {
+          "positives": 8469,
+          "distinct_events": 711
+        },
+        "holdout": {
+          "positives": 17705,
+          "distinct_events": 1594
+        }
+      },
+      "per_valid_year": {
+        "eval-2020": [
+          13797,
+          4126
+        ],
+        "eval-2021": [
+          14307,
+          4343
+        ],
+        "holdout-2022": [
+          13561,
+          4126
+        ],
+        "holdout-2023": [
+          12730,
+          3911
+        ],
+        "holdout-2024": [
+          13101,
+          4162
+        ],
+        "holdout-2025": [
+          11911,
+          3886
+        ],
+        "holdout-2026": [
+          5023,
+          1620
+        ],
+        "train-2012": [
+          3,
+          3
+        ],
+        "train-2013": [
+          4,
+          2
+        ],
+        "train-2014": [
+          9,
+          7
+        ],
+        "train-2015": [
+          129,
+          63
+        ],
+        "train-2016": [
+          8627,
+          2916
+        ],
+        "train-2017": [
+          16266,
+          5415
+        ],
+        "train-2018": [
+          15255,
+          4622
+        ],
+        "train-2019": [
+          14541,
+          4020
+        ]
+      },
+      "valid_years_by_split": {
+        "train": [
+          2012,
+          2013,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019
+        ],
+        "eval": [
+          2020,
+          2021
+        ],
+        "holdout": [
+          2022,
+          2023,
+          2024,
+          2025,
+          2026
+        ]
+      },
+      "presence": {
+        "green_belt": 138979,
+        "agricultural_holding": 125477,
+        "procedure": 139264,
+        "development_type": 139212,
+        "appeal_type_reason": 131616,
+        "appeal_reason": 138898,
+        "type_detail": 139264,
+        "link_status": 131618,
+        "listed_building_setting": 16126,
+        "conservation_area": 11529,
+        "aonb": 13204,
+        "historic_building_grant": 6411,
+        "flooding_issue": 6812,
+        "sssi": 6673
+      },
+      "flag_presence": {
+        "green_belt": 138979,
+        "agricultural_holding": 125477,
+        "listed_building_setting": 16126,
+        "historic_building_grant": 6411,
+        "conservation_area": 11529,
+        "flooding_issue": 6812,
+        "aonb": 13204,
+        "sssi": 6673
+      },
+      "shipped_flags": [
+        "green_belt",
+        "agricultural_holding",
+        "listed_building_setting",
+        "historic_building_grant",
+        "conservation_area",
+        "flooding_issue",
+        "aonb",
+        "sssi"
+      ],
+      "dropped_flags": {},
+      "enforcement_grounds_shipped": false,
+      "vocab_sizes": {
+        "procedure": 4,
+        "development_type": 20,
+        "appeal_type_reason": 21,
+        "appeal_reason": 9,
+        "type_detail": 9,
+        "link_status": 4
+      },
+      "vocab_top": {
+        "procedure": {
+          "Written Representations": 132629,
+          "Hearing": 4675,
+          "Inquiry": 1945,
+          "Written representation (Part 1)": 15
+        },
+        "development_type": {
+          "Householder developments": 47757,
+          "Minor Dwellings": 45991,
+          "Other minor developments": 16284,
+          "Change of use": 15824,
+          "Major dwellings": 5765,
+          "Minor retail and services": 2600,
+          "Minor general industry/storage/warehousing": 1494,
+          "Other Major Developments": 1330,
+          "Minor offices/R&D/light industry": 484,
+          "Unknown": 453,
+          "Minor traveller and caravan pitches": 449,
+          "Major general industry/storage/warehousing": 304
+        },
+        "appeal_type_reason": {
+          "1. Refused planning permission": 113260,
+          "": 7648,
+          "3. Refused prior approval of permitted development rights": 6681,
+          "8. Failed to give notice of its decision within the appropriate period (usually 8 weeks) on an application for permission or approval": 5288,
+          "2. Refused permission to vary or remove a condition(s)": 3758,
+          "4. Grant planning permission for the development subject to conditions to which you object": 1325,
+          "5. Refuse approval of the matters reserved under an outline planning permission": 613,
+          "7. Refuse to approve any matter required by a condition on a previous planning permission": 333,
+          "6. Grant approval of the matters reserved under an outline planning permission subject to conditions to which you object": 96,
+          "1. The decision of the LPA refusing/refusing in part to grant a certificate of lawful use or development": 94,
+          "Unknown": 76,
+          "9. Failed to give notice of its decision within the appropriate period because of a dispute over provision of local list documentation": 68
+        },
+        "appeal_reason": {
+          "Refusal": 120046,
+          "refused": 6991,
+          "Failure": 5364,
+          "Appeal Against Conditions": 5178,
+          "Refusal - Reserved Matters": 615,
+          "": 366,
+          "Refusal - Matter related to previously imposed condition": 334,
+          "not_received": 263,
+          "granted": 107
+        },
+        "type_detail": {
+          "Planning Appeals - Full": 101441,
+          "Unknown": 21352,
+          "Planning Appeals - Outline": 8142,
+          "Planning Appeals - Other": 4150,
+          "Householder": 2476,
+          "Planning Appeals - Reserved Matters": 647,
+          "No Application Type Assocaited": 421,
+          "Prior Approval": 358,
+          "Removal or Variation of Conditions": 277
+        },
+        "link_status": {
+          "Not Linked": 122701,
+          "": 7646,
+          "Lead": 5127,
+          "Child": 3790
+        }
+      },
+      "matched_casework_types": {
+        "Planning Appeal": 99464,
+        "Householder (HAS)": 42912
+      },
+      "decision_by_type": {
+        "Planning Appeal": {
+          "Dismissed": 70810,
+          "Unknown": 662,
+          "Allowed": 28654,
+          "Invalid": 94,
+          "Split Decision": 700,
+          "Appeal Withdrawn": 210,
+          "Turned Away": 12
+        },
+        "Enforcement Notice": {
+          "Notice upheld": 6370,
+          "Planning permission granted": 1851,
+          "Invalid": 242,
+          "Notice varied and upheld": 5616,
+          "Unknown": 1380,
+          "Quashed On Legal Grounds": 1702,
+          "Split Decision": 556,
+          "Appeal Withdrawn": 56,
+          "Turned Away": 1
+        },
+        "Rights of Way Opposed Orders": {
+          "Unknown": 1027
+        },
+        "Lawful Development Certificate": {
+          "Dismissed": 3057,
+          "Allowed": 1795,
+          "Split Decision": 78,
+          "Unknown": 100,
+          "Appeal Withdrawn": 20,
+          "Invalid": 3
+        },
+        "Common Land": {
+          "Unknown": 663,
+          "Appeal Withdrawn": 30
+        },
+        "Householder (HAS)": {
+          "Dismissed": 27672,
+          "Allowed": 15240,
+          "Appeal Withdrawn": 42,
+          "Unknown": 98,
+          "Split Decision": 928,
+          "Invalid": 11
+        },
+        "Advert Discontinuance": {
+          "Notice upheld": 49,
+          "Notice Quashed": 13
+        },
+        "Appeal against Enforcement Listed Buildi": {
+          "Quashed On Legal Grounds": 54,
+          "Notice upheld": 192,
+          "Notice varied and upheld": 146,
+          "Planning permission granted": 25,
+          "Split Decision": 38,
+          "Unknown": 7
+        },
+        "Commercial Appeal Service (CAS)": {
+          "Dismissed": 2877,
+          "Allowed": 1444,
+          "Split Decision": 91,
+          "Unknown": 33,
+          "Appeal Withdrawn": 9,
+          "Turned Away": 1
+        },
+        "Listed Building Consent & Conservation A": {
+          "Dismissed": 2778,
+          "Split Decision": 123,
+          "Unknown": 332,
+          "Allowed": 921,
+          "Turned Away": 1,
+          "Appeal Withdrawn": 7,
+          "Invalid": 23
+        },
+        "Advertisement Appeal": {
+          "Allowed": 494,
+          "Dismissed": 927,
+          "Unknown": 153,
+          "Allowed with Conditions": 31,
+          "Appeal Withdrawn": 3,
+          "Allowed in part": 11,
+          "Turned Away": 1
+        },
+        "Rights Of Way": {
+          "": 778,
+          "Unknown": 321,
+          "Appeal Withdrawn": 1
+        },
+        "Tree Preservation Order": {
+          "Dismissed": 2377,
+          "Allowed": 625,
+          "Split Decision": 179,
+          "No Decision Code Associated": 57,
+          "Turned Away": 1,
+          "Enforcement Notice Varied": 3
+        },
+        "Called In Planning Application": {
+          "Dismissed": 21,
+          "Allowed": 51,
+          "Unknown": 5
+        },
+        "High Hedges": {
+          "Dismissed": 178,
+          "Allowed": 66,
+          "Split Decision": 74,
+          "Appeal Withdrawn": 29,
+          "No Decision Code Associated": 146,
+          "Turned Away": 2
+        },
+        "Environmental": {
+          "Unknown": 345,
+          "Appeal Withdrawn": 1
+        },
+        "Rights of Way Modifications": {
+          "Unknown": 12,
+          "Allowed": 103,
+          "No Decision Code Associated": 14,
+          "Allowed with Conditions": 10
+        },
+        "Section 106 Agreement": {
+          "Allowed": 47,
+          "Dismissed": 71,
+          "Unknown": 3,
+          "Split Decision": 2,
+          "Appeal Withdrawn": 2
+        },
+        "Tree Replacement Notice": {
+          "Split Decision": 11,
+          "No Decision Code Associated": 1,
+          "Dismissed": 32,
+          "Allowed": 17,
+          "Turned Away": 1
+        },
+        "Hedgerow": {
+          "Allowed": 10,
+          "Dismissed": 42,
+          "Split Decision": 4,
+          "No Decision Code Associated": 2
+        },
+        "Community Infrastructure Levy Appeal": {
+          "Unknown": 5,
+          "Dismissed": 156,
+          "Allowed": 57,
+          "Appeal Withdrawn": 1
+        },
+        "Marine and Coastal Access": {
+          "Unknown": 1
+        },
+        "Purchase Notice": {
+          "Unknown": 8
+        },
+        "Commercial Appeals Service (Adverts)": {
+          "Dismissed": 271,
+          "Split Decision": 5,
+          "Allowed": 140
+        },
+        "Commercial Appeals Service (Planning)": {
+          "Dismissed": 9,
+          "Split Decision": 1
+        },
+        "Section 106BC (Affordable Housing)": {
+          "Allowed": 14,
+          "Appeal Withdrawn": 1,
+          "Dismissed": 6
+        },
+        "No appeal type associated": {
+          "Allowed": 2
+        }
+      },
+      "columns": [
+        "row_id",
+        "lpa_name",
+        "ons_lpa_code",
+        "casework_type",
+        "procedure",
+        "development_type",
+        "appeal_type_reason",
+        "appeal_reason",
+        "type_detail",
+        "link_status",
+        "valid_date",
+        "valid_year",
+        "valid_day_of_year",
+        "received_date",
+        "received_to_valid_days",
+        "area_of_site_hectares",
+        "floor_space_sqm",
+        "number_of_residences",
+        "green_belt",
+        "agricultural_holding",
+        "listed_building_setting",
+        "historic_building_grant",
+        "conservation_area",
+        "flooding_issue",
+        "aonb",
+        "sssi",
+        "lpa_decisions_prior_count",
+        "lpa_allowed_prior_count",
+        "lpa_allow_rate_prior",
+        "lpa_last_outcome",
+        "lpa_days_since_prev_case_valid",
+        "allowed"
+      ],
+      "features": [
+        "lpa_name",
+        "ons_lpa_code",
+        "casework_type",
+        "procedure",
+        "development_type",
+        "appeal_type_reason",
+        "appeal_reason",
+        "type_detail",
+        "link_status",
+        "valid_date",
+        "valid_year",
+        "valid_day_of_year",
+        "received_date",
+        "received_to_valid_days",
+        "area_of_site_hectares",
+        "floor_space_sqm",
+        "number_of_residences",
+        "green_belt",
+        "agricultural_holding",
+        "listed_building_setting",
+        "historic_building_grant",
+        "conservation_area",
+        "flooding_issue",
+        "aonb",
+        "sssi",
+        "lpa_decisions_prior_count",
+        "lpa_allowed_prior_count",
+        "lpa_allow_rate_prior",
+        "lpa_last_outcome",
+        "lpa_days_since_prev_case_valid"
+      ],
+      "fixture_case_3236151": {
+        "valid_date": "2019-09-12",
+        "decision_date": "2021-10-01",
+        "allowed": 0,
+        "lpa": "Waverley Borough Council",
+        "procedure": "Hearing"
+      },
+      "assertions_passed": [
+        "per-decision-year counts reproduce the discovery probe (11 years)",
+        "row_id unique",
+        "disjoint valid-year split windows",
+        "both classes every valid year in every split",
+        "fixture case 3236151 (dated worked example)",
+        "brute-force LPA-history recomputation on a 500-row sample",
+        "no forbidden/post-hoc/PII column shipped",
+        "overall allow rate inside the publisher envelope 27-33%",
+        "numeric cells parse or ship missing (pins-planning-baseline-001 defect class)",
+        "string descriptor levels shipped verbatim (probe said ok)"
+      ]
+    },
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 430108320,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-8ac88c6d0b3ed97856cd",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-8ac88c6d0b3ed97856cd/manifest.json",
+    "assets": [
+      {
+        "id": 696134354,
+        "size": 74,
+        "sha256": "d504dcfeb0af13c882e5a7ae51e7bd43a755e9e29db2885428fb03fd2999fe4d"
+      },
+      {
+        "id": 696134400,
+        "size": 728,
+        "sha256": "08c52aa5f5cdee9da5882b2485e7ff1ec6c3f9839923623cf0ba4fb1e44f59f8"
+      },
+      {
+        "id": 696134459,
+        "size": 2518,
+        "sha256": "4e7a31048bb77372cbc42bcf3f8a341e2eeeed0afdce920fb678164f2f6c76b2"
+      },
+      {
+        "id": 696134523,
+        "size": 14976119,
+        "sha256": "3f65dc801e0819bd6e828a101065deb7cfc68b764db339a08b2442deddc6fc96"
+      },
+      {
+        "id": 696134649,
+        "size": 7688640,
+        "sha256": "2ab9271f70c74f857f0c1a7b696fa299427754a5fb0167a7ee6ab11480dd6e72"
+      },
+      {
+        "id": 696134717,
+        "size": 14799462,
+        "sha256": "299e5af47610af833bec33e15e8a5d8a242f6edebfd401388714b819593c2f65"
+      },
+      {
+        "id": 696134819,
+        "size": 44632,
+        "sha256": "9203accc06369f3d2468b8740ac84c293d5e1222907d2daa1d7bb486b437ae33"
+      },
+      {
+        "id": 696134893,
+        "size": 364,
+        "sha256": "abd6f7249a473f07f501069dde0fe2436ada294e0816606ef6d35309752ff944"
+      },
+      {
+        "id": 696134962,
+        "size": 17480,
+        "sha256": "f2d33fcaf593bdaf812f11ebf40ce904125e7867969c6a882ae1c5c4f7719abf"
+      },
+      {
+        "id": 696135035,
+        "size": 17480,
+        "sha256": "f2d33fcaf593bdaf812f11ebf40ce904125e7867969c6a882ae1c5c4f7719abf"
+      },
+      {
+        "id": 696135101,
+        "size": 3047,
+        "sha256": "97e7f3643750853c3a9ca67d929a36ab0b50efd6b6ff59ff713536a69f99c9bb"
+      },
+      {
+        "id": 696135150,
+        "size": 14224,
+        "sha256": "25b7b60c1c1e6931632daab7bebcf6abda2ffc22cbab9935f7a59174ac742db1"
+      },
+      {
+        "id": 696135204,
+        "size": 256000,
+        "sha256": "fdd515dc8e0666ec8a5a293a2b7601428e386292cf35e298b882100fc8a5caa6"
+      },
+      {
+        "id": 696135236,
+        "size": 22261,
+        "sha256": "3752b4e4eae3538a8119192113bb74ebaa1541e170768c606d6ef303009aea9c"
+      },
+      {
+        "id": 696135292,
+        "size": 27995,
+        "sha256": "beef4e408f34696f5d62922ff544b10f6b69acb743a6aabf36960772b4bcaa4a"
+      }
+    ],
+    "skipped_empty": []
+  },
+  "collected_at": "2026-10-31T18:24:40.511276+00:00",
+  "deleted_at": "2026-10-31T18:26:05.386179+00:00"
+}

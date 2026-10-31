@@ -263,6 +263,98 @@
      ]
     }
    }
+  },
+  "rebuild_2026_10_31_pins_planning_002": {
+   "what": "the single permitted rebuild; worker-side category-predict probe + rebuilt artifact",
+   "probe": {
+    "predict_on_category_dtype": "ok",
+    "subtests": {
+     "fit": "fit ok",
+     "predict_seen_levels": "ok",
+     "predict_unseen_level_nan": "ok"
+    },
+    "versions": {
+     "python": "3.13.18",
+     "pandas": "2.3.3",
+     "numpy": "2.5.4",
+     "xgboost": "3.4.1"
+    },
+    "reading": "001's rejection message listed the nine category columns, but category dtypes are accepted at predict; the object-dtype floor_space_sqm column was the only breaker, fixed by num() mapping prose to missing"
+   },
+   "artifact_version": "c861bd8f4acd9bbe267bdb58e1168996fdb359c540aaf4030030a632d693c527",
+   "gate": "1.5.0, failed_checks empty, --accept ACCEPTED on the worker over the full artifact",
+   "staging_release": 430108320,
+   "byte_delta_vs_001": "train.csv + holdout.csv sha256-identical; eval.csv differs only in the 6 prose cells (now missing); quality.json + categorical_coding block; meta.json identical",
+   "references_reproduce_001_exactly": true,
+   "split_stats": {
+    "train": [
+     54834,
+     17048
+    ],
+    "eval": [
+     28104,
+     8469
+    ],
+    "holdout": [
+     56326,
+     17705
+    ]
+   },
+   "command": "sh scripts/scout-factory worker plan/launch .factory/jobs/pins-planning-002/job.json (assemble-job.py bundle, commit d6a51a0 pre-launch)"
+  },
+  "baseline_2026_10_31_pins_planning_baseline_002": {
+   "what": "runner-contract baseline + paired model-vs-reference intervals, identical 28,104 eval rows",
+   "model_eval_auc": 0.6108489948647478,
+   "references_eval_auc": {
+    "procedure_type_rate": 0.55506072071053,
+    "lpa_hist_rate": 0.5414410163425604,
+    "persistence_last_outcome": 0.504458138089444,
+    "shipped_rate_feature": 0.5422421736543134,
+    "calendar_identity": "0.5414410163425604 - degenerate: collapsed onto lpa_hist_rate exactly (eval years have no train-era support), recorded as such",
+    "majority_class_accuracy_this_split": 0.6986549957301452
+   },
+   "paired_vs_procedure_type": {
+    "diff": 0.05578827415421772,
+    "row_ci95": [
+     0.046661949591588536,
+     0.06261963717752905
+    ],
+    "lpa_cluster_ci95": [
+     0.04621657112389288,
+     0.06537236597230933
+    ]
+   },
+   "paired_vs_lpa_hist": {
+    "diff": 0.06940797852218739,
+    "row_ci95": [
+     0.06221382066459791,
+     0.07659881935671231
+    ],
+    "lpa_cluster_ci95": [
+     0.0597079992007401,
+     0.079216870767996
+    ]
+   },
+   "paired_vs_shipped_rate_feature": {
+    "diff": 0.06860682121043438,
+    "row_ci95": [
+     0.061863579560411885,
+     0.07555217878137621
+    ],
+    "lpa_cluster_ci95": [
+     0.05963823748448373,
+     0.07997558183755316
+    ]
+   },
+   "headroom_reading": "every paired interval excludes zero on both row-level and LPA-clustered protocols: demonstrated headroom over every measured simple reference under this protocol (persistence 0.5045, identity/LPA rate 0.5414, procedure rate 0.5551, degenerate calendar control). The model AUC may not be quoted without these comparisons beside it",
+   "contract": {
+    "train_py_eval_auc": 0.6108,
+    "validate_sh": "CONTRACT OK, same 0.6108",
+    "runner_unmodified": true
+   },
+   "holdout_opened": false,
+   "staging_release": 430112422,
+   "command": "sh scripts/scout-factory worker plan/launch .factory/jobs/pins-planning-baseline-002/job.json (bundle pins-planning-baseline, qualification.json replaced with the 002 report)"
   }
  },
  "jobs": [
@@ -289,12 +381,36 @@
    "collected": "2026-10-31T17:27:07Z",
    "destroyed": "2026-10-31T17:29:49Z",
    "outcome": "runner-contract baseline failed at the verbatim train.py predict step (accept had already printed ACCEPTED 0cbb55fe, materialize OK, train.py fit ran, predict raised): xgboost 3.4.1 rejected the eval feature frame - DataFrame.dtypes must be int/float/bool/category. ROOT CAUSE 1 (measured): floor_space_sqm carries the publisher's literal string 'Under 200 sq m floorspace' in 6 of 28,104 eval rows (and none in train), so eval's column parses as object dtype while train's parses float64 - the build's num() passed unparseable publisher strings through verbatim instead of treating them as missing. ROOT CAUSE 2 (unresolved by this run): the same rejection lists the nine category columns (lpa_name, ons_lpa_code, casework_type, procedure, development_type, appeal_type_reason, appeal_reason, type_detail, link_status) as invalid at the inplace_predict path even though the model was fit with enable_categorical=True - whether the verbatim runner's categorical handling works under xgboost 3.4.1 when no object column exists was NOT established (acnc's artifact was all-numeric so this path was never exercised before). Nothing was scored; no model AUC exists; the holdout was never opened. Worker destroyed and receipt recorded."
+  },
+  {
+   "id": "pins-planning-002",
+   "status": "succeeded",
+   "exit_code": 0,
+   "elapsed_seconds": 110.5,
+   "server_id": 173816674,
+   "staging_release": 430108320,
+   "launched": "2026-10-31T18:20:31Z",
+   "collected": "2026-10-31T18:24:40Z",
+   "destroyed": "2026-10-31T18:26:05Z",
+   "outcome": "THE ONE PERMITTED REBUILD (runner-compatibility class), executed and verified from its own collected reports. Stage 0 probe (probe_category_predict.py, synthetic frames, the verbatim train.py idiom under the baseline's own dependency ranges) SETTLED the question baseline-001 left open: predict_on_category_dtype = ok under xgboost 3.4.1 / pandas 2.3.3 / numpy 2.5.4 - fit, predict on seen levels and predict on an unseen level (NaN category) all pass, so the verbatim runner DOES accept category dtypes at predict and 001's error listing the nine category columns was xgboost's dtype validator naming every non-basic column while the actual breaker was the object column. The build therefore shipped string levels verbatim (no coding applied; the integer-coding writer path exists, probe-driven, and is pinned by tests) with the single real fix: num() maps unparseable publisher prose to missing. Byte evidence vs 001: train.csv and private/holdout.csv sha256-identical (299e5af4..., 3f65dc80...), eval.csv differs only in the 6 prose cells (43cc768e... -> 2ab9271f..., 150 B smaller), meta.json identical, quality.json grew by the categorical_coding block (applied false, probe evidence recorded). Gate 1.5.0 on the full artifact: failed_checks empty; --accept ACCEPTED c861bd8f4acd9bbe267bdb58e1168996fdb359c540aaf4030030a632d693c527 before any figure. Post-acceptance references reproduce 001's figures EXACTLY (procedure_type_rate 0.55506072071053, lpa_hist_rate 0.5414410163425604, persistence 0.504458138089444, calendar_identity degenerate at 0.5414410163425604, majority accuracy 0.6987) - the writer change touched no row selection, split or grouping. Split counts identical (train 54,834/17,048; eval 28,104/8,469; holdout 56,326/17,705). Bounded local smoke on the pinned bytes preceded the launch (both probe modes build; local gate 0 failed checks; scratch copies deleted). Worker destroyed 18:26:05Z; provider read-back this session: server 173816674 HTTP 404, zero project servers, zero primary IPs."
+  },
+  {
+   "id": "pins-planning-baseline-002",
+   "status": "succeeded",
+   "exit_code": 0,
+   "elapsed_seconds": 192.6,
+   "server_id": 173817662,
+   "staging_release": 430112422,
+   "launched": "2026-10-31T18:26:52Z",
+   "collected": "2026-10-31T18:32:42Z",
+   "destroyed": "2026-10-31T18:33:08Z",
+   "outcome": "RUNNER CONTRACT NOW PASSES END TO END on the rebuilt artifact (the defect class that killed baseline-001). Verified from the collected reports, never the exit code: --accept printed ACCEPTED c861bd8f4acd9bbe for the fetched staging-430108320 bytes before any number; materialize copied public train+eval only (holdout fetched for --accept, never copied into a workdir); the benchmark's own train.py and validate.sh ran UNMODIFIED (bundled sha256 == expected for all three runner files) - train.py Eval AUC 0.6108, validate.sh CONTRACT OK with the same 0.6108 via predict_proba on the target-dropped frame. Derived evidence (model_intervals.py, second implementation): model 0.6108489948647478 vs procedure_type_rate 0.5551 diff +0.0558 (row-level CI [0.0467, 0.0626]; LPA-clustered CI [0.0462, 0.0654]); vs lpa_hist_rate 0.5414 diff +0.0694 (CI [0.0622, 0.0766]; clustered [0.0597, 0.0792]); vs shipped_rate_feature 0.5422 diff +0.0686 (CI [0.0619, 0.0756]) - EVERY interval excludes zero on BOTH protocols: the full model beats all measured simple references, and the second implementation reproduces the build job's reference figures exactly (0.5414410163425604 / 0.55506072071053). Eval rows only (28,104); the holdout was never opened and stays sealed. Dependencies: python 3.13.18, pandas 2.3.3, numpy 2.5.4, xgboost 3.4.1, scikit-learn 1.9.1. Worker destroyed 18:33:08Z; provider read-back this session: server 173817662 HTTP 404, zero project servers, zero primary IPs."
   }
  ],
  "artifacts": [],
  "rejection_reason": null,
  "review": null,
- "next_action": "BASELINE FAILED AT THE RUNNER CONTRACT 2026-10-31 (job pins-planning-baseline-001, diagnosed, receipts preserved in staging release 430077841): the accepted artifact 0cbb55fe does not run through the benchmark's own train.py because (1) floor_space_sqm carries the publisher's literal 'Under 200 sq m floorspace' in 6 eval rows (object dtype in eval, float64 in train -> xgboost rejects the predict frame), and (2) the same rejection lists the nine string-categorical columns as invalid at the inplace_predict path under xgboost 3.4.1 even with enable_categorical at fit - unresolved whether the verbatim runner supports category dtypes at predict at all. THE ONE PERMITTED REBUILD (runner-compatibility defect class, qualification skill): pins-planning-002 changes the writer only - num() maps unparseable numeric-cell values to '' (missing) instead of passing publisher phrases through, and the same rebuild settles the categorical question: if a worker-side minimal probe still shows the verbatim train.py predict path rejecting category dtypes, integer-code the nine categorical columns in the SAME rebuild (codes documented in quality.json measurements/feature_evidence, vocabulary sizes already recorded) so the shipped frame is int/float/bool only - the runner contract wins over prettier string levels. Then the full worker order again: construct -> qualify -> exact-byte accept -> references -> baseline + model_intervals (bundle already written, needs the new artifact digests). Everything else is verified and stands: gate 1.5.0 45/45, per-decision-year fixture, split counts, references (procedure_type 0.5551 / lpa_hist 0.5414 / persistence 0.5045, degenerate calendar control recorded), cross-row probe, staging release 430070815 for the superseded artifact. A SECOND failure of this class after the rebuild means stop and re-target, no pins-planning-003. Workers 173804615 and 173807013 both destroyed (receipts recorded); no worker is running.",
+ "next_action": "RUNNER CONTRACT VERIFIED 2026-10-31 (jobs pins-planning-002 + pins-planning-baseline-002, both succeeded, both destroyed with provider 404 read-back): the single permitted rebuild fixed the one real breaker (num() prose->missing; eval.csv differs from 001 only in those 6 cells; train/holdout byte-identical), and the worker-side probe settled the open question - the verbatim predict path ACCEPTS category dtypes under xgboost 3.4.1 (fit, seen-level and unseen-level-NaN predicts all pass), so string levels ship and 001's category-column listing was the dtype validator's message shape, not a second defect. New accepted artifact c861bd8f4acd9bbe... (gate 1.5.0 0 failed checks, --accept ACCEPTED, staging release 430108320). Baseline on the identical 28,104 eval rows: train.py Eval AUC 0.6108, validate.sh CONTRACT OK, and the model beats EVERY measured simple reference with row-level AND LPA-clustered intervals excluding zero (+0.0558 vs procedure_type 0.5551, +0.0694 vs lpa_hist 0.5414, +0.0686 vs shipped rate feature; persistence 0.5045; calendar control degenerate, collapsed onto lpa_hist exactly and recorded as such). No further rebuild of this construction is justified or permitted - the one rebuild is spent; a new runner-contract defect would mean re-target as a new task instance, no pins-planning-003. NEXT STEP (advancement, unblocked): package and privately stage the accepted c861bd8f artifact with dataset-release (release-manifest, check-package, VERIFICATION with the baseline triad quoted together, licence block from the recorded OGL v3.0 decision), then the usual private staging + consumer verification; the holdout stays sealed (never scored) and publication remains the operator's flip.",
  "novelty_check": {
   "checked_at": "2026-10-31T16:15:06+00:00",
   "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
@@ -447,5 +563,5 @@
    "not_a_mirror": "supported - mechanical novelty check verdict 'differentiated' (recorded 2026-10-31): the publisher ships raw files and descriptive '% allowed' statistics; PlanSureAI ships commercial search + overturn-rate analytics over the same source; the APE 2026 leniency study is econometrics on 2,227 scraped cases; no one ships a scored, temporally-split prediction task with a submission-time feature contract"
   }
  },
- "updated_at": "2026-10-31T17:30:15.150393+00:00"
+ "updated_at": "2026-10-31T18:35:00+00:00"
 }
