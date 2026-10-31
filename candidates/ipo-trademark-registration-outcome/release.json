@@ -1,0 +1,31 @@
+{
+  "release_version": "2026.10",
+  "release_tag": "v2026.10",
+  "repository": "https://github.com/earino/ipo-trademark-registration-outcome",
+  "construction_commit": "22db582",
+  "construction_commit_note": "22db582 (2026-10-30T10:54:40Z) carries candidates/ipo-trademark-registration-outcome/source/build.py at sha256 70b8e634b082670e3c9bd03401a4ab385ad52b9e446e8a2069ce191aa7807e73, source/run.sh at 39bd461b75119e9bdec368c556605ee5cfbc348582672d8d21ad4aa54ee3df19 and source/score.py at 9f39ff5b985c14b177af4edfb1df85d44f548656a32266c60432b4fc03ec827f - the exact bytes worker job ipo-tm-004 executed (its bundle-owner record lists the same digests), which produced the gated artifact 2c1dade2913d0a8b643c89e628095a18e03223a6167beb9363316389486a544d from the pinned IPO snapshot (opendatadomestic.zip, sha256 3b6063bed36a78e8a04f10a5383f2881f4072a1be13e706a81ab097fb56ee571, 63,238,846 B, Last-Modified 2018-02-13T13:19:48Z, single anonymous GET). code/qualify_dataset.py is the canonical gate 1.5.0 (4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1); baseline/materialize.py is the baseline bundle's own copy. baseline/train.py, validate.py, validate.sh are the harness benchmark's runner files, shipped verbatim (a3c6bcf1..., b597e7f8..., 3f06ca48...).",
+  "source": {
+    "name": "UK trade mark applications open data - opendatadomestic.zip, the frozen 2018-02-13 snapshot of the domestic register (Intellectual Property Office, United Kingdom)",
+    "landing_page": "https://www.gov.uk/government/publications/ipo-trade-mark-data-release",
+    "api": "https://assets.publishing.service.gov.uk/media/5a82e5f4e5274a2e87dc387d/opendatadomestic.zip - single anonymous GET of the whole snapshot; UTF-16LE, pipe-separated, 62 documented columns, 1,189,005 raw rows",
+    "accessed": "2026-10-27 (pinned; the file is a frozen snapshot so the pin is the vintage)",
+    "licence": "Open Government Licence v3.0 (the publication's footer and the dataset's own explained-document, section 5; evidence recorded in candidates/ipo-trademark-registration-outcome/record.json license_evidence). Required attribution carries through: 'Contains public sector information licensed under the Open Government Licence v3.0. Source: UK trade mark applications open data (Intellectual Property Office), opendatadomestic.zip snapshot of 2018-02-13.' Derived research dataset - not an Intellectual Property Office product."
+  },
+  "commands": {
+    "gate": "python3 code/qualify_dataset.py ./task",
+    "baseline": "sh baseline/reproduce_baseline.sh ./task",
+    "get_dataset": "python3 get_dataset.py --dest ./task"
+  },
+  "layout": {
+    "public/train.csv": "public/train.csv",
+    "public/eval.csv": "public/eval.csv",
+    "private/holdout.csv": "private/holdout.csv",
+    "meta.json": "meta.json",
+    "quality.json": "quality.json"
+  },
+  "required_docs": [
+    "code/score.py",
+    "code/materialize.py"
+  ],
+  "note": "One task instance, one artifact. The five shipped files are the ipo-tm-004 worker artifact 2c1dade2913d0a8b... (gate 1.5.0, 45/45 checks on the full artifact, exact-byte --accepted on the worker and re-accepted in jobs ipo-tm-baseline-001, ipo-tm-diag-001 and ipo-tm-diag-002); the package's code/ carries the construction script, the references implementation, the runner-workdir materializer and the gate, baseline/ the runner-contract baseline. The holdout ships as an asset like the other splits; it is not copied into any runner workdir and was never evaluated. The publisher exposes exactly one frozen snapshot and no historical vintages, so the evaluation contract declares retrospective research over the pinned snapshot (event_time filing instant, training-label timing unverified), never a point-in-time reconstruction. Recorded finding carried in measurements.json, RELEASE_NOTES.md and VERIFICATION.md: the stock runner baseline (eval AUC 0.6224) exceeds every measured simple reference on the identical 97,274 eval rows with paired row-level intervals excluding zero (mark-type rate 0.5650, nice-class rate 0.5421, calendar 0.4972) - demonstrated headroom over these references under this protocol, with its scope recorded beside it (row-level intervals only, one model configuration, two filing years of eval); no figure may be quoted without that comparison beside it."
+}

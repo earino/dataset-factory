@@ -1,3 +1,85 @@
+## 2026-10-31 03:30Z - ipo-trademark-registration-outcome v2026.10 PACKAGED and privately staged on BOTH destinations (GitHub release 429672426 + Hub v2026.10, all five assets at the accepted artifact digests; consumer job re-ran every REPRODUCE.md command on the published bytes in a credential-free container); awaiting_operator set with the pre-flip audit prompt generated
+
+Release work outranked construction, so this advancement session executed the packaged
+candidate's recorded next_action end to end: private staging of
+release/ipo-trademark-registration-outcome v2026.10 to GitHub and Hugging Face, then the
+operator holds the flip. The accepted artifact 2c1dade2913d0a8b... bytes, digests and
+manifest were never regenerated (one REPRODUCE.md honesty amendment BEFORE any staging,
+below); the two other operator waits are unchanged (ns-bwa flip, unhcr audit-prompt relay).
+
+- Pre-staging fix: REPRODUCE.md's header claimed every command ran "before this package
+  was staged" with the download included. False in the real flow: the consumer check runs
+  after staging (it fetches from the staged release) and the private download is
+  host-side. Amended to state exactly what runs where; MANIFEST.json regenerated
+  (package_files: only REPRODUCE.md changed), check-package OK.
+- GitHub destination (private, complete): repo earino/ipo-trademark-registration-outcome
+  created private with the 25 package document files as the initial commit on main (tip
+  74fbddd, API readback; anonymous API 404 = private by design; MANIFEST.json ships in the
+  repo like msha/unhcr, DESTINATIONS.json stays factory-side), draft release v2026.10
+  (429672426) created, then worker job ipo-tm-publish-001 (server 173657307, cx23/hel1,
+  EUR 0.04, destroyed 02:43:52Z) copied the five accepted ipo-tm-004 assets from private
+  staging 428923481 - transferred 5, failures 0, 59,738,122 bytes, each sha256 verified on
+  arrival and against the server digest after upload; source asset ids resolved by sha256
+  match against the staging worker-written manifest.json, never hand-copied. API readback:
+  exactly 5 assets, every name/size/server digest equal to MANIFEST.json. Published
+  non-draft 02:45:39Z; tag v2026.10 == main == 74fbddd.
+- Consumer verification (the fresh-environment reproduction): worker job
+  ipo-tm-consumer-001 (server 173659603, cpx32, EUR 0.24, exit 0 after 111 s, collected
+  02:57:39Z, destroyed 03:06:37Z). A credential-free container with no private-repo access
+  ran every REPRODUCE.md command on the published bytes: package byte-verified against
+  MANIFEST package_files (24 files, PACKAGE OK), 5 assets host-fetched into the restored
+  layout, get_dataset.py re-verification OK, sha256sum -c SHA256SUMS OK, full gate re-run
+  QUALIFICATION PASSED (artifact 2c1dade2913d0a8b), exact-byte --accept ACCEPTED,
+  baseline reproduce_baseline.sh CONTRACT OK with both AUC prints 0.6224, score.py
+  references recomputed EQUAL to all 7 recorded figures (6 rate AUCs + majority-class
+  accuracy 0.8398852725291445), rebuild from the pinned snapshot byte-identical (all five
+  digests, --built-at 2026-10-30T00:00:00Z). Reports preserved at
+  .factory/ipo-tm-consumer-001/reports/ and staging release 429681624.
+- DEFECT FOUND AND FIXED in the consumer's first run.sh (recorded, not papered over): the
+  step-9 reference comparison lacked '|| exit 1' and mis-extracted the majority-class
+  accuracy (values.get('auc_eval', ...) returns majority_class's by-design null auc_eval),
+  so it printed a mismatch without failing the job. Every figure was then verified
+  individually from the collected reports (all equal), and the fixed guard was proven
+  red/green on the coordinator (mutated expectation -> exit 1). run.sh fixed for future
+  runs; ipo-tm-consumer-001's evidence stands on the individually-verified check outputs.
+- Hugging Face destination (private, complete): hf-publish.py --create --upload-small
+  (write credential file, in-process only) created earino/ipo-trademark-registration-outcome
+  private with 10 small files (card generated from MANIFEST with front matter, LOADING.md,
+  MANIFEST, SHA256SUMS, licence texts, dictionary, VERIFICATION.md, measurements.json).
+  Worker job ipo-tm-hf-001 (server 173662479, EUR 0.04, destroyed 03:14:38Z): uploads 5,
+  skipped 0, failures 0 (59,738,122 bytes at the manifest digests), loading check ok on
+  all three splits (train 106,990/92,668, eval 97,274/81,699, holdout 115,172/99,385,
+  57 columns, label registered [0,1]). hf-publish --verify/--tag --worker-job ipo-tm-hf-001:
+  all five digest-verified at Hub main 8581baa1; tag v2026.10 == main.
+- Destination evidence: release/ipo-trademark-registration-outcome/DESTINATIONS.json
+  records both destinations verified+staged with per-destination verified_at, files_verified
+  as lists, artifact_version equal to the manifest's. Candidate record: artifacts[0]
+  carries the staged destinations, jobs list 7->10, status packaged, awaiting_operator
+  true, the flip the sole remaining step.
+- Pre-flip audit prepared per the standing practice:
+  candidates/ipo-trademark-registration-outcome/pre-flip-audit-prompt.md, generated from
+  the operator-endorsed template with every digest/size/count/figure filled
+  programmatically from MANIFEST.json, meta.json and measurements.json (0 placeholders
+  left; generator retention not committed - the saved prompt is the artefact). It names
+  the package's own honest claims for the auditor to attack: model 0.6224 beats every
+  measured simple reference with intervals excluding zero, persistence recorded
+  not-applicable (attack: series/owner/mark-text repeats across rows), retrospective
+  single-snapshot scope with training-label timing unverified, snapshot-vintage owner/class
+  columns, censored-cohort conditioning recorded as a limitation.
+- Cleanup: all three workers destroyed after verified collection (02:43:52Z, 03:06:37Z,
+  03:14:38Z). October conservative reservations now EUR 12.06 of 20 (0.04 + 0.24 + 0.04
+  added).
+- Checks at close-out: check-package.py rc=0, check-candidate.py ipo OK + --all rc=0,
+  check-suitability rc=0 (16 reviews), full suite 683 tests OK in 27 s. Nothing is
+  public; staging completion is not publication approval. The ec-state-aid untracked
+  probe work is preserved untouched.
+
+Next action: the operator relays
+candidates/ipo-trademark-registration-outcome/pre-flip-audit-prompt.md to an independent
+auditor; on an approving verdict (or a waiver) the flip sequence per dataset-release runs
+(flip both destinations, prove anonymously, refresh status-bearing documents, website
+pipeline). The ns-bwa flip and unhcr audit-prompt relay waits are unchanged.
+
 ## 2026-10-30 18:30Z - ipo-tm-diag-002 VALID: the permitted recovery relaunch returned resampler_alignment_ok true with paired intervals excluding zero on all three model-vs-reference comparisons; diag attempt chain closed; worker destroyed 0/0; packaging is now the recorded next action
 
 Release track first, unchanged: unhcr-refugee-data-finder keeps `operator_decision_pending: true`

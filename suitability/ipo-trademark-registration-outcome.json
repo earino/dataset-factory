@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "dataset": "ipo-trademark-registration-outcome",
+  "release_tag": "v2026.10",
+  "artifact_version": "2c1dade2913d0a8b643c89e628095a18e03223a6167beb9363316389486a544d",
+  "reviewed_on": "2026-10-30",
+  "reviewer": "Scout, advancement session 2026-10-30 (review over the accepted ipo-tm-004 artifact 2c1dade2913d0a8b, gate 1.5.0 45/45, re-accepted in jobs ipo-tm-baseline-001, ipo-tm-diag-001 and ipo-tm-diag-002; every reference figure replicated by the diag-002 pandas second implementation)",
+  "decision": "retain_restricted",
+  "summary": "Retained for retrospective model-development research. Each row is one distinct trade mark application whose features are its own filing-time attributes as recorded in the single frozen 2018-02-13 IPO snapshot; the prediction instant is the filing event (event_time) and no point-in-time or operational claim is made. The publisher serves exactly one frozen vintage and no historical vintages, so training-label timing and full-row historical availability are unverified and none is claimed. Measured finding carried beside every figure: the stock runner baseline (eval AUC 0.6224, Brier 0.1318) exceeds every measured simple reference on the identical 97,274 eval rows - mark-type rate 0.5650 (+0.0574, CI95 [0.0533, 0.0605]), nice-class rate 0.5421 (+0.0803, [0.0748, 0.0862]), calendar-month rate 0.4972 (+0.1252, [0.1174, 0.1315]) - all paired row-level intervals excluding zero, with the advantage holding in both eval filing years at flat prevalence: demonstrated headroom over these references under this protocol, with its scope recorded (row-level intervals only - no dependence cluster is measurable from the shipped columns; one model configuration, no re-tuning; two filing years of eval coverage). Persistence is not applicable (every scored row is a new application).",
+  "supported_uses": [
+    "Retrospective research and method comparison on the pinned 2018-02-13 snapshot, predicting row-wise from the shipped filing-time columns",
+    "Agent evaluation with the labeled eval split as development/validation data and the holdout kept outside agent development until a design is frozen",
+    "Study of filing-cohort prevalence and of which filing-time attributes carry registration-outcome signal"
+  ],
+  "unsupported_uses": [
+    "Operational or live filing-time screening claims: no historical operational-availability evidence exists and none is claimed",
+    "Point-in-time historical reconstruction: the publisher serves one frozen snapshot; a later re-fetch is a different vintage, not what was knowable earlier",
+    "Quoting the model AUC (0.6224) without the reference comparison (mark-type 0.5650, nice-class 0.5421, calendar 0.4972, with the paired intervals) beside it",
+    "Treating the snapshot-vintage owner fields (country/region/postcode area) or class columns as as-of-filing facts: ownership can be assigned after filing and classes can be narrowed"
+  ],
+  "evaluation_access": "isolated_rows",
+  "historical_availability": "unverified",
+  "training_label_timing": "unverified",
+  "vintage": "current_snapshot",
+  "selection": "prediction_time",
+  "cross_row_audit": {
+    "status": "untested",
+    "scope": "No cross-row exposure is declared and none is structurally available in the shipped columns: every feature is a filing-time attribute of the application itself (mark text, class booleans, category, type, series, owner fields, filing date), no history or aggregate feature crosses rows, tm_number is unique per row, and the label source columns are excluded from every shipped CSV. The panel-style reverse-history probes declared for panel-shaped candidates therefore do not apply; no donor-join audit has been run against this artifact. The isolation contract is the row-per-application grain itself; the shipped illustrative runner passes the whole eval feature table to the predictor, which does not create an exposure here but is also not an enforcement mechanism."
+  },
+  "limitations": [
+    "Single frozen vintage (2018-02-13 snapshot, sha256-pinned); the publisher revises in place and retains no historical vintages, so no historical operational-availability claim is possible",
+    "Training-label timing and full-row historical availability are unverified; the task is retrospective research only",
+    "Owner and class columns are snapshot-vintage: assignment can move ownership after filing and classes can be narrowed post-filing - a uniform-vintage limitation declared in quality.json, never an as-of claim",
+    "Censoring is outcome-observability conditioning recorded as a limitation: marks unresolved at the snapshot (21/172/809 per split) are excluded and counted, never labelled negative",
+    "The headroom finding's scope: row-level intervals only (no dependence cluster measurable from the shipped columns), one model configuration with no re-tuning, and two filing years of eval coverage; beating the measured rate references does not enumerate all simple rules and does not prove a causal signal",
+    "The holdout was never evaluated; no holdout figure exists and its first use must follow a frozen design"
+  ],
+  "evidence": [
+    {
+      "claim": "The artifact passed the full-artifact qualification gate (1.5.0, 45/45 checks) and was exact-byte accepted, including the event_time timing block, the evaluation contract and the in-file known-event fixtures",
+      "source": "release/ipo-trademark-registration-outcome/qualification.json",
+      "detail": "The gate's collected report for job ipo-tm-004, shipped with the package: ok=true, gate_version 1.5.0, artifact 2c1dade2913d0a8b643c89e628095a18e03223a6167beb9363316389486a544d; jobs ipo-tm-baseline-001, ipo-tm-diag-001 and ipo-tm-diag-002 re-ran --accept against fetched, digest-verified bytes (ACCEPTED) before any score was computed."
+    },
+    {
+      "claim": "Every reference figure and the model AUC were replicated by a second implementation, and the model-vs-reference comparison carries row-level paired intervals excluding zero",
+      "source": "release/ipo-trademark-registration-outcome/measurements.json",
+      "detail": "measurements.json records the full comparison on identical eval rows (model 0.6224; mark-type 0.5650; nice-class 0.5421; series-flag 0.5213; owner-country 0.5191; category 0.5031; calendar 0.4972; majority accuracy 0.8399; persistence not applicable), the diag-002 paired intervals (+0.0574 [0.0533, 0.0605]; +0.0803 [0.0748, 0.0862]; +0.1252 [0.1174, 0.1315]) with resampler_alignment_ok true, the per-filing-year table, and the replication flags (all_match true, 10/10 figures)."
+    },
+    {
+      "claim": "The publisher's open-data release page documents the snapshot's frozen nature, and the pinned snapshot is the distribution the construction fetched",
+      "source": "https://www.gov.uk/government/publications/ipo-trade-mark-data-release",
+      "detail": "Landing page read at discovery (2026-10-27): opendatadomestic.zip, Last-Modified 2018-02-13T13:19:48Z, sha256 3b6063bed36a78e8a04f10a5383f2881f4072a1be13e706a81ab097fb56ee571, 63,238,846 B, fetched with one anonymous GET; the publisher's own documentation warns the snapshot may not be directly comparable with official publications because the live register is dynamic."
+    }
+  ],
+  "required_actions": [
+    "Before any evaluation: read the evaluation contract in quality.json; treat the labeled eval split as development/validation and keep the holdout outside evaluated agents' workspaces until a design is frozen",
+    "Before the flip to public: run the independent adversarial pre-flip audit over the frozen package (standing practice since 2026-10-27); the flip waits for the auditor's verdict unless the operator waives it",
+    "A re-fetch of the publisher's snapshot (if one is ever re-served) is a new artifact version: re-measure every count, re-qualify, and re-issue as a new reviewed version; never regenerate this package in place",
+    "Any operational-screening use requires its own validation on live filing-time data; nothing in this package certifies it"
+  ],
+  "corrections": []
+}

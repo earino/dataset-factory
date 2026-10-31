@@ -1,0 +1,821 @@
+{
+ "name": "ipo-trademark-registration-outcome",
+ "task": {
+  "question": "For a UK domestic trade mark application filed 2010-2016 - known at filing: mark text, Nice class coverage, category, mark type, series flag and series size, owner country/region/postcode area, filing date - will the mark reach registration as resolved in the IPO's frozen February-2018 open-data snapshot (Registered date recorded)? Unresolved applications at the snapshot (still in examination, opposition or appeal) are censored, never scored.",
+  "prediction_time": "The application's filing date (Europe/London calendar day; register column 'Filed'). Every shipped feature is a filing-time attribute AS RECORDED IN the one frozen 2018-02-13 snapshot (sha256-pinned): mark text, category, mark type, series flag/count, Nice class booleans and count, owner country/region/postcode area. This is a clearly-labelled RETROSPECTIVE single-snapshot task: no historical operational availability is claimed, and no feature is derived from any other application's record. The outcome observation window is the snapshot itself (filed date .. 2018-02-13), so the target window never precedes the instant."
+ },
+ "target": "registered",
+ "positive_label": 1,
+ "time_column": "filed_date",
+ "event_key_column": "filed_date",
+ "event_key_note": "the gate's clustered event count is distinct positive filing dates - a deliberately conservative same-day reading (marks filed the same day by different owners are in truth independent events; hundreds of distinct dates per split keep the count far above the gate minimum either way). The application-level event key is the trade mark number, unique per scored row",
+ "features": [
+  "category",
+  "mark_type",
+  "series_flag",
+  "series_marks_count",
+  "nice_class_count",
+  "class1",
+  "class2",
+  "class3",
+  "class4",
+  "class5",
+  "class6",
+  "class7",
+  "class8",
+  "class9",
+  "class10",
+  "class11",
+  "class12",
+  "class13",
+  "class14",
+  "class15",
+  "class16",
+  "class17",
+  "class18",
+  "class19",
+  "class20",
+  "class21",
+  "class22",
+  "class23",
+  "class24",
+  "class25",
+  "class26",
+  "class27",
+  "class28",
+  "class29",
+  "class30",
+  "class31",
+  "class32",
+  "class33",
+  "class34",
+  "class35",
+  "class36",
+  "class37",
+  "class38",
+  "class39",
+  "class40",
+  "class41",
+  "class42",
+  "class43",
+  "class44",
+  "class45",
+  "owner_country",
+  "owner_region"
+ ],
+ "features_documented_at": "prediction_time",
+ "feature_documentation": "every shipped feature is a filing-time attribute of the application itself: mark text, category, mark type, series flag/count, the 45 Nice class booleans and their count, owner country/region/postcode area, and the filing date. No shipped column is computed from any other application's record, and no history/aggregate feature exists. Not shipped, with reasons: Status, Published, Registered, Expired, Renewal Due Date (the label source and its post-filing companions); Hyperlink (an Excel formula wrapping the mark number); Name (free-text owner identity, excluded by the frozen handoff design - its removal also removes the trivial same-owner outcome-rate join a solver could otherwise build)",
+ "carry_columns": [
+  "filed_date"
+ ],
+ "id_columns": [
+  "tm_number"
+ ],
+ "high_cardinality_columns": [
+  "mark_text",
+  "owner_postcode_area"
+ ],
+ "high_cardinality_note": "mark_text is near-unique per row and owner_postcode_area carries ~2k outward-code levels; both are declared rather than scored by the single-column AUC check, and the runner's baseline drops string columns over 1000 levels automatically. tm_number is the id column. No high-cardinality column encodes any other row's outcome",
+ "label_source_columns": [
+  "Status",
+  "Published",
+  "Registered",
+  "Expired",
+  "Renewal Due Date"
+ ],
+ "post_hoc_columns": [
+  "Published",
+  "Expired",
+  "Renewal Due Date"
+ ],
+ "measurements": [
+  {
+   "column": "tm_number",
+   "unit": "register trade mark number (spaces stripped; letter-suffixed series sub-marks stay distinct records)",
+   "frame": "the application's own number as recorded in the snapshot; id column, not a model input"
+  },
+  {
+   "column": "mark_text",
+   "unit": "register free text (whitespace collapsed)",
+   "frame": "the mark as filed; declared high-cardinality (near-unique per row), dropped by the runner's >1000-level rule"
+  },
+  {
+   "column": "category",
+   "unit": "register level, column 'Category of Mark' (blank -> 'unknown')",
+   "frame": "the category recorded for the application (e.g. Standard)"
+  },
+  {
+   "column": "mark_type",
+   "unit": "register level, column 'Mark Type' (blank -> 'unknown')",
+   "frame": "the mark's type recorded for the application (e.g. Word, Figurative)"
+  },
+  {
+   "column": "series_flag",
+   "unit": "register level, column 'Series' (blank -> 'unknown')",
+   "frame": "whether the application is part of a series"
+  },
+  {
+   "column": "series_marks_count",
+   "unit": "integer, column 'No of Marks in Series' (0 when blank/unparseable)",
+   "frame": "the number of marks in the series as recorded at filing"
+  },
+  {
+   "column": "nice_class_count",
+   "unit": "count of assigned Nice classes (0-45)",
+   "frame": "sum of the row's class booleans as recorded in the snapshot"
+  },
+  {
+   "column": "owner_country",
+   "unit": "register text, column 'Country' (blank -> 'unknown')",
+   "frame": "the owner's country as recorded in the snapshot"
+  },
+  {
+   "column": "owner_region",
+   "unit": "register text, column 'Region' (blank -> 'unknown')",
+   "frame": "the owner's region as recorded in the snapshot (UK owners)"
+  },
+  {
+   "column": "owner_postcode_area",
+   "unit": "register text, column 'Postcode' - the outward area code for UK owners (blank -> 'unknown'); declared high-cardinality",
+   "frame": "the owner's postcode area as recorded in the snapshot; blank for non-UK owners by the source's grain"
+  },
+  {
+   "column": "filed_date",
+   "unit": "ISO calendar date (Europe/London)",
+   "frame": "the prediction instant itself (carry column, split time column and clustered-event key)"
+  },
+  {
+   "column": "registered",
+   "unit": "0/1 (1 = Registered date non-empty in the snapshot)",
+   "frame": "the label: registered-by-snapshot"
+  },
+  {
+   "column": "class1",
+   "unit": "0/1 - Nice class 1 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class2",
+   "unit": "0/1 - Nice class 2 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class3",
+   "unit": "0/1 - Nice class 3 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class4",
+   "unit": "0/1 - Nice class 4 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class5",
+   "unit": "0/1 - Nice class 5 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class6",
+   "unit": "0/1 - Nice class 6 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class7",
+   "unit": "0/1 - Nice class 7 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class8",
+   "unit": "0/1 - Nice class 8 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class9",
+   "unit": "0/1 - Nice class 9 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class10",
+   "unit": "0/1 - Nice class 10 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class11",
+   "unit": "0/1 - Nice class 11 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class12",
+   "unit": "0/1 - Nice class 12 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class13",
+   "unit": "0/1 - Nice class 13 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class14",
+   "unit": "0/1 - Nice class 14 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class15",
+   "unit": "0/1 - Nice class 15 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class16",
+   "unit": "0/1 - Nice class 16 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class17",
+   "unit": "0/1 - Nice class 17 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class18",
+   "unit": "0/1 - Nice class 18 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class19",
+   "unit": "0/1 - Nice class 19 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class20",
+   "unit": "0/1 - Nice class 20 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class21",
+   "unit": "0/1 - Nice class 21 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class22",
+   "unit": "0/1 - Nice class 22 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class23",
+   "unit": "0/1 - Nice class 23 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class24",
+   "unit": "0/1 - Nice class 24 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class25",
+   "unit": "0/1 - Nice class 25 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class26",
+   "unit": "0/1 - Nice class 26 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class27",
+   "unit": "0/1 - Nice class 27 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class28",
+   "unit": "0/1 - Nice class 28 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class29",
+   "unit": "0/1 - Nice class 29 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class30",
+   "unit": "0/1 - Nice class 30 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class31",
+   "unit": "0/1 - Nice class 31 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class32",
+   "unit": "0/1 - Nice class 32 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class33",
+   "unit": "0/1 - Nice class 33 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class34",
+   "unit": "0/1 - Nice class 34 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class35",
+   "unit": "0/1 - Nice class 35 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class36",
+   "unit": "0/1 - Nice class 36 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class37",
+   "unit": "0/1 - Nice class 37 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class38",
+   "unit": "0/1 - Nice class 38 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class39",
+   "unit": "0/1 - Nice class 39 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class40",
+   "unit": "0/1 - Nice class 40 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class41",
+   "unit": "0/1 - Nice class 41 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class42",
+   "unit": "0/1 - Nice class 42 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class43",
+   "unit": "0/1 - Nice class 43 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class44",
+   "unit": "0/1 - Nice class 44 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  },
+  {
+   "column": "class45",
+   "unit": "0/1 - Nice class 45 assigned (snapshot value; non-{0,1} values counted as anomalies)",
+   "frame": "the class coverage recorded for the application"
+  }
+ ],
+ "known_event": {
+  "name": "in-file snapshot fixtures (UK00000000001 'BASS & Co's PALE ALE'; UK00003171385 'Brexit'; UK00003041794)",
+  "expected_verdict": "as recorded in the frozen snapshot",
+  "detail": "three named rows asserted against the fetched bytes: the 1876 BASS mark (Registered, Registered date 1876-01-01 - identity/fidelity anchor outside every scored cohort); 'Brexit' UK00003171385 filed 2016-06-25, status Appealed and no Registered date at the snapshot -> censored, excluded from the holdout cohort (exercises the censoring rule); and UK00003041794 filed 2014-02-11, Application Published 2017-12-22 and still unregistered at the snapshot -> censored (the long-examination tail must stay censored, never negative). No external threshold is used by this task; the fixtures pin parsing, dedup and censoring semantics",
+  "source": "the fetched snapshot itself (values cross-checked at discovery against the publisher's live register for the Brexit mark)"
+ },
+ "timing": {
+  "prediction_instant": {
+   "kind": "event_time",
+   "period": "day",
+   "days_after_period_end": 0,
+   "citation": "register column 'Filed' is the application's filing date - the event time documented in the publisher's own guide (ipo-data-explained-2016, section 5, and the dataset landing page 'IPO trade mark data release', last updated 13 Feb 2018); the question is resolved at the filing event, and the snapshot is an administrative record of applications"
+  },
+  "features": {
+   "period": "day",
+   "published_days_after_period_end": 0,
+   "source_kind": "administrative_record"
+  },
+  "row_selection": {
+   "latest_period_used": "2016-12-31 (scored cohorts are filings 2010-01-01..2016-12-31; the 2017-2018 cohorts exist in the snapshot and are excluded by eligibility, never by outcome)",
+   "fields": [
+    "Filed (filing date: cohort membership)"
+   ],
+   "basis": "membership is fixed by the filing date alone. The label rule runs after membership: a mark whose outcome is unresolved at the frozen snapshot (still in examination, opposition or appeal) is censored - excluded from scoring and counted per cohort - which is outcome-OBSERVABILITY conditioning recorded as a limitation, never a label-value decision; censored marks are not treated as negatives. Rows with blank or unparseable filing dates cannot be placed on the timeline and are excluded and counted"
+  },
+  "observations": []
+ },
+ "split_windows": {
+  "train": {
+   "start": "2010-01-01",
+   "end": "2013-01-01"
+  },
+  "eval": {
+   "start": "2013-01-01",
+   "end": "2015-01-01"
+  },
+  "holdout": {
+   "start": "2015-01-01",
+   "end": "2017-01-01"
+  }
+ },
+ "split_boundaries": {
+  "train": "filing years 2010-2012 (window end exclusive)",
+  "eval": "filing years 2013-2014 (window end exclusive)",
+  "holdout": "filing years 2015-2016 (window end exclusive; the 2017-2018 cohorts stay an unscored reserve outside the frozen design)"
+ },
+ "positive_events": {
+  "train": {
+   "positives": 92668,
+   "distinct_events": 1040
+  },
+  "eval": {
+   "positives": 81699,
+   "distinct_events": 720
+  },
+  "holdout": {
+   "positives": 99385,
+   "distinct_events": 730
+  }
+ },
+ "positive_events_note": "positives and distinct positive filing dates per split, recomputed from the written rows; the gate re-verifies. Positive rates: train 0.866137, eval 0.839885, holdout 0.862927",
+ "expected_duplicate_ids": 0,
+ "id_columns_are_entity_keys": true,
+ "id_columns_note": "tm_number names one application with one observed outcome in the snapshot; construction keeps one row per distinct mark number (multi-owner duplicate rows keep the first occurrence, 16,909 rows removed and counted; the 22,812 letter-suffixed series sub-marks such as UK0000000052A/B are distinct records and stay). The identifier is unique across the artifact, so no id spans two splits",
+ "splits": {
+  "train": "public/train.csv",
+  "eval": "public/eval.csv",
+  "holdout": "private/holdout.csv"
+ },
+ "evaluation_contract": {
+  "use": "retrospective_research",
+  "access": "isolated_rows",
+  "training_label_timing": "unverified",
+  "scope_note": "each row is one application whose features are its own filing-time attributes as recorded in the single frozen 2018-02-13 snapshot; the intended protocol predicts row-wise from the shipped columns (the shipped benchmark validator passes the whole table to the predictor, so isolated_rows is the design intent of this artifact's row-per-application contract, not a runtime-enforced protocol). Labeled eval is development/validation; the holdout is the final test and stays outside evaluated agents' workspaces. Training-label timing is UNVERIFIED: the publisher exposes one frozen snapshot and no historical vintages, so no full-row availability ledger can be constructed and no historical as-of availability is claimed - retrospective research only, never a certified historical forecasting setup",
+  "feature_evidence": {
+   "tm_number": {
+    "source": "register column 'Trade Mark' (spaces stripped)",
+    "availability": "assigned to the application at filing; id column",
+    "status": "verified"
+   },
+   "category": {
+    "source": "register column for category (normalised)",
+    "availability": "recorded for the application at filing",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value of a filing-time attribute"
+   },
+   "mark_type": {
+    "source": "register column for mark_type (normalised)",
+    "availability": "recorded for the application at filing",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value of a filing-time attribute"
+   },
+   "series_flag": {
+    "source": "register column for series_flag (normalised)",
+    "availability": "recorded for the application at filing",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value of a filing-time attribute"
+   },
+   "series_marks_count": {
+    "source": "register column for series_marks_count (normalised)",
+    "availability": "recorded for the application at filing",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value of a filing-time attribute"
+   },
+   "nice_class_count": {
+    "source": "register column for nice_class_count (normalised)",
+    "availability": "recorded for the application at filing",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value of a filing-time attribute"
+   },
+   "class1": {
+    "source": "register class column 1",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class2": {
+    "source": "register class column 2",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class3": {
+    "source": "register class column 3",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class4": {
+    "source": "register class column 4",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class5": {
+    "source": "register class column 5",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class6": {
+    "source": "register class column 6",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class7": {
+    "source": "register class column 7",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class8": {
+    "source": "register class column 8",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class9": {
+    "source": "register class column 9",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class10": {
+    "source": "register class column 10",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class11": {
+    "source": "register class column 11",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class12": {
+    "source": "register class column 12",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class13": {
+    "source": "register class column 13",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class14": {
+    "source": "register class column 14",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class15": {
+    "source": "register class column 15",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class16": {
+    "source": "register class column 16",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class17": {
+    "source": "register class column 17",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class18": {
+    "source": "register class column 18",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class19": {
+    "source": "register class column 19",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class20": {
+    "source": "register class column 20",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class21": {
+    "source": "register class column 21",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class22": {
+    "source": "register class column 22",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class23": {
+    "source": "register class column 23",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class24": {
+    "source": "register class column 24",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class25": {
+    "source": "register class column 25",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class26": {
+    "source": "register class column 26",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class27": {
+    "source": "register class column 27",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class28": {
+    "source": "register class column 28",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class29": {
+    "source": "register class column 29",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class30": {
+    "source": "register class column 30",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class31": {
+    "source": "register class column 31",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class32": {
+    "source": "register class column 32",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class33": {
+    "source": "register class column 33",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class34": {
+    "source": "register class column 34",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class35": {
+    "source": "register class column 35",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class36": {
+    "source": "register class column 36",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class37": {
+    "source": "register class column 37",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class38": {
+    "source": "register class column 38",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class39": {
+    "source": "register class column 39",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class40": {
+    "source": "register class column 40",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class41": {
+    "source": "register class column 41",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class42": {
+    "source": "register class column 42",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class43": {
+    "source": "register class column 43",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class44": {
+    "source": "register class column 44",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "class45": {
+    "source": "register class column 45",
+    "availability": "the class coverage recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: the publisher's guide documents classes for the application; classes can be narrowed post-filing, so the boolean is the snapshot's view"
+   },
+   "owner_country": {
+    "source": "register owner column for owner_country (normalised)",
+    "availability": "the owner recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: ownership can move after filing by assignment; the as-of policy is uniform because there is exactly one vintage"
+   },
+   "owner_region": {
+    "source": "register owner column for owner_region (normalised)",
+    "availability": "the owner recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: ownership can move after filing by assignment; the as-of policy is uniform because there is exactly one vintage"
+   },
+   "mark_text": {
+    "source": "register column 'Mark Text' (whitespace collapsed)",
+    "availability": "the mark as filed",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value of a filing-time attribute (mark text does not change post-filing; embedded-pipe rows recovered right-anchored, counted)"
+   },
+   "owner_postcode_area": {
+    "source": "register owner column for owner_postcode_area (normalised)",
+    "availability": "the owner recorded for the application",
+    "status": "assumed",
+    "assumption": "snapshot-vintage value: ownership can move after filing by assignment; the as-of policy is uniform because there is exactly one vintage"
+   },
+   "filed_date": {
+    "source": "register column 'Filed'",
+    "availability": "the prediction instant itself",
+    "status": "verified"
+   }
+  },
+  "vintage": {
+   "kind": "as_of",
+   "evidence": "exactly one frozen vintage for every row: the publisher's 2018-02-13 open-data snapshot, fetched as a sha256-pinned 63,238,846-byte zip (3b6063bed36a78e8..., Last-Modified 2018-02-13T13:19:48Z); every shipped value is that snapshot's value of a filing-time attribute. The publisher itself warns the snapshot 'may not be directly comparable' with the live register. No mixing of vintages occurs because no other vintage exists"
+  },
+  "selection": {
+   "kind": "prediction_time",
+   "evidence": "membership is fixed by filing date (cohorts 2010-2016); eligibility never reads the label. Censoring excludes 1,002 eligible marks whose outcome is unresolved at the snapshot (21/172/809 per split window, 0.31% of the eligible population) and is outcome-observability conditioning - counted per cohort and recorded as a limitation; the 2017-2018 cohorts are excluded by the frozen eligibility window (16,386 and 5,949 censored there at discovery), not by outcome"
+  },
+  "limitations": [
+   "single frozen 2018-02-13 snapshot; no historical vintages exist, so no as-of reconstruction of any feature value and no operational-forecasting claim is possible",
+   "owner fields are snapshot-vintage: assignment can move ownership after filing, so owner country/region/postcode may reflect a later owner; a robustness variant dropping owner fields is recorded as a future construction decision",
+   "Nice class booleans are snapshot-vintage: classes can be narrowed post-filing, so coverage may overstate what was filed",
+   "censoring conditions the scored population on outcomes resolvable within the snapshot: 1,002 eligible marks (0.31%; 631 of them in the 2016 cohort, 1.02%) remain unresolved and are excluded rather than labelled; their exclusion is a recorded selection bias, not a missing check",
+   "the label window extends to the snapshot date (up to ~8 years for 2010 filings, ~13-25 months for 2016 filings), so 'registered-by-snapshot' mixes horizons across cohorts; per-year reporting is mandatory when quoting figures",
+   "large repeat filers (one owner filing many marks) cluster outcomes statistically; owner Name is not shipped, so a same-owner join is not directly available to a solver, but dependence across one owner's marks remains a caveat for uncertainty estimates",
+   "filing-year prevalence drifts (negatives 13.4% train / 16.0% eval / 13.7% holdout): a prevalence shift between splits is a measured property of the cohorts"
+  ],
+  "cross_row_audit": {
+   "probes": [
+    {
+     "entity_columns": [
+      "tm_number"
+     ],
+     "time_column": "filed_date",
+     "offset_days": 1,
+     "left": "class1",
+     "operation": "copy"
+    }
+   ],
+   "rationale": "the plausible cross-row exposure family is reverse-history: a later row at the same entity carrying an earlier row's outcome inside a shipped feature. This artifact cannot carry it: no shipped column is derived from any other row (no history or aggregate features exist), and each trade mark number appears exactly once after construction dedup, so no donor row exists for any scored row. The declared probe executes the same-entity join on the full artifact and measures exactly that: coverage is expected to be zero on every split, and nonzero coverage would mean the dedup failed. Coarser keys (owner country/region/postcode) expose only other applications' own attributes, never the scored row's outcome",
+   "auxiliary_files_review": "the artifact ships public/train.csv, public/eval.csv, private/holdout.csv, meta.json, quality.json and summary.json. summary.json carries construction diagnostics only (per-cohort counts, hazard buckets, fixture results, censored-status census) and no per-row labels. No joint label matrix or other solver-visible file exists in the artifact"
+  }
+ }
+}

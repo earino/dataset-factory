@@ -1,646 +1,722 @@
 {
- "id": "ipo-trademark-registration-outcome",
- "status": "qualified",
- "domain": "intellectual-property / administrative-outcome prediction",
- "title": "UK trade mark application: will it reach registration?",
- "prediction_question": "For a UK domestic trade mark application filed with the Intellectual Property Office, will it reach registration as resolved in the frozen February-2018 open-data snapshot - predicted from features fixed at filing: mark text, Nice class coverage (45 binary columns), category of mark, mark type, series membership/count, owner country/region/postcode-area, and filing date?",
- "prediction_time": "The application's filing date (Europe/London). This is a clearly-labelled RETROSPECTIVE, single-snapshot task: every feature is a filing-time field AS RECORDED IN the one frozen 2018-02-13 snapshot (sha256 3b6063bed36a78e8a04f10a5383f2881f4072a1be13e706a81ab097fb56ee571). No claim of historical operational availability is made. Recorded vintage limitation: owner name/postcode/region/country are snapshot-vintage (assignment can move ownership after filing, and classes can be narrowed post-filing); the as-of policy is uniform for every row because there is exactly one vintage.",
- "target_definition": "Label = registered-by-snapshot. Positive: Registered date non-empty (statuses Registered, Merged, Dead, Removed, Expired, Cancelled, Surrendered all imply the mark reached registration; Merged has Registered date set in-file). Negative: Registered date empty AND status in {Refused, Withdrawn}. Censored (excluded from scoring, counted per cohort): Registered date empty AND any other status - Application Received, Examination, Pre-Publication, Application Published, Opposed, Appealed, Appealable, Registration Pending, and the undocumented Deleted / Deemed Not Filed / blank. Source columns for the label (Status, Registered, Published, Expired, Renewal Due Date) are excluded from the shipped features.",
- "eligibility": "Filed date in 2010-01-01..2016-12-31. The publisher's own coverage statement (Open data explained, section 3) lists ALL applications (any outcome) only from 1 January 2010; earlier filings appear mainly if subsequently registered. Measured: 2005-2009 cohorts show only 10-506 never-registered marks per year versus thousands in eligible years (2009: 499 of 25,163 - a registration-conditioned transition year), so eligibility starts at 2010 filings. One row per distinct trade mark: 16,892 multi-owner duplicate rows measured and deduplicated. Marks still in flight at the snapshot are censored, not scored.",
- "sources": [
-  {
-   "url": "https://www.gov.uk/government/publications/ipo-trade-mark-data-release",
-   "landing_page": "https://www.gov.uk/government/publications/ipo-trade-mark-data-release",
-   "license": "Open Government Licence (v2 linked from the dataset's own documentation section 5; v3 asserted on the page footer)",
-   "publisher": "Intellectual Property Office (United Kingdom)",
-   "note": "Snapshot of trade mark applications; page last updated 13 February 2018; domestic zip + international-registrations zip."
-  },
-  {
-   "url": "https://www.gov.uk/government/publications/ipo-trade-mark-data-release/ipo-data-explained-2016",
-   "landing_page": "https://www.gov.uk/government/publications/ipo-trade-mark-data-release/ipo-data-explained-2016",
-   "license": "Open Government Licence",
-   "publisher": "Intellectual Property Office (United Kingdom)",
-   "note": "Column documentation (62 columns), the 16-value status vocabulary, the coverage statement, and the OGL grant for the data itself."
-  },
-  {
-   "url": "https://assets.publishing.service.gov.uk/media/5a82e5f4e5274a2e87dc387d/opendatadomestic.zip",
-   "api": "single anonymous GET, static file, no paging",
-   "license": "Open Government Licence (see license_evidence)",
-   "note": "OpenDataDomestic.txt, 63,238,846 B zip, Last-Modified 2018-02-13T13:19:48Z, sha256 3b6063bed36a78e8a04f10a5383f2881f4072a1be13e706a81ab097fb56ee571, 817,350,108 B uncompressed UTF-16LE pipe-separated text."
-  }
- ],
- "jurisdiction": {
-  "country": "GB",
-  "region": "Europe",
-  "publisher": "Intellectual Property Office (United Kingdom)",
-  "recorded_at": "2026-10-27"
- },
- "licence_class": "A",
- "license_evidence": [
-  {
-   "quote": "Provision and use of this data is defined under an open government licence",
-   "url": "https://www.gov.uk/government/publications/ipo-trade-mark-data-release/ipo-data-explained-2016",
-   "note": "Section 5 'Open government licence' of the dataset's own documentation, linking OGL version 2; read 2026-10-27."
-  },
-  {
-   "quote": "This publication is licensed under the terms of the Open Government Licence v3.0 except where otherwise stated. ... (C) Crown copyright 2018",
-   "url": "https://www.gov.uk/government/publications/ipo-trade-mark-data-release/ipo-data-explained-2016",
-   "note": "Page footer on the same instrument, read 2026-10-27."
-  },
-  {
-   "quote": "All content is available under the Open Government Licence v3.0, except where otherwise stated",
-   "url": "https://trademarks.ipo.gov.uk/ipo-tmcase/page/Results/1/UK00003171385",
-   "note": "Live trade mark register page footer, read in the supported browser 2026-10-27 (plain clients get HTTP 403). Register content is not redistributed by us; quoted for the fixture verification only."
-  }
- ],
- "split_strategy": "Cohort split on filing year (disjoint calendar-year windows, both classes in every window; scored rows exclude censored marks): train 2010-2012, eval 2013-2014, holdout 2015-2016. Counts CORRECTED 2026-10-30 by probe_reconcile_pipe_rows.py (see measurements.pipe_row_reconciliation_2026_10_30): train 106,990 scored rows / 92,668 pos / 14,322 neg / 21 censored; eval 97,274 / 81,699 pos / 15,575 neg / 172 censored; holdout 115,172 / 99,385 pos / 15,787 neg / 809 censored. The original 2026-10-27 table (eval 97,258 / 81,689; holdout 115,130 / 99,345) was a probe-measurement error: probe_aggregate.py read the 94 embedded-pipe rows at shifted positions and under-counted cohorts 2013-2016 by exactly the 58 recovered in-window pipe rows.",
- "splits": {
-  "train": {
-   "filed_years": "2010-2012",
-   "rows": 106990,
-   "negatives": 14322,
-   "negative_rate": 0.1339,
-   "censored_excluded": 21
-  },
-  "eval": {
-   "filed_years": "2013-2014",
-   "rows": 97274,
-   "negatives": 15575,
-   "negative_rate": 0.1601,
-   "censored_excluded": 172
-  },
-  "holdout": {
-   "filed_years": "2015-2016",
-   "rows": 115172,
-   "negatives": 15787,
-   "negative_rate": 0.1371,
-   "censored_excluded": 809
-  },
-  "per_year": {
-   "2010": {
-    "n": 30372,
-    "pos": 27181,
-    "neg": 3187,
-    "cens": 4
-   },
-   "2011": {
-    "n": 36364,
-    "pos": 31015,
-    "neg": 5338,
-    "cens": 11
-   },
-   "2012": {
-    "n": 40275,
-    "pos": 34472,
-    "neg": 5797,
-    "cens": 6
-   },
-   "2013": {
-    "n": 46362,
-    "pos": 38928,
-    "neg": 7365,
-    "cens": 69
-   },
-   "2014": {
-    "n": 51084,
-    "pos": 42771,
-    "neg": 8210,
-    "cens": 103
-   },
-   "2015": {
-    "n": 54300,
-    "pos": 46169,
-    "neg": 7953,
-    "cens": 178
-   },
-   "2016": {
-    "n": 61681,
-    "pos": 53216,
-    "neg": 7834,
-    "cens": 631
-   }
-  },
-  "independence": "Each row is one distinct application decision; no entity repetition within the scored set. Positives (never-registered) arrive as 3,187-8,206 per year spread across all filing months - no storm-day-style clustering. 2017+ cohorts are out of eligibility: 16,386/75,024 still censored at snapshot.",
-  "counts_corrected_2026_10_30": "aligned with measurements.pipe_row_reconciliation_2026_10_30 and the ipo-tm-003/004 in-build assertions; the old probe table (eval 97,258 / holdout 115,130) was a shifted-read measurement error"
- },
- "measurements": {
-  "zip_shape": {
-   "url": "https://assets.publishing.service.gov.uk/media/5a82e5f4e5274a2e87dc387d/opendatadomestic.zip",
-   "http_bytes": 63238846,
-   "last_modified": "2018-02-13T13:19:48Z",
-   "sha256": "3b6063bed36a78e8a04f10a5383f2881f4072a1be13e706a81ab097fb56ee571",
-   "member": "OpenDataDomestic.txt",
-   "uncompressed_bytes": 817350108,
-   "encoding": "UTF-16LE, pipe-separated (the publisher's page says tab-separated; the measured delimiter is '|')",
-   "columns": 62
-  },
-  "full_file_aggregate_2026_10_27": {
-   "rows_seen": 1189005,
-   "distinct_marks": 1149248,
-   "field_count_distribution": {
-    "62": 1188911,
-    "63": 76,
-    "64": 15,
-    "65": 3
-   },
-   "rows_with_ne_62_fields": 94,
-   "owner_duplicate_rows": 16892,
-   "blank_or_bad_filed_rows": 53,
-   "sortedness_violations": 3,
-   "neg_status_with_regdate_rows": 10,
-   "pos_with_status_outside_lapsed_set": 239,
-   "ir_zip_bytes": 6155443,
-   "ir_zip_last_modified": "2018-02-13T08:46:44Z"
-  },
-  "publisher_crosscheck": {
-   "product": "IPO facts and figures - Trade mark data 2015-2016 (Trade_marks_2016.xlsx, Section 'Summary of trade mark activity', National UK applications)",
-   "url": "https://assets.publishing.service.gov.uk/media/5a74c648e5274a3f93b48b43/Trade_marks_2016.xlsx",
-   "published_national_applications": {
-    "2012": 40238,
-    "2013": 46362,
-    "2014": 51016,
-    "2015": 54320,
-    "2016": 61681
-   },
-   "measured_distinct_marks": {
-    "2012": 40275,
-    "2013": 46355,
-    "2014": 51075,
-    "2015": 54291,
-    "2016": 61648
-   },
-   "relative_difference": "+0.09% / -0.02% / +0.12% / -0.05% / -0.05% - register fidelity corroborated within 0.12% every year"
-  },
-  "extraction_cost": {
-   "requests": "1 anonymous GET for the whole source (no paging, no auth)",
-   "bytes": 63238846,
-   "wall_seconds_coordinator": 5.1,
-   "machine_class": "coordinator (1.9 GiB RAM, 4 vCPU), streaming zlib + UTF-16 pass with no data retained",
-   "note": "The full aggregate pass (1,189,005 rows parsed, deduped, classified) ran twice with consistent results; construction on a worker is single-file and trivial."
-  },
-  "fixtures": [
-   {
-    "mark": "UK00000000001",
-    "name": "BASS & Co's PALE ALE",
-    "filed": "1876-01-01",
-    "snapshot_verdict": "Registered (Registered date 1876-01-01 set)",
-    "external_check": "The first UK trade mark, widely documented; in-file row matches the known identity - register fidelity at the file head."
-   },
-   {
-    "mark": "UK00003171385",
-    "name": "Brexit",
-    "filed": "2016-06-25",
-    "snapshot_verdict": "Appealed, no Registered date -> CENSORED by the label rule (2016 cohort: 631/61,648 = 1.02% censored)",
-    "external_check": "Live register (trademarks.ipo.gov.uk, read 2026-10-27 in the supported browser; plain client gets 403) shows Status: Refused - the censored direction resolved negative, confirming the exclusion avoided scoring an unresolved case."
-   },
-   {
-    "mark": "UK00003041794",
-    "name": "ALL NATURAL FRUITY V",
-    "filed": "2014-02-11",
-    "snapshot_verdict": "Application Published 2017-12-22 (34 months after filing), no Registered date -> CENSORED",
-    "external_check": "In-file evidence for why censoring (not negative labelling) is required for long-examination tails."
-   }
+  "id": "ipo-trademark-registration-outcome",
+  "status": "packaged",
+  "domain": "intellectual-property / administrative-outcome prediction",
+  "title": "UK trade mark application: will it reach registration?",
+  "prediction_question": "For a UK domestic trade mark application filed with the Intellectual Property Office, will it reach registration as resolved in the frozen February-2018 open-data snapshot - predicted from features fixed at filing: mark text, Nice class coverage (45 binary columns), category of mark, mark type, series membership/count, owner country/region/postcode-area, and filing date?",
+  "prediction_time": "The application's filing date (Europe/London). This is a clearly-labelled RETROSPECTIVE, single-snapshot task: every feature is a filing-time field AS RECORDED IN the one frozen 2018-02-13 snapshot (sha256 3b6063bed36a78e8a04f10a5383f2881f4072a1be13e706a81ab097fb56ee571). No claim of historical operational availability is made. Recorded vintage limitation: owner name/postcode/region/country are snapshot-vintage (assignment can move ownership after filing, and classes can be narrowed post-filing); the as-of policy is uniform for every row because there is exactly one vintage.",
+  "target_definition": "Label = registered-by-snapshot. Positive: Registered date non-empty (statuses Registered, Merged, Dead, Removed, Expired, Cancelled, Surrendered all imply the mark reached registration; Merged has Registered date set in-file). Negative: Registered date empty AND status in {Refused, Withdrawn}. Censored (excluded from scoring, counted per cohort): Registered date empty AND any other status - Application Received, Examination, Pre-Publication, Application Published, Opposed, Appealed, Appealable, Registration Pending, and the undocumented Deleted / Deemed Not Filed / blank. Source columns for the label (Status, Registered, Published, Expired, Renewal Due Date) are excluded from the shipped features.",
+  "eligibility": "Filed date in 2010-01-01..2016-12-31. The publisher's own coverage statement (Open data explained, section 3) lists ALL applications (any outcome) only from 1 January 2010; earlier filings appear mainly if subsequently registered. Measured: 2005-2009 cohorts show only 10-506 never-registered marks per year versus thousands in eligible years (2009: 499 of 25,163 - a registration-conditioned transition year), so eligibility starts at 2010 filings. One row per distinct trade mark: 16,892 multi-owner duplicate rows measured and deduplicated. Marks still in flight at the snapshot are censored, not scored.",
+  "sources": [
+    {
+      "url": "https://www.gov.uk/government/publications/ipo-trade-mark-data-release",
+      "landing_page": "https://www.gov.uk/government/publications/ipo-trade-mark-data-release",
+      "license": "Open Government Licence (v2 linked from the dataset's own documentation section 5; v3 asserted on the page footer)",
+      "publisher": "Intellectual Property Office (United Kingdom)",
+      "note": "Snapshot of trade mark applications; page last updated 13 February 2018; domestic zip + international-registrations zip."
+    },
+    {
+      "url": "https://www.gov.uk/government/publications/ipo-trade-mark-data-release/ipo-data-explained-2016",
+      "landing_page": "https://www.gov.uk/government/publications/ipo-trade-mark-data-release/ipo-data-explained-2016",
+      "license": "Open Government Licence",
+      "publisher": "Intellectual Property Office (United Kingdom)",
+      "note": "Column documentation (62 columns), the 16-value status vocabulary, the coverage statement, and the OGL grant for the data itself."
+    },
+    {
+      "url": "https://assets.publishing.service.gov.uk/media/5a82e5f4e5274a2e87dc387d/opendatadomestic.zip",
+      "api": "single anonymous GET, static file, no paging",
+      "license": "Open Government Licence (see license_evidence)",
+      "note": "OpenDataDomestic.txt, 63,238,846 B zip, Last-Modified 2018-02-13T13:19:48Z, sha256 3b6063bed36a78e8a04f10a5383f2881f4072a1be13e706a81ab097fb56ee571, 817,350,108 B uncompressed UTF-16LE pipe-separated text."
+    }
   ],
-  "as_of_policy": {
-   "vintage": "Single frozen snapshot, Last-Modified 2018-02-13, sha256-pinned. The publisher's own documentation warns: 'Online registers are dynamic and alter as the trade marks' status changes. As this data is a snapshot, it may not be directly comparable with official publications' - the record applies the stricter reading and claims only snapshot-vintage features.",
-   "coverage_note_stale": "The explained-document's coverage section says filings earlier than 31 August 2016; the measured max filing date in the Feb-2018 file is January 2018 (2017 cohort n=75,024; 2018 January n=6,221) - the published cutoff is stale, the file is richer. Eligibility still ends at 2016-12-31 filings because 2017+ cohorts are too censored to score (16,386/75,024).",
-   "feature_vintage_caveat": "Owner Name/Postcode/Region/Country and the class columns are snapshot-vintage (assignment can change ownership post-filing; classes can be narrowed). Declared limitation; robustness variant = drop owner fields, recorded as a construction decision."
+  "jurisdiction": {
+    "country": "GB",
+    "region": "Europe",
+    "publisher": "Intellectual Property Office (United Kingdom)",
+    "recorded_at": "2026-10-27"
   },
-  "parse_hazards": [
-   "94 rows carry embedded pipes inside Mark Text (76x63 fields, 15x64, 3x65) - right-anchored parsing (Class45..Class1 from the right, then the 17 leading fields) or exclusion-with-count; 53 rows have blank/invalid Filed; 3 rows are shifted international-registration clones (country values like 'Ireland'/'Switzerland' appearing in the status position).",
-   "10 rows carry a negative status with a Registered date set - the label rule keys on the Registered date (positive) and the count is asserted in-build.",
-   "239 rows have a Registered date with a status outside the registered-then-lapsed set - counted bucket, rule asserted in-build.",
-   "Statuses Deleted (196 marks 2010-2016), Deemed Not Filed (2), Appealed/Appealable (306 in 2017, few earlier) are NOT in the publisher's documented 16-value status table - all fall in the censored bucket by the label rule; construction asserts the per-cohort counts."
+  "licence_class": "A",
+  "license_evidence": [
+    {
+      "quote": "Provision and use of this data is defined under an open government licence",
+      "url": "https://www.gov.uk/government/publications/ipo-trade-mark-data-release/ipo-data-explained-2016",
+      "note": "Section 5 'Open government licence' of the dataset's own documentation, linking OGL version 2; read 2026-10-27."
+    },
+    {
+      "quote": "This publication is licensed under the terms of the Open Government Licence v3.0 except where otherwise stated. ... (C) Crown copyright 2018",
+      "url": "https://www.gov.uk/government/publications/ipo-trade-mark-data-release/ipo-data-explained-2016",
+      "note": "Page footer on the same instrument, read 2026-10-27."
+    },
+    {
+      "quote": "All content is available under the Open Government Licence v3.0, except where otherwise stated",
+      "url": "https://trademarks.ipo.gov.uk/ipo-tmcase/page/Results/1/UK00003171385",
+      "note": "Live trade mark register page footer, read in the supported browser 2026-10-27 (plain clients get HTTP 403). Register content is not redistributed by us; quoted for the fixture verification only."
+    }
   ],
-  "dedup_key_reconciliation_2026_10_30": {
-   "probe": "coordinator source-metadata pass over the pinned snapshot (full-file counts only; no panel, no labels, no model)",
-   "finding": "raw-string dedup key (stripped mark number) reproduces the discovery cohort table exactly: per-year n/pos/neg/cens 2010-2016 identical to full_file_aggregate_2026_10_27; the discovery probe deduped by parsed integer, which silently skipped the 22,812 letter-suffixed series sub-marks (e.g. UK0000000052A/B) out of dedup/distinct counting",
-   "data_rows": 1189004,
-   "distinct_marks_string_key": 1172043,
-   "distinct_marks_integer_key": 1149248,
-   "dup_rows_string_key": 16909,
-   "dup_rows_integer_key": 16892,
-   "letter_suffix_rows": 22812,
-   "letter_suffix_dup_rows": 17,
-   "blank_or_bad_filed_data_rows": 52,
-   "neg_with_regdate_eligible_2010_2016": 8,
-   "neg_with_regdate_post2010_population": 10,
-   "field_count_distribution_data_rows": {
-    "62": 1188910,
-    "63": 76,
-    "64": 15,
-    "65": 3
-   },
-   "wall_s": 5.0,
-   "consequence": "construction dedups on the stripped mark-number string (first occurrence); all in-build assertions target the string-key numbers, which equal the recorded cohort table"
-  },
-  "pipe_row_reconciliation_2026_10_30": {
-   "probe": "candidates/ipo-trademark-registration-outcome/probe_reconcile_pipe_rows.py",
-   "evidence": "candidates/ipo-trademark-registration-outcome/ipo_tm_reconciliation.json",
-   "verdict": "RECONCILIATION CLOSED; the build's right-anchored recovery is the correct reading; the frozen EXPECTED table was a probe-measurement error",
-   "what_was_measured": "Over the same sha256-pinned snapshot (3b6063be...): pass A reproduces the frozen ipo_tm_aggregates.json exactly (all numeric keys), proving the old table's provenance; pass C (build.py's exact pipeline, cross-checked against an imported build.iter_records) matches every number the ipo-tm-002 worker measured: data rows 1,189,004, distinct 1,172,095, dup 16,909, letter-suffixed 22,812/17, blank/bad-filed 34, neg_with_regdate 8 eligible / 10 post2010, per-year cohorts. Per-row attribution closes every delta exactly: +58 scored rows = the 58 recovered pipe rows filed 2013-2016 (2013 +5 pos +2 neg; 2014 +5 pos +4 neg; 2015 +9 pos; 2016 +31 pos +2 neg); -18 blank/bad-filed = pipe rows whose shifted read ('No'x11/'Yes'x4/'Word'x2/'Figurative'x1) failed the 4-digit check; the remaining pipe rows were excluded via bogus year keys ('0'x67, '2'x6, '3'x2, '5'x1) or int-key dups (x2); 17 non-pipe diffs are letter-suffixed repeated-owner rows filed 1928-2003 (out of window, zero cohort effect). The handoff's '3 unparseable (3/5) filed rows' was the same shifted-read artifact (UK00003033672/UK00003112662/UK00003154878, all recovered with parseable dates); the correct-column unparseable count is 0.",
-   "correctness_evidence": "All 94 recovered rows: Status in the publisher's documented vocabulary 94/94 (shifted status reads: 0/94 - they read Country/Mark-Type values); recovered Filed dates parse 94/94; class columns binary 94/94. Corrected cohorts 2013 (46,362) and 2016 (61,681) now equal the IPO workbook's published National applications EXACTLY (old table was low by exactly the mis-read pipe rows).",
-   "scope": "Aggregate counts only; no feature panel, no aligned labels, no model, no AUC."
-  },
-  "references_2026_10_30_ipo_tm_004": {
-   "source": "worker job ipo-tm-004 (references json), post-acceptance, eval-only, holdout sealed",
-   "rows": 97274,
-   "positives": 81699,
-   "required_comparator_nice_class_rate": {
-    "eval_auc": 0.542050096312312
-   },
-   "mark_type_rate": {
-    "eval_auc": 0.5649860521366877,
-    "note": "dominant simple reference: beats nice_class_rate with paired mean -0.023071, CI95 [-0.02933, -0.017299] excluding zero - the cheapest comparator a model must beat"
-   },
-   "owner_country_rate": {
-    "eval_auc": 0.5190639759221086
-   },
-   "calendar_month_rate": {
-    "eval_auc": 0.49717530762266227
-   },
-   "category_rate": {
-    "eval_auc": 0.5030650964271485
-   },
-   "series_flag_rate": {
-    "eval_auc": 0.5212537612864133
-   },
-   "majority_class_accuracy_this_split": 0.8398852725291445,
-   "persistence": "not_applicable (recorded: every scored row is a new application; no prior observation of the same entity exists at the filing instant)",
-   "global_rate": "degenerate constant control, no ranking information",
-   "per_filing_year_eval_nice_class_auc": {
-    "2013": 0.5412071590589789,
-    "2014": 0.5428658105024148
-   },
-   "prevalence": "train 0.866137 vs eval 0.839885 (prevalence shift recorded; per-year AUC/Brier in the references json)",
-   "runner_model_eval_auc": 0.6224,
-   "runner_model_note": "measured by worker job ipo-tm-baseline-001 (runner-contract baseline, 2026-10-30): the benchmark's own train.py and validate.py ran unmodified on the re-accepted artifact after exact-byte --accept; validate.py's independent predict_proba recompute printed the same 4-decimal figure. The model-vs-reference paired intervals are the diag job's (ipo-tm-diag-001), not this run's."
-  },
-  "runner_baseline_2026_10_30_ipo_tm_baseline_001": {
-   "source": "worker job ipo-tm-baseline-001 (baseline_result.json + logs, collected and sha256-verified from private staging release 429107092)",
-   "order": "fetch the five artifact files from staging 428923481 (every sha256 verified on arrival) -> exact-byte --accept against the gate's own ipo-tm-004 report (ACCEPTED, artifact 2c1dade2913d0a8b) -> materialize the runner workdir (public train+eval only; holdout never copied into a workdir) -> the benchmark's own train.py and validate.sh, both unmodified (digests verified against the read-only clone)",
-   "contract_ok": true,
-   "eval_auc_train_py": 0.6224,
-   "eval_auc_validate_py_independent_recompute": 0.6224,
-   "accepted_before_scoring": true,
-   "accepted_artifact_version": "2c1dade2913d0a8b",
-   "runner_files_unmodified": true,
-   "dependencies": {
-    "python": "3.13.18",
-    "pandas": "2.3.3",
-    "numpy": "2.5.4",
-    "xgboost": "3.4.1",
-    "scikit-learn": "1.9.1"
-   },
-   "elapsed_seconds": 43.4,
-   "scope": "runner-contract baseline only; eval rows only (97,274); no agent loop; the holdout was never read and stays sealed",
-   "evidence": ".factory/ipo-tm-baseline-001/reports/output/ (baseline_result.json, train.log, validate.log, accept.log, dependency-versions.txt), all re-hashed to the release manifest digests"
-  },
-  "diag_2026_10_30_ipo_tm_diag_001": {
-   "source": "worker job ipo-tm-diag-001 (diag_result.json + logs, collected and sha256-verified from private staging release 429120865)",
-   "order": "fetch the five artifact files from staging 428923481 (every sha256 verified on arrival) -> exact-byte --accept against the gate's own ipo-tm-004 report (ACCEPTED, artifact 2c1dade2913d0a8b) -> validate.sh CONTRACT OK -> per-row predict_proba (validate.py's exact call) -> pandas re-derivation of every reference -> paired row-level bootstrap (150 resamples, seed 31)",
-   "accepted_before_scoring": true,
-   "accepted_artifact_version": "2c1dade2913d0a8b",
-   "runner_files_unmodified": true,
-   "replication_second_implementation": "10/10 recomputed figures match the recorded ipo-tm-004/baseline values exactly (see jobs entry); measured agreement, not assumed",
-   "model_eval_auc": {
-    "sklearn": 0.622376,
-    "midrank": 0.622375603890859,
-    "train_py_printed": 0.6224,
-    "validate_log": 0.6224,
-    "eval_brier": 0.13178109454618642
-   },
-   "observed_gaps_point_estimates": {
-    "model_minus_mark_type_rate": 0.05739,
-    "model_minus_nice_class_rate": 0.080326,
-    "model_minus_calendar_month_rate": 0.1252,
-    "uncertainty": "NOT VALIDLY MEASURED YET: the paired-bootstrap intervals this job produced are invalid (resampler defect below); quote the point gaps only with this caveat until ipo-tm-diag-002 returns valid intervals"
-   },
-   "per_filing_year": {
-    "2013": {
-     "rows": 46293,
-     "positive_rate": 0.840905,
-     "model_auc": 0.6232809840033328,
-     "model_brier": 0.1309852287559413,
-     "nice_class_rate_auc": 0.5412071590589789,
-     "mark_type_rate_auc": 0.5638871641178422,
-     "calendar_month_rate_auc": 0.5084582789568306
-    },
-    "2014": {
-     "rows": 50981,
-     "positive_rate": 0.83896,
-     "model_auc": 0.6215952653953407,
-     "model_brier": 0.1325037758399628,
-     "nice_class_rate_auc": 0.5428658105024148,
-     "mark_type_rate_auc": 0.5659882797634777,
-     "calendar_month_rate_auc": 0.48708237601427834
-    }
-   },
-   "defect_paired_intervals": "np.bincount(idx, weights=y) pairs weights with draw positions, not drawn rows: label-row alignment scrambled, every AUC difference collapsed to noise (bootstrap means ~1e-4 against observed gaps ~5.7e-2; the intervals [-0.0048, 0.0047] etc. in diag_result.json are noise and carry no information). The pre-fix script exited 0 because it had no alignment invariant.",
-   "fix_committed": "diag/diag.py rebuilt (sha256 f30347a64221..., 26,074 B): counts = np.bincount(idx, minlength=n); w_pos = counts * y - each drawn row carries its own label; resampler_alignment_ok invariant (|bootstrap mean - observed gap| < 0.05 for every comparison) added to the exit-0 condition; tests/test_ipo_tm_diag.py mirrors the fixed and defective resamplers in pure Python (fixed preserves the observed gap, defective destroys it) - 4/4 pass locally; the numpy path itself is guarded on the worker",
-   "clustering_limitation": "no dependence cluster is measurable from the shipped columns (tm_number unique per row, no owner or series identity): intervals are row-level only - a limitation, not independence",
-   "scope": "diagnostic only: eval split, one model configuration, no re-tuning, no agent loop; the holdout was never read and stays sealed"
-  },
-  "diag_2026_10_30_ipo_tm_diag_002": {
-   "source": "worker job ipo-tm-diag-002 (the single permitted recovery relaunch of ipo-tm-diag-001 with the fixed diag.py, sha256 f30347a64221): diag_result.json + logs collected and sha256-verified against the job ledger from private staging release 429342825 (10 assets, fetched files re-hashed locally; per_row_scores.csv preserved in the release, not fetched to the coordinator)",
-   "order": "fetch the five artifact files from staging 428923481 (every sha256 verified on arrival, 59,738,122 B, 0 failures) -> exact-byte --accept against the gate's own ipo-tm-004 report (ACCEPTED, artifact 2c1dade2913d0a8b, BEFORE any metric) -> materialize public train+eval only (holdout never copied) -> validate.sh CONTRACT OK -> per-row predict_proba -> pandas second-implementation reference replication -> paired row-level bootstrap with counts-based weights (150 resamples, seed 31)",
-   "accepted_before_scoring": true,
-   "accepted_artifact_version": "2c1dade2913d0a8b",
-   "runner_files_unmodified": true,
-   "replication_second_implementation": "10/10 recomputed figures match the recorded ipo-tm-004/baseline values exactly (all_match true)",
-   "model_eval_auc": {
-    "sklearn": 0.622376,
-    "midrank": 0.622375603890859,
-    "train_py_printed": 0.6224,
-    "validate_log": 0.6224,
-    "eval_brier": 0.13178109454618642
-   },
-   "observed_gaps_point_estimates": {
-    "model_minus_mark_type_rate": 0.05739,
-    "model_minus_nice_class_rate": 0.080326,
-    "model_minus_calendar_month_rate": 0.1252
-   },
-   "paired_intervals_valid": {
-    "model_vs_mark_type_rate": {
-     "mean_difference": 0.05731,
-     "ci95_low": 0.053257,
-     "ci95_high": 0.060546,
-     "interval_excludes_zero": true,
-     "note": "dominant simple reference (mark_type_rate AUC 0.5650): the cheapest comparator a model must beat"
-    },
-    "model_vs_nice_class_rate": {
-     "mean_difference": 0.080381,
-     "ci95_low": 0.074786,
-     "ci95_high": 0.086192,
-     "interval_excludes_zero": true,
-     "note": "required comparator (nice_class_rate AUC 0.5421)"
-    },
-    "model_vs_calendar_month_rate": {
-     "mean_difference": 0.125036,
-     "ci95_low": 0.117361,
-     "ci95_high": 0.13153,
-     "interval_excludes_zero": true,
-     "note": "calendar control (calendar_month_rate AUC 0.4972)"
-    }
-   },
-   "resampler_alignment_ok": true,
-   "resampler_alignment_evidence": "every bootstrap mean centers on its observed gap (0.05731 vs 0.05739; 0.080381 vs 0.080326; 0.125036 vs 0.1252), the invariant that now gates exit 0 - unlike ipo-tm-diag-001, whose positional-weight defect collapsed the means to ~1e-4",
-   "determinism_cross_check": "per_row_scores.csv is byte-identical to ipo-tm-diag-001's (sha256 380756fcacfbe5d4c57563b0590a4823e2833d9202ad1eb162db61a00ae01101, 5,641,986 B, assets 692357266 / 692973148): the fix touches only the bootstrap resampler, not the model fit or the rate tables; accept.log, materialize.log, pip-install.log and dependency-versions.txt are also byte-identical; validate.log differs only in wall-clock timings, with identical substantive lines (both AUCs 0.6224, CONTRACT OK)",
-   "per_filing_year": {
-    "2013": {
-     "rows": 46293,
-     "positive_rate": 0.840905,
-     "model_auc": 0.6232809840033328,
-     "model_brier": 0.1309852287559413,
-     "nice_class_rate_auc": 0.5412071590589789,
-     "mark_type_rate_auc": 0.5638871641178422,
-     "calendar_month_rate_auc": 0.5084582789568306
-    },
-    "2014": {
-     "rows": 50981,
-     "positive_rate": 0.83896,
-     "model_auc": 0.6215952653953407,
-     "model_brier": 0.1325037758399628,
-     "nice_class_rate_auc": 0.5428658105024148,
-     "mark_type_rate_auc": 0.5659882797634777,
-     "calendar_month_rate_auc": 0.48708237601427834
-    }
-   },
-   "per_year_interpretation": "rows sum to the 97,274 eval rows exactly (46,293 + 50,981); the model's advantage over mark_type_rate holds in both eval filing years (2013: 0.6233 vs 0.5639; 2014: 0.6216 vs 0.5660) with prevalence essentially flat (0.8409 -> 0.8390), so no within-eval structural break is visible; the eval window is only two filing years, recorded as limited by-year coverage",
-   "clustering_limitation": "no dependence cluster is measurable from the shipped columns (tm_number unique per row, no owner or series identity): intervals are row-level only - a limitation, not independence",
-   "persistence_reference": "not-applicable, recorded in the construction references: every scored row is a new application, so there is no last observed label to persist",
-   "majority_class_accuracy": 0.8399,
-   "scope": "diagnostic only: eval split, one model configuration, no re-tuning, no agent loop; the holdout was never read and stays sealed",
-   "interpretation": "under this protocol the full model demonstrates headroom over every measured simple reference on identical eval rows: +0.0574 [0.0533, 0.0605] over the dominant mark_type_rate, +0.0803 [0.0748, 0.0862] over the required nice_class_rate comparator, +0.1252 [0.1174, 0.1315] over the calendar control, every paired row-level interval excluding zero; the gaps are observed differences with row-level uncertainty only (no dependence cluster measurable), one model configuration, and do not establish a bound on any other model"
-  }
- },
- "contracts": {
-  "redistribution": "SUPPORTED - Open Government Licence on the dataset's own instrument (v2 linked in section 5 of the explained document; v3 footer), class A: reuse including commercially, with attribution. Ship source terms preserved.",
-  "prediction_timing": "SUPPORTED AS A DECLARED RETROSPECTIVE TASK - the instant (filing) precedes all outcome observation; every feature is a filing-time field of one uniform 2018-02-13 vintage; no historical operational-availability claim. Owner-field vintage caveat declared.",
-  "target": "SUPPORTED - label derivable in-file from Status + Registered date; source columns excludable; censoring distinguished from observed absence and counted per cohort (the chilecompra outcome-conditioning pattern, declared with measured rates: scored population is applications resolved by snapshot; censoring 0.02%-1.02% of eligible cohorts).",
-  "split_capacity": "SUPPORTED - measured from the built, gate-1.5.0-accepted artifact: 106,990 / 97,274 / 115,172 scored rows with 14,322 / 15,575 / 15,787 negatives in disjoint filing-year windows, both classes in every window and every year.",
-  "not_a_mirror": "SUPPORTED (novelty_check verdict: differentiated) - no ML-ready UK trade-mark registration-outcome benchmark exists; adjacent prior art targets different outcomes (USPTO distinctiveness, EUTMR pairwise confusion) or is a proprietary tool (IPO Pre-Apply, Rocketeer) or aggregate statistics (facts-and-figures workbooks)."
- },
- "construction_handoff": {
-  "step": "On a worker: fetch the pinned zip (sha256 verify), stream-parse UTF-16LE pipe-separated with right-anchored field recovery, dedup multi-owner rows by mark number, apply eligibility (filed 2010-01-01..2016-12-31) and the label rule with per-cohort censored counts, emit one row per distinct mark with filing-time features only (mark text, class booleans + class count, category, mark type, series flag/count, owner country/region/postcode-area, filed date; Status/Published/Registered/Expired/Renewal excluded), write quality.json with evaluation_contract declaring the retrospective single-snapshot scope and the owner-vintage caveat, assert in-build: the three fixtures, the cross-check tolerance vs Trade_marks_2016.xlsx National applications (+-1%), the 94-pipe-row handling, the 10 neg_with_regdate rows, and per-split counts equal to this record's splits.",
-  "expected_artifact": "ipo-tm-001: train/eval/holdout CSVs at ~107k/97k/115k rows, meta.json, quality.json (gate 1.5 evaluation_contract), build/fixutes in source/.",
-  "success_check": "dataset-qualification gate 1.5.x passes on the full artifact on the worker, exact-byte --accept, THEN reference baselines (class-conditional rate, mark-type rate, owner-country rate, calendar month) before any model figure; the sector/class-conditional reference is the required comparator."
- },
- "novelty_check": {
-  "checked_at": "2026-10-27T04:29:11+00:00",
-  "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
-  "queries": [
-   "predict trademark registration outcome machine learning",
-   "UK IPO trade mark open data snapshot benchmark Kaggle Hugging Face"
-  ],
-  "evidence": {
-   "huggingface_datasets": [
-    {
-     "query": "predict trademark registration outcome machine learning",
-     "hits": 0,
-     "top": []
-    },
-    {
-     "query": "UK IPO trade mark open data snapshot benchmark Kaggle Hugging Face",
-     "hits": 0,
-     "top": []
-    }
-   ],
-   "zenodo_records": [
-    {
-     "query": "predict trademark registration outcome machine learning",
-     "hits": 413386,
-     "top": [
-      "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
-      "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI",
-      "RGB and RGNIR Plastic Waste Database",
-      "Unveiling the Dynamics of Cricket: A Sports Analytics Framework for IPL Match Prediction",
-      "Trust Prediction: Use of Decision Tree in Training  & Evaluation"
-     ]
-    },
-    {
-     "query": "UK IPO trade mark open data snapshot benchmark Kaggle Hugging Face",
-     "hits": 1636659,
-     "top": [
-      "BENCHMARKING PRE-TRAINED OPEN-SOURCE LARGE LANGUAGE MODELS FOR UZBEK:  EVALUATING PERFORMANCE IN A LOW-RESOURCE SETTING ACROSS TRANSLATION,  COMPREHENSION, AND GENERATION",
-      "Searching Sage: AI-Powered Image Retrieval on a Nationwide Edge Computing Cyberinfrastructure",
-      "huggingface/datasets: 2.8.0",
-      "Token Classification",
-      "Detecting Machine-Generated Arabic Text: AraBERT\u2013LSTM for Trustworthy Low-Resource NLP"
-     ]
-    }
-   ],
-   "arxiv_preprints": [
-    {
-     "query": "predict trademark registration outcome machine learning",
-     "hits": 5,
-     "top": [
-      "DOME: Recommendations for supervised machine learning validation in biology",
-      "Changing Data Sources in the Age of Machine Learning for Official Statistics",
-      "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
-      "Active learning for data streams: a survey",
-      "Physics-Inspired Interpretability Of Machine Learning Models"
-     ]
-    },
-    {
-     "query": "UK IPO trade mark open data snapshot benchmark Kaggle Hugging Face",
-     "hits": 5,
-     "top": [
-      "Supervised Contrastive Learning for Snapshot Spectral Imaging Face Anti-Spoofing",
-      "Data Encoding for Byzantine-Resilient Distributed Optimization",
-      "Byzantine-Resilient SGD in High Dimensions on Heterogeneous Data",
-      "Constraints on dark energy from H II starburst galaxy apparent magnitude versus redshift data",
-      "Kaggle LSHTC4 Winning Solution"
-     ]
-    }
-   ]
-  },
-  "evidence_summary": "- huggingface_datasets / 'predict trademark registration outcome machine learning': 0 hit(s) - nothing notable\n- huggingface_datasets / 'UK IPO trade mark open data snapshot benchmark Kaggle Hugging Face': 0 hit(s) - nothing notable\n- zenodo_records / 'predict trademark registration outcome machine learning': 413386 hit(s) - plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database, Unveiling the Dynamics of Cricket: A Sports Analytics Framework for IPL Match Prediction, Trust Prediction: Use of Decision Tree in Training  & Evaluation\n- zenodo_records / 'UK IPO trade mark open data snapshot benchmark Kaggle Hugging Face': 1636659 hit(s) - BENCHMARKING PRE-TRAINED OPEN-SOURCE LARGE LANGUAGE MODELS FOR UZBEK:  EVALUATING PERFORMANCE IN A LOW-RESOURCE SETTING ACROSS TRANSLATION,  COMPREHENSION, AND GENERATION, Searching Sage: AI-Powered Image Retrieval on a Nationwide Edge Computing Cyberinfrastructure, huggingface/datasets: 2.8.0, Token Classification, Detecting Machine-Generated Arabic Text: AraBERT\u2013LSTM for Trustworthy Low-Resource NLP\n- arxiv_preprints / 'predict trademark registration outcome machine learning': 5 hit(s) - DOME: Recommendations for supervised machine learning validation in biology, Changing Data Sources in the Age of Machine Learning for Official Statistics, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Active learning for data streams: a survey, Physics-Inspired Interpretability Of Machine Learning Models\n- arxiv_preprints / 'UK IPO trade mark open data snapshot benchmark Kaggle Hugging Face': 5 hit(s) - Supervised Contrastive Learning for Snapshot Spectral Imaging Face Anti-Spoofing, Data Encoding for Byzantine-Resilient Distributed Optimization, Byzantine-Resilient SGD in High Dimensions on Heterogeneous Data, Constraints on dark energy from H II starburst galaxy apparent magnitude versus redshift data, Kaggle LSHTC4 Winning Solution",
-  "prior_art": [
-   "Automating Abercrombie, J. Empirical Legal Studies (Wiley, 2023); TrademarkML, TU Wien thesis (2023); MARQUES Lewis Gaze paper on AI in trademark law (2022, describing IPO Pre-Apply and Rocketeer)"
-  ],
-  "theirs": "Adjacent prior art exists but none publishes this task in ML-ready form: Automating Abercrombie (Wiley JELS) predicts USPTO inherent-distinctiveness from US office actions - different target and jurisdiction; TrademarkML (TU Wien 2023) predicts EUTMR pairwise likelihood of confusion - different target; the UK IPO Pre-Apply tool and commercial tools (Rocketeer) predict outcomes but publish no dataset, splits or scored contract; IPO facts-and-figures workbooks are aggregate counts; Kaggle/HF/Zenodo searches returned no UK trade-mark registration benchmark.",
-  "ours": "First open, ML-ready UK trade-mark registration-outcome benchmark: formulation (registered-by-snapshot from filing-time features), 2010-2016 cohort eligibility with measured censoring rules, disjoint filing-year splits (106,990/97,274/115,172 scored rows), named fixtures, and honest reference baselines, built from the only open bulk snapshot of UK trade mark applications (sha256-pinned Feb-2018 vintage).",
-  "verdict": "differentiated",
-  "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
- },
- "next_action": "QUALIFIED, ACCEPTED AND MEASURED 2026-10-30 (artifact 2c1dade2913d0a8b, gate 1.5.0, --accept ACCEPTED in ipo-tm-004 and re-ACCEPTED in baseline-001/diag-001/diag-002). The model-vs-reference comparison is COMPLETE with valid paired row-level intervals (ipo-tm-diag-002, resampler_alignment_ok true, 10/10 replication): full model eval AUC 0.6224 (four ways) vs mark_type_rate 0.5650 (+0.0574, CI95 [0.0533, 0.0605]), nice_class_rate 0.5421 (+0.0803, [0.0748, 0.0862]), calendar_month_rate 0.4972 (+0.1252, [0.1174, 0.1315]); every interval excludes zero; per-filing-year advantage holds in both eval years; persistence recorded not-applicable; majority accuracy 0.8399. Limitations recorded: row-level intervals only (no dependence cluster measurable from the shipped columns), one model configuration, two filing years in eval. Packaging STARTED: license.json declared 2026-10-30 (source OGL-UK-3.0 with the three recorded licence quotes and the pinned snapshot; our code MIT; compilation CC0-1.0; build.py's EXCLUDED_BY_DESIGN name/hyperlink columns and the shipped owner fields stated exactly). REMAINING for packaging per dataset-release: assemble release/ipo-trademark-registration-outcome from the accepted artifact bytes (staging release 428923481) with MANIFEST.json + SHA256SUMS + VERIFICATION.md carrying the diag-002 comparison beside every figure (including the invalid diag-001 intervals recorded as the defect they were), reproduction instructions executed on the published bytes in a fresh environment, check-package.py and check-suitability.py, then private staging only. Nothing is public; no release steps have been taken.",
- "jobs": [
-  {
-   "id": "ipo-tm-001",
-   "launched_utc": "2026-10-30T03:17:20Z",
-   "status": "failed",
-   "outcome": "exit 1 after 7.3 s, construction defect: check_fixtures passes Counter() as iter_records' hazards argument (build.py line 422), so line 253 hazards[\"field_counts\"][len(fields)] += 1 subscripted the int a Counter returns for a missing key (TypeError). Pinned source fetch verified OK before the crash: 63,238,846 B, sha256 3b6063bed36a78e8a04f10a5383f2881f4072a1be13e706a81ab097fb56ee571. No artifact, gate run, acceptance or score exists.",
-   "evidence": ".factory/ipo-tm-001/reports/container.log (866 B, sha256 01abc7e380b3e31f7ca804af9eeade00ad7bdc5474dec7a8b5aa853bd1fbf871) and manifest.json (33e7e96503a8bb37e862dd60d5cbfe24f595d1d9a516b608be769f16fc9d12d8), fetched from private staging release 428619019 and re-hashed to the job record's asset digests; source.tar input bundle remains in that release at 935aaa3756e54de3b674078ec08e2b974ab49a51d6e700adde04ef8b3a9a5a31. Worker destroyed 2026-10-30T03:54:28Z, Hetzner read-back 0 servers / 0 primary IPs.",
-   "server_id": 173462544,
-   "server_type": "cpx32",
-   "reservation_eur": "0.24",
-   "bundle": "candidates/ipo-trademark-registration-outcome/source/bundle.json (assembled .factory/jobs/ipo-tm-001, source_sha256 935aaa3756e54de3b674078ec08e2b974ab49a51d6e700adde04ef8b3a9a5a31)",
-   "what": "full construction -> gate -> exact-byte accept -> eval-row references on the worker; expected outputs qualification-ipo-trademark-registration-outcome.json (gate 1.5, must pass), acceptance txt, references json, summary json, staging upload of the five artifact files",
-   "note": "build.py was syntax-checked and its parsing/classification logic mirrors the two full-file probes, but it has never executed end to end; the worker run was its first execution and the failure is diagnosed from the collected log (fresh attempt id ipo-tm-002 required for any relaunch)"
-  },
-  {
-   "id": "ipo-tm-002",
-   "launched_utc": "2026-10-30T06:10:46Z",
-   "status": "failed",
-   "parent_attempt": "ipo-tm-001",
-   "outcome": "exit 1 after 19.1 s, a NEW construction defect distinct from ipo-tm-001's: the hazards-shape fix worked (all three in-file fixtures asserted OK on the fetched bytes; parse+classify streamed all 1,189,004 rows; dup 16,909, letter-suffix and field-count tallies all matched), but assert_expectations refused the artifact: the build classifies 58 more scored rows than the frozen discovery record (eval 97,274/81,699/15,575 vs 97,258/81,689/15,569; holdout 115,172/99,385/15,787 vs 115,130/99,345/15,785), censored counts identical in every cohort, train cohorts exact, and blank/bad-filed measured 34 vs 52. Pinned source fetch verified OK first (63,238,846 B, sha256 3b6063be...). No gate run, acceptance or score exists.",
-   "diagnosis": "Root cause identified from the collected container log plus a code read of probe_aggregate.py (the script that produced the frozen EXPECTED cohort table) vs build.py: the probe and the build disagree on two pipeline choices. (a) The 94 embedded-pipe rows: probe_aggregate splits on '|' and keeps reading columns at SHIFTED positions for any row whose field count != 62 (its shift_rows_total / bad_examples counters show it never recovers them), so their filed/status/registered values are read from the wrong slots; build.py recovers them right-anchored (the publisher's last-45 class columns) and scores them correctly. (b) Dedup: the probe counts blank/bad-filed BEFORE deduplicating on the integer tm key, while build dedups first occurrence per stripped string key BEFORE the filed check - which also explains 52 vs 34 blank/bad-filed once duplicate rows with bad filed values are counted by the probe but dropped as duplicates by the build. The +58 (eval +16, holdout +42) with identical censored counts and exact train cohorts is consistent with the build scoring rows the probe mis-slotted, but the exact attribution is NOT yet measured.",
-   "evidence": ".factory/ipo-tm-002/reports/container.log (2,045 B, sha256 6ae61127bf05e6bd6c8ba7df0d58e223f878701ce4c102ca2c5496cb4b528678) and manifest.json (4,261 B, sha256 bc1dcf1377ca0b38cad565d222e557812362ab90ebf4ba7c011f5a0543fe6752), fetched from private staging release 428706741 by numeric asset id and re-hashed to the collect result's asset digests; source bundle (225,280 B, 56f6dea1...) remains in the release. Worker server 173481207 destroyed 07:08:13Z; Hetzner read-back 0 servers / 0 primary IPs (scripts/provider-inventory.py).",
-   "server_id": 173481207,
-   "server_type": "cpx32",
-   "reservation_eur": "0.24",
-   "bundle": "candidates/ipo-trademark-registration-outcome/source/bundle.json (assembled .factory/jobs/ipo-tm-002, source_sha256 56f6dea173c60d6b6d8700bd1a1e23dd99f4d53c3c0dd54ff3942dc9ec1a30b0)",
-   "what": "full construction -> gate -> exact-byte accept -> eval-row references on the worker; expected outputs qualification-ipo-trademark-registration-outcome.json (gate 1.5, must pass), acceptance txt, references json, summary json, staging upload of the five artifact files",
-   "note": "The ipo-tm-001 hazards defect is FIXED and now proven on the real snapshot: both iter_records call sites share one new_hazards() shape; tests/test_ipo_tm_build.py (4 tests) verifies the fixtures stage, the hazards shape, the pipe recovery and the classify loop on bounded synthetic rows - red on the pre-fix code (the exact ipo-tm-001 TypeError), green on the fix; full local suite 678 tests OK. Operational lesson recorded for the next session: worker status shows the SERVER record, which stays 'running' until destroy - the job result appears only via collect; poll collect (or ssh docker ps) instead of polling status."
-  },
-  {
-   "id": "ipo-tm-003",
-   "launched_utc": "2026-10-30T10:29:07Z",
-   "status": "failed",
-   "parent_attempt": "ipo-tm-002",
-   "outcome": "exit 1 after 23.1 s, and the first attempt to validate the construction end to end: with the re-derived EXPECTED table, ALL in-build assertions passed for the first time (corrected cohorts 2013-2016 exact, splits exact, three fixtures, publisher cross-check +-1%, hazards, label-source columns absent, column set exact) and all five artifact files were written to the extract (train 106,990/92,668 pos; eval 97,274/81,699; holdout 115,172/99,385). The crash came AFTER the write, in the summary-writing block: build.py's publisher cross-check comprehension looked the pinned INT year keys of PUBLISHED_NATIONAL_APPLICATIONS up in the STRING-keyed diag['per_year'] dict (KeyError: 2012), before summary.json was written. Pinned source fetch verified OK first (63,238,846 B, sha256 3b6063be...). No gate run, acceptance or score exists for this attempt; the five extract files are preserved in private staging release 428902203.",
-   "diagnosis": "A one-line latent defect in code no previous attempt had ever reached: ipo-tm-001 crashed in the fixtures stage and ipo-tm-002 in assert_expectations, both strictly before write_splits, so the summary tail of main() had never executed. The construction itself is now verified correct twice over: the coordinator reconciliation probe (probe_reconcile_pipe_rows.py, RECONCILIATION CLOSED) and this run's all-green assertions. Not a structural, timing, population or leakage defect of the kind the dataset-qualification rebuild cap exists for.",
-   "evidence": ".factory/ipo-tm-003/reports/container.log (1,751 B, sha256 a997a797a592792e157a... verified against the release manifest) and manifest.json fetched from private staging release 428902203 by numeric asset id (signed-URL redirect followed without the auth header); extract assets train/eval/holdout CSVs + meta.json + quality.json at manifest digests. Worker server 173516828 destroyed 10:43:43Z.",
-   "server_id": 173516828,
-   "server_type": "cpx32",
-   "reservation_eur": "0.24",
-   "bundle": "assembled .factory/jobs/ipo-tm-003, source_sha256 9c8377d44bb654dc019c961ee18bbf49a97616f398850b3f96cf4773e3575bcb",
-   "what": "full construction -> gate -> exact-byte accept -> eval-row references; expected outputs qualification json (gate 1.5, must pass), acceptance txt, references json, summary json, staging upload of the five artifact files",
-   "note": "Fix landed for ipo-tm-004: the expression is extracted into build.py cross_check_measured() with str-key alignment, guarded by tests/test_ipo_tm_build.py (red on a pre-fix variant reproducing KeyError: 2012, green on the fix; suite 679 tests OK locally with one unreproduced single failure in one of five full runs, recorded in STATE.md). Attempt-cap decision recorded in next_action: one mechanical post-artifact defect does not trigger the re-target-or-drop rule, but ANY further code defect on ipo-tm-004 does - no ipo-tm-005."
-  },
-  {
-   "id": "ipo-tm-004",
-   "launched_utc": "2026-10-30T10:52:44Z",
-   "status": "succeeded",
-   "parent_attempt": "ipo-tm-003",
-   "outcome": "exit 0 after 83.0 s, the FULL pipeline green for the first time: construct (all in-build assertions passed; 319,436 scored rows written) -> qualification gate 1.5.0 on the full artifact (ok, 45 results, failed_checks []) -> exact-byte --accept ('ACCEPTED: /output/extract matches the qualified artifact 2c1dade2913d0a8b') BEFORE any metric -> simple references on eval rows only (holdout sealed). Staging release 428923481; all 14 release assets digest-verified by collect, reports fetched by numeric asset id and every sha256 re-verified against the release manifest. Determinism proven: all five artifact files byte-identical to ipo-tm-003's staging digests (the cross_check fix touches only the post-write summary block); extract/summary.json plus the post-acceptance reports are the only new files. Worker 173520161 destroyed 2026-10-30T10:59:01Z (ledger deleted_at); Hetzner provider read-back 0 servers / 0 primary_ips at 2026-10-30T11:10:30Z (also covers 003's server 173516828, deleted 10:43:43Z).",
-   "evidence": ".factory/ipo-tm-004/reports/ (qualification json gate 1.5.0 ok; acceptance txt; references json; summary json; container log; release manifest) from staging release 428923481",
-   "server_id": 173520161,
-   "server_type": "cpx32",
-   "reservation_eur": "0.24",
-   "what": "full construction -> gate -> exact-byte accept -> eval-row references; all four stages ran and passed"
-  },
-  {
-   "id": "ipo-tm-baseline-001",
-   "launched_utc": "2026-10-30T14:05:48.424754+00:00",
-   "status": "succeeded",
-   "outcome": "exit 0 after 43.4 s. Runner-contract baseline on the accepted artifact, fetched from private staging release 428923481 with every sha256 verified on arrival; exact-byte --accept ACCEPTED (artifact 2c1dade2913d0a8b) before any metric; the benchmark's own train.py and validate.sh completed with CONTRACT OK and both eval AUCs = 0.6224 (validate.py recomputes independently via predict_proba). No agent loop, no holdout read. Uploaded to private staging release 429107092; reports collected and digest-verified.",
-   "evidence": ".factory/ipo-tm-baseline-001/reports/output/baseline_result.json and logs; jobs/ipo-tm-baseline-001.json (ledger); bundle candidates/ipo-trademark-registration-outcome/baseline/bundle.json",
-   "server_id": 173546680,
-   "server_type": "cx23",
-   "reservation_eur": "0.06",
-   "bundle": "candidates/ipo-trademark-registration-outcome/baseline/bundle.json",
-   "what": "runner-contract baseline on the accepted artifact: re-accept fetched bytes, materialize the runner workdir (public train+eval only), run the benchmark's own train.py and validate.sh unmodified, record both eval AUCs",
-   "note": "release-track work on the accepted artifact (no construction); the comparison against the construction references is made after this job returns, never inside it"
-  },
-  {
-   "id": "ipo-tm-diag-001",
-   "launched_utc": "2026-10-30T14:18:09.007452+00:00",
-   "status": "succeeded (exit 0) but the paired-bootstrap interval block is INVALID - a diagnosed resampler defect; those intervals must not be quoted",
-   "outcome": "exit 0 after 78.3 s. Fetched the accepted artifact from private staging release 428923481 (every sha256 verified on arrival); exact-byte --accept ACCEPTED (2c1dade2913d0a8b) before any metric; the benchmark's own validate.sh completed with CONTRACT OK; per-row predict_proba preserved. VALID OUTPUT: the second-implementation (pandas) re-derivation replicated all 10 recorded reference figures from ipo-tm-004 and the baseline (all_match true: nice_class_rate 0.542050, mark_type_rate 0.564986, owner_country_rate 0.519064, calendar_month_rate 0.497175, category_rate 0.503065, series_flag_rate 0.521254, majority accuracy 0.839885, per-year nice_class 2013/2014, full-model 0.6224); model eval AUC 0.6224 confirmed four ways (sklearn 0.622376, midrank 0.6223756, train.py print, validate.py recompute); per-filing-year AUC/Brier recorded (2013: AUC 0.62328 / Brier 0.13099 / rate 0.840905; 2014: AUC 0.62160 / Brier 0.13250 / rate 0.83896). INVALID OUTPUT: the three paired row-level bootstrap intervals. The pre-fix resampler built weights with np.bincount(idx, weights=y): weights pair with DRAW POSITIONS, so the label of position k was added to drawn row idx[k], scrambling label-row alignment and collapsing every AUC difference to noise (means ~1e-4 against observed gaps ~5.7e-2). The pre-fix script had no alignment invariant, so exit 0 did not certify the intervals. Fix staged by the 14:2xZ session and committed with this change: counts-based weights (each drawn row carries its own label) plus a resampler_alignment_ok invariant that refuses exit 0 unless every bootstrap mean centers on its observed gap; red/green mirror test tests/test_ipo_tm_diag.py (4/4 pass on the coordinator, pure-Python mirror).",
-   "evidence": ".factory/ipo-tm-diag-001/reports/output/diag_result.json and container.log; jobs/ipo-tm-diag-001.json (ledger); bundle candidates/ipo-trademark-registration-outcome/diag/bundle.json; uploaded to private staging release 429120865 (includes per_row_scores.csv, asset 692357266, 5,641,986 B, sha256 380756fcacfbe5d4c57563b0580a4823e2833d9202ad1eb162db61a00ae01101)",
-   "server_id": 173548479,
-   "server_type": "cx23",
-   "reservation_eur": "0.06",
-   "bundle": "candidates/ipo-trademark-registration-outcome/diag/bundle.json",
-   "what": "bounded per-row diagnostic on the accepted artifact: re-accept fetched bytes, validate.sh, per-row predict_proba, second-implementation reference replication, model-vs-reference paired bootstrap intervals, per-filing-year figures",
-   "note": "worker destroyed 2026-10-30T14:27:08Z; Hetzner provider read-back 0 servers / 0 primary IPs at 14:39Z. The single permitted recovery for this attempt chain - relaunch as ipo-tm-diag-002 with the fixed diag.py - is handed to advancement (the follow-up runner's wall clock could not fit a blocking relaunch plus close-out); the same-job-source staging release 428923481 and its digests are unchanged and named in diag/job.json."
-  },
-  {
-   "id": "ipo-tm-diag-002",
-   "launched_utc": "2026-10-30T18:06:59Z",
-   "status": "succeeded",
-   "outcome": "exit 0 after 93.6 s; the fixed diag.py's own clean gate all green: --accept ACCEPTED 2c1dade2913d0a8b before the first metric, runner files unmodified, 10/10 second-implementation replication, resampler_alignment_ok true, all three paired intervals valid and excluding zero",
-   "what": "the single permitted recovery relaunch of ipo-tm-diag-001 with the fixed diag.py (counts-based bootstrap weights; resampler_alignment_ok invariant required for exit 0): same accepted artifact fetched from staging 428923481, same construct order, same 150-resample seed-31 protocol; produced the model-vs-reference paired intervals diag-001 could not",
-   "evidence": ".factory/ipo-tm-diag-002/reports/output/diag_result.json (sha256 d41d7b0ce318c113... per ledger, fetched and re-hashed) + container.log + accept/validate/materialize logs; jobs/ipo-tm-diag-002.json (ledger); source bundle sha256 7d6663e0db96c9b4...; uploaded to private staging release 429342825, which preserves per_row_scores.csv (asset 692973148, byte-identical to diag-001's 692357266)",
-   "server_id": 173582959,
-   "server_type": "cx23",
-   "reservation_eur": "0.06",
-   "bundle": "candidates/ipo-trademark-registration-outcome/diag/bundle.json",
-   "note": "worker destroyed 2026-10-30T18:26:01Z after verified collection; Hetzner provider read-back 0 servers / 0 primary IPs at 18:26Z. October conservative reservations now EUR 11.74 of 20. The diag attempt chain is closed: diag-001's intervals invalid (recorded), diag-002 valid - no further diagnostic retry is authorized or needed."
-  }
- ],
- "updated_at": "2026-10-30T18:56:00Z",
- "qualification": {
-  "qualified_at": "2026-10-30, ipo-tm-004 container run (job created 10:52:44Z, elapsed 83.0 s, collected 2026-10-30T10:57:49Z per jobs/ipo-tm-004.json)",
-  "gate_version": "1.5.0",
-  "job": "ipo-tm-004",
-  "result": "passed; 0 failed checks of 45 on the full artifact on the worker (leakage incl. declared high-cardinality identifiers, timing filing-instant retrospective single-snapshot contract, splits disjoint with both classes in every window, runner contract); exact-byte --accept ACCEPTED 2c1dade2913d0a8b before the first metric",
-  "artifact_version": "2c1dade2913d0a8b643c89e628095a18e03223a6167beb9363316389486a544d",
-  "report": ".factory/ipo-tm-004/reports/file-0007-part-0000 (qualification-ipo-trademark-registration-outcome.json)"
- },
- "artifacts": [
-  {
-   "artifact_version": "2c1dade2913d0a8b643c89e628095a18e03223a6167beb9363316389486a544d",
-   "digest_of": "sha256 over train/eval/holdout CSVs + meta.json + quality.json (gate 1.5.0 artifact_version)",
-   "repo": "earino/dataset-factory-staging",
-   "tag": "job-ipo-tm-004",
-   "release_id": 428923481,
-   "gate_version": "1.5.0",
-   "accepted": "exact-byte --accept on the worker: 'ACCEPTED: /output/extract matches the qualified artifact 2c1dade2913d0a8b'",
-   "job": "ipo-tm-004",
-   "source_snapshot": {
-    "url": "https://assets.publishing.service.gov.uk/media/5a82e5f4e5274a2e87dc387d/opendatadomestic.zip",
-    "bytes": 63238846,
-    "sha256": "3b6063bed36a78e8a04f10a5383f2881f4072a1be13e706a81ab097fb56ee571",
-    "last_modified": "2018-02-13T13:19:48Z"
-   },
-   "splits": {
+  "split_strategy": "Cohort split on filing year (disjoint calendar-year windows, both classes in every window; scored rows exclude censored marks): train 2010-2012, eval 2013-2014, holdout 2015-2016. Counts CORRECTED 2026-10-30 by probe_reconcile_pipe_rows.py (see measurements.pipe_row_reconciliation_2026_10_30): train 106,990 scored rows / 92,668 pos / 14,322 neg / 21 censored; eval 97,274 / 81,699 pos / 15,575 neg / 172 censored; holdout 115,172 / 99,385 pos / 15,787 neg / 809 censored. The original 2026-10-27 table (eval 97,258 / 81,689; holdout 115,130 / 99,345) was a probe-measurement error: probe_aggregate.py read the 94 embedded-pipe rows at shifted positions and under-counted cohorts 2013-2016 by exactly the 58 recovered in-window pipe rows.",
+  "splits": {
     "train": {
-     "rows": 106990,
-     "positives": 92668
+      "filed_years": "2010-2012",
+      "rows": 106990,
+      "negatives": 14322,
+      "negative_rate": 0.1339,
+      "censored_excluded": 21
     },
     "eval": {
-     "rows": 97274,
-     "positives": 81699
+      "filed_years": "2013-2014",
+      "rows": 97274,
+      "negatives": 15575,
+      "negative_rate": 0.1601,
+      "censored_excluded": 172
     },
     "holdout": {
-     "rows": 115172,
-     "positives": 99385
+      "filed_years": "2015-2016",
+      "rows": 115172,
+      "negatives": 15787,
+      "negative_rate": 0.1371,
+      "censored_excluded": 809
+    },
+    "per_year": {
+      "2010": {
+        "n": 30372,
+        "pos": 27181,
+        "neg": 3187,
+        "cens": 4
+      },
+      "2011": {
+        "n": 36364,
+        "pos": 31015,
+        "neg": 5338,
+        "cens": 11
+      },
+      "2012": {
+        "n": 40275,
+        "pos": 34472,
+        "neg": 5797,
+        "cens": 6
+      },
+      "2013": {
+        "n": 46362,
+        "pos": 38928,
+        "neg": 7365,
+        "cens": 69
+      },
+      "2014": {
+        "n": 51084,
+        "pos": 42771,
+        "neg": 8210,
+        "cens": 103
+      },
+      "2015": {
+        "n": 54300,
+        "pos": 46169,
+        "neg": 7953,
+        "cens": 178
+      },
+      "2016": {
+        "n": 61681,
+        "pos": 53216,
+        "neg": 7834,
+        "cens": 631
+      }
+    },
+    "independence": "Each row is one distinct application decision; no entity repetition within the scored set. Positives (never-registered) arrive as 3,187-8,206 per year spread across all filing months - no storm-day-style clustering. 2017+ cohorts are out of eligibility: 16,386/75,024 still censored at snapshot.",
+    "counts_corrected_2026_10_30": "aligned with measurements.pipe_row_reconciliation_2026_10_30 and the ipo-tm-003/004 in-build assertions; the old probe table (eval 97,258 / holdout 115,130) was a shifted-read measurement error"
+  },
+  "measurements": {
+    "zip_shape": {
+      "url": "https://assets.publishing.service.gov.uk/media/5a82e5f4e5274a2e87dc387d/opendatadomestic.zip",
+      "http_bytes": 63238846,
+      "last_modified": "2018-02-13T13:19:48Z",
+      "sha256": "3b6063bed36a78e8a04f10a5383f2881f4072a1be13e706a81ab097fb56ee571",
+      "member": "OpenDataDomestic.txt",
+      "uncompressed_bytes": 817350108,
+      "encoding": "UTF-16LE, pipe-separated (the publisher's page says tab-separated; the measured delimiter is '|')",
+      "columns": 62
+    },
+    "full_file_aggregate_2026_10_27": {
+      "rows_seen": 1189005,
+      "distinct_marks": 1149248,
+      "field_count_distribution": {
+        "62": 1188911,
+        "63": 76,
+        "64": 15,
+        "65": 3
+      },
+      "rows_with_ne_62_fields": 94,
+      "owner_duplicate_rows": 16892,
+      "blank_or_bad_filed_rows": 53,
+      "sortedness_violations": 3,
+      "neg_status_with_regdate_rows": 10,
+      "pos_with_status_outside_lapsed_set": 239,
+      "ir_zip_bytes": 6155443,
+      "ir_zip_last_modified": "2018-02-13T08:46:44Z"
+    },
+    "publisher_crosscheck": {
+      "product": "IPO facts and figures - Trade mark data 2015-2016 (Trade_marks_2016.xlsx, Section 'Summary of trade mark activity', National UK applications)",
+      "url": "https://assets.publishing.service.gov.uk/media/5a74c648e5274a3f93b48b43/Trade_marks_2016.xlsx",
+      "published_national_applications": {
+        "2012": 40238,
+        "2013": 46362,
+        "2014": 51016,
+        "2015": 54320,
+        "2016": 61681
+      },
+      "measured_distinct_marks": {
+        "2012": 40275,
+        "2013": 46355,
+        "2014": 51075,
+        "2015": 54291,
+        "2016": 61648
+      },
+      "relative_difference": "+0.09% / -0.02% / +0.12% / -0.05% / -0.05% - register fidelity corroborated within 0.12% every year"
+    },
+    "extraction_cost": {
+      "requests": "1 anonymous GET for the whole source (no paging, no auth)",
+      "bytes": 63238846,
+      "wall_seconds_coordinator": 5.1,
+      "machine_class": "coordinator (1.9 GiB RAM, 4 vCPU), streaming zlib + UTF-16 pass with no data retained",
+      "note": "The full aggregate pass (1,189,005 rows parsed, deduped, classified) ran twice with consistent results; construction on a worker is single-file and trivial."
+    },
+    "fixtures": [
+      {
+        "mark": "UK00000000001",
+        "name": "BASS & Co's PALE ALE",
+        "filed": "1876-01-01",
+        "snapshot_verdict": "Registered (Registered date 1876-01-01 set)",
+        "external_check": "The first UK trade mark, widely documented; in-file row matches the known identity - register fidelity at the file head."
+      },
+      {
+        "mark": "UK00003171385",
+        "name": "Brexit",
+        "filed": "2016-06-25",
+        "snapshot_verdict": "Appealed, no Registered date -> CENSORED by the label rule (2016 cohort: 631/61,648 = 1.02% censored)",
+        "external_check": "Live register (trademarks.ipo.gov.uk, read 2026-10-27 in the supported browser; plain client gets 403) shows Status: Refused - the censored direction resolved negative, confirming the exclusion avoided scoring an unresolved case."
+      },
+      {
+        "mark": "UK00003041794",
+        "name": "ALL NATURAL FRUITY V",
+        "filed": "2014-02-11",
+        "snapshot_verdict": "Application Published 2017-12-22 (34 months after filing), no Registered date -> CENSORED",
+        "external_check": "In-file evidence for why censoring (not negative labelling) is required for long-examination tails."
+      }
+    ],
+    "as_of_policy": {
+      "vintage": "Single frozen snapshot, Last-Modified 2018-02-13, sha256-pinned. The publisher's own documentation warns: 'Online registers are dynamic and alter as the trade marks' status changes. As this data is a snapshot, it may not be directly comparable with official publications' - the record applies the stricter reading and claims only snapshot-vintage features.",
+      "coverage_note_stale": "The explained-document's coverage section says filings earlier than 31 August 2016; the measured max filing date in the Feb-2018 file is January 2018 (2017 cohort n=75,024; 2018 January n=6,221) - the published cutoff is stale, the file is richer. Eligibility still ends at 2016-12-31 filings because 2017+ cohorts are too censored to score (16,386/75,024).",
+      "feature_vintage_caveat": "Owner Name/Postcode/Region/Country and the class columns are snapshot-vintage (assignment can change ownership post-filing; classes can be narrowed). Declared limitation; robustness variant = drop owner fields, recorded as a construction decision."
+    },
+    "parse_hazards": [
+      "94 rows carry embedded pipes inside Mark Text (76x63 fields, 15x64, 3x65) - right-anchored parsing (Class45..Class1 from the right, then the 17 leading fields) or exclusion-with-count; 53 rows have blank/invalid Filed; 3 rows are shifted international-registration clones (country values like 'Ireland'/'Switzerland' appearing in the status position).",
+      "10 rows carry a negative status with a Registered date set - the label rule keys on the Registered date (positive) and the count is asserted in-build.",
+      "239 rows have a Registered date with a status outside the registered-then-lapsed set - counted bucket, rule asserted in-build.",
+      "Statuses Deleted (196 marks 2010-2016), Deemed Not Filed (2), Appealed/Appealable (306 in 2017, few earlier) are NOT in the publisher's documented 16-value status table - all fall in the censored bucket by the label rule; construction asserts the per-cohort counts."
+    ],
+    "dedup_key_reconciliation_2026_10_30": {
+      "probe": "coordinator source-metadata pass over the pinned snapshot (full-file counts only; no panel, no labels, no model)",
+      "finding": "raw-string dedup key (stripped mark number) reproduces the discovery cohort table exactly: per-year n/pos/neg/cens 2010-2016 identical to full_file_aggregate_2026_10_27; the discovery probe deduped by parsed integer, which silently skipped the 22,812 letter-suffixed series sub-marks (e.g. UK0000000052A/B) out of dedup/distinct counting",
+      "data_rows": 1189004,
+      "distinct_marks_string_key": 1172043,
+      "distinct_marks_integer_key": 1149248,
+      "dup_rows_string_key": 16909,
+      "dup_rows_integer_key": 16892,
+      "letter_suffix_rows": 22812,
+      "letter_suffix_dup_rows": 17,
+      "blank_or_bad_filed_data_rows": 52,
+      "neg_with_regdate_eligible_2010_2016": 8,
+      "neg_with_regdate_post2010_population": 10,
+      "field_count_distribution_data_rows": {
+        "62": 1188910,
+        "63": 76,
+        "64": 15,
+        "65": 3
+      },
+      "wall_s": 5.0,
+      "consequence": "construction dedups on the stripped mark-number string (first occurrence); all in-build assertions target the string-key numbers, which equal the recorded cohort table"
+    },
+    "pipe_row_reconciliation_2026_10_30": {
+      "probe": "candidates/ipo-trademark-registration-outcome/probe_reconcile_pipe_rows.py",
+      "evidence": "candidates/ipo-trademark-registration-outcome/ipo_tm_reconciliation.json",
+      "verdict": "RECONCILIATION CLOSED; the build's right-anchored recovery is the correct reading; the frozen EXPECTED table was a probe-measurement error",
+      "what_was_measured": "Over the same sha256-pinned snapshot (3b6063be...): pass A reproduces the frozen ipo_tm_aggregates.json exactly (all numeric keys), proving the old table's provenance; pass C (build.py's exact pipeline, cross-checked against an imported build.iter_records) matches every number the ipo-tm-002 worker measured: data rows 1,189,004, distinct 1,172,095, dup 16,909, letter-suffixed 22,812/17, blank/bad-filed 34, neg_with_regdate 8 eligible / 10 post2010, per-year cohorts. Per-row attribution closes every delta exactly: +58 scored rows = the 58 recovered pipe rows filed 2013-2016 (2013 +5 pos +2 neg; 2014 +5 pos +4 neg; 2015 +9 pos; 2016 +31 pos +2 neg); -18 blank/bad-filed = pipe rows whose shifted read ('No'x11/'Yes'x4/'Word'x2/'Figurative'x1) failed the 4-digit check; the remaining pipe rows were excluded via bogus year keys ('0'x67, '2'x6, '3'x2, '5'x1) or int-key dups (x2); 17 non-pipe diffs are letter-suffixed repeated-owner rows filed 1928-2003 (out of window, zero cohort effect). The handoff's '3 unparseable (3/5) filed rows' was the same shifted-read artifact (UK00003033672/UK00003112662/UK00003154878, all recovered with parseable dates); the correct-column unparseable count is 0.",
+      "correctness_evidence": "All 94 recovered rows: Status in the publisher's documented vocabulary 94/94 (shifted status reads: 0/94 - they read Country/Mark-Type values); recovered Filed dates parse 94/94; class columns binary 94/94. Corrected cohorts 2013 (46,362) and 2016 (61,681) now equal the IPO workbook's published National applications EXACTLY (old table was low by exactly the mis-read pipe rows).",
+      "scope": "Aggregate counts only; no feature panel, no aligned labels, no model, no AUC."
+    },
+    "references_2026_10_30_ipo_tm_004": {
+      "source": "worker job ipo-tm-004 (references json), post-acceptance, eval-only, holdout sealed",
+      "rows": 97274,
+      "positives": 81699,
+      "required_comparator_nice_class_rate": {
+        "eval_auc": 0.542050096312312
+      },
+      "mark_type_rate": {
+        "eval_auc": 0.5649860521366877,
+        "note": "dominant simple reference: beats nice_class_rate with paired mean -0.023071, CI95 [-0.02933, -0.017299] excluding zero - the cheapest comparator a model must beat"
+      },
+      "owner_country_rate": {
+        "eval_auc": 0.5190639759221086
+      },
+      "calendar_month_rate": {
+        "eval_auc": 0.49717530762266227
+      },
+      "category_rate": {
+        "eval_auc": 0.5030650964271485
+      },
+      "series_flag_rate": {
+        "eval_auc": 0.5212537612864133
+      },
+      "majority_class_accuracy_this_split": 0.8398852725291445,
+      "persistence": "not_applicable (recorded: every scored row is a new application; no prior observation of the same entity exists at the filing instant)",
+      "global_rate": "degenerate constant control, no ranking information",
+      "per_filing_year_eval_nice_class_auc": {
+        "2013": 0.5412071590589789,
+        "2014": 0.5428658105024148
+      },
+      "prevalence": "train 0.866137 vs eval 0.839885 (prevalence shift recorded; per-year AUC/Brier in the references json)",
+      "runner_model_eval_auc": 0.6224,
+      "runner_model_note": "measured by worker job ipo-tm-baseline-001 (runner-contract baseline, 2026-10-30): the benchmark's own train.py and validate.py ran unmodified on the re-accepted artifact after exact-byte --accept; validate.py's independent predict_proba recompute printed the same 4-decimal figure. The model-vs-reference paired intervals are the diag job's (ipo-tm-diag-001), not this run's."
+    },
+    "runner_baseline_2026_10_30_ipo_tm_baseline_001": {
+      "source": "worker job ipo-tm-baseline-001 (baseline_result.json + logs, collected and sha256-verified from private staging release 429107092)",
+      "order": "fetch the five artifact files from staging 428923481 (every sha256 verified on arrival) -> exact-byte --accept against the gate's own ipo-tm-004 report (ACCEPTED, artifact 2c1dade2913d0a8b) -> materialize the runner workdir (public train+eval only; holdout never copied into a workdir) -> the benchmark's own train.py and validate.sh, both unmodified (digests verified against the read-only clone)",
+      "contract_ok": true,
+      "eval_auc_train_py": 0.6224,
+      "eval_auc_validate_py_independent_recompute": 0.6224,
+      "accepted_before_scoring": true,
+      "accepted_artifact_version": "2c1dade2913d0a8b",
+      "runner_files_unmodified": true,
+      "dependencies": {
+        "python": "3.13.18",
+        "pandas": "2.3.3",
+        "numpy": "2.5.4",
+        "xgboost": "3.4.1",
+        "scikit-learn": "1.9.1"
+      },
+      "elapsed_seconds": 43.4,
+      "scope": "runner-contract baseline only; eval rows only (97,274); no agent loop; the holdout was never read and stays sealed",
+      "evidence": ".factory/ipo-tm-baseline-001/reports/output/ (baseline_result.json, train.log, validate.log, accept.log, dependency-versions.txt), all re-hashed to the release manifest digests"
+    },
+    "diag_2026_10_30_ipo_tm_diag_001": {
+      "source": "worker job ipo-tm-diag-001 (diag_result.json + logs, collected and sha256-verified from private staging release 429120865)",
+      "order": "fetch the five artifact files from staging 428923481 (every sha256 verified on arrival) -> exact-byte --accept against the gate's own ipo-tm-004 report (ACCEPTED, artifact 2c1dade2913d0a8b) -> validate.sh CONTRACT OK -> per-row predict_proba (validate.py's exact call) -> pandas re-derivation of every reference -> paired row-level bootstrap (150 resamples, seed 31)",
+      "accepted_before_scoring": true,
+      "accepted_artifact_version": "2c1dade2913d0a8b",
+      "runner_files_unmodified": true,
+      "replication_second_implementation": "10/10 recomputed figures match the recorded ipo-tm-004/baseline values exactly (see jobs entry); measured agreement, not assumed",
+      "model_eval_auc": {
+        "sklearn": 0.622376,
+        "midrank": 0.622375603890859,
+        "train_py_printed": 0.6224,
+        "validate_log": 0.6224,
+        "eval_brier": 0.13178109454618642
+      },
+      "observed_gaps_point_estimates": {
+        "model_minus_mark_type_rate": 0.05739,
+        "model_minus_nice_class_rate": 0.080326,
+        "model_minus_calendar_month_rate": 0.1252,
+        "uncertainty": "NOT VALIDLY MEASURED YET: the paired-bootstrap intervals this job produced are invalid (resampler defect below); quote the point gaps only with this caveat until ipo-tm-diag-002 returns valid intervals"
+      },
+      "per_filing_year": {
+        "2013": {
+          "rows": 46293,
+          "positive_rate": 0.840905,
+          "model_auc": 0.6232809840033328,
+          "model_brier": 0.1309852287559413,
+          "nice_class_rate_auc": 0.5412071590589789,
+          "mark_type_rate_auc": 0.5638871641178422,
+          "calendar_month_rate_auc": 0.5084582789568306
+        },
+        "2014": {
+          "rows": 50981,
+          "positive_rate": 0.83896,
+          "model_auc": 0.6215952653953407,
+          "model_brier": 0.1325037758399628,
+          "nice_class_rate_auc": 0.5428658105024148,
+          "mark_type_rate_auc": 0.5659882797634777,
+          "calendar_month_rate_auc": 0.48708237601427834
+        }
+      },
+      "defect_paired_intervals": "np.bincount(idx, weights=y) pairs weights with draw positions, not drawn rows: label-row alignment scrambled, every AUC difference collapsed to noise (bootstrap means ~1e-4 against observed gaps ~5.7e-2; the intervals [-0.0048, 0.0047] etc. in diag_result.json are noise and carry no information). The pre-fix script exited 0 because it had no alignment invariant.",
+      "fix_committed": "diag/diag.py rebuilt (sha256 f30347a64221..., 26,074 B): counts = np.bincount(idx, minlength=n); w_pos = counts * y - each drawn row carries its own label; resampler_alignment_ok invariant (|bootstrap mean - observed gap| < 0.05 for every comparison) added to the exit-0 condition; tests/test_ipo_tm_diag.py mirrors the fixed and defective resamplers in pure Python (fixed preserves the observed gap, defective destroys it) - 4/4 pass locally; the numpy path itself is guarded on the worker",
+      "clustering_limitation": "no dependence cluster is measurable from the shipped columns (tm_number unique per row, no owner or series identity): intervals are row-level only - a limitation, not independence",
+      "scope": "diagnostic only: eval split, one model configuration, no re-tuning, no agent loop; the holdout was never read and stays sealed"
+    },
+    "diag_2026_10_30_ipo_tm_diag_002": {
+      "source": "worker job ipo-tm-diag-002 (the single permitted recovery relaunch of ipo-tm-diag-001 with the fixed diag.py, sha256 f30347a64221): diag_result.json + logs collected and sha256-verified against the job ledger from private staging release 429342825 (10 assets, fetched files re-hashed locally; per_row_scores.csv preserved in the release, not fetched to the coordinator)",
+      "order": "fetch the five artifact files from staging 428923481 (every sha256 verified on arrival, 59,738,122 B, 0 failures) -> exact-byte --accept against the gate's own ipo-tm-004 report (ACCEPTED, artifact 2c1dade2913d0a8b, BEFORE any metric) -> materialize public train+eval only (holdout never copied) -> validate.sh CONTRACT OK -> per-row predict_proba -> pandas second-implementation reference replication -> paired row-level bootstrap with counts-based weights (150 resamples, seed 31)",
+      "accepted_before_scoring": true,
+      "accepted_artifact_version": "2c1dade2913d0a8b",
+      "runner_files_unmodified": true,
+      "replication_second_implementation": "10/10 recomputed figures match the recorded ipo-tm-004/baseline values exactly (all_match true)",
+      "model_eval_auc": {
+        "sklearn": 0.622376,
+        "midrank": 0.622375603890859,
+        "train_py_printed": 0.6224,
+        "validate_log": 0.6224,
+        "eval_brier": 0.13178109454618642
+      },
+      "observed_gaps_point_estimates": {
+        "model_minus_mark_type_rate": 0.05739,
+        "model_minus_nice_class_rate": 0.080326,
+        "model_minus_calendar_month_rate": 0.1252
+      },
+      "paired_intervals_valid": {
+        "model_vs_mark_type_rate": {
+          "mean_difference": 0.05731,
+          "ci95_low": 0.053257,
+          "ci95_high": 0.060546,
+          "interval_excludes_zero": true,
+          "note": "dominant simple reference (mark_type_rate AUC 0.5650): the cheapest comparator a model must beat"
+        },
+        "model_vs_nice_class_rate": {
+          "mean_difference": 0.080381,
+          "ci95_low": 0.074786,
+          "ci95_high": 0.086192,
+          "interval_excludes_zero": true,
+          "note": "required comparator (nice_class_rate AUC 0.5421)"
+        },
+        "model_vs_calendar_month_rate": {
+          "mean_difference": 0.125036,
+          "ci95_low": 0.117361,
+          "ci95_high": 0.13153,
+          "interval_excludes_zero": true,
+          "note": "calendar control (calendar_month_rate AUC 0.4972)"
+        }
+      },
+      "resampler_alignment_ok": true,
+      "resampler_alignment_evidence": "every bootstrap mean centers on its observed gap (0.05731 vs 0.05739; 0.080381 vs 0.080326; 0.125036 vs 0.1252), the invariant that now gates exit 0 - unlike ipo-tm-diag-001, whose positional-weight defect collapsed the means to ~1e-4",
+      "determinism_cross_check": "per_row_scores.csv is byte-identical to ipo-tm-diag-001's (sha256 380756fcacfbe5d4c57563b0590a4823e2833d9202ad1eb162db61a00ae01101, 5,641,986 B, assets 692357266 / 692973148): the fix touches only the bootstrap resampler, not the model fit or the rate tables; accept.log, materialize.log, pip-install.log and dependency-versions.txt are also byte-identical; validate.log differs only in wall-clock timings, with identical substantive lines (both AUCs 0.6224, CONTRACT OK)",
+      "per_filing_year": {
+        "2013": {
+          "rows": 46293,
+          "positive_rate": 0.840905,
+          "model_auc": 0.6232809840033328,
+          "model_brier": 0.1309852287559413,
+          "nice_class_rate_auc": 0.5412071590589789,
+          "mark_type_rate_auc": 0.5638871641178422,
+          "calendar_month_rate_auc": 0.5084582789568306
+        },
+        "2014": {
+          "rows": 50981,
+          "positive_rate": 0.83896,
+          "model_auc": 0.6215952653953407,
+          "model_brier": 0.1325037758399628,
+          "nice_class_rate_auc": 0.5428658105024148,
+          "mark_type_rate_auc": 0.5659882797634777,
+          "calendar_month_rate_auc": 0.48708237601427834
+        }
+      },
+      "per_year_interpretation": "rows sum to the 97,274 eval rows exactly (46,293 + 50,981); the model's advantage over mark_type_rate holds in both eval filing years (2013: 0.6233 vs 0.5639; 2014: 0.6216 vs 0.5660) with prevalence essentially flat (0.8409 -> 0.8390), so no within-eval structural break is visible; the eval window is only two filing years, recorded as limited by-year coverage",
+      "clustering_limitation": "no dependence cluster is measurable from the shipped columns (tm_number unique per row, no owner or series identity): intervals are row-level only - a limitation, not independence",
+      "persistence_reference": "not-applicable, recorded in the construction references: every scored row is a new application, so there is no last observed label to persist",
+      "majority_class_accuracy": 0.8399,
+      "scope": "diagnostic only: eval split, one model configuration, no re-tuning, no agent loop; the holdout was never read and stays sealed",
+      "interpretation": "under this protocol the full model demonstrates headroom over every measured simple reference on identical eval rows: +0.0574 [0.0533, 0.0605] over the dominant mark_type_rate, +0.0803 [0.0748, 0.0862] over the required nice_class_rate comparator, +0.1252 [0.1174, 0.1315] over the calendar control, every paired row-level interval excluding zero; the gaps are observed differences with row-level uncertainty only (no dependence cluster measurable), one model configuration, and do not establish a bound on any other model"
     }
-   }
-  }
- ],
- "construction_script": "candidates/ipo-trademark-registration-outcome/source/build.py (streaming build, stdlib only, runs on a worker) plus source/run.sh (worker entrypoint: construct -> gate on the full artifact -> exact-byte --accept -> eval-row references) and source/score.py (reference baselines); both bundled into the ipo-tm-004 worker image"
+  },
+  "contracts": {
+    "redistribution": "SUPPORTED - Open Government Licence on the dataset's own instrument (v2 linked in section 5 of the explained document; v3 footer), class A: reuse including commercially, with attribution. Ship source terms preserved.",
+    "prediction_timing": "SUPPORTED AS A DECLARED RETROSPECTIVE TASK - the instant (filing) precedes all outcome observation; every feature is a filing-time field of one uniform 2018-02-13 vintage; no historical operational-availability claim. Owner-field vintage caveat declared.",
+    "target": "SUPPORTED - label derivable in-file from Status + Registered date; source columns excludable; censoring distinguished from observed absence and counted per cohort (the chilecompra outcome-conditioning pattern, declared with measured rates: scored population is applications resolved by snapshot; censoring 0.02%-1.02% of eligible cohorts).",
+    "split_capacity": "SUPPORTED - measured from the built, gate-1.5.0-accepted artifact: 106,990 / 97,274 / 115,172 scored rows with 14,322 / 15,575 / 15,787 negatives in disjoint filing-year windows, both classes in every window and every year.",
+    "not_a_mirror": "SUPPORTED (novelty_check verdict: differentiated) - no ML-ready UK trade-mark registration-outcome benchmark exists; adjacent prior art targets different outcomes (USPTO distinctiveness, EUTMR pairwise confusion) or is a proprietary tool (IPO Pre-Apply, Rocketeer) or aggregate statistics (facts-and-figures workbooks)."
+  },
+  "construction_handoff": {
+    "step": "On a worker: fetch the pinned zip (sha256 verify), stream-parse UTF-16LE pipe-separated with right-anchored field recovery, dedup multi-owner rows by mark number, apply eligibility (filed 2010-01-01..2016-12-31) and the label rule with per-cohort censored counts, emit one row per distinct mark with filing-time features only (mark text, class booleans + class count, category, mark type, series flag/count, owner country/region/postcode-area, filed date; Status/Published/Registered/Expired/Renewal excluded), write quality.json with evaluation_contract declaring the retrospective single-snapshot scope and the owner-vintage caveat, assert in-build: the three fixtures, the cross-check tolerance vs Trade_marks_2016.xlsx National applications (+-1%), the 94-pipe-row handling, the 10 neg_with_regdate rows, and per-split counts equal to this record's splits.",
+    "expected_artifact": "ipo-tm-001: train/eval/holdout CSVs at ~107k/97k/115k rows, meta.json, quality.json (gate 1.5 evaluation_contract), build/fixutes in source/.",
+    "success_check": "dataset-qualification gate 1.5.x passes on the full artifact on the worker, exact-byte --accept, THEN reference baselines (class-conditional rate, mark-type rate, owner-country rate, calendar month) before any model figure; the sector/class-conditional reference is the required comparator."
+  },
+  "novelty_check": {
+    "checked_at": "2026-10-27T04:29:11+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "predict trademark registration outcome machine learning",
+      "UK IPO trade mark open data snapshot benchmark Kaggle Hugging Face"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "predict trademark registration outcome machine learning",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "UK IPO trade mark open data snapshot benchmark Kaggle Hugging Face",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "predict trademark registration outcome machine learning",
+          "hits": 413386,
+          "top": [
+            "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
+            "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI",
+            "RGB and RGNIR Plastic Waste Database",
+            "Unveiling the Dynamics of Cricket: A Sports Analytics Framework for IPL Match Prediction",
+            "Trust Prediction: Use of Decision Tree in Training  & Evaluation"
+          ]
+        },
+        {
+          "query": "UK IPO trade mark open data snapshot benchmark Kaggle Hugging Face",
+          "hits": 1636659,
+          "top": [
+            "BENCHMARKING PRE-TRAINED OPEN-SOURCE LARGE LANGUAGE MODELS FOR UZBEK:  EVALUATING PERFORMANCE IN A LOW-RESOURCE SETTING ACROSS TRANSLATION,  COMPREHENSION, AND GENERATION",
+            "Searching Sage: AI-Powered Image Retrieval on a Nationwide Edge Computing Cyberinfrastructure",
+            "huggingface/datasets: 2.8.0",
+            "Token Classification",
+            "Detecting Machine-Generated Arabic Text: AraBERT\u2013LSTM for Trustworthy Low-Resource NLP"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "predict trademark registration outcome machine learning",
+          "hits": 5,
+          "top": [
+            "DOME: Recommendations for supervised machine learning validation in biology",
+            "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+            "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
+            "Active learning for data streams: a survey",
+            "Physics-Inspired Interpretability Of Machine Learning Models"
+          ]
+        },
+        {
+          "query": "UK IPO trade mark open data snapshot benchmark Kaggle Hugging Face",
+          "hits": 5,
+          "top": [
+            "Supervised Contrastive Learning for Snapshot Spectral Imaging Face Anti-Spoofing",
+            "Data Encoding for Byzantine-Resilient Distributed Optimization",
+            "Byzantine-Resilient SGD in High Dimensions on Heterogeneous Data",
+            "Constraints on dark energy from H II starburst galaxy apparent magnitude versus redshift data",
+            "Kaggle LSHTC4 Winning Solution"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'predict trademark registration outcome machine learning': 0 hit(s) - nothing notable\n- huggingface_datasets / 'UK IPO trade mark open data snapshot benchmark Kaggle Hugging Face': 0 hit(s) - nothing notable\n- zenodo_records / 'predict trademark registration outcome machine learning': 413386 hit(s) - plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database, Unveiling the Dynamics of Cricket: A Sports Analytics Framework for IPL Match Prediction, Trust Prediction: Use of Decision Tree in Training  & Evaluation\n- zenodo_records / 'UK IPO trade mark open data snapshot benchmark Kaggle Hugging Face': 1636659 hit(s) - BENCHMARKING PRE-TRAINED OPEN-SOURCE LARGE LANGUAGE MODELS FOR UZBEK:  EVALUATING PERFORMANCE IN A LOW-RESOURCE SETTING ACROSS TRANSLATION,  COMPREHENSION, AND GENERATION, Searching Sage: AI-Powered Image Retrieval on a Nationwide Edge Computing Cyberinfrastructure, huggingface/datasets: 2.8.0, Token Classification, Detecting Machine-Generated Arabic Text: AraBERT\u2013LSTM for Trustworthy Low-Resource NLP\n- arxiv_preprints / 'predict trademark registration outcome machine learning': 5 hit(s) - DOME: Recommendations for supervised machine learning validation in biology, Changing Data Sources in the Age of Machine Learning for Official Statistics, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Active learning for data streams: a survey, Physics-Inspired Interpretability Of Machine Learning Models\n- arxiv_preprints / 'UK IPO trade mark open data snapshot benchmark Kaggle Hugging Face': 5 hit(s) - Supervised Contrastive Learning for Snapshot Spectral Imaging Face Anti-Spoofing, Data Encoding for Byzantine-Resilient Distributed Optimization, Byzantine-Resilient SGD in High Dimensions on Heterogeneous Data, Constraints on dark energy from H II starburst galaxy apparent magnitude versus redshift data, Kaggle LSHTC4 Winning Solution",
+    "prior_art": [
+      "Automating Abercrombie, J. Empirical Legal Studies (Wiley, 2023); TrademarkML, TU Wien thesis (2023); MARQUES Lewis Gaze paper on AI in trademark law (2022, describing IPO Pre-Apply and Rocketeer)"
+    ],
+    "theirs": "Adjacent prior art exists but none publishes this task in ML-ready form: Automating Abercrombie (Wiley JELS) predicts USPTO inherent-distinctiveness from US office actions - different target and jurisdiction; TrademarkML (TU Wien 2023) predicts EUTMR pairwise likelihood of confusion - different target; the UK IPO Pre-Apply tool and commercial tools (Rocketeer) predict outcomes but publish no dataset, splits or scored contract; IPO facts-and-figures workbooks are aggregate counts; Kaggle/HF/Zenodo searches returned no UK trade-mark registration benchmark.",
+    "ours": "First open, ML-ready UK trade-mark registration-outcome benchmark: formulation (registered-by-snapshot from filing-time features), 2010-2016 cohort eligibility with measured censoring rules, disjoint filing-year splits (106,990/97,274/115,172 scored rows), named fixtures, and honest reference baselines, built from the only open bulk snapshot of UK trade mark applications (sha256-pinned Feb-2018 vintage).",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  },
+  "next_action": "PACKAGED AND PRIVATELY STAGED ON BOTH DESTINATIONS 2026-10-31 (v2026.10, artifact 2c1dade2913d0a8b643c89e628095a18e03223a6167beb9363316389486a544d). GitHub: private repo earino/ipo-trademark-registration-outcome, release 429672426 non-draft, tag == main == 74fbddd, 5 assets API-readback at the manifest digests, anonymous API 404. Hugging Face: private repo at tag v2026.10 == main == 8581baa1, five data files digest-verified, loading check ok. Consumer verification ipo-tm-consumer-001 ran every REPRODUCE.md command on the published bytes in a credential-free container (gate PASSED, --accept ACCEPTED, baseline 0.6224 CONTRACT OK, references equal, rebuild byte-identical); its step-9 guard defect was found, fixed and red/green-proven, with every figure verified from the collected reports. The flip to public is the operator's single remaining act: candidates/ipo-trademark-registration-outcome/pre-flip-audit-prompt.md (generated programmatically, 0 placeholders) goes to an independent auditor; the flip waits for the auditor's verdict unless the operator waives it. Nothing is public; no publication approval is recorded.",
+  "jobs": [
+    {
+      "id": "ipo-tm-001",
+      "launched_utc": "2026-10-30T03:17:20Z",
+      "status": "failed",
+      "outcome": "exit 1 after 7.3 s, construction defect: check_fixtures passes Counter() as iter_records' hazards argument (build.py line 422), so line 253 hazards[\"field_counts\"][len(fields)] += 1 subscripted the int a Counter returns for a missing key (TypeError). Pinned source fetch verified OK before the crash: 63,238,846 B, sha256 3b6063bed36a78e8a04f10a5383f2881f4072a1be13e706a81ab097fb56ee571. No artifact, gate run, acceptance or score exists.",
+      "evidence": ".factory/ipo-tm-001/reports/container.log (866 B, sha256 01abc7e380b3e31f7ca804af9eeade00ad7bdc5474dec7a8b5aa853bd1fbf871) and manifest.json (33e7e96503a8bb37e862dd60d5cbfe24f595d1d9a516b608be769f16fc9d12d8), fetched from private staging release 428619019 and re-hashed to the job record's asset digests; source.tar input bundle remains in that release at 935aaa3756e54de3b674078ec08e2b974ab49a51d6e700adde04ef8b3a9a5a31. Worker destroyed 2026-10-30T03:54:28Z, Hetzner read-back 0 servers / 0 primary IPs.",
+      "server_id": 173462544,
+      "server_type": "cpx32",
+      "reservation_eur": "0.24",
+      "bundle": "candidates/ipo-trademark-registration-outcome/source/bundle.json (assembled .factory/jobs/ipo-tm-001, source_sha256 935aaa3756e54de3b674078ec08e2b974ab49a51d6e700adde04ef8b3a9a5a31)",
+      "what": "full construction -> gate -> exact-byte accept -> eval-row references on the worker; expected outputs qualification-ipo-trademark-registration-outcome.json (gate 1.5, must pass), acceptance txt, references json, summary json, staging upload of the five artifact files",
+      "note": "build.py was syntax-checked and its parsing/classification logic mirrors the two full-file probes, but it has never executed end to end; the worker run was its first execution and the failure is diagnosed from the collected log (fresh attempt id ipo-tm-002 required for any relaunch)"
+    },
+    {
+      "id": "ipo-tm-002",
+      "launched_utc": "2026-10-30T06:10:46Z",
+      "status": "failed",
+      "parent_attempt": "ipo-tm-001",
+      "outcome": "exit 1 after 19.1 s, a NEW construction defect distinct from ipo-tm-001's: the hazards-shape fix worked (all three in-file fixtures asserted OK on the fetched bytes; parse+classify streamed all 1,189,004 rows; dup 16,909, letter-suffix and field-count tallies all matched), but assert_expectations refused the artifact: the build classifies 58 more scored rows than the frozen discovery record (eval 97,274/81,699/15,575 vs 97,258/81,689/15,569; holdout 115,172/99,385/15,787 vs 115,130/99,345/15,785), censored counts identical in every cohort, train cohorts exact, and blank/bad-filed measured 34 vs 52. Pinned source fetch verified OK first (63,238,846 B, sha256 3b6063be...). No gate run, acceptance or score exists.",
+      "diagnosis": "Root cause identified from the collected container log plus a code read of probe_aggregate.py (the script that produced the frozen EXPECTED cohort table) vs build.py: the probe and the build disagree on two pipeline choices. (a) The 94 embedded-pipe rows: probe_aggregate splits on '|' and keeps reading columns at SHIFTED positions for any row whose field count != 62 (its shift_rows_total / bad_examples counters show it never recovers them), so their filed/status/registered values are read from the wrong slots; build.py recovers them right-anchored (the publisher's last-45 class columns) and scores them correctly. (b) Dedup: the probe counts blank/bad-filed BEFORE deduplicating on the integer tm key, while build dedups first occurrence per stripped string key BEFORE the filed check - which also explains 52 vs 34 blank/bad-filed once duplicate rows with bad filed values are counted by the probe but dropped as duplicates by the build. The +58 (eval +16, holdout +42) with identical censored counts and exact train cohorts is consistent with the build scoring rows the probe mis-slotted, but the exact attribution is NOT yet measured.",
+      "evidence": ".factory/ipo-tm-002/reports/container.log (2,045 B, sha256 6ae61127bf05e6bd6c8ba7df0d58e223f878701ce4c102ca2c5496cb4b528678) and manifest.json (4,261 B, sha256 bc1dcf1377ca0b38cad565d222e557812362ab90ebf4ba7c011f5a0543fe6752), fetched from private staging release 428706741 by numeric asset id and re-hashed to the collect result's asset digests; source bundle (225,280 B, 56f6dea1...) remains in the release. Worker server 173481207 destroyed 07:08:13Z; Hetzner read-back 0 servers / 0 primary IPs (scripts/provider-inventory.py).",
+      "server_id": 173481207,
+      "server_type": "cpx32",
+      "reservation_eur": "0.24",
+      "bundle": "candidates/ipo-trademark-registration-outcome/source/bundle.json (assembled .factory/jobs/ipo-tm-002, source_sha256 56f6dea173c60d6b6d8700bd1a1e23dd99f4d53c3c0dd54ff3942dc9ec1a30b0)",
+      "what": "full construction -> gate -> exact-byte accept -> eval-row references on the worker; expected outputs qualification-ipo-trademark-registration-outcome.json (gate 1.5, must pass), acceptance txt, references json, summary json, staging upload of the five artifact files",
+      "note": "The ipo-tm-001 hazards defect is FIXED and now proven on the real snapshot: both iter_records call sites share one new_hazards() shape; tests/test_ipo_tm_build.py (4 tests) verifies the fixtures stage, the hazards shape, the pipe recovery and the classify loop on bounded synthetic rows - red on the pre-fix code (the exact ipo-tm-001 TypeError), green on the fix; full local suite 678 tests OK. Operational lesson recorded for the next session: worker status shows the SERVER record, which stays 'running' until destroy - the job result appears only via collect; poll collect (or ssh docker ps) instead of polling status."
+    },
+    {
+      "id": "ipo-tm-003",
+      "launched_utc": "2026-10-30T10:29:07Z",
+      "status": "failed",
+      "parent_attempt": "ipo-tm-002",
+      "outcome": "exit 1 after 23.1 s, and the first attempt to validate the construction end to end: with the re-derived EXPECTED table, ALL in-build assertions passed for the first time (corrected cohorts 2013-2016 exact, splits exact, three fixtures, publisher cross-check +-1%, hazards, label-source columns absent, column set exact) and all five artifact files were written to the extract (train 106,990/92,668 pos; eval 97,274/81,699; holdout 115,172/99,385). The crash came AFTER the write, in the summary-writing block: build.py's publisher cross-check comprehension looked the pinned INT year keys of PUBLISHED_NATIONAL_APPLICATIONS up in the STRING-keyed diag['per_year'] dict (KeyError: 2012), before summary.json was written. Pinned source fetch verified OK first (63,238,846 B, sha256 3b6063be...). No gate run, acceptance or score exists for this attempt; the five extract files are preserved in private staging release 428902203.",
+      "diagnosis": "A one-line latent defect in code no previous attempt had ever reached: ipo-tm-001 crashed in the fixtures stage and ipo-tm-002 in assert_expectations, both strictly before write_splits, so the summary tail of main() had never executed. The construction itself is now verified correct twice over: the coordinator reconciliation probe (probe_reconcile_pipe_rows.py, RECONCILIATION CLOSED) and this run's all-green assertions. Not a structural, timing, population or leakage defect of the kind the dataset-qualification rebuild cap exists for.",
+      "evidence": ".factory/ipo-tm-003/reports/container.log (1,751 B, sha256 a997a797a592792e157a... verified against the release manifest) and manifest.json fetched from private staging release 428902203 by numeric asset id (signed-URL redirect followed without the auth header); extract assets train/eval/holdout CSVs + meta.json + quality.json at manifest digests. Worker server 173516828 destroyed 10:43:43Z.",
+      "server_id": 173516828,
+      "server_type": "cpx32",
+      "reservation_eur": "0.24",
+      "bundle": "assembled .factory/jobs/ipo-tm-003, source_sha256 9c8377d44bb654dc019c961ee18bbf49a97616f398850b3f96cf4773e3575bcb",
+      "what": "full construction -> gate -> exact-byte accept -> eval-row references; expected outputs qualification json (gate 1.5, must pass), acceptance txt, references json, summary json, staging upload of the five artifact files",
+      "note": "Fix landed for ipo-tm-004: the expression is extracted into build.py cross_check_measured() with str-key alignment, guarded by tests/test_ipo_tm_build.py (red on a pre-fix variant reproducing KeyError: 2012, green on the fix; suite 679 tests OK locally with one unreproduced single failure in one of five full runs, recorded in STATE.md). Attempt-cap decision recorded in next_action: one mechanical post-artifact defect does not trigger the re-target-or-drop rule, but ANY further code defect on ipo-tm-004 does - no ipo-tm-005."
+    },
+    {
+      "id": "ipo-tm-004",
+      "launched_utc": "2026-10-30T10:52:44Z",
+      "status": "succeeded",
+      "parent_attempt": "ipo-tm-003",
+      "outcome": "exit 0 after 83.0 s, the FULL pipeline green for the first time: construct (all in-build assertions passed; 319,436 scored rows written) -> qualification gate 1.5.0 on the full artifact (ok, 45 results, failed_checks []) -> exact-byte --accept ('ACCEPTED: /output/extract matches the qualified artifact 2c1dade2913d0a8b') BEFORE any metric -> simple references on eval rows only (holdout sealed). Staging release 428923481; all 14 release assets digest-verified by collect, reports fetched by numeric asset id and every sha256 re-verified against the release manifest. Determinism proven: all five artifact files byte-identical to ipo-tm-003's staging digests (the cross_check fix touches only the post-write summary block); extract/summary.json plus the post-acceptance reports are the only new files. Worker 173520161 destroyed 2026-10-30T10:59:01Z (ledger deleted_at); Hetzner provider read-back 0 servers / 0 primary_ips at 2026-10-30T11:10:30Z (also covers 003's server 173516828, deleted 10:43:43Z).",
+      "evidence": ".factory/ipo-tm-004/reports/ (qualification json gate 1.5.0 ok; acceptance txt; references json; summary json; container log; release manifest) from staging release 428923481",
+      "server_id": 173520161,
+      "server_type": "cpx32",
+      "reservation_eur": "0.24",
+      "what": "full construction -> gate -> exact-byte accept -> eval-row references; all four stages ran and passed"
+    },
+    {
+      "id": "ipo-tm-baseline-001",
+      "launched_utc": "2026-10-30T14:05:48.424754+00:00",
+      "status": "succeeded",
+      "outcome": "exit 0 after 43.4 s. Runner-contract baseline on the accepted artifact, fetched from private staging release 428923481 with every sha256 verified on arrival; exact-byte --accept ACCEPTED (artifact 2c1dade2913d0a8b) before any metric; the benchmark's own train.py and validate.sh completed with CONTRACT OK and both eval AUCs = 0.6224 (validate.py recomputes independently via predict_proba). No agent loop, no holdout read. Uploaded to private staging release 429107092; reports collected and digest-verified.",
+      "evidence": ".factory/ipo-tm-baseline-001/reports/output/baseline_result.json and logs; jobs/ipo-tm-baseline-001.json (ledger); bundle candidates/ipo-trademark-registration-outcome/baseline/bundle.json",
+      "server_id": 173546680,
+      "server_type": "cx23",
+      "reservation_eur": "0.06",
+      "bundle": "candidates/ipo-trademark-registration-outcome/baseline/bundle.json",
+      "what": "runner-contract baseline on the accepted artifact: re-accept fetched bytes, materialize the runner workdir (public train+eval only), run the benchmark's own train.py and validate.sh unmodified, record both eval AUCs",
+      "note": "release-track work on the accepted artifact (no construction); the comparison against the construction references is made after this job returns, never inside it"
+    },
+    {
+      "id": "ipo-tm-diag-001",
+      "launched_utc": "2026-10-30T14:18:09.007452+00:00",
+      "status": "succeeded (exit 0) but the paired-bootstrap interval block is INVALID - a diagnosed resampler defect; those intervals must not be quoted",
+      "outcome": "exit 0 after 78.3 s. Fetched the accepted artifact from private staging release 428923481 (every sha256 verified on arrival); exact-byte --accept ACCEPTED (2c1dade2913d0a8b) before any metric; the benchmark's own validate.sh completed with CONTRACT OK; per-row predict_proba preserved. VALID OUTPUT: the second-implementation (pandas) re-derivation replicated all 10 recorded reference figures from ipo-tm-004 and the baseline (all_match true: nice_class_rate 0.542050, mark_type_rate 0.564986, owner_country_rate 0.519064, calendar_month_rate 0.497175, category_rate 0.503065, series_flag_rate 0.521254, majority accuracy 0.839885, per-year nice_class 2013/2014, full-model 0.6224); model eval AUC 0.6224 confirmed four ways (sklearn 0.622376, midrank 0.6223756, train.py print, validate.py recompute); per-filing-year AUC/Brier recorded (2013: AUC 0.62328 / Brier 0.13099 / rate 0.840905; 2014: AUC 0.62160 / Brier 0.13250 / rate 0.83896). INVALID OUTPUT: the three paired row-level bootstrap intervals. The pre-fix resampler built weights with np.bincount(idx, weights=y): weights pair with DRAW POSITIONS, so the label of position k was added to drawn row idx[k], scrambling label-row alignment and collapsing every AUC difference to noise (means ~1e-4 against observed gaps ~5.7e-2). The pre-fix script had no alignment invariant, so exit 0 did not certify the intervals. Fix staged by the 14:2xZ session and committed with this change: counts-based weights (each drawn row carries its own label) plus a resampler_alignment_ok invariant that refuses exit 0 unless every bootstrap mean centers on its observed gap; red/green mirror test tests/test_ipo_tm_diag.py (4/4 pass on the coordinator, pure-Python mirror).",
+      "evidence": ".factory/ipo-tm-diag-001/reports/output/diag_result.json and container.log; jobs/ipo-tm-diag-001.json (ledger); bundle candidates/ipo-trademark-registration-outcome/diag/bundle.json; uploaded to private staging release 429120865 (includes per_row_scores.csv, asset 692357266, 5,641,986 B, sha256 380756fcacfbe5d4c57563b0580a4823e2833d9202ad1eb162db61a00ae01101)",
+      "server_id": 173548479,
+      "server_type": "cx23",
+      "reservation_eur": "0.06",
+      "bundle": "candidates/ipo-trademark-registration-outcome/diag/bundle.json",
+      "what": "bounded per-row diagnostic on the accepted artifact: re-accept fetched bytes, validate.sh, per-row predict_proba, second-implementation reference replication, model-vs-reference paired bootstrap intervals, per-filing-year figures",
+      "note": "worker destroyed 2026-10-30T14:27:08Z; Hetzner provider read-back 0 servers / 0 primary IPs at 14:39Z. The single permitted recovery for this attempt chain - relaunch as ipo-tm-diag-002 with the fixed diag.py - is handed to advancement (the follow-up runner's wall clock could not fit a blocking relaunch plus close-out); the same-job-source staging release 428923481 and its digests are unchanged and named in diag/job.json."
+    },
+    {
+      "id": "ipo-tm-diag-002",
+      "launched_utc": "2026-10-30T18:06:59Z",
+      "status": "succeeded",
+      "outcome": "exit 0 after 93.6 s; the fixed diag.py's own clean gate all green: --accept ACCEPTED 2c1dade2913d0a8b before the first metric, runner files unmodified, 10/10 second-implementation replication, resampler_alignment_ok true, all three paired intervals valid and excluding zero",
+      "what": "the single permitted recovery relaunch of ipo-tm-diag-001 with the fixed diag.py (counts-based bootstrap weights; resampler_alignment_ok invariant required for exit 0): same accepted artifact fetched from staging 428923481, same construct order, same 150-resample seed-31 protocol; produced the model-vs-reference paired intervals diag-001 could not",
+      "evidence": ".factory/ipo-tm-diag-002/reports/output/diag_result.json (sha256 d41d7b0ce318c113... per ledger, fetched and re-hashed) + container.log + accept/validate/materialize logs; jobs/ipo-tm-diag-002.json (ledger); source bundle sha256 7d6663e0db96c9b4...; uploaded to private staging release 429342825, which preserves per_row_scores.csv (asset 692973148, byte-identical to diag-001's 692357266)",
+      "server_id": 173582959,
+      "server_type": "cx23",
+      "reservation_eur": "0.06",
+      "bundle": "candidates/ipo-trademark-registration-outcome/diag/bundle.json",
+      "note": "worker destroyed 2026-10-30T18:26:01Z after verified collection; Hetzner provider read-back 0 servers / 0 primary IPs at 18:26Z. October conservative reservations now EUR 11.74 of 20. The diag attempt chain is closed: diag-001's intervals invalid (recorded), diag-002 valid - no further diagnostic retry is authorized or needed."
+    },
+    {
+      "id": "ipo-tm-publish-001",
+      "bundle": null,
+      "evidence": "jobs/ipo-tm-publish-001.json + release/ipo-trademark-registration-outcome/DESTINATIONS.json",
+      "launched_utc": "2026-10-31",
+      "note": "source asset ids resolved by sha256 match against the staging manifest.json, not hand-copied",
+      "outcome": "succeeded: transferred 5, failures 0, 59,738,122 bytes; API readback 5 assets at manifest digests; release published non-draft 02:45:39Z, tag v2026.10 == main == 74fbddd; worker destroyed 02:43:52Z",
+      "reservation_eur": "0.04",
+      "server_id": 173657307,
+      "server_type": "cx23",
+      "status": "deleted",
+      "what": "destination-staging transfer: five accepted ipo-tm-004 assets from private staging 428923481 into private draft release 429672426 under flat names; sha256 verified on arrival and after upload"
+    },
+    {
+      "id": "ipo-tm-consumer-001",
+      "bundle": null,
+      "evidence": "jobs/ipo-tm-consumer-001.json + release/ipo-trademark-registration-outcome/DESTINATIONS.json",
+      "launched_utc": "2026-10-31",
+      "note": "step-9 guard defect found in this run and fixed: the reference-comparison heredoc lacked '|| exit 1' and mis-extracted majority_class (auc_eval null by design); every figure was verified individually from the collected reports and the fixed guard proven red/green on the coordinator; run.sh fixed",
+      "outcome": "succeeded (exit 0): PACKAGE OK (24 files), sha256sum -c OK, QUALIFICATION PASSED (2c1dade2913d0a8b), --accept ACCEPTED, baseline CONTRACT OK both AUC prints 0.6224, all 7 recorded reference figures recomputed equal (incl. majority-class accuracy 0.8398852725291445), rebuild byte-identical; collected reports at .factory/ipo-tm-consumer-001/reports/ and staging release 429681624",
+      "reservation_eur": "0.24",
+      "server_id": 173659603,
+      "server_type": "cpx32",
+      "status": "deleted",
+      "what": "fresh-environment consumer verification of the published bytes: package vs MANIFEST package_files, host-side asset fetch into the restored layout, get_dataset.py re-verification, sha256sum -c, full gate re-run, exact-byte --accept, baseline reproduce, references recompute, rebuild from source"
+    },
+    {
+      "id": "ipo-tm-hf-001",
+      "bundle": null,
+      "evidence": "jobs/ipo-tm-hf-001.json + release/ipo-trademark-registration-outcome/DESTINATIONS.json",
+      "launched_utc": "2026-10-31",
+      "note": "Hub repo created private by hf-publish.py --create --upload-small (10 small files, card from candidates/ipo-trademark-registration-outcome/card.md generated from MANIFEST.json)",
+      "outcome": "succeeded: uploads 5, skipped 0, failures 0 (59,738,122 bytes); loading check ok on all three splits (train 106,990/92,668, eval 97,274/81,699, holdout 115,172/99,385, 57 columns, label registered [0,1]); hf-publish --verify/--tag: all five digest-verified at Hub main 8581baa1, tag v2026.10 == main; worker destroyed 03:14:38Z",
+      "reservation_eur": "0.04",
+      "server_id": 173662479,
+      "server_type": "cx23",
+      "status": "deleted",
+      "what": "hf_publish: upload the five data files from the private GitHub release to the private Hub dataset repo at the manifest digests, then the documented load_dataset loading check"
+    }
+  ],
+  "updated_at": "2026-10-31T03:25:00Z",
+  "qualification": {
+    "qualified_at": "2026-10-30, ipo-tm-004 container run (job created 10:52:44Z, elapsed 83.0 s, collected 2026-10-30T10:57:49Z per jobs/ipo-tm-004.json)",
+    "gate_version": "1.5.0",
+    "job": "ipo-tm-004",
+    "result": "passed; 0 failed checks of 45 on the full artifact on the worker (leakage incl. declared high-cardinality identifiers, timing filing-instant retrospective single-snapshot contract, splits disjoint with both classes in every window, runner contract); exact-byte --accept ACCEPTED 2c1dade2913d0a8b before the first metric",
+    "artifact_version": "2c1dade2913d0a8b643c89e628095a18e03223a6167beb9363316389486a544d",
+    "report": ".factory/ipo-tm-004/reports/file-0007-part-0000 (qualification-ipo-trademark-registration-outcome.json)",
+    "splits": {
+      "train": {
+        "rows": 106990,
+        "positives": 92668,
+        "positive_rate": 0.866137
+      },
+      "eval": {
+        "rows": 97274,
+        "positives": 81699,
+        "positive_rate": 0.839885
+      },
+      "holdout": {
+        "rows": 115172,
+        "positives": 99385,
+        "positive_rate": 0.862927
+      }
+    },
+    "splits_source": "copied verbatim from the gate report's splits.non_empty evidence (release/ipo-trademark-registration-outcome/qualification.json, the ipo-tm-004 report for artifact 2c1dade2913d0a8b)"
+  },
+  "artifacts": [
+    {
+      "artifact_version": "2c1dade2913d0a8b643c89e628095a18e03223a6167beb9363316389486a544d",
+      "digest_of": "sha256 over train/eval/holdout CSVs + meta.json + quality.json (gate 1.5.0 artifact_version)",
+      "repo": "earino/dataset-factory-staging",
+      "tag": "job-ipo-tm-004",
+      "release_id": 428923481,
+      "gate_version": "1.5.0",
+      "accepted": "exact-byte --accept on the worker: 'ACCEPTED: /output/extract matches the qualified artifact 2c1dade2913d0a8b'",
+      "job": "ipo-tm-004",
+      "source_snapshot": {
+        "url": "https://assets.publishing.service.gov.uk/media/5a82e5f4e5274a2e87dc387d/opendatadomestic.zip",
+        "bytes": 63238846,
+        "sha256": "3b6063bed36a78e8a04f10a5383f2881f4072a1be13e706a81ab097fb56ee571",
+        "last_modified": "2018-02-13T13:19:48Z"
+      },
+      "splits": {
+        "train": {
+          "rows": 106990,
+          "positives": 92668
+        },
+        "eval": {
+          "rows": 97274,
+          "positives": 81699
+        },
+        "holdout": {
+          "rows": 115172,
+          "positives": 99385
+        }
+      },
+      "staged_destinations": {
+        "github": {
+          "repo": "earino/ipo-trademark-registration-outcome",
+          "release_id": 429672426,
+          "tag": "v2026.10",
+          "target_commit": "74fbdddab6f279078177cec11d496665c75af0db",
+          "private": true,
+          "verified": true
+        },
+        "huggingface": {
+          "repo": "earino/ipo-trademark-registration-outcome",
+          "revision": "v2026.10",
+          "commit": "8581baa19ac6d992be1b21b59e43fec59b36606e",
+          "private": true,
+          "verified": true
+        }
+      }
+    }
+  ],
+  "construction_script": "candidates/ipo-trademark-registration-outcome/source/build.py (streaming build, stdlib only, runs on a worker) plus source/run.sh (worker entrypoint: construct -> gate on the full artifact -> exact-byte --accept -> eval-row references) and source/score.py (reference baselines); both bundled into the ipo-tm-004 worker image",
+  "awaiting_operator": true,
+  "packaged_at": "2026-10-31T03:21:06Z"
 }

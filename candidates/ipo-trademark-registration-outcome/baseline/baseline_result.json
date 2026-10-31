@@ -1,0 +1,59 @@
+{
+  "job": "ipo-tm-baseline-001",
+  "purpose": "one baseline through the runner's existing training and validation contract, on the accepted ipo-trademark-registration-outcome artifact",
+  "artifact": {
+    "name": "ipo-trademark-registration-outcome",
+    "target": "registered",
+    "positive_label": 1,
+    "id_columns": [
+      "tm_number"
+    ],
+    "rows": {
+      "train": 106990,
+      "eval": 97274,
+      "holdout": 115172
+    },
+    "positive_rate": {
+      "train": 0.866137,
+      "eval": 0.839885,
+      "holdout": 0.862927
+    },
+    "split_description": "cohort split on filing year: train 2010-2012, eval 2013-2014, holdout 2015-2016; population is domestic applications with a parseable filing date inside a cohort window; marks whose outcome is unresolved at the frozen 2018-02-13 snapshot are censored - excluded and counted per cohort, never labelled negative"
+  },
+  "qualification_report": {
+    "bundled": "qualification.json",
+    "sha256": "33855b34580d0f6f6c1f8f70fc048ab53bb45eed4ec9cbe8bf8ceebd86a332de",
+    "gate_version": "1.5.0",
+    "gate_ok": true,
+    "gate_failed_checks": [],
+    "accepted_before_scoring": true,
+    "accepted_artifact_version": "2c1dade2913d0a8b",
+    "qualified_artifact_version": "2c1dade2913d0a8b643c89e628095a18e03223a6167beb9363316389486a544d"
+  },
+  "contract": {
+    "contract_ok": true,
+    "eval_auc_from_train_py": 0.6224,
+    "eval_auc_from_validate_py": 0.6224
+  },
+  "runner_files": {
+    "bundled_sha256": {
+      "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+      "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+      "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+    },
+    "expected_sha256": {
+      "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+      "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+      "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+    },
+    "unmodified": true
+  },
+  "dependencies": {
+    "python": "3.13.18",
+    "pandas": "2.3.3",
+    "numpy": "2.5.4",
+    "xgboost": "3.4.1",
+    "scikit-learn": "1.9.1"
+  },
+  "scope": "runner-contract baseline only; no agent loop, no holdout evaluation. Holdout stays sealed until the design is frozen."
+}
