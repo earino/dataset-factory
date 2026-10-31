@@ -11026,3 +11026,46 @@ the evidence, corrected two figures, and closed the ledger. Both jobs belong to
   suitability/), ec-state-aid-investigation-opening/probe/.
 - Next action unchanged: tw-typhoon-day-closure is READY; construction handoff to advancement as
   recorded in its record.json next_action.
+
+## 2026-10-31 10:35Z - acnc baseline triad leg verified (model trails persistence); acnc diag-001 failed at its own refusal, diagnosed and handed to advancement; both workers provider-confirmed deleted
+
+Follow-up runner 2026-10-31 10:35Z (watcher events acnc-baseline-001 + acnc-diag-001, same research
+mutex, follow-up scope only).
+
+- acnc-baseline-001 (server 173730000, EUR 0.06 reservation, 54 s) SUCCEEDED, and every stage was
+  verified from its own collected report, never from the exit code: gate --accept printed ACCEPTED for
+  artifact 70b7e7175ad45c8a before any number existed; materialize copied public train+eval only (the
+  holdout was never copied into a workdir); train.py/validate.py/validate.sh bundled sha256 == expected
+  (unmodified); train exit 0, validate exit 0, [validate] CONTRACT OK. THE TRIAD'S THIRD LEG: full model
+  eval AUC 0.6862 on the identical 80,298 eval rows where acnc-002 measured persistence_momentum 0.70061.
+  The model TRAILS the dominant simple reference by 0.0144 (and identity/history 0.68907 by 0.0029); it
+  leads persistence_flag 0.67102 by 0.0152 and calendar/size 0.56768 by 0.1185. Recorded as a DEFECT per
+  the qualification skill: no demonstrated headroom under this protocol, and the model AUC may never be
+  quoted without this comparison. All 9 fetched report files re-hashed at their ledger digests; bulk
+  evidence stays in private staging release 429858212.
+- acnc-diag-001 (server 173732153, EUR 0.06 reservation, 117 s) FAILED exit 4 - at diag.py's own refusal
+  (diag exit 3), not at infrastructure. Its earlier stages ran clean (accept ACCEPTED, materialize OK,
+  validate.sh CONTRACT OK, same eval AUC 0.6862). container.log: "reference identity_history_rate
+  produced no ranking; refusing to compare". Diagnosis - a construction defect in diag.py's SECOND
+  implementation of the identity/history reference: rate_table_second keys the train rate table by the
+  raw ABN string, but the eval lookup uses 1-tuples (ident_table.get((row["abn"],), ...), diag.py lines
+  339-341), so every eval row missed and fell back to the global train rate; the vector was constant;
+  plain_auc correctly returned None and diag.py refused to compare against a constant. The construction
+  reference (acnc-002 first implementation, AUC 0.68907 with ranking, same accepted bytes) stands.
+  What the job produced is preserved: per-row model scores for all 80,298 eval rows
+  (output/per_row_scores.csv, staging release 429864258 asset 695062437, sha256 6538079e...) plus 7
+  bounded logs fetched to .factory/acnc-diag-001/reports/, each digest-verified against the release's
+  own manifest. The model-vs-momentum paired and charity-cluster intervals were never computed - that
+  is the decisive missing evidence for the headroom verdict, and it is advancement's: fix the lookup key
+  type, add an offline red/green for rate_table_second's key type to tests/test_acnc_diag.py (the
+  current 4 tests cover only the charity-cluster resampler and pass locally), relaunch as a fresh job
+  linked to parent acnc-diag-001; the one recovery budget applies across that attempt chain.
+- tests/test_acnc_diag.py (left by the launching session, untracked until now) runs green here
+  (4 tests) and is committed with this job's work.
+- Cleanup, provider-confirmed: `worker destroy acnc-diag-001` ran at 10:34:03Z, then Hetzner read-back -
+  server 173730000 404, server 173732153 404, zero primary IPs labeled for either job. The baseline
+  worker was destroyed by the launching session at 10:20:05Z and the 404 was re-read this session.
+- Candidate record updated (jobs += acnc-baseline-001, acnc-diag-001; measurements +=
+  baseline_2026_10_31_acnc_baseline_001; next_action names advancement's repair). Unrelated uncommitted
+  work preserved untouched and excluded from this commit: ec-state-aid-investigation-opening/probe/.
+  No publication, package, tag or holdout read was performed or authorized by this event.
