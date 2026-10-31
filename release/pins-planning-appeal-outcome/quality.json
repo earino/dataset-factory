@@ -1,0 +1,617 @@
+{
+ "name": "pins-planning-appeal-outcome",
+ "built_at_utc": "2026-10-31T00:00:00Z",
+ "task": {
+  "question": "For a planning-permission-family appeal (PINS casework type 'Planning Appeal' or 'Householder (HAS)') that reaches a PINS decision, will the final decision be 'Allowed' rather than 'Dismissed', given only what is known at validation?",
+  "prediction_time": "00:00 Europe/London on the appeal's Valid Date (the date PINS validated the case; present on 100% of the 186,785 measured decided rows). All outcome events (case start, allocation, hearing/inquiry, decision) postdate the instant; measured valid->decision lag is 91-365 days for 74% of cases. Worked example (Europe/London): case 3236151, Waverley Borough Council, received 2019-08-29, validated 2019-09-12 (the instant), decided 2021-10-01 as Dismissed."
+ },
+ "target": "allowed",
+ "positive_label": 1,
+ "id_columns": [
+  "row_id"
+ ],
+ "id_columns_are_entity_keys": true,
+ "id_columns_note": "row_id = <file>:<reference number> names one decided appeal with one label; unique across the panel, asserted at construction",
+ "time_column": "valid_date",
+ "event_key_column": "valid_date",
+ "event_key_note": "an event is one distinct validation date among the positive rows (the gate's conservative date clustering); the scientifically relevant clustering is by LPA (376-379 distinct), declared in split_strategy and used for the cluster bootstrap in reporting",
+ "split_windows": {
+  "train": {
+   "start": null,
+   "end": "2020-01-01"
+  },
+  "eval": {
+   "start": "2020-01-01",
+   "end": "2022-01-01"
+  },
+  "holdout": {
+   "start": "2022-01-01",
+   "end": "2027-01-01"
+  }
+ },
+ "split_boundaries": {
+  "train": "every appeal validated before 2020-01-01 (no lower bound: long-running appeals decided 2016-2020 reach back to 2012 validations; measured range 2012-06-01..2019-12-31)",
+  "eval": "appeals validated 2020-01-01..2021-12-31 (window end exclusive)",
+  "holdout": "appeals validated 2022-01-01 onwards (the pinned edition's last decision date is 2026-10; window end exclusive)"
+ },
+ "splits": {
+  "train": "public/train.csv",
+  "eval": "public/eval.csv",
+  "holdout": "private/holdout.csv"
+ },
+ "positive_events": {
+  "train": {
+   "positives": 17048,
+   "distinct_events": 1430
+  },
+  "eval": {
+   "positives": 8469,
+   "distinct_events": 711
+  },
+  "holdout": {
+   "positives": 17705,
+   "distinct_events": 1594
+  }
+ },
+ "positive_events_note": "distinct events are distinct validation dates among positives; LPA-level clustering (positives concentrate in permissive or restrictive LPAs) is the dependence structure for intervals",
+ "features": [
+  "lpa_name",
+  "ons_lpa_code",
+  "casework_type",
+  "procedure",
+  "development_type",
+  "appeal_type_reason",
+  "appeal_reason",
+  "type_detail",
+  "link_status",
+  "valid_date",
+  "valid_year",
+  "valid_day_of_year",
+  "received_date",
+  "received_to_valid_days",
+  "area_of_site_hectares",
+  "floor_space_sqm",
+  "number_of_residences",
+  "green_belt",
+  "agricultural_holding",
+  "listed_building_setting",
+  "historic_building_grant",
+  "conservation_area",
+  "flooding_issue",
+  "aonb",
+  "sssi",
+  "lpa_decisions_prior_count",
+  "lpa_allowed_prior_count",
+  "lpa_allow_rate_prior",
+  "lpa_last_outcome",
+  "lpa_days_since_prev_case_valid"
+ ],
+ "features_documented_at": "prediction_time",
+ "shipped_columns": [
+  "row_id",
+  "lpa_name",
+  "ons_lpa_code",
+  "casework_type",
+  "procedure",
+  "development_type",
+  "appeal_type_reason",
+  "appeal_reason",
+  "type_detail",
+  "link_status",
+  "valid_date",
+  "valid_year",
+  "valid_day_of_year",
+  "received_date",
+  "received_to_valid_days",
+  "area_of_site_hectares",
+  "floor_space_sqm",
+  "number_of_residences",
+  "green_belt",
+  "agricultural_holding",
+  "listed_building_setting",
+  "historic_building_grant",
+  "conservation_area",
+  "flooding_issue",
+  "aonb",
+  "sssi",
+  "lpa_decisions_prior_count",
+  "lpa_allowed_prior_count",
+  "lpa_allow_rate_prior",
+  "lpa_last_outcome",
+  "lpa_days_since_prev_case_valid",
+  "allowed"
+ ],
+ "label_source_columns": [
+  "the publisher's Decision field (Allowed/Dismissed) and Decision Date - the label and its timing; neither ships in any split"
+ ],
+ "post_hoc_columns": [
+  "Decision Date (the outcome's date; excluded, and the reason the split key is the validation instant, not the decision year)",
+  "Inspector Name (allocation after validation; publisher warns per-inspector outcome patterns are allocation artefacts)",
+  "Start Date, Jurisdiction (mutable via recovery/derecovery), Date Recovered, Date Not Recovered Or Derecovered, Call In Date, Redetermined, Bespoke (timetable agreed after validation)",
+  "Costs Applied for Indicator (a costs application can be lodged after validation; no vintage evidence it is known at the instant)",
+  "LPA Decision Date and LPA Application Reference (carried only by the 5-year file, absent from the older file that supplies the train window - shipping either would put an all-empty column in train)",
+  "Lead Case (a joinable cross-row case identifier), Appellant, Agent, Site Address, Site Address Postcode, Data Source (PII or non-feature)"
+ ],
+ "high_cardinality_columns": [
+  "row_id"
+ ],
+ "expected_duplicate_ids": 0,
+ "external_threshold": false,
+ "measurements": [
+  {
+   "column": "area_of_site_hectares",
+   "unit": "hectares (publisher field, 'if known')",
+   "frame": "site area of the appealed development, as recorded at registration"
+  },
+  {
+   "column": "floor_space_sqm",
+   "unit": "square metres (publisher field, 'if known')",
+   "frame": "floorspace of the appealed development, as recorded at registration"
+  },
+  {
+   "column": "number_of_residences",
+   "unit": "dwellings (count, publisher field, 'if known')",
+   "frame": "number of residences in the appealed development"
+  },
+  {
+   "column": "received_to_valid_days",
+   "unit": "days (Valid Date minus Received Date)",
+   "frame": "two publisher-recorded dates of the same appeal"
+  },
+  {
+   "column": "valid_year",
+   "unit": "calendar year (integer)",
+   "frame": "year of the validation instant, Europe/London"
+  },
+  {
+   "column": "valid_day_of_year",
+   "unit": "day index within the year (1-366)",
+   "frame": "the validation instant's position in its year"
+  },
+  {
+   "column": "lpa_decisions_prior_count",
+   "unit": "count of decided cases",
+   "frame": "same-LPA s78_core decisions strictly before the instant"
+  },
+  {
+   "column": "lpa_allowed_prior_count",
+   "unit": "count of Allowed decisions",
+   "frame": "same-LPA s78_core decisions strictly before the instant"
+  },
+  {
+   "column": "lpa_allow_rate_prior",
+   "unit": "share (0-1, 6 decimals; -1.0 sentinel when no prior decided case exists)",
+   "frame": "allowed share of the same LPA's strictly-prior decided cases"
+  },
+  {
+   "column": "lpa_last_outcome",
+   "unit": "code (-1 none, 0 dismissed, 1 allowed)",
+   "frame": "most recent same-LPA decided case strictly before the instant"
+  },
+  {
+   "column": "lpa_days_since_prev_case_valid",
+   "unit": "days",
+   "frame": "gap to the same LPA's previous validated case"
+  },
+  {
+   "column": "green_belt",
+   "unit": "binary indicator (1/0, '' when the publisher left the field blank)",
+   "frame": "publisher site descriptor 'Site Green Belt', recorded at registration"
+  },
+  {
+   "column": "agricultural_holding",
+   "unit": "binary indicator (1/0, '' when the publisher left the field blank)",
+   "frame": "publisher site descriptor 'Agricultural Holding', recorded at registration"
+  },
+  {
+   "column": "listed_building_setting",
+   "unit": "binary indicator (1/0, '' when the publisher left the field blank)",
+   "frame": "publisher site descriptor 'Development Affect Setting of Listed Building', recorded at registration"
+  },
+  {
+   "column": "historic_building_grant",
+   "unit": "binary indicator (1/0, '' when the publisher left the field blank)",
+   "frame": "publisher site descriptor 'Historic Building Grant Made', recorded at registration"
+  },
+  {
+   "column": "conservation_area",
+   "unit": "binary indicator (1/0, '' when the publisher left the field blank)",
+   "frame": "publisher site descriptor 'In CA Relates to CA', recorded at registration"
+  },
+  {
+   "column": "flooding_issue",
+   "unit": "binary indicator (1/0, '' when the publisher left the field blank)",
+   "frame": "publisher site descriptor 'Is Flooding an Issue', recorded at registration"
+  },
+  {
+   "column": "aonb",
+   "unit": "binary indicator (1/0, '' when the publisher left the field blank)",
+   "frame": "publisher site descriptor 'Is the site within an AONB', recorded at registration"
+  },
+  {
+   "column": "sssi",
+   "unit": "binary indicator (1/0, '' when the publisher left the field blank)",
+   "frame": "publisher site descriptor 'Is site within an SSSI', recorded at registration"
+  }
+ ],
+ "categorical_coding": {
+  "applied": false,
+  "scheme": "not applied: the worker-side probe accepted category dtypes at predict, so the publisher's string levels ship verbatim",
+  "columns": null,
+  "reason": "the worker-side minimal probe showed the verbatim predict path accepts category-dtype frames under the installed xgboost",
+  "probe_evidence": {
+   "predict_on_category_dtype": "ok",
+   "purpose": "does the verbatim benchmark train.py predict path accept category-dtype columns at predict under the installed xgboost",
+   "subtests": {
+    "fit": "fit ok",
+    "predict_seen_levels": "ok",
+    "predict_unseen_level_nan": "ok"
+   },
+   "model_config": "XGBClassifier n_estimators=10 max_depth=3 lr=0.1 hist enable_categorical=True seed 42 - the verbatim train.py configuration modulo tree size",
+   "versions": {
+    "python": "3.13.18",
+    "pandas": "2.3.3",
+    "numpy": "2.5.4",
+    "xgboost": "3.4.1"
+   },
+   "note": "verdict rejected means build.py integer-codes the nine string-categorical columns so the shipped frame is int/float/bool only; no dataset row was read and no metric computed"
+  },
+  "value_mapping_location": null
+ },
+ "timing": {
+  "prediction_instant": {
+   "kind": "event_time",
+   "period": "per-appeal validation",
+   "days_after_period_end": 0,
+   "citation": "PINS validates the appeal on the Valid Date (present on 100% of 186,785 measured decided rows, 2026-10-31 files). Every feature field is recorded from the appeal submission/registration and carries a publisher data-quality grade (Appeals Data: Data notes and guidance, GOV.UK). Received->valid is within 30 days for 85.9% of cases; valid->decision is 91-365 days for 74% (measured), so the outcome window follows the instant"
+  },
+  "features": {
+   "period": "registration (at or before the instant)",
+   "published_days_after_period_end": 0,
+   "source_kind": "administrative_record"
+  },
+  "row_selection": {
+   "latest_period_used": "the appeal's own registration record; LPA-history features read only decisions strictly earlier than the row's Valid Date",
+   "fields": [
+    "Type of Casework (s78_core prefix match)",
+    "Decision in {Allowed, Dismissed}",
+    "Received/Valid/Decision dates parseable and decision not before validation",
+    "cross-file dedup on (type, LPA, received, valid, decision date, decision)"
+   ],
+   "basis": "eligibility reads only the row's own registration fields; the outcome enters only as the binary Decision value that defines the labelled population (decided-cases-only, an outcome-conditioned population the publisher itself fixes by excluding in-progress, withdrawn and turned-away cases); no post-instant field is read for selection"
+  },
+  "observations": []
+ },
+ "evaluation_contract": {
+  "use": "retrospective_research",
+  "access": "isolated_rows",
+  "training_label_timing": "unverified",
+  "scope_note": "each row is one decided appeal whose features read the same LPA's strictly-earlier decided cases. Honest evaluation requires isolated rows - one row presented to the solver at a time - because the LPA-history features embed other rows' labels (see the declared cross-row probe). The shipped illustrative runner does NOT enforce this: it passes the whole eval feature table to the predictor in one call, so unrestricted-access scores overstate honest performance and the isolated-rows requirement is stated as a requirement, never as an enforcement claim. Labeled eval is development/validation; the holdout is the final test and stays outside evaluated agents' workspaces. Training-label timing is UNVERIFIED: the split key is the validation instant and slow cases put some training labels after the eval window's earliest instants, so no full-row availability ledger is claimed and the artifact is retrospective research only, never a certified historical forecasting setup",
+  "feature_evidence": {
+   "row_id": {
+    "source": "row key <file>:<reference number> (Case Number in the 5-year file, Older Casework Data Ref No in the older file)",
+    "availability": "identity of the row, known at the instant",
+    "status": "verified"
+   },
+   "lpa_name": {
+    "source": "the appeal's own registration record in the PINS Casework Database (bulk Excel files, 2026-10-22 edition, sha256-pinned) -> lpa_name: the publisher's LPA Name field",
+    "availability": "recorded at submission/registration and documented by the publisher with a per-field data-quality grade (Appeals Data: Data notes and guidance); the fields exist at the validation instant, an administrative record written at the event",
+    "status": "assumed",
+    "assumption": "current-snapshot vintage: values are as published in the pinned 2026-10-22 edition; the publisher revises the rolling database between editions, so no historical vintage proves the file state at past instants - the same posture the candidate record fixed for this retrospective benchmark"
+   },
+   "ons_lpa_code": {
+    "source": "the appeal's own registration record in the PINS Casework Database (bulk Excel files, 2026-10-22 edition, sha256-pinned) -> ons_lpa_code: the publisher's ONS LPA Code field",
+    "availability": "recorded at submission/registration and documented by the publisher with a per-field data-quality grade (Appeals Data: Data notes and guidance); the fields exist at the validation instant, an administrative record written at the event",
+    "status": "assumed",
+    "assumption": "current-snapshot vintage: values are as published in the pinned 2026-10-22 edition; the publisher revises the rolling database between editions, so no historical vintage proves the file state at past instants - the same posture the candidate record fixed for this retrospective benchmark"
+   },
+   "casework_type": {
+    "source": "the appeal's own registration record in the PINS Casework Database (bulk Excel files, 2026-10-22 edition, sha256-pinned) -> casework_type: the publisher's casework_type field, recorded at registration",
+    "availability": "recorded at submission/registration and documented by the publisher with a per-field data-quality grade (Appeals Data: Data notes and guidance); the fields exist at the validation instant, an administrative record written at the event",
+    "status": "assumed",
+    "assumption": "current-snapshot vintage: values are as published in the pinned 2026-10-22 edition; the publisher revises the rolling database between editions, so no historical vintage proves the file state at past instants - the same posture the candidate record fixed for this retrospective benchmark"
+   },
+   "procedure": {
+    "source": "the appeal's own registration record in the PINS Casework Database (bulk Excel files, 2026-10-22 edition, sha256-pinned) -> procedure: the publisher's procedure field, recorded at registration",
+    "availability": "recorded at submission/registration and documented by the publisher with a per-field data-quality grade (Appeals Data: Data notes and guidance); the fields exist at the validation instant, an administrative record written at the event",
+    "status": "assumed",
+    "assumption": "current-snapshot vintage: values are as published in the pinned 2026-10-22 edition; the publisher revises the rolling database between editions, so no historical vintage proves the file state at past instants - the same posture the candidate record fixed for this retrospective benchmark"
+   },
+   "development_type": {
+    "source": "the appeal's own registration record in the PINS Casework Database (bulk Excel files, 2026-10-22 edition, sha256-pinned) -> development_type: the publisher's development_type field, recorded at registration",
+    "availability": "recorded at submission/registration and documented by the publisher with a per-field data-quality grade (Appeals Data: Data notes and guidance); the fields exist at the validation instant, an administrative record written at the event",
+    "status": "assumed",
+    "assumption": "current-snapshot vintage: values are as published in the pinned 2026-10-22 edition; the publisher revises the rolling database between editions, so no historical vintage proves the file state at past instants - the same posture the candidate record fixed for this retrospective benchmark"
+   },
+   "appeal_type_reason": {
+    "source": "the appeal's own registration record in the PINS Casework Database (bulk Excel files, 2026-10-22 edition, sha256-pinned) -> appeal_type_reason: the publisher's appeal_type_reason field, recorded at registration",
+    "availability": "recorded at submission/registration and documented by the publisher with a per-field data-quality grade (Appeals Data: Data notes and guidance); the fields exist at the validation instant, an administrative record written at the event",
+    "status": "assumed",
+    "assumption": "current-snapshot vintage: values are as published in the pinned 2026-10-22 edition; the publisher revises the rolling database between editions, so no historical vintage proves the file state at past instants - the same posture the candidate record fixed for this retrospective benchmark"
+   },
+   "appeal_reason": {
+    "source": "the appeal's own registration record in the PINS Casework Database (bulk Excel files, 2026-10-22 edition, sha256-pinned) -> appeal_reason: the publisher's appeal_reason field, recorded at registration",
+    "availability": "recorded at submission/registration and documented by the publisher with a per-field data-quality grade (Appeals Data: Data notes and guidance); the fields exist at the validation instant, an administrative record written at the event",
+    "status": "assumed",
+    "assumption": "current-snapshot vintage: values are as published in the pinned 2026-10-22 edition; the publisher revises the rolling database between editions, so no historical vintage proves the file state at past instants - the same posture the candidate record fixed for this retrospective benchmark"
+   },
+   "type_detail": {
+    "source": "the appeal's own registration record in the PINS Casework Database (bulk Excel files, 2026-10-22 edition, sha256-pinned) -> type_detail: the publisher's type_detail field, recorded at registration",
+    "availability": "recorded at submission/registration and documented by the publisher with a per-field data-quality grade (Appeals Data: Data notes and guidance); the fields exist at the validation instant, an administrative record written at the event",
+    "status": "assumed",
+    "assumption": "current-snapshot vintage: values are as published in the pinned 2026-10-22 edition; the publisher revises the rolling database between editions, so no historical vintage proves the file state at past instants - the same posture the candidate record fixed for this retrospective benchmark"
+   },
+   "link_status": {
+    "source": "the appeal's own registration record in the PINS Casework Database (bulk Excel files, 2026-10-22 edition, sha256-pinned) -> link_status: the publisher's Link Status field (linked-case role recorded at registration); the Lead Case number is NOT shipped",
+    "availability": "recorded at submission/registration and documented by the publisher with a per-field data-quality grade (Appeals Data: Data notes and guidance); the fields exist at the validation instant, an administrative record written at the event",
+    "status": "assumed",
+    "assumption": "current-snapshot vintage: values are as published in the pinned 2026-10-22 edition; the publisher revises the rolling database between editions, so no historical vintage proves the file state at past instants - the same posture the candidate record fixed for this retrospective benchmark"
+   },
+   "valid_date": {
+    "source": "the appeal's own registration record in the PINS Casework Database (bulk Excel files, 2026-10-22 edition, sha256-pinned) -> valid_date: the publisher's Valid Date field - the prediction instant itself",
+    "availability": "recorded at submission/registration and documented by the publisher with a per-field data-quality grade (Appeals Data: Data notes and guidance); the fields exist at the validation instant, an administrative record written at the event",
+    "status": "assumed",
+    "assumption": "current-snapshot vintage: values are as published in the pinned 2026-10-22 edition; the publisher revises the rolling database between editions, so no historical vintage proves the file state at past instants - the same posture the candidate record fixed for this retrospective benchmark"
+   },
+   "valid_year": {
+    "source": "the appeal's own registration record in the PINS Casework Database (bulk Excel files, 2026-10-22 edition, sha256-pinned) -> valid_year: calendar year of the Valid Date",
+    "availability": "recorded at submission/registration and documented by the publisher with a per-field data-quality grade (Appeals Data: Data notes and guidance); the fields exist at the validation instant, an administrative record written at the event",
+    "status": "assumed",
+    "assumption": "current-snapshot vintage: values are as published in the pinned 2026-10-22 edition; the publisher revises the rolling database between editions, so no historical vintage proves the file state at past instants - the same posture the candidate record fixed for this retrospective benchmark"
+   },
+   "valid_day_of_year": {
+    "source": "the appeal's own registration record in the PINS Casework Database (bulk Excel files, 2026-10-22 edition, sha256-pinned) -> valid_day_of_year: day-of-year of the Valid Date",
+    "availability": "recorded at submission/registration and documented by the publisher with a per-field data-quality grade (Appeals Data: Data notes and guidance); the fields exist at the validation instant, an administrative record written at the event",
+    "status": "assumed",
+    "assumption": "current-snapshot vintage: values are as published in the pinned 2026-10-22 edition; the publisher revises the rolling database between editions, so no historical vintage proves the file state at past instants - the same posture the candidate record fixed for this retrospective benchmark"
+   },
+   "received_date": {
+    "source": "the appeal's own registration record in the PINS Casework Database (bulk Excel files, 2026-10-22 edition, sha256-pinned) -> received_date: the publisher's Received Date field",
+    "availability": "recorded at submission/registration and documented by the publisher with a per-field data-quality grade (Appeals Data: Data notes and guidance); the fields exist at the validation instant, an administrative record written at the event",
+    "status": "assumed",
+    "assumption": "current-snapshot vintage: values are as published in the pinned 2026-10-22 edition; the publisher revises the rolling database between editions, so no historical vintage proves the file state at past instants - the same posture the candidate record fixed for this retrospective benchmark"
+   },
+   "received_to_valid_days": {
+    "source": "the appeal's own registration record in the PINS Casework Database (bulk Excel files, 2026-10-22 edition, sha256-pinned) -> received_to_valid_days: Valid Date minus Received Date, in days",
+    "availability": "recorded at submission/registration and documented by the publisher with a per-field data-quality grade (Appeals Data: Data notes and guidance); the fields exist at the validation instant, an administrative record written at the event",
+    "status": "assumed",
+    "assumption": "current-snapshot vintage: values are as published in the pinned 2026-10-22 edition; the publisher revises the rolling database between editions, so no historical vintage proves the file state at past instants - the same posture the candidate record fixed for this retrospective benchmark"
+   },
+   "area_of_site_hectares": {
+    "source": "the appeal's own registration record in the PINS Casework Database (bulk Excel files, 2026-10-22 edition, sha256-pinned) -> area_of_site_hectares: the publisher's area_of_site_hectares field, recorded at registration",
+    "availability": "recorded at submission/registration and documented by the publisher with a per-field data-quality grade (Appeals Data: Data notes and guidance); the fields exist at the validation instant, an administrative record written at the event",
+    "status": "assumed",
+    "assumption": "current-snapshot vintage: values are as published in the pinned 2026-10-22 edition; the publisher revises the rolling database between editions, so no historical vintage proves the file state at past instants - the same posture the candidate record fixed for this retrospective benchmark"
+   },
+   "floor_space_sqm": {
+    "source": "the appeal's own registration record in the PINS Casework Database (bulk Excel files, 2026-10-22 edition, sha256-pinned) -> floor_space_sqm: the publisher's floor_space_sqm field, recorded at registration",
+    "availability": "recorded at submission/registration and documented by the publisher with a per-field data-quality grade (Appeals Data: Data notes and guidance); the fields exist at the validation instant, an administrative record written at the event",
+    "status": "assumed",
+    "assumption": "current-snapshot vintage: values are as published in the pinned 2026-10-22 edition; the publisher revises the rolling database between editions, so no historical vintage proves the file state at past instants - the same posture the candidate record fixed for this retrospective benchmark"
+   },
+   "number_of_residences": {
+    "source": "the appeal's own registration record in the PINS Casework Database (bulk Excel files, 2026-10-22 edition, sha256-pinned) -> number_of_residences: the publisher's number_of_residences field, recorded at registration",
+    "availability": "recorded at submission/registration and documented by the publisher with a per-field data-quality grade (Appeals Data: Data notes and guidance); the fields exist at the validation instant, an administrative record written at the event",
+    "status": "assumed",
+    "assumption": "current-snapshot vintage: values are as published in the pinned 2026-10-22 edition; the publisher revises the rolling database between editions, so no historical vintage proves the file state at past instants - the same posture the candidate record fixed for this retrospective benchmark"
+   },
+   "green_belt": {
+    "source": "the appeal's own registration record in the PINS Casework Database (bulk Excel files, 2026-10-22 edition, sha256-pinned) -> green_belt: the publisher's green_belt field, recorded at registration",
+    "availability": "recorded at submission/registration and documented by the publisher with a per-field data-quality grade (Appeals Data: Data notes and guidance); the fields exist at the validation instant, an administrative record written at the event",
+    "status": "assumed",
+    "assumption": "current-snapshot vintage: values are as published in the pinned 2026-10-22 edition; the publisher revises the rolling database between editions, so no historical vintage proves the file state at past instants - the same posture the candidate record fixed for this retrospective benchmark"
+   },
+   "agricultural_holding": {
+    "source": "the appeal's own registration record in the PINS Casework Database (bulk Excel files, 2026-10-22 edition, sha256-pinned) -> agricultural_holding: the publisher's agricultural_holding field, recorded at registration",
+    "availability": "recorded at submission/registration and documented by the publisher with a per-field data-quality grade (Appeals Data: Data notes and guidance); the fields exist at the validation instant, an administrative record written at the event",
+    "status": "assumed",
+    "assumption": "current-snapshot vintage: values are as published in the pinned 2026-10-22 edition; the publisher revises the rolling database between editions, so no historical vintage proves the file state at past instants - the same posture the candidate record fixed for this retrospective benchmark"
+   },
+   "listed_building_setting": {
+    "source": "the appeal's own registration record in the PINS Casework Database (bulk Excel files, 2026-10-22 edition, sha256-pinned) -> listed_building_setting: the publisher's listed_building_setting field, recorded at registration",
+    "availability": "recorded at submission/registration and documented by the publisher with a per-field data-quality grade (Appeals Data: Data notes and guidance); the fields exist at the validation instant, an administrative record written at the event",
+    "status": "assumed",
+    "assumption": "current-snapshot vintage: values are as published in the pinned 2026-10-22 edition; the publisher revises the rolling database between editions, so no historical vintage proves the file state at past instants - the same posture the candidate record fixed for this retrospective benchmark"
+   },
+   "historic_building_grant": {
+    "source": "the appeal's own registration record in the PINS Casework Database (bulk Excel files, 2026-10-22 edition, sha256-pinned) -> historic_building_grant: the publisher's historic_building_grant field, recorded at registration",
+    "availability": "recorded at submission/registration and documented by the publisher with a per-field data-quality grade (Appeals Data: Data notes and guidance); the fields exist at the validation instant, an administrative record written at the event",
+    "status": "assumed",
+    "assumption": "current-snapshot vintage: values are as published in the pinned 2026-10-22 edition; the publisher revises the rolling database between editions, so no historical vintage proves the file state at past instants - the same posture the candidate record fixed for this retrospective benchmark"
+   },
+   "conservation_area": {
+    "source": "the appeal's own registration record in the PINS Casework Database (bulk Excel files, 2026-10-22 edition, sha256-pinned) -> conservation_area: the publisher's conservation_area field, recorded at registration",
+    "availability": "recorded at submission/registration and documented by the publisher with a per-field data-quality grade (Appeals Data: Data notes and guidance); the fields exist at the validation instant, an administrative record written at the event",
+    "status": "assumed",
+    "assumption": "current-snapshot vintage: values are as published in the pinned 2026-10-22 edition; the publisher revises the rolling database between editions, so no historical vintage proves the file state at past instants - the same posture the candidate record fixed for this retrospective benchmark"
+   },
+   "flooding_issue": {
+    "source": "the appeal's own registration record in the PINS Casework Database (bulk Excel files, 2026-10-22 edition, sha256-pinned) -> flooding_issue: the publisher's flooding_issue field, recorded at registration",
+    "availability": "recorded at submission/registration and documented by the publisher with a per-field data-quality grade (Appeals Data: Data notes and guidance); the fields exist at the validation instant, an administrative record written at the event",
+    "status": "assumed",
+    "assumption": "current-snapshot vintage: values are as published in the pinned 2026-10-22 edition; the publisher revises the rolling database between editions, so no historical vintage proves the file state at past instants - the same posture the candidate record fixed for this retrospective benchmark"
+   },
+   "aonb": {
+    "source": "the appeal's own registration record in the PINS Casework Database (bulk Excel files, 2026-10-22 edition, sha256-pinned) -> aonb: the publisher's aonb field, recorded at registration",
+    "availability": "recorded at submission/registration and documented by the publisher with a per-field data-quality grade (Appeals Data: Data notes and guidance); the fields exist at the validation instant, an administrative record written at the event",
+    "status": "assumed",
+    "assumption": "current-snapshot vintage: values are as published in the pinned 2026-10-22 edition; the publisher revises the rolling database between editions, so no historical vintage proves the file state at past instants - the same posture the candidate record fixed for this retrospective benchmark"
+   },
+   "sssi": {
+    "source": "the appeal's own registration record in the PINS Casework Database (bulk Excel files, 2026-10-22 edition, sha256-pinned) -> sssi: the publisher's sssi field, recorded at registration",
+    "availability": "recorded at submission/registration and documented by the publisher with a per-field data-quality grade (Appeals Data: Data notes and guidance); the fields exist at the validation instant, an administrative record written at the event",
+    "status": "assumed",
+    "assumption": "current-snapshot vintage: values are as published in the pinned 2026-10-22 edition; the publisher revises the rolling database between editions, so no historical vintage proves the file state at past instants - the same posture the candidate record fixed for this retrospective benchmark"
+   },
+   "lpa_decisions_prior_count": {
+    "source": "decisions of the same LPA among the shipped population, with Decision Date strictly earlier than the row's Valid Date -> lpa_decisions_prior_count: count of the LPA's decided s78_core cases before the instant",
+    "availability": "computed only from strictly-earlier decision dates (enforced in construction with a brute-force sample assertion); a prior decision is published PINS outcome information that predates the row's instant",
+    "status": "assumed",
+    "assumption": "current-snapshot vintage, as above; also carries the declared cross-row exposure: an aggregate over other rows' labels (see cross_row_audit)"
+   },
+   "lpa_allowed_prior_count": {
+    "source": "decisions of the same LPA among the shipped population, with Decision Date strictly earlier than the row's Valid Date -> lpa_allowed_prior_count: of those, count Allowed",
+    "availability": "computed only from strictly-earlier decision dates (enforced in construction with a brute-force sample assertion); a prior decision is published PINS outcome information that predates the row's instant",
+    "status": "assumed",
+    "assumption": "current-snapshot vintage, as above; also carries the declared cross-row exposure: an aggregate over other rows' labels (see cross_row_audit)"
+   },
+   "lpa_allow_rate_prior": {
+    "source": "decisions of the same LPA among the shipped population, with Decision Date strictly earlier than the row's Valid Date -> lpa_allow_rate_prior: allowed share among them; -1.0 sentinel when the count is zero (lpa_decisions_prior_count = 0 disambiguates)",
+    "availability": "computed only from strictly-earlier decision dates (enforced in construction with a brute-force sample assertion); a prior decision is published PINS outcome information that predates the row's instant",
+    "status": "assumed",
+    "assumption": "current-snapshot vintage, as above; also carries the declared cross-row exposure: an aggregate over other rows' labels (see cross_row_audit)"
+   },
+   "lpa_last_outcome": {
+    "source": "decisions of the same LPA among the shipped population, with Decision Date strictly earlier than the row's Valid Date -> lpa_last_outcome: -1 when the LPA has no decided prior case, else 1/0 for the most recent prior decision being Allowed/Dismissed; same-day decisions break ties by validation date then row_id (deterministic total order, asserted by brute-force sample)",
+    "availability": "computed only from strictly-earlier decision dates (enforced in construction with a brute-force sample assertion); a prior decision is published PINS outcome information that predates the row's instant",
+    "status": "assumed",
+    "assumption": "current-snapshot vintage, as above; also carries the declared cross-row exposure: an aggregate over other rows' labels (see cross_row_audit)"
+   },
+   "lpa_days_since_prev_case_valid": {
+    "source": "decisions of the same LPA among the shipped population, with Decision Date strictly earlier than the row's Valid Date -> lpa_days_since_prev_case_valid: days since the same LPA's previous shipped case was validated (0 when there is none)",
+    "availability": "computed only from strictly-earlier decision dates (enforced in construction with a brute-force sample assertion); a prior decision is published PINS outcome information that predates the row's instant",
+    "status": "assumed",
+    "assumption": "current-snapshot vintage, as above; also carries the declared cross-row exposure: an aggregate over other rows' labels (see cross_row_audit)"
+   }
+  },
+  "vintage": {
+   "kind": "current_snapshot",
+   "evidence": "the two bulk Excel files are a rolling database republished monthly-to-quarterly since 21 March 2018 (publisher update log); the publisher states 'data can change between different publications of this data set'. This build pins the fetched 2026-10-22 edition by size and sha256 (summary.json) and fails loudly if the bytes change; every value is construction-time vintage. No historical vintages are claimed; the update log plus web archives could support a future as-of claim, which this record does not make"
+  },
+  "selection": {
+   "kind": "outcome_conditioned",
+   "evidence": "the publisher's database contains DECIDED cases only (in-progress, withdrawn and turned-away cases are excluded by the publisher), and the labelled population further restricts to binary decisions in {Allowed, Dismissed}: measured exclusion masses per casework family are recorded in the candidate record and summary.json. The task is 'among validated appeals that reach a PINS decision, which succeed' - not 'among all validated appeals'. Rows decided before they were validated are excluded as data-integrity anomalies and counted"
+  },
+  "limitations": [
+   "decided-cases-only population (publisher exclusion of in-progress, withdrawn and turned-away cases): the label conditions on reaching a decision, so no claim is made about appeal success before the decision exists",
+   "single current-snapshot vintage (2026-10-22 edition, sha256-pinned): between-edition revision means past-era values are as-revised, not as-first-published",
+   "the split key is the validation instant, not the decision year of the provisional candidate partition: the outcome date cannot ship, and slow cases put some training labels after the eval window's earliest instants - label timing is unverified and no operational forecasting claim is made",
+   "LPA-history features carry a declared cross-row outcome exposure (the probe measures it); unrestricted row-wise access can recover prior rows' labels from thin histories, so honest evaluation requires isolated rows and nothing in this package enforces that",
+   "the older file (decisions 2016-2020) does not carry LPA Decision Date or LPA Application Reference, so neither ships; the train window has no access to them and the eval/holdout windows' copies would have been a train/eval availability asymmetry",
+   "publisher site-descriptor fields left entirely blank in these vintages are not shipped (measured presence below the 100-value threshold, counts in summary.json); the fields remain documented by the publisher and could populate in later editions",
+   "Costs Applied for Indicator is excluded as post-instant (a costs application can be lodged after validation; 22.0% populated in the 5-year file)",
+   "prevalence is stable across splits (measured allow rates sit in 29-31%) but positives cluster by LPA beyond the row count; per-LPA clustered intervals accompany every comparison",
+   "the enforcement-appeal vocabulary (Notice upheld / varied and upheld / quashed) is out of scope; only Planning Appeal and Householder (HAS) casework types with binary decisions ship"
+  ],
+  "cross_row_audit": {
+   "probes": [
+    {
+     "name": "lpa_prev_case_exposes_outcome",
+     "entity_columns": [
+      "lpa_name"
+     ],
+     "time_column": "valid_date",
+     "lag_days_column": "lpa_days_since_prev_case_valid",
+     "left": "lpa_last_outcome",
+     "operation": "copy",
+     "expectation": "the donor row (same LPA, validated later) points back - via its lpa_days_since_prev_case_valid - to the same LPA's previous validated case, and its lpa_last_outcome feature is computed from the most recent same-LPA decision strictly before the donor's instant: when that previous case was already decided and no other same-LPA case was decided in between, lpa_last_outcome IS the previous row's label exactly. Covered rows therefore demonstrate the cross-row outcome exposure inherent to any prior-outcome feature (mismatches are rows whose outcome was still pending at the donor's instant, or where another case was decided in between, or ambiguous same-day keys); the isolated-rows protocol is the required mitigation for honest evaluation, declared as a requirement - nothing in this package enforces it"
+    }
+   ],
+   "rationale": "the only join that exposes one row's label through another row's features is the within-LPA prior-outcome join: a later row's lpa_last_outcome / lpa_allow_rate_prior are computed from the same LPA's earlier decided cases, so a later shipped row carries earlier shipped rows' labels in aggregate - exactly when the previous case was decided before the later row's instant, the last-outcome feature is that row's label verbatim. Same-instant joins are unique by construction (row_id unique, one row per appeal); no other shipped column reads any other row's outcome",
+   "auxiliary_files_review": "the artifact ships exactly public/train.csv, public/eval.csv, private/holdout.csv, meta.json and quality.json; no auxiliary solver-visible file exists (summary.json is written outside the extract, and the source Excel files are never shipped)"
+  }
+ },
+ "source_snapshot": {
+  "publisher": "Planning Inspectorate (PINS), GOV.UK publication 'Planning Inspectorate Casework Database', last updated 22 October 2026",
+  "files": [
+   {
+    "kind": "casework",
+    "name": "Casework_Database_-_2610.xlsx",
+    "url": "https://assets.publishing.service.gov.uk/media/6ad9fcc1c818345ad8aca325/Casework_Database_-_2610.xlsx",
+    "bytes": 22207115,
+    "sha256": "dff80bd0f17cbc640dc205009a9411269c8e58462b6df71af903c592af3c20fa"
+   },
+   {
+    "kind": "older",
+    "name": "Older_Casework_Data_-_2610.xlsx",
+    "url": "https://assets.publishing.service.gov.uk/media/6ad9fcd12263175ac2aca2f7/Older_Casework_Data_-_2610.xlsx",
+    "bytes": 12325866,
+    "sha256": "baf28d80c5cd5ad266f8a9e62c25517b2ec9d4c5d951239ab0638666bc092a4b"
+   }
+  ],
+  "licence_note": "Open Government Licence v3.0 (stated on the publication's data-notes page; OGL emblem on the publication page, read 2026-10-31)",
+  "snapshot_note": "rolling database republished monthly-to-quarterly since March 2018; this build pins the 2026-10-22 edition and fails if the bytes change"
+ },
+ "splits_stats": {
+  "train": {
+   "rows": 54834,
+   "positives": 17048,
+   "negatives": 37786,
+   "positive_rate": 0.3109019951125214
+  },
+  "eval": {
+   "rows": 28104,
+   "positives": 8469,
+   "negatives": 19635,
+   "positive_rate": 0.30134500426985483
+  },
+  "holdout": {
+   "rows": 56326,
+   "positives": 17705,
+   "negatives": 38621,
+   "positive_rate": 0.3143308596385328
+  }
+ },
+ "per_valid_year_stats": {
+  "eval-2020": [
+   13797,
+   4126
+  ],
+  "eval-2021": [
+   14307,
+   4343
+  ],
+  "holdout-2022": [
+   13561,
+   4126
+  ],
+  "holdout-2023": [
+   12730,
+   3911
+  ],
+  "holdout-2024": [
+   13101,
+   4162
+  ],
+  "holdout-2025": [
+   11911,
+   3886
+  ],
+  "holdout-2026": [
+   5023,
+   1620
+  ],
+  "train-2012": [
+   3,
+   3
+  ],
+  "train-2013": [
+   4,
+   2
+  ],
+  "train-2014": [
+   9,
+   7
+  ],
+  "train-2015": [
+   129,
+   63
+  ],
+  "train-2016": [
+   8627,
+   2916
+  ],
+  "train-2017": [
+   16266,
+   5415
+  ],
+  "train-2018": [
+   15255,
+   4622
+  ],
+  "train-2019": [
+   14541,
+   4020
+  ]
+ }
+}

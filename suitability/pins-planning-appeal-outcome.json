@@ -1,0 +1,74 @@
+{
+ "schema_version": 1,
+ "dataset": "pins-planning-appeal-outcome",
+ "release_tag": "v2026.10",
+ "artifact_version": "c861bd8f4acd9bbe267bdb58e1168996fdb359c540aaf4030030a632d693c527",
+ "reviewed_on": "2026-10-31",
+ "reviewer": "Scout, advancement session 2026-10-31 (review over the accepted pins-planning-002 artifact c861bd8f4acd9bbe, gate 1.5.0 45/45 on the full artifact, re-accepted in job pins-planning-baseline-002 which re-fetched all five assets with sha256 verified on arrival; references reproduced 001's figures exactly across the permitted rebuild)",
+ "decision": "retain_restricted",
+ "summary": "Retained for retrospective model-development research. Each row is one decided s78_core planning-permission-family appeal whose features are its own registration attributes plus LPA prior-outcome history computed strictly from decisions earlier than the row's validation instant; the prediction instant is the validation event (Valid Date, event_time) and no point-in-time or operational claim is made. The publisher serves a rolling database (pinned here at the 2026-10-22 edition) and no historical vintages, so training-label timing and full-row historical availability are unverified and none is claimed. The evaluation contract requires isolated rows: the LPA-history features embed other rows' labels (lpa_last_outcome is the previous same-LPA decided case's label), a declared and probed cross-row exposure, while the shipped illustrative runner passes the whole eval feature table to the predictor - unrestricted-access scores overstate honest performance and the requirement is a requirement, never an enforcement claim. Measured finding carried beside every figure: the stock runner baseline (eval AUC 0.6108) exceeds every measured simple reference on the identical 28,104 eval rows - procedure-type rate 0.5551 (+0.0558, row CI95 [0.0467, 0.0626], LPA-cluster CI95 [0.0462, 0.0654]), LPA history rate 0.5414 (+0.0694, [0.0622, 0.0766] / [0.0597, 0.0792]), shipped rate feature 0.5422 (+0.0686, [0.0619, 0.0756] / [0.0596, 0.0800]) - every paired interval excluding zero under both the row-level and the LPA-clustered protocol: demonstrated headroom over these references under this protocol, with its scope recorded (one model configuration, no re-tuning; two validation years of eval coverage). Persistence is measured at 0.5045 (92%+ of eval rows' LPAs have train-era history; the -1 sentinel marks the rest). The calendar-identity control collapsed onto the LPA rate exactly (eval years have no train-era valid-year support) and is recorded as a degenerate control, never as independent confirmation.",
+ "supported_uses": [
+  "Retrospective research and method comparison on the pinned 2026-10-22 edition, predicting row-wise from the shipped validation-instant columns under an isolated-rows protocol",
+  "Agent evaluation with the labeled eval split as development/validation data and the holdout kept outside agent development until a design is frozen",
+  "Study of LPA-level and procedure-level prevalence and of which validation-instant attributes carry outcome signal"
+ ],
+ "unsupported_uses": [
+  "Operational or live validation-instant screening claims: no historical operational-availability evidence exists and none is claimed",
+  "Point-in-time historical reconstruction: the publisher serves a rolling current vintage; a later re-fetch is a different vintage, not what was knowable earlier",
+  "Quoting the model AUC (0.6108) without the reference comparison (procedure-type 0.5551, LPA rate 0.5414, shipped rate 0.5422, persistence 0.5045, with the paired row-level and LPA-clustered intervals) beside it",
+  "Scoring the eval split with the whole feature table and presenting the result as an isolated-rows figure: the LPA-history features make cross-row label recovery measurably possible, so unrestricted-access scores overstate honest performance",
+  "Treating the split as certified decision-time separation: the split key is the validation instant and slow cases put some training labels after the eval window's earliest instants, so label timing is unverified"
+ ],
+ "evaluation_access": "isolated_rows",
+ "historical_availability": "unverified",
+ "training_label_timing": "unverified",
+ "vintage": "current_snapshot",
+ "selection": "outcome_conditioned",
+ "cross_row_audit": {
+  "status": "recovery_demonstrated",
+  "scope": "Gate 1.5.0's own probe over the full artifact (check contract.cross_row_probe_0, job pins-planning-002): the within-LPA donor join covers 36,643 train / 21,593 eval / 43,747 holdout rows, and on the covered rows the later row's lpa_last_outcome feature is an earlier shipped row's label verbatim exactly when that previous case was already decided before the donor's instant (measured mismatches 15,428 / 8,803 / 18,430 are rows whose previous case was still pending at the donor's instant or where another same-LPA case was decided in between; 12,705 / 6,085 / 12,143 ambiguous same-day keys). The exposure is inherent to any prior-outcome feature and unmitigated at runtime by the shipped contract, which passes the whole eval feature table to the predictor: quality.json declares isolated_rows as a REQUIREMENT for honest evaluation and claims no enforcement. Any evaluation must present one row at a time to the solver; unrestricted-access AUCs are not comparable to isolated-rows AUCs and must not be presented as such.",
+  "evidence": [
+   "release/pins-planning-appeal-outcome/qualification.json",
+   "release/pins-planning-appeal-outcome/quality.json"
+  ]
+ },
+ "limitations": [
+  "Single current-snapshot vintage (the 2026-10-22 edition, sha256-pinned for both source files); the publisher republishes the rolling database monthly-to-quarterly and retains no historical vintages, so no historical operational-availability claim is possible",
+  "Training-label timing and full-row historical availability are unverified; the split key is the validation instant because the outcome date cannot ship, so the task is retrospective research only",
+  "All publisher-sourced columns are current-snapshot vintage: values are as revised in the pinned edition, not as first published at past instants",
+  "The population is the publisher's own decided-cases-only extract (in progress, withdrawn and turned away cases are absent) further restricted to binary decisions - outcome-observability conditioning recorded as a limitation, never resolved by relabelling",
+  "The cross-row exposure over LPA-history features is declared and requires an isolated-rows protocol; the shipped runner does not enforce it",
+  "The headroom finding's scope: one model configuration with no re-tuning, two validation years of eval coverage; the calendar-identity control was degenerate (collapsed onto the LPA rate), so seasonality/identity headroom is not independently established; the model's per-validation-year AUC and Brier were not computed; beating the measured references does not enumerate all simple rules and does not prove a causal signal",
+  "The holdout was never evaluated; no holdout figure exists and its first use must follow a frozen design"
+ ],
+ "evidence": [
+  {
+   "claim": "The artifact passed the full-artifact qualification gate (1.5.0, 45/45 checks, failed_checks empty) and was exact-byte accepted, including the event_time timing block with per-column feature evidence, the evaluation contract with the declared cross-row probe, split windows disjoint on the shipped time column, leakage scans over every shipped column and the runner contract",
+   "source": "release/pins-planning-appeal-outcome/qualification.json",
+   "detail": "The gate's collected report for job pins-planning-002, shipped with the package: ok=true, gate_version 1.5.0, artifact c861bd8f4acd9bbe267bdb58e1168996fdb359c540aaf4030030a632d693c527; job pins-planning-baseline-002 re-ran --accept against re-fetched, digest-verified bytes (ACCEPTED) before any score was computed."
+  },
+  {
+   "claim": "The model-vs-reference comparison carries paired row-level AND LPA-clustered intervals excluding zero on the identical 28,104 eval rows, with the references reimplemented independently of the build job's score.py",
+   "source": "release/pins-planning-appeal-outcome/measurements.json",
+   "detail": "measurements.json records the full comparison (model 0.6108490; procedure-type 0.5550607; LPA rate 0.5414410; shipped rate 0.5422422; persistence 0.5044581; majority-class accuracy 0.6986550; degenerate calendar and constant controls recorded as such) with the 150-resample row-level and LPA-clustered intervals from job pins-planning-baseline-002, plus the per-validation-year reference tables."
+  },
+  {
+   "claim": "The construction is deterministic and its frame fidelity was verified in-build against the recorded probe counts",
+   "source": "release/pins-planning-appeal-outcome/measurements.json",
+   "detail": "The per-decision-year fixture balances exactly for all 11 decision years (kept + counted exclusions == probe n; kept_allowed + excluded_allowed == probe allowed); exclusions counted (2,757 non-binary decisions, 3,110 cross-file duplicates, 2 decided-before-validation rows); flag presence verified by direct letter-based counts."
+  },
+  {
+   "claim": "The runner-contract baseline passed end to end with the benchmark's own unmodified files",
+   "source": "candidates/pins-planning-appeal-outcome/baseline/baseline_result.json",
+   "detail": "train.py/validate.py/validate.sh bundled sha256 equal the read-only clone's hashes (unmodified: true); CONTRACT OK; both eval AUC prints 0.6108; dependencies pinned (python 3.13.18, pandas 2.3.3, numpy 2.5.4, xgboost 3.4.1, scikit-learn 1.9.1); the holdout was never copied into any workdir."
+  }
+ ],
+ "required_actions": [
+  "Before any evaluation: read the evaluation contract in quality.json; treat the labeled eval split as development/validation and keep the holdout outside evaluated agents' workspaces until a design is frozen",
+  "Any evaluation must use an isolated-rows protocol (one row per solver context); present unrestricted-access scores only as such, never as isolated-rows results",
+  "Before the flip to public: run the independent adversarial pre-flip audit over the frozen package (standing practice since 2026-10-27); the flip waits for the auditor's verdict unless the operator waives it",
+  "A re-fetch of the publisher's rolling database is a new artifact version: re-measure every count, re-qualify, and re-issue as a new reviewed version; never regenerate this package in place",
+  "Any operational screening use requires its own validation on live validation-instant data; nothing in this package certifies it"
+ ],
+ "corrections": []
+}

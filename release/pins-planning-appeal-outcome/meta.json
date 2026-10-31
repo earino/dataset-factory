@@ -1,0 +1,55 @@
+{
+ "name": "pins-planning-appeal-outcome",
+ "description": "For a planning-permission-family appeal (PINS casework type 'Planning Appeal' or 'Householder (HAS)') validated by the Planning Inspectorate, will the final decision be 'Allowed' rather than 'Dismissed', given only what is known at validation: casework type, LPA name and ONS code, received date, procedure, development type, appeal reason fields, site descriptors and flags, and LPA-level prior-outcome history computed strictly from decisions earlier than the validation instant. Decided-cases-only population; a fixed retrospective benchmark over the pinned 2026-10-22 publication bytes.",
+ "target": "allowed",
+ "positive_label": 1,
+ "id_columns": [
+  "row_id"
+ ],
+ "columns": [
+  "row_id",
+  "lpa_name",
+  "ons_lpa_code",
+  "casework_type",
+  "procedure",
+  "development_type",
+  "appeal_type_reason",
+  "appeal_reason",
+  "type_detail",
+  "link_status",
+  "valid_date",
+  "valid_year",
+  "valid_day_of_year",
+  "received_date",
+  "received_to_valid_days",
+  "area_of_site_hectares",
+  "floor_space_sqm",
+  "number_of_residences",
+  "green_belt",
+  "agricultural_holding",
+  "listed_building_setting",
+  "historic_building_grant",
+  "conservation_area",
+  "flooding_issue",
+  "aonb",
+  "sssi",
+  "lpa_decisions_prior_count",
+  "lpa_allowed_prior_count",
+  "lpa_allow_rate_prior",
+  "lpa_last_outcome",
+  "lpa_days_since_prev_case_valid",
+  "allowed"
+ ],
+ "rows": {
+  "train": 54834,
+  "eval": 28104,
+  "holdout": 56326
+ },
+ "positive_rate": {
+  "train": 0.3109019951125214,
+  "eval": 0.30134500426985483,
+  "holdout": 0.3143308596385328
+ },
+ "split": "temporal split on the validation instant (Valid Date): train < 2020-01-01, eval 2020-2021, holdout >= 2022-01-01",
+ "split_description": "temporal split on the VALIDATION instant, the shipped time column: train = appeals validated before 2020-01-01, eval = validated 2020-01-01..2021-12-31, holdout = validated on or after 2022-01-01. The candidate record's provisional partition was by decision year; the outcome date cannot ship (it is post-instant information) and the qualification gate requires disjoint split ranges on a shipped time column, so the split key moved to the instant - the same construction as the published ipo-trademark-registration-outcome (filed_date) and ec-merger-phase2-opening (notification_date) tasks. Slow cases mean a split's labels can postdate the next split's earliest instants; label timing is declared unverified and the artifact is retrospective research only."
+}

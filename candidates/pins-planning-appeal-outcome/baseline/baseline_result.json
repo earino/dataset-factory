@@ -1,0 +1,133 @@
+{
+  "job": "pins-planning-baseline-002",
+  "purpose": "one baseline through the runner's existing training and validation contract, on the accepted pins-planning-appeal-outcome artifact, plus the derived paired model-vs-reference intervals",
+  "artifact": {
+    "name": "pins-planning-appeal-outcome",
+    "target": "allowed",
+    "positive_label": 1,
+    "id_columns": [
+      "row_id"
+    ],
+    "rows": {
+      "train": 54834,
+      "eval": 28104,
+      "holdout": 56326
+    },
+    "positive_rate": {
+      "train": 0.3109019951125214,
+      "eval": 0.30134500426985483,
+      "holdout": 0.3143308596385328
+    },
+    "split_description": "temporal split on the VALIDATION instant, the shipped time column: train = appeals validated before 2020-01-01, eval = validated 2020-01-01..2021-12-31, holdout = validated on or after 2022-01-01. The candidate record's provisional partition was by decision year; the outcome date cannot ship (it is post-instant information) and the qualification gate requires disjoint split ranges on a shipped time column, so the split key moved to the instant - the same construction as the published ipo-trademark-registration-outcome (filed_date) and ec-merger-phase2-opening (notification_date) tasks. Slow cases mean a split's labels can postdate the next split's earliest instants; label timing is declared unverified and the artifact is retrospective research only."
+  },
+  "qualification_report": {
+    "bundled": "qualification.json",
+    "sha256": "f2d33fcaf593bdaf812f11ebf40ce904125e7867969c6a882ae1c5c4f7719abf",
+    "gate_version": "1.5.0",
+    "gate_ok": true,
+    "gate_failed_checks": [],
+    "accepted_before_scoring": true,
+    "accepted_artifact_version": "c861bd8f4acd9bbe",
+    "qualified_artifact_version": "c861bd8f4acd9bbe267bdb58e1168996fdb359c540aaf4030030a632d693c527"
+  },
+  "contract": {
+    "contract_ok": true,
+    "eval_auc_from_train_py": 0.6108,
+    "eval_auc_from_validate_py": 0.6108
+  },
+  "model_vs_references": {
+    "purpose": "derived evidence, not the runner: paired model-vs-reference intervals on identical eval rows after the verbatim contract run",
+    "model": "XGBClassifier n_estimators=30 max_depth=6 lr=0.1 hist seed 42 - identical to the verbatim train.py baseline; string columns with >1000 levels dropped exactly as the baseline drops them",
+    "scope": "eval rows only (28104 rows, validation instants 2020-2021); the holdout was never opened",
+    "model_eval_auc": 0.6108489948647478,
+    "references_eval_auc": {
+      "lpa_hist_rate": 0.5414410163425604,
+      "procedure_type_rate": 0.55506072071053,
+      "shipped_rate_feature": 0.5422421736543134
+    },
+    "paired_row_level": {
+      "lpa_hist_rate": {
+        "model_auc": 0.6108489948647478,
+        "reference_auc": 0.5414410163425604,
+        "observed_diff": 0.06940797852218739,
+        "ci95": [
+          0.06221382066459791,
+          0.07659881935671231
+        ],
+        "resamples": 150
+      },
+      "procedure_type_rate": {
+        "model_auc": 0.6108489948647478,
+        "reference_auc": 0.55506072071053,
+        "observed_diff": 0.05578827415421772,
+        "ci95": [
+          0.046661949591588536,
+          0.06261963717752905
+        ],
+        "resamples": 150
+      },
+      "shipped_rate_feature": {
+        "model_auc": 0.6108489948647478,
+        "reference_auc": 0.5422421736543134,
+        "observed_diff": 0.06860682121043438,
+        "ci95": [
+          0.061863579560411885,
+          0.07555217878137621
+        ],
+        "resamples": 150
+      }
+    },
+    "paired_lpa_clustered": {
+      "lpa_hist_rate": {
+        "ci95": [
+          0.0597079992007401,
+          0.079216870767996
+        ],
+        "resamples": 150,
+        "unit": "LPA cluster"
+      },
+      "procedure_type_rate": {
+        "ci95": [
+          0.04621657112389288,
+          0.06537236597230933
+        ],
+        "resamples": 150,
+        "unit": "LPA cluster"
+      },
+      "shipped_rate_feature": {
+        "ci95": [
+          0.05963823738848373,
+          0.07997558183755316
+        ],
+        "resamples": 150,
+        "unit": "LPA cluster"
+      }
+    },
+    "notes": [
+      "the references are reimplemented here independently (pandas groupby), not imported from the build job's score.py",
+      "shipped_rate_feature scores the artifact's own lpa_allow_rate_prior column; its agreement with lpa_hist_rate cross-checks the reference",
+      "intervals containing zero are inconclusive differences, not parity"
+    ]
+  },
+  "runner_files": {
+    "bundled_sha256": {
+      "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+      "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+      "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+    },
+    "expected_sha256": {
+      "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+      "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+      "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+    },
+    "unmodified": true
+  },
+  "dependencies": {
+    "python": "3.13.18",
+    "pandas": "2.3.3",
+    "numpy": "2.5.4",
+    "xgboost": "3.4.1",
+    "scikit-learn": "1.9.1"
+  },
+  "scope": "runner-contract baseline plus derived reference intervals; no agent loop, no holdout evaluation. Holdout stays sealed until the design is frozen."
+}

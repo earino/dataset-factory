@@ -11408,3 +11408,43 @@ HTTPS). One candidate opened, none reopened.
   (88 MB) deleted from the coordinator after the aggregates were recorded. No tokens, no
   workers, no releases touched. Concurrent sessions' work (ec-state-aid-investigation-opening/
   probe/ untracked; newer pins commits) left untouched and excluded from this commit.
+
+## 2026-10-31 (22:36Z) - Watcher follow-up pins-publish-001 + pins-consumer-001: pins v2026.10 staged private and consumer-verified end to end; candidate packaged (GitHub destination), Hub staging remains
+
+Both release jobs for the pins-planning-appeal-outcome v2026.10 package succeeded; outcomes read from the
+collected reports and API read-backs, never from exit codes or upload summaries alone. Both workers destroyed via the supported lifecycle (destroy, then `worker status` reconciliation at 22:41Z);
+direct Hetzner API spot-checks from the coordinator 404'd at the route level and were not usable as
+independent read-back evidence, so deletion rests on the lifecycle's own provider confirmation.
+
+- pins-publish-001 (transfer, server 173852125, EUR 0.04 reserved): copied the five accepted c861bd8f assets
+  from private staging release 430108320 into private dataset repo earino/pins-planning-appeal-outcome
+  release v2026.10 (430215294) under flat asset names; each asset verified against its recorded sha256 on
+  arrival and against the server's own digest after upload; failures=[]. Collected 22:15:27Z, destroyed
+  22:15:57Z, lifecycle-confirmed.
+- pins-consumer-001 (fresh-consumer verification, server 173853774, EUR 0.24 reserved, exit 0 in 86.3 s): the
+  worker host fetched the five released assets with digest verification; the container had no credential.
+  All ten published REPRODUCE steps passed on the released bytes: package 25/25 files match MANIFEST.json;
+  layout restored and get_dataset.py re-verified; sha256sum -c OK; gate 1.5.0 PASSED; exact-byte --accept
+  ACCEPTED artifact c861bd8f...; declared dependency ranges import (pandas 2.3.3, numpy 2.5.4, xgboost 3.4.1,
+  scikit-learn 1.9.1); baseline CONTRACT OK with both AUC prints 0.6108 (holdout NOT copied into the
+  workdir); score.py references recomputed equal to measurements.json (procedure_type 0.5551, lpa_hist
+  0.5414, persistence 0.5045, majority-class accuracy_this_split 0.698655; calendar control collapsed onto
+  lpa_hist and the constant controls carry null AUC with briers, recorded as degenerate); rebuild from source
+  byte-identical (all five digests). Reports kept in .factory/pins-consumer-001/reports/output/. Collected
+  22:22:49Z, destroyed 22:34:42Z, lifecycle-confirmed.
+- Destination read-backs (this session, authenticated API): dataset repo private: true; release 430215294
+  (v2026.10, non-draft) carries exactly 5 assets whose server digests equal the accepted artifact digests;
+  tag v2026.10 and main both resolve to a19978bd (tag == main). release/pins-planning-appeal-outcome/
+  DESTINATIONS.json written for the GitHub destination (private, verified); the Hub destination is not yet
+  staged and the package manifest does not claim publication.
+- Candidate record: jobs += pins-publish-001 + pins-consumer-001 (full evidence), status ready -> packaged,
+  packaged_at 2026-10-31T22:36:07Z, awaiting_operator False (Hub staging remains, so the release is still
+  actionable and preempts construction). The whole v2026.10 package (docs, code, manifest, gate report,
+  measurements, suitability record, job ledger entries) committed in this commit; the unrelated untracked
+  ec-state-aid-investigation-opening/probe/ left untouched and excluded.
+- Next (advancement): the documented Hub staging cycle (hf-publish --plan, --create --upload-small,
+  hf_publish worker job from the staged GitHub release, --verify, --tag last), then the Hub block in
+  DESTINATIONS.json, scripts/check-suitability.py with its public notice, then awaiting_operator: true.
+  The flip remains the operator's single approval, preceded by the standing pre-flip adversarial audit
+  (templates/pre-flip-audit-prompt.md filled programmatically). No rebuild of this construction; the holdout
+  stays sealed.

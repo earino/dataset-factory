@@ -1,0 +1,671 @@
+{
+  "dataset": "pins-planning-appeal-outcome",
+  "release_version": "2026.10",
+  "release_tag": "v2026.10",
+  "repository": "https://github.com/earino/pins-planning-appeal-outcome",
+  "visibility": "private (publication requires explicit authorisation)",
+  "artifact_version": "c861bd8f4acd9bbe267bdb58e1168996fdb359c540aaf4030030a632d693c527",
+  "package_digest": null,
+  "artifact_job": "pins-planning-002",
+  "staging_release": 430108320,
+  "staging_release_tag": "job-pins-planning-002",
+  "staging_repo": "earino/dataset-factory-staging",
+  "construction_commit": "d6a51a035a04e369df5af00756968bc870049e44",
+  "gate_version": "1.5.0",
+  "gate_command": "python3 code/qualify_dataset.py ./task",
+  "measurements": {
+    "name": "pins-planning-appeal-outcome",
+    "built_at_utc": "2026-10-31T00:00:00Z",
+    "source": {
+      "publisher": "Planning Inspectorate (PINS), GOV.UK publication 'Planning Inspectorate Casework Database', last updated 22 October 2026",
+      "landing_page": "https://www.gov.uk/government/publications/planning-inspectorate-appeals-database",
+      "files": [
+        {
+          "name": "Casework_Database_-_2610.xlsx",
+          "url": "https://assets.publishing.service.gov.uk/media/6ad9fcc1c818345ad8aca325/Casework_Database_-_2610.xlsx",
+          "bytes": 22207115,
+          "sha256": "dff80bd0f17cbc640dc205009a9411269c8e58462b6df71af903c592af3c20fa"
+        },
+        {
+          "name": "Older_Casework_Data_-_2610.xlsx",
+          "url": "https://assets.publishing.service.gov.uk/media/6ad9fcd12263175ac2aca2f7/Older_Casework_Data_-_2610.xlsx",
+          "bytes": 12325866,
+          "sha256": "baf28d80c5cd5ad266f8a9e62c25517b2ec9d4c5d951239ab0638666bc092a4b"
+        }
+      ],
+      "mode": "two anonymous bulk GETs; the build fails if the pinned bytes change",
+      "vintage_note": "rolling database republished monthly-to-quarterly since March 2018; this build pins the 2026-10-22 edition, and every value is construction-time current-snapshot vintage - no historical vintages are claimed"
+    },
+    "grain": "one row per decided s78_core planning-permission-family appeal (validated 2012-06-01..2026-08-21)",
+    "population": {
+      "eligibility": "publisher Type of Casework in the s78_core family (e.g. Planning Appeal, Householder (HAS)); Decision in {Allowed, Dismissed}; Received/Valid/Decision dates parseable and decision not before validation",
+      "deduplication": "cross-file dedup on (type, LPA, received, valid, decision date, decision): 3,110 rows appear in BOTH publisher files with identical composites (2021 decisions) and are deduplicated; counted, never silently dropped",
+      "exclusions": {
+        "non_binary_decision": 2757,
+        "cross_file_duplicate": 3110,
+        "decided_before_valid": 2
+      },
+      "exclusions_by_decision_year": {
+        "2021": {
+          "non_binary_decision": 336,
+          "cross_file_duplicate": 119
+        },
+        "2022": {
+          "non_binary_decision": 390,
+          "cross_file_duplicate": 148
+        },
+        "2023": {
+          "non_binary_decision": 310,
+          "cross_file_duplicate": 229
+        },
+        "2024": {
+          "non_binary_decision": 247,
+          "cross_file_duplicate": 136
+        },
+        "2025": {
+          "non_binary_decision": 260,
+          "cross_file_duplicate": 204
+        },
+        "2026": {
+          "cross_file_duplicate": 122,
+          "non_binary_decision": 158
+        },
+        "2016": {
+          "non_binary_decision": 59,
+          "cross_file_duplicate": 62,
+          "decided_before_valid": 1
+        },
+        "2017": {
+          "non_binary_decision": 218,
+          "cross_file_duplicate": 355,
+          "decided_before_valid": 1
+        },
+        "2018": {
+          "non_binary_decision": 228,
+          "cross_file_duplicate": 512
+        },
+        "2019": {
+          "non_binary_decision": 243,
+          "cross_file_duplicate": 907
+        },
+        "2020": {
+          "non_binary_decision": 308,
+          "cross_file_duplicate": 316
+        }
+      },
+      "censoring": "none beyond the publisher's own decided-cases-only extract (in progress, withdrawn and turned away cases are not in the source); the outcome-conditioned population is a property of the publisher's database, recorded as a limitation",
+      "frame_fidelity": "the in-build per-decision-year fixture reproduces the discovery probe exactly for all 11 decision years (kept + counted exclusions == probe n; kept_allowed + excluded_allowed == probe allowed); flag presence verified by direct letter-based counts"
+    },
+    "splits": {
+      "windows": "temporal split on the validation instant (valid_date, the shipped time column): train < 2020-01-01, eval 2020-01-01..2021-12-31, holdout >= 2022-01-01 (through 2026-08-21); the outcome date cannot ship (post-instant), so the split key is the instant - the same construction as the published ipo (filed_date) and ec-merger (notification_date) tasks",
+      "stats": {
+        "train": {
+          "rows": 54834,
+          "positives": 17048,
+          "negatives": 37786,
+          "positive_rate": 0.3109019951125214
+        },
+        "eval": {
+          "rows": 28104,
+          "positives": 8469,
+          "negatives": 19635,
+          "positive_rate": 0.30134500426985483
+        },
+        "holdout": {
+          "rows": 56326,
+          "positives": 17705,
+          "negatives": 38621,
+          "positive_rate": 0.3143308596385328
+        }
+      },
+      "valid_date_ranges": {
+        "train": [
+          "2012-06-01",
+          "2019-12-31"
+        ],
+        "eval": [
+          "2020-01-01",
+          "2021-12-31"
+        ],
+        "holdout": [
+          "2022-01-01",
+          "2026-08-21"
+        ]
+      },
+      "sparse_valid_year_tails": {
+        "train-2012": [
+          3,
+          3
+        ],
+        "train-2013": [
+          4,
+          2
+        ],
+        "train-2014": [
+          9,
+          7
+        ]
+      },
+      "positive_events_by_validation_date": {},
+      "prevalence_shift_note": "train 31.09% -> eval 30.13% -> holdout 31.43% positive: no material prevalence drift across splits; eval's two validation years are 0.2990 and 0.3036"
+    },
+    "runner_contract_probe": {
+      "source": "worker job pins-planning-002 stage 0 (category_probe.json), synthetic frames - no dataset row read, no metric computed",
+      "result": {
+        "predict_on_category_dtype": "ok",
+        "purpose": "does the verbatim benchmark train.py predict path accept category-dtype columns at predict under the installed xgboost",
+        "subtests": {
+          "fit": "fit ok",
+          "predict_seen_levels": "ok",
+          "predict_unseen_level_nan": "ok"
+        },
+        "model_config": "XGBClassifier n_estimators=10 max_depth=3 lr=0.1 hist enable_categorical=True seed 42 - the verbatim train.py configuration modulo tree size",
+        "versions": {
+          "python": "3.13.18",
+          "pandas": "2.3.3",
+          "numpy": "2.5.4",
+          "xgboost": "3.4.1"
+        },
+        "note": "verdict rejected means build.py integer-codes the nine string-categorical columns so the shipped frame is int/float/bool only; no dataset row was read and no metric computed"
+      },
+      "reading": "the verbatim train.py predict path accepts category dtypes under xgboost 3.4.1, so the publisher's string levels ship verbatim; the only real breaker measured by baseline-001 was the object-dtype floor_space_sqm (6 eval rows of publisher prose), fixed by mapping unparseable prose to missing"
+    },
+    "qualification": {
+      "source": "worker job pins-planning-002, gate 1.5.0 on the full artifact on the worker",
+      "checks_total": 45,
+      "failed_checks": [],
+      "artifact_version": "c861bd8f4acd9bbe267bdb58e1168996fdb359c540aaf4030030a632d693c527",
+      "accepted_before_any_figure": true,
+      "reaccepted_in": [
+        "pins-planning-baseline-002 (re-fetched all five assets, every sha256 verified on arrival)"
+      ],
+      "rebuild_note": "this artifact is the ONE permitted rebuild (runner-compatibility defect class): pins-planning-001 (artifact 0cbb55fe..., staging 430070815) passed the gate but its baseline job pins-planning-baseline-001 failed at the verbatim train.py predict step on the 6 prose cells; train.csv and holdout.csv are sha256-identical between 001 and 002, eval.csv differs only in those 6 cells, and references reproduce 001's figures exactly"
+    },
+    "references": {
+      "source": "worker job pins-planning-002 score.py, post-acceptance, eval rows only (holdout never opened)",
+      "eval_rows": 28104,
+      "eval_positives": 8469,
+      "aucs": {
+        "lpa_hist_rate": 0.5414410163425604,
+        "persistence_last_outcome": 0.504458138089444,
+        "procedure_type_rate": 0.55506072071053,
+        "calendar_identity": 0.5414410163425604,
+        "year_rate": null,
+        "global_rate": null
+      },
+      "briers": {
+        "lpa_hist_rate": 0.21071114833737709,
+        "persistence_last_outcome": 0.4149943068602334,
+        "procedure_type_rate": 0.2079902264250544,
+        "calendar_identity": 0.21071114833737709,
+        "year_rate": 0.21062752874542284,
+        "global_rate": 0.21062752874542284
+      },
+      "majority_class_accuracy_this_split": 0.6986549957301452,
+      "majority_note": "majority fitted on train, measured against this split's labels",
+      "degenerate_controls_recorded": {
+        "calendar_identity": "collapsed onto lpa_hist_rate exactly: eval validation years (2020/2021) have no train-era valid-year support, so every eval row fell back to its LPA's train rate; paired diff 0.0, CI [0,0] - a collapsed control, never independent confirmation",
+        "year_rate_and_global_rate": "constant scores, no ranking information (null AUC) - degenerate controls, recorded"
+      },
+      "per_validation_year_eval": {
+        "2020": {
+          "rows": 13797,
+          "positives": 4126,
+          "lpa_hist_rate_auc": 0.5472758931222083,
+          "persistence_last_outcome_auc": 0.5076170076967018,
+          "procedure_type_rate_auc": 0.5616123592715111,
+          "calendar_identity_auc": 0.5472758931222083
+        },
+        "2021": {
+          "rows": 14307,
+          "positives": 4343,
+          "lpa_hist_rate_auc": 0.5357930271288405,
+          "persistence_last_outcome_auc": 0.5012667292328367,
+          "procedure_type_rate_auc": 0.5485993301420458,
+          "calendar_identity_auc": 0.5357930271288405
+        }
+      },
+      "paired_reference_differences": {
+        "lpa_hist_vs_calendar": {
+          "observed_diff": 0.0,
+          "ci95": [
+            0.0,
+            0.0
+          ],
+          "resamples": 150,
+          "resampler_alignment_ok": true
+        },
+        "lpa_hist_vs_procedure_type": {
+          "observed_diff": -0.013619704367969665,
+          "ci95": [
+            -0.025416455496207524,
+            -0.004201383069700859
+          ],
+          "resamples": 150,
+          "resampler_alignment_ok": true
+        },
+        "persistence_vs_lpa_hist": {
+          "observed_diff": -0.036982878253116414,
+          "ci95": [
+            -0.04683821369070518,
+            -0.029879417956382825
+          ],
+          "resamples": 150,
+          "resampler_alignment_ok": true
+        }
+      },
+      "lpa_clustered_bootstrap": {
+        "unit": "LPA (appeal outcomes of one planning authority are correlated)",
+        "lpa_hist_vs_persistence_diff": 0.036982878253116414,
+        "ci95": [
+          0.025071643773399543,
+          0.048432989356319234
+        ],
+        "resamples": 150
+      },
+      "persistence_note": "measured, not declared not-applicable: every eval row's LPA has a train-era decided-case history for 92%+ of rows (the -1 sentinel marks the rest)",
+      "notes": [
+        "the full model is NOT computed here; the harness runner's baseline job trains it on these same rows and its figure is quoted beside these references when it exists",
+        "lpa_hist_rate is the headroom reference named in the candidate record: a model must demonstrate headroom over it under this protocol for a positive verdict",
+        "persistence is measured, not declared not-applicable: every eval row's LPA has a train-era decided-case history for 92%+ of rows (the -1 sentinel marks the rest)",
+        "intervals containing zero are inconclusive differences, not parity"
+      ]
+    },
+    "runner_baseline": {
+      "source": "worker job pins-planning-baseline-002: the benchmark's own train.py + validate.sh, bundled verbatim (sha256 equal the read-only clone's; unmodified: true)",
+      "eval_auc_from_train_py": 0.6108,
+      "eval_auc_from_validate_py": 0.6108,
+      "contract_ok": true,
+      "dependencies": {
+        "python": "3.13.18",
+        "pandas": "2.3.3",
+        "numpy": "2.5.4",
+        "xgboost": "3.4.1",
+        "scikit-learn": "1.9.1"
+      },
+      "scope": "one baseline through the runner's existing training and validation contract; no agent or harness comparison was run and none is implied; the holdout was never copied into any workdir"
+    },
+    "model_vs_reference_comparison": {
+      "source": "worker job pins-planning-baseline-002 (model_intervals.py), derived evidence on the identical eval rows after the verbatim contract run",
+      "model": "XGBClassifier n_estimators=30 max_depth=6 lr=0.1 hist seed 42 - identical to the verbatim train.py baseline; string columns with >1000 levels dropped exactly as the baseline drops them",
+      "model_eval_auc": 0.6108489948647478,
+      "references_eval_auc": {
+        "lpa_hist_rate": 0.5414410163425604,
+        "procedure_type_rate": 0.55506072071053,
+        "shipped_rate_feature": 0.5422421736543134
+      },
+      "paired_row_level": {
+        "lpa_hist_rate": {
+          "model_auc": 0.6108489948647478,
+          "reference_auc": 0.5414410163425604,
+          "observed_diff": 0.06940797852218739,
+          "ci95": [
+            0.06221382066459791,
+            0.07659881935671231
+          ],
+          "resamples": 150
+        },
+        "procedure_type_rate": {
+          "model_auc": 0.6108489948647478,
+          "reference_auc": 0.55506072071053,
+          "observed_diff": 0.05578827415421772,
+          "ci95": [
+            0.046661949591588536,
+            0.06261963717752905
+          ],
+          "resamples": 150
+        },
+        "shipped_rate_feature": {
+          "model_auc": 0.6108489948647478,
+          "reference_auc": 0.5422421736543134,
+          "observed_diff": 0.06860682121043438,
+          "ci95": [
+            0.061863579560411885,
+            0.07555217878137621
+          ],
+          "resamples": 150
+        }
+      },
+      "paired_lpa_clustered": {
+        "lpa_hist_rate": {
+          "ci95": [
+            0.0597079992007401,
+            0.079216870767996
+          ],
+          "resamples": 150,
+          "unit": "LPA cluster"
+        },
+        "procedure_type_rate": {
+          "ci95": [
+            0.04621657112389288,
+            0.06537236597230933
+          ],
+          "resamples": 150,
+          "unit": "LPA cluster"
+        },
+        "shipped_rate_feature": {
+          "ci95": [
+            0.05963823738848373,
+            0.07997558183755316
+          ],
+          "resamples": 150,
+          "unit": "LPA cluster"
+        }
+      },
+      "interpretation": "every paired interval excludes zero under both the row-level and the LPA-clustered protocol: demonstrated headroom over every measured simple reference under this protocol (procedure-type rate 0.5551, LPA history rate 0.5414, shipped rate feature 0.5422; persistence 0.5045; degenerate calendar control). One model configuration, no re-tuning, two validation years of eval coverage - an observed result, not a bound on other models",
+      "replication_note": "the references are reimplemented here independently (pandas groupby), not imported from the build job's score.py; the shipped_rate_feature reference scores the artifact's own lpa_allow_rate_prior column, cross-checking the LPA-rate implementation (0.5422 vs 0.5414). The model figure is quoted from the verbatim runner contract run, not independently rerun.",
+      "limitations": [
+        "one model configuration with no re-tuning",
+        "two validation years of eval coverage",
+        "the calendar-identity control was degenerate (collapsed onto the LPA rate), so seasonality/identity headroom is not independently established",
+        "the model's per-validation-year AUC and Brier were not computed; per-year figures exist for the references only"
+      ],
+      "notes": [
+        "the references are reimplemented here independently (pandas groupby), not imported from the build job's score.py",
+        "shipped_rate_feature scores the artifact's own lpa_allow_rate_prior column; its agreement with lpa_hist_rate cross-checks the reference",
+        "intervals containing zero are inconclusive differences, not parity"
+      ]
+    },
+    "scope_note": "All figures computed on temporary workers after exact-byte acceptance of artifact c861bd8f4acd9bbe267bdb58e1168996fdb359c540aaf4030030a632d693c527; the holdout was never opened by any scoring stage and stays sealed. The cross-row exposure (LPA-history features embedding other rows' labels) means honest evaluation requires isolated rows - a requirement the shipped illustrative runner does not enforce."
+  },
+  "assets": {
+    "meta.json": {
+      "asset_name": "meta.json",
+      "bytes": 2518,
+      "sha256": "4e7a31048bb77372cbc42bcf3f8a341e2eeeed0afdce920fb678164f2f6c76b2"
+    },
+    "private/holdout.csv": {
+      "asset_name": "private-holdout.csv",
+      "bytes": 14976119,
+      "sha256": "3f65dc801e0819bd6e828a101065deb7cfc68b764db339a08b2442deddc6fc96"
+    },
+    "public/eval.csv": {
+      "asset_name": "public-eval.csv",
+      "bytes": 7688640,
+      "sha256": "2ab9271f70c74f857f0c1a7b696fa299427754a5fb0167a7ee6ab11480dd6e72"
+    },
+    "public/train.csv": {
+      "asset_name": "public-train.csv",
+      "bytes": 14799462,
+      "sha256": "299e5af47610af833bec33e15e8a5d8a242f6edebfd401388714b819593c2f65"
+    },
+    "quality.json": {
+      "asset_name": "quality.json",
+      "bytes": 44632,
+      "sha256": "9203accc06369f3d2468b8740ac84c293d5e1222907d2daa1d7bb486b437ae33"
+    }
+  },
+  "package_files": {
+    "DATA_DICTIONARY.md": "8ae26138131bff9d461ea5f3dd9e3e6147cde765cba0cdb3abcc924ed0ffc6d6",
+    "LICENSE-CC0-1.0.txt": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+    "LICENSE-MIT.txt": "200f782f6b8bc23b926ea774cbacb4147826b3b2b59200917d8dc5ec68159535",
+    "LICENSE.md": "4dc5b5a7b2908476571a5a050712ecc875ec1994aeed36380ca616ee5abb5cde",
+    "README.md": "741826a08a7394bc0c943f25c4a2526c34d337d073ed191e93ca387de156db6f",
+    "RELEASE_NOTES.md": "ee562d669e2dc6561963e0c4d7e628aaff6090855e6ba354325c57b48d0a6517",
+    "REPRODUCE.md": "daa78050f49a657e7010abddcb0b5b43343df0bbe66990a6bc17e7bf8a76fa4f",
+    "SHA256SUMS": "4aa57b8ca78096b90c71e8a985dd0e1b1d7c23344978b2df6f6358897aefb92e",
+    "VERIFICATION.md": "500abb922a279fcfc9e8087e1d15e2f71e32d03cdc7f95de9946ba5a711b2e96",
+    "baseline/README.md": "34e850e70454114db70d287d482add1597ca2b8fc365658f67148632d9044459",
+    "baseline/reproduce_baseline.sh": "32de96032ab1b55d19fdcd1e04e0f5a6b10a187633aa280e9ee76aee9f03c584",
+    "baseline/train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+    "baseline/validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+    "baseline/validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d",
+    "code/build.py": "dc0b3ddeff3ec7efa3fe5f5a587189f2a481cfcb591a8f5444c5034f7d51b86f",
+    "code/category_probe.json": "08c52aa5f5cdee9da5882b2485e7ff1ec6c3f9839923623cf0ba4fb1e44f59f8",
+    "code/materialize.py": "99fa787ebbff5dadee7154489171551df6a2f9debd36d6973da816b44a219f13",
+    "code/qualify_dataset.py": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1",
+    "code/run.sh": "1852faaab7684cc81150a38c346b0f15524b1b2f609acce372e1602797fca908",
+    "code/score.py": "3b8298c7ddbb4a886da8a299f265ddf45c0968c8827348fc4b9f0bb68941ca30",
+    "get_dataset.py": "62d724f42bfad34fdf78dae22873127983589c5254c72e21d8baac16ef8edd1c",
+    "measurements.json": "c49cd692e73284f5eabeede6dd9e42c9be48c37c8b1d774f073a66fe6b044ded",
+    "meta.json": "4e7a31048bb77372cbc42bcf3f8a341e2eeeed0afdce920fb678164f2f6c76b2",
+    "qualification.json": "f2d33fcaf593bdaf812f11ebf40ce904125e7867969c6a882ae1c5c4f7719abf",
+    "quality.json": "9203accc06369f3d2468b8740ac84c293d5e1222907d2daa1d7bb486b437ae33"
+  },
+  "baseline_command": "sh baseline/reproduce_baseline.sh ./task",
+  "get_dataset_command": "python3 get_dataset.py --dest ./task",
+  "source": {
+    "name": "Planning Inspectorate Casework Database (GOV.UK publication, 2026-10-22 edition) - the two bulk Excel extracts",
+    "landing_page": "https://www.gov.uk/government/publications/planning-inspectorate-appeals-database",
+    "api": "https://assets.publishing.service.gov.uk/media/6ad9fcc1c818345ad8aca325/Casework_Database_-_2610.xlsx and https://assets.publishing.service.gov.uk/media/6ad9fcd12263175ac2aca2f7/Older_Casework_Data_-_2610.xlsx - two anonymous bulk GETs; ~40 documented fields with per-field data-quality grades",
+    "accessed": "2026-10-31 (the build pins the 2026-10-22 edition bytes and fails if they change; the publisher republishes the rolling database monthly-to-quarterly, so the pin is the vintage)",
+    "licence": "Open Government Licence v3.0 (the publication's data-notes page; OGL emblem on the publication page; evidence recorded in candidates/pins-planning-appeal-outcome/record.json license_evidence). Required attribution carries through: 'Contains public sector information licensed under the Open Government Licence v3.0. Source: Planning Inspectorate Casework Database (Planning Inspectorate), Casework_Database_-_2610.xlsx and Older_Casework_Data_-_2610.xlsx, 2026-10-22 edition.' Derived research dataset - not a Planning Inspectorate product.",
+    "licence_evidence": [
+      "Read 2026-10-31 from https://www.gov.uk/government/publications/planning-inspectorate-appeals-database/appeals-data-data-notes-and-guidance: 'This publication is licensed under the terms of the Open Government Licence v3.0 except where otherwise stated.'",
+      "Publication page (read 2026-10-31) carries the Open Government Licence emblem and 'Crown copyright 2026'; no dataset-specific restriction is stated on the publication page or the data notes - the publisher's own caveats are about attribution of outcomes to decision makers, not redistribution.",
+      "Publisher caveats to carry onto any release (data notes + publication page, read 2026-10-31): 'Some categorisation of appeals can be subjective'; 'data can change between different publications of this data set'; decided cases only (in progress / withdrawn / turned away not included); Local Plans Examinations rows removed from the current Casework Database; TPO valid dates removed by the publisher after a data-entry issue (TPO is out of the core task's scope); inspector-name data errors corrected 2025 (field excluded from features anyway); 'The Planning Inspectorate will not entertain a challenge to the appointment of any Decision Maker on the basis of this data.'"
+    ]
+  },
+  "layout": {
+    "public/train.csv": "public/train.csv",
+    "public/eval.csv": "public/eval.csv",
+    "private/holdout.csv": "private/holdout.csv",
+    "meta.json": "meta.json",
+    "quality.json": "quality.json"
+  },
+  "files": {
+    "public/train.csv": {
+      "bytes": 14799462,
+      "sha256": "299e5af47610af833bec33e15e8a5d8a242f6edebfd401388714b819593c2f65"
+    },
+    "public/eval.csv": {
+      "bytes": 7688640,
+      "sha256": "2ab9271f70c74f857f0c1a7b696fa299427754a5fb0167a7ee6ab11480dd6e72"
+    },
+    "private/holdout.csv": {
+      "bytes": 14976119,
+      "sha256": "3f65dc801e0819bd6e828a101065deb7cfc68b764db339a08b2442deddc6fc96"
+    },
+    "meta.json": {
+      "bytes": 2518,
+      "sha256": "4e7a31048bb77372cbc42bcf3f8a341e2eeeed0afdce920fb678164f2f6c76b2"
+    },
+    "quality.json": {
+      "bytes": 44632,
+      "sha256": "9203accc06369f3d2468b8740ac84c293d5e1222907d2daa1d7bb486b437ae33"
+    }
+  },
+  "splits": {
+    "train": {
+      "rows": 54834,
+      "positives": 17048,
+      "positive_rate": 0.3109019951125214
+    },
+    "eval": {
+      "rows": 28104,
+      "positives": 8469,
+      "positive_rate": 0.30134500426985483
+    },
+    "holdout": {
+      "rows": 56326,
+      "positives": 17705,
+      "positive_rate": 0.3143308596385328
+    }
+  },
+  "qualification": {
+    "gate_version": "1.5.0",
+    "ok": true,
+    "failed_checks": [],
+    "result": "PASSED",
+    "artifact_version": "c861bd8f4acd9bbe267bdb58e1168996fdb359c540aaf4030030a632d693c527",
+    "report": "qualification.json"
+  },
+  "baseline": {
+    "job": "pins-planning-baseline-002",
+    "purpose": "one baseline through the runner's existing training and validation contract, on the accepted pins-planning-appeal-outcome artifact, plus the derived paired model-vs-reference intervals",
+    "artifact": {
+      "name": "pins-planning-appeal-outcome",
+      "target": "allowed",
+      "positive_label": 1,
+      "id_columns": [
+        "row_id"
+      ],
+      "rows": {
+        "train": 54834,
+        "eval": 28104,
+        "holdout": 56326
+      },
+      "positive_rate": {
+        "train": 0.3109019951125214,
+        "eval": 0.30134500426985483,
+        "holdout": 0.3143308596385328
+      },
+      "split_description": "temporal split on the VALIDATION instant, the shipped time column: train = appeals validated before 2020-01-01, eval = validated 2020-01-01..2021-12-31, holdout = validated on or after 2022-01-01. The candidate record's provisional partition was by decision year; the outcome date cannot ship (it is post-instant information) and the qualification gate requires disjoint split ranges on a shipped time column, so the split key moved to the instant - the same construction as the published ipo-trademark-registration-outcome (filed_date) and ec-merger-phase2-opening (notification_date) tasks. Slow cases mean a split's labels can postdate the next split's earliest instants; label timing is declared unverified and the artifact is retrospective research only."
+    },
+    "qualification_report": {
+      "bundled": "qualification.json",
+      "sha256": "f2d33fcaf593bdaf812f11ebf40ce904125e7867969c6a882ae1c5c4f7719abf",
+      "gate_version": "1.5.0",
+      "gate_ok": true,
+      "gate_failed_checks": [],
+      "accepted_before_scoring": true,
+      "accepted_artifact_version": "c861bd8f4acd9bbe",
+      "qualified_artifact_version": "c861bd8f4acd9bbe267bdb58e1168996fdb359c540aaf4030030a632d693c527"
+    },
+    "contract": {
+      "contract_ok": true,
+      "eval_auc_from_train_py": 0.6108,
+      "eval_auc_from_validate_py": 0.6108
+    },
+    "model_vs_references": {
+      "purpose": "derived evidence, not the runner: paired model-vs-reference intervals on identical eval rows after the verbatim contract run",
+      "model": "XGBClassifier n_estimators=30 max_depth=6 lr=0.1 hist seed 42 - identical to the verbatim train.py baseline; string columns with >1000 levels dropped exactly as the baseline drops them",
+      "scope": "eval rows only (28104 rows, validation instants 2020-2021); the holdout was never opened",
+      "model_eval_auc": 0.6108489948647478,
+      "references_eval_auc": {
+        "lpa_hist_rate": 0.5414410163425604,
+        "procedure_type_rate": 0.55506072071053,
+        "shipped_rate_feature": 0.5422421736543134
+      },
+      "paired_row_level": {
+        "lpa_hist_rate": {
+          "model_auc": 0.6108489948647478,
+          "reference_auc": 0.5414410163425604,
+          "observed_diff": 0.06940797852218739,
+          "ci95": [
+            0.06221382066459791,
+            0.07659881935671231
+          ],
+          "resamples": 150
+        },
+        "procedure_type_rate": {
+          "model_auc": 0.6108489948647478,
+          "reference_auc": 0.55506072071053,
+          "observed_diff": 0.05578827415421772,
+          "ci95": [
+            0.046661949591588536,
+            0.06261963717752905
+          ],
+          "resamples": 150
+        },
+        "shipped_rate_feature": {
+          "model_auc": 0.6108489948647478,
+          "reference_auc": 0.5422421736543134,
+          "observed_diff": 0.06860682121043438,
+          "ci95": [
+            0.061863579560411885,
+            0.07555217878137621
+          ],
+          "resamples": 150
+        }
+      },
+      "paired_lpa_clustered": {
+        "lpa_hist_rate": {
+          "ci95": [
+            0.0597079992007401,
+            0.079216870767996
+          ],
+          "resamples": 150,
+          "unit": "LPA cluster"
+        },
+        "procedure_type_rate": {
+          "ci95": [
+            0.04621657112389288,
+            0.06537236597230933
+          ],
+          "resamples": 150,
+          "unit": "LPA cluster"
+        },
+        "shipped_rate_feature": {
+          "ci95": [
+            0.05963823738848373,
+            0.07997558183755316
+          ],
+          "resamples": 150,
+          "unit": "LPA cluster"
+        }
+      },
+      "notes": [
+        "the references are reimplemented here independently (pandas groupby), not imported from the build job's score.py",
+        "shipped_rate_feature scores the artifact's own lpa_allow_rate_prior column; its agreement with lpa_hist_rate cross-checks the reference",
+        "intervals containing zero are inconclusive differences, not parity"
+      ]
+    },
+    "runner_files": {
+      "bundled_sha256": {
+        "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+        "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+        "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      },
+      "expected_sha256": {
+        "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+        "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+        "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      },
+      "unmodified": true
+    },
+    "dependencies": {
+      "python": "3.13.18",
+      "pandas": "2.3.3",
+      "numpy": "2.5.4",
+      "xgboost": "3.4.1",
+      "scikit-learn": "1.9.1"
+    },
+    "scope": "runner-contract baseline plus derived reference intervals; no agent loop, no holdout evaluation. Holdout stays sealed until the design is frozen."
+  },
+  "scope": "One baseline through the runner's training and validation contract. No agent or harness comparison was run and none is implied.",
+  "published": false,
+  "publication_note": "Prepared for human review. Nothing here has been published.",
+  "licenses": {
+    "policy_version": "2026-09-19",
+    "decided": "2026-10-31",
+    "code": {
+      "spdx": "MIT",
+      "file": "LICENSE-MIT.txt",
+      "copyright": "Copyright (c) 2026 E. Ari\u00f1o de la Rubia (earino)",
+      "third_party": [
+        {
+          "file": "baseline/train.py, baseline/validate.py, baseline/validate.sh",
+          "terms": "MIT - the harness benchmark's own runner files, shipped verbatim and unmodified (bundled sha256 equal the benchmark clone's hashes, recorded as unmodified: true in the baseline job result)",
+          "permission": "The benchmark checkout is read-only; permission to distribute verbatim copies of its runner files covers the distributed copies only"
+        }
+      ]
+    },
+    "data_compilation": {
+      "spdx": "CC0-1.0",
+      "file": "LICENSE-CC0-1.0.txt",
+      "scope": "Our contribution - the s78_core eligibility frame (planning-permission-family casework with a binary Allowed/Dismissed decision), the counted exclusions (non-binary decisions, cross-file composite duplicates, decided-before-validation rows), the derived binary label from the publisher's Decision field, the derived date-gap and calendar features, the site-descriptor and designation flags, the LPA prior-outcome history features computed strictly from decisions earlier than the row's validation instant, the validation-instant temporal partition, and the packaging - is dedicated to the public domain under CC0-1.0. The dedication covers only our contribution: the underlying Planning Inspectorate Casework Database keeps its own designation and remains subject to the Open Government Licence v3.0, whose attribution condition carries through to every copy of the derived data. Nothing here relicenses the source or presents CC0 as the source's terms."
+    },
+    "source_data": {
+      "spdx": "OGL-UK-3.0",
+      "status": "Planning Inspectorate Casework Database (GOV.UK publication 'Planning Inspectorate Casework Database', 2026-10-22 edition) under the Open Government Licence v3.0: free to copy, publish, distribute, transmit, adapt and exploit commercially with the required attribution statement. OGL-UK exempts personal data, third-party rights and official symbols from its grant; the shipped columns were chosen with that in mind: the publisher's inspector-name field is excluded by design (post-instant and corrected for data errors by the publisher in 2025), no free-text applicant or site-occupier identity ships, and the LPA name/ONS code, casework type, procedure, development type, appeal reason fields, site descriptors and flags are redistributed exactly as the publisher publishes them, with nothing added beyond our derived binary label, the derived date/calendar features, the LPA prior-outcome history features, the eligibility frame, the deduplication and the partition. The derived dataset is labelled as such throughout and is not the Planning Inspectorate's official product. The publisher's own caveats carry through unchanged: some categorisation of appeals can be subjective; the data can change between different publications of this dataset; the extract covers decided cases only (in progress, withdrawn and turned away cases are not included); Local Plans Examination rows were removed by the publisher from the current Casework Database; TPO valid dates were removed by the publisher after a data-entry issue (TPO is out of this task's scope); and 'The Planning Inspectorate will not entertain a challenge to the appointment of any Decision Maker on the basis of this data.'",
+      "evidence": [
+        "[Appeals Data: data notes and guidance, https://www.gov.uk/government/publications/planning-inspectorate-appeals-database/appeals-data-data-notes-and-guidance, read 2026-10-31] 'This publication is licensed under the terms of the Open Government Licence v3.0 except where otherwise stated.'",
+        "[Publication page, https://www.gov.uk/government/publications/planning-inspectorate-appeals-database, read 2026-10-31] Open Government Licence emblem present; 'Crown copyright 2026'; no dataset-specific restriction stated on the publication page or the data notes.",
+        "[Data notes and guidance, read 2026-10-31] Publisher caveats: 'Some categorisation of appeals can be subjective'; 'data can change between different publications of this data set'; decided cases only; Local Plans Examinations rows removed from the current Casework Database; TPO valid dates removed by the publisher after a data-entry issue; inspector-name data errors corrected 2025 (the field is excluded from this task's features by design).",
+        "[Pinned source bytes, two anonymous GETs] Casework_Database_-_2610.xlsx, 22,207,115 B, sha256 dff80bd0f17cbc640dc205009a9411269c8e58462b6df71af903c592af3c20fa; Older_Casework_Data_-_2610.xlsx, 12,325,866 B, sha256 baf28d80c5cd5ad266f8a9e62c25517b2ec9d4c5d951239ab0638666bc092a4b; both from the publication page's download links (assets.publishing.service.gov.uk), the 2026-10-22 edition the build pins and fails on if the bytes change."
+      ],
+      "attribution": "Contains public sector information licensed under the Open Government Licence v3.0. Source: Planning Inspectorate Casework Database (Planning Inspectorate), Casework_Database_-_2610.xlsx and Older_Casework_Data_-_2610.xlsx, 2026-10-22 edition.",
+      "citation": "Planning Inspectorate. Planning Inspectorate Casework Database (bulk extract, 2026-10-22 edition). https://www.gov.uk/government/publications/planning-inspectorate-appeals-database . Licensed under the Open Government Licence v3.0. Derived dataset: UK planning-appeal outcome prediction task (not a Planning Inspectorate product).",
+      "derived_labelling": "Labelled as a derived research dataset throughout; it is not the Planning Inspectorate's official product and the Planning Inspectorate has not reviewed or endorsed it. The publisher's own designation, required attribution statement, suggested citation and data caveats are preserved, and changes from the source are indicated (row selection, counted exclusions, deduplication, derived label, derived features, partition)."
+    },
+    "rules": [
+      "Code and documentation: MIT by default.",
+      "Our rights in a derived compilation: CC0-1.0 by default.",
+      "The source's own terms are preserved and never relicensed; the compilation dedication covers only our contribution.",
+      "Each dataset must use terms compatible with its sources. CC0 is NOT a blanket override of upstream terms: attribution, share-alike and non-commercial requirements from a source are carried through unchanged.",
+      "A source whose licence terms cannot be read is not published at all.",
+      "The chosen terms are declared per dataset in candidates/<id>/license.json and recorded in the release manifest, so the manifest cannot drift from the decision."
+    ]
+  }
+}

@@ -1,6 +1,6 @@
 {
  "id": "pins-planning-appeal-outcome",
- "status": "ready",
+ "status": "packaged",
  "created_at": "2026-10-31T16:07:59.325598+00:00",
  "domain": "planning law and land-use adjudication / regulatory appeal outcomes",
  "prediction_question": "For a planning-permission-family appeal (PINS casework type 'Planning Appeal' or 'Householder (HAS)') validated by the Planning Inspectorate, will the final decision be 'Allowed' rather than 'Dismissed', given only what is known at validation: casework type, LPA name and ONS code, LPA decision date, received date, procedure (written representations / hearing / inquiry), development type, appeal type reason and type-detail, site descriptors (area, floorspace, number of residences, green belt, agricultural holding, listed-building setting, conservation area, flooding issue, AONB, SSSI indicators), LPA application reference, and enforcement grounds where applicable?",
@@ -34,7 +34,7 @@
   "Publication page (read 2026-10-31) carries the Open Government Licence emblem and 'Crown copyright 2026'; no dataset-specific restriction is stated on the publication page or the data notes - the publisher's own caveats are about attribution of outcomes to decision makers, not redistribution.",
   "Publisher caveats to carry onto any release (data notes + publication page, read 2026-10-31): 'Some categorisation of appeals can be subjective'; 'data can change between different publications of this data set'; decided cases only (in progress / withdrawn / turned away not included); Local Plans Examinations rows removed from the current Casework Database; TPO valid dates removed by the publisher after a data-entry issue (TPO is out of the core task's scope); inspector-name data errors corrected 2025 (field excluded from features anyway); 'The Planning Inspectorate will not entertain a challenge to the appointment of any Decision Maker on the basis of this data.'"
  ],
- "construction_script": null,
+ "construction_script": "candidates/pins-planning-appeal-outcome/source/build.py",
  "split_strategy": "Temporal by decision year, counts computed from the source (probe_count.py, 2026-10-31 files, s78_core = Planning Appeal + Householder (HAS)): train 2016-2020 (older file) 65,483 rows, 19,577 allowed (29.9%); eval 2021-2022 (complementary halves of 2021 from both files: 10,199+3,442) 27,179 rows, 8,044 allowed (29.6%); holdout 2023-2026 (5-yr file, 2026 through October) 52,471 rows, 16,273 allowed (31.0%). Both classes present in every one of the 11 decision years (yearly allow rate 27.0%-34.6%, no drift). Positives are independent appeal events; the main clustering is by LPA (376-379 distinct) and by linked cases (Link Status/Lead Case present, 0 duplicate case numbers within each file) - an LPA-clustered bootstrap interval is planned for the reference comparison. Cross-file dedup must key on the composite (Type of Casework, LPA Name, Received/Valid/Decision dates, Decision) because the Older Casework Data reference numbers are explicitly NOT linkable to Casework Database case numbers (publisher-documented).",
  "measurements": {
   "probe_2026_10_31": {
@@ -405,12 +405,73 @@
    "collected": "2026-10-31T18:32:42Z",
    "destroyed": "2026-10-31T18:33:08Z",
    "outcome": "RUNNER CONTRACT NOW PASSES END TO END on the rebuilt artifact (the defect class that killed baseline-001). Verified from the collected reports, never the exit code: --accept printed ACCEPTED c861bd8f4acd9bbe for the fetched staging-430108320 bytes before any number; materialize copied public train+eval only (holdout fetched for --accept, never copied into a workdir); the benchmark's own train.py and validate.sh ran UNMODIFIED (bundled sha256 == expected for all three runner files) - train.py Eval AUC 0.6108, validate.sh CONTRACT OK with the same 0.6108 via predict_proba on the target-dropped frame. Derived evidence (model_intervals.py, second implementation): model 0.6108489948647478 vs procedure_type_rate 0.5551 diff +0.0558 (row-level CI [0.0467, 0.0626]; LPA-clustered CI [0.0462, 0.0654]); vs lpa_hist_rate 0.5414 diff +0.0694 (CI [0.0622, 0.0766]; clustered [0.0597, 0.0792]); vs shipped_rate_feature 0.5422 diff +0.0686 (CI [0.0619, 0.0756]) - EVERY interval excludes zero on BOTH protocols: the full model beats all measured simple references, and the second implementation reproduces the build job's reference figures exactly (0.5414410163425604 / 0.55506072071053). Eval rows only (28,104); the holdout was never opened and stays sealed. Dependencies: python 3.13.18, pandas 2.3.3, numpy 2.5.4, xgboost 3.4.1, scikit-learn 1.9.1. Worker destroyed 18:33:08Z; provider read-back this session: server 173817662 HTTP 404, zero project servers, zero primary IPs."
+  },
+  {
+   "id": "pins-publish-001",
+   "status": "succeeded",
+   "exit_code": null,
+   "elapsed_seconds": 12.1,
+   "server_id": 173852125,
+   "staging_release": 430216092,
+   "launched": "2026-10-31T22:09:21Z",
+   "collected": "2026-10-31T22:15:27Z",
+   "destroyed": "2026-10-31T22:15:57Z",
+   "outcome": "Destination-staging transfer (release job, host-side, no container): copied the five accepted pins-planning-002 assets (artifact c861bd8f4acd9bbe267bdb58e1168996fdb359c540aaf4030030a632d693c527) from private staging release 430108320 into private dataset repo earino/pins-planning-appeal-outcome release v2026.10 (430215294) under the flat asset names the download helper restores (meta.json, private-holdout.csv, public-eval.csv, public-train.csv, quality.json); source asset ids resolved by sha256 against the staging manifest, not hand-copied. Every asset verified against its recorded sha256 on arrival AND against the server's own digest after upload; failures=[]; 37,511,371 B total, bytes never passed through the coordinator. Verified again by this follow-up via the GitHub API: release 430215294 (non-draft, tag v2026.10) carries exactly 5 assets whose server digests equal the accepted artifact digests (4e7a3104/3f65dc80/2ab9271f/299e5af4/9203accc). Worker destroyed via the supported lifecycle (destroy command's built-in provider read-back) and re-confirmed by `worker status` reconciliation at 2026-10-31T22:41Z."
+  },
+  {
+   "id": "pins-consumer-001",
+   "status": "succeeded",
+   "exit_code": 0,
+   "elapsed_seconds": 86.3,
+   "server_id": 173853774,
+   "staging_release": 430220991,
+   "launched": "2026-10-31T22:19:50Z",
+   "collected": "2026-10-31T22:22:49Z",
+   "destroyed": "2026-10-31T22:34:42Z",
+   "outcome": "Fresh-consumer verification of the published v2026.10 bytes, read from the collected reports (release 430220991 -> .factory/pins-consumer-001/reports/output/), never from the exit code alone. The worker host fetched the five release assets from release 430215294 with digest verification and mounted them read-only; the container had no credential and no factory access. All ten published REPRODUCE steps passed: (1) package 25/25 files match MANIFEST.json; (2) asset layout restored as get_dataset.py expects; (3) get_dataset.py re-verification OK (5 files, 37,511,371 B); (4) sha256sum -c SHA256SUMS OK over the restored tree; (5) gate 1.5.0 QUALIFICATION PASSED on the full published artifact; (6) exact-byte --accept ACCEPTED artifact c861bd8f4acd9bbe; (7) declared dependency ranges install and import (pandas 2.3.3, numpy 2.5.4, xgboost 3.4.1, scikit-learn 1.9.1); (8) baseline/reproduce_baseline.sh CONTRACT OK with both AUC prints 0.6108 (holdout NOT copied into the workdir); (9) code/score.py recomputed the reference triad on the 28,104 eval rows and every figure equals measurements.json (procedure_type_rate 0.5551, lpa_hist_rate 0.5414, persistence 0.5045, majority-class accuracy_this_split 0.698655; calendar_identity collapsed onto lpa_hist exactly and year_rate/global_rate carry null AUC by design with briers); (10) rebuild from source with --built-at 2026-10-31T00:00:00Z and the packaged probe verdict is byte-identical to the release (all five digests match SHA256SUMS). Worker destroyed via the supported lifecycle (destroy command's built-in provider read-back) and re-confirmed by `worker status` reconciliation at 2026-10-31T22:41Z."
   }
  ],
- "artifacts": [],
+ "artifacts": [
+  {
+   "artifact_version": "c861bd8f4acd9bbe267bdb58e1168996fdb359c540aaf4030030a632d693c527",
+   "digest_of": "sha256 over train/eval/holdout CSVs + meta.json + quality.json (gate 1.5.0 artifact_version)",
+   "gate_version": "1.5.0",
+   "accepted": "exact-byte --accept on the worker (pins-planning-002 / pins-planning-baseline-002) and on the published v2026.10 bytes (pins-consumer-001); rebuild from source byte-identical (all five digests match SHA256SUMS)",
+   "source_snapshot": {
+    "Casework_Database_-_2610.xlsx": {
+     "sha256": "dff80bd0f17cbc640dc205009a9411269c8e58462b6df71af903c592af3c20fa",
+     "bytes": 22207115
+    },
+    "Older_Casework_Data_-_2610.xlsx": {
+     "sha256": "baf28d80c5cd5ad266f8e9e62c25517b2ec9d4c5d951239ab0638666bc092a4b",
+     "bytes": 12325866
+    },
+    "edition": "GOV.UK Planning Inspectorate Casework Database, 2026-10-22 edition, fetched 2026-10-31 (two anonymous bulk GETs; the build pins these bytes and fails if they change)"
+   },
+   "splits": {
+    "train": {
+     "rows": 54834,
+     "positives": 17048
+    },
+    "eval": {
+     "rows": 28104,
+     "positives": 8469
+    },
+    "holdout": {
+     "rows": 56326,
+     "positives": 17705
+    }
+   },
+   "staged_at": {
+    "github_release": "earino/pins-planning-appeal-outcome v2026.10 (430215294, private, tag == main == a19978bd)",
+    "transfer_job": "pins-publish-001",
+    "consumer_job": "pins-consumer-001"
+   }
+  }
+ ],
  "rejection_reason": null,
  "review": null,
- "next_action": "RUNNER CONTRACT VERIFIED 2026-10-31 (jobs pins-planning-002 + pins-planning-baseline-002, both succeeded, both destroyed with provider 404 read-back): the single permitted rebuild fixed the one real breaker (num() prose->missing; eval.csv differs from 001 only in those 6 cells; train/holdout byte-identical), and the worker-side probe settled the open question - the verbatim predict path ACCEPTS category dtypes under xgboost 3.4.1 (fit, seen-level and unseen-level-NaN predicts all pass), so string levels ship and 001's category-column listing was the dtype validator's message shape, not a second defect. New accepted artifact c861bd8f4acd9bbe... (gate 1.5.0 0 failed checks, --accept ACCEPTED, staging release 430108320). Baseline on the identical 28,104 eval rows: train.py Eval AUC 0.6108, validate.sh CONTRACT OK, and the model beats EVERY measured simple reference with row-level AND LPA-clustered intervals excluding zero (+0.0558 vs procedure_type 0.5551, +0.0694 vs lpa_hist 0.5414, +0.0686 vs shipped rate feature; persistence 0.5045; calendar control degenerate, collapsed onto lpa_hist exactly and recorded as such). No further rebuild of this construction is justified or permitted - the one rebuild is spent; a new runner-contract defect would mean re-target as a new task instance, no pins-planning-003. NEXT STEP (advancement, unblocked): package and privately stage the accepted c861bd8f artifact with dataset-release (release-manifest, check-package, VERIFICATION with the baseline triad quoted together, licence block from the recorded OGL v3.0 decision), then the usual private staging + consumer verification; the holdout stays sealed (never scored) and publication remains the operator's flip.",
+ "next_action": "PACKAGED 2026-10-31 22:36Z (watcher follow-up of release jobs pins-publish-001 + pins-consumer-001, both succeeded and destroyed with provider 404 read-back): artifact c861bd8f4acd9bbe267bdb58e1168996fdb359c540aaf4030030a632d693c527 is packaged at release/pins-planning-appeal-outcome/ and staged on the private dataset repo earino/pins-planning-appeal-outcome as release v2026.10 (430215294, non-draft, tag == main == a19978bd), 5/5 assets at the accepted digests; the fresh-consumer job re-ran every published REPRODUCE step against the released bytes (gate PASSED, exact-byte --accept ACCEPTED, baseline CONTRACT OK at 0.6108, references recomputed equal, rebuild byte-identical; reports in .factory/pins-consumer-001/reports/output/). REMAINING (advancement, in order): (1) Hub staging via the documented cycle - hf-publish.py --plan, --create --upload-small (coordinator, small docs only), hf_publish worker job moving the five data files from the staged GitHub release with digest verification at both ends, hf-publish.py --verify, --tag LAST, keeping tag == main; (2) write the Hub block into release/pins-planning-appeal-outcome/DESTINATIONS.json beside the recorded GitHub block; (3) run scripts/check-suitability.py and carry its public notice to the card/LOADING/site; (4) then set awaiting_operator: true - the flip (making the repo and Hub repo public) is the operator's single approval, with the standing pre-flip adversarial audit prompt generated from templates/pre-flip-audit-prompt.md and filled programmatically from the frozen manifest. No rebuild of this construction is permitted (the one rebuild is spent); a new runner-contract defect means re-target as a new task instance, no pins-planning-003. The holdout stays sealed (fetched only for --accept, never copied into a workdir, never scored).",
  "novelty_check": {
   "checked_at": "2026-10-31T16:15:06+00:00",
   "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
@@ -449,7 +510,7 @@
      "hits": 210781,
      "top": [
       "Community Mental Health Service User Councils and Involuntary Admission Appeals in Kenyan Counties: A Difference-in-Differences Estimation of Participatory Governance Exposure",
-      "A time-series forecasting model for the cost-effectiveness evaluation of district hospital systems in Kenya: a methodological appraisal, 2000\u20132026",
+      "A time-series forecasting model for the cost-effectiveness evaluation of district hospital systems in Kenya: a methodological appraisal, 2000–2026",
       "LATENT FACTOR-GUIDED TEMPORAL MODELING FOR PREDICTING AUTISM TREATMENT OUTCOMES USING BI-LSTM NETWORKS",
       "Trew's Law: Automatic review of convictions linked to imprisoned police officers",
       "Oral and Maxillofacial Surgery: Segmentation, Surgical Risk and Outcome Prediction"
@@ -536,7 +597,7 @@
     }
    ]
   },
-  "evidence_summary": "- huggingface_datasets / 'planning appeal outcome prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'Planning Inspectorate machine learning': 0 hit(s) - nothing notable\n- huggingface_datasets / 'planning appeal benchmark dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'UK planning appeals train test dataset': 0 hit(s) - nothing notable\n- zenodo_records / 'planning appeal outcome prediction': 210781 hit(s) - Community Mental Health Service User Councils and Involuntary Admission Appeals in Kenyan Counties: A Difference-in-Differences Estimation of Participatory Governance Exposure, A time-series forecasting model for the cost-effectiveness evaluation of district hospital systems in Kenya: a methodological appraisal, 2000\u20132026, LATENT FACTOR-GUIDED TEMPORAL MODELING FOR PREDICTING AUTISM TREATMENT OUTCOMES USING BI-LSTM NETWORKS, Trew's Law: Automatic review of convictions linked to imprisoned police officers, Oral and Maxillofacial Surgery: Segmentation, Surgical Risk and Outcome Prediction\n- zenodo_records / 'Planning Inspectorate machine learning': 396532 hit(s) - plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database, Analysis of Risk-Based Internal Audit Planning Implementation and Its Impact on Audit Quality: Case Study at the Inspectorate of Surakarta, Indonesia, mushrooms\n- zenodo_records / 'planning appeal benchmark dataset': 426028 hit(s) - SCG Dataset from Graph Neural Networks in Supply Chain Analytics and Optimization: Concepts, Perspectives, Dataset and Benchmarks, NFT Dataset for testing the ranking and rarity algorithms, Geospatial Modelling of Australia's National Electricity Market - Dataset, A Dataset of Orthogonal Polygon-Derived Maze Environments for Path Planning Benchmarking, VishalPallagani/PLANTS-benchmark: v1.0.0\n- zenodo_records / 'UK planning appeals train test dataset': 673396 hit(s) - Annual patronage by regional train station, Victoria, Annual patronage by metropolitan train station, Melbourne, HyperTex-Splits: Standardized Train-Test Partitions for Fibre Composition Estimation, The UK COVID-19 Vocal Audio Dataset, municipalities_train_test_set.hdf5\n- arxiv_preprints / 'planning appeal outcome prediction': 5 hit(s) - Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, PiP: Planning-informed Trajectory Prediction for Autonomous Driving, Predicted Composite Signed-Distance Fields for Real-Time Motion Planning in Dynamic Environments, HDDL 2.1: Towards Defining a Formalism and a Semantics for Temporal HTN Planning, Provenance-Based Assessment of Plans in Context\n- arxiv_preprints / 'Planning Inspectorate machine learning': 5 hit(s) - Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Active learning for data streams: a survey, Physics-Inspired Interpretability Of Machine Learning Models\n- arxiv_preprints / 'planning appeal benchmark dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, Bitstream-Corrupted Video Recovery: A Novel Benchmark Dataset and Method, HDDL 2.1: Towards Defining a Formalism and a Semantics for Temporal HTN Planning\n- arxiv_preprints / 'UK planning appeals train test dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, MLIM: Vision-and-Language Model Pre-training with Masked Language and Image Modeling, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, HDDL 2.1: Towards Defining a Formalism and a Semantics for Temporal HTN Planning",
+  "evidence_summary": "- huggingface_datasets / 'planning appeal outcome prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'Planning Inspectorate machine learning': 0 hit(s) - nothing notable\n- huggingface_datasets / 'planning appeal benchmark dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'UK planning appeals train test dataset': 0 hit(s) - nothing notable\n- zenodo_records / 'planning appeal outcome prediction': 210781 hit(s) - Community Mental Health Service User Councils and Involuntary Admission Appeals in Kenyan Counties: A Difference-in-Differences Estimation of Participatory Governance Exposure, A time-series forecasting model for the cost-effectiveness evaluation of district hospital systems in Kenya: a methodological appraisal, 2000–2026, LATENT FACTOR-GUIDED TEMPORAL MODELING FOR PREDICTING AUTISM TREATMENT OUTCOMES USING BI-LSTM NETWORKS, Trew's Law: Automatic review of convictions linked to imprisoned police officers, Oral and Maxillofacial Surgery: Segmentation, Surgical Risk and Outcome Prediction\n- zenodo_records / 'Planning Inspectorate machine learning': 396532 hit(s) - plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database, Analysis of Risk-Based Internal Audit Planning Implementation and Its Impact on Audit Quality: Case Study at the Inspectorate of Surakarta, Indonesia, mushrooms\n- zenodo_records / 'planning appeal benchmark dataset': 426028 hit(s) - SCG Dataset from Graph Neural Networks in Supply Chain Analytics and Optimization: Concepts, Perspectives, Dataset and Benchmarks, NFT Dataset for testing the ranking and rarity algorithms, Geospatial Modelling of Australia's National Electricity Market - Dataset, A Dataset of Orthogonal Polygon-Derived Maze Environments for Path Planning Benchmarking, VishalPallagani/PLANTS-benchmark: v1.0.0\n- zenodo_records / 'UK planning appeals train test dataset': 673396 hit(s) - Annual patronage by regional train station, Victoria, Annual patronage by metropolitan train station, Melbourne, HyperTex-Splits: Standardized Train-Test Partitions for Fibre Composition Estimation, The UK COVID-19 Vocal Audio Dataset, municipalities_train_test_set.hdf5\n- arxiv_preprints / 'planning appeal outcome prediction': 5 hit(s) - Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, PiP: Planning-informed Trajectory Prediction for Autonomous Driving, Predicted Composite Signed-Distance Fields for Real-Time Motion Planning in Dynamic Environments, HDDL 2.1: Towards Defining a Formalism and a Semantics for Temporal HTN Planning, Provenance-Based Assessment of Plans in Context\n- arxiv_preprints / 'Planning Inspectorate machine learning': 5 hit(s) - Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Active learning for data streams: a survey, Physics-Inspired Interpretability Of Machine Learning Models\n- arxiv_preprints / 'planning appeal benchmark dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, Bitstream-Corrupted Video Recovery: A Novel Benchmark Dataset and Method, HDDL 2.1: Towards Defining a Formalism and a Semantics for Temporal HTN Planning\n- arxiv_preprints / 'UK planning appeals train test dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, MLIM: Vision-and-Language Model Pre-training with Masked Language and Image Modeling, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, HDDL 2.1: Towards Defining a Formalism and a Semantics for Temporal HTN Planning",
   "prior_art": [
    "PlanSureAI appeals search (plansureai.com/appeals; descriptive overturn rates only); APE Autonomous Research, 'The Inspector Lottery That Isn't: Small-Sample Bias in Examiner Leniency Designs Applied to England's Planning Appeals', ape.socialcatalystlab.org, 2026-04-09; PMC8392781 and PMC10683341 (PINS hot-food-takeaway appeal analyses, 2021/2023)."
   ],
@@ -563,5 +624,55 @@
    "not_a_mirror": "supported - mechanical novelty check verdict 'differentiated' (recorded 2026-10-31): the publisher ships raw files and descriptive '% allowed' statistics; PlanSureAI ships commercial search + overturn-rate analytics over the same source; the APE 2026 leniency study is econometrics on 2,227 scraped cases; no one ships a scored, temporally-split prediction task with a submission-time feature contract"
   }
  },
- "updated_at": "2026-10-31T18:35:00+00:00"
+ "updated_at": "2026-10-31T22:36:07Z",
+ "construction_output": {
+  "splits": {
+   "train": {
+    "rows": 54834,
+    "positives": 17048,
+    "positive_rate": 0.3109019951125214
+   },
+   "eval": {
+    "rows": 28104,
+    "positives": 8469,
+    "positive_rate": 0.30134500426985483
+   },
+   "holdout": {
+    "rows": 56326,
+    "positives": 17705,
+    "positive_rate": 0.3143308596385328
+   }
+  },
+  "splits_source": "the accepted artifact's own meta.json rows/positive_rate blocks (bytes sha256 4e7a31048bb77372cbc42bcf3f8a341e2eeeed0afdce920fb678164f2f6c76b2, staging release 430108320) and the worker-written gate report's positive counts (qualification.json, sha256 f2d33fcaf593bdaf812f11ebf40ce904125e7867969c6a882ae1c5c4f7719abf): train 54,834/17,048 (0.310902), eval 28,104/8,469 (0.301345), holdout 56,326/17,705 (0.314331)"
+ },
+ "packaged_at": "2026-10-31T22:36:07Z",
+ "awaiting_operator": false,
+ "packaging": {
+  "release_version": "2026.10",
+  "release_tag": "v2026.10",
+  "artifact": "c861bd8f4acd9bbe267bdb58e1168996fdb359c540aaf4030030a632d693c527",
+  "package_dir": "release/pins-planning-appeal-outcome/",
+  "dataset_repository": "earino/pins-planning-appeal-outcome",
+  "repository_private": true,
+  "github_release": {
+   "id": 430215294,
+   "tag": "v2026.10",
+   "tag_equals_main": "a19978bdaa067768bd6df6185a9d6b7faf4e2ae3",
+   "assets": 5,
+   "asset_digests_match_artifact": true,
+   "transfer_job": "pins-publish-001",
+   "consumer_verification_job": "pins-consumer-001",
+   "consumer_reports": ".factory/pins-consumer-001/reports/output/"
+  },
+  "huggingface": "NOT YET STAGED - remaining advancement step (hf-publish cycle), then the operator's flip",
+  "note": "Packaged and consumer-verified 2026-10-31 by watcher follow-up of pins-publish-001 + pins-consumer-001 (both release jobs). The GitHub destination is staged and verified private; the Hub destination is not staged yet, so awaiting_operator is False and release work remains actionable. The flip is the operator's act; holdout never opened or scored."
+ },
+ "qualification": {
+  "qualified_at": "2026-10-31 (worker job pins-planning-002, gate 1.5.0, artifact c861bd8f4acd9bbe...; staging release 430108320)",
+  "gate_version": "1.5.0",
+  "job": "pins-planning-002",
+  "result": "passed; 0 failed checks on the full artifact on the worker (staging 430108320); re-run on the released bytes by consumer job pins-consumer-001: QUALIFICATION PASSED and exact-byte --accept ACCEPTED for the same artifact (reports in .factory/pins-consumer-001/reports/output/)",
+  "artifact_version": "c861bd8f4acd9bbe267bdb58e1168996fdb359c540aaf4030030a632d693c527",
+  "acceptance": "exact-byte --accept verified on the worker before any reference was computed (pins-planning-baseline-002: 'ACCEPTED c861bd8f4acd9bbe'), and again on the published bytes (pins-consumer-001: 'ACCEPTED: /tmp/task matches the qualified artifact c861bd8f4acd9bbe')"
+ }
 }

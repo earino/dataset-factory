@@ -1,0 +1,355 @@
+{
+ "name": "pins-planning-appeal-outcome",
+ "built_at_utc": "2026-10-31T00:00:00Z",
+ "source": {
+  "publisher": "Planning Inspectorate (PINS), GOV.UK publication 'Planning Inspectorate Casework Database', last updated 22 October 2026",
+  "landing_page": "https://www.gov.uk/government/publications/planning-inspectorate-appeals-database",
+  "files": [
+   {
+    "name": "Casework_Database_-_2610.xlsx",
+    "url": "https://assets.publishing.service.gov.uk/media/6ad9fcc1c818345ad8aca325/Casework_Database_-_2610.xlsx",
+    "bytes": 22207115,
+    "sha256": "dff80bd0f17cbc640dc205009a9411269c8e58462b6df71af903c592af3c20fa"
+   },
+   {
+    "name": "Older_Casework_Data_-_2610.xlsx",
+    "url": "https://assets.publishing.service.gov.uk/media/6ad9fcd12263175ac2aca2f7/Older_Casework_Data_-_2610.xlsx",
+    "bytes": 12325866,
+    "sha256": "baf28d80c5cd5ad266f8a9e62c25517b2ec9d4c5d951239ab0638666bc092a4b"
+   }
+  ],
+  "mode": "two anonymous bulk GETs; the build fails if the pinned bytes change",
+  "vintage_note": "rolling database republished monthly-to-quarterly since March 2018; this build pins the 2026-10-22 edition, and every value is construction-time current-snapshot vintage - no historical vintages are claimed"
+ },
+ "grain": "one row per decided s78_core planning-permission-family appeal (validated 2012-06-01..2026-08-21)",
+ "population": {
+  "eligibility": "publisher Type of Casework in the s78_core family (e.g. Planning Appeal, Householder (HAS)); Decision in {Allowed, Dismissed}; Received/Valid/Decision dates parseable and decision not before validation",
+  "deduplication": "cross-file dedup on (type, LPA, received, valid, decision date, decision): 3,110 rows appear in BOTH publisher files with identical composites (2021 decisions) and are deduplicated; counted, never silently dropped",
+  "exclusions": {
+   "non_binary_decision": 2757,
+   "cross_file_duplicate": 3110,
+   "decided_before_valid": 2
+  },
+  "exclusions_by_decision_year": {
+   "2021": {
+    "non_binary_decision": 336,
+    "cross_file_duplicate": 119
+   },
+   "2022": {
+    "non_binary_decision": 390,
+    "cross_file_duplicate": 148
+   },
+   "2023": {
+    "non_binary_decision": 310,
+    "cross_file_duplicate": 229
+   },
+   "2024": {
+    "non_binary_decision": 247,
+    "cross_file_duplicate": 136
+   },
+   "2025": {
+    "non_binary_decision": 260,
+    "cross_file_duplicate": 204
+   },
+   "2026": {
+    "cross_file_duplicate": 122,
+    "non_binary_decision": 158
+   },
+   "2016": {
+    "non_binary_decision": 59,
+    "cross_file_duplicate": 62,
+    "decided_before_valid": 1
+   },
+   "2017": {
+    "non_binary_decision": 218,
+    "cross_file_duplicate": 355,
+    "decided_before_valid": 1
+   },
+   "2018": {
+    "non_binary_decision": 228,
+    "cross_file_duplicate": 512
+   },
+   "2019": {
+    "non_binary_decision": 243,
+    "cross_file_duplicate": 907
+   },
+   "2020": {
+    "non_binary_decision": 308,
+    "cross_file_duplicate": 316
+   }
+  },
+  "censoring": "none beyond the publisher's own decided-cases-only extract (in progress, withdrawn and turned away cases are not in the source); the outcome-conditioned population is a property of the publisher's database, recorded as a limitation",
+  "frame_fidelity": "the in-build per-decision-year fixture reproduces the discovery probe exactly for all 11 decision years (kept + counted exclusions == probe n; kept_allowed + excluded_allowed == probe allowed); flag presence verified by direct letter-based counts"
+ },
+ "splits": {
+  "windows": "temporal split on the validation instant (valid_date, the shipped time column): train < 2020-01-01, eval 2020-01-01..2021-12-31, holdout >= 2022-01-01 (through 2026-08-21); the outcome date cannot ship (post-instant), so the split key is the instant - the same construction as the published ipo (filed_date) and ec-merger (notification_date) tasks",
+  "stats": {
+   "train": {
+    "rows": 54834,
+    "positives": 17048,
+    "negatives": 37786,
+    "positive_rate": 0.3109019951125214
+   },
+   "eval": {
+    "rows": 28104,
+    "positives": 8469,
+    "negatives": 19635,
+    "positive_rate": 0.30134500426985483
+   },
+   "holdout": {
+    "rows": 56326,
+    "positives": 17705,
+    "negatives": 38621,
+    "positive_rate": 0.3143308596385328
+   }
+  },
+  "valid_date_ranges": {
+   "train": [
+    "2012-06-01",
+    "2019-12-31"
+   ],
+   "eval": [
+    "2020-01-01",
+    "2021-12-31"
+   ],
+   "holdout": [
+    "2022-01-01",
+    "2026-08-21"
+   ]
+  },
+  "sparse_valid_year_tails": {
+   "train-2012": [
+    3,
+    3
+   ],
+   "train-2013": [
+    4,
+    2
+   ],
+   "train-2014": [
+    9,
+    7
+   ]
+  },
+  "positive_events_by_validation_date": {},
+  "prevalence_shift_note": "train 31.09% -> eval 30.13% -> holdout 31.43% positive: no material prevalence drift across splits; eval's two validation years are 0.2990 and 0.3036"
+ },
+ "runner_contract_probe": {
+  "source": "worker job pins-planning-002 stage 0 (category_probe.json), synthetic frames - no dataset row read, no metric computed",
+  "result": {
+   "predict_on_category_dtype": "ok",
+   "purpose": "does the verbatim benchmark train.py predict path accept category-dtype columns at predict under the installed xgboost",
+   "subtests": {
+    "fit": "fit ok",
+    "predict_seen_levels": "ok",
+    "predict_unseen_level_nan": "ok"
+   },
+   "model_config": "XGBClassifier n_estimators=10 max_depth=3 lr=0.1 hist enable_categorical=True seed 42 - the verbatim train.py configuration modulo tree size",
+   "versions": {
+    "python": "3.13.18",
+    "pandas": "2.3.3",
+    "numpy": "2.5.4",
+    "xgboost": "3.4.1"
+   },
+   "note": "verdict rejected means build.py integer-codes the nine string-categorical columns so the shipped frame is int/float/bool only; no dataset row was read and no metric computed"
+  },
+  "reading": "the verbatim train.py predict path accepts category dtypes under xgboost 3.4.1, so the publisher's string levels ship verbatim; the only real breaker measured by baseline-001 was the object-dtype floor_space_sqm (6 eval rows of publisher prose), fixed by mapping unparseable prose to missing"
+ },
+ "qualification": {
+  "source": "worker job pins-planning-002, gate 1.5.0 on the full artifact on the worker",
+  "checks_total": 45,
+  "failed_checks": [],
+  "artifact_version": "c861bd8f4acd9bbe267bdb58e1168996fdb359c540aaf4030030a632d693c527",
+  "accepted_before_any_figure": true,
+  "reaccepted_in": [
+   "pins-planning-baseline-002 (re-fetched all five assets, every sha256 verified on arrival)"
+  ],
+  "rebuild_note": "this artifact is the ONE permitted rebuild (runner-compatibility defect class): pins-planning-001 (artifact 0cbb55fe..., staging 430070815) passed the gate but its baseline job pins-planning-baseline-001 failed at the verbatim train.py predict step on the 6 prose cells; train.csv and holdout.csv are sha256-identical between 001 and 002, eval.csv differs only in those 6 cells, and references reproduce 001's figures exactly"
+ },
+ "references": {
+  "source": "worker job pins-planning-002 score.py, post-acceptance, eval rows only (holdout never opened)",
+  "eval_rows": 28104,
+  "eval_positives": 8469,
+  "aucs": {
+   "lpa_hist_rate": 0.5414410163425604,
+   "persistence_last_outcome": 0.504458138089444,
+   "procedure_type_rate": 0.55506072071053,
+   "calendar_identity": 0.5414410163425604,
+   "year_rate": null,
+   "global_rate": null
+  },
+  "briers": {
+   "lpa_hist_rate": 0.21071114833737709,
+   "persistence_last_outcome": 0.4149943068602334,
+   "procedure_type_rate": 0.2079902264250544,
+   "calendar_identity": 0.21071114833737709,
+   "year_rate": 0.21062752874542284,
+   "global_rate": 0.21062752874542284
+  },
+  "majority_class_accuracy_this_split": 0.6986549957301452,
+  "majority_note": "majority fitted on train, measured against this split's labels",
+  "degenerate_controls_recorded": {
+   "calendar_identity": "collapsed onto lpa_hist_rate exactly: eval validation years (2020/2021) have no train-era valid-year support, so every eval row fell back to its LPA's train rate; paired diff 0.0, CI [0,0] - a collapsed control, never independent confirmation",
+   "year_rate_and_global_rate": "constant scores, no ranking information (null AUC) - degenerate controls, recorded"
+  },
+  "per_validation_year_eval": {
+   "2020": {
+    "rows": 13797,
+    "positives": 4126,
+    "lpa_hist_rate_auc": 0.5472758931222083,
+    "persistence_last_outcome_auc": 0.5076170076967018,
+    "procedure_type_rate_auc": 0.5616123592715111,
+    "calendar_identity_auc": 0.5472758931222083
+   },
+   "2021": {
+    "rows": 14307,
+    "positives": 4343,
+    "lpa_hist_rate_auc": 0.5357930271288405,
+    "persistence_last_outcome_auc": 0.5012667292328367,
+    "procedure_type_rate_auc": 0.5485993301420458,
+    "calendar_identity_auc": 0.5357930271288405
+   }
+  },
+  "paired_reference_differences": {
+   "lpa_hist_vs_calendar": {
+    "observed_diff": 0.0,
+    "ci95": [
+     0.0,
+     0.0
+    ],
+    "resamples": 150,
+    "resampler_alignment_ok": true
+   },
+   "lpa_hist_vs_procedure_type": {
+    "observed_diff": -0.013619704367969665,
+    "ci95": [
+     -0.025416455496207524,
+     -0.004201383069700859
+    ],
+    "resamples": 150,
+    "resampler_alignment_ok": true
+   },
+   "persistence_vs_lpa_hist": {
+    "observed_diff": -0.036982878253116414,
+    "ci95": [
+     -0.04683821369070518,
+     -0.029879417956382825
+    ],
+    "resamples": 150,
+    "resampler_alignment_ok": true
+   }
+  },
+  "lpa_clustered_bootstrap": {
+   "unit": "LPA (appeal outcomes of one planning authority are correlated)",
+   "lpa_hist_vs_persistence_diff": 0.036982878253116414,
+   "ci95": [
+    0.025071643773399543,
+    0.048432989356319234
+   ],
+   "resamples": 150
+  },
+  "persistence_note": "measured, not declared not-applicable: every eval row's LPA has a train-era decided-case history for 92%+ of rows (the -1 sentinel marks the rest)",
+  "notes": [
+   "the full model is NOT computed here; the harness runner's baseline job trains it on these same rows and its figure is quoted beside these references when it exists",
+   "lpa_hist_rate is the headroom reference named in the candidate record: a model must demonstrate headroom over it under this protocol for a positive verdict",
+   "persistence is measured, not declared not-applicable: every eval row's LPA has a train-era decided-case history for 92%+ of rows (the -1 sentinel marks the rest)",
+   "intervals containing zero are inconclusive differences, not parity"
+  ]
+ },
+ "runner_baseline": {
+  "source": "worker job pins-planning-baseline-002: the benchmark's own train.py + validate.sh, bundled verbatim (sha256 equal the read-only clone's; unmodified: true)",
+  "eval_auc_from_train_py": 0.6108,
+  "eval_auc_from_validate_py": 0.6108,
+  "contract_ok": true,
+  "dependencies": {
+   "python": "3.13.18",
+   "pandas": "2.3.3",
+   "numpy": "2.5.4",
+   "xgboost": "3.4.1",
+   "scikit-learn": "1.9.1"
+  },
+  "scope": "one baseline through the runner's existing training and validation contract; no agent or harness comparison was run and none is implied; the holdout was never copied into any workdir"
+ },
+ "model_vs_reference_comparison": {
+  "source": "worker job pins-planning-baseline-002 (model_intervals.py), derived evidence on the identical eval rows after the verbatim contract run",
+  "model": "XGBClassifier n_estimators=30 max_depth=6 lr=0.1 hist seed 42 - identical to the verbatim train.py baseline; string columns with >1000 levels dropped exactly as the baseline drops them",
+  "model_eval_auc": 0.6108489948647478,
+  "references_eval_auc": {
+   "lpa_hist_rate": 0.5414410163425604,
+   "procedure_type_rate": 0.55506072071053,
+   "shipped_rate_feature": 0.5422421736543134
+  },
+  "paired_row_level": {
+   "lpa_hist_rate": {
+    "model_auc": 0.6108489948647478,
+    "reference_auc": 0.5414410163425604,
+    "observed_diff": 0.06940797852218739,
+    "ci95": [
+     0.06221382066459791,
+     0.07659881935671231
+    ],
+    "resamples": 150
+   },
+   "procedure_type_rate": {
+    "model_auc": 0.6108489948647478,
+    "reference_auc": 0.55506072071053,
+    "observed_diff": 0.05578827415421772,
+    "ci95": [
+     0.046661949591588536,
+     0.06261963717752905
+    ],
+    "resamples": 150
+   },
+   "shipped_rate_feature": {
+    "model_auc": 0.6108489948647478,
+    "reference_auc": 0.5422421736543134,
+    "observed_diff": 0.06860682121043438,
+    "ci95": [
+     0.061863579560411885,
+     0.07555217878137621
+    ],
+    "resamples": 150
+   }
+  },
+  "paired_lpa_clustered": {
+   "lpa_hist_rate": {
+    "ci95": [
+     0.0597079992007401,
+     0.079216870767996
+    ],
+    "resamples": 150,
+    "unit": "LPA cluster"
+   },
+   "procedure_type_rate": {
+    "ci95": [
+     0.04621657112389288,
+     0.06537236597230933
+    ],
+    "resamples": 150,
+    "unit": "LPA cluster"
+   },
+   "shipped_rate_feature": {
+    "ci95": [
+     0.05963823738848373,
+     0.07997558183755316
+    ],
+    "resamples": 150,
+    "unit": "LPA cluster"
+   }
+  },
+  "interpretation": "every paired interval excludes zero under both the row-level and the LPA-clustered protocol: demonstrated headroom over every measured simple reference under this protocol (procedure-type rate 0.5551, LPA history rate 0.5414, shipped rate feature 0.5422; persistence 0.5045; degenerate calendar control). One model configuration, no re-tuning, two validation years of eval coverage - an observed result, not a bound on other models",
+  "replication_note": "the references are reimplemented here independently (pandas groupby), not imported from the build job's score.py; the shipped_rate_feature reference scores the artifact's own lpa_allow_rate_prior column, cross-checking the LPA-rate implementation (0.5422 vs 0.5414). The model figure is quoted from the verbatim runner contract run, not independently rerun.",
+  "limitations": [
+   "one model configuration with no re-tuning",
+   "two validation years of eval coverage",
+   "the calendar-identity control was degenerate (collapsed onto the LPA rate), so seasonality/identity headroom is not independently established",
+   "the model's per-validation-year AUC and Brier were not computed; per-year figures exist for the references only"
+  ],
+  "notes": [
+   "the references are reimplemented here independently (pandas groupby), not imported from the build job's score.py",
+   "shipped_rate_feature scores the artifact's own lpa_allow_rate_prior column; its agreement with lpa_hist_rate cross-checks the reference",
+   "intervals containing zero are inconclusive differences, not parity"
+  ]
+ },
+ "scope_note": "All figures computed on temporary workers after exact-byte acceptance of artifact c861bd8f4acd9bbe267bdb58e1168996fdb359c540aaf4030030a632d693c527; the holdout was never opened by any scoring stage and stays sealed. The cross-row exposure (LPA-history features embedding other rows' labels) means honest evaluation requires isolated rows - a requirement the shipped illustrative runner does not enforce."
+}
