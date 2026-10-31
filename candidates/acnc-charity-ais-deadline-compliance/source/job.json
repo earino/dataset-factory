@@ -1,0 +1,18 @@
+{
+ "id": "acnc-002",
+ "candidate": "acnc-charity-ais-deadline-compliance",
+ "image": "python:3.13-slim",
+ "command": [
+  "sh",
+  "/workspace/run.sh"
+ ],
+ "server_type": "cx23",
+ "location": "hel1",
+ "cpus": 2,
+ "memory_mb": 4096,
+ "timeout_minutes": 30,
+ "lifetime_minutes": 45,
+ "max_disk_mb": 6000,
+ "max_artifact_mb": 120,
+ "what": "Rebuild 2, linked to acnc-001, which failed at 60.4 s on the build's own in-build assertion (staging release 429761703 preserves the partial extract and the run log; nothing was scored and no gate ran). Diagnosis from the preserved log plus a coordinator-side scan of the same-day probe copies: acnc-001's frame included the publisher-assigned synthetic ABN block 91 111 111 xxx - the ACNC GROUP head entities (348 rows 2019-2024, names carrying the _ACNC GROUP marker with spelling variants, e.g. 'Bond University ACNC GROUP', 'Sunnyfield_ACNC_Group') - and that block is exactly the set that breaks ABN 10-prefix injectivity (49 colliding prefixes, ALL inside the block; zero collisions outside it, verified on the fetched vintage). Two defects fixed in this rebuild: (1) group-head entities are excluded from the frame and counted (exclusions.group_head_excluded) - they are collective lodgers, not individual charities, matching the record's existing group-member exclusion; the quality.json limitations and selection evidence now state the exclusion with its measured size; (2) the 2021 group-members file carries 'dd/mm/yyyy 00:00:00' string start dates where the other years carry Excel serials (acnc-001 parsed 1,014 of 1,014 as unparseable) - the parser now accepts both formats. Attempt-cap reasoning: this is one structural defect class (entity-key semantics) plus a mechanical parse fix in the same rebuild, the single rebuild the qualification skill permits; a further defect on acnc-002 means stop, re-target or drop, no acnc-003. Everything else is unchanged from acnc-001: the construct -> qualify -> accept -> references order, the eligibility frame (prior 'Date AIS Received' <= T where T = period-Y due date minus 90 days; recorded due for lodgers, modal-policy-offset-derived for never-lodgers; group members with membership start <= T or unparseable excluded), splits train 2020-2021 / eval 2022-2023 / holdout 2024, the Integricare and policy-offset fixtures asserted in-build, the declared cross-row probe (adjacent-target-year join: a later row's prior_lateness_positive IS the earlier row's label) with isolated_rows access and no enforcement claim, and no performance metric before exact-byte acceptance. Expected frame: acnc-001 measured eligible 37,874/39,348/39,367/41,480/42,825 per target year INCLUDING group heads; this build removes them (about 60-90 rows per year) and records exact counts. Stopping condition: any failed stage exits non-zero and leaves its report for collection; a second failure records the blocker and stops the candidate."
+}

@@ -1,0 +1,123 @@
+{
+  "job": {
+    "id": "acnc-001",
+    "candidate": "acnc-charity-ais-deadline-compliance",
+    "image": "python:3.13-slim",
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 4096,
+    "timeout_minutes": 30,
+    "lifetime_minutes": 45,
+    "max_disk_mb": 6000,
+    "max_artifact_mb": 120,
+    "what": "First construction of acnc-charity-ais-deadline-compliance per the candidate record's recorded next_action. Preflight (read from the actual entrypoint this job runs): run.sh -> build.py constructs and nothing else - what chooses rows is the eligibility frame in build.py's frame loop (prior-period AIS row with recorded 'Date AIS Received' <= T where T = the period-Y due date minus 90 days, recorded due for lodgers and modal-policy-offset-derived due for never-lodgers, group members with membership start <= T or unparseable excluded, prior rows missing received/period-end/due excluded and counted); what writes the artifact is build.py's write stage (public/train.csv target years 2020-2021, public/eval.csv 2022-2023, private/holdout.csv 2024, meta.json, quality.json; summary.json written OUTSIDE the extract to /output); where qualification runs is /workspace/qualify_dataset.py (gate 1.5.0, full artifact) followed by exact-byte --accept, both in run.sh before score.py; the first place any performance metric is computed is score.py's reference stage, which run.sh invokes only after acceptance and which itself re-verifies the accepted report and the five artifact digests before its first number. Feature availability: every shipped feature is a prior-period (or earlier) AIS field with recorded receipt <= T (eligibility rule for the prior row, enforced as-of receipt filter for history rows); the ACNC register is not used; the declared cross-row probe (adjacent-target-year join on the same charity: a later row's prior_lateness_positive IS the earlier row's label) is expected to show near-zero mismatches on covered rows, so the artifact declares isolated_rows access and states the runner does NOT enforce it (illustrative framing per the operator's unhcr directive). Expected artifact: three CSVs + meta.json + quality.json at the measured envelope (frame within 3% of train 77,357 / eval 80,977 / holdout 42,885 rows, positives within 3% of 23,205 / 20,958 / 11,035), summary.json with per-year source pins (discovery pins recorded for the six AIS CSVs and the 2024 group-members file), fixtures asserted in-build (Integricare ABN 11000073870 target-2024 label 1 due 2025-01-31; 2024 policy offsets +7 months June-end / +6 months December-end), ABN 10-prefix event-key injectivity asserted on the shipped rows. Stopping condition: any failed stage exits non-zero and leaves its report for collection; on gate failure the candidate records failed qualification and the construction is diagnosed before any retry.",
+    "source_files": [
+      {
+        "bundled_as": "build.py",
+        "source": "candidates/acnc-charity-ais-deadline-compliance/source/build.py",
+        "bytes": 54186,
+        "sha256": "be458c73622878020f1b669cec845c82000d850fc3ab5726d2e1686f16e1fb4a"
+      },
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/acnc-charity-ais-deadline-compliance/source/run.sh",
+        "bytes": 2153,
+        "sha256": "cfb2926ef296d8983e66c0beabe698cfc514f77fe6cc10c050ce4ce9bb067d31"
+      },
+      {
+        "bundled_as": "score.py",
+        "source": "candidates/acnc-charity-ais-deadline-compliance/source/score.py",
+        "bytes": 12576,
+        "sha256": "bec7f031a1a0bc31ef8c0e800c2f4dec9fd5642a2f50fca501ca8ee0feb51cd0"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 57029,
+        "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+      }
+    ]
+  },
+  "reservation_eur": "0.04",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 2,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 225280,
+  "source_sha256": "176196076454443f56ff7d36199c753f579c7117538db5c41c69e7c4d93925d1",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-10-31T06:19:18.665107+00:00",
+  "expires": 1793430258,
+  "budget_months": [
+    "2026-10"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 173690163,
+  "known_hosts": "/opt/data/dataset-factory/.factory/acnc-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "65.21.158.17",
+  "result": {
+    "job_id": "acnc-001",
+    "status": "failed",
+    "uploaded": true,
+    "image_id": "sha256:2d44738ebf4ce5f63b9d9ea871e9c7cfdc0426f7b0c97cac915fd88ded1d86bb",
+    "image_digests": [
+      "python@sha256:2d44738ebf4ce5f63b9d9ea871e9c7cfdc0426f7b0c97cac915fd88ded1d86bb"
+    ],
+    "exit_code": 1,
+    "oom_killed": false,
+    "elapsed_seconds": 60.4,
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 429761703,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-718948ff4aaeb2015463",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-718948ff4aaeb2015463/manifest.json",
+    "assets": [
+      {
+        "id": 694569657,
+        "size": 2028,
+        "sha256": "e1420329a8baa2bc0a6663c3eec8226b00dc3db1d92180c263f2a227f66ccd98"
+      },
+      {
+        "id": 694569714,
+        "size": 6172831,
+        "sha256": "56014938f76b26a5f10975353cc1009bb1fd2fef0aec54a1ab770dc2fe7cdf6d"
+      },
+      {
+        "id": 694569793,
+        "size": 12014187,
+        "sha256": "f7e8b6a95ed3482d82b3cab019d31ff5b6af476bf20d604fb6ad5d9647747270"
+      },
+      {
+        "id": 694569900,
+        "size": 11145060,
+        "sha256": "2a3b7987bff370c5c68572c382fb29dcb24682ab12870c5dad990569a6ddf017"
+      },
+      {
+        "id": 694570020,
+        "size": 225280,
+        "sha256": "176196076454443f56ff7d36199c753f579c7117538db5c41c69e7c4d93925d1"
+      },
+      {
+        "id": 694570068,
+        "size": 1903,
+        "sha256": "44e2f00e169ac0c1a2a5c25a2c95e922b7592397c1480bf9c15598c5d7512810"
+      },
+      {
+        "id": 694570105,
+        "size": 6671,
+        "sha256": "fc07b0e6d22a3ef32cca8b0268560ed6c259e9fcc06639504b8e0b6330db4b62"
+      }
+    ],
+    "skipped_empty": []
+  },
+  "collected_at": "2026-10-31T07:05:55.872721+00:00",
+  "deleted_at": "2026-10-31T07:08:37.668483+00:00"
+}

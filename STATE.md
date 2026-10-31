@@ -1,4 +1,69 @@
-## 2026-10-31 05:05Z - discovery tick (Oceania focus): acnc-charity-ais-deadline-compliance opened and advanced to READY on measured evidence; GEN star-ratings and NZ charities register licence-cleared as named follow-ups
+## 2026-10-31 07:1xZ - unhcr release re-verified green and handed to the operator for the re-audit relay; acnc-charity-ais-deadline-compliance construction written end to end, acnc-001 failed on its own in-build assertion (group-head synthetic ABNs), the one permitted rebuild acnc-002 running
+
+Two tracks this advancement session. Nothing is public; no publication approval exists for any candidate.
+
+Release track first (unhcr-refugee-data-finder, the operator's actionable release item): the recorded
+state was re-read from the record and the package itself, not from prose - `operator_decision_pending: true`
+(the operator relays the regenerated pre-flip audit prompt to an independent auditor; no verdict or waiver is
+recorded), awaiting_operator false, nothing changed in the package bytes, tags or destinations. Verified green
+this session: check-package.py release/unhcr-refugee-data-finder OK, check-suitability OK (16 reviews), and
+the audit prompt's currency re-checked programmatically - all five asset sha256 prefixes in
+candidates/unhcr-refugee-data-finder/pre-flip-audit-prompt.md match the frozen MANIFEST.json digests and the
+corrected artifact identity 6bd0c307d15d7500... is named in it. THE PROMPT IS READY FOR THE OPERATOR'S RELAY:
+hand candidates/unhcr-refugee-data-finder/pre-flip-audit-prompt.md to the independent auditor; the flip waits
+for that verdict and the operator's decision. No release byte, tag, digest or destination was touched.
+
+Construction track (acnc-charity-ais-deadline-compliance, per the 05:05Z discovery handoff naming advancement
+as the owner): the full build was written this session - source/build.py (fetch six AIS year CSVs 2019-2024 +
+five group-members XLSX, sha256-pinned; eligibility = prior-period AIS received <= T where T = the period-Y
+due date minus 90 days, recorded due for lodgers and modal-policy-offset-derived for never-lodgers; group
+members with as-of start <= T excluded; features are prior-period AIS content + as-of-T lodgment history, the
+ACNC register deliberately unused), source/score.py (eval-only references AFTER acceptance: persistence
+momentum/flag FIRST, calendar/size rate, identity/history rate, majority-class, paired bootstraps with a
+resampler_alignment_ok invariant), source/run.sh (construct -> gate 1.5.0 on the full artifact -> exact-byte
+--accept -> references, each stage stopping the next), source/job.json + source/bundle.json, and
+tests/test_acnc_build.py (synthetic end-to-end: build -> real gate -> references -> leakage red/green; it
+caught four pre-launch defects and now also proves the group-head exclusion and the 2021-format group-file
+dates). The descriptor declares the panel's cross-row exposure honestly (a later row's prior_lateness_positive
+IS the earlier row's label; the gate's probe measured it on the synthetic fixture: train covered 79,
+mismatches 0) with isolated_rows access and no enforcement claim, per the operator's unhcr directive.
+
+- acnc-001 (server 173690163, launched 06:19:18Z, exit 1 after 60.4 s, collected 07:05:55Z, destroyed
+  07:08:37Z, staging release 429761703 preserves the partial extract + run log): FAILED on the build's own
+  in-build assertion - two distinct shipped ABNs shared a 10-digit prefix - before any gate or score, so no
+  performance number ever existed. The fetch and parse stages ran green first and the per-year row counts
+  matched the discovery measurements exactly (51,040/51,438/51,841/53,053/53,548/54,145; duplicate-ABN rows
+  1 in 2021 and 1 in 2024, resolved to earliest received). Diagnosis (preserved log + a coordinator-side scan
+  of the same-vintage probe copies): the colliding ABNs are exactly the publisher-assigned synthetic block
+  91 111 111 xxx - the ACNC GROUP HEAD entities (348 rows 2019-2024, names carrying the _ACNC GROUP marker
+  with spelling variants); 49 colliding prefixes, ALL inside the block, zero collisions among all other
+  62,320 ABNs. A second defect found in the same log: the 2021 group-members file carries 'dd/mm/yyyy
+  00:00:00' string start dates where the other years carry Excel serials, so acnc-001 parsed 1,014 of 1,014
+  as unparseable (conservative exclusion, now parsed correctly).
+- Rebuild reasoning (one rebuild per structural defect): the group-head block is an entity-key/population
+  defect (collective lodgers are not individual charities - the record already excludes their members), the
+  gm2021 date format is a mechanical parse fix in the same rebuild. A further defect on acnc-002 means stop,
+  re-target or drop - no acnc-003.
+- acnc-002 (server 173697625, launched 07:08:40Z, EUR 0.04 reservation) IS RUNNING with both fixes, the
+  test re-proven green locally first (gate 0 failed checks on the synthetic artifact, group-head exclusion
+  asserted, leakage red/green asserted). OPERATIONAL NOTE: the ledger's `worker status` stays 'running'
+  after a job finishes - `worker collect` is what reconciles it (acnc-001 actually failed at 06:20 while
+  status reported running for 45 minutes). Handoff: collect acnc-002, then verify each stage's report
+  individually (pins vs discovery, gate zero failed_checks, ACCEPTED for the exact digest, references with
+  persistence first), then destroy, then the harness-runner baseline job for the model side of the triad.
+- Checks at close-out: check-candidate acnc OK (ready) + --all rc=0, check-package unhcr OK,
+  check-suitability OK, tests/test_acnc_build.py green. The ec-state-aid untracked probe work is preserved
+  untouched and is not part of this commit.
+
+Next action: collect and verify acnc-002 per the candidate record's next_action (gate -> accept ->
+references, each verified from its own report); on success destroy the worker and run the harness baseline
+job for the model triad; on failure record the blocker and stop the candidate. The unhcr re-audit relay
+remains the operator's move; the other operator waits (ipo-tm audit-prompt relay/flip, ns-bwa flip) are
+unchanged.
+
+Follow-up runner 2026-10-31 07:28Z (watcher event acnc-001, same research mutex): verified the recorded handling first-hand. Staging release 429761703 (draft job-acnc-001) answers for all 7 assets at the ledger digests, mapped via its own manifest (sha256-verified). Bounded evidence fetched to .factory/acnc-001/reports/: container.log (sha256 44e2f00e...) shows fetch, parse and frame green at the discovery counts, then the build's own event-key injectivity assertion failed before the gate - so no gate and no score ran and no performance figure exists to quote; the 2021 group-members parse defect is visible in the same log (1,014 of 1,014 unparseable). Partial-extract bulk CSVs were not downloaded to the coordinator. Hetzner read-back (api.hetzner.cloud): server 173690163 not found - deletion confirmed by the provider; server 173697625 (scout-acnc-002) running on the reused IP 65.21.158.17. This commit carries the durable record of the whole handling; ec-state-aid probe/ stays untracked on purpose. CI result on this commit is read back below and is the next reader's first check if it is not green.
+
+
 
 Discovery-only tick; no construction, qualification or release work touched, and the three
 operator waits are unchanged (ipo-tm audit-prompt relay/flip, ns-bwa flip, unhcr audit-prompt
