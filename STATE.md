@@ -11448,3 +11448,19 @@ independent read-back evidence, so deletion rests on the lifecycle's own provide
   The flip remains the operator's single approval, preceded by the standing pre-flip adversarial audit
   (templates/pre-flip-audit-prompt.md filled programmatically). No rebuild of this construction; the holdout
   stays sealed.
+
+## 2026-10-31 (22:58Z) - Close-out correction: pins artifacts[0] gained the machine-readable destination fields (CI fix for 0589c8b)
+
+Commit 0589c8b's suite failed one test, test_every_committed_candidate_record_passes: the pins
+record's artifacts[0] named the staged GitHub release only inside staged_at.github_release
+prose, and check-candidate's RELEASED-shape rule (url/tag/repo on the artifact entry) refused
+it in CI's clean checkout. Diagnosis honesty: the earlier local "check-candidate rc=0" was
+misread through a pipe (tail's exit status, not the checker's; real local rc was 1). Fix adds
+destination github / repo earino/pins-planning-appeal-outcome / tag v2026.10 / release_url /
+verified true to artifacts[0], every field re-read from the authenticated API this session
+(repo private, release 430215294 non-draft, 5/5 assets at the accepted digests, tag == main ==
+a19978bd); packaged_at unchanged at 22:36:07Z, updated_at bumped to the edit. No package byte,
+frozen manifest, existing tag or destination content changed - the failing check is the
+records-must-pass-CI guard doing its job. Verified before the fix commit: check-candidate
+--all rc=0 unpiped, test_artifact_checks 26/26 OK. ec-state-aid-investigation-opening/probe/
+still untouched and excluded.
