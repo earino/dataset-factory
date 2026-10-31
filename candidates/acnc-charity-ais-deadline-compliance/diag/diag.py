@@ -336,8 +336,14 @@ def main() -> int:
     calendar, cal_meta = calendar_size_scores(train_s, train_y, eval_s, train_rate)
     calendar = np.asarray(calendar, dtype=float)
     ident_table, ident_global = rate_table_second(train_s["abn"].tolist(), train_y)
+    # rate_table_second is keyed by the raw abn string (unlike the construction
+    # score.py, whose column-list rate_table builds 1-tuple keys), so the eval
+    # lookup uses the same raw key: diag-001 shipped the 1-tuple lookup here,
+    # every key missed, the vector collapsed to the constant global rate and
+    # diag.py refused to compare (exit 3). Pinned by
+    # tests/test_acnc_diag.py::test_shipped_identity_lookup_uses_the_tables_key_type.
     identity = np.asarray(
-        [ident_table.get((row["abn"],), ident_global) for row in eval_s.to_dict("records")],
+        [ident_table.get(row["abn"], ident_global) for row in eval_s.to_dict("records")],
         dtype=float)
     majority = 1 if train_rate >= 0.5 else 0
     majority_accuracy = float((eval_y == majority).mean())
@@ -461,7 +467,8 @@ def main() -> int:
 
     result = {
         "name": "acnc-charity-ais-deadline-compliance",
-        "job": "acnc-diag-001",
+        "job": (Path("/workspace/job_id.txt").read_text().strip()
+                if Path("/workspace/job_id.txt").is_file() else None),
         "purpose": "per-row model scores and model-vs-reference paired intervals on the "
                    "accepted artifact, completing the baseline triad measured by "
                    "acnc-baseline-001",

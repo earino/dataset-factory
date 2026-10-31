@@ -1,5 +1,5 @@
 {
-  "id": "acnc-diag-001",
+  "id": "acnc-diag-002",
   "candidate": "acnc-charity-ais-deadline-compliance",
   "image": "python:3.13-slim",
   "server_type": "cx23",
@@ -10,7 +10,7 @@
   "lifetime_minutes": 90,
   "max_disk_mb": 4096,
   "max_artifact_mb": 16,
-  "what": "per-row diagnostic on the accepted acnc-charity-ais-deadline-compliance artifact 70b7e7175ad45c8a..., fetched from private staging release 429782089 (not rebuilt): gate --accept on the fetched bytes, then validate.sh verbatim, then per-row model scores and the model-vs-reference comparisons job acnc-baseline-001 could not carry - paired row-level bootstrap intervals (150 resamples, seed 31, the construction references' protocol) for model vs persistence_momentum (dominant reference, recorded 0.70061), persistence_flag (0.67102), identity_history_rate (0.68907) and calendar_size_rate (0.56768), plus a charity-cluster (whole-abn) bootstrap for the decisive model-vs-momentum comparison because eval rows cluster by charity, plus a momentum_vs_calendar canary against job acnc-002's recorded interval [0.12746, 0.13909]. Contract only, no agent loop, no holdout score; the holdout is never read.",
+  "what": "the single permitted recovery relaunch of acnc-diag-001 (exit 4 at diag.py's own refusal: the identity/history lookup used 1-tuple keys in a rate table built from raw abn strings, so every eval row fell back to the global train rate, the reference vector was constant and diag.py correctly refused to compare against a constant). Identical artifact, fetch and stage order - the accepted acnc-charity-ais-deadline-compliance artifact 70b7e7175ad45c8a... (gate 1.5.0 --accept ACCEPTED in job acnc-002, re-ACCEPTED in jobs acnc-baseline-001 and acnc-diag-001) fetched from private staging release 429782089, re-accepted against the gate's own collected report BEFORE any metric, runner workdir materialized from public train+eval only (the private holdout is never copied), benchmark's own validate.sh contract re-run - with the FIXED diag.py (sha256 c077c06e04a5...): the identity lookup now uses the raw-string key its rate table is built with, pinned offline by tests/test_acnc_diag.py (red on the pre-fix source, green on the fixed one). Produces the model-vs-persistence_momentum (dominant simple reference, recorded 0.70061), model-vs-persistence_flag (0.67102), model-vs-identity_history_rate (0.68907) and model-vs-calendar_size_rate (0.56768) paired row-level bootstrap intervals (150 resamples, seed 31, the construction references' own protocol), the charity-cluster (whole-abn) bootstrap for the decisive model-vs-momentum comparison because eval rows cluster by charity, per-target-year model AUC/Brier, per-row scores, the 5-figure and per-year second-implementation replication that must all match or the job exits 5, and the momentum_vs_calendar canary against job acnc-002's recorded interval [0.12746, 0.13909]. No re-tuning of label, threshold or splits; no agent loop; the holdout is never read.",
   "fetch": {
     "repo": "earino/dataset-factory-staging",
     "release": 429782089,

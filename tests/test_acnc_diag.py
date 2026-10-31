@@ -1,4 +1,5 @@
-"""Offline test for the charity-cluster resampler added by the acnc diag.
+"""Offline tests for the acnc diag: the charity-cluster resampler and the
+identity rate-table key type.
 
 diag.py (candidates/acnc-charity-ais-deadline-compliance/diag/diag.py) computes
 the dependence-aware model-vs-persistence interval by resampling CHARITIES
@@ -78,6 +79,30 @@ def mirror_defective_counts(clusters, drawn):
     for position in drawn:
         counts[position % len(clusters)] += 1
     return counts
+
+
+def mirror_rate_table_second(keys, ys):
+    """Pure-Python mirror of diag.rate_table_second.
+
+    Keys are kept exactly as given (diag.py passes raw strings for single
+    columns and tuples for compound keys), so the table's key type is whatever
+    the caller used to build it - and the eval lookup must use the same type.
+    """
+    totals, positives = {}, {}
+    for key, y in zip(keys, ys):
+        totals[key] = totals.get(key, 0) + 1
+        if y:
+            positives[key] = positives.get(key, 0) + 1
+    table = {key: positives.get(key, 0) / total for key, total in totals.items()}
+    global_rate = (sum(ys) / len(ys)) if ys else 0.5
+    return table, global_rate
+
+
+def mirror_plain_auc_constant_guard(scores):
+    """Mirror of diag.plain_auc's first check: a constant vector carries no
+    ranking information, so the AUC is None and diag.py refuses to compare
+    against it (exit 3 - the observed acnc-diag-001 failure)."""
+    return len(set(scores)) == 1
 
 
 def group_weighted_auc(labels, scores, w_pos, w_neg):
@@ -176,6 +201,66 @@ class TestCharityClusterResampler(unittest.TestCase):
         self.assertEqual(result, again)
         empty = mirror_interval([])
         self.assertEqual(empty, {"resamples": 0, "ci95": None})
+
+
+class TestIdentityRateTableKeyType(unittest.TestCase):
+    """Job acnc-diag-001 (exit 3) failed because the SECOND implementation of
+    the identity/history reference mixed key types: rate_table_second built
+    the train table from train_s["abn"].tolist() (raw strings) while the eval
+    lookup copied the construction score.py's 1-tuple idiom
+    (ident_table.get((row["abn"],), ...)) - score.py is consistent because its
+    own rate_table builds tuple keys from a column list, but here every key
+    missed, each row fell back to the global rate, the vector was constant and
+    diag.py correctly refused to compare against a constant.
+    """
+
+    TRAIN = (["A", "A", "B", "B", "B"], [1, 1, 0, 0, 0])
+    EVAL_ROWS = [{"abn": "A"}, {"abn": "B"}, {"abn": "A"}, {"abn": "C"}]
+
+    def test_fixed_lookup_returns_per_charity_rates(self):
+        keys, ys = self.TRAIN
+        table, global_rate = mirror_rate_table_second(keys, ys)
+        self.assertEqual(table, {"A": 1.0, "B": 0.0})
+        fixed = [table.get(r["abn"], global_rate) for r in self.EVAL_ROWS]
+        self.assertEqual(fixed, [1.0, 0.0, 1.0, global_rate])
+        # both charity rates plus the global fallback are distinct: a real
+        # ranking, not a constant
+        self.assertEqual(len(set(fixed)), 3)
+        self.assertEqual(fixed[3], global_rate)  # unseen charity falls back
+
+    def test_defective_tuple_lookup_collapses_to_constant(self):
+        """The diag-001 defect class: a 1-tuple lookup in a string-keyed table."""
+        keys, ys = self.TRAIN
+        table, global_rate = mirror_rate_table_second(keys, ys)
+        self.assertIn("A", table)
+        self.assertNotIn(("A",), table)  # the tuple key does not exist
+        defective = [table.get((r["abn"],), global_rate) for r in self.EVAL_ROWS]
+        self.assertEqual(defective, [global_rate] * len(self.EVAL_ROWS))
+        self.assertTrue(mirror_plain_auc_constant_guard(defective))
+        # the two lookups diverge on the same table and rows, so this mirror
+        # distinguishes the fixed form from the defective one
+        fixed = [table.get(r["abn"], global_rate) for r in self.EVAL_ROWS]
+        self.assertNotEqual(fixed, defective)
+        self.assertFalse(mirror_plain_auc_constant_guard(fixed))
+
+    def test_shipped_identity_lookup_uses_the_tables_key_type(self):
+        """Bites on the shipped file itself: diag.py builds the identity table
+        from raw abn strings, so its eval lookup must use the raw key. This
+        test fails on the pre-fix source diag-001 shipped."""
+        source = DIAG.read_text()
+        self.assertTrue(
+            'rate_table_second(train_s["abn"].tolist(), train_y)' in source,
+            "the identity table is no longer built from raw abn strings; "
+            "update this guard to the new build form")
+        self.assertTrue(
+            'ident_table.get(row["abn"], ident_global)' in source,
+            "diag.py's identity lookup does not use the raw-string key its "
+            "rate table is built with")
+        self.assertFalse(
+            'ident_table.get((row["abn"],), ident_global)' in source,
+            "diag.py still carries the diag-001 defect: a 1-tuple lookup in "
+            "the string-keyed identity table misses every key, collapses the "
+            "reference to the constant global rate and forces the refusal")
 
 
 if __name__ == "__main__":
