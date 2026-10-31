@@ -1,0 +1,217 @@
+{
+  "id": "eu-ombudsman-inquiry-outcome",
+  "status": "investigating",
+  "created_at": "2026-10-31T12:41:59.739975+00:00",
+  "domain": "EU administrative oversight / European Ombudsman inquiry outcomes (case-level settlement prediction)",
+  "prediction_question": "For a complaint-based European Ombudsman inquiry published at opening against an EU institution or body, will the inquiry conclude with an adverse maladministration outcome (settlement code 'Maladministration found' or 'Critical remark'), vs a no-finding outcome ('No maladministration found' / 'No further inquiries justified') or a resolved outcome (solution/settled/draft-recommendation accepted), within a stated horizon after the opening instant?",
+  "prediction_time": "The publication instant of the inquiry's 'case opened' record (EOOPENINGSUMMARY document; the per-case record carries dateOpened, and the opening summary's documentDate). All shipped features are fixed at or before that instant: the case reference (year + handling-team initials), the ownInitiative/strategicInitiative/publicInterest flags, the institution complained against (named in the opening summary title and coded on the case), the complainant country, the topic(s), the key5 policy-area coding and the key7 'types of maladministration alleged' coding, plus the opening summary title text. The label event - the settlement code recorded at closure (dateClosed / the EODECISION document date) - always follows the instant; no feature's target window precedes it. Vintage caveat: the register serves current-vintage coding (per-case records carry dateUpdate; no historical snapshots), so features are stated as current-vintage with the cutoff recorded, the same posture as the published ec-merger-phase2-opening.",
+  "target_definition": "Publisher-coded settlement outcome per case (and per institution within the case), from eoCaseInstitutionSettlements.eoSettlement on the per-case record (22-value taxonomy, labels decoded from the publisher's own label store: ma='Maladministration found', crr='Critical remark', nmf='No maladministration found', nfij='No further inquiries justified', sbi='Settled by the institution', sa/spa/solution-rejected='Solution achieved/partly/rejected', sai/spai/suggestion-rejected='Suggestion(s) accepted/partly/rejected', drai/drpai='Draft recommendation accepted/partly accepted', rai/rpai/recommendation-rejected='Recommendation agreed/partly/rejected', frs='Friendly solution', dbc='Dropped by the complainant', dwc='Dealt with by a Court', casr='Closed after Special Report', oth='Other'). The primary binary label is 'adverse maladministration outcome' (ma or crr) vs all other settled codes; construction may ship the grouped 4-way variant. Label source = the settlement coding + the EODECISION document, both excludable from features.",
+  "sources": [
+    {
+      "name": "European Ombudsman inquiry register (search-inquiries web application and its REST backend)",
+      "url": "https://www.ombudsman.europa.eu/en/search-inquiries",
+      "api_search": "POST https://www.ombudsman.europa.eu/rest/legal-documents/search/en?page=N with JSON body {text, languageISO, caseId, docTypes, dateMin 'dd_mm_yyyy', dateMax, institutionIds, settlementIds, topics, keys1, keys2, keys3, keys5, keys7, countryId} (captured 2026-10-31 from the publisher's own Angular app, chunk_CqcAHzvI.js; empty body returns all documents, countDtos + listDtos, 10 docs/page)",
+      "api_case": "GET https://www.ombudsman.europa.eu/rest/eoCases/byCaseId?caseId=<caseRef> returns the per-case record: caseId, number, year, nr, dateOpened, dateClosed, admissible, inMandate, ownInitiative, strategicInitiative, publicInterest, parallelInquiry, confidentiality, country, topics[], key1/key2/key3/key5/key7 codings, eoCaseInstitutionSettlements[] (institution + eoSettlement), legalDocumentsMap, hasCaseDescriptionOrOpeningCase (measured 2026-10-31 on case 483/2024/PVV)",
+      "api_reference": "GET /rest/eo-settlements (22 settlement codes), /rest/documentTypes, /rest/topics, /rest/institutions, /rest/caseKeywords/keys1|keys2|keys3|keys5|keys7, /rest/geographical/countries, /rest/labels?lang=en (label decode)",
+      "decisions_page": "https://www.ombudsman.europa.eu/en/decisions - 'Decisions following an inquiry by the European Ombudsman are available in this Section for cases closed since 1 July 1998' (publisher page text, 5,727 results observed 2026-10-31)",
+      "access": "anonymous, no login or key; REST backend readable from a plain HTTP client (all probe scripts in probe/ run from the terminal). Web app is an Angular SPA; the search results page is client-rendered from the same REST API. No bulk export found; the corpus is paged at 10 documents/page (13,069 documents total -> ~1,300 page requests for a full fetch, a worker-sized job).",
+      "licence": "Class B. Publisher's own copyright notice: '(c) European Union, 1995-2026. Reproduction is authorised, provided the source is acknowledged, save where otherwise stated.' - attribution-only; derivatives not explicitly addressed. Conditions to be stated in LICENSE.md at construction."
+    }
+  ],
+  "license_evidence": [
+    "European Ombudsman copyright page (https://www.ombudsman.europa.eu/copyright, read 2026-10-31): '(c) European Union, 1995-2026 Reproduction is authorised, provided the source is acknowledged, save where otherwise stated. Where prior permission must be obtained for the reproduction or use of textual and multimedia information (sound, images, software, etc.), such permission shall cancel the above-mentioned general permission and shall clearly indicate any restrictions on use.' No dataset-specific or tool-specific terms found on the search-inquiries application or the REST backend; no registration, cookie-gate or ToS acceptance anywhere in the captured anonymous flow.",
+    "Classification note: unlike the European Commission legal notice (which grants CC BY 4.0 explicitly), the Ombudsman's own instrument authorises reproduction with acknowledgment and is silent on derivative works/adaptation -> class B (attribution-required, conditions to state in LICENSE.md), not class A. The Notice to users page (https://www.ombudsman.europa.eu/en/notice/en) frames the site under language, personal-data, copyright and errors policies; personal-data handling is the publisher's own responsibility and the shipped fields are administrative metadata (case numbers, institution codings, topic codings, dates), not complainant identities - decision/opening texts quote complainants in anonymised form ('the complainant').",
+    "Reuse scope: what would ship is the register metadata (case references, dates, institution/topic/policy-area/allegation codings, settlement codes) and optionally the published opening-summary titles - the publisher's own public register content with the source acknowledged."
+  ],
+  "construction_script": null,
+  "split_strategy": null,
+  "measurements": {
+    "what_is_measured": "Channel, schema, population and outcome mixes, measured 2026-10-31 from the publisher's REST API with bounded aggregate queries (countDtos only; ~130 POST queries, each returning 10 documents' metadata, ~5 min wall clock on the coordinator; scripts + raw counts retained in probe/). NOT yet measured: the exact per-opening-cohort join counts (published openings that later received a published decision, by opening year) - that is a per-case panel build and is the named prerequisite in next_action.",
+    "totals_measured_2026_10_31": {
+      "documents_all_types": "countDtos=13,069 with empty body",
+      "by_doctype": {
+        "EODECISION": 5727,
+        "EOOPENINGSUMMARY": 3653,
+        "EOSOLUTION": 137,
+        "EODRAFTRECOMMENDATION": 343,
+        "EOSPECIALREPORT": 21,
+        "EOCASEDESCRIPTION": 1483
+      },
+      "per_year_decisions": "0 before 2007; 2 (2007), 5 (2008), 129 (2009), 164 (2010), then 106-476/yr 2011-2026 (peak 476 in 2018); 2023: 158, 2024: 186, 2025: 194, 2026 YTD: 110",
+      "per_year_published_openings": "0 before 2011 (the register publishes opening summaries only from 2011); 179 (2011), 180 (2012), 105 (2013), 101 (2014), 39 (2015), 44 (2016), 244 (2017), 325 (2018), 277 (2019), 247 (2020), 247 (2021), 278 (2022), 312 (2023), 356 (2024), 389 (2025), 330 (2026 YTD)"
+    },
+    "settlement_mix_alltime_on_decisions": {
+      "nmf": 1629,
+      "sbi": 722,
+      "nfij": 542,
+      "ma": 143,
+      "crr": 134,
+      "sa": 76,
+      "rai": 28,
+      "dwc": 24,
+      "frs": 43,
+      "drai": 30,
+      "dbc": 14,
+      "spa": 18,
+      "drpai": 9,
+      "rpai": 4,
+      "sai": 6,
+      "casr": 4,
+      "recommendation-rejected": 1,
+      "others (oth/spai/solution-rejected/suggestion-rejected)": 0,
+      "note": "counted as EODECISION documents per settlement code (decisions published 2007-2026); sum 3,403 < 5,727 because pre-2009 rows and rows with settlement not yet coded are counted only when they match the filter - exact per-case attribution is the join prerequisite"
+    },
+    "grouped_outcome_counts_by_decision_year_window": {
+      "maladministration_established (ma+crr+recommendation-rejected)": {
+        "2008-2012": 44,
+        "2013-2017": 98,
+        "2018-2022": 52,
+        "2023-2026": 82
+      },
+      "no_finding (nmf+nfij)": {
+        "2008-2012": 143,
+        "2013-2017": 501,
+        "2018-2022": 1022,
+        "2023-2026": 406
+      },
+      "resolved_with_action (sa+spa+sai+spai+sbi+frs+drai+drpai+rai+rpai)": {
+        "2008-2012": 46,
+        "2013-2017": 317,
+        "2018-2022": 397,
+        "2023-2026": 161
+      },
+      "withdrawn_or_court (dbc+dwc+oth+casr+solRej+sugRej)": {
+        "2008-2012": 12,
+        "2013-2017": 12,
+        "2018-2022": 15,
+        "2023-2026": 2
+      },
+      "reading": "both classes present in every 5-year window from 2008; the adverse class runs 44-98 per window (roughly 9-12% of published decisions), enough for year-clustered intervals on eval/holdout windows in the 2011+ opening era (compare ec-merger-phase2-opening: 46/46 positives in eval/holdout)"
+    },
+    "publisher_cross_check": "European Parliament resolution P10_TA(2024)0063 on the EO annual report 2023: 398 inquiries opened, 372 closed; of closures 'no maladministration was found in 99 (26.6%) cases, a solution was achieved, partly achieved or settled by the institution in 206 (55.4%), no further inquiries were justified in 46 (12.4%) and maladministration was found in 27 (7.3%)'. Measured 2023 published-decision counts: nmf=90, ma=17 (probe_eo_records.py) - consistent in scale and order but a DIFFERENT population (all closures vs closures with a published decision document, 158 in 2023); the coverage gap is itself a recorded property. Same pattern for 2012 (EO Overview 2012: 424 closures, nmf 76 / ma 56 / nfij 197 / settled 80 vs 175 published decisions).",
+    "coverage_property": "Published openings undercount all inquiries (312 published vs 398 opened in 2023, ~78%); published decisions undercount all closures (158 vs 372 in 2023, ~42%). The task population is the published join: inquiries with a published opening summary (2011+) that later receive a published decision; the unpublished share is a documented eligibility boundary, not a defect - predictions are made only on published openings.",
+    "schema_measured": "Per-case record (483/2024/PVV, fetched 2026-10-31): caseId, number 483, year 2024, nr 202400483, dateOpened 2024-03-20, dateClosed 2024-12-18, admissible true, inMandate true, ownInitiative false, strategicInitiative false, publicInterest false, parallelInquiry false, confidentiality.confidential false, country codeISO 'nl', topics [Access to documents], key5 [Justice and police cooperation], key7 [Failure to take a timely decision [Article 17 ECGAB], Failure to deal properly with r...], eoCaseInstitutionSettlements [{institution techKey 4 (European Commission, category 1), eoSettlement 'nfij'}], legalDocumentsMap {}, hasCaseDescriptionOrOpeningCase true, caseStates[] (internal state history, all public:false). Opening-summary document rows: title (names the institution and subject), documentDate, techKey; decision rows add caseRef in the title and a summary paragraph.",
+    "timing_observation": "Opening summaries are published at inquiry opening (documentDate matches dateOpened to the day on the measured case); decisions are published at closure (documentDate matches dateClosed to the day). The register is the publisher's own public register, updated continuously; historical vintages are not served - the as-of policy is current-vintage with the fetch date recorded, identical posture to the published ec-merger-phase2-opening (current-vintage register coding)."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": "Opened 2026-10-31 in the EU/EEA regional tick; the first Ombudsman-register source on the bench. Four of five contracts have measured evidence: redistribution (class B - the publisher's own copyright notice authorises reproduction with attribution; derivatives unstated, conditions carried into LICENSE.md), timing (opening-publication instant; publisher-coded features at the instant; label event strictly after; current-vintage as-of policy recorded), target (22-value publisher-coded settlement taxonomy, decoded from the publisher's own label store, excludable), and not-a-mirror (novelty check recorded: the only adjacent ML work found - a 2025 Indonesian study classifying maladministration findings on the Indonesian Ombudsman's internal, non-public complaint database - is a different registry, jurisdiction, population and feature set with no public dataset; no ML-ready formulation of the European Ombudsman's inquiry outcomes exists). The fifth contract - split capacity on the task's own population - is evidenced at the aggregate level (per-year decisions 106-476 since 2010, both classes in every 5-year window from 2008, adverse class 44-98 per window) but the exact per-opening-cohort counts require the per-case panel (published opening -> published decision -> settlement), which is a worker build and is the named prerequisite. Unfamiliar, clean, in-region; the strongest lead this tick.",
+  "next_action": "ONE bounded worker measurement job (advancement owns it; it is a panel build, not a discovery probe): page the legal-documents corpus (13,069 documents at 10/page = ~1,300 POSTs) plus GET /rest/eoCases/byCaseId per case (~4,000-5,700 cases), join published openings (2011+) to later published decisions and settlements, and output per-opening-year cohort counts with the grouped label mix (train/eval/holdout candidate windows, e.g. train 2011-2017, eval 2018-2021, holdout 2022-2026, both classes required in each), the censoring count (opened, no decision yet), the opening->decision lag distribution, and the ma/crr base rate per window. Acceptance: every count re-derivable from the saved raw responses; figures reported only after the full-panel build passes the dataset-qualification gate in construction. If the join population or the adverse-class counts turn out too thin for three disjoint windows, flip to parked with the measured counts - the aggregate evidence above suggests they will not. Do not re-probe the licence or the channel; both are measured in this record.",
+  "jurisdiction": {
+    "country": "EU",
+    "region": "Europe",
+    "publisher": "European Ombudsman (inquiry register / search-inquiries application)",
+    "recorded_at": "2026-10-31"
+  },
+  "licence_class": "B",
+  "licence_note": "Attribution-only reproduction authorisation ('Reproduction is authorised, provided the source is acknowledged, save where otherwise stated') - the publisher's own copyright instrument, not the Commission's CC BY 4.0 notice. Derivatives not explicitly addressed, so class B rather than A; construction states the attribution condition ('Source: European Ombudsman - public inquiry register') and the no-alteration practice for quoted texts in LICENSE.md.",
+  "verdict": "hold",
+  "uncertainty": "The one unresolved contract is split capacity on the exact task population (the opening->decision join). Aggregate evidence says it will hold (both classes in every window since 2008; adverse class 44-98 per 5-year window; openings 247-389/yr since 2020), but the per-cohort counts are not yet computed and must not be asserted as measured. Secondary uncertainty: whether all key5/key7 case codings are assigned at intake (before the opening instant) rather than later in the inquiry - the panel build can check this by comparing codings against the opening-summary text for a bounded sample; if a coding is provably post-hoc, it is excluded from features and recorded as such, which does not sink the task (institution, country, topic, year and title text remain).",
+  "novelty_check": {
+    "checked_at": "2026-10-31T12:44:22+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "European Ombudsman decisions",
+      "ombudsman maladministration outcome",
+      "EU administrative complaint outcome prediction"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "European Ombudsman decisions",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "ombudsman maladministration outcome",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "EU administrative complaint outcome prediction",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "European Ombudsman decisions",
+          "hits": 762456,
+          "top": [
+            "The European Ombudsman: democratic empowerment or democratic deficit? (Deliverable 8.9)",
+            "Between Output and Throughput: Legitimacy Frame Misalignment in Ombudsman Decisions on Public Personnel Selection",
+            "Regional Ombudsman as a Public Service Oversight Agency in Indonesia (Analysis of Constitutional Court of the Republic of Indonesia Decision Number 62/Puu-Viii/2010)",
+            "Gatekeeper of Rights IV: \"Illusory Remedies in Higher Education: Article 47 CFR and a Hungarian Ombudsman-Court Loop in Medical Training\"",
+            "Concept and Content of Administrative and Legal Relations of Administrative and Legal Regulation of the Ombudsman's Institute in Ukraine"
+          ]
+        },
+        {
+          "query": "ombudsman maladministration outcome",
+          "hits": 49760,
+          "top": [
+            "The European Ombudsman: democratic empowerment or democratic deficit? (Deliverable 8.9)",
+            "Legal Responsibility for Maladministration in the Issuance of Mining Business Permits",
+            "The Role of the Ombudsman in Curbing Corruption in Malawi",
+            "The Role of Batam City's Manpower Department in the Protection of Migrant Workers in Batam City",
+            "Sanitary maladministration"
+          ]
+        },
+        {
+          "query": "EU administrative complaint outcome prediction",
+          "hits": 204747,
+          "top": [
+            "FARMERS' GRIEVANCE RECORDS REVEALING AND CONCEALING REPORTING CHANNELS, NUMBERS AND REMEDIES IN UZBEKISTAN",
+            "The access to justice of consumers in the current European Union legal system: challenges and perspectives",
+            "Cassation complaint - a remedy in the administrative justice system from the perspective of the dispositional principle",
+            "Zamkni\u0119cie drogi s\u0105dowej w sprawie bezczynno\u015bci z zakresu dost\u0119pu do informacji publicznej",
+            "\u041e\u0441\u043e\u0431\u043b\u0438\u0432\u043e\u0441\u0442\u0456 \u043a\u043e\u043d\u0446\u0435\u043f\u0446\u0456\u0457 \"\u0431\u0435\u0437\u043f\u0435\u0447\u043d\u043e\u0457 \u0442\u0440\u0435\u0442\u044c\u043e\u0457 \u043a\u0440\u0430\u0457\u043d\u0438\" \u0442\u0430 \u0457\u0457 \u0432\u043f\u043b\u0438\u0432 \u043d\u0430 \u043f\u0440\u0430\u0432\u0430 \u0434\u0456\u0442\u0435\u0439-\u043c\u0456\u0433\u0440\u0430\u043d\u0442\u0456\u0432"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "European Ombudsman decisions",
+          "hits": 5,
+          "top": [
+            "Physics Briefing Book",
+            "PEJWAK: A Profile-Echoing Self-Anchored Aggregation Architecture for Multi-Criteria Decision Analysis",
+            "Corrigendum to \"On subgroup perfect codes in Cayley graphs\" [European J. Combin. 91 (2021) 103228]",
+            "Energy Communities: From European Law to Numerical Modeling",
+            "The SMARTHEP European Training Network"
+          ]
+        },
+        {
+          "query": "ombudsman maladministration outcome",
+          "hits": 5,
+          "top": [
+            "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
+            "Infrastructure Ombudsman: Mining Future Failure Concerns from Structural Disaster Response",
+            "Unlocking Democratic Efficiency: How Coordinated Outcome-Contingent Promises Shape Decisions",
+            "What Outcome RL Buys: Finishing, Reliability, Rarely Reach",
+            "Valid Instrumental Variables Selection Methods using Negative Control Outcomes and Constructing Efficient Estimator"
+          ]
+        },
+        {
+          "query": "EU administrative complaint outcome prediction",
+          "hits": 5,
+          "top": [
+            "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
+            "The AI Adaptation Gap in Higher Education: Students, Faculty, and Administrative Staff",
+            "Key features of administrative responsibility",
+            "Embracing Annotation Efficient Learning (AEL) for Digital Pathology and Natural Images",
+            "Signed Mahonian polynomials for major and sorting indices"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'European Ombudsman decisions': 0 hit(s) - nothing notable\n- huggingface_datasets / 'ombudsman maladministration outcome': 0 hit(s) - nothing notable\n- huggingface_datasets / 'EU administrative complaint outcome prediction': 0 hit(s) - nothing notable\n- zenodo_records / 'European Ombudsman decisions': 762456 hit(s) - The European Ombudsman: democratic empowerment or democratic deficit? (Deliverable 8.9), Between Output and Throughput: Legitimacy Frame Misalignment in Ombudsman Decisions on Public Personnel Selection, Regional Ombudsman as a Public Service Oversight Agency in Indonesia (Analysis of Constitutional Court of the Republic of Indonesia Decision Number 62/Puu-Viii/2010), Gatekeeper of Rights IV: \"Illusory Remedies in Higher Education: Article 47 CFR and a Hungarian Ombudsman-Court Loop in Medical Training\", Concept and Content of Administrative and Legal Relations of Administrative and Legal Regulation of the Ombudsman's Institute in Ukraine\n- zenodo_records / 'ombudsman maladministration outcome': 49760 hit(s) - The European Ombudsman: democratic empowerment or democratic deficit? (Deliverable 8.9), Legal Responsibility for Maladministration in the Issuance of Mining Business Permits, The Role of the Ombudsman in Curbing Corruption in Malawi, The Role of Batam City's Manpower Department in the Protection of Migrant Workers in Batam City, Sanitary maladministration\n- zenodo_records / 'EU administrative complaint outcome prediction': 204747 hit(s) - FARMERS' GRIEVANCE RECORDS REVEALING AND CONCEALING REPORTING CHANNELS, NUMBERS AND REMEDIES IN UZBEKISTAN, The access to justice of consumers in the current European Union legal system: challenges and perspectives, Cassation complaint - a remedy in the administrative justice system from the perspective of the dispositional principle, Zamkni\u0119cie drogi s\u0105dowej w sprawie bezczynno\u015bci z zakresu dost\u0119pu do informacji publicznej, \u041e\u0441\u043e\u0431\u043b\u0438\u0432\u043e\u0441\u0442\u0456 \u043a\u043e\u043d\u0446\u0435\u043f\u0446\u0456\u0457 \"\u0431\u0435\u0437\u043f\u0435\u0447\u043d\u043e\u0457 \u0442\u0440\u0435\u0442\u044c\u043e\u0457 \u043a\u0440\u0430\u0457\u043d\u0438\" \u0442\u0430 \u0457\u0457 \u0432\u043f\u043b\u0438\u0432 \u043d\u0430 \u043f\u0440\u0430\u0432\u0430 \u0434\u0456\u0442\u0435\u0439-\u043c\u0456\u0433\u0440\u0430\u043d\u0442\u0456\u0432\n- arxiv_preprints / 'European Ombudsman decisions': 5 hit(s) - Physics Briefing Book, PEJWAK: A Profile-Echoing Self-Anchored Aggregation Architecture for Multi-Criteria Decision Analysis, Corrigendum to \"On subgroup perfect codes in Cayley graphs\" [European J. Combin. 91 (2021) 103228], Energy Communities: From European Law to Numerical Modeling, The SMARTHEP European Training Network\n- arxiv_preprints / 'ombudsman maladministration outcome': 5 hit(s) - Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, Infrastructure Ombudsman: Mining Future Failure Concerns from Structural Disaster Response, Unlocking Democratic Efficiency: How Coordinated Outcome-Contingent Promises Shape Decisions, What Outcome RL Buys: Finishing, Reliability, Rarely Reach, Valid Instrumental Variables Selection Methods using Negative Control Outcomes and Constructing Efficient Estimator\n- arxiv_preprints / 'EU administrative complaint outcome prediction': 5 hit(s) - Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, The AI Adaptation Gap in Higher Education: Students, Faculty, and Administrative Staff, Key features of administrative responsibility, Embracing Annotation Efficient Learning (AEL) for Digital Pathology and Natural Images, Signed Mahonian polynomials for major and sorting indices",
+    "prior_art": [
+      "Daswati, Wijayanto & Afendi 2025 (BAREKENG) - Indonesian Ombudsman internal-database classifier, non-public data; European Ombudsman Annual Reports and EP resolutions P10_TA(2024)0063, P9_TA(2024)0035 (publisher's own aggregate statistics)"
+    ],
+    "theirs": "The publisher (European Ombudsman) publishes the register itself with per-case codings and annual-report outcome percentages (e.g. EP resolution P10_TA(2024)0063: 2023 closures nmf 26.6%, resolved 55.4%, nfij 12.4%, ma 7.3%) - summaries, not a prediction task, and no bulk dataset. The only adjacent ML work found: a 2025 Indonesian study (BAREKENG: J. Math. Appl., Daswati/Wijayanto/Afendi) classifying maladministration findings from the Ombudsman of the Republic of Indonesia's INTERNAL, NON-PUBLIC complaint database (9,795 reports 2023-2024, LightGBM/CatBoost/RF, no public dataset, no temporal splits) - a different registry, jurisdiction, population and feature set, which cannot be downloaded or reproduced by a consumer. National-ombudsman effectiveness literature is aggregate/qualitative.",
+    "ours": "First public, temporally-split formulation of European Ombudsman inquiry-outcome prediction: at the publication of the opening summary (publisher-dated, 2011+), predict the publisher-coded settlement at closure (22-value taxonomy; adverse class ma/crr vs no-finding vs resolved) from features fixed at the instant (institution, complainant country, topics, key5 policy area, key7 alleged-maladministration types, opening title). Everything ships from the publisher's own anonymous REST register; no ML-ready formulation of this register exists anywhere - the mechanical sweep (HF/Zenodo/arXiv) found no hits, and the web sweep found no study posing outcome prediction on the European Ombudsman's register. The contribution is the formulation, the opening-instant contract with the current-vintage as-of policy, eligibility (published openings only, censoring of live inquiries), split windows with measured cohort counts, and the publisher's own aggregate cross-checks (EP resolution percentages).",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
+}

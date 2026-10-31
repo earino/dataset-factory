@@ -11069,3 +11069,60 @@ mutex, follow-up scope only).
   baseline_2026_10_31_acnc_baseline_001; next_action names advancement's repair). Unrelated uncommitted
   work preserved untouched and excluded from this commit: ec-state-aid-investigation-opening/probe/.
   No publication, package, tag or holdout read was performed or authorized by this event.
+
+## 2026-10-31 (12:46Z) - EU/EEA discovery tick: EC infringement register resolved (API + licence A) then dropped on a published mirror (JEPP 2026 + CC0 Dataverse replication data); European Ombudsman inquiry-outcome lead opened (licence B, REST register measured, 4/5 contracts, split-count join handed to advancement)
+
+Regional focus Europe - EU/EEA. Both verdicts in-region, no US substitution, no construction,
+qualification, packaging or publication; no existing candidate advanced; no worker launched
+(all probes bounded coordinator-side terminal/browser queries against publisher REST APIs).
+Untracked parallel-session work candidates/ec-state-aid-investigation-opening/probe/ was left
+untouched and is excluded from this commit.
+
+- `ec-infringement-case-escalation` (EU, investigating -> DROPPED, mirror): the recorded next
+  probe ran exactly as specified. The 2026-10-28 access blocker is RESOLVED - the register
+  ("Themis", https://ec.europa.eu/implementing-eu-law/.../en; the old _en URLs now HTTP 500) is
+  backed by an anonymous JSON API captured from the publisher's own app: POST
+  /search-infringement-decisions/api/decisions (62,957 decision rows; date filters DD/MM/YYYY
+  only, YYYY-MM-DD rejected HTTP 500 - error read) and POST /api/infringements (25,838 cases,
+  each embedding its complete dated decisions[] history; 2,006 active). Licence class A
+  (Commission legal notice CC BY 4.0 / Decision 2011/833/EU, read 2026-10-31). Per-year
+  decision counts measured for every year 1996-2026 via bounded totalRows queries (LFN
+  550-1,947/yr since 2002; RO 147-724; RTC 18-265; closures 489-2,045); 2023 cross-check vs
+  the publisher's Annual Report: closures 1,037 measured vs 1,038 reported. The novelty sweep
+  then found the task already published: a 2026 peer-reviewed study poses exactly the
+  candidate's primary label (Reasoned Opinion issued after a formal notice, 1/0) on this exact
+  register (~19,600 cases 2002-2020, base rate ~34%), and its assembled case-level replication
+  dataset is publicly released, CC0 and unrestricted (Harvard Dataverse doi:10.7910/DVN/LGADVE,
+  replication_PP.zip 71,421,134 bytes, versionState RELEASED - verified via the Dataverse API;
+  adjacent stage-2/Art.260/duration formulations covered by Boerzel & Knoll and Fjelstul &
+  Carrubba). check-novelty.py verdict: mirror. Dropped with the reopen hook = a genuinely
+  different target variable with its own novelty sweep; the measured API/licence/population
+  evidence stands so a reopen never re-probes. High-value rejection: construction would have
+  been spent repackaging a shipped task.
+- `eu-ombudsman-inquiry-outcome` (EU, OPENED, investigating): new source family for the bench.
+  The European Ombudsman's inquiry register (ombudsman.europa.eu Angular SPA) is backed by an
+  anonymous REST API captured from the publisher's bundle: POST
+  /rest/legal-documents/search/en (13,069 documents: 5,727 decisions since 1998, 3,653
+  published openings 2011+) and GET /rest/eoCases/byCaseId (per-case record with dateOpened/
+  dateClosed, institution, complainant country, topics, key5 policy area, key7 alleged-
+  maladministration types, and the publisher-coded 22-value settlement outcome). Licence class
+  B (the Ombudsman's own copyright page: "Reproduction is authorised, provided the source is
+  acknowledged" - attribution-only, derivatives unstated; NOT the Commission's CC BY
+  instrument). Task: at the publication of the opening summary, predict the settlement outcome
+  (adverse ma/crr vs no-finding nmf/nfij vs resolved), features fixed at the instant. Dated
+  example worked and verified (case 483/2024/PVV: opening published 2024-03-20 = dateOpened to
+  the day; decision 2024-12-20, settlement nfij). Aggregate measurements: decisions 106-476/yr
+  since 2010; adverse class 44/98/52/82 across the four 5-year windows from 2008 - both
+  classes everywhere; coverage gap vs the publisher's own statistics recorded as an
+  eligibility boundary (2023: 158 published decisions vs 372 closures). Novelty:
+  differentiated (mechanical sweep 0 hits; the only adjacent ML work - a 2025 Indonesian
+  Ombudsman study - runs on internal non-public data with no public dataset). The one
+  unresolved contract is split capacity on the task's own population: the per-opening-cohort
+  join is a per-case panel build (a worker job, ~1,300 corpus pages + ~4-5k per-case GETs) and
+  is handed to advancement with exact acceptance criteria in record.json next_action; if the
+  cohorts hold the candidate flips to ready with no further probing.
+
+Session hygiene: check-candidate.py --all exit 0 (116 records, +1 candidate, +1 dropped);
+unittest suite 687/687 OK; discovery-coverage.py exit 0 (Europe 27, EU 12, live non-US 35/41 =
+85%). Probe scripts + raw counts retained in both candidates' probe/ dirs. No tokens, no
+workers, no releases touched.

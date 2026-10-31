@@ -1,6 +1,6 @@
 {
   "id": "ec-infringement-case-escalation",
-  "status": "investigating",
+  "status": "dropped",
   "created_at": "2026-10-28T12:34:27.192617+00:00",
   "domain": "EU law enforcement / infringement procedures against Member States (case-level escalation)",
   "prediction_question": "For an open European Commission infringement case against a Member State at a decision instant (e.g. the date a letter of formal notice is decided), will the case escalate to the next procedural stage (reasoned opinion, then referral to the Court of Justice) or be closed without escalation within a stated horizon?",
@@ -10,29 +10,155 @@
     {
       "name": "European Commission infringement register / 'Implementing EU law' site (interactive maps, graphs and per-case register search by decision, status, type, Member State, policy area)",
       "url": "https://ec.europa.eu/implementing-eu-law/home/en",
-      "landing_page": "https://ec.europa.eu/implementing-eu-law/member-state-infringement-cases_en",
-      "access": "public web application, read 2026-10-28; NO documented bulk export or API found in this tick's bounded search. The monthly infringement packages are PDFs on the Commission presscorner (e.g. INF_25_2077 of 2025-10-08, INF_26_1084 of 2026-06-04). A third-party scraping API exists (brubru.beresol.eu /api/v2/commission/infringements) but is NOT the publisher's channel and is not evidence of one.",
-      "licence": "official Commission web content under the Commission reuse policy; per-case licence not yet read - classify only after the access channel is settled"
+      "landing_page": "https://ec.europa.eu/implementing-eu-law/member-state-infringement-cases/en",
+      "search_app": "https://ec.europa.eu/implementing-eu-law/search-infringement-decisions/?typeOfSearch=byCase&activeCase=true&langCode=EN",
+      "api_decisions": "https://ec.europa.eu/implementing-eu-law/search-infringement-decisions/api/decisions (POST JSON, paged)",
+      "api_cases": "https://ec.europa.eu/implementing-eu-law/search-infringement-decisions/api/infringements (POST JSON, paged, one record per case with the full decisions[] history embedded)",
+      "api_referencedata": "https://ec.europa.eu/implementing-eu-law/search-infringement-decisions/api/referencedata/loadAll and /api/referencedata/decision-type/mapping (GET)",
+      "access": "RESOLVED 2026-10-31 (was the recorded blocker): the register application is backed by an anonymous, unauthenticated JSON API captured from the publisher's own web app (no login, no key). /api/decisions returns per-decision rows (62,957 total) with fields activeInfringementCase, caseType, decisionDate, decisionType, infringementNumber, leadDg, memberState, memo(+URL), nonCommunicationCase, normalCuriaReference(+URL), policyAreas[], pressRelease(+URL), title. /api/infringements returns one record per case (25,838 total) with the same case fields plus decisions[] carrying the complete dated decision history per case - the per-case panel is available directly from the publisher. The app also exposes 'Export Search Url' / 'Export to Excel' controls (page text observed 2026-10-31). Date filters accept DD/MM/YYYY only (YYYY-MM-DD returns HTTP 500); decisionCategory accepts the referencedata keys (LFN, RO, RTC, CLOSURES, ALFN, ARO, ...). The 2026-10-28 URL spellings with _en now return HTTP 500; the current paths use /en. The monthly infringement packages remain PDFs on the presscorner (e.g. INF_25_2077 of 2025-10-08, INF_26_431 of 2026-03); the third-party scraping API (brubru.beresol.eu) remains irrelevant.",
+      "licence": "Class A. Commission web content under the Commission reuse policy: Commission Decision 2011/833/EU; 'Unless otherwise indicated (e.g. in individual copyright notices), content owned by the EU on this website is licensed under the Creative Commons Attribution 4.0 International (CC BY 4.0) licence' (Commission legal notice, read 2026-10-31). No individual copyright notice found on the implementing-eu-law subsite."
     }
   ],
   "license_evidence": [
-    "ec.europa.eu 'Implementing EU law' pages (read 2026-10-28): public register of infringement decisions, search by 'decision, status, type, number, Member State, policy area or title' per the publisher's own page text. The pages are Commission web content (reuse policy: Commission Decision 2011/833/EU / CC BY 4.0 default), but no machine-readable distribution is documented on the page itself - recorded as observed, licence classification deferred with the access question."
+    "ec.europa.eu 'Implementing EU law' pages (read 2026-10-28): public register of infringement decisions, search by 'decision, status, type, number, Member State, policy area or title' per the publisher's own page text.",
+    "European Commission legal notice (https://commission.europa.eu/legal-notice_en, read 2026-10-31): 'The Commission's reuse policy is implemented by the Commission Decision of 12 December 2011 on the reuse of Commission documents... Unless otherwise indicated (e.g. in individual copyright notices), content owned by the EU on this website is licensed under the Creative Commons Attribution 4.0 International (CC BY 4.0) licence. This means that reuse is allowed, provided appropriate credit is given and changes are indicated.' Same instrument family as the published ec-merger-phase2-opening candidate.",
+    "Scope check 2026-10-31: the register rows ship Commission-decided metadata (case numbers, decision dates/types, Member State, policy area, DG, title). Titles are the Commission's own published case titles; no third-party works are embedded in the register fields.",
+    "Referencedata decision-type mapping read 2026-10-31 (GET /api/referencedata/decision-type/mapping): raw codes -> categories, e.g. FN258/FN106->LFN, RO258/RO258_260->RO, RTC258->RTC, CLOSING_OF_THE_CASE/WITHDRAWAL_FROM_THE_COURT->CLOSURES, AFN258/SECOND_AFN258->ALFN, FN260->LFN_POST_RULING, ARO258->ARO, RO259->INTER_STATE_DISPUTED_RO."
   ],
   "construction_script": null,
   "split_strategy": null,
   "measurements": {
-    "what_is_measured": "Nothing in this tick beyond the channel search. Case volume context from the publisher's own monthly packages (read 2026-10-28): a typical monthly package opens and closes dozens of cases (e.g. the 2025-10-08 package closes 59 cases and opens multiple letters of formal notice per policy area; case numbers of the form INFR(2025)2129). Population per year is hundreds of new cases across 27 Member States - enough volume in principle for staged-escalation labels, IF a row-level channel exists."
+    "what_is_measured": "Channel + population, measured 2026-10-31 from the publisher's own API (bounded aggregate queries; scripts retained in candidates/ec-infringement-case-escalation/probe/). NOT a split measurement: per-case transition base rates were never computed - the mirror verdict (see rejection_reason) ended the lead before a per-case panel was built.",
+    "totals_measured_2026_10_31": {
+      "decisions_endpoint": "POST /api/decisions, no filter: totalRows=62,957 decision records; newest decision 21/10/2026; earliest observed decision 18/10/1995 (case INFR(1994)5095); case numbers span INFR(1994)..INFR(2026)",
+      "cases_endpoint": "POST /api/infringements, no filter: totalRows=25,838 case records, each embedding its full decisions[] history; activeCase=true filter: 2,006 active cases",
+      "sample_case": "INFR(1994)5095 (Italy, Bad application of regulations/Treaties/decisions): Formal notice Art. 258 18/10/1995 -> Reasoned opinion Art. 258 10/12/1996 -> Referral to Court Art. 258 2/12/1998 (Curia C-439/99) -> Formal notice Art. 260 30/04/2003 -> Reasoned opinion Art. 228 7/07/2004 -> Closing 13/12/2005"
+    },
+    "per_year_decision_counts_measured": "From /api/decisions totalRows with DD/MM/YYYY date windows (probe script probe_yearly_totals.py; every year 1996-2026 queried, ALL + category LFN/RO/RTC/CLOSURES): ALL 41 (1996) -> 1,759 (2002, register goes systematic) -> 4,745 (2005 peak) -> 1,504 (2026 YTD); LFN 18 (1996) -> 982 (2002) -> 1,947 (2004 peak) -> 550-903 (2022-2026); RO 9 (1996) -> 724 (2005) -> 147-302 (2022-2025); RTC 0 (1996) -> 265 (2004) -> 18-51 (2022-2026); CLOSURES 3 (1996) -> 2,045 (2005) -> 373-1,037 (2022-2026). Full table in candidates/ec-infringement-case-escalation/probe/yearly_totals_2026-10-31.json.",
+    "publisher_cross_check": "2023 Annual Report on monitoring the application of EU law (commission.europa.eu, read 2026-10-31): Commission closed 1,038 infringement cases in 2023 (680 after LFN, 300 after RO, 20 post-referral pre-application, 25 after Art. 258 judgment, 13 withdrawn from Court) and referred 82 cases to the CJEU. Measured API 2023 category counts are consistent in scale: CLOSURES 1,037 vs reported 1,038 closed; RTC 37 decisions in-year vs 82 referrals decided (referral decisions land in later years); LFN 528; RO 267.",
+    "fetch_cost_measured": "Bounded probe 2026-10-31: ~135 small POST/GET requests (1-3 rows each, <=4 KB responses), ~3 min wall clock on the coordinator. Full fetch ARITHMETIC (estimate, not measured): decisions endpoint 62,957 rows at size=200 -> ~315 requests; cases endpoint 25,838 cases at size=200 -> ~130 requests; each measured page <=~200 KB, so a full case-level panel is plausibly ~25-50 MB in ~130 requests - a worker-sized fetch, never attempted because the lead closed.",
+    "timing_observation": "Register updated in real time per the publisher's 2023 annual report ('The Commission's public register of infringement cases... is updated in real time'); decisions are announced in dated monthly infringement packages on the presscorner (e.g. INF_25_2077 of 2025-10-08, INF_26_431 of 2026-03). Decision rows carry the publisher's own decision dates; the register is a living database, so any historical vintage question would have needed an as-of policy recorded before construction (mooted by the drop)."
   },
   "jobs": [],
   "artifacts": [],
-  "rejection_reason": null,
-  "review": "Institutional-decision task distinct from this bench's published ec-merger task (different procedure, population = Member States, staged labels). The single decisive uncertainty is ACCESS: everything observable this tick is a web application plus PDF packages. A PDF-only publisher is a park, not a go (geographic-coverage reference). Before parking, one bounded probe is owed: inspect the register application for a documented JSON/XHR endpoint or export control, in the supported browser. If none exists after a bounded attempt, park on the access blocker with the ec-tdi-case-outcome precedent (parked, not dropped, when the task shape is promising and only the channel is missing).",
-  "next_action": "Next probe (bounded, a later tick): in the supported browser, open https://ec.europa.eu/implementing-eu-law/home/en, trigger a register search, and record whether any documented machine-readable endpoint or export produces row-level case data (case number, Member State, policy area, decision type, decision date). If yes: measure per-year case counts and stage-transition base rates, then read the licence instrument and run the novelty sweep. If no: set status parked with the access blocker named exactly ('no documented bulk/API channel; PDF monthly packages only') and the reopen hook ('a documented export or API on the implementing-eu-law register').",
+  "rejection_reason": "Mirror with the precedent named. The access blocker recorded on 2026-10-28 is RESOLVED (the register is backed by a public anonymous JSON API with a case-level endpoint embedding full decision histories), and the licence is class A - but the natural task family on this source is already published. The candidate's primary label - will a case at the formal-notice stage escalate to a reasoned opinion, vs close without escalation - is posed, on this exact register, by a 2026 peer-reviewed study (tandfonline 10.1080/13501763.2026.2739423, ~19,600 unique cases 2002-2020, 'assign the value (1) if we observe the issuing of a Reasoned Opinion and (0) only if the case was closed without a prior Reasoned Opinion', escalation base rate ~34%), whose assembled case-level replication dataset is publicly released, CC0 and unrestricted (Harvard Dataverse doi:10.7910/DVN/LGADVE, replication_PP.zip 71,421,134 bytes, versionState RELEASED, verified 2026-10-31 via the Dataverse API). A consumer can already download the task's data with the exact label. The adjacent formulations are also covered: stage histories through referral to the CJEU and to judgment (Boerzel & Knoll infringement database 1978-1999, public download; Fjelstul & Carrubba stage-history models), duration-to-outcome and Art. 260 compliance/sanctions (compliance literature). What would remain ours - refreshed years 2021-2026, chronological splits, a corrected censoring rule for the active cases, fixtures - is packaging of someone else's formulation, not a genuinely novel task. Under the operator's standing bar we ship nothing rather than mirror. Initiation targets are impossible from this register by design (it records only initiated procedures, as the 2026 paper notes).",
+  "review": "2026-10-31: the recorded next probe ran exactly as specified (browser inspection of the register application). It found a public anonymous JSON API (decisions + case-level endpoints) and a class A licence - the two facts that would have made this candidate buildable - and the novelty sweep then found the task already published with a public CC0 replication dataset, which is decisive against publication under the standing bar. The drop is a novelty drop, NOT an access or licence drop: any reopen must bring a genuinely different target variable with its own recorded novelty sweep; the measured access/licence/population evidence in this record stands and need not be re-probed.",
+  "next_action": "Closed for the procedural-escalation family on this register (LFN->RO, RO->CJEU referral, Art. 260 post-judgment, duration-to-closure) - all covered by named published prior art, and the primary label's assembled dataset is already publicly downloadable (CC0). Reopen only with (a) a task contract on this register whose target variable is genuinely different from the published family, with its own recorded novelty sweep naming the new prior art, and (b) reuse of this record's measured channel/licence/population evidence - do not re-probe the API or re-read the licence. Do not reopen merely to refresh the 2002-2020 replication data to 2026 or to add splits/censoring corrections to it - that is a repackage of a shipped task.",
   "jurisdiction": {
     "country": "EU",
     "region": "Europe",
     "publisher": "European Commission (Secretariat-General infringement register; 'Implementing EU law' site)",
     "recorded_at": "2026-10-28"
   },
-  "verdict": "hold"
+  "licence_class": "A",
+  "licence_note": "CC BY 4.0 per the Commission legal notice (Commission Decision 2011/833/EU reuse policy; no individual copyright notice on the subsite), read 2026-10-31. Attribution 'European Commission - infringement decisions register'; conditions carried into any derived work. The class stands even though the candidate is dropped on novelty: it is the measured licence posture of this source.",
+  "verdict": "dropped",
+  "decision_date": "2026-10-31",
+  "uncertainty": "None material. The one measurement never made - per-case stage-transition base rates on a full panel - cannot change the verdict: the published replication dataset already contains the assembled case-level data with the primary label, so measuring our own base rates would only re-measure their published ~34% escalation rate. If a genuinely different target is ever proposed (see next_action reopen hook), the per-case panel can be fetched with the documented API in ~130 requests (cases endpoint) and the split counts then computed on the worker.",
+  "novelty_check": {
+    "checked_at": "2026-10-31T12:23:24+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "EU infringement procedure",
+      "infringement reasoned opinion",
+      "European Commission infringement cases"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "EU infringement procedure",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "infringement reasoned opinion",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "European Commission infringement cases",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "EU infringement procedure",
+          "hits": 89693,
+          "top": [
+            "The Polish \"muzzle\" law, violation of EU primacy, independence, impartiality and private life of judges",
+            "Infringement Procedure \u2013  The case of Romania",
+            "Challenges to the Primacy of European Union Law: the legal repercussions of the German Federal Constitutional Court's decision of 5th May 2020",
+            "The access to justice of consumers in the current European Union legal system: challenges and perspectives",
+            "Ripensare il \"Nuovo Approccio\" alia Condizionalita nei Balcani Occidentali: Lezioni dalla Croazia [Rethinking the 'New Approach' to Conditionality in the Western Balkans: Lessons from Croatia]"
+          ]
+        },
+        {
+          "query": "infringement reasoned opinion",
+          "hits": 26619,
+          "top": [
+            "Subnational European Environmental Infringements (SEEI) Dataset",
+            "THE CONCEPT OF COMMUNICATION AND ITS MAIN TYPES",
+            "2024 Joint Statistical Meetings",
+            "Nurses' Organizational Commitment and Job Performance in a Tertiary Hospital in the Kingdom of Bahrain",
+            "Media Message and Public Sensitivity: A Study on the Conditional Nature of Public Responses towards Controversial Advertisements in India"
+          ]
+        },
+        {
+          "query": "European Commission infringement cases",
+          "hits": 846205,
+          "top": [
+            "The plight of migrant women nightworkers in the Irish night-time economy",
+            "Infringement Procedure \u2013  The case of Romania",
+            "Competition Law Enforcement Dataset (CLED)",
+            "Subnational European Environmental Infringements (SEEI) Dataset",
+            "D6.1\u2013 HT micro- learning unit descriptors"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "EU infringement procedure",
+          "hits": 5,
+          "top": [
+            "Embracing Annotation Efficient Learning (AEL) for Digital Pathology and Natural Images",
+            "Signed Mahonian polynomials for major and sorting indices",
+            "Combinatorial proofs of Petrie Pieri rule and Plethystic Pieri rule",
+            "Probing Stylistic Appropriation using Large Language Models: An Evaluation Framework for Copyright Infringement under EU",
+            "Signed Mahonian on Parabolic Quotients of Colored Permutation Groups"
+          ]
+        },
+        {
+          "query": "infringement reasoned opinion",
+          "hits": 5,
+          "top": [
+            "Exposing Paid Opinion Manipulation Trolls",
+            "Modeling Opinion Toroidal Polarization: Insights from Bounding Confidence Beyond, Distance Matters",
+            "Phase Field Modeling in Social Media Dynamics:Simulation of Opinion Evolution with Feedback, Separation",
+            "From Spin States to Social Consensus: Ising Approach to Dimer Configurations in Opinion Formation",
+            "A Psychologically-Motivated Model of Opinion Change with Applications to American Politics"
+          ]
+        },
+        {
+          "query": "European Commission infringement cases",
+          "hits": 5,
+          "top": [
+            "Response by the Montreal AI Ethics Institute to the European Commission's Whitepaper on AI",
+            "ERAnets Evaluation of Collaboration Among Participants of IST Research and their Evolution to Collaborations in the Euro",
+            "Physics Briefing Book",
+            "Corrigendum to \"On subgroup perfect codes in Cayley graphs\" [European J. Combin. 91 (2021) 103228]",
+            "Submission to the Commission on Taxation and Welfare on introducing a site value tax"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'EU infringement procedure': 0 hit(s) - nothing notable\n- huggingface_datasets / 'infringement reasoned opinion': 0 hit(s) - nothing notable\n- huggingface_datasets / 'European Commission infringement cases': 0 hit(s) - nothing notable\n- zenodo_records / 'EU infringement procedure': 89693 hit(s) - The Polish \"muzzle\" law, violation of EU primacy, independence, impartiality and private life of judges, Infringement Procedure \u2013  The case of Romania, Challenges to the Primacy of European Union Law: the legal repercussions of the German Federal Constitutional Court's decision of 5th May 2020, The access to justice of consumers in the current European Union legal system: challenges and perspectives, Ripensare il \"Nuovo Approccio\" alia Condizionalita nei Balcani Occidentali: Lezioni dalla Croazia [Rethinking the 'New Approach' to Conditionality in the Western Balkans: Lessons from Croatia]\n- zenodo_records / 'infringement reasoned opinion': 26619 hit(s) - Subnational European Environmental Infringements (SEEI) Dataset, THE CONCEPT OF COMMUNICATION AND ITS MAIN TYPES, 2024 Joint Statistical Meetings, Nurses' Organizational Commitment and Job Performance in a Tertiary Hospital in the Kingdom of Bahrain, Media Message and Public Sensitivity: A Study on the Conditional Nature of Public Responses towards Controversial Advertisements in India\n- zenodo_records / 'European Commission infringement cases': 846205 hit(s) - The plight of migrant women nightworkers in the Irish night-time economy, Infringement Procedure \u2013  The case of Romania, Competition Law Enforcement Dataset (CLED), Subnational European Environmental Infringements (SEEI) Dataset, D6.1\u2013 HT micro- learning unit descriptors\n- arxiv_preprints / 'EU infringement procedure': 5 hit(s) - Embracing Annotation Efficient Learning (AEL) for Digital Pathology and Natural Images, Signed Mahonian polynomials for major and sorting indices, Combinatorial proofs of Petrie Pieri rule and Plethystic Pieri rule, Probing Stylistic Appropriation using Large Language Models: An Evaluation Framework for Copyright Infringement under EU, Signed Mahonian on Parabolic Quotients of Colored Permutation Groups\n- arxiv_preprints / 'infringement reasoned opinion': 5 hit(s) - Exposing Paid Opinion Manipulation Trolls, Modeling Opinion Toroidal Polarization: Insights from Bounding Confidence Beyond, Distance Matters, Phase Field Modeling in Social Media Dynamics:Simulation of Opinion Evolution with Feedback, Separation, From Spin States to Social Consensus: Ising Approach to Dimer Configurations in Opinion Formation, A Psychologically-Motivated Model of Opinion Change with Applications to American Politics\n- arxiv_preprints / 'European Commission infringement cases': 5 hit(s) - Response by the Montreal AI Ethics Institute to the European Commission's Whitepaper on AI, ERAnets Evaluation of Collaboration Among Participants of IST Research and their Evolution to Collaborations in the Euro, Physics Briefing Book, Corrigendum to \"On subgroup perfect codes in Cayley graphs\" [European J. Combin. 91 (2021) 103228], Submission to the Commission on Taxation and Welfare on introducing a site value tax",
+    "prior_art": [
+      "Tandfonline 10.1080/13501763.2026.2739423 (2026) + its CC0 replication dataset doi:10.7910/DVN/LGADVE; Boerzel & Knoll 2012 infringement-db.jmce.org; Fjelstul & Carrubba 2018"
+    ],
+    "theirs": "Hagedorn/Marx/Thijs et al-type officials-bias study (JEPP/JEUR 'National, partisan or ideological biases? How EU officials characteristics can influence infringement proceeding outcomes', tandfonline 10.1080/13501763.2026.2739423): exact LFN->RO escalation variable on all register decisions 2002-2020, ~19,600 cases, base rate ~34%; replication dataset released CC0, unrestricted, on Harvard Dataverse (doi:10.7910/DVN/LGADVE, replication_PP.zip 71.4 MB, versionState RELEASED, verified 2026-10-31). Older: Boerzel/Knoll infringement database 1978-1999 (public download, stage histories to ECJ judgment); Fjelstul/Carrubba stage-history models incl. referrals; duration/compliance (Art. 260) literature.",
+    "ours": "Nothing publishable on the natural target: the procedural-escalation family (formal notice -> reasoned opinion -> referral to CJEU -> Art. 260) on this exact register is already published. A 2026 peer-reviewed paper poses precisely the candidate's primary label (RO issued after a formal notice, 1/0, ~19,600 cases 2002-2020, censored active cases counted as 0) on the Commission's own infringement database, and ships the assembled case-level dataset publicly. Stage-2 referral, duration and Art. 260 compliance variants are covered by the older political-science literature (stage-history models; 1978-1999 infringement database). Remaining 'ours' would be freshness to 2026, chronological splits and corrected censoring - packaging, not a new task; under the standing bar we ship nothing rather than mirror.",
+    "verdict": "mirror",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
 }
