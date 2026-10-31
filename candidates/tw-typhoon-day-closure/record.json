@@ -1,7 +1,7 @@
 {
   "id": "tw-typhoon-day-closure",
   "created_at": "2026-10-22",
-  "status": "investigating",
+  "status": "ready",
   "verdict": "go",
   "domain": "emergency management / government decision prediction",
   "prediction_question": "For a Taiwan county on a date D for which a typhoon land warning (陸上颱風警報) is active or being considered, will offices and schools be fully closed (全日停止辦公及上課) on D, predicted at the statutory announcement instant on the evening before D?",
@@ -38,9 +38,13 @@
   "license_evidence": [
     "data.gov.tw dataset 20457 page read in a real browser 2026-10-22: 'License: Open Government Data License, version 1.0 / Charge: free / Note: Authorization description website: http://data.gov.tw/license'. The same ODDL text governs dataset 45501 and the platform-wide licence page.",
     "CWA website declaration (https://www.cwa.gov.tw/V8/C/information.html, read 2026-10-22 via search-engine cache of the live page): '以無償、非專屬、得由使用者再授權之方式提供公眾使用，使用者得不限時間及地域，重複、改作、編輯、公開傳輸或為其他方式之利用...然使用時應註明出處' - free, non-exclusive, sublicensable, any purpose, attribution required.",
-    "DGPA announcement attachments (2026-10-22 fetch of pid=13097 attachment) carry the operating rules with the statutory announcement windows quoted in prediction_time; the DGPA site footer links 政府網站資料開放宣告 (the standard Taiwan government open declaration)."
+    {
+      "quote": "行政院人事行政總處全球資訊網上刊載之所有資料與素材，其得受著作權保護之範圍，以無償、非專屬，得再授權之方式提供公眾使用，使用者得不限時間及地域，重複、改作、編輯、公開傳輸或為其他方式之利用，開發各種產品或服務（簡稱加值衍生物），此一授權行為不會嗣後撤回，使用者亦無須取得本機關之書面或其他方式授權；然使用時，應註明出處。",
+      "url": "https://www.dgpa.gov.tw/archive?uid=75",
+      "note": "DGPA 政府網站資料開放宣告 (dated 106.03.28), fetched 2026-10-31 by probe_modern_label.py session: free, non-exclusive, sublicensable, reuse and derivatives (重製、改作、編輯、公開傳輸) without time/place limit, irrevocable, no further written authorisation needed, attribution (註明出處) required. Covers the closure archive and attachments served on www.dgpa.gov.tw itself."
+    }
   ],
-  "licence_class": "B",
+  "licence_class": "A",
   "licence_note": "Open Government Data License 1.0 (data.gov.tw, DGPA-mirrored dataset) and the government-website open declarations (CWA, DGPA): free use, redistribution and derivatives with attribution; attribution and non-misrepresentation conditions carried through.",
   "jurisdiction": {
     "country": "TW",
@@ -51,12 +55,31 @@
   "measurements": {
     "dgpa_archive_span_2026_10_22": "DGPA archive: 500 announcements over 50 pages (10/page), oldest record 民國90.07.30 (CE 2001-07-30), newest 民國115.09.03 (CE 2026-09-02) - measured from informationlist pages 1 and 50, fetched anonymously 2026-10-22.",
     "dgpa_fetch_sizes_2026_10_22": "Detail page pid=13097 = 34,360 bytes; attachments 3,058-21,661 bytes; full harvest is about 50 list pages + 500 detail pages + 500-1000 attachments, on the order of 1,050-1,550 requests and 20-30 MB total (estimate labelled as such; not yet measured end-to-end). DGPA HTTPS fails strict SSL validation (chain missing Subject Key Identifier), so probes used an unverified context; the browser accepts the chain.",
-    "dgpa_attachment_formats_2026_10_22": "Sampled first record of list pages 1/6/12/20/30/40/45: static per-county status table found for 2002 (Big5), 2009-era, and 2024-10-04 (UTF-8 typhoon-event table, 21,661 bytes); shell-only files (no county rows, only the statutory disclaimer block) observed for 2023-06-01, 2025-09-30 and 2026-09-02 - per-county extraction for the modern era is the one unproven step and is pinned as the first construction task."
+    "dgpa_attachment_formats_2026_10_22": "Sampled first record of list pages 1/6/12/20/30/40/45: static per-county status table found for 2002 (Big5), 2009-era, and 2024-10-04 (UTF-8 typhoon-event table, 21,661 bytes); shell-only files (no county rows, only the statutory disclaimer block) observed for 2023-06-01, 2025-09-30 and 2026-09-02 - per-county extraction for the modern era is the one unproven step and is pinned as the first construction task.",
+    "modern_label_extraction_2026_10_31": "DGPA archive attachments carry machine-parseable per-county status rows across the whole span. The 2026-10-22 'shell only' reading for 2023-06-01/2025-09-30/2026-09-02 was a probe artifact: pid=13097 (2026-09-02) carries '屏東縣|春日鄉士文村:今天停止上班、停止上課。' - a township-level closure the old probe's county/phrase list missed. Worker census east-asia-measure-002 (exit 0, 280.2 s; 976 DGPA detail/attachment requests + 50 list pages): 500/500 announcements processed, 0 fetch errors; 476/500 records carry county rows, 24 records (all in 2013) have no attachment and no county rows anywhere (label absent - measured coverage gap); 216/500 records have >=1 county-wide full-day closure; 1,333 county-day full-closure positives total (measured: sum of per-year countyday_full in the report); 100 event runs (consecutive-date clusters) with full closures, run sizes 19,10,9,5,4,3...; per-year positives 2001-2026: every year has both classes (min 2 county-day positives in 2020, max 158 in 2024). Modern canonical phrases: '今天已達停止上班及上課標準' (closed) / '今天未達停止上班及上課標準' (open); old era uses 照常辦公/停止辦公 variants; district-qualified rows (township/school closures) appear from 2011 and must be excluded from the county-wide label. Classifier fixtures: 13130 (2026-10-24) 13 full + 9 open; 13097 (2026-09-02) 1 partial; 7100 (2011-03-11, Big5, descriptive attachment name) 5 full + 1 partial; 7018 (2011-08-28) 2 full + 19 open. Report: probe/measure_report_2026-10-31.json.",
+    "effective_date_semantics_2026_10_31": "Archive records are keyed by ANNOUNCEMENT date (title = NNN年M月D日...情形), and rows reference one effective day via phrase: '今天' rows -> effective = title date; '明天' rows -> effective = title date + 1. Sampled 10 records across 2001-2026: 9/10 are entirely 今天-phrased; one (2024-07-27, Gaemi) mixes 16 今天 + 10 明天 rows; one further 2025 record (114年11月11日) is 明天-phrased. Most records therefore carry the same-day (final) status for the title date; a minority (observed 2024+) are previous-evening announcements for the next day. CONSTRUCTION RULE: map each row's effective date from its 今天/明天 phrase, never from the title alone. The census's per-year counts attribute positives by title date, so a minority of 2024+ records shifts by +1 day; this does not change any split-capacity conclusion.",
+    "daily_view_not_parameterisable_2026_10_31": "probe_modern_label.py: /typh/daily/nds.html returns a byte-identical 13,113 B response for 6 date-parameter variants (?date=2024-10-03, ?d=1131003, ?ymd=1131003, ?yy&mm&dd, ...) and contains no form/date controls; the daily view answers the current day only and cannot serve historical labels. County-portal registers exist as a cross-check: data.gov.tw 84387 (Taichung, CSV 西元年,月,日,災害類別,狀況 - 80 rows 2018-07-10..2026-06-10, 7,304 B, fetched 2026-10-31) and 161017 (Taoyuan, opendata.tycg.gov.tw); they are per-county and not needed for the primary label path."
   },
-  "next_action": "Construction (coordinator-side scripts first, then worker): (1) PIN THE MODERN-ERA LABEL EXTRACTION - try DGPA daily-view query variants (the server-rendered /typh/daily/nds.html answers per-county statuses for the current day; find its historical-date parameterisation if any) and, in parallel, harvest the county-portal CSVs (data.taipei verified; Taichung and Taoyuan equivalents are listed as related datasets on data.gov.tw 20457); decision gate: if neither yields machine-readable per-county statuses for 2015-2026, re-target the label to announcement-day grain (which counties closed anywhere on date D, derivable from the archive alone). (2) Build the event panel: county-days within typhoon warning periods 2001-2026 from the DGPA archive plus CWA TDB bulletin issuance times. (3) Feature set strictly before 19:00 TPE D-1: CWA warning bulletins (position, central pressure, radius, forecast track distance to county centroid), previous-day closure status, county identity; assert no post-instant field enters shipped columns. (4) Report clustered positives at typhoon level, not row level. (5) Run the baseline triad (persistence = previous-day closure status, calendar-only, full model) before quoting any AUC.",
+  "next_action": "READY -> hand to advancement. Construction: (1) rebuild the county-day panel with the phrase-aware effective-date mapping (rule measured 2026-10-31); (2) enumerate CWA TDB bulletins per typhoon and pin each bulletin's issuance timestamp; eligible features are only bulletins/warning states issued before 19:00 TPE on D-1 (the statutory evening window 19:00-22:00 is the prediction instant; same-morning reinforced closures are part of the outcome, never a feature); (3) exclude the 24 label-absent 2013 records; (4) run the full pipeline: worker construction -> dataset-qualification gate on the full artifact -> exact-byte acceptance -> blind cross-row leakage joins (the abs-001 defect class: no solver-visible row may expose another scored row's outcome) -> baseline triad -> reporting. Deciding check: qualification gate green on the exact artifact plus blind-join AUC 1.0 absence on eval.",
   "rejection_reason": null,
-  "review": null,
-  "jobs": [],
+  "review": "Five contracts reconciled 2026-10-31: redistribution SUPPORTED (DGPA 政府網站資料開放宣告 quoted - free, irrevocable, derivatives allowed, attribution; attribution-only condition, no sharealike - class A per the quoted declaration; data.gov.tw mirror ODDL 1.0), timing SUPPORTED (statutory announcement instant quoted from the DGPA operating rules; CWA TDB issuance timestamps verified on the archive structure 2026-10-22), target SUPPORTED (machine-parseable per-county statuses proven 2001-2026 with fixtures; 2013 coverage gap measured), split capacity SUPPORTED (measured: 216 closure dates, 1,333 county-day positives, 100 event clusters, both classes every year), not-a-mirror SUPPORTED (novelty_check differentiated, recorded 2026-10-22). Uncertainty carried into construction: the 'other'-phrase rows (up to 111/yr in 2025) and the 明天-row minority need per-row sampling during the build; they change attribution, not feasibility.",
+  "jobs": [
+    {
+      "id": "east-asia-measure-001",
+      "status": "failed (deleted)",
+      "outcome": "INFRASTRUCTURE failure, not a scientific verdict: python:3.13-slim ships no xlrd, so all 64 OLE2/BIFF .xls pollen files parsed as valid=None and part_a crashed at agg['censored'] += rec['censored'] (KeyError) before the DGPA census ran; exit 1 at 46.0 s. The 64 per-file None lines in container.log are the .xls/.xlsx format split cited by jp-moe-pollen-exceedance's archive_format_split measurement. Diagnosed and recovered in the same tick by east-asia-measure-002 (same script; command prefixed \"pip install xlrd\"), the one permitted recovery. Evidence: .factory/east-asia-measure-001/reports/ (container.log, source.tar, manifest.json), staging release 429614137, jobs/east-asia-measure-001.json status deleted.",
+      "exit_code": 1,
+      "elapsed_seconds": 46.0
+    },
+    {
+      "id": "east-asia-measure-002",
+      "status": "succeeded (deleted)",
+      "server_id": 173635988,
+      "outcome": "Measure succeeded: pollen 113/113 files fetched (16 seasons 2006-2021 parsed; 2003-2005 unparsed, different layout), DGPA census 500/500 announcements, 0 fetch errors. Report collected to probe/measure_report_2026-10-31.json, sha256 58311d0f... equal to ledger asset 693888476 and re-verified against the staging asset of release 429618656 by the follow-up session; all 7 assets of both releases sha256-verified. Recorded figures recomputed from the report; positives total corrected to 1,333. Worker destroyed by the tick session; Hetzner read-back 2026-10-31: 0 servers, 0 primary IPs. Evidence: .factory/east-asia-measure-002/reports/, staging release 429618656, jobs/east-asia-measure-002.json status deleted.",
+      "exit_code": 0,
+      "elapsed_seconds": 280.2
+    }
+  ],
   "artifacts": [],
   "novelty_check": {
     "checked_at": "2026-10-22T00:21:04+00:00",
@@ -199,5 +222,6 @@
     "ours": "First ML-ready benchmark of the Taiwan county-day typhoon-closure decision: 2001-2026 panel built from the DGPA statutory announcement archive (the only public per-county closure record) with the prediction instant fixed by regulation at 19:00-22:00 the prior evening, features limited to CWA typhoon warning bulletins and prior-day closure status available before that instant, year-based splits with clustered positives reported per typhoon, and persistence/calendar baselines shipped beside any model",
     "verdict": "differentiated",
     "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
-  }
+  },
+  "split_strategy": "County-day event panel from the DGPA archive (label) + CWA TDB warning periods and bulletins (population and features). Population: county-days within typhoon land-warning periods 2001-2026 for the 22 counties. Label: county-wide full-day closure on the effective date (phrase-mapped 今天/明天; district/school-qualified rows and half-day closures are excluded from the positive class - they may form a separate partial class). Candidate windows (temporal, disjoint): train 2001-2012 (measured by the east-asia-measure-002 census: 491 county-day positives over 91 announcement records), eval 2013-2018 (403 positives measured over 138 records; note 2013 has 24 label-absent records - usable dates only), holdout 2019-2026 (439 positives measured over 271 records). Both classes present in every year 2001-2026 (min 2 positives, 2020). Clustered effective sample: 100 event runs with full closures (a national closure day contributes 22 correlated positives) - clustered counts must be reported with scores."
 }

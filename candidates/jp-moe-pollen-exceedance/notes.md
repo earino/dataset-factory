@@ -166,3 +166,23 @@ or any national panel):
 Search scope limitation: web search only, English + Japanese query terms; no
 guarantee an unindexed private benchmark does not exist. Verdict recorded via
 scripts/check-novelty.py: differentiated.
+
+## Count-column taxon pinned + archive format split (2026-10-31, East Asia tick)
+
+- MOE press release 4673 (https://www.env.go.jp/press/4673.html, fetched 2026-10-31)
+  documents the Hanako display/download data as "リアルタイムの花粉飛散データ（個数/m³）
+  （当分の間 スギ花粉数）" and "過去の花粉飛散データ（個数/m³）（当分の間 スギ花粉数）",
+  with per-station "24時間の花粉飛散数" tables and per-day CSV download. So the single
+  count column in the archive files is publisher-documented as SUGI (Japanese cedar)
+  pollen, grains/m³, hourly -> daily 24-hour sum. Resolves next_action item (2).
+  The "当分の間" wording is a publisher caveat that the column may later widen to other
+  taxa; the archive terminated 2021-12-24, so for this closed archive the column is sugi.
+- Archive file formats measured (worker job east-asia-measure-001 log + magic-byte probe):
+  64 of 113 pollen files are OLE2/BIFF .xls (magic d0cf11e0...), covering 2003-2014;
+  the 2015-2021 seasons (49 files) are zip .xlsx. The 2026-10-28 probe only parsed a
+  2021 xlsx sample, so the "14 seasons with 7 regions" arithmetic over-counted the
+  machine-readable (zip) era by 7 seasons: 2008-2014 are .xls. Parsing both eras needs
+  xlrd (worker job 002); zip-only parsing would cover 7 seasons (2015-2021).
+- 2014 Hokkaido .xls parsed on the coordinator (xlrd, isolated install) as a layout
+  fixture: header 年/月/日/時 + station columns (札幌,函館,旭川,帯広,...), 3,600 data
+  rows, trailing legend column (-9998:降雪による欠測), station-day counts computed.

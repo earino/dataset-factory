@@ -10645,3 +10645,42 @@ deleted_at in the ledger). This session finished and proved the cleanup:
 - `python3 scripts/check-candidate.py india-datagovin-portal` -> OK (status=parked).
 - Untracked candidates/ec-state-aid-investigation-opening/probe/ preserved untouched and
   excluded from this commit (parallel session's work).
+
+## 2026-10-31 (01:05Z) - worker-watch follow-up: east-asia-measure-001/-002 verified, corrected and closed
+
+Follow-up session under the research mutex. The East Asia tick session ran both jobs and updated
+the two candidate records but left the work uncommitted and unrecorded here; this session verified
+the evidence, corrected two figures, and closed the ledger. Both jobs belong to
+`tw-typhoon-day-closure` (the pollen measurements feed `jp-moe-pollen-exceedance`).
+
+- `east-asia-measure-001` (failed, exit 1, 46.0 s, staging release 429614137): INFRASTRUCTURE
+  failure, not a scientific verdict. python:3.13-slim ships no xlrd; all 64 OLE2/BIFF .xls pollen
+  files parsed as valid=None and part_a crashed with KeyError 'censored' (container.log) before
+  the DGPA census ran. The 64 None lines in container.log are the .xls/.xlsx format census cited
+  by jp-moe's archive_format_split measurement. Recovered inside the same tick by
+  east-asia-measure-002 (same script, command prefixed 'pip install xlrd') - the one permitted
+  recovery; no further recovery attempted or needed.
+- `east-asia-measure-002` (succeeded, exit 0, 280.2 s, staging release 429618656): report
+  collected to candidates/tw-typhoon-day-closure/probe/measure_report_2026-10-31.json; sha256
+  58311d0f... verified equal to ledger asset 693888476, and re-fetched from staging and
+  re-matched this session. All 7 assets of both releases fetched bounded, mapped through the
+  manifests and sha256-matched against the ledger digests; local copies in
+  .factory/east-asia-measure-001/reports/ and .factory/east-asia-measure-002/reports/
+  (renamed to logical names via each manifest).
+- Figures recomputed from the report; two tick-session numbers were wrong and are corrected in
+  this commit: county-day full-closure positives total ~1,395 -> 1,333 (sum of per-year
+  countyday_full), and jp-moe censored range 24-38% -> 18-36%/season (min 2009 18.3%, max 2012
+  36.0%). Split windows updated to measured counts (train 2001-2012: 491 positives/91 records;
+  eval 2013-2018: 403/138 incl. the 24 label-absent 2013 records; holdout 2019-2026: 439/271).
+  All other recorded figures verified against the report (476 parsed / 24 no-rows / 216 dates /
+  100 runs / both classes every year; pollen 113 fetched, 16 seasons parsed, threshold counts
+  and split counts exact).
+- Cleanup: both workers destroyed by the tick session (ledger status deleted, deleted_at
+  00:28:49Z / 00:43:15Z). Provider read-back this session (Hetzner API): 0 servers, 0 primary
+  IPs in earino-dataset-factory; servers 173634995/173635988 and IP 65.21.158.17 absent; no
+  east-asia-measure-labelled resources. Deletion confirmed by the provider.
+- Unrelated uncommitted work preserved untouched and excluded from this commit:
+  ipo-trademark-registration-outcome (record, baseline/, card.md, release.json, release/,
+  suitability/), ec-state-aid-investigation-opening/probe/.
+- Next action unchanged: tw-typhoon-day-closure is READY; construction handoff to advancement as
+  recorded in its record.json next_action.
