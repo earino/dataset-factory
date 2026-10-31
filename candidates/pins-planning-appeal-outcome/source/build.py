@@ -2,6 +2,9 @@
 """Build the pins-planning-appeal-outcome runner artifact from the two PINS Excel files.
 
 Construction order (nothing here scores anything):
+  0. read the worker-side category-predict probe verdict; a rejection means the
+     nine string-categorical descriptor columns ship as integer codes (the
+     runner-contract defect class measured in pins-planning-baseline-001);
   1. fetch the two pinned GOV.UK Excel files by exact recorded URL and verify
      size + sha256 against the discovery pins (a new edition fails the build,
      never silently replaces the measured bytes);
@@ -89,6 +92,18 @@ TRAIN_BEFORE_YEAR = 2020       # valid year < 2020 -> train
 EVAL_YEARS = (2020, 2021)      # valid year in {2020, 2021} -> eval
                                  # valid year >= 2022 -> holdout
 FLAG_MIN_PRESENCE = 100        # a site flag ships only with >= 100 populated values
+
+# The nine string-categorical descriptor columns the verbatim runner keeps as
+# pandas category dtypes at fit (nunique <= 1000; higher-cardinality strings such
+# as the date columns are dropped from its feature set, and row_id is an id).
+# pins-planning-baseline-001 measured xgboost 3.4.1's inplace_predict rejecting
+# exactly these nine at predict even with enable_categorical=True at fit; the
+# worker-side probe (probe_category_predict.py) settles whether the shipped frame
+# must carry them as integer codes instead (runner contract wins over prettier
+# string levels).
+CATEGORICAL_FEATURES = ("lpa_name", "ons_lpa_code", "casework_type", "procedure",
+                        "development_type", "appeal_type_reason", "appeal_reason",
+                        "type_detail", "link_status")
 
 # Publisher columns read at registration/validation (identical names in both files).
 REG_COLS = ("Type of Casework", "LPA Name", "ONS LPA Code", "Received Date", "Valid Date",
@@ -281,7 +296,14 @@ def flag_value(raw):
 
 
 def num(raw):
-    """Normalise a publisher numeric cell to a plain decimal string ('' if absent)."""
+    """Normalise a publisher numeric cell to a plain decimal string ('' if absent).
+
+    Unparseable prose (the publisher writes phrases such as 'Under 200 sq m
+    floorspace' inside numeric fields) also ships as missing: pins-planning-baseline-001
+    measured 6 eval rows where the literal phrase made the column object-dtype and
+    the verbatim runner's predict path rejected the frame. Prose is data, but it is
+    not a number the runner's frame can carry, and the runner contract wins.
+    """
     if raw is None:
         return ""
     s = str(raw).strip()
@@ -290,7 +312,7 @@ def num(raw):
     try:
         return repr(float(s))
     except ValueError:
-        return s
+        return ""
 
 
 def main():
@@ -302,9 +324,32 @@ def main():
                     help="reuse pre-fetched files from this directory (local test path)")
     ap.add_argument("--relax-expected", action="store_true",
                     help="disable the publisher-envelope assertions only (local synthetic test)")
+    ap.add_argument("--category-probe-result", default=None,
+                    help="JSON written by probe_category_predict.py; its "
+                         "predict_on_category_dtype verdict decides whether the nine "
+                         "string-categorical columns ship as integer codes "
+                         "(required for a real run; the rebuild settles the runner "
+                         "contract question, it does not guess it)")
     ap.add_argument("--summary-out", default=None,
                     help="where to write summary.json (default: beside the extract; keep it OUTSIDE)")
     args = ap.parse_args()
+
+    # ---- stage 0: the runner-contract probe verdict ---------------------------
+    if not args.category_probe_result:
+        raise SystemExit(
+            "--category-probe-result is required: the worker-side minimal probe "
+            "(probe_category_predict.py) must settle whether the verbatim runner's "
+            "predict path accepts category dtypes before this writer decides "
+            "between string levels and integer codes")
+    with open(args.category_probe_result, encoding="utf-8") as fh:
+        probe = json.load(fh)
+    probe_verdict = probe.get("predict_on_category_dtype")
+    if probe_verdict not in ("ok", "rejected"):
+        raise SystemExit(f"probe result carries no usable verdict: {probe_verdict!r}")
+    code_categoricals = probe_verdict == "rejected"
+    print(f"== probe verdict: predict_on_category_dtype={probe_verdict} -> "
+          f"{'integer-code the nine categorical columns' if code_categoricals else 'keep string levels'}",
+          flush=True)
 
     out = os.path.abspath(args.out)
     os.makedirs(os.path.join(out, "public"), exist_ok=True)
@@ -456,6 +501,22 @@ def main():
                     f"{want_allowed}")
         print("  all 11 decision years reproduce the probe counts exactly", flush=True)
 
+    # ---- stage 3b: categorical coding maps (the runner-contract rebuild) -----
+    # Codes are a bijective relabelling of the descriptor values, not an ordering
+    # claim: 1..N over the sorted distinct non-blank values of the pooled eligible
+    # panel, blank stays missing. Integer codes remain fully separable by threshold
+    # splits, so no expressiveness is lost for tree models. The mapping reads only
+    # feature values (never the label), and pooling all splits is safe for the
+    # same reason: it is an identity table, not an estimate.
+    code_maps = {}
+    if code_categoricals:
+        for col in CATEGORICAL_FEATURES:
+            distinct = sorted({r[col] for r in rows if r[col] != ""})
+            code_maps[col] = {value: str(i + 1) for i, value in enumerate(distinct)}
+        print("  coded vocabularies: "
+              + ", ".join(f"{c}={len(code_maps[c])}" for c in CATEGORICAL_FEATURES),
+              flush=True)
+
     # ---- stage 4: LPA prior-outcome structures -------------------------------
     print("== lpa history ==", flush=True)
     by_lpa_events = collections.defaultdict(list)   # lpa -> [(decision_date, valid_date, row_id, allowed)]
@@ -573,6 +634,26 @@ def main():
         }
         for f in shipped_flags:
             emitted[f] = row[f]
+        if code_categoricals:
+            # the runner-contract rebuild: descriptor strings leave the shipped
+            # frame as integer codes; the in-memory rows keep their publisher
+            # strings so every semantic self-check below still reads real values
+            for col in CATEGORICAL_FEATURES:
+                emitted[col] = code_maps[col].get(row[col], "")
+                value = emitted[col]
+                assert value == "" or (value.lstrip("-").isdigit()
+                                       and 1 <= int(value) <= len(code_maps[col])), \
+                    f"coding produced a non-code value in {col}: {value!r}"
+        for col in ("area_of_site_hectares", "floor_space_sqm", "number_of_residences"):
+            value = emitted[col]
+            if value != "":
+                try:
+                    float(value)
+                except ValueError:
+                    raise SystemExit(
+                        f"writer regression: {col} carries non-numeric prose "
+                        f"{value!r}; num() must map unparseable cells to missing "
+                        "(pins-planning-baseline-001 defect class)")
         key = split_of(valid)
         if key in minmax_valid:
             lo, hi = minmax_valid[key]
@@ -683,6 +764,14 @@ def main():
         positive_events[key] = {"positives": split_positives[key],
                                 "distinct_events": len(days)}
 
+    coding_note = (
+        " Descriptor fields (LPA name and ONS code, casework type, procedure, development "
+        "type, appeal reason fields, link status) ship as integer codes - see "
+        "quality.json categorical_coding for the scheme and vocabulary sizes; blank "
+        "stays missing. This is a runner-contract requirement measured in "
+        "pins-planning-baseline-001, not a semantic change."
+    ) if code_categoricals else ""
+
     meta = {
         "name": NAME,
         "description": (
@@ -693,7 +782,8 @@ def main():
             "appeal reason fields, site descriptors and flags, and LPA-level prior-outcome "
             "history computed strictly from decisions earlier than the validation instant. "
             "Decided-cases-only population; a fixed retrospective benchmark over the pinned "
-            "2026-10-22 publication bytes."),
+            "2026-10-22 publication bytes."
+        ) + coding_note,
         "target": TARGET,
         "positive_label": POSITIVE,
         "id_columns": ID_COLUMNS,
@@ -720,7 +810,8 @@ def main():
 
     quality = build_quality(COLUMNS, FEATURES, shipped_flags, dropped_flags,
                             ship_enforcement, split_stats, positive_events,
-                            per_valid_year, minmax_valid, stats, args.built_at)
+                            per_valid_year, minmax_valid, stats, args.built_at,
+                            code_categoricals, code_maps, probe)
     with open(os.path.join(out, "quality.json"), "w") as f:
         json.dump(quality, f, indent=1)
         f.write("\n")
@@ -729,6 +820,15 @@ def main():
         "name": NAME,
         "built_at_utc": args.built_at,
         "relax_expected": bool(args.relax_expected),
+        "categorical_coding": {
+            "applied": code_categoricals,
+            "probe_result": probe,
+            "scheme": ("1..N over the sorted distinct non-blank values of the pooled "
+                       "eligible panel; blank stays missing") if code_categoricals else None,
+            "vocab_sizes": {c: len(code_maps[c]) for c in CATEGORICAL_FEATURES}
+                           if code_categoricals else None,
+            "code_maps": code_maps if code_categoricals else None,
+        },
         "source_pins": [{"kind": s["kind"], "url": s["url"], "bytes": s["bytes"],
                          "sha256": s["sha256"]} for s in FILES],
         "rows_per_file": dict(stats["rows_per_file"]),
@@ -766,6 +866,9 @@ def main():
             "brute-force LPA-history recomputation on a 500-row sample",
             "no forbidden/post-hoc/PII column shipped",
             "overall allow rate inside the publisher envelope 27-33%",
+            "numeric cells parse or ship missing (pins-planning-baseline-001 defect class)",
+            "coded columns are blank or integer codes inside the declared vocabulary"
+            if code_categoricals else "string descriptor levels shipped verbatim (probe said ok)",
         ],
     }
     summary_path = args.summary_out or os.path.join(os.path.dirname(out), "summary.json")
@@ -778,7 +881,8 @@ def main():
 
 
 def build_quality(columns, features, shipped_flags, dropped_flags, ship_enforcement,
-                  split_stats, positive_events, per_valid_year, minmax_valid, stats, built_at):
+                  split_stats, positive_events, per_valid_year, minmax_valid, stats, built_at,
+                  code_categoricals=False, code_maps=None, category_probe=None):
     reg_group = {
         "source": ("the appeal's own registration record in the PINS Casework Database "
                    "(bulk Excel files, 2026-10-22 edition, sha256-pinned)"),
@@ -830,6 +934,12 @@ def build_quality(columns, features, shipped_flags, dropped_flags, ship_enforcem
                 "ons_lpa_code": "the publisher's ONS LPA Code field",
             }.get(name, f"the publisher's {name} field, recorded at registration")
             fe[name] = {**reg_group, "source": reg_group["source"] + f" -> {name}: {source_note}"}
+            if code_categoricals and name in CATEGORICAL_FEATURES:
+                fe[name]["coding"] = (
+                    f"ships as an integer code: 1..{len((code_maps or {}).get(name, {}))} over the "
+                    "sorted distinct non-blank values of the pinned eligible panel, blank stays "
+                    "missing (see categorical_coding); a bijective relabelling, not an ordering "
+                    "claim")
     for name, desc in {
         "lpa_decisions_prior_count": "count of the LPA's decided s78_core cases before the instant",
         "lpa_allowed_prior_count": "of those, count Allowed",
@@ -877,6 +987,22 @@ def build_quality(columns, features, shipped_flags, dropped_flags, ship_enforcem
     if ship_enforcement:
         measurements.append({"column": "enforcement_grounds_count", "unit": "count of grounds",
                               "frame": "publisher field, populated when the appeal raises them"})
+    if code_categoricals:
+        publisher_field = {"lpa_name": "LPA Name", "ons_lpa_code": "ONS LPA Code",
+                           "casework_type": "Type of Casework", "procedure": "Procedure",
+                           "development_type": "Development Type",
+                           "appeal_type_reason": "Appeal Type Reason",
+                           "appeal_reason": "Reason for the Appeal",
+                           "type_detail": "Type - Detail", "link_status": "Link Status"}
+        for col in CATEGORICAL_FEATURES:
+            measurements.append({
+                "column": col,
+                "unit": (f"integer code 1..{len((code_maps or {}).get(col, {}))} over the sorted "
+                         "distinct non-blank values of the pinned eligible panel; blank = missing"),
+                "frame": (f"code of the publisher's {publisher_field[col]} value, recorded at "
+                          "registration; a bijective relabelling of the string level, not an "
+                          "ordering claim - see categorical_coding for why"),
+            })
 
     probe = {
         "name": "lpa_prev_case_exposes_outcome",
@@ -973,6 +1099,42 @@ def build_quality(columns, features, shipped_flags, dropped_flags, ship_enforcem
         "expected_duplicate_ids": 0,
         "external_threshold": False,
         "measurements": measurements,
+        "categorical_coding": {
+            "applied": code_categoricals,
+            "scheme": (
+                "each listed column ships as an integer code: 1..N over the sorted distinct "
+                "non-blank values of the pinned eligible panel; blank stays missing (NaN). A "
+                "bijective relabelling of the publisher's string level, not an ordering claim: "
+                "integer codes remain fully separable by threshold splits, so tree models keep "
+                "the same expressiveness, and the mapping reads only feature values (never the "
+                "label), so pooling all splits introduces no estimate and no leak"
+            ) if code_categoricals else
+            "not applied: the worker-side probe accepted category dtypes at predict, so the "
+            "publisher's string levels ship verbatim",
+            "columns": {
+                col: {"vocab_size": len((code_maps or {}).get(col, {}))}
+                for col in CATEGORICAL_FEATURES
+            } if code_categoricals else None,
+            "reason": (
+                "the verbatim benchmark runner's predict path rejects these columns: "
+                "pins-planning-baseline-001 measured xgboost 3.4.1 raising "
+                "'DataFrame.dtypes for data must be int, float, bool or category ... "
+                "enable_categorical must be set to True' at Booster.inplace_predict during "
+                "model.predict_proba, listing all nine category-dtype columns as invalid even "
+                "though enable_categorical=True was set at fit - the estimator's "
+                "enable_categorical is not applied on that predict path. The worker-side "
+                "minimal probe in this job (probe_category_predict.py, synthetic frames only) "
+                "confirmed the rejection; the runner contract wins over prettier string levels"
+            ) if code_categoricals else
+            "the worker-side minimal probe showed the verbatim predict path accepts "
+            "category-dtype frames under the installed xgboost",
+            "probe_evidence": category_probe,
+            "value_mapping_location": (
+                "the full value->code table is in this job's collected summary.json "
+                "(outside the shipped extract); the scheme above makes it reconstructible "
+                "from the pinned source"
+            ) if code_categoricals else None,
+        },
         "timing": {
             "prediction_instant": {
                 "kind": "event_time",
