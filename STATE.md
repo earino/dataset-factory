@@ -1,3 +1,66 @@
+## 2026-10-31 (14:48Z) - acnc diag-002 recovery verified end to end: decisive intervals delivered, model significantly trails persistence_momentum (no demonstrated headroom, interval-supported); eu discovery tick's uncommitted work landed as a documented handoff; unhcr remains operator-gated, untouched
+
+Scheduled advancement tick. Release work outranks construction and the operator's list names
+unhcr-refugee-data-finder the release item, but its only remaining steps are operator-gated (the
+re-audit relay, then flip approval; operator_decision_pending true, no recorded verdict or waiver,
+all pre-flip prep completed by the 10:05Z session), so per the standing rule it stays private and
+untouched. The actionable build work with an explicit handoff to this session was the acnc
+diag-001 repair; that is what ran.
+
+acnc-diag-002 (server 173772460, cx23/hel1, EUR 0.06 reservation, the single permitted recovery
+of acnc-diag-001, launched 14:14:24Z, collected 14:40:58Z, destroyed 14:45:24Z):
+
+- Repair first, test-first: the new offline guard in tests/test_acnc_diag.py was written before
+  the fix and demonstrated RED on the shipped defective diag.py ("identity lookup does not use
+  the raw-string key its rate table is built with") and GREEN after the one-line repair plus a
+  pure-Python mirror of rate_table_second showing the fixed lookup returns per-charity rates
+  with the global fallback while the 1-tuple form collapses to a constant that plain_auc refuses
+  (the exact diag-001 failure). diag_result's job id now reads /workspace/job_id.txt
+  (assemble-job writes it) instead of a hardcoded string. Committed pre-launch (4652e8e) with
+  suite 690/690 and check-candidate --all rc=0.
+- Every stage verified from the collected report, never the exit code: --accept printed ACCEPTED
+  for artifact 70b7e7175ad45c8a before any number existed; materialize copied public train+eval
+  only (holdout never read or copied); validate.sh exit 0 CONTRACT OK, same eval AUC 0.6862;
+  diag exit 0 with ALL 9 in-job checks true. All five second-implementation references replicate
+  acnc-002's recorded figures exactly - including the repaired identity/history rate
+  0.6890741926945402, matching the first implementation - and the momentum_vs_calendar canary
+  reproduces acnc-002's recorded interval [0.127233, 0.138315] vs [0.12746, 0.13909].
+- THE DECISIVE EVIDENCE diag-001 could not deliver, on the identical 80,298 eval rows: model
+  0.68619 vs persistence_momentum 0.70061, difference -0.014423; paired row-level bootstrap CI
+  [-0.018278, -0.010296]; charity-cluster (whole-abn, 44,003 charities, dependence-aware) CI
+  [-0.018129, -0.010103]. BOTH exclude zero on the deficit side: the model is significantly
+  WORSE than the dominant simple reference under both protocols. Model-vs-identity -0.002884
+  CI [-0.007222, 0.002286] contains zero (inconclusive, not parity); model-vs-flag +0.015170 CI
+  [0.010673, 0.018333]; model-vs-calendar +0.118511 CI [0.11268, 0.12399]. Per-target-year:
+  2022 model 0.61938 vs momentum 0.69264, 2023 model 0.75859 vs 0.70832 - the pooled deficit
+  conceals opposite-signed per-year gaps, recorded as a structural observation with no post-hoc
+  re-scoring (the pooled comparison was pre-specified on identical rows and stands).
+- Verdict recorded in the candidate record: NO demonstrated headroom under this protocol, now
+  interval-supported; the model AUC may never be quoted without this comparison. Next step is
+  the operator's choice among recorded paths: drop preserving the negative finding, re-scope to
+  a change/onset target as a NEW task instance (own discovery/novelty/qualification/triad), or
+  leave ready with the finding recorded. No further rebuild of this construction is justified
+  (the one rebuild went to acnc-002, the one recovery to acnc-diag-002).
+- Evidence: per_row_scores.csv (5,177,783 B, sha256 6538079e...) is byte-identical to diag-001's
+  preserved copy (deterministic refit) and stays in private staging release 429980362 (10 assets,
+  verified by collect against the live release: tag job-acnc-diag-002, every size+digest
+  matched); the 9 bounded report files were fetched to .factory/acnc-diag-002/reports/, each
+  digest-verified at fetch; the bulk CSV was verified then deleted from the coordinator.
+  Cleanup provider-confirmed on api.hetzner.cloud: server 173772460 read back 404, zero project
+  servers, zero primary IPs. EUR 0.06 spent this session.
+
+Working-tree handoff landed first (commit 9110190): the 12:46Z EU/EEA discovery session ended
+before committing and left its finished tick staged (last write 12:47:19Z; its own STATE entry
+records suite 687/687 and check-candidate --all 0/116). Landed unchanged as its own commit with
+the handoff documented in the message, re-verified on this tree first (suite 690/690 including
+this session's 3 new tests, --all rc=0). Untracked candidates/ec-state-aid-investigation-opening/
+probe/ preserved untouched and excluded, as before.
+
+Checks at close-out: suite 690/690 green, check-candidate acnc OK (ready) and --all rc=0.
+unhcr: no byte, tag, destination or visibility touched; operator_decision_pending stays true.
+No publication, package or holdout read was performed or authorized this session.
+
+
 ## 2026-10-31 (10:05Z) - unhcr website publication plan prepared and inspected (plan b8b2087f, ready for operator review); staged artifact re-verified to the byte via the documented consumer path; flip still waits on the operator's re-audit relay
 
 Scheduled advancement tick. The operator's task list names unhcr-refugee-data-finder the
