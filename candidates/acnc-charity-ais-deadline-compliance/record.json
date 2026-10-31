@@ -1,0 +1,186 @@
+{
+  "id": "acnc-charity-ais-deadline-compliance",
+  "status": "ready",
+  "created_at": "2026-10-31T04:47:54.768031+00:00",
+  "domain": "charity regulation / annual reporting deadline compliance (per-charity lodgment timeliness)",
+  "prediction_question": "For an Australian charity registered with the ACNC that lodged its Annual Information Statement (AIS) for the reporting period ending in year Y-1 early enough that the lodgment was already recorded 90 days before its next deadline, will the charity FAIL to lodge its period-Y AIS by the ACNC-recorded due date for that period (the AIS 'date ais received' falls after the 'ais due date', or the charity never lodges a period-Y AIS and no row exists in the period-Y AIS dataset)?",
+  "prediction_time": "Per-charity instant T = (the publisher-recorded 'ais due date' for the charity's period-Y AIS) minus 90 days. The due date is fixed by policy at six months after the reporting-period end (ACNC due-dates page), with the Commissioner's standing extension for standard 1 July-30 June periods to the following 31 January recorded in-file (measured: period ends 30/06/2023 carry due date 31/01/2024; 31/12/2024 carry 30/06/2025). Eligibility: the charity's period-(Y-1) AIS row exists with 'date ais received' <= T, and the charity is not listed as a member of an ACNC reporting group for period Y (group members lodge via their head entity; measured 2024: only 5 of 1,315 group-member ABNs also carry an individual period-2024 AIS row). All features come from the period-(Y-1) and earlier AIS datasets (finances, staffing, charity size, reporting-period structure, past lodgment timing including prior lateness) and the ACNC Register dataset; the target period-Y 'date ais received' (and row absence) is the label source and is excluded from features. Example instant (Australia/Sydney, AEDT): T = 2 November 2024 for a charity with FY ending 30/06/2024 (due 31/01/2025).",
+  "target_definition": "Binary label 1 = charity fails to lodge its period-Y AIS by the due date, computed from the publisher's own recorded fields in the period-Y AIS dataset: label 1 iff ('date ais received' > 'ais due date') OR (no row for the ABN in the period-Y dataset as of the snapshot). Label 0 iff 'date ais received' <= 'ais due date'. Label source columns: 'date ais received' and row presence (both excluded from shipped features; 'ais due date' is a legitimate feature because it is determined by the period end and announced deadline policy, known before T). The label matches the ACNC's own compliance KPI ('Percentage of ... Annual Information Statements submitted by the due date', Annual Report 2025-26 KPI 1.3: 76% for 2025, 73% for 2024) against measured on-time shares of 73.96% (2023 file) and 74.95% (2024 file).",
+  "sources": [
+    {
+      "name": "ACNC Registered Charities (Charity Register bulk dataset, updated weekly)",
+      "url": "https://data.gov.au/data/dataset/acnc-register",
+      "landing_page": "https://data.gov.au/data/dataset/b050b242-4487-4306-abf5-07ca073e5594",
+      "format": "CSV 15,156,962 bytes (datadotgov_main.csv) + XLSX; 66,541 rows / 65,933 unique ABNs measured 2026-10-31",
+      "license": "Creative Commons Attribution 3.0 Australia (dataset page 'Licence' field and per-resource labels)"
+    },
+    {
+      "name": "ACNC Annual Information Statement (AIS) datasets, one per reporting-period year 2013-2024 (CSV for 2019-2024; XLSX-only 2013-2018; each with programs and group-members files plus per-year explanatory notes PDF)",
+      "url": "https://www.acnc.gov.au/charity/about-charity-register/download-charity-register-data",
+      "landing_page": "ACNC publishes the AIS datasets at data.gov.au; 2024: https://data.gov.au/data/dataset/276ec1bc-4971-461c-88bc-be9f3c99a0f8 ; 2023: ff6905d6-9d5d-4ef1-8478-72b833864fb7 ; 2022: 311c24f3-fc09-42e7-8362-f15a76334a75 ; 2021: db8def1b-b3ba-4536-98eb-60c99e5495e5 ; 2020: 28a94374-d516-4200-a6f8-c09e76f58cc5 ; 2019: 34b35c52-8af0-4cc1-aa0b-2278f6416d09",
+      "format": "CSV 32-45 MB per year, one row per charity per lodgment, ABN-keyed; schema drifts by year (2019: 167 columns incl. address; 2020-2021: 93; 2022: 97; 2023-2024: 91) but the core label/feature columns are present in every year",
+      "license": "Per-year CC BY variant (package metadata): 2023+2024 CC BY 3.0 Australia; 2019-2022 CC BY 2.5 Australia; 2015 CC BY 4.0 International; register CC BY 3.0 Australia - all permit redistribution with attribution"
+    },
+    {
+      "name": "ACNC policy and summary pages: AIS due dates, the AIS itself, Annual Report 2025-26 (KPI cross-check), Australian Charities Report 11th edition (census cross-check)",
+      "url": "https://www.acnc.gov.au/for-charities/annual-information-statement/annual-information-statement-due-dates",
+      "landing_page": "https://www.acnc.gov.au/tools/reports/acnc-annual-report-2025-26 ; https://www.acnc.gov.au/tools/reports/australian-charities-report-11th-edition",
+      "format": "HTML",
+      "license": "ABS-style CC BY 4.0 does not apply; acnc.gov.au material is published under the site's copyright statement - the datasets above carry their own per-dataset CC BY licences, which govern the rows we would ship"
+    }
+  ],
+  "license_evidence": [
+    "data.gov.au dataset page 'ACNC Registered Charities' (https://data.gov.au/data/dataset/acnc-register, read 2026-10-31): 'Licence | Creative Commons Attribution 3.0 Australia' in Additional Info, and each resource (user notes PDF, XLSX, CSV) is individually labelled 'Creative Commons Attribution 3.0 Australia'.",
+    "CKAN package_show for the AIS datasets (read 2026-10-31): 'ACNC 2024 Annual Information Statement (AIS) Data' license_title 'Creative Commons Attribution 3.0 Australia'; 'ACNC 2023 ...' the same; 'ACNC 2019 Annual Information Statement Data' license_title 'Creative Commons Attribution 2.5 Australia'; 'ACNC 2015 Annual Information Statement Data' license_title 'Creative Commons Attribution 4.0 International'. Every AIS dataset 2013-2024 carries a CC BY variant (cc-by, cc-by-2.5 or cc-by-4.0 in package metadata).",
+    "ACNC 'Download Charity Register data' page (https://www.acnc.gov.au/charity/about-charity-register/download-charity-register-data, read 2026-10-31): 'The ACNC publishes two main types of datasets at data.gov.au: ACNC Charity Register dataset ... regularly updated ... Annual Information Statement datasets ... will be published on an annual basis, and updated weekly.'",
+    "'About the ACNC Charity Register' page (read 2026-10-31): 'In some situations, charities can apply to have some or all of their information withheld from the Charity Register. If the ACNC has approved for the information to be withheld, it won't appear in these datasets from the date of approval onwards.' - the recorded mechanism for the withheld-record label-noise channel."
+  ],
+  "construction_script": null,
+  "split_strategy": "Temporal windows on the target reporting-period year Y (periods ending in that calendar year; windows disjoint by Y). Candidate partition measured on the eligibility frame (prior AIS received <= T, group members excluded in construction): train Y in {2020, 2021}: 77,357 eligible rows / 23,205 positives (30.0%) / 54,152 negatives; eval {2022, 2023}: 80,977 / 20,958 (25.9%) / 60,019; holdout {2024}: 42,885 / 11,035 (25.7%) / 31,850. Both classes present in every window and every single year (per-year positive rates 25.7%-31.0%). Positives are spread across tens of thousands of distinct charities per year (eligible frames 37,970-42,885), not event clusters; a charity can appear in multiple target years, so per-charity clustering is a documented property for interval construction. XLSX-only years 2013-2018 can extend the train window at construction (worker parses XLSX; schema differences documented).",
+  "measurements": {
+    "measured_on": "2026-10-31, hosted coordinator, bounded anonymous HTTPS fetches into /opt/data/cache/scratch (24h-pruned), aggregate analysis only (no labeled rows written); commands and outputs in notes.md; retained probe script probe_ais_metrics.py",
+    "fetch_cost_measured": "One anonymous HTTPS GET per file, no auth: register CSV 15,156,962 B in 3.0 s; AIS CSVs: 2019 44,462,950 B / 4.4 s, 2020 32,540,058 / 4.1, 2021 32,983,235 / 4.2, 2022 35,588,791 / 4.1, 2023 36,881,236 / 4.0, 2024 38,072,279 / 4.2; 2024 group-members XLSX 66,137 B. All CSV years 2019-2024 total ~220 MB in ~25 s; adding XLSX years 2013-2018 (~170 MB) is a worker-sized, not coordinator-sized, job.",
+    "per_year_rows_and_lateness": {
+      "2019": "51,040 rows / 51,040 unique ABN; on-time 36,670 (71.85%), late 14,327 (28.07%), undated 43",
+      "2020": "51,438 rows; on-time 34,914 (67.88%), late 16,505 (32.09%), undated 19",
+      "2021": "51,841 rows / 51,840 ABN; on-time 36,339 (70.10%), late 15,494 (29.89%)",
+      "2022": "53,053 rows; on-time 38,326 (72.24%), late 14,722 (27.75%)",
+      "2023": "53,548 rows; on-time 39,604 (73.96%), late 13,940 (26.03%)",
+      "2024": "54,145 rows / 54,144 ABN; on-time 40,581 (74.95%), late 13,561 (25.05%)",
+      "late_lag_days_2024": "median 57 days, p90 376, max 950 (a 2024-period AIS can be received up to ~2.6 years late; the 'failed by due date' label is unchanged by later trickle)"
+    },
+    "eligible_frame_and_label_counts_2026_10_31": {
+      "definition": "eligible = period-(Y-1) row with 'date ais received' <= (period-Y due date - 90 days); label 1 = period-Y 'date ais received' > due date or no period-Y row",
+      "target_2020": "eligible 37,970; on-time 26,196; late-positive 10,355; never-positive 1,419; positive rate 31.01%",
+      "target_2021": "eligible 39,387; on-time 27,956; late-positive 9,829; never-positive 1,602; positive rate 29.02%",
+      "target_2022": "eligible 39,432; on-time 29,190; late-positive 9,041; never-positive 1,201; positive rate 25.97%",
+      "target_2023": "eligible 41,545; on-time 30,829; late-positive 9,163; never-positive 1,553; positive rate 25.79%",
+      "target_2024": "eligible 42,885; on-time 31,850; late-positive 9,418; never-positive 1,617; positive rate 25.73%",
+      "windows": "train 2020-2021 77,357 rows / 23,205 positives (30.00%); eval 2022-2023 80,977 / 20,958 (25.88%); holdout 2024 42,885 / 11,035 (25.73%) - both classes in every window and year"
+    },
+    "prior_filer_absence_transitions": "2021->2022: 1,439/51,840 absent (2.78%); 2022->2023: 1,808/53,053 (3.41%); 2023->2024: 1,935/53,548 (3.61%) - the never-lodger component of the positive class",
+    "status_coding_measured": "The AIS datasets carry a reason-coded 'registration status' on every historical row, distinguishing compliance outcomes from voluntary exit: 2024 mix (54,145 rows): Registered 52,274; 'Voluntarily Revoked No Longer Operating' 1,500; 'Voluntarily Revoked Merged' 175; 'Revoked Double Defaulter' 126; other revoked codes 70. Of the 1,935 prior-year filers absent from the 2024 file, 1,035 (53.5%) carry a 'Voluntarily Revoked*' code, 49+ are 'Revoked Double Defaulter' (the ACNC's own non-lodgment outcome), and 812 were still 'Registered' in the 2023-file snapshot (FY-end changes, pending extreme-late lodgment, or later revocation) - the frame-defining mixture at construction",
+    "group_reporting_measured": "2024 group-members file: 1,315 member ABNs (columns: ACNC group name, member ABN, member name, membership start/end dates); only 5 of them also carry an individual period-2024 AIS row (60 in the 2023 file, 242 in 2019 - members that once lodged individually). Group members must be excluded from the eligible frame; the exclusion is derivable from the published per-year group-members files",
+    "due_date_policy_measured": "Offset from period end to recorded due date: 2024 file +7 months for 31,454 rows (all June-end periods, Commissioner-extended 31 January deadline) and +6 months for 14,127 (December-end, 30 June deadline); 2019 file +7 for 25,042 and +8 for 10,794 (May-end periods). The publisher's own 'ais due date' field is the operative deadline and varies with announced extensions - the label must use the recorded field, never a fixed rule",
+    "publisher_cross_checks": [
+      "ACNC Annual Report 2025-26 KPI 1.3 'Percentage of 2025 Annual Information Statements submitted by the due date (Target: 75%, Result: 76%)'; 'At 30 June 2026, 76% of charities had submitted their Annual Information Statement by the due date, a significant improvement compared to 73% in the previous year' - consistent with measured on-time shares 74.95% (2024 file) and 73.96% (2023 file), small differences explained by the ACNC's fixed census date vs the final weekly-updated file",
+      "Australian Charities Report 11th edition: '52,627 Annual Information Statements ... for the 2023 reporting period ... 52,314 statements submitted by individual charities' and '313 Group Annual Information Statements submitted on behalf of 1,281 registered charities' vs 53,548 rows in the final 2023 file - a measured +1,234 rows after the report's census, quantifying the weekly trickle channel (late lodgers keep being added); the label is stable under trickle because a later-received period-Y AIS still has 'date ais received' after the past due date"
+    ],
+    "known_event_fixtures": [
+      "Deadline-extension fixture (verified in-file): charities with period ending 30/06/2023 carry 'ais due date' 31/01/2024 (seven months, the Commissioner's standing 31 January extension for standard-FY charities announced on the ACNC due-dates page), while period ending 31/12/2024 carries 30/06/2025 (six months, the nominal rule)",
+      "Dated example (real, verified from the fetched files; instants in Australia/Sydney, AEDT UTC+11): Integricare Limited, ABN 11000073870, FY 1 July-30 June. Feature row: period 01/07/2022-30/06/2023, recorded due date 31/01/2024, 'date ais received' 18/01/2024 (on time, lodgment observable before the instant). Target period: 01/07/2023-30/06/2024, recorded due date 31/01/2025. Prediction instant T = 31/01/2025 minus 90 days = 02/11/2024 (eligibility satisfied: prior AIS received 18/01/2024 <= T). Target window: lodgment in (02/11/2024, 31/01/2025]. Observed outcome: 'date ais received' 03/02/2025 > 31/01/2025 -> label 1 (failed to lodge by the due date, by 3 days). No part of the target window precedes T"
+    ],
+    "vintage_caveats": [
+      "AIS datasets are 'updated weekly' (ACNC download page) and the register 'regularly updated': the files fetched 2026-10-31 are one vintage per year, not archived snapshots; a construction snapshot date must be pinned and recorded. The 2023->2024 trickle is measured (+1,234 post-census rows via the Charities Report cross-check)",
+      "Withheld records are removed 'from the date of approval onwards' (ACNC register page): a charity that lodged on time but later won withholding would show as absent -> false positive. Mechanism recorded; rate not measurable from the current files; direction bounded (can only add positives, never remove them). publicdata.au rehosts the register dataset with version history (HF 'National-Digital/acnc-register' card) - a possible historical-vintage channel for register attributes, unverified for the AIS files",
+      "'registration status' on historical rows is current-vintage (status as of the last weekly update), not status-at-lodgment; using it for eligibility must be done at construction under the prediction-contract gate (a 'Voluntarily Revoked*' exclusion is post-hoc and must be declared; a 'Revoked Double Defaulter' exclusion would remove true positives and must not be used as an exclusion)",
+      "Schema drift: 2019 file has 167 columns including address/state and activity/beneficiary flags; 2020-2024 files (91-97 columns) drop address - location features for recent years come only from the register (current-vintage) or must be dropped; per-year 'Explanatory notes' PDFs are the publisher's column documentation"
+    ]
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": "Five contracts reconciled on measured evidence. (1) Redistribution: every input dataset carries an explicit CC BY licence (per-year variants recorded) - class A; attribution conditions carried to LICENSE.md. (2) Prediction timing: per-charity instant T = recorded due date - 90 days, example worked in Australia/Sydney with real timestamps (Integricare: T 02/11/2024, due 31/01/2025, received 03/02/2025); features are prior-period AIS content whose lodgment (hence observability) predates T by the eligibility rule; label columns excluded; vintage caveats (weekly updates, withheld-record removal, current-vintage status) recorded with the measured trickle and the bounded direction of the withheld channel - the as-of policy is current-vintage retrospective with pinned snapshot dates, to be probed at construction per the prediction-contract gate. (3) Target: publisher-recorded ('date ais received' vs 'ais due date' + absence), matching the ACNC's own KPI definition; censoring channels are publisher-coded (voluntary revocation status codes, group-membership files) and the residual mixture is measured (812 'Registered'-status absentees of 1,935 in 2023->2024) and declared part of the definition. (4) Split capacity: measured eligible-frame counts for disjoint windows train 2020-2021 (77,357 rows, 30.00% positive), eval 2022-2023 (80,977, 25.88%), holdout 2024 (42,885, 25.73%), both classes everywhere, positives spread over tens of thousands of charities. (5) Not a mirror: mechanical novelty search recorded; no ML-ready formulation of this or a sibling target exists externally; internal siblings target different outcomes (filing-population exit) in other jurisdictions. Uncertainty that remains: the withheld-record false-positive rate is unmeasured (mechanism recorded, direction bounded) and the 2013-2018 XLSX backfill for a longer train window is untested - both are construction-time, non-blocking.",
+  "next_action": "CONSTRUCTION (advancement owns it; handoff order: construction -> full-worker qualification -> exact-byte acceptance -> reference/model scoring -> reporting). Construction step: on a worker, fetch the pinned-vintage CSVs for AIS years 2019-2024 (optionally XLSX 2013-2018 to extend train), build the (ABN, target-year) panel with the eligibility frame (prior AIS received <= due-90d; group members excluded via the per-year group-members files), label = failed-to-lodge-by-recorded-due-date, features from prior AIS rows + register attributes, splits train 2020-2021 / eval 2022-2023 / holdout 2024. Expected artifact: runner-contract train/eval/holdout CSVs (~77k/81k/43k rows). Deciding checks: dataset-qualification gate on the full artifact (leakage: label-source columns excluded; prediction-timing reverse-history probes for the eligibility and vintage assumptions per docs/PREDICTION-CONTRACT.md, including the due-date-announcement timing for the 31-January extension years), exact-byte acceptance, then the baseline triad (persistence/prior-lateness reference first - prior-year lateness is the natural dominant reference and must be measured).",
+  "updated_at": "2026-10-31T04:53:00.405848+00:00",
+  "jurisdiction": {
+    "country": "AU",
+    "region": "Oceania",
+    "publisher": "Australian Charities and Not-for-profits Commission (Commonwealth of Australia)",
+    "recorded_at": "2026-10-31"
+  },
+  "licence_class": "A",
+  "licence_note": "Class A: every shipped input dataset carries an explicit CC BY licence (3.0 Australia for the register and AIS 2023-2024; 2.5 Australia for AIS 2019-2022; 4.0 International for 2015). Attribution per source version carried into LICENSE.md at release ('Source: Australian Charities and Not-for-profits Commission'); per-year licence versions differ and must be stated per-year in the package.",
+  "novelty_check": {
+    "checked_at": "2026-10-31T04:54:09+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "charity annual information statement lodgment deadline prediction",
+      "nonprofit filing compliance benchmark dataset",
+      "ACNC charity register machine learning prediction"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "charity annual information statement lodgment deadline prediction",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "nonprofit filing compliance benchmark dataset",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "ACNC charity register machine learning prediction",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "charity annual information statement lodgment deadline prediction",
+          "hits": 614793,
+          "top": [
+            "Digital Preservation for the Masses: Creating Workflows  for Institutions & Under-Resourced Organisations",
+            "Climate change impacts humans: A cross-sector narrative review of impact pathways, cascading risks, and accountable quantification",
+            "ANALISIS PREDIKSI KEBANGKRUTAN PADA PT FKS FOOD SEJAHTERA TBK PERIODE 2018-2022",
+            "Society of Research Software Engineering Trustees Annual Report",
+            "Erring on the Side of Least Drama: Evaluating Claims of Conservative Bias in Climate Risk Assessment"
+          ]
+        },
+        {
+          "query": "nonprofit filing compliance benchmark dataset",
+          "hits": 394715,
+          "top": [
+            "The Impact of Using E-Filing on Taxpayers is Reviewed from the Principle of Legal Certainty",
+            "ELECTRONIC FILING OF TAX RETURN AND TAX COMPLIANCE BEHAVIOUR IN KWARA STATE, NIGERIA",
+            "Assessing Tax Compliance among Taxpayers in RDO 34 Paco, Manila:  A Study on Non-Compliance and Payment Gaps",
+            "THE EFFECT OF DIGITAL INNOVATION ON TAX FILING AND REFUND ADMINISTRATION IN INDIA",
+            "EXPLORING TAXPAYER AWARENESS, PERCEPTIONS, AND SATISFACTION:  AN IN-DEPTH STUDY OF ELECTRONIC INCOME TAX FILING IN DHULE AND  NANDURBAR DISTRICTS"
+          ]
+        },
+        {
+          "query": "ACNC charity register machine learning prediction",
+          "hits": 403273,
+          "top": [
+            "Register of Australian charities, ACNC",
+            "Campus Placement Prediction System using  Machine Learning",
+            "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
+            "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI",
+            "RGB and RGNIR Plastic Waste Database"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "charity annual information statement lodgment deadline prediction",
+          "error": "HTTPError",
+          "hits": null,
+          "top": []
+        },
+        {
+          "query": "nonprofit filing compliance benchmark dataset",
+          "error": "HTTPError",
+          "hits": null,
+          "top": []
+        },
+        {
+          "query": "ACNC charity register machine learning prediction",
+          "error": "HTTPError",
+          "hits": null,
+          "top": []
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'charity annual information statement lodgment deadline prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'nonprofit filing compliance benchmark dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'ACNC charity register machine learning prediction': 0 hit(s) - nothing notable\n- zenodo_records / 'charity annual information statement lodgment deadline prediction': 614793 hit(s) - Digital Preservation for the Masses: Creating Workflows  for Institutions & Under-Resourced Organisations, Climate change impacts humans: A cross-sector narrative review of impact pathways, cascading risks, and accountable quantification, ANALISIS PREDIKSI KEBANGKRUTAN PADA PT FKS FOOD SEJAHTERA TBK PERIODE 2018-2022, Society of Research Software Engineering Trustees Annual Report, Erring on the Side of Least Drama: Evaluating Claims of Conservative Bias in Climate Risk Assessment\n- zenodo_records / 'nonprofit filing compliance benchmark dataset': 394715 hit(s) - The Impact of Using E-Filing on Taxpayers is Reviewed from the Principle of Legal Certainty, ELECTRONIC FILING OF TAX RETURN AND TAX COMPLIANCE BEHAVIOUR IN KWARA STATE, NIGERIA, Assessing Tax Compliance among Taxpayers in RDO 34 Paco, Manila:  A Study on Non-Compliance and Payment Gaps, THE EFFECT OF DIGITAL INNOVATION ON TAX FILING AND REFUND ADMINISTRATION IN INDIA, EXPLORING TAXPAYER AWARENESS, PERCEPTIONS, AND SATISFACTION:  AN IN-DEPTH STUDY OF ELECTRONIC INCOME TAX FILING IN DHULE AND  NANDURBAR DISTRICTS\n- zenodo_records / 'ACNC charity register machine learning prediction': 403273 hit(s) - Register of Australian charities, ACNC, Campus Placement Prediction System using  Machine Learning, plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database\n- arxiv_preprints / 'charity annual information statement lodgment deadline prediction': unavailable (HTTPError)\n- arxiv_preprints / 'nonprofit filing compliance benchmark dataset': unavailable (HTTPError)\n- arxiv_preprints / 'ACNC charity register machine learning prediction': unavailable (HTTPError)",
+    "prior_art": [
+      "HendrickDang/acnc-charity-analytics (charity-size classification, GitHub); National-Digital/acnc-register + publicdata.au rehosts; kleister_charity (PDF extraction); arXiv:2206.10661 (US Form 990 funding networks); internal cra-charity-filing-exit / companies-house-company-exit / npri-facility-reporting-exit"
+    ],
+    "theirs": "ACNC publishes the raw AIS/register datasets (CC BY) and a descriptive annual Charities Report; a CDU student project predicts charity SIZE from the same register; HF/publicdata.au rehost the raw register; arXiv work targets US Form 990 funding networks; internal CRA sibling predicts T3010 filing-population exit in Canada without per-charity deadlines",
+    "ours": "Per-charity AIS deadline-compliance prediction on the ACNC register: binary fails-to-lodge-by-recorded-due-date at a per-charity instant 90 days before the deadline, features from prior AIS filings, temporal splits 2020-2024 with measured counts, label cross-checked against the ACNC's own on-time KPI",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  },
+  "verdict": "go"
+}

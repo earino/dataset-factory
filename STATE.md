@@ -1,3 +1,58 @@
+## 2026-10-31 05:05Z - discovery tick (Oceania focus): acnc-charity-ais-deadline-compliance opened and advanced to READY on measured evidence; GEN star-ratings and NZ charities register licence-cleared as named follow-ups
+
+Discovery-only tick; no construction, qualification or release work touched, and the three
+operator waits are unchanged (ipo-tm audit-prompt relay/flip, ns-bwa flip, unhcr audit-prompt
+relay). Regional focus Oceania; all three leads advanced are national-level sources.
+
+- NEW acnc-charity-ais-deadline-compliance (AU, class A, status ready, verdict go): per-charity
+  ACNC Annual Information Statement deadline-compliance prediction - at T = the publisher-recorded
+  'ais due date' for period Y minus 90 days, will a charity that lodged its period-(Y-1) AIS by T
+  fail to lodge the period-Y AIS by that due date. Decisive schema finding: the per-year AIS datasets
+  carry 'ais due date' AND 'date ais received' per charity, plus a reason-coded 'registration
+  status' that separates voluntary exits from 'Revoked Double Defaulter' - the label and the
+  censoring channels are all publisher-recorded. Measured (coordinator, bounded fetches, scratch
+  only, 2026-10-31): rows 51,040-54,145/year for CSV years 2019-2024, on-time 67.9-75.0% per year;
+  eligibility-frame counts train 2020-2021 77,357 rows / 23,205 positives (30.00%), eval 2022-2023
+  80,977 / 20,958 (25.88%), holdout 2024 42,885 / 11,035 (25.73%), both classes every year.
+  Publisher cross-checks: ACNC Annual Report 2025-26 KPI 1.3 (76% of 2025 AISs by due date, 73%
+  prior year) vs measured 74.95%/73.96%; Charities Report 11th ed. census 52,314 individual 2023
+  statements vs 53,548 final rows (+1,234 measured trickle; label stable under trickle). Group
+  members (1,315 ABNs in the 2024 group-members file, only 5 with an individual 2024 row) are a
+  required frame exclusion, derivable from published files. Dated example (Australia/Sydney):
+  Integricare Ltd ABN 11000073870, prior AIS received 18/01/2024, T 02/11/2024, due 31/01/2025,
+  received 03/02/2025 -> label 1. Licence: register + AIS 2023/2024 CC BY 3.0 Australia, AIS
+  2019-2022 CC BY 2.5 Australia, 2015 CC BY 4.0 - per-year variants recorded for LICENSE.md.
+  check-novelty verdict differentiated recorded (closest external: a CDU student project predicts
+  charity SIZE from the same register; HF/publicdata.au rehost the raw register; the internal
+  cra-charity-filing-exit targets filing-population exit in CA, a different outcome with no
+  per-charity deadlines). probe_ais_metrics.py retained in the candidate dir and verified to
+  reproduce every figure. Known construction-time uncertainties recorded in the record
+  (withheld-record false-positive rate unmeasured, direction bounded; 2013-2018 XLSX backfill
+  untested; 31-January-extension announcement timing for early train years).
+- Licence-cleared this tick, not opened (budget): (1) AIHW GEN 'Star Ratings quarterly data
+  extract' series (site licence CC BY 4.0 read 2026-10-31; quarterly extracts May 2023 -> Oct 2026
+  for residential aged-care services; next probe: one extract download, stable service identifiers
+  and rating columns across quarters, publication calendar from the recorded release dates).
+  (2) NZ Charities Register open data (DIA; 'Use of this data is licensed under a Creative
+  Commons Attribution 3.0 New Zealand License' on the open-data page; OData + CSV + data
+  dictionary + ERD; the cross-region sibling of the CRA/ACNC charity family - open only if that
+  family is wanted again).
+- Regional coverage note: this tick advanced Commonwealth-AU and NZ-national sources only.
+  Australian state portals were not probed; the operator's caution that several state licences
+  are not open stands, and no state source was relied on. Previously recorded AU blockers are
+  unchanged (BoM class D, ATSB export-capped, FWC/EPBC class D, Melbourne pedestrian class C
+  closed). ABS already carries a published candidate. An empty state-portal survey remains honest
+  coverage, not a gap to pad.
+- Checks at close-out: check-candidate acnc OK (ready) + --all rc=0, check-novelty recorded,
+  full suite 683 tests OK in 26.0 s. The ec-state-aid untracked probe work is preserved untouched
+  and not part of this commit.
+
+Next action: advancement owns construction of acnc-charity-ais-deadline-compliance per its
+record next_action (worker build, eligibility frame with group-member exclusion, splits
+2020-2021/2022-2023/2024, full-worker qualification -> exact-byte acceptance -> baseline triad
+with prior-lateness measured first). The next discovery tick picks up the GEN star-ratings probe
+or the state-portal survey per the rotation.
+
 ## 2026-10-31 03:30Z - ipo-trademark-registration-outcome v2026.10 PACKAGED and privately staged on BOTH destinations (GitHub release 429672426 + Hub v2026.10, all five assets at the accepted artifact digests; consumer job re-ran every REPRODUCE.md command on the published bytes in a credential-free container); awaiting_operator set with the pre-flip audit prompt generated
 
 Release work outranked construction, so this advancement session executed the packaged
