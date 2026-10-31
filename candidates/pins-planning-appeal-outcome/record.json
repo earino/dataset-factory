@@ -1,333 +1,451 @@
 {
-  "id": "pins-planning-appeal-outcome",
-  "status": "ready",
-  "created_at": "2026-10-31T16:07:59.325598+00:00",
-  "domain": "planning law and land-use adjudication / regulatory appeal outcomes",
-  "prediction_question": "For a planning-permission-family appeal (PINS casework type 'Planning Appeal' or 'Householder (HAS)') validated by the Planning Inspectorate, will the final decision be 'Allowed' rather than 'Dismissed', given only what is known at validation: casework type, LPA name and ONS code, LPA decision date, received date, procedure (written representations / hearing / inquiry), development type, appeal type reason and type-detail, site descriptors (area, floorspace, number of residences, green belt, agricultural holding, listed-building setting, conservation area, flooding issue, AONB, SSSI indicators), LPA application reference, and enforcement grounds where applicable?",
-  "prediction_time": "00:00 Europe/London on the appeal's Valid Date (the date PINS validated the case; present on 100% of the 186,785 measured decided rows). All outcome events (case start, allocation, hearing/inquiry, decision) postdate the instant; measured valid->decision lag is 91-365 days for 74% of cases. Every feature field is recorded from the appeal submission/registration and is documented by the publisher with a per-field data-quality grade (Appeals Data: Data notes and guidance). Post-instant fields are excluded by contract: Inspector Name (allocation after validation; publisher also warns apparent per-inspector outcome patterns are allocation artefacts), Start Date, Jurisdiction (mutable by recovery/derecovery), Date Recovered / Date Not Recovered / Call In Date, Redetermined, Bespoke, and the Decision/Decision Date columns themselves. Costs Applied for Indicator is treated as verify-at-construction (a costs application can be lodged after validation). This is a fixed RETROSPECTIVE benchmark over the current published files: the publisher revises the rolling database between editions ('data can change between different publications of this data set'), so historical operational as-of claims would need vintage evidence beyond this record (the update log documents monthly-to-quarterly publication since March 2018, so web-archive vintages are provable if a historical-availability claim is ever wanted).",
-  "target_definition": "Binary from the publisher's Decision field (documented data quality 'Good'): positive = 'Allowed', negative = 'Dismissed'. Pre-specified eligibility rule: labelled population = s78_core casework types with Decision in {Allowed, Dismissed}; 'Split Decision' (1,350 5-yr / 1,440 older, all types) and 'Allowed in part' rows are excluded from the core task rather than coerced (recorded masses; a variant may map split->positive). Excluded outcomes (measured, all types): Unknown 3,186+1,969, No Decision Code Associated 148+72, Invalid 237+136, Turned Away 9+11, Appeal Withdrawn 243+169, missing 178+600. Enforcement/RoW/TPO/high-hedges casework uses a different outcome vocabulary (Notice upheld / varied and upheld / quashed) and is out of scope. Censoring is stated: the database contains DECIDED cases only (publisher: in-progress, withdrawn and turned-away cases are not included), so the population is outcome-conditioned by construction; the task is 'among validated appeals that reach a PINS decision, which succeed', not 'among all validated appeals'. Decision and Decision Date columns are excluded from shipped features.",
-  "sources": [
-    {
-      "name": "Planning Inspectorate Casework Database (GOV.UK publication)",
-      "url": "https://www.gov.uk/government/publications/planning-inspectorate-appeals-database",
-      "api": "Two bulk Excel files, direct anonymous GET: Casework_Database_-_2610.xlsx (https://assets.publishing.service.gov.uk/media/6ad9fcc1c818345ad8aca325/Casework_Database_-_2610.xlsx, 22,207,115 B, sha256 dff80bd0f17cbc640dc205009a9411269c8e58462b6df71af903c592af3c20fa) and Older_Casework_Data_-_2610.xlsx (https://assets.publishing.service.gov.uk/media/6ad9fcd12263175ac2aca2f7/Older_Casework_Data_-_2610.xlsx, 12,325,866 B, sha256 baf28d80c5cd5ad266f8a9e62c25517b2ec9d4c5d951239ab0638666bc092a4b). Publication last updated 22 October 2026; update log documents monthly-to-quarterly publication since 21 March 2018. Local copies fetched 2026-10-31 were deleted from the coordinator after counting (bulk data stays off this host).",
-      "license": "Open Government Licence v3.0 (stated on the publication's data-notes page and OGL emblem on the publication page, read 2026-10-31)",
-      "access": "anonymous bulk download; no API needed"
-    },
-    {
-      "name": "Appeals Data: Data notes and guidance (field list with data-quality grades)",
-      "url": "https://www.gov.uk/government/publications/planning-inspectorate-appeals-database/appeals-data-data-notes-and-guidance",
-      "api": null,
-      "license": "Open Government Licence v3.0 (same publication)",
-      "access": "anonymous HTML; 40 documented fields with quality grades Excellent/Good/Moderate/Subjective"
-    },
-    {
-      "name": "Planning Inspectorate - Planning Appeals Casework (data.gov.uk National Data Library listing)",
-      "url": "https://www.data.gov.uk/dataset/a8ae664e-f73d-4e43-8d72-93b2199482d8/planning-inspectorate-planning-appeals-casework",
-      "api": null,
-      "license": "OGL (harvested listing; the authoritative instrument is the GOV.UK publication)",
-      "access": "anonymous HTML"
-    }
-  ],
-  "license_evidence": [
-    "Read 2026-10-31 from https://www.gov.uk/government/publications/planning-inspectorate-appeals-database/appeals-data-data-notes-and-guidance: 'This publication is licensed under the terms of the Open Government Licence v3.0 except where otherwise stated.'",
-    "Publication page (read 2026-10-31) carries the Open Government Licence emblem and 'Crown copyright 2026'; no dataset-specific restriction is stated on the publication page or the data notes - the publisher's own caveats are about attribution of outcomes to decision makers, not redistribution.",
-    "Publisher caveats to carry onto any release (data notes + publication page, read 2026-10-31): 'Some categorisation of appeals can be subjective'; 'data can change between different publications of this data set'; decided cases only (in progress / withdrawn / turned away not included); Local Plans Examinations rows removed from the current Casework Database; TPO valid dates removed by the publisher after a data-entry issue (TPO is out of the core task's scope); inspector-name data errors corrected 2025 (field excluded from features anyway); 'The Planning Inspectorate will not entertain a challenge to the appointment of any Decision Maker on the basis of this data.'"
-  ],
-  "construction_script": null,
-  "split_strategy": "Temporal by decision year, counts computed from the source (probe_count.py, 2026-10-31 files, s78_core = Planning Appeal + Householder (HAS)): train 2016-2020 (older file) 65,483 rows, 19,577 allowed (29.9%); eval 2021-2022 (complementary halves of 2021 from both files: 10,199+3,442) 27,179 rows, 8,044 allowed (29.6%); holdout 2023-2026 (5-yr file, 2026 through October) 52,471 rows, 16,273 allowed (31.0%). Both classes present in every one of the 11 decision years (yearly allow rate 27.0%-34.6%, no drift). Positives are independent appeal events; the main clustering is by LPA (376-379 distinct) and by linked cases (Link Status/Lead Case present, 0 duplicate case numbers within each file) - an LPA-clustered bootstrap interval is planned for the reference comparison. Cross-file dedup must key on the composite (Type of Casework, LPA Name, Received/Valid/Decision dates, Decision) because the Older Casework Data reference numbers are explicitly NOT linkable to Casework Database case numbers (publisher-documented).",
-  "measurements": {
-    "probe_2026_10_31": {
-      "command": "probe_count.py on both xlsx (stdlib zipfile+iterparse; full JSON at candidates/pins-planning-appeal-outcome/probe_results_2026-10-31.json)",
-      "5yr_file": {
-        "data_rows": 91216,
-        "empty_rows": 957218,
-        "distinct_case_number": 91216,
-        "duplicate_refs": 0,
-        "distinct_lpa": 376,
-        "decision_years": {
-          "2021": 4277,
-          "2022": 17559,
-          "2023": 18330,
-          "2024": 18066,
-          "2025": 19941,
-          "2026": 13043
-        },
-        "decisions": {
-          "Dismissed": 53525,
-          "Allowed": 24326,
-          "Unknown": 3186,
-          "Notice varied and upheld": 3175,
-          "Notice upheld": 2933,
-          "Split Decision": 1350,
-          "Planning permission granted": 987,
-          "Quashed On Legal Grounds": 885,
-          "Appeal Withdrawn": 243,
-          "Invalid": 237,
-          "missing": 178,
-          "No Decision Code Associated": 148,
-          "other": 31
-        },
-        "casework_type_top": {
-          "Planning Appeal": 47757,
-          "Householder (HAS)": 21694,
-          "Enforcement Notice": 9119,
-          "Lawful Development Certificate": 2850,
-          "Commercial Appeal Service (CAS)": 2043,
-          "Listed Building Consent & Conservation Area Consent Appeal": 2038,
-          "Tree Preservation Order": 1690
-        },
-        "procedure": {
-          "Written Representations": 83910,
-          "Hearing": 3846,
-          "Inquiry": 2213,
-          "No Procedure Associated": 1048,
-          "Schedule 14": 178,
-          "Written representation (Part 1)": 16
-        },
-        "missing_received_valid_decision_dates": [
-          0,
-          0,
-          0
-        ],
-        "lag_valid_decision_days": {
-          "0-30": 125,
-          "31-90": 10624,
-          "91-180": 34624,
-          "181-365": 33471,
-          "366-inf": 12314
-        },
-        "lag_received_valid_days": {
-          "0-30": 78236,
-          "31-90": 8915,
-          "91-180": 2384,
-          "181-365": 910,
-          "366-inf": 313
-        },
-        "s78_core_by_year": {
-          "2021": 3442,
-          "2022": 13538,
-          "2023": 14271,
-          "2024": 14063,
-          "2025": 14897,
-          "2026": 9240
-        },
-        "s78_core_allowed_by_year": {
-          "2021": 1035,
-          "2022": 3982,
-          "2023": 4353,
-          "2024": 4219,
-          "2025": 4757,
-          "2026": 2944
-        }
-      },
-      "older_file": {
-        "data_rows": 95569,
-        "empty_rows": 1,
-        "distinct_ref": 95569,
-        "duplicate_refs": 0,
-        "distinct_lpa": 379,
-        "decision_years": {
-          "2016": 4761,
-          "2017": 19529,
-          "2018": 19045,
-          "2019": 21888,
-          "2020": 17676,
-          "2021": 12670
-        },
-        "decisions": {
-          "Dismissed": 57759,
-          "Allowed": 25354,
-          "Notice upheld": 3678,
-          "Notice varied and upheld": 2587,
-          "Unknown": 1969,
-          "Split Decision": 1440,
-          "Planning permission granted": 889,
-          "Quashed On Legal Grounds": 871,
-          "missing": 600,
-          "other": 202
-        },
-        "missing_received_valid_decision_dates": [
-          0,
-          0,
-          0
-        ],
-        "s78_core_by_year": {
-          "2016": 3786,
-          "2017": 15587,
-          "2018": 15112,
-          "2019": 17581,
-          "2020": 13417,
-          "2021": 10199
-        },
-        "s78_core_allowed_by_year": {
-          "2016": 1309,
-          "2017": 5049,
-          "2018": 4821,
-          "2019": 4773,
-          "2020": 3625,
-          "2021": 3027
-        }
-      },
-      "cross_check_publisher_summary": "PINS Annual Report 2022-23: 'In the last year three out of every ten appeals were allowed' - measured s78_core allow rate 29.0% (Planning Appeal) / 34.3% (Householder) in the 5-yr file, 29.9%/32.4% older; measured per-year s78_core allow rate 27.0%-34.6%, consistent with the publisher's published ~30% figure and stable across 11 years."
-    },
-    "extraction_cost": "Measured 2026-10-31 on the coordinator (4 vCPU, 1.9 GiB class): 2 anonymous HTTP GETs, 34,532,981 bytes total (22,207,115 + 12,325,866), 0.63 s + 0.58 s download wall clock; stdlib streaming parse of both files 26-33 s. Construction is worker-trivial: the complete source is 34.5 MB. sha256 recorded per file in sources."
+ "id": "pins-planning-appeal-outcome",
+ "status": "ready",
+ "created_at": "2026-10-31T16:07:59.325598+00:00",
+ "domain": "planning law and land-use adjudication / regulatory appeal outcomes",
+ "prediction_question": "For a planning-permission-family appeal (PINS casework type 'Planning Appeal' or 'Householder (HAS)') validated by the Planning Inspectorate, will the final decision be 'Allowed' rather than 'Dismissed', given only what is known at validation: casework type, LPA name and ONS code, LPA decision date, received date, procedure (written representations / hearing / inquiry), development type, appeal type reason and type-detail, site descriptors (area, floorspace, number of residences, green belt, agricultural holding, listed-building setting, conservation area, flooding issue, AONB, SSSI indicators), LPA application reference, and enforcement grounds where applicable?",
+ "prediction_time": "00:00 Europe/London on the appeal's Valid Date (the date PINS validated the case; present on 100% of the 186,785 measured decided rows). All outcome events (case start, allocation, hearing/inquiry, decision) postdate the instant; measured valid->decision lag is 91-365 days for 74% of cases. Every feature field is recorded from the appeal submission/registration and is documented by the publisher with a per-field data-quality grade (Appeals Data: Data notes and guidance). Post-instant fields are excluded by contract: Inspector Name (allocation after validation; publisher also warns apparent per-inspector outcome patterns are allocation artefacts), Start Date, Jurisdiction (mutable by recovery/derecovery), Date Recovered / Date Not Recovered / Call In Date, Redetermined, Bespoke, and the Decision/Decision Date columns themselves. Costs Applied for Indicator is treated as verify-at-construction (a costs application can be lodged after validation). This is a fixed RETROSPECTIVE benchmark over the current published files: the publisher revises the rolling database between editions ('data can change between different publications of this data set'), so historical operational as-of claims would need vintage evidence beyond this record (the update log documents monthly-to-quarterly publication since March 2018, so web-archive vintages are provable if a historical-availability claim is ever wanted).",
+ "target_definition": "Binary from the publisher's Decision field (documented data quality 'Good'): positive = 'Allowed', negative = 'Dismissed'. Pre-specified eligibility rule: labelled population = s78_core casework types with Decision in {Allowed, Dismissed}; 'Split Decision' (1,350 5-yr / 1,440 older, all types) and 'Allowed in part' rows are excluded from the core task rather than coerced (recorded masses; a variant may map split->positive). Excluded outcomes (measured, all types): Unknown 3,186+1,969, No Decision Code Associated 148+72, Invalid 237+136, Turned Away 9+11, Appeal Withdrawn 243+169, missing 178+600. Enforcement/RoW/TPO/high-hedges casework uses a different outcome vocabulary (Notice upheld / varied and upheld / quashed) and is out of scope. Censoring is stated: the database contains DECIDED cases only (publisher: in-progress, withdrawn and turned-away cases are not included), so the population is outcome-conditioned by construction; the task is 'among validated appeals that reach a PINS decision, which succeed', not 'among all validated appeals'. Decision and Decision Date columns are excluded from shipped features.",
+ "sources": [
+  {
+   "name": "Planning Inspectorate Casework Database (GOV.UK publication)",
+   "url": "https://www.gov.uk/government/publications/planning-inspectorate-appeals-database",
+   "api": "Two bulk Excel files, direct anonymous GET: Casework_Database_-_2610.xlsx (https://assets.publishing.service.gov.uk/media/6ad9fcc1c818345ad8aca325/Casework_Database_-_2610.xlsx, 22,207,115 B, sha256 dff80bd0f17cbc640dc205009a9411269c8e58462b6df71af903c592af3c20fa) and Older_Casework_Data_-_2610.xlsx (https://assets.publishing.service.gov.uk/media/6ad9fcd12263175ac2aca2f7/Older_Casework_Data_-_2610.xlsx, 12,325,866 B, sha256 baf28d80c5cd5ad266f8a9e62c25517b2ec9d4c5d951239ab0638666bc092a4b). Publication last updated 22 October 2026; update log documents monthly-to-quarterly publication since 21 March 2018. Local copies fetched 2026-10-31 were deleted from the coordinator after counting (bulk data stays off this host).",
+   "license": "Open Government Licence v3.0 (stated on the publication's data-notes page and OGL emblem on the publication page, read 2026-10-31)",
+   "access": "anonymous bulk download; no API needed"
   },
-  "jobs": [],
-  "artifacts": [],
-  "rejection_reason": null,
-  "review": null,
-  "next_action": "GO to construction (advancement session owns it). Construction step: on a worker, re-download both Excel files by exact recorded URL (sha256-pinned), parse with pandas, restrict to s78_core, apply the pre-specified eligibility rule, dedup across files on the date composite, drop post-instant and PII columns (Inspector Name, Start Date, Jurisdiction, recovery/call-in/redetermined/bespoke, Appellant, Agent, Site Address, Data Source), engineer LPA-level prior-outcome features strictly from decision dates earlier than each row's validation instant, write train/eval/holdout CSVs, then full-worker qualification -> exact-byte acceptance -> reference/model scoring -> reporting in that order. Expected artifact: ~130-145k rows x ~25 columns, ~25-40 MB of CSVs (worker-trivial: the whole source is 34.5 MB). Decisive checks: qualification gate pass on the full artifact; measured paired model-vs-baseline AUC intervals on eval (baselines: LPA historical allow rate, procedure/casework-type base rates, calendar-only); go/no-go on demonstrated headroom over the LPA-prior reference, so a persistence-style win does not ship as a headline.",
-  "novelty_check": {
-    "checked_at": "2026-10-31T16:15:06+00:00",
-    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
-    "queries": [
-      "planning appeal outcome prediction",
-      "Planning Inspectorate machine learning",
-      "planning appeal benchmark dataset",
-      "UK planning appeals train test dataset"
-    ],
-    "evidence": {
-      "huggingface_datasets": [
-        {
-          "query": "planning appeal outcome prediction",
-          "hits": 0,
-          "top": []
-        },
-        {
-          "query": "Planning Inspectorate machine learning",
-          "hits": 0,
-          "top": []
-        },
-        {
-          "query": "planning appeal benchmark dataset",
-          "hits": 0,
-          "top": []
-        },
-        {
-          "query": "UK planning appeals train test dataset",
-          "hits": 0,
-          "top": []
-        }
-      ],
-      "zenodo_records": [
-        {
-          "query": "planning appeal outcome prediction",
-          "hits": 210781,
-          "top": [
-            "Community Mental Health Service User Councils and Involuntary Admission Appeals in Kenyan Counties: A Difference-in-Differences Estimation of Participatory Governance Exposure",
-            "A time-series forecasting model for the cost-effectiveness evaluation of district hospital systems in Kenya: a methodological appraisal, 2000\u20132026",
-            "LATENT FACTOR-GUIDED TEMPORAL MODELING FOR PREDICTING AUTISM TREATMENT OUTCOMES USING BI-LSTM NETWORKS",
-            "Trew's Law: Automatic review of convictions linked to imprisoned police officers",
-            "Oral and Maxillofacial Surgery: Segmentation, Surgical Risk and Outcome Prediction"
-          ]
-        },
-        {
-          "query": "Planning Inspectorate machine learning",
-          "hits": 396532,
-          "top": [
-            "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
-            "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI",
-            "RGB and RGNIR Plastic Waste Database",
-            "Analysis of Risk-Based Internal Audit Planning Implementation and Its Impact on Audit Quality: Case Study at the Inspectorate of Surakarta, Indonesia",
-            "mushrooms"
-          ]
-        },
-        {
-          "query": "planning appeal benchmark dataset",
-          "hits": 426028,
-          "top": [
-            "SCG Dataset from Graph Neural Networks in Supply Chain Analytics and Optimization: Concepts, Perspectives, Dataset and Benchmarks",
-            "NFT Dataset for testing the ranking and rarity algorithms",
-            "Geospatial Modelling of Australia's National Electricity Market - Dataset",
-            "A Dataset of Orthogonal Polygon-Derived Maze Environments for Path Planning Benchmarking",
-            "VishalPallagani/PLANTS-benchmark: v1.0.0"
-          ]
-        },
-        {
-          "query": "UK planning appeals train test dataset",
-          "hits": 673396,
-          "top": [
-            "Annual patronage by regional train station, Victoria",
-            "Annual patronage by metropolitan train station, Melbourne",
-            "HyperTex-Splits: Standardized Train-Test Partitions for Fibre Composition Estimation",
-            "The UK COVID-19 Vocal Audio Dataset",
-            "municipalities_train_test_set.hdf5"
-          ]
-        }
-      ],
-      "arxiv_preprints": [
-        {
-          "query": "planning appeal outcome prediction",
-          "hits": 5,
-          "top": [
-            "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
-            "PiP: Planning-informed Trajectory Prediction for Autonomous Driving",
-            "Predicted Composite Signed-Distance Fields for Real-Time Motion Planning in Dynamic Environments",
-            "HDDL 2.1: Towards Defining a Formalism and a Semantics for Temporal HTN Planning",
-            "Provenance-Based Assessment of Plans in Context"
-          ]
-        },
-        {
-          "query": "Planning Inspectorate machine learning",
-          "hits": 5,
-          "top": [
-            "Changing Data Sources in the Age of Machine Learning for Official Statistics",
-            "DOME: Recommendations for supervised machine learning validation in biology",
-            "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
-            "Active learning for data streams: a survey",
-            "Physics-Inspired Interpretability Of Machine Learning Models"
-          ]
-        },
-        {
-          "query": "planning appeal benchmark dataset",
-          "hits": 5,
-          "top": [
-            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
-            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
-            "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset",
-            "Bitstream-Corrupted Video Recovery: A Novel Benchmark Dataset and Method",
-            "HDDL 2.1: Towards Defining a Formalism and a Semantics for Temporal HTN Planning"
-          ]
-        },
-        {
-          "query": "UK planning appeals train test dataset",
-          "hits": 5,
-          "top": [
-            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
-            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
-            "MLIM: Vision-and-Language Model Pre-training with Masked Language and Image Modeling",
-            "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset",
-            "HDDL 2.1: Towards Defining a Formalism and a Semantics for Temporal HTN Planning"
-          ]
-        }
-      ]
-    },
-    "evidence_summary": "- huggingface_datasets / 'planning appeal outcome prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'Planning Inspectorate machine learning': 0 hit(s) - nothing notable\n- huggingface_datasets / 'planning appeal benchmark dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'UK planning appeals train test dataset': 0 hit(s) - nothing notable\n- zenodo_records / 'planning appeal outcome prediction': 210781 hit(s) - Community Mental Health Service User Councils and Involuntary Admission Appeals in Kenyan Counties: A Difference-in-Differences Estimation of Participatory Governance Exposure, A time-series forecasting model for the cost-effectiveness evaluation of district hospital systems in Kenya: a methodological appraisal, 2000\u20132026, LATENT FACTOR-GUIDED TEMPORAL MODELING FOR PREDICTING AUTISM TREATMENT OUTCOMES USING BI-LSTM NETWORKS, Trew's Law: Automatic review of convictions linked to imprisoned police officers, Oral and Maxillofacial Surgery: Segmentation, Surgical Risk and Outcome Prediction\n- zenodo_records / 'Planning Inspectorate machine learning': 396532 hit(s) - plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database, Analysis of Risk-Based Internal Audit Planning Implementation and Its Impact on Audit Quality: Case Study at the Inspectorate of Surakarta, Indonesia, mushrooms\n- zenodo_records / 'planning appeal benchmark dataset': 426028 hit(s) - SCG Dataset from Graph Neural Networks in Supply Chain Analytics and Optimization: Concepts, Perspectives, Dataset and Benchmarks, NFT Dataset for testing the ranking and rarity algorithms, Geospatial Modelling of Australia's National Electricity Market - Dataset, A Dataset of Orthogonal Polygon-Derived Maze Environments for Path Planning Benchmarking, VishalPallagani/PLANTS-benchmark: v1.0.0\n- zenodo_records / 'UK planning appeals train test dataset': 673396 hit(s) - Annual patronage by regional train station, Victoria, Annual patronage by metropolitan train station, Melbourne, HyperTex-Splits: Standardized Train-Test Partitions for Fibre Composition Estimation, The UK COVID-19 Vocal Audio Dataset, municipalities_train_test_set.hdf5\n- arxiv_preprints / 'planning appeal outcome prediction': 5 hit(s) - Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, PiP: Planning-informed Trajectory Prediction for Autonomous Driving, Predicted Composite Signed-Distance Fields for Real-Time Motion Planning in Dynamic Environments, HDDL 2.1: Towards Defining a Formalism and a Semantics for Temporal HTN Planning, Provenance-Based Assessment of Plans in Context\n- arxiv_preprints / 'Planning Inspectorate machine learning': 5 hit(s) - Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Active learning for data streams: a survey, Physics-Inspired Interpretability Of Machine Learning Models\n- arxiv_preprints / 'planning appeal benchmark dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, Bitstream-Corrupted Video Recovery: A Novel Benchmark Dataset and Method, HDDL 2.1: Towards Defining a Formalism and a Semantics for Temporal HTN Planning\n- arxiv_preprints / 'UK planning appeals train test dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, MLIM: Vision-and-Language Model Pre-training with Masked Language and Image Modeling, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, HDDL 2.1: Towards Defining a Formalism and a Semantics for Temporal HTN Planning",
-    "prior_art": [
-      "PlanSureAI appeals search (plansureai.com/appeals; descriptive overturn rates only); APE Autonomous Research, 'The Inspector Lottery That Isn't: Small-Sample Bias in Examiner Leniency Designs Applied to England's Planning Appeals', ape.socialcatalystlab.org, 2026-04-09; PMC8392781 and PMC10683341 (PINS hot-food-takeaway appeal analyses, 2021/2023)."
-    ],
-    "theirs": "The publisher (PINS) ships the raw bulk Excel files plus descriptive quarterly '% allowed' statistics; PlanSureAI ships commercial appeal-decision search and LPA overturn-rate analytics over the same open data (199,531 decisions, no prediction benchmark, no splits); APE 2026 'The Inspector Lottery That Isn't' is an econometric examiner-leniency study on 2,227 scraped appeals (no ML-ready release); public-health thematic studies analyze small subsets (52-54 hot-food-takeaway appeals).",
-    "ours": "A scored, temporally-split binary prediction task over the full official PINS Casework bulk panel (both GOV.UK Excel files, 11 decision years 2016-2026, ~187k decided cases, ~145k in the planning-permission family), with a submission-time feature contract that excludes post-instant fields (Inspector Name, recovery/call-in dates, Redetermined) and a documented eligibility rule for Split/Unknown decisions; shipped as train/eval/holdout with a reproducible construction script.",
-    "verdict": "differentiated",
-    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  {
+   "name": "Appeals Data: Data notes and guidance (field list with data-quality grades)",
+   "url": "https://www.gov.uk/government/publications/planning-inspectorate-appeals-database/appeals-data-data-notes-and-guidance",
+   "api": null,
+   "license": "Open Government Licence v3.0 (same publication)",
+   "access": "anonymous HTML; 40 documented fields with quality grades Excellent/Good/Moderate/Subjective"
   },
-  "jurisdiction": {
-    "country": "GB",
-    "region": "Europe",
-    "publisher": "Planning Inspectorate (executive agency of the Ministry of Housing, Communities and Local Government), England, United Kingdom",
-    "recorded_at": "2026-10-31"
-  },
-  "licence_class": "A",
-  "licence_note": "Class A on the publisher's own instruments: the Appeals Data: Data notes and guidance page (part of the same GOV.UK publication as the data files) states 'This publication is licensed under the terms of the Open Government Licence v3.0 except where otherwise stated'; the publication page carries the OGL attribution emblem with Crown copyright 2026. OGL v3 permits commercial use and redistribution with attribution. The 5-yr file contains Appellant/Agent names and Site Address; construction will drop those PII columns from any shipped artifact (they are not needed as features).",
-  "verdict": {
-    "status": "ready",
-    "contracts": {
-      "redistribution": "supported - OGL v3.0 on the publication's own data-notes page and OGL emblem on the publication page (licence_class A), quoted in license_evidence",
-      "prediction_timing": "supported - instant = Valid Date, present on 100% of 186,785 measured rows; features recorded at submission and documented per-field by the publisher; post-instant fields (Inspector Name, Start Date, Jurisdiction, recovery/call-in, Redetermined, Bespoke) excluded by contract; dated worked example in notes.md; retrospective-scope statement and revision policy recorded; vintage-evidence path named but not needed for a fixed benchmark",
-      "obtainable_target": "supported - Decision field (quality 'Good'), binary rule pre-specified with measured exclusion masses; censoring (decided-cases-only population) stated as part of the task definition; source columns excludable from shipped features",
-      "split_capacity": "supported - measured s78_core counts by decision year: train 2016-2020 65,483 (29.9% pos), eval 2021-2022 27,179 (29.6% pos), holdout 2023-2026 52,471 (31.0% pos); both classes in all 11 years; LPA clustering named for bootstrap intervals",
-      "not_a_mirror": "supported - mechanical novelty check verdict 'differentiated' (recorded 2026-10-31): the publisher ships raw files and descriptive '% allowed' statistics; PlanSureAI ships commercial search + overturn-rate analytics over the same source; the APE 2026 leniency study is econometrics on 2,227 scraped cases; no one ships a scored, temporally-split prediction task with a submission-time feature contract"
-    }
+  {
+   "name": "Planning Inspectorate - Planning Appeals Casework (data.gov.uk National Data Library listing)",
+   "url": "https://www.data.gov.uk/dataset/a8ae664e-f73d-4e43-8d72-93b2199482d8/planning-inspectorate-planning-appeals-casework",
+   "api": null,
+   "license": "OGL (harvested listing; the authoritative instrument is the GOV.UK publication)",
+   "access": "anonymous HTML"
   }
+ ],
+ "license_evidence": [
+  "Read 2026-10-31 from https://www.gov.uk/government/publications/planning-inspectorate-appeals-database/appeals-data-data-notes-and-guidance: 'This publication is licensed under the terms of the Open Government Licence v3.0 except where otherwise stated.'",
+  "Publication page (read 2026-10-31) carries the Open Government Licence emblem and 'Crown copyright 2026'; no dataset-specific restriction is stated on the publication page or the data notes - the publisher's own caveats are about attribution of outcomes to decision makers, not redistribution.",
+  "Publisher caveats to carry onto any release (data notes + publication page, read 2026-10-31): 'Some categorisation of appeals can be subjective'; 'data can change between different publications of this data set'; decided cases only (in progress / withdrawn / turned away not included); Local Plans Examinations rows removed from the current Casework Database; TPO valid dates removed by the publisher after a data-entry issue (TPO is out of the core task's scope); inspector-name data errors corrected 2025 (field excluded from features anyway); 'The Planning Inspectorate will not entertain a challenge to the appointment of any Decision Maker on the basis of this data.'"
+ ],
+ "construction_script": null,
+ "split_strategy": "Temporal by decision year, counts computed from the source (probe_count.py, 2026-10-31 files, s78_core = Planning Appeal + Householder (HAS)): train 2016-2020 (older file) 65,483 rows, 19,577 allowed (29.9%); eval 2021-2022 (complementary halves of 2021 from both files: 10,199+3,442) 27,179 rows, 8,044 allowed (29.6%); holdout 2023-2026 (5-yr file, 2026 through October) 52,471 rows, 16,273 allowed (31.0%). Both classes present in every one of the 11 decision years (yearly allow rate 27.0%-34.6%, no drift). Positives are independent appeal events; the main clustering is by LPA (376-379 distinct) and by linked cases (Link Status/Lead Case present, 0 duplicate case numbers within each file) - an LPA-clustered bootstrap interval is planned for the reference comparison. Cross-file dedup must key on the composite (Type of Casework, LPA Name, Received/Valid/Decision dates, Decision) because the Older Casework Data reference numbers are explicitly NOT linkable to Casework Database case numbers (publisher-documented).",
+ "measurements": {
+  "probe_2026_10_31": {
+   "command": "probe_count.py on both xlsx (stdlib zipfile+iterparse; full JSON at candidates/pins-planning-appeal-outcome/probe_results_2026-10-31.json)",
+   "5yr_file": {
+    "data_rows": 91216,
+    "empty_rows": 957218,
+    "distinct_case_number": 91216,
+    "duplicate_refs": 0,
+    "distinct_lpa": 376,
+    "decision_years": {
+     "2021": 4277,
+     "2022": 17559,
+     "2023": 18330,
+     "2024": 18066,
+     "2025": 19941,
+     "2026": 13043
+    },
+    "decisions": {
+     "Dismissed": 53525,
+     "Allowed": 24326,
+     "Unknown": 3186,
+     "Notice varied and upheld": 3175,
+     "Notice upheld": 2933,
+     "Split Decision": 1350,
+     "Planning permission granted": 987,
+     "Quashed On Legal Grounds": 885,
+     "Appeal Withdrawn": 243,
+     "Invalid": 237,
+     "missing": 178,
+     "No Decision Code Associated": 148,
+     "other": 31
+    },
+    "casework_type_top": {
+     "Planning Appeal": 47757,
+     "Householder (HAS)": 21694,
+     "Enforcement Notice": 9119,
+     "Lawful Development Certificate": 2850,
+     "Commercial Appeal Service (CAS)": 2043,
+     "Listed Building Consent & Conservation Area Consent Appeal": 2038,
+     "Tree Preservation Order": 1690
+    },
+    "procedure": {
+     "Written Representations": 83910,
+     "Hearing": 3846,
+     "Inquiry": 2213,
+     "No Procedure Associated": 1048,
+     "Schedule 14": 178,
+     "Written representation (Part 1)": 16
+    },
+    "missing_received_valid_decision_dates": [
+     0,
+     0,
+     0
+    ],
+    "lag_valid_decision_days": {
+     "0-30": 125,
+     "31-90": 10624,
+     "91-180": 34624,
+     "181-365": 33471,
+     "366-inf": 12314
+    },
+    "lag_received_valid_days": {
+     "0-30": 78236,
+     "31-90": 8915,
+     "91-180": 2384,
+     "181-365": 910,
+     "366-inf": 313
+    },
+    "s78_core_by_year": {
+     "2021": 3442,
+     "2022": 13538,
+     "2023": 14271,
+     "2024": 14063,
+     "2025": 14897,
+     "2026": 9240
+    },
+    "s78_core_allowed_by_year": {
+     "2021": 1035,
+     "2022": 3982,
+     "2023": 4353,
+     "2024": 4219,
+     "2025": 4757,
+     "2026": 2944
+    }
+   },
+   "older_file": {
+    "data_rows": 95569,
+    "empty_rows": 1,
+    "distinct_ref": 95569,
+    "duplicate_refs": 0,
+    "distinct_lpa": 379,
+    "decision_years": {
+     "2016": 4761,
+     "2017": 19529,
+     "2018": 19045,
+     "2019": 21888,
+     "2020": 17676,
+     "2021": 12670
+    },
+    "decisions": {
+     "Dismissed": 57759,
+     "Allowed": 25354,
+     "Notice upheld": 3678,
+     "Notice varied and upheld": 2587,
+     "Unknown": 1969,
+     "Split Decision": 1440,
+     "Planning permission granted": 889,
+     "Quashed On Legal Grounds": 871,
+     "missing": 600,
+     "other": 202
+    },
+    "missing_received_valid_decision_dates": [
+     0,
+     0,
+     0
+    ],
+    "s78_core_by_year": {
+     "2016": 3786,
+     "2017": 15587,
+     "2018": 15112,
+     "2019": 17581,
+     "2020": 13417,
+     "2021": 10199
+    },
+    "s78_core_allowed_by_year": {
+     "2016": 1309,
+     "2017": 5049,
+     "2018": 4821,
+     "2019": 4773,
+     "2020": 3625,
+     "2021": 3027
+    }
+   },
+   "cross_check_publisher_summary": "PINS Annual Report 2022-23: 'In the last year three out of every ten appeals were allowed' - measured s78_core allow rate 29.0% (Planning Appeal) / 34.3% (Householder) in the 5-yr file, 29.9%/32.4% older; measured per-year s78_core allow rate 27.0%-34.6%, consistent with the publisher's published ~30% figure and stable across 11 years."
+  },
+  "extraction_cost": "Measured 2026-10-31 on the coordinator (4 vCPU, 1.9 GiB class): 2 anonymous HTTP GETs, 34,532,981 bytes total (22,207,115 + 12,325,866), 0.63 s + 0.58 s download wall clock; stdlib streaming parse of both files 26-33 s. Construction is worker-trivial: the complete source is 34.5 MB. sha256 recorded per file in sources.",
+  "build_2026_10_31_pins_planning_001": {
+   "source": "worker job pins-planning-001 (summary.json, qualification.json, references JSON, all digest-verified from staging release 430070815)",
+   "eligible_population": "139,264 decided s78_core appeals with binary Decision in {Allowed, Dismissed}, from the sha256-pinned 2026-10-22 edition of both GOV.UK files (dff80bd0.../baf28d80...)",
+   "exclusions_counted": {
+    "non_binary_decision": 2757,
+    "cross_file_duplicate": 3110,
+    "decided_before_valid": 2
+   },
+   "cross_file_duplicate_finding": "the record's 'complementary halves' assumption for decision-year 2021 is CORRECTED: 3,110 rows appear in BOTH files with identical (type, LPA, received, valid, decision date, decision) composites and are deduplicated; the per-decision-year fixture still balances exactly against the probe counts (kept + counted exclusions == probe n; kept_allowed + excluded_allowed == probe allowed, all 11 years)",
+   "splits_by_validation_instant": {
+    "train": {
+     "rows": 54834,
+     "positives": 17048,
+     "rate": 0.3109,
+     "valid_range": [
+      "2012-06-01",
+      "2019-12-31"
+     ]
+    },
+    "eval": {
+     "rows": 28104,
+     "positives": 8469,
+     "rate": 0.30135,
+     "valid_range": [
+      "2020-01-01",
+      "2021-12-31"
+     ]
+    },
+    "holdout": {
+     "rows": 56326,
+     "positives": 17705,
+     "rate": 0.31433,
+     "valid_range": [
+      "2022-01-01",
+      "2026-08-21"
+     ]
+    }
+   },
+   "split_key_deviation_recorded": "the provisional decision-year partition moved to the VALIDATION instant (valid_date, the shipped time column): the outcome date cannot ship (post-instant) and gate 1.5.0 requires disjoint split ranges on a shipped time column; same construction as the published ipo (filed_date) and ec-merger (notification_date) tasks; per-decision-year counts still verified exactly; train's valid tail reaches 2012 (long-running appeals); sparse tails train-2012/2013/2014 (3/4/9 rows) recorded, both-classes asserted only for valid years with >= 30 rows",
+   "probe_flag_presence_correction": "the discovery probe's zero presence for 'In CA Relates to CA' and 'Is Flooding an Issue' was its own header-case typo ('Relates To CA'/'Flooding An Issue'); the build reads the correct headers and the eligible population carries conservation_area 11,529 / flooding_issue 6,812 / listed_building_setting 16,126 / historic_building_grant 6,411 populated values (verified by direct letter-based count: AE=6,849, AF=4,191 in the 5-yr file)",
+   "gate": "1.5.0, 45/45 checks, failed_checks empty, on the full artifact on the worker; --accept ACCEPTED 0cbb55fe32c039385efbf54746d2e7c151597666e58a8adec85330f4fc8d9d5f",
+   "artifact_bytes": {
+    "public/train.csv": 14799462,
+    "public/eval.csv": 7688790,
+    "private/holdout.csv": 14976119,
+    "meta.json": 2518,
+    "quality.json": 43480
+   },
+   "cross_row_probe_declared": "lpa_prev_case_exposes_outcome (entity lpa_name, time valid_date, lag lpa_days_since_prev_case_valid, copy lpa_last_outcome): a later same-LPA row's last-outcome feature is the previous row's label verbatim when that case was decided before the donor's instant; access isolated_rows declared as a requirement, no enforcement claim",
+   "post_acceptance_references_eval": {
+    "rows": 28104,
+    "positives": 8469,
+    "scope": "eval only, holdout never opened",
+    "lpa_hist_rate_auc": 0.54144,
+    "persistence_last_outcome_auc": 0.50446,
+    "procedure_type_rate_auc": 0.55506,
+    "majority_class_accuracy": 0.69865,
+    "year_rate_auc": null,
+    "global_rate_auc": null,
+    "paired_row_level": {
+     "lpa_hist_vs_procedure_type": {
+      "diff": -0.01362,
+      "ci95": [
+       -0.02542,
+       -0.0042
+      ]
+     },
+     "persistence_vs_lpa_hist": {
+      "diff": -0.03698,
+      "ci95": [
+       -0.04684,
+       -0.02988
+      ]
+     },
+     "lpa_hist_vs_calendar": {
+      "diff": 0.0,
+      "ci95": [
+       0.0,
+       0.0
+      ],
+      "note": "DEGENERATE: train has no valid-year 2020/2021 rows, so the (LPA, year) control fell back to the LPA rate for every row - recorded as a collapsed control, not independent confirmation"
+     }
+    },
+    "lpa_clustered": {
+     "lpa_hist_vs_persistence_diff": 0.03698,
+     "ci95": [
+      0.02507,
+      0.04843
+     ]
+    }
+   }
+  }
+ },
+ "jobs": [
+  {
+   "id": "pins-planning-001",
+   "status": "succeeded",
+   "exit_code": 0,
+   "elapsed_seconds": 88.8,
+   "server_id": 173804615,
+   "staging_release": 430070815,
+   "launched": "2026-10-31T17:06:10Z",
+   "collected": "2026-10-31T17:14:37Z",
+   "destroyed": "2026-10-31T17:20:49Z",
+   "outcome": "first build, every stage verified from its own collected report (never the exit code): build OK with the in-build per-decision-year fixture reproducing the discovery probe exactly (11 years, both files); gate 1.5.0 on the full artifact 45/45 checks, failed_checks empty; --accept ACCEPTED 0cbb55fe32c039385efbf54746d2e7c151597666e58a8adec85330f4fc8d9d5f (byte-identical to the bounded local smoke build of the same pinned source, so the worker reproduced the artifact from the recorded URLs); references computed post-acceptance on eval only. All 12 staged assets digest-verified against the release's own manifest. Worker destroyed at 17:20:49Z; provider 404 read-back pending in close-out."
+  },
+  {
+   "id": "pins-planning-baseline-001",
+   "status": "failed",
+   "exit_code": 4,
+   "elapsed_seconds": 41.4,
+   "server_id": 173807013,
+   "staging_release": 430077841,
+   "launched": "2026-10-31T17:22:20Z",
+   "collected": "2026-10-31T17:27:07Z",
+   "destroyed": "2026-10-31T17:29:49Z",
+   "outcome": "runner-contract baseline failed at the verbatim train.py predict step (accept had already printed ACCEPTED 0cbb55fe, materialize OK, train.py fit ran, predict raised): xgboost 3.4.1 rejected the eval feature frame - DataFrame.dtypes must be int/float/bool/category. ROOT CAUSE 1 (measured): floor_space_sqm carries the publisher's literal string 'Under 200 sq m floorspace' in 6 of 28,104 eval rows (and none in train), so eval's column parses as object dtype while train's parses float64 - the build's num() passed unparseable publisher strings through verbatim instead of treating them as missing. ROOT CAUSE 2 (unresolved by this run): the same rejection lists the nine category columns (lpa_name, ons_lpa_code, casework_type, procedure, development_type, appeal_type_reason, appeal_reason, type_detail, link_status) as invalid at the inplace_predict path even though the model was fit with enable_categorical=True - whether the verbatim runner's categorical handling works under xgboost 3.4.1 when no object column exists was NOT established (acnc's artifact was all-numeric so this path was never exercised before). Nothing was scored; no model AUC exists; the holdout was never opened. Worker destroyed and receipt recorded."
+  }
+ ],
+ "artifacts": [],
+ "rejection_reason": null,
+ "review": null,
+ "next_action": "BASELINE FAILED AT THE RUNNER CONTRACT 2026-10-31 (job pins-planning-baseline-001, diagnosed, receipts preserved in staging release 430077841): the accepted artifact 0cbb55fe does not run through the benchmark's own train.py because (1) floor_space_sqm carries the publisher's literal 'Under 200 sq m floorspace' in 6 eval rows (object dtype in eval, float64 in train -> xgboost rejects the predict frame), and (2) the same rejection lists the nine string-categorical columns as invalid at the inplace_predict path under xgboost 3.4.1 even with enable_categorical at fit - unresolved whether the verbatim runner supports category dtypes at predict at all. THE ONE PERMITTED REBUILD (runner-compatibility defect class, qualification skill): pins-planning-002 changes the writer only - num() maps unparseable numeric-cell values to '' (missing) instead of passing publisher phrases through, and the same rebuild settles the categorical question: if a worker-side minimal probe still shows the verbatim train.py predict path rejecting category dtypes, integer-code the nine categorical columns in the SAME rebuild (codes documented in quality.json measurements/feature_evidence, vocabulary sizes already recorded) so the shipped frame is int/float/bool only - the runner contract wins over prettier string levels. Then the full worker order again: construct -> qualify -> exact-byte accept -> references -> baseline + model_intervals (bundle already written, needs the new artifact digests). Everything else is verified and stands: gate 1.5.0 45/45, per-decision-year fixture, split counts, references (procedure_type 0.5551 / lpa_hist 0.5414 / persistence 0.5045, degenerate calendar control recorded), cross-row probe, staging release 430070815 for the superseded artifact. A SECOND failure of this class after the rebuild means stop and re-target, no pins-planning-003. Workers 173804615 and 173807013 both destroyed (receipts recorded); no worker is running.",
+ "novelty_check": {
+  "checked_at": "2026-10-31T16:15:06+00:00",
+  "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+  "queries": [
+   "planning appeal outcome prediction",
+   "Planning Inspectorate machine learning",
+   "planning appeal benchmark dataset",
+   "UK planning appeals train test dataset"
+  ],
+  "evidence": {
+   "huggingface_datasets": [
+    {
+     "query": "planning appeal outcome prediction",
+     "hits": 0,
+     "top": []
+    },
+    {
+     "query": "Planning Inspectorate machine learning",
+     "hits": 0,
+     "top": []
+    },
+    {
+     "query": "planning appeal benchmark dataset",
+     "hits": 0,
+     "top": []
+    },
+    {
+     "query": "UK planning appeals train test dataset",
+     "hits": 0,
+     "top": []
+    }
+   ],
+   "zenodo_records": [
+    {
+     "query": "planning appeal outcome prediction",
+     "hits": 210781,
+     "top": [
+      "Community Mental Health Service User Councils and Involuntary Admission Appeals in Kenyan Counties: A Difference-in-Differences Estimation of Participatory Governance Exposure",
+      "A time-series forecasting model for the cost-effectiveness evaluation of district hospital systems in Kenya: a methodological appraisal, 2000\u20132026",
+      "LATENT FACTOR-GUIDED TEMPORAL MODELING FOR PREDICTING AUTISM TREATMENT OUTCOMES USING BI-LSTM NETWORKS",
+      "Trew's Law: Automatic review of convictions linked to imprisoned police officers",
+      "Oral and Maxillofacial Surgery: Segmentation, Surgical Risk and Outcome Prediction"
+     ]
+    },
+    {
+     "query": "Planning Inspectorate machine learning",
+     "hits": 396532,
+     "top": [
+      "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
+      "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI",
+      "RGB and RGNIR Plastic Waste Database",
+      "Analysis of Risk-Based Internal Audit Planning Implementation and Its Impact on Audit Quality: Case Study at the Inspectorate of Surakarta, Indonesia",
+      "mushrooms"
+     ]
+    },
+    {
+     "query": "planning appeal benchmark dataset",
+     "hits": 426028,
+     "top": [
+      "SCG Dataset from Graph Neural Networks in Supply Chain Analytics and Optimization: Concepts, Perspectives, Dataset and Benchmarks",
+      "NFT Dataset for testing the ranking and rarity algorithms",
+      "Geospatial Modelling of Australia's National Electricity Market - Dataset",
+      "A Dataset of Orthogonal Polygon-Derived Maze Environments for Path Planning Benchmarking",
+      "VishalPallagani/PLANTS-benchmark: v1.0.0"
+     ]
+    },
+    {
+     "query": "UK planning appeals train test dataset",
+     "hits": 673396,
+     "top": [
+      "Annual patronage by regional train station, Victoria",
+      "Annual patronage by metropolitan train station, Melbourne",
+      "HyperTex-Splits: Standardized Train-Test Partitions for Fibre Composition Estimation",
+      "The UK COVID-19 Vocal Audio Dataset",
+      "municipalities_train_test_set.hdf5"
+     ]
+    }
+   ],
+   "arxiv_preprints": [
+    {
+     "query": "planning appeal outcome prediction",
+     "hits": 5,
+     "top": [
+      "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
+      "PiP: Planning-informed Trajectory Prediction for Autonomous Driving",
+      "Predicted Composite Signed-Distance Fields for Real-Time Motion Planning in Dynamic Environments",
+      "HDDL 2.1: Towards Defining a Formalism and a Semantics for Temporal HTN Planning",
+      "Provenance-Based Assessment of Plans in Context"
+     ]
+    },
+    {
+     "query": "Planning Inspectorate machine learning",
+     "hits": 5,
+     "top": [
+      "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+      "DOME: Recommendations for supervised machine learning validation in biology",
+      "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
+      "Active learning for data streams: a survey",
+      "Physics-Inspired Interpretability Of Machine Learning Models"
+     ]
+    },
+    {
+     "query": "planning appeal benchmark dataset",
+     "hits": 5,
+     "top": [
+      "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+      "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+      "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset",
+      "Bitstream-Corrupted Video Recovery: A Novel Benchmark Dataset and Method",
+      "HDDL 2.1: Towards Defining a Formalism and a Semantics for Temporal HTN Planning"
+     ]
+    },
+    {
+     "query": "UK planning appeals train test dataset",
+     "hits": 5,
+     "top": [
+      "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+      "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+      "MLIM: Vision-and-Language Model Pre-training with Masked Language and Image Modeling",
+      "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset",
+      "HDDL 2.1: Towards Defining a Formalism and a Semantics for Temporal HTN Planning"
+     ]
+    }
+   ]
+  },
+  "evidence_summary": "- huggingface_datasets / 'planning appeal outcome prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'Planning Inspectorate machine learning': 0 hit(s) - nothing notable\n- huggingface_datasets / 'planning appeal benchmark dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'UK planning appeals train test dataset': 0 hit(s) - nothing notable\n- zenodo_records / 'planning appeal outcome prediction': 210781 hit(s) - Community Mental Health Service User Councils and Involuntary Admission Appeals in Kenyan Counties: A Difference-in-Differences Estimation of Participatory Governance Exposure, A time-series forecasting model for the cost-effectiveness evaluation of district hospital systems in Kenya: a methodological appraisal, 2000\u20132026, LATENT FACTOR-GUIDED TEMPORAL MODELING FOR PREDICTING AUTISM TREATMENT OUTCOMES USING BI-LSTM NETWORKS, Trew's Law: Automatic review of convictions linked to imprisoned police officers, Oral and Maxillofacial Surgery: Segmentation, Surgical Risk and Outcome Prediction\n- zenodo_records / 'Planning Inspectorate machine learning': 396532 hit(s) - plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database, Analysis of Risk-Based Internal Audit Planning Implementation and Its Impact on Audit Quality: Case Study at the Inspectorate of Surakarta, Indonesia, mushrooms\n- zenodo_records / 'planning appeal benchmark dataset': 426028 hit(s) - SCG Dataset from Graph Neural Networks in Supply Chain Analytics and Optimization: Concepts, Perspectives, Dataset and Benchmarks, NFT Dataset for testing the ranking and rarity algorithms, Geospatial Modelling of Australia's National Electricity Market - Dataset, A Dataset of Orthogonal Polygon-Derived Maze Environments for Path Planning Benchmarking, VishalPallagani/PLANTS-benchmark: v1.0.0\n- zenodo_records / 'UK planning appeals train test dataset': 673396 hit(s) - Annual patronage by regional train station, Victoria, Annual patronage by metropolitan train station, Melbourne, HyperTex-Splits: Standardized Train-Test Partitions for Fibre Composition Estimation, The UK COVID-19 Vocal Audio Dataset, municipalities_train_test_set.hdf5\n- arxiv_preprints / 'planning appeal outcome prediction': 5 hit(s) - Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, PiP: Planning-informed Trajectory Prediction for Autonomous Driving, Predicted Composite Signed-Distance Fields for Real-Time Motion Planning in Dynamic Environments, HDDL 2.1: Towards Defining a Formalism and a Semantics for Temporal HTN Planning, Provenance-Based Assessment of Plans in Context\n- arxiv_preprints / 'Planning Inspectorate machine learning': 5 hit(s) - Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Active learning for data streams: a survey, Physics-Inspired Interpretability Of Machine Learning Models\n- arxiv_preprints / 'planning appeal benchmark dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, Bitstream-Corrupted Video Recovery: A Novel Benchmark Dataset and Method, HDDL 2.1: Towards Defining a Formalism and a Semantics for Temporal HTN Planning\n- arxiv_preprints / 'UK planning appeals train test dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, MLIM: Vision-and-Language Model Pre-training with Masked Language and Image Modeling, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, HDDL 2.1: Towards Defining a Formalism and a Semantics for Temporal HTN Planning",
+  "prior_art": [
+   "PlanSureAI appeals search (plansureai.com/appeals; descriptive overturn rates only); APE Autonomous Research, 'The Inspector Lottery That Isn't: Small-Sample Bias in Examiner Leniency Designs Applied to England's Planning Appeals', ape.socialcatalystlab.org, 2026-04-09; PMC8392781 and PMC10683341 (PINS hot-food-takeaway appeal analyses, 2021/2023)."
+  ],
+  "theirs": "The publisher (PINS) ships the raw bulk Excel files plus descriptive quarterly '% allowed' statistics; PlanSureAI ships commercial appeal-decision search and LPA overturn-rate analytics over the same open data (199,531 decisions, no prediction benchmark, no splits); APE 2026 'The Inspector Lottery That Isn't' is an econometric examiner-leniency study on 2,227 scraped appeals (no ML-ready release); public-health thematic studies analyze small subsets (52-54 hot-food-takeaway appeals).",
+  "ours": "A scored, temporally-split binary prediction task over the full official PINS Casework bulk panel (both GOV.UK Excel files, 11 decision years 2016-2026, ~187k decided cases, ~145k in the planning-permission family), with a submission-time feature contract that excludes post-instant fields (Inspector Name, recovery/call-in dates, Redetermined) and a documented eligibility rule for Split/Unknown decisions; shipped as train/eval/holdout with a reproducible construction script.",
+  "verdict": "differentiated",
+  "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+ },
+ "jurisdiction": {
+  "country": "GB",
+  "region": "Europe",
+  "publisher": "Planning Inspectorate (executive agency of the Ministry of Housing, Communities and Local Government), England, United Kingdom",
+  "recorded_at": "2026-10-31"
+ },
+ "licence_class": "A",
+ "licence_note": "Class A on the publisher's own instruments: the Appeals Data: Data notes and guidance page (part of the same GOV.UK publication as the data files) states 'This publication is licensed under the terms of the Open Government Licence v3.0 except where otherwise stated'; the publication page carries the OGL attribution emblem with Crown copyright 2026. OGL v3 permits commercial use and redistribution with attribution. The 5-yr file contains Appellant/Agent names and Site Address; construction will drop those PII columns from any shipped artifact (they are not needed as features).",
+ "verdict": {
+  "status": "ready",
+  "contracts": {
+   "redistribution": "supported - OGL v3.0 on the publication's own data-notes page and OGL emblem on the publication page (licence_class A), quoted in license_evidence",
+   "prediction_timing": "supported - instant = Valid Date, present on 100% of 186,785 measured rows; features recorded at submission and documented per-field by the publisher; post-instant fields (Inspector Name, Start Date, Jurisdiction, recovery/call-in, Redetermined, Bespoke) excluded by contract; dated worked example in notes.md; retrospective-scope statement and revision policy recorded; vintage-evidence path named but not needed for a fixed benchmark",
+   "obtainable_target": "supported - Decision field (quality 'Good'), binary rule pre-specified with measured exclusion masses; censoring (decided-cases-only population) stated as part of the task definition; source columns excludable from shipped features",
+   "split_capacity": "supported - measured s78_core counts by decision year: train 2016-2020 65,483 (29.9% pos), eval 2021-2022 27,179 (29.6% pos), holdout 2023-2026 52,471 (31.0% pos); both classes in all 11 years; LPA clustering named for bootstrap intervals",
+   "not_a_mirror": "supported - mechanical novelty check verdict 'differentiated' (recorded 2026-10-31): the publisher ships raw files and descriptive '% allowed' statistics; PlanSureAI ships commercial search + overturn-rate analytics over the same source; the APE 2026 leniency study is econometrics on 2,227 scraped cases; no one ships a scored, temporally-split prediction task with a submission-time feature contract"
+  }
+ },
+ "updated_at": "2026-10-31T17:30:15.150393+00:00"
 }

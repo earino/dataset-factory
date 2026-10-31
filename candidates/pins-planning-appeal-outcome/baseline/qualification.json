@@ -1,0 +1,673 @@
+{
+ "ok": true,
+ "dataset": "/output/extract",
+ "gate_version": "1.5.0",
+ "artifact": {
+  "train": {
+   "file": "public/train.csv",
+   "sha256": "299e5af47610af833bec33e15e8a5d8a242f6edebfd401388714b819593c2f65",
+   "bytes": 14799462
+  },
+  "eval": {
+   "file": "public/eval.csv",
+   "sha256": "43cc768e69193a3ee9e4c9b50973c2b87daa019987d87cad62aac15609e35818",
+   "bytes": 7688790
+  },
+  "holdout": {
+   "file": "private/holdout.csv",
+   "sha256": "3f65dc801e0819bd6e828a101065deb7cfc68b764db339a08b2442deddc6fc96",
+   "bytes": 14976119
+  },
+  "meta.json": {
+   "file": "meta.json",
+   "sha256": "4e7a31048bb77372cbc42bcf3f8a341e2eeeed0afdce920fb678164f2f6c76b2",
+   "bytes": 2518
+  },
+  "quality.json": {
+   "file": "quality.json",
+   "sha256": "0cfca30e9f711dea5da41900768cbe7c223c2a25555606d6fa0c8f2fe6cd5e86",
+   "bytes": 43480
+  },
+  "artifact_version": {
+   "digest": "0cbb55fe32c039385efbf54746d2e7c151597666e58a8adec85330f4fc8d9d5f",
+   "components": [
+    "eval",
+    "holdout",
+    "meta.json",
+    "quality.json",
+    "train"
+   ]
+  }
+ },
+ "results": [
+  {
+   "check": "descriptor",
+   "ok": true,
+   "detail": "quality.json loaded for 'pins-planning-appeal-outcome'",
+   "evidence": {}
+  },
+  {
+   "check": "contract.declared",
+   "ok": true,
+   "detail": "evaluation_contract required: intended use, access, vintage and evidence",
+   "evidence": {}
+  },
+  {
+   "check": "contract.scope",
+   "ok": true,
+   "detail": "use='retrospective_research'; access='isolated_rows'; eval is development, holdout is final",
+   "evidence": {}
+  },
+  {
+   "check": "contract.every_input_has_availability_evidence",
+   "ok": true,
+   "detail": "Every solver-visible non-target column needs availability evidence; missing: []",
+   "evidence": {}
+  },
+  {
+   "check": "contract.vintage_and_selection",
+   "ok": true,
+   "detail": "Vintage, selection and limitations must be explicit; declarations are not measurements",
+   "evidence": {}
+  },
+  {
+   "check": "contract.cross_row_review",
+   "ok": true,
+   "detail": "Document applicable cross-row probes and every solver-visible auxiliary file",
+   "evidence": {}
+  },
+  {
+   "check": "contract.cross_row_probe_0",
+   "ok": true,
+   "detail": "Outcome-bearing later-row exposure requires restricted evaluation access; mismatches are reported",
+   "evidence": {
+    "train": {
+     "rows": 54834,
+     "covered": 36643,
+     "mismatches": 15428,
+     "ambiguous_or_conflicting": 12705
+    },
+    "eval": {
+     "rows": 28104,
+     "covered": 21593,
+     "mismatches": 8803,
+     "ambiguous_or_conflicting": 6085
+    },
+    "holdout": {
+     "rows": 56326,
+     "covered": 43747,
+     "mismatches": 18430,
+     "ambiguous_or_conflicting": 12143
+    }
+   }
+  },
+  {
+   "check": "contract.label_availability",
+   "ok": true,
+   "detail": "No full-row availability ledger: training-label timing UNVERIFIED; retrospective use only",
+   "evidence": {}
+  },
+  {
+   "check": "leakage.declared_columns",
+   "ok": true,
+   "detail": "every shipped column is declared",
+   "evidence": {
+    "undeclared": []
+   }
+  },
+  {
+   "check": "leakage.answer_source_absent",
+   "ok": true,
+   "detail": "no answer source or post-hoc column is shipped",
+   "evidence": {
+    "shipped_forbidden": []
+   }
+  },
+  {
+   "check": "leakage.every_column_could_be_scored",
+   "ok": true,
+   "detail": "every column was scored for leakage",
+   "evidence": {
+    "unscorable": []
+   }
+  },
+  {
+   "check": "leakage.no_single_column_determines_the_target",
+   "ok": true,
+   "detail": "no shipped column separates the classes on its own",
+   "evidence": {
+    "offenders": [],
+    "high_cardinality": [
+     "row_id@eval",
+     "row_id@holdout",
+     "row_id@train"
+    ],
+    "missing_splits": []
+   }
+  },
+  {
+   "check": "leakage.high_cardinality_declared",
+   "ok": true,
+   "detail": "high-cardinality columns are declared as identifiers or free fields",
+   "evidence": {
+    "undeclared": [],
+    "declared": [
+     "row_id"
+    ]
+   }
+  },
+  {
+   "check": "timing.prediction_time_declared",
+   "ok": true,
+   "detail": "prediction instant is declared",
+   "evidence": {}
+  },
+  {
+   "check": "timing.no_post_hoc_feature",
+   "ok": true,
+   "detail": "no feature is documented as post-hoc",
+   "evidence": {
+    "overlap": []
+   }
+  },
+  {
+   "check": "timing.label_source_is_not_a_feature",
+   "ok": true,
+   "detail": "the label source is not a feature",
+   "evidence": {
+    "source_features": []
+   }
+  },
+  {
+   "check": "timing.every_feature_documented",
+   "ok": true,
+   "detail": "features documented as available 'prediction_time'",
+   "evidence": {
+    "features_documented_at": "prediction_time"
+   }
+  },
+  {
+   "check": "timing.instant_declared",
+   "ok": true,
+   "detail": "prediction instant kind='event_time' citation=True",
+   "evidence": {
+    "prediction_instant": {
+     "kind": "event_time",
+     "period": "per-appeal validation",
+     "days_after_period_end": 0,
+     "citation": "PINS validates the appeal on the Valid Date (present on 100% of 186,785 measured decided rows, 2026-10-31 files). Every feature field is recorded from the appeal submission/registration and carries a publisher data-quality grade (Appeals Data: Data notes and guidance, GOV.UK). Received->valid is within 30 days for 85.9% of cases; valid->decision is 91-365 days for 74% (measured), so the outcome window follows the instant"
+    }
+   }
+  },
+  {
+   "check": "timing.publication_lag_measured",
+   "ok": true,
+   "detail": "0 of 0 observed period_end -> published dates are usable",
+   "evidence": {
+    "observations": [],
+    "measured_lag_days": null,
+    "source_kind": "administrative_record"
+   }
+  },
+  {
+   "check": "timing.features_available_at_instant",
+   "ok": true,
+   "detail": "features publish 0d after the period, instant is 0d after it",
+   "evidence": {
+    "features_lag_days": 0,
+    "instant_lag_days": 0,
+    "measured_lag_days": null
+   }
+  },
+  {
+   "check": "timing.instant_accounts_for_publication_lag",
+   "ok": true,
+   "detail": "instant kind is 'event_time' while features publish 0d after the period",
+   "evidence": {
+    "kind": "event_time",
+    "features_lag_days": 0
+   }
+  },
+  {
+   "check": "timing.selection_uses_only_available_data",
+   "ok": true,
+   "detail": "row selection declares its latest period as \"the appeal's own registration record; LPA-history features read only decisions strictly earlier than the row's Valid Date\"",
+   "evidence": {
+    "latest_period_used": "the appeal's own registration record; LPA-history features read only decisions strictly earlier than the row's Valid Date",
+    "fields": [
+     "Type of Casework (s78_core prefix match)",
+     "Decision in {Allowed, Dismissed}",
+     "Received/Valid/Decision dates parseable and decision not before validation",
+     "cross-file dedup on (type, LPA, received, valid, decision date, decision)"
+    ]
+   }
+  },
+  {
+   "check": "units.measured_columns_declare_unit_and_frame",
+   "ok": true,
+   "detail": "19 measured column(s) declare unit and frame",
+   "evidence": {
+    "measurements": [
+     {
+      "column": "area_of_site_hectares",
+      "unit": "hectares (publisher field, 'if known')",
+      "frame": "site area of the appealed development, as recorded at registration"
+     },
+     {
+      "column": "floor_space_sqm",
+      "unit": "square metres (publisher field, 'if known')",
+      "frame": "floorspace of the appealed development, as recorded at registration"
+     },
+     {
+      "column": "number_of_residences",
+      "unit": "dwellings (count, publisher field, 'if known')",
+      "frame": "number of residences in the appealed development"
+     },
+     {
+      "column": "received_to_valid_days",
+      "unit": "days (Valid Date minus Received Date)",
+      "frame": "two publisher-recorded dates of the same appeal"
+     },
+     {
+      "column": "valid_year",
+      "unit": "calendar year (integer)",
+      "frame": "year of the validation instant, Europe/London"
+     },
+     {
+      "column": "valid_day_of_year",
+      "unit": "day index within the year (1-366)",
+      "frame": "the validation instant's position in its year"
+     },
+     {
+      "column": "lpa_decisions_prior_count",
+      "unit": "count of decided cases",
+      "frame": "same-LPA s78_core decisions strictly before the instant"
+     },
+     {
+      "column": "lpa_allowed_prior_count",
+      "unit": "count of Allowed decisions",
+      "frame": "same-LPA s78_core decisions strictly before the instant"
+     },
+     {
+      "column": "lpa_allow_rate_prior",
+      "unit": "share (0-1, 6 decimals; -1.0 sentinel when no prior decided case exists)",
+      "frame": "allowed share of the same LPA's strictly-prior decided cases"
+     },
+     {
+      "column": "lpa_last_outcome",
+      "unit": "code (-1 none, 0 dismissed, 1 allowed)",
+      "frame": "most recent same-LPA decided case strictly before the instant"
+     },
+     {
+      "column": "lpa_days_since_prev_case_valid",
+      "unit": "days",
+      "frame": "gap to the same LPA's previous validated case"
+     },
+     {
+      "column": "green_belt",
+      "unit": "binary indicator (1/0, '' when the publisher left the field blank)",
+      "frame": "publisher site descriptor 'Site Green Belt', recorded at registration"
+     },
+     {
+      "column": "agricultural_holding",
+      "unit": "binary indicator (1/0, '' when the publisher left the field blank)",
+      "frame": "publisher site descriptor 'Agricultural Holding', recorded at registration"
+     },
+     {
+      "column": "listed_building_setting",
+      "unit": "binary indicator (1/0, '' when the publisher left the field blank)",
+      "frame": "publisher site descriptor 'Development Affect Setting of Listed Building', recorded at registration"
+     },
+     {
+      "column": "historic_building_grant",
+      "unit": "binary indicator (1/0, '' when the publisher left the field blank)",
+      "frame": "publisher site descriptor 'Historic Building Grant Made', recorded at registration"
+     },
+     {
+      "column": "conservation_area",
+      "unit": "binary indicator (1/0, '' when the publisher left the field blank)",
+      "frame": "publisher site descriptor 'In CA Relates to CA', recorded at registration"
+     },
+     {
+      "column": "flooding_issue",
+      "unit": "binary indicator (1/0, '' when the publisher left the field blank)",
+      "frame": "publisher site descriptor 'Is Flooding an Issue', recorded at registration"
+     },
+     {
+      "column": "aonb",
+      "unit": "binary indicator (1/0, '' when the publisher left the field blank)",
+      "frame": "publisher site descriptor 'Is the site within an AONB', recorded at registration"
+     },
+     {
+      "column": "sssi",
+      "unit": "binary indicator (1/0, '' when the publisher left the field blank)",
+      "frame": "publisher site descriptor 'Is site within an SSSI', recorded at registration"
+     }
+    ]
+   }
+  },
+  {
+   "check": "units.known_event_fixture_recorded",
+   "ok": true,
+   "detail": "no external threshold, so no known-event fixture is required",
+   "evidence": {}
+  },
+  {
+   "check": "splits.time_column_declared",
+   "ok": true,
+   "detail": "split overlap is checked against 'valid_date'",
+   "evidence": {}
+  },
+  {
+   "check": "splits.machine_readable_windows",
+   "ok": true,
+   "detail": "train/eval/holdout windows are declared with start/end",
+   "evidence": {
+    "split_windows": {
+     "train": {
+      "start": null,
+      "end": "2020-01-01"
+     },
+     "eval": {
+      "start": "2020-01-01",
+      "end": "2022-01-01"
+     },
+     "holdout": {
+      "start": "2022-01-01",
+      "end": "2027-01-01"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.files_present",
+   "ok": true,
+   "detail": "all three split files exist",
+   "evidence": {
+    "missing": []
+   }
+  },
+  {
+   "check": "splits.non_empty",
+   "ok": true,
+   "detail": "every split has rows",
+   "evidence": {
+    "train": {
+     "rows": 54834,
+     "positives": 17048,
+     "negatives": 37786,
+     "positive_rate": 0.310902
+    },
+    "eval": {
+     "rows": 28104,
+     "positives": 8469,
+     "negatives": 19635,
+     "positive_rate": 0.301345
+    },
+    "holdout": {
+     "rows": 56326,
+     "positives": 17705,
+     "negatives": 38621,
+     "positive_rate": 0.314331
+    }
+   }
+  },
+  {
+   "check": "splits.eval_and_holdout_have_both_classes",
+   "ok": true,
+   "detail": "eval and holdout each contain positives and negatives",
+   "evidence": {
+    "train": {
+     "rows": 54834,
+     "positives": 17048,
+     "negatives": 37786,
+     "positive_rate": 0.310902
+    },
+    "eval": {
+     "rows": 28104,
+     "positives": 8469,
+     "negatives": 19635,
+     "positive_rate": 0.301345
+    },
+    "holdout": {
+     "rows": 56326,
+     "positives": 17705,
+     "negatives": 38621,
+     "positive_rate": 0.314331
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_declared",
+   "ok": true,
+   "detail": "eval and holdout declare positives and distinct events",
+   "evidence": {
+    "declared": {
+     "train": {
+      "positives": 17048,
+      "distinct_events": 1430
+     },
+     "eval": {
+      "positives": 8469,
+      "distinct_events": 711
+     },
+     "holdout": {
+      "positives": 17705,
+      "distinct_events": 1594
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_match_rows",
+   "ok": true,
+   "detail": "declared positive counts match the rows",
+   "evidence": {
+    "mismatched": []
+   }
+  },
+  {
+   "check": "splits.event_key_column_declared",
+   "ok": true,
+   "detail": "clustered events are counted by 'valid_date' (date part)",
+   "evidence": {}
+  },
+  {
+   "check": "splits.distinct_events_match_rows",
+   "ok": true,
+   "detail": "declared clustered event counts match the rows",
+   "evidence": {
+    "recomputed": {
+     "train": 1430,
+     "eval": 711,
+     "holdout": 1594
+    },
+    "declared": {
+     "train": {
+      "positives": 17048,
+      "distinct_events": 1430
+     },
+     "eval": {
+      "positives": 8469,
+      "distinct_events": 711
+     },
+     "holdout": {
+      "positives": 17705,
+      "distinct_events": 1594
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.enough_clustered_positives",
+   "ok": true,
+   "detail": "eval and holdout carry enough independent positive events to score",
+   "evidence": {
+    "thin": [],
+    "recomputed_events": {
+     "train": 1430,
+     "eval": 711,
+     "holdout": 1594
+    },
+    "minimums": {
+     "positives": 30,
+     "distinct_events": 20
+    }
+   }
+  },
+  {
+   "check": "splits.rates_not_uniform",
+   "ok": true,
+   "detail": "positive rates are between 0 and 1",
+   "evidence": {
+    "rates": [
+     0.310902,
+     0.301345,
+     0.314331
+    ]
+   }
+  },
+  {
+   "check": "splits.actual_ranges_computed",
+   "ok": true,
+   "detail": "row timestamps found for every split",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "2012-06-01",
+      "max": "2019-12-31"
+     },
+     "eval": {
+      "min": "2020-01-01",
+      "max": "2021-12-31"
+     },
+     "holdout": {
+      "min": "2022-01-01",
+      "max": "2026-08-21"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.actual_ranges_disjoint",
+   "ok": true,
+   "detail": "the rows of the three splits occupy disjoint periods",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "2012-06-01",
+      "max": "2019-12-31"
+     },
+     "eval": {
+      "min": "2020-01-01",
+      "max": "2021-12-31"
+     },
+     "holdout": {
+      "min": "2022-01-01",
+      "max": "2026-08-21"
+     }
+    },
+    "overlaps": []
+   }
+  },
+  {
+   "check": "splits.rows_within_declared_windows",
+   "ok": true,
+   "detail": "every row falls inside its split's declared window",
+   "evidence": {
+    "windows": {
+     "train": {
+      "start": null,
+      "end": "2020-01-01"
+     },
+     "eval": {
+      "start": "2020-01-01",
+      "end": "2022-01-01"
+     },
+     "holdout": {
+      "start": "2022-01-01",
+      "end": "2027-01-01"
+     }
+    },
+    "ranges": {
+     "train": {
+      "min": "2012-06-01",
+      "max": "2019-12-31"
+     },
+     "eval": {
+      "min": "2020-01-01",
+      "max": "2021-12-31"
+     },
+     "holdout": {
+      "min": "2022-01-01",
+      "max": "2026-08-21"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.no_cross_split_entities",
+   "ok": true,
+   "detail": "no row_id appears in more than one split",
+   "evidence": {
+    "shared_sample": [],
+    "shared_count": 0
+   }
+  },
+  {
+   "check": "splits.duplicate_entities_within_splits",
+   "ok": true,
+   "detail": "0 repeated-identifier rows within splits, at most the declared 0",
+   "evidence": {
+    "duplicate_rows": {},
+    "declared": 0
+   }
+  },
+  {
+   "check": "runner.layout",
+   "ok": true,
+   "detail": "holdout is private and train/eval are public",
+   "evidence": {}
+  },
+  {
+   "check": "runner.meta_json_keys",
+   "ok": true,
+   "detail": "meta.json carries the keys the runner reads",
+   "evidence": {
+    "keys": [
+     "columns",
+     "description",
+     "id_columns",
+     "name",
+     "positive_label",
+     "positive_rate",
+     "rows",
+     "split",
+     "split_description",
+     "target"
+    ]
+   }
+  },
+  {
+   "check": "runner.meta_matches_files",
+   "ok": true,
+   "detail": "meta.json agrees with the split files",
+   "evidence": {
+    "problems": []
+   }
+  },
+  {
+   "check": "runner.meta_counts_match_files",
+   "ok": true,
+   "detail": "meta rows and rates match the files",
+   "evidence": {}
+  },
+  {
+   "check": "runner.id_columns_are_not_features",
+   "ok": true,
+   "detail": "declared identifiers are not also listed as features",
+   "evidence": {}
+  }
+ ],
+ "failed_checks": []
+}

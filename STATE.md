@@ -11237,3 +11237,69 @@ Session hygiene: check-candidate.py --all exit 0 (116 records, +1 candidate, +1 
 unittest suite 687/687 OK; discovery-coverage.py exit 0 (Europe 27, EU 12, live non-US 35/41 =
 85%). Probe scripts + raw counts retained in both candidates' probe/ dirs. No tokens, no
 workers, no releases touched.
+
+## 2026-10-31 (17:35Z) - pins-planning-appeal-outcome first build accepted on the worker (gate 45/45, artifact 0cbb55fe); runner-contract baseline failed on a measured dtype defect, single permitted rebuild handed to the next session; both workers destroyed
+
+Advancement session (scheduled). Candidate: pins-planning-appeal-outcome (licence A / OGL v3.0,
+novelty differentiated 2026-10-31). unhcr-refugee-data-finder untouched: operator_decision_pending
+is true (the operator's move is relaying the pre-flip audit prompt; the flip waits for that
+verdict) and all its pre-flip prep was verified complete on 2026-10-31. acnc-charity-ais-
+deadline-compliance also untouched: its triad is interval-supported negative and the next step
+is the operator's choice among recorded paths. No publication, package, tag or holdout score in
+this event; the holdout was written by the build and never opened by any scoring stage.
+
+- Job pins-planning-001 (server 173804615, EUR 0.04 reserved, 88.8 s, staging release 430070815):
+  first build, every stage verified from its own collected report, never the exit code. Build:
+  both GOV.UK Excel files re-downloaded by exact recorded URL and sha256-matched to the discovery
+  pins (dff80bd0.../baf28d80...); the in-build per-decision-year fixture reproduces the discovery
+  probe EXACTLY for all 11 decision years (kept + counted exclusions == probe n, kept_allowed +
+  excluded_allowed == probe allowed). Frame findings recorded: (a) the 'complementary halves'
+  assumption for 2021 is corrected - 3,110 rows appear in BOTH files with identical composites and
+  are deduplicated (plus 2,757 non-binary decisions and 2 decided-before-validated rows, all
+  counted); (b) the discovery probe's zero presence for conservation-area/flooding flags was its
+  own header-case typo ('Relates To CA'/'Flooding An Issue') - the build reads the correct headers
+  (verified by direct letter-based count) and both flags ship with measured presence. Split key
+  moved from the provisional decision-year partition to the VALIDATION instant (the shipped
+  valid_date column) because the outcome date cannot ship (post-instant) and gate 1.5.0 requires
+  disjoint ranges on a shipped time column - the same construction as the published ipo
+  (filed_date) and ec-merger (notification_date) tasks; train valid tail reaches 2012 (long-running
+  appeals), sparse tails (3/4/9 rows) recorded. Splits: train 54,834/17,048 (31.09%), eval
+  28,104/8,469 (30.13%), holdout 56,326/17,705 (31.43%). Gate 1.5.0 on the full artifact ON THE
+  WORKER: 45/45, failed_checks empty; --accept ACCEPTED 0cbb55fe32c03938... - byte-identical to
+  the bounded local smoke build from the same pinned bytes, so the worker reproduced the artifact
+  deterministically. All 12 staged assets digest-verified against the release's own manifest.
+  Cross-row exposure declared through the gate's probe mechanism (lpa_last_outcome over the
+  previous same-LPA case) with isolated_rows access and no enforcement claim; dropped with
+  measured reasons: enforcement_grounds_count (0 populated), LPA Decision Date / LPA Application
+  Reference (absent from the older file), Costs Applied for Indicator (post-instant), Lead Case
+  (joinable cross-row id), PII. Post-acceptance references (eval only): procedure/casework-type
+  rate 0.5551 (strongest; significantly above lpa_hist_rate, paired CI [-0.0254,-0.0042]),
+  lpa_hist_rate 0.5414, persistence_last_outcome 0.5045 (lpa_hist beats it under both row-level
+  and LPA-clustered intervals), majority-class accuracy 0.6987. DEGENERATE CONTROL RECORDED: the
+  (LPA, year) calendar-identity control collapsed onto the LPA rate exactly (train has no
+  valid-year 2020/2021 rows, so every row fell back to the LPA's train rate; paired diff 0.0,
+  CI [0,0]) - recorded as a collapsed control, never as independent confirmation.
+- Job pins-planning-baseline-001 (server 173807013, 41.4 s, staging release 430077841): the
+  runner-contract baseline FAILED at the verbatim train.py predict step (after --accept printed
+  ACCEPTED 0cbb55fe and materialize succeeded). Measured root cause: floor_space_sqm carries the
+  publisher's literal 'Under 200 sq m floorspace' in 6 of 28,104 eval rows (object dtype in eval,
+  float64 in train), so xgboost 3.4.1 rejected the eval predict frame; the same rejection also
+  lists the nine string-categorical columns as invalid at the inplace_predict path even though
+  the model was fit with enable_categorical=True, and whether that path accepts category dtypes
+  when no object column exists was NOT established by this run (acnc's all-numeric artifact never
+  exercised it). Nothing was scored; no model AUC exists. The repair is ONE permitted rebuild
+  (runner-compatibility defect class): num() maps unparseable publisher phrases to missing, and
+  the same rebuild settles the categorical question (integer-code the nine columns if the verbatim
+  predict path still rejects categories) - then the full construct -> qualify -> accept ->
+  references -> baseline order again. A second failure of this class means stop and re-target.
+- Hygiene: both workers destroyed with receipts (173804615 at 17:20:49Z, 173807013 at 17:29:49Z;
+  both read back status=deleted); bulk CSVs deleted from the coordinator after digest
+  verification (small reports retained in .factory/pins-planning-001/reports and
+  .factory/pins-planning-baseline-001/reports); scratch smoke data deleted. Candidate record
+  updated (jobs += pins-planning-001, pins-planning-baseline-001; measurements +=
+  build_2026_10_31_pins_planning_001; next_action names the single permitted rebuild and its
+  stopping condition). Unrelated untracked ec-state-aid-investigation-opening/probe/ preserved
+  untouched. Local smoke-test context for the rebuild: the bounded local build/gate de-risk on
+  the pinned bytes is legitimate and was repeated here (build 30 s, gate ~90 s, byte-identical
+  rebuild verified) - but the authoritative gate and acceptance always ran and still run on the
+  worker over the full artifact.
