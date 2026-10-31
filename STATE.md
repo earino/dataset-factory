@@ -1,3 +1,51 @@
+## 2026-10-31 (16:22Z) - UK discovery tick: pins-planning-appeal-outcome READY (OGL v3.0, 186,785 measured decided appeals 2016-2026, novelty differentiated); ea-permit-compliance-breach dropped at licence triage (EA Conditional Licence, class D)
+
+Scheduled discovery tick, regional focus United Kingdom (ONS, NHS Digital, Defra,
+EA, Companies House, data.gov.uk). No construction, qualification, publication or
+advancement of existing candidates; unhcr untouched (operator-gated, as before).
+Queue before the tick: 41 live / 116 candidates, GB 12. Opened two leads, closed both
+with recorded verdicts; one is the new ready buffer candidate.
+
+1. ea-permit-compliance-breach: DROPPED at licence triage before any schema/volume
+   probe (cheapest veto first). The EA Compliance Classification Scheme page names
+   the "Environment Agency Conditional Licence": internal/personal use only,
+   one-year permitted-use term, sublicensing only under written EA licence, "All
+   rights reserved" - derived rows cannot ship. Clause quoted in license_evidence;
+   scope limited to this dataset (EA mixes OGL and Conditional licences across its
+   catalogue; its bathing-water/flood products are OGL and stay viable). Reopen only
+   on EA relicensing or a candidate-specific operator decision.
+
+2. pins-planning-appeal-outcome: READY. Task: for a PINS s78_core appeal (Planning
+   Appeal + Householder casework), predict Allowed vs Dismissed from submission-time
+   features at the Valid Date instant. Publisher's own instruments carry OGL v3.0
+   (class A). Measured (probe_count.py, both bulk Excel files, sha256 pinned, 2 GETs /
+   34.5 MB / ~1.2 s, scratch copies deleted after counting): 186,785 decided cases
+   2016-2026, zero duplicate refs, zero missing Received/Valid/Decision dates,
+   s78_core 145,133 rows with 27.0-34.6% allowed per decision year (both classes in
+   all 11 years; stable, no drift). Split capacity measured: train 2016-2020 65,483
+   (29.9% pos) / eval 2021-2022 27,179 (29.6%) / holdout 2023-2026 52,471 (31.0%).
+   Cross-check vs publisher summary: "three out of every ten appeals were allowed"
+   (Annual Report 2022-23) vs measured 29.0%/34.3% by s78 type - consistent.
+   Post-instant fields excluded by contract (Inspector Name, Start Date, Jurisdiction,
+   recovery/call-in/redetermined/bespoke); PII (Appellant, Agent, Site Address) dropped
+   from any shipped artifact; decided-cases-only censoring stated in the target.
+   Novelty: mechanical check verdict differentiated - PlanSureAI ships search +
+   descriptive overturn rates over the same source and APE 2026 is an econometric
+   leniency study (2,227 scraped cases); nobody ships a scored, temporally-split
+   prediction task. check-candidate OK (ready), five contracts reconciled in
+   record.verdict. Dated worked example (case 3236151, Europe/London): refused
+   2019-05-24, received 2019-08-29, instant = valid 2019-09-12, decided 2021-10-01
+   (Dismissed). Next action: advancement owns construction on a worker (LPA-prior
+   reference headroom FIRST, then qualification -> exact-byte acceptance -> scoring
+   -> reporting).
+
+Checks at close-out: check-candidate pins OK (ready), ea OK (dropped), --all rc=0
+(118 records), full unittest suite 690/690 OK in 26.0 s; discovery-coverage: 118
+candidates (was 116), GB now 14 (6 live incl. this ready), live 42, ready 12,
+non-US share 36/42 (86%). No worker launched (EUR 0 spent). Scratch bulk
+copies deleted; probe scripts + full probe JSON retained in the candidate directory.
+
+
 ## 2026-10-31 (14:48Z) - acnc diag-002 recovery verified end to end: decisive intervals delivered, model significantly trails persistence_momentum (no demonstrated headroom, interval-supported); eu discovery tick's uncommitted work landed as a documented handoff; unhcr remains operator-gated, untouched
 
 Scheduled advancement tick. Release work outranks construction and the operator's list names
