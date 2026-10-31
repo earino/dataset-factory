@@ -1,0 +1,224 @@
+{
+  "id": "canadabuys-tender-cancellation",
+  "status": "investigating",
+  "created_at": "2026-10-31T20:18:39.352601+00:00",
+  "updated_at": "2026-10-31T20:30:00+00:00",
+  "domain": "public procurement - pre-award solicitation lifecycle outcome prediction (federal tenders, Canada)",
+  "prediction_question": "For a Government of Canada competitive solicitation (noticeType in the RFP-like set: Request for Proposal, RFP against Supply Arrangement, Request for Standing Offer, Request for Supply Arrangement, Invitation to Qualify) whose original tender notice is published on CanadaBuys at instant T (publicationDate of the original notice row), will the solicitation be cancelled before award - i.e. its terminal tenderStatus is 'Cancelled' rather than 'Expired'? Features are the original-notice fields fixed at T: title and description text, contracting entity and its city/province, GSIN/UNSPSC and descriptions, procurement category, procurement method, selection criteria, trade agreements, regions of opportunity and delivery, expected contract start/end dates, and the closing date (documented UTC-0500) which with publicationDate gives the posting duration.",
+  "prediction_time": "The instant is the original tender notice's publicationDate (the row with amendmentNumber 000; amendment rows are separate later publication events and are excluded from features and from the instant). Every shipped feature is a field of the notice as published at T, each documented in the publisher's own XML data dictionary (fetched 2026-10-31, 60,478 bytes). The label is a later state change of the same notice: the publisher's data dictionary defines tenderStatus as 'A status that indicates whether a tender is Open (ie: accepting bids), Expired (no longer accepting bids) or Cancelled', and the publisher's support page states the files 'will include information on new, open, cancelled and expired notices that are published on the CanadaBuys website' and that 'Tender notice closing times will be displayed in Universal Time Coordinated minus 5 hours (UTC-0500)'. As-of policy: the open-data files re-state the CURRENT status of each notice (the complete file carries live Open rows; the closed-FY files carry only terminal statuses - measured FY2023-24 file: 6,414 Expired / 415 Cancelled, zero Open). Historical cancellation DATES are not published in the bulk files, so labels are read as terminal states from an archive snapshot pinned by sha256 at harvest; still-Open solicitations are censored (excluded, not imputed). Cancellation is operationally observable in real time on the CanadaBuys site and the files refresh at least daily (2026-2027 tender file Last-Modified measured Sat, 31 Oct 2026 10:30:31 GMT). Residual limitation, recorded not resolved: rare late reversions of already-published statuses cannot be excluded for the most recent window; construction runs a bounded notice-page verification on a sample of Cancelled rows.",
+  "target_definition": "Binary: 1 if the solicitation's terminal tenderStatus (current archive) is 'Cancelled'; 0 if 'Expired'. Label source column: tenderStatus-appelOffresStatut-eng/-fra, excluded from shipped features. Population restricted to the RFP-like notice types above; excluded: Request for Information (measured 3.2% award-notice rate - no award by design), Advance Contract Award Notice (award pre-decided), Directed Contract and Not Applicable (non-competitive instruments). Observed absence vs no-event: 'Expired' is an observed terminal state (closed without cancellation), not missing data. Multi-row rule: 499/6,829 FY2023-24 solicitations carry amendment rows with their own later publication dates, and 144 of those show differing statuses across rows - construction defines precedence as any-row-Cancelled (solicitation-level label), verified on a bounded sample against the notice pages; measured FY2023-24 impact of the precedence choice is small (base rate 6.08% under max-amendment-row vs 6.1-6.9% band). Censoring: solicitations still Open at harvest are excluded. Optional recorded variant (NOT the primary label): no award notice published among Expired RFP-like solicitations (measured ~48% in the FY2023-24 + FY2024-25 award files) - ambiguous because award-notice publication is not guaranteed for every award.",
+  "sources": [
+    {
+      "name": "CanadaBuys tender notices (Public Services and Procurement Canada), open.canada.ca dataset 6abd20d4-7a1c-4b38-baa2-9525d0bb2fd2",
+      "url": "https://open.canada.ca/data/en/dataset/6abd20d4-7a1c-4b38-baa2-9525d0bb2fd2",
+      "api": "https://open.canada.ca/data/en/api/3/action/package_show?id=6abd20d4-7a1c-4b38-baa2-9525d0bb2fd2",
+      "files": {
+        "complete_2022_08_onwards": "https://canadabuys.canada.ca/opendata/pub/tenderNoticeComplete-avisAppelOffresComplet.csv (188,290,269 B, HEAD 2026-10-31)",
+        "legacy_2009_2022": "https://canadabuys.canada.ca/opendata/pub/2009-2022-tenderNoticeHistorical-AvisAppelOffresHistorique.csv (558,413,231 B, HEAD 2026-10-31; SAME 67-column schema including tenderStatus, measured via bounded range slices)",
+        "per_fy": "https://canadabuys.canada.ca/opendata/pub/<FY>-TenderNotice-AvisAppelOffres.csv for FY2022-23..2026-27 (23.2-48.0 MB each, HEAD 2026-10-31)",
+        "new_open_snapshots": "https://canadabuys.canada.ca/opendata/pub/newTenderNotice-nouvelAvisAppelOffres.csv and openTenderNotice-ouvertAvisAppelOffres.csv (current-state snapshots)"
+      },
+      "measured": "FY2023-24 file: 45,318,253 B downloaded in ~8 s anonymous HTTPS (coordinator, 2026-10-31); 7,430 rows, 6,829 distinct solicitationNumbers, publication dates 2023-04-01..2024-03-29",
+      "licence": "Open Government Licence - Canada 2.0 (license_id ca-ogl-lgo on the open.canada.ca dataset record)"
+    },
+    {
+      "name": "CanadaBuys data dictionary (publisher's XML column documentation, shared by tender notices / award notices / contract history)",
+      "url": "https://donnees-data.tpsgc-pwgsc.gc.ca/ba2/ac-cb/achatscanada-canadabuys-dd.xml",
+      "measured": "60,478 bytes, fetched 2026-10-31; documents all 67 tender-notice columns and the award-notice columns",
+      "licence": "No separate licence instrument is stated on the XML file itself; it is the publisher's supporting documentation for the OGL-Canada-2.0-licensed CanadaBuys datasets (open.canada.ca records above). Recorded absence, not a grant; the shipped dataset rows come from the tender/award CSVs, whose instrument is quoted in license_evidence."
+    },
+    {
+      "name": "CanadaBuys award notices (PSPC), open.canada.ca dataset a1acb126-9ce8-40a9-b889-5da2b1dd20cb - secondary cross-check and optional variant only",
+      "url": "https://open.canada.ca/data/en/dataset/a1acb126-9ce8-40a9-b889-5da2b1dd20cb",
+      "files": {
+        "complete_2022_08_onwards": "https://canadabuys.canada.ca/opendata/pub/awardNoticeComplete-avisAttributionComplet.csv (104,817,598 B, HEAD)",
+        "legacy_2012_2022": "https://canadabuys.canada.ca/opendata/pub/2012-2022-awardNoticeHistorical-avisAttributionHistorique.csv (270,603,514 B, HEAD)",
+        "per_fy": "https://canadabuys.canada.ca/opendata/pub/<FY>-awardNotice-avisAttribution.csv"
+      },
+      "measured": "FY2023-24 file 19,723,305 B + FY2024-25 file 23,972,751 B downloaded 2026-10-31; 12,089 rows, 9,294 distinct award solicitationNumbers; join key solicitationNumber-numeroSollicitation",
+      "licence": "Open Government Licence - Canada 2.0 (license_id ca-ogl-lgo)"
+    },
+    {
+      "name": "PSPC supporting documentation: Understanding the new CanadaBuys tender and award notices datasets (status semantics, file organization, refresh)",
+      "url": "https://donnees-data.tpsgc-pwgsc.gc.ca/ba2/ac-cb/soutien-support-eng.html",
+      "measured": "fetched 2026-10-31; states the files include new/open/cancelled/expired notices, closing times UTC-0500, the Active->Open status rename, and per-FY file bucketing by publication date",
+      "licence": "No separate licence instrument is stated on the page itself; it is the publisher's supporting documentation for the OGL-Canada-2.0-licensed CanadaBuys datasets. Recorded absence, not a grant; used only as documentation evidence, not as a data source."
+    }
+  ],
+  "license_evidence": [
+    {
+      "quote": "The Information Provider grants you a worldwide, royalty-free, perpetual, non-exclusive licence to use the Information, including for commercial purposes, subject to the terms below. You are free to: Copy, modify, publish, translate, adapt, distribute or otherwise use the Information in any medium, mode or format for any lawful purpose. You must, where you do any of the above: Acknowledge the source of the Information by including any attribution statement specified by the Information Provider(s)... you must use the following attribution statement: Contains information licensed under the Open Government Licence - Canada.",
+      "source": "Open Government Licence - Canada 2.0, https://open.canada.ca/en/open-government-licence-canada, read 2026-10-31 (version 2.0, Information Provider = His Majesty the King in right of Canada)"
+    },
+    {
+      "quote": "license_id: ca-ogl-lgo on open.canada.ca package records 6abd20d4-7a1c-4b38-baa2-9525d0bb2fd2 (CanadaBuys tender notices), a1acb126-9ce8-40a9-b889-5da2b1dd20cb (award notices), 4fe645a1-ffcd-40c1-9385-2c771be956a4 (contract history), organization pwgsc-tpsgc; fetched via https://open.canada.ca/data/en/api/3/action/package_search?q=CanadaBuys%20tender on 2026-10-31.",
+      "source": "open.canada.ca CKAN package records (the publisher's own catalogue instrument for these datasets), fetched 2026-10-31"
+    }
+  ],
+  "construction_script": null,
+  "split_strategy": "Temporal on the original notice publicationDate over 2009-2026 (legacy archive 2009-2022 measured to carry the SAME 67-column schema including tenderStatus; cancellation present in bounded slices from 2017, 2018 and 2021). Indicative windows pending the bulk count pass: train 2009-2019, eval 2020-2023, holdout 2024-2026, each multi-year with both classes expected from the measured per-FY rate. Measured basis (FY2023-24, whole-FY bounded sample): RFP-like population 5,749 solicitations with 397 Cancelled (6.90%); all-solicitations 6,829 with 415 Cancelled (6.08%); both classes present. Per-window exact counts are the FIRST construction measurement on the worker (the ~746 MB tender archive download is bulk work and stays off the coordinator); no sampled number is claimed as a total. Cancellations cluster by contracting entity and publication month, so intervals must be clustered on (entity, publication-month); clustered counts are reported beside raw counts.",
+  "measurements": {
+    "catalogue_2026_10_31": "open.canada.ca CKAN search q='CanadaBuys tender' (17 results) and q='contract history' (13 results) via /data/en/api/3/action/package_search: identified the three OGL-Canada datasets (tender notices 6abd20d4, award notices a1acb126, contract history 4fe645a1) plus the archived 2009-2023 buy-and-sell datasets; all license_id=ca-ogl-lgo, org pwgsc-tpsgc.",
+    "schema_2026_10_31": "67 columns, bilingual eng/fra, identical header in the FY files, the complete file and the 2009-2022 legacy file (range-slice verified). Publisher data dictionary documents every column; key documented semantics quoted: tenderStatus ('Open (ie: accepting bids), Expired (no longer accepting bids) or Cancelled'); tenderClosingDate ('The date of closing for a tender notice, after which no new submissions will be accepted... displayed are all in UTC-0500... EASTERN STANDARD TIME'); amendmentNumber ('The number of amendments against a tender notice and/or a related awarded contract' - a running counter, so amendment counts on original rows are NOT as-of-T facts and are excluded from features); noticeType taxonomy (RFP, ACAN, ITQ, RFI, RFSO, RFSA, RFP against SA, Directed Contract, Not Applicable); procurementMethod taxonomy (competitive open bidding / selective tendering / traditional, non-competitive, ACAN, limited tendering); selectionCriteria taxonomy; GSIN/UNSPSC + descriptions; regionsOfOpportunity/Delivery; contracting entity + end-user entity fields; expectedContractStart/EndDate; tradeAgreements; noticeURL; tenderDescription (full text).",
+    "fy2023_24_panel_2026_10_31": "2023-2024-TenderNotice-AvisAppelOffres.csv: 45,318,253 B in ~8 s (one anonymous GET, coordinator). 7,430 rows = 6,829 distinct solicitationNumbers + 601 amendment/re-publication rows. publicationDate range 2023-04-01..2024-03-29 (per-FY bucketing by publication date confirmed); year mix 2023: 5,247 / 2024: 1,582 (Jan-Mar 2024). tenderClosingDate present 6,829/6,829 (100%); publication->closing days n=6,752 median 26 (p10 14, p90 53). Current-status mix of distinct solicitations: Expired 6,414, Cancelled 415, Open 0 (closed-FY file carries only terminal states).",
+    "provenance_mix_2026_10_31": "Distinct-solicitation notice-type mix (FY2023-24): Request for Proposal 3,893 (Cancelled 268), RFP against Supply Arrangement 848 (47), Request for Standing Offer 598 (50), Advance Contract Award Notice 459 (7), Invitation to Qualify 331 (21), blank 321 (6), Request for Information 219 (4), Request for Supply Arrangement 79 (11), Not Applicable 76 (1), Directed Contract 5 (0). Procurement-method mix: Competitive-Open bidding 4,597; Competitive-Selective tendering 1,425; ACAN 412; Competitive-Traditional 341; Non-competitive 30; Competitive-Limited tendering 22; blank 2. RFP-like eligibility set (RFP, RFP-SA, RFSO, RFSA, ITQ): 5,749 solicitations, 397 Cancelled (6.90%) - the task population; both classes present in this FY.",
+    "row_model_2026_10_31": "499 solicitations carry >1 row; amendment rows have their own LATER publication dates (e.g. 24-246305: amendment-0 pub 2023-10-23, amendment-3 pub 2023-11-01; WS3952365869: amendment-0 pub 2023-04-05, amendment-4 pub 2023-07-12). 144 multi-row solicitations show differing tenderStatus across rows (e.g. S4384520: amendment-5 row pub 2023-04-11 Cancelled, amendment-1 row pub 2023-04-18 Expired) - construction applies solicitation-level precedence (any-row-Cancelled) with bounded notice-page verification. 81 solicitations where the amendment-000 row's publicationDate is not the earliest row's publicationDate - the earliest-publication row is the original-notice rule of record. 12 FY2023-24 rows have titles prefixed 'Cancelled-' (legacy-era convention also measured: cancelled solicitations re-published with 'Cancelled-' title prefix, e.g. 5P420-17-5210/A Parks Canada, in the 2009-2022 archive).",
+    "award_join_2026_10_31": "FY2023-24 + FY2024-25 award-notice files (19,723,305 + 23,972,751 B): 12,089 rows, 9,294 distinct award solicitationNumbers, 80 columns. 3,146/6,829 (46.07%) FY2023-24 solicitations have an award notice in these two files; by current status: Expired 48.1% vs Cancelled 14.5% (status and award records are largely consistent - cancelled solicitations rarely produce awards); by type: RFP 50.3%, RFP-SA 45.3%, RFSO 53.2%, ITQ 55.3%, ACAN 37.3%, RFI 3.2% (RFIs do not produce awards by design - excluded from the task population). Recorded optional variant, not the primary label: among Expired RFP-like solicitations ~47.6% have no award notice in the follow-up files.",
+    "legacy_slices_2026_10_31": "Four bounded 400,000-byte range slices of the 558,413,231-byte legacy file at byte offsets 3M / 150M / 330M / 520M (HTTP Range, anonymous): same 67-column schema; tenderStatus populated in every slice; Cancelled rows present in the 3M slice (2017, 2018 - Parks Canada 'Cancelled-' re-publications) and the 520M slice (2021 - PWGSC WS3010378161, NRCan-5000059348/B); slices span publication years 2012-2022. Establishes: the label exists across the legacy era; per-year exact counts need the bulk download (worker).",
+    "dated_examples_2026_10_31": "All timestamps below as published (closing times documented UTC-0500/EST). CANCELLED: WS3864736193 (PWGSC, 'RFP - HVAC Maintenance Services Contract - Connaught Range...') published 2023-04-14, closing 2023-04-17T14:00:00, terminal status Cancelled - feature window at instant 2023-04-14: 3-day posting duration, notice type RFP, entity PWGSC; the cancellation is a state change strictly after the instant. CANCELLED: WS3765771658 (PWGSC, 'EV385-231411. Loading Docks Assessment and Repair, Prince...') published 2023-04-20, closing 2023-05-16T14:00:00, Cancelled. Contrast (negative class): BPM020594/25224 (Shared Services Canada) published 2024-01-22, closing 2024-02-06T14:00:00, Expired (closed normally). Legacy-era CANCELLED: 5P420-17-5210/A (Parks Canada) published 2017-07-17, closing 2017-08-08T16:00:00, Cancelled.",
+    "refresh_and_vintage_2026_10_31": "FY2026-27 tender file Last-Modified: Sat, 31 Oct 2026 10:30:31 GMT (daily refresh measured); FY2025-26 and older per-FY files Last-Modified 2026-10-28. Complete file carries live Open rows (sample row published 2026-01-23 with closing 2029-03-31, status Open). Current-vintage caveat recorded: bulk files re-state current status; cancellation dates are not in the bulk data; the as-of policy is terminal-state-from-pinned-archive with Open-row censoring, plus a bounded construction-time verification against notice pages.",
+    "extraction_cost_2026_10_31": "Measured from the coordinator, anonymous HTTPS: 3 whole-FY files totalling 88,413,309 bytes (FY23-24 tender 45.3 MB ~8 s; FY23-24 awards 19.7 MB ~4 s; FY24-25 awards 24.0 MB ~4 s) + 4 range slices of 400 KB + 2 header slices. Full harvest (worker, one job): tender complete 188,290,269 B + tender legacy 558,413,231 B + award complete 104,817,598 B (+ award legacy 270,603,514 B only if the variant is built) = ~851 MB across 3-4 GETs; a single standard worker job.",
+    "measured_on": "2026-10-31 from the coordinator, anonymous HTTPS only; scripts: candidates/canadabuys-tender-cancellation/probe/ (probe_fy2023_24_panel.py, probe_row_model.py, probe_legacy_slices.py - each reproduces the quoted numbers from the recorded URLs; catalogue and dictionary fetches recorded as curl commands in notes.md)"
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": "Five contracts at probe time: (1) Redistribution - SUPPORTED: OGL-Canada 2.0, explicit copy/modify/publish/adapt/distribute grant incl. commercial use, attribution statement required and carried to LICENSE.md; class A. (2) Prediction timing - SUPPORTED with recorded limitation: instant = original-notice publicationDate; every shipped feature is an original-notice field documented in the publisher's own data dictionary; the label is a post-instant terminal state from the publisher's own refreshed archive; cancellation dates are not in the bulk data, so the as-of policy is pinned-archive terminal-state with Open-row censoring + bounded notice-page verification at construction (weaker than dated-event labels like austender's; recorded as such). (3) Target - SUPPORTED: tenderStatus is a publisher-maintained column with documented three-value semantics; 'Expired' is observed absence (closed normally), 'Cancelled' the event; label column excludable; eligibility defined from information at the instant (notice type, competitive methods) not from outcomes. (4) Split capacity - PARTIALLY MEASURED: whole-FY2023-24 measured (5,749 eligible, 397 positives, 6.90%); legacy archive measured to carry the label across 2012-2022 via bounded slices; per-window exact counts need one bulk worker pass (recorded as the prerequisite to ready; never extrapolated to a claimed total). (5) Not a mirror - differentiated (novelty check recorded): no ML-ready cancellation task for any jurisdiction found; EU TED outcome-prediction literature studies different targets on a different jurisdiction and is not shipped ML-ready; the nearest bench sibling austender-contract-amendment-occurrence is the same domain but a different task contract (post-award contract amendments vs pre-award solicitation cancellation; different instant, population and label source).",
+  "next_action": "One bounded worker measurement pass (advancement owns it), then ready/drop decision on measured criteria. Job: download tender complete (188,290,269 B) + tender legacy (558,413,231 B) + award complete (104,817,598 B), sha256-pin each, build the per-solicitation frame (earliest-publication row = features; any-row-Cancelled = terminal status; RFP-like notice types only; censor still-Open), and compute per-year eligible counts, cancellation rates and the three disjoint window counts (indicative windows train 2009-2019 / eval 2020-2023 / holdout 2024-2026) with clustered counts on (contracting entity, publication-month). ACCEPTANCE CRITERIA to flip ready: every window carries both classes with >=100 clustered positives and a cancellation rate inside a 2-20% band (measured FY2023-24: 6.90%), the precedence rule verified against >=30 notice pages with >=95% agreement, and the provenance mix per window recorded. FAILURE MODE to record instead: any window without both classes, or a >2x rate discontinuity across the 2022-08 CanadaBuys migration boundary that cannot be handled by era-separate splits. If ready: construction step = the same worker job extends to the full artifact build (features from the original-notice row, description text shipped, status and amendment fields excluded), expected artifact = train/eval/holdout CSVs + quality.json under the repository's construction path, decided by the standard gate.",
+  "jurisdiction": {
+    "country": "CA",
+    "region": "North America",
+    "publisher": "Public Services and Procurement Canada (PSPC) - CanadaBuys open data via open.canada.ca",
+    "recorded_at": "2026-10-31"
+  },
+  "licence_class": "A",
+  "licence_note": "Open Government Licence - Canada 2.0 (attribution-only; no share-alike; commercial use and derivatives permitted). Attribution statement required in LICENSE.md: 'Contains information licensed under the Open Government Licence - Canada.' Source designation and PSPC attribution preserved verbatim; the dataset is labelled derived, never an official PSPC product.",
+  "verdict": "investigating - all probed contracts support the task; one bulk per-window count pass (worker) remains before ready",
+  "novelty_check": {
+    "checked_at": "2026-10-31T20:26:40+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "tender cancellation prediction",
+      "procurement tender outcome prediction dataset",
+      "public procurement machine learning benchmark",
+      "CanadaBuys tender data machine learning"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "tender cancellation prediction",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "procurement tender outcome prediction dataset",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "public procurement machine learning benchmark",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "CanadaBuys tender data machine learning",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "tender cancellation prediction",
+          "hits": 90778,
+          "top": [
+            "Airline Cancellation Prediction Dataset",
+            "Seguran\u00e7a e sa\u00fade em obras subterr\u00e2neas",
+            "Estimating CO2-Brine diffusivity using hybrid models of ANFIS and evolutionary algorithms",
+            "Drought Risk Profile for Karamoja Cross-Border Area: Strengthening Capacity of IGAD to Increase Drought Resilience in the Horn of Africa",
+            "Os Benef\u00edcios do BIM na Preven\u00e7\u00e3o de Riscos Profissionais"
+          ]
+        },
+        {
+          "query": "procurement tender outcome prediction dataset",
+          "hits": 430758,
+          "top": [
+            "Challenges in Procurement of Works in Design Bid Build Institutional Projects",
+            "\u0412\u041d\u0415\u0428\u041d\u0415\u0415 \u0420\u0415\u0413\u0423\u041b\u0418\u0420\u041e\u0412\u0410\u041d\u0418\u0415 \u0421\u0418\u0421\u0422\u0415\u041c\u042b \u0413\u041e\u0421\u0423\u0414\u0410\u0420\u0421\u0422\u0412\u0415\u041d\u041d\u042b\u0425 \u0422\u0415\u041d\u0414\u0415\u0420\u041d\u042b\u0425 \u0417\u0410\u041a\u0423\u041f\u041e\u041a",
+            "OncNGS PCP: D3.6 Call for Tender Publishable Report",
+            "LLM-Classified European Public IT Procurement Awards: Digitization, Digitalization, and Digital Transformation in German TED Notices, 2024\u20132025",
+            "\u0424\u041e\u0420\u041c\u042b \u041e\u0420\u0413\u0410\u041d\u0418\u0417\u0410\u0426\u0418\u0418 \u0421\u0418\u0421\u0422\u0415\u041c\u042b \u0413\u041e\u0421\u0423\u0414\u0410\u0420\u0421\u0422\u0412\u0415\u041d\u041d\u042b\u0425 \u0422\u0415\u041d\u0414\u0415\u0420\u041d\u042b\u0425 \u0417\u0410\u041a\u0423\u041f\u041e\u041a"
+          ]
+        },
+        {
+          "query": "public procurement machine learning benchmark",
+          "hits": 591239,
+          "top": [
+            "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
+            "RGB and RGNIR Plastic Waste Database",
+            "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI",
+            "Artificial Intelligence\u2013Driven Audit Analytics and Fraud Detection Effectiveness in Public Sector Procurement Systems: A Quantitative Study in Nigeria",
+            "Data Set of Public Procurement in M\u00e9xico (2013-2020)"
+          ]
+        },
+        {
+          "query": "CanadaBuys tender data machine learning",
+          "hits": 1439841,
+          "top": [
+            "Sensor Position Comparison Dataset",
+            "mmRadPose",
+            "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
+            "RGB and RGNIR Plastic Waste Database",
+            "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "tender cancellation prediction",
+          "hits": 5,
+          "top": [
+            "Cancellation of homothetic modules",
+            "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
+            "Cancellation Meadows: a Generic Basis Theorem and Some Applications",
+            "A Combined Deep Learning-Gradient Boosting Machine Framework for Fluid Intelligence Prediction",
+            "Torsion subgroups of small cancellation groups"
+          ]
+        },
+        {
+          "query": "procurement tender outcome prediction dataset",
+          "hits": 5,
+          "top": [
+            "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
+            "A Decade of Public Procurement in Spain: A Longitudinal Open Dataset from the BOE (2014-2024)",
+            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+            "Acceptance of e-procurement in organisations"
+          ]
+        },
+        {
+          "query": "public procurement machine learning benchmark",
+          "hits": 5,
+          "top": [
+            "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+            "DOME: Recommendations for supervised machine learning validation in biology",
+            "A Decade of Public Procurement in Spain: A Longitudinal Open Dataset from the BOE (2014-2024)",
+            "A Benchmark Study of Machine Learning Models for Online Fake News Detection",
+            "Learning Curves for Decision Making in Supervised Machine Learning: A Survey"
+          ]
+        },
+        {
+          "query": "CanadaBuys tender data machine learning",
+          "hits": 5,
+          "top": [
+            "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+            "DOME: Recommendations for supervised machine learning validation in biology",
+            "Active learning for data streams: a survey",
+            "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
+            "Physics-Inspired Interpretability Of Machine Learning Models"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'tender cancellation prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'procurement tender outcome prediction dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'public procurement machine learning benchmark': 0 hit(s) - nothing notable\n- huggingface_datasets / 'CanadaBuys tender data machine learning': 0 hit(s) - nothing notable\n- zenodo_records / 'tender cancellation prediction': 90778 hit(s) - Airline Cancellation Prediction Dataset, Seguran\u00e7a e sa\u00fade em obras subterr\u00e2neas, Estimating CO2-Brine diffusivity using hybrid models of ANFIS and evolutionary algorithms, Drought Risk Profile for Karamoja Cross-Border Area: Strengthening Capacity of IGAD to Increase Drought Resilience in the Horn of Africa, Os Benef\u00edcios do BIM na Preven\u00e7\u00e3o de Riscos Profissionais\n- zenodo_records / 'procurement tender outcome prediction dataset': 430758 hit(s) - Challenges in Procurement of Works in Design Bid Build Institutional Projects, \u0412\u041d\u0415\u0428\u041d\u0415\u0415 \u0420\u0415\u0413\u0423\u041b\u0418\u0420\u041e\u0412\u0410\u041d\u0418\u0415 \u0421\u0418\u0421\u0422\u0415\u041c\u042b \u0413\u041e\u0421\u0423\u0414\u0410\u0420\u0421\u0422\u0412\u0415\u041d\u041d\u042b\u0425 \u0422\u0415\u041d\u0414\u0415\u0420\u041d\u042b\u0425 \u0417\u0410\u041a\u0423\u041f\u041e\u041a, OncNGS PCP: D3.6 Call for Tender Publishable Report, LLM-Classified European Public IT Procurement Awards: Digitization, Digitalization, and Digital Transformation in German TED Notices, 2024\u20132025, \u0424\u041e\u0420\u041c\u042b \u041e\u0420\u0413\u0410\u041d\u0418\u0417\u0410\u0426\u0418\u0418 \u0421\u0418\u0421\u0422\u0415\u041c\u042b \u0413\u041e\u0421\u0423\u0414\u0410\u0420\u0421\u0422\u0412\u0415\u041d\u041d\u042b\u0425 \u0422\u0415\u041d\u0414\u0415\u0420\u041d\u042b\u0425 \u0417\u0410\u041a\u0423\u041f\u041e\u041a\n- zenodo_records / 'public procurement machine learning benchmark': 591239 hit(s) - plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, RGB and RGNIR Plastic Waste Database, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, Artificial Intelligence\u2013Driven Audit Analytics and Fraud Detection Effectiveness in Public Sector Procurement Systems: A Quantitative Study in Nigeria, Data Set of Public Procurement in M\u00e9xico (2013-2020)\n- zenodo_records / 'CanadaBuys tender data machine learning': 1439841 hit(s) - Sensor Position Comparison Dataset, mmRadPose, plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, RGB and RGNIR Plastic Waste Database, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI\n- arxiv_preprints / 'tender cancellation prediction': 5 hit(s) - Cancellation of homothetic modules, Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, Cancellation Meadows: a Generic Basis Theorem and Some Applications, A Combined Deep Learning-Gradient Boosting Machine Framework for Fluid Intelligence Prediction, Torsion subgroups of small cancellation groups\n- arxiv_preprints / 'procurement tender outcome prediction dataset': 5 hit(s) - Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, A Decade of Public Procurement in Spain: A Longitudinal Open Dataset from the BOE (2014-2024), The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, Acceptance of e-procurement in organisations\n- arxiv_preprints / 'public procurement machine learning benchmark': 5 hit(s) - Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, A Decade of Public Procurement in Spain: A Longitudinal Open Dataset from the BOE (2014-2024), A Benchmark Study of Machine Learning Models for Online Fake News Detection, Learning Curves for Decision Making in Supervised Machine Learning: A Survey\n- arxiv_preprints / 'CanadaBuys tender data machine learning': 5 hit(s) - Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, Active learning for data streams: a survey, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Physics-Inspired Interpretability Of Machine Learning Models",
+    "prior_art": [
+      "How you describe procurement calls matters: Predicting outcome of public procurement using call descriptions, Natural Language Engineering 30(5) 2024 - TED outcomes (offers/single-offer/foreign-winner/price-overrun), no cancellation target, EU only",
+      "Failed Procurements as a Measure of Public Procurement Performance, Springer 2026 - TED unsuccessful-call analysis 2016-2023 (16.37%), explanatory, not ML-ready",
+      "Casady et al. 2023 - Danish local-authority cancellation-likelihood determinants, econometric, internal register data",
+      "Machine Learning in Procurement with a View to Equity, UniTo 2025 - Italian ANAC tender-variation prediction, post-award target"
+    ],
+    "theirs": "PSPC publishes the raw tender-notice archive under OGL-Canada with no prediction task; EU TED outcome-prediction literature studies different targets (offers, single-offer, foreign winner, price overrun, void rates) on a different jurisdiction and is explanatory, not shipped ML-ready; the bench's austender-contract-amendment-occurrence covers post-award contract amendments in Australia - same domain, different target, instant, population and label source",
+    "ours": "First ML-ready, as-of-honest formulation of pre-award solicitation-cancellation prediction on Canadian federal procurement (CanadaBuys/PSPC): publication-instant original-notice features, temporal splits over 2009-2026, scored binary contract; no existing dataset ships any jurisdiction's tender-cancellation task in ML-ready form",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
+}

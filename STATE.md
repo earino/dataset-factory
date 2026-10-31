@@ -11368,3 +11368,43 @@ this event; the holdout was written by the build and never opened by any scoring
   the pinned bytes is legitimate and was repeated here (build 30 s, gate ~90 s, byte-identical
   rebuild verified) - but the authoritative gate and acceptance always ran and still run on the
   worker over the full artifact.
+
+## 2026-10-31 (20:28Z) - canadabuys-tender-cancellation opened (Canada tick): pre-award solicitation-cancellation task on PSPC CanadaBuys, licence A, novelty differentiated, one worker count pass from ready
+
+Discovery-only session (regional focus Canada; no construction, qualification, packaging,
+publication, advancement or worker launched; all probes bounded coordinator-side anonymous
+HTTPS). One candidate opened, none reopened.
+
+- `canadabuys-tender-cancellation` (CA, investigating): new source family for the bench
+  (pre-award procurement lifecycle). At the publication instant of a federal RFP-like tender
+  notice on CanadaBuys (PSPC), predict whether the solicitation is cancelled before award
+  (terminal tenderStatus Cancelled vs Expired). Licence class A - OGL-Canada 2.0 (attribution
+  statement recorded; dataset-level license_id ca-ogl-lgo on the open.canada.ca package
+  records). Publisher's own XML data dictionary (67 columns) read in full: tenderStatus
+  semantics, closing times UTC-0500, amendmentNumber is a running counter (excluded from
+  features), full notice-type/method/selection-criteria taxonomies. Measured FY2023-24
+  whole-FY sample (45.3 MB, one GET ~8 s): 6,829 solicitations, 415 Cancelled (6.08%); RFP-like
+  population 5,749 with 397 positives (6.90%); 100% closing-date coverage; provenance mixes
+  recorded by notice type and method; award-notice join measured (46.07% coverage; Cancelled
+  14.5% vs Expired 48.1% - internal consistency; RFI 3.2% excluded by design). Legacy archive
+  2009-2022 (558 MB) verified by bounded range slices to carry the SAME schema with
+  tenderStatus populated and Cancelled rows present (2017/2018/2021 slices), so the task can
+  span 2009-2026. Dated examples worked and verified (WS3864736193 pub 2023-04-14 close
+  2023-04-17T14:00:00 EST -> Cancelled; legacy 5P420-17-5210/A 2017-07-17 -> Cancelled).
+  Novelty: differentiated (mechanical sweep recorded; HF 0 hits on all queries; prior art =
+  EU TED outcome-prediction literature on other targets/jurisdictions, explanatory only; bench
+  sibling austender is post-award amendments in Australia - different target, instant,
+  population, label source). A Canadian post-award contract-amendment variant was deliberately
+  NOT opened: it would be a family duplicate of the ready austender candidate. The one
+  unresolved contract is split capacity on the full population: per-window exact counts need
+  the ~746 MB bulk download = one worker pass, handed to advancement with acceptance criteria
+  in record.json next_action (>=100 clustered positives per window, 2-20% rate band,
+  any-row-Cancelled precedence verified on >=30 notice pages); the current-vintage status
+  caveat (cancellation dates not in bulk data; pinned-archive terminal-state labels; Open rows
+  censored) is recorded as a limitation, not resolved.
+- Hygiene: check-candidate.py canadabuys-tender-cancellation OK, --all rc=0 (119 records,
+  +1 candidate); discovery-coverage.py rc=0 (CA 15, live 43, non-US 37/43 = 86%); probe
+  scripts retained in candidates/canadabuys-tender-cancellation/probe/; scratch bulk CSVs
+  (88 MB) deleted from the coordinator after the aggregates were recorded. No tokens, no
+  workers, no releases touched. Concurrent sessions' work (ec-state-aid-investigation-opening/
+  probe/ untracked; newer pins commits) left untouched and excluded from this commit.
