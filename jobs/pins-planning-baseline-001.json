@@ -1,0 +1,237 @@
+{
+  "job": {
+    "id": "pins-planning-baseline-001",
+    "candidate": "pins-planning-appeal-outcome",
+    "image": "python:3.13-slim",
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 3072,
+    "timeout_minutes": 45,
+    "lifetime_minutes": 90,
+    "max_disk_mb": 4096,
+    "max_artifact_mb": 16,
+    "what": "Runner-contract baseline on the accepted pins-planning-appeal-outcome artifact 0cbb55fe32c03938... (gate 1.5.0, 45 checks, 0 failed, exact-byte --accept ACCEPTED in job pins-planning-001), fetched from private staging release 430070815 rather than rebuilt: re-accept the five fetched files against the gate's own collected report, materialize the runner workdir (public train+eval only; the private holdout is fetched for --accept over the full artifact but never copied into a workdir), run the benchmark's own train.py and validate.sh unmodified and record both eval AUCs, then the DERIVED evidence step (model_intervals.py, not the runner): same model configuration retrained for per-row eval scores, paired row-level and LPA-clustered bootstrap intervals vs second-implementation references (LPA historical allow rate 0.5414, procedure/casework-type rate 0.5551, shipped rate feature cross-check) on the identical 28,104 eval rows. Construction-time references already measured post-acceptance in pins-planning-001: procedure_type_rate 0.5551 (strongest), lpa_hist_rate 0.5414, persistence_last_outcome 0.5045, majority-class accuracy 0.6987; calendar_identity collapsed onto lpa_hist_rate exactly (eval years have no train-era support) and is recorded as degenerate. No holdout score, no agent loop. Stopping condition: any failed stage exits non-zero and leaves its logs for collection.",
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 430070815,
+      "assets": [
+        {
+          "asset_id": 695967049,
+          "dest": "extract/meta.json",
+          "size": 2518,
+          "sha256": "4e7a31048bb77372cbc42bcf3f8a341e2eeeed0afdce920fb678164f2f6c76b2"
+        },
+        {
+          "asset_id": 695967183,
+          "dest": "extract/public/eval.csv",
+          "size": 7688790,
+          "sha256": "43cc768e69193a3ee9e4c9b50973c2b87daa019987d87cad62aac15609e35818"
+        },
+        {
+          "asset_id": 695967253,
+          "dest": "extract/public/train.csv",
+          "size": 14799462,
+          "sha256": "299e5af47610af833bec33e15e8a5d8a242f6edebfd401388714b819593c2f65"
+        },
+        {
+          "asset_id": 695967115,
+          "dest": "extract/private/holdout.csv",
+          "size": 14976119,
+          "sha256": "3f65dc801e0819bd6e828a101065deb7cfc68b764db339a08b2442deddc6fc96"
+        },
+        {
+          "asset_id": 695967326,
+          "dest": "extract/quality.json",
+          "size": 43480,
+          "sha256": "0cfca30e9f711dea5da41900768cbe7c223c2a25555606d6fa0c8f2fe6cd5e86"
+        }
+      ]
+    },
+    "source_files": [
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/pins-planning-appeal-outcome/baseline/run.sh",
+        "bytes": 2982,
+        "sha256": "1d9bdc059f85b4c65b8eb7608c4e70f4377cc29252423f98ae238dfe031d9ac4"
+      },
+      {
+        "bundled_as": "materialize.py",
+        "source": "candidates/pins-planning-appeal-outcome/baseline/materialize.py",
+        "bytes": 2090,
+        "sha256": "99fa787ebbff5dadee7154489171551df6a2f9debd36d6973da816b44a219f13"
+      },
+      {
+        "bundled_as": "model_intervals.py",
+        "source": "candidates/pins-planning-appeal-outcome/baseline/model_intervals.py",
+        "bytes": 9002,
+        "sha256": "69427c70be53c10e808ff382ebd928306a194941f18050975813786a73737c31"
+      },
+      {
+        "bundled_as": "report.py",
+        "source": "candidates/pins-planning-appeal-outcome/baseline/report.py",
+        "bytes": 5398,
+        "sha256": "b2c06b5134575f8b795e31f0f0dc4c05129b30c3c3bb705754eac48e350b3031"
+      },
+      {
+        "bundled_as": "qualification.json",
+        "source": "candidates/pins-planning-appeal-outcome/baseline/qualification.json",
+        "bytes": 17480,
+        "sha256": "fa9e70e442a47e44b9812726d82e38887caea98eca70435601e3d91b9e30678d"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 57029,
+        "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+      },
+      {
+        "bundled_as": "train.py",
+        "source": "/opt/data/harness_benchmark/task_template/train.py",
+        "bytes": 2500,
+        "sha256": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8"
+      },
+      {
+        "bundled_as": "validate.py",
+        "source": "/opt/data/harness_benchmark/task_template/validate.py",
+        "bytes": 1277,
+        "sha256": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b"
+      },
+      {
+        "bundled_as": "validate.sh",
+        "source": "/opt/data/harness_benchmark/task_template/validate.sh",
+        "bytes": 482,
+        "sha256": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      }
+    ]
+  },
+  "reservation_eur": "0.06",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 3,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 204800,
+  "source_sha256": "4bd01b3d417c9d496b870103cc741d57ca2398b691f9876fd3359432b8c54d5e",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-10-31T17:20:53.680614+00:00",
+  "expires": 1793472653,
+  "budget_months": [
+    "2026-10"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 173807013,
+  "known_hosts": "/opt/data/dataset-factory/.factory/pins-planning-baseline-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "65.21.158.17",
+  "result": {
+    "job_id": "pins-planning-baseline-001",
+    "status": "failed",
+    "uploaded": true,
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 430070815,
+      "fetched": [
+        {
+          "dest": "extract/meta.json",
+          "bytes": 2518,
+          "sha256": "4e7a31048bb77372cbc42bcf3f8a341e2eeeed0afdce920fb678164f2f6c76b2"
+        },
+        {
+          "dest": "extract/public/eval.csv",
+          "bytes": 7688790,
+          "sha256": "43cc768e69193a3ee9e4c9b50973c2b87daa019987d87cad62aac15609e35818"
+        },
+        {
+          "dest": "extract/public/train.csv",
+          "bytes": 14799462,
+          "sha256": "299e5af47610af833bec33e15e8a5d8a242f6edebfd401388714b819593c2f65"
+        },
+        {
+          "dest": "extract/private/holdout.csv",
+          "bytes": 14976119,
+          "sha256": "3f65dc801e0819bd6e828a101065deb7cfc68b764db339a08b2442deddc6fc96"
+        },
+        {
+          "dest": "extract/quality.json",
+          "bytes": 43480,
+          "sha256": "0cfca30e9f711dea5da41900768cbe7c223c2a25555606d6fa0c8f2fe6cd5e86"
+        }
+      ],
+      "failures": [],
+      "bytes": 37510369
+    },
+    "image_id": "sha256:2d44738ebf4ce5f63b9d9ea871e9c7cfdc0426f7b0c97cac915fd88ded1d86bb",
+    "image_digests": [
+      "python@sha256:2d44738ebf4ce5f63b9d9ea871e9c7cfdc0426f7b0c97cac915fd88ded1d86bb"
+    ],
+    "exit_code": 4,
+    "oom_killed": false,
+    "elapsed_seconds": 41.4,
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 430077841,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-090da305c3c2a5022e89",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-090da305c3c2a5022e89/manifest.json",
+    "assets": [
+      {
+        "id": 695995698,
+        "size": 72,
+        "sha256": "631f7991415b150b9b27a91b33190ac3cffe9c4267302cf3c118cd92efb79729"
+      },
+      {
+        "id": 695995769,
+        "size": 2929,
+        "sha256": "82d8b8c82cd002b55abb43ae424229af9ff01688f94cdd9cc3a85163bad3192c"
+      },
+      {
+        "id": 695995834,
+        "size": 247,
+        "sha256": "3ab68eb2a8f9ae624128394490d8a6906155326a6b868a966bd85fdb6af8ce4a"
+      },
+      {
+        "id": 695995876,
+        "size": 195,
+        "sha256": "01ea17c83936a6839534e6bcc45562637f1926963f304a1cc623ded35a5546cc"
+      },
+      {
+        "id": 695995930,
+        "size": 364,
+        "sha256": "abd6f7249a473f07f501069dde0fe2436ada294e0816606ef6d35309752ff944"
+      },
+      {
+        "id": 695996013,
+        "size": 2738,
+        "sha256": "e202641de9849c94e14772e573eff9a53a5abff1a75c338d75ed18d2067b3811"
+      },
+      {
+        "id": 695996084,
+        "size": 2974,
+        "sha256": "b80f42298fb0e4c79771a51980c161e10675639071fba273c8c14d65314b26f2"
+      },
+      {
+        "id": 695996118,
+        "size": 204800,
+        "sha256": "4bd01b3d417c9d496b870103cc741d57ca2398b691f9876fd3359432b8c54d5e"
+      },
+      {
+        "id": 695996177,
+        "size": 4919,
+        "sha256": "1f9b45b8ac8d497c74b31d82ced6923c5204b4fcb4c91f5203d2245bb6071589"
+      },
+      {
+        "id": 695996228,
+        "size": 10083,
+        "sha256": "06a9b7693d44d6a3220c338f8c317ef8c04a3d036665c50a917833b94df2896c"
+      }
+    ],
+    "skipped_empty": []
+  },
+  "collected_at": "2026-10-31T17:27:07.138893+00:00",
+  "deleted_at": "2026-10-31T17:29:55.753411+00:00"
+}
