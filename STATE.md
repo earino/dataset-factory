@@ -1,4 +1,68 @@
-## 2026-10-31 (08:10Z) - International-organisations discovery tick: WIPO Madrid designation-refusal task closed at the class D gate; OECD GlobalRecalls propagation closed on measured coverage + class C
+## 2026-10-31 (10:05Z) - unhcr website publication plan prepared and inspected (plan b8b2087f, ready for operator review); staged artifact re-verified to the byte via the documented consumer path; flip still waits on the operator's re-audit relay
+
+Scheduled advancement tick. The operator's task list names unhcr-refugee-data-finder the
+actionable release item and release work outranks construction, so no construction was launched.
+This session extends the 07:1xZ pass with the two things it deliberately did not do: a byte-level
+re-acceptance of the staged artifact, and the missing website publication plan. Nothing is public;
+no flip approval exists for any candidate; no release byte, tag, digest or destination was modified.
+
+Byte-level re-verification of the staged corrected package (6bd0c307d15d7500..., v2026.10):
+- Live GitHub readback of private release 426752344: exactly five assets, every size and
+  server-side sha256 equal to the frozen MANIFEST.json digests (meta.json 6620bdc9.../1404,
+  private-holdout.csv 54decaaa.../202783, public-eval.csv 4b7f06c3.../195252,
+  public-train.csv c7ebd552.../343359, quality.json df419622.../19904).
+- The documented consumer path executed end-to-end from the coordinator:
+  release/unhcr-refugee-data-finder/get_dataset.py downloaded all five assets through the
+  authenticated API path (5 files, 762,702 bytes, every size and sha256 verified, exit 0,
+  row counts train 3,363 / eval 1,887 / holdout 1,962). The publish credential was read from
+  its file inside the verification process, never echoed or exported; the downloaded extract
+  was deleted from scratch after acceptance (bounded fetch, ~0.75 MB, established consumer
+  verification path).
+- Gate 1.5.0 --accept re-run on the downloaded tree against the package's qualification.json:
+  ACCEPTED, matches the qualified artifact 6bd0c307d15d7500.
+- check-package.py release/unhcr-refugee-data-finder OK (same informational DESTINATIONS.json
+  note as before); check-suitability OK (16 version-bound reviews; this artifact retain_restricted).
+
+Website publication plan (the pre-flip artifact that did not exist for this dataset):
+- sites/unhcr-refugee-data-finder.json written (editorial, site_revision 1, release_date
+  2026-10-28 = the v2026.10 version date). Every figure is taken from the frozen manifest, the
+  recorded audit and the suitability review: illustrative baseline eval AUC 0.5393 (Brier 0.0851)
+  vs persistence momentum 0.5742 and surge flag 0.5856 with every paired 95% interval containing
+  zero (no demonstrated headroom, quoted together or not at all); the 2026-10-28 DO NOT PUBLISH
+  audit verdict with the measured label-blind recoveries (eval 0.975325, holdout 0.983034,
+  0.996970 all-splits, exact count recovery) and the honest re-description; the publication-lag
+  nowcast framing; 15 limitations.
+- site-publish prepare -> .factory/sites/unhcr-v2026.10-1 (offline, zero network calls):
+  plan_sha256 b8b2087fcbc6671cbfd95f0d8dabd3984c62dd3a1c6514bf7041a257d0e0341b. REVIEW.md and
+  both previews rendered with no unresolved placeholders and a concrete
+  load_dataset('earino/unhcr-refugee-data-finder', revision='v2026.10') snippet.
+- site-publish inspect (read-only): GitHub release 426752344 verified; Hub main 77aa1fad ==
+  tag v2026.10 verified by asset digests (bulk_downloads 0); both destinations private and
+  ready_for_publication false BY DESIGN (the pipeline correctly refuses private destinations);
+  catalogue earino/dataset-factory-site accessible, Pages live at
+  https://earino.github.io/dataset-factory-site/ with HTTPS enforced; dataset repo target
+  accessible with Pages to be created at publish time.
+
+Candidate record next_action updated to the ordered remaining steps: (1) OPERATOR: relay the
+re-audit prompt (candidates/unhcr-refugee-data-finder/pre-flip-audit-prompt.md, verified current
+by the 07:1xZ session) to an independent auditor; the flip waits for that verdict unless waived.
+(2) On a passing verdict plus the operator's flip approval: flip both destinations per
+dataset-release, prove them anonymously, MERGE visibility into DESTINATIONS.json, then
+site-publish publish .factory/sites/unhcr-v2026.10-1 --approved-plan b8b2087f... and verify. If the
+re-audit requires document changes, or the operator wants the site release_date to be the actual
+flip date, bump the editorial site_revision and re-prepare into a NEW folder (a changed plan needs
+a new review); never move dataset tags or regenerate the frozen manifest.
+
+Checks at close-out: check-candidate unhcr-refugee-data-finder OK + --all rc=0, check-package OK,
+check-suitability OK, full unittest suite 683/683 OK in 26.2 s. No worker launched (EUR 0 spent).
+Untracked ec-state-aid probe/ preserved untouched and excluded from this commit. awaiting_operator
+stays false, operator_decision_pending stays true: the re-audit relay remains the operator's move.
+The .factory/sites/ plan folder is local by design (.factory/ is ignored); the plan is
+deterministically reproducible from the committed inputs (editorial JSON + frozen package +
+DESTINATIONS.json).
+
+
+## 2026-10-31 (08:10Z) - International-organisations discovery tick: WIPO Madrid designation-refusal task closed at the class D licence gate; OECD GlobalRecalls propagation closed on measured coverage + class C
 
 Regional focus International organisations (World Bank, OECD, UN agencies, WHO, IMF, ITU); both new
 verdicts in-region (WIPO CH, OECD FR), no US substitution, no construction, qualification, packaging,
