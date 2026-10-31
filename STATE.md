@@ -1,3 +1,77 @@
+## 2026-10-31 (08:10Z) - International-organisations discovery tick: WIPO Madrid designation-refusal task closed at the class D gate; OECD GlobalRecalls propagation closed on measured coverage + class C
+
+Regional focus International organisations (World Bank, OECD, UN agencies, WHO, IMF, ITU); both new
+verdicts in-region (WIPO CH, OECD FR), no US substitution, no construction, qualification, packaging,
+publication or advancement. Two NEW leads opened and closed, each at the cheapest decisive gate; the
+regional surface is otherwise already measured (live: ocha-fts-appeal-funding-trajectory ready,
+unhcr-refugee-data-finder packaged, who-flunet-activity-exceedance published-but-in-rework;
+closed with recorded blockers: IAEA class C, IMF/ITU/OECD task-shape, UNODC class D, two WB
+headroom negatives, UNICEF parked on split capacity).
+
+- `wipo-madrid-designation-refusal` (CH, dropped, licence class D): the lead was designation-level
+  provisional-refusal prediction on the Madrid System registry - an attractive shape (treaty-documented
+  12/18-month censoring window; the weekly Gazette chapter list measured to carry both the cohort and
+  the label events: 'Notifications of provisional refusals', 'Confirmations of total provisional refusal
+  (Rule 18ter(3))', 'Statements of grant of protection (Rule 18ter(1))', 'Possible opposition beyond the
+  18-month time limit (Rule 16)'; no known ML-ready precedent; would have been the multi-member sibling
+  of the in-flight UK IPO trademark task). Killed at the licence gate before any task probing: the
+  Madrid Monitor Terms of Use (July 2025) - which also hosts the Gazette view - grants only
+  query/view/store-individual-documents rights, requires prior written consent for any other use,
+  explicitly prohibits bulk acquisition/copying/reformatting/redistribution and automated queries
+  (>10 search actions/min), and states the information may 'under no circumstances' be made accessible
+  or sublicensed to another service provider host or publisher; the GBD channel repeats the prohibitions
+  and offers the full Madrid collection only on payment of a fee; the site-wide WIPO CC BY 4.0 policy is
+  explicitly conditional on the absence of service-specific terms, and here they apply. A GitHub/HF
+  release of derived rows is exactly the prohibited use. All clauses quoted from direct fetches in
+  record.json license_evidence.
+- `oecd-global-recalls-propagation` (FR, dropped, licence class C + target-contract failure): the lead
+  was cross-jurisdiction recall propagation - the one task shape the OECD GlobalRecalls compilation
+  could carry beyond the in-house single-portal recall/notification classification comparators.
+  Bounded aggregate probes of the portal's own UI endpoints (two GETs, 16.8 KB + 246.5 KB; no bulk
+  transfer; recipe retained at candidates/oecd-global-recalls-propagation/probe/probe_aggregates.py,
+  re-run and reproducing all figures) measured 57,807 notices across 50 jurisdictions with radically
+  heterogeneous coverage: top-5 channels (EEA/US/AU/CA/DE) hold 40,309 (69.7%), 12 jurisdictions hold
+  <100 lifetime notices (LI 1, MY 19, IL 19); the OECD itself states the scope of contributed recalls
+  'depends on the mandate of the particular government authority providing the information'. The
+  propagation negative class is therefore censoring-dominated (no recorded second-jurisdiction recall
+  cannot be read as absence), the public payload carries no product-identity field (product.name +
+  GS1 GPC category + manufacturer.country only; no GTIN/model), and 2 of 4 sample rows carry a
+  1900-01-01 date sentinel. Licence: no dataset-level open licence anywhere on the portal, the search
+  endpoint serves '© OECD. All rights reserved', and the OECD ToU Data section explicitly leaves
+  third-party-owned rows to the user to clear per owner (~50 national authorities) - unresolved class C,
+  closed under the standing policy. Restricting to the homogeneous auto-push channels (US/CA/AU/EU
+  Safety Gate) would fix coverage but make the OECD layer redundant with the national portals, whose
+  follow-up structure EU Safety Gate already publishes natively.
+- Considered and deliberately NOT opened (reasoning recorded here so no future session re-derives it):
+  (1) World Bank procurement/contract-award competition prediction - the family is crowded and
+  negative: the TED single-bid mirror precedent (Acikalin et al., NLE 2024) covers offer-count and
+  foreign-winner targets on published construction code, chilecompra-tender-outcome is a measured
+  no-headroom negative, and the two WB instrument-outcome drops are identity-prior negatives. A WB
+  procurement task would need a target outside the precedent's list and its own novelty sweep, or an
+  operator request; not opened on speculation. (2) New WHO data products - the recorded posture is
+  class C (who-flunet was published under a candidate-specific operator risk acceptance), and the
+  standing policy does not extend a candidate-specific acceptance to sibling sources; do not open new
+  WHO leads without their own clean per-product terms. (3) UNHCR/OCHA sibling tasks on the same RDF/FTS
+  sources (recognition-rate prediction, CERF allocation prediction) are advancement follow-ups of the
+  packaged/ready candidates, not discovery.
+- Coverage after this session (discovery-coverage.py): 115 candidates, 41 live; International
+  organisations 13 (13/13 classified: WIPO CH and OECD FR added, both dropped); live non-US 35/41
+  (85%); dropped 45; ready buffer unchanged (11 ready overall; OCHA FTS remains the in-region ready
+  item, awaiting advancement capacity per its record's next_action).
+- Regional reopen triggers recorded in the records: WIPO - an explicit dataset-level open licence on a
+  Madrid channel, or a candidate-specific operator risk acceptance plus a licensed access channel.
+  OECD recalls - a documented public read API AND a dataset-level open licence AND a product-identity
+  field. IAEA PRIS - unchanged (second release announced for early 2027). UNODC - unchanged (explicit
+  open licence only). OECD row-level non-panel products - the recalls probe was this tick's test of the
+  oecd-sdmx reopen condition; it fails on the contracts above.
+
+Session hygiene: `check-candidate.py --all` exit 0 (115 records, including the two new ones);
+unittest suite 683/683 OK; no worker jobs (all probes bounded coordinator fetches); this session's
+scratch fetches (cache/scratch/oecd-recalls) deleted after the recipe was copied into the candidate
+directory. Concurrent-writer files preserved untouched and excluded from this session's commit:
+uncommitted ipo-trademark-registration-outcome/* and candidates/ec-state-aid-investigation-opening/probe/*
+(parallel sessions' work).
+
 ## 2026-10-31 07:1xZ - unhcr release re-verified green and handed to the operator for the re-audit relay; acnc-charity-ais-deadline-compliance construction written end to end, acnc-001 failed on its own in-build assertion (group-head synthetic ABNs), the one permitted rebuild acnc-002 running
 
 Two tracks this advancement session. Nothing is public; no publication approval exists for any candidate.
