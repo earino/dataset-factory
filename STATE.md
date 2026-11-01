@@ -11578,5 +11578,15 @@ prompt, then the flip), so it was left untouched. No construction was launched.
 - Next (operator): relay candidates/pins-planning-appeal-outcome/pre-flip-audit-prompt.md to
   an independent auditor; the flip waits for that verdict unless waived. Everything on the
   publisher side is complete.
+- pins-hf-001 watcher follow-up (2026-11-01T03:10Z): re-verified the collected job evidence
+  before acknowledging - all five Hub uploads byte-equal to the frozen MANIFEST digests and
+  sizes, Hub verify ok/errors=[] at commit 9628b108, load_dataset evidence identical to the
+  accepted artifact (train 54834/17048, eval 28104/8469, holdout 56326/17705, 32 columns,
+  labels 0/1, problems=[]), DESTINATIONS.json artifact_version == manifest c861bd8f with
+  both destination blocks verified. Worker deletion confirmed by the provider this session
+  (GET servers/173885790 -> 404; project server list empty). CI on recording commit 2ff972d
+  green (check + preview); check-package OK, check-candidate --all rc=0.
+  .factory/pins-hf-001/handled written. Blocker unchanged and operator-owned: audit relay
+  + flip (awaiting_operator since 02:47:24Z).
 
 
