@@ -1,0 +1,127 @@
+{
+  "job": {
+    "id": "fts-baseline-001",
+    "candidate": "ocha-fts-appeal-funding-trajectory",
+    "image": "python:3.13-slim",
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 2048,
+    "timeout_minutes": 45,
+    "lifetime_minutes": 90,
+    "max_disk_mb": 4096,
+    "max_artifact_mb": 16,
+    "what": "Runner-contract baseline on the accepted ocha-fts-appeal-funding-trajectory artifact e7441e1fd868522d... (gate 1.5.0, failed_checks empty, exact-byte --accept ACCEPTED in job fts-appeal-002), fetched from private staging release 430443206 rather than rebuilt: re-accept the five fetched files against the gate's own collected report, materialize the runner workdir (public train+eval only; the private holdout is fetched for --accept over the full artifact but never copied into a workdir), then run the benchmark's own train.py and validate.sh unmodified and record both eval AUCs. Contract only, no agent loop, no holdout score. Construction-time references measured on the same eval rows (job fts-appeal-002, post-acceptance): persistence_last_coverage 0.71711 (the headroom reference), prior_mean_rate 0.71435, ask_size_rate 0.71264, country_hist_rate 0.67295, plan_type_rate 0.66922, majority-class accuracy 0.58273.",
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 430443206,
+      "assets": [
+        {
+          "asset_id": 697725673,
+          "dest": "extract/meta.json",
+          "size": 1775,
+          "sha256": "bc3d4b89be7ae1500cae0d724cc04f9d384c84c9c05d89d0e2043aa42a4b1114"
+        },
+        {
+          "asset_id": 697725850,
+          "dest": "extract/public/train.csv",
+          "size": 35621,
+          "sha256": "eb0c4dcab27b4e8cd872a26cc711a745952208fd600f3c786f357e9efcda591a"
+        },
+        {
+          "asset_id": 697725783,
+          "dest": "extract/public/eval.csv",
+          "size": 11268,
+          "sha256": "b40bd9c6dc2cd5b2eeeee61c03aa7a7a191a55faae60aa4a4b772e8be13f8506"
+        },
+        {
+          "asset_id": 697725725,
+          "dest": "extract/private/holdout.csv",
+          "size": 15419,
+          "sha256": "0819c3f146e663d3854105ee4b9de8a975a5d8b76a9e596410a3d26671a40499"
+        },
+        {
+          "asset_id": 697725918,
+          "dest": "extract/quality.json",
+          "size": 25882,
+          "sha256": "32c341f73bf891b99de456acdfaec55eea58f6fa79d82bee9f3761a468e13cb0"
+        }
+      ]
+    },
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "source_files": [
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/ocha-fts-appeal-funding-trajectory/baseline/run.sh",
+        "bytes": 2838,
+        "sha256": "5f92ab397682e50a1d8e5c9d9e36a80c26f1000a5c7bb7be60480d9ee4c4484a"
+      },
+      {
+        "bundled_as": "materialize.py",
+        "source": "candidates/ocha-fts-appeal-funding-trajectory/baseline/materialize.py",
+        "bytes": 2096,
+        "sha256": "0f0c8802a99078fe26b3b25598ea7982e2ed872ce8789fa2cf29170a1002e76d"
+      },
+      {
+        "bundled_as": "report.py",
+        "source": "candidates/ocha-fts-appeal-funding-trajectory/baseline/report.py",
+        "bytes": 5143,
+        "sha256": "efc2ae88042b139298725048992bcb04f61b44c5def930ec3ab90825bb5a6af2"
+      },
+      {
+        "bundled_as": "qualification.json",
+        "source": "candidates/ocha-fts-appeal-funding-trajectory/baseline/qualification.json",
+        "bytes": 15477,
+        "sha256": "76cb92d56a23428a33ed317fa003873e25477d9284fec3a7ff5d88e051357680"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 57029,
+        "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+      },
+      {
+        "bundled_as": "train.py",
+        "source": "/opt/data/harness_benchmark/task_template/train.py",
+        "bytes": 2500,
+        "sha256": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8"
+      },
+      {
+        "bundled_as": "validate.py",
+        "source": "/opt/data/harness_benchmark/task_template/validate.py",
+        "bytes": 1277,
+        "sha256": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b"
+      },
+      {
+        "bundled_as": "validate.sh",
+        "source": "/opt/data/harness_benchmark/task_template/validate.sh",
+        "bytes": 482,
+        "sha256": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      }
+    ]
+  },
+  "reservation_eur": "0.06",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 3,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 194560,
+  "source_sha256": "6ca3aeb5b7a3483396944ea9985c1a1aa5dc2259503a2c79f08c89cd668a7d38",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "running",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-11-01T08:14:39.502898+00:00",
+  "expires": 1793526279,
+  "budget_months": [
+    "2026-11"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 173931463,
+  "known_hosts": "/opt/data/dataset-factory/.factory/fts-baseline-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "65.21.158.17"
+}

@@ -1,3 +1,64 @@
+## 2026-11-01 (08:2xZ) - ocha-fts-appeal-funding-trajectory QUALIFIED and ACCEPTED after one diagnosed rebuild (runner-contract defect caught by inspection); the runner baseline fts-baseline-001 is in flight; both operator-gated release items verified untouched
+
+Scheduled advancement tick. Release work outranks construction, and both release items were
+re-verified from their records as human waits, so nothing was touched: unhcr-refugee-data-finder
+keeps operator_decision_pending=true (the pre-flip re-audit relay is the operator's move; no
+verdict or waiver recorded; newest audit file remains 2026-10-28) and pins-planning-appeal-outcome
+keeps awaiting_operator=true (staged, verified, private; flip waits on the audit relay). No byte,
+tag, destination or visibility changed on either. The actionable work was the in-flight handoff
+from the 07:0xZ session: fts-appeal-001.
+
+fts-appeal-001 COLLECTED (07:48:15Z, worker 173923335 destroyed, provider 404 read-back): job
+succeeded in 1418 s, gate 1.5.0 on the full artifact ok=true with failed_checks EMPTY, exact-byte
+--accept ACCEPTED on the worker for artifact 893b2e78a4812dcc..., all three fixtures pinned to the
+dollar (AFG 2023 orig 4,627,363,573 / funding 1,678,347,238 / label 0 with the CSV revised value
+3,227,372,908 NOT the denominator; YEM 2023 1,774,327,599; Burundi RRP 2021 slice 14,978,233 of
+19,282,778), flow-vs-CSV funding mismatch 36/757 scored rows (4.75%, guard 10%). Splits as built:
+train 437/279, eval 139/81, holdout 182/96 (holdout sealed). Post-acceptance references on the 139
+eval rows (the decisive value test): persistence_last_coverage 0.71711 (THE headroom reference),
+prior_mean 0.71435, ask_size 0.71264, country_hist 0.67295, plan_type 0.66922, majority-class
+accuracy 0.58273, degenerate year/global controls labelled degenerate; per-year persistence AUC
+0.736/0.666/0.747/0.727; paired bootstrap persistence-vs-each all inconclusive (every CI contains
+zero on 139 rows). No full-model figure exists yet, so no headroom claim exists.
+
+DEFECT found by inspection against the read-only harness clone while the worker ran:
+bench/workdir.py line 76 writes task.json with meta[k] for exactly (name, description, target,
+positive_label, id_columns, split, columns, rows), but build.py's meta dict wrote only
+split_description and no description - the produced meta.json KeyErrors at runner materialization.
+The gate passed it because gate 1.5.0 does not check those two keys; recorded as a PROPOSED gate
+addition (own reviewable branch + tests + fixture), not implemented mid-session. Artifact 893b2e78
+is preserved unshipped in staging release 430422823.
+
+ONE diagnosed rebuild (fts-appeal-002, the permitted rebuild for this defect class): build.py now
+emits description (the prediction question) and split (the one-line temporal statement), verified
+locally on a synthetic write_artifact run asserting all 8 TASK_KEYS present; no other logic
+changed. 002 ran clean and was COLLECTED (08:13:43Z, worker 173928952 destroyed, provider 404):
+gate 1.5.0 failed_checks empty, ACCEPTED for artifact e7441e1fd868522d... (staging release
+430443206), fixtures identical, mismatch 37/758 (4.88%). The three CSVs and quality.json are
+BYTE-IDENTICAL to 001; only meta.json changed (847 -> 1,775 B) - the fix is provably the only
+difference between attempts, and the meta.json in staging now carries all 8 TASK_KEYS (verified
+from the staged bytes). References re-measured on 002: identical figures, as byte-identical CSVs
+require. Candidate record: status=qualified with the full qualification block; check-candidate OK.
+
+fts-baseline-001 (runner-contract baseline on e7441e1f, server 173931463, launched 08:14:39Z,
+EUR 0.06 reserved) is IN FLIGHT at close: fetch the five staged files digest-verified, re-accept
+against the gate's own 002 report BEFORE any score, materialize the runner workdir (public
+train+eval only), run the benchmark's own train.py + validate.sh verbatim (digests recorded in
+runner_files.json, verified byte-identical to the clone), record both eval AUCs. A running worker
+is the handoff: collect, destroy with 404 read-back, then QUOTE the full-model eval AUC beside
+persistence 0.71711 on the same 139 rows (model below persistence = recorded defect; above =
+recorded gap with uncertainty; no headroom claim until then). Packaging per dataset-release is
+the step after that comparison. The baseline bundle is fully assembled (fetch filled from 002's
+collect by baseline/fill_from_collect.py, digest-verified).
+
+Checks at close-out (all actually run this session): check-candidate ocha...=OK (qualified),
+full unittest suite 697/697 OK in 26.6 s (run before the record's qualified transition),
+check-candidate --all rc=0 (121 records). Worker spend today: fts-appeal-001 0.04 + fts-appeal-002
+0.04 + fts-baseline-001 0.06 = EUR 0.14 of 20 (November), release reserve untouched. Both
+collected workers account for their servers (404 read-backs); fts-baseline-001 is in flight. Scratch bulk
+copies: none (staging evidence only; small reports fetched under .factory/fts-appeal-00{1,2}/
+with every digest verified).
+
 ## 2026-11-01 (07:0xZ) - fts-appeal-001 construction launched on a worker (ocha-fts-appeal-funding-trajectory); release track stays operator-gated (unhcr re-audit relay, pins flip) and untouched
 
 Scheduled advancement tick. Release work outranks construction, but BOTH release items are
