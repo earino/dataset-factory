@@ -1,4 +1,4 @@
-## 2026-11-01 (08:2xZ) - ocha-fts-appeal-funding-trajectory QUALIFIED and ACCEPTED after one diagnosed rebuild (runner-contract defect caught by inspection); the runner baseline fts-baseline-001 is in flight; both operator-gated release items verified untouched
+## 2026-11-01 (08:2xZ) - ocha-fts-appeal-funding-trajectory QUALIFIED, ACCEPTED and baselined in one session (triad complete: stock runner 0.6298 trails persistence 0.71711 - recorded as no demonstrated headroom under this protocol); both operator-gated release items verified untouched
 
 Scheduled advancement tick. Release work outranks construction, and both release items were
 re-verified from their records as human waits, so nothing was touched: unhcr-refugee-data-finder
@@ -40,22 +40,28 @@ difference between attempts, and the meta.json in staging now carries all 8 TASK
 from the staged bytes). References re-measured on 002: identical figures, as byte-identical CSVs
 require. Candidate record: status=qualified with the full qualification block; check-candidate OK.
 
-fts-baseline-001 (runner-contract baseline on e7441e1f, server 173931463, launched 08:14:39Z,
-EUR 0.06 reserved) is IN FLIGHT at close: fetch the five staged files digest-verified, re-accept
-against the gate's own 002 report BEFORE any score, materialize the runner workdir (public
-train+eval only), run the benchmark's own train.py + validate.sh verbatim (digests recorded in
-runner_files.json, verified byte-identical to the clone), record both eval AUCs. A running worker
-is the handoff: collect, destroy with 404 read-back, then QUOTE the full-model eval AUC beside
-persistence 0.71711 on the same 139 rows (model below persistence = recorded defect; above =
-recorded gap with uncertainty; no headroom claim until then). Packaging per dataset-release is
-the step after that comparison. The baseline bundle is fully assembled (fetch filled from 002's
-collect by baseline/fill_from_collect.py, digest-verified).
+fts-baseline-001 (runner-contract baseline on e7441e1f, server 173931463, launched 08:14:39Z)
+COMPLETED and was collected + destroyed the same session (collect 08:21:30Z, destroy 08:21:47Z,
+provider 404 read-back; EUR 0.06 of the EUR 0.14 November worker spend). Contract clean:
+accepted_before_scoring=true for e7441e1f... == the qualified version, runner files unmodified
+(digests == runner_files.json), contract_ok=true, holdout never opened. THE TRIAD on the same 139
+eval rows, all post-acceptance: persistence_last_coverage 0.71711 (headroom reference), full model
+via the runner's own train.py AND validate.py 0.6298 (two implementations, agreeing), majority-class
+accuracy 0.58273. THE STOCK RUNNER TRAILS PERSISTENCE BY 0.0873 AUC: recorded as NO DEMONSTRATED
+HEADROOM UNDER THIS PROTOCOL (stock runner) - a recorded defect of the run, not proof the task is
+impossible (persistence's edge over the other simple references is itself inconclusive at n=139; the
+plausible diagnosis is the untuned XGBClassifier(30,6) on 437 rows with a 78-level categorical,
+which is a runner-side property, NOT grounds for rebuilding the artifact). The operator decision
+point is recorded in next_action: package with both figures on the card, re-scope the target as a
+new instance, or drop. Any later model figure must be quoted beside persistence 0.71711. The
+baseline bundle (fetch filled from 002's collect by baseline/fill_from_collect.py,
+digest-verified) is reusable verbatim for any re-baseline.
 
 Checks at close-out (all actually run this session): check-candidate ocha...=OK (qualified),
 full unittest suite 697/697 OK in 26.6 s (run before the record's qualified transition),
 check-candidate --all rc=0 (121 records). Worker spend today: fts-appeal-001 0.04 + fts-appeal-002
-0.04 + fts-baseline-001 0.06 = EUR 0.14 of 20 (November), release reserve untouched. Both
-collected workers account for their servers (404 read-backs); fts-baseline-001 is in flight. Scratch bulk
+0.04 + fts-baseline-001 0.06 = EUR 0.14 of 20 (November), release reserve untouched. All three
+workers collected, destroyed and provider-confirmed (404 read-backs); no worker left running. Scratch bulk
 copies: none (staging evidence only; small reports fetched under .factory/fts-appeal-00{1,2}/
 with every digest verified).
 
