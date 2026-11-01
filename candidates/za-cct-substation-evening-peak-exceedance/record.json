@@ -1,0 +1,158 @@
+{
+  "id": "za-cct-substation-evening-peak-exceedance",
+  "status": "ready",
+  "domain": "electricity distribution operations / substation-day peak-stress exceedance prediction (retrospective)",
+  "created_at": "2026-11-01T04:55:00+00:00",
+  "updated_at": "2026-11-01T04:55:00+00:00",
+  "jurisdiction": {
+    "country": "ZA",
+    "region": "Africa",
+    "publisher": "City of Cape Town (Energy Directorate via the Corporate GIS Open Data Portal, odp-cctegis.opendata.arcgis.com) - metropolitan municipality in South Africa",
+    "recorded_at": "2026-11-01"
+  },
+  "prediction_question": "For each City of Cape Town switching substation, at 06:00 SAST on day D, predict whether that substation's evening peak apparent-power load (maximum half-hourly MVA reading over 16:00-22:00 SAST on day D) will exceed the trailing-90-evening 95th percentile of its own evening peaks (evenings ending strictly before the instant).",
+  "prediction_time": "06:00 Africa/Johannesburg (SAST, UTC+2) on day D, within the artifact's history. Features are the substation's half-hourly MVA readings with timestamps <= the instant (including day D's 00:00-06:00 readings), trailing aggregates computed only from readings <= the instant, plus calendar fields and substation identity. The evening target window 16:00-22:00 SAST lies entirely after the instant. RETROSPECTIVE USE: the publisher released the entire 2022-01-01..2024-12-31 window as one closed table (item created 2026-02-28, last modified 2026-03-02, hasStaticData), so this is a retrospective_research task per docs/PREDICTION-CONTRACT.md: no historical-operational-availability claim is made, label timing is unverified at any historical instant outside the artifact's own timestamp order.",
+  "target_definition": "Binary: evening-peak exceedance. Label = (max half-hourly MVA over 16:00-22:00 SAST on day D for substation S) > (95th percentile of the same substation's evening peaks over the trailing 90 evenings ending strictly before the instant, minimum 30 prior evenings for eligibility). Label source columns: the target day's 16:00-22:00 MVA readings, plus the same substation's prior evening peaks; these are sealed (private label matrix) and never shipped in any solver-visible feature frame. The baseline operand (trailing p95) is computed from feature-side readings <= the instant and may ship as a numeric feature; the target evening readings cannot.",
+  "sources": [
+    {
+      "name": "City of Cape Town Open Data Portal - Switching Substation Load Profile (half-hourly MVA per switching substation, 2022-2024)",
+      "url": "https://odp-cctegis.opendata.arcgis.com/documents/cctegis::switching-substation-load-profile",
+      "api": "https://services6.arcgis.com/nyYfO9SxHU2ChQd9/arcgis/rest/services/Switching_Substation_Load_Profile/FeatureServer/0 (anonymous ArcGIS REST table; outStatistics returns 400 on this service, so aggregates require paged reads)",
+      "item_id": "bebf20c25bfa4ffaa7fc07a1a94ba287",
+      "access": "Anonymous REST, no registration; 52,608 rows measured 2026-11-01; NOT indexed by the portal DCAT-US feed (Hub search API only) - a census-method gap recorded on za-capetown-odp-coverage",
+      "licence": "Item licenseInfo links the City of Cape Town Open Data Terms of Use; Council-approved Open Data Policy 27781 defines open data as freely used, shared and built-on by anyone, anywhere, for any purpose (see license_evidence)"
+    }
+  ],
+  "licence_class": "A",
+  "license_evidence": [
+    "ArcGIS item bebf20c25bfa4ffaa7fc07a1a94ba287 licenseInfo field (read 2026-11-01): hyperlink to 'https://www.capetown.gov.za/General/Terms-of-use-open-data' - the same instrument the portal's other datasets carry.",
+    "City of Cape Town Open Data terms of use (https://www.capetown.gov.za/general/city-of-cape-town-open-data-terms-of-use/, quoted in za-cct-c3-service-request-surge/record.json from 2026-10-29, same portal terms): disclaimer-only (as-is, no warranty, no liability) and imposes NO restriction on reuse, redistribution or derivatives for portal data.",
+    "Open Data Policy, Policy Number 27781, revised and approved by Council 03 December 2020 (https://www.capetown.gov.za/media/vg2plaql/open_data_policy.pdf, read 2026-10-29): Definitions: \"'Open data' means data that can be freely used, shared and built-on by anyone, anywhere, for any purpose.\"; clause 7.6: \"The use of the Open Data Portal will be subject to its Terms of Use. The Terms of Use will conform with open data principles.\"",
+    "Counter-signal noted for the reviewer: the general City website terms differ from the Open Data Portal terms; the Open Data Policy and portal Terms of Use are the dataset-specific instruments and both were read from the publisher's own pages."
+  ],
+  "licence_note": "City of Cape Town Open Data (portal terms + Open Data Policy 27781). Attribution line at release: 'Source: City of Cape Town Open Data Portal - Switching Substation Load Profile'. Conditions carried into LICENSE.md.",
+  "measurements": {
+    "panel_shape_measured": "52,608 rows = 48 half-hours x 1,096 days, 2022-01-01 00:00 .. 2024-12-31 23:30 SAST, gapless (0 days with !=48 half-hours). 45 fields: Timestamp + 43 substation columns (33kV/66kV/132kV switching stations) + ObjectId. 41 double-typed substation columns have 52,608/52,608 non-null values (ZERO nulls); Triangle_132kV (string-typed) contains no values at all; Morgen_Gronde_132kV (string-typed) carries numeric readings stored as strings (schema artifact: parse at construction or exclude; measured on fetch). 42 stations carry data in total (41 double + Morgen Gronde parsed), and all 41 double-typed stations are used for the measured label counts.",
+    "target_labels_measured": "Evening-peak p95-exceedance labels (trailing 90 evenings, min 30 prior evenings, evening window 16:00-22:00 SAST): 2022 positives 1,539/13,735 (11.20%); 2023 positives 1,256/14,965 (8.39%); 2024 positives 1,382/15,006 (9.21%). Total 4,177/43,706. Both classes present in every year. Commands in notes.md (probe_fullscan.py, probe_cluster.py).",
+    "clustering_measured": "Positives cluster by day (city-wide weather / load-shedding regime): distinct exceedance days 2022: 227, 2023: 246, 2024: 247 (out of 365/365/366 label-bearing days), with all 41 stations carrying at least one positive in every year. The distinct-day counts are the clustered/independent-observation evidence for split capacity.",
+    "seasonality_fixture": "Known-event fixture (verified measured): Cape Town winter evening-peaking. Monthly mean evening peak over all stations: 2024-07 61.9 MVA vs 2024-12 44.1 MVA; same May-August rise in 2022 (2022-08 60.3 vs 2022-12 48.0) and 2023 (2023-07 60.6 vs 2023-12 45.9). Per-station winter(May-Aug)/summer(Nov-Feb) mean evening-peak ratios: Grassy Park 66kV 1.25, Atlantis Industrial 132kV 1.22, Foreshore 132kV (CBD) 0.98 - winter-peaking residential/industrial substations and a flat CBD profile, exactly as expected for Cape Town's winter-heating, summer-cooling-mild coastal climate.",
+    "dated_worked_example": "Grassy Park 66kV, Africa/Johannesburg (SAST): day D = 2024-07-15 (Monday, mid-winter). Feature event window = half-hourly readings 2022-01-01 00:00 .. 2024-07-15 06:00 for this substation (trailing aggregates computed within it); prediction instant = 2024-07-15 06:00 SAST; eligibility = >= 30 prior evenings (met: 90 evenings 2024-04-16..2024-07-14 used); target window = 2024-07-15 16:00-22:00 SAST (entirely after the instant); measured label = evening peak 150.38 MVA > trailing-90-evening p95 146.82 MVA -> POSITIVE. Every target-window timestamp is later than the instant; no target-window reading can be a feature.",
+    "extraction_cost_measured": "53 HTTP GETs (1,000 rows/page, orderByFields=ObjectId, outFields all), 70,086,470 bytes JSON, 54.1 s wall clock on the coordinator (4 vCPU / 1.9 GiB class), measured 2026-11-01. No raw copy retained: the fetch streams to per-station-day aggregates only (probe_fullscan.py); reduced aggregates ~9 MB. Advancement-side construction must re-fetch on a worker and pin sha256.",
+    "publisher_caveat": "Item description (quoted): 'Users should note that readings are indicative of the measured Mega Volt-Ampere readings which have not been corrected for temporary load shifts due to operational requirements or load fluctuations due to load shedding.' The label therefore measures demand-as-dispatched, not underlying demand; this is documented meaning (usable), recorded as a limitation, and must appear in the dataset README.",
+    "cross_check_publisher_summary": "The publisher ships no summary product for this table (raw readings only; the ODP page carries only the description quoted above). The internal consistency check is the arithmetic identity rows = 48 x 1,096 and the gapless daily grid, both measured. No publisher aggregate exists to contradict.",
+    "provenance_mix_measured": "Single provenance stream: one reading per substation per half-hour from the City's SCADA/telemetry export; no sentinel/non-sentinel or multi-stream mixture. Two columns are string-typed (one empty, one numeric-as-text) - a schema artifact, not a separate population.",
+    "novelty_scope_limitations": "Web search (arXiv, HF, GitHub, Fraunhofer survey) 2026-11-01; queries recorded by scripts/check-novelty.py. The Fraunhofer 25-dataset public load-forecasting survey lists system/zone/substation datasets from EU/US/AU operators only; no African substation series surfaced. Hugging Face/Zenodo catalogue searches for this source's title returned no ML-ready formulation of this task."
+  },
+  "split_strategy": "Temporal splits on station-days: train = 2022 (13,735 label-bearing station-days, 1,539 positives), eval = 2023 (14,965, 1,256), holdout = 2024 (15,006, 1,382). Disjoint years, both classes in every window, positives clustered on 227/246/247 distinct days per year. First ~30-90 evenings per station are burn-in (eligibility) and drop out of the labelled set. The evening-window 16:00-22:00 and the 06:00 instant are fixed for all splits; the sealed evening readings of any scored day never enter any shipped feature frame.",
+  "verdict": "go",
+  "review": "All five discovery contracts are supported with measured evidence: class A licence from the publisher's own instruments; a within-artifact 06:00 SAST instant with a fully-post-instant evening target window and publisher-documented feature meaning (with the load-shift caveat recorded as a limitation); a label derivable from the same gapless table with sealable label-source columns; measured split capacity (train 2022 / eval 2023 / holdout 2024, 1,256-1,539 positives per year, clustered on 227-247 distinct days); and a differentiated novelty position (regression forecasting benchmarks exist on EU/US/AU substation data; none is African, none is a within-day exceedance classification with a sealed label contract). Honest labelling: retrospective_research - the closed 2022-2024 window was published as one table in 2026, so no historical-operational-availability claim is made and label timing is unverified outside the artifact's own timestamp order.",
+  "next_action": "Advancement owns construction on a worker: re-fetch all 52,608 rows and pin sha256; build station-day rows with features <= 06:00 instant and a sealed evening label matrix; splits 2022/2023/2024; full-artifact qualification + exact-byte acceptance BEFORE any quoted number (the abs-visitor-arrivals cross-row defect applies here by shape: a later same-station row's feature window contains this row's evening label operand - enforce isolated_rows prediction and keep evening readings out of all solver-visible frames, then run the reverse-history probes per docs/PREDICTION-CONTRACT.md); reference baselines (base-rate, prior-evening persistence, calendar/climatology) before model comparison. Open non-blocking question: whether the publisher extends the series beyond 2024 (item static since 2026-03).",
+  "uncertainty": "Publisher extension of the series beyond 2024 is unknown (sibling prepaid item IS extended monthly; this item hasStaticData since 2026-03). Does not block v1 on the closed window.",
+  "notes_ref": "notes.md",
+  "novelty_check": {
+    "checked_at": "2026-11-01T05:36:00+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "substation load forecasting public benchmark dataset half-hourly MVA",
+      "Cape Town switching substation load profile machine learning",
+      "electricity peak exceedance prediction benchmark distribution substation"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "substation load forecasting public benchmark dataset half-hourly MVA",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "Cape Town switching substation load profile machine learning",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "electricity peak exceedance prediction benchmark distribution substation",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "substation load forecasting public benchmark dataset half-hourly MVA",
+          "hits": 638124,
+          "top": [
+            "Coventry City half-hourly apparent electrical power demand, 2017-07-16 to 2020-02-13",
+            "BQEB-Data BIO-Quantum Energy Brain Benchmark Dataset for Smart Grid Intelligence, Renewable Forecasting, Storage Optimization, and Cyber Resilience",
+            "BQEB ForecastBench: Benchmarking AI Models for Smart Grid Forecasting Using BQEB-Data v1",
+            "Temperature Rain Dataset without Missing Values",
+            "Temperature Rain Dataset with Missing Values"
+          ]
+        },
+        {
+          "query": "Cape Town switching substation load profile machine learning",
+          "hits": 503081,
+          "top": [
+            "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
+            "RGB and RGNIR Plastic Waste Database",
+            "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI",
+            "Intelligent Load Forecasting and Enhanced Reliability and Sustainability in Smart Grid Systems Using Smart Meter",
+            "Short-Term Electric Load Forecasting Using Standardized Load Profile (SLP) And Support Vector Regression (SVR)"
+          ]
+        },
+        {
+          "query": "electricity peak exceedance prediction benchmark distribution substation",
+          "hits": 517877,
+          "top": [
+            "Automated system for load flow prediction in power substations using artificial neural networks",
+            "Simulation of sheath voltage, losses and loss factor of high voltage underground cable using MATLAB/Simulink",
+            "A Review on IoT-based Switching of Microgrid for Uninterrupted Power Supply",
+            "Energy Storage Arbitrage and Peak Shaving in Distribution Grids Under Uncertainty",
+            "Detecting suspicious behaviour in power consumption with Fuzzy Logic"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "substation load forecasting public benchmark dataset half-hourly MVA",
+          "hits": 5,
+          "top": [
+            "Lasso estimation for GEFCom2014 probabilistic electric load forecasting",
+            "Quantile Regression for Qualifying Match of GEFCom2017 Probabilistic Load Forecasting",
+            "SDWPF: A Dataset for Spatial Dynamic Wind Power Forecasting Challenge at KDD Cup 2022",
+            "Forecasting Daily Primary Three-Hour Net Load Ramps in the CAISO System",
+            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset"
+          ]
+        },
+        {
+          "query": "Cape Town switching substation load profile machine learning",
+          "hits": 5,
+          "top": [
+            "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+            "DOME: Recommendations for supervised machine learning validation in biology",
+            "Identification of Pediatric Sepsis Subphenotypes for Enhanced Machine Learning Predictive Performance: A Latent Profile ",
+            "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
+            "Active learning for data streams: a survey"
+          ]
+        },
+        {
+          "query": "electricity peak exceedance prediction benchmark distribution substation",
+          "hits": 5,
+          "top": [
+            "Modeling Coincident Peak Pricing in Electricity Markets: Challenges and Peak Shaving Effectiveness",
+            "An accurate model for the primordial black hole mass distribution from a peak in the power spectrum",
+            "Minimizing the impact of EV charging on the electricity distribution network",
+            "Thinking Beyond Distributions in Testing Machine Learned Models",
+            "A Benchmark for the Application of Distributed Control Techniques to the Electricity Network of the European Economic Ar"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'substation load forecasting public benchmark dataset half-hourly MVA': 0 hit(s) - nothing notable\n- huggingface_datasets / 'Cape Town switching substation load profile machine learning': 0 hit(s) - nothing notable\n- huggingface_datasets / 'electricity peak exceedance prediction benchmark distribution substation': 0 hit(s) - nothing notable\n- zenodo_records / 'substation load forecasting public benchmark dataset half-hourly MVA': 638124 hit(s) - Coventry City half-hourly apparent electrical power demand, 2017-07-16 to 2020-02-13, BQEB-Data BIO-Quantum Energy Brain Benchmark Dataset for Smart Grid Intelligence, Renewable Forecasting, Storage Optimization, and Cyber Resilience, BQEB ForecastBench: Benchmarking AI Models for Smart Grid Forecasting Using BQEB-Data v1, Temperature Rain Dataset without Missing Values, Temperature Rain Dataset with Missing Values\n- zenodo_records / 'Cape Town switching substation load profile machine learning': 503081 hit(s) - plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, RGB and RGNIR Plastic Waste Database, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, Intelligent Load Forecasting and Enhanced Reliability and Sustainability in Smart Grid Systems Using Smart Meter, Short-Term Electric Load Forecasting Using Standardized Load Profile (SLP) And Support Vector Regression (SVR)\n- zenodo_records / 'electricity peak exceedance prediction benchmark distribution substation': 517877 hit(s) - Automated system for load flow prediction in power substations using artificial neural networks, Simulation of sheath voltage, losses and loss factor of high voltage underground cable using MATLAB/Simulink, A Review on IoT-based Switching of Microgrid for Uninterrupted Power Supply, Energy Storage Arbitrage and Peak Shaving in Distribution Grids Under Uncertainty, Detecting suspicious behaviour in power consumption with Fuzzy Logic\n- arxiv_preprints / 'substation load forecasting public benchmark dataset half-hourly MVA': 5 hit(s) - Lasso estimation for GEFCom2014 probabilistic electric load forecasting, Quantile Regression for Qualifying Match of GEFCom2017 Probabilistic Load Forecasting, SDWPF: A Dataset for Spatial Dynamic Wind Power Forecasting Challenge at KDD Cup 2022, Forecasting Daily Primary Three-Hour Net Load Ramps in the CAISO System, The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset\n- arxiv_preprints / 'Cape Town switching substation load profile machine learning': 5 hit(s) - Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, Identification of Pediatric Sepsis Subphenotypes for Enhanced Machine Learning Predictive Performance: A Latent Profile , Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Active learning for data streams: a survey\n- arxiv_preprints / 'electricity peak exceedance prediction benchmark distribution substation': 5 hit(s) - Modeling Coincident Peak Pricing in Electricity Markets: Challenges and Peak Shaving Effectiveness, An accurate model for the primordial black hole mass distribution from a peak in the power spectrum, Minimizing the impact of EV charging on the electricity distribution network, Thinking Beyond Distributions in Testing Machine Learned Models, A Benchmark for the Application of Distributed Control Techniques to the Electricity Network of the European Economic Ar",
+    "prior_art": [
+      "KIT-IAI load-forecasting-benchmark arXiv 2607.15705; arXiv 1910.03976 (Rolle hierarchical demand forecasting); PowerZooDataset Ausgrid_Zone_Substation; OpenSTEF/liander2024-energy-forecasting-benchmark; Fraunhofer 'Publicly Available Datasets For Electric Load Forecasting' (19/25 system-level, no African dataset)"
+    ],
+    "theirs": "Public substation/zone-level load data and regression or probabilistic forecasting benchmarks on EU/US/AU sources: KIT-IAI load-forecasting-benchmark (arXiv 2607.15705: TSO control area + LV feeders + end consumers), Rolle/EPFL hierarchical demand forecasting (arXiv 1910.03976, LV secondary substations), Ausgrid distribution zone substation data (15-min, NSW, packaged in PowerZooDataset), Liander 2024 energy-forecasting benchmark (HF OpenSTEF, 55 grid points), Fraunhofer 25-dataset public load-forecasting survey.",
+    "ours": "First scored, temporally-split (2022 train / 2023 eval / 2024 holdout) within-day peak-stress EXCEEDANCE classification task at 06:00 SAST with a sealed evening-label contract, on City of Cape Town switching-substation half-hourly MVA telemetry (33kV-132kV, 2022-2024) published Feb 2026. No African substation series appears in the public load-forecasting catalogs.",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
+}

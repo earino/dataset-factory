@@ -41,3 +41,39 @@ billing-mask probe on the water service; the census scripts are described below)
   daily-updated C3 notification table → weekly surge exceedance task.
 - Everything else: parked per record.json rejection_reason, with the reopen
   conditions stated there (billing needs ~18+ unmasked months, i.e. from ~2027-10).
+
+
+## Africa tick 2026-11-01: handoff series probed + census-method correction
+
+Commands (all 2026-11-01, anonymous, from the coordinator; scratch scripts
+cct_dcat_probe.py / cct_item_resolve.py / cct_download_items.py /
+cct_cwq_years.py / cct_electric_family.py / cct_probe_services.py in
+/opt/data/cache/scratch/, and the retained load-profile recipes in
+candidates/za-cct-substation-evening-peak-exceedance/):
+
+- DCAT re-sweep: `curl -sS https://odp-cctegis.opendata.arcgis.com/api/feed/dcat-us/1.1.json`
+  -> still 265 datasets; loose voltage/dip/electric/power/outage/load sweep
+  over titles+descriptions -> ZERO matches.
+- Hub search API: `.../api/search/v1/collections/dataset/items?q=voltage&limit=10`
+  -> the electricity family the DCAT feed does NOT index (method correction in
+  record.next_action).
+- Emergency response times item 5d66229321134aa6b44a464c02f47b58 (Microsoft
+  Excel, 34,447 bytes, modified 2025-03-10): single 'Response Times' sheet of
+  aggregate response-time bucket counts, data window Jan-Jul 2022 per the
+  item description - ENDED, no task.
+- Coastal Water Quality item d632041f58384740916b63a95ba2f778 (Excel,
+  62,546 bytes, modified 2025-03-06): 'CWQ data' sheet = ~104 recreational
+  nodes x annual rating columns 2017-2021 + two 365-day rolling-period
+  columns + latest Enterococci/E. coli counts. ~7 label periods/node, stale,
+  per-sample data absent - not a task.
+- Library items (overview 3ab4c025..., visitor count bba8e9b1...): overview =
+  city-level financial-year aggregates; visitor count item wraps
+  'Library_Visitor_Count.pdf' (zip listing), no machine-readable series.
+- Voltage dips: no item found under any search term in either channel.
+- Prepaid Electricity by Suburbs and Tariffs, item 2fc8869202a749ab9c65bd40d124253a
+  (FeatureServer table, modified 2026-10-31, LIVE): fields Suburb /
+  units_per_Suburb / txmonth / number_in_Suburb / tariff; monthly Jan 2024..
+  Sep 2026 (33 months); sample rows show a '\\N' Suburb bucket. Too short for
+  three windows; re-census from ~2027-10.
+- Switching Substation Load Profile item bebf20c25bfa4ffaa7fc07a1a94ba287 ->
+  carried to za-cct-substation-evening-peak-exceedance (ready).

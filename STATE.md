@@ -1,3 +1,73 @@
+## 2026-11-01 (05:55Z) - Africa discovery tick: CCT handoff resolved (all four negative, first-hand evidence) and the census-method correction it surfaced exposed an electricity family the DCAT feed never indexed -> za-cct-substation-evening-peak-exceedance READY (42 Cape Town switching substations, half-hourly MVA 2022-2024, class A, retrospective within-day evening-peak exceedance)
+
+Scheduled discovery tick, regional focus Africa (South Africa, Kenya, Nigeria,
+Ghana, Morocco, AfDB, UNECA). No construction, qualification, publication or
+advancement; unhcr untouched (operator-gated, as before). Queue before the
+tick: 44 live / 120 candidates, Africa 11 (ZA 6, KE 2, GH 1, MA 1, NG 1).
+
+The recorded handoff on za-capetown-odp-coverage named four unprobed CCT
+series for "a later Africa tick before opening new portals"; this tick was
+that tick. All four resolved NEGATIVE with first-hand evidence (recorded on
+the coverage record): Emergency response times = aggregate Excel ended
+Jul 2022; Voltage dips = absent from both catalogue channels; Library stats =
+city-level annual aggregates / a PDF wrapper; Coastal Water Quality = ~104
+nodes x ~7 annual rating periods, stale since 2025-03, per-sample data not
+published. Decisive method finding: the portal DCAT-US feed (265 datasets)
+does NOT index everything the Hub search API exposes - the 2026-10-29 census
+undercounted. The Hub-only electricity family (Switching Substation Load
+Profile, Prepaid Electricity by Suburbs and Tariffs, Loadshedding schedule,
+capacity layers) was never censused. Future censuses use both channels.
+
+1. za-cct-substation-evening-peak-exceedance: READY. Task: for each Cape
+   Town switching substation (33/66/132kV, 42 stations carry data), at
+   06:00 SAST on day D predict whether the evening peak load (max half-hourly
+   MVA over 16:00-22:00 SAST) will exceed the substation's trailing-90-evening
+   p95. Measured (probe_fullscan.py, 53 GETs / 70,086,470 bytes / 54.1 s on
+   the coordinator, no raw copy retained): 52,608 half-hours = gapless
+   1,096 days 2022-01-01..2024-12-31 SAST (0 days with !=48), 41 double
+   columns 52,608/52,608 non-null (one string column empty, one
+   numeric-as-text schema artifact). Labels by year: 2022 1,539/13,735
+   (11.20%), 2023 1,256/14,965 (8.39%), 2024 1,382/15,006 (9.21%);
+   clustered on 227/246/247 distinct days; 41/41 stations positive in every
+   year. Splits train 2022 / eval 2023 / holdout 2024. Known-event fixture
+   measured: winter (May-Aug) evening-peaking vs summer, per-station ratios
+   Grassy Park 1.25 / Atlantis Industrial 1.22 / Foreshore CBD 0.98; monthly
+   means peak 2024-07 61.9 MVA vs 2024-12 44.1. Dated example: Grassy Park
+   66kV 2024-07-15, instant 06:00 SAST, 90 evenings history, evening peak
+   150.38 > p95 146.82 -> positive. Licence class A (item licenseInfo + portal
+   Terms of Use + Council Open Data Policy 27781, same instruments as the
+   ready C3 candidate). Novelty differentiated (check-novelty.py): prior art
+   is regression/probabilistic load-forecasting benchmarks on EU/US/AU data
+   (KIT-IAI 2026, Rolle 2019, Ausgrid zone-substations, Liander 2024,
+   Fraunhofer survey); no African substation series in the catalogs, no
+   within-day exceedance classification with a sealed evening-label contract.
+   HONEST LABELLING: retrospective_research - the closed 2022-2024 window was
+   published as one table in 2026-02/03 (hasStaticData); no
+   historical-operational-availability claim; publisher caveat (readings not
+   corrected for load shifts / load shedding) recorded as a limitation.
+   Advancement owns construction: isolated_rows protocol + sealed evening
+   matrix (the abs-visitor-arrivals cross-row defect applies by shape: a
+   later same-station row's feature window contains this row's label
+   operand), qualification -> exact-byte acceptance -> baselines -> scoring.
+
+2. Regional coverage honesty: the tick's searches covered only Cape Town
+   (ZA). Kenya KNBS remains operator-gated on the NC decision; Morocco
+   data.gov.ma re-census trigger not checked this tick; Nigeria/Ghana/AfDB/
+   UNECA not probed this tick (the CCT handoff + a ready candidate consumed
+   the session inside its budget). The four parked African candidates keep
+   their recorded reopen conditions; nothing was reopened without new
+   evidence.
+
+Checks at close-out (all actually run this session): check-candidate
+za-cct-substation-evening-peak-exceedance OK (ready), za-capetown-odp-coverage
+OK (parked), --all rc=0 (121 records), full unittest suite 697/697 OK in 26.3 s,
+discovery-coverage: 121 candidates, ZA now 7 (7 live incl. this ready),
+Africa 12, live 45, ready 12, non-US share 39/45 (87%). No worker launched
+(EUR 0 spent). Scratch bulk copies: none retained (fetch was streaming;
+reduced aggregates only in scratch; retained recipes in the candidate
+directory).
+
+
 ## 2026-10-31 (18:35Z) - pins runner contract verified: the one permitted rebuild landed (probe settles the category question - predict ACCEPTS category dtypes; the 6 prose cells were the only breaker), train.py/validate.sh CONTRACT OK at eval AUC 0.6108, model beats every simple reference with intervals excluding zero; unhcr stays operator-gated and untouched
 
 Scheduled advancement tick. Release work outranks construction, but the only release item
