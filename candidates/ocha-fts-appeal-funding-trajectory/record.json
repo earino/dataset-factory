@@ -4,7 +4,64 @@
  "created_at": "2026-10-29T20:12:32.403245+00:00",
  "domain": "humanitarian financing / per-plan-year appeal funding coverage (UN OCHA Financial Tracking Service) - funding-outcome task family; first humanitarian-appeal financing register assessed on the bench",
  "id": "ocha-fts-appeal-funding-trajectory",
- "jobs": [],
+ "jobs": [
+  {
+   "acceptance": "ACCEPTED on the worker: /output/extract matches the qualified artifact 893b2e78a4812dcc... (acceptance-ocha-fts-appeal-funding-trajectory.txt, sha256 89bd7787...; report qualification-...json 15442 bytes sha256 13706e53...)",
+   "artifact_version": "893b2e78a4812dcc4004ea2bc4ce85cc78191ff52a6f1d0f3499a9960de0a4da",
+   "collected_at": "2026-11-01T07:48:15Z",
+   "defect_found_post_collection": "meta.json lacks the runner's required 'description' and 'split' keys (bench/workdir.py line 76 indexes meta[k] for all 8 TASK_KEYS); gate 1.5.0 does not check these two keys, so the artifact passed qualification but would KeyError at workdir materialization; preserved as artifact 893b2e78 in staging release 430422823 (tag job-fts-appeal-001); NOT shipped",
+   "destroyed_at": "2026-11-01T07:48:35Z",
+   "elapsed_seconds": 1418.2,
+   "exclusion_buckets": {
+    "live_edge_unobserved": 24,
+    "no_orig_requirements": 35,
+    "regional_multi_country": 60
+   },
+   "exit_code": 0,
+   "fixtures": "all three matched to the dollar: AFG 2023 orig 4,627,363,573 / funding 1,678,347,238 / label 0 / CSV revised 3,227,372,908 (ratio 0.3627 of orig, so the revised value was NOT the denominator); YEM 2023 funding 1,774,327,599; Burundi RRP 2021 slice 14,978,233 of plan total 19,282,778",
+   "flow_vs_csv_crosscheck": "36 of 757 scored rows (4.75%) above the per-row tolerance; within the 10% guard; the 36 rows are listed in the collected summary.json",
+   "gate": "1.5.0, ok=true, failed_checks=[] (full artifact on the worker)",
+   "job_id": "fts-appeal-001",
+   "launched_at": "2026-11-01T06:55:24Z",
+   "provider_readback": "server 173923335 answers 404 from the Hetzner API; zero scout-job-labeled primary IPs remain",
+   "server_id": 173923335,
+   "splits_built": {
+    "eval": {
+     "distinct_countries": 51,
+     "positives": 81,
+     "rate": 0.582734,
+     "rows": 139,
+     "years": "2017-2020"
+    },
+    "holdout": {
+     "distinct_countries": 43,
+     "positives": 96,
+     "rate": 0.527473,
+     "rows": 182,
+     "years": "2021-2025"
+    },
+    "note": "measured from the collected summary.json (the pre-launch expectation said train ~282 positives; the live source decided 279 - within the recorded drift allowance)",
+    "train": {
+     "distinct_countries": 78,
+     "positives": 279,
+     "rate": 0.638444,
+     "rows": 437,
+     "years": "2000-2016"
+    }
+   },
+   "staging_release": 430422823,
+   "status": "succeeded"
+  },
+  {
+   "build_py_sha256": "ab0526baa1ab8e1d (54,287 bytes; 001's was 59f59251... at 53,127 bytes)",
+   "bundle_source_sha256": "f6b54378807a90a95b9529df9ed9361250ea30ab42f3dc5ff39a5ecc3aeb90d9",
+   "job_id": "fts-appeal-002",
+   "launched_at": "2026-11-01T07:50:20Z",
+   "server_id": 173928952,
+   "status": "running",
+   "what": "the ONE diagnosed rebuild for the meta-key defect class: build.py write_artifact() now emits 'description' (the prediction question) and 'split' (one-line temporal statement) - verified locally with a synthetic write_artifact run asserting all 8 TASK_KEYS present; no other logic changed; harvest, fixtures, gate, acceptance and references rerun in full"
+  }
+ ],
  "jurisdiction": {
   "country": "CH",
   "note": "A UN organ is not a country jurisdiction; recorded as CH per the FTS service location (Geneva), matching the who-flunet WHO-Geneva precedent on this bench. Subject matter is global: 83 distinct country series in the primary population.",
@@ -34,10 +91,96 @@
   "population_2026_10_29": "HDX CSV: 3,874 rows 1999-2031 (future-dated rows are multiyear-plan usage-year extensions); 2,678 rows without requirements (country funding outside appeals - outside the task population); 1,196 rows with plan id + requirements = plan x country attribution; 877 distinct (plan, plan-year) pairs; 782 primary single-country plan-years with origRequirements>0 (2000-2025), 60 multi-country regional plans, 41 plan-years with no recorded original requirements (excluded, counted).",
   "provenance_mix_2026_10_29": "Primary population by typeName: Humanitarian response plan 212, Consolidated appeals process 152, Flash appeal 122, Other 117, Consolidated inter-agency appeal 69, Humanitarian needs and response plan 49, Strategic response plan 45, Regional response plan 16; isPartOfGHO true 703/782. Type is a documented feature, not a population shift: all types share the appeal-launch contract.",
   "publisher_summary_crosscheck_2026_10_29": "GHO 2023 December update (publisher's snapshot): requirements $56.7B, funding $21.8B, coverage 38% at 2023-12-31; launch ask was $51.5B (2022-12-01). My CSV-basis 2023 aggregate (55.8B requirements / 25.2B funding / 45.1%) differs because it includes non-GHO plans and mixed-vintage requirements - composition, explained; per-plan origRequirements + isPartOfGHO reconcile at construction.",
+  "references_2026_11_01_fts_appeal_001": {
+   "brier": {
+    "ask_size_rate": 0.22545387995752264,
+    "country_hist_rate": 0.25021941248042434,
+    "persistence_last_coverage": 0.2787769784172662,
+    "plan_type_rate": 0.25080408668973475,
+    "prior_mean_rate": 0.2212567383762087
+   },
+   "collected_evidence": ".factory/fts-appeal-001/reports/{acceptance.txt, qualification.json, references.json, summary.json, container.log} each re-hashed at its staging ledger digest from release 430422823; bulk CSVs stay in staging (train 35,621 B / eval 11,268 B / holdout 15,419 B at the ledger digests)",
+   "interpretation_rule": "persistence_last_coverage 0.7171 is the headroom reference; any full-model figure from the runner baseline job must be quoted beside it, and a model below it is a recorded defect; no full-model figure exists yet (the baseline job on the accepted 002 artifact is the next step)",
+   "majority_class": {
+    "accuracy_this_split": 0.5827338129496403,
+    "note": "majority fitted on train (positive rate 0.6384), measured against eval labels"
+   },
+   "measured_on": "artifact 893b2e78a4812dcc (job fts-appeal-001, post-acceptance score.py on the worker; eval rows only, holdout never opened)",
+   "paired_bootstrap_150": {
+    "note": "every interval contains zero: persistence's edge over the other simple references is inconclusive on 139 eval rows; an interval containing zero is an inconclusive difference, not parity",
+    "persistence_vs_ask_size": {
+     "ci95": [
+      -0.1230496453900709,
+      0.08506493506493507
+     ],
+     "observed_difference": 0.004469987228607919
+    },
+    "persistence_vs_country_hist": {
+     "ci95": [
+      -0.05893246187363832,
+      0.1466581524052788
+     ],
+     "observed_difference": 0.04416773094934012
+    },
+    "persistence_vs_plan_type": {
+     "ci95": [
+      -0.06977225672877851,
+      0.16033755274261607
+     ],
+     "observed_difference": 0.04789272030651348
+    },
+    "persistence_vs_prior_mean": {
+     "ci95": [
+      -0.07012987012987015,
+      0.10370051635111877
+     ],
+     "observed_difference": 0.002767134951042971
+    }
+   },
+   "per_eval_year_persistence_auc": {
+    "2017": 0.7361111111111112,
+    "2018": 0.6657894736842105,
+    "2019": 0.7471590909090909,
+    "2020": 0.7272727272727273
+   },
+   "per_eval_year_rows_positives": {
+    "2017": [
+     34,
+     16
+    ],
+    "2018": [
+     29,
+     19
+    ],
+    "2019": [
+     30,
+     22
+    ],
+    "2020": [
+     46,
+     24
+    ]
+   },
+   "references_eval_auc": {
+    "ask_size_rate": 0.7126436781609196,
+    "country_hist_rate": 0.6729459344401874,
+    "global_rate": "degenerate (constant score; no ranking information)",
+    "persistence_last_coverage": 0.7171136653895275,
+    "plan_type_rate": 0.669220945083014,
+    "prior_mean_rate": 0.7143465304384845,
+    "year_rate": "degenerate by construction (eval plan years 2017-2020 outside train range 2000-2016; falls back to the constant global train rate)"
+   },
+   "rows": {
+    "eval": 139,
+    "eval_positives": 81,
+    "train": 437,
+    "train_positive_rate": 0.638444
+   }
+  },
   "regional_slice_gap_2026_10_29": "Burundi RRP 2021 (plan 1017): HDX CSV country slices sum to 14,978,233 funding vs API plan total 19,282,778 (ratio 0.78) - regional plans excluded from the primary population; the flow endpoint carries the authoritative plan total.",
   "vintage_flip_fixture_2026_10_29": "Afghanistan HRP 2023: origRequirements 4,627,363,573 (launch ask, matches GHO 2022-12-01 '$4.6 billion' and UNICEF sitrep 'US$4.62 billion is required'); final funding 1,678,347,238 = 36.3% of orig -> label 0. The same plan in today's HDX CSV: requirements 3,227,372,908 (down-revised post-launch) and percentFunded 52 -> using the CSV column would flip the label to 1 and leak the post-launch revision. Recorded as the construction's forbidden-column fixture."
  },
- "next_action": "CONSTRUCTION IN FLIGHT (advancement session 2026-11-01, job fts-appeal-001, server 173923335, cx23/hel1, EUR 0.04 reserved, launched 2026-11-01T06:55:24Z, timeout 45 min / lifetime 60 min). Preflight recorded before launch: (a) row selection lives in build.py build_panel() - primary = CSV (id,year) groups with exactly one country row AND plan-endpoint origRequirements > 0 AND plan year 2000..2025; exclusions counted in their own buckets (regional multi-country, no-orig, pre-window, 2026+ live-edge unobserved targets - never scored as negatives); history features read only strictly-earlier plan years and are asserted against a from-scratch recompute. (b) The artifact is written by write_artifact() (public/train.csv, public/eval.csv, private/holdout.csv, meta.json) plus build_quality() (quality.json with the gate-1.5 evaluation_contract: retrospective_research, isolated_rows, mixed vintage, training_label_timing unverified, declared cross-row probe). (c) Qualification and exact-byte acceptance run ON THE WORKER in run.sh stages 2-3 over the full extract; the first performance metric in the job is score.py (post-acceptance references on eval rows only; holdout never opened; build.py computes no AUC/accuracy/model). (d) Local synthetic dry-run before launch (scratch, no real data, no network: flow caches pre-populated) exercised the builder + the real gate 1.5.0: all checks passed except the thin-positives threshold expected on synthetic data, and the dry run caught + fixed one real defect (country_iso3 exceeds the gate's relative levels>rows/5 threshold on this small panel -> declared in high_cardinality_columns). Gate-1.5 reverse-history probe mechanics verified on the synthetic extract: 0 mismatches on covered rows - the prior-outcome exposure is real and declared. NEXT STEPS for the collecting session: (1) `sh scripts/scout-factory worker collect fts-appeal-001` then `destroy fts-appeal-001` (collect-then-delete-immediately); (2) verify from the collected reports: gate failed_checks EMPTY for the exact artifact, qualification--accept ACCEPTED on the worker, fixtures all pinned (AFG 2023 orig 4,627,363,573 / funding 1,678,347,238 / label 0 / CSV revised 3,227,372,908 NOT the denominator; YEM 2023 1,774,327,599; Burundi RRP 2021 14,978,233 vs 19,282,778), flow-vs-CSV funding mismatch rate <= 10%; (3) read references-ocha-fts...json and RECORD the persistence comparison beside any model figure (persistence_last_coverage is the headroom reference; a model that trails it is a recorded defect, and if the interval supports no headroom that is the reportable negative finding - preserve it, operator chooses drop/re-scope/leave); (4) if and only if the artifact is accepted, the runner-contract baseline job (harness train.py + validate.sh unmodified + model_intervals second implementation, eval rows only, holdout sealed) is the next worker job on the staged bytes - assemble from baseline/ with the staging release id from collect; (5) any fixture/gate failure: collect diagnostics, diagnose, ONE diagnosed rebuild maximum (fts-appeal-002), second failure of the same class -> hold and record the blocker. Stopping condition: accepted artifact + recorded persistence comparison, or a recorded blocker.",
+ "next_action": "REBUILD IN FLIGHT (advancement session 2026-11-01). fts-appeal-001 collected and worker destroyed (provider-confirmed 404): gate 1.5.0 clean, exact-byte ACCEPTED artifact 893b2e78a4812dcc, all fixtures to the dollar, flow-vs-CSV mismatch 36/757 = 4.75% (guard 10%), references recorded (persistence_last_coverage eval AUC 0.7171 on 139 rows / 81 positives; per-year 0.736/0.666/0.747/0.727; majority-class accuracy 0.5827; paired bootstrap vs the other simple references all inconclusive). DEFECT found by inspection after collection: meta.json lacks 'description' and 'split', which bench/workdir.py line 76 indexes with meta[k] (8 TASK_KEYS) - the artifact passes the gate (the gate does not check these keys; recorded as a PROPOSED gate addition for the builder agent, not implemented mid-session) but KeyErrors at runner materialization, so 893b2e78 is preserved in staging release 430422823 and NOT shipped. The one permitted diagnosed rebuild is IN FLIGHT: fts-appeal-002 (server 173928952, launched 2026-11-01T07:50:20Z, EUR 0.04 reserved, build.py sha ab0526ba... with description+split added and verified locally on a synthetic write_artifact run - all 8 TASK_KEYS present). NEXT STEPS for the collecting session: (1) `sh scripts/scout-factory worker collect fts-appeal-002` then `destroy fts-appeal-002` (collect-then-delete, provider 404 read-back); (2) verify gate failed_checks empty + --accept ACCEPTED for the new artifact + fixtures green + mismatch <= 10%; (3) compare the rebuilt split counts and references with 001's (drift on the live source is expected and the gate decides); (4) THEN the runner-contract baseline job on the accepted 002 bytes - the baseline/ bundle is scaffolded (run.sh, materialize.py, report.py, bundle.json, job.json with fetch marked PENDING): fill baseline/job.json's fetch block + qualification.json + expected_artifact.json from 002's collect, patch the references comment in run.sh with 002's measured reference figures, assemble 'fts-baseline', plan, launch, collect; quote the full-model eval AUC beside persistence; (5) any failure of any class in 002 is recorded and held - this was the one permitted rebuild for the meta-key defect class. A running worker is a valid handoff.",
  "novelty_check": {
   "checked_at": "2026-10-29T20:43:46+00:00",
   "evidence": {

@@ -1,0 +1,68 @@
+{
+  "job": {
+    "id": "fts-appeal-002",
+    "candidate": "ocha-fts-appeal-funding-trajectory",
+    "image": "python:3.13-slim",
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 2048,
+    "timeout_minutes": 45,
+    "lifetime_minutes": 60,
+    "max_disk_mb": 3000,
+    "max_artifact_mb": 24,
+    "what": "Diagnosed rebuild of ocha-fts-appeal-funding-trajectory (fts-appeal-002), the ONE rebuild permitted for its defect class after fts-appeal-001 succeeded end to end (gate 1.5.0 failed_checks empty, exact-byte ACCEPTED for artifact 893b2e78a4812dcc... on the worker, all three fixtures matched to the dollar, flow-vs-CSV mismatch 36/757 = 4.75% within the 10% guard; that artifact is preserved in staging release 430422823 and its references recorded). DEFECT (found by inspection against the read-only harness clone, not by a failed stage): bench/workdir.py line 76 writes task.json with meta[k] for exactly (name, description, target, positive_label, id_columns, split, columns, rows), but build.py's meta dict wrote only split_description and no description - the produced meta.json KeyErrors at runner materialization, so the artifact cannot enter a workdir despite passing the gate (the gate does not check these two keys; recorded as a proposed gate addition, not implemented mid-session). FIX: build.py write_artifact() now emits 'description' (the prediction question) and 'split' (the one-line temporal split statement) alongside split_description, verified locally with a synthetic write_artifact run asserting all 8 TASK_KEYS present. No other logic changed; the harvest, panel construction, fixtures, gate, acceptance and post-acceptance references are unchanged from the 001 spec and rerun in full on the live source so the accepted artifact is produced end to end by the builder. Expected artifact: same panel as 001 (train 437 / eval 139 / holdout ~182 at the measured vintage; counts may drift with the current-vintage source and the gate decides). Stopping condition: any failed stage exits non-zero leaving its logs and diagnostics for collection; a fixture or cross-check failure means diagnose before ANY rebuild - this is already the one permitted rebuild for the meta-key defect class, so a failure here (of any class) is recorded, not blindly retried.",
+    "stopping_condition": "gate failure or fixture failure -> collect diagnostics, diagnose, record; this IS the one diagnosed rebuild for the meta-key defect class; a second failure of any class -> hold the candidate and record the blocker",
+    "source_files": [
+      {
+        "bundled_as": "build.py",
+        "source": "candidates/ocha-fts-appeal-funding-trajectory/source/build.py",
+        "bytes": 54287,
+        "sha256": "ab0526baa1ab8e1daf9bd513f5686f29f8386fc7d484db4ca2b355a1057d17d2"
+      },
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/ocha-fts-appeal-funding-trajectory/source/run.sh",
+        "bytes": 2286,
+        "sha256": "1a43bc829d387f87fa81856091137159d5b34a04e0d2fdb9b0e74ef1822ea609"
+      },
+      {
+        "bundled_as": "score.py",
+        "source": "candidates/ocha-fts-appeal-funding-trajectory/source/score.py",
+        "bytes": 13732,
+        "sha256": "804adbae62ecd520d35b1d7d596b093ff7ed652ea7d1a15fd8fed3c5cffb4e26"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 57029,
+        "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+      }
+    ]
+  },
+  "reservation_eur": "0.04",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 2,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 225280,
+  "source_sha256": "f6b54378807a90a95b9529df9ed9361250ea30ab42f3dc5ff39a5ecc3aeb90d9",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "running",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-11-01T07:50:20.068325+00:00",
+  "expires": 1793523020,
+  "budget_months": [
+    "2026-11"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 173928952,
+  "known_hosts": "/opt/data/dataset-factory/.factory/fts-appeal-002/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "65.21.158.17"
+}

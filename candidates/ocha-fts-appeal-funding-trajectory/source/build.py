@@ -482,6 +482,20 @@ def write_artifact(out: Path, splits, built_at: str):
 
     meta = {
         "name": NAME,
+        "description": (
+            "For a UN-coordinated humanitarian appeal or response plan "
+            "(HRP/CAP/flash appeal and similar single-country plans) at its "
+            "public launch instant (requirements first published - GHO early "
+            "December for the following year, or the plan's own release, "
+            "whichever the record dates), will the plan receive funding equal "
+            "to at least 50% of its ORIGINAL (launch-vintage) requirements by "
+            "the close of its plan year? Features are launch-time attributes "
+            "(original requirements, plan type, GHO membership, country, "
+            "emergency linkage) plus strictly-prior-year history for the same "
+            "country (prior-year plan coverage, series length). A useful "
+            "prediction identifies, months ahead, which appeals will end the "
+            "year underfunded - the quantity GHO gap analysis reports after "
+            "the fact - enabling donor advocacy and fundraising prioritization."),
         "target": TARGET,
         "positive_label": POSITIVE,
         "positive_label_text": POSITIVE_LABEL_TEXT,
@@ -490,6 +504,8 @@ def write_artifact(out: Path, splits, built_at: str):
         "rows": {name: stats_by_split[name]["rows"] for name in stats_by_split},
         "positive_rate": {name: stats_by_split[name]["positive_rate"]
                           for name in stats_by_split},
+        "split": ("temporal on the plan year: train 2000-2016, eval 2017-2020, "
+                  "holdout 2021-2025"),
         "split_description": (
             "temporal on the plan year: train 2000-2016, eval 2017-2020, "
             "holdout 2021-2025 (the 2026+ live edge is excluded until those years "

@@ -1,19 +1,19 @@
 {
- "id": "fts-appeal-001",
- "candidate": "ocha-fts-appeal-funding-trajectory",
- "image": "python:3.13-slim",
- "command": [
-  "sh",
-  "/workspace/run.sh"
- ],
- "server_type": "cx23",
- "location": "hel1",
- "cpus": 2,
- "memory_mb": 2048,
- "timeout_minutes": 45,
- "lifetime_minutes": 60,
- "max_disk_mb": 3000,
- "max_artifact_mb": 24,
- "what": "Construction of the ocha-fts-appeal-funding-trajectory panel per the recorded GO (candidate record next_action, discovery 2026-10-29): (1) harvest on the worker - the HDX requirements-and-funding CSV (the panel enumerator, sha256-pinned, CC BY-IGO), per-plan launch-vintage origRequirements from api.hpc.tools v2/public/plan (NOT the CSV requirements column, which carries the revised value in revised cases), and per-scored-plan-year appeal-linked funding totals from the flow endpoint first pages (~1,650 anonymous requests, ~340 MB, resume-cached, raw responses not retained - compact per-record provenance uploaded instead); (2) build the launch-instant panel: one row per primary (single-country, orig>0) plan-year 2000-2025, features = launch attributes + strictly-prior same-country history (asserted by brute-force recompute), label = 2*funding >= orig, exclusions counted in their own buckets (regional multi-country groups, no-orig groups, pre-window rows, 2026+ live-edge unobserved targets - never scored as negatives); (3) assert the three dated fixtures in-build to the dollar: AFG 2023 (orig 4,627,363,573, funding 1,678,347,238, label 0, CSV revised 3,227,372,908 must NOT be the denominator), YEM 2023 (funding 1,774,327,599), Burundi RRP 2021 regional slice gap (14,978,233 vs plan total 19,282,778) - plus a flow-vs-CSV funding cross-check on every scored row (guard: mismatch rate <= 10%); (4) qualification gate 1.5.x on the FULL artifact on the worker, including the declared gate-1.5 reverse-history cross-row probe (country + 12-month anchor join exposing prior plan-year labels through country_last_prior_covered) and the evaluation_contract (retrospective_research, isolated_rows, mixed vintage, training_label_timing unverified); (5) exact-byte --accept BEFORE any score; (6) post-acceptance simple references on eval rows only (persistence_last_coverage as the headroom reference the record names first, prior_mean_rate, country_hist_rate, plan_type_rate, ask_size_rate, degenerate year_rate/global_rate controls, majority_class, per-year eval AUCs, paired bootstrap) - the full model is NOT computed here, it is the separate baseline job on the staged artifact. Expected artifact: ~758 scored rows, train 2000-2016: ~437 (282 pos) / eval 2017-2020: ~139 (81 pos) / holdout 2021-2025: ~182 (96 pos) at the measured 2026-10-29 vintage; counts may drift with the current-vintage source, and the gate decides (both classes everywhere, >=30 eval positives, >=20 events). Stopping condition: any failed stage exits non-zero leaving its logs and diagnostics for collection; a fixture or cross-check failure means diagnose before ANY rebuild - at most one diagnosed rebuild per defect class (no fts-appeal-003 without a recorded diagnosis).",
- "stopping_condition": "gate failure or fixture failure -> collect diagnostics, diagnose, record; one diagnosed rebuild permitted; second failure of the same class -> hold the candidate and record the blocker"
+  "id": "fts-appeal-002",
+  "candidate": "ocha-fts-appeal-funding-trajectory",
+  "image": "python:3.13-slim",
+  "command": [
+    "sh",
+    "/workspace/run.sh"
+  ],
+  "server_type": "cx23",
+  "location": "hel1",
+  "cpus": 2,
+  "memory_mb": 2048,
+  "timeout_minutes": 45,
+  "lifetime_minutes": 60,
+  "max_disk_mb": 3000,
+  "max_artifact_mb": 24,
+  "what": "Diagnosed rebuild of ocha-fts-appeal-funding-trajectory (fts-appeal-002), the ONE rebuild permitted for its defect class after fts-appeal-001 succeeded end to end (gate 1.5.0 failed_checks empty, exact-byte ACCEPTED for artifact 893b2e78a4812dcc... on the worker, all three fixtures matched to the dollar, flow-vs-CSV mismatch 36/757 = 4.75% within the 10% guard; that artifact is preserved in staging release 430422823 and its references recorded). DEFECT (found by inspection against the read-only harness clone, not by a failed stage): bench/workdir.py line 76 writes task.json with meta[k] for exactly (name, description, target, positive_label, id_columns, split, columns, rows), but build.py's meta dict wrote only split_description and no description - the produced meta.json KeyErrors at runner materialization, so the artifact cannot enter a workdir despite passing the gate (the gate does not check these two keys; recorded as a proposed gate addition, not implemented mid-session). FIX: build.py write_artifact() now emits 'description' (the prediction question) and 'split' (the one-line temporal split statement) alongside split_description, verified locally with a synthetic write_artifact run asserting all 8 TASK_KEYS present. No other logic changed; the harvest, panel construction, fixtures, gate, acceptance and post-acceptance references are unchanged from the 001 spec and rerun in full on the live source so the accepted artifact is produced end to end by the builder. Expected artifact: same panel as 001 (train 437 / eval 139 / holdout ~182 at the measured vintage; counts may drift with the current-vintage source and the gate decides). Stopping condition: any failed stage exits non-zero leaving its logs and diagnostics for collection; a fixture or cross-check failure means diagnose before ANY rebuild - this is already the one permitted rebuild for the meta-key defect class, so a failure here (of any class) is recorded, not blindly retried.",
+  "stopping_condition": "gate failure or fixture failure -> collect diagnostics, diagnose, record; this IS the one diagnosed rebuild for the meta-key defect class; a second failure of any class -> hold the candidate and record the blocker"
 }
