@@ -11464,3 +11464,57 @@ frozen manifest, existing tag or destination content changed - the failing check
 records-must-pass-CI guard doing its job. Verified before the fix commit: check-candidate
 --all rc=0 unpiped, test_artifact_checks 26/26 OK. ec-state-aid-investigation-opening/probe/
 still untouched and excluded.
+
+## 2026-11-01 (00:40Z) - icfes-saber11-school-outcome-decline opened (LatAm tick): first education task on the bench, CO Saber 11 school-aggregate outcome decline, licence B (CC BY-SA), one registration-channel listing from ready/drop
+
+Discovery-only session (regional focus Latin America; no construction, qualification, packaging,
+publication, advancement or worker launched; all probes bounded coordinator-side anonymous HTTPS,
+source-side aggregates only, ~40 GETs / ~8 MB total). One candidate opened, none reopened.
+
+- `icfes-saber11-school-outcome-decline` (CO, investigating): at the official results-publication
+  instant of a Saber 11 Calendario A school-year sitting T (dated example: exam 2025-08-10, results
+  2025-10-10 COT), predict whether a school's next-school-year mean global score falls below its T
+  mean by a fixed margin. First education-outcome task on the bench (portfolio gap measured first:
+  119 candidates, 43 live, none in education; procurement/entity-exit/aggregate-forecast families all
+  loaded). Licence class B - CC BY-SA 4.0 (licenceId CC_40_BY_SA, official ICFES account
+  bpbw-gs2u on datos.gov.co; attribution + share-alike to carry into LICENSE.md); the
+  registration-gated DataIcfes channel's terms are UNREAD and recorded as such. Publisher's own
+  51-column documented schema read in full; stable school keys (COLE_CODIGO_ICFES + DANE codes);
+  global-score era starts 2014-2 (matches third-party guide). MEASURED: per-sitting rows and period
+  codes (Cal-A school-years 2014-2017 = 546,727/544,491/550,275/548,269; 2019 = periodo 20194 with
+  the sitting loaded twice - 546,211 distinct consecutivos; 2022 = 20224; 2020-2 exists only as the
+  separate rnvb-vnyh dataset, 504,872 x 81); school counts 11.8-13.7k per Cal-A school-year, ~350-400
+  Cal-B; transition base rates from server-side per-school aggregates (decline rates 20.7-62.5%,
+  both classes in every measured transition, 9,025-10,952 schools per pair); equating year-shifts
+  measured (+8.35/-2.97 Cal-A) as a label-definition caveat (percentile-rank alternative recorded);
+  2019-2 duplication, consent-column governance values, official exam/results calendars (CA 2025,
+  CB 2025/2026), open-microdata publication lag (unified table rowsUpdatedAt 2023-08-23) -> panel is
+  current-vintage retrospective (za-statsa posture). DECISIVE NEGATIVE (the one unresolved contract):
+  Cal-A school-years 2018 and 2021 are absent from EVERY published anonymous copy (measured; a
+  third-party guide independently states the same), so the anonymous channel yields only 4
+  transitions and cannot fill three disjoint windows; the complete Cal-B fallback (7 transitions,
+  283-308 schools/pair) is recorded as an explicit redesign decision, not taken silently. The
+  renovated DataIcfes portal's own inventory image (403 to plain clients; fetched through the
+  supported browser, retained in probe/) claims Saber 11 1996-2024 student-level, and an IADB paper
+  documents downloading 2018-2 from the OLD portal - but per-sitting presence of 2018-2/2021-2/2023/
+  2024 is unverifiable without registering (access link is auto-emailed to the registrant; this
+  environment has no inbox). Novelty: differentiated (mechanical check recorded; prior art is
+  student-level cross-sectional same-exam ML and Saber-Pro linkage products - no school-aggregate
+  next-year outcome benchmark with temporal splits found in HF/zenodo/arXiv/web/Kaggle; nearest
+  bench sibling ofsted-childrens-home-next-rating compared and distinguished). Next action with
+  acceptance criteria in record.json: one bounded DataIcfes registration+listing pass (operator or
+  worker inbox needed) settles advance-to-construction (2014-2024 panel, 10-11 transitions) vs
+  Cal-B redesign vs park-with-trigger.
+- CI fix (separate commit): tests/test_dashboard.py's ledger fixture hardcoded 2026-10-02/03/04
+  timestamps, so test_lifetime_and_month_costs_come_from_recorded_intervals failed on any run after
+  2026-10-31 (observed this session: expected month_to_date 0.24, got 0.0 - yesterday's session saw
+  697/697 because it still ran inside October). Fixture now derives the same intervals (2h, 1h, one
+  open job) from the current month's first days; suite 697/697 OK (rc=0, unpiped).
+- Hygiene: check-candidate icfes OK, --all rc=0 (120 records, +1 candidate, licence field on every
+  source entry); discovery-coverage rc=0 (CO 2, live 44, non-US 38/44 = 86%); factory doctor rc=0,
+  check-runtime --source-only rc=0, check-suitability rc=0 (17 reviews); probe scripts + aggregate
+  outputs retained in candidates/icfes-saber11-school-outcome-decline/probe/ (incl. the DataIcfes
+  inventory image and the one-shot record-fill recipe); scratch view-metadata copies left to the
+  24h scratch sweep. No tokens, no workers, no releases touched. Concurrent session's
+  ec-state-aid-investigation-opening/probe/ untracked, untouched and excluded from both commits.
+
