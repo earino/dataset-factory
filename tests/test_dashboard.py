@@ -123,14 +123,25 @@ class ResourceTests(unittest.TestCase):
         (root / "config").mkdir(parents=True)
         (root / "config" / "local.json").write_text('{"monthly_budget_eur": 20}')
         (root / "jobs").mkdir()
+        # Month-relative timestamps: month_to_date counts jobs in the calendar
+        # month the dashboard runs in, so a fixed 2026-10 fixture made the test
+        # fail on every run after 2026-10-31 (observed 2026-11-01: expected 0.24,
+        # got 0.0). Anchor all jobs to the current month's first days instead;
+        # the recorded intervals (2h, 1h, one open job) are unchanged.
+        from datetime import datetime, timedelta, timezone
+        month_start = datetime.now(timezone.utc).replace(
+            day=1, hour=0, minute=0, second=0, microsecond=0)
         jobs = {
-            "a": {"created_at": "2026-10-02T00:00:00+00:00", "deleted_at": "2026-10-02T02:00:00+00:00",
+            "a": {"created_at": (month_start + timedelta(days=1)).isoformat(),
+                  "deleted_at": (month_start + timedelta(days=1, hours=2)).isoformat(),
                   "provider_hourly_eur": "0.06924", "status": "deleted",
                   "job": {"id": "a", "server_type": "cpx32", "location": "hel1"}},
-            "b": {"created_at": "2026-10-03T00:00:00+00:00", "deleted_at": "2026-10-03T01:00:00+00:00",
+            "b": {"created_at": (month_start + timedelta(days=2)).isoformat(),
+                  "deleted_at": (month_start + timedelta(days=2, hours=1)).isoformat(),
                   "provider_hourly_eur": "0.1", "status": "deleted",
                   "job": {"id": "b", "server_type": "cpx42", "location": "hel1"}},
-            "c": {"created_at": "2026-10-04T00:00:00+00:00", "provider_hourly_eur": "0.1",
+            "c": {"created_at": (month_start + timedelta(days=3)).isoformat(),
+                  "provider_hourly_eur": "0.1",
                   "status": "provisioning", "job": {"id": "c"}},
         }
         for name, record in jobs.items():
