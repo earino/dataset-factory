@@ -1,0 +1,68 @@
+{
+  "job": {
+    "id": "fts-appeal-001",
+    "candidate": "ocha-fts-appeal-funding-trajectory",
+    "image": "python:3.13-slim",
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 2048,
+    "timeout_minutes": 45,
+    "lifetime_minutes": 60,
+    "max_disk_mb": 3000,
+    "max_artifact_mb": 24,
+    "what": "Construction of the ocha-fts-appeal-funding-trajectory panel per the recorded GO (candidate record next_action, discovery 2026-10-29): (1) harvest on the worker - the HDX requirements-and-funding CSV (the panel enumerator, sha256-pinned, CC BY-IGO), per-plan launch-vintage origRequirements from api.hpc.tools v2/public/plan (NOT the CSV requirements column, which carries the revised value in revised cases), and per-scored-plan-year appeal-linked funding totals from the flow endpoint first pages (~1,650 anonymous requests, ~340 MB, resume-cached, raw responses not retained - compact per-record provenance uploaded instead); (2) build the launch-instant panel: one row per primary (single-country, orig>0) plan-year 2000-2025, features = launch attributes + strictly-prior same-country history (asserted by brute-force recompute), label = 2*funding >= orig, exclusions counted in their own buckets (regional multi-country groups, no-orig groups, pre-window rows, 2026+ live-edge unobserved targets - never scored as negatives); (3) assert the three dated fixtures in-build to the dollar: AFG 2023 (orig 4,627,363,573, funding 1,678,347,238, label 0, CSV revised 3,227,372,908 must NOT be the denominator), YEM 2023 (funding 1,774,327,599), Burundi RRP 2021 regional slice gap (14,978,233 vs plan total 19,282,778) - plus a flow-vs-CSV funding cross-check on every scored row (guard: mismatch rate <= 10%); (4) qualification gate 1.5.x on the FULL artifact on the worker, including the declared gate-1.5 reverse-history cross-row probe (country + 12-month anchor join exposing prior plan-year labels through country_last_prior_covered) and the evaluation_contract (retrospective_research, isolated_rows, mixed vintage, training_label_timing unverified); (5) exact-byte --accept BEFORE any score; (6) post-acceptance simple references on eval rows only (persistence_last_coverage as the headroom reference the record names first, prior_mean_rate, country_hist_rate, plan_type_rate, ask_size_rate, degenerate year_rate/global_rate controls, majority_class, per-year eval AUCs, paired bootstrap) - the full model is NOT computed here, it is the separate baseline job on the staged artifact. Expected artifact: ~758 scored rows, train 2000-2016: ~437 (282 pos) / eval 2017-2020: ~139 (81 pos) / holdout 2021-2025: ~182 (96 pos) at the measured 2026-10-29 vintage; counts may drift with the current-vintage source, and the gate decides (both classes everywhere, >=30 eval positives, >=20 events). Stopping condition: any failed stage exits non-zero leaving its logs and diagnostics for collection; a fixture or cross-check failure means diagnose before ANY rebuild - at most one diagnosed rebuild per defect class (no fts-appeal-003 without a recorded diagnosis).",
+    "stopping_condition": "gate failure or fixture failure -> collect diagnostics, diagnose, record; one diagnosed rebuild permitted; second failure of the same class -> hold the candidate and record the blocker",
+    "source_files": [
+      {
+        "bundled_as": "build.py",
+        "source": "candidates/ocha-fts-appeal-funding-trajectory/source/build.py",
+        "bytes": 53127,
+        "sha256": "59f59251e24551aaf2def687746ffba1be6d7af7f0e9de2e29b1bd3a90370e03"
+      },
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/ocha-fts-appeal-funding-trajectory/source/run.sh",
+        "bytes": 2286,
+        "sha256": "1a43bc829d387f87fa81856091137159d5b34a04e0d2fdb9b0e74ef1822ea609"
+      },
+      {
+        "bundled_as": "score.py",
+        "source": "candidates/ocha-fts-appeal-funding-trajectory/source/score.py",
+        "bytes": 13732,
+        "sha256": "804adbae62ecd520d35b1d7d596b093ff7ed652ea7d1a15fd8fed3c5cffb4e26"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 57029,
+        "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+      }
+    ]
+  },
+  "reservation_eur": "0.04",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 2,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 225280,
+  "source_sha256": "5d849e0fcf6e1ac3d22392a72cd2523d72b122c6974ecc01c4ea36c3c2ef806b",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "running",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-11-01T06:55:24.866196+00:00",
+  "expires": 1793519724,
+  "budget_months": [
+    "2026-11"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 173923335,
+  "known_hosts": "/opt/data/dataset-factory/.factory/fts-appeal-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "65.21.158.17"
+}

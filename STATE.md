@@ -1,3 +1,55 @@
+## 2026-11-01 (07:0xZ) - fts-appeal-001 construction launched on a worker (ocha-fts-appeal-funding-trajectory); release track stays operator-gated (unhcr re-audit relay, pins flip) and untouched
+
+Scheduled advancement tick. Release work outranks construction, but BOTH release items are
+operator-gated human waits, verified from their records this session: unhcr-refugee-data-finder
+keeps operator_decision_pending (re-audit relay, no recorded verdict or waiver) and
+pins-planning-appeal-outcome completed BOTH private destinations 2026-11-01T02:47Z
+(pins-hf-001, awaiting the audit relay + flip) - so per the standing rule both stay private and
+untouched, and the actionable work was the operator-listed build/construct queue. No remediation
+hold is active (#17 closed). No active jobs at session start; November worker spend was EUR 0.04
+(pins-hf-001) of 20, release reserve 5 untouched.
+
+CHOSEN CANDIDATE: ocha-fts-appeal-funding-trajectory (operator-listed build item, status ready,
+Class A licence CC BY-IGO, novelty differentiated at discovery 2026-10-29 with every construction
+input pre-measured: dated fixtures, launch-vintage orig/revised separation on 836 plans, measured
+split counts with both classes, 83-country clustering, prevalence drift recorded). Rationale: the
+only listed candidate whose full construct -> qualify -> accept -> references cycle plausibly
+completes inside one session budget, with the decisive persistence comparison pre-registered as
+the value test (honest outcome either way).
+
+PREFLIGHT (recorded in the candidate record before launch): row selection in build.py
+build_panel() (primary = single-country CSV group, orig>0, plan year 2000-2025; live-edge/no-orig/
+regional/pre-window exclusions counted in their own buckets, never scored as negatives); artifact
+written by write_artifact() + build_quality(); qualification and exact-byte --accept run on the
+WORKER in run.sh stages 2-3; the first performance metric in the job is post-acceptance score.py
+(eval rows only, holdout never opened; build.py computes no AUC/accuracy/model - counts and
+fixture asserts only). Local synthetic dry-run BEFORE launch (scratch only, no real data, flow
+caches pre-populated so no network): builder + real gate 1.5.0 exercised end to end; it caught
+one real defect (country_iso3 exceeds the gate's relative levels>rows/5 categorical threshold on
+a panel this small -> now declared in high_cardinality_columns with the reason) and verified the
+declared cross-row probe mechanics (0 mismatches on covered rows: the prior-outcome feature IS the
+earlier row's label - the exposure is real, declared, and isolated_rows is the required protocol).
+
+fts-appeal-001 (server 173923335, cx23/hel1, EUR 0.04 reserved -> November total 0.08 of 20,
+launched 06:55:24Z, timeout 45/lifetime 60): stdlib-only construction. Harvest on the worker:
+HDX CSV enumerator (sha256-pinned) + per-plan launch-vintage origRequirements (v2/public/plan,
+NOT the CSV requirements column which carries revised values) + per-plan-year flow-endpoint
+funding totals (first pages, resume-cached, compact provenance uploaded, raw responses not
+retained). In-build fixtures asserted to the dollar: AFG 2023 (orig 4,627,363,573, funding
+1,678,347,238, label 0, CSV revised 3,227,372,908 must not be the denominator), YEM 2023
+(1,774,327,599), Burundi RRP 2021 slice gap (14,978,233 vs 19,282,778); flow-vs-CSV funding
+cross-check on every scored row (guard <=10%). Expected artifact ~758 rows: train 2000-2016
+~437 (282 pos) / eval 2017-2020 ~139 (81 pos) / holdout 2021-2025 ~182 (96 pos) at the measured
+vintage - counts may drift with the current-vintage source and the gate decides.
+
+HANDOFF (a running worker is the handoff): collect fts-appeal-001, verify gate failed_checks
+empty + --accept ACCEPTED on the worker + fixtures green, destroy the worker
+(collect-then-delete), read references-*.json and record the persistence comparison beside any
+model figure, then (only on an accepted artifact) the runner-contract baseline job on the staged
+bytes. Any fixture/gate failure: collect diagnostics, diagnose, ONE diagnosed rebuild maximum;
+second failure of the same class -> hold and record. unhcr and pins: no byte, tag, destination
+or visibility touched; both operator waits unchanged.
+
 ## 2026-11-01 (05:55Z) - Africa discovery tick: CCT handoff resolved (all four negative, first-hand evidence) and the census-method correction it surfaced exposed an electricity family the DCAT feed never indexed -> za-cct-substation-evening-peak-exceedance READY (42 Cape Town switching substations, half-hourly MVA 2022-2024, class A, retrospective within-day evening-peak exceedance)
 
 Scheduled discovery tick, regional focus Africa (South Africa, Kenya, Nigeria,
