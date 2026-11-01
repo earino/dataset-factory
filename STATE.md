@@ -11518,3 +11518,65 @@ source-side aggregates only, ~40 GETs / ~8 MB total). One candidate opened, none
   24h scratch sweep. No tokens, no workers, no releases touched. Concurrent session's
   ec-state-aid-investigation-opening/probe/ untracked, untouched and excluded from both commits.
 
+## 2026-11-01 (02:47Z) - pins Hub staging complete: v2026.10 verified on both private destinations, site plan prepared, candidate now awaiting_operator (audit relay + flip)
+
+Scheduled advancement session (release work outranks construction). Primary chosen:
+pins-planning-appeal-outcome (packaged 2026-10-31, Hub staging explicitly remaining,
+awaiting_operator false). unhcr-refugee-data-finder re-checked first: ALL pre-flip prep
+complete since 2026-10-31 and its remaining steps are operator acts (relay the re-audit
+prompt, then the flip), so it was left untouched. No construction was launched.
+
+- The documented Hub cycle ran end to end for pins v2026.10 (artifact c861bd8f4acd9bbe):
+  hf-publish.py --plan (repo earino/pins-planning-appeal-outcome, 10 coordinator-side small
+  uploads + 5 worker asset uploads, card generated from MANIFEST.json), then --create
+  --upload-small (private Hub repo created, card/LOADING/manifest/sums/licences/dictionary/
+  VERIFICATION/measurements uploaded; no bulk bytes on the coordinator).
+- pins-hf-001 (release job, cx23/hel1, server 173885790, launched 02:08:36Z, job runtime
+  106.1 s, collected 02:36:41Z, destroyed 02:37:32Z with lifecycle reconciliation to
+  'deleted'; reservation EUR 0.04 at the 0.02/h ceiling, provider rate 0.01152/h, November
+  budget month): the worker host fetched the five assets from the staged private GitHub
+  release 430215294 by asset id (digests read from the live release API this session, all
+  equal to MANIFEST.json), verified each sha256 on arrival, uploaded each with the
+  Hub-reported digest verified after upload (uploads 5, skipped 0, failures 0: meta.json
+  2518 B, data/private-holdout.csv 14976119 B, data/public-eval.csv 7688640 B,
+  data/public-train.csv 14799462 B, quality.json 44632 B), deleted local copies, and ran the
+  documented load_dataset path against the uploaded bytes: train 54834/17048, eval
+  28104/8469, holdout 56326/17705, 32 columns, label values 0/1, problems=[] - identical to
+  the accepted artifact. Bytes never passed through the coordinator.
+- hf-publish.py --verify --worker-job pins-hf-001: all five files present at the recorded
+  commit 9628b108 with sizes and digests verified (missing/size_mismatch/digest_unverified
+  all empty); --tag created v2026.10 at that commit with tag == main
+  (release_revision_verified true). The first --tag attempt WITHOUT the pinned worker receipt
+  was refused (digest_unverified: data/public-eval.csv) - the correct refusal shape, not a
+  failure; the re-run with --worker-job pins-hf-001 tagged cleanly. Anonymous Hub access is
+  refused (private by design); nothing is public.
+- release/pins-planning-appeal-outcome/DESTINATIONS.json now carries both destination blocks
+  (Hub files_verified as the five Hub target paths; the GitHub block's stale 'Hub NOT staged
+  yet' note corrected without touching any other field). check-package OK (DESTINATIONS.json
+  factory-side, informational); check-suitability OK (17 version-bound reviews; this
+  artifact retain_restricted) and the honest-disclosure notice is already generated into the
+  Hub card and LOADING.md from the manifest and quality.json.
+- Pre-flip audit prompt generated PROGRAMMATICALLY from the frozen manifest, record and
+  measurements (candidates/pins-planning-appeal-outcome/pre-flip-audit-prompt.md; generator
+  kept at candidates/pins-planning-appeal-outcome/publish/generate_pre_flip_audit_prompt.py;
+  digests never hand-copied; unfilled-placeholder guard exits nonzero).
+- Website plan PREPARED for operator review: sites/pins-planning-appeal-outcome.json
+  (editorial, site_revision 1, release_date 2026-10-31 = the v2026.10 version date) ->
+  .factory/sites/pins-v2026.10-1, plan_sha256
+  3a4ad255a7b3667e4b74e6893c5817f35a174e4d936b68f7037171046223776e (prepare made zero
+  network calls; previews rendered with no unresolved placeholders and a concrete
+  load_dataset('earino/pins-planning-appeal-outcome', revision='v2026.10') snippet;
+  inspect: both destinations private + verified, catalogue repo public with Pages,
+  ready_for_publication false by design). Publish runs only after the flip with this
+  approved plan sha.
+- Candidate record: jobs += pins-hf-001 (full evidence), artifacts[1] = the Hub destination
+  (repo/tag v2026.10/commit 9628b108/verified true with readback), awaiting_operator TRUE
+  (scope: relay the pre-flip audit prompt, then the operator's single flip approval),
+  next_action rewritten. check-candidate pins OK and --all rc=0 (120 records). One cx23
+  worker used and destroyed; no other workers, no tokens exposed, no dataset tags moved, no
+  manifest or published byte regenerated; the holdout stays sealed.
+- Next (operator): relay candidates/pins-planning-appeal-outcome/pre-flip-audit-prompt.md to
+  an independent auditor; the flip waits for that verdict unless waived. Everything on the
+  publisher side is complete.
+
+
