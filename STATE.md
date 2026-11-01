@@ -1831,6 +1831,63 @@ candidate review - review the next candidate's source-specific prediction contra
 and update its builder before construction; #25 remains deferred.
 
 
+## 2026-11-01 (22:35Z) - queue audit verdicts applied: ipo + pins corrected and PUBLISHED (2 flips, both proven anonymously, sites live); ns-bwa, ocha-fts and unhcr held on P0 label recovery; austender licence-blocked, tw-typhoon fix-the-record; 9 ready candidates cleared to build
+
+The operator relayed the independent queue audit (Codex, 2026-11-01, report at
+audits/2026-11-01-queue-audit-codex.md - 16 items, the operator's ranked test
+standard) and instructed: "flip everything you can based on this."
+
+PUBLISHED (the only two flippable items - both failed solely on one false
+licence sentence, corrected pre-flip; the operator's instruction was read as
+the auditor-verdict waiver for the corrected packages):
+- ipo-trademark-registration-outcome: the shipped LICENSE.md falsely asserted
+  an OGL 3.0 same-licence condition on adaptations (OGL 3.0 imposes none; CC
+  BY 4.0 / ODC Attribution adaptations satisfy it - verified against the
+  authoritative licence text). Corrected in both packages (release/ LICENSE.md;
+  the false sentence exists nowhere else - swept, including all published
+  packages), MANIFEST regenerated, docs pushed (main 98f19fa, tag == main),
+  Hub re-uploaded. Audit passed leakage (best blind score 0.5751), integrity
+  (319,436 rows rebuilt byte-for-byte), references and novelty. Flipped both
+  destinations; anonymous proof (5/5 assets 206, Hub tag files 206, corrected
+  licence live on both); site page live, HTTPS enforced, catalogue lists it.
+  Five-file artifact 2c1dade2... unchanged throughout.
+- pins-planning-appeal-outcome: same false-sentence defect and same
+  correction (main 1b16eb7, tag == main). Audit passed leakage (bounded, best
+  0.5727; history heuristics covered 16 eval rows), integrity (139,264 rows
+  rebuilt), references, novelty. Flipped, proven anonymously, site live,
+  catalogue lists it. Artifact c861bd8f... unchanged.
+The catalogue now lists 13 datasets.
+
+HELD (P0 label recovery - the operator's automatic-prohibition standard;
+disclosure does not waive it):
+- ns-bwa-advisory-lift-duration: cumulative-history count arithmetic recovers
+  196/372 eval and 286/884 holdout labels with 0 errors - stronger than the
+  disclosed exposure. Stays private; operator decision rebuild vs drop.
+- ocha-fts-appeal-funding-trajectory: country-history arithmetic recovers
+  120/139 eval and 128/182 holdout labels with 0 errors, caught pre-staging
+  before the staging spend. Do not stage/package; operator decision.
+- unhcr-refugee-data-finder: second DO NOT PUBLISH - corrections verified
+  real and honest, but the unchanged features still recover 0.975325 /
+  0.983034 label-blind. Stays private; operator decision rebuild vs drop.
+
+TIER C: austender LICENCE-BLOCKED (current-source terms unreadable; the
+licensed CC BY historical archive is a separately reviewable scope);
+tw-typhoon FIX-THE-RECORD (public prior repository ships county/day closure
+training CSVs with TmrDayoff - the novelty record must confront it before any
+build); 9 candidates READY-TO-BUILD (acnc, conagua, eu-transparency-register,
+jp-moe-pollen, ofsted, za-cct-c3, za-cct-substation, za-municipal-audit,
+za-statsa-liquidations) - novelty/licence/channel all passed at bounded scope.
+
+OBSERVATION for the operator: the queue audit noted the factory repository
+earino/dataset-factory reads as PUBLIC to the GitHub API. This session did not
+change it and does not know whether that is intended.
+
+All checks green after the records: check-package both, check-suitability 17/17,
+suite at baseline. Both sites verified with HTTPS enforced. Nothing was
+published without an audit verdict; the only flips are the two the audit's own
+findings cleared after correction.
+
+
 ## 2026-10-28 (22:35Z) - unhcr audit-corrected package complete: illustrative re-description applied in both copies, re-qualified 6bd0c307, re-staged on both private destinations with tags == main, re-audit prompt regenerated; nothing public
 
 Executed the operator's correction directive end to end. The corrected artifact is

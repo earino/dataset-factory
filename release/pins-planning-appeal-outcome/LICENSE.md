@@ -32,8 +32,11 @@ The underlying data are the UK Planning Inspectorate's Casework Database
 (`Casework_Database_-_2610.xlsx` and `Older_Casework_Data_-_2610.xlsx`, the
 2026-10-22 edition), published on GOV.UK under the Open Government Licence v3.0.
 OGL-UK v3.0 permits copying, publication, distribution, transmission, adaptation and
-commercial exploitation with attribution, and applies the same-licence condition to
-adapted versions of the information. OGL-UK exempts personal data, third-party
+commercial exploitation with attribution, and imposes no same-licence condition on
+adaptations: works adapting the information may be licensed under any terms that
+satisfy the OGL's conditions, and adaptations licensed under CC BY 4.0 or the Open
+Data Commons Attribution License automatically satisfy the OGL (OGL-UK v3.0,
+The National Archives). OGL-UK exempts personal data, third-party
 rights and official symbols from its grant; the shipped columns were chosen with
 that in mind: the publisher's inspector-name field is excluded by design
 (post-instant, and corrected for data errors by the publisher in 2025), no free-text

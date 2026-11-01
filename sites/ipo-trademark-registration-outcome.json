@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "site_revision": 1,
+  "title": "UK trade mark registration outcome",
+  "summary": "Research task: from what is fixed at filing - the mark text, Nice class coverage, category, type, series and owner geography - predict whether a UK domestic trade mark application reaches registration in the IPO's frozen 2018-02-13 open data snapshot.",
+  "task_type": "binary-classification",
+  "domain": "Intellectual property administration",
+  "release_date": "2026-11-01",
+  "post": {
+    "title": "Will this trade mark register? A frozen-snapshot task over IPO bulk data",
+    "paragraphs": [
+      "The UK Intellectual Property Office publishes its domestic trade mark register as one bulk open data release. The contribution here is not access: it is the frozen 2018-02-13 snapshot, the declaration that the prediction instant is the filing date, and the label - whether the application ever reaches a recorded Registered date in that snapshot. 319,436 applications across filing years 2010-2016, split by filing cohort.",
+      "Every shipped feature is fixed at filing: the mark text, its 45 Nice class indicators, category, mark type, series membership and size, the owner's country / region / postcode area, and the filing date. Owner names and hyperlinks are excluded by design; everything else ships exactly as published. Registration is the norm - 84% of applications register - so majority-class accuracy is high and the honest scale for skill is the AUC.",
+      "The release ships an illustrative stock baseline at eval AUC 0.6224, with the simple references beside it: mark type 0.5650, nice-class-count 0.5421, owner country 0.5191, calendar 0.4972. The baseline beats every reference, and an independent audit reproduced it exactly while confirming no tested single column, token or date rule recovered the outcome (best blind score: mark-text length, 0.5751).",
+      "The independent adversarial audit (2026-11-01) verified the five shipped files against both MANIFEST and SHA256SUMS, rebuilt all three splits byte-for-byte from the publisher snapshot, confirmed split disjointness and the 319,436-row census, and searched for the task publicly - no equivalent registration-outcome task release exists. It found one false sentence in our licence description - we wrongly asserted an OGL 3.0 same-licence condition on adaptations, which OGL 3.0 does not impose - and that was corrected before anything was made public."
+    ]
+  },
+  "limitations": [
+    "Derived research dataset, not an official IPO product; the IPO has not reviewed, authorised or endorsed it.",
+    "Retrospective, single-snapshot target: registration outcomes are resolved in the frozen 2018-02-13 snapshot; withdrawn/refused applications later re-filed are not tracked across applications.",
+    "The snapshot's owner and class values are current-vintage: they do not establish what was observable at each historical filing instant.",
+    "Applications unresolved in the snapshot are excluded by a disclosed rule; unresolved rows are counted, never labelled.",
+    "Registration is the majority outcome (84%); accuracy numbers flatter any model, so AUC and the paired references are the quoted scale.",
+    "The labeled holdout is downloadable by design; keep it outside every evaluated agent's workspace.",
+    "Source data is the IPO's open data under OGL 3.0 (attribution preserved); our compilation is dedicated CC0-1.0 and code MIT. OGL 3.0 imposes no same-licence condition on adaptations."
+  ]
+}

@@ -29,7 +29,10 @@ The underlying trade mark data are the UK Intellectual Property Office's trade m
 open data (`opendatadomestic.zip`, the frozen 2018-02-13 snapshot), published under
 the Open Government Licence v3.0. OGL-UK v3.0 permits copying, publication,
 distribution, transmission, adaptation and commercial exploitation with attribution,
-and applies the same-licence condition to adapted versions of the information.
+and imposes no same-licence condition on adaptations: works adapting the
+information may be licensed under any terms that satisfy the OGL's conditions, and
+adaptations licensed under CC BY 4.0 or the Open Data Commons Attribution License
+automatically satisfy the OGL (OGL-UK v3.0, The National Archives).
 OGL-UK exempts personal data, third-party rights and official symbols from its grant;
 the shipped columns were chosen with that in mind: owner name and the hyperlink
 column are excluded by design, while the owner country / region / postcode-area
