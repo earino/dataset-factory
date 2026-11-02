@@ -1,0 +1,1175 @@
+{
+  "job": {
+    "id": "fts-appeal-003",
+    "candidate": "ocha-fts-appeal-funding-trajectory",
+    "image": "python:3.13-slim",
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 2048,
+    "timeout_minutes": 45,
+    "lifetime_minutes": 60,
+    "max_disk_mb": 3000,
+    "max_artifact_mb": 24,
+    "what": "P0-recovery rebuild of ocha-fts-appeal-funding-trajectory (fts-appeal-003), the rebuild path the operator chose from the 2026-11-01 queue audit's rebuild-or-drop decision (the operator task list of 2026-11-02 names this candidate actionable at stage 'package'). The audit found label-blind exact recovery on the accepted e7441e1f artifact: later appeals' country-history features (cumulative prior appeal count x rounded covered rate, plus the declared last-prior tie rule) recover 120/139 eval and 128/182 holdout labels with 0 errors - the operator's automatic DO-NOT-PUBLISH class. FIX (feature-set only; population, label arithmetic, fixtures, splits, timing and evaluation-contract posture unchanged): country_prior_appeals, country_prior_covered_rate and country_last_prior_covered no longer ship; every remaining feature is a function of the row's own launch record except years_since_country_prior, which reads only WHICH strictly-earlier same-country appeals exist (years, never labels; derivable from the shipped row set itself; asserted label-free by the brute-force construction recompute). score.py recomputes the persistence/prior-mean references scorer-side from prior-in-time labels (train+eval only, holdout never opened) and must reproduce the 002-era figures on unchanged rows (persistence 0.7171136653895275, prior_mean 0.7143465304384845) - a divergence means row drift or a recompute bug and is diagnosed, not scored past. Expected artifact: the same 758-row panel as e7441e1f at the measured vintage with 9 shipped columns instead of 12; counts may drift with the current-vintage source and the gate decides.",
+    "stopping_condition": "gate failure or fixture failure -> collect diagnostics, diagnose, record; this IS the one rebuild for the P0 label-recovery defect class; a failure of any class here is recorded as a blocker, not blindly retried",
+    "source_files": [
+      {
+        "bundled_as": "build.py",
+        "source": "candidates/ocha-fts-appeal-funding-trajectory/source/build.py",
+        "bytes": 54246,
+        "sha256": "8d41202f88f1f45ba57e7d7ec18f9548368762e7294c2d25180493b525ac956a"
+      },
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/ocha-fts-appeal-funding-trajectory/source/run.sh",
+        "bytes": 2497,
+        "sha256": "835d23ca4ab86abd3a2f4ad7aa1566c10b294382cd0545e5b81d299d99b60975"
+      },
+      {
+        "bundled_as": "score.py",
+        "source": "candidates/ocha-fts-appeal-funding-trajectory/source/score.py",
+        "bytes": 16700,
+        "sha256": "55952837935f68819c6d7e3cd5a5e5f5b4b832f992955e4035fc19c95af97525"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 57029,
+        "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+      }
+    ]
+  },
+  "reservation_eur": "0.04",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 2,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 225280,
+  "source_sha256": "884c21ed7199e743bcf1e1e1d97615c418ccf18b83b52372101f905068c415ba",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-11-02T13:01:28.620434+00:00",
+  "expires": 1793628088,
+  "budget_months": [
+    "2026-11"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 174163321,
+  "known_hosts": "/opt/data/dataset-factory/.factory/fts-appeal-003/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "2.29.159.168",
+  "result": {
+    "job_id": "fts-appeal-003",
+    "status": "succeeded",
+    "uploaded": true,
+    "image_id": "sha256:ae14d4ce8771606477a81446e7ef429edd6762305fc50c84507c1041fa8285d1",
+    "image_digests": [
+      "python@sha256:ae14d4ce8771606477a81446e7ef429edd6762305fc50c84507c1041fa8285d1"
+    ],
+    "exit_code": 0,
+    "oom_killed": false,
+    "elapsed_seconds": 1396.6,
+    "summary": {
+      "artifacts": {
+        "meta.json": {
+          "bytes": 1891,
+          "sha256": "9f3095a8f2662387c75e098f4d1a4e60292109f5ebc503288a357df864659b5e"
+        },
+        "private/holdout.csv": {
+          "bytes": 12862,
+          "sha256": "ffa427d9e67cd1ed7213c370b805287e58549d9058e9241bb01af40105dd37d9"
+        },
+        "public/eval.csv": {
+          "bytes": 9322,
+          "sha256": "c11c03935277ecb164ccde4648fd6541e69d962239a561347832e220c981ef2c"
+        },
+        "public/train.csv": {
+          "bytes": 29660,
+          "sha256": "db0c7eea0efd3362f369b64c446d4f237b390d8d5539306dc9b66857e685b787"
+        },
+        "quality.json": {
+          "bytes": 23348,
+          "sha256": "5dd17cea147d298c7e8249dd3e661541dc58a65cbb00da711ce09c90696f67c7"
+        }
+      },
+      "built_at_utc": "2026-11-02T00:00:00Z",
+      "elapsed_seconds": 1389.8,
+      "exclusion_buckets": {
+        "live_edge_unobserved": 24,
+        "no_orig_requirements": 35,
+        "regional_multi_country": 60
+      },
+      "fixture_values": {
+        "afg_2023": {
+          "csv_requirements_revised": 3227372908,
+          "funding": 1678347238,
+          "label": 0,
+          "orig": 4627363573,
+          "ratio_coverage_of_orig": 0.362701
+        },
+        "burundi_rrp_2021": {
+          "plan_total": 19282778,
+          "slice_ratio": 0.776767,
+          "slice_sum": 14978233
+        },
+        "yem_2023": {
+          "funding": 1774327599
+        }
+      },
+      "flow_vs_csv_funding_mismatches": [
+        {
+          "csv": 45715539,
+          "flow": 0,
+          "plan_year_id": "2000-62"
+        },
+        {
+          "csv": 125586657,
+          "flow": 0,
+          "plan_year_id": "2000-65"
+        },
+        {
+          "csv": 21580886,
+          "flow": 0,
+          "plan_year_id": "2000-68"
+        },
+        {
+          "csv": 12473674,
+          "flow": 18042674,
+          "plan_year_id": "2007-252"
+        },
+        {
+          "csv": 28189925,
+          "flow": 0,
+          "plan_year_id": "2009-298"
+        },
+        {
+          "csv": 6934578,
+          "flow": 0,
+          "plan_year_id": "2010-335"
+        },
+        {
+          "csv": 12250508,
+          "flow": 0,
+          "plan_year_id": "2013-419"
+        },
+        {
+          "csv": 1142347933,
+          "flow": 1149470585,
+          "plan_year_id": "2014-442"
+        },
+        {
+          "csv": 12158640,
+          "flow": 0,
+          "plan_year_id": "2015-454"
+        },
+        {
+          "csv": 67351656,
+          "flow": 67342019,
+          "plan_year_id": "2016-487"
+        },
+        {
+          "csv": 196310154,
+          "flow": 195064401,
+          "plan_year_id": "2016-517"
+        },
+        {
+          "csv": 1900383192,
+          "flow": 1901402401,
+          "plan_year_id": "2017-526"
+        },
+        {
+          "csv": 2392343077,
+          "flow": 2393339890,
+          "plan_year_id": "2020-924"
+        },
+        {
+          "csv": 27969390,
+          "flow": 27413834,
+          "plan_year_id": "2020-937"
+        },
+        {
+          "csv": 119357388,
+          "flow": 135676723,
+          "plan_year_id": "2021-1050"
+        },
+        {
+          "csv": 14221892,
+          "flow": 15665227,
+          "plan_year_id": "2021-1051"
+        },
+        {
+          "csv": 1005134053,
+          "flow": 1004350920,
+          "plan_year_id": "2022-1093"
+        },
+        {
+          "csv": 3765217036,
+          "flow": 3774520961,
+          "plan_year_id": "2022-1102"
+        },
+        {
+          "csv": 956632880,
+          "flow": 956594545,
+          "plan_year_id": "2023-1113"
+        },
+        {
+          "csv": 2901298131,
+          "flow": 2901468075,
+          "plan_year_id": "2024-1156"
+        },
+        {
+          "csv": 884189798,
+          "flow": 884202892,
+          "plan_year_id": "2024-1180"
+        },
+        {
+          "csv": 1590805651,
+          "flow": 1590832009,
+          "plan_year_id": "2024-1185"
+        },
+        {
+          "csv": 556370261,
+          "flow": 556412713,
+          "plan_year_id": "2024-1190"
+        },
+        {
+          "csv": 636941060,
+          "flow": 636941062,
+          "plan_year_id": "2024-1192"
+        },
+        {
+          "csv": 400003046,
+          "flow": 401203046,
+          "plan_year_id": "2024-1210"
+        },
+        {
+          "csv": 1664726943,
+          "flow": 1664826887,
+          "plan_year_id": "2025-1220"
+        },
+        {
+          "csv": 417043106,
+          "flow": 417043108,
+          "plan_year_id": "2025-1221"
+        },
+        {
+          "csv": 187468719,
+          "flow": 187470471,
+          "plan_year_id": "2025-1222"
+        },
+        {
+          "csv": 461191338,
+          "flow": 461181436,
+          "plan_year_id": "2025-1260"
+        },
+        {
+          "csv": 705549398,
+          "flow": 705514118,
+          "plan_year_id": "2025-1262"
+        },
+        {
+          "csv": 1027625849,
+          "flow": 1022190462,
+          "plan_year_id": "2025-1263"
+        },
+        {
+          "csv": 14606390,
+          "flow": 14469840,
+          "plan_year_id": "2025-1270"
+        },
+        {
+          "csv": 1663604574,
+          "flow": 1663604577,
+          "plan_year_id": "2025-1271"
+        },
+        {
+          "csv": 2739537574,
+          "flow": 2739830521,
+          "plan_year_id": "2025-1273"
+        },
+        {
+          "csv": 287184944,
+          "flow": 287337974,
+          "plan_year_id": "2025-1274"
+        },
+        {
+          "csv": 1371315632,
+          "flow": 1371278528,
+          "plan_year_id": "2025-1276"
+        },
+        {
+          "csv": 63051033,
+          "flow": 62362707,
+          "plan_year_id": "2025-1431"
+        },
+        {
+          "csv": 9567475,
+          "flow": 9717475,
+          "plan_year_id": "2025-1465"
+        }
+      ],
+      "harvest": {
+        "bucket_groups": {
+          "live_edge_unobserved": [
+            {
+              "group": "1498-2026",
+              "reason": "plan year 2026 still running at the snapshot; outcome unobserved - counted, never scored"
+            },
+            {
+              "group": "1499-2026",
+              "reason": "plan year 2026 still running at the snapshot; outcome unobserved - counted, never scored"
+            },
+            {
+              "group": "1500-2026",
+              "reason": "plan year 2026 still running at the snapshot; outcome unobserved - counted, never scored"
+            },
+            {
+              "group": "1501-2026",
+              "reason": "plan year 2026 still running at the snapshot; outcome unobserved - counted, never scored"
+            },
+            {
+              "group": "1505-2026",
+              "reason": "plan year 2026 still running at the snapshot; outcome unobserved - counted, never scored"
+            },
+            {
+              "group": "1506-2026",
+              "reason": "plan year 2026 still running at the snapshot; outcome unobserved - counted, never scored"
+            },
+            {
+              "group": "1508-2026",
+              "reason": "plan year 2026 still running at the snapshot; outcome unobserved - counted, never scored"
+            },
+            {
+              "group": "1509-2026",
+              "reason": "plan year 2026 still running at the snapshot; outcome unobserved - counted, never scored"
+            },
+            {
+              "group": "1510-2026",
+              "reason": "plan year 2026 still running at the snapshot; outcome unobserved - counted, never scored"
+            },
+            {
+              "group": "1511-2026",
+              "reason": "plan year 2026 still running at the snapshot; outcome unobserved - counted, never scored"
+            },
+            {
+              "group": "1513-2026",
+              "reason": "plan year 2026 still running at the snapshot; outcome unobserved - counted, never scored"
+            },
+            {
+              "group": "1514-2026",
+              "reason": "plan year 2026 still running at the snapshot; outcome unobserved - counted, never scored"
+            },
+            {
+              "group": "1516-2026",
+              "reason": "plan year 2026 still running at the snapshot; outcome unobserved - counted, never scored"
+            },
+            {
+              "group": "1517-2026",
+              "reason": "plan year 2026 still running at the snapshot; outcome unobserved - counted, never scored"
+            },
+            {
+              "group": "1518-2026",
+              "reason": "plan year 2026 still running at the snapshot; outcome unobserved - counted, never scored"
+            },
+            {
+              "group": "1520-2026",
+              "reason": "plan year 2026 still running at the snapshot; outcome unobserved - counted, never scored"
+            },
+            {
+              "group": "1524-2026",
+              "reason": "plan year 2026 still running at the snapshot; outcome unobserved - counted, never scored"
+            },
+            {
+              "group": "1565-2026",
+              "reason": "plan year 2026 still running at the snapshot; outcome unobserved - counted, never scored"
+            },
+            {
+              "group": "1567-2026",
+              "reason": "plan year 2026 still running at the snapshot; outcome unobserved - counted, never scored"
+            },
+            {
+              "group": "1568-2026",
+              "reason": "plan year 2026 still running at the snapshot; outcome unobserved - counted, never scored"
+            },
+            {
+              "group": "1601-2026",
+              "reason": "plan year 2026 still running at the snapshot; outcome unobserved - counted, never scored"
+            },
+            {
+              "group": "1603-2026",
+              "reason": "plan year 2026 still running at the snapshot; outcome unobserved - counted, never scored"
+            },
+            {
+              "group": "1637-2026",
+              "reason": "plan year 2026 still running at the snapshot; outcome unobserved - counted, never scored"
+            },
+            {
+              "group": "1670-2026",
+              "reason": "plan year 2026 still running at the snapshot; outcome unobserved - counted, never scored"
+            }
+          ],
+          "no_orig_requirements": [
+            {
+              "group": "66-2000",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "47-2001",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "70-2001",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "452-2014",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "1009-2020",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "830-2020",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "919-2020",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "990-2020",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "997-2020",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "998-2020",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "1049-2021",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "1073-2021",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "1063-2022",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "1087-2022",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "1104-2022",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "1109-2023",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "1114-2023",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "1136-2023",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "1141-2023",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "1149-2023",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "1151-2023",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "1191-2024",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "1198-2024",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "1202-2024",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "1204-2024",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "1206-2024",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "1277-2025",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "1502-2026",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "1503-2026",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "1507-2026",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "1512-2026",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "1515-2026",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "1522-2026",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "1526-2026",
+              "reason": "launch ask missing or zero"
+            },
+            {
+              "group": "1532-2026",
+              "reason": "launch ask missing or zero"
+            }
+          ],
+          "regional_multi_country": [
+            {
+              "group": "190-2006",
+              "reason": "7 country slice rows (regional plan)"
+            },
+            {
+              "group": "208-2006",
+              "reason": "3 country slice rows (regional plan)"
+            },
+            {
+              "group": "222-2007",
+              "reason": "14 country slice rows (regional plan)"
+            },
+            {
+              "group": "224-2007",
+              "reason": "3 country slice rows (regional plan)"
+            },
+            {
+              "group": "259-2008",
+              "reason": "13 country slice rows (regional plan)"
+            },
+            {
+              "group": "293-2009",
+              "reason": "13 country slice rows (regional plan)"
+            },
+            {
+              "group": "323-2010",
+              "reason": "14 country slice rows (regional plan)"
+            },
+            {
+              "group": "329-2010",
+              "reason": "4 country slice rows (regional plan)"
+            },
+            {
+              "group": "352-2011",
+              "reason": "2 country slice rows (regional plan)"
+            },
+            {
+              "group": "365-2011",
+              "reason": "4 country slice rows (regional plan)"
+            },
+            {
+              "group": "423-2013",
+              "reason": "5 country slice rows (regional plan)"
+            },
+            {
+              "group": "443-2014",
+              "reason": "5 country slice rows (regional plan)"
+            },
+            {
+              "group": "451-2014",
+              "reason": "4 country slice rows (regional plan)"
+            },
+            {
+              "group": "480-2015",
+              "reason": "5 country slice rows (regional plan)"
+            },
+            {
+              "group": "481-2015",
+              "reason": "3 country slice rows (regional plan)"
+            },
+            {
+              "group": "514-2016",
+              "reason": "5 country slice rows (regional plan)"
+            },
+            {
+              "group": "534-2016",
+              "reason": "5 country slice rows (regional plan)"
+            },
+            {
+              "group": "552-2017",
+              "reason": "5 country slice rows (regional plan)"
+            },
+            {
+              "group": "658-2018",
+              "reason": "5 country slice rows (regional plan)"
+            },
+            {
+              "group": "724-2019",
+              "reason": "5 country slice rows (regional plan)"
+            },
+            {
+              "group": "726-2019",
+              "reason": "4 country slice rows (regional plan)"
+            },
+            {
+              "group": "943-2020",
+              "reason": "5 country slice rows (regional plan)"
+            },
+            {
+              "group": "944-2020",
+              "reason": "15 country slice rows (regional plan)"
+            },
+            {
+              "group": "1017-2021",
+              "reason": "3 country slice rows (regional plan)"
+            },
+            {
+              "group": "1018-2021",
+              "reason": "6 country slice rows (regional plan)"
+            },
+            {
+              "group": "1019-2021",
+              "reason": "3 country slice rows (regional plan)"
+            },
+            {
+              "group": "1020-2021",
+              "reason": "5 country slice rows (regional plan)"
+            },
+            {
+              "group": "1021-2021",
+              "reason": "15 country slice rows (regional plan)"
+            },
+            {
+              "group": "1038-2021",
+              "reason": "3 country slice rows (regional plan)"
+            },
+            {
+              "group": "1061-2022",
+              "reason": "5 country slice rows (regional plan)"
+            },
+            {
+              "group": "1066-2022",
+              "reason": "3 country slice rows (regional plan)"
+            },
+            {
+              "group": "1069-2022",
+              "reason": "15 country slice rows (regional plan)"
+            },
+            {
+              "group": "1071-2022",
+              "reason": "3 country slice rows (regional plan)"
+            },
+            {
+              "group": "1072-2022",
+              "reason": "5 country slice rows (regional plan)"
+            },
+            {
+              "group": "1092-2022",
+              "reason": "6 country slice rows (regional plan)"
+            },
+            {
+              "group": "1118-2023",
+              "reason": "5 country slice rows (regional plan)"
+            },
+            {
+              "group": "1119-2023",
+              "reason": "6 country slice rows (regional plan)"
+            },
+            {
+              "group": "1120-2023",
+              "reason": "3 country slice rows (regional plan)"
+            },
+            {
+              "group": "1125-2023",
+              "reason": "3 country slice rows (regional plan)"
+            },
+            {
+              "group": "1126-2023",
+              "reason": "5 country slice rows (regional plan)"
+            }
+          ]
+        },
+        "buckets": {
+          "live_edge_unobserved": 24,
+          "no_orig_requirements": 35,
+          "regional_multi_country": 60
+        },
+        "csv_bytes": 279849,
+        "csv_flow_mismatches": [
+          {
+            "csv": 45715539,
+            "flow": 0,
+            "plan_year_id": "2000-62"
+          },
+          {
+            "csv": 125586657,
+            "flow": 0,
+            "plan_year_id": "2000-65"
+          },
+          {
+            "csv": 21580886,
+            "flow": 0,
+            "plan_year_id": "2000-68"
+          },
+          {
+            "csv": 12473674,
+            "flow": 18042674,
+            "plan_year_id": "2007-252"
+          },
+          {
+            "csv": 28189925,
+            "flow": 0,
+            "plan_year_id": "2009-298"
+          },
+          {
+            "csv": 6934578,
+            "flow": 0,
+            "plan_year_id": "2010-335"
+          },
+          {
+            "csv": 12250508,
+            "flow": 0,
+            "plan_year_id": "2013-419"
+          },
+          {
+            "csv": 1142347933,
+            "flow": 1149470585,
+            "plan_year_id": "2014-442"
+          },
+          {
+            "csv": 12158640,
+            "flow": 0,
+            "plan_year_id": "2015-454"
+          },
+          {
+            "csv": 67351656,
+            "flow": 67342019,
+            "plan_year_id": "2016-487"
+          },
+          {
+            "csv": 196310154,
+            "flow": 195064401,
+            "plan_year_id": "2016-517"
+          },
+          {
+            "csv": 1900383192,
+            "flow": 1901402401,
+            "plan_year_id": "2017-526"
+          },
+          {
+            "csv": 2392343077,
+            "flow": 2393339890,
+            "plan_year_id": "2020-924"
+          },
+          {
+            "csv": 27969390,
+            "flow": 27413834,
+            "plan_year_id": "2020-937"
+          },
+          {
+            "csv": 119357388,
+            "flow": 135676723,
+            "plan_year_id": "2021-1050"
+          },
+          {
+            "csv": 14221892,
+            "flow": 15665227,
+            "plan_year_id": "2021-1051"
+          },
+          {
+            "csv": 1005134053,
+            "flow": 1004350920,
+            "plan_year_id": "2022-1093"
+          },
+          {
+            "csv": 3765217036,
+            "flow": 3774520961,
+            "plan_year_id": "2022-1102"
+          },
+          {
+            "csv": 956632880,
+            "flow": 956594545,
+            "plan_year_id": "2023-1113"
+          },
+          {
+            "csv": 2901298131,
+            "flow": 2901468075,
+            "plan_year_id": "2024-1156"
+          },
+          {
+            "csv": 884189798,
+            "flow": 884202892,
+            "plan_year_id": "2024-1180"
+          },
+          {
+            "csv": 1590805651,
+            "flow": 1590832009,
+            "plan_year_id": "2024-1185"
+          },
+          {
+            "csv": 556370261,
+            "flow": 556412713,
+            "plan_year_id": "2024-1190"
+          },
+          {
+            "csv": 636941060,
+            "flow": 636941062,
+            "plan_year_id": "2024-1192"
+          },
+          {
+            "csv": 400003046,
+            "flow": 401203046,
+            "plan_year_id": "2024-1210"
+          },
+          {
+            "csv": 1664726943,
+            "flow": 1664826887,
+            "plan_year_id": "2025-1220"
+          },
+          {
+            "csv": 417043106,
+            "flow": 417043108,
+            "plan_year_id": "2025-1221"
+          },
+          {
+            "csv": 187468719,
+            "flow": 187470471,
+            "plan_year_id": "2025-1222"
+          },
+          {
+            "csv": 461191338,
+            "flow": 461181436,
+            "plan_year_id": "2025-1260"
+          },
+          {
+            "csv": 705549398,
+            "flow": 705514118,
+            "plan_year_id": "2025-1262"
+          },
+          {
+            "csv": 1027625849,
+            "flow": 1022190462,
+            "plan_year_id": "2025-1263"
+          },
+          {
+            "csv": 14606390,
+            "flow": 14469840,
+            "plan_year_id": "2025-1270"
+          },
+          {
+            "csv": 1663604574,
+            "flow": 1663604577,
+            "plan_year_id": "2025-1271"
+          },
+          {
+            "csv": 2739537574,
+            "flow": 2739830521,
+            "plan_year_id": "2025-1273"
+          },
+          {
+            "csv": 287184944,
+            "flow": 287337974,
+            "plan_year_id": "2025-1274"
+          },
+          {
+            "csv": 1371315632,
+            "flow": 1371278528,
+            "plan_year_id": "2025-1276"
+          },
+          {
+            "csv": 63051033,
+            "flow": 62362707,
+            "plan_year_id": "2025-1431"
+          },
+          {
+            "csv": 9567475,
+            "flow": 9717475,
+            "plan_year_id": "2025-1465"
+          }
+        ],
+        "csv_rows": 3874,
+        "csv_sha256": "928fb168aac97fc45f59f810a10ad3fe10cbbdbb2abe39148331e2268885a163",
+        "eligible_rows": 1196,
+        "errors": 0,
+        "fixtures": {
+          "afg_2023": {
+            "csv_requirements_revised": 3227372908,
+            "funding": 1678347238,
+            "label": 0,
+            "orig": 4627363573,
+            "ratio_coverage_of_orig": 0.362701
+          },
+          "burundi_rrp_2021": {
+            "plan_total": 19282778,
+            "slice_ratio": 0.776767,
+            "slice_sum": 14978233
+          },
+          "yem_2023": {
+            "funding": 1774327599
+          }
+        },
+        "plan_year_groups": 877,
+        "requests": 1637,
+        "zero_funding_rows": 10
+      },
+      "job": "fts-appeal-003",
+      "name": "ocha-fts-appeal-funding-trajectory",
+      "per_year": {
+        "2000": {
+          "positives": 5,
+          "rows": 14
+        },
+        "2001": {
+          "positives": 12,
+          "rows": 17
+        },
+        "2002": {
+          "positives": 9,
+          "rows": 24
+        },
+        "2003": {
+          "positives": 14,
+          "rows": 29
+        },
+        "2004": {
+          "positives": 18,
+          "rows": 29
+        },
+        "2005": {
+          "positives": 16,
+          "rows": 21
+        },
+        "2006": {
+          "positives": 21,
+          "rows": 29
+        },
+        "2007": {
+          "positives": 28,
+          "rows": 34
+        },
+        "2008": {
+          "positives": 22,
+          "rows": 32
+        },
+        "2009": {
+          "positives": 19,
+          "rows": 25
+        },
+        "2010": {
+          "positives": 17,
+          "rows": 24
+        },
+        "2011": {
+          "positives": 15,
+          "rows": 22
+        },
+        "2012": {
+          "positives": 20,
+          "rows": 25
+        },
+        "2013": {
+          "positives": 18,
+          "rows": 22
+        },
+        "2014": {
+          "positives": 15,
+          "rows": 26
+        },
+        "2015": {
+          "positives": 14,
+          "rows": 29
+        },
+        "2016": {
+          "positives": 16,
+          "rows": 35
+        },
+        "2017": {
+          "positives": 16,
+          "rows": 34
+        },
+        "2018": {
+          "positives": 19,
+          "rows": 29
+        },
+        "2019": {
+          "positives": 22,
+          "rows": 30
+        },
+        "2020": {
+          "positives": 24,
+          "rows": 46
+        },
+        "2021": {
+          "positives": 26,
+          "rows": 39
+        },
+        "2022": {
+          "positives": 25,
+          "rows": 37
+        },
+        "2023": {
+          "positives": 14,
+          "rows": 32
+        },
+        "2024": {
+          "positives": 22,
+          "rows": 37
+        },
+        "2025": {
+          "positives": 9,
+          "rows": 37
+        }
+      },
+      "splits": {
+        "eval": {
+          "distinct_countries": 51,
+          "negatives": 58,
+          "positive_rate": 0.582734,
+          "positives": 81,
+          "rows": 139,
+          "year_max": 2020,
+          "year_min": 2017
+        },
+        "holdout": {
+          "distinct_countries": 43,
+          "negatives": 86,
+          "positive_rate": 0.527473,
+          "positives": 96,
+          "rows": 182,
+          "year_max": 2025,
+          "year_min": 2021
+        },
+        "train": {
+          "distinct_countries": 78,
+          "negatives": 158,
+          "positive_rate": 0.638444,
+          "positives": 279,
+          "rows": 437,
+          "year_max": 2016,
+          "year_min": 2000
+        }
+      },
+      "zero_funding_rows": 10
+    },
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 431492902,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-2dbcfc2a24306d2630e6",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-2dbcfc2a24306d2630e6/manifest.json",
+    "assets": [
+      {
+        "id": 701847416,
+        "size": 74,
+        "sha256": "2de21e32b8fa0b40a216a9985dea35f24c5fbc9f4b59bd6142f4ec5cc5b4e52f"
+      },
+      {
+        "id": 701847475,
+        "size": 1891,
+        "sha256": "9f3095a8f2662387c75e098f4d1a4e60292109f5ebc503288a357df864659b5e"
+      },
+      {
+        "id": 701847549,
+        "size": 12862,
+        "sha256": "ffa427d9e67cd1ed7213c370b805287e58549d9058e9241bb01af40105dd37d9"
+      },
+      {
+        "id": 701847633,
+        "size": 9322,
+        "sha256": "c11c03935277ecb164ccde4648fd6541e69d962239a561347832e220c981ef2c"
+      },
+      {
+        "id": 701847723,
+        "size": 29660,
+        "sha256": "db0c7eea0efd3362f369b64c446d4f237b390d8d5539306dc9b66857e685b787"
+      },
+      {
+        "id": 701847792,
+        "size": 23348,
+        "sha256": "5dd17cea147d298c7e8249dd3e661541dc58a65cbb00da711ce09c90696f67c7"
+      },
+      {
+        "id": 701847879,
+        "size": 14518,
+        "sha256": "ea5f2210536f80151483b07be7da86cc2dd7f791631e5a0c35d4cc736de82501"
+      },
+      {
+        "id": 701847952,
+        "size": 14518,
+        "sha256": "ea5f2210536f80151483b07be7da86cc2dd7f791631e5a0c35d4cc736de82501"
+      },
+      {
+        "id": 701848022,
+        "size": 3984,
+        "sha256": "f6419c0885beca3c854e67445b9226db24f8c23638e4daf29922f9a732c06349"
+      },
+      {
+        "id": 701848131,
+        "size": 55838,
+        "sha256": "125abccbddfc34122dea82cf8794b3a528680b6ab3855c31ec1189eade724b33"
+      },
+      {
+        "id": 701848216,
+        "size": 385915,
+        "sha256": "295a4d91bf4746ab52bfe96f203f8461d60dd92a122a0445cbd714b06efbee35"
+      },
+      {
+        "id": 701848305,
+        "size": 279849,
+        "sha256": "928fb168aac97fc45f59f810a10ad3fe10cbbdbb2abe39148331e2268885a163"
+      },
+      {
+        "id": 701848389,
+        "size": 20623,
+        "sha256": "b1d980d751256aa2afbece96a2490467c5d75d8672144a9da91c3349d658fb5b"
+      },
+      {
+        "id": 701848449,
+        "size": 225280,
+        "sha256": "884c21ed7199e743bcf1e1e1d97615c418ccf18b83b52372101f905068c415ba"
+      },
+      {
+        "id": 701848531,
+        "size": 19352,
+        "sha256": "0fe323121c2b9133f01d6697f8e2a419a6bb33da93f7d9b4d9f977378971be3b"
+      },
+      {
+        "id": 701848611,
+        "size": 37683,
+        "sha256": "db90478a6b0402bce34986ef39253fcbd3a3a614c0ef1be466e18b97e177dfcf"
+      }
+    ],
+    "skipped_empty": []
+  },
+  "collected_at": "2026-11-02T13:38:03.669331+00:00",
+  "deleted_at": "2026-11-02T13:38:57.415271+00:00"
+}

@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-"""Fill the fts-baseline bundle from fts-appeal-002's collected result (one-shot).
+"""Fill the fts-baseline bundle from fts-appeal-003's collected result (one-shot).
 
 Repo-relative; run from the dataset-factory root. Candidate-scoped session mechanics for the
 runner-contract baseline job, kept beside the bundle it fills.
 
-Reads .factory/fts-appeal-002/result.json + the staging release manifest, verifies every
+Reads .factory/fts-appeal-003/result.json + the staging release manifest, verifies every
 digest, then:
-  1. downloads 002's qualification report -> baseline/qualification.json
-  2. downloads 002's references report -> .factory/fts-appeal-002/reports/references.json
+  1. downloads 003's qualification report -> baseline/qualification.json
+  2. downloads 003's references report -> .factory/fts-appeal-003/reports/references.json
   3. fills baseline/job.json fetch block (5 extract assets: ids/sizes/sha256)
   4. writes baseline/expected_artifact.json
-  5. patches the references comment in baseline/run.sh with 002's measured figures
-Fails loudly on any mismatch. Run only AFTER `worker collect fts-appeal-002` reports succeeded.
+  5. patches the references comment in baseline/run.sh with 003's measured figures
+Fails loudly on any mismatch. Run only AFTER `worker collect fts-appeal-003` reports succeeded.
 """
 import hashlib, json, subprocess
 from pathlib import Path
@@ -26,7 +26,7 @@ def api(url, binary=False):
     raw = subprocess.run(cmd + [url], capture_output=True).stdout
     return raw
 
-result = json.loads((ROOT / '.factory/fts-appeal-002/result.json').read_text())
+result = json.loads((ROOT / '.factory/fts-appeal-003/result.json').read_text())
 assert result['status'] == 'succeeded' and result['uploaded'] is True, result.get('status')
 release = int(result['release_id'])
 
@@ -58,10 +58,10 @@ gate = json.loads(qraw)
 assert gate.get('ok') is True and gate.get('failed_checks') == [], 'gate not clean'
 artifact_digest = gate['artifact']['artifact_version']['digest']
 
-# 2. references -> .factory/fts-appeal-002/reports/references.json
+# 2. references -> .factory/fts-appeal-003/reports/references.json
 rraw, _ = fetch_verified('output/references-ocha-fts-appeal-funding-trajectory.json')
-(ROOT / '.factory/fts-appeal-002/reports').mkdir(parents=True, exist_ok=True)
-(ROOT / '.factory/fts-appeal-002/reports/references.json').write_bytes(rraw)
+(ROOT / '.factory/fts-appeal-003/reports').mkdir(parents=True, exist_ok=True)
+(ROOT / '.factory/fts-appeal-003/reports/references.json').write_bytes(rraw)
 refs = json.loads(rraw)
 assert refs['references']['persistence_last_coverage']['eval_auc'] is not None
 
@@ -83,12 +83,12 @@ job['fetch'] = {'repo': 'earino/dataset-factory-staging', 'release': release, 'a
 job['what'] = (
     "Runner-contract baseline on the accepted ocha-fts-appeal-funding-trajectory artifact "
     f"{artifact_digest[:16]}... (gate {gate['gate_version']}, failed_checks empty, exact-byte --accept "
-    f"ACCEPTED in job fts-appeal-002), fetched from private staging release {release} rather than "
+    f"ACCEPTED in job fts-appeal-003), fetched from private staging release {release} rather than "
     "rebuilt: re-accept the five fetched files against the gate's own collected report, materialize "
     "the runner workdir (public train+eval only; the private holdout is fetched for --accept over the "
     "full artifact but never copied into a workdir), then run the benchmark's own train.py and "
     "validate.sh unmodified and record both eval AUCs. Contract only, no agent loop, no holdout score. "
-    "Construction-time references measured on the same eval rows (job fts-appeal-002, "
+    "Construction-time references measured on the same eval rows (job fts-appeal-003, "
     f"post-acceptance): persistence_last_coverage {refs['references']['persistence_last_coverage']['eval_auc']:.5f} "
     f"(the headroom reference), prior_mean_rate {refs['references']['prior_mean_rate']['eval_auc']:.5f}, "
     f"ask_size_rate {refs['references']['ask_size_rate']['eval_auc']:.5f}, country_hist_rate "
@@ -100,7 +100,7 @@ job['what'] = (
 
 # 4. expected_artifact.json
 expected = {
-    'job': 'fts-appeal-002',
+    'job': 'fts-appeal-003',
     'staging_release': release,
     'gate_version': gate['gate_version'],
     'artifact_version': artifact_digest,
@@ -109,8 +109,8 @@ expected = {
               for logical in FIVE},
     'verification': (
         f"the five artifact digests are the worker-written staging manifest entries for release {release} "
-        f"(tag job-fts-appeal-002), read back from the release manifest and re-verified on download; "
-        f"job fts-appeal-002's gate {gate['gate_version']} report (bundled as baseline/qualification.json, "
+        f"(tag job-fts-appeal-003), read back from the release manifest and re-verified on download; "
+        f"job fts-appeal-003's gate {gate['gate_version']} report (bundled as baseline/qualification.json, "
         f"sha256 {hashlib.sha256(qraw).hexdigest()}, staging asset {q_id}) accepted exactly these bytes on "
         f"the worker (artifact {artifact_digest}). The baseline job re-fetches the same five assets with "
         "every sha256 verified on arrival and re-accepts them against that report before any score "
@@ -124,7 +124,7 @@ lines = runsh.splitlines()
 target = [i for i, l in enumerate(lines) if 'Construction-time references measured on the same eval rows' in l]
 assert len(target) == 1, f'references comment lines: {target}'
 new_block = [
-    "# Construction-time references measured on the same eval rows (job fts-appeal-002, run",
+    "# Construction-time references measured on the same eval rows (job fts-appeal-003, run",
     f"# post-acceptance): persistence_last_coverage {refs['references']['persistence_last_coverage']['eval_auc']:.5f} "
     "(the headroom reference the candidate",
     f"# record names first), prior_mean_rate {refs['references']['prior_mean_rate']['eval_auc']:.5f}, "

@@ -1,9 +1,24 @@
 #!/usr/bin/env python3
-"""Construction of the ocha-fts-appeal-funding-trajectory artifact (fts-appeal-001).
+"""Construction of the ocha-fts-appeal-funding-trajectory artifact (fts-appeal-003).
 
 Task: for a primary (single-country) humanitarian appeal plan-year, predict at the
 appeal's launch whether the plan-year will reach >= 50% of its ORIGINAL requirements
 (launch-vintage origRequirements) in final appeal-linked funding.
+
+fts-appeal-003 is the P0-recovery rebuild the operator chose from the 2026-11-01
+queue audit (audits/2026-11-01-queue-audit-codex.md section 5): the 2026.10-era
+shipped history features (country_prior_appeals, country_prior_covered_rate,
+country_last_prior_covered) let a label-blind attacker recover 120/139 eval and
+128/182 holdout labels exactly (count x rounded-rate arithmetic plus the declared
+last-prior tie rule, reading only later rows' history features). This version ships
+NO outcome-bearing history column: every shipped feature is a function of the
+row's own launch record plus the PRESENCE (never the outcome) of the country's
+strictly-earlier plan-year appeals - years_since_country_prior is derivable from
+the shipped row set itself and carries no label information. The population, the
+label arithmetic, the fixtures and the splits are unchanged from the accepted
+e7441e1f artifact; only the feature set changed. score.py recomputes the
+persistence/prior-mean references scorer-side from prior-in-time labels because
+their feature form is exactly the exposure that was removed.
 
 This file ONLY constructs files and gate diagnostics. It computes no performance
 metric (no AUC, no accuracy, no model): row and positive counts, fixture assertions
@@ -82,8 +97,7 @@ BDI = {"name_contains": "Burundi", "year": 2021, "slice_sum": 14978233,
 
 COLUMNS = ["plan_year_id", "plan_year_anchor", "country_iso3", "plan_year",
            "plan_type", "is_part_of_gho", "orig_requirements_usd",
-           "country_prior_appeals", "country_prior_covered_rate",
-           "country_last_prior_covered", "years_since_country_prior", TARGET]
+           "years_since_country_prior", TARGET]
 FEATURES = [c for c in COLUMNS if c not in (TARGET, *ID_COLUMNS)]
 
 
@@ -311,40 +325,24 @@ def build_panel(eligible, groups, plans, flows_cache: Path, stats: dict):
     for entries in by_country.values():
         for index, entry in enumerate(entries):
             prior = [e for e in entries[:index] if e["year"] < entry["year"]]
-            entry["prior_appeals"] = len(prior)
             if prior:
-                labels = [e["label"] for e in prior]
-                entry["prior_rate"] = round(sum(labels) / len(labels), 6)
                 last_year = max(e["year"] for e in prior)
-                # deterministic tie-break among the same prior year's appeals
-                last = max((e for e in prior if e["year"] == last_year),
-                           key=lambda e: e["plan_id"])
-                entry["last_prior_covered"] = last["label"]
                 entry["years_since_prior"] = entry["year"] - last_year
             else:
-                entry["prior_rate"] = -1.0
-                entry["last_prior_covered"] = -1
                 entry["years_since_prior"] = -1
 
-    # Brute-force recompute: the history features must equal a from-scratch
-    # recompute over strictly-earlier plan years only.
+    # Brute-force recompute: the recency feature must equal a from-scratch
+    # recompute over strictly-earlier plan years only, and must never read any
+    # row's label (the P0-recovery guard: no shipped feature may be a function
+    # of another row's outcome - the 2026.10 history features that were, are gone).
     for entries in by_country.values():
         for entry in entries:
             earlier = [e for e in entries if e["year"] < entry["year"]]
-            if entry["prior_appeals"] != len(earlier):
-                raise BuildError(f"history recompute mismatch for {entry}")
             if earlier:
-                labels = [e["label"] for e in earlier]
-                if abs(entry["prior_rate"] - round(sum(labels) / len(labels), 6)) > 1e-9:
-                    raise BuildError(f"prior_rate recompute mismatch for {entry}")
                 last_year = max(e["year"] for e in earlier)
-                chosen = max((e for e in earlier if e["year"] == last_year),
-                             key=lambda e: e["plan_id"])
-                if entry["last_prior_covered"] != chosen["label"]:
-                    raise BuildError(f"last_prior_covered recompute mismatch for {entry}")
                 if entry["years_since_prior"] != entry["year"] - last_year:
                     raise BuildError(f"years_since_prior recompute mismatch for {entry}")
-            elif entry["last_prior_covered"] != -1 or entry["years_since_prior"] != -1:
+            elif entry["years_since_prior"] != -1:
                 raise BuildError(f"sentinel mismatch for a no-prior row: {entry}")
 
     stats["zero_funding_rows"] = zero_funding_rows
@@ -429,10 +427,6 @@ def split_rows(primary):
     return splits
 
 
-def fmt_rate(value: float) -> str:
-    return "-1.000000" if value == -1 else f"{value:.6f}"
-
-
 def write_artifact(out: Path, splits, built_at: str):
     (out / "public").mkdir(parents=True, exist_ok=True)
     (out / "private").mkdir(parents=True, exist_ok=True)
@@ -449,9 +443,6 @@ def write_artifact(out: Path, splits, built_at: str):
                 "plan_type": (entry["row"].get("typeName") or "").strip(),
                 "is_part_of_gho": 1 if entry["plan"].get("gho") else 0,
                 "orig_requirements_usd": str(entry["orig"]),
-                "country_prior_appeals": str(entry["prior_appeals"]),
-                "country_prior_covered_rate": fmt_rate(entry["prior_rate"]),
-                "country_last_prior_covered": str(entry["last_prior_covered"]),
                 "years_since_country_prior": str(entry["years_since_prior"]),
                 TARGET: str(entry["label"]),
             })
@@ -490,9 +481,12 @@ def write_artifact(out: Path, splits, built_at: str):
             "whichever the record dates), will the plan receive funding equal "
             "to at least 50% of its ORIGINAL (launch-vintage) requirements by "
             "the close of its plan year? Features are launch-time attributes "
-            "(original requirements, plan type, GHO membership, country, "
-            "emergency linkage) plus strictly-prior-year history for the same "
-            "country (prior-year plan coverage, series length). A useful "
+            "(original requirements, plan type, GHO membership, country, plan "
+            "year) plus the appeal-recency gap to the country's most recent "
+            "strictly-earlier appeal (years_since_country_prior; -1 when the "
+            "country has no prior appeal). No prior-outcome history ships: the "
+            "2026.10-era prior-outcome features allowed exact cross-row label "
+            "recovery and were removed after the 2026-11-01 queue audit. A useful "
             "prediction identifies, months ahead, which appeals will end the "
             "year underfunded - the quantity GHO gap analysis reports after "
             "the fact - enabling donor advocacy and fundraising prioritization."),
@@ -534,20 +528,22 @@ def build_quality(stats_by_split, harvest_stats, built_at: str) -> dict:
             "historical vintage proves the API state at past instants"),
     }
     history_group = {
-        "source": ("strictly-earlier plan-years of the same country in the same "
-                   "primary panel (funding outcomes of prior appeals)"),
+        "source": ("the PRESENCE of strictly-earlier plan-years of the same "
+                   "country in the same primary panel (which appeals existed, "
+                   "never their funding outcomes)"),
         "availability": (
-            "a prior plan year is complete before this appeal's launch, so its "
-            "funding outcome predates the row's instant; features read only plan "
-            "years strictly smaller than the row's own (asserted by brute-force "
-            "recompute in construction)"),
+            "an earlier appeal's existence and plan year are launch-time facts; "
+            "the only history-derived feature reads the year of the country's "
+            "most recent strictly-earlier appeal, never any row's label "
+            "(asserted by brute-force recompute in construction)"),
         "status": "assumed",
         "assumption": (
-            "current-snapshot vintage of the prior years' funding totals: the final "
-            "value can include late-reported flows that arrived after the row's "
-            "launch instant (worst case: the immediately-preceding plan year, whose "
-            "funding was still accruing at a December launch) - the declared "
-            "limitation behind training_label_timing: unverified"),
+            "current-snapshot row set: the appeal inventory is as published at "
+            "construction time (built_at pinned, every fetched file sha256-pinned "
+            "in summary.json). This evidence group carried the 2026.10-era "
+            "prior-outcome features that the 2026-11-01 queue audit recovered "
+            "labels through (120/139 eval, 128/182 holdout, 0 errors); those "
+            "columns no longer exist, and what remains is presence-only"),
     }
     fe = {
         "plan_year_id": {
@@ -592,20 +588,6 @@ def build_quality(stats_by_split, harvest_stats, built_at: str) -> dict:
             "assumption": "the current API value of the launch ask; the publisher "
                           "could restate it, which the sha256-pinned harvest and "
                           "fixture asserts would surface"},
-        "country_prior_appeals": {
-            **history_group,
-            "source": history_group["source"] + " -> country_prior_appeals: count "
-            "of strictly-earlier plan-years of the same country"},
-        "country_prior_covered_rate": {
-            **history_group,
-            "source": history_group["source"] + " -> country_prior_covered_rate: "
-            "mean coverage label over those plan-years; -1.000000 sentinel when "
-            "the country has no prior appeal"},
-        "country_last_prior_covered": {
-            **history_group,
-            "source": history_group["source"] + " -> country_last_prior_covered: "
-            "1/0 label of the most recent prior plan-year (deterministic tie-break "
-            "on plan id within that year); -1 sentinel when none exists"},
         "years_since_country_prior": {
             **history_group,
             "source": history_group["source"] + " -> years_since_country_prior: "
@@ -619,24 +601,17 @@ def build_quality(stats_by_split, harvest_stats, built_at: str) -> dict:
          "frame": "requirements stated at the appeal's launch (launch vintage, "
                   "externally cross-checked; NOT the CSV requirements column, "
                   "which carries the revised value in revised cases)"},
-        {"column": "country_prior_appeals",
-         "unit": "count of plan-years",
-         "frame": "strictly-earlier plan-years of the same country"},
-        {"column": "country_prior_covered_rate",
-         "unit": "share 0-1 (6 decimals; -1.000000 sentinel when no prior appeal)",
-         "frame": "covered share of the same country's strictly-earlier plan-years"},
-        {"column": "country_last_prior_covered",
-         "unit": "code (-1 none, 0 below half, 1 covered)",
-         "frame": "the most recent strictly-earlier same-country plan-year"},
         {"column": "years_since_country_prior",
          "unit": "years (-1 sentinel when no prior appeal)",
-         "frame": "gap to the most recent strictly-earlier same-country plan-year"},
+         "frame": "gap to the most recent strictly-earlier same-country "
+                  "plan-year; a function of which appeals exist, never of any "
+                  "row's funding outcome"},
         {"column": "plan_year", "unit": "calendar year (integer)",
          "frame": "the appeal's plan year; the split key"},
         {"column": "plan_year_anchor",
          "unit": "ISO date (derived: January 1 of the plan year)",
-         "frame": "the annual grain's calendar anchor; the join key for the "
-                  "declared cross-row probe"},
+         "frame": "the annual grain's calendar anchor; the gate's time-column "
+                  "join key for any cross-row review"},
         {"column": "is_part_of_gho", "unit": "binary indicator",
          "frame": "appeal is part of the Global Humanitarian Overview"},
         {"column": "country_iso3", "unit": "ISO 3166-1 alpha-3 country code",
@@ -644,25 +619,6 @@ def build_quality(stats_by_split, harvest_stats, built_at: str) -> dict:
         {"column": "plan_type", "unit": "publisher plan type name",
          "frame": "appeal instrument type (HRP, Flash appeal, ...)"},
     ]
-
-    probe = {
-        "name": "country_prior_appeal_exposes_outcome",
-        "entity_columns": ["country_iso3"],
-        "time_column": "plan_year_anchor",
-        "offset_months": 12,
-        "left": "country_last_prior_covered",
-        "operation": "copy",
-        "expectation": (
-            "the donor row (a same-country appeal one plan year later) points back "
-            "12 months to this row's anchor, and its country_last_prior_covered "
-            "feature is this row's label verbatim whenever this row is the "
-            "country's most recent prior plan-year - exactly the cross-row outcome "
-            "exposure inherent to any prior-outcome feature. Covered rows "
-            "demonstrate the exposure (mismatches would indicate same-year appeal "
-            "tie-breaks or anchor misalignment); the isolated-rows protocol is the "
-            "required mitigation for honest evaluation, declared as a requirement "
-            "- nothing in this package enforces it"),
-    }
 
     positive_events = {}
     for name in ("train", "eval", "holdout"):
@@ -687,7 +643,9 @@ def build_quality(stats_by_split, harvest_stats, built_at: str) -> dict:
                 "GHO 2023 launched 2022-12-01; HRPs launch end-December to early "
                 "January; flash appeals launch at event onset mid-year). Features "
                 "are the launch attributes plus strictly-earlier same-country "
-                "plan-years. The shipped plan_year_anchor (Jan 1 of the plan year) "
+                "appeal PRESENCE (the recency gap only; the prior-outcome "
+                "features that the 2026-11-01 queue audit recovered labels "
+                "through were removed in fts-appeal-003). The shipped plan_year_anchor (Jan 1 of the plan year) "
                 "is the conservative annual-grain join key, not a claim that every "
                 "appeal launched on that day. Worked example (UTC dates, annual "
                 "grain): Afghanistan HNP 2023, plan id 1117, asked US$4,627,363,573 "
@@ -784,15 +742,17 @@ def build_quality(stats_by_split, harvest_stats, built_at: str) -> dict:
                     "January; flash appeals launch at event onset"),
             },
             "features": {
-                "period": "the appeal's own launch record plus strictly-earlier "
-                          "plan-years of the same country",
+                "period": "the appeal's own launch record plus the PRESENCE of "
+                          "strictly-earlier plan-years of the same country "
+                          "(years only; no prior outcome ships)",
                 "published_days_after_period_end": 0,
                 "source_kind": "administrative_record",
             },
             "row_selection": {
                 "latest_period_used": (
-                    "the row's own plan-year launch attributes; history features "
-                    "read only plan-years strictly earlier than the row's plan year"),
+                    "the row's own plan-year launch attributes; the only "
+                    "history-derived column reads the YEAR of the country's most "
+                    "recent strictly-earlier appeal, never any row's outcome"),
                 "fields": [
                     "CSV (id, year) group carries exactly one country row (primary "
                     "population; multi-country regional groups excluded, counted)",
@@ -815,24 +775,30 @@ def build_quality(stats_by_split, harvest_stats, built_at: str) -> dict:
             "access": "isolated_rows",
             "training_label_timing": "unverified",
             "scope_note": (
-                "each row is one primary plan-year appeal whose features read the "
-                "same country's strictly-earlier plan-years, whose funding outcomes "
-                "are those rows' labels. Honest evaluation requires isolated rows - "
-                "one row presented to the solver at a time - because the "
-                "prior-history features embed earlier rows' labels (see the "
-                "declared cross-row probe). The shipped illustrative runner does "
-                "NOT enforce this: it passes the whole eval feature table to the "
-                "predictor in one call, so unrestricted-access scores overstate "
-                "honest performance and the isolated-rows requirement is stated as "
-                "a requirement, never as an enforcement claim. Labeled eval is "
+                "each row is one primary plan-year appeal. The 2026.10-era "
+                "prior-outcome features (country_prior_appeals, "
+                "country_prior_covered_rate, country_last_prior_covered) allowed "
+                "a label-blind attacker to recover earlier rows' labels exactly "
+                "from later rows' features (2026-11-01 queue audit: 120/139 eval, "
+                "128/182 holdout, 0 errors) and were REMOVED in fts-appeal-003; "
+                "no shipped column is any longer a function of another row's "
+                "outcome (asserted by construction: the only history-derived "
+                "column reads prior appeal YEARS, never labels). The "
+                "isolated-rows access declaration is retained as the CONSERVATIVE "
+                "posture, not as an enforcement claim: the illustrative runner "
+                "still passes the whole eval feature table to the predictor in "
+                "one call, nothing in this package enforces isolation, and the "
+                "absence of a known recovery is not a proof against future "
+                "attacks - the fresh independent pre-flip audit must attack the "
+                "shipped bytes before any publication. Labeled eval is "
                 "development/validation; the holdout is the final test and stays "
                 "outside evaluated agents' workspaces. Training-label timing is "
-                "UNVERIFIED: the split key is the plan year and a train plan-year's "
-                "final funding can complete during the first eval appeals' launch "
-                "window (train 2016 outcomes closed during 2017 while GHO 2017 "
-                "launched December 2016), so no full-row availability ledger is "
-                "claimed and the artifact is retrospective research only, never a "
-                "certified historical forecasting setup"),
+                "UNVERIFIED: the split key is the plan year and a train "
+                "plan-year's final funding can complete during the first eval "
+                "appeals' launch window (train 2016 outcomes closed during 2017 "
+                "while GHO 2017 launched December 2016), so no full-row "
+                "availability ledger is claimed and the artifact is retrospective "
+                "research only, never a certified historical forecasting setup"),
             "feature_evidence": fe,
             "vintage": {
                 "kind": "mixed",
@@ -875,10 +841,15 @@ def build_quality(stats_by_split, harvest_stats, built_at: str) -> dict:
                 "preceding plan year's outcome was still accruing at December "
                 "launches - training-label timing is unverified and no operational "
                 "forecasting claim is made",
-                "prior-history features carry a declared cross-row outcome exposure "
-                "(the probe measures it): unrestricted row-wise access can recover "
-                "earlier rows' labels, so honest evaluation requires isolated rows "
-                "and nothing in this package enforces that",
+                "prior-history exposure CLOSED by fts-appeal-003: the 2026.10-era "
+                "prior-outcome features let a label-blind attacker recover "
+                "earlier rows' labels exactly (2026-11-01 queue audit: 120/139 "
+                "eval, 128/182 holdout, 0 errors) and were removed; the only "
+                "history-derived column left (years_since_country_prior) reads "
+                "prior appeal YEARS, is derivable from the shipped row set "
+                "itself, and carries no outcome - but the whole-table runner "
+                "still presents every row at once, so isolated rows remain the "
+                "declared conservative requirement with no enforcement claim",
                 "regional multi-country appeals are out of scope (measured slice "
                 "gap 0.78); the task is about single-country appeals only",
                 "the label counts appeal-linked funding only (FTS incoming "
@@ -895,28 +866,41 @@ def build_quality(stats_by_split, harvest_stats, built_at: str) -> dict:
                 "would surface as a fixture failure",
             ],
             "cross_row_audit": {
-                "probes": [probe],
+                "probes": [],
                 "rationale": (
-                    "the only join that exposes one row's label through another "
-                    "row's features is the within-country prior-outcome join: a "
-                    "later row's country_last_prior_covered and "
-                    "country_prior_covered_rate are computed from the same "
-                    "country's strictly-earlier plan-years, so a later shipped row "
-                    "carries earlier shipped rows' labels - and when the previous "
-                    "plan-year row is the country's most recent prior appeal, the "
-                    "last-outcome feature is that row's label verbatim. Same-instant "
-                    "joins are unique by construction (plan_year_id unique, one row "
-                    "per plan-year appeal); no other shipped column reads any other "
-                    "row's outcome. The FTS API exposes no historical vintages "
-                    "(checked), so no as-of reconstruction is possible and the "
-                    "restricted retrospective protocol is the declared posture"),
+                    "the within-country prior-outcome join that previously "
+                    "exposed one row's label through a later row's features was "
+                    "removed in fts-appeal-003 together with its operand columns "
+                    "(country_last_prior_covered, country_prior_covered_rate, "
+                    "country_prior_appeals): the 2026-11-01 queue audit recovered "
+                    "120/139 eval and 128/182 holdout labels exactly through "
+                    "count x rounded-rate arithmetic plus the declared last-prior "
+                    "tie rule, reading only shipped features of later rows. No "
+                    "declared probe remains because no shipped column reads "
+                    "another row's outcome: every remaining feature is a function "
+                    "of the row's own launch record, except "
+                    "years_since_country_prior, which reads only WHICH "
+                    "strictly-earlier same-country appeals exist (their years, "
+                    "never their labels), is derivable by any reader from the "
+                    "shipped row set itself, and is asserted label-free by "
+                    "brute-force recompute at construction. Row presence is "
+                    "launch-decidable (single-country CSV group, positive launch "
+                    "ask, plan year in window; the live-edge and no-orig "
+                    "exclusions are unobserved-target censoring, never "
+                    "outcome-based), so no missing-row rule encodes any label. "
+                    "Same-instant joins are unique by construction (plan_year_id "
+                    "unique, one row per plan-year appeal). The FTS API exposes "
+                    "no historical vintages (checked), so no as-of "
+                    "reconstruction is claimed and the restricted retrospective "
+                    "posture stands. The pre-flip independent audit must "
+                    "re-attack these bytes label-blind before any publication"),
                 "auxiliary_files_review": (
                     "the artifact ships exactly public/train.csv, public/eval.csv, "
                     "private/holdout.csv, meta.json and quality.json; no auxiliary "
                     "solver-visible file exists (summary.json, the harvest "
                     "provenance JSONLs and the source CSV copy are written outside "
-                    "the extract under /output, and no funding value appears in any "
-                    "shipped column)"),
+                    "the extract under /output, and no funding value or prior "
+                    "outcome appears in any shipped column)"),
             },
         },
         "source_snapshot": {
@@ -1003,7 +987,7 @@ def main() -> int:
     summary = {
         "name": NAME,
         "built_at_utc": args.built_at,
-        "job": "fts-appeal-001",
+        "job": "fts-appeal-003",
         "harvest": harvest_stats,
         "exclusion_buckets": {k: len(v) for k, v in buckets.items()},
         "flow_vs_csv_funding_mismatches": harvest_stats["csv_flow_mismatches"],

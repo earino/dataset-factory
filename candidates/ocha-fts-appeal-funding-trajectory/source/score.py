@@ -14,11 +14,23 @@ set takes this shape (every rate table is estimated ONLY from training rows,
 
   * persistence_last_coverage - THE HEADROOM REFERENCE the candidate record
     names first: the country's most recent strictly-earlier plan-year's label
-    as the score (0.5 for the -1 no-prior sentinel) - the funding-persistence
-    form the full model must beat.
-  * prior_mean_rate - the shipped country_prior_covered_rate feature as a
-    continuous score (mean over ALL prior plan-years; global train rate for the
-    sentinel) - the broader persistence family.
+    as the score (0.5 when no prior appeal exists). fts-appeal-003: the
+    prior-outcome FEATURES were removed from the shipped bytes because they
+    were the 2026-11-01 queue audit's exact cross-row label recovery, so this
+    reference is RECOMPUTED HERE from the label column of strictly-earlier
+    same-country rows in train.csv + eval.csv (never the holdout; an eval
+    row's priors are always earlier years). Same max-plan-id tie rule as the
+    removed feature, so on unchanged rows it reproduces the 002-era figure
+    (0.7171136653895275 measured on the e7441e1f artifact) - a value test, not
+    a tautology: a divergence means the rows or the recompute changed.
+    INFORMATION ASYMMETRY, disclosed: the full model is NOT given the last
+    outcome (it is unshippable under the operator's P0 standard), while this
+    reference reads it - trailing this reference is expected and beating it is
+    a strong result; the comparison must always be quoted with this note.
+  * prior_mean_rate - the broader persistence family: mean covered label over
+    ALL strictly-earlier same-country plan-years (6-decimal rounding as the
+    removed feature; global train rate for the no-prior sentinel), recomputed
+    scorer-side from the same label columns for the same reason.
   * country_hist_rate - train-estimated covered rate of the row's country
     (identity reference; global train rate for countries unseen in train).
   * plan_type_rate - train-estimated rate by plan type (launch-attribute base
@@ -154,14 +166,44 @@ def main() -> int:
     def scores_from(rows, fn):
         return [fn(r) for r in rows]
 
-    # persistence: the country's most recent strictly-earlier plan-year's label
-    persistence = scores_from(evald, lambda r: 0.5 if r["country_last_prior_covered"] == "-1"
-                              else float(r["country_last_prior_covered"]))
+    # ---- scorer-side history recompute (fts-appeal-003) -----------------------
+    # The prior-outcome features were removed from the shipped bytes (they were
+    # the queue audit's exact cross-row recovery), so the persistence references
+    # are recomputed here from the LABELS of strictly-earlier same-country rows
+    # in train.csv + eval.csv only. The holdout is never opened, and an eval
+    # row's strictly-earlier years can never be holdout rows (eval years
+    # 2017-2020 < holdout years 2021-2025). Any reader may verify: these vectors
+    # use label information the model is deliberately not given - disclosed in
+    # the report notes and the candidate record.
+    history_rows = []
+    for rows in (train, evald):
+        for row in rows:
+            year, pid = row["plan_year_id"].split("-", 1)
+            history_rows.append((row["country_iso3"], int(year), pid,
+                                 1 if row[TARGET] == POSITIVE else 0))
 
-    # broader persistence family: mean covered rate over all prior plan-years
-    prior_mean = scores_from(evald, lambda r: train_rate
-                            if r["country_prior_covered_rate"] == "-1.000000"
-                            else float(r["country_prior_covered_rate"]))
+    def last_prior_label(country, year):
+        """Most recent strictly-earlier same-country appeal outcome; max-plan-id
+        tie rule, identical to the removed country_last_prior_covered feature."""
+        priors = [h for h in history_rows if h[0] == country and h[1] < year]
+        if not priors:
+            return None
+        last_year = max(h[1] for h in priors)
+        return max((h for h in priors if h[1] == last_year),
+                   key=lambda h: h[2])[3]
+
+    # persistence: the country's most recent strictly-earlier plan-year's label
+    persistence = []
+    prior_mean = []
+    for row in evald:
+        year, _ = row["plan_year_id"].split("-", 1)
+        year = int(year)
+        label = last_prior_label(row["country_iso3"], year)
+        persistence.append(0.5 if label is None else float(label))
+        labels = [h[3] for h in history_rows
+                  if h[0] == row["country_iso3"] and h[1] < year]
+        prior_mean.append(train_rate if not labels
+                          else round(sum(labels) / len(labels), 6))
 
     # identity: train-estimated per-country covered rate
     country_table, country_global = rate_table(train, ["country_iso3"])
@@ -271,9 +313,16 @@ def main() -> int:
         "paired_bootstrap": paired,
         "notes": [
             "every rate table is estimated ONLY from train plan-years 2000-2016",
+            "fts-appeal-003: persistence_last_coverage and prior_mean_rate are "
+            "recomputed scorer-side from the labels of strictly-earlier "
+            "same-country rows (train.csv + eval.csv only, holdout never "
+            "opened) because their feature form was the removed P0 cross-row "
+            "recovery; the full model does NOT receive this information, so "
+            "the model-vs-persistence comparison is information-asymmetric by "
+            "design and must be quoted with this note",
             "the holdout was never opened by this stage",
-            "the full model comes from the benchmark runner's baseline job on the "
-            "same eval rows; its figure is quoted beside these references",
+            "the full model comes from the benchmark runner's baseline job on "
+            "the same eval rows; its figure is quoted beside these references",
             "an interval containing zero is an inconclusive difference, not parity",
         ],
     }

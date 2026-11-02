@@ -1,3 +1,72 @@
+## 2026-11-02 (13:40Z) - ocha-fts P0-recovery rebuild QUALIFIED + ACCEPTED (fts-appeal-003, artifact ac529cd4, rows unchanged, every reference reproduced to the last digit); unhcr recorded rebuild path proven unable to clear P0 (structural missing-successor rule) - operator decision reframed precisely; no construction for anything else
+
+Scheduled advancement session. Release work outranks construction; the operator's post-audit task
+list names ocha-fts (package) and unhcr (release) actionable while ns-bwa - carrying the identical
+rebuild-or-drop decision shape - is absent, which reads as the operator choosing the two rebuild
+paths. Primary: ocha-fts-appeal-funding-trajectory (the recorded rebuild there is sound); unhcr got
+a decision-grade analysis (below) after its recorded path proved insufficient.
+
+- PREFLIGHT before any worker (in the candidate record): rows chosen by build.py build_panel()
+  (single-country CSV group, orig>0, year 2000-2025; every exclusion bucketed, never scored);
+  artifact written by write_artifact() + build_quality(); qualification = run.sh stage 2 (gate
+  1.5.0, FULL artifact on the worker), acceptance stage 3 (exact-byte --accept), references stage 4
+  (score.py, post-acceptance only, holdout never opened); the first performance metric in the job
+  is score.py's, after acceptance - build.py computes none (read line by line). A synthetic
+  full-order rehearsal on fake bytes (construct -> gate -> exact-byte accept -> score) passed before
+  launch; the only rehearsal failure was the toy panel's clustered-positive count, fixed by scaling
+  the toy (no real data, no real labels).
+- fts-appeal-003 (P0-recovery rebuild, the one rebuild for that defect class; launched 13:01:28Z,
+  cx23/hel1, server 174163321, collected 13:38:00Z, destroyed 13:38:57Z with provider 404
+  read-back; EUR 0.04 reservation at the 0.02/h ceiling, provider rate 0.01152/h, November month):
+  job succeeded in 1396.6 s, exit 0. FIX: country_prior_appeals / country_prior_covered_rate /
+  country_last_prior_covered no longer ship (the 2026-11-01 queue audit recovered 120/139 eval and
+  128/182 holdout labels exactly through them); every remaining feature is a function of the row's
+  own launch record except years_since_country_prior (presence-only: reads WHICH strictly-earlier
+  same-country appeals exist, never their labels; derivable from the shipped row set; asserted
+  label-free by the brute-force construction recompute). 9 shipped columns instead of 12.
+- RESULT: gate 1.5.0 ok=true failed_checks=[] on the full artifact on the worker (contract checks
+  6/6 green; cross_row_audit now carries probes=[] with a rationale documenting the removed
+  prior-outcome join; access stays isolated_rows as the declared conservative posture, no
+  enforcement claim); exact-byte --accept ACCEPTED for artifact
+  ac529cd4e9d4da90f804ecef425e74c94a946b857fe39095fd73a0407506b8c0 (staging release 431492902,
+  tag job-fts-appeal-003; extract never on the coordinator). ROWS UNCHANGED vs the audited
+  e7441e1f: train 437/279, eval 139/81, holdout 182/96 - the live source did not drift.
+- VALUE TEST (the decisive one): score.py now recomputes persistence_last_coverage and
+  prior_mean_rate scorer-side from prior-in-time labels (train+eval only, holdout never opened),
+  because their feature form is exactly the removed P0 exposure; on the unchanged rows it
+  reproduces the 002-era figures EXACTLY - persistence 0.7171136653895275, prior_mean
+  0.7143465304384845, ask_size 0.7126436781609196, country_hist 0.6729459344401874, plan_type
+  0.669220945083014, majority accuracy 0.5827338129496403, per-year persistence AUC
+  0.73611/0.66579/0.74716/0.72727. Equality to the last digit proves both the unchanged panel and
+  the recompute. INFORMATION ASYMMETRY recorded in the report notes and the candidate record: the
+  full model is deliberately NOT given the last prior outcome (unshippable under the operator's P0
+  standard) while the persistence reference reads it - the model-vs-persistence comparison must be
+  quoted with that note.
+- NEXT (recorded in next_action): launch the prepared fts-baseline-002 bundle (filled by
+  fill_from_collect.py from the 003 collect: fetch block, expected_artifact.json,
+  baseline/qualification.json, run.sh references comment all regenerated) to measure the stock
+  runner's full-model AUC on the rebuilt information set, quote it beside persistence, interpret,
+  then package + private staging, then the fresh independent pre-flip audit (its frozen attack code
+  must now find no operand columns) - the flip stays the operator's single approval. Nothing public.
+- unhcr-refugee-data-finder: NO construction launched - the recorded rebuild path ("without the
+  self-answering feature set (surged_recently, apps_d/apps_d1)") PROVABLY cannot clear the
+  operator's P0 standard: the headline recovery (eval AUC 0.975325 / holdout 0.983034) is the
+  MISSING-SUCCESSOR rule, which reads only ROW PRESENCE via (origin, asylum, target_date) - verified
+  against source/build.py (MIN_APPS=500 base eligibility: label 1 => apps_{D+1} >= 2 x apps_D >=
+  1000 => successor row exists; successor absent => label 0, 0 errors on 1,584/1,887 eval and
+  1,422/1,962 holdout) and it needs no feature column, so dropping the named features leaves it
+  intact; a clean rebuild would also have to drop the successor-row host/origin aggregates, leaving
+  identity + calendar + corridor_age. Structural characterisation + evidence-backed recommendation
+  (drop as a publishable corridor-grain benchmark; revival only as a NEW task instance through
+  discovery) written into the record's next_action; operator_decision_pending stays true (drop /
+  re-scope commission / keep-private-indefinitely are the operator's paths). The staged 6bd0c307
+  package is untouched on both private destinations.
+- Hygiene: check-candidate ocha OK + unhcr OK (rc=0 each). No tokens exposed (fill_from_collect's
+  displayed 'Bearer ***' is the terminal's display artifact - ord() shows '{tok}'; the file reads
+  the credential file at point of use). One cx23 worker used and provider-confirmed destroyed. No
+  manifest, tag, published byte or destination touched; the 2026.10 staged artifacts for ocha-fts
+  (releases 430422823/430443206) and unhcr remain preserved as historical evidence.
+
 ## 2026-11-01 (08:2xZ) - ocha-fts-appeal-funding-trajectory QUALIFIED, ACCEPTED and baselined in one session (triad complete: stock runner 0.6298 trails persistence 0.71711 - recorded as no demonstrated headroom under this protocol); both operator-gated release items verified untouched
 
 Scheduled advancement tick. Release work outranks construction, and both release items were

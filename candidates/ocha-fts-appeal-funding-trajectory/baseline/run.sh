@@ -11,7 +11,7 @@
 #      read-only clone, and record both eval AUCs.
 # No number here is computed before step 1 succeeds.
 #
-# Construction-time references measured on the same eval rows (job fts-appeal-002, run
+# Construction-time references measured on the same eval rows (job fts-appeal-003, run
 # post-acceptance): persistence_last_coverage 0.71711 (the headroom reference the candidate
 # record names first), prior_mean_rate 0.71435, ask_size_rate 0.71264,
 # country_hist_rate 0.67295, plan_type_rate 0.66922, majority-class accuracy

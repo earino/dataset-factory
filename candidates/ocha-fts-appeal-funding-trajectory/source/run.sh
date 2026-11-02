@@ -1,6 +1,8 @@
 #!/bin/sh
 # Worker entrypoint for the ocha-fts-appeal-funding-trajectory construction
-# (fts-appeal-001).
+# (fts-appeal-003, the P0-recovery rebuild: the prior-outcome history features
+# country_prior_appeals / country_prior_covered_rate / country_last_prior_covered
+# no longer ship; see the job record and the 2026-11-01 queue audit).
 #
 # Order is fixed and each stage stops the next: construct -> qualify -> accept
 # exact bytes -> simple references. build.py only constructs files and gate
@@ -17,7 +19,7 @@ mkdir -p /output
 
 echo "== build (construct only; no performance metric) =="
 python3 -u /workspace/build.py --out "$OUT" --work-dir /tmp/fts \
-    --built-at 2026-11-01T00:00:00Z --summary-out /output/summary.json
+    --built-at 2026-11-02T00:00:00Z --summary-out /output/summary.json
 build_status=$?
 
 if [ "$build_status" -ne 0 ]; then

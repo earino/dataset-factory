@@ -5,31 +5,31 @@
  "artifact": {
   "train": {
    "file": "public/train.csv",
-   "sha256": "eb0c4dcab27b4e8cd872a26cc711a745952208fd600f3c786f357e9efcda591a",
-   "bytes": 35621
+   "sha256": "db0c7eea0efd3362f369b64c446d4f237b390d8d5539306dc9b66857e685b787",
+   "bytes": 29660
   },
   "eval": {
    "file": "public/eval.csv",
-   "sha256": "b40bd9c6dc2cd5b2eeeee61c03aa7a7a191a55faae60aa4a4b772e8be13f8506",
-   "bytes": 11268
+   "sha256": "c11c03935277ecb164ccde4648fd6541e69d962239a561347832e220c981ef2c",
+   "bytes": 9322
   },
   "holdout": {
    "file": "private/holdout.csv",
-   "sha256": "0819c3f146e663d3854105ee4b9de8a975a5d8b76a9e596410a3d26671a40499",
-   "bytes": 15419
+   "sha256": "ffa427d9e67cd1ed7213c370b805287e58549d9058e9241bb01af40105dd37d9",
+   "bytes": 12862
   },
   "meta.json": {
    "file": "meta.json",
-   "sha256": "bc3d4b89be7ae1500cae0d724cc04f9d384c84c9c05d89d0e2043aa42a4b1114",
-   "bytes": 1775
+   "sha256": "9f3095a8f2662387c75e098f4d1a4e60292109f5ebc503288a357df864659b5e",
+   "bytes": 1891
   },
   "quality.json": {
    "file": "quality.json",
-   "sha256": "32c341f73bf891b99de456acdfaec55eea58f6fa79d82bee9f3761a468e13cb0",
-   "bytes": 25882
+   "sha256": "5dd17cea147d298c7e8249dd3e661541dc58a65cbb00da711ce09c90696f67c7",
+   "bytes": 23348
   },
   "artifact_version": {
-   "digest": "e7441e1fd868522d1fae1d5d2efca3733ca47c85f8cd612402f89b445c9e9a63",
+   "digest": "ac529cd4e9d4da90f804ecef425e74c94a946b857fe39095fd73a0407506b8c0",
    "components": [
     "eval",
     "holdout",
@@ -75,31 +75,6 @@
    "ok": true,
    "detail": "Document applicable cross-row probes and every solver-visible auxiliary file",
    "evidence": {}
-  },
-  {
-   "check": "contract.cross_row_probe_0",
-   "ok": true,
-   "detail": "Outcome-bearing later-row exposure requires restricted evaluation access; mismatches are reported",
-   "evidence": {
-    "train": {
-     "rows": 437,
-     "covered": 268,
-     "mismatches": 0,
-     "ambiguous_or_conflicting": 18
-    },
-    "eval": {
-     "rows": 139,
-     "covered": 78,
-     "mismatches": 0,
-     "ambiguous_or_conflicting": 0
-    },
-    "holdout": {
-     "rows": 182,
-     "covered": 101,
-     "mismatches": 0,
-     "ambiguous_or_conflicting": 24
-    }
-   }
   },
   {
    "check": "contract.label_availability",
@@ -234,9 +209,9 @@
   {
    "check": "timing.selection_uses_only_available_data",
    "ok": true,
-   "detail": "row selection declares its latest period as \"the row's own plan-year launch attributes; history features read only plan-years strictly earlier than the row's plan year\"",
+   "detail": "row selection declares its latest period as \"the row's own plan-year launch attributes; the only history-derived column reads the YEAR of the country's most recent strictly-earlier appeal, never any row's outcome\"",
    "evidence": {
-    "latest_period_used": "the row's own plan-year launch attributes; history features read only plan-years strictly earlier than the row's plan year",
+    "latest_period_used": "the row's own plan-year launch attributes; the only history-derived column reads the YEAR of the country's most recent strictly-earlier appeal, never any row's outcome",
     "fields": [
      "CSV (id, year) group carries exactly one country row (primary population; multi-country regional groups excluded, counted)",
      "plan endpoint origRequirements > 0 (no-orig groups excluded as unobserved denominators, counted)",
@@ -247,7 +222,7 @@
   {
    "check": "units.measured_columns_declare_unit_and_frame",
    "ok": true,
-   "detail": "10 measured column(s) declare unit and frame",
+   "detail": "7 measured column(s) declare unit and frame",
    "evidence": {
     "measurements": [
      {
@@ -256,23 +231,8 @@
       "unit": "US dollars (integer; the launch ask)"
      },
      {
-      "column": "country_prior_appeals",
-      "frame": "strictly-earlier plan-years of the same country",
-      "unit": "count of plan-years"
-     },
-     {
-      "column": "country_prior_covered_rate",
-      "frame": "covered share of the same country's strictly-earlier plan-years",
-      "unit": "share 0-1 (6 decimals; -1.000000 sentinel when no prior appeal)"
-     },
-     {
-      "column": "country_last_prior_covered",
-      "frame": "the most recent strictly-earlier same-country plan-year",
-      "unit": "code (-1 none, 0 below half, 1 covered)"
-     },
-     {
       "column": "years_since_country_prior",
-      "frame": "gap to the most recent strictly-earlier same-country plan-year",
+      "frame": "gap to the most recent strictly-earlier same-country plan-year; a function of which appeals exist, never of any row's funding outcome",
       "unit": "years (-1 sentinel when no prior appeal)"
      },
      {
@@ -282,7 +242,7 @@
      },
      {
       "column": "plan_year_anchor",
-      "frame": "the annual grain's calendar anchor; the join key for the declared cross-row probe",
+      "frame": "the annual grain's calendar anchor; the gate's time-column join key for any cross-row review",
       "unit": "ISO date (derived: January 1 of the plan year)"
      },
      {
