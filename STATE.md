@@ -2064,6 +2064,26 @@ candidate review - review the next candidate's source-specific prediction contra
 and update its builder before construction; #25 remains deferred.
 
 
+## 2026-11-01 (23:05Z) - catalogue table fix: giant suitability-summary blocks removed from the datasets table (operator-reported); rows now carry a one-line decision tag, full notice stays on each dataset page
+
+The operator reported the site's datasets table rendering giant blocks of
+suitability prose per row ("how is that the right fucking place to say that
+shit" - correct; a table needs scannable rows). Cause: sites/runtime.py's
+catalogue row rendered the editorial summary AND the entire suitability
+summary paragraph in bold inside the 40% "What it asks" cell.
+
+Fix: the cell keeps the editorial summary and adds a compact one-line decision
+tag (SUITABILITY_TAGS: retain_restricted -> "Retrospective research only",
+retain -> "General research use"); the full suitability notice remains on each
+dataset's own page (its intended place). Preview verified before publish
+(table: 0 long blocks, tags present; dataset pages unchanged); republished via
+the ipo bundle (plan d0bd71e4...); live catalogue verified anonymously: 13 rows,
+13 tags, 0 long blocks, 0 old cell pattern; dataset pages still carry the full
+notice. Suite OK. The older renderer copies in the other 12 dataset repos are
+cosmetically stale (they do not render the catalogue) and refresh on their next
+publish.
+
+
 ## 2026-11-01 (22:35Z) - queue audit verdicts applied: ipo + pins corrected and PUBLISHED (2 flips, both proven anonymously, sites live); ns-bwa, ocha-fts and unhcr held on P0 label recovery; austender licence-blocked, tw-typhoon fix-the-record; 9 ready candidates cleared to build
 
 The operator relayed the independent queue audit (Codex, 2026-11-01, report at

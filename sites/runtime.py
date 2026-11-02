@@ -76,6 +76,7 @@ th[scope="row"]{{white-space:nowrap}}
 .catalogue{{table-layout:fixed;min-width:760px}}
 .catalogue th[scope="row"]{{white-space:normal;vertical-align:top;overflow-wrap:anywhere}}
 .catalogue td:nth-child(3),.catalogue td:nth-child(4){{white-space:nowrap}}
+.catalogue .suptag{{display:block;margin:6px 0 0;color:#333}}
 .catalogue .newbadge{{display:block;margin:6px 0 0}}
 .rainbow{{width:100%;height:6px;display:block;margin:6px 0}}
 pre{{background:#000;color:#0f0;font:13px/1.5 "Courier New",monospace;padding:12px;border:3px inset #808080;overflow-x:auto}}
@@ -128,6 +129,14 @@ def navigation(record):
         ("github_release", "GitHub release"), ("huggingface_version", "Hugging Face"),
         ("catalog", "All datasets")))
     return '<div class="tscroll"><table class="getbar" aria-label="Dataset destinations"><tr>' + cells + "</tr></table></div>"
+
+
+SUITABILITY_TAGS = {
+    "retain": "General research use",
+    "retain_restricted": "Retrospective research only",
+    "rebuild_before_use": "Not for use in this form",
+    "retire": "Retired",
+}
 
 
 def suitability_html(r):
@@ -267,7 +276,7 @@ def render(config, records, preview=False, editions=(), _historical=False):
                 f'<tr><th scope="row">{link(r["urls"]["version"], r["title"])}{badge}</th>'
                 f'<td>{esc(r["domain"])}<br>{esc(r["task_type"])}</td>'
                 f'<td>{rows:,}</td><td>{esc(r["release_date"])}</td>'
-                f'<td>{esc(r["summary"])}<p><strong>{esc(r.get("suitability", {}).get("summary", "Suitability review pending"))}</strong></p></td></tr>')
+                f'<td>{esc(r["summary"])}<span class="suptag">{esc(SUITABILITY_TAGS.get(r.get("suitability", {}).get("decision"), "Suitability notice on the dataset page"))}</span></td></tr>')
         posts = []
         for r in records:
             url = config["catalog_url"] + 'releases/' + r["dataset"] + '/' + r["release_tag"] + '/'
