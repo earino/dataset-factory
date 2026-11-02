@@ -1,3 +1,39 @@
+## 2026-11-02 (14:40Z) - watcher follow-up: all four finished ocha-fts jobs (fts-appeal-001/002/003, fts-baseline-001) verified already handled and acknowledged with .factory handled markers; no new collection, worker or spend
+
+The watcher reported the four finished ocha-fts jobs (all exit=0, all assets uploaded:
+releases 430422823 / 430443206 / 431492902 / 430445512). Every one was already
+collected, interpreted, recorded and cleaned up by the 2026-11-01 08:2xZ and
+2026-11-02 13:40Z sessions; this session verified that from existing read-only records
+(job ledger status=deleted + collected_at for each; the provider 404 destroy read-backs
+recorded in those sessions' entries) and wrote the missing
+`.factory/<job>/handled` acknowledgment markers (untracked local bookkeeping) so the
+watcher stops re-reporting them. No collect, no `worker status` (it writes), no launch,
+no candidate byte, no release/tag/destination changed. EUR 0 spent.
+
+- fts-appeal-001 (16 assets, release 430422823): collected 2026-11-01T07:48:15Z;
+  worker 173923335 destroyed, provider 404 read-back. Gate 1.5.0 clean + exact-byte
+  --accept for 893b2e78; meta.json TASK_KEYS defect -> the one permitted rebuild.
+  Outcome recorded at 4c094f7.
+- fts-appeal-002 (16 assets, release 430443206): collected 08:13:43Z; worker 173928952
+  destroyed (404). ACCEPTED e7441e1f; P0 label-recovery hold (5fe48f5) -> superseded by
+  003's ac529cd4; preserved unshipped, DO NOT PUBLISH. Outcome recorded at 4c094f7.
+- fts-appeal-003 (16 assets, release 431492902): collected 2026-11-02T13:38:03Z;
+  worker 174163321 destroyed 13:38:57Z (404). P0-recovery rebuild ACCEPTED (ac529cd4;
+  every reference reproduced to the last digit, persistence 0.7171136653895275).
+  Outcome recorded at ac11b88.
+- fts-baseline-001 (10 assets, release 430445512): collected 2026-11-01T08:21:30Z;
+  worker 173931463 destroyed 08:21:47Z (404). Triad on e7441e1f: full model 0.6298 vs
+  persistence 0.71711 on the same 139 eval rows -> no demonstrated headroom (stock
+  runner). Outcome recorded at 5cee7ba.
+- Handoff unchanged and already precise (candidate next_action, updated 13:40Z):
+  launch the prepared fts-baseline-002 bundle on the accepted ac529cd4, quote the
+  full-model AUC beside persistence 0.71711 with the information-asymmetry note, then
+  package + private staging + fresh label-blind pre-flip audit; the flip stays the
+  operator's single approval. Nothing in this event needs the operator.
+- Checks this session: check-candidate --all rc=0. Each marker carries its job's
+  evidence path and remaining blocker; the watcher's next run reports nothing for
+  these four.
+
 ## 2026-11-02 (14:29Z) - datasus-sinasc-cesarean-share-decline opened and READY (LatAm tick): first maternal-health task on the bench, BR SINASC municipality cesarean-share decline at the year-T publication instant; licence A (cc-by package instrument) with the site-footer BY-ND conflict recorded, all five contracts reconciled
 
 Discovery-only session (regional focus Latin America, Brazil; no construction, qualification,
