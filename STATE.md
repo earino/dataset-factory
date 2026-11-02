@@ -2131,9 +2131,9 @@ build); 9 candidates READY-TO-BUILD (acnc, conagua, eu-transparency-register,
 jp-moe-pollen, ofsted, za-cct-c3, za-cct-substation, za-municipal-audit,
 za-statsa-liquidations) - novelty/licence/channel all passed at bounded scope.
 
-OBSERVATION for the operator: the queue audit noted the factory repository
-earino/dataset-factory reads as PUBLIC to the GitHub API. This session did not
-change it and does not know whether that is intended.
+RESOLVED: the operator confirmed 2026-11-01 the factory repository
+earino/dataset-factory is PUBLIC by design (free GitHub Actions on public
+repos); never flip it private.
 
 All checks green after the records: check-package both, check-suitability 17/17,
 suite at baseline. Both sites verified with HTTPS enforced. Nothing was
