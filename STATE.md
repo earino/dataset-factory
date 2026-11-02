@@ -2064,6 +2064,41 @@ candidate review - review the next candidate's source-specific prediction contra
 and update its builder before construction; #25 remains deferred.
 
 
+## 2026-11-02 (23:00Z) - recommendation executed: ocha-fts v2026.11 staged private on both destinations with the re-audit prompt ready (flip waits for the verdict); ns-bwa rebuild designed and queued; unhcr v2026.10 dropped in this form, candidate parked with a reopen condition
+
+The operator accepted the recommendation and instructed "do your recommendation".
+
+ocha-fts-appeal-funding-trajectory (the standout): the 2026-11-02 advancement
+session's corrected rebuild (artifact ac529cd4, the three prior-outcome columns
+removed) is now STAGED PRIVATE on both destinations by this session - private
+repo created with the package docs (main 3bb489c), fts-publish-001 transferred
+the five assets from staging 431492902 into release 432039311 (5/5 server
+digests; tag v2026.11 == main), consumer path green (get_dataset.py 77,083
+bytes, sha256sum 5/5, gate --accept ACCEPTED ac529cd4), card authored,
+fts-hf-001 pinned all five on Hub main e715affd with the loading check ok and
+tag v2026.11 == main. Status packaged, awaiting_operator true; suitability
+version-bound 18/18; workers destroyed provider-confirmed. The pre-flip
+re-audit prompt is generated from the frozen manifest and mandates re-running
+the 2026-11-01 frozen attacks on these bytes. Next: operator relays the prompt;
+the flip waits for the verdict.
+
+ns-bwa-advisory-lift-duration (the cheap fix): the rebuild design is recorded -
+all eight outcome-derived history columns dropped, the v2026.12 frame keeps
+issuance-time facts plus recency intervals. The next advancement session
+executes the full sequence (rebuild, requal, baseline, package, stage, fresh
+audit prompt). Honest expectation recorded: site persistence stays the bar.
+
+unhcr-refugee-data-finder (the one not worth fixing): the v2026.10 package is
+DROPPED - never to be flipped in this form; the leak is the task's core
+quantity (a T+1 row ships the T row's label operand), and two audits confirm
+it. The candidate parks with one reopen condition: a redesigned task that keeps
+corridor momentum without adjacent corridor-years both shipping, built and
+audited fresh. Both destinations stay private indefinitely.
+
+Nothing was published this session; the only flips remain the operator's, and
+ocha's is gated on the fresh audit verdict.
+
+
 ## 2026-11-01 (23:05Z) - catalogue table fix: giant suitability-summary blocks removed from the datasets table (operator-reported); rows now carry a one-line decision tag, full notice stays on each dataset page
 
 The operator reported the site's datasets table rendering giant blocks of

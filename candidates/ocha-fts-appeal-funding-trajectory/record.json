@@ -1,5 +1,29 @@
 {
- "artifacts": [],
+ "artifacts": [
+  {
+   "artifact_version": "ac529cd4e9d4da90f804ecef425e74c94a946b857fe39095fd73a0407506b8c0",
+   "digest_of": "sha256 over public/train.csv, public/eval.csv, private/holdout.csv, meta.json, quality.json (gate 1.5.0)",
+   "accepted": "exact-byte --accept on the worker (fts-appeal-003) and re-accepted after download by the consumer path 2026-11-02: 'ACCEPTED: ... matches the qualified artifact ac529cd4e9d4da90'",
+   "gate": "1.5.0 two-phase over the full artifact, failed_checks empty (report ships as release/.../qualification.json)",
+   "built_by": "worker job fts-appeal-003 from the pinned FTS/HPC inputs (construction commit ac11b88)",
+   "supersedes": "e7441e1fd868522d1fae1d5d2efca3733ca47c85f8cd612402f89b445c9e9a63 - the 2026-10-31-era artifact rejected by the 2026-11-01 queue audit (P0 label recovery through the prior-outcome history features); rows unchanged, the three outcome-derived columns removed, only years_since_country_prior remains as history-derived and reads prior appeal YEARS, never labels",
+   "staged_on": {
+    "github": "private release 432039311 (repo earino/ocha-fts-appeal-funding-trajectory, tag v2026.11 == main == 3bb489c), 5/5 assets at the accepted digests",
+    "huggingface": "private repo earino/ocha-fts-appeal-funding-trajectory, main e715affd, tag v2026.11 == main, worker receipt fts-hf-001"
+   },
+   "consumer_verified": "get_dataset.py end-to-end against the private release (5 files, 77,083 bytes, digests verified), sha256sum -c 5/5, qualify_dataset.py --accept ACCEPTED (2026-11-02)",
+   "evidence": [
+    "release/ocha-fts-appeal-funding-trajectory/DESTINATIONS.json",
+    "release/ocha-fts-appeal-funding-trajectory/qualification.json",
+    "jobs/fts-appeal-003.json",
+    "jobs/fts-publish-001.json",
+    "jobs/fts-hf-001.json"
+   ],
+   "url": "https://github.com/earino/ocha-fts-appeal-funding-trajectory/releases/tag/v2026.11",
+   "tag": "v2026.11",
+   "repo": "earino/ocha-fts-appeal-funding-trajectory"
+  }
+ ],
  "audits": {
   "independent_queue_audit_2026_11_01": {
    "auditor": "Codex (independent, read-only)",
@@ -351,7 +375,7 @@
    }
   }
  },
- "next_action": "PACKAGE BUILT AND VERIFIED (2026-11-02): release/ocha-fts-appeal-funding-trajectory/ carries the v2026.11 package - the accepted artifact ac529cd4 bytes (meta.json + quality.json copied digest-asserted from staging release 431492902), the fts-appeal-003 gate report, code/ (build.py, run.sh, score.py, materialize.py, the canonical gate 1.5.0), baseline/ (the benchmark runner files verbatim + reproduce script), the docs (README, DATA_DICTIONARY, LICENSE, REPRODUCE, RELEASE_NOTES, VERIFICATION, measurements.json), get_dataset.py (digests generated from expected_artifact.json), MANIFEST.json + SHA256SUMS via release-manifest.py. check-package rc=0. Status stays 'qualified' until staging exists (check-candidate requires artifacts[] non-empty for 'packaged'). Recorded finding carried in the package: stock runner 0.6452 vs persistence 0.7171136653895275 on the identical 139 eval rows - no demonstrated headroom under this protocol, with the information-asymmetry note (model deliberately denied the last prior outcome under the P0 standard; persistence reads it scorer-side). NEXT STEPS, in order (all private; nothing public): (1) GitHub staging - create private repo earino/ocha-fts-appeal-funding-trajectory, commit the package documents as the initial commit, create draft release v2026.11, then a release-flagged worker transfer job copying the five accepted assets from staging release 431492902 into it (source asset ids already resolved in baseline/job.json's fetch block: meta.json=701847475, train.csv=701847723, eval.csv=701847633, holdout.csv=701847549, quality.json=701847792); verify name/size/server-side digest per asset; publish tag == main == the docs commit; (2) DESTINATIONS.json github block (files_verified as the five logical manifest paths) + consumer check: get_dataset.py end-to-end against the private release and gate --accept on the downloaded tree, per the unhcr/pins precedent; THEN set status=packaged + packaged_at; (3) Hub staging cycle: hf-publish.py --plan, --create --upload-small (card generated from MANIFEST.json), hf_publish worker job from the staged GitHub release, --verify --worker-job, --tag LAST; DESTINATIONS.json hub block (artifact_version == manifest ac529cd4); (4) suitability: version-bound suitability record for this exact artifact + scripts/check-suitability.py, public notice into card/LOADING; (5) regenerate the pre-flip audit prompt programmatically from the frozen manifest (templates/pre-flip-audit-prompt.md; digests never hand-copied) - the fresh independent audit MUST re-attack the rebuilt bytes label-blind (the 2026-11-01 queue audit's frozen attack code is the baseline; it must now find no operand columns) - then set awaiting_operator: true. The flip stays the operator's single approval. Do not re-run fts-appeal-003 or fts-baseline-002; the holdout stays sealed. One cx23 worker at a time; November budget month.",
+ "next_action": "V2026.11 STAGED PRIVATE ON BOTH DESTINATIONS 2026-11-02T22:50Z, awaiting the fresh independent audit before the operator's flip. GitHub: private repo earino/ocha-fts-appeal-funding-trajectory, docs at main 3bb489c, release 432039311 non-draft with the five ac529cd4 assets (server digests verified), tag v2026.11 == main; consumer path green (get_dataset.py 5 files 77,083 bytes, sha256sum -c 5/5, gate --accept ACCEPTED ac529cd4). Hub: private, main e715affd with all five assets pinned by worker job fts-hf-001 (loading ok: train 437/279, eval 139/81, holdout 182/96, 9 columns, labels 0/1), tag v2026.11 == main via the verified tagging pass. DESTINATIONS.json carries both blocks. Card authored; suitability version-bound to ac529cd4 (retain_restricted; check-suitability 18/18). Workers fts-publish-001 and fts-hf-001 collected and destroyed (provider read-back 404). SOLE REMAINING STEP: relay candidates/ocha-fts-appeal-funding-trajectory/pre-flip-audit-prompt.md (generated from the frozen manifest, filled programmatically) to the independent auditor - the re-audit MUST re-run the 2026-11-01 frozen attacks on these bytes and try beyond them; the corrected design claims no shipped column is a function of another row's outcome. The flip waits for the verdict, then the operator's single act.",
  "novelty_check": {
   "checked_at": "2026-10-29T20:43:46+00:00",
   "evidence": {
@@ -534,7 +558,7 @@
   }
  ],
  "split_strategy": "Temporal, on the primary population (782 single-country plan-years with origRequirements>0, 2000-2025), measured from the source on 2026-10-29 at the >=50%-of-ORIGINAL-requirements threshold: train 2000-2016: 437 rows, pos 282 / neg 155 (64.5%), 78 distinct countries; eval 2017-2020: 139 rows, pos 81 / neg 58 (58.3%), 51 countries; holdout 2021-2025: 182 rows, pos 96 / neg 86 (52.7%), 43 countries. Both classes present in every window. 2026 live-edge rows (24) excluded until their year closes. CLUSTERED COUNT (the honest sample size): 83 distinct country series in the primary population, max 28 plan-years for one country; positives also cluster by year through global funding cycles - measured positive rate at the 50% threshold drifts 68.3% (2000-2013) -> 52.3% (2014-2018) -> 63.8% (2019-2022) -> 42.5% (2023-2025), and GHO coverage fell from ~50% (2022) to 38% (2023) per the publisher's own snapshot; intervals and baselines must be country-clustered and year-aware. The final window cut is construction's choice; these three windows are the measured default.",
- "status": "qualified",
+ "status": "packaged",
  "target_definition": "Binary: the plan's FTS funding total for its plan year (usage year = plan year; commitments + paid contributions, pledges excluded, USD, publisher's own attribution including boundary flows) divided by its ORIGINAL requirements (launch vintage) is >= 0.50 -> 1, else 0. Label source: per-plan-year funding totals (FTS flow endpoint incoming.fundingTotal with planId+year filter; equal to the publisher's HDX distribution on single-country rows - measured: Yemen HRP 2023 1,774,327,599, Afghanistan HRP 2023 1,678,347,238, both API==CSV to the dollar) and origRequirements from the plan endpoint; both excludable from features by construction (features carry launch attributes and strictly-prior years only). Censoring: plan-years whose year has not closed are excluded and counted (2026 live edge: 24 primary rows), never imputed. Zero-funding rows are the publisher's recorded outcome (empty funding fields in the HDX CSV counted at construction, not dropped silently). Population: PRIMARY = single-country plan-years with origRequirements > 0, 2000-2025 (782 rows; 60 multi-country regional plans excluded from the primary task because the HDX CSV splits them into country slices whose funding sum covers only ~78% of the plan total - measured on Burundi RRP 2021: slices 14,978,233 vs API plan total 19,282,778; regional plans can be a secondary population with flow-endpoint totals if construction wants them). Appeal-linked funding only; the country rows without plan linkage (2,678 HDX CSV rows, 'Not specified' plans) are outside the task population, so the label's meaning is single-population throughout.",
  "updated_at": "2026-11-02T16:01:33Z",
  "verdict": "ready",
@@ -564,5 +588,7 @@
   "artifact_version": "ac529cd4e9d4da90f804ecef425e74c94a946b857fe39095fd73a0407506b8c0",
   "check_package": "rc=0 (2026-11-02, after release-manifest.py wrote MANIFEST.json + SHA256SUMS)",
   "packaged_claim_note": "status stays 'qualified' until the private GitHub staging exists: check-candidate's RELEASED-shape rule requires the artifacts entry to carry the staged release. packaged_at is set after staging verifies, the pins order."
- }
+ },
+ "packaged_at": "2026-11-02T22:50:00Z",
+ "awaiting_operator": true
 }
