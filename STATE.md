@@ -1,3 +1,69 @@
+## 2026-11-02 (14:29Z) - datasus-sinasc-cesarean-share-decline opened and READY (LatAm tick): first maternal-health task on the bench, BR SINASC municipality cesarean-share decline at the year-T publication instant; licence A (cc-by package instrument) with the site-footer BY-ND conflict recorded, all five contracts reconciled
+
+Discovery-only session (regional focus Latin America, Brazil; no construction, qualification,
+packaging, publication, advancement or worker launched; bounded coordinator-side anonymous
+probes: 17 TABNET POSTs ~3.3 MB, 64 KB partial CSV-header reads, HEAD size probes). One
+candidate opened, none reopened. The tick's named DATASUS hint survived licence triage - the
+health-family gap was measured first (122 candidates, none in birth/maternal outcomes).
+
+- `datasus-sinasc-cesarean-share-decline` (BR, ready): at the final-publication instant of
+  complete-year T SINASC data (publisher-stamped final no later than early December T+1),
+  predict whether a municipality's cesarean share among resident live births falls >= 2 pp
+  from year T to complete year T+2 - the next complete year entirely after the instant.
+  Dated example (America/Sao_Paulo): T=2024, instant 2025-12-02, features 1996-2024 final
+  years only (preliminares/previews embargoed by design), target 2026-01-01..2026-12-31, no
+  target month before the instant. LICENCE: class A - the SINASC package's own CKAN metadata
+  (package 441cc6bd, read from the page __NEXT_DATA__ because /api/3/action serves the SPA
+  shell) carries license_id cc-by (Creative Commons Atribuição, opendefinition cc-by);
+  CONFLICT recorded, not resolved away: every portal page shows a footer claiming CC BY-ND
+  3.0 for 'todo o conteúdo deste site' - dataset-specific instrument governs per the discovery
+  policy, corroborated by PDA-MS 2024-2026 ('... pode ser utilizada, reutilizada e
+  redistribuída ...'); escalation path in the record: a footer-governs reading is class D and
+  the candidate must not be built. MEASURED (all commands in notes.md, outputs in probe/out/):
+  publisher's own publication ladder (TABNET footnotes: 'Dados finais disponíveis até 2024 -
+  data de extração 02/12/2025'; 2025 preliminares extraction 2026-07-28; 2026 2ª prévia;
+  whole CSV archive last_modified 2026-05-08 -> current-vintage retrospective posture, no
+  operational historical claim); national residence-based cesarean series 32.0% (1994) ->
+  50.0% (2009) -> 57.0% (2014) -> 60.59% (2024, 1,447,691/2,389,325 = the construction
+  known-event fixture) -> 61.5% (2025 prelim); 2024 month completeness (12 months sum to the
+  annual total); 8 sampled transitions 1998->2000 .. 2022->2024 with BOTH classes in all 24
+  (transition x floor {100,200,500}) cells, eligible n 833-3,556 per transition; era drift
+  measured (rise-dominant pre-2015, mixed after: 2014->2016 flips to 42.7% decline at floor
+  500) -> target-year clustering required; municipality mesh drift 5560->5565->5570 codes;
+  data-quality eras (Ignorado 15.3% in 1994, <1.5% since 1996 -> feature history starts 1996;
+  Fórceps column 1994-95 only); schema documented by the publisher's dictionary (PARTO
+  '1- Vaginal; 2- Cesário; 9- Ignorado', per-field evolution) and actual CSV headers read via
+  partial inflate (1996: 21 cols -> 2024: 62, core label/feature fields in both eras; TABNET
+  labels the column 'Cesáreo' in the national table but 'Cesário' in municipality tables -
+  caught by a wrong-probe zero before it could become a false negative); extraction cost:
+  30 year-zips ~3 GB (HEAD-measured 92-127 MB recent years), anonymous S3, no registration
+  (unlike the icfes channel), worker-only; TABNET probes 17 POSTs ~3.3 MB 2-6 s each.
+  NOVELTY: differentiated (mechanical check recorded; prior art = microdata mirrors (HF
+  healthbr-data/SidneyBissoli, healthbR), national/FU-level ARIMA/joinpoint trend projections
+  (CSC 2023), individual-level clinical cesarean prediction and SINASC-based individual-level
+  ML (preterm, neonatal mortality) - no municipality-year share-transition benchmark with a
+  publication-instant contract, eligibility floor and temporal splits). Five contracts
+  reconciled in record.review; split windows proposed (targets train 2000-2012 / eval
+  2013-2018 / holdout 2019-2024) with sampled counts recorded and the exact per-window count
+  pass named as the first construction step with acceptance criteria (CSV recomputation must
+  reproduce the TABNET tables and the 60.59% fixture). Cross-row self-answer risk identified
+  (a T+2 share is a later row's feature): anti-join design + gate-1.5 reverse-history probes
+  required at construction, recorded in next_action.
+- Hygiene: check-candidate datasus OK, --all rc=0 (122 records); discovery-coverage rc=0
+  (BR 5, Latin America 12, live 46, ready 12, live non-US 40/46 = 87%); factory doctor rc=0;
+  check-runtime --source-only rc=0; check-suitability rc=0 (17 reviews); suite 697/697 OK
+  (rc=0 read UNPIPED after the pipe lesson from 2026-10-31); probe script + 17 raw TABNET
+  outputs + fill_record.py retained in candidates/datasus-sinasc-cesarean-share-decline/probe/;
+  scratch copies left to the 24h sweep. No tokens, no workers, no releases touched. The
+  concurrent session's 13:40Z ocha-fts entry below is untouched.
+- Next (advancement, not discovery): worker CSV pass (freeze 30 zips + sha256, recompute
+  counts reproduce probe tables + national fixture) -> exact per-window class counts ->
+  margin/floor grid fixed per window before scoring -> anti-join artifact design ->
+  LICENSE.md carrying the attribution, the cc-by package link, the current-vintage notice and
+  the footer-conflict disclosure -> qualification -> exact-byte acceptance -> scoring, in
+  that order. Strongest uncertainties: exact per-window counts (sampled 8 transitions only,
+  never presented as full) and the operator-visible licence footer conflict.
+
 ## 2026-11-02 (13:40Z) - ocha-fts P0-recovery rebuild QUALIFIED + ACCEPTED (fts-appeal-003, artifact ac529cd4, rows unchanged, every reference reproduced to the last digit); unhcr recorded rebuild path proven unable to clear P0 (structural missing-successor rule) - operator decision reframed precisely; no construction for anything else
 
 Scheduled advancement session. Release work outranks construction; the operator's post-audit task
