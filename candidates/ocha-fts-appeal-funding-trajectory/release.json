@@ -1,0 +1,31 @@
+{
+ "release_version": "2026.11",
+ "release_tag": "v2026.11",
+ "repository": "https://github.com/earino/ocha-fts-appeal-funding-trajectory",
+ "construction_commit": "ac11b88fad36fb42507f3deae00f292602d2da4f",
+ "construction_commit_note": "ac11b88 (2026-11-02T13:43:02Z) carries candidates/ocha-fts-appeal-funding-trajectory/source/build.py at sha256 8d41202f88f1f45ba57e7d7ec18f9548368762e7294c2d25180493b525ac956a, source/run.sh at 835d23ca4ab86abd3a2f4ad7aa1566c10b294382cd0545e5b81d299d99b60975 and source/score.py at 55952837935f68819c6d7e3cd5a5e5f5b4b832f992955e4035fc19c95af97525 - the exact bytes worker job fts-appeal-003 executed (its bundle-owner record lists the same digests), which produced the gated artifact ac529cd4e9d4da90f804ecef425e74c94a946b857fe39095fd73a0407506b8c0 from the pinned FTS/HPC inputs (HDX fts_requirements_funding_global.csv 279,849 B sha256 928fb168aac97fc45f59f810a10ad3fe10cbbdbb2abe39148331e2268885a163 downloaded 2026-10-29; HPC API plan/flow records harvested 2026-10-30 with per-plan compact provenance retained in the collected harvest). code/qualify_dataset.py is the canonical gate 1.5.0 (4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1); code/materialize.py is the baseline bundle's own copy (sha256 0f0c8802a99078fe26b3b25598ea7982e2ed872ce8789fa2cf29170a1002e76d, the file fts-baseline-002 executed). baseline/train.py, validate.py, validate.sh are the harness benchmark's runner files, shipped verbatim (a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8, b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b, 3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d).",
+ "source": {
+  "name": "OCHA Financial Tracking Service - HPC API plan/flow records and the HDX 'Global - Requirements and Funding Data' bulk CSV",
+  "landing_page": "https://fts.unocha.org/ and https://data.humdata.org/dataset/global-requirements-and-funding-data",
+  "api": "https://api.hpc.tools/v2/public/plan/year/{year}, https://api.hpc.tools/v2/public/plan/{planId} and https://api.hpc.tools/v1/public/fts/flow?planId={id}&year={year} - public anonymous endpoints; plan detail carries launch-vintage origRequirements, and the flow endpoint's incoming.fundingTotal is the label numerator (never shipped)",
+  "accessed": "2026-10-29 (HDX CSV, pinned bytes) and 2026-10-30 (HPC API harvest, job fts-appeal-001); the FTS API exposes no historical vintages (checked), so the panel is current-vintage retrospective and no as-of reconstruction is claimed",
+  "licence": "FTS use-and-republish permission (fts.unocha.org/content/about-fts-using-fts-data, read 2026-10-29) plus CC BY-IGO on the HDX record for the bulk CSV; both quoted in the candidate record's license_evidence and carried into LICENSE.md. Derived research dataset - not an OCHA or FTS product."
+ },
+ "commands": {
+  "gate": "python3 code/qualify_dataset.py ./task",
+  "baseline": "sh baseline/reproduce_baseline.sh ./task",
+  "get_dataset": "python3 get_dataset.py --dest ./task"
+ },
+ "layout": {
+  "public/train.csv": "public/train.csv",
+  "public/eval.csv": "public/eval.csv",
+  "private/holdout.csv": "private/holdout.csv",
+  "meta.json": "meta.json",
+  "quality.json": "quality.json"
+ },
+ "required_docs": [
+  "code/score.py",
+  "code/materialize.py"
+ ],
+ "note": "One task instance, one artifact. The five shipped files are the fts-appeal-003 worker artifact ac529cd4e9d4da90f804ecef425e74c94a946b857fe39095fd73a0407506b8c0 (gate 1.5.0 on the full artifact, failed_checks empty, exact-byte --accept on the worker; re-accepted from the fetched bytes inside baseline job fts-baseline-002 before any score existed). The package's code/ carries the construction script, the references implementation, the worker run order, the runner-workdir materializer and the gate; baseline/ the runner-contract baseline. The holdout ships as an asset like the other splits; it is not copied into any runner workdir and was never evaluated. The prediction instant is the appeal's public launch (requirements first published; event_time), months before the plan year closes. The 2026.10-era prior-outcome features that allowed exact cross-row label recovery (the 2026-11-01 queue audit's P0) were removed in the fts-appeal-003 rebuild: no shipped column reads any row's outcome, and the only history-derived column (years_since_country_prior) reads strictly-earlier appeal YEARS, never labels. Recorded finding carried in measurements.json, RELEASE_NOTES.md and VERIFICATION.md: on the identical 139 eval rows the stock runner's full model scores 0.6452 while the persistence reference (scorer-side recompute of the last prior same-country coverage from prior-in-time labels, train+eval only) scores 0.7171136653895275 - the model trails persistence by 0.0719 and every measured simple reference except the majority-class rate, recorded as no demonstrated headroom under this protocol for the stock runner, with the information-asymmetry note (the model is deliberately denied the last prior outcome under the operator's P0 standard while the persistence reference reads it scorer-side) beside every quoted figure; a solver must beat persistence_last_coverage for any headroom claim. Labeled eval is development/validation; holdout is final scoring and stays sealed until the design is frozen."
+}

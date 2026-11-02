@@ -1,0 +1,33 @@
+{
+ "columns": [
+  "plan_year_id",
+  "plan_year_anchor",
+  "country_iso3",
+  "plan_year",
+  "plan_type",
+  "is_part_of_gho",
+  "orig_requirements_usd",
+  "years_since_country_prior",
+  "reached_half"
+ ],
+ "description": "For a UN-coordinated humanitarian appeal or response plan (HRP/CAP/flash appeal and similar single-country plans) at its public launch instant (requirements first published - GHO early December for the following year, or the plan's own release, whichever the record dates), will the plan receive funding equal to at least 50% of its ORIGINAL (launch-vintage) requirements by the close of its plan year? Features are launch-time attributes (original requirements, plan type, GHO membership, country, plan year) plus the appeal-recency gap to the country's most recent strictly-earlier appeal (years_since_country_prior; -1 when the country has no prior appeal). No prior-outcome history ships: the 2026.10-era prior-outcome features allowed exact cross-row label recovery and were removed after the 2026-11-01 queue audit. A useful prediction identifies, months ahead, which appeals will end the year underfunded - the quantity GHO gap analysis reports after the fact - enabling donor advocacy and fundraising prioritization.",
+ "id_columns": [
+  "plan_year_id"
+ ],
+ "name": "ocha-fts-appeal-funding-trajectory",
+ "positive_label": 1,
+ "positive_label_text": "covered (>= 50% of original requirements)",
+ "positive_rate": {
+  "eval": 0.582734,
+  "holdout": 0.527473,
+  "train": 0.638444
+ },
+ "rows": {
+  "eval": 139,
+  "holdout": 182,
+  "train": 437
+ },
+ "split": "temporal on the plan year: train 2000-2016, eval 2017-2020, holdout 2021-2025",
+ "split_description": "temporal on the plan year: train 2000-2016, eval 2017-2020, holdout 2021-2025 (the 2026+ live edge is excluded until those years close; exclusions are counted, never scored)",
+ "target": "reached_half"
+}

@@ -1,0 +1,591 @@
+{
+ "ok": true,
+ "dataset": "/output/extract",
+ "gate_version": "1.5.0",
+ "artifact": {
+  "train": {
+   "file": "public/train.csv",
+   "sha256": "db0c7eea0efd3362f369b64c446d4f237b390d8d5539306dc9b66857e685b787",
+   "bytes": 29660
+  },
+  "eval": {
+   "file": "public/eval.csv",
+   "sha256": "c11c03935277ecb164ccde4648fd6541e69d962239a561347832e220c981ef2c",
+   "bytes": 9322
+  },
+  "holdout": {
+   "file": "private/holdout.csv",
+   "sha256": "ffa427d9e67cd1ed7213c370b805287e58549d9058e9241bb01af40105dd37d9",
+   "bytes": 12862
+  },
+  "meta.json": {
+   "file": "meta.json",
+   "sha256": "9f3095a8f2662387c75e098f4d1a4e60292109f5ebc503288a357df864659b5e",
+   "bytes": 1891
+  },
+  "quality.json": {
+   "file": "quality.json",
+   "sha256": "5dd17cea147d298c7e8249dd3e661541dc58a65cbb00da711ce09c90696f67c7",
+   "bytes": 23348
+  },
+  "artifact_version": {
+   "digest": "ac529cd4e9d4da90f804ecef425e74c94a946b857fe39095fd73a0407506b8c0",
+   "components": [
+    "eval",
+    "holdout",
+    "meta.json",
+    "quality.json",
+    "train"
+   ]
+  }
+ },
+ "results": [
+  {
+   "check": "descriptor",
+   "ok": true,
+   "detail": "quality.json loaded for 'ocha-fts-appeal-funding-trajectory'",
+   "evidence": {}
+  },
+  {
+   "check": "contract.declared",
+   "ok": true,
+   "detail": "evaluation_contract required: intended use, access, vintage and evidence",
+   "evidence": {}
+  },
+  {
+   "check": "contract.scope",
+   "ok": true,
+   "detail": "use='retrospective_research'; access='isolated_rows'; eval is development, holdout is final",
+   "evidence": {}
+  },
+  {
+   "check": "contract.every_input_has_availability_evidence",
+   "ok": true,
+   "detail": "Every solver-visible non-target column needs availability evidence; missing: []",
+   "evidence": {}
+  },
+  {
+   "check": "contract.vintage_and_selection",
+   "ok": true,
+   "detail": "Vintage, selection and limitations must be explicit; declarations are not measurements",
+   "evidence": {}
+  },
+  {
+   "check": "contract.cross_row_review",
+   "ok": true,
+   "detail": "Document applicable cross-row probes and every solver-visible auxiliary file",
+   "evidence": {}
+  },
+  {
+   "check": "contract.label_availability",
+   "ok": true,
+   "detail": "No full-row availability ledger: training-label timing UNVERIFIED; retrospective use only",
+   "evidence": {}
+  },
+  {
+   "check": "leakage.declared_columns",
+   "ok": true,
+   "detail": "every shipped column is declared",
+   "evidence": {
+    "undeclared": []
+   }
+  },
+  {
+   "check": "leakage.answer_source_absent",
+   "ok": true,
+   "detail": "no answer source or post-hoc column is shipped",
+   "evidence": {
+    "shipped_forbidden": []
+   }
+  },
+  {
+   "check": "leakage.every_column_could_be_scored",
+   "ok": true,
+   "detail": "every column was scored for leakage",
+   "evidence": {
+    "unscorable": []
+   }
+  },
+  {
+   "check": "leakage.no_single_column_determines_the_target",
+   "ok": true,
+   "detail": "no shipped column separates the classes on its own",
+   "evidence": {
+    "offenders": [],
+    "high_cardinality": [
+     "country_iso3@eval",
+     "country_iso3@holdout",
+     "plan_year_id@eval",
+     "plan_year_id@holdout",
+     "plan_year_id@train"
+    ],
+    "missing_splits": []
+   }
+  },
+  {
+   "check": "leakage.high_cardinality_declared",
+   "ok": true,
+   "detail": "high-cardinality columns are declared as identifiers or free fields",
+   "evidence": {
+    "undeclared": [],
+    "declared": [
+     "country_iso3",
+     "plan_year_id"
+    ]
+   }
+  },
+  {
+   "check": "timing.prediction_time_declared",
+   "ok": true,
+   "detail": "prediction instant is declared",
+   "evidence": {}
+  },
+  {
+   "check": "timing.no_post_hoc_feature",
+   "ok": true,
+   "detail": "no feature is documented as post-hoc",
+   "evidence": {
+    "overlap": []
+   }
+  },
+  {
+   "check": "timing.label_source_is_not_a_feature",
+   "ok": true,
+   "detail": "the label source is not a feature",
+   "evidence": {
+    "source_features": []
+   }
+  },
+  {
+   "check": "timing.every_feature_documented",
+   "ok": true,
+   "detail": "features documented as available 'prediction_time'",
+   "evidence": {
+    "features_documented_at": "prediction_time"
+   }
+  },
+  {
+   "check": "timing.instant_declared",
+   "ok": true,
+   "detail": "prediction instant kind='event_time' citation=True",
+   "evidence": {
+    "prediction_instant": {
+     "citation": "FTS launch evidence: GHO 2023 launched 2022-12-01 (reliefweb press release); the Afghanistan HNP 2023 ask of US$4.62 billion is documented in UNICEF sitrep #12 (January 2023) and matches plan origRequirements 4,627,363,573 to the dollar (the in-build fixture); HRP launches run end-December to early January; flash appeals launch at event onset",
+     "days_after_period_end": 0,
+     "kind": "event_time",
+     "period": "the appeal's launch (requirements announcement), at or before the plan year starts"
+    }
+   }
+  },
+  {
+   "check": "timing.publication_lag_measured",
+   "ok": true,
+   "detail": "0 of 0 observed period_end -> published dates are usable",
+   "evidence": {
+    "observations": [],
+    "measured_lag_days": null,
+    "source_kind": "administrative_record"
+   }
+  },
+  {
+   "check": "timing.features_available_at_instant",
+   "ok": true,
+   "detail": "features publish 0d after the period, instant is 0d after it",
+   "evidence": {
+    "features_lag_days": 0,
+    "instant_lag_days": 0,
+    "measured_lag_days": null
+   }
+  },
+  {
+   "check": "timing.instant_accounts_for_publication_lag",
+   "ok": true,
+   "detail": "instant kind is 'event_time' while features publish 0d after the period",
+   "evidence": {
+    "kind": "event_time",
+    "features_lag_days": 0
+   }
+  },
+  {
+   "check": "timing.selection_uses_only_available_data",
+   "ok": true,
+   "detail": "row selection declares its latest period as \"the row's own plan-year launch attributes; the only history-derived column reads the YEAR of the country's most recent strictly-earlier appeal, never any row's outcome\"",
+   "evidence": {
+    "latest_period_used": "the row's own plan-year launch attributes; the only history-derived column reads the YEAR of the country's most recent strictly-earlier appeal, never any row's outcome",
+    "fields": [
+     "CSV (id, year) group carries exactly one country row (primary population; multi-country regional groups excluded, counted)",
+     "plan endpoint origRequirements > 0 (no-orig groups excluded as unobserved denominators, counted)",
+     "plan year within 2000..2025 (pre-window groups and the 2026+ live edge excluded, counted)"
+    ]
+   }
+  },
+  {
+   "check": "units.measured_columns_declare_unit_and_frame",
+   "ok": true,
+   "detail": "7 measured column(s) declare unit and frame",
+   "evidence": {
+    "measurements": [
+     {
+      "column": "orig_requirements_usd",
+      "frame": "requirements stated at the appeal's launch (launch vintage, externally cross-checked; NOT the CSV requirements column, which carries the revised value in revised cases)",
+      "unit": "US dollars (integer; the launch ask)"
+     },
+     {
+      "column": "years_since_country_prior",
+      "frame": "gap to the most recent strictly-earlier same-country plan-year; a function of which appeals exist, never of any row's funding outcome",
+      "unit": "years (-1 sentinel when no prior appeal)"
+     },
+     {
+      "column": "plan_year",
+      "frame": "the appeal's plan year; the split key",
+      "unit": "calendar year (integer)"
+     },
+     {
+      "column": "plan_year_anchor",
+      "frame": "the annual grain's calendar anchor; the gate's time-column join key for any cross-row review",
+      "unit": "ISO date (derived: January 1 of the plan year)"
+     },
+     {
+      "column": "is_part_of_gho",
+      "frame": "appeal is part of the Global Humanitarian Overview",
+      "unit": "binary indicator"
+     },
+     {
+      "column": "country_iso3",
+      "frame": "the single affected country of the primary appeal",
+      "unit": "ISO 3166-1 alpha-3 country code"
+     },
+     {
+      "column": "plan_type",
+      "frame": "appeal instrument type (HRP, Flash appeal, ...)",
+      "unit": "publisher plan type name"
+     }
+    ]
+   }
+  },
+  {
+   "check": "units.known_event_fixture_recorded",
+   "ok": true,
+   "detail": "no external threshold, so no known-event fixture is required",
+   "evidence": {}
+  },
+  {
+   "check": "splits.time_column_declared",
+   "ok": true,
+   "detail": "split overlap is checked against 'plan_year'",
+   "evidence": {}
+  },
+  {
+   "check": "splits.machine_readable_windows",
+   "ok": true,
+   "detail": "train/eval/holdout windows are declared with start/end",
+   "evidence": {
+    "split_windows": {
+     "eval": {
+      "end": "2021",
+      "start": "2017"
+     },
+     "holdout": {
+      "end": "2026",
+      "start": "2021"
+     },
+     "train": {
+      "end": "2017",
+      "start": "2000"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.files_present",
+   "ok": true,
+   "detail": "all three split files exist",
+   "evidence": {
+    "missing": []
+   }
+  },
+  {
+   "check": "splits.non_empty",
+   "ok": true,
+   "detail": "every split has rows",
+   "evidence": {
+    "train": {
+     "rows": 437,
+     "positives": 279,
+     "negatives": 158,
+     "positive_rate": 0.638444
+    },
+    "eval": {
+     "rows": 139,
+     "positives": 81,
+     "negatives": 58,
+     "positive_rate": 0.582734
+    },
+    "holdout": {
+     "rows": 182,
+     "positives": 96,
+     "negatives": 86,
+     "positive_rate": 0.527473
+    }
+   }
+  },
+  {
+   "check": "splits.eval_and_holdout_have_both_classes",
+   "ok": true,
+   "detail": "eval and holdout each contain positives and negatives",
+   "evidence": {
+    "train": {
+     "rows": 437,
+     "positives": 279,
+     "negatives": 158,
+     "positive_rate": 0.638444
+    },
+    "eval": {
+     "rows": 139,
+     "positives": 81,
+     "negatives": 58,
+     "positive_rate": 0.582734
+    },
+    "holdout": {
+     "rows": 182,
+     "positives": 96,
+     "negatives": 86,
+     "positive_rate": 0.527473
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_declared",
+   "ok": true,
+   "detail": "eval and holdout declare positives and distinct events",
+   "evidence": {
+    "declared": {
+     "eval": {
+      "distinct_events": 81,
+      "positives": 81
+     },
+     "holdout": {
+      "distinct_events": 96,
+      "positives": 96
+     },
+     "train": {
+      "distinct_events": 279,
+      "positives": 279
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_match_rows",
+   "ok": true,
+   "detail": "declared positive counts match the rows",
+   "evidence": {
+    "mismatched": []
+   }
+  },
+  {
+   "check": "splits.event_key_column_declared",
+   "ok": true,
+   "detail": "clustered events are counted by 'plan_year_id' (date part)",
+   "evidence": {}
+  },
+  {
+   "check": "splits.distinct_events_match_rows",
+   "ok": true,
+   "detail": "declared clustered event counts match the rows",
+   "evidence": {
+    "recomputed": {
+     "train": 279,
+     "eval": 81,
+     "holdout": 96
+    },
+    "declared": {
+     "eval": {
+      "distinct_events": 81,
+      "positives": 81
+     },
+     "holdout": {
+      "distinct_events": 96,
+      "positives": 96
+     },
+     "train": {
+      "distinct_events": 279,
+      "positives": 279
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.enough_clustered_positives",
+   "ok": true,
+   "detail": "eval and holdout carry enough independent positive events to score",
+   "evidence": {
+    "thin": [],
+    "recomputed_events": {
+     "train": 279,
+     "eval": 81,
+     "holdout": 96
+    },
+    "minimums": {
+     "positives": 30,
+     "distinct_events": 20
+    }
+   }
+  },
+  {
+   "check": "splits.rates_not_uniform",
+   "ok": true,
+   "detail": "positive rates are between 0 and 1",
+   "evidence": {
+    "rates": [
+     0.638444,
+     0.582734,
+     0.527473
+    ]
+   }
+  },
+  {
+   "check": "splits.actual_ranges_computed",
+   "ok": true,
+   "detail": "row timestamps found for every split",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "2000",
+      "max": "2016"
+     },
+     "eval": {
+      "min": "2017",
+      "max": "2020"
+     },
+     "holdout": {
+      "min": "2021",
+      "max": "2025"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.actual_ranges_disjoint",
+   "ok": true,
+   "detail": "the rows of the three splits occupy disjoint periods",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "2000",
+      "max": "2016"
+     },
+     "eval": {
+      "min": "2017",
+      "max": "2020"
+     },
+     "holdout": {
+      "min": "2021",
+      "max": "2025"
+     }
+    },
+    "overlaps": []
+   }
+  },
+  {
+   "check": "splits.rows_within_declared_windows",
+   "ok": true,
+   "detail": "every row falls inside its split's declared window",
+   "evidence": {
+    "windows": {
+     "eval": {
+      "end": "2021",
+      "start": "2017"
+     },
+     "holdout": {
+      "end": "2026",
+      "start": "2021"
+     },
+     "train": {
+      "end": "2017",
+      "start": "2000"
+     }
+    },
+    "ranges": {
+     "train": {
+      "min": "2000",
+      "max": "2016"
+     },
+     "eval": {
+      "min": "2017",
+      "max": "2020"
+     },
+     "holdout": {
+      "min": "2021",
+      "max": "2025"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.no_cross_split_entities",
+   "ok": true,
+   "detail": "no plan_year_id appears in more than one split",
+   "evidence": {
+    "shared_sample": [],
+    "shared_count": 0
+   }
+  },
+  {
+   "check": "splits.duplicate_entities_within_splits",
+   "ok": true,
+   "detail": "0 repeated-identifier rows within splits, at most the declared 0",
+   "evidence": {
+    "duplicate_rows": {},
+    "declared": 0
+   }
+  },
+  {
+   "check": "runner.layout",
+   "ok": true,
+   "detail": "holdout is private and train/eval are public",
+   "evidence": {}
+  },
+  {
+   "check": "runner.meta_json_keys",
+   "ok": true,
+   "detail": "meta.json carries the keys the runner reads",
+   "evidence": {
+    "keys": [
+     "columns",
+     "description",
+     "id_columns",
+     "name",
+     "positive_label",
+     "positive_label_text",
+     "positive_rate",
+     "rows",
+     "split",
+     "split_description",
+     "target"
+    ]
+   }
+  },
+  {
+   "check": "runner.meta_matches_files",
+   "ok": true,
+   "detail": "meta.json agrees with the split files",
+   "evidence": {
+    "problems": []
+   }
+  },
+  {
+   "check": "runner.meta_counts_match_files",
+   "ok": true,
+   "detail": "meta rows and rates match the files",
+   "evidence": {}
+  },
+  {
+   "check": "runner.id_columns_are_not_features",
+   "ok": true,
+   "detail": "declared identifiers are not also listed as features",
+   "evidence": {}
+  }
+ ],
+ "failed_checks": []
+}

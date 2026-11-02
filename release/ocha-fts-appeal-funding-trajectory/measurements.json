@@ -1,0 +1,45 @@
+{
+ "artifact_version": "ac529cd4e9d4da90f804ecef425e74c94a946b857fe39095fd73a0407506b8c0",
+ "gate_version": "1.5.0",
+ "qualified_by_job": "fts-appeal-003 (gate on the full artifact on the worker, failed_checks empty; exact-byte --accept ACCEPTED)",
+ "baseline_job": "fts-baseline-002 (2026-11-02): fetched the five accepted files from private staging release 431492902 with every sha256 verified on arrival, re-accepted the bytes against the gate's own collected report BEFORE any score existed, materialized the runner workdir from the public splits only (the private holdout was never copied into a workdir), then ran the benchmark's own train.py and validate.sh unmodified (bundled digests equal the read-only clone's)",
+ "panel": {
+  "rows": {"train": 437, "eval": 139, "holdout": 182},
+  "positives": {"train": 279, "eval": 81, "holdout": 96},
+  "positive_rate": {"train": 0.638444, "eval": 0.582734, "holdout": 0.527473},
+  "distinct_countries": {"train": 78, "eval": 51, "holdout": 43},
+  "split": "temporal on the plan year: train 2000-2016, eval 2017-2020, holdout 2021-2025 (the 2026+ live edge is excluded until those years close; exclusions are counted, never scored)",
+  "shipped_columns": 9
+ },
+ "references_same_eval_rows": {
+  "persistence_last_coverage": 0.7171136653895275,
+  "prior_mean_rate": 0.7143465304384845,
+  "ask_size_rate": 0.7126436781609196,
+  "country_hist_rate": 0.6729459344401874,
+  "plan_type_rate": 0.669220945083014,
+  "majority_class_accuracy": 0.5827338129496403,
+  "note": "all references measured on the identical 139 eval rows by the references implementation in code/score.py (job fts-appeal-003 stage 4, post-acceptance only). persistence_last_coverage and prior_mean_rate are recomputed scorer-side from prior-in-time same-country labels (train+eval only; the holdout is never opened) because their feature form is exactly the prior-outcome channel removed under the operator's P0 standard. majority_class_accuracy fits the constant label on train and measures its agreement with eval labels."
+ },
+ "baseline_result": {
+  "full_model_eval_auc_train_py": 0.6452,
+  "full_model_eval_auc_validate_py": 0.6452,
+  "two_implementations_agree": true,
+  "contract_ok": true,
+  "runner_unmodified": true,
+  "dependencies": {"python": "3.13.18", "pandas": "2.3.3", "numpy": "2.5.4", "xgboost": "3.4.1", "scikit-learn": "1.9.1"},
+  "scope": "runner-contract baseline only; no agent or harness comparison was run and none is implied; the holdout was not evaluated and stays sealed"
+ },
+ "finding": {
+  "verdict": "no demonstrated headroom under this protocol for the stock runner",
+  "comparison": "full model 0.6452 vs persistence_last_coverage 0.7171136653895275 on the identical 139 eval rows: the model trails by 0.0719 AUC, and also trails every other measured simple reference except the majority-class rate",
+  "information_asymmetry": "the model's shipped information set deliberately omits the last prior same-country outcome (the country_prior_* features were the 2026-11-01 queue audit's P0 label-recovery channel and are unshippable under the operator's standard), while the persistence reference reads prior-in-time outcomes scorer-side; the gap is quoted with this note and is not read as model failure against an equal information set",
+  "recorded_defect_not_task_property": "a model below persistence is a recorded defect under the dataset-qualification protocol: any headroom claim on this task requires beating persistence_last_coverage on the same rows",
+  "predecessor": "the same stock runner measured 0.6298 on the pre-rebuild 12-column artifact e7441e1f (job fts-baseline-001, 2026-11-01); removing the P0 prior-outcome features slightly improved the runner (0.6298 -> 0.6452) while closing the label-recovery channel"
+ },
+ "per_label_year_note": "references and the baseline are quoted on the pooled 2017-2020 eval window; the references implementation also reports per-year persistence AUC (0.73611 / 0.66579 / 0.74716 / 0.72727 for 2017-2020), recorded in the candidate record",
+ "p0_history": {
+  "2026-11-01_queue_audit": "the audit recovered 120/139 eval and 128/182 holdout labels exactly through the shipped country_prior_* features (count x rounded-rate arithmetic plus the last-prior tie rule), reading only shipped features of later rows",
+  "fts-appeal-003_rebuild": "the prior-outcome features (country_prior_appeals, country_prior_covered_rate, country_last_prior_covered) no longer ship; every remaining feature is a function of the row's own launch record except years_since_country_prior, which reads only WHICH strictly-earlier same-country appeals exist (their years, never their labels), is derivable from the shipped row set itself, and is asserted label-free by brute-force recompute at construction; rows are unchanged vs the audited artifact e7441e1f (train 437/279, eval 139/81, holdout 182/96)",
+  "post_rebuild_requirement": "the fresh independent pre-flip audit must re-attack the rebuilt bytes label-blind; the 2026-11-01 queue audit's frozen attack code is the baseline and must now find no operand columns"
+ }
+}

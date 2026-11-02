@@ -1,3 +1,65 @@
+## 2026-11-02 (15:58Z) - ocha-fts P0-recovery baseline measured (fts-baseline-002: stock runner 0.6452 vs persistence 0.71711, recorded defect) and the v2026.11 package BUILT + check-package rc=0; record stays 'qualified' until private staging exists; unhcr left untouched (operator decision)
+
+Scheduled advancement session. Release work outranks construction; unhcr-refugee-data-finder
+(task list 'release') re-checked first and left untouched: it carries
+operator_decision_pending=true (drop / re-scope commission / keep-private are the operator's
+recorded paths, decision-grade analysis in its next_action since the 13:40Z session; no
+recorded decision since). Primary: ocha-fts-appeal-funding-trajectory, the recorded next
+steps of its accepted rebuild (ac529cd4).
+
+- fts-baseline-002 (runner-contract baseline, cx23/hel1, server 174177604, launched
+  14:56:29Z, elapsed 52.8 s, exit 0, staging release 431595358, collected 15:01:37Z,
+  destroyed with provider 404 read-back; project server list empty; EUR 0.06 reservation,
+  November month): fetched the five accepted assets from staging release 431492902 (every
+  sha256 verified on arrival), re-accepted the bytes against the gate's own collected
+  report BEFORE any score (ACCEPTED ac529cd4e9d4da90), materialized the runner workdir from
+  the public splits only (holdout never copied), ran the benchmark's own train.py +
+  validate.sh unmodified (bundled digests == read-only clone's, recorded unmodified:true).
+  RESULT: CONTRACT OK; eval AUC 0.6452 from both the runner's own log and validate.py's
+  independent recompute (agreement checkable). TRIAD on the identical 139 eval rows:
+  persistence 0.7171136653895275 > prior-mean 0.71435 > ask-size 0.71264 > country-history
+  0.67295 > plan-type 0.66922 > MODEL 0.6452 > majority accuracy 0.58273. Recorded as no
+  demonstrated headroom under this protocol for the stock runner, WITH the
+  information-asymmetry note: the model is deliberately denied the last prior same-country
+  outcome (the P0 channel removed in fts-appeal-003) while persistence reads it scorer-side
+  from prior-in-time labels (train+eval only). Model trails persistence by 0.0719 - a
+  recorded defect beside the number, per dataset-qualification. Predecessor comparison:
+  0.6298 on the pre-rebuild 12-column artifact -> removing the leaky features slightly
+  improved the runner while closing the recovery channel. Recorded in the candidate record
+  (measurements.baseline_triad_2026_11_02_fts_baseline_002, jobs entry) by
+  record_baseline_002.py reading only collected evidence; baseline_result.json installed
+  beside the candidate (staging-manifest digest asserted).
+- PACKAGE BUILT: release/ocha-fts-appeal-funding-trajectory/ (v2026.11) - artifact bytes
+  (meta.json + quality.json) copied digest-asserted from the accepted staging release; the
+  fts-appeal-003 gate report; code/ (build.py, run.sh, score.py, materialize.py, canonical
+  gate 1.5.0); baseline/ (runner files verbatim + reproduce_baseline.sh); README,
+  DATA_DICTIONARY, LICENSE, REPRODUCE, RELEASE_NOTES, VERIFICATION, measurements.json;
+  get_dataset.py generated from expected_artifact.json (digests computed, never typed);
+  licence texts + license.json (class A: FTS use-and-republish + CC BY-IGO on the HDX bulk
+  input, attribution carried; our code MIT, compilation CC0-1.0); release.json names
+  construction commit ac11b88 with digests composed programmatically from the files
+  (fix_release_note.py asserted against the bundle-owner records). release-manifest.py
+  wrote MANIFEST.json (artifact ac529cd4, 24 package files, published:false with review
+  note, baseline present) + SHA256SUMS; check-package rc=0.
+- Record state corrected per the checker's refusal: 'packaged' claims a staged release
+  (artifacts[] RELEASED-shape rule) and the GitHub staging has not run, so status stays
+  'qualified' with package_built recorded (package, artifact, check rc, packaged_at after
+  staging verifies - the pins order) and next_action naming the exact remaining steps:
+  (1) private GitHub repo + docs commit + release-flagged worker transfer job from staging
+  431492902 (asset ids already resolved in baseline/job.json), consumer get_dataset.py +
+  gate --accept, DESTINATIONS.json github block, THEN packaged; (2) Hub cycle (plan,
+  create --upload-small, hf_publish worker job, verify, tag last) + hub block; (3)
+  suitability record + check-suitability; (4) pre-flip audit prompt regenerated
+  programmatically - the fresh independent audit must re-attack the rebuilt bytes
+  label-blind and find no operand columns - then awaiting_operator: true. The flip stays
+  the operator's single approval. Nothing public; the holdout stays sealed.
+- Hygiene: check-candidate ocha OK + --all rc=0 (122 records); one cx23 worker used and
+  provider-confirmed destroyed (404); no token exposed; no manifest/tag/published byte
+  touched; concurrent workspaces untouched. One-shot record/package scripts kept beside
+  the candidate as provenance (record_baseline_002.py, record_construction_output.py,
+  assemble_package.py, gen_get_dataset.py, mark_packaged.py + fix_packaged_status.py
+  preserving the checker-refusal diagnosis).
+
 ## 2026-11-02 (14:40Z) - watcher follow-up: all four finished ocha-fts jobs (fts-appeal-001/002/003, fts-baseline-001) verified already handled and acknowledged with .factory handled markers; no new collection, worker or spend
 
 The watcher reported the four finished ocha-fts jobs (all exit=0, all assets uploaded:
