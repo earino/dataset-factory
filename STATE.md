@@ -1,3 +1,91 @@
+## 2026-11-03 (19:15Z) - cqc-care-home-deregistration framing decided and construction launched (cqc-chd-001, server 174367893): first register-exit build, P0 successor design settled and rehearsed before launch; za-cct packaging stays blocked on the operator's (a)/(b)/(c) decision; unhcr untouched
+
+Scheduled advancement session. Both release-track items were re-read from their
+records first and stay human waits: unhcr-refugee-data-finder carries the
+recorded 2026-11-02 drop decision (operator_decision_pending true, untouched),
+and za-cct-substation-evening-peak-exceedance's own next_action says the
+pre-registered packaging gate is NOT met (stock runner 0.5107 vs morning_ratio
+0.7340) and "Scout does not package until (a) is recorded" - the operator's one
+decision among (a) package as agent-headroom benchmark / (b) re-scope / (c)
+drop. No release byte, tag, destination or visibility changed anywhere.
+
+CHOSEN CANDIDATE (build queue): cqc-care-home-deregistration, the 2026-11-03
+UK tick's READY candidate - a new task family (register exit), every
+construction input pre-measured, class A licence, and STATE.md's recorded next
+action naming advancement as owner.
+
+- FRAMING DECISION (recorded in record.framing_decision before launch): the
+  target is the REGISTER EVENT - 12-month deregistration of the CQC location
+  (Location Status Inactive-Dereg/Removed with a Location HSCA End Date in
+  (T, T+365d]) - with the re-registration share (~40-55% per BMJ 2024 vs
+  CQC's in-file note) stated as a limitation, not a closure claim.
+- P0 PANEL DESIGN (the session's substantive judgment, in
+  record.preflight_cqc_chd_001): the missing-successor rule (the unhcr P0 -
+  row presence at a later instant recovers the label; ~363-367-day instant
+  gaps make it near-exact) is killed STRUCTURALLY, three ways: (1) every
+  scored frame carries a SINGLE instant - train = January vintages 2016-2022,
+  eval = the 2024-01 vintage, holdout = the 2025-01 vintage (the last), and
+  the 2023 vintage is excluded by design so every train outcome window closes
+  >= 12 months before the eval instant; (2) location identity ships as a
+  per-instant pseudonym sha256(salt|instant|location_id)[:16] - no name,
+  address, postcode, provider id or CH/charity number ships, real ids sealed
+  in auxiliary/location_map.csv (staging-side only); (3) no provider-group
+  history feature ships (sector only). The gate's cross-row probes MEASURE
+  the residual exposure: probe 0 = successor attack over the pseudonym id
+  (expected coverage 0), probe 1 = successor attack over the strongest
+  instant-invariant quasi-key (LA x beds x start-year x rating x sector,
+  +12-month offset) - eval/holdout coverage is the measured bound over the
+  frames a solver can see; in-train coverage measures the quasi-linkage rate
+  where labels are public anyway.
+- SYNTHETIC REHEARSAL before launch (tests/test_cqc_build.py, 10/10 OK,
+  coordinator, no real data, no network): real build.py over synthetic
+  vintages (one XLSX exercising the new stdlib OOXML reader, the rest ODS) ->
+  gate 1.5.0 with 0 failed checks on the synthetic artifact -> exact-byte
+  --accept -> score.py references -> byte-identical rebuild -> red/green: a
+  mutated extract smuggling a second eval instant (re-opening the successor
+  channel) is REFUSED by rows_within_declared_windows; removing the timing
+  block is REFUSED; a stale report against different bytes is REFUSED. The
+  rehearsal caught three real pre-launch defects (meta positive_rate shape,
+  event-key grain, month-grain split windows) - fixed in the source, not
+  worked around.
+- cqc-chd-001 LAUNCHED 19:12:55Z (cx23/hel1, server 174367893, EUR 0.04
+  reservation, November; bundle assembled 146,615 B, source sha256
+  00a0e6b4...). Job order is the qualification skill's worked order:
+  construct (no performance metric in build.py, read line by line) -> gate
+  1.5.0 on the FULL artifact on the worker -> exact-byte --accept ->
+  score.py references (eval rows only, holdout never opened). In-build
+  assertions against the 2026-11-03 discovery measurements: deactivated
+  2026-11-02 edition pinned (27,644,723 B / sha256 prefix 49dc3062, 65,830
+  rows / 17,177 care homes); 2024-01 vintage pinned (26,147,266 B / ac40b6f8);
+  eval 14,765 care homes / 758 positives / 2,076 later-deactivated / 0 rating
+  publication dates after T; dated fixtures Park Hills Nursing Home
+  (1-113831768, label 1), Henley House (1-10000302982, label 0), Options
+  Hazel House (1-10086766554, end 05/03/2025 -> label 0). Splits: train
+  2016-2022 instants (>= 5 must resolve; a vintage with unresolved required
+  columns is DROPPED loudly), eval 2024-01, holdout 2025-01; holdout lag check
+  asserts the window ends >= 60 days inside deactivated coverage and records
+  recent-month event counts vs prior years.
+- HANDOFF (a running worker is the handoff): collect cqc-chd-001; require
+  gate ok=true with failed_checks EMPTY on the full artifact, --accept
+  ACCEPTED on the worker, fixtures green, both successor probes reporting
+  eval/holdout coverage 0; then destroy the worker (collect-then-delete,
+  provider 404 read-back). On success record the reference set
+  (references-cqc-care-home-deregistration.json: global / local-authority /
+  last-rating / beds-bucket / provider-sector / start-year rate tables from
+  train only, majority accuracy, NO persistence BY DESIGN - the pseudonym
+  makes prior-instant labels unlinkable for the scorer too) in the candidate
+  record; the runner-contract baseline job (stock model figure) is the step
+  after that, quoted beside the strongest reference. Any gate/fixture failure:
+  collect diagnostics, diagnose, ONE rebuild per structural defect class.
+- Hygiene this session: full suite 707/707 OK in 29.1 s (10 new
+  test_cqc_build tests included); check-candidate cqc OK + --all rc=0; no
+  token exposure; no release/tag/destination touched.
+
+Next action (a fresh session can carry it out): collect + verify + destroy
+cqc-chd-001 per the handoff above, record the reference set beside any model
+figure, then the runner-contract baseline job; the operator's two standing
+decisions (za-cct (a)/(b)/(c), ocha-fts flip relay) are unchanged.
+
 ## 2026-11-03 (17:10Z) - discovery tick (United Kingdom): cqc-care-home-deregistration OPENED and READY (first register-exit task on the bench; CQC OGL v3, 15-year monthly vintage archive, 5.13% measured 12-month prevalence, as-of verified); Companies House unpark condition re-checked and still unmet; EA flood-defence-condition lead not opened on published-contract grounds
 
 Discovery-only session. No construction, qualification, packaging, publication or

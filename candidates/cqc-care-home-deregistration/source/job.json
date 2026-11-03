@@ -1,0 +1,16 @@
+{
+  "id": "cqc-chd-001",
+  "candidate": "cqc-care-home-deregistration",
+  "image": "python:3.13-slim",
+  "command": ["sh", "/workspace/run.sh"],
+  "server_type": "cx23",
+  "location": "hel1",
+  "cpus": 2,
+  "memory_mb": 2048,
+  "timeout_minutes": 45,
+  "lifetime_minutes": 60,
+  "max_disk_mb": 4000,
+  "max_artifact_mb": 60,
+  "what": "First construction of cqc-care-home-deregistration (cqc-chd-001), the READY candidate from the 2026-11-03 UK discovery tick, per the operator's actionable-build list. Task: at the production instant T of a monthly CQC 'HSCA Active Locations' vintage, for every care home active at T, predict whether the location's CQC registration ends (register event: Location Status Inactive-Dereg/Removed with a Location HSCA End Date in (T, T+365d]). FRAMING (recorded 2026-11-03): register-event target, re-registration share (~40-55% per BMJ 2024 vs CQC's own in-file note) stated as a limitation. P0-SAFE PANEL DESIGN (the design decision this build honors): the missing-successor rule (the unhcr P0 - row presence at a later instant recovers the label) is killed structurally: (1) every scored frame carries a SINGLE instant (train = January vintages 2016-2022, eval = the 2024-01 vintage, holdout = the 2025-01 vintage; the 2023 vintage is excluded by design so every train window closes >= 12 months before the eval instant); (2) location identity ships as a per-instant pseudonym sha256(salt|instant|location_id)[:16], with the real ids sealed in auxiliary/location_map.csv (staging-side, never solver-visible), and no name/address/postcode/provider-id/CH-number column ships; (3) no provider-group history feature ships. The gate's cross-row probes measure the residual quasi-identifier successor attack (LA x beds x start-year x rating x sector, +12-month offset) and the pseudonym id channel. Labels come from the pinned 2026-11-02 Deactivated Locations edition (size+sha256 asserted); the 2024-01 vintage is asserted against the discovery pins (ac40b6f8 / 26,147,266 B). Acceptance asserted in-build against the 2026-11-03 discovery measurements: deactivated 65,830 rows / 17,177 care homes; eval instant 14,765 care homes / 758 positives / 2,076 later-deactivated / 0 rating publication dates after T (as-of holds); dated fixtures Park Hills Nursing Home (1-113831768, label 1), Henley House (1-10000302982, label 0), Options Hazel House (1-10086766554, end 05/03/2025 -> label 0).",
+  "stopping_condition": "gate failure or fixture failure -> collect diagnostics, diagnose, record; ONE rebuild per structural defect class is permitted, a second failure of the same class is a recorded blocker, never a blind retry"
+}
