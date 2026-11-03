@@ -1,3 +1,50 @@
+## 2026-11-03 (12:50Z) - watcher follow-up: all four finished jobs (fts-baseline-002, fts-hf-001, fts-publish-001, za-cct-001) verified already handled and acknowledged with .factory markers; cleanup re-confirmed by a read-only provider read-back
+
+The watcher reported four finished jobs (all succeeded, all uploaded: staging
+releases 431595358 / 432049938 / 432040837 / 432591871). Every one was already
+collected, interpreted, recorded and cleaned up by the 2026-11-02 advancement
+sessions and the 2026-11-03 11:35Z session. This session re-verified each from
+read-only records (ledger status=deleted + collected_at + server ids; per-check
+results in each result.json; za-cct reports digest-verified at collection) and
+wrote the missing `.factory/<job>/handled` markers (untracked local bookkeeping)
+so the watcher stops re-reporting them. No collect, no `worker status` (it
+writes), no launch, no candidate byte, no release/tag/destination/manifest
+changed. EUR 0 spent.
+
+- fts-baseline-002 (10 assets, release 431595358; server 174177604): baseline on
+  the accepted ac529cd4 - bytes re-ACCEPTED against the bundled gate report
+  BEFORE scoring, contract OK, eval AUC 0.6452 from both train.py and
+  validate.py; triad on the identical 139 eval rows: persistence 0.71711 >
+  prior-mean 0.71435 > ask-size 0.71264 > country-history 0.67295 > plan-type
+  0.66922 > MODEL 0.6452 - recorded defect, no demonstrated headroom for the
+  stock runner. Recorded at be281be (baseline_result.json + candidate
+  measurements.baseline_triad_2026_11_02_fts_baseline_002).
+- fts-publish-001 (server 174228046): 5/5 assets staging 431492902 -> private
+  repo release 432039311, digests verified on arrival and server-side, tag
+  v2026.11 == main == 3bb489c, consumer path green incl. gate --accept ACCEPTED
+  ac529cd4; DESTINATIONS.json github block verified 2026-11-02T22:37:27Z.
+  Recorded at 35d32f7.
+- fts-hf-001 (server 174228947): 5/5 uploads pinned on Hub main e715affd,
+  hf_loading ok:true (train 437/279 pos, eval 139/81, holdout 182/96), tag
+  v2026.11 == main; DESTINATIONS.json hub block verified 22:47:40Z,
+  missing/size_mismatch/digest_unverified all empty. Recorded at 35d32f7.
+- za-cct-001 (14 assets, release 432591871; server 174300532): construct ->
+  gate 1.5.0 full-artifact PASS (0 failed checks) -> exact-byte ACCEPTED
+  9f2e10ce -> references on the identical 14,965 eval rows (morning_ratio
+  0.73402 headroom reference; no model figure yet, so no headroom claim).
+  Recorded at c57e371.
+- CLEANUP re-confirmed by this session's read-only provider read-back: project
+  server list empty (0 servers) and each worker id 404s (174177604, 174228046,
+  174228947, 174300532). This closes the "provider read-back pending" note the
+  22:37Z staging write left for fts-publish-001; the historical string inside
+  DESTINATIONS.json is left untouched and this entry is the fresh evidence.
+- Handoff unchanged and already precise: ocha-fts awaits the operator's flip
+  (fresh pre-flip re-audit verdict first, prompt ready); za-cct's next action is
+  the runner baseline job vs 0.7340 (advancement). Nothing in this event needs
+  the operator.
+- Checks this session: check-candidate --all rc=0. Each marker carries its
+  job's evidence path and remaining blocker.
+
 ## 2026-11-03 (11:35Z) - za-cct-substation-evening-peak-exceedance CONSTRUCTED, QUALIFIED and ACCEPTED in one session (za-cct-001, artifact 9f2e10ce, every discovery measurement reproduced exactly; the P0-safe feature design held on the real artifact: probe mismatch 44.9% on eval, no recovery); reference triad measured - morning_ratio 0.7340 is the headroom reference, significantly above persistence 0.6502 and calendar 0.6504
 
 Scheduled advancement session. Release work outranks construction, and the task list's one
