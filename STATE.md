@@ -1,3 +1,106 @@
+## 2026-11-03 (11:35Z) - za-cct-substation-evening-peak-exceedance CONSTRUCTED, QUALIFIED and ACCEPTED in one session (za-cct-001, artifact 9f2e10ce, every discovery measurement reproduced exactly; the P0-safe feature design held on the real artifact: probe mismatch 44.9% on eval, no recovery); reference triad measured - morning_ratio 0.7340 is the headroom reference, significantly above persistence 0.6502 and calendar 0.6504
+
+Scheduled advancement session. Release work outranks construction, and the task list's one
+release item (unhcr-refugee-data-finder) was re-read from its record first: the recorded
+operator decision applied 2026-11-02 is that the v2026.10 panel package 6bd0c307 is DROPPED
+in this form ("never to be flipped"), with operator_decision_pending true and the reopen
+condition recorded - a human wait, left private and untouched, like ocha-fts and ns-bwa
+(both awaiting_operator: the flip). No release byte, tag, destination or visibility changed
+anywhere. No active jobs existed (ledger reconciled: every job deleted/collected). The
+actionable work was the operator-listed build queue; chosen candidate:
+za-cct-substation-evening-peak-exceedance (the 2026-11-01 Africa tick's ready candidate:
+every construction input pre-measured, class A licence, novelty differentiated, small
+artifact - the one listed build whose full construct -> qualify -> accept -> references
+cycle plausibly completes inside one session budget).
+
+DESIGN DECISION TAKEN BEFORE ANY BUILD (the session's substantive judgment, recorded in
+the candidate record preflight): the record's cross-row concern ("a later same-station
+row's feature window contains this row's evening label operand" - the abs-visitor-arrivals
+shape) is a P0 under the operator's standard, because a sliding EVENING quantile's
+day-over-day delta reconstructs the entering evening's exceedance almost exactly
+([p95(D+1) > p95(D)] == [eve(D) > p95(D)] except top-tail window swaps) - the same class
+as the fts-appeal-003 rebuild and the unhcr drop. Therefore NO evening-derived value ships
+in any solver-visible frame: evening readings, evening peaks and the trailing-evening p95
+threshold are sealed into auxiliary/evening_peaks.csv (staging-side verification input,
+never a solver input), and the model predicts exceedance of a threshold it never sees. The
+only history-derived shipped column is hist_morningpeak_mean_90, the mean of the trailing
+<= 90 prior days' MORNING peaks (never label operands); the gate probe executes exactly
+that morning-mean delta attack over the full artifact. Shipped features: station identity,
+calendar (dow/doy/doy sin-cos/month), the 12 same-day 00:00-06:00 half-hour slots, morning
+mean/max/min, the trailing morning-history mean. 25 columns, id station_day (row-unique,
+so the gate's cross-split check keys on it).
+
+PREFLIGHT recorded in the candidate record before launch (row selection: build_panel()
+eligibility = >= 30 prior evenings, burn-in counted never scored; artifact writer:
+write_artifact() with ONE column list in one place; gate + exact-byte accept ON THE WORKER
+stages 2-3; the first performance metric is score.py stage 4, post-acceptance, eval-only;
+build.py computes none - read line by line; timing block compared against the filters:
+06:00 SAST period_end instant, features lag 0, administrative_record, no future period in
+row selection).
+
+SYNTHETIC REHEARSAL before launch (tests/test_za_cct_build.py, coordinator, no real data,
+no network): real build.py over synthetic FeatureServer pages -> real gate 1.5.0 with 0
+failed checks -> exact-byte ACCEPTED -> score.py references -> stale-report refusal ->
+red/green (a mutated extract shipping evening_peak_mva is refused by
+leakage.answer_source_absent) -> byte-identical rebuild at the same --built-at. It caught
+TWO real defects pre-launch: (1) split years hardcoded to 2022-2024 broke the synthetic
+path - now derived from the panel and asserted 2022/2023/2024 under --real-fixtures; (2)
+the date column is high-cardinality on small panels - now declared in
+high_cardinality_columns with the reason (on the full 41-station panel each date carries 41
+rows and scores normally). It also pinned the P0 rationale on synthetic bytes: the
+evening-p95 delta attack reproduces 0.995 of synthetic labels exactly vs 0.669 for the
+shipped morning mean - the asymmetry that justifies the sealed-evening design.
+
+za-cct-001 (server 174300532, cx23/hel1, EUR 0.04 reservation, November; launched
+11:08:32Z, succeeded in 110 s, collected 11:23:23Z, destroyed 11:28:14Z, provider
+read-back 404 + zero project servers):
+
+- BUILD: live harvest 54 requests / 67,346,440 bytes, per-page sha256 pinned; grid 52,608
+  rows = 1,096 gapless days x 48, 2022-01-01..2024-12-31, 41 double stations, zero bad
+  days; item created 2026-02-28 / modified 2026-03-02 (the discovery vintage, static).
+  EVERY DISCOVERY MEASUREMENT REPRODUCED EXACTLY: labels 1,539/13,735 + 227 distinct
+  days (2022), 1,256/14,965 + 246 (2023), 1,382/15,006 + 247 (2024); burn-in 1,230;
+  41/41 stations positive every year; dated fixture Grassy_Park_66kV 2024-07-15 evening
+  peak 150.3751 > trailing p95 146.8229 -> label 1; six monthly-mean fixtures green.
+  Splits as built: train 13,735/1,539 (11.205%), eval 14,965/1,256 (8.393%), holdout
+  15,006/1,382 (9.210%) - holdout sealed.
+- GATE 1.5.0 ON THE FULL ARTIFACT, ON THE WORKER: ok=true, failed_checks EMPTY (45
+  checks; contract 6/6 green). THE PROBE ON REAL DATA: morning_history_delta_attack
+  covered 13,694/14,924/14,965 rows (train/eval/holdout) with mismatches 48.2%/44.9%/44.5%
+  - the only history-derived shipped column does NOT permit label recovery; exposure
+  bounded, recorded, isolated_rows access declared, no enforcement claim.
+- EXACT-BYTE ACCEPTANCE on the worker: ACCEPTED for artifact
+  9f2e10ce485635f65e695072e2bbd904024ebf58b1465d12fb969f8bb0692180 (staging release
+  432591871). All four stage statuses 0 in container.log. Reports fetched digest-verified
+  (mapped through the release's own manifest.json by .factory/za-cct-001/fetch_reports.py;
+  the token stayed in-process); bulk CSVs verified then deleted from the coordinator
+  (.factory/za-cct-001 is 416 KB of compact evidence).
+- REFERENCES (score.py, post-acceptance, the identical 14,965 eval rows, holdout never
+  opened; every rate table from 2022 train only): morning_ratio (morning_max /
+  hist_morningpeak_mean_90, a one-line physics rule over shipped features) 0.73402 is the
+  STRONGEST reference; month_only 0.65405, calendar_identity (station x month) 0.65036,
+  persistence_prev_evening 0.65018, identity_only 0.51341, majority accuracy 0.91607,
+  global_rate degenerate. Paired bootstrap (150, seeded): morning_ratio beats persistence
+  by +0.0838 CI [-0.1012, -0.0706] and calendar_identity by +0.0837 CI [-0.1019,
+  -0.0627] - BOTH intervals exclude zero; persistence vs calendar_identity -0.0002 CI
+  [-0.0168, +0.0161] is INCONCLUSIVE. Per-month eval reporting for all 12 months of 2023
+  (morning_ratio tops 11 of 12). INFORMATION ASYMMETRY recorded: persistence is recomputed
+  scorer-side from prior-in-time labels (a shipped prior label is the P0 cross-row
+  recovery), so the model is denied it; any model-vs-persistence comparison carries that
+  note. NO full-model figure exists yet, so NO headroom claim exists: the recorded
+  headroom reference for the coming baseline job is 0.7340, not persistence.
+- Record updated (status qualified, artifacts[0], qualification block, jobs entry,
+  measurements.references_2026_11_03_za_cct_001); next_action names the runner-contract
+  baseline job on the staged bytes, the interpretation rule (model vs 0.7340 on identical
+  rows), then packaging per dataset-release. Holdout sealed; nothing public; no operator
+  step pending.
+
+Hygiene: check-candidate za-cct OK (qualified) + --all rc=0; full unittest suite 697/697 OK
+(27.1 s) plus tests/test_za_cct_build.py standalone ALL OK; worker destroyed with provider
+404 read-back; no token exposed (fetch script reads the file at point of use, follows the
+signed-URL redirect without credentials); no manifest, tag, published byte, destination or
+concurrent session's work touched.
+
 ## 2026-11-03 (09:12Z) - discovery tick (International organisations): oecd-ncp-specific-instance-acceptance opened and READY (first grievance-mechanism intake task; class A, five contracts reconciled); wb-procurement-contract-awards opened and DROPPED (no post-award outcome column; third WB instrument-activity family hit)
 
 Discovery-only session. No construction, qualification, packaging, publication or advancement; no

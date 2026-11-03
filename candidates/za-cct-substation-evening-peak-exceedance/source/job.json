@@ -1,0 +1,19 @@
+{
+  "id": "za-cct-001",
+  "candidate": "za-cct-substation-evening-peak-exceedance",
+  "image": "python:3.13-slim",
+  "command": [
+    "sh",
+    "/workspace/run.sh"
+  ],
+  "server_type": "cx23",
+  "location": "hel1",
+  "cpus": 2,
+  "memory_mb": 2048,
+  "timeout_minutes": 45,
+  "lifetime_minutes": 60,
+  "max_disk_mb": 3000,
+  "max_artifact_mb": 24,
+  "what": "First construction of za-cct-substation-evening-peak-exceedance (za-cct-001), the ready candidate from the 2026-11-01 Africa tick, per the operator's actionable-build list. Task: for a Cape Town switching substation at 06:00 SAST on day D, predict whether the evening peak (max half-hourly MVA 16:00-22:00 SAST) exceeds the station's trailing-90-evening p95 (min 30 prior evenings). P0-SAFE FEATURE DESIGN (the design decision this build exists to honor): no evening-derived value ships in any solver-visible frame - evening readings, evening peaks and the sliding evening p95 threshold are sealed into auxiliary/evening_peaks.csv outside every split file, because a sliding evening quantile's day-over-day delta reconstructs the entering evening's exceedance almost exactly (label-blind exact recovery, the operator's automatic DO-NOT-PUBLISH class per the 2026-11-01 queue audit and the fts-appeal-003 rebuild). The only history-derived shipped column is hist_morningpeak_mean_90, a mean of MORNING peaks (never label operands); the gate's cross-row probe executes exactly the morning-mean delta attack on the full artifact and records coverage/mismatches. Features: station identity, calendar (dow/doy/doy sin-cos/month), the 12 same-day 00:00-06:00 half-hour slots, morning mean/max/min, and the trailing morning-history mean. Splits: train 2022 / eval 2023 / holdout 2024 by target day. Acceptance asserted in-build against the 2026-11-01 discovery measurements: 52,608 rows = 1,096 gapless days x 48, 41 double-typed stations; labels 1,539/13,735 + 227 distinct days (2022), 1,256/14,965 + 246 (2023), 1,382/15,006 + 247 (2024); 41/41 stations positive every year; dated fixture Grassy_Park_66kV 2024-07-15 peak 150.38 > p95 146.82 -> label 1; six monthly-mean evening-peak fixtures. A live-source drift that breaks any fixture fails the build loudly (the item is static since 2026-03, so drift would itself be a finding).",
+  "stopping_condition": "gate failure or fixture failure -> collect diagnostics, diagnose, record; ONE rebuild per structural defect class is permitted, a second failure of the same class is a recorded blocker, never a blind retry"
+}

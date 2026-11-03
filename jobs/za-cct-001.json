@@ -1,0 +1,428 @@
+{
+  "job": {
+    "id": "za-cct-001",
+    "candidate": "za-cct-substation-evening-peak-exceedance",
+    "image": "python:3.13-slim",
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 2048,
+    "timeout_minutes": 45,
+    "lifetime_minutes": 60,
+    "max_disk_mb": 3000,
+    "max_artifact_mb": 24,
+    "what": "First construction of za-cct-substation-evening-peak-exceedance (za-cct-001), the ready candidate from the 2026-11-01 Africa tick, per the operator's actionable-build list. Task: for a Cape Town switching substation at 06:00 SAST on day D, predict whether the evening peak (max half-hourly MVA 16:00-22:00 SAST) exceeds the station's trailing-90-evening p95 (min 30 prior evenings). P0-SAFE FEATURE DESIGN (the design decision this build exists to honor): no evening-derived value ships in any solver-visible frame - evening readings, evening peaks and the sliding evening p95 threshold are sealed into auxiliary/evening_peaks.csv outside every split file, because a sliding evening quantile's day-over-day delta reconstructs the entering evening's exceedance almost exactly (label-blind exact recovery, the operator's automatic DO-NOT-PUBLISH class per the 2026-11-01 queue audit and the fts-appeal-003 rebuild). The only history-derived shipped column is hist_morningpeak_mean_90, a mean of MORNING peaks (never label operands); the gate's cross-row probe executes exactly the morning-mean delta attack on the full artifact and records coverage/mismatches. Features: station identity, calendar (dow/doy/doy sin-cos/month), the 12 same-day 00:00-06:00 half-hour slots, morning mean/max/min, and the trailing morning-history mean. Splits: train 2022 / eval 2023 / holdout 2024 by target day. Acceptance asserted in-build against the 2026-11-01 discovery measurements: 52,608 rows = 1,096 gapless days x 48, 41 double-typed stations; labels 1,539/13,735 + 227 distinct days (2022), 1,256/14,965 + 246 (2023), 1,382/15,006 + 247 (2024); 41/41 stations positive every year; dated fixture Grassy_Park_66kV 2024-07-15 peak 150.38 > p95 146.82 -> label 1; six monthly-mean evening-peak fixtures. A live-source drift that breaks any fixture fails the build loudly (the item is static since 2026-03, so drift would itself be a finding).",
+    "stopping_condition": "gate failure or fixture failure -> collect diagnostics, diagnose, record; ONE rebuild per structural defect class is permitted, a second failure of the same class is a recorded blocker, never a blind retry",
+    "source_files": [
+      {
+        "bundled_as": "build.py",
+        "source": "candidates/za-cct-substation-evening-peak-exceedance/source/build.py",
+        "bytes": 52386,
+        "sha256": "5ffefd98be870c4ab303d6892814f535bdd7fe055a64050ec087d5726182480b"
+      },
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/za-cct-substation-evening-peak-exceedance/source/run.sh",
+        "bytes": 2320,
+        "sha256": "2584200ee0526851193f827de76b929dea000dae3369c105230709b0d4055c31"
+      },
+      {
+        "bundled_as": "score.py",
+        "source": "candidates/za-cct-substation-evening-peak-exceedance/source/score.py",
+        "bytes": 15016,
+        "sha256": "8d6332c1192bfde78adc75bec2f0260543ef75963bc98267189c2636418d1572"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 57029,
+        "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+      }
+    ]
+  },
+  "reservation_eur": "0.04",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 2,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 225280,
+  "source_sha256": "391ae2053769d9cba6653d8b5371642bf4b077468198dbb05d10df37445d93d7",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-11-03T11:08:32.050604+00:00",
+  "expires": 1793707712,
+  "budget_months": [
+    "2026-11"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 174300532,
+  "known_hosts": "/opt/data/dataset-factory/.factory/za-cct-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "2.29.159.168",
+  "result": {
+    "job_id": "za-cct-001",
+    "status": "succeeded",
+    "uploaded": true,
+    "image_id": "sha256:ae14d4ce8771606477a81446e7ef429edd6762305fc50c84507c1041fa8285d1",
+    "image_digests": [
+      "python@sha256:ae14d4ce8771606477a81446e7ef429edd6762305fc50c84507c1041fa8285d1"
+    ],
+    "exit_code": 0,
+    "oom_killed": false,
+    "elapsed_seconds": 110.0,
+    "summary": {
+      "artifact_sha256": {
+        "auxiliary/evening_peaks.csv": "6352606f780f50f63d588ed6ef91a4af175442f0f5b822c45304241a8b9ad318",
+        "meta.json": "935a7438a96b326fb646b802ae2122b2ad8fdcfc5e28e5e9b8e271052606b060",
+        "private/holdout.csv": "9ab07c57bbe241661fe5f5c8049a0a14a7445e75cc94423edbcf9c9aacb50430",
+        "public/eval.csv": "2e416315a3f32fb5dc5f816ea0bc3e67d37dd4c62a8514c43e3c5ec64c0309de",
+        "public/train.csv": "f7b533529492c86155a2ddc26592b52db539ae700bae4c37df370e4b4af9d0b9",
+        "quality.json": "f0690d28e99324461b6f9b8f250a1bd77eed480ad22bdd08ec54b4a32a4bb8ec"
+      },
+      "built_at_utc": "2026-11-03T00:00:00Z",
+      "columns": [
+        "station_day",
+        "station",
+        "date",
+        "day_of_week",
+        "day_of_year",
+        "doy_sin",
+        "doy_cos",
+        "month",
+        "m00_00",
+        "m00_30",
+        "m01_00",
+        "m01_30",
+        "m02_00",
+        "m02_30",
+        "m03_00",
+        "m03_30",
+        "m04_00",
+        "m04_30",
+        "m05_00",
+        "m05_30",
+        "morning_mean",
+        "morning_max",
+        "morning_min",
+        "hist_morningpeak_mean_90",
+        "exceeds"
+      ],
+      "exclusions": {
+        "burn_in_under_30_prior_evenings": 1230,
+        "note": "burn-in station-days (the first 30 days of each station's series) lack the 30 prior evenings the p95 needs; they are counted here, never scored as negatives"
+      },
+      "fetch": {
+        "bytes": 67346440,
+        "page_sha256": {
+          "page-000.json": "ad61a200991ba8b74e6b0fcb1049a3936ea8cd835cd67029379683ac5b272362",
+          "page-001.json": "eb227db1724b3d641f1be480f6cfd0030d181c0f5848d983c363b2fa4f689780",
+          "page-002.json": "5786e9bb0108aac855541d7d30c4162ac2cec4f90e5c02ed09cdac196e049733",
+          "page-003.json": "5c6ea19b5b6dc8e337a4c138a03024832e5b8eec84db0cf8b1603a4c23ff3d4a",
+          "page-004.json": "41e5569a57896ef64a39a1e454d4ecfce012f41c68c47d26c1d454afcdd5788e",
+          "page-005.json": "988ab1d1fb9b4745323e4c6f51b434fe39957390da3a50e3cdd8a214e76eb9cb",
+          "page-006.json": "942f39d81689350a5201f16ef3c5b65840b68a258f48b9a77e44121d86b50fa2",
+          "page-007.json": "a73cd8525030a1382b3464a0d845722060fc26c2a17f58abdf21e3aab33f1a7f",
+          "page-008.json": "770d6602de3825d03d4ce658e809a3b8f94c4b9d6c04a3a65c152135b0e94233",
+          "page-009.json": "ef58fff615eb2cfb6e9c2a058274bc4deda92010899ba1fd2085d26dfbb38a1f",
+          "page-010.json": "3ff2ab47ba87e261e0b2551a4ea386c6de8ced6cf6d3b1ca149354c503f664b6",
+          "page-011.json": "33e69a3d36a97a18fe740d19b2e0c7e8e7716ba2eee4448976870882bd3a665b",
+          "page-012.json": "2c7c9f59faf6d8527d45d3eadac4649d6e9e1b09206be362bbf06bcedb9f9308",
+          "page-013.json": "fca42f382f03adac20d7c603329b1d7f4734a28f33271e2fc177b74f3a177716",
+          "page-014.json": "e4535ad43f730146e322ba842e8793b0f811fd9c67a617141992c5f0d5cea2af",
+          "page-015.json": "d982aa3ef978f95d4a7460f719d5d3b4db54b81897c618c5020f569b8e9de09d",
+          "page-016.json": "facef50ab013c4d7293125063cd4eed4317798363fa1e22d9fe6398acda1e12c",
+          "page-017.json": "3017e9a3def2fef6defff72aa596a6939c903cd1e9d8cf46d261030488ed93a5",
+          "page-018.json": "2777125b66d187692f9fbf48fe4376c58a8f9c4698a60735767fe74b2e9d7f22",
+          "page-019.json": "d2bf5edc08705d71a619874cd51357087c9b8d34d3e71460a22736641a6c8c5d",
+          "page-020.json": "8f3fe3c38087e3022304ea06974401117b8b54cdbb2595c8891202e1502edb19",
+          "page-021.json": "ab46e1d7b9f490bbe60f5cfbd607c0a2f033e8c1ba650d49fcdc810b9379800a",
+          "page-022.json": "9ee631f48f21108783da9bbb77a9dae7e676bec10104350818ddeb19b95bdd9e",
+          "page-023.json": "fd97f2c3ec1255b8a3b73713c436212a477fc4ba750919b1e8a4359ec116274e",
+          "page-024.json": "19888d67812bcb4d9bd81002f8f994eb6b6893c22dbe6ceb3c1273b1214bba0c",
+          "page-025.json": "5c6fd3a46428d2cc9b5d33f83ce125c35a2833a09feeee3e3de2eb1414d66651",
+          "page-026.json": "01cf02f039bf50545f205ff6ac87913ab073c7e99be8a7a28329b45873f22577",
+          "page-027.json": "b53462409303709e5d9ce3d93869e0fa2be373aad305902e7216cd7d046e3722",
+          "page-028.json": "c13ab575081a6ea117c0facade435d84b0fc2225ef4ea6ff72770501dc9615e2",
+          "page-029.json": "47e0db367ad65ed1eba3e5daced48df3b16319baf29ba6503bb6487a6104526a",
+          "page-030.json": "d41b07feefbb60e9e1b65135dec55ee9d4434170d23e104bb36806e94a905378",
+          "page-031.json": "cf61ded9116387599f58b463b4cd6b9f4d96d288f39f2c2a27e96960eb747952",
+          "page-032.json": "fe9a48f18a9308daca7313302d18230bcd8a47be971381945b95a349369a988f",
+          "page-033.json": "d5862c0a942bba0e6dbac136b42cbab13e78ad5e423dd2205f6faafa1f97b925",
+          "page-034.json": "7ddedcb0ef684be369a74aa701ad6f3719133ecff57a23f7f08b8f7a6d707268",
+          "page-035.json": "d6020a26ff7a7fd9ecc1c5c4499877c58cf53319c2728484f02b935f97cd5727",
+          "page-036.json": "44475fda287433ee504b7d2e17f33251da9b0ecd9bf706981cb46ebc7f0d775a",
+          "page-037.json": "251c31d51cdf70739377f96b79b319789f7ea6053eb5a28e2c687aa4df7548fb",
+          "page-038.json": "f0eddd503203daeb7d780946ab331ddcac38f0d901267e4ec3323823713d582d",
+          "page-039.json": "43ea43dcc5789f9a679a8d6323b9e7f365ea77953acf87955a9e59248eb749be",
+          "page-040.json": "cc5ebc1b7b31aaa272e08ecd37157db7c670d16f4317e1d258fcb150c2d5953e",
+          "page-041.json": "511a56a7f5f561029253bc35819d10c5c0faac46397ca832ca48b3486810d105",
+          "page-042.json": "77417f0f781697732c3db63a62fbd0017c141aab18e97b81f1bb6ea08e17eec8",
+          "page-043.json": "a6cbbdb58a6d40b615aa3815b141d54432178dafda295a7d19a0f1e2eedf5ea2",
+          "page-044.json": "33ca21b8892ef2c6d9ed28256d877dd8f0a0b70f2cac0121bfa28c66b165aba5",
+          "page-045.json": "29cf1545a5e727865cb110a9272079a576767c968c5c020da83e378b2b2976c0",
+          "page-046.json": "75bf682c6ced06e875915525744d3e754e938fe71a8e6bc5f0fec0150984bb67",
+          "page-047.json": "59f6c18a3cba110eea6ed7d8610f104863a62994b4bc3da2daf532308b87c609",
+          "page-048.json": "5b18b1e5fc78234a9fb64b7122ccd440e08857d446c16b825f65bd309354ec03",
+          "page-049.json": "f794c950404493a346dbf926f8849af8930aedf8504eb7ff1268f145a86b3492",
+          "page-050.json": "5556323cec3f91bb0258ae30a4aa6194f49512824284601b4a2093eee51f2206",
+          "page-051.json": "babf152bb3080886fdad764a07b581f3d7c3fb0c93a8c251a83facaae0e5fa00",
+          "page-052.json": "437c680629a4f8fd0832648e74c3b264a0633ca043e250b69f6419ea09f6d299",
+          "page-053.json": "c53ef10d869afeee183a8d1426db6430199b6a9b74dbceb29f29b6434628f18f"
+        },
+        "pages": 54,
+        "requests": 54
+      },
+      "fixtures": {
+        "dated_example": {
+          "date": "2024-07-15",
+          "evening_peak_mva": 150.3751,
+          "label": 1,
+          "station": "Grassy_Park_66kV",
+          "trailing_p95_mva": 146.8229
+        },
+        "labels_match_discovery_measurement": true,
+        "monthly_means_asserted": {
+          "2022-08": 60.3,
+          "2022-12": 48.0,
+          "2023-07": 60.6,
+          "2023-12": 45.9,
+          "2024-07": 61.9,
+          "2024-12": 44.1
+        }
+      },
+      "grid": {
+        "bad_days": {},
+        "days": 1096,
+        "first_day": "2022-01-01",
+        "last_day": "2024-12-31",
+        "raw_rows": 52608,
+        "stations": 41,
+        "ts_first": "2022-01-01 00:00:00+02:00",
+        "ts_last": "2024-12-31 23:30:00+02:00"
+      },
+      "item": {
+        "access": "public",
+        "created": 1772281773000,
+        "id": "bebf20c25bfa4ffaa7fc07a1a94ba287",
+        "modified": 1772446733000,
+        "size": 25444352,
+        "title": "Switching Substation Load Profile"
+      },
+      "labels_by_year": {
+        "2022": {
+          "distinct_days": 227,
+          "positives": 1539,
+          "rows": 13735
+        },
+        "2023": {
+          "distinct_days": 246,
+          "positives": 1256,
+          "rows": 14965
+        },
+        "2024": {
+          "distinct_days": 247,
+          "positives": 1382,
+          "rows": 15006
+        }
+      },
+      "layer": {
+        "double_fields": [
+          "Dassenberg_33kV",
+          "Dassenberg_Switchyard_33kV",
+          "Midlands_33kV",
+          "Atlantis_Industrial_132kV",
+          "Perkins_33kV",
+          "Roggebaai_33kV",
+          "Foreshore_132kV",
+          "Woodstock_132kV",
+          "Montague_Gardens_132kV",
+          "Maitland_132kV",
+          "Epping_132kV",
+          "Athlone__Philippi__132kV",
+          "Athlone__Montague__132kV",
+          "Newlands_66kV",
+          "Loch_Road_66kV",
+          "Constantia_66kV",
+          "Rosmead_66kV",
+          "Clovelly_66kV",
+          "Muizenberg_66kV",
+          "Grassy_Park_66kV",
+          "Newfields_132kV",
+          "Mitchells_Plain_132kV",
+          "Gugulethu_132kV",
+          "Philippi_132kV",
+          "Paardevlei_132kV",
+          "Strand_66kV",
+          "Somerset_West_66kV",
+          "Gordons_Bay_66kV",
+          "N1_66kV",
+          "Elsies_66kV",
+          "Tiervlei_66kV",
+          "Westhof_66kV",
+          "Doordekraal_66kV",
+          "Oakdale_66kV",
+          "Marais_66kV",
+          "Langeberg_66kV",
+          "Eversdal_66kV",
+          "Langverwacht_66kV",
+          "Triangle_66kV",
+          "Bellville_South_66kV",
+          "Parow_South_66kV"
+        ],
+        "name": "Switching_Substation_Load_Profile",
+        "object_count_field": false,
+        "service_item_id": "bebf20c25bfa4ffaa7fc07a1a94ba287"
+      },
+      "monthly_mean_evening_peak_mva": {
+        "2022-01": 49.9675,
+        "2022-02": 52.7868,
+        "2022-03": 53.8838,
+        "2022-04": 54.169,
+        "2022-05": 57.1616,
+        "2022-06": 58.989,
+        "2022-07": 59.2206,
+        "2022-08": 60.3209,
+        "2022-09": 57.3491,
+        "2022-10": 54.4989,
+        "2022-11": 52.4163,
+        "2022-12": 47.9554,
+        "2023-01": 50.7956,
+        "2023-02": 53.7158,
+        "2023-03": 54.1857,
+        "2023-04": 53.9335,
+        "2023-05": 57.8905,
+        "2023-06": 58.8581,
+        "2023-07": 60.5606,
+        "2023-08": 56.868,
+        "2023-09": 57.1295,
+        "2023-10": 51.6127,
+        "2023-11": 51.7392,
+        "2023-12": 45.9117,
+        "2024-01": 48.6385,
+        "2024-02": 52.7508,
+        "2024-03": 50.5216,
+        "2024-04": 53.2512,
+        "2024-05": 54.604,
+        "2024-06": 56.4993,
+        "2024-07": 61.8659,
+        "2024-08": 60.1055,
+        "2024-09": 52.9741,
+        "2024-10": 52.52,
+        "2024-11": 47.2991,
+        "2024-12": 44.1243
+      },
+      "name": "za-cct-substation-evening-peak-exceedance",
+      "split_stats": {
+        "eval": {
+          "distinct_positive_days": 246,
+          "negatives": 13709,
+          "positive_rate": 0.083929,
+          "positives": 1256,
+          "rows": 14965,
+          "stations": 41
+        },
+        "holdout": {
+          "distinct_positive_days": 247,
+          "negatives": 13624,
+          "positive_rate": 0.092096,
+          "positives": 1382,
+          "rows": 15006,
+          "stations": 41
+        },
+        "train": {
+          "distinct_positive_days": 227,
+          "negatives": 12196,
+          "positive_rate": 0.11205,
+          "positives": 1539,
+          "rows": 13735,
+          "stations": 41
+        }
+      }
+    },
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 432591871,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-26a1680fc4568cc33aa0",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-26a1680fc4568cc33aa0/manifest.json",
+    "assets": [
+      {
+        "id": 705316966,
+        "size": 74,
+        "sha256": "a5173eaa69a6de1c1d761e39b7783afc31949a8e8df05d2b179114d56760d4e2"
+      },
+      {
+        "id": 705317015,
+        "size": 2075020,
+        "sha256": "6352606f780f50f63d588ed6ef91a4af175442f0f5b822c45304241a8b9ad318"
+      },
+      {
+        "id": 705317080,
+        "size": 2011,
+        "sha256": "935a7438a96b326fb646b802ae2122b2ad8fdcfc5e28e5e9b8e271052606b060"
+      },
+      {
+        "id": 705317159,
+        "size": 2879772,
+        "sha256": "9ab07c57bbe241661fe5f5c8049a0a14a7445e75cc94423edbcf9c9aacb50430"
+      },
+      {
+        "id": 705317257,
+        "size": 2866998,
+        "sha256": "2e416315a3f32fb5dc5f816ea0bc3e67d37dd4c62a8514c43e3c5ec64c0309de"
+      },
+      {
+        "id": 705317351,
+        "size": 2638747,
+        "sha256": "f7b533529492c86155a2ddc26592b52db539ae700bae4c37df370e4b4af9d0b9"
+      },
+      {
+        "id": 705317437,
+        "size": 33378,
+        "sha256": "f0690d28e99324461b6f9b8f250a1bd77eed480ad22bdd08ec54b4a32a4bb8ec"
+      },
+      {
+        "id": 705317524,
+        "size": 18325,
+        "sha256": "0f1bb6a9324c32806a24e5920fcbba472633508cc9d6e63491e9f8b6ffeafc94"
+      },
+      {
+        "id": 705317594,
+        "size": 18325,
+        "sha256": "0f1bb6a9324c32806a24e5920fcbba472633508cc9d6e63491e9f8b6ffeafc94"
+      },
+      {
+        "id": 705317675,
+        "size": 8131,
+        "sha256": "a9c203daa1e1a4da67410c21eda1f09261e4ece3da872792e8d59523a543dd49"
+      },
+      {
+        "id": 705317748,
+        "size": 9620,
+        "sha256": "91d3444baeac51a892c514cc1dbf96ddcdb9afdc6851f3eebe02fb839c1450b8"
+      },
+      {
+        "id": 705317800,
+        "size": 225280,
+        "sha256": "391ae2053769d9cba6653d8b5371642bf4b077468198dbb05d10df37445d93d7"
+      },
+      {
+        "id": 705317868,
+        "size": 27610,
+        "sha256": "1b3e9b5c5cdb1e7467cb3121fca85a697adbadcecfd0209e1b37cf5645a1a546"
+      },
+      {
+        "id": 705317961,
+        "size": 20461,
+        "sha256": "373666e5ec9ab6645ba5d024546527ab0ed8b329b3aef1eff37f844a929c96aa"
+      }
+    ],
+    "skipped_empty": []
+  },
+  "collected_at": "2026-11-03T11:23:23.020857+00:00",
+  "deleted_at": "2026-11-03T11:28:14.525550+00:00"
+}
