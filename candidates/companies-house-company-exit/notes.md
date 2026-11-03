@@ -5,6 +5,15 @@ guessed: the bulk product is the live register only, so exit labels cannot be
 observed from anything published today. Do not re-probe the download page; the
 shape is recorded here.
 
+**Unpark-condition re-check (2026-11-03, UK discovery tick, read-only).** The
+recorded reopen condition ("a free historical dissolution feed appears") is
+still unmet: download.companieshouse.gov.uk still serves only the live-register
+Free Company Data Product (now `BasicCompanyDataAsOneFile-2026-11-01.zip`,
+471 MB, "live companies on the register"); the dissolved-company name DVD
+remains withdrawn (2021) in favour of the online dissolved search index, which
+is a search service, not a bulk product; no bulk historical snapshots exist for
+at-instant features. The park stands; no further probe spent.
+
 ## The task (when it can be built)
 
 For a company on the live register at snapshot month M, will it exit (dissolve)

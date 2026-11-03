@@ -1,3 +1,87 @@
+## 2026-11-03 (17:10Z) - discovery tick (United Kingdom): cqc-care-home-deregistration OPENED and READY (first register-exit task on the bench; CQC OGL v3, 15-year monthly vintage archive, 5.13% measured 12-month prevalence, as-of verified); Companies House unpark condition re-checked and still unmet; EA flood-defence-condition lead not opened on published-contract grounds
+
+Discovery-only session. No construction, qualification, packaging, publication or
+advancement of existing candidates; no worker launched (EUR 0 spent); bounded
+anonymous coordinator probes only. Regional focus United Kingdom (ONS, NHS Digital,
+Defra, EA, Companies House, data.gov.uk). Queue before the tick: 48 live / 127
+candidates, GB 14.
+
+- cqc-care-home-deregistration (CQC, GB, READY): at the production instant of a
+  monthly CQC "HSCA Active Locations" vintage T, for every care home active at T,
+  predict whether the location's registration ends (Location Status Inactive-Dereg
+  with a Location HSCA End Date) within 12 months - a register-exit task no bench
+  candidate covers (companies-house-company-exit is parked on unobtainable labels;
+  here the label IS the publisher's own monthly product). LICENCE class A from the
+  publisher's own instruments: using-cqc-data page "Our data is made available under
+  the Open Government Licence" + the same statement inside the Deactivated ODS
+  itself + the T&C page. MEASURED (commands and outputs in the candidate's probe/,
+  fetched-file sha256 in notes.md): monthly vintage archive 2011-2026 (Drive year
+  folders, anonymous listing + download verified, 2019 .xlsx / 2024+ .ods); weekly
+  CSV census 57,123 active locations, care homes today 15,477 (10,380 residential +
+  4,497 nursing); Deactivated Locations (one current file = whole event history back
+  to 2010-08-05): 65,830 archived locations of which 17,177 care homes, by HSCA end
+  year 2011..2026 = 1656,1649,1063,1227,1245,1381,1352,970,949,822,967,803,827,768,
+  801,697(partial); status mix 17,046 Inactive-Dereg / 131 Removed; clustering mild
+  (376-877 distinct providers per year, top-3 provider share <= 12.2% every complete
+  year); dated join vintage x deactivated: 14,765 care homes at T=2024-01-05, 758
+  deregister in (T, T+365d] = 5.13% prevalence, label fully observable at that
+  instant, 0/14,765 vintage rows carry a rating publication date after T (as-of
+  holds); dated worked example Park Hills Nursing Home (1-113831768), Oldham, 17
+  beds, Good published 26/08/2022, present at T, end date
+  01/02/2024 -> label 1, with NEG examples (Henley House active; Options Hazel House
+  end date outside window). NOVELTY differentiated (check-novelty.py recorded; HF 0
+  relevant hits, arXiv 0, Zenodo adds cqcpack = LSE CPEC R package redistributing
+  CURRENT CQC API snapshots whose own note says historical/longitudinal data is not
+  accessible from it): prior art is explanatory econometrics on bespoke API-linked
+  panels (BMJ Public Health 2024 logistic regression, 8,346 complete closures
+  2011-2023; Lancet Healthy Longevity involuntary-closures Stata/R replication
+  package, 816 enforced closures; NIHR multilevel logit) or US (npj Health Systems
+  CMS closure ML); no scored, temporally-split ML-ready benchmark exists on CQC bulk
+  data. CARRIED RISKS (in record verdict): the register event conflates cessation
+  with re-registration (CQC in-file note; BMJ 8,346 complete closures vs 14,911
+  register events 2011-2023 implies ~40-55% re-registrations) - framing decision is
+  advancement's first step; simple-reference headroom unmeasured (last-rating /
+  bed-size / LA / provider-sector priors are strong per the BMJ/npj evidence) - the
+  reference triad is the FIRST construction measurement; publisher system-migration
+  delay on registration cancellations (recent-window lag check required); era breaks
+  (~2024 single-assessment rating change, 1 April 2019 regulatory-history
+  inheritance); provider-group cross-row exposure if group-history features ship.
+  Next action is in record.next_action (framing decision -> worker build -> triad
+  before any model figure -> gate/accept/scoring order).
+- Named-publisher coverage this tick: ONS stays parked on task value (aggregate-only
+  publisher; its recorded unpark condition - an open event/case-grain product - was
+  not re-checked, the park is recent and reasoned); NHS Digital open data remains
+  provider/area aggregates, so the nhs-ae drop's reopen condition (non-persistence-
+  dominated label + a publication-date archive) stays unmet on known products - not
+  re-probed; Defra's two UK records (AURN dropped on family, recycling parked on
+  measured headroom) stand, no new Defra lead probed. These are coverage statements,
+  not "no viable source exists" claims.
+- Companies House unpark condition RE-CHECKED read-only (dated note added to its
+  notes.md): the Free Company Data Product is still live-companies-only (now
+  2026-11-01, 471 MB), the dissolved DVD stays withdrawn in favour of a search
+  index, and no bulk historical snapshots exist - the park stands.
+- EA flood-defence asset condition: CONSIDERED AND NOT OPENED (reasoning recorded
+  here so no future session re-derives it): AIMS open products are daily live
+  snapshots plus a decommissioned-assets file with end dates; there is no per-asset
+  condition history and no archived condition vintages, so neither the target
+  (future condition at next inspection) nor at-T features are retrospectively
+  observable. Reopen only if EA publishes archived asset-condition vintages or an
+  inspection-history product.
+- Session hygiene: check-candidate cqc OK (ready) + --all rc=0 (128 records);
+  discovery-coverage rc=0 (GB 15 records, live 49, ready 13, live non-US 43/49 =
+  88%); full suite 697/697 OK in 26.8 s; no worker, no token use, no release/tag/
+  manifest/destination changes anywhere. Coordinator bulk fetches this session:
+  85.9 MB CQC files in scratch, aggregated and left to the 24h sweep (a
+  scoped deletion command was refused by the approval gate and not retried);
+  probe scripts + outputs retained in candidates/cqc-care-home-deregistration/probe/.
+  za-cct's operator decision and ocha-fts's flip remain the outstanding operator
+  steps; nothing in this tick needs the operator.
+
+Next action (a fresh session can carry it out): advancement owns the record's
+next_action for cqc-care-home-deregistration (framing decision, then worker
+construction with the reference triad before any model figure); the operator's
+za-cct decision and ocha-fts flip are unchanged.
+
 ## 2026-11-03 (16:10Z) - watcher follow-up: za-cct-baseline-001 verified already recorded (91a32ba) and acknowledged with its .factory marker; cleanup re-confirmed read-only; CI on 91a32ba read back green
 
 The watcher re-reported one finished job (za-cct-baseline-001, succeeded exit=0,
