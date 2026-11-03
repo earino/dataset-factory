@@ -1,6 +1,62 @@
 # npri-facility-reporting-exit
 
+## 2026-11-03 discovery session (regional focus: Canada) - reconciliation to ready
+
+Recorded the stale status (`investigating` since 2026-10-19 with a `go` verdict) as
+`ready` after reconciling all five contracts; probe retained at
+`probe/probe_2026_11_03.py`, output at `probe/out/probe_2026_11_03.json`. Bulk
+CSVs in `/opt/data/cache/scratch/ca_npri_2026_11_03/` left to the 24h sweep.
+
+### Fresh measurement + dated example (command: `python3 candidates/npri-facility-reporting-exit/probe/probe_2026_11_03.py`)
+
+- 2 GETs, 79,162,819 bytes, ~43 s: 2023 single-year CSV (40,400,423 B, sha256
+  0e8c04a9...), 2024 (38,762,396 B, 7648e67f...). Both byte-size-identical to
+  the 2026-10-19 ranged measurements -> files stable across the 15-day gap.
+- 2023->2024 exit pair (third full-population measurement): 7,986 -> 7,738
+  facilities, exits 1,063 (**13.311%**), entrants 815. Recent era now
+  12.32% / 10.84% / 13.31%.
+- Provincial clustering of exits: AB 588 (55.3%), SK 262 (24.7%), ON 82, BC 80,
+  QC 32, MB 11, NS 4, NB 2, YT 1, NL 1 - oil-and-gas provinces dominate.
+- POSITIVE example: NPRI ID 10033 "Hagersville Agg" (Lafarge Canada Inc. -
+  EAST), Hagersville ON, NAICS 2123, 3 substance rows in 2023, ABSENT from the
+  2024 file -> label 1.
+- NEGATIVE example: NPRI ID 1 Alberta-Pacific Forest Industries Inc. (County
+  of Athabasca AB, NAICS 3221), 102 substance rows in 2023, present in both
+  files -> label 0.
+- Encoding: both files cp1252; headers are BILINGUAL ("ID INRP / NPRI ID",
+  "Nom de l'installation / Facility Name", "Ville / City") - construction must
+  match columns bilingually (a naive exact-name lookup returns None).
+
+### Timing evidence (as-of; 2026-11-03)
+
+- Publisher FAQ (canada.ca NPRI reporting-requirements FAQ, read via search):
+  "the reporting deadline is 11:59 p.m. Eastern Daylight Time (EDT) on June 1",
+  extended to the next business day when June 1 falls on a weekend.
+- The 2021-2023 Canada Gazette notice names the adjusted dates: reports due
+  "June 1, 2023, June 3, 2024 and June 2, 2025" (2024-06-01 was a Saturday,
+  2025-06-01 a Sunday - verified with `date -d`). So the year-2023 instant is
+  2024-06-03 23:59 America/Toronto; the year-2024 target deadline
+  (2025-06-02) is strictly after it.
+- open.canada.ca single-year package was re-created 2026-04-30 (portal dates
+  prove nothing about first publication); both files byte-size-stable between
+  the 2026-10-19 and 2026-11-03 reads. Current-vintage posture, no
+  historical-vintage claim.
+- DATED EXAMPLE (America/Toronto): Hagersville Agg (ID 10033) - feature
+  window = reporting history through year 2023; instant T = 2024-06-03 23:59
+  EDT; target = no 2024 report, due 2025-06-02 23:59 EDT; label revealed with
+  the 2024 single-year publication; measured label 1.
+
+### DNMC label nuance (publisher's reporting guide, read via search)
+
+"A facility that submitted a report in the previous year but no longer meets
+NPRI reporting criteria for the current year, is required to submit a 'Does
+Not Meet Criteria (DNMC) report' by the reporting deadline." Construction must
+measure whether DNMC submissions appear in the published year files (e.g.
+zero-quantity rows) and state which side of the presence/absence label they
+fall on. The mechanical label is unaffected; the limitation must be explicit.
+
 ## 2026-10-19 discovery session (regional focus: Canada)
+
 
 Anonymous probes from the coordinator; probe scripts (`.factory/probe_ca_npri*.py`)
 deleted after use; single-year CSVs downloaded to `/opt/data/cache/scratch/ca_npri/`

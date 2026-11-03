@@ -29,7 +29,7 @@ is what donor advocacy and fundraising prioritization need.
   positive), eval 2017-2020 (139 rows, 81 positive), holdout 2021-2025 (182 rows,
   96 positive). The 2026+ live edge is excluded until those years close;
   exclusions are counted in their own buckets, never scored as negatives.
-- **Id:** `plan_year_id` (one row per plan-year appeal).
+- **Id:** `plan_year_id` (one row per appeal-plan ID × plan year). (country, plan year) is **not** unique — 41 country-year groups carry more than one appeal (e.g. Tanzania 2001-43 and 2001-73).
 
 ## Files
 

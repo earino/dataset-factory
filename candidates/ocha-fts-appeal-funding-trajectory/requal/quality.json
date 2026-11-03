@@ -1,0 +1,287 @@
+{
+ "built_at_utc": "2026-11-02T00:00:00Z",
+ "evaluation_contract": {
+  "access": "isolated_rows",
+  "cross_row_audit": {
+   "auxiliary_files_review": "the artifact ships exactly public/train.csv, public/eval.csv, private/holdout.csv, meta.json and quality.json; no auxiliary solver-visible file exists (summary.json, the harvest provenance JSONLs and the source CSV copy are written outside the extract under /output, and no funding value or prior outcome appears in any shipped column)",
+   "probes": [],
+   "rationale": "the within-country prior-outcome join that previously exposed one row's label through a later row's features was removed in fts-appeal-003 together with its operand columns (country_last_prior_covered, country_prior_covered_rate, country_prior_appeals): the 2026-11-01 queue audit recovered 120/139 eval and 128/182 holdout labels exactly through count x rounded-rate arithmetic plus the declared last-prior tie rule, reading only shipped features of later rows. No declared probe remains because no shipped column reads another row's outcome: every remaining feature is a function of the row's own launch record, except years_since_country_prior, which reads only WHICH strictly-earlier same-country appeals exist (their years, never their labels), is derivable by any reader from the shipped row set itself, and is asserted label-free by brute-force recompute at construction. Row presence is launch-decidable (single-country CSV group, positive launch ask, plan year in window; the live-edge and no-orig exclusions are unobserved-target censoring, never outcome-based), so no missing-row rule encodes any label. Same-instant joins are unique by construction (plan_year_id unique, one row per plan-year appeal). The FTS API exposes no historical vintages (checked), so no as-of reconstruction is claimed and the restricted retrospective posture stands. The pre-flip independent audit must re-attack these bytes label-blind before any publication"
+  },
+  "feature_evidence": {
+   "country_iso3": {
+    "assumption": "current-snapshot vintage: values are as published at construction time (built_at pinned, every fetched file sha256-pinned in summary.json); the publisher exposes no version history (checked 2026-10-29), so no historical vintage proves the API state at past instants",
+    "availability": "recorded at the appeal's launch: the requirements ask, plan type, GHO membership and plan year are published with the appeal itself (an administrative record written at the launch event)",
+    "source": "the appeal's own launch record: the FTS plan endpoint (api.hpc.tools v2/public/plan) origRequirements and planVersion metadata plus the HDX requirements-and-funding CSV row that enumerates the (plan, year) group -> country_iso3: the CSV countryCode of the single-country group",
+    "status": "assumed"
+   },
+   "is_part_of_gho": {
+    "assumption": "current-snapshot vintage: values are as published at construction time (built_at pinned, every fetched file sha256-pinned in summary.json); the publisher exposes no version history (checked 2026-10-29), so no historical vintage proves the API state at past instants",
+    "availability": "recorded at the appeal's launch: the requirements ask, plan type, GHO membership and plan year are published with the appeal itself (an administrative record written at the launch event)",
+    "source": "the appeal's own launch record: the FTS plan endpoint (api.hpc.tools v2/public/plan) origRequirements and planVersion metadata plus the HDX requirements-and-funding CSV row that enumerates the (plan, year) group -> is_part_of_gho: planVersion.isPartOfGHO, 1 when the appeal is part of the Global Humanitarian Overview, else 0",
+    "status": "assumed"
+   },
+   "orig_requirements_usd": {
+    "assumption": "the current API value of the launch ask; the publisher could restate it, which the sha256-pinned harvest and fixture asserts would surface",
+    "availability": "launch vintage, externally cross-checked: the AFG HNP 2023 ask 4,627,363,573 matches the documented December-2022/January-2023 ask (UNICEF sitrep #12, US$4.62B) to the dollar, asserted in-build; orig/revised separation measured on 836 plans (286 revised up, 166 down, 384 unchanged, 2026-10-29 sweep)",
+    "source": "the FTS plan endpoint origRequirements - the launch ask",
+    "status": "verified"
+   },
+   "plan_type": {
+    "assumption": "current-snapshot vintage: values are as published at construction time (built_at pinned, every fetched file sha256-pinned in summary.json); the publisher exposes no version history (checked 2026-10-29), so no historical vintage proves the API state at past instants",
+    "availability": "recorded at the appeal's launch: the requirements ask, plan type, GHO membership and plan year are published with the appeal itself (an administrative record written at the launch event)",
+    "source": "the appeal's own launch record: the FTS plan endpoint (api.hpc.tools v2/public/plan) origRequirements and planVersion metadata plus the HDX requirements-and-funding CSV row that enumerates the (plan, year) group -> plan_type: the CSV typeName (Humanitarian response plan, Flash appeal, ...)",
+    "status": "assumed"
+   },
+   "plan_year": {
+    "assumption": "current-snapshot vintage: values are as published at construction time (built_at pinned, every fetched file sha256-pinned in summary.json); the publisher exposes no version history (checked 2026-10-29), so no historical vintage proves the API state at past instants",
+    "availability": "recorded at the appeal's launch: the requirements ask, plan type, GHO membership and plan year are published with the appeal itself (an administrative record written at the launch event)",
+    "source": "the appeal's own launch record: the FTS plan endpoint (api.hpc.tools v2/public/plan) origRequirements and planVersion metadata plus the HDX requirements-and-funding CSV row that enumerates the (plan, year) group -> plan_year: the appeal's plan year",
+    "status": "assumed"
+   },
+   "plan_year_anchor": {
+    "availability": "derived from the row's own plan year; trivially known at launch",
+    "source": "derived calendar key: January 1 of the plan year, derived from plan_year; NOT the publisher's per-plan start date (flash appeals start mid-year; the anchor is the annual grain the task predicts at)",
+    "status": "verified"
+   },
+   "plan_year_id": {
+    "availability": "identity of the row, known at launch",
+    "source": "row key <plan year>-<FTS plan id>; the identity of one primary plan-year appeal",
+    "status": "verified"
+   },
+   "years_since_country_prior": {
+    "assumption": "current-snapshot row set: the appeal inventory is as published at construction time (built_at pinned, every fetched file sha256-pinned in summary.json). This evidence group carried the 2026.10-era prior-outcome features that the 2026-11-01 queue audit recovered labels through (120/139 eval, 128/182 holdout, 0 errors); those columns no longer exist, and what remains is presence-only",
+    "availability": "an earlier appeal's existence and plan year are launch-time facts; the only history-derived feature reads the year of the country's most recent strictly-earlier appeal, never any row's label (asserted by brute-force recompute in construction)",
+    "source": "the PRESENCE of strictly-earlier plan-years of the same country in the same primary panel (which appeals existed, never their funding outcomes) -> years_since_country_prior: years between the row and that most recent prior plan-year; -1 sentinel when none exists",
+    "status": "assumed"
+   }
+  },
+  "limitations": [
+   "the 2026+ live edge is excluded until those plan years close; the panel is a snapshot of complete plan years 2000-2025",
+   "funding totals are current-snapshot vintage (no publisher version history): late-reported flows mean a completed year's total can differ from any past instant's running value, and the immediately-preceding plan year's outcome was still accruing at December launches - training-label timing is unverified and no operational forecasting claim is made",
+   "prior-history exposure CLOSED by fts-appeal-003: the 2026.10-era prior-outcome features let a label-blind attacker recover earlier rows' labels exactly (2026-11-01 queue audit: 120/139 eval, 128/182 holdout, 0 errors) and were removed; the only history-derived column left (years_since_country_prior) reads prior appeal YEARS, is derivable from the shipped row set itself, and carries no outcome - but the whole-table runner still presents every row at once, so isolated rows remain the declared conservative requirement with no enforcement claim",
+   "regional multi-country appeals are out of scope (measured slice gap 0.78); the task is about single-country appeals only",
+   "the label counts appeal-linked funding only (FTS incoming fundingTotal); internal transfers, CBPF allocations and non-appeal funding are out of scope, as are requirements outside FTS (e.g. regional RRPs' host-government shares)",
+   "prevalence is NOT stationary across eras: measured positive rate at the 50% threshold drifts 68.3% (2000-2013) -> 52.3% (2014-2018) -> 63.8% (2019-2022) -> 42.5% (2023-2025); intervals must be country-clustered and year-aware, and a single-window holdout reads as an era as much as a test",
+   "origRequirements is verified launch-vintage on dated external evidence for sampled cohorts, not for every row; a restated ask would surface as a fixture failure"
+  ],
+  "scope_note": "each row is one primary plan-year appeal. The 2026.10-era prior-outcome features (country_prior_appeals, country_prior_covered_rate, country_last_prior_covered) allowed a label-blind attacker to recover earlier rows' labels exactly from later rows' features (2026-11-01 queue audit: 120/139 eval, 128/182 holdout, 0 errors) and were REMOVED in fts-appeal-003; no shipped column is any longer a function of another row's outcome (asserted by construction: the only history-derived column reads prior appeal YEARS, never labels). The isolated-rows access declaration is retained as the CONSERVATIVE posture, not as an enforcement claim: the illustrative runner still passes the whole eval feature table to the predictor in one call, nothing in this package enforces isolation, and the absence of a known recovery is not a proof against future attacks - the fresh independent pre-flip audit must attack the shipped bytes before any publication. Labeled eval is development/validation; the holdout is the final test and stays outside evaluated agents' workspaces. Training-label timing is UNVERIFIED: the split key is the plan year and a train plan-year's final funding can complete during the first eval appeals' launch window (train 2016 outcomes closed during 2017 while GHO 2017 launched December 2016), so no full-row availability ledger is claimed and the artifact is retrospective research only, never a certified historical forecasting setup",
+  "selection": {
+   "evidence": "membership is decidable from the appeal's own launch record: a single-country CSV group with a positive launch ask in the scored year range. The exclusions are unobserved-target censoring counted in their own buckets - 2026+ live-edge rows (outcome not yet observable at the snapshot), no-orig groups (denominator not stated), regional multi-country groups (excluded by design after measuring the Burundi RRP 2021 slice gap: country slices sum to 14,978,233 against the plan total 19,282,778, ratio 0.78, so per-country slices cannot carry the plan-level label) - no row is excluded for a low outcome. Funded and unfunded appeals are both retained whenever the launch record exists",
+   "kind": "prediction_time"
+  },
+  "training_label_timing": "unverified",
+  "use": "retrospective_research",
+  "vintage": {
+   "evidence": "launch attributes are launch-vintage, externally cross-checked (AFG HNP 2023 orig 4,627,363,573 matches the documented December-2022/January-2023 ask; orig/revised separation measured on 836 plans: 286 revised up, 166 down, 384 unchanged; the CSV requirements column carries the revised value in revised cases and is excluded as a denominator). Funding totals are CURRENT-SNAPSHOT vintage: api.hpc.tools exposes no version history (checked 2026-10-29), the HDX resource was observed refreshed 2026-10-30, and late-reported flows can shift a completed year's total; this build pins every fetched file by sha256 at construction time (summary.json) and states all values as construction-time vintage",
+   "kind": "mixed"
+  }
+ },
+ "event_key_column": "plan_year_id",
+ "event_key_note": "an event is one positive plan-year appeal (the gate's clustering takes the id's first 10 characters, which is the whole 9-10 char id here, so the recomputed count equals the positive count at appeal grain). The scientifically relevant dependence structure is coarser and is used for clustered intervals in reporting: same-country series (83 distinct countries measured) and same-year global funding cycles (measured positive rate drifts 68.3% 2000-2013 -> 42.5% 2023-2025)",
+ "expected_duplicate_ids": 0,
+ "external_threshold": false,
+ "features": [
+  "plan_year_anchor",
+  "country_iso3",
+  "plan_year",
+  "plan_type",
+  "is_part_of_gho",
+  "orig_requirements_usd",
+  "years_since_country_prior"
+ ],
+ "features_documented_at": "prediction_time",
+ "high_cardinality_columns": [
+  "country_iso3"
+ ],
+ "high_cardinality_columns_note": "country_iso3 is the identity FEATURE (it appears in all three splits by design and is never an id column). On this small panel it exceeds the gate's relative categorical threshold (distinct levels > rows/5 in a split - measured 51 countries over 139 eval rows against the threshold 27), so it is declared here as a free high-cardinality field, not treated as a leak: the column is the country identity the task predicts on, per-level statistics are too thin to memorise individual rows, and its AUC is reported as a measured property",
+ "id_columns": [
+  "plan_year_id"
+ ],
+ "id_columns_are_entity_keys": true,
+ "id_columns_note": "plan_year_id = <plan year>-<FTS plan id> names one primary plan-year appeal with one label; unique across the panel, asserted at construction (country, plan year) is NOT the grain and is not unique: 41 country-year groups carry more than one appeal (43 excess rows - e.g. Tanzania 2001-43 and 2001-73, Indonesia 2002-85 and 2002-94, distinct appeals within the same country-year), per the 2026-11-03 independent re-audit",
+ "label_source_columns": [
+  "the FTS flow endpoint's per-plan-year incoming.fundingTotal (api.hpc.tools/v1/public/fts/flow?planId=<id>&year=<year>) - the label numerator; never shipped in any split",
+  "the HDX CSV funding column (cross-check only; flow and CSV agreed to the dollar on the 2026-10-29 fixtures and are cross-checked on every row at construction)"
+ ],
+ "measurements": [
+  {
+   "column": "orig_requirements_usd",
+   "frame": "requirements stated at the appeal's launch (launch vintage, externally cross-checked; NOT the CSV requirements column, which carries the revised value in revised cases)",
+   "unit": "US dollars (integer; the launch ask)"
+  },
+  {
+   "column": "years_since_country_prior",
+   "frame": "gap to the most recent strictly-earlier same-country plan-year; a function of which appeals exist, never of any row's funding outcome",
+   "unit": "years (-1 sentinel when no prior appeal)"
+  },
+  {
+   "column": "plan_year",
+   "frame": "the appeal's plan year; the split key",
+   "unit": "calendar year (integer)"
+  },
+  {
+   "column": "plan_year_anchor",
+   "frame": "the annual grain's calendar anchor; the gate's time-column join key for any cross-row review",
+   "unit": "ISO date (derived: January 1 of the plan year)"
+  },
+  {
+   "column": "is_part_of_gho",
+   "frame": "appeal is part of the Global Humanitarian Overview",
+   "unit": "binary indicator"
+  },
+  {
+   "column": "country_iso3",
+   "frame": "the single affected country of the primary appeal",
+   "unit": "ISO 3166-1 alpha-3 country code"
+  },
+  {
+   "column": "plan_type",
+   "frame": "appeal instrument type (HRP, Flash appeal, ...)",
+   "unit": "publisher plan type name"
+  }
+ ],
+ "name": "ocha-fts-appeal-funding-trajectory",
+ "positive_events": {
+  "eval": {
+   "distinct_events": 81,
+   "positives": 81
+  },
+  "holdout": {
+   "distinct_events": 96,
+   "positives": 96
+  },
+  "train": {
+   "distinct_events": 279,
+   "positives": 279
+  }
+ },
+ "positive_events_note": "each positive is one distinct plan-year appeal; the clustered counts that matter for inference are the country series and funding-cycle years declared in event_key_note and measured in summary.json",
+ "positive_label": 1,
+ "positive_label_text": "covered (>= 50% of original requirements)",
+ "post_hoc_columns": [
+  "revisedRequirements and the CSV requirements column (post-launch revisions; the CSV column carries the REVISED value in revised cases - AFG 2023: CSV 3,227,372,908 vs orig 4,627,363,573, a fixture that would flip the label to 1 if used as the denominator)",
+  "per-plan-year funding totals in any form (the label numerator; funding appears in no shipped column)",
+  "percentFunded (the CSV's current mixed-vintage ratio)",
+  "revisionState, planVersion start/end dates of the CURRENT version (mutable post-launch metadata; only isPartOfGHO, the launch ask and the year ship)"
+ ],
+ "shipped_columns": [
+  "plan_year_id",
+  "plan_year_anchor",
+  "country_iso3",
+  "plan_year",
+  "plan_type",
+  "is_part_of_gho",
+  "orig_requirements_usd",
+  "years_since_country_prior",
+  "reached_half"
+ ],
+ "source_snapshot": {
+  "files": [
+   {
+    "bytes": 279849,
+    "kind": "hdx-bulk-csv",
+    "name": "fts_requirements_funding_global.csv",
+    "sha256": "928fb168aac97fc45f59f810a10ad3fe10cbbdbb2abe39148331e2268885a163",
+    "url": "https://data.humdata.org/dataset/b2bbb33c-2cfb-4809-8dd3-6bbdc080cbb9/resource/b3232da8-f1e4-41ab-9642-b22dae10a1d7/download/fts_requirements_funding_global.csv"
+   },
+   {
+    "kind": "api-endpoint",
+    "name": "v2/public/plan/{id}",
+    "note": "launch-vintage origRequirements + planVersion metadata; per-plan compact records in the collected harvest_plans.jsonl",
+    "url": "https://api.hpc.tools/v2/public/plan/{id}"
+   },
+   {
+    "kind": "api-endpoint",
+    "name": "v1/public/fts/flow",
+    "note": "first page only; incoming.fundingTotal per scored plan-year; per-plan-year compact records in the collected harvest_flows.jsonl",
+    "url": "https://api.hpc.tools/v1/public/fts/flow?planId={}&year={}"
+   }
+  ],
+  "licence_note": "FTS 'Using FTS data' page answers 'Can I use and republish the data and information published on FTS website/API?' with 'Yes' plus a citation request; the identical HDX dataset record carries CC BY-IGO (licence_class A, read 2026-10-29)",
+  "publisher": "UN OCHA Financial Tracking Service (fts.unocha.org / api.hpc.tools), enumerated via the HDX distribution 'Global requirements and funding data' (data.humdata.org, resource fts_requirements_funding_global.csv)",
+  "snapshot_note": "current-vintage source re-fetched at build time and pinned by sha256; the publisher revises the live database continuously and no historical vintages exist"
+ },
+ "split_boundaries": {
+  "eval": "plan years 2017-2020 (window end exclusive)",
+  "holdout": "plan years 2021-2025 (window end exclusive; the 2026+ live edge is excluded until those years close)",
+  "train": "plan years 2000-2016 (window end exclusive)"
+ },
+ "split_windows": {
+  "eval": {
+   "end": "2021",
+   "start": "2017"
+  },
+  "holdout": {
+   "end": "2026",
+   "start": "2021"
+  },
+  "train": {
+   "end": "2017",
+   "start": "2000"
+  }
+ },
+ "splits": {
+  "eval": "public/eval.csv",
+  "holdout": "private/holdout.csv",
+  "train": "public/train.csv"
+ },
+ "splits_stats": {
+  "eval": {
+   "distinct_countries": 51,
+   "negatives": 58,
+   "positive_rate": 0.582734,
+   "positives": 81,
+   "rows": 139,
+   "year_max": 2020,
+   "year_min": 2017
+  },
+  "holdout": {
+   "distinct_countries": 43,
+   "negatives": 86,
+   "positive_rate": 0.527473,
+   "positives": 96,
+   "rows": 182,
+   "year_max": 2025,
+   "year_min": 2021
+  },
+  "train": {
+   "distinct_countries": 78,
+   "negatives": 158,
+   "positive_rate": 0.638444,
+   "positives": 279,
+   "rows": 437,
+   "year_max": 2016,
+   "year_min": 2000
+  }
+ },
+ "target": "reached_half",
+ "task": {
+  "prediction_time": "the appeal's launch: the requirements announcement at or before the plan year starts (GHO launches 1 December of the prior year - GHO 2023 launched 2022-12-01; HRPs launch end-December to early January; flash appeals launch at event onset mid-year). Features are the launch attributes plus strictly-earlier same-country appeal PRESENCE (the recency gap only; the prior-outcome features that the 2026-11-01 queue audit recovered labels through were removed in fts-appeal-003). The shipped plan_year_anchor (Jan 1 of the plan year) is the conservative annual-grain join key, not a claim that every appeal launched on that day. Worked example (UTC dates, annual grain): Afghanistan HNP 2023, plan id 1117, asked US$4,627,363,573 at launch (external December-2022 documentation matches), ended 2023 at US$1,678,347,238 funding = 36.3% of the original ask -> label 0 (below half).",
+  "question": "For a primary (single-country) humanitarian appeal plan-year launched by OCHA/FTS, will the plan-year end with appeal-linked funding at >= 50% of its ORIGINAL (launch) requirements? A useful prediction at launch lets financing analysts flag underfunded appeals months before the year-end gap is reported."
+ },
+ "threshold_note": "the 0.5 x ORIGINAL requirements threshold is a task-defined policy fraction (half the launch ask), fixed before construction and not data-derived; both operands are US dollars from the same publisher, and the AFG 2023 + YEM 2023 + Burundi RRP 2021 fixtures pin the unit and frame to exact dollar values asserted in-build",
+ "time_column": "plan_year",
+ "timing": {
+  "features": {
+   "period": "the appeal's own launch record plus the PRESENCE of strictly-earlier plan-years of the same country (years only; no prior outcome ships)",
+   "published_days_after_period_end": 0,
+   "source_kind": "administrative_record"
+  },
+  "observations": [],
+  "prediction_instant": {
+   "citation": "FTS launch evidence: GHO 2023 launched 2022-12-01 (reliefweb press release); the Afghanistan HNP 2023 ask of US$4.62 billion is documented in UNICEF sitrep #12 (January 2023) and matches plan origRequirements 4,627,363,573 to the dollar (the in-build fixture); HRP launches run end-December to early January; flash appeals launch at event onset",
+   "days_after_period_end": 0,
+   "kind": "event_time",
+   "period": "the appeal's launch (requirements announcement), at or before the plan year starts"
+  },
+  "row_selection": {
+   "basis": "eligibility reads only the appeal's own launch record; the live-edge and no-orig exclusions are unobserved-target censoring counted in their own buckets, never scored as negatives - a running 2026 appeal is excluded because its outcome does not exist yet, not because it failed",
+   "fields": [
+    "CSV (id, year) group carries exactly one country row (primary population; multi-country regional groups excluded, counted)",
+    "plan endpoint origRequirements > 0 (no-orig groups excluded as unobserved denominators, counted)",
+    "plan year within 2000..2025 (pre-window groups and the 2026+ live edge excluded, counted)"
+   ],
+   "latest_period_used": "the row's own plan-year launch attributes; the only history-derived column reads the YEAR of the country's most recent strictly-earlier appeal, never any row's outcome"
+  }
+ }
+}

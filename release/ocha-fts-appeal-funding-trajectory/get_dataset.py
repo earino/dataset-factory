@@ -55,8 +55,8 @@ EXPECTED = {
                       "sha256": "c11c03935277ecb164ccde4648fd6541e69d962239a561347832e220c981ef2c"},
     "public-train.csv": {"bytes": 29660,
                       "sha256": "db0c7eea0efd3362f369b64c446d4f237b390d8d5539306dc9b66857e685b787"},
-    "quality.json": {"bytes": 23348,
-                      "sha256": "5dd17cea147d298c7e8249dd3e661541dc58a65cbb00da711ce09c90696f67c7"},
+    "quality.json": {"bytes": 23627,
+                      "sha256": "108be84f79ecfc54477404a0af20f5e9a0e33f58ab70c8cea7f7dc763d7e0432"},
 }
 URL = "https://github.com/{repo}/releases/download/{tag}/{name}"
 

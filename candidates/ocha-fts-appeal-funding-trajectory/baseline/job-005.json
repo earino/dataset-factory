@@ -1,0 +1,106 @@
+{
+  "id": "fts-baseline-005",
+  "candidate": "ocha-fts-appeal-funding-trajectory",
+  "release": true,
+  "image": "python:3.13-slim",
+  "command": [
+    "sh",
+    "/workspace/run.sh"
+  ],
+  "server_type": "cx23",
+  "location": "hel1",
+  "cpus": 2,
+  "memory_mb": 2048,
+  "timeout_minutes": 45,
+  "lifetime_minutes": 90,
+  "max_disk_mb": 4096,
+  "max_artifact_mb": 16,
+  "what": "Runner-contract baseline re-run on the re-audit-corrected shipped bytes (artifact 7bbc8514, the grain-corrected v2026.11 package): fetch the five current assets from the private GitHub release 432039311, re-accept through the gate against the fts-requal-001 collected report, materialize the runner workdir (public only), run the benchmark's train.py and validate.sh unmodified, and record both eval AUCs. The CSVs are byte-identical to the fts-baseline-002 measurement, so every figure is expected to reproduce exactly; the re-run exists so the published package's baseline evidence names the shipped artifact. The bytes never pass through the coordinator.",
+  "fetch": {
+    "repo": "earino/ocha-fts-appeal-funding-trajectory",
+    "release": 432039311,
+    "assets": [
+      {
+        "asset_id": 703404441,
+        "dest": "extract/meta.json",
+        "size": 1891,
+        "sha256": "9f3095a8f2662387c75e098f4d1a4e60292109f5ebc503288a357df864659b5e"
+      },
+      {
+        "asset_id": 703404474,
+        "dest": "extract/public/train.csv",
+        "size": 29660,
+        "sha256": "db0c7eea0efd3362f369b64c446d4f237b390d8d5539306dc9b66857e685b787"
+      },
+      {
+        "asset_id": 703404520,
+        "dest": "extract/public/eval.csv",
+        "size": 9322,
+        "sha256": "c11c03935277ecb164ccde4648fd6541e69d962239a561347832e220c981ef2c"
+      },
+      {
+        "asset_id": 703404565,
+        "dest": "extract/private/holdout.csv",
+        "size": 12862,
+        "sha256": "ffa427d9e67cd1ed7213c370b805287e58549d9058e9241bb01af40105dd37d9"
+      },
+      {
+        "asset_id": 707169475,
+        "dest": "extract/quality.json",
+        "size": 23627,
+        "sha256": "108be84f79ecfc54477404a0af20f5e9a0e33f58ab70c8cea7f7dc763d7e0432"
+      }
+    ]
+  },
+  "note": "fts-baseline-003 lacked the gate; 004 packed source_files outside the job directory (harness templates on absolute paths do not travel). This attempt copies every bundled file into the baseline directory beside this spec.",
+  "source_files": [
+    {
+      "bundled_as": "run.sh",
+      "source": "candidates/ocha-fts-appeal-funding-trajectory/baseline/run.sh",
+      "bytes": 2838,
+      "sha256": "2f34dd472865ab12b259a16390e062efb09a7f7bcff390d254976dbdb417ddce"
+    },
+    {
+      "bundled_as": "materialize.py",
+      "source": "candidates/ocha-fts-appeal-funding-trajectory/baseline/materialize.py",
+      "bytes": 2096,
+      "sha256": "0f0c8802a99078fe26b3b25598ea7982e2ed872ce8789fa2cf29170a1002e76d"
+    },
+    {
+      "bundled_as": "report.py",
+      "source": "candidates/ocha-fts-appeal-funding-trajectory/baseline/report.py",
+      "bytes": 5143,
+      "sha256": "efc2ae88042b139298725048992bcb04f61b44c5def930ec3ab90825bb5a6af2"
+    },
+    {
+      "bundled_as": "qualification.json",
+      "source": "candidates/ocha-fts-appeal-funding-trajectory/baseline/qualification.json",
+      "bytes": 14518,
+      "sha256": "cbbef718b801b74297f7fec8296111f7647d6206f6b11d38e5277cf4b9af5d64"
+    },
+    {
+      "bundled_as": "qualify_dataset.py",
+      "source": "candidates/ocha-fts-appeal-funding-trajectory/baseline/qualify_dataset.py",
+      "bytes": 57029,
+      "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+    },
+    {
+      "bundled_as": "train.py",
+      "source": "candidates/ocha-fts-appeal-funding-trajectory/baseline/train.py",
+      "bytes": 2500,
+      "sha256": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8"
+    },
+    {
+      "bundled_as": "validate.py",
+      "source": "candidates/ocha-fts-appeal-funding-trajectory/baseline/validate.py",
+      "bytes": 1277,
+      "sha256": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b"
+    },
+    {
+      "bundled_as": "validate.sh",
+      "source": "candidates/ocha-fts-appeal-funding-trajectory/baseline/validate.sh",
+      "bytes": 482,
+      "sha256": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+    }
+  ]
+}

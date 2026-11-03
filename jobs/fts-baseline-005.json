@@ -1,0 +1,233 @@
+{
+  "job": {
+    "id": "fts-baseline-005",
+    "candidate": "ocha-fts-appeal-funding-trajectory",
+    "release": true,
+    "image": "python:3.13-slim",
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 2048,
+    "timeout_minutes": 45,
+    "lifetime_minutes": 90,
+    "max_disk_mb": 4096,
+    "max_artifact_mb": 16,
+    "what": "Runner-contract baseline re-run on the re-audit-corrected shipped bytes (artifact 7bbc8514, the grain-corrected v2026.11 package): fetch the five current assets from the private GitHub release 432039311, re-accept through the gate against the fts-requal-001 collected report, materialize the runner workdir (public only), run the benchmark's train.py and validate.sh unmodified, and record both eval AUCs. The CSVs are byte-identical to the fts-baseline-002 measurement, so every figure is expected to reproduce exactly; the re-run exists so the published package's baseline evidence names the shipped artifact. The bytes never pass through the coordinator.",
+    "fetch": {
+      "repo": "earino/ocha-fts-appeal-funding-trajectory",
+      "release": 432039311,
+      "assets": [
+        {
+          "asset_id": 703404441,
+          "dest": "extract/meta.json",
+          "size": 1891,
+          "sha256": "9f3095a8f2662387c75e098f4d1a4e60292109f5ebc503288a357df864659b5e"
+        },
+        {
+          "asset_id": 703404474,
+          "dest": "extract/public/train.csv",
+          "size": 29660,
+          "sha256": "db0c7eea0efd3362f369b64c446d4f237b390d8d5539306dc9b66857e685b787"
+        },
+        {
+          "asset_id": 703404520,
+          "dest": "extract/public/eval.csv",
+          "size": 9322,
+          "sha256": "c11c03935277ecb164ccde4648fd6541e69d962239a561347832e220c981ef2c"
+        },
+        {
+          "asset_id": 703404565,
+          "dest": "extract/private/holdout.csv",
+          "size": 12862,
+          "sha256": "ffa427d9e67cd1ed7213c370b805287e58549d9058e9241bb01af40105dd37d9"
+        },
+        {
+          "asset_id": 707169475,
+          "dest": "extract/quality.json",
+          "size": 23627,
+          "sha256": "108be84f79ecfc54477404a0af20f5e9a0e33f58ab70c8cea7f7dc763d7e0432"
+        }
+      ]
+    },
+    "note": "fts-baseline-003 lacked the gate; 004 packed source_files outside the job directory (harness templates on absolute paths do not travel). This attempt copies every bundled file into the baseline directory beside this spec.",
+    "source_files": [
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/ocha-fts-appeal-funding-trajectory/baseline/run.sh",
+        "bytes": 2838,
+        "sha256": "2f34dd472865ab12b259a16390e062efb09a7f7bcff390d254976dbdb417ddce"
+      },
+      {
+        "bundled_as": "materialize.py",
+        "source": "candidates/ocha-fts-appeal-funding-trajectory/baseline/materialize.py",
+        "bytes": 2096,
+        "sha256": "0f0c8802a99078fe26b3b25598ea7982e2ed872ce8789fa2cf29170a1002e76d"
+      },
+      {
+        "bundled_as": "report.py",
+        "source": "candidates/ocha-fts-appeal-funding-trajectory/baseline/report.py",
+        "bytes": 5143,
+        "sha256": "efc2ae88042b139298725048992bcb04f61b44c5def930ec3ab90825bb5a6af2"
+      },
+      {
+        "bundled_as": "qualification.json",
+        "source": "candidates/ocha-fts-appeal-funding-trajectory/baseline/qualification.json",
+        "bytes": 14518,
+        "sha256": "cbbef718b801b74297f7fec8296111f7647d6206f6b11d38e5277cf4b9af5d64"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "candidates/ocha-fts-appeal-funding-trajectory/baseline/qualify_dataset.py",
+        "bytes": 57029,
+        "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+      },
+      {
+        "bundled_as": "train.py",
+        "source": "candidates/ocha-fts-appeal-funding-trajectory/baseline/train.py",
+        "bytes": 2500,
+        "sha256": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8"
+      },
+      {
+        "bundled_as": "validate.py",
+        "source": "candidates/ocha-fts-appeal-funding-trajectory/baseline/validate.py",
+        "bytes": 1277,
+        "sha256": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b"
+      },
+      {
+        "bundled_as": "validate.sh",
+        "source": "candidates/ocha-fts-appeal-funding-trajectory/baseline/validate.sh",
+        "bytes": 482,
+        "sha256": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      }
+    ]
+  },
+  "reservation_eur": "0.06",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 3,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 215040,
+  "source_sha256": "6b127d766dc6a7020363378e4b3a7346573239bd62c0247b9c234799711ab4b4",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-11-03T22:14:18.888974+00:00",
+  "expires": 1793749458,
+  "budget_months": [
+    "2026-11"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 174390040,
+  "known_hosts": "/opt/data/dataset-factory/.factory/fts-baseline-005/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "2.29.159.168",
+  "result": {
+    "job_id": "fts-baseline-005",
+    "status": "succeeded",
+    "uploaded": true,
+    "fetch": {
+      "repo": "earino/ocha-fts-appeal-funding-trajectory",
+      "release": 432039311,
+      "fetched": [
+        {
+          "dest": "extract/meta.json",
+          "bytes": 1891,
+          "sha256": "9f3095a8f2662387c75e098f4d1a4e60292109f5ebc503288a357df864659b5e"
+        },
+        {
+          "dest": "extract/public/train.csv",
+          "bytes": 29660,
+          "sha256": "db0c7eea0efd3362f369b64c446d4f237b390d8d5539306dc9b66857e685b787"
+        },
+        {
+          "dest": "extract/public/eval.csv",
+          "bytes": 9322,
+          "sha256": "c11c03935277ecb164ccde4648fd6541e69d962239a561347832e220c981ef2c"
+        },
+        {
+          "dest": "extract/private/holdout.csv",
+          "bytes": 12862,
+          "sha256": "ffa427d9e67cd1ed7213c370b805287e58549d9058e9241bb01af40105dd37d9"
+        },
+        {
+          "dest": "extract/quality.json",
+          "bytes": 23627,
+          "sha256": "108be84f79ecfc54477404a0af20f5e9a0e33f58ab70c8cea7f7dc763d7e0432"
+        }
+      ],
+      "failures": [],
+      "bytes": 77362
+    },
+    "image_id": "sha256:ae14d4ce8771606477a81446e7ef429edd6762305fc50c84507c1041fa8285d1",
+    "image_digests": [
+      "python@sha256:ae14d4ce8771606477a81446e7ef429edd6762305fc50c84507c1041fa8285d1"
+    ],
+    "exit_code": 0,
+    "oom_killed": false,
+    "elapsed_seconds": 34.0,
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 433276125,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-f8d774dd27b84185b9ee",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-f8d774dd27b84185b9ee/manifest.json",
+    "assets": [
+      {
+        "id": 707286525,
+        "size": 72,
+        "sha256": "127e1f0847ca011c619d7e3c4fd129365e848cd30ba104d2a36c5bba50a49fe5"
+      },
+      {
+        "id": 707286594,
+        "size": 1928,
+        "sha256": "32890ca8948971ca562da3ae1ff04cfcfa475d7b052a9929b7f208f2cdb9daf7"
+      },
+      {
+        "id": 707286673,
+        "size": 235,
+        "sha256": "e8194bfd1c0034bdda49a8a74f60385c3f62c514a516ff488a00fa1945710006"
+      },
+      {
+        "id": 707286749,
+        "size": 200,
+        "sha256": "c09db45b896f790df30edd111e9997937888d3f90892d9cfb536003684e5e53b"
+      },
+      {
+        "id": 707286839,
+        "size": 475,
+        "sha256": "e1146eccd0232ab02b6880825bed5bdb4db84ad3536657e34683a53330067104"
+      },
+      {
+        "id": 707286905,
+        "size": 53,
+        "sha256": "81d790d0f353a601ea717a0acd3ed984e9d86b0cbe7c22982ca89710ac227040"
+      },
+      {
+        "id": 707286956,
+        "size": 178,
+        "sha256": "6469e119c46442dceb38850784f255bf663c59399cefdfb5afdd629ad1ce65ca"
+      },
+      {
+        "id": 707287029,
+        "size": 215040,
+        "sha256": "6b127d766dc6a7020363378e4b3a7346573239bd62c0247b9c234799711ab4b4"
+      },
+      {
+        "id": 707287137,
+        "size": 845,
+        "sha256": "569c3f223181f7bd47d76e6780c2190f850943d817550d853521bc2a3b494be7"
+      },
+      {
+        "id": 707287250,
+        "size": 9415,
+        "sha256": "0ae7c02b87eb7129b900dbfcb1e2ce1e74d88814aa5fe8b6975daeea9d52c64a"
+      }
+    ],
+    "skipped_empty": []
+  },
+  "collected_at": "2026-11-03T22:16:49.786795+00:00",
+  "deleted_at": "2026-11-03T22:17:59.520029+00:00"
+}

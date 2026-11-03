@@ -1,4 +1,92 @@
-## 2026-11-03 (19:15Z) - cqc-care-home-deregistration framing decided and construction launched (cqc-chd-001, server 174367893): first register-exit build, P0 successor design settled and rehearsed before launch; za-cct packaging stays blocked on the operator's (a)/(b)/(c) decision; unhcr untouched
+## 2026-11-03 (22:50Z) - discovery tick (Canada): two stale investigating records reconciled to READY with dated examples and publication-lag evidence - cra-charity-filing-exit and npri-facility-reporting-exit, CA's first ready candidates
+
+Discovery-only session. No construction, qualification, packaging, publication or
+advancement of existing candidates; no worker launched (EUR 0 spent); bounded
+anonymous coordinator probes only (CKAN package_show/package_search JSON calls,
+5 CSV fetches ~126 MB into scratch left to the 24h sweep with sha256 pinned in
+each candidate's probe/out/, one web search for NPRI deadline citations). Regional
+focus Canada (Statistics Canada, ECCC, Health Canada, open.canada.ca). Queue before
+the tick: CA 15 records, ZERO ready; four sat at investigating since 2026-10-19.
+Reconciling the two whose verdict/next_action already said "GO to construction"
+was the region's highest-value work; both carried recorded differentiated novelty
+checks, class A OGL-Canada licences and measured full-population base rates, but a
+stale status contradicting their own verdicts.
+
+- cra-charity-filing-exit (CRA T3010 filing-exit panel, CA, READY): reproduced the
+  2023->2024 exit measurement EXACTLY on 2026-11-03 (2,376/84,519 = 2.811%, 1,618
+  entrants - source unchanged; probe/probe_2026_11_03.py, 3 GETs 47.2 MB).
+  DATED EXAMPLE (America/Toronto): BN 101835338RR0001 FONDATION D'ANESTHESIOLOGIE
+  ET REANIMATION DU QUEBEC (Montreal QC), FPE 2023-12-31, feature window = returns
+  with FPE <= 2023-12-31, instant T = 2024-06-30 (six months after FPE, the
+  documented T3010 deadline), target = no return with FPE in 2024 (deadlines all
+  strictly after T), measured label 1; negatives AGA KHAN FOUNDATION CANADA
+  (Ottawa) and AGASSIZ CHILD CARE CENTRE (Winnipeg), label 0. PUBLICATION-LAG
+  FINDING (as-of): the year-2023 List package was created 2025-07-29 and year-2024
+  on 2026-03-06, but ALL older packages were bulk re-created (1990-2008 on
+  2026-02-20, 2009-2012 on 2021-11-29, 2013-2022 on 2024-12-17) - portal dates
+  prove nothing about first publication, and at the deadline instant the year-Y
+  returns are filer-known, not third-party published. Two honest framings recorded
+  (retrospective filer-information vs list-publication instant); the choice is
+  advancement's first step, cqc precedent. ENCODING CORRECTION: 2023/2024 files are
+  UTF-8 (byte 0x8f invalid cp1252), 2012 measured cp1252 - per-year detection,
+  superseding the blanket cp1252 instruction. Also measured: FPE month mix (58%
+  Dec-31; instant is per-charity), 171 multi-return BNs (year-end switchers),
+  2,342/2,376 exits carry a 2023 financial record.
+- npri-facility-reporting-exit (ECCC NPRI facility reporting-exit panel, CA,
+  READY): measured the FRESH third full-population pair 2023->2024 - 1,063/7,986
+  = 13.311% exits, 815 entrants (recent era now 12.32/10.84/13.31%; probe/
+  probe_2026_11_03.py, 2 GETs 79.2 MB; both files byte-size-stable across the
+  15-day gap). DATED EXAMPLE (America/Toronto): NPRI ID 10033 Hagersville Agg
+  (Lafarge Canada Inc. - EAST, Hagersville ON, NAICS 2123), instant T = 2024-06-03
+  23:59 EDT (June 1 2024 was a Saturday; the publisher's FAQ states the 11:59 pm
+  EDT deadline with weekend extension and the 2021-2023 Canada Gazette notice
+  itself names 'June 1, 2023, June 3, 2024 and June 2, 2025'), target = no 2024
+  report, due 2025-06-02 23:59 EDT - strictly after T; measured label 1.
+  Negative: NPRI ID 1 Alberta-Pacific Forest Industries (AB), label 0. CLUSTERING
+  MEASURED: AB 588 (55.3%) + SK 262 (24.7%) = 80% of 2023->2024 exits -
+  province/sector clustered counts required per window. DNMC LABEL NUANCE found in
+  the publisher's reporting guide (below-threshold facilities must file a 'Does
+  Not Meet Criteria' report) - construction must state which side of the
+  presence/absence label DNMC rows fall on. Bilingual-header warning recorded
+  ('ID INRP / NPRI ID'); the 2024 facility count corrected (7,738, not 7,986+).
+- Both records now carry record.review with all five contracts reconciled
+  (licence class A from the publishers' own CKAN records; timing supported with
+  the framing decision named; target mechanical and exclusion-by-construction;
+  split capacity from full-population year-pair measurements with exact per-window
+  counts named as the FIRST construction measurement; novelty differentiated) and
+  next_action ordering framing decision -> construction -> full-artifact gate ->
+  exact-byte acceptance -> reference triad BEFORE any model figure -> runner
+  baseline.
+- Regional coverage honesty: this tick touched only the two reconciled records.
+  The other two investigating CA records keep their recorded next actions (iaac:
+  stratified 60-100-page registry sample; canadabuys: bulk count pass needs a
+  worker). StatCan stays parked (aggregate-only), ECCC hydrometric dropped, the
+  Health Canada family dropped - all recent, reasoned, not re-probed. No new
+  publisher family was opened. These are coverage statements, not claims that no
+  viable source exists.
+- Hygiene: check-candidate cra OK (ready), npri OK (ready), --all rc=0 (128
+  records); discovery-coverage rc=0 (CA 15 records now with 2 ready; ready 13->15,
+  investigating 19->17, live 49, live non-US 43/49 = 88%). SUITE: 707 tests, 1
+  ERROR - test_release_schema.test_every_public_package_has_a_recorded_site fails
+  on release/ocha-fts-appeal-funding-trajectory/MANIFEST.json (destinations.site
+  not recorded) - that is the CONCURRENT advancement session's uncommitted
+  ocha-fts release work (modified release/ + baseline/ + untracked
+  sites/ocha-fts...json), not this session's files; this session's commit contains
+  only the two candidate directories + STATE.md. Follow-up for the concurrent
+  session: record the site destination in the ocha-fts MANIFEST (or complete the
+  site step) so the suite returns to green; no concurrent-writer bytes were
+  touched or reverted here.
+- No token exposure; no release byte, tag, destination, manifest or visibility
+  changed anywhere; probe scripts + JSON outputs retained in both candidates'
+  probe/ directories.
+
+Next action (a fresh session can carry it out): advancement owns construction
+for the two new ready CA candidates (framing decision first, per their records);
+the region's next discovery probes remain iaac's stratified registry-page sample
+and canadabuys's bulk count pass (advancement worker); the operator's standing
+decisions (za-cct (a)/(b)/(c), ocha-fts flip) are unchanged.
+
+
 
 Scheduled advancement session. Both release-track items were re-read from their
 records first and stay human waits: unhcr-refugee-data-finder carries the
@@ -2592,6 +2680,60 @@ audits/remediation-2026-10-24/hosted-closeout-readback-2026-10-24.json, deployed
 commit 8512fd8). Close #17; ordinary advancement thereafter is source-specific
 candidate review - review the next candidate's source-specific prediction contract
 and update its builder before construction; #25 remains deferred.
+
+
+## 2026-11-03 (22:15Z) - ocha-fts PUBLISHED: re-audit verdict PUBLISH WITH CONDITIONS executed; condition 1 (grain) applied and re-qualified as 7bbc8514; baseline re-measured on the shipped bytes; both destinations flipped and proven anonymously; site live; catalogue lists 14
+
+The operator relayed the independent re-audit verdict (Codex, 2026-11-03, report at
+audits/2026-11-03-ocha-fts-re-audit-codex.md): PUBLISH WITH CONDITIONS, for
+retrospective research only. Leakage channel gone (the 2026-11-01 frozen attack
+finds no operands; 1,223 feature-only probes, none extreme; the recency feature
+reconstructed label-free on 758/758 rows), all seven reference figures reproduce,
+and the conditions were executed:
+
+- Condition 1 (grain): described as one FTS appeal-plan ID x plan year
+  everywhere - quality.json id_columns_note with the measured country-year
+  non-uniqueness (41 repeated groups, e.g. Tanzania 2001-43 and 2001-73),
+  README, the card, and the builder's own copy. Descriptor-only change:
+  re-qualified through gate 1.5.0 (fts-requal-001; CSVs and meta byte-identical
+  to the audited bytes; failed_checks empty) -> artifact 7bbc8514.
+- Conditions 2 and 3 were verified present by the audit itself (retrospective-
+  only wording; the 0.6452-vs-0.7171 underperformance and the persistence
+  information asymmetry sit beside every figure).
+- get_dataset.py EXPECTED realigned (the stale quality digest - the same defect
+  class ec-merger and unhcr hit); corrected quality.json staged on the release
+  (fts-publish-002) and the Hub (fts-hf-002 with a complete five-asset receipt
+  and the loading check; tag v2026.11 == main).
+- Baseline re-measured on the shipped bytes (fts-baseline-005: gate --accept
+  ACCEPTED 7bbc8514 before any number; Eval AUC 0.6452 reproduced exactly by
+  train.py, validate.py and the predict_proba path; CONTRACT OK) and the
+  manifest baseline block updated to that measurement; suitability re-bound to
+  7bbc8514 (check-suitability 18/18).
+- FLIP: both destinations PATCHed public and proven anonymously (repo/page/
+  release 200, 5/5 assets ranged GET 206, Hub private:false, 5/5 tag-revision
+  files 206, corrected grain text live on both). Card/LOADING refreshed with
+  public status; site page live, HTTPS enforced; the catalogue lists 14
+  datasets.
+
+Sequence lessons recorded: (1) baseline re-runs belong BEFORE the flip - the
+derived-published read exposes a stale baseline label in the frozen manifest,
+and the generator's own guard then strict-reads the incoherent existing manifest
+and refuses; the repair here was a programmatic baseline-block replacement
+replicating the generator's exact output (verified by diff), documented. The
+tag revisions (GitHub v2026.11, Hub v2026.11) predate the baseline
+re-measurement: a strict schema read of the pinned revision will refuse on the
+baseline guard; the sanctioned repair, if ever needed, is a new reviewed
+version - tags are never repointed. (2) Worker bundles need every file beside
+the spec: fts-baseline-003 lacked the gate, 004 packed harness templates from
+absolute outside paths that do not travel; 005 copied them in and succeeded.
+(3) The requal path now covers the full condition-execution flow: verdict ->
+descriptor correction (both copies) -> requal worker -> restage -> baseline
+re-run -> flip -> anonymous proof -> status refresh -> site.
+
+Workers fts-requal-001, fts-publish-002, fts-hf-002, fts-baseline-003/004
+(failed attempts), fts-baseline-005 all collected and destroyed. Suite OK.
+Nothing else changed: ns-bwa's rebuild stays queued per its recorded design;
+unhcr stays dropped-in-this-form and parked.
 
 
 ## 2026-11-02 (23:00Z) - recommendation executed: ocha-fts v2026.11 staged private on both destinations with the re-audit prompt ready (flip waits for the verdict); ns-bwa rebuild designed and queued; unhcr v2026.10 dropped in this form, candidate parked with a reopen condition

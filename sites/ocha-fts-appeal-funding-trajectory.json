@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "site_revision": 1,
+  "title": "OCHA appeal funding trajectory",
+  "summary": "Research task: at a humanitarian appeal's launch, from launch-time facts only - plan type, GHO membership, original requirements, and the gap since the country's prior appeal - predict whether appeal-linked funding will reach at least half of the original launch requirements.",
+  "task_type": "binary-classification",
+  "domain": "Humanitarian financing",
+  "release_date": "2026-11-03",
+  "post": {
+    "title": "Will the appeal reach half its ask? A launch-time task over FTS records",
+    "paragraphs": [
+      "OCHA's Financial Tracking Service records every coordinated appeal, its original launch requirements, and the funding that follows. The contribution here is not access: it is the pinned FTS/HPC harvest, the declaration that the prediction instant is the appeal's launch, and the label - whether appeal-linked funding reaches at least half of the original requirements by the close of the plan year. One row per appeal-plan ID x plan year (758 rows; a country can carry several distinct appeals in one plan year, and the package says so explicitly). Funding totals themselves never ship.",
+      "This release survived two adversarial audits. The first rejected its predecessor: the shipped country-history features let a label-blind attacker reconstruct earlier rows' labels exactly. Those columns are gone - the only history-derived column reads prior appeal YEARS, never labels - and the re-audit's frozen attacks, re-run on these bytes, found no replacement channel in 1,223 probes. The re-audit returned PUBLISH WITH CONDITIONS: describe the grain honestly (done), stay retrospective-only (stated), and keep the model's underperformance visible (kept).",
+      "Every number is published beside its references, because the references decide what it means. The illustrative stock runner reaches eval AUC 0.6452 and TRAILS persistence at 0.7171 - an honest negative finding. And the comparison is asymmetric by design: the model is deliberately denied the last prior outcome (the removed leaky feature) while the persistence reference reads it scorer-side. An auditor's untuned logistic fit reached 0.788 on the same rows, so signal beyond the references plausibly exists - but no headroom is claimed under the shipped protocol.",
+      "This is retrospective research over a current-vintage record. The FTS API exposes no historical vintages, no row-level launch timestamps or funding-crossing times ship, and no point-in-time or operational forecasting claim is made. The labeled holdout ships by design and stays outside every evaluated agent's workspace."
+    ]
+  },
+  "limitations": [
+    "Derived research dataset, not an OCHA or FTS product; OCHA has not reviewed, authorised or endorsed it.",
+    "Retrospective research only: launch-time availability, strictly-after-launch label timing, and original-requirements vintages are NOT VERIFIED (no historical publication ledger exists for the FTS record).",
+    "The grain is one appeal-plan ID x plan year; (country, plan year) is not unique - 41 country-year groups carry more than one appeal.",
+    "The illustrative stock runner (eval AUC 0.6452) trails the persistence reference (0.7171); no headroom is claimed, and the persistence reference holds an information advantage the model is denied by design.",
+    "The isolated-rows declaration is a conservative posture, not an enforcement claim: nothing shipped enforces it, and any real evaluation must restrict solver access itself.",
+    "37 of 758 rows differ between the flow endpoint's year total and the HDX CSV's funding column; the count is disclosed, not hidden.",
+    "The labeled holdout is downloadable by design; keep it outside every evaluated agent's workspace.",
+    "Source terms preserved: FTS use-and-republish permission plus CC BY-IGO on the HDX bulk input; our compilation contribution is CC0-1.0 and code MIT."
+  ]
+}

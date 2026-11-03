@@ -660,7 +660,12 @@ def build_quality(stats_by_split, harvest_stats, built_at: str) -> dict:
         "id_columns_are_entity_keys": True,
         "id_columns_note": ("plan_year_id = <plan year>-<FTS plan id> names one "
                             "primary plan-year appeal with one label; unique "
-                            "across the panel, asserted at construction"),
+                            "across the panel, asserted at construction"
+                            " (country, plan year) is NOT the grain and is not unique: 41 country-"
+                            "year groups carry more than one appeal (43 excess rows "
+                            "- e.g. Tanzania 2001-43 and 2001-73, Indonesia 2002-85 "
+                            "and 2002-94, distinct appeals within the same country-"
+                            "year), per the 2026-11-03 independent re-audit"),
         "time_column": TIME_COLUMN,
         "event_key_column": EVENT_KEY_COLUMN,
         "event_key_note": (

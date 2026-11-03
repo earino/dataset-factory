@@ -1,6 +1,67 @@
 # cra-charity-filing-exit
 
+## 2026-11-03 discovery session (regional focus: Canada) - reconciliation to ready
+
+Recorded the stale status (`investigating` since 2026-10-19 with a `go` verdict) as
+`ready` after reconciling all five contracts; probe retained at
+`probe/probe_2026_11_03.py`, output at `probe/out/probe_2026_11_03.json`. Bulk
+CSVs in `/opt/data/cache/scratch/ca_charities_2026_11_03/` left to the 24h sweep.
+
+### Reproduction (command: `python3 candidates/cra-charity-filing-exit/probe/probe_2026_11_03.py`)
+
+- 3 GETs, 47,241,798 bytes total, ~14 s: ident_2023 (13,339,737 B,
+  sha256 416c98d1...), ident_2024 (13,203,780 B, 4f214ff2...), financial 2023
+  (20,665,081 B, 65c6321c...).
+- 2023 list 84,519 BNs; 2024 list 83,761; exits 2,376 (2.811%); entrants 1,618 -
+  IDENTICAL to the 2026-10-19 measurement. Source unchanged.
+
+### Dated worked example (America/Toronto)
+
+- POSITIVE: BN 101835338RR0001 FONDATION D'ANESTHESIOLOGIE ET REANIMATION DU
+  QUEBEC (Montreal QC). FPE 2023-12-31 (financial 2023 file, single return).
+  Feature event window: returns with FPE <= 2023-12-31. Eligibility: present in
+  the 2023 list. Prediction instant T = 2024-06-30 (six months after FPE - the
+  documented T3010 deadline). Target: any return with FPE in 2024 (filing
+  deadlines all strictly after T; latest 2025-06-30). Label revealed with the
+  2024 list product (package created 2026-03-06). Measured: absent from
+  ident_2024 -> label 1.
+- NEGATIVES (label 0): BN 100072586RR0001 AGA KHAN FOUNDATION CANADA (Ottawa
+  ON), BN 100072933RR0001 AGASSIZ CHILD CARE CENTRE INC (Winnipeg MB); both
+  FPE 2023-12-31, present in both lists.
+
+### Publication-timing evidence (as-of)
+
+- CKAN package enumeration (all 35 year packages): year-2023 package created
+  2025-07-29, year-2024 created 2026-03-06 - both single-year creations that
+  look like genuine first publication. But 1990-2008 were ALL created 2026-02-20,
+  2009-2012 on 2021-11-29, 2013-2022 on 2024-12-17 - bulk re-publication, so
+  portal metadata dates do NOT evidence first publication for older years.
+- Consequence, recorded in record.prediction_time: at the deadline instant the
+  year-Y returns are filer-known, not yet third-party published. Two honest
+  framings stated; the choice is advancement's first step (cqc precedent).
+- Files carry `_updated` suffixes; packages modified after creation (2024
+  package modified 2026-10-04). Labels are current-vintage finalized; no
+  historical-vintage claim.
+
+### New shape measurements
+
+- 2023 financial file: 84,342 rows, 84,171 BNs with FPE, 171 multi-return BNs
+  (year-end switchers; handled by the any-FPE-in-year label).
+- FPE month mix of the 2023 filing population: Dec 49,011 (58.2%), Mar 14,718,
+  Jun 6,531, Aug 4,698, and every other month present. The instant is
+  per-charity (six months after its own FPE).
+- 2,342 of the 2,376 exiting BNs have a 2023 financial record.
+
+### Encoding correction (supersedes the 2026-10-19 note)
+
+- The 2023/2024 Identification and 2023 financial files decode cleanly as UTF-8
+  (byte 0x8f is invalid cp1252 - a cp1252 read raises). The 2012 file measured
+  cp1252 on 2026-10-19. Encoding is PER-YEAR: construction must detect it
+  (UTF-8 first, cp1252 fallback). The record's earlier blanket "decode as
+  cp1252" instruction is corrected in next_action.
+
 ## 2026-10-19 discovery session (regional focus: Canada)
+
 
 All probes anonymous, run from the coordinator. Probe scripts (`.factory/probe_ca_*.py`)
 were deleted after use; downloaded CSVs lived in `/opt/data/cache/scratch/ca_charities/`

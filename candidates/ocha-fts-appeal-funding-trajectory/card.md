@@ -27,7 +27,9 @@ configs:
 For a primary humanitarian appeal plan-year (OCHA Financial Tracking Service; HPC
 plan records with their original launch requirements), **at the appeal's launch,
 will appeal-linked funding reach at least half of the original requirements?**
-One row per primary plan-year appeal; the label is `reached_half` (2 x appeal-linked
+One row per appeal-plan ID × plan year (`plan_year_id`, unique across the panel;
+(country, plan year) is not the grain — a country can carry several distinct
+appeals in one plan year); the label is `reached_half` (2 x appeal-linked
 funding >= original requirements), resolved from the FTS/HPC record; the funding
 totals themselves are never shipped. Every shipped feature is fixed at launch:
 plan year, plan type, GHO membership, original requirements, and the number of
