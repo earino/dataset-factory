@@ -1,3 +1,32 @@
+## 2026-11-03 (16:10Z) - watcher follow-up: za-cct-baseline-001 verified already recorded (91a32ba) and acknowledged with its .factory marker; cleanup re-confirmed read-only; CI on 91a32ba read back green
+
+The watcher re-reported one finished job (za-cct-baseline-001, succeeded exit=0,
+10 assets, staging release 432863325, uploaded). The 16:08Z advancement session
+had already collected its reports, interpreted the result, updated the candidate
+record, destroyed the worker and pushed everything at 91a32ba - but never wrote
+the `.factory/za-cct-baseline-001/handled` marker, so the watcher kept
+re-reporting it. This session verified from read-only records and wrote the
+marker. No collect, no `worker status` (it writes), no launch, no worker spend
+(EUR 0), no candidate byte, release, tag, destination or manifest change.
+
+- Outcome unchanged, recorded at 91a32ba: model eval AUC 0.5107 on the
+  re-accepted 9f2e10ce bytes (both runner implementations, runner unmodified,
+  --accept before any score); NO headroom for the stock runner vs
+  morning_ratio 0.7340 on the identical 14,965 eval rows; pre-registered
+  packaging gate NOT met, packaging did not start; diagnosis candidates
+  preserved in measurements.baseline_triad_2026_11_03_za_cct_baseline_001.
+- Cleanup re-confirmed read-only: provider GET server 174337518 -> 404
+  ("server not found"), project server list empty (ledger already recorded
+  collected 2026-11-03T15:51:50Z, deleted 15:56:42Z).
+- CI loop closed for the exact push commit 91a32ba: run 41669954838, event
+  push, completed/success, run 16:01:57Z-16:02:23Z - the CI read-back was not
+  previously recorded in STATE.md.
+- Marker written: .factory/za-cct-baseline-001/handled (one line: commit,
+  evidence paths, remaining blocker).
+- Next action unchanged: the operator's one za-cct decision (package as
+  agent-headroom benchmark / re-scope / drop); ocha-fts v2026.11 stays staged
+  private awaiting the operator's flip.
+
 ## 2026-11-03 (16:08Z) - za-cct-substation-evening-peak-exceedance baseline measured (za-cct-baseline-001): stock runner model eval AUC 0.5107 on the re-accepted 9f2e10ce bytes - recorded NO headroom for the stock runner; the pre-registered packaging gate is NOT met, packaging did not start, and the operator's one decision (package as agent-headroom benchmark / re-scope / drop) is the next action
 
 Scheduled advancement session. The task list's two release-track items were re-read
