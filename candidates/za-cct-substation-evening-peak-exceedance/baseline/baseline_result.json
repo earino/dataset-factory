@@ -1,0 +1,59 @@
+{
+  "job": "za-cct-baseline-001",
+  "purpose": "one baseline through the runner's existing training and validation contract, on the accepted za-cct-substation-evening-peak-exceedance artifact",
+  "artifact": {
+    "name": "za-cct-substation-evening-peak-exceedance",
+    "target": "exceeds",
+    "positive_label": 1,
+    "id_columns": [
+      "station_day"
+    ],
+    "rows": {
+      "eval": 14965,
+      "holdout": 15006,
+      "train": 13735
+    },
+    "positive_rate": {
+      "eval": 0.083929,
+      "holdout": 0.092096,
+      "train": 0.11205
+    },
+    "split_description": "temporal on the target day (Africa/Johannesburg): train 2022, eval 2023, holdout 2024; the first 30 days of each station's series are burn-in (no 30 prior evenings for the p95) and are excluded, counted, never scored"
+  },
+  "qualification_report": {
+    "bundled": "qualification.json",
+    "sha256": "0f1bb6a9324c32806a24e5920fcbba472633508cc9d6e63491e9f8b6ffeafc94",
+    "gate_version": "1.5.0",
+    "gate_ok": true,
+    "gate_failed_checks": [],
+    "accepted_before_scoring": true,
+    "accepted_artifact_version": "9f2e10ce485635f6",
+    "qualified_artifact_version": "9f2e10ce485635f65e695072e2bbd904024ebf58b1465d12fb969f8bb0692180"
+  },
+  "contract": {
+    "contract_ok": true,
+    "eval_auc_from_train_py": 0.5107,
+    "eval_auc_from_validate_py": 0.5107
+  },
+  "runner_files": {
+    "bundled_sha256": {
+      "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+      "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+      "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+    },
+    "expected_sha256": {
+      "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+      "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+      "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+    },
+    "unmodified": true
+  },
+  "dependencies": {
+    "python": "3.13.18",
+    "pandas": "2.3.3",
+    "numpy": "2.5.4",
+    "xgboost": "3.4.1",
+    "scikit-learn": "1.9.1"
+  },
+  "scope": "runner-contract baseline only; no agent loop, no holdout evaluation. Holdout stays sealed until the design is frozen."
+}

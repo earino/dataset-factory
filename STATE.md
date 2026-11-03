@@ -1,3 +1,66 @@
+## 2026-11-03 (16:08Z) - za-cct-substation-evening-peak-exceedance baseline measured (za-cct-baseline-001): stock runner model eval AUC 0.5107 on the re-accepted 9f2e10ce bytes - recorded NO headroom for the stock runner; the pre-registered packaging gate is NOT met, packaging did not start, and the operator's one decision (package as agent-headroom benchmark / re-scope / drop) is the next action
+
+Scheduled advancement session. The task list's two release-track items were re-read
+from their records first: unhcr-refugee-data-finder stays a human wait (recorded
+operator decision 2026-11-02: the v2026.10 panel 6bd0c307 is dropped in this form,
+operator_decision_pending true - untouched, and the "(release)" label conflicts
+with the recorded decision, which governs); za-cct was the actionable item
+(qualified + accepted, artifact 9f2e10ce, baseline pending per its own next_action).
+
+- za-cct-baseline-001 (cx23 hel1, server 174337518, reservation EUR 0.06, staging
+  release 432863325): fetched the five accepted assets from release 432591871
+  (8,420,906 bytes, digests verified on arrival and cross-checked three ways by
+  baseline/fill_from_collect.py: worker-written manifest + collected result.json +
+  live release asset list), --accept ACCEPTED 9f2e10ce BEFORE any score, workdir
+  materialized from public splits only (holdout never in a workdir), the
+  benchmark's own train.py + validate.sh verbatim (digests match runner_files.json,
+  unmodified: true).
+- Measured on the identical 14,965 eval rows as the za-cct-001 references: full-model
+  eval AUC 0.5107 from BOTH the runner's implementations; CONTRACT OK. Triad:
+  morning_ratio 0.7340 (the headroom reference) > month_only 0.6541 >
+  calendar_identity 0.6504 ~ persistence 0.6502 (inseparable, paired CI spans zero)
+  > identity_only 0.5134 > MODEL 0.5107. The model is at chance, below even the
+  identity-only control; observed gap to the reference -0.2233 AUC.
+- Pre-registered verdict applied (record next_action step 2: "a model at or below
+  0.7340 is a recorded no-headroom finding, not a repair trigger"). Step 3's gate
+  ("on a useful triad outcome: package") is NOT met, so packaging did not start.
+  The finding is preserved in the record
+  (measurements.baseline_triad_2026_11_03_za_cct_baseline_001) with diagnosis
+  candidates: (a) the stock train.py treats the 'date' string column as a
+  365-level train-only categorical (eval dates unseen -> NaN); (b) the model must
+  express morning_max / hist_morningpeak_mean_90 as an implicit ratio - the
+  one-line rule reaching 0.7340 is not among the stock features; (c) no
+  misalignment, no post-hoc reference (both AUC figures from the runner's own two
+  implementations on the same accepted bytes; morning_ratio reads only shipped
+  at-instant columns, so 0.7340 is a fair same-information target); (d) prevalence
+  shift 11.20% -> 8.39% cannot explain a fall to chance.
+- What this does NOT mean: morning_ratio proves the extractable signal IS in the
+  shipped at-instant features (CI excluding zero over both controls). The
+  benchmark's consumer is an agent that edits train.py and can compute the ratio in
+  one line. The operator now records ONE decision: (a) package as an agent-headroom
+  benchmark with the comparison leading every package document - stock 0.5107
+  quoted beside morning_ratio 0.7340 (ocha-fts precedent: shipped with model 0.6298
+  < persistence 0.71711 recorded; Scout recommends this), (b) re-scope the task
+  instance, or (c) drop. Scout does not package until (a) is recorded.
+- Infrastructure note, no defect: ~35 min of server bootstrap preceded the 41.6 s
+  executor run; `worker status` reads "running" throughout bootstrap (the executor
+  had not started), so elapsed_seconds in the result is the real job time. A
+  read-only SSH diagnostic through factory.worker.remote (the same helper status
+  uses; .factory/za-cct-baseline-001/inspect.py) showed result.json already
+  present and the container gone; collect then succeeded immediately. Destroy
+  verified provider-side: project server list empty, server 174337518 gone
+  (deleted_at 2026-11-03T15:56:42Z). November worker spend: the za-cct-001 session's
+  EUR 0.04 + this job's ~EUR 0.01 actual (reservation 0.06 released).
+- Checks: check-candidate za-cct rc=0 after the record update; full suite run
+  before commit (see below). No release byte, tag, destination, manifest or
+  visibility changed anywhere this session.
+
+Next action (a fresh session can carry it out): the operator's recorded decision
+among (a)/(b)/(c) in candidates/za-cct-substation-evening-peak-exceedance/record.json
+next_action; on (a), package per dataset-release with the triad comparison leading
+every document, the sealed evening matrix as an auxiliary verification file only,
+suitability record + check-suitability before any publication claim.
+
 ## 2026-11-03 (14:57Z) - discovery tick (Europe - EU/EEA): efsa-health-claim-opinion-outcome OPEN (investigating); echa-svhc-candidate-list-inclusion DROPPED on licence (class D for the natural design); euipo-opposition-outcome DROPPED as a mirror with named prior art
 
 Region: Europe - EU/EEA (scheduler). Discovery only: no construction, no workers,

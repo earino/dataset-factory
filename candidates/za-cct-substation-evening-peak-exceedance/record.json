@@ -37,6 +37,19 @@
    "spend": "EUR 0.04 reservation (cx23 ceiling 0.02/h, provider rate 0.01152/h), November month",
    "status": "collected+destroyed",
    "stopping_condition": "fixture/gate failure -> collect diagnostics, diagnose, record; ONE rebuild per structural defect class; second failure of the same class is a recorded blocker, never a blind retry."
+  },
+  {
+   "acceptance_criteria": "5/5 fetched assets at the manifest digests; --accept ACCEPTED 9f2e10ce before any score; runner files byte-identical to runner_files.json; CONTRACT OK; holdout never in a workdir",
+   "bundle": "baseline/{run.sh,materialize.py,report.py,job.json,bundle.json,qualification.json} + canonical gate 1.5.0 + the benchmark's own train.py/validate.py/validate.sh verbatim from the read-only clone",
+   "candidate": "za-cct-substation-evening-peak-exceedance",
+   "collected_at": "2026-11-03T15:51:50Z",
+   "destroy_verified": "provider read-back after destroy: project server list empty, server 174337518 -> gone",
+   "destroyed_at": "2026-11-03T15:56:42Z",
+   "id": "za-cct-baseline-001",
+   "kind": "baseline",
+   "launched_at": "2026-11-03T15:15:27Z",
+   "reservation_eur": "0.06",
+   "result": "succeeded, exit 0, executor elapsed 41.6 s (note: ~35 min of server bootstrap preceded the executor; worker status reads 'running' throughout bootstrap, so executor elapsed_seconds is the real job time); fetch 8,420,906 bytes 5/5 files; eval AUC 0.5107 from both train.py and validate.py; staging release 432863325"
   }
  ],
  "jurisdiction": {
@@ -132,9 +145,24 @@
    "rows": "14,965 eval rows (1,256 positives, 246 distinct exceedance days); train tables estimated from 2022 only"
   },
   "seasonality_fixture": "Known-event fixture (verified measured): Cape Town winter evening-peaking. Monthly mean evening peak over all stations: 2024-07 61.9 MVA vs 2024-12 44.1 MVA; same May-August rise in 2022 (2022-08 60.3 vs 2022-12 48.0) and 2023 (2023-07 60.6 vs 2023-12 45.9). Per-station winter(May-Aug)/summer(Nov-Feb) mean evening-peak ratios: Grassy Park 66kV 1.25, Atlantis Industrial 132kV 1.22, Foreshore 132kV (CBD) 0.98 - winter-peaking residential/industrial substations and a flat CBD profile, exactly as expected for Cape Town's winter-heating, summer-cooling-mild coastal climate.",
-  "target_labels_measured": "Evening-peak p95-exceedance labels (trailing 90 evenings, min 30 prior evenings, evening window 16:00-22:00 SAST): 2022 positives 1,539/13,735 (11.20%); 2023 positives 1,256/14,965 (8.39%); 2024 positives 1,382/15,006 (9.21%). Total 4,177/43,706. Both classes present in every year. Commands in notes.md (probe_fullscan.py, probe_cluster.py)."
+  "target_labels_measured": "Evening-peak p95-exceedance labels (trailing 90 evenings, min 30 prior evenings, evening window 16:00-22:00 SAST): 2022 positives 1,539/13,735 (11.20%); 2023 positives 1,256/14,965 (8.39%); 2024 positives 1,382/15,006 (9.21%). Total 4,177/43,706. Both classes present in every year. Commands in notes.md (probe_fullscan.py, probe_cluster.py).",
+  "baseline_triad_2026_11_03_za_cct_baseline_001": {
+   "command": "worker job za-cct-baseline-001 run.sh (fetch the five accepted assets from staging release 432591871, digests verified on arrival, --accept ACCEPTED 9f2e10ce BEFORE any score, then the benchmark's own unmodified train.py + validate.sh); report .factory/za-cct-baseline-001/reports/output/baseline_result.json, staging release 432863325",
+   "full_model_eval_auc": 0.5107,
+   "full_model_eval_auc_from_validate_py": 0.5107,
+   "morning_ratio_auc": 0.7340185012588782,
+   "persistence_prev_evening_auc": 0.6501779422881337,
+   "calendar_identity_auc": 0.6503605075098278,
+   "identity_only_auc": 0.513407814058643,
+   "measured_on": "the accepted artifact 9f2e10ce (job za-cct-baseline-001, after --accept, on the same 14,965 eval rows as the za-cct-001 references)",
+   "observed_gap": "the stock runner model trails the strongest simple reference by 0.2233 AUC (0.5107 vs morning_ratio 0.734) on identical rows, also trails persistence 0.6502, calendar_identity 0.6504 and identity_only 0.5134 - at chance",
+   "information_asymmetry_note": "persistence_prev_evening is recomputed scorer-side from strictly-earlier same-station rows; the model is denied the prior evening's outcome, so model-vs-persistence is information-asymmetric by design. The morning_ratio comparison is NOT asymmetric: both read only shipped at-instant columns, so 0.7340 is a fair same-information target for anything that consumes this artifact",
+   "concrete_diagnosis_candidates": "(a) the stock train.py treats the 'date' string column as a 365-level train-only categorical (eval dates unseen -> NaN), so the 30-tree depth-6 budget is spent partly on train-date memorization; (b) the model must express morning_max / hist_morningpeak_mean_90 as an implicit ratio through splits - the one-line rule reaching 0.7340 is not among the stock features; (c) no misalignment and no post-hoc reference: both AUC figures come from the runner's own two implementations on the same accepted bytes and morning_ratio reads only shipped at-instant columns; (d) prevalence shift 11.20% -> 8.39% is recorded and cannot explain a fall to chance",
+   "verdict": "NO DEMONSTRATED HEADROOM UNDER THIS PROTOCOL (stock runner): the model figure is quoted beside morning_ratio 0.7340 as the skill requires, and the pre-registered packaging gate (next_action step 3, 'on a useful triad outcome') is NOT met, so packaging did not start. This does not prove every competent model must lose: morning_ratio proves the extractable signal exists in the shipped at-instant features (CI excluding zero over persistence and calendar, which are inseparable); the stock template does not find it",
+   "interpretation_rule": "any later model figure must still be quoted beside morning_ratio 0.7340; keep fitting until a score wins is forbidden"
+  }
  },
- "next_action": "QUALIFIED + ACCEPTED (za-cct-001, artifact 9f2e10ce485635f6, staging release 432591871). Next: (1) the runner-contract baseline job on the staged bytes (fetch the five accepted assets from release 432591871, verify digests, re-accept with the gate's own collected report BEFORE any score, materialize the workdir from public splits only, run the benchmark's own train.py + validate.sh unmodified) to measure the full-model eval AUC. (2) Interpret against the reference triad on the identical 14,965 eval rows: the model must beat morning_ratio 0.7340185012588782 (the strongest simple reference, intervals excluding zero over persistence 0.6502 and calendar_identity 0.6504); persistence vs calendar is inconclusive; quote any model figure beside 0.7340 with the information-asymmetry note (the model is denied the previous evening's outcome while the persistence reference reads it scorer-side). A model at or below 0.7340 is a recorded no-headroom finding, not a repair trigger by itself. (3) On a useful triad outcome: package per dataset-release (LICENSE.md from the class A instruments already recorded; suitability record + check-suitability; the sealed evening matrix ships as an auxiliary verification file, never a solver input). Holdout stays sealed; nothing public; no operator step is pending yet.",
+ "next_action": "BASELINE MEASURED (za-cct-baseline-001, staging release 432863325, artifact 9f2e10ce re-accepted before any score): the stock runner model scored eval AUC 0.5107 (train.py and validate.py agree; runner files verified unmodified), far below the pre-registered headroom reference morning_ratio 0.7340 and below persistence 0.6502 / calendar_identity 0.6504 / identity_only 0.5134 - a recorded NO-headroom finding for the stock runner. The record's pre-registered packaging gate ('on a useful triad outcome') is NOT met and packaging did not start. The signal itself is proven extractable from shipped at-instant columns (morning_ratio 0.7340, CI excluding zero over both controls). Next: the OPERATOR records one decision among (a) package as an agent-headroom benchmark with the comparison leading every package document - stock baseline 0.5107 quoted beside morning_ratio 0.7340, on the ocha-fts precedent that shipped with model 0.6298 < persistence 0.71711 recorded (Scout recommends this: the consumer is an agent that edits train.py and can compute the ratio in one line; holdout stays sealed; everything stays private until the flip), (b) re-scope the task instance, or (c) drop. Scout does not package until (a) is recorded.",
  "notes_ref": "notes.md",
  "novelty_check": {
   "checked_at": "2026-11-01T05:36:00+00:00",
@@ -284,6 +312,6 @@
  "status": "qualified",
  "target_definition": "Binary: evening-peak exceedance. Label = (max half-hourly MVA over 16:00-22:00 SAST on day D for substation S) > (95th percentile of the same substation's evening peaks over the trailing 90 evenings ending strictly before the instant, minimum 30 prior evenings for eligibility). Label source columns: the target day's 16:00-22:00 MVA readings, plus the same substation's prior evening peaks; these are sealed (private label matrix) and never shipped in any solver-visible feature frame. The baseline operand (trailing p95) is computed from feature-side readings <= the instant and may ship as a numeric feature; the target evening readings cannot.",
  "uncertainty": "Publisher extension of the series beyond 2024 is unknown (sibling prepaid item IS extended monthly; this item hasStaticData since 2026-03). Does not block v1 on the closed window.",
- "updated_at": "2026-11-03T11:29:34Z",
+ "updated_at": "2026-11-03T16:05:00Z",
  "verdict": "go"
 }

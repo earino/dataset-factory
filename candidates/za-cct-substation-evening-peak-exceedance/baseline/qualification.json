@@ -1,0 +1,693 @@
+{
+ "ok": true,
+ "dataset": "/output/extract",
+ "gate_version": "1.5.0",
+ "artifact": {
+  "train": {
+   "file": "public/train.csv",
+   "sha256": "f7b533529492c86155a2ddc26592b52db539ae700bae4c37df370e4b4af9d0b9",
+   "bytes": 2638747
+  },
+  "eval": {
+   "file": "public/eval.csv",
+   "sha256": "2e416315a3f32fb5dc5f816ea0bc3e67d37dd4c62a8514c43e3c5ec64c0309de",
+   "bytes": 2866998
+  },
+  "holdout": {
+   "file": "private/holdout.csv",
+   "sha256": "9ab07c57bbe241661fe5f5c8049a0a14a7445e75cc94423edbcf9c9aacb50430",
+   "bytes": 2879772
+  },
+  "meta.json": {
+   "file": "meta.json",
+   "sha256": "935a7438a96b326fb646b802ae2122b2ad8fdcfc5e28e5e9b8e271052606b060",
+   "bytes": 2011
+  },
+  "quality.json": {
+   "file": "quality.json",
+   "sha256": "f0690d28e99324461b6f9b8f250a1bd77eed480ad22bdd08ec54b4a32a4bb8ec",
+   "bytes": 33378
+  },
+  "artifact_version": {
+   "digest": "9f2e10ce485635f65e695072e2bbd904024ebf58b1465d12fb969f8bb0692180",
+   "components": [
+    "eval",
+    "holdout",
+    "meta.json",
+    "quality.json",
+    "train"
+   ]
+  }
+ },
+ "results": [
+  {
+   "check": "descriptor",
+   "ok": true,
+   "detail": "quality.json loaded for 'za-cct-substation-evening-peak-exceedance'",
+   "evidence": {}
+  },
+  {
+   "check": "contract.declared",
+   "ok": true,
+   "detail": "evaluation_contract required: intended use, access, vintage and evidence",
+   "evidence": {}
+  },
+  {
+   "check": "contract.scope",
+   "ok": true,
+   "detail": "use='retrospective_research'; access='isolated_rows'; eval is development, holdout is final",
+   "evidence": {}
+  },
+  {
+   "check": "contract.every_input_has_availability_evidence",
+   "ok": true,
+   "detail": "Every solver-visible non-target column needs availability evidence; missing: []",
+   "evidence": {}
+  },
+  {
+   "check": "contract.vintage_and_selection",
+   "ok": true,
+   "detail": "Vintage, selection and limitations must be explicit; declarations are not measurements",
+   "evidence": {}
+  },
+  {
+   "check": "contract.cross_row_review",
+   "ok": true,
+   "detail": "Document applicable cross-row probes and every solver-visible auxiliary file",
+   "evidence": {}
+  },
+  {
+   "check": "contract.cross_row_probe_0",
+   "ok": true,
+   "detail": "Outcome-bearing later-row exposure requires restricted evaluation access; mismatches are reported",
+   "evidence": {
+    "train": {
+     "rows": 13735,
+     "covered": 13694,
+     "mismatches": 6603,
+     "ambiguous_or_conflicting": 0
+    },
+    "eval": {
+     "rows": 14965,
+     "covered": 14924,
+     "mismatches": 6700,
+     "ambiguous_or_conflicting": 0
+    },
+    "holdout": {
+     "rows": 15006,
+     "covered": 14965,
+     "mismatches": 6657,
+     "ambiguous_or_conflicting": 0
+    }
+   }
+  },
+  {
+   "check": "contract.label_availability",
+   "ok": true,
+   "detail": "No full-row availability ledger: training-label timing UNVERIFIED; retrospective use only",
+   "evidence": {}
+  },
+  {
+   "check": "leakage.declared_columns",
+   "ok": true,
+   "detail": "every shipped column is declared",
+   "evidence": {
+    "undeclared": []
+   }
+  },
+  {
+   "check": "leakage.answer_source_absent",
+   "ok": true,
+   "detail": "no answer source or post-hoc column is shipped",
+   "evidence": {
+    "shipped_forbidden": []
+   }
+  },
+  {
+   "check": "leakage.every_column_could_be_scored",
+   "ok": true,
+   "detail": "every column was scored for leakage",
+   "evidence": {
+    "unscorable": []
+   }
+  },
+  {
+   "check": "leakage.no_single_column_determines_the_target",
+   "ok": true,
+   "detail": "no shipped column separates the classes on its own",
+   "evidence": {
+    "offenders": [],
+    "high_cardinality": [
+     "station_day@eval",
+     "station_day@holdout",
+     "station_day@train"
+    ],
+    "missing_splits": []
+   }
+  },
+  {
+   "check": "leakage.high_cardinality_declared",
+   "ok": true,
+   "detail": "high-cardinality columns are declared as identifiers or free fields",
+   "evidence": {
+    "undeclared": [],
+    "declared": [
+     "date",
+     "station_day"
+    ]
+   }
+  },
+  {
+   "check": "timing.prediction_time_declared",
+   "ok": true,
+   "detail": "prediction instant is declared",
+   "evidence": {}
+  },
+  {
+   "check": "timing.no_post_hoc_feature",
+   "ok": true,
+   "detail": "no feature is documented as post-hoc",
+   "evidence": {
+    "overlap": []
+   }
+  },
+  {
+   "check": "timing.label_source_is_not_a_feature",
+   "ok": true,
+   "detail": "the label source is not a feature",
+   "evidence": {
+    "source_features": []
+   }
+  },
+  {
+   "check": "timing.every_feature_documented",
+   "ok": true,
+   "detail": "features documented as available 'prediction_time'",
+   "evidence": {
+    "features_documented_at": "prediction_time"
+   }
+  },
+  {
+   "check": "timing.instant_declared",
+   "ok": true,
+   "detail": "prediction instant kind='period_end' citation=True",
+   "evidence": {
+    "prediction_instant": {
+     "citation": "the publisher's half-hourly telemetry table itself (City of Cape Town Switching Substation Load Profile, ArcGIS item bebf20c25bfa4ffaa7fc07a1a94ba287); every shipped feature is a slot ending at or before 06:00 SAST on the target day or an aggregate of strictly prior days. Within-artifact timeliness is asserted at construction (gapless 48-slot days, all slots non-null). The table is a closed 2022-2024 window published 2026-02..03, so real-world availability at historical instants is unverified - the artifact is retrospective research",
+     "days_after_period_end": 0,
+     "kind": "period_end",
+     "period": "the half-hour telemetry grid of the target day's 00:00-06:00 SAST window; the instant is its end (the 05:30 slot completes at 06:00)"
+    }
+   }
+  },
+  {
+   "check": "timing.publication_lag_measured",
+   "ok": true,
+   "detail": "0 of 0 observed period_end -> published dates are usable",
+   "evidence": {
+    "observations": [],
+    "measured_lag_days": null,
+    "source_kind": "administrative_record"
+   }
+  },
+  {
+   "check": "timing.features_available_at_instant",
+   "ok": true,
+   "detail": "features publish 0d after the period, instant is 0d after it",
+   "evidence": {
+    "features_lag_days": 0,
+    "instant_lag_days": 0,
+    "measured_lag_days": null
+   }
+  },
+  {
+   "check": "timing.instant_accounts_for_publication_lag",
+   "ok": true,
+   "detail": "instant kind is 'period_end' while features publish 0d after the period",
+   "evidence": {
+    "kind": "period_end",
+    "features_lag_days": 0
+   }
+  },
+  {
+   "check": "timing.selection_uses_only_available_data",
+   "ok": true,
+   "detail": "row selection declares its latest period as '2024-12-31'",
+   "evidence": {
+    "latest_period_used": "2024-12-31",
+    "fields": [
+     "station is one of the 41 double-typed columns (the two string-typed columns Triangle_132kV and Morgen_Gronde_132kV are excluded so the panel reproduces the measured discovery counts; exclusion recorded)",
+     "the station-day has >= 30 prior evenings in the sealed evening matrix (the p95 window's minimum); the first 30 days of each station's series are burn-in, counted, never scored"
+    ]
+   }
+  },
+  {
+   "check": "units.measured_columns_declare_unit_and_frame",
+   "ok": true,
+   "detail": "23 measured column(s) declare unit and frame",
+   "evidence": {
+    "measurements": [
+     {
+      "column": "m00_00",
+      "frame": "half-hourly substation load reading, SAST grid; publisher caveat: readings are not corrected for load shifts or load shedding",
+      "unit": "megavolt-amperes (MVA) as published"
+     },
+     {
+      "column": "m00_30",
+      "frame": "half-hourly substation load reading, SAST grid; publisher caveat: readings are not corrected for load shifts or load shedding",
+      "unit": "megavolt-amperes (MVA) as published"
+     },
+     {
+      "column": "m01_00",
+      "frame": "half-hourly substation load reading, SAST grid; publisher caveat: readings are not corrected for load shifts or load shedding",
+      "unit": "megavolt-amperes (MVA) as published"
+     },
+     {
+      "column": "m01_30",
+      "frame": "half-hourly substation load reading, SAST grid; publisher caveat: readings are not corrected for load shifts or load shedding",
+      "unit": "megavolt-amperes (MVA) as published"
+     },
+     {
+      "column": "m02_00",
+      "frame": "half-hourly substation load reading, SAST grid; publisher caveat: readings are not corrected for load shifts or load shedding",
+      "unit": "megavolt-amperes (MVA) as published"
+     },
+     {
+      "column": "m02_30",
+      "frame": "half-hourly substation load reading, SAST grid; publisher caveat: readings are not corrected for load shifts or load shedding",
+      "unit": "megavolt-amperes (MVA) as published"
+     },
+     {
+      "column": "m03_00",
+      "frame": "half-hourly substation load reading, SAST grid; publisher caveat: readings are not corrected for load shifts or load shedding",
+      "unit": "megavolt-amperes (MVA) as published"
+     },
+     {
+      "column": "m03_30",
+      "frame": "half-hourly substation load reading, SAST grid; publisher caveat: readings are not corrected for load shifts or load shedding",
+      "unit": "megavolt-amperes (MVA) as published"
+     },
+     {
+      "column": "m04_00",
+      "frame": "half-hourly substation load reading, SAST grid; publisher caveat: readings are not corrected for load shifts or load shedding",
+      "unit": "megavolt-amperes (MVA) as published"
+     },
+     {
+      "column": "m04_30",
+      "frame": "half-hourly substation load reading, SAST grid; publisher caveat: readings are not corrected for load shifts or load shedding",
+      "unit": "megavolt-amperes (MVA) as published"
+     },
+     {
+      "column": "m05_00",
+      "frame": "half-hourly substation load reading, SAST grid; publisher caveat: readings are not corrected for load shifts or load shedding",
+      "unit": "megavolt-amperes (MVA) as published"
+     },
+     {
+      "column": "m05_30",
+      "frame": "half-hourly substation load reading, SAST grid; publisher caveat: readings are not corrected for load shifts or load shedding",
+      "unit": "megavolt-amperes (MVA) as published"
+     },
+     {
+      "column": "morning_mean",
+      "frame": "mean of the target day's 12 morning slots (00:00-06:00 SAST)",
+      "unit": "MVA"
+     },
+     {
+      "column": "morning_max",
+      "frame": "maximum of the target day's 12 morning slots",
+      "unit": "MVA"
+     },
+     {
+      "column": "morning_min",
+      "frame": "minimum of the target day's 12 morning slots",
+      "unit": "MVA"
+     },
+     {
+      "column": "hist_morningpeak_mean_90",
+      "frame": "mean of trailing <= 90 prior days' morning maxima (>= 30 required); a MORNING telemetry aggregate - never an evening value, never a label operand",
+      "unit": "MVA"
+     },
+     {
+      "column": "day_of_week",
+      "frame": "calendar, Africa/Johannesburg",
+      "unit": "day of week (0 = Monday)"
+     },
+     {
+      "column": "day_of_year",
+      "frame": "calendar, Africa/Johannesburg",
+      "unit": "ordinal day of year (1-366)"
+     },
+     {
+      "column": "doy_sin",
+      "frame": "sin(2*pi*(day_of_year-1)/365.25)",
+      "unit": "dimensionless cyclical encoding"
+     },
+     {
+      "column": "doy_cos",
+      "frame": "cos(2*pi*(day_of_year-1)/365.25)",
+      "unit": "dimensionless cyclical encoding"
+     },
+     {
+      "column": "month",
+      "frame": "calendar, Africa/Johannesburg",
+      "unit": "calendar month (1-12)"
+     },
+     {
+      "column": "station",
+      "frame": "one of the 41 double-typed switching substation columns",
+      "unit": "publisher column name (station identity)"
+     },
+     {
+      "column": "date",
+      "frame": "Africa/Johannesburg (SAST, UTC+2, no DST)",
+      "unit": "ISO date"
+     }
+    ]
+   }
+  },
+  {
+   "check": "units.known_event_fixture_recorded",
+   "ok": true,
+   "detail": "no external threshold, so no known-event fixture is required",
+   "evidence": {}
+  },
+  {
+   "check": "splits.time_column_declared",
+   "ok": true,
+   "detail": "split overlap is checked against 'date'",
+   "evidence": {}
+  },
+  {
+   "check": "splits.machine_readable_windows",
+   "ok": true,
+   "detail": "train/eval/holdout windows are declared with start/end",
+   "evidence": {
+    "split_windows": {
+     "eval": {
+      "end": "2024-01-01",
+      "start": "2023-01-01"
+     },
+     "holdout": {
+      "end": "2025-01-01",
+      "start": "2024-01-01"
+     },
+     "train": {
+      "end": "2023-01-01",
+      "start": "2022-01-01"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.files_present",
+   "ok": true,
+   "detail": "all three split files exist",
+   "evidence": {
+    "missing": []
+   }
+  },
+  {
+   "check": "splits.non_empty",
+   "ok": true,
+   "detail": "every split has rows",
+   "evidence": {
+    "train": {
+     "rows": 13735,
+     "positives": 1539,
+     "negatives": 12196,
+     "positive_rate": 0.11205
+    },
+    "eval": {
+     "rows": 14965,
+     "positives": 1256,
+     "negatives": 13709,
+     "positive_rate": 0.083929
+    },
+    "holdout": {
+     "rows": 15006,
+     "positives": 1382,
+     "negatives": 13624,
+     "positive_rate": 0.092096
+    }
+   }
+  },
+  {
+   "check": "splits.eval_and_holdout_have_both_classes",
+   "ok": true,
+   "detail": "eval and holdout each contain positives and negatives",
+   "evidence": {
+    "train": {
+     "rows": 13735,
+     "positives": 1539,
+     "negatives": 12196,
+     "positive_rate": 0.11205
+    },
+    "eval": {
+     "rows": 14965,
+     "positives": 1256,
+     "negatives": 13709,
+     "positive_rate": 0.083929
+    },
+    "holdout": {
+     "rows": 15006,
+     "positives": 1382,
+     "negatives": 13624,
+     "positive_rate": 0.092096
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_declared",
+   "ok": true,
+   "detail": "eval and holdout declare positives and distinct events",
+   "evidence": {
+    "declared": {
+     "eval": {
+      "distinct_events": 246,
+      "positives": 1256
+     },
+     "holdout": {
+      "distinct_events": 247,
+      "positives": 1382
+     },
+     "train": {
+      "distinct_events": 227,
+      "positives": 1539
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_match_rows",
+   "ok": true,
+   "detail": "declared positive counts match the rows",
+   "evidence": {
+    "mismatched": []
+   }
+  },
+  {
+   "check": "splits.event_key_column_declared",
+   "ok": true,
+   "detail": "clustered events are counted by 'date' (date part)",
+   "evidence": {}
+  },
+  {
+   "check": "splits.distinct_events_match_rows",
+   "ok": true,
+   "detail": "declared clustered event counts match the rows",
+   "evidence": {
+    "recomputed": {
+     "train": 227,
+     "eval": 246,
+     "holdout": 247
+    },
+    "declared": {
+     "eval": {
+      "distinct_events": 246,
+      "positives": 1256
+     },
+     "holdout": {
+      "distinct_events": 247,
+      "positives": 1382
+     },
+     "train": {
+      "distinct_events": 227,
+      "positives": 1539
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.enough_clustered_positives",
+   "ok": true,
+   "detail": "eval and holdout carry enough independent positive events to score",
+   "evidence": {
+    "thin": [],
+    "recomputed_events": {
+     "train": 227,
+     "eval": 246,
+     "holdout": 247
+    },
+    "minimums": {
+     "positives": 30,
+     "distinct_events": 20
+    }
+   }
+  },
+  {
+   "check": "splits.rates_not_uniform",
+   "ok": true,
+   "detail": "positive rates are between 0 and 1",
+   "evidence": {
+    "rates": [
+     0.11205,
+     0.083929,
+     0.092096
+    ]
+   }
+  },
+  {
+   "check": "splits.actual_ranges_computed",
+   "ok": true,
+   "detail": "row timestamps found for every split",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "2022-01-31",
+      "max": "2022-12-31"
+     },
+     "eval": {
+      "min": "2023-01-01",
+      "max": "2023-12-31"
+     },
+     "holdout": {
+      "min": "2024-01-01",
+      "max": "2024-12-31"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.actual_ranges_disjoint",
+   "ok": true,
+   "detail": "the rows of the three splits occupy disjoint periods",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "2022-01-31",
+      "max": "2022-12-31"
+     },
+     "eval": {
+      "min": "2023-01-01",
+      "max": "2023-12-31"
+     },
+     "holdout": {
+      "min": "2024-01-01",
+      "max": "2024-12-31"
+     }
+    },
+    "overlaps": []
+   }
+  },
+  {
+   "check": "splits.rows_within_declared_windows",
+   "ok": true,
+   "detail": "every row falls inside its split's declared window",
+   "evidence": {
+    "windows": {
+     "eval": {
+      "end": "2024-01-01",
+      "start": "2023-01-01"
+     },
+     "holdout": {
+      "end": "2025-01-01",
+      "start": "2024-01-01"
+     },
+     "train": {
+      "end": "2023-01-01",
+      "start": "2022-01-01"
+     }
+    },
+    "ranges": {
+     "train": {
+      "min": "2022-01-31",
+      "max": "2022-12-31"
+     },
+     "eval": {
+      "min": "2023-01-01",
+      "max": "2023-12-31"
+     },
+     "holdout": {
+      "min": "2024-01-01",
+      "max": "2024-12-31"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.no_cross_split_entities",
+   "ok": true,
+   "detail": "no station_day appears in more than one split",
+   "evidence": {
+    "shared_sample": [],
+    "shared_count": 0
+   }
+  },
+  {
+   "check": "splits.duplicate_entities_within_splits",
+   "ok": true,
+   "detail": "0 repeated-identifier rows within splits, at most the declared 0",
+   "evidence": {
+    "duplicate_rows": {},
+    "declared": 0
+   }
+  },
+  {
+   "check": "runner.layout",
+   "ok": true,
+   "detail": "holdout is private and train/eval are public",
+   "evidence": {}
+  },
+  {
+   "check": "runner.meta_json_keys",
+   "ok": true,
+   "detail": "meta.json carries the keys the runner reads",
+   "evidence": {
+    "keys": [
+     "columns",
+     "description",
+     "id_columns",
+     "name",
+     "positive_label",
+     "positive_label_text",
+     "positive_rate",
+     "rows",
+     "split",
+     "split_description",
+     "target"
+    ]
+   }
+  },
+  {
+   "check": "runner.meta_matches_files",
+   "ok": true,
+   "detail": "meta.json agrees with the split files",
+   "evidence": {
+    "problems": []
+   }
+  },
+  {
+   "check": "runner.meta_counts_match_files",
+   "ok": true,
+   "detail": "meta rows and rates match the files",
+   "evidence": {}
+  },
+  {
+   "check": "runner.id_columns_are_not_features",
+   "ok": true,
+   "detail": "declared identifiers are not also listed as features",
+   "evidence": {}
+  }
+ ],
+ "failed_checks": []
+}

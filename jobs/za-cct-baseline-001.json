@@ -1,0 +1,231 @@
+{
+  "job": {
+    "id": "za-cct-baseline-001",
+    "candidate": "za-cct-substation-evening-peak-exceedance",
+    "image": "python:3.13-slim",
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 2048,
+    "timeout_minutes": 45,
+    "lifetime_minutes": 90,
+    "max_disk_mb": 3000,
+    "max_artifact_mb": 16,
+    "what": "Runner-contract baseline on the accepted za-cct-substation-evening-peak-exceedance artifact 9f2e10ce485635f6... (gate 1.5.0, failed_checks empty, exact-byte --accept ACCEPTED in job za-cct-001), fetched from private staging release 432591871 rather than rebuilt: re-accept the five fetched files against the gate's own collected report, materialize the runner workdir (public train+eval only; the private holdout is fetched for --accept over the full artifact but never copied into a workdir), then run the benchmark's own train.py and validate.sh unmodified and record both eval AUCs. Contract only, no agent loop, no holdout score. Construction-time references measured on the identical 14,965 eval rows (job za-cct-001, post-acceptance): morning_ratio 0.7340185012588782 (the headroom reference), persistence_prev_evening 0.6501779422881337 (recomputed scorer-side; the model is denied the prior evening's outcome - information-asymmetric by design), calendar_identity 0.6503605075098278, month_only 0.6540502879924992, identity_only 0.513407814058643, majority-class accuracy 0.9160708319411961.",
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 432591871,
+      "assets": [
+        {
+          "asset_id": 705317080,
+          "dest": "extract/meta.json",
+          "size": 2011,
+          "sha256": "935a7438a96b326fb646b802ae2122b2ad8fdcfc5e28e5e9b8e271052606b060"
+        },
+        {
+          "asset_id": 705317351,
+          "dest": "extract/public/train.csv",
+          "size": 2638747,
+          "sha256": "f7b533529492c86155a2ddc26592b52db539ae700bae4c37df370e4b4af9d0b9"
+        },
+        {
+          "asset_id": 705317257,
+          "dest": "extract/public/eval.csv",
+          "size": 2866998,
+          "sha256": "2e416315a3f32fb5dc5f816ea0bc3e67d37dd4c62a8514c43e3c5ec64c0309de"
+        },
+        {
+          "asset_id": 705317159,
+          "dest": "extract/private/holdout.csv",
+          "size": 2879772,
+          "sha256": "9ab07c57bbe241661fe5f5c8049a0a14a7445e75cc94423edbcf9c9aacb50430"
+        },
+        {
+          "asset_id": 705317437,
+          "dest": "extract/quality.json",
+          "size": 33378,
+          "sha256": "f0690d28e99324461b6f9b8f250a1bd77eed480ad22bdd08ec54b4a32a4bb8ec"
+        }
+      ]
+    },
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "source_files": [
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/za-cct-substation-evening-peak-exceedance/baseline/run.sh",
+        "bytes": 3215,
+        "sha256": "a26a4186c087434fdafe3831822918f7b8bc3aa264b0563ddc6cc3523fa4f18b"
+      },
+      {
+        "bundled_as": "materialize.py",
+        "source": "candidates/za-cct-substation-evening-peak-exceedance/baseline/materialize.py",
+        "bytes": 2103,
+        "sha256": "bcd9748023ec886d796c7b53d9a863a7d6c1a3cc0bec4d3ba92c76af6d5a1292"
+      },
+      {
+        "bundled_as": "report.py",
+        "source": "candidates/za-cct-substation-evening-peak-exceedance/baseline/report.py",
+        "bytes": 5157,
+        "sha256": "3e8e30e34e99a07b202416d21b127a249849155eaa1600419d4bcd842fe9270d"
+      },
+      {
+        "bundled_as": "qualification.json",
+        "source": "candidates/za-cct-substation-evening-peak-exceedance/baseline/qualification.json",
+        "bytes": 18325,
+        "sha256": "0f1bb6a9324c32806a24e5920fcbba472633508cc9d6e63491e9f8b6ffeafc94"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 57029,
+        "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+      },
+      {
+        "bundled_as": "train.py",
+        "source": "/opt/data/harness_benchmark/task_template/train.py",
+        "bytes": 2500,
+        "sha256": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8"
+      },
+      {
+        "bundled_as": "validate.py",
+        "source": "/opt/data/harness_benchmark/task_template/validate.py",
+        "bytes": 1277,
+        "sha256": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b"
+      },
+      {
+        "bundled_as": "validate.sh",
+        "source": "/opt/data/harness_benchmark/task_template/validate.sh",
+        "bytes": 482,
+        "sha256": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      }
+    ]
+  },
+  "reservation_eur": "0.06",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 3,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 194560,
+  "source_sha256": "2e1630c801bb28e29d20d9aa2cfbaacda9bf52e821a7530d24098a3c81af8740",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-11-03T15:15:27.089425+00:00",
+  "expires": 1793724327,
+  "budget_months": [
+    "2026-11"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 174337518,
+  "known_hosts": "/opt/data/dataset-factory/.factory/za-cct-baseline-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "2.29.159.168",
+  "result": {
+    "job_id": "za-cct-baseline-001",
+    "status": "succeeded",
+    "uploaded": true,
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 432591871,
+      "fetched": [
+        {
+          "dest": "extract/meta.json",
+          "bytes": 2011,
+          "sha256": "935a7438a96b326fb646b802ae2122b2ad8fdcfc5e28e5e9b8e271052606b060"
+        },
+        {
+          "dest": "extract/public/train.csv",
+          "bytes": 2638747,
+          "sha256": "f7b533529492c86155a2ddc26592b52db539ae700bae4c37df370e4b4af9d0b9"
+        },
+        {
+          "dest": "extract/public/eval.csv",
+          "bytes": 2866998,
+          "sha256": "2e416315a3f32fb5dc5f816ea0bc3e67d37dd4c62a8514c43e3c5ec64c0309de"
+        },
+        {
+          "dest": "extract/private/holdout.csv",
+          "bytes": 2879772,
+          "sha256": "9ab07c57bbe241661fe5f5c8049a0a14a7445e75cc94423edbcf9c9aacb50430"
+        },
+        {
+          "dest": "extract/quality.json",
+          "bytes": 33378,
+          "sha256": "f0690d28e99324461b6f9b8f250a1bd77eed480ad22bdd08ec54b4a32a4bb8ec"
+        }
+      ],
+      "failures": [],
+      "bytes": 8420906
+    },
+    "image_id": "sha256:ae14d4ce8771606477a81446e7ef429edd6762305fc50c84507c1041fa8285d1",
+    "image_digests": [
+      "python@sha256:ae14d4ce8771606477a81446e7ef429edd6762305fc50c84507c1041fa8285d1"
+    ],
+    "exit_code": 0,
+    "oom_killed": false,
+    "elapsed_seconds": 41.6,
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 432863325,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-ae7228350628471b2ded",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-ae7228350628471b2ded/manifest.json",
+    "assets": [
+      {
+        "id": 706053133,
+        "size": 72,
+        "sha256": "d38726d263d148018ae91e1663b46344a4aedfd1d66d539a5096758bcc161a59"
+      },
+      {
+        "id": 706053236,
+        "size": 2268,
+        "sha256": "d3c33ede849afa9f8bd9c3454efc898d88d62797ba529247a461bfa9257a5bbb"
+      },
+      {
+        "id": 706053353,
+        "size": 235,
+        "sha256": "e8194bfd1c0034bdda49a8a74f60385c3f62c514a516ff488a00fa1945710006"
+      },
+      {
+        "id": 706053502,
+        "size": 200,
+        "sha256": "9d8f34adde65f7f86ca191ade0506ad00d1252fa1088ec26f3eee829a49d03e5"
+      },
+      {
+        "id": 706053597,
+        "size": 475,
+        "sha256": "e1146eccd0232ab02b6880825bed5bdb4db84ad3536657e34683a53330067104"
+      },
+      {
+        "id": 706053663,
+        "size": 53,
+        "sha256": "f0b4c2ffcb85a72265359584d03405851788a9ea525913311984f6c3e66d8ea6"
+      },
+      {
+        "id": 706053743,
+        "size": 178,
+        "sha256": "97f9dc6fabe22f36e5866b305371bea09a23524ea4985bb866da099b8f7226d4"
+      },
+      {
+        "id": 706053830,
+        "size": 194560,
+        "sha256": "2e1630c801bb28e29d20d9aa2cfbaacda9bf52e821a7530d24098a3c81af8740"
+      },
+      {
+        "id": 706053938,
+        "size": 845,
+        "sha256": "5033f726ae4b22a8e8320c4dcb65c83eadff30fe239cef7af808f7928dc1f598"
+      },
+      {
+        "id": 706054027,
+        "size": 9577,
+        "sha256": "c3f44674944be05bddb677f4a77de31b37c2de3712e1820c51379e826eb025b4"
+      }
+    ],
+    "skipped_empty": []
+  },
+  "collected_at": "2026-11-03T15:51:50.151774+00:00",
+  "deleted_at": "2026-11-03T15:56:42.736187+00:00"
+}

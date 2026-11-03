@@ -1,0 +1,54 @@
+{
+  "id": "za-cct-baseline-001",
+  "candidate": "za-cct-substation-evening-peak-exceedance",
+  "image": "python:3.13-slim",
+  "server_type": "cx23",
+  "location": "hel1",
+  "cpus": 2,
+  "memory_mb": 2048,
+  "timeout_minutes": 45,
+  "lifetime_minutes": 90,
+  "max_disk_mb": 3000,
+  "max_artifact_mb": 16,
+  "what": "Runner-contract baseline on the accepted za-cct-substation-evening-peak-exceedance artifact 9f2e10ce485635f6... (gate 1.5.0, failed_checks empty, exact-byte --accept ACCEPTED in job za-cct-001), fetched from private staging release 432591871 rather than rebuilt: re-accept the five fetched files against the gate's own collected report, materialize the runner workdir (public train+eval only; the private holdout is fetched for --accept over the full artifact but never copied into a workdir), then run the benchmark's own train.py and validate.sh unmodified and record both eval AUCs. Contract only, no agent loop, no holdout score. Construction-time references measured on the identical 14,965 eval rows (job za-cct-001, post-acceptance): morning_ratio 0.7340185012588782 (the headroom reference), persistence_prev_evening 0.6501779422881337 (recomputed scorer-side; the model is denied the prior evening's outcome - information-asymmetric by design), calendar_identity 0.6503605075098278, month_only 0.6540502879924992, identity_only 0.513407814058643, majority-class accuracy 0.9160708319411961.",
+  "fetch": {
+    "repo": "earino/dataset-factory-staging",
+    "release": 432591871,
+    "assets": [
+      {
+        "asset_id": 705317080,
+        "dest": "extract/meta.json",
+        "size": 2011,
+        "sha256": "935a7438a96b326fb646b802ae2122b2ad8fdcfc5e28e5e9b8e271052606b060"
+      },
+      {
+        "asset_id": 705317351,
+        "dest": "extract/public/train.csv",
+        "size": 2638747,
+        "sha256": "f7b533529492c86155a2ddc26592b52db539ae700bae4c37df370e4b4af9d0b9"
+      },
+      {
+        "asset_id": 705317257,
+        "dest": "extract/public/eval.csv",
+        "size": 2866998,
+        "sha256": "2e416315a3f32fb5dc5f816ea0bc3e67d37dd4c62a8514c43e3c5ec64c0309de"
+      },
+      {
+        "asset_id": 705317159,
+        "dest": "extract/private/holdout.csv",
+        "size": 2879772,
+        "sha256": "9ab07c57bbe241661fe5f5c8049a0a14a7445e75cc94423edbcf9c9aacb50430"
+      },
+      {
+        "asset_id": 705317437,
+        "dest": "extract/quality.json",
+        "size": 33378,
+        "sha256": "f0690d28e99324461b6f9b8f250a1bd77eed480ad22bdd08ec54b4a32a4bb8ec"
+      }
+    ]
+  },
+  "command": [
+    "sh",
+    "/workspace/run.sh"
+  ]
+}
