@@ -1,3 +1,64 @@
+## 2026-11-03 (14:57Z) - discovery tick (Europe - EU/EEA): efsa-health-claim-opinion-outcome OPEN (investigating); echa-svhc-candidate-list-inclusion DROPPED on licence (class D for the natural design); euipo-opposition-outcome DROPPED as a mirror with named prior art
+
+Region: Europe - EU/EEA (scheduler). Discovery only: no construction, no workers,
+no spend. Three new candidate records, all EU agency publishers; check-candidate --all
+rc=0 (127 records), discovery-coverage: EU 15 country records / Europe 32, live 48,
+live non-US 42/48 (88%).
+
+- echa-svhc-candidate-list-inclusion DROPPED on licence before any task probing. The
+  task (predict REACH Candidate List / SVHC inclusion events; ~219 listings since
+  2008 in ~35 dated tranches; EUR-Lex-derivable as-of features; compliance value)
+  survived the novelty sweep - no published ML benchmark predicts the listing event
+  (QSAR hazard papers and prioritisation schemes USE the list, none predicts it) -
+  but ECHA's own legal notice kills it: website data "may be downloaded, reproduced,
+  distributed and/or used, totally or in part" with attribution, EXCEPT "whole or
+  substantial parts of databases"; "The replication, in whole or in substantial part,
+  of the ECHA databases is prohibited, unless ECHA's prior written permission is
+  given"; ECHA also reserves the right to block systematic collection. The label
+  source IS an ECHA database and a full-population dataset ships the whole list; no
+  EUR-Lex instrument carries Art. 59(10) events. The written-permission channel is a
+  class C "contact us" pattern, closed for new leads under standing policy. Reopen
+  only on a licence event (explicit open licence for the list, or an operator
+  decision) - not on access improvements. Access evidence recorded separately:
+  echa.europa.eu Azure-WAF-blocks plain HTTP AND the supported browser (challenge
+  never cleared); chem.echa.europa.eu APIs serve plain clients anonymously; the
+  data.europa.eu catalogue record is stale (2018, no licence, no distributions).
+- euipo-opposition-outcome DROPPED as a mirror at the prior-art sweep, before any
+  EUIPO probing or licence reading. Released, scored prior art exists for exactly
+  this task: TMSIM-500 (TU Wien 2023, doi 10.7910/DVN/PNFQLC, 500 EUIPO opposition
+  cases, published pipeline + splits), arXiv 2201.01164 (released case-law dataset
+  incl. ~2,852 EUIPO opposition/BoA decisions, RoBERTa scored), ICAIL 2023 (8,126
+  EUIPO opposition decisions as evaluation data), Rocketeer (commercial, ~7,400
+  opposition decisions, 93% reported). Reopen only with a genuinely different target
+  variable and its own novelty sweep.
+- efsa-health-claim-opinion-outcome OPEN (investigating) - strongest surviving lead.
+  Task: will EFSA's NDA Panel issue a favourable (cause-and-effect established) vs
+  unfavourable opinion on a health claim under Reg. (EC) 1924/2006 (Art. 13.1 batch
+  of 4,637 claims + Art. 13.5/14 applications). Licence read from both publishers'
+  own instruments: EFSA legal notice "Re-use is authorised, provided that EFSA is
+  acknowledged as the source" (no database carve-out; tentative class B pending the
+  per-document journal check); Commission legal notice CC BY 4.0 for the EU Register
+  (class A). Three novelty searches found no published scored study or ML-ready
+  benchmark for this outcome. Measured access: ndaclaims13.zip anonymous 200,
+  8,341,996 bytes; FIP backend API base found and working for policy-items
+  (health_claims endpoints 404 from plain clients - request capture named as the
+  next probe); EFSA Journal (Wiley) 403s plain clients - the main access risk;
+  RoQ platform retired Jan 2021 into the OpenEFSA SPA. NOT ready: per-year
+  split-window counts, clustered opinion counts, the dated worked example, the
+  journal per-document copyright line and extraction cost are named open items in
+  the record; check-novelty.py must run before any ready verdict.
+- Session rules respected: class-C/D policy applied without invented grants; the
+  ECHA WAF block recorded as inaccessible access, not as absent terms (terms were
+  read from chem.echa.europa.eu and are decisive); the EUIPO probe budget was not
+  spent after the mirror verdict. No operator decision requested this session.
+
+Next action (a fresh session can carry it out): the bounded probe list in
+candidates/efsa-health-claim-opinion-outcome/record.json next_action - FIP
+health_claims request capture, worker-side ndaclaims13.mdb parse, browser test
+against the Wiley 403 for one opinion PDF (copyright line + Received/adoption
+dates), then check-novelty.py before any ready decision.
+
+
 ## 2026-11-03 (12:50Z) - watcher follow-up: all four finished jobs (fts-baseline-002, fts-hf-001, fts-publish-001, za-cct-001) verified already handled and acknowledged with .factory markers; cleanup re-confirmed by a read-only provider read-back
 
 The watcher reported four finished jobs (all succeeded, all uploaded: staging
