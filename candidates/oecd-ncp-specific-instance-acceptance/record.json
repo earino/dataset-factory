@@ -1,0 +1,227 @@
+{
+  "id": "oecd-ncp-specific-instance-acceptance",
+  "status": "ready",
+  "created_at": "2026-11-03T09:01:32.908650+00:00",
+  "domain": "Business and human rights / non-judicial grievance mechanisms: OECD Guidelines for Multinational Enterprises specific instances (RBC / corporate accountability)",
+  "prediction_question": "At the filing instant of a specific instance - the day an interested party (individual, NGO, trade union, business or other submitter) submits a complaint to a National Contact Point (NCP) alleging that a multinational enterprise did not observe the OECD Guidelines - will the NCP accept the case for further examination at initial assessment (Step 3 of the procedure), or will the case be closed without proceeding ('not accepted', which per the publisher's own terminology also includes withdrawals before the initial assessment completes)? A useful prediction tells complainants whether and how a grievance framed this way is likely to clear the intake gate of the chosen NCP, tells companies and RBC observers which complaint profiles are likely to enter mediation, and gives the 52-NCP network a measurable intake-consistency signal across the functional-equivalence agenda the OECD itself tracks. Acceptance is a real institutional decision published 1-12+ months after filing (measured: 2021-2025 closed-cohort acceptance 54-63%), not an editorial artefact.",
+  "prediction_time": "One sentence: the prediction is made on the submission date of the specific instance (day grain; the NCP-recorded 'Date' field on the case record), using only the complaint's own DB-coded attributes (lead NCP, supporting NCP, country of the issue, submitter class, sector/subsector, Guidelines topics and subtopics cited, entity-involved type) plus trailing history computed only from cases whose initial assessment was already decided before that date, and the label is the initial-assessment decision that the NCP publishes strictly afterwards. Dated example (Europe/Paris, publisher HQ; all dates recorded by the publisher at day grain, no time of day): case kr0029, Hoang Gia Trading & Services vs Lotte Corporation; feature event window = all specific instances with submission date < 2026-02-27 and decision-published before the instant (trailing acceptance rates, counts per NCP/submitter/topic); first-available timestamps and version = the complaint itself exists 2026-02-27 (Korean NCP, filed 2026-02-27 local; the DB's own listing date for this case equals the filing date - measured, see measurements.db_listing_lag), and the case's structured attributes are as coded in the current database vintage (fetched 2026-11-03; the database migrated platform in June 2025 and no historical vintages are archived - current-vintage posture, explicit assumption); eligibility cutoff = submission date in a scored window AND terminal status at the extraction vintage ('In progress' cases are excluded, not labelled); prediction instant = 2026-02-27 00:00 Europe/Paris (day-grain convention stated); target start/end = the initial assessment event, published 2026-05-21 (Korean NCP statement, decision 'not accepted'), i.e. target window 2026-02-27..2026-05-21 ending at the decision - every part of the target window is after the instant; the DB listing date (2026-02-27 for this case) is never used as instant or decision date. For any future-event scoring, a row scored at filing must use only rows decided strictly before its filing date for history features.",
+  "target_definition": "Binary label per specific instance: 1 = the NCP accepted the case for further examination at initial assessment (DB Status values indicating acceptance: 'Concluded' after acceptance, or an in-progress-but-accepted state; the publisher's status taxonomy from the case records and the annual reports: closed = concluded OR not accepted, in progress = awaiting initial assessment OR accepted and ongoing); 0 = the case did not proceed past initial assessment ('Not accepted', which the publisher defines to include cases withdrawn prior to completion of the initial assessment). Source columns: the DB case-record 'Status' field (label source; excludable - not shipped as a feature) with 'Outcomes', 'Procedural issues' and all prose summaries excluded from features as post-hoc. Rows with Status 'In progress' at extraction are excluded from scored splits (censored, not negative). Label derivation needs no external data and no threshold.",
+  "sources": [
+    {
+      "name": "OECD Database of specific instances handled by National Contact Points (case-level registry, 700+ cases since 2000; per-case structured Overview: Lead NCP, Supporting NCP, Date, Country of the issue, Source/submitter, Sector, Subsectors, Topics, Subtopics, Status, Outcomes, Procedural issues, Entity involved, Relationships to Other Instruments; plus an NCP-authored retrospective Summary)",
+      "url": "https://www.oecd.org/en/networks/national-contact-points-for-responsible-business-conduct/database.html",
+      "api": "enumeration channel: RSS feed https://api.oecd.org/webcms/search/rss?siteName=oecd&interfaceLanguage=en&hiddenFacets=siteName%3Amne-guidelines&page=N&size=15 (47 pages x 15 = 700 items measured, size capped at 15; items carry title, link, DB listing date, truncated summary). Case content: per-case HTML pages (e.g. .../database/2026/kr0029.html) - the site is a client-side-rendered SPA: plain curl returns a ~5.7 KB shell with no content (measured with browser and Googlebot user-agents), a JS-rendering client is required for bulk extraction (the extraction service renders them fully - sampled 2 pages, 2006-era and 2026-era, both fully structured)",
+      "license": "OECD Terms and Conditions (https://www.oecd.org/en/about/terms-conditions.html): OECD.org is an 'OECD Website'; Data may be used 'for any purpose, even for commercial use' where no additional restriction applies; no dataset-specific restrictive notice appears on the database or case pages (checked 2026-11-03)",
+      "measured": "2026-11-03: total 700 items via RSS pagination (46x15+10); per-case field structure sampled on pl0001 (filed 2006, Concluded) and kr0029 (filed 2026-02-27, Not accepted 2026-05-21); case URLs use flat IDs for older cases and /YYYY/ folders for recent ones"
+    },
+    {
+      "name": "OECD 2025 Annual Report on NCP Activity (publisher's own summary product; CC BY 4.0 footer) - yearly filings table 2011-2025, closed-cohort acceptance 2024/2025, submitter-class acceptance 2025, NCP concentration",
+      "url": "https://www.oecd.org/content/dam/oecd/en/networks/national-contact-points/OECD-2025-Annual-Report-on-NCP-Activity.pdf",
+      "api": "static PDF",
+      "license": "'OECD 2026, CC BY 4.0. For the full terms of use and applicable disclaimers see https://www.oecd.org/en/about/terms-conditions.html' (report footer)",
+      "measured": "2026-11-03: filings/year 2011-2025 = 31,27,39,39,24,31,26,49,36,57,47,41,55,56,119; cases closed 2025: 56, of which 26 (46%) not accepted, 30 (54%) concluded after acceptance; 2024: 58% accepted of 52 closed; 2025 submitter-class acceptance of closed cases: individuals 39% (11/28), NGOs 86% (12/14), trade unions 63% (5/8); top-5 NCPs hold 52% of 2025 submissions; 2023-25 receipt shares US 16%, UK 10%, DE 9%, FR 8%"
+    },
+    {
+      "name": "OECD Annual Report on the Activity of NCPs 2021 (corroboration for the eval-era cohort) + NCP FAQ on the grievance mechanism (inclusion-discretion statement) + NCP database keyword taxonomy PDF (documented filter vocabulary)",
+      "url": "https://www.oecd.org/content/dam/oecd/en/networks/national-contact-points/annual-report-on-the-activity-of-national-contact-points-2021.pdf",
+      "api": "static PDFs: FAQ https://www.oecd.org/content/dam/oecd/en/networks/national-contact-points/FAQ-NCP-grievance-mechanism.pdf ; keywords https://www.oecd.org/content/dam/oecd/en/networks/national-contact-points/database/public-keywords-website-updated.pdf",
+      "license": "2021 report (c) OECD 2022, pre-Open-Access instrument; used only as the publisher's own summary cross-check with citation, not as a redistributed input. The shipped artifact derives solely from the database (current T&C Data clause) and facts are not copyrightable content",
+      "measured": "2026-11-03: 2021 closed cohort = 43 cases, 27 concluded, 16 not accepted (37%); FAQ: 'all ongoing cases might not be reflected in the database, as NCPs have discretion as to the moment they report a case for inclusion'; keywords PDF documents the filter taxonomy incl. Outcomes vocabulary (agreement, recommendations, determination, follow-up, financial compensation, policy change, restitution, satisfaction)"
+    }
+  ],
+  "license_evidence": [
+    {
+      "quote": "'Following implementation of the OECD Open Access Policy, most OECD written content published as of 1 July 2024 is licensed under a Creative Commons Attribution BY 4.0 licence (CC BY 4.0). This licence permits users to reproduce, distribute and adapt (including translate) the content for any purpose without seeking authorisation from the OECD.' ... 'Data may be subject to restrictions beyond the scope of these Terms and Conditions, either because specific terms apply to those Data or because third parties may have ownership interests.' ... 'Except where additional restrictions apply as stated above, you can extract from, download, copy, adapt, print, distribute, share and embed Data for any purpose, even for commercial use.' ... 'These terms and conditions set out your rights to use material owned solely by the OECD and made available on its website oecd.org and related websites (together, OECD Websites).'",
+      "source": "OECD Terms and Conditions, https://www.oecd.org/en/about/terms-conditions.html (fetched 2026-11-03; the NCP database is served on oecd.org)"
+    },
+    {
+      "quote": "'OECD 2026, CC BY 4.0. For the full terms of use and applicable disclaimers see https://www.oecd.org/en/about/terms-conditions.html' - footer of the 2025 Annual Report on NCP Activity, the publisher's own summary of the same case population.",
+      "source": "https://www.oecd.org/content/dam/oecd/en/networks/national-contact-points/OECD-2025-Annual-Report-on-NCP-Activity.pdf (fetched 2026-11-03)"
+    },
+    {
+      "quote": "NO additional restriction was found on the database listing or per-case pages (checked 2026-11-03 on a rendered case page and the database page; no per-dataset licence or terms overlay exists for the specific-instances database; case summaries are OECD/NCP-authored, and party names and case facts are not copyrightable). CAVEAT recorded, not a blocker: the Annual Report Data Annexes (NCP-AR-data-annex-*.pdf) are cover-marked 'Restricted Use - A usage restreint'; annexes are used only as publicly-downloadable cross-checks in discovery notes, and no annex content enters any redistributed artifact - the shipped dataset derives solely from the public database.",
+      "source": "database + case pages (rendered extraction, 2026-11-03); annexes e.g. https://www.oecd.org/content/dam/oecd/en/networks/national-contact-points/NCP-AR-data-annex-2025.pdf"
+    }
+  ],
+  "construction_script": null,
+  "split_strategy": "PROPOSED windows by submission year, disjoint; exact per-window row and label counts are the FIRST construction measurement (they require the full 700-case scrape - bulk work, worker), so the numbers below are the publisher's own reported aggregates plus measured closed-cohort acceptance rates, never presented as full-DB counts. Unit = one specific instance (DB case ID). Train: filings 2000-2017 (publisher filings table 2011-2017 sums to 217; pre-2011 filings approximately 203 from DB total 700 minus 2011-2025 - approximate, to be measured exactly at construction). Eval: filings 2018-2021 (189 per the publisher's table; all resolved by extraction - measured 2021 cohort: 63% accepted/37% not accepted). Holdout: filings 2022-2024 (152 per the publisher's table, minus rows still 'In progress' at extraction; measured cohort acceptance 2024: 58%, 2025: 54%). 2025-2026 filings are EXCLUDED from scored rows: the 2025 cohort is mostly still pending (publisher's data annex: at end-2025, of the 120 received in 2025, 99 in progress, 19 not accepted, 2 concluded; restricted-marked annex cited as cross-check only - construction re-measures censoring exactly from the DB). Both classes measured in every recent closed cohort (2021: 27/16, 2024: 30/22, 2025: 30/26). Cluster structure to measure at construction: cases cluster by lead NCP (top-5 NCPs hold 52% of 2025 submissions), by respondent company (repeat filings against the same company occur, incl. coordinated multi-NCP campaigns), and by submission year (the 2025 individual-submission surge is a cohort effect: 71% of 2025 submissions vs 23% in 2024) - the clustered count and an interval on it are required outputs of the first construction measurement, per the discovery policy.",
+  "measurements": {
+    "db_total_2026_11_03": {
+      "method": "RSS pagination: curl 'https://api.oecd.org/webcms/search/rss?siteName=oecd&interfaceLanguage=en&hiddenFacets=siteName%3Amne-guidelines&page=N&size=15' for N=0..47; retained as probe_ncp_rss.py",
+      "result": "page=0..45 -> 15 items each, page=46 -> 10 items, page=47 -> 0; total 700; size parameter capped at 15 (size=100 returns 15); matches the site's 'Over 700 cases' statement and '700 results' on the listing page; ~14 KB per RSS page, 47 requests total for enumeration"
+    },
+    "filings_per_year_publisher_table_2026_11_03": {
+      "source": "2025 Annual Report on NCP Activity (CC BY 4.0), 'Cases received by NCPs' table",
+      "years": {
+        "2011": 31,
+        "2012": 27,
+        "2013": 39,
+        "2014": 39,
+        "2015": 24,
+        "2016": 31,
+        "2017": 26,
+        "2018": 49,
+        "2019": 36,
+        "2020": 57,
+        "2021": 47,
+        "2022": 41,
+        "2023": 55,
+        "2024": 56,
+        "2025": 119
+      },
+      "caveat": "publisher's own numbers carry small internal inconsistencies (report text: '120 case submissions' and '58 cases in 2020' vs table rows 119 and 57; the 2021 report states 48 received in 2021 vs table 47) - exact counts must come from the DB scrape at construction; the table is evidence of volume, not the shipped count"
+    },
+    "closed_cohort_acceptance_publisher_2026_11_03": {
+      "2021": {
+        "closed": 43,
+        "concluded": 27,
+        "not_accepted": 16,
+        "not_accepted_pct": 37,
+        "source": "Annual Report 2021 (c OECD 2022)"
+      },
+      "2024": {
+        "closed": 52,
+        "accepted_pct": 58,
+        "source": "2025 Annual Report (CC BY 4.0): 'slight decrease in acceptance rate, compared to 58% in 2024'"
+      },
+      "2025": {
+        "closed": 56,
+        "not_accepted": 26,
+        "concluded_after_acceptance": 30,
+        "accepted_pct": 54,
+        "submitter_class": {
+          "individuals": {
+            "accepted": 11,
+            "closed": 28,
+            "accepted_pct": 39
+          },
+          "ngos": {
+            "accepted": 12,
+            "closed": 14,
+            "accepted_pct": 86
+          },
+          "trade_unions": {
+            "accepted": 5,
+            "closed": 8,
+            "accepted_pct": 63
+          }
+        },
+        "source": "2025 Annual Report (CC BY 4.0)"
+      }
+    },
+    "db_inclusion_discretion_2026_11_03": {
+      "quote": "all ongoing cases might not be reflected in the database, as NCPs have discretion as to the moment they report a case for inclusion in the database",
+      "source": "NCP Grievance Mechanism FAQ (oecd.org PDF, fetched 2026-11-03)",
+      "implication": "the historical filing population is enumerable only from the current DB vintage; DB listing dates are NOT filing dates and NOT decision dates; the task is a clearly-labelled current-vintage retrospective panel with no operational point-in-time claim for history (same posture family as ocha-fts and za-statsa), and construction must state this in the dataset card"
+    },
+    "db_listing_lag_2026_11_03": {
+      "measured": "kr0029: filed 2026-02-27, DB listing date 2026-02-27 (lag 0); ca0029 (United Tegaru Canada vs East Africa Metals): filed 2022-09-10, DB listing date 2026-05-12 (lag ~32 months); the DB 'Publication Date' filter therefore cannot stand in for any timing field",
+      "source": "RSS listing dates vs case-page 'Date' fields and summaries, 2026-11-03"
+    },
+    "access_cost_2026_11_03": {
+      "enumeration": "47 RSS requests (~660 KB total) for 700 case URLs + listing dates + truncated summaries",
+      "case_pages": "~700 pages, client-side rendered (plain curl/Googlebot UA returns a 5.7-5.9 KB empty shell - measured; a JS-rendering client is required, e.g. headless browser on the worker); rendered page ~15-40 KB each, est. 15-30 MB total, est. 700-750 requests; wall-clock well under one hour on a small worker VM",
+      "note": "estimates for the rendering step are labelled as such; the enumeration and shell measurements are measured"
+    },
+    "field_structure_sample_2026_11_03": {
+      "cases": [
+        "pl0001 (filed 2006-05-04, US->Poland transfer, Status Concluded)",
+        "kr0029 (filed 2026-02-27, Status Not accepted, Outcomes Recommendations, initial assessment published 2026-05-21)"
+      ],
+      "fields": "Lead NCP, Supporting NCP, Date (= submission date), Country of the issue, Source (submitter class), Sector, Subsectors, Topics, Subtopics, Status, Outcomes, Procedural issues, Entity involved, Relationships to Other Instruments + retrospective NCP-authored Summary",
+      "gap": "no structured initial-assessment decision-date field on sampled pages; decision timing lives in the summary prose and linked NCP statements; the label itself (Status) needs no decision date - eligibility is terminal-status-at-vintage"
+    }
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": "All five discovery contracts reconciled against recorded evidence (2026-11-03, discovery-only session; no construction, no worker). (1) Redistribution SUPPORTED - class A: OECD T&C grant Data use 'for any purpose, even for commercial use' absent additional restrictions, none found on the database or case pages; 2025 annual report is explicitly CC BY 4.0; attribution format prescribed ('[OECD (year), Title, URL]') and carried into LICENSE.md; the restricted-marked annual-report data annexes are excluded from any redistributed artifact. (2) Prediction timing SUPPORTED with one recorded assumption - instant = submission date (day grain, publisher-recorded per case), label event strictly after (initial assessment published 1-12+ months later; measured kr0029: filed 2026-02-27, decided 2026-05-21); the DB-coded complaint attributes (NCP, issue country, submitter class, sector, topics cited) are complaint-stated, but the codification itself is NCP/OECD-assigned in the current vintage - an ASSUMPTION to verify at construction on a bounded sample (compare DB topic codes against the complaint text in the linked initial-assessment statements; a material mismatch downgrades those columns to post-hoc and they are dropped); DB listing dates measured as unusable for timing (0 to ~32-month lag); current-vintage posture explicit (DB migrated platform June 2025, no historical vintages; inclusion timing discretionary per the publisher's FAQ - quoted). (3) Target SUPPORTED - binary acceptance at initial assessment derived from the publisher's own Status taxonomy (quoted Box-terminology: closed = concluded OR not accepted, incl. pre-assessment withdrawals; in progress = pending); label source column excludable (Status/Outcomes/Procedural issues/summaries never shipped as features); censoring handled by eligibility (terminal status at extraction), not by treating pending as negative. (4) Split capacity SUPPORTED at the aggregate level - publisher-measured filings/year for every proposed window (train ~420, eval 189, holdout 152 minus pending), both classes measured in the 2021/2024/2025 closed cohorts (63%/58%/54% accepted) and strongly varying by submitter class (39-86% in 2025); exact per-window counts, the pending fraction of 2022-2024 filings and the clustered counts (by NCP, by respondent company, by year) are the first construction measurement on the worker - this record never presents those as known. (5) Not a mirror SUPPORTED as differentiated - the OECD publishes the registry and aggregate reports but no prediction task; the nearest prior art is an academic hand-coded dataset of 81 human-rights cases concluded 2012-2021 scored on remedy gravity (Springer chapter, descriptive, not distributed in ML-ready form, different population and different target), named in the novelty check; no ML-ready NCP acceptance/conclusion benchmark found in catalog or literature searches. RISKS named for the construction gate: (a) the WB-instrument-family defect - if a trailing NCP(+submitter-class) rate table matches the model, there is no headroom and the candidate drops at baseline (the reference triad is therefore mandatory: global prior, NCP trailing rate, NCP x submitter-class trailing rate); (b) topic-codification timing (assumption above); (c) small-population clustering (top-5 NCPs = 52% of recent filings; ~120-190 rows per window) - the honest effective-sample and cluster counts must accompany any quoted score.",
+  "next_action": "Hand to construction (worker; discovery is complete and no construction was run in this session): (1) scrape the 700 case records via the RSS enumeration (47 pages) + JS-rendered case pages, freeze the extraction with sha256 and the DB vintage timestamp, and measure exactly: per-window row counts, label counts, pending fraction of 2022-2024 filings, clustered counts by lead NCP / respondent company / submission year; (2) verify the topic-codification assumption on a bounded sample (DB topics vs complaint text in the linked initial-assessment statements) and drop any column that fails; (3) build the trailing-history features with the strictly-before rule (only cases decided before the instant contribute to history), enforce the restricted prediction protocol for the self-answer join (a scored row's label is a later row's history operand - same coupling class as za-statsa: ship pre-computed fixed-window feature matrices or strip case keys so no solver-visible join couples two scored rows), run gate-1.5 reverse-history probes on the exact artifact; (4) triad references mandatory: global prior, trailing NCP rate table, trailing NCP x submitter-class rate table - if the model does not beat them, record no-headroom and stop (WB-instrument-family defect); (5) splits: train 2000-2017 / eval 2018-2021 / holdout 2022-2024 by submission year, 2025+ excluded as censored (re-check at extraction); (6) LICENSE.md: '[OECD (2026), Database of specific instances handled by National Contact Points, <URL>]' attribution, CC BY 4.0 carry-through for any annual-report-derived text (none planned), the restricted-annex exclusion note, the current-vintage/retrospective as-of statement in the dataset card; (7) full-worker qualification -> exact-byte acceptance before any AUC or headroom number is quoted.",
+  "jurisdiction": {
+    "country": "FR",
+    "region": "International organisations",
+    "publisher": "Organisation for Economic Co-operation and Development (OECD), Paris (Investment Committee / Responsible Business Conduct team); case data reported by the National Contact Points of the 52 adherent countries; the OECD's own jurisdiction is France (Paris HQ) - 'international' is not a country",
+    "recorded_at": "2026-11-03"
+  },
+  "licence_class": "A",
+  "licence_note": "Class A: OECD.org Terms and Conditions grant extraction, adaptation and distribution of Data 'for any purpose, even for commercial use' where no additional restriction applies (none found on the database or case pages, checked 2026-11-03); written content published since 2024-07-01 is CC BY 4.0; prescribed attribution '[OECD (year), Title, URL]' carried into LICENSE.md. Standing caveats: (a) annual-report data annexes are cover-marked 'Restricted Use' and never enter a redistributed artifact; (b) case summaries are NCP-authored prose - the shipped rows carry the structured fields and derived labels, with summary text excluded (post-hoc by construction); (c) the pre-2024 annual reports carry the older OECD copyright instrument - used only as cited cross-checks, not as redistributed inputs.",
+  "updated_at": "2026-11-03T09:30:00+00:00",
+  "novelty_check": {
+    "checked_at": "2026-11-03T09:08:05+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "OECD Guidelines specific instances prediction dataset",
+      "NCP grievance mechanism acceptance benchmark"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "OECD Guidelines specific instances prediction dataset",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "NCP grievance mechanism acceptance benchmark",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "OECD Guidelines specific instances prediction dataset",
+          "hits": 649488,
+          "top": [
+            "OECD TG_SMILES",
+            "Investigating the minority class oversampling technique (SMOTE) on an imbalanced Cardiovascular Disease (CVD) dataset.",
+            "Government Budget Allocations for R&D in Environment",
+            "Environment's Share in Total Government Budget Allocations for R&D",
+            "The interdependency of data governance and open government data: lessons from COVID-19"
+          ]
+        },
+        {
+          "query": "NCP grievance mechanism acceptance benchmark",
+          "hits": 175488,
+          "top": [
+            "The Legal Protection for Consumers in Conducting E-Commerce Activities in India",
+            "Grievance Redress Mechanism in the Ministry of Health Sri Lanka: Concept and implementation strategy",
+            "Dynamics of pathophysiology changes in the hemostasis system at the main stages of breast cancer treatment = \u0414\u0438\u043d\u0430\u043c\u0456\u043a\u0430 \u043f\u0430\u0442\u043e\u0444\u0456\u0437\u0456\u043e\u043b\u043e\u0433\u0456\u0447\u043d\u0438\u0445 \u0437\u043c\u0456\u043d \u0441\u0438\u0441\u0442\u0435\u043c\u0438 \u0433\u0435\u043c\u043e\u0441\u0442\u0430\u0437\u0443 \u043d\u0430 \u043e\u0441\u043d\u043e\u0432\u043d\u0438\u0445 \u0435\u0442\u0430\u043f\u0430\u0445 \u043b\u0456\u043a\u0443\u0432\u0430\u043d\u043d\u044f \u0440\u0430\u043a\u0443 \u043c\u043e\u043b\u043e\u0447\u043d\u043e\u0457 \u0437\u0430\u043b\u043e\u0437\u0438",
+            "PHOSPHORYLATION DEPENDENT BINDING AND SEQUESTRATION OF SARS-COV-2 ENCODED NUCLEOCAPSID PROTEIN BY PROTEIN 14-3-3.",
+            "Research Report: PLEDGE Codebook v.1"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "OECD Guidelines specific instances prediction dataset",
+          "hits": 5,
+          "top": [
+            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+            "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset",
+            "Design Guidelines for Domain Specific Languages",
+            "How do ASA Ethical Guidelines Support U.S. Guidelines for Official Statistics?"
+          ]
+        },
+        {
+          "query": "NCP grievance mechanism acceptance benchmark",
+          "hits": 5,
+          "top": [
+            "Synthesis of Mechanism for single- and hybrid-tasks using Differential Evolution",
+            "Synthesis of Spherical 4R Mechanism for Path Generation using Differential Evolution",
+            "Design and Analysis of a Robotic Lizard using Five-Bar Mechanism",
+            "The Grievance Dictionary: Understanding Threatening Language Use",
+            "Latency-Aware Bid Acceptance under Operational Feasibility: A Public Benchmark with Hindsight Ceilings"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'OECD Guidelines specific instances prediction dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'NCP grievance mechanism acceptance benchmark': 0 hit(s) - nothing notable\n- zenodo_records / 'OECD Guidelines specific instances prediction dataset': 649488 hit(s) - OECD TG_SMILES, Investigating the minority class oversampling technique (SMOTE) on an imbalanced Cardiovascular Disease (CVD) dataset., Government Budget Allocations for R&D in Environment, Environment's Share in Total Government Budget Allocations for R&D, The interdependency of data governance and open government data: lessons from COVID-19\n- zenodo_records / 'NCP grievance mechanism acceptance benchmark': 175488 hit(s) - The Legal Protection for Consumers in Conducting E-Commerce Activities in India, Grievance Redress Mechanism in the Ministry of Health Sri Lanka: Concept and implementation strategy, Dynamics of pathophysiology changes in the hemostasis system at the main stages of breast cancer treatment = \u0414\u0438\u043d\u0430\u043c\u0456\u043a\u0430 \u043f\u0430\u0442\u043e\u0444\u0456\u0437\u0456\u043e\u043b\u043e\u0433\u0456\u0447\u043d\u0438\u0445 \u0437\u043c\u0456\u043d \u0441\u0438\u0441\u0442\u0435\u043c\u0438 \u0433\u0435\u043c\u043e\u0441\u0442\u0430\u0437\u0443 \u043d\u0430 \u043e\u0441\u043d\u043e\u0432\u043d\u0438\u0445 \u0435\u0442\u0430\u043f\u0430\u0445 \u043b\u0456\u043a\u0443\u0432\u0430\u043d\u043d\u044f \u0440\u0430\u043a\u0443 \u043c\u043e\u043b\u043e\u0447\u043d\u043e\u0457 \u0437\u0430\u043b\u043e\u0437\u0438, PHOSPHORYLATION DEPENDENT BINDING AND SEQUESTRATION OF SARS-COV-2 ENCODED NUCLEOCAPSID PROTEIN BY PROTEIN 14-3-3., Research Report: PLEDGE Codebook v.1\n- arxiv_preprints / 'OECD Guidelines specific instances prediction dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, Design Guidelines for Domain Specific Languages, How do ASA Ethical Guidelines Support U.S. Guidelines for Official Statistics?\n- arxiv_preprints / 'NCP grievance mechanism acceptance benchmark': 5 hit(s) - Synthesis of Mechanism for single- and hybrid-tasks using Differential Evolution, Synthesis of Spherical 4R Mechanism for Path Generation using Differential Evolution, Design and Analysis of a Robotic Lizard using Five-Bar Mechanism, The Grievance Dictionary: Understanding Threatening Language Use, Latency-Aware Bid Acceptance under Operational Feasibility: A Public Benchmark with Hindsight Ceilings",
+    "prior_art": [
+      "OECD Database of specific instances (registry, not a task); OECD 2025 Annual Report on NCP Activity (CC BY 4.0 aggregates); Springer 2025 chapter 'Understanding Remedy Outcomes at the OECD National Contact Points' (81-case hand-coded remedy-outcomes dataset, concluded-only, HR-subset, descriptive); bench comparator eu-ombudsman-inquiry-outcome (EU Ombudsman inquiries, different institution/population/target)"
+    ],
+    "theirs": "The OECD publishes the case registry itself plus aggregate annual-report statistics (filings/year, closed-cohort acceptance 54-66%) and procedural guides, but no prediction task, splits or scored benchmark; the nearest academic prior art is a hand-coded dataset of 81 human-rights specific instances concluded 2012-2021 scored on remedy gravity/degree (Springer chapter, descriptive, not ML-ready, different population and different target); the rest of the literature on NCP effectiveness is qualitative/econometric without a distributed dataset",
+    "ours": "Full-population, all-topics intake-acceptance prediction task at the filing instant of an OECD Guidelines specific instance (complainant class, sector, Guidelines chapters cited, issue country, lead NCP + strictly-prior trailing history -> accepted for further examination at initial assessment y/n), built from the OECD's own case-level registry (700 cases since 2000) with terminal-status eligibility, submission-year temporal splits (train 2000-2017 / eval 2018-2021 / holdout 2022-2024) and a scored contract; no such task exists in ML-ready form",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
+}

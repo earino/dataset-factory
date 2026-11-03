@@ -1,3 +1,58 @@
+## 2026-11-03 (09:12Z) - discovery tick (International organisations): oecd-ncp-specific-instance-acceptance opened and READY (first grievance-mechanism intake task; class A, five contracts reconciled); wb-procurement-contract-awards opened and DROPPED (no post-award outcome column; third WB instrument-activity family hit)
+
+Discovery-only session. No construction, qualification, packaging, publication or advancement; no
+worker, no spend. Regional focus: World Bank, OECD, UN agencies, WHO, IMF, ITU. Named publishers were
+first reconciled against existing records, not re-probed: IMF closed at publisher level (event-grain
+reopen condition unmet), ITU closed (aggregate panels + mirror), UNODC closed (class D), UNHCR occupied
+(active packaged/parked work), UNICEF parked on measured split capacity, WHO FluNet published.
+
+- `oecd-ncp-specific-instance-acceptance` (OECD, FR, ready): at the filing instant of a specific
+  instance to a National Contact Point under the OECD Guidelines, predict whether the NCP accepts it
+  for further examination at initial assessment. New lead that satisfies the recorded
+  oecd-sdmx-aggregate-family reopen condition verbatim ("a row-level product that is neither an
+  aggregate panel nor a mirror of national datasets") - the Database of specific instances is
+  case-level and OECD-originated, and sits outside the Data Explorer scan that re-check covered.
+  LICENCE class A: OECD T&C Data clause ("for any purpose, even for commercial use"), no restrictive
+  notice on the DB/case pages, 2025 annual report explicitly CC BY 4.0; the restricted-marked
+  annual-report annexes are excluded from any artifact. MEASURED (commands in notes.md): RSS
+  enumeration channel 47 requests = 700 cases (no JSON API; case pages are client-side rendered -
+  plain curl returns a 5.7 KB shell, construction needs a JS-rendering client on the worker);
+  per-case structured Overview sampled across eras (2006 and 2026 cases, both fully structured);
+  filing-date semantics verified in prose; DB listing dates measured unusable for timing (lag 0 to
+  ~32 months); publisher's own aggregates: filings/year 2011-2025 table, closed-cohort acceptance
+  63% (2021) / 58% (2024) / 54% (2025), submitter-class acceptance 39-86% (2025) - both classes
+  present in every measured cohort. Dated example in notes.md (kr0029: filed 2026-02-27, decided
+  2026-05-21, Europe/Paris day-grain convention). Splits proposed train 2000-2017 / eval 2018-2021 /
+  holdout 2022-2024 by filing year; 2025-2026 excluded as censored (99/120 of the 2025 cohort in
+  progress at end-2025). Novelty: differentiated - nearest prior art is a hand-coded 81-case
+  remedy-gravity dataset (Springer chapter, descriptive, not ML-ready, different population and
+  target); no ML-ready formulation found in HF/Zenodo/arXiv/web searches. Risks carried into the
+  construction handoff: mandatory reference triad (global prior, trailing NCP rate, trailing
+  NCP x submitter-class rate - the twice-measured WB family defect is the drop condition),
+  topic-codification timing assumption to verify on a bounded sample, cluster counts (NCP/company/
+  year) as the first construction measurement, and the za-statsa-style self-answer join (a scored
+  row's label is a later row's history operand) handled by the restricted prediction protocol.
+- `wb-procurement-contract-awards` (World Bank, US, dropped): the one un-probed WB row-level family
+  (Finances One/STEP contract awards, DS00005 296,836 rows + FY17-19 + retired FY01-16 segments).
+  Dropped on documented schema + task shape, licence class A recorded so it is never re-checked:
+  the 21-column schema has only at-award attributes and a snapshot stamp (no revision/termination/
+  completion column; the publisher states post-signature modifications are not reflected), so every
+  derivable label is administrative recurrence - the family measured twice as rate-table-dominated
+  (wb-loan-disbursement-completion, wb-ieg-project-outcome); stream is borrower-entered and
+  publisher-disclaimed ("only a guide", "does not guarantee the data"), and the FY2020 boundary
+  changes the inclusion rule (prior-reviewed-only -> all IPF awards), so pre-2020 history cannot
+  backfill FY2020+ rows. Reopen condition: row-level post-award contract events, or an operator
+  request for the pipeline task.
+- Checks: check-candidate both records OK; check-candidate --all rc=0 (124 records); novelty script
+  recorded (catalogue searches, 0 relevant hits). Coverage after this tick: International
+  organisations 15 records (5 live: ocha-fts packaged, unhcr packaged, who-flunet published,
+  oecd-ncp ready, unicef-sdmx parked). One ready candidate in the buffer behind the current
+  packaged work, as the queue policy wants.
+- Next action stays with advancement: ocha-fts re-audit/flip sequence and ns-bwa rebuild hold; the
+  new ready candidate's construction steps are fully specified in its record next_action (worker
+  scrape -> gate-1.5 -> triad -> exact-byte acceptance) and must not start while the packaged
+  candidate is actionable.
+
 ## 2026-11-02 (15:58Z) - ocha-fts P0-recovery baseline measured (fts-baseline-002: stock runner 0.6452 vs persistence 0.71711, recorded defect) and the v2026.11 package BUILT + check-package rc=0; record stays 'qualified' until private staging exists; unhcr left untouched (operator decision)
 
 Scheduled advancement session. Release work outranks construction; unhcr-refugee-data-finder

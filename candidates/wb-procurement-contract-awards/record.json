@@ -1,0 +1,66 @@
+{
+  "id": "wb-procurement-contract-awards",
+  "status": "dropped",
+  "created_at": "2026-11-03T09:10:39.127474+00:00",
+  "domain": "Multilateral development procurement: World Bank Investment Project Financing contract awards (STEP procurement stream)",
+  "prediction_question": "The task family this source could carry: at the end of a quarter, given a WB IPF project's contract-award history and attributes, predict whether the project will sign another major contract award in the next one to two quarters (award occurrence / pipeline continuation), or predict the composition of the next award (local vs foreign supplier country, procurement method, category). Prospective users would be firms/consultants watching the WB procurement pipeline and observers of implementation slowdowns. DROPPED before construction: the stream carries no post-award outcome, so every derivable label is future administrative activity on the same borrower-entered stream - the target family measured twice on WB instruments with no headroom over identity/rate tables (see rejection_reason).",
+  "prediction_time": "One sentence (moot, recorded for the rejection): the prediction would be made at the end of fiscal quarter T using awards with contract_signing_date <= that instant, about awards signed in T+1..T+2; contract_signing_date is a documented at-award column and the as_of_date snapshot column is the publisher's refresh stamp, not an outcome; the FY2001-2016 segment is prior-reviewed-only while FY2020+ is all IPF awards, so the population definition breaks across segments and pre-FY2020 history cannot serve as the same population for FY2020+ rows.",
+  "target_definition": "No defensible target exists in this stream: the documented 21-column schema (DS00005, read 2026-11-03) contains only at-award attributes (project, borrower country, procurement category/method, supplier, supplier country, contract amount, signing date, WB contract number) and the snapshot date; there is no post-signature field (no revision, modification, termination, completion or end-date column), and the publisher states contracts 'may be modified after signature' with modifications not reflected. Any label must therefore be a future award occurrence or composition on the same stream - administrative activity, not an externally observable outcome.",
+  "sources": [
+    {
+      "name": "Contract Awards in Investment Project Financing (Since FY 2020) - WBG Finances One DS00005 (base dataset, source STEP, all IPF awards)",
+      "url": "https://financesone.worldbank.org/contract-awards-in-investment-project-financing-since-fy-2020/DS00005",
+      "api": "API Service (https://financesone.worldbank.org/api-explorer?id=DS00005), bulk download, query tool; daily updates",
+      "license": "Dataset metadata block: 'License: Creative Commons Attribution 4.0 International'; platform Terms of Use: WBG-owned data under CC BY 4.0 IGO unless otherwise labeled",
+      "measured": "2026-11-03 (published metadata, no bulk download): 296,836 rows, 21 columns, 'Data as of Nov 03, 2026', update schedule 'Daily updates when new records are available'; fields per the Column Details listing"
+    },
+    {
+      "name": "Contract Awards in IPF since FY2017-FY2019 (DS04691) and the retired FY2001-FY2016 prior-reviewed set (DS01004)",
+      "url": "https://financesone.worldbank.org/contract-awards-in-investment-project-financing-since-fy-2017-fy-2019/DS04691",
+      "api": "DS04691: 63,912 rows, 17 columns, daily updates; DS01004 (https://financesone.worldbank.org/contract-awards-in-investment-project-financing-since-fy-2001-fy-2016/DS01004): 146,802 rows, 17 columns, retired 'No further updates planned', 'Data as of Mar 11, 2022', CSV download 49.92 MB",
+      "license": "DS01004 metadata: 'License: Creative Commons Attribution 4.0 International'",
+      "measured": "2026-11-03: the three segments together span FY2001-present but under different inclusion rules - FY2001-2016 is prior-reviewed contracts only ('This dataset does not list all contracts awarded by the Bank'), FY2020+ is all IPF awards; a cross-segment panel mixes populations"
+    },
+    {
+      "name": "Publisher's own scoping and quality statements (dataset descriptions, read 2026-11-03)",
+      "url": "https://financesone.worldbank.org/terms",
+      "api": "Terms of Use: 'The World Bank Group allows me to use data extracted or downloaded from the Platform subject to certain license terms... This data, and visualizations and projects using this data, may be downloaded, exported, and used by me only if I comply with the terms of a Creative Commons Attribution license (CC BY 4.0 IGO).' Attribution format from the Data Catalog terms: 'The World Bank: Dataset name: Data source (if known).'",
+      "license": "CC BY 4.0 (dataset-specific metadata) / CC BY 4.0 IGO (platform default for WBG-owned data)",
+      "measured": "Dataset description caveats quoted: 'Data is entered by Borrowers'; 'should be viewed only as a guide to determine the distribution of major contract commitments'; 'does not include awards to subcontractors, nor does it account for cofinancing'; 'The Procurement Policy and Services Group does not guarantee the data included in this publication and accepts no responsibility whatsoever for any consequences of its use'; 'contracts may be modified after signature' (modifications not reflected in the data)"
+    }
+  ],
+  "license_evidence": [
+    {
+      "quote": "DS00005 and DS01004 dataset metadata: 'License: Creative Commons Attribution 4.0 International' (creativecommons.org/licenses/by/4.0/legalcode). Platform Terms of Use (financesone.worldbank.org/terms): 'unless otherwise labeled, data in the Platform was generated and is owned by the World Bank Group. This data, and visualizations and projects using this data, may be downloaded, exported, and used by me only if I comply with the terms of a Creative Commons Attribution license (CC BY 4.0 IGO).' Class A - recorded so a future session need not re-check the licence.",
+      "source": "https://financesone.worldbank.org/contract-awards-in-investment-project-financing-since-fy-2001-fy-2016/DS01004 (metadata block) and https://financesone.worldbank.org/terms (fetched 2026-11-03)"
+    }
+  ],
+  "construction_script": null,
+  "split_strategy": null,
+  "measurements": {
+    "schema_2026_11_03": {
+      "method": "published Column Details of DS01004 (17 columns, enumerated on the dataset page) and the DS00005 dataset page (21 columns); no bulk download was made",
+      "columns": "fiscal_year, region, borrower_country, project_id, project_name, project_global_practice, procurement_category, procurement_method, contract_number, contract_description, borrower_contract_reference_number, contract_signing_date, supplier, supplier_country, supplier_contract_amount_usd, contract_signed_calendar_year, as_of_date (+WB contract number and 3 further fields in the 21-column FY2020+ set)",
+      "finding": "at-award attributes and a snapshot stamp only; no post-signature outcome column exists in any segment"
+    },
+    "volume_2026_11_03": {
+      "DS00005_fy2020_plus": {"rows": 296836, "columns": 21, "data_as_of": "2026-11-03", "update_schedule": "daily"},
+      "DS04691_fy2017_2019": {"rows": 63912, "columns": 17},
+      "DS01004_fy2001_2016": {"rows": 146802, "columns": 17, "retired": true, "data_as_of": "2022-03-11", "csv_bytes": 49920000}
+    }
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "DROPPED on task shape and documented schema, not licence (licence is class A and recorded). Three decisive grounds, all read from the publisher's own pages on 2026-11-03: (1) NO POST-AWARD OUTCOME - the documented schemas (17 and 21 columns) contain only at-award attributes plus a snapshot date; the publisher states contracts 'may be modified after signature' and modifications are not in the data, so every derivable label is future award occurrence or composition on the same administrative stream - a pipeline-continuation hazard, not an externally observable outcome; (2) THE MEASURED WB FAMILY DEFECT - this is the third WB instrument-activity product examined and the two siblings were both dropped after measurement with the same defect: wb-loan-disbursement-completion measured no headroom over an identity prior at the approval instant (country identity carried nearly all observable signal) and wb-ieg-project-outcome measured the runner-contract model at no headroom over the prior on an 81%-positive label; a project-age x country x practice hazard/rate table is precisely the reference that family defect predicts will win here, at a population (all IPF awards) even more mechanically driven by disbursement schedules and prior-review thresholds than the instrument outcomes already measured; (3) PUBLISHER-DISCLAIMED DATA QUALITY AND A POPULATION BREAK - the stream is 'entered by Borrowers' via STEP, the publisher says it 'does not guarantee the data', it 'should be viewed only as a guide', excludes subcontractors and cofinancing, splits joint-venture amounts equally, and the FY2001-2016 segment covers prior-reviewed contracts only while FY2020+ covers all IPF awards, so pre-2020 history cannot serve as the same population for FY2020+ rows (the two-streams failure mode). REOPEN if the World Bank publishes post-award contract events (modifications, terminations, revised amounts, completion) at row level - that would create a genuinely different outcome family (implementation risk / cost growth) with documented timing - or if the operator specifically wants the pipeline-continuation task despite the twice-measured family defect. This drop covers the Finances One contract-award streams; it does not extend to other WB products (the two sibling drops cover instrument outcomes; corporate procurement is the same shape at smaller scale and inherits grounds 1 and 3).",
+  "review": "Discovery-only session 2026-11-03, regional tick International organisations (World Bank named). The two existing WB drops covered instrument outcomes (IEG ratings, disbursement completion); this was the one un-probed WB row-level family. Probes were bounded and coordinator-side: published dataset pages and metadata only, no bulk download (the 50 MB CSV stays on the publisher). Contracts: redistribution SUPPORTED (class A, dataset-specific CC BY 4.0 recorded); prediction timing STATEABLE (contract_signing_date is documented) but MOOT; target NOT SUPPORTABLE (no post-award outcome column; only administrative recurrence labels); split capacity present (296k+ rows, quarterly instants) but irrelevant once the target fails; contribution NOT SUPPORTABLE within this stream (the WB itself redistributes the full data daily with bulk access, so our value-add would be only the task formulation - and the formulation lands in the family already measured twice as rate-table-dominated). The licence evidence is recorded deliberately so a reopened lead starts past the licence check.",
+  "next_action": "None - closed on task-shape/schema grounds with the probes recorded; the licence is class A so a future session need not re-check it. Re-open only if the World Bank publishes row-level post-award contract events (modifications, terminations, revised amounts, completion dates) - a different outcome family with documented timing - or if the operator specifically requests the pipeline-continuation task despite the twice-measured WB family defect (wb-loan-disbursement-completion, wb-ieg-project-outcome).",
+  "jurisdiction": {
+    "country": "US",
+    "region": "International organisations",
+    "publisher": "World Bank Group (IBRD/IDA), Washington DC - Finances One platform (financesone.worldbank.org), procurement data sourced from STEP (Systematic Tracking of Exchanges in Procurement), entered by borrowing countries; the publisher's own jurisdiction is the United States (Washington DC HQ) - 'international' is not a country",
+    "recorded_at": "2026-11-03"
+  },
+  "licence_class": "A",
+  "licence_note": "Class A: dataset-specific metadata states 'License: Creative Commons Attribution 4.0 International'; the platform's default for WBG-owned data is CC BY 4.0 IGO; prescribed attribution 'The World Bank: Dataset name: Data source (if known).' No restrictive notice was found on either dataset page (checked 2026-11-03).",
+  "updated_at": "2026-11-03T09:40:00+00:00"
+}
