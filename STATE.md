@@ -66,16 +66,18 @@ stale status contradicting their own verdicts.
   viable source exists.
 - Hygiene: check-candidate cra OK (ready), npri OK (ready), --all rc=0 (128
   records); discovery-coverage rc=0 (CA 15 records now with 2 ready; ready 13->15,
-  investigating 19->17, live 49, live non-US 43/49 = 88%). SUITE: 707 tests, 1
-  ERROR - test_release_schema.test_every_public_package_has_a_recorded_site fails
-  on release/ocha-fts-appeal-funding-trajectory/MANIFEST.json (destinations.site
-  not recorded) - that is the CONCURRENT advancement session's uncommitted
-  ocha-fts release work (modified release/ + baseline/ + untracked
-  sites/ocha-fts...json), not this session's files; this session's commit contains
-  only the two candidate directories + STATE.md. Follow-up for the concurrent
-  session: record the site destination in the ocha-fts MANIFEST (or complete the
-  site step) so the suite returns to green; no concurrent-writer bytes were
-  touched or reverted here.
+  investigating 19->17, live 49, live non-US 43/49 = 88%). SUITE: a mid-flight run
+  caught 1 ERROR (test_release_schema.test_every_public_package_has_a_recorded_
+  site, release/ocha-fts.../MANIFEST.json destinations.site not recorded) in the
+  CONCURRENT advancement session's then-uncommitted ocha-fts work - not this
+  session's files; that session's commit cfb0bbe (22:56:05Z) recorded the site
+  destination and the FINAL suite run on the tree containing it is 707/707 OK.
+  CONCURRENT-WRITER NOTE: cfb0bbe swept in this tick's two candidate records,
+  notes, probes and this STATE entry along with its own ocha-fts publication work
+  (same bytes this session wrote - verified by diff); the only piece this session
+  commits separately is the restoration of the 19:15Z heading that the mid-edit
+  snapshot lost, plus this correction. No concurrent-writer bytes were touched,
+  reverted or "fixed" here.
 - No token exposure; no release byte, tag, destination, manifest or visibility
   changed anywhere; probe scripts + JSON outputs retained in both candidates'
   probe/ directories.
@@ -86,7 +88,7 @@ the region's next discovery probes remain iaac's stratified registry-page sample
 and canadabuys's bulk count pass (advancement worker); the operator's standing
 decisions (za-cct (a)/(b)/(c), ocha-fts flip) are unchanged.
 
-
+## 2026-11-03 (19:15Z) - cqc-care-home-deregistration framing decided and construction launched (cqc-chd-001, server 174367893): first register-exit build, P0 successor design settled and rehearsed before launch; za-cct packaging stays blocked on the operator's (a)/(b)/(c) decision; unhcr untouched
 
 Scheduled advancement session. Both release-track items were re-read from their
 records first and stay human waits: unhcr-refugee-data-finder carries the
