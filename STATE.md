@@ -13588,3 +13588,103 @@ triad-vs-family-risk decision); the other Africa records keep their recorded blo
 (KNBS operator decision, SAPS written licence answer, Morocco count trigger); the
 concurrent cqc session's uncommitted record fixes (construction_script at qualified) belong
 to that session or its follow-up.
+
+
+
+## 2026-11-04 (14:45Z) - scheduled advancement: cqc flip boundary reached (hf verify+tag done, site plan prepared, awaiting_operator set); unhcr drop marking applied on both destinations (record parked); za-cct packaging decision (a) recorded + suitability/licence/release descriptors done
+
+Release work only; no worker launched (EUR 0), no construction, no publication, no
+dataset tag or frozen byte touched. Priority order per the brief: cqc release
+completion, then the unhcr supersede marking, then za-cct packaging prep.
+
+- cqc-care-home-deregistration -> flip boundary. The record's own remaining list ran
+  in order: hf-publish.py --verify --worker-job cqc-hf-001 (all five files
+  digest-verified at Hub main fea98b695abd..., repo private, tags empty),
+  then hf-publish.py --tag (2026-11-04T14:01Z, attempt d0eff33bf1d442ac9bcdb417f925b108:
+  tag v2026.11 created at tag == main == fea98b695abd..., release_revision_verified
+  true, DESTINATIONS hub block now carries revision v2026.11 with the verified
+  files list). Anonymous read-back after tagging: Hub API 401 and the tag revision
+  401 (still private, as designed). The stale hub note was refreshed and the planner-
+  required top-level artifact_version field added to release/.../DESTINATIONS.json
+  (afe9ee203f302f3c..., equal to the manifest - unhcr's file already had the field;
+  the cqc writer had omitted it). check-package rc=0 twice (after each DESTINATIONS
+  edit). The pre-flip audit prompt (generated 2026-11-04 10:26, digests filled
+  programmatically) re-checked: no unresolved placeholders, carries the honest
+  disclosure block including the runner-below-reference defect and the
+  no-persistence-by-design note.
+- cqc website plan prepared OFFLINE (the pins precedent, pre-flip):
+  sites/cqc-care-home-deregistration.json written (schema 1, release_date 2026-11-04,
+  summary 931 chars, 4 post paragraphs, 9 limitations, every number derived from the
+  frozen manifest/record: 107,652 rows, model 0.5659 beside references 0.5871/0.5597/
+  0.5298/0.5226/0.5207/0.5011, majority 0.9487, register-event framing, quasi-identifier
+  coverage, OGL v3.0 attribution); site-publish.py prepare -> plan_sha256
+  3a04e87601cbfa5f6cd91c6efcbba0b5aeac80baf2a3f73a0619c6d994b5ac3b (zero network
+  calls); inspect: both destinations private + verified, catalogue repo public with
+  Pages, ready_for_publication false by design; previews render with no unresolved
+  placeholders (the only brace hits are CSS keyframes) and a concrete
+  load_dataset('earino/cqc-care-home-deregistration', revision='v2026.11') snippet;
+  0.5659 and 0.5871 both appear on the dataset page.
+- cqc record -> awaiting_operator TRUE (since 2026-11-04T14:03:00Z), scope recorded:
+  the flip is the sole remaining step, the flip waits for the independent auditor's
+  verdict on candidates/cqc-care-home-deregistration/pre-flip-audit-prompt.md unless
+  the operator waives it, and the site publishes after the flip with the
+  operator-reviewed plan sha 3a04e876... The next_action carries the full post-flip
+  procedure (anonymous verification, DESTINATIONS visibility fields with
+  files_verified lists, editorial refresh with apply-navigation, check-package,
+  check-suitability notice, site publish/verify). check-candidate cqc OK.
+- unhcr-refugee-data-finder -> the applied operator drop decision (2026-11-02) is now
+  mechanically executed on both destinations, per the convention and the record's own
+  next_action: GitHub release 426752344 renamed "v2026.10 - DROPPED, DO NOT PUBLISH"
+  (gh api -X PATCH with the github-publish credential, read back; matches the nhs-ae
+  v2026.12 precedent), and the Hub README on editorial main carries a "DROPPED - DO
+  NOT PUBLISH" banner (idempotent script
+  candidates/unhcr-refugee-data-finder/mark_hub_superseded_2026_11_04.py; banner
+  verified by re-download; tag v2026.10 stays frozen at 77aa1fad..., main advanced to
+  0c2d3cf8... by exactly the banner commit; repo private). release/.../
+  DESTINATIONS.json records both markings under `superseded` with evidence; the
+  record moved to status=parked with the decision as rejection_reason and the stale
+  awaiting_operator_scope/since removed; operator_decision_pending cleared (the
+  decision is applied; parked exempts the preemption guard naturally -
+  release_work_pending now returns []). The .factory/sites/unhcr-v2026.10-1 plan is
+  void with the drop and never publishes. check-candidate unhcr OK (parked);
+  check-package OK.
+- za-cct-substation-evening-peak-exceedance -> OPERATOR DECISION (a) RECORDED
+  (2026-11-04): package as an agent-headroom benchmark, comparison leading every
+  package document. Basis: the operator's 2026-11-04 scheduler brief lists the
+  candidate as actionable at stage "(package)" - that selects (a) among the three
+  recorded options ((a) package / (b) re-scope / (c) drop), exactly as Scout
+  recommended. Binding requirements carried into record.next_action: stock baseline
+  0.5107 quoted beside morning_ratio 0.7340 in every document, ocha-fts framing
+  (agent-headroom benchmark, NOT demonstrated-model-headroom), holdout sealed,
+  retrospective_research contract + persistence information-asymmetry note carried
+  everywhere. Packaging-prep steps done this session: (i) suitability/
+  za-cct-substation-evening-peak-exceedance.json for artifact 9f2e10ce... with
+  planned release_tag v2026.11 (validated clean against factory.suitability.validate;
+  not yet counted by check-suitability because no release package exists - it binds
+  when the manifest lands); (ii) candidates/.../license.json (source
+  LicenseRef-CityOfCapeTown-OpenDataTerms from the portal ToU + Open Data Policy
+  27781 evidence, MIT code, CC0-1.0 compilation, runner-files third-party note) and
+  release.json (construction commit c57e3711fe6f9e9db8f58d1a5f01f5b64a3ba4b5 with
+  build.py/run.sh/score.py digests verified against that commit, source pins,
+  commands, layout, decision-(a) note). REMAINING for the packaging session (exact
+  steps in record.next_action): package documents with the comparison leading,
+  release-manifest + check-package, private staging (publish-dataset.py --execute,
+  worker transfer, hf-publish create/upload-small + hf_publish worker job,
+  fresh-consumer job), record -> packaged, then the pre-flip audit prompt and the
+  operator's flip.
+- Hygiene: check-candidate --all rc=0 (129 records), check-package cqc OK,
+  check-suitability rc=0 (19 reviews), factory doctor rc=0, full suite 708/708 OK
+  (run twice: after the cqc/unhcr edits and again after all za-cct edits).
+  release_work_pending [] (cqc awaiting_operator, unhcr parked). No token exposure
+  (credentials used via files, one-shot env prefixes, never echoed); no bulk data
+  through the coordinator; both destination states read back through the APIs.
+
+Next action (a fresh session can carry it out): (1) cqc is the operator's - relay
+candidates/cqc-care-home-deregistration/pre-flip-audit-prompt.md to an independent
+auditor; the flip waits for that verdict unless waived; after the flip run the full
+recorded post-flip procedure (anonymous verification, DESTINATIONS visibility,
+editorial refresh, site publish with plan sha 3a04e876...). (2) za-cct packaging
+session: build the package documents per record.next_action steps (iii)-(vi)
+(comparison leading every document), manifest + checks, stage both destinations,
+consumer-verify, record -> packaged. (3) unhcr needs nothing until its reopen
+condition is chosen; both destinations stay private and marked.

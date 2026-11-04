@@ -1,0 +1,31 @@
+{
+ "release_version": "2026.11",
+ "release_tag": "v2026.11",
+ "repository": "https://github.com/earino/za-cct-substation-evening-peak-exceedance",
+ "construction_commit": "c57e3711fe6f9e9db8f58d1a5f01f5b64a3ba4b5",
+ "construction_commit_note": "c57e371 (2026-11-03) carries candidates/za-cct-substation-evening-peak-exceedance/source/build.py at sha256 5ffefd98be870c4ab303d6892814f535bdd7fe055a64050ec087d5726182480b (verified: git show c57e371:<path> hashes to the same digest as the working tree), source/run.sh at 2584200ee0526851193f827de76b929dea000dae3369c105230709b0d4055c31 and source/score.py at 8d6332c1192bfde78adc75bec2f0260543ef75963bc98267189c2636418d1572 - the exact bytes worker job za-cct-001 executed, which produced the gated artifact 9f2e10ce485635f65e695072e2bbd904024ebf58b1465d12fb969f8bb0692180 from the pinned source pages (FeatureServer table Switching_Substation_Load_Profile/0, item bebf20c25bfa4ffaa7fc07a1a94ba287, 52,608 rows fetched anonymously with per-page sha256 pinned in the build; the build fails if any pinned bytes change). code/qualify_dataset.py is the canonical gate 1.5.0; code/materialize.py is the baseline bundle's own copy (candidates/za-cct-substation-evening-peak-exceedance/baseline/materialize.py). baseline/train.py, validate.py, validate.sh are the harness benchmark's runner files, shipped verbatim (a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8, b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b, 3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d; recorded unmodified: true in the za-cct-baseline-001 result). baseline/reproduce_baseline.sh is generated for the package by the packaging session from candidates/za-cct-substation-evening-peak-exceedance/baseline/run.sh, mirroring the cqc package's reproduce script.",
+ "source": {
+  "name": "City of Cape Town Open Data Portal - Switching Substation Load Profile (half-hourly MVA per switching substation, 2022-2024)",
+  "landing_page": "https://odp-cctegis.opendata.arcgis.com/documents/cctegis::switching-substation-load-profile",
+  "api": "https://services6.arcgis.com/nyYfO9SxHU2ChQd9/arcgis/rest/services/Switching_Substation_Load_Profile/FeatureServer/0 (anonymous ArcGIS REST table, item bebf20c25bfa4ffaa7fc07a1a94ba287; outStatistics returns 400 on this service, so the build harvests paged reads and pins each page's sha256)",
+  "accessed": "2026-11-01/03 (the build pins every fetched page's bytes and fails if they change; the item serves the closed 2022-01-01..2024-12-31 window as one table, created 2026-02-28, last modified 2026-03-02, hasStaticData)",
+  "licence": "City of Cape Town Open Data Terms of Use (disclaimer-only; no restriction on reuse, redistribution or derivatives for portal data) together with the Council-approved Open Data Policy 27781; evidence recorded in candidates/za-cct-substation-evening-peak-exceedance/record.json license_evidence. Requested attribution carries through: 'Source: City of Cape Town Open Data Portal - Switching Substation Load Profile'. Derived research dataset - not a City of Cape Town product."
+ },
+ "commands": {
+  "gate": "python3 code/qualify_dataset.py ./task",
+  "baseline": "sh baseline/reproduce_baseline.sh ./task",
+  "get_dataset": "python3 get_dataset.py --dest ./task"
+ },
+ "layout": {
+  "public/train.csv": "public/train.csv",
+  "public/eval.csv": "public/eval.csv",
+  "private/holdout.csv": "private/holdout.csv",
+  "meta.json": "meta.json",
+  "quality.json": "quality.json"
+ },
+ "required_docs": [
+  "code/score.py",
+  "code/materialize.py"
+ ],
+ "note": "One task instance, one artifact. The five shipped files are the za-cct-001 worker artifact 9f2e10ce485635f65e695072e2bbd904024ebf58b1465d12fb969f8bb0692180 (gate 1.5.0 on the full artifact, failed_checks empty, exact-byte --accept on the worker and re-accept in za-cct-baseline-001 before any score); the package's code/ carries the construction script, the references implementation, the runner-workdir materializer and the gate, baseline/ the runner-contract baseline. The holdout ships as an asset like the other splits; it is not copied into any runner workdir and was never evaluated. The prediction instant is 06:00 SAST on day D; every shipped feature reads only readings with timestamps <= the instant (including day D 00:00-06:00) and trailing aggregates from readings <= the instant; the evening target window 16:00-22:00 SAST lies entirely after the instant; the evening label matrix is sealed to auxiliary/evening_peaks.csv (artifact-side) and NO evening-derived column ships in any split file - the synthetic rehearsal pinned by tests/test_za_cct_build.py bounds the evening-p95 delta attack at 0.995 exact agreement, and the gate's real-artifact probe measured the shipped morning-peak history column at 44.9% eval mismatches (no recovery). The publisher released the window as ONE CLOSED TABLE (hasStaticData), so the evaluation contract is retrospective research: no historical-operational-availability claim is made. PACKAGING IS BY OPERATOR DECISION (a) RECORDED 2026-11-04 (agent-headroom benchmark, on the ocha-fts precedent), and the comparison LEADS every package document, README first: the stock runner baseline scored eval AUC 0.5107 (both runner implementations agree, on the accepted bytes after --accept) on the identical 14,965 eval rows, while the pre-registered headroom reference morning_ratio (morning_max / hist_morningpeak_mean_90, reading only shipped at-instant columns - a fair same-information comparison) reached 0.7340, with persistence_prev_evening 0.6502 (information-asymmetric BY DESIGN: recomputed scorer-side from strictly-earlier same-station rows), calendar_identity 0.6504, identity_only 0.5134, month_only 0.6541, majority-class accuracy 0.9161, global_rate degenerate; paired clustered bootstrap (150 resamples, (station, day) clusters): morning_ratio over persistence CI [-0.1012, -0.0706] and over calendar_identity CI [-0.1019, -0.0627] exclude zero. NO figure may be quoted without that comparison beside it. The artifact's splits: train 13,735 rows / 1,539 positives (11.205%) / 227 distinct exceedance days (label year 2022), eval 14,965 / 1,256 (8.393%) / 246 days (2023), holdout 15,006 / 1,382 (9.210%) / 247 days (2024, sealed); burn-in 1,230 station-days counted, never scored."
+}

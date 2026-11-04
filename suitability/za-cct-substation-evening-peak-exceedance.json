@@ -1,0 +1,69 @@
+{
+ "schema_version": 1,
+ "dataset": "za-cct-substation-evening-peak-exceedance",
+ "release_tag": "v2026.11",
+ "artifact_version": "9f2e10ce485635f65e695072e2bbd904024ebf58b1465d12fb969f8bb0692180",
+ "reviewed_on": "2026-11-04",
+ "reviewer": "Scout, advancement session 2026-11-04 (review over the accepted za-cct-001 artifact 9f2e10ce485635f65e695072e2bbd904024ebf58b1465d12fb969f8bb0692180: gate 1.5.0 over the full artifact on the worker, failed_checks empty; exact-byte --accept on the worker and re-accept in za-cct-baseline-001 before any score; references from za-cct-001 score.py post-acceptance, baseline from za-cct-baseline-001). The release_tag v2026.11 is the planned tag recorded in the candidate next_action; the packaging session must use it or update this record in the same change.",
+ "decision": "retain_restricted",
+ "summary": "Retained, by operator decision (a) recorded 2026-11-04, as an AGENT-HEADROOM benchmark for retrospective research and agent evaluation with the labeled eval split - NOT as a demonstrated-model-headroom claim. Each row is one City of Cape Town switching substation on one day D at 06:00 SAST: predict whether the substation's evening peak apparent-power load (max half-hourly MVA over 16:00-22:00 SAST on day D) exceeds the trailing-90-evening 95th percentile of its own evening peaks (evenings ending strictly before the instant, min 30 prior evenings). Features are the substation's half-hourly MVA readings with timestamps <= the instant (including day D 00:00-06:00), trailing aggregates from readings <= the instant only, calendar fields and station identity; the label matrix is sealed and never ships. The publisher released the entire 2022-01-01..2024-12-31 window as ONE CLOSED TABLE (ArcGIS item created 2026-02-28, modified 2026-03-02, hasStaticData), so this is retrospective_research: no historical-operational-availability claim is made, and no claim that the closed table's state equals any past operational state. The measured finding that defines the task, carried beside every figure: the stock runner model scored eval AUC 0.5107 (both runner implementations agree, on the accepted bytes after --accept) on the identical 14,965 eval rows, while the pre-registered headroom reference morning_ratio (morning_max / hist_morningpeak_mean_90, reading only shipped at-instant columns - a fair same-information comparison) reached 0.7340, with persistence_prev_evening 0.6502 (information-asymmetric BY DESIGN: recomputed scorer-side from strictly-earlier same-station rows because a shipped prior-evening label is exactly the P0 cross-row recovery the feature design excludes), calendar_identity 0.6504, identity_only 0.5134, month_only 0.6541, majority-class accuracy 0.9161 and global_rate degenerate (constant, no ranking information). Paired clustered bootstrap (150 resamples): morning_ratio over persistence CI [-0.1012, -0.0706] and over calendar_identity CI [-0.1019, -0.0627] both exclude zero; persistence vs calendar_identity is inconclusive (CI contains zero). Prevalence shifts 11.205% (train 2022) to 8.393% (eval 2023) and eval is a single year, so per-month AUCs are reported beside the pooled figure. Morning_ratio proves extractable signal exists in the shipped at-instant features; the stock runner trailing it is a recorded defect of that runner under this protocol, and beating the reference ladder is the natural agent target.",
+ "evaluation_access": "isolated_rows",
+ "historical_availability": "unverified",
+ "training_label_timing": "unverified",
+ "vintage": "current_snapshot",
+ "selection": "prediction_time",
+ "cross_row_audit": {
+  "status": "bounded_no_recovery",
+  "scope": "Gate 1.5.0's declared probe on the full real artifact (morning_history_delta_attack): the only history-derived shipped column is hist_morningpeak_mean_90 (MORNING peaks), covered 13,694/13,735 train, 14,924/14,965 eval, 14,965/15,006 holdout rows, with mismatches 48.2%/44.9%/44.5% - it does not permit label recovery. The equivalent EVENING-p95 history attack recovers labels (0.995 exact agreement measured in the synthetic rehearsal pinned by tests/test_za_cct_build.py), which is why NO evening-derived column ships in any split file; the evening matrix is sealed to the auxiliary label store and never enters any solver-visible frame. Isolated rows remain the declared access requirement; the probes are a measured bound, not an enforcement claim.",
+  "evidence": "probe numbers recorded in candidates/za-cct-substation-evening-peak-exceedance/record.json measurements.cross_row_probe_on_real_artifact and asserted by tests/test_za_cct_build.py (the evening-attack rehearsal); the gate report for artifact 9f2e10ce... (job za-cct-001, collected digest-verified) recorded the same probe over the full artifact on the worker."
+ },
+ "supported_uses": [
+  "Agent evaluation with the labeled eval split under the recorded operator decision (a): the consumer is a coding agent that edits the runner's train.py; the reference ladder (morning_ratio 0.7340 leading, then month_only 0.6541, calendar_identity 0.6504, persistence 0.6502 with its information-asymmetry note, identity_only 0.5134) is the target to beat and must be quoted beside any model figure",
+  "Retrospective research and method comparison on the pinned artifact 9f2e10ce, predicting row-wise from the shipped at-instant columns under an isolated-rows protocol, with the labeled eval split as development/validation",
+  "Reproducibility studies: per-file sha256-pinned source pages, digest-pinned artifact, the gate/references/baseline shipped with the package"
+ ],
+ "unsupported_uses": [
+  "Operational or live load-management claims: the publisher released the 2022-2024 window as one closed table (hasStaticData since 2026-03) and no historical operational availability is claimed or evidenced",
+  "Any historical point-in-time reconstruction claim about the closed table, or any claim that past operational states are recoverable from it",
+  "Reading the stock runner's 0.5107 as a ceiling on model performance: morning_ratio 0.7340 proves extractable signal exists in the shipped at-instant features, and no model above the ladder has been measured",
+  "Quoting any single figure from this dataset without the comparison ladder (and the persistence information-asymmetry note) beside it",
+  "Presenting the derived dataset as a City of Cape Town product; the source's attribution and terms carry through unchanged"
+ ],
+ "limitations": [
+  "The defining measured finding: stock runner eval AUC 0.5107 trails morning_ratio 0.7340 by 0.2233 on the identical 14,965 eval rows (also trails persistence 0.6502 / calendar_identity 0.6504; identity_only 0.5134 is at chance). Recorded diagnosis candidates: the stock train.py treats the 'date' string as a train-only 365-level categorical so eval dates are unseen, and the one-line morning ratio is not among the stock features - the model must express it implicitly through splits.",
+  "Persistence_prev_evening is information-asymmetric BY DESIGN (recomputed scorer-side from strictly-earlier same-station rows; the shipped frame excludes prior-evening labels to prevent the P0 cross-row recovery), so model-vs-persistence is not a fair same-information comparison; morning_ratio IS fair (both read only shipped at-instant columns).",
+  "Prevalence shift between splits (train 11.205% -> eval 8.393% -> holdout 9.210%) and eval is a single year (2023): per-month AUCs are reported beside every pooled figure (morning_ratio ranges 0.5702..0.9239 across eval months), and a single-year holdout (2024) carries the same structural caveat.",
+  "Positives cluster city-wide on regime days (eval: 1,256 positives over 246 distinct exceedance days, 41 stations): station-days within one day are dependent, and clustered (station, day) bootstrap intervals accompany every comparison.",
+  "Retrospective closed-table vintage: one ArcGIS item serving the whole 2022-2024 window; publisher extension of the series beyond 2024 is unknown (the sibling prepaid item IS extended monthly; this item hasStaticData).",
+  "The trailing-p95 threshold is computed per-station from the artifact's own history (not an external domain standard); the label is defined relative to it and says nothing about absolute network capacity."
+ ],
+ "required_actions": [
+  "Before any evaluation: read the evaluation contract in the package quality.json; treat the labeled eval split as development/validation and keep the holdout (15,006 rows / 1,382 positives, sealed) outside evaluated agents' workspaces until a design is frozen",
+  "Any evaluated model figure must be quoted beside the reference ladder on the identical eval rows - morning_ratio 0.7340 leading, with the persistence information-asymmetry note and majority-class accuracy 0.9161 (no ranking information)",
+  "Every package document (README first) leads with the comparison per operator decision (a): stock baseline 0.5107 quoted beside morning_ratio 0.7340, on the ocha-fts precedent framing",
+  "Consumers must keep the City of Cape Town attribution ('Source: City of Cape Town Open Data Portal - Switching Substation Load Profile') and the derived-labelling notice in every redistribution"
+ ],
+ "corrections": [],
+ "evidence": [
+  {
+   "claim": "The artifact passed the full-artifact qualification gate (1.5.0, failed_checks empty, 45 checks) and was exact-byte accepted on the worker; the baseline job re-accepted the fetched bytes before any score.",
+   "source": "candidates/za-cct-substation-evening-peak-exceedance/record.json",
+   "detail": "artifacts[-1]: gate 1.5.0 over the full artifact on the worker (report collected digest-verified to .factory/za-cct-001/reports/output/), accepted 'exact-byte --accept on the worker (za-cct-001): ACCEPTED: /output/extract matches the qualified artifact 9f2e10ce485635f6'; jobs za-cct-001 and za-cct-baseline-001 (baseline run.sh re-accepts the five assets from staging release 432591871, digests verified, BEFORE train.py/validate.sh run)"
+  },
+  {
+   "claim": "The comparison the contract requires was measured on the identical 14,965 eval rows: morning_ratio 0.7340 > month_only 0.6541 > calendar_identity 0.6504 > persistence_prev_evening 0.6502 > identity_only 0.5134 > stock runner 0.5107, with clustered paired bootstrap CIs (150 resamples) excluding zero for morning_ratio over persistence and over calendar_identity, and majority-class accuracy 0.9161.",
+   "source": "candidates/za-cct-substation-evening-peak-exceedance/record.json",
+   "detail": "measurements.baseline_triad_2026_11_03_za_cct_baseline_001 (model 0.5107 both prints, artifact 9f2e10ce, job za-cct-baseline-001) and measurements.references_2026_11_03_za_cct_001 (reference AUCs, per-month eval table, dependence note: 1,256 positives over 246 distinct days, clustered (station, day) inference required); the same numbers are in the collected reports .factory/za-cct-001/reports/output/references-*.json and .factory/za-cct-baseline-001/reports/output/baseline_result.json"
+  },
+  {
+   "claim": "Cross-row outcome exposure is bounded with no recovery path measured on the real artifact: the shipped history column (morning peaks) covered 14,924/14,965 eval rows with 44.9% mismatches, and the evening-derived equivalent - which WOULD recover labels (0.995 exact agreement) - ships nowhere; the evening label matrix stays sealed outside every solver-visible frame.",
+   "source": "tests/test_za_cct_build.py",
+   "detail": "the evening-attack rehearsal is pinned as a test assertion; the real-artifact probe numbers are recorded in candidates/za-cct-substation-evening-peak-exceedance/record.json measurements.cross_row_probe_on_real_artifact (morning_history_delta_attack coverage 13,694/14,924/14,965 and mismatches 48.2%/44.9%/44.5% train/eval/holdout)"
+  },
+  {
+   "claim": "The source is the publisher's own anonymous ArcGIS table under the City of Cape Town Open Data terms (class A), one closed 2022-2024 vintage (hasStaticData), which makes the task retrospective research.",
+   "source": "https://services6.arcgis.com/nyYfO9SxHU2ChQd9/arcgis/rest/services/Switching_Substation_Load_Profile/FeatureServer/0",
+   "detail": "recorded in candidates/za-cct-substation-evening-peak-exceedance/record.json sources[] (item bebf20c25bfa4ffaa7fc07a1a94ba287, created 2026-02-28, modified 2026-03-02, hasStaticData; 52,608 rows measured 2026-11-01) and license_evidence (portal Terms of Use disclaimer-only with no reuse restriction; Council Open Data Policy 27781: 'freely used, shared and built-on by anyone, anywhere, for any purpose')"
+  }
+ ]
+}

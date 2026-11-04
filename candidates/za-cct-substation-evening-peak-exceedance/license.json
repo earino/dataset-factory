@@ -1,0 +1,47 @@
+{
+ "dataset": "za-cct-substation-evening-peak-exceedance",
+ "decided": "2026-11-04",
+ "basis": "The City of Cape Town publishes the Switching Substation Load Profile table on its Open Data Portal (ArcGIS item bebf20c25bfa4ffaa7fc07a1a94ba287, anonymous REST access, no registration). The item's licenseInfo field links the City of Cape Town Open Data Terms of Use (read 2026-11-01), the same instrument the portal's other datasets carry. The portal Open Data Terms of Use are disclaimer-only (as-is, no warranty, no liability) and impose NO restriction on reuse, redistribution or derivatives for portal data; the Council-approved Open Data Policy (Policy Number 27781, revised and approved 03 December 2020) defines open data as data that 'can be freely used, shared and built-on by anyone, anywhere, for any purpose' and binds portal use to those terms. Class A (open terms permitting redistribution and derivatives, attribution requested), so the standing defaults apply: our code and documentation are MIT, our rights in the derived compilation are dedicated CC0-1.0, and the source's own terms are preserved, never relicensed. A counter-signal is recorded for the reviewer: the general City website terms differ from the Open Data Portal terms; the Open Data Policy and the portal Terms of Use are the dataset-specific instruments and both were read from the publisher's own pages.",
+ "code": {
+  "spdx": "MIT",
+  "copyright": "Copyright (c) 2026 E. Ariño de la Rubia (earino)",
+  "file": "LICENSE-MIT.txt",
+  "third_party": [
+   {
+    "file": "baseline/train.py, baseline/validate.py, baseline/validate.sh",
+    "terms": "MIT - the harness benchmark's own runner files, shipped verbatim and unmodified (bundled sha256 equal the benchmark clone's hashes, recorded as unmodified: true in the baseline job result)",
+    "permission": "The benchmark checkout is read-only; permission to distribute verbatim copies of its runner files covers the distributed copies only"
+   }
+  ]
+ },
+ "compilation": {
+  "spdx": "CC0-1.0",
+  "file": "LICENSE-CC0-1.0.txt",
+  "scope": "Our contribution - the substation-day eligibility frame (one row per switching substation per day D with at least 30 prior evenings of history at the 06:00 SAST instant; burn-in days counted, never scored), the derived binary evening-peak-exceedance label (day-D evening peak MVA over 16:00-22:00 SAST exceeding the same substation's trailing-90-evening 95th percentile, computed with the pinned p95 rule from the sealed evening matrix), the at-instant feature derivations (same-day 00:00-06:00 readings, trailing morning-peak aggregates, calendar fields, station identity), the sealed evening label matrix kept outside every solver-visible frame, and the temporal partition (train 2022, eval 2023, holdout 2024) - is dedicated to the public domain under CC0-1.0. The dedication covers only our contribution: the underlying City of Cape Town load readings keep their own designation and remain subject to the City of Cape Town Open Data Terms of Use, whose attribution request carries through to every copy of the derived data. Nothing here relicenses the source or presents CC0 as the source's terms."
+ },
+ "source": {
+  "spdx": "LicenseRef-CityOfCapeTown-OpenDataTerms",
+  "status": "No standard SPDX licence is declared; the operative instruments are the City of Cape Town Open Data Terms of Use (disclaimer-only: as-is, no warranty, no liability; no restriction on reuse, redistribution or derivatives for portal data) together with the Council-approved Open Data Policy 27781 ('freely used, shared and built-on by anyone, anywhere, for any purpose'), and the ArcGIS item's licenseInfo links the portal terms. The table is engineering telemetry (half-hourly apparent-power MVA readings per switching substation): no personal data, no third-party content, no official symbols. The redistributed fields are the publisher's own readings (timestamped MVA values and station identifiers) plus our derived binary label, at-instant aggregates, calendar fields and partition. The derived dataset is labelled as such throughout and is not a City of Cape Town product.",
+  "evidence": [
+   "[ArcGIS item bebf20c25bfa4ffaa7fc07a1a94ba287 licenseInfo field, read 2026-11-01] hyperlink to 'https://www.capetown.gov.za/General/Terms-of-use-open-data' - the same instrument the portal's other datasets carry.",
+   "[City of Cape Town Open Data terms of use, https://www.capetown.gov.za/general/city-of-cape-town-open-data-terms-of-use/, read 2026-10-29] disclaimer-only (as-is, no warranty, no liability) and imposes NO restriction on reuse, redistribution or derivatives for portal data; same portal terms quoted in candidates/za-cct-c3-service-request-surge/record.json from 2026-10-29.",
+   "[Open Data Policy, Policy Number 27781, revised and approved by Council 03 December 2020, https://www.capetown.gov.za/media/vg2plaql/open_data_policy.pdf, read 2026-10-29] Definitions: \"'Open data' means data that can be freely used, shared and built-on by anyone, anywhere, for any purpose.\"; clause 7.6: \"The use of the Open Data Portal will be subject to its Terms of Use. The Terms of Use will conform with open data principles.\"",
+   "[Counter-signal noted for the reviewer] the general City website terms differ from the Open Data Portal terms; the Open Data Policy and portal Terms of Use are the dataset-specific instruments and both were read from the publisher's own pages (recorded in candidates/za-cct-substation-evening-peak-exceedance/record.json license_evidence)."
+  ],
+  "attribution": "Source: City of Cape Town Open Data Portal - Switching Substation Load Profile (ArcGIS item bebf20c25bfa4ffaa7fc07a1a94ba287), accessed 2026-11-01.",
+  "citation": "City of Cape Town. Switching Substation Load Profile. City of Cape Town Open Data Portal, ArcGIS item bebf20c25bfa4ffaa7fc07a1a94ba287, Open Data Terms of Use. Derived dataset: Cape Town switching-substation evening-peak exceedance prediction task (not a City of Cape Town product).",
+  "derived_labelling": "Labelled as a derived research dataset throughout; it is not the City of Cape Town's official product and the City has not reviewed or endorsed it. The publisher's own designation, requested attribution statement and suggested citation are preserved, and changes from the source are indicated (row selection and burn-in eligibility, the derived binary evening-peak-exceedance label, the at-instant feature derivations, the sealed evening label matrix, the temporal partition). The portal Terms of Use disclaimer (as-is, no warranty, no liability) carries through unchanged."
+ },
+ "conditions": [
+  "The requested attribution statement ('Source: City of Cape Town Open Data Portal - Switching Substation Load Profile') is carried in every copy of the data and its documentation.",
+  "The dataset is labelled as derived and never presented as a City of Cape Town product; the portal Terms of Use disclaimer (as-is, no warranty, no liability) carries through unchanged.",
+  "Changes are indicated: the dataset ships a row selection (substation-days with at least 30 prior evenings at the instant), a derived binary evening-peak-exceedance label, at-instant feature derivations, a sealed evening label matrix that never ships, and a temporal partition (train 2022 / eval 2023 / holdout 2024).",
+  "The framing limitation is stated in every document per the operator decision (a): the stock runner baseline (eval AUC 0.5107) is quoted beside the pre-registered headroom reference morning_ratio 0.7340 on the identical eval rows; no figure may be quoted without that comparison.",
+  "Our contribution is dedicated CC0-1.0; the source's terms are preserved and carry through unchanged, including attribution.",
+  "Our code and documentation are MIT."
+ ],
+ "operator_acceptance": {
+  "accepted": false,
+  "note": "No operator acceptance is needed or recorded: the source carries open terms (portal Terms of Use + Open Data Policy 27781) permitting redistribution and derivatives, and this release stays within them."
+ }
+}
