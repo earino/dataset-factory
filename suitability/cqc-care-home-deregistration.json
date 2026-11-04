@@ -1,0 +1,63 @@
+{
+ "schema_version": 1,
+ "dataset": "cqc-care-home-deregistration",
+ "release_tag": "v2026.11",
+ "artifact_version": "afe9ee203f302f3ca41b9b01ad74a937e111d1b830590c7e662bb0b7b6df85d7",
+ "reviewed_on": "2026-11-04",
+ "reviewer": "Scout, advancement session 2026-11-04 (review over the accepted cqc-chd-004 artifact afe9ee203f302f3c, gate 1.5.0 ok=true failed_checks=[] on the full artifact on the worker, exact-byte --accept, re-accepted from fetched bytes in job cqc-chd-baseline-001 before any score; references from cqc-chd-004 score.py post-acceptance, baseline from cqc-chd-baseline-001)",
+ "decision": "retain_restricted",
+ "summary": "Retained for retrospective model-development research and agent evaluation with the labeled eval split. Each row is one care-home location active on the CQC register at a January 'HSCA Active Locations' vintage instant T (selected by the vintage's own 'Care home?' = Y column read at T; the label is looked up afterwards, solely to compute the label). Features are the vintage's own at-T columns; as-of was asserted in-build (0/14,765 eval rows carry a rating publication date after T). The prediction instant is the vintage production instant (period_end, administrative record, 0-day lag). The evaluation contract is retrospective research with isolated rows: identity ships as per-instant salted pseudonyms (the missing-successor P0 design - each scored frame carries a single instant), so no prior-instant outcome is linkable and there is NO persistence reference by design; gate cross-row probes measured pseudonym-successor coverage 0/0/0 on train/eval/holdout and quasi-identifier (LA x beds x start-year x rating x sector) coverage 0 on eval and holdout (11,786 on train, where labels are public anyway). Training-label timing is UNVERIFIED - the Google Drive archive serves the historical active-locations vintages but no full-row availability ledger exists for them, and the label register is the current cumulative 2026-11-02 deactivated edition - so no historical-forecasting or operational claim is made. Measured finding carried beside every figure: the stock runner baseline scored eval AUC 0.5659 (both runner implementations agree) on the identical 14,765 eval rows, BELOW the strongest reference rating_x_beds_rate 0.5871 (train-fitted rate table over latest rating x beds; paired bootstrap over last_rating_rate 0.5597 with CI95 [0.0123, 0.0407] excluding zero) but ABOVE every one-line prior - a recorded defect of the stock runner under this protocol, not a no-headroom verdict: the reference reads only shipped at-T columns (no information asymmetry), so any consumer can compute it in one line and beating it is the natural target for a solver. One verified diagnosis candidate: the stock train.py treats 'instant' (YYYY-MM) as a train-only categorical, so the eval instant 2024-01 is unseen. Majority-class accuracy on eval is 0.94873 (no ranking information). Framing limitation stated everywhere: the target is the register event (deregistration), which CQC's own file note says can include services continuing under a new registration - not necessarily service cessation (BMJ Public Health 2024 implies ~40-55% re-registrations/transfers).",
+ "selection": "prediction_time",
+ "vintage": "mixed",
+ "historical_availability": "unverified",
+ "training_label_timing": "unverified",
+ "evaluation_access": "isolated_rows",
+ "cross_row_audit": {
+  "status": "bounded_no_recovery",
+  "scope": "Gate 1.5.0's own probes over the full artifact (job cqc-chd-004, checks contract.cross_row_probe_0 and contract.cross_row_probe_1): the pseudonym-successor join covers 0 train / 0 eval / 0 holdout rows, and the strongest instant-invariant quasi-key join (LA x beds x start-year x rating x sector, +12-month offset) covers 0 eval and 0 holdout rows (11,786 train rows, where labels are public anyway). Each scored frame carries a SINGLE instant (train 2018-01..2022-01, eval 2024-01, holdout 2025-01), so successor rows of eval rows exist only in the sealed holdout and holdout rows have no successor instant in the artifact. Isolated rows remain the declared requirement; the probes are a measured bound, not an enforcement claim.",
+  "evidence": "probe_0 pseudonym-successor coverage 0/0/0 and probe_1 quasi-identifier eval/holdout coverage 0, recorded in release/cqc-care-home-deregistration/qualification.json (checks contract.cross_row_probe_0, contract.cross_row_probe_1) and candidates/cqc-care-home-deregistration/record.json qualification.cross_row_probe_on_real_artifact; the single-instant-per-frame design is recorded in the same gate report's splits.actual_ranges evidence and in release/cqc-care-home-deregistration/measurements.json"
+ },
+ "evidence": [
+  {
+   "claim": "The artifact passed the full-artifact qualification gate (1.5.0, ok=true, failed_checks empty) and was exact-byte accepted on the worker, including the period_end timing block, the at-T as-of assertion, disjoint single-instant splits with both classes, and the evaluation contract (retrospective_research, isolated_rows).",
+   "source": "release/cqc-care-home-deregistration/qualification.json",
+   "detail": "gate report for artifact afe9ee203f302f3ca41b9b01ad74a937e111d1b830590c7e662bb0b7b6df85d7, job cqc-chd-004; re-accepted from fetched bytes in cqc-chd-baseline-001 before any score ('ACCEPTED: /data/extract matches the qualified artifact afe9ee203f302f3c', shipped in release/cqc-care-home-deregistration/VERIFICATION.md)"
+  },
+  {
+   "claim": "The comparison the skill requires was measured on the identical 14,765 eval rows: rating_x_beds_rate 0.5871 > stock-runner model 0.5659 (both implementations) > last_rating_rate 0.5597 > beds_bucket_rate 0.5298 > hsca_start_year_rate 0.5226 > local_authority_rate 0.5207 > provider_sector_rate 0.5011; global constant degenerate; majority-class accuracy 0.94873; NO persistence by design.",
+   "source": "release/cqc-care-home-deregistration/measurements.json",
+   "detail": "references from cqc-chd-004 score.py (post-acceptance, rate tables from train rows only, holdout never opened); baseline from cqc-chd-baseline-001 (runner files verified unmodified, CONTRACT OK)"
+  },
+  {
+   "claim": "No shipped column separates the target on its own; the label-source columns never ship; the 2016/2017 vintages were dropped loudly (unresolved required columns) and the 2023 vintage is excluded by design so every train window closes >= 12 months before the eval instant.",
+   "source": "candidates/cqc-care-home-deregistration/record.json",
+   "detail": "qualification block (rebuild_history, cross_row_probe_on_real_artifact), construction_script and quality descriptor; build diagnostics for every instant recorded in the cqc-chd-004 staging manifest"
+  }
+ ],
+ "limitations": [
+  "Training-label timing and full-row historical availability are UNVERIFIED: the pinned January vintages are genuine historical register snapshots, but no availability ledger exists for the 2011-2026 Drive archive and the label register is the current cumulative deactivated edition (2026-11-02, max observed end date 2026-10-27, holdout window end 2026-01-01, margin 299 days). No point-in-time reconstruction or operational availability is claimed.",
+  "Framing: the target is the register event (deregistration), which conflates cessation with re-registration (CQC in-file note; BMJ Public Health 2024 implies ~40-55% re-registrations/transfers). Successor linkage needs developer-portal API access and was not built.",
+  "The stock runner baseline (0.5659) trails the strongest reference (rating_x_beds_rate 0.5871) on the identical eval rows - a recorded defect of that runner under this protocol; no model above the reference has been measured and fitting until a score wins is not the protocol.",
+  "Era breaks inside the train-to-eval span: the single-assessment rating change (~2024) and the 1 April 2019 regulatory-history inheritance change; the publisher's system migration delays reflection of recent cancellations in current files (lag measured, margin 299 days).",
+  "One eval instant and one holdout instant (January 2024 / January 2025): the measured comparison covers a single instant each, not a range of instants."
+ ],
+ "supported_uses": [
+  "Retrospective research and method comparison on the pinned artifact afe9ee203f302f3c, predicting row-wise from the shipped at-T vintage columns under an isolated-rows protocol, with the labeled eval split as development/validation",
+  "Agent evaluation with the labeled eval split: the consumer (a coding agent) edits the runner's train.py; the recorded reference ladder (rating_x_beds_rate 0.5871 leading) is the target to beat and must be quoted beside any model figure",
+  "Reproducibility studies: every artifact file is digest-pinned, the construction source bytes are sha256-pinned, and the gate, references and baseline are all shipped in the package"
+ ],
+ "unsupported_uses": [
+  "Operational or live deregistration-risk screening claims: no historical operational-availability evidence exists and none is claimed",
+  "Point-in-time historical reconstruction of the label register beyond the pinned edition, or any claim that the cumulative deactivated file's state equals the file's state at past instants",
+  "Reading the model-vs-reference comparison as a ceiling: the stock runner trailing rating_x_beds_rate does not prove every competent model must lose, and no model above the reference has been measured",
+  "Quoting any single figure from this dataset without the comparison ladder and the register-event framing limitation beside it",
+  "Service-closure prediction: the label is the register event, not verified cessation"
+ ],
+ "required_actions": [
+  "Before any evaluation: read the evaluation contract in release/cqc-care-home-deregistration/quality.json; treat the labeled eval split as development/validation and keep the holdout outside evaluated agents' workspaces until a design is frozen",
+  "Any evaluated model figure must be quoted beside rating_x_beds_rate 0.5871 on the identical eval rows, with the no-persistence-by-design note and the majority-class accuracy 0.94873 (no ranking information)",
+  "Holdout (14,749 rows / 761 positives) stays sealed until the design is frozen; a holdout score requires a pre-registered protocol and is final, never development",
+  "Consumers must keep the CQC attribution statement and the derived-labelling notice in every redistribution (OGL-UK v3.0 terms preserved; see release/cqc-care-home-deregistration/LICENSE.md)"
+ ],
+ "corrections": []
+}
