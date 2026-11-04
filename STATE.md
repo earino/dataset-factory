@@ -13047,3 +13047,125 @@ prompt, then the flip), so it was left untouched. No construction was launched.
   + flip (awaiting_operator since 02:47:24Z).
 
 
+
+
+## 2026-11-04 (05:20Z) - addendum: cqc-chd-004 SUCCEEDED end to end - cqc-care-home-deregistration QUALIFIED + ACCEPTED (artifact afe9ee203f302f3c..., gate 1.5.0 failed_checks empty, successor probes eval/holdout coverage 0); references measured, runner baseline is next
+
+cqc-chd-004 (server 174428318, launched 05:02:44Z, 376.4 s, exit 0, staging
+release 433536764) carried all three fixes and passed the whole worked order:
+construct (five train instants built in-band: 2018 16,104/947, 2019
+15,807/917, 2020 15,554/803, 2021 15,467/952, 2022 15,206/799; 2016/2017
+loudly DROPPED; deactivated index matched 65,830/17,177 exactly) -> gate 1.5.0
+on the FULL artifact ok=true with failed_checks EMPTY -> exact-byte --accept
+ACCEPTED -> score.py references (eval only, holdout sealed). Both successor
+probes report eval/holdout coverage 0 (probe 1 in-train 11,786 - the
+quasi-linkage rate where labels are public anyway). Discovery fixtures
+reproduced exactly, including the full field set (beds/LA/rating/pub/start).
+Splits: train 78,138/4,418 (5.654%), eval 14,765/757 (5.126%), holdout
+14,749/761 (5.158%, sealed). Worker destroyed 05:12:54Z after verified
+collection; ledger closed.
+
+References measured post-acceptance (rate tables from train only): the
+strongest is rating_x_beds_rate 0.5871 eval AUC (paired bootstrap vs
+last_rating_rate +0.0273, CI [0.0123, 0.0407], excludes zero), then
+last_rating_rate 0.5597 > beds_bucket 0.5298 > hsca_start_year 0.5226 >
+local_authority 0.5207 > provider_sector 0.5011 > global (degenerate);
+majority accuracy 0.9487. NO persistence reference BY DESIGN (the per-instant
+pseudonym makes prior-instant labels unlinkable - for the scorer too). Any
+full-model figure from the coming baseline job must be quoted beside 0.5871.
+
+The candidate record now carries the qualified transition (artifacts[0] with
+the full digest, qualification block, measurements, next_action = the
+runner-contract baseline job on the staged bytes). check-candidate cqc OK.
+November worker ledger: four cqc reservations (0.04 each) + the ibama probes;
+actual compute ~EUR 0.01 per job; release reserve untouched.
+
+## 2026-11-04 (05:40Z) - discovery tick (Africa): afdb-project-cancellation OPENED (investigating) - the tick's named AfDB publisher carries a class-A row-level product (IATI activity files, cc-by on 57/57 registry datasets, project history 1969-2026, all 230 cancelled operations measured); every other named source re-checked against its recorded blocker and none moved; data.gov.za, data.afdb.org and projectsportal.afdb.org measured NXDOMAIN
+
+Discovery-only session, regional focus Africa (operator tick: South Africa, Kenya, Nigeria,
+Ghana, Morocco, AfDB, UNECA). One candidate opened, none reopened, no construction,
+qualification, packaging, publication or advancement of any candidate; no worker launched
+(EUR 0); bounded anonymous probes only (plain HTTP + the supported browser where Cloudflare
+or a TLS-chain defect blocked plain clients). Queue before the tick: Africa 12 records,
+3 ready (all ZA), buffer already satisfied globally (15 ready).
+
+- NAMED-PUBLISHER SWEEP (each re-check is against the record's own reopen/park condition,
+  no new probing of closed sources beyond what the condition names):
+  data.gov.za NXDOMAIN (Cloudflare DoH confirms no A record; the odza.opendata.durban
+  mirror is a stale 2018 project page) - the portal is dead, not merely unreachable from
+  this coordinator. Morocco: portal count 699 vs the recorded 697 trigger (+2, not
+  material) - park stands (probe retained in the afdb candidate's probe/). SAPS:
+  copyright.php re-read in the supported browser, unchanged ("All material on this site is
+  subject to copyright") - the written-licence-confirmation unpark question stands; plain
+  Python fails the site's TLS chain (recorded in the saps notes). Kenya: KNBS stays parked
+  on the pending operator CC BY-NC decision; opendata.go.ke is NXDOMAIN; CBK stays closed
+  (class C). Ghana: data.gov.gh stays closed (dead endpoints; the record forbids re-probing
+  from this coordinator). Nigeria: NBS stays closed (class D, dated quote). Stats SA / City
+  of Cape Town / National Treasury: already on the bench (3 ZA ready + 1 qualified), no
+  discovery action owed. UNECA: ecastats.uneca.org is an ACS "Data Viz" SPA of country
+  indicator aggregates (data-situation/country-profile/products views, custom API with
+  countries/codelists) - aggregate-platform shape (StatCan precedent), not opened.
+- afdb-project-cancellation (AfDB Group, CI/Abidjan, INVESTIGATING): the one named publisher
+  with an un-probed row-level class-A product. MapAfrica (mapafrica.afdb.org) is the
+  publisher's own dashboard over AfDB's IATI publication: 6,000 operations, status mix
+  383 Approved / 987 Ongoing / 4,400 Completed / 230 Cancelled. TASK: at the board-approval
+  instant (activity-date type 1), from at-approval attributes only (country, sector,
+  finance type, commitment, planned span, era), predict whether the operation is ultimately
+  CANCELLED (status 5) rather than COMPLETED (status 3) - a rare-event register-exit task
+  the bench does not cover (companies-house exit is parked on labels; CQC is a different
+  registry). LICENCE class A twice over: MapAfrica "About this data" modal "Data provided
+  under Creative Commons Attribution licence" (CC BY 4.0 link) AND license_id cc-by on
+  57/57 IATI Registry datasets for publisher afdb (package_show + package_search measured
+  2026-11-04). MEASURED: all 230 cancelled operations (browser, 3 bounded pages; approval
+  years 1969-2023, every decade carries positives; 49 countries + 29 multinational; actual
+  start on 219/230, actual end on 0/230); proposed windows train <=2000 (136 positives) /
+  eval 2001-2010 (36) / holdout 2011-2023 (58); publisher-summary cross-check recorded with
+  its honest discrepancy (MapAfrica 230 cancelled vs community datastore 191 - construction
+  must define the population from the registry XML only and reconcile); registry inventory
+  57 datasets, sum activity_count 5,188, deep history IN the published files (610
+  activities with starts before 1985); one full country XML (afdb-saotome, 1,145,985 B in
+  one anonymous GET) pinned the schema: date types 1/2/3 on all activities, type 4 (actual
+  end) exactly on the completed (32/32), no board-approval element (type-1 is the instant
+  proxy, ~1 day off MapAfrica's displayed Approval Date on the one observed pair); the
+  schedule-overrun alternative target measured revision-contaminated (planned_end is the
+  revised end; 12.5% overrun in the one-country sample) - cancellation is the clean
+  target. Extraction cost measured on the coordinator (one 1.1 MB XML in one GET; registry
+  compat API plain-HTTP); bulk ~140 MB over 57 files is an ESTIMATE, worker pass measures
+  it; MapAfrica's own API/downloads are Cloudflare-403 to plain clients (browser only).
+- NOVELTY differentiated (check-novelty.py recorded, 4 queries): no published scored or
+  ML-ready benchmark for AfDB operation outcomes; nearest prior art is a Nature Energy
+  2020 power-plant-realization ML study (different population) and MOPAN institutional
+  reports. The two WB-family comparators on this bench (wb-ieg-project-outcome,
+  wb-loan-disbursement-completion) were dropped on measured no-headroom over
+  identity/rate priors at the approval instant - this candidate's record PRE-REGISTERS
+  the reference triad (global / country / sector-x-decade cancellation rates) as the
+  mandatory first scored comparison and drop condition, and carries the family risk in
+  its review. Five contracts: redistribution supported; timing partial (current-vintage
+  posture to declare, instant offset to pin); target supported with the censoring rule
+  stated; split capacity partial (per-window denominators + clustered counts are the
+  first construction measurement on a worker); contribution differentiated-but-family-risky.
+  NOT ready: the worker-side reachability test (afdb.org static paths answered this
+  coordinator but Hetzner is untested - the dws.gov.za lesson), the full-panel count pass,
+  the codelists vocabulary pin and the instant-offset sample are the named next steps in
+  record.next_action, in order.
+- Hygiene: check-candidate afdb OK (investigating, unpiped rc=0); discovery-coverage rc=0
+  (Africa 12 -> 13 records, investigating 16 -> 17, live 49 -> 50, live non-US 44/50 =
+  88%); novelty check recorded (4 queries, differentiated). CONCURRENT-WRITER NOTE: the
+  working tree carries the 05:20Z advancement addendum's uncommitted cqc-chd-004 updates
+  (record status qualified, jobs ledger, STATE.md addendum); the cqc record in that
+  transitional state fails check-candidate (construction_script empty at qualified), so the
+  working-tree suite run fails exactly one test on THEIR bytes, not mine. This commit
+  verifies in a CLEAN CLONE at HEAD + this session's files only: check-candidate --all
+  rc=0, discovery-coverage rc=0, full suite 708/708 OK (rc read from the clone run, not
+  through a pipe). Their addendum (complete, factual prose) is swept into this commit via
+  STATE.md; their record/job edits are left uncommitted and untouched. No token exposure;
+  no release byte, tag, manifest or destination touched; probe scripts + raw outputs
+  retained in candidates/afdb-project-cancellation/probe/.
+
+Next action (a fresh session can carry it out): discovery owns the afdb-project-cancellation
+steps in record.next_action (novelty recorded; then the worker reachability + bounded
+extraction test, the full-panel count pass, the codelists/instant pins, the pre-registered
+triad-vs-family-risk decision); the other Africa records keep their recorded blockers
+(KNBS operator decision, SAPS written licence answer, Morocco count trigger); the
+concurrent cqc session's uncommitted record fixes (construction_script at qualified) belong
+to that session or its follow-up.

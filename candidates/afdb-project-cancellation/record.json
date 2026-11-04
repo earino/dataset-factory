@@ -1,0 +1,191 @@
+{
+ "id": "afdb-project-cancellation",
+ "status": "investigating",
+ "created_at": "2026-11-04T09:20:00+00:00",
+ "domain": "multilateral development bank operations / project lifecycle panel",
+ "prediction_question": "At the board-approval instant of an African Development Bank Group (AfDB) operation, using only the at-approval attributes AfDB publishes in its IATI activity files (country, sector, financing instrument, commitment, planned span, era), will the operation ultimately be CANCELLED (activity-status 5) rather than COMPLETED (activity-status 3)?",
+ "prediction_time": "The instant the operation enters AfDB's published record at approval: activity-date type 1 (planned start), observed within ~1 day of MapAfrica's displayed 'Approval Date' (P-KE-KF0-013: UI 23 Sept 2026 vs API planned_start 2026-09-24; a bounded construction sample must pin this offset). All features are at-approval attributes; the terminal status is observed only years later at the current coverage end (registry files re-published in full, so the current vintage is the observation frame - a current-vintage retrospective task, not an operational historical claim).",
+ "target_definition": "Binary: terminal activity-status = Cancelled (IATI code 5) vs Completed (code 3) for operations whose outcome window has closed. Label source column: activity-status in AfDB's IATI XML (excludable by construction - it ships only as the label). Statuses 1 (Approved, 383) and 2 (Ongoing, 987) are right-censored and never scored; eligibility must be defined from information available at the instant (approval date + planned end + censoring margin), never from eventual status.",
+ "sources": [
+  {
+   "name": "AfDB IATI activity files via the IATI Registry (publisher 'afdb', org XM-DAC-46002)",
+   "url": "https://iatiregistry.org/api/3/action/package_search?fq=organization:afdb&rows=100",
+   "api": "57 datasets (54 country files + afdb-multinational + afdb-nonsovereign + afdb-org + libya), all license_id=cc-by (57/57 measured 2026-11-04); sum of registry activity_count extras = 5,188; files are static XML at www.afdb.org/sites/default/files/iati/*.xml (example afdb-saotome resource: iatisaotomeandprincipedata.xml, 1,145,985 bytes fetched in one anonymous GET); registry package_show answers plain HTTP clients",
+   "access": "anonymous; the community IATI Datastore (datastore.codeforiati.org) also serves this publisher (5,187 activities, per-status and start-date filters verified); MapAfrica (mapafrica.afdb.org) is the publisher's own presentation layer over the same data but its API/download endpoints sit behind a Cloudflare challenge that 403s plain clients (tested from this coordinator)",
+   "licence": "CC BY 4.0 (license_id cc-by on all 57 IATI Registry dataset records for publisher afdb, read 2026-11-04; see license_evidence)"
+  },
+  {
+   "name": "MapAfrica portal (publisher's own dashboard; used for bounded aggregates and the status vocabulary, via the supported browser only)",
+   "url": "https://mapafrica.afdb.org/",
+   "api": "/api/v15/stats, /api/v15/activities (paged), /api/v15/codelists - all Cloudflare-challenged for plain clients; the supported browser passes and same-origin fetches work",
+   "access": "browser-only from this coordinator; bulk downloads (CSV/JSON/XLSX/XML buttons) also 403 plain clients (tested 2026-11-04)",
+   "licence": "CC BY 4.0 (MapAfrica About-this-data modal: Data provided under Creative Commons Attribution licence; see license_evidence)"
+  }
+ ],
+ "license_evidence": [
+  "MapAfrica 'About this data' modal, read 2026-11-04 in the supported browser: 'Data provided under Creative Commons Attribution licence.' with a footer link to https://creativecommons.org/licenses/by/4.0/deed.en ('Creative Commons Attribution' anchor, href verified on the page).",
+  "IATI Registry package_show?id=afdb-saotome, read 2026-11-04 via plain HTTPS: license_id 'cc-by', organization 'African Development Bank' (name 'afdb'). package_search?fq=organization:afdb&rows=100 returns all 57 AfDB datasets with license_id cc-by on every one (parsed over the full result set).",
+  "IATI Standard 'Using IATI data' page (iatistandard.org, search-result snippet read 2026-11-04): 'IATI data is open, meaning anyone can use it for any purpose.' - corroboration only; the per-publisher registry record governs.",
+  "AfDB 'IATI Data' page (afdb.org, search-result snippet read 2026-11-04): 'Data is published on the IATI Registry in XML format.' Identifies the registry files as AfDB's own publication channel."
+ ],
+ "licence_class": "A",
+ "licence_note": "CC BY 4.0 stated by the publisher twice: on MapAfrica's own data-product modal and on every IATI Registry dataset record for publisher 'afdb'. Attribution 'African Development Bank Group' carried into any LICENSE.md; the dataset must be labelled derived, not AfDB's official product.",
+ "construction_script": null,
+ "split_strategy": "Temporal split on approval year. Proposed (positive counts measured from the bounded full-population cancelled fetch of 2026-11-04, 230 rows): train approvals <=2000 (136 cancelled positives), eval 2001-2010 (36), holdout 2011-2023 (58). Negatives (completed 4,400) are thousands per window but per-window denominators and eligibility accounting are unmeasured - the exact per-window class count over the terminal population is the FIRST construction measurement on the worker, with acceptance criteria recorded before scoring. Positives cluster by country (measured: 49 distinct countries, top DRC 15 / Cote d'Ivoire 10 / Liberia 9 / Tunisia 9 / Angola 9 of 230; 29 rows multinational) and by approval year - per-window clustered counts required at construction.",
+ "measurements": {
+  "mapafrica_stats_2026_11_04": "Publisher's own aggregate (browser same-origin fetch /api/v15/stats?currency=xdr): activities 6,000; activity_status {1: 383, 2: 987, 3: 4400, 5: 230}; 55 countries, 18 sector groups, 58 sectors, 16 ADF cycles, 5 regions; total commitments (non-gov view) 142,427,078,206.7 XDR.",
+  "cancelled_population_2026_11_04": "All 230 cancelled operations fetched bounded via MapAfrica /api/v15/activities?status=5 (3 pages x 100 rows, browser): approval (planned_start) range 1969-07-24..2023-12-30; by approval year (1969..2023): 1,1,3,2,3,5,5,5,4,7,9,5,7,4,12,9,7,9,13,1,1,1,8,6,4,4,7,6,2,1,1,3,2,1,9,4,5,4,10,4,8,3,5,6,7,2,1,1,2 for years 1969,1972,1975,1976,1977,1979,1981,1982,1983,1984,1985,1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023 - every decade carries positives; 49 distinct countries + 29 multinational rows; actual_start present on 219/230, actual_end on 0/230 (cancellations never carry a completion date).",
+  "registry_inventory_2026_11_04": "package_search?fq=organization:afdb&rows=100: 57 datasets, license_id cc-by on 57/57, sum(activity_count extras)=5,188 (afdb-org has no count), largest files afdb-multinational 781, afdb-nonsovereign 402, afdb-morocco 175, afdb-tunisia 166, afdb-tanzania 131. Evidence: probe/out/africa_tick_b12.json.",
+  "datastore_crosscheck_2026_11_04": "datastore.codeforiati.org (community index of the same registry files): 5,187 activities for reporting-org=XM-DAC-46002; activity-status=3 -> 3,896; activity-status=5 -> 191; start-date<1985 -> 610; start-date<2000 -> 1,759; 2010<start-date<2020 -> 1,439. DISCREPANCY recorded honestly: MapAfrica reports 230 cancelled / 4,400 completed while the datastore indexes 191 / 3,896 - MapAfrica's internal database appears to carry more rows than the published IATI files; construction MUST define the population from the registry XML only (the publisher's own bulk instrument) and reconcile this gap as a design input, never mix channels.",
+  "sao_tome_file_schema_2026_11_04": "afdb-saotome XML (42 activities, 1,145,985 bytes, one anonymous GET): activity-status mix {3: 32, 2: 7, 1: 3}; activity-date types 1,2,3 on 42/42 and type 4 (actual end) on exactly the 32 completed - label derivable from published dates; planned_start != actual_start on 42/42 (approval vs effectiveness are distinct); overrun check on the 32 completed: actual_end > planned_end on 4/32 (12.5% of this one-country sample) - recorded as evidence that a schedule-overrun target would be revision-contaminated (planned_end in the current vintage is the revised end), NOT as a population count.",
+  "xml_field_inventory_2026_11_04": "Per-activity fields available at approval in the registry XML: iati-identifier, title, recipient-country, sector (vocabulary 1), activity-date types 1-3, default-flow-type (10=ODA), default-finance-type (421/110 on 35/42 in the sample), default-tied-status (5=untied), conditions attached, budget items with AfDB-specific codes, participating organisations (2,073 distinct across the bank per MapAfrica stats). Post-approval / label-source fields excluded from features: activity-date type 4 (actual end), activity-status, transaction histories (2,442 transaction elements in the sample file carrying afdb:finance-type-id), total_disbursements. No explicit board-approval-date element exists in the XML; the type-1 date is the instant proxy (see prediction_time).",
+  "extraction_cost_measured_2026_11_04": "Coordinator (browser, Cloudflare-cleared): 3 activities pages (100 rows each, ~40 KB/page) + 1 stats call + 1 codelists attempt. Coordinator (plain HTTP): registry package_search 90,702 B + package_show 1,625 B + one country XML 1,145,985 B in one GET (~3 s); datastore count queries 4.3-99 KB each, 6 queries. Bulk estimate (NOT a count): 57 XML files, 5,188 activities at ~27 KB/activity measured on the one file -> ~140 MB total, worker-scale. PREREQUISITE: afdb.org static-file paths answered this coordinator anonymously (dynamic afdb.org pages 403 plain clients), but worker-side (Hetzner) reachability is untested - the dws.gov.za lesson; the first worker job must measure it.",
+  "known_event_fixtures": "Positives (label 1, measured in the cancelled fetch): P-LR-B00-005 Liberia, approved 1969-07-24 (earliest cancelled, sector 32110, sovereign, UA 1,350,000); P-SD-FF0-001 Sudan, approved 2019-12-18, actual start 2020-03-05, planned end 2025-12-31, sector 23230, sovereign, UA 29,020,000. Negative (label 0, measured in the afdb-saotome XML): 46002-P-ST-K00-012, planned start 2013-06-17, actual end 2015-12-31 before planned end 2016-06-30, status 3 (Completed).",
+  "novelty_search_2026_11_04": "Web searches found no published, scored or ML-ready benchmark for AfDB operation outcomes: nearest prior art is a Nature Energy 2020 ML study predicting realization of PLANNED POWER PLANTS in Africa (different population - all power plants, not AfDB operations), MOPAN institutional assessment reports (descriptive), and an unrelated HuggingFace IATI mirror of Malaysia aid flows (country-level aggregates, no outcome task). The WB-family comparators on this bench (wb-ieg-project-outcome, wb-loan-disbursement-completion) were dropped on measured no-headroom over identity/rate priors at the Board-approval instant - this candidate's differentiation must be measured against that precedent, not assumed (see next_action)."
+ },
+ "jurisdiction": {
+  "country": "CI",
+  "region": "Africa",
+  "publisher": "African Development Bank Group (Abidjan, Cote d'Ivoire) - publisher of the IATI activity files and MapAfrica",
+  "recorded_at": "2026-11-04"
+ },
+ "novelty_check": {
+  "checked_at": "2026-11-04T05:33:46+00:00",
+  "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+  "queries": [
+   "African Development Bank project cancellation prediction",
+   "AfDB project success machine learning",
+   "IATI project outcome prediction dataset",
+   "multilateral development bank project cancellation prediction"
+  ],
+  "evidence": {
+   "huggingface_datasets": [
+    {
+     "query": "African Development Bank project cancellation prediction",
+     "hits": 0,
+     "top": []
+    },
+    {
+     "query": "AfDB project success machine learning",
+     "hits": 0,
+     "top": []
+    },
+    {
+     "query": "IATI project outcome prediction dataset",
+     "hits": 0,
+     "top": []
+    },
+    {
+     "query": "multilateral development bank project cancellation prediction",
+     "hits": 0,
+     "top": []
+    }
+   ],
+   "zenodo_records": [
+    {
+     "query": "African Development Bank project cancellation prediction",
+     "hits": 951726,
+     "top": [
+      "Food Inflation and Child Health",
+      "Design and Operationalisation of a Results-Based Monitoring Framework for AfDB TSF Pillar III Operations (RDTS)",
+      "EXISTING PROBLEMS OF THE SUSTAINABLE FINANCING SYSTEM IN UZBEKISTAN: A DIAGNOSTIC ANALYSIS",
+      "EXISTING PROBLEMS OF THE SUSTAINABLE FINANCING SYSTEM IN UZBEKISTAN: A DIAGNOSTIC ANALYSIS",
+      "EXISTING PROBLEMS OF THE SUSTAINABLE FINANCING SYSTEM IN UZBEKISTAN: A DIAGNOSTIC ANALYSIS"
+     ]
+    },
+    {
+     "query": "AfDB project success machine learning",
+     "hits": 632124,
+     "top": [
+      "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
+      "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI",
+      "RGB and RGNIR Plastic Waste Database",
+      "Project Success Assessment based on Machine Learning",
+      "mushrooms"
+     ]
+    },
+    {
+     "query": "IATI project outcome prediction dataset",
+     "hits": 665746,
+     "top": [
+      "Table 3 in 21 - Hydroxypregnane 21 - O-malonylation, a crucial step in cardenolide biosynthesis, can be achieved by substrate-promiscuous BAHD-type phenolic glucoside malonyltransferases from Arabidopsis thaliana and homolog proteins from Digitalis lanata",
+      "Front-end Code for the Visualization Tool for Exploring IATI's Open Aid Data",
+      "Outcome dataset for project: Miniatura 2023/07/X/ST8/01345",
+      "Outcome dataset for project: Miniatura 2023/07/X/ST8/01311",
+      "IngSoft NASA POWER Atmospheric and Solar Data Observatory"
+     ]
+    },
+    {
+     "query": "multilateral development bank project cancellation prediction",
+     "hits": 862271,
+     "top": [
+      "World Bank Infrastructure Financing and Its Effects on Private Sector Investment: A Quantitative Analysis of Crowding-In Effects in Emerging Markets",
+      "Modern Sources of Investment Project Financing: Bank Lending, Private Capital, and International Financial Institutions",
+      "Modern architecture of the international financial system",
+      "washinvestments: Multilateral development banks investment behaviour in water and sanitation",
+      "EXISTING PROBLEMS OF THE SUSTAINABLE FINANCING SYSTEM IN UZBEKISTAN: A DIAGNOSTIC ANALYSIS"
+     ]
+    }
+   ],
+   "arxiv_preprints": [
+    {
+     "query": "African Development Bank project cancellation prediction",
+     "hits": 5,
+     "top": [
+      "The Araucaria Project: Improving the cosmic distance scale",
+      "Open but Incompatible: A License Compatibility Analysis of Corpora for Low-Resource African Languages",
+      "Astrotourism for Development: An Overview of Resources from the IAU Office of Astronomy for Development",
+      "Chinese vs. World Bank Development Projects: Insights from Earth Observation and Computer Vision on Wealth Gains in Afri",
+      "A Combined Deep Learning-Gradient Boosting Machine Framework for Fluid Intelligence Prediction"
+     ]
+    },
+    {
+     "query": "AfDB project success machine learning",
+     "hits": 5,
+     "top": [
+      "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+      "DOME: Recommendations for supervised machine learning validation in biology",
+      "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
+      "Active learning for data streams: a survey",
+      "Privacy-preserving machine learning for healthcare: open challenges and future perspectives"
+     ]
+    },
+    {
+     "query": "IATI project outcome prediction dataset",
+     "hits": 5,
+     "top": [
+      "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
+      "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+      "The Araucaria Project: Improving the cosmic distance scale",
+      "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+      "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset"
+     ]
+    },
+    {
+     "query": "multilateral development bank project cancellation prediction",
+     "hits": 5,
+     "top": [
+      "The Araucaria Project: Improving the cosmic distance scale",
+      "Astrotourism for Development: An Overview of Resources from the IAU Office of Astronomy for Development",
+      "A Combined Deep Learning-Gradient Boosting Machine Framework for Fluid Intelligence Prediction",
+      "The ATLAS Pixel Project",
+      "Chinese vs. World Bank Development Projects: Insights from Earth Observation and Computer Vision on Wealth Gains in Afri"
+     ]
+    }
+   ]
+  },
+  "evidence_summary": "- huggingface_datasets / 'African Development Bank project cancellation prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'AfDB project success machine learning': 0 hit(s) - nothing notable\n- huggingface_datasets / 'IATI project outcome prediction dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'multilateral development bank project cancellation prediction': 0 hit(s) - nothing notable\n- zenodo_records / 'African Development Bank project cancellation prediction': 951726 hit(s) - Food Inflation and Child Health, Design and Operationalisation of a Results-Based Monitoring Framework for AfDB TSF Pillar III Operations (RDTS), EXISTING PROBLEMS OF THE SUSTAINABLE FINANCING SYSTEM IN UZBEKISTAN: A DIAGNOSTIC ANALYSIS, EXISTING PROBLEMS OF THE SUSTAINABLE FINANCING SYSTEM IN UZBEKISTAN: A DIAGNOSTIC ANALYSIS, EXISTING PROBLEMS OF THE SUSTAINABLE FINANCING SYSTEM IN UZBEKISTAN: A DIAGNOSTIC ANALYSIS\n- zenodo_records / 'AfDB project success machine learning': 632124 hit(s) - plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database, Project Success Assessment based on Machine Learning, mushrooms\n- zenodo_records / 'IATI project outcome prediction dataset': 665746 hit(s) - Table 3 in 21 - Hydroxypregnane 21 - O-malonylation, a crucial step in cardenolide biosynthesis, can be achieved by substrate-promiscuous BAHD-type phenolic glucoside malonyltransferases from Arabidopsis thaliana and homolog proteins from Digitalis lanata, Front-end Code for the Visualization Tool for Exploring IATI's Open Aid Data, Outcome dataset for project: Miniatura 2023/07/X/ST8/01345, Outcome dataset for project: Miniatura 2023/07/X/ST8/01311, IngSoft NASA POWER Atmospheric and Solar Data Observatory\n- zenodo_records / 'multilateral development bank project cancellation prediction': 862271 hit(s) - World Bank Infrastructure Financing and Its Effects on Private Sector Investment: A Quantitative Analysis of Crowding-In Effects in Emerging Markets, Modern Sources of Investment Project Financing: Bank Lending, Private Capital, and International Financial Institutions, Modern architecture of the international financial system, washinvestments: Multilateral development banks investment behaviour in water and sanitation, EXISTING PROBLEMS OF THE SUSTAINABLE FINANCING SYSTEM IN UZBEKISTAN: A DIAGNOSTIC ANALYSIS\n- arxiv_preprints / 'African Development Bank project cancellation prediction': 5 hit(s) - The Araucaria Project: Improving the cosmic distance scale, Open but Incompatible: A License Compatibility Analysis of Corpora for Low-Resource African Languages, Astrotourism for Development: An Overview of Resources from the IAU Office of Astronomy for Development, Chinese vs. World Bank Development Projects: Insights from Earth Observation and Computer Vision on Wealth Gains in Afri, A Combined Deep Learning-Gradient Boosting Machine Framework for Fluid Intelligence Prediction\n- arxiv_preprints / 'AfDB project success machine learning': 5 hit(s) - Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Active learning for data streams: a survey, Privacy-preserving machine learning for healthcare: open challenges and future perspectives\n- arxiv_preprints / 'IATI project outcome prediction dataset': 5 hit(s) - Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The Araucaria Project: Improving the cosmic distance scale, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset\n- arxiv_preprints / 'multilateral development bank project cancellation prediction': 5 hit(s) - The Araucaria Project: Improving the cosmic distance scale, Astrotourism for Development: An Overview of Resources from the IAU Office of Astronomy for Development, A Combined Deep Learning-Gradient Boosting Machine Framework for Fluid Intelligence Prediction, The ATLAS Pixel Project, Chinese vs. World Bank Development Projects: Insights from Earth Observation and Computer Vision on Wealth Gains in Afri",
+  "prior_art": [
+   "Nicolas/et al Nature Energy 2020 (power-plant realization ML, not AfDB operations); MOPAN AfDB assessment 2023 (descriptive institutional report); electricsheepasia/asia-aid-flows-iati-malaysia HF dataset (aggregate mirror, no outcome label); bench comparators wb-ieg-project-outcome and wb-loan-disbursement-completion (dropped on measured no-headroom - family risk, not prior art)"
+  ],
+  "theirs": "The publisher provides the raw IATI files and MapAfrica (no prediction task, no splits); MOPAN publishes institutional assessment reports (descriptive); a Nature Energy 2020 study predicts realization of planned POWER PLANTS in Africa (different population); an HuggingFace IATI mirror of Malaysia aid flows is country aggregates with no outcome task; no published scored benchmark predicts AfDB operation outcomes",
+  "ours": "A scored, temporally split AfDB operation-cancellation benchmark built from the publisher's own CC BY IATI activity files: at-approval attributes only, 1969-2023 deep history with positives in every split window, censoring-aware eligibility, current-vintage contract declared",
+  "verdict": "differentiated",
+  "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+ },
+ "review": "Five contracts at investigating: (1) Redistribution SUPPORTED (class A, two publisher instruments, 57/57 registry datasets cc-by). (2) Prediction timing PARTIALLY SUPPORTED - the instant is stateable (approval, activity-date type 1) and features are at-approval attributes in a fully republished file, but the current-vintage-only posture must be declared (no historical snapshots promised) and the type-1-vs-approval-date offset needs a bounded sample; UNRESOLVED items recorded in prediction_time. (3) Target SUPPORTED as derivable-and-excludable (activity-status is the label source; censoring rule stated; the MapAfrica-vs-registry count gap must be reconciled at construction). (4) Split capacity PARTIALLY SUPPORTED - positives measured in every proposed window (136/36/58) but per-window denominators and clustered counts are unmeasured (worker pass; the first construction measurement). (5) Contribution UNRESOLVED pending check-novelty.py and the pre-registered family-risk test: two WB at-approval tasks on this bench died on rate-table/identity priors, so the reference triad (global / country / sector-x-decade cancellation rates) is the mandatory first scored comparison and a pre-registered drop condition, not an afterthought.",
+ "next_action": "Discovery-owned order for the next session(s): (1) record the novelty verdict with scripts/check-novelty.py (queries: 'AfDB project cancellation prediction', 'African Development Bank project success machine learning', 'IATI project outcome prediction dataset', 'multilateral development bank project cancellation dataset'); (2) worker-side reachability + bounded extraction test of the 57 afdb.org XML URLs (the dws.gov.za lesson: coordinator success does not prove worker access); if afdb.org blocks the worker, fall back to registry resource URLs / datastore; (3) full-panel worker pass to measure the unmeasured numbers: terminal population (status 3+5) per approval-year window with both classes, per-window clustered counts (country x year), the eligibility accounting under the censoring rule, and the reconciliation of MapAfrica 230 cancelled vs datastore 191; (4) pin the instant: bounded sample of type-1 dates vs MapAfrica displayed approval dates (P-KE-KF0-013 one-day offset) and the codelists status vocabulary via the browser (/api/v15/codelists is Cloudflare-gated); (5) PRE-REGISTER the family-risk test before any model: reference triad from train only (global rate, trailing country rate, trailing sector-x-decade rate) on the identical eval rows - if the triad's strongest member is not beaten by a meaningful margin, this is the third measured instance of the WB at-approval family defect and the candidate drops with the evidence; (6) cross-row design: if any trailing-rate feature ships, anti-join design + gate-1.5 reverse-history probes per the za-statsa/ibama precedents; (7) only then advance to construction -> full-worker qualification -> exact-byte acceptance -> reference triad -> reporting, in the standing order. Construction must not start while the packaged-candidate rule blocks it.",
+ "jobs": [],
+ "artifacts": [],
+ "rejection_reason": null
+}

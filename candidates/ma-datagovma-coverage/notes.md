@@ -74,3 +74,13 @@ further probes spent.
 - Count 694: below 697 again (697 on 2026-10-23, 695 on the earlier re-check, 694 now);
   no new publisher org observed. Reopen condition (count materially above 697 or a new
   org) still NOT met. Stays parked; no further probes spent this tick.
+
+## 2026-11-04 re-check (Africa discovery tick)
+
+- Same one CKAN call (batch reachability probe of this tick, retained at
+  candidates/afdb-project-cancellation/probe/afdb_probe_01_portal_reachability.py,
+  output probe/out/africa_tick_b1.json):
+  `{"success": true, "result": {"count": 699, ...}}`.
+- Count 699 vs 697 recorded on 2026-10-23 (+2, not material); no new publisher org checked
+  further because the count trigger alone is not met. Reopen condition still NOT met.
+  Stays parked; no further probes spent this tick.

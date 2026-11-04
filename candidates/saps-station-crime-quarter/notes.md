@@ -58,3 +58,14 @@ check-novelty.py then.
 
 One quarter workbook = 11.55 MB measured. Full quarterly series FY2019/20-FY2026/27
 (~28 quarters) ≈ 300 MB over ~28 requests (estimate). Cheap - access is not the problem.
+
+## 2026-11-04 re-check (Africa discovery tick)
+
+The tick named SAPS, so the parked blocker (written licence confirmation) was re-tested
+read-only. `https://www.saps.gov.za/copyright.php` re-read in the supported browser
+(plain Python fails the site's TLS chain from this coordinator: CERTIFICATE_VERIFY_FAILED
+unable to get local issuer certificate; http:// times out). Page text unchanged in
+substance from the 2026-10-21 evidence: "All material on this site is subject to copyright."
+No open licence, no redistribution grant, no terms change. Footer "© 2025 Copyright: SAPS".
+The unpark question is unchanged: an external written answer from SAPS, which a tick
+cannot resolve under the standing class C policy. Park stands.
