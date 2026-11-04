@@ -1,3 +1,52 @@
+## 2026-11-04 (06:46Z) - watcher follow-up: cqc-chd-baseline-001 verified already recorded (5a6aa3f) and acknowledged with its .factory marker; cleanup re-confirmed read-only
+
+Watcher brief, one terminal job observed (cqc-chd-baseline-001: succeeded,
+exit 0, 10 assets, staging release 433569826, uploaded). The 06:35Z advancement
+session had already collected its reports (06:27:43Z), interpreted the result,
+updated the candidate record, destroyed the worker (06:28:28Z, provider-verified
+by that session) and committed everything at 5a6aa3f, with packaging at 36cae86
+and the suitability review at f446b1d after it - but never wrote the
+`.factory/cqc-chd-baseline-001/handled` marker, so the watcher kept re-reporting
+the job. This session verified every claim first-hand from the collected bytes
+and wrote the marker. No collect re-run, no `worker status` (it writes), no
+launch, no worker spend (EUR 0), no candidate byte, release, tag, manifest or
+destination change.
+
+- VERIFIED FROM THE COLLECTED BYTES, not from the owning session's prose:
+  jobs/cqc-chd-baseline-001.json is terminal (status deleted, collected
+  06:27:43Z, deleted 06:28:28Z, server 174433577); result.json succeeded
+  exit 0, 63.4 s executor, 10 assets on release 433569826, fetch 13,155,319
+  bytes 5/5 with every sha256 equal to the accepted artifact's five gate-report
+  digests (the ledger fetch spec, built from baseline/expected_artifact.json);
+  container.log prints "ACCEPTED: /data/extract matches the qualified artifact
+  afe9ee203f302f3c" BEFORE any score, task.json target deregistered_12m /
+  id_columns ['location_key'], "the private holdout was NOT copied",
+  train + validate exit 0, eval AUC 0.5659 from BOTH implementations, evidence
+  contract_ok true; baseline/baseline_result.json (tracked):
+  accepted_before_scoring true, gate 1.5.0 ok true with failed_checks empty,
+  runner files unmodified (bundled sha256 == runner_files.json), scope
+  "no agent loop, no holdout evaluation". Comparison and scope stand as
+  recorded in measurements.runner_contract_baseline_2026_11_04_cqc_chd_baseline_001:
+  model 0.5659 < headroom reference rating_x_beds_rate 0.5871 on the identical
+  14,765 eval rows (recorded defect of the stock runner, verified diagnosis
+  candidate, pre-registered drop condition NOT met - the model beats every
+  one-line prior), majority accuracy 0.94873, NO persistence by design.
+- CLEANUP re-confirmed read-only this session (fresh evidence, not a repeat of
+  the owning session's claim): GET /v1/servers/174433577 -> 404 not_found;
+  scripts/provider-inventory.py 0 servers / 0 primary IPs, project and account.
+- Marker written: .factory/cqc-chd-baseline-001/handled (one line: commit,
+  evidence paths, remaining blocker - none for this job).
+- Next action unchanged and advancement-owned: private staging per
+  dataset-release per the record's next_action (publish-dataset.py to the
+  private repo, re-run check-package, then packaged_at + awaiting_operator
+  true once the flip is the sole remaining step); the fresh pre-flip
+  adversarial audit precedes the operator's flip, which stays the operator's
+  single approval. The operator's two standing decisions (za-cct (a)/(b)/(c);
+  unhcr drop/re-scope/keep-private) are unchanged and not part of this event.
+- Hygiene: check-candidate --all rc=0 (cqc-care-home-deregistration OK, status
+  qualified); working tree clean at start, no other coordinator's unfinished
+  work and no unrelated edits to preserve.
+
 ## 2026-11-04 (06:35Z) - advancement session: cqc-chd-baseline-001 runner-contract baseline SUCCEEDED on the accepted cqc-care-home-deregistration artifact (model eval AUC 0.5659, below the headroom reference rating_x_beds_rate 0.5871 - recorded defect for the stock runner, NOT a no-headroom verdict; packaging started per the recorded next_action)
 
 Chosen candidate: cqc-care-home-deregistration (operator-listed "(package)"). The two
