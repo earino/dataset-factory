@@ -1,3 +1,70 @@
+## 2026-11-04 (18:20Z) - advancement session: za-cct-substation-evening-peak-exceedance PACKAGED per operator decision (a) - release/ assembled (23 files), manifest + check-package green on the first pass, comparison ladder (0.5107 beside morning_ratio 0.7340) leading every document; private staging is the named next step
+
+Scheduled advancement session. Release work outranks construction: the task list's one
+"(package)" item maps to za-cct-substation-evening-peak-exceedance, whose record carries
+operator decision (a) RECORDED 2026-11-04 (package as agent-headroom benchmark) with
+packaging prep steps (i)-(ii) already done. The list's other za-cct entry
+(za-cct-c3-service-request-surge) conflicts with its own record - status ready, never
+constructed, artifacts [] - so nothing there can be packaged and its next step is worker
+construction, which the release work outranks; the record governs. No cqc/unhcr item was
+actionable (cqc awaiting_operator: the flip; unhcr drop executed). No remediation hold is
+active. No release byte, tag, manifest of a PUBLISHED package, destination or visibility
+changed anywhere.
+
+- PACKAGING STEPS (iii)+(iv) DONE this session, per the record's pipeline order:
+  - release/za-cct-substation-evening-peak-exceedance/ assembled by
+    candidates/za-cct-substation-evening-peak-exceedance/package/build_release_2026_11_04.py
+    from digest-verified recorded bytes only: construction code copied after re-verifying
+    the c57e371 digests (build.py 5ffefd98..., run.sh 2584200e..., score.py 8d6332c1...);
+    byte-pinned meta.json/quality.json equal to the accepted artifact 9f2e10ce...'s five
+    gate digests; qualification.json = the gate report itself (sha256 0f1bb6a9...); the
+    canonical gate qualify_dataset.py 1.5.0 (4fab8a34..., same bytes the cqc package
+    ships); benchmark runner files verbatim from the read-only clone (bundled sha256 ==
+    runner_files.json); LICENSE texts standard. measurements.json GENERATED from the record
+    + the za-cct-001 gate-report parts + the za-cct-baseline-001 result + the references
+    report - no figure retyped (every AUC, split count, bootstrap interval and fixture
+    value read from those files).
+  - Documents with the comparison ladder LEADING, README first: stock runner eval AUC
+    0.5107 (both runner implementations, after --accept, on the accepted bytes) beside
+    morning_ratio 0.7340 (paired clustered bootstrap CIs excluding zero over persistence
+    and calendar_identity), persistence 0.6502 (information-asymmetric BY DESIGN),
+    identity_only 0.5134, majority accuracy 0.9161; the agent-headroom framing per
+    decision (a); the retrospective-research evaluation contract (closed static
+    2022-2024 table, hasStaticData), the sealed evening matrix / no-evening-value-ships
+    P0 design, the load-shedding publisher caveat and the prevalence drift all stated in
+    every document.
+  - record.construction_output.splits added from the gate-report values,
+    cross-checked against meta.json (package/record_splits_2026_11_04.py);
+    scripts/release-manifest.py wrote MANIFEST.json + SHA256SUMS (artifact_version
+    9f2e10ce485635f6..., 5 files, baseline present, licenses generated from license.json);
+    scripts/check-package.py -> OK FIRST PASS.
+  - publish-dataset.py DRY-RUN rc=0 (would create v2026.11, 5 assets, 8.4 MB, streamed
+    from staging 432591871, artifact from commit c57e371) - and a caution recorded in
+    next_action: that script's --execute is the OLD direct-publication path (its plan
+    says "public repository" and it demands --confirm-publication); private staging goes
+    through the publish WORKER JOB per the cqc precedent (cqc-publish-001), never --execute.
+- VERIFIED this session, not assumed: all six pinned digests re-hashed before copy
+  (build.py/run.sh/score.py/meta.json/quality.json/qualification.json), the gate script's
+  digest equals the cqc package's shipped gate, the runner files hash to runner_files.json,
+  get_dataset.py parses and its EXPECTED block matches expected_artifact.json exactly,
+  reproduce_baseline.sh passes sh -n, the README ladder/CI/artifact strings render.
+- Hygiene: check-candidate za-cct OK (status=qualified) + --all rc=0 (131 records);
+  suite 708/708 OK (unittest, 29.2 s); no worker launched (EUR 0); no token use beyond the
+  read-only dry-run (publish-dataset.py prints no token); holdout untouched and sealed;
+  candidates/fenz-incident-data/ left untracked for its owner.
+- NEXT (a fresh session can carry it out): private staging per the cqc precedent, in the
+  record's next_action order - (v) jobs/za-cct-publish-001 (release: true worker job
+  modeled on candidates/cqc-care-home-deregistration/publish/job.json: create the PRIVATE
+  repo earino/za-cct-substation-evening-peak-exceedance, transfer the five accepted
+  assets from staging 432591871 into its v2026.11 release, digest-verified on arrival and
+  server-side, asset ids resolved via publish-dataset.py --stream-test), then
+  hf-publish.py --create --upload-small + the hf_publish worker job, then the
+  fresh-consumer worker job; (vi) DESTINATIONS.json both blocks, record -> packaged
+  (packaged_at, awaiting_operator FALSE until the pre-flip audit prompt exists),
+  check-candidate --all, suite. The pre-flip adversarial audit prompt and the flip remain
+  the operator's single approval. The operator's other standing decisions are unchanged.
+
+
 ## 2026-11-04 (17:07Z) - watcher follow-up: ipa-tm-002 discovery aggregate job SUCCEEDED (all 7 passes, 818.9 s; the -001 party-pass repair held) - the outcome-by-filing-year and pending-share measurements that the -001 crash lost now exist, so every measurement the ready/parked verdict needed is recorded in the candidate; the verdict itself stays with advancement, blocked on the contract resolutions named in record.next_action
 
 Watcher brief, one finished job (ipa-tm-002: exit 0, 14 min, 5 assets, staging release 434199371, uploaded).

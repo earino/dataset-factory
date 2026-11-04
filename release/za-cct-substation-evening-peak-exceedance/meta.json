@@ -1,0 +1,49 @@
+{
+ "columns": [
+  "station_day",
+  "station",
+  "date",
+  "day_of_week",
+  "day_of_year",
+  "doy_sin",
+  "doy_cos",
+  "month",
+  "m00_00",
+  "m00_30",
+  "m01_00",
+  "m01_30",
+  "m02_00",
+  "m02_30",
+  "m03_00",
+  "m03_30",
+  "m04_00",
+  "m04_30",
+  "m05_00",
+  "m05_30",
+  "morning_mean",
+  "morning_max",
+  "morning_min",
+  "hist_morningpeak_mean_90",
+  "exceeds"
+ ],
+ "description": "For a Cape Town switching substation (33/66/132kV), at 06:00 SAST on day D, will the evening peak load (maximum half-hourly MVA over 16:00-22:00 SAST) exceed the station's trailing-90-evening p95 (minimum 30 prior evenings)? Features are the station identity, the calendar, the same-day 00:00-06:00 half-hourly readings and the mean of the trailing <= 90 prior days' morning peaks. No evening-derived value ships: evening readings, evening peaks and the trailing-evening p95 threshold are sealed outside the artifact (a sliding evening quantile's day-over-day delta reconstructs labels - the fts-appeal-003 P0 lesson), so the model predicts exceedance of a threshold it never sees. A useful prediction at 06:00 lets the distribution desk flag evenings that will stress a substation before the evening ramp, in a city whose publisher notes readings are not corrected for load shifts.",
+ "id_columns": [
+  "station_day"
+ ],
+ "name": "za-cct-substation-evening-peak-exceedance",
+ "positive_label": 1,
+ "positive_label_text": "evening peak (max half-hourly MVA over 16:00-22:00 SAST) exceeds the station's trailing-90-evening p95",
+ "positive_rate": {
+  "eval": 0.083929,
+  "holdout": 0.092096,
+  "train": 0.11205
+ },
+ "rows": {
+  "eval": 14965,
+  "holdout": 15006,
+  "train": 13735
+ },
+ "split": "temporal on the target day: train 2022, eval 2023, holdout 2024",
+ "split_description": "temporal on the target day (Africa/Johannesburg): train 2022, eval 2023, holdout 2024; the first 30 days of each station's series are burn-in (no 30 prior evenings for the p95) and are excluded, counted, never scored",
+ "target": "exceeds"
+}

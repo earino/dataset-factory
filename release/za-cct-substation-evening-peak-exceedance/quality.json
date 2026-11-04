@@ -1,0 +1,446 @@
+{
+ "built_at_utc": "2026-11-03T00:00:00Z",
+ "evaluation_contract": {
+  "access": "isolated_rows",
+  "cross_row_audit": {
+   "auxiliary_files_review": "the artifact ships exactly public/train.csv, public/eval.csv, private/holdout.csv, meta.json and quality.json. auxiliary/evening_peaks.csv (station, date, evening_peak_mva, trailing_evening_p95_mva, scored, exceeds) is uploaded to private staging for label verification and reproduction only - it is never mounted into an evaluated agent's workspace and never a solver input; no other outcome-bearing file exists. The raw fetch pages stay in the job work-dir with per-page sha256 recorded in summary.json and are not uploaded",
+   "probes": [
+    {
+     "entity_columns": [
+      "station"
+     ],
+     "left": "hist_morningpeak_mean_90",
+     "name": "morning_history_delta_attack",
+     "note": "predicts label(D) = [hist(D+1) > hist(D)], i.e. whether the entering morning peak raised the trailing morning mean: the strongest label-recovery join expressible over the shipped frame; mismatch rate is the measured bound on the morning-history exposure",
+     "offset_days": 1,
+     "operation": "gt",
+     "right": "hist_morningpeak_mean_90",
+     "right_row": "earlier",
+     "time_column": "date"
+    }
+   ],
+   "rationale": "the abs-visitor-arrivals shape applies by construction to any sliding evening history: a later same-station row's window would contain this row's evening label operand. The mitigation is structural, not declared: NO evening-derived value ships in any split file - evening readings, evening peaks and the trailing-evening p95 live only in auxiliary/evening_peaks.csv outside every solver-visible frame, and no sliding quantile ships because its day-over-day delta equals the entering evening's exceedance except for top-tail window swaps (label-blind exact recovery, the operator's automatic DO-NOT-PUBLISH class per the 2026-11-01 queue audit and the fts-appeal-003 rebuild). The single history-derived shipped column, hist_morningpeak_mean_90, aggregates MORNING peaks (never label operands); the same delta attack on it recovers only [morning_peak(D) > trailing morning mean], a ~50%-base-rate event far from the ~9% evening label. Probe 0 executes exactly that attack over the full artifact and records coverage and mismatches; a covered probe requires the isolated_rows access declared above. Same-day rows of different stations share only the calendar (identity is per-station); each station's evening peak is its own telemetry and never appears in another station's row"
+  },
+  "feature_evidence": {
+   "date": {
+    "availability": "calendar identity of the row; known at the instant",
+    "source": "the target day (Africa/Johannesburg, UTC+2, no DST)",
+    "status": "verified"
+   },
+   "day_of_week": {
+    "availability": "calendar; known at the instant",
+    "source": "derived from date (0 = Monday)",
+    "status": "verified"
+   },
+   "day_of_year": {
+    "availability": "calendar; known at the instant",
+    "source": "derived from date (ordinal 1-366)",
+    "status": "verified"
+   },
+   "doy_cos": {
+    "availability": "calendar; known at the instant",
+    "source": "cyclical encoding cos(2*pi*(day_of_year-1)/365.25)",
+    "status": "verified"
+   },
+   "doy_sin": {
+    "availability": "calendar; known at the instant",
+    "source": "cyclical encoding sin(2*pi*(day_of_year-1)/365.25)",
+    "status": "verified"
+   },
+   "hist_morningpeak_mean_90": {
+    "assumption": "current-snapshot vintage: values are the single static table published 2026-02..03 (item created 2026-02-28, modified 2026-03-02, read pinned by per-page sha256 in summary.json); no historical vintages exist to prove availability at past instants",
+    "availability": "every window member day ends strictly before the instant (the latest member is D-1, whose morning window closed at 06:00 SAST on D-1)",
+    "source": "mean of the daily maximum 00:00-06:00 reading over the trailing <= 90 prior days (>= 30 required, the same eligibility rule as the label's evening window)",
+    "status": "assumed"
+   },
+   "m00_00": {
+    "assumption": "current-snapshot vintage: values are the single static table published 2026-02..03 (item created 2026-02-28, modified 2026-03-02, read pinned by per-page sha256 in summary.json); no historical vintages exist to prove availability at past instants",
+    "availability": "within the artifact's closed 2022-2024 window every half-hour slot ending at or before 06:00 SAST on the target day is complete at the instant (gapless grid asserted: 48 half-hours every day, 41 stations non-null); real-world availability at historical instants is unverified because the publisher exposes only the current closed window",
+    "source": "the station's own same-day 00:00-06:00 SAST half-hourly readings in the City of Cape Town Switching Substation Load Profile table (item bebf20c25bfa4ffaa7fc07a1a94ba287) -> m00_00: the 00:00 half-hour slot of the target day",
+    "status": "assumed"
+   },
+   "m00_30": {
+    "assumption": "current-snapshot vintage: values are the single static table published 2026-02..03 (item created 2026-02-28, modified 2026-03-02, read pinned by per-page sha256 in summary.json); no historical vintages exist to prove availability at past instants",
+    "availability": "within the artifact's closed 2022-2024 window every half-hour slot ending at or before 06:00 SAST on the target day is complete at the instant (gapless grid asserted: 48 half-hours every day, 41 stations non-null); real-world availability at historical instants is unverified because the publisher exposes only the current closed window",
+    "source": "the station's own same-day 00:00-06:00 SAST half-hourly readings in the City of Cape Town Switching Substation Load Profile table (item bebf20c25bfa4ffaa7fc07a1a94ba287) -> m00_30: the 00:30 half-hour slot of the target day",
+    "status": "assumed"
+   },
+   "m01_00": {
+    "assumption": "current-snapshot vintage: values are the single static table published 2026-02..03 (item created 2026-02-28, modified 2026-03-02, read pinned by per-page sha256 in summary.json); no historical vintages exist to prove availability at past instants",
+    "availability": "within the artifact's closed 2022-2024 window every half-hour slot ending at or before 06:00 SAST on the target day is complete at the instant (gapless grid asserted: 48 half-hours every day, 41 stations non-null); real-world availability at historical instants is unverified because the publisher exposes only the current closed window",
+    "source": "the station's own same-day 00:00-06:00 SAST half-hourly readings in the City of Cape Town Switching Substation Load Profile table (item bebf20c25bfa4ffaa7fc07a1a94ba287) -> m01_00: the 01:00 half-hour slot of the target day",
+    "status": "assumed"
+   },
+   "m01_30": {
+    "assumption": "current-snapshot vintage: values are the single static table published 2026-02..03 (item created 2026-02-28, modified 2026-03-02, read pinned by per-page sha256 in summary.json); no historical vintages exist to prove availability at past instants",
+    "availability": "within the artifact's closed 2022-2024 window every half-hour slot ending at or before 06:00 SAST on the target day is complete at the instant (gapless grid asserted: 48 half-hours every day, 41 stations non-null); real-world availability at historical instants is unverified because the publisher exposes only the current closed window",
+    "source": "the station's own same-day 00:00-06:00 SAST half-hourly readings in the City of Cape Town Switching Substation Load Profile table (item bebf20c25bfa4ffaa7fc07a1a94ba287) -> m01_30: the 01:30 half-hour slot of the target day",
+    "status": "assumed"
+   },
+   "m02_00": {
+    "assumption": "current-snapshot vintage: values are the single static table published 2026-02..03 (item created 2026-02-28, modified 2026-03-02, read pinned by per-page sha256 in summary.json); no historical vintages exist to prove availability at past instants",
+    "availability": "within the artifact's closed 2022-2024 window every half-hour slot ending at or before 06:00 SAST on the target day is complete at the instant (gapless grid asserted: 48 half-hours every day, 41 stations non-null); real-world availability at historical instants is unverified because the publisher exposes only the current closed window",
+    "source": "the station's own same-day 00:00-06:00 SAST half-hourly readings in the City of Cape Town Switching Substation Load Profile table (item bebf20c25bfa4ffaa7fc07a1a94ba287) -> m02_00: the 02:00 half-hour slot of the target day",
+    "status": "assumed"
+   },
+   "m02_30": {
+    "assumption": "current-snapshot vintage: values are the single static table published 2026-02..03 (item created 2026-02-28, modified 2026-03-02, read pinned by per-page sha256 in summary.json); no historical vintages exist to prove availability at past instants",
+    "availability": "within the artifact's closed 2022-2024 window every half-hour slot ending at or before 06:00 SAST on the target day is complete at the instant (gapless grid asserted: 48 half-hours every day, 41 stations non-null); real-world availability at historical instants is unverified because the publisher exposes only the current closed window",
+    "source": "the station's own same-day 00:00-06:00 SAST half-hourly readings in the City of Cape Town Switching Substation Load Profile table (item bebf20c25bfa4ffaa7fc07a1a94ba287) -> m02_30: the 02:30 half-hour slot of the target day",
+    "status": "assumed"
+   },
+   "m03_00": {
+    "assumption": "current-snapshot vintage: values are the single static table published 2026-02..03 (item created 2026-02-28, modified 2026-03-02, read pinned by per-page sha256 in summary.json); no historical vintages exist to prove availability at past instants",
+    "availability": "within the artifact's closed 2022-2024 window every half-hour slot ending at or before 06:00 SAST on the target day is complete at the instant (gapless grid asserted: 48 half-hours every day, 41 stations non-null); real-world availability at historical instants is unverified because the publisher exposes only the current closed window",
+    "source": "the station's own same-day 00:00-06:00 SAST half-hourly readings in the City of Cape Town Switching Substation Load Profile table (item bebf20c25bfa4ffaa7fc07a1a94ba287) -> m03_00: the 03:00 half-hour slot of the target day",
+    "status": "assumed"
+   },
+   "m03_30": {
+    "assumption": "current-snapshot vintage: values are the single static table published 2026-02..03 (item created 2026-02-28, modified 2026-03-02, read pinned by per-page sha256 in summary.json); no historical vintages exist to prove availability at past instants",
+    "availability": "within the artifact's closed 2022-2024 window every half-hour slot ending at or before 06:00 SAST on the target day is complete at the instant (gapless grid asserted: 48 half-hours every day, 41 stations non-null); real-world availability at historical instants is unverified because the publisher exposes only the current closed window",
+    "source": "the station's own same-day 00:00-06:00 SAST half-hourly readings in the City of Cape Town Switching Substation Load Profile table (item bebf20c25bfa4ffaa7fc07a1a94ba287) -> m03_30: the 03:30 half-hour slot of the target day",
+    "status": "assumed"
+   },
+   "m04_00": {
+    "assumption": "current-snapshot vintage: values are the single static table published 2026-02..03 (item created 2026-02-28, modified 2026-03-02, read pinned by per-page sha256 in summary.json); no historical vintages exist to prove availability at past instants",
+    "availability": "within the artifact's closed 2022-2024 window every half-hour slot ending at or before 06:00 SAST on the target day is complete at the instant (gapless grid asserted: 48 half-hours every day, 41 stations non-null); real-world availability at historical instants is unverified because the publisher exposes only the current closed window",
+    "source": "the station's own same-day 00:00-06:00 SAST half-hourly readings in the City of Cape Town Switching Substation Load Profile table (item bebf20c25bfa4ffaa7fc07a1a94ba287) -> m04_00: the 04:00 half-hour slot of the target day",
+    "status": "assumed"
+   },
+   "m04_30": {
+    "assumption": "current-snapshot vintage: values are the single static table published 2026-02..03 (item created 2026-02-28, modified 2026-03-02, read pinned by per-page sha256 in summary.json); no historical vintages exist to prove availability at past instants",
+    "availability": "within the artifact's closed 2022-2024 window every half-hour slot ending at or before 06:00 SAST on the target day is complete at the instant (gapless grid asserted: 48 half-hours every day, 41 stations non-null); real-world availability at historical instants is unverified because the publisher exposes only the current closed window",
+    "source": "the station's own same-day 00:00-06:00 SAST half-hourly readings in the City of Cape Town Switching Substation Load Profile table (item bebf20c25bfa4ffaa7fc07a1a94ba287) -> m04_30: the 04:30 half-hour slot of the target day",
+    "status": "assumed"
+   },
+   "m05_00": {
+    "assumption": "current-snapshot vintage: values are the single static table published 2026-02..03 (item created 2026-02-28, modified 2026-03-02, read pinned by per-page sha256 in summary.json); no historical vintages exist to prove availability at past instants",
+    "availability": "within the artifact's closed 2022-2024 window every half-hour slot ending at or before 06:00 SAST on the target day is complete at the instant (gapless grid asserted: 48 half-hours every day, 41 stations non-null); real-world availability at historical instants is unverified because the publisher exposes only the current closed window",
+    "source": "the station's own same-day 00:00-06:00 SAST half-hourly readings in the City of Cape Town Switching Substation Load Profile table (item bebf20c25bfa4ffaa7fc07a1a94ba287) -> m05_00: the 05:00 half-hour slot of the target day",
+    "status": "assumed"
+   },
+   "m05_30": {
+    "assumption": "current-snapshot vintage: values are the single static table published 2026-02..03 (item created 2026-02-28, modified 2026-03-02, read pinned by per-page sha256 in summary.json); no historical vintages exist to prove availability at past instants",
+    "availability": "within the artifact's closed 2022-2024 window every half-hour slot ending at or before 06:00 SAST on the target day is complete at the instant (gapless grid asserted: 48 half-hours every day, 41 stations non-null); real-world availability at historical instants is unverified because the publisher exposes only the current closed window",
+    "source": "the station's own same-day 00:00-06:00 SAST half-hourly readings in the City of Cape Town Switching Substation Load Profile table (item bebf20c25bfa4ffaa7fc07a1a94ba287) -> m05_30: the 05:30 half-hour slot of the target day",
+    "status": "assumed"
+   },
+   "month": {
+    "availability": "calendar; known at the instant",
+    "source": "calendar month derived from date",
+    "status": "verified"
+   },
+   "morning_max": {
+    "assumption": "current-snapshot vintage: values are the single static table published 2026-02..03 (item created 2026-02-28, modified 2026-03-02, read pinned by per-page sha256 in summary.json); no historical vintages exist to prove availability at past instants",
+    "availability": "within the artifact's closed 2022-2024 window every half-hour slot ending at or before 06:00 SAST on the target day is complete at the instant (gapless grid asserted: 48 half-hours every day, 41 stations non-null); real-world availability at historical instants is unverified because the publisher exposes only the current closed window",
+    "source": "the station's own same-day 00:00-06:00 SAST half-hourly readings in the City of Cape Town Switching Substation Load Profile table (item bebf20c25bfa4ffaa7fc07a1a94ba287) -> morning_max: the max of the target day's 12 morning slots",
+    "status": "assumed"
+   },
+   "morning_mean": {
+    "assumption": "current-snapshot vintage: values are the single static table published 2026-02..03 (item created 2026-02-28, modified 2026-03-02, read pinned by per-page sha256 in summary.json); no historical vintages exist to prove availability at past instants",
+    "availability": "within the artifact's closed 2022-2024 window every half-hour slot ending at or before 06:00 SAST on the target day is complete at the instant (gapless grid asserted: 48 half-hours every day, 41 stations non-null); real-world availability at historical instants is unverified because the publisher exposes only the current closed window",
+    "source": "the station's own same-day 00:00-06:00 SAST half-hourly readings in the City of Cape Town Switching Substation Load Profile table (item bebf20c25bfa4ffaa7fc07a1a94ba287) -> morning_mean: the mean of the target day's 12 morning slots",
+    "status": "assumed"
+   },
+   "morning_min": {
+    "assumption": "current-snapshot vintage: values are the single static table published 2026-02..03 (item created 2026-02-28, modified 2026-03-02, read pinned by per-page sha256 in summary.json); no historical vintages exist to prove availability at past instants",
+    "availability": "within the artifact's closed 2022-2024 window every half-hour slot ending at or before 06:00 SAST on the target day is complete at the instant (gapless grid asserted: 48 half-hours every day, 41 stations non-null); real-world availability at historical instants is unverified because the publisher exposes only the current closed window",
+    "source": "the station's own same-day 00:00-06:00 SAST half-hourly readings in the City of Cape Town Switching Substation Load Profile table (item bebf20c25bfa4ffaa7fc07a1a94ba287) -> morning_min: the min of the target day's 12 morning slots",
+    "status": "assumed"
+   },
+   "station": {
+    "availability": "fixed attribute of the telemetry column; known at the instant",
+    "source": "the substation's column name in the City's Switching Substation Load Profile table (one of the 41 double-typed 33/66/132kV switching stations)",
+    "status": "verified"
+   },
+   "station_day": {
+    "availability": "identity of the row, complete at the instant",
+    "source": "row key <station>|<date>; the identity of one station-day",
+    "status": "verified"
+   }
+  },
+  "limitations": [
+   "retrospective closed window: the table was published 2026-02..03 as one static 2022-2024 snapshot; no historical vintages exist, so no operational forecasting claim is made and training-label timing stays unverified",
+   "evening label operands are sealed outside the artifact; the trailing-evening p95 threshold is not a shipped feature, so the model predicts exceedance of a threshold it never sees",
+   "the publisher's own caveat: readings are not corrected for load shifts or load shedding, and Cape Town's 2022-2024 load-shedding regime suppresses observed peaks",
+   "one city, 41 substations, 1,096 days; generalisation beyond Cape Town's grid and regime is not established",
+   "positive rate drifts across splits (11.20% train 2022, 8.39% eval 2023, 9.21% holdout 2024): an out-of-distribution as well as temporal test, recorded not repaired",
+   "positives cluster on city-wide regime days (227/246/247 distinct exceedance days): station-days within a day are dependent, and clustered intervals must be used for inference",
+   "the string-typed columns Triangle_132kV (empty) and Morgen_Gronde_132kV (numeric-as-text) are excluded to reproduce the measured discovery counts exactly; their inclusion is a v2 question, not a silent gap"
+  ],
+  "scope_note": "each row is one station-day. The label's operands (the evening readings and the trailing-evening p95) are sealed outside every solver-visible frame, so no shipped column is a function of any row's evening outcome; the only history-derived shipped column is a mean of MORNING peaks, which are never label operands. The isolated-rows declaration is the required posture for the probe-measured morning-history exposure and is not an enforcement claim: the illustrative runner still passes the whole eval feature table to the predictor in one call, nothing in this package enforces isolation, and the absence of a known recovery is not a proof against future attacks - the independent pre-flip audit must attack the shipped bytes before any publication. Labeled eval is development/validation; the holdout is the final test and stays sealed",
+  "selection": {
+   "evidence": "a station-day enters the scored panel iff it has >= 30 prior evenings in the sealed evening matrix (count of strictly earlier days) and its station is one of the 41 double-typed columns; membership is decidable at the instant and reads no target-period or post-instant field; burn-in rows are counted, never scored",
+   "kind": "prediction_time"
+  },
+  "training_label_timing": "unverified",
+  "use": "retrospective_research",
+  "vintage": {
+   "evidence": "single closed-window table: the ArcGIS item bebf20c25bfa4ffaa7fc07a1a94ba287 was created 2026-02-28, modified 2026-03-02 and is static (hasStaticData); the 2022-2024 grid is gapless (1,096 days x 48 half-hours) and the publisher exposes no revised vintages, so the artifact reads the only snapshot that exists. Harvest pinned per-page by sha256 (summary.json), read 54 requests",
+   "kind": "current_snapshot"
+  }
+ },
+ "event_key_column": "date",
+ "event_key_note": "an event is one positive station-day; the gate's clustering takes the date part, so the recomputed count is the distinct exceedance day count (measured 227/246/247 by year). Positives cluster city-wide on regime days (cold-front evenings), so distinct days are the conservative independent-observation count; station-days within one day are dependent, recorded as a limitation",
+ "expected_duplicate_ids": 0,
+ "external_threshold": false,
+ "features": [
+  "station",
+  "date",
+  "day_of_week",
+  "day_of_year",
+  "doy_sin",
+  "doy_cos",
+  "month",
+  "m00_00",
+  "m00_30",
+  "m01_00",
+  "m01_30",
+  "m02_00",
+  "m02_30",
+  "m03_00",
+  "m03_30",
+  "m04_00",
+  "m04_30",
+  "m05_00",
+  "m05_30",
+  "morning_mean",
+  "morning_max",
+  "morning_min",
+  "hist_morningpeak_mean_90"
+ ],
+ "features_documented_at": "prediction_time",
+ "high_cardinality_columns": [
+  "date"
+ ],
+ "high_cardinality_columns_note": "date is the time column (the gate's join key) and the calendar day identity every row legitimately carries. On smaller panels (the synthetic rehearsal, or any v2 subset) its level count exceeds the gate's relative threshold (levels > rows/5), so it is declared here as a free high-cardinality field rather than treated as a leak: a date level is not one row - it is every station's station-day of that date, its label varies across stations, and per-level statistics cannot memorise individual rows. On the full 41-station panel each date level carries 41 rows and the column is scored normally, with its AUC reported as a measured property",
+ "id_columns": [
+  "station_day"
+ ],
+ "id_columns_are_entity_keys": true,
+ "id_columns_note": "station_day = <station>|<date> names one station-day with one label; unique across the panel, asserted at construction",
+ "label_source_columns": [
+  "the target day's evening half-hourly MVA readings (16:00-21:30 SAST) - the label numerator; sealed in auxiliary/evening_peaks.csv, never shipped in any split",
+  "the trailing-90-evening p95 threshold (min 30 prior evenings) - the label comparator; sealed in auxiliary/evening_peaks.csv, never shipped in any split"
+ ],
+ "measurements": [
+  {
+   "column": "m00_00",
+   "frame": "half-hourly substation load reading, SAST grid; publisher caveat: readings are not corrected for load shifts or load shedding",
+   "unit": "megavolt-amperes (MVA) as published"
+  },
+  {
+   "column": "m00_30",
+   "frame": "half-hourly substation load reading, SAST grid; publisher caveat: readings are not corrected for load shifts or load shedding",
+   "unit": "megavolt-amperes (MVA) as published"
+  },
+  {
+   "column": "m01_00",
+   "frame": "half-hourly substation load reading, SAST grid; publisher caveat: readings are not corrected for load shifts or load shedding",
+   "unit": "megavolt-amperes (MVA) as published"
+  },
+  {
+   "column": "m01_30",
+   "frame": "half-hourly substation load reading, SAST grid; publisher caveat: readings are not corrected for load shifts or load shedding",
+   "unit": "megavolt-amperes (MVA) as published"
+  },
+  {
+   "column": "m02_00",
+   "frame": "half-hourly substation load reading, SAST grid; publisher caveat: readings are not corrected for load shifts or load shedding",
+   "unit": "megavolt-amperes (MVA) as published"
+  },
+  {
+   "column": "m02_30",
+   "frame": "half-hourly substation load reading, SAST grid; publisher caveat: readings are not corrected for load shifts or load shedding",
+   "unit": "megavolt-amperes (MVA) as published"
+  },
+  {
+   "column": "m03_00",
+   "frame": "half-hourly substation load reading, SAST grid; publisher caveat: readings are not corrected for load shifts or load shedding",
+   "unit": "megavolt-amperes (MVA) as published"
+  },
+  {
+   "column": "m03_30",
+   "frame": "half-hourly substation load reading, SAST grid; publisher caveat: readings are not corrected for load shifts or load shedding",
+   "unit": "megavolt-amperes (MVA) as published"
+  },
+  {
+   "column": "m04_00",
+   "frame": "half-hourly substation load reading, SAST grid; publisher caveat: readings are not corrected for load shifts or load shedding",
+   "unit": "megavolt-amperes (MVA) as published"
+  },
+  {
+   "column": "m04_30",
+   "frame": "half-hourly substation load reading, SAST grid; publisher caveat: readings are not corrected for load shifts or load shedding",
+   "unit": "megavolt-amperes (MVA) as published"
+  },
+  {
+   "column": "m05_00",
+   "frame": "half-hourly substation load reading, SAST grid; publisher caveat: readings are not corrected for load shifts or load shedding",
+   "unit": "megavolt-amperes (MVA) as published"
+  },
+  {
+   "column": "m05_30",
+   "frame": "half-hourly substation load reading, SAST grid; publisher caveat: readings are not corrected for load shifts or load shedding",
+   "unit": "megavolt-amperes (MVA) as published"
+  },
+  {
+   "column": "morning_mean",
+   "frame": "mean of the target day's 12 morning slots (00:00-06:00 SAST)",
+   "unit": "MVA"
+  },
+  {
+   "column": "morning_max",
+   "frame": "maximum of the target day's 12 morning slots",
+   "unit": "MVA"
+  },
+  {
+   "column": "morning_min",
+   "frame": "minimum of the target day's 12 morning slots",
+   "unit": "MVA"
+  },
+  {
+   "column": "hist_morningpeak_mean_90",
+   "frame": "mean of trailing <= 90 prior days' morning maxima (>= 30 required); a MORNING telemetry aggregate - never an evening value, never a label operand",
+   "unit": "MVA"
+  },
+  {
+   "column": "day_of_week",
+   "frame": "calendar, Africa/Johannesburg",
+   "unit": "day of week (0 = Monday)"
+  },
+  {
+   "column": "day_of_year",
+   "frame": "calendar, Africa/Johannesburg",
+   "unit": "ordinal day of year (1-366)"
+  },
+  {
+   "column": "doy_sin",
+   "frame": "sin(2*pi*(day_of_year-1)/365.25)",
+   "unit": "dimensionless cyclical encoding"
+  },
+  {
+   "column": "doy_cos",
+   "frame": "cos(2*pi*(day_of_year-1)/365.25)",
+   "unit": "dimensionless cyclical encoding"
+  },
+  {
+   "column": "month",
+   "frame": "calendar, Africa/Johannesburg",
+   "unit": "calendar month (1-12)"
+  },
+  {
+   "column": "station",
+   "frame": "one of the 41 double-typed switching substation columns",
+   "unit": "publisher column name (station identity)"
+  },
+  {
+   "column": "date",
+   "frame": "Africa/Johannesburg (SAST, UTC+2, no DST)",
+   "unit": "ISO date"
+  }
+ ],
+ "name": "za-cct-substation-evening-peak-exceedance",
+ "positive_events": {
+  "eval": {
+   "distinct_events": 246,
+   "positives": 1256
+  },
+  "holdout": {
+   "distinct_events": 247,
+   "positives": 1382
+  },
+  "train": {
+   "distinct_events": 227,
+   "positives": 1539
+  }
+ },
+ "positive_events_note": "each positive is one station-day; the dependence structure that matters for inference is the exceedance day (city-wide regime) and the station series, both declared in event_key_note",
+ "positive_label": 1,
+ "positive_label_text": "evening peak (max half-hourly MVA over 16:00-22:00 SAST) exceeds the station's trailing-90-evening p95",
+ "post_hoc_columns": [
+  "every evening reading of the target day (16:00-22:00 SAST) - post-hoc at the 06:00 instant and the label's own operand; excluded from all split files by construction",
+  "the evening peak and the trailing-evening p95 in any form (raw, rounded, windowed or differenced) - a sliding evening quantile's day-over-day delta reconstructs the entering value's exceedance (the fts-appeal-003 P0 lesson), so no evening-derived aggregate ships",
+  "day-of evening readings of ANY prior day (an evening value is always some scored row's label operand)"
+ ],
+ "shipped_columns": [
+  "station_day",
+  "station",
+  "date",
+  "day_of_week",
+  "day_of_year",
+  "doy_sin",
+  "doy_cos",
+  "month",
+  "m00_00",
+  "m00_30",
+  "m01_00",
+  "m01_30",
+  "m02_00",
+  "m02_30",
+  "m03_00",
+  "m03_30",
+  "m04_00",
+  "m04_30",
+  "m05_00",
+  "m05_30",
+  "morning_mean",
+  "morning_max",
+  "morning_min",
+  "hist_morningpeak_mean_90",
+  "exceeds"
+ ],
+ "split_boundaries": {
+  "eval": "target days 2023-01-01..2023-12-31 (window end exclusive)",
+  "holdout": "target days 2024-01-01..2024-12-31 (window end exclusive)",
+  "train": "target days 2022-01-01..2022-12-31 (window end exclusive)"
+ },
+ "split_windows": {
+  "eval": {
+   "end": "2024-01-01",
+   "start": "2023-01-01"
+  },
+  "holdout": {
+   "end": "2025-01-01",
+   "start": "2024-01-01"
+  },
+  "train": {
+   "end": "2023-01-01",
+   "start": "2022-01-01"
+  }
+ },
+ "splits": {
+  "eval": "public/eval.csv",
+  "holdout": "private/holdout.csv",
+  "train": "public/train.csv"
+ },
+ "target": "exceeds",
+ "task": {
+  "prediction_time": "06:00 SAST (Africa/Johannesburg, UTC+2, no DST) on the target day D. Features are the target day's 00:00-06:00 half-hour slots (each slot ends at or before the instant; the 05:30 slot ends exactly at 06:00), the calendar of D, the station identity, and the mean of the trailing <= 90 prior days' morning peaks (the latest window member is D-1). The evening window 16:00-22:00 SAST lies entirely after the instant. Worked example: Grassy_Park_66kV 2024-07-15 (Monday, mid-winter), instant 06:00 SAST, trailing-90-evening p95 146.82 MVA, evening peak 150.38 MVA -> label 1 (exceeds). The evening peak and the p95 are label operands and ship in NO split file; they are sealed in auxiliary/evening_peaks.csv outside every solver-visible frame.",
+  "question": "For a Cape Town switching substation, at 06:00 SAST on day D, will the evening peak load (max half-hourly MVA over 16:00-22:00 SAST) exceed the station's trailing-90-evening p95 (min 30 prior evenings)? A useful prediction at 06:00 flags, before the evening ramp, the station-days that will stress a substation beyond its recent high-load regime."
+ },
+ "threshold_note": "the threshold is internal to the panel (the station's own trailing-90-evening p95, min 30 prior evenings), not an external standard, so no external known-event fixture is required; the dated worked example (Grassy_Park_66kV 2024-07-15: 150.38 > 146.82 -> 1) and the six monthly-mean fixtures are asserted in-build against the 2026-11-01 discovery measurements, and the label counts per year are asserted exactly",
+ "time_column": "date",
+ "timing": {
+  "features": {
+   "period": "the target day's 00:00-06:00 slots plus strictly prior days' morning aggregates (latest member D-1)",
+   "published_days_after_period_end": 0,
+   "source_kind": "administrative_record"
+  },
+  "observations": [],
+  "prediction_instant": {
+   "citation": "the publisher's half-hourly telemetry table itself (City of Cape Town Switching Substation Load Profile, ArcGIS item bebf20c25bfa4ffaa7fc07a1a94ba287); every shipped feature is a slot ending at or before 06:00 SAST on the target day or an aggregate of strictly prior days. Within-artifact timeliness is asserted at construction (gapless 48-slot days, all slots non-null). The table is a closed 2022-2024 window published 2026-02..03, so real-world availability at historical instants is unverified - the artifact is retrospective research",
+   "days_after_period_end": 0,
+   "kind": "period_end",
+   "period": "the half-hour telemetry grid of the target day's 00:00-06:00 SAST window; the instant is its end (the 05:30 slot completes at 06:00)"
+  },
+  "row_selection": {
+   "basis": "eligibility counts only days strictly before the target day - decidable at the instant with no target-period or future field; the burn-in rows are unobserved-threshold censoring counted in their own bucket, never scored as negatives",
+   "fields": [
+    "station is one of the 41 double-typed columns (the two string-typed columns Triangle_132kV and Morgen_Gronde_132kV are excluded so the panel reproduces the measured discovery counts; exclusion recorded)",
+    "the station-day has >= 30 prior evenings in the sealed evening matrix (the p95 window's minimum); the first 30 days of each station's series are burn-in, counted, never scored"
+   ],
+   "latest_period_used": "2024-12-31"
+  }
+ }
+}
