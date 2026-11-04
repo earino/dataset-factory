@@ -1,3 +1,43 @@
+## 2026-11-04 (17:07Z) - watcher follow-up: ipa-tm-002 discovery aggregate job SUCCEEDED (all 7 passes, 818.9 s; the -001 party-pass repair held) - the outcome-by-filing-year and pending-share measurements that the -001 crash lost now exist, so every measurement the ready/parked verdict needed is recorded in the candidate; the verdict itself stays with advancement, blocked on the contract resolutions named in record.next_action
+
+Watcher brief, one finished job (ipa-tm-002: exit 0, 14 min, 5 assets, staging release 434199371, uploaded).
+The follow-up runner held the research mutex for the whole invocation; no active manual writer was found
+(no writer process alive, no file writes after 16:58:12Z), and the concurrent session that launched -002
+had itself collected the job at 16:56:41Z and fetched the reports at 16:58Z, then ended without recording -
+so this session did the durable recording and the cleanup. EUR 0 spent by this session (the EUR 0.04
+reservation was the launching session's, released with the worker).
+
+- ipa-tm-002 (server 174500236, cx23/hel1, launched 16:40:27Z by the concurrent manual session as the
+  diagnosed retry of ipa-tm-001): exit 0, elapsed 828.7 s, all 7 aggregate passes (TM rows: application
+  2,339,438; classification 3,812,144; description 5,400,476; events 32,005,468; links 1,436,185; party
+  7,757,991; fetch re-measured 1,350,841,716 B in 51.9 s at 26.0 MB/s, sha256 0411bc46... identical to
+  -001 - source vintage stable between attempts). New measurements now in the record
+  (aggregates_ipa_tm_002): censoring <=0.76% through filing year 2023 (2024: 2.14%, 2025: 17.7%, 2026:
+  78.1%) supports the declared eligibility cutoff and holdout end 2023; candidate splits all carry both
+  classes (train 1995-2013 n 909,256; eval 2014-2018 n 363,162; holdout 2019-2023 n 409,451 with 83,418
+  pre-grant failures; positive rate drifts 68.6%->79.2%); label reconciliation 1,630,920 agree / 0
+  mismatches; prior-TM-history signal 69.0% vs 77.9% registered; registration within 1y for 1,149,962 of
+  the registered; party coverage (agent 99.99%, ABN present 1,185,809); mark-type coverage; 2 of 3 dated
+  examples. The -001 diagnosis is corrected in one respect: the served party header DOES carry the
+  postcode field, named 'post_code' (build.py:423 asked for 'postcode'); headers_seen is now preserved
+  in the report before each pass.
+- Evidence: compact reports at .factory/ipa-tm-002/reports/ (report 44ac061d..., container.log
+  179ccd9c..., manifest 3031a097...; per-asset sha256 re-verified locally this session); durable copy at
+  staging release 434199371 including source.tar 122,880 B (= ledger source_sha256 2c165b8d..., same
+  bytes as candidates/ipa-tm-registration-outcome/source/); no accepted artifact existed, so none was
+  owed preservation.
+- Cleanup: worker 174500236 destroyed 17:04:24Z after verified collection; provider read-back 17:04:41Z:
+  server answers HTTP 404, project inventory 0 servers / 0 primary IPs, account totals 0/0.
+- The concurrent session's -002-related bytes are committed with the outcome, as the -001 commit
+  documented they would be: the repaired source/ (build.py party-pass fix + headers_seen written before
+  each pass), probe/ (publisher data-dictionary PDF + CKAN probe scripts, both cited by the record), and
+  jobs/ipa-tm-002.json. candidates/fenz-incident-data/ stays untracked and untouched for its owner. No
+  tracked-file edit by this session beyond record.json, notes.md, STATE.md.
+- Verdict status: candidate stays investigating; every verdict-blocking measurement is now recorded, and
+  record.next_action names the exact remaining resolutions (343,866 negative-lag classification rows;
+  post_code coverage or drop; as-of rule for 814,525 later-dated founding-applicant rows; publisher
+  cross-check; third dated example) before the discovery verdict and any construction.
+
 ## 2026-11-04 (16:42Z) - watcher follow-up: ipa-tm-001 discovery aggregate job FAILED IN PROBE CODE (build.py:423 raw header.index('postcode') inside the party example-capture; the real party_activity.csv header has no postcode column) - infrastructure fine (IPRAPID.zip 1,350,841,716 bytes fetched in 47.6 s at 28.4 MB/s, sha256 0411bc46...), passes 1-3 completed and their partial aggregates are recorded in the candidate (2,339,438 TM applications with status/sub-type counts; classification lag 88.9% at 0 days plus 343,866 negative-lag rows the prediction-time claim must handle; Madrid 313,628 / convention 289,152 / divisional 26,534), but the outcome-by-filing-year and pending-share passes never ran, so no ready/parked verdict is possible from this attempt. Compact reports fetched with per-asset sha256 verification into .factory/ipa-tm-001/reports/ (report.json 38976bec..., container.log 279bf82a..., manifest 0195ad34...); staging release 434166219 (draft, tag job-ipa-tm-001) holds the durable diagnostics copy; no accepted artifact existed so none was owed preservation. Worker 174498574 destroyed and provider read-back confirms deletion (404, 0 live servers, 0 primary IPs). The diagnosed repair and relaunch were handed to advancement in the record's next_action; a CONCURRENT manual session then took them over mid-flight (observed from existing records only; left untouched and uncommitted by this follow-up): build.py was fixed on disk at 16:39, jobs/ipa-tm-002.json launched 16:40:27 (server 174500236, running; the launch waited for this session's confirmed 16:40:13 deletion of the -001 worker), candidates/fenz-incident-data opened 16:42, and candidates/ipa-tm-registration-outcome/probe/ (dictionary PDF + probe scripts) appeared 16:44. Candidate stays investigating. This commit lands the candidate opening itself (record, licence A evidence, novelty differentiated) plus jobs/ipa-tm-001.json, which the discovery tick left uncommitted when it went idle; the concurrent session's source/ edits (fixed build.py, -002 job.json) are deliberately NOT in this commit and stay for that session to record with ipa-tm-002's outcome.
 
 ## 2026-11-04 (12:30Z) - discovery tick (East Asia): tw-typhoon-day-closure mirror question RESOLVED (differentiated re-recorded from the prior repo's own bytes; FIX-THE-RECORD closed, stays ready with anti-mirror constraints), standing-capture mechanism SEEDED for tw-taipower + hk-red-tide (their recorded reopen paths), Seoul probed end-to-end - Korea access is NOT uniformly account-walled (per-dataset class-A licence instruments read on the publisher's own pages); the one event-grain register found is an operator family decision, not a candidate
