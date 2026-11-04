@@ -1,3 +1,89 @@
+## 2026-11-04 (20:25Z) - discovery tick (International organisations): unhcr-corridor-entry-surge OPENED READY - the operator's recorded UNHCR reopen condition is now formulated and measured (one-shot first-crossing redesign; primary label = two-year cumulative 2x, gate-passing with 2.4x margin; the direct one-shot+next-year-2x analogue measured NOT gate-viable)
+
+Discovery-only session, regional focus International organisations (operator tick:
+World Bank, OECD, UNHCR, UNICEF, UNODC, WHO, IMF, ITU). No construction,
+qualification, packaging, publication or advancement of any candidate; no worker
+launched (EUR 0); anonymous bounded probes only; no release byte, tag, manifest
+or destination touched anywhere.
+
+- REGIONAL SHORTLIST from current records, not re-probed: every other publisher
+  in the tick's list carries a recorded verdict - WB (3 task-shape drops), IMF
+  and ITU (aggregate-panel family drops), OECD (sdmx aggregate-family drop,
+  recalls censoring drop, ncp ready = the existing buffer), UNODC and WIPO
+  (class D licence closes), IAEA (class C close), WHO FluNet + OCHA FTS
+  (published). The one unresolved decision-value item in the region was the
+  UNHCR parked record's operator reopen condition (2026-11-02 drop: adjacent
+  corridor-years self-answer; reopen = "a redesigned task that keeps corridor
+  momentum WITHOUT adjacent corridor-years both shipping (e.g. a one-shot
+  per-corridor design, or an aggregate-outcome label), constructed and audited
+  fresh"). This session formulated and measured that redesign; it is the only
+  lead opened.
+- NEW CANDIDATE unhcr-corridor-entry-surge (status ready): one row per corridor
+  at its FIRST year >=500 government-procedure applications (entry year T0).
+  Source re-pinned byte-identical to the parent record's vintage (8,669,567 B,
+  3.11 s, sha256 d5808616...; HDX package licence re-verified live: cc-by-igo,
+  class A carried). Measured on the pinned CSV with two retained probes
+  (probe_hdx_oneshot.py, probe_hdx_oneshot_designs.py):
+  - Population: 1,129 of 6,936 G/P corridors ever cross 500; entries by year
+    2000:193 .. 2022:79 .. 2025:26; 1,093 next-year-labeled rows; 761/1,093
+    with a published T0-1 value (192 left-censored T0=2000); live edge at the
+    2026-08-20T15:33:49Z instant: 26 corridors entered 2025 (strict-forecast
+    rows), 57 unlabeled deployable rows for the primary design.
+  - DECISIVE NEGATIVE: the direct analogue (one-shot + next-year 2x, the
+    parent task's house label) does NOT clear the qualification gate's
+    eval/holdout minimum (30 positives / 20 events): eval 183/25/20, holdout
+    201/28/28, zero-positive entry years 2019 (COVID label year) and 2024.
+    Window re-drawing reaches exactly 30 holdout positives with zero margin -
+    recorded, not chosen. Eligibility 200 rescues it only by small-number
+    noise (measured); the recorded 500 eligibility is kept.
+  - PRIMARY DESIGN (operator's aggregate-outcome shape): label = corridor
+    total over T0+1..T0+2 >= 2 x T0 total. Gate capacity with margin: train
+    (entries 2000-2014) 653 rows/214 pos/153 events, eval (2015-2020)
+    230/103/83, holdout (2021-2023) 170/73/64; prevalence drift 32.8% ->
+    44.8% -> 42.9%; still passing under the parent's momentum-feature
+    eligibility (published T0-1 required: 363/127, 202/98, 159/72). Measured
+    fallback recorded: next-year >25% growth (eval 183/59/46, holdout
+    201/68/59), chosen BEFORE any score; no threshold re-tuning after scores.
+  - MOMENTUM (the operator's condition): next-year labels keep the monotone
+    momentum-continuation profile (2x label: 5.8% -> 11.8% -> 16.2% by
+    growth-into-entry bucket); the cum2_2x label INVERTS it (42.0% / 45.6% /
+    37.5%) - recorded as a measured property so construction describes the
+    aggregate label honestly (mean reversion included), not as pure
+    continuation.
+  - Fixtures verified in the pinned bytes: AFG->USA T0=2021 TRUE (Taliban
+    takeover), VEN->COL T0=2017 TRUE, UKR->POL T0=2014 FALSE (Ukraine =
+    temporary protection, absent from this stream), SYR->DEU T0=2000
+    left-censored FALSE, SSD->ETH T0=2025 live strict-forecast (50,148).
+    Dated example (AFG->USA, all instants UTC) in notes.md; publication-lag
+    nowcast framing identical to the parent/abs precedent, live rows strict
+    forecasts.
+  - Novelty: check-novelty.py verdict differentiated (3 fresh searches
+    2026-11-04; prior art is EU-only monthly panel forecasting / aggregate
+    nowcasting / unreleased systems - J Econ Geog 25(1):3 2025, Cambridge
+    Data & Policy 2024, JRC122178, Napierala 2022, OECD 2025 survey,
+    arXiv:2505.06249 - none a released first-crossing corridor task with
+    fixed splits and a scored contract).
+  - Five contracts reconciled in record.review; the one carried limitation:
+  rows share origins across windows, so a later entrant's origin aggregates
+  can contain components of an earlier entrant's outcome years - partial
+  information, not the parent's exact-copy exposure; gate 1.5.0 cross-row
+  probe must run on the built artifact with the aggregate features declared.
+- PARENT RECORDS CROSSLINKED (minimal edits): unhcr-refugee-data-finder
+  next_action now points at the formulation (its DO-NOT-PUBLISH markings,
+  the v2026.10 package and the drop decision unchanged);
+  unicef-sdmx-refugee-origin-growth next_action notes the panel drop and the
+  new record; its own unpark condition unchanged.
+- Hygiene: check-candidate --all rc=0 (132 records, was 131); suite 708/708
+  OK (29.3 s); discovery-coverage now 132 candidates / 53 live / ready 16 /
+  International organisations 16; candidates/fenz-incident-data/ left
+  untracked for its owner; scratch downloads confined to
+  /opt/data/cache/scratch/unhcr-oneshot-2026-11-04 (pruned automatically).
+- NEXT (advancement owns it, in record.next_action order): fresh construction
+  on a worker from the pinned source -> gate 1.5.0 with the cross-row probe ->
+  exact-byte acceptance -> reference baselines (majority, identity-only,
+  into-entry momentum, persistence) as the DECIDING check: if identity-only
+  matches the reference model, drop for no headroom (the wb-loan precedent).
+
 ## 2026-11-04 (18:20Z) - advancement session: za-cct-substation-evening-peak-exceedance PACKAGED per operator decision (a) - release/ assembled (23 files), manifest + check-package green on the first pass, comparison ladder (0.5107 beside morning_ratio 0.7340) leading every document; private staging is the named next step
 
 Scheduled advancement session. Release work outranks construction: the task list's one

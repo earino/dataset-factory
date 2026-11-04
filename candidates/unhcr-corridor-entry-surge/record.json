@@ -1,0 +1,159 @@
+{
+  "id": "unhcr-corridor-entry-surge",
+  "status": "ready",
+  "created_at": "2026-11-04T20:05:47.903568+00:00",
+  "updated_at": "2026-11-04T21:10:00+00:00",
+  "domain": "forced displacement / annual asylum-corridor entry events",
+  "prediction_question": "For an asylum corridor (country of origin O, country of asylum H) whose total government-procedure asylum applications FIRST reach at least 500 in year T0 (its entry year), will the corridor's total applications over the two following years (T0+1 and T0+2) reach at least twice the T0 total? One row per corridor, taken once at first crossing; a useful prediction enables two-year reception and processing-capacity planning for newly-arrived flows. Measured fallback design (also one-shot, decided before any score): will the crossing year's flow grow by more than 25% in T0+1.",
+  "prediction_time": "Publication-lag nowcast at the annual instant: the first refresh of the UNHCR HDX global package (data.humdata.org, dataset unhcr-population-data-for-world) that carries the entry year T0's data (observed cadence: refreshes 2026-06-11/19/22 and 2026-08-20T15:33:49Z; the 2026-08-20 file carries years 2000-2025). Features are the corridor's published yearly totals for years <= T0 only. The outcome years T0+1/T0+2 are unpublished and unavailable on this channel at the instant (first published ~mid T0+2/T0+3); for historical rows the outcome window has partially elapsed at the instant - no 'window follows the instant' claim is made (the abs-visitor-arrivals-direction / unhcr-refugee-data-finder posture). Corridors entering 2025 are live strict forecasts: their whole outcome window 2026-2027 follows the 2026-08-20 instant. Dated example in notes.md (AFG->USA).",
+  "target_definition": "Binary label: (corridor G/P application total in T0+1 + total in T0+2) >= 2 x corridor G/P total in T0. Source column: Number of Applications summed over Government-procedure (Procedure Type G), person-count (Application Data Type P) rows per corridor-year (the sum rule validated against BAMF in the parent record). The T0+1 and T0+2 values are the label operands and never ship as features. Observed absence: corridor row missing while the host still reports that year = 0; host silent in an outcome year = unobserved target, row excluded (19 rows measured). Eligibility (first year >= 500) is decided only from the at-instant year-T0 row - no whole-series future inclusion. Fallback label: total(T0+1) >= 1.25 x total(T0).",
+  "jurisdiction": {
+    "country": "CH",
+    "region": "International organisations",
+    "publisher": "United Nations High Commissioner for Refugees (UNHCR), headquartered in Geneva, Switzerland; published via the UNHCR organisation account on OCHA's Humanitarian Data Exchange (data.humdata.org)",
+    "convention": "The publisher's HQ country is recorded because 'international' is not a country; UNHCR is a UN programme headquartered in Geneva, Switzerland. Same source and publisher as candidates/unhcr-refugee-data-finder.",
+    "recorded_at": "2026-11-04"
+  },
+  "licence_class": "A",
+  "licence_note": "Carried from the parent record (same resource, byte-identical vintage re-pinned 2026-11-04) and re-verified live today: the HDX package still declares license_id cc-by-igo. CC BY 3.0 IGO grants reproduction, distribution and adaptation with attribution and change-marking; no share-alike, no NC. Conditions carry into LICENSE.md at construction. The unhcr.org website-terms AI-scraping clause does not apply: acquisition uses the documented HDX bulk resource, no scraping of unhcr.org.",
+  "sources": [
+    {
+      "name": "UNHCR population data for world (HDX global package) - asylum_applications_residing_world.csv",
+      "url": "https://data.humdata.org/dataset/unhcr-population-data-for-world",
+      "api": "https://data.humdata.org/dataset/74cdbe77-0a0b-441b-9535-bacc263be2a8/resource/295cd9e4-8464-43ee-ad17-47196991a1f7/download/asylum_applications_residing_world.csv",
+      "access": "anonymous bulk resource, no WAF, no auth (302 to a signed URL; curl -L). Measured 2026-11-04: HTTP 200, 8,669,567 bytes, 3.11 s, sha256 d5808616c3d10d33925d4df5a3182a2028dd574d111e843cc207455ba45fe950, byte-identical to the parent record's 2026-10-23 pin and 2026-10-27 preflight re-fetch (vintage stable). Resource last modified 2026-08-20T15:33:49Z, carries years 2000-2025.",
+      "licence": "cc-by-igo (CC BY 3.0 IGO), the UNHCR organisation account's own licence choice on its HDX package; RDF methodology page independently grants CC BY 4.0 on the same datasets"
+    }
+  ],
+  "license_evidence": [
+    "CKAN package_show for unhcr-population-data-for-world, read 2026-11-04: license_id \"cc-by-igo\", dataset_source \"UNHCR\", maintainer = UNHCR organisation account, last_modified 2026-08-20T15:33:49Z, 5 resources.",
+    "CC BY 3.0 IGO legal code (read 2026-10-23, carried from the parent record): Section 3 grants Reproduce/Distribute/Publicly Perform and to 'create and distribute Adaptations' provided changes are clearly labelled; Section 4 attribution; no share-alike, no NC, no added restrictions; no implied endorsement.",
+    "RDF methodology page 'Data terms and conditions of usage' (read 2026-10-20, carried): 'Except where otherwise indicated, the datasets made available by UNHCR on UNHCR Refugee Population Statistics Database are licensed under the Creative Commons Attribution 4.0 International Public License.'",
+    "Third parties already redistribute these exact panels under cc-by-igo (Hugging Face africa-unhcr-population-data-for-*), carried from the parent record - external confirmation the licence is read the same way by others."
+  ],
+  "construction_script": null,
+  "split_strategy": "One row per corridor at its FIRST year >= 500 government-procedure applications (entry year T0); temporal splits on entry year. Primary design (cum2_2x) measured windows: train entries 2000-2014 (653 rows / 214 positives / 153 origin-entry-year events), eval 2015-2020 (230/103/83), holdout 2021-2023 (170/73/64) - outcome years must be published, so entries stop at 2023; 57 live-edge corridors (entries 2024-2025) carry no label at the 2026-08-20 instant. Both gate minimums (30 positives / 20 distinct events on eval and holdout) pass with margin. Under the parent's momentum-feature eligibility (published T0-1 value required): 363/127, 202/98, 159/72 - still passing, so construction may adopt the stricter rule. Construction may re-draw boundaries BEFORE any score is seen. Measured fallback (next1_g25, entries T0<=2024): train 709/185/136, eval 183/59/46, holdout 201/68/59. The direct analogue (one-shot + next-year 2x, the parent task's label) is measured NOT viable: eval 183/25/20, holdout 201/28/28 (below 30), zero-positive entry years 2019 and 2024.",
+  "measurements": {
+    "population_measured_2026_11_04": "G/P corridors 6,936 (carried: 99,281 G/P rows, years 2000-2025); corridors ever reaching >=500 in a year: 1,129; entries by year recorded in notes.md (2000:193 ... 2022:79 ... 2025:26).",
+    "one_shot_base_rates": "n=1,093 next-year-labeled rows (T0<=2024, host active in T0+1): decline 58.0%, >=1.5x 19.8%, >=2x 11.1%, >=3x 5.0% (panel task's family for comparison: >=2x 9.3%). cum2_2x prevalence: train 32.8% -> eval 44.8% -> holdout 42.9% (drift recorded as a phenomenon property).",
+    "momentum_feature_coverage": "761/1,093 labeled rows have a published T0-1 corridor value; 192 left-censored at T0=2000 (panel starts 2000); 719 have >=2 prior published years.",
+    "design_table_measured": "rows/positives/distinct-events at eligibility 500 (probe_hdx_oneshot_designs.py): next1_2x train 709/68/57 eval 183/25/20 holdout 201/28/28 GATE FAIL; next1_1.5x 709/118/94, 183/45/34, 201/53/49 PASS; next1_g25 709/185/136, 183/59/46, 201/68/59 PASS; next1_3x 183/11/8, 201/16/16 FAIL; cum2_2x 653/214/153, 230/103/83, 170/73/64 PASS. Threshold sensitivity: eligibility 200 rescues next1_2x only by admitting small-number noise (263/37/31 eval, 258/37/31 holdout); cum2_2x passes at every threshold 200-500. The recorded 500 eligibility is kept.",
+    "momentum_association_by_label": "Positive rate by growth into the entry year (T0-1 -> T0): next1_2x 5.8%/<1.5x, 11.8%/1.5-3x, 16.2%/>3x (monotone continuation, ~2.8x risk ratio); next1_g25 23.0%/32.6%/32.7% (monotone); cum2_2x 42.0%/45.6%/37.5% with 28.3% among no-prior rows (INVERTED at the top: past-peak corridors revert - a measured property construction must describe honestly, recorded in notes.md).",
+    "censoring_measured": "Host silent in an outcome year: 19 rows excluded (cum2_2x), 10 (next-year labels). Live edge at the 2026-08-20T15:33:49Z instant: 26 corridors entered 2025 (strict-forecast rows, outcome entirely future), plus 31 entering 2024 whose outcome is half-published (2025 known, 2026 not) - 57 unlabeled deployable rows for cum2_2x; largest SSD->ETH 50,148.",
+    "known_event_fixtures": "AFG->USA T0=2021 (533; 2020: 44) outcome 25,082+19,320=44,402 >= 1,066 TRUE (post-Aug-2021 Taliban takeover); VEN->COL T0=2017 (582; 2016: 316) outcome 2,592+10,479=13,071 >= 1,164 TRUE; SYR->DEU T0=2000 left-censored, FALSE; UKR->POL T0=2014 (2,511) outcome 2,295+1,194=3,489 < 5,022 FALSE (2022 Ukraine displacement is mostly EU temporary protection, absent from this stream); SSD->ETH T0=2025 (50,148) live strict-forecast row.",
+    "fetch_cost_measured": "1 request, 8,669,567 bytes, 3.11 s on the coordinator (2026-11-04); no bulk transfer beyond the single source CSV; all aggregates computed locally from the pinned file.",
+    "probes": "candidates/unhcr-corridor-entry-surge/probe_hdx_oneshot.py (population, base rates, coverage, fixtures, live edge); probe_hdx_oneshot_designs.py (design table, momentum association, capacity under momentum-eligibility); both read the pinned CSV and reproduce every number quoted here.",
+    "measured_on": "2026-11-04, coordinator, from sha256-pinned source d5808616c3d10d33925d4df5a3182a2028dd574d111e843cc207455ba45fe950"
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": "Five contracts reconciled 2026-11-04 on written evidence (details and dated example in notes.md): (1) Redistribution SUPPORTED - cc-by-igo re-verified live on the package today; class A; conditions carry to LICENSE.md; no unhcr.org scraping. (2) Timing SUPPORTED with the documented current-vintage assumption - annual publication-lag nowcast instant, outcome years unpublished at the instant, live 2025-entrant rows strict forecasts; the archive is revised in place so values are construction-time vintage, sha256-pinned (parent-record posture); no claim of historical operational availability of today's vintages. (3) Target SUPPORTED - label operands (T0+1/T0+2 totals) excluded from features by the one-row-per-corridor structure; observed-zero vs host-silent censoring measured; eligibility from at-instant information only. (4) Split capacity SUPPORTED with margin for the primary design (eval 103/83, holdout 73/64 vs gate 30/20; momentum-eligibility variant also passing); the direct next-year-2x analogue measured not viable (25/28) and recorded. (5) Not a mirror SUPPORTED - differentiated verdict recorded via check-novelty.py; no released corridor-grain first-crossing task with fixed splits and a scored contract exists; prior art is EU-only monthly panel forecasting or unreleased systems. LIMITATION recorded for construction: rows share origins across windows, so a later entrant's origin-level aggregate can contain components of an earlier entrant's outcome years - partial information, not the parent's exact-copy exposure; the gate 1.5.0 cross-row probe must run on the built artifact with the aggregate features declared. This record formulates the operator's recorded reopen condition (unhcr-refugee-data-finder, 2026-11-02): the one-shot design removes the adjacent-row self-answering structurally; the aggregate-outcome label is the operator's second named shape.",
+  "next_action": "Hand to advancement (construction is NOT part of this discovery record). Order: fresh construction on a worker from the pinned source (build.py: one row per corridor at first crossing, features from years <= T0 only, primary label cum2_2x, measured fallback next1_g25 chosen BEFORE any score; no re-tuning of the 2x threshold or the 500 eligibility after scores) -> gate 1.5.0 with the cross-row probe on the built artifact (declare the origin/host aggregate features; verify no shipped value equals another row's label operand - the parent task's failure mode) -> exact-byte acceptance -> reference baselines on the accepted artifact (majority, identity-only origin/host, naive into-entry momentum, persistence): the deciding check is measured headroom - if identity-only matches the reference model, drop for no headroom (the wb-loan-disbursement-completion precedent) - -> report. The dropped v2026.10 panel package is never published and its bytes are not reused; any artifact is fresh with a fresh attempt ID. The parent record's reopen condition is otherwise unchanged.",
+  "novelty_check": {
+    "checked_at": "2026-11-04T20:22:58+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "asylum applications corridor prediction benchmark machine learning dataset splits",
+      "new asylum corridors emergence first time crossing threshold prediction displacement early warning",
+      "huggingface OR zenodo asylum corridor dataset train holdout prediction task UNHCR"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "asylum applications corridor prediction benchmark machine learning dataset splits",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "new asylum corridors emergence first time crossing threshold prediction displacement early warning",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "huggingface OR zenodo asylum corridor dataset train holdout prediction task UNHCR",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "asylum applications corridor prediction benchmark machine learning dataset splits",
+          "hits": 819470,
+          "top": [
+            "BQEB-Data BIO-Quantum Energy Brain Benchmark Dataset for Smart Grid Intelligence, Renewable Forecasting, Storage Optimization, and Cyber Resilience",
+            "BQEB-Data: An Open Benchmark Dataset for Autonomous Energy Intelligence and Smart Grid Analytics",
+            "Czech Roads GEOJSON Dataset: Complete Coverage of All 14 Regions (2026)",
+            "Identifying Mislabels in Nanopore Data of Adeno-Associated Virus Using Transfer Learning-Based Ensemble Method",
+            "Identifying mislabels in nanopore data of adeno-associated virus using transfer learning based ensemble method"
+          ]
+        },
+        {
+          "query": "new asylum corridors emergence first time crossing threshold prediction displacement early warning",
+          "hits": 2218166,
+          "top": [
+            "Landslide displacement forecasting using deep learning and monitoring data across selected sites",
+            "Online conformal calibration of landslide velocity forecasts: code, data and results",
+            "Landslide Monitoring and Prediction Using IOT and LSTM Based RNN",
+            "Rainfall\u2013landslide early warning system (RLEWS) using TRMM precipitation estimates",
+            "HYDROCAST-NG: Real-T\u0131me Flood Mapp\u0131ng and D\u0131splaced Populat\u0131on Est\u0131mat\u0131on Us\u0131ng Sent\u0131nel-1 SAR Imagery and Deep Learn\u0131ng for N\u0131ger\u0131a: A Semantic Segmentation and Spatio-Temporal Forecasting Framework for Disaster Response and Humanitarian Planning"
+          ]
+        },
+        {
+          "query": "huggingface OR zenodo asylum corridor dataset train holdout prediction task UNHCR",
+          "hits": 6392526,
+          "top": [
+            "Disparities in the Issuance of Refugee Cards by the UNHCR in Indonesia: Vulnerability and Risk Mitigation",
+            "RESET-OECD dataset",
+            "ComFaceID Train and Test Data",
+            "Kabul land uses, land uses change and conflict metrics 1990-2024",
+            "EU Financial Allocations to Major Humanitarian Actors in Greece in the Aftermath of the 2015 Refugee Crisis (2016\u20132021): AMIF and ESI"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "asylum applications corridor prediction benchmark machine learning dataset splits",
+          "hits": 5,
+          "top": [
+            "A Benchmark Study of Machine Learning Models for Online Fake News Detection",
+            "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+            "DOME: Recommendations for supervised machine learning validation in biology",
+            "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
+            "MerLin: A Discovery Engine for Photonic and Hybrid Quantum Machine Learning"
+          ]
+        },
+        {
+          "query": "new asylum corridors emergence first time crossing threshold prediction displacement early warning",
+          "hits": 5,
+          "top": [
+            "Machine Learning-Driven Analytical Models for Threshold Displacement Energy Prediction in Materials",
+            "Space-time distributions",
+            "Fluid Antenna System: New Insights on Outage Probability and Diversity Gain",
+            "Early warning in egg production curves from commercial hens: A SVM approach",
+            "First look at time-dependent CP violation using early Belle II data"
+          ]
+        },
+        {
+          "query": "huggingface OR zenodo asylum corridor dataset train holdout prediction task UNHCR",
+          "hits": 5,
+          "top": [
+            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+            "MLIM: Vision-and-Language Model Pre-training with Masked Language and Image Modeling",
+            "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset",
+            "Holdout predictive checks for Bayesian model criticism"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'asylum applications corridor prediction benchmark machine learning dataset splits': 0 hit(s) - nothing notable\n- huggingface_datasets / 'new asylum corridors emergence first time crossing threshold prediction displacement early warning': 0 hit(s) - nothing notable\n- huggingface_datasets / 'huggingface OR zenodo asylum corridor dataset train holdout prediction task UNHCR': 0 hit(s) - nothing notable\n- zenodo_records / 'asylum applications corridor prediction benchmark machine learning dataset splits': 819470 hit(s) - BQEB-Data BIO-Quantum Energy Brain Benchmark Dataset for Smart Grid Intelligence, Renewable Forecasting, Storage Optimization, and Cyber Resilience, BQEB-Data: An Open Benchmark Dataset for Autonomous Energy Intelligence and Smart Grid Analytics, Czech Roads GEOJSON Dataset: Complete Coverage of All 14 Regions (2026), Identifying Mislabels in Nanopore Data of Adeno-Associated Virus Using Transfer Learning-Based Ensemble Method, Identifying mislabels in nanopore data of adeno-associated virus using transfer learning based ensemble method\n- zenodo_records / 'new asylum corridors emergence first time crossing threshold prediction displacement early warning': 2218166 hit(s) - Landslide displacement forecasting using deep learning and monitoring data across selected sites, Online conformal calibration of landslide velocity forecasts: code, data and results, Landslide Monitoring and Prediction Using IOT and LSTM Based RNN, Rainfall\u2013landslide early warning system (RLEWS) using TRMM precipitation estimates, HYDROCAST-NG: Real-T\u0131me Flood Mapp\u0131ng and D\u0131splaced Populat\u0131on Est\u0131mat\u0131on Us\u0131ng Sent\u0131nel-1 SAR Imagery and Deep Learn\u0131ng for N\u0131ger\u0131a: A Semantic Segmentation and Spatio-Temporal Forecasting Framework for Disaster Response and Humanitarian Planning\n- zenodo_records / 'huggingface OR zenodo asylum corridor dataset train holdout prediction task UNHCR': 6392526 hit(s) - Disparities in the Issuance of Refugee Cards by the UNHCR in Indonesia: Vulnerability and Risk Mitigation, RESET-OECD dataset, ComFaceID Train and Test Data, Kabul land uses, land uses change and conflict metrics 1990-2024, EU Financial Allocations to Major Humanitarian Actors in Greece in the Aftermath of the 2015 Refugee Crisis (2016\u20132021): AMIF and ESI\n- arxiv_preprints / 'asylum applications corridor prediction benchmark machine learning dataset splits': 5 hit(s) - A Benchmark Study of Machine Learning Models for Online Fake News Detection, Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, MerLin: A Discovery Engine for Photonic and Hybrid Quantum Machine Learning\n- arxiv_preprints / 'new asylum corridors emergence first time crossing threshold prediction displacement early warning': 5 hit(s) - Machine Learning-Driven Analytical Models for Threshold Displacement Energy Prediction in Materials, Space-time distributions, Fluid Antenna System: New Insights on Outage Probability and Diversity Gain, Early warning in egg production curves from commercial hens: A SVM approach, First look at time-dependent CP violation using early Belle II data\n- arxiv_preprints / 'huggingface OR zenodo asylum corridor dataset train holdout prediction task UNHCR': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, MLIM: Vision-and-Language Model Pre-training with Masked Language and Image Modeling, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, Holdout predictive checks for Bayesian model criticism",
+    "prior_art": [
+      "J Econ Geography 25(1):3 (2025); BSE WP 1387; Cambridge Data & Policy DAP_2400048 (2024); JRC122178; Napierala et al. 2022; OECD Migration Anticipation and Preparedness (2025); arXiv:2505.06249; arXiv:2405.06857"
+    ],
+    "theirs": "The publisher ships the raw panel (HDX global package), not a task. Prior art is EU-focused: bilateral monthly Eurostat flow forecasting (J Econ Geography 25(1):3 2025; BSE WP 1387, no dataset release), Italy-aggregate 6-month forecasting (Cambridge Data & Policy 2024), JRC122178 4-week EU system (internal), Napierala et al. 2022 cusum alert detection (EU weekly/monthly, no released benchmark), OECD Migration Anticipation and Preparedness 2025 (survey), arXiv:2505.06249 origin-grain monthly early warning (no released task), HF/Zenodo raw-panel repackages only.",
+    "ours": "A one-row-per-corridor first-crossing benchmark on UNHCR's global asylum-applications channel (130 hosts, 215 origins, 2000-2025): predict, at the first publication of a corridor's >=500-application year, whether the corridor's flow over the next two years reaches twice that level - fixed entry-year train/eval/holdout splits, clustered event counts, a scored contract and a live strict-forecast edge. No existing release predicts corridor emergence at first crossing; nothing here ships adjacent corridor-years (the redesign of the dropped panel task).",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
+}
