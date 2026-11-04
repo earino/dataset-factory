@@ -1,3 +1,23 @@
+## 2026-11-04 (04:13Z) - watcher follow-up: both ibama probe jobs verified and acknowledged - already durably recorded at d1ed022 by the owning discovery tick; provider cleanup re-confirmed read-only
+
+Watcher brief, two terminal jobs observed (ibama-probe-001 failed exit 1,
+ibama-probe-002 succeeded exit 0). The research mutex was held by this invocation
+for the whole follow-up; the working tree was clean at start (no other
+coordinator's unfinished work; no unrelated edits to preserve). Both jobs'
+outcomes, the probe-001 diagnosis (probe code defect, nothing scientific
+measured), staging releases 433488550 / 433491900 (assets sha256-verified at
+collect 03:47:10Z / 03:53:07Z) and the probe-002 full-table measurements were
+already recorded by the owning tick and committed in d1ed022; ledger entries are
+terminal (status deleted); the bounded probe outputs are confirmed present in
+candidates/ibama-auto-infracao-recidivism/probe/out/. This session added only an
+independent read-only cleanup re-confirmation: scripts/provider-inventory.py
+reports 0 servers and 0 primary IPs (project and account), and
+GET /v1/servers/174421747 and /v1/servers/174422247 both answer 404
+"server not found". Both jobs acknowledged with .factory markers; no collection,
+recovery, record or candidate change was needed and none was made. Next action
+unchanged: advancement owns ibama construction (ibama-build-001 per
+record.next_action).
+
 ## 2026-11-04 (04:20Z) - discovery tick (Latin America): ibama-auto-infracao-recidivism READY - the record's discovery-owned worker aggregate probe ran (probe-001 failed on a diagnosed code defect, probe-002 succeeded), full-table split capacity measured, verdict go
 
 Discovery-only session, regional focus Latin America (operator tick). One candidate
