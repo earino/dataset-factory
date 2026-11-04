@@ -61,14 +61,31 @@
  "jobs": [
   {
    "id": "cqc-chd-001",
+   "kind": "construction",
    "launched_by": "advancement session 2026-11-03",
-   "state_at_record": "preflight recorded, launch pending"
+   "launched_at": "2026-11-03T19:12:55Z (server 174367893, cx23/hel1, reservation EUR 0.04)",
+   "collected_at": "2026-11-03T19:31:38Z (collect verified the staging release tag, asset membership, sizes and digests)",
+   "destroyed_at": "2026-11-03T21:25:26Z (ledger entry closed as deleted after the worker expired 20:12:55Z; the deleting actor itself was not observed - the hourly sweep is the expected path)",
+   "destroy_verified": "watcher read-only provider re-check 2026-11-04T03:16Z: project server list empty, server 174367893 answers HTTP 404, 0 primary IPs",
+   "result": "failed, exit 1, executor elapsed 375.4 s, oom_killed false; staging release 433120388 (source.tar 245,760 B sha 00a0e6b4..., container.log 1,517 B sha 888c9d8b..., manifest.json 4,913 B)",
+   "failure_class": "construction (real-data vintage drift the 10/10 synthetic rehearsal did not reproduce); not infrastructure, not scientific, not verification",
+   "failure_detail": "panel build: January vintages 2019/2020/2021 each built 0 care-home rows (2018 xlsx: 16,104 rows / 947 positives; 2022 ods: 15,206 / 799; 2024: 14,765 / 757; 2025: 14,749 / 761; 2016 and 2017 DROPPED loudly for unresolved required columns, as designed); assert_structure raised BuildError 'instant 2019 care-home rows 0 outside the expected 10k-20k band' (build.py:1375) and the build stopped BEFORE the gate ran - no qualification.json, no extract uploaded, nothing scored, no figure may be quoted from this attempt; the deactivated index matched the acceptance anchor exactly (65,830 rows / 17,177 care homes / 0 duplicate care-home ids)",
+   "diagnosis": "the 2019-2021 vintages resolved their required columns (so they were not DROPPED like 2016/2017) yet matched zero care-home rows: the care-home filter's keying column or value domain differs in those three editions; 2018 (same xlsx era) and 2022+ (ods) both build",
+   "next_check": "bounded vintage-schema probe on a worker before any rebuild: read the care-home-identifying column plus its distinct values from active_2018_01.xlsx (works, 16,104 rows) vs active_2019_01.xlsx / active_2020_01.xlsx / active_2021_01.xlsx (0 rows each) and name the exact drift; then fix the vintage filter in build.py with the P0 design and assertions unchanged and re-assemble as cqc-chd-002",
+   "evidence": {
+    "staging_release": "earino/dataset-factory-staging release 433120388, tag job-cqc-chd-001 (draft) - the durable diagnostics copy; no accepted artifact existed, so none was owed preservation",
+    "container_log": ".factory/cqc-chd-001/reports/file-0001-part-0000 (sha256 888c9d8b6311bdca3d9c7fea8fe03c913fe260b73de7b270c0796698b72dabac, fetched from staging by .factory/fetch_cqc_chd001_reports.py)",
+    "staging_manifest": ".factory/cqc-chd-001/reports/manifest.json",
+    "ledger": "jobs/cqc-chd-001.json",
+    "compact_result": ".factory/cqc-chd-001/result.json"
+   },
+   "state_at_record": "failed construction recorded by the watcher follow-up 2026-11-04; stopping condition honoured - ONE rebuild permitted for this defect class, a second failure of the same class is a recorded blocker"
   }
  ],
  "artifacts": [],
  "rejection_reason": null,
  "review": null,
- "next_action": "Advancement owns construction (no construction while a packaged candidate is actionable): (1) record the framing decision - register-event target with the re-registration share stated as a limitation, or a successor-linked 'complete closure' target (address/UPRN/brand adjacency; API linkage needs auth); (2) worker build: enumerate the Drive year folders, fetch January vintages 2016-2024 plus the deactivated file (sha256-pin everything, ~390 MB), assemble one row per care home per instant with strictly vintage-visible features (beds, service types, user bands, at-T rating + publication date + inherited flag, provider attributes, HSCA ages); (3) compute exact per-instant positives and the simple-reference triad (global rate, LA rate, last-rating rate, bed-size rate, provider-sector rate) BEFORE any model figure - droppable if a one-line prior saturates; (4) full-artifact gate 1.5 on the worker, exact-byte acceptance, then scoring, in the standing order.",
+ "next_action": "CONSTRUCTION FAILED (cqc-chd-001, 2026-11-03, staging release 433120388): the 2019/2020/2021 January vintages built 0 care-home rows each and assert_structure stopped the build before the gate ran - no qualification, no scoring, no quoted figure. Advancement owns the repair, in the standing order: (1) run the bounded vintage-schema probe named in jobs[0].next_check (care-home-identifying column value domains, active_2018_01 vs active_2019/2020/2021_01) and record the exact drift; (2) fix build.py's vintage filter, keeping the P0 single-instant design, per-instant pseudonym ids and every assertion unchanged; (3) re-assemble and relaunch as cqc-chd-002 - the ONE rebuild this defect class is permitted by the recorded stopping condition; a second failure of the same class is a recorded blocker, never a blind retry; (4) on success continue the unchanged standing order: full-artifact gate 1.5 on the worker, exact-byte accept, reference triad BEFORE any model figure, then the runner-contract baseline. No publication, tag or destination is touched by any of this.",
  "licence_class": "A",
  "licence_note": "OGL v3 per the publisher's own instruments. Attribution 'Care Quality Commission' carries into any release; the in-sheet disclaimer (CQC not responsible for subsequent analysis; must not be quoted as its source) is carried into the dataset documentation.",
  "jurisdiction": {
@@ -88,7 +105,7 @@
   },
   "uncertainty": "1) FRAMING: the register event conflates cessation with re-registration - CQC's own file note says some deactivations continue under a new registration (legal entity/address/provider change), and BMJ 2024 (8,346 complete closures vs 14,911 register events 2011-2023) implies roughly 40-55% of deregistrations are re-registrations/transfer; advancement must either ship the honest register-event target with this limitation stated or build successor linkage (address/UPRN/ODS-code/brand adjacency; the API's linked-organisation data needs developer-portal auth). 2) HEADROOM UNMEASURED: simple references (last-rating rate, bed-size, LA, provider-sector) are the plausible strong priors - the BMJ/npj evidence says ratings+ownership drive closures (US ML AUROC 0.79 out-of-sample, so learnable structure exists); the reference triad is the FIRST construction measurement and the task is droppable if a one-line prior saturates it. 3) The publisher's system migration is delaying reflection of registration cancellations in current files - recent-window lag check required. 4) Era breaks: single-assessment rating change (~2024, location-level overall ratings dropped for multi-service ASC locations) and the 1 April 2019 regulatory-history inheritance change. 5) Provider-group cross-row exposure if group-history features ship - strictly-prior events only + declared restricted protocol. 6) Dormant-but-registered locations may sit in the at-T population (no dormancy flag in the bulk files; not measured this session)."
  },
- "updated_at": "2026-11-03T18:2xZ",
+ "updated_at": "2026-11-04T03:20Z (watcher follow-up: cqc-chd-001 construction failure recorded with evidence and next check)",
  "novelty_check": {
   "checked_at": "2026-11-03T16:56:53+00:00",
   "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",

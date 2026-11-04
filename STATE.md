@@ -1,3 +1,65 @@
+## 2026-11-04 (03:20Z) - watcher follow-up: cqc-chd-001 failed IN CONSTRUCTION (2019/2020/2021 January vintages built 0 care-home rows; the build stopped before the gate ran, nothing was scored) - diagnostics preserved in staging release 433120388, worker gone with provider-side proof; the six terminal fts-* jobs re-confirmed recorded at cfb0bbe and acknowledged; the cqc repair is handed to advancement
+
+Watcher brief, seven terminal jobs observed. The research mutex was held by
+this invocation for the whole follow-up; the working tree was clean at start
+(no other coordinator's unfinished work; unrelated edits preserved - there
+were none).
+
+- cqc-chd-001 (construction, cqc-care-home-deregistration): FAILED, exit 1,
+  elapsed 375.4 s, oom_killed false. Already collected 2026-11-03T19:31:38Z
+  (staging release 433120388 verified: tag job-cqc-chd-001, 3 assets, sizes
+  and digests match); this session fetched the bounded diagnostics that had
+  never been pulled (container.log 1,517 B + manifest.json 4,913 B ->
+  .factory/cqc-chd-001/reports/, source bundle skipped as already pinned in
+  the ledger). The container log shows the panel builder emitted 2018:
+  16,104 rows / 947 positives, 2019: 0/0, 2020: 0/0, 2021: 0/0, 2022:
+  15,206/799, 2024: 14,765/757, 2025: 14,749/761, with 2016/2017 DROPPED
+  loudly (unresolved required columns, as designed) and the deactivated
+  index matching the acceptance anchor exactly (65,830 rows / 17,177 care
+  homes / 0 duplicate ids); assert_structure then raised BuildError
+  "instant 2019 care-home rows 0 outside the expected 10k-20k band" and the
+  build stopped by design BEFORE the gate ran: no qualification.json, no
+  extract uploaded, nothing scored - no figure may be quoted from this
+  attempt. FAILURE CLASS: construction - the 2019-2021 vintages resolved
+  their required columns yet matched zero care homes (real-data vintage
+  drift the 10/10 synthetic rehearsal did not reproduce); not
+  infrastructure, not scientific, not verification. No recovery attempted:
+  the one model-directed recovery is reserved for infrastructure/transfer
+  failures with a named source, and this is a build defect advancement owns.
+  Cleanup: the worker expired 20:12:55Z, the ledger entry closed deleted
+  21:25:26Z (deleting actor not observed; the hourly sweep is the expected
+  path), and the read-only provider re-check at 03:16Z confirms deletion -
+  project server list empty, server 174367893 HTTP 404, 0 primary IPs. The
+  private staging release is the durable diagnostics copy; no accepted
+  artifact existed, so none was owed preservation. Candidate record
+  (jobs[0] rewritten with evidence paths) + notes.md updated with the
+  cheapest discriminating next check.
+- NEXT ACTION (advancement owns it; recorded in the candidate record):
+  run the bounded vintage-schema probe - diff the care-home-identifying
+  column's distinct values in active_2018_01.xlsx (works, 16,104 rows) vs
+  active_2019/2020/2021_01.xlsx (0 rows each) - then fix build.py's vintage
+  filter with the P0 single-instant design, pseudonym ids and every
+  assertion unchanged, and re-assemble as cqc-chd-002. That is the ONE
+  rebuild this defect class is permitted by the recorded stopping condition;
+  a second failure of the same class is a recorded blocker, never a blind
+  retry. On success the standing order resumes unchanged: full-artifact
+  gate 1.5, exact-byte accept, reference triad BEFORE any model figure,
+  runner-contract baseline.
+- fts-requal-001, fts-publish-002, fts-hf-002, fts-baseline-005 (all
+  succeeded) and fts-baseline-003, fts-baseline-004 (failed attempts,
+  superseded by 005): outcomes, measurements and sequence lessons were
+  already recorded by the ocha-fts release session at cfb0bbe (STATE
+  2026-11-03: "workers ... all collected and destroyed"). Ledger re-read
+  confirms all six entries status deleted (21:29-22:17Z), and the provider
+  re-check above (empty project, no IPs) covers their cleanup. Nothing new
+  to record; acknowledged with .factory markers pointing at cfb0bbe.
+- Boundaries kept: no publication, tag, manifest, destination or
+  qualification check was touched; no unqualified figure is quoted; budget
+  untouched beyond the already-recorded EUR 0.04 reservation (job failed,
+  reservation retained by policy); the operator's standing decisions
+  (za-cct (a)/(b)/(c), ocha-fts flip relay) are unchanged and not part of
+  this event.
+
 ## 2026-11-03 (22:50Z) - discovery tick (Canada): two stale investigating records reconciled to READY with dated examples and publication-lag evidence - cra-charity-filing-exit and npri-facility-reporting-exit, CA's first ready candidates
 
 Discovery-only session. No construction, qualification, packaging, publication or

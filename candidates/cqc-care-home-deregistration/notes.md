@@ -161,3 +161,48 @@ Ours: the vintage-anchored prediction-instant contract (CQC's own 2011-2026 mont
 Drive archive - the asset cqcpack explicitly lacks), temporal splits, reference
 triad, gate-qualified artifact - none of which the prior art ships; nobody
 redistributes an ML-ready panel (the prior art used the API and bespoke linkage).
+
+## Construction attempt cqc-chd-001 (failed 2026-11-03; recorded 2026-11-04)
+
+Worker job cqc-chd-001 (server 174367893, launched 2026-11-03T19:12:55Z,
+EUR 0.04 reservation) ran the assembled construct->qualify order and
+FAILED in construction, before qualification. Panel build per the
+container log: 2016 DROPPED, 2017 DROPPED (unresolved required columns -
+the designed loud drop), 2018: 16,104 rows / 947 positives, 2019: 0/0,
+2020: 0/0, 2021: 0/0, 2022: 15,206/799, 2024: 14,765/757, 2025:
+14,749/761; the deactivated index matched the recorded acceptance anchor
+exactly (65,830 rows / 17,177 care homes / 0 duplicate care-home ids).
+assert_structure then raised
+`BuildError: instant 2019 care-home rows 0 outside the expected 10k-20k band`
+(build.py:1375) and the build stopped by design BEFORE the gate ran: no
+qualification.json exists, nothing was scored, and no figure may be quoted
+from this attempt.
+
+Failure class: construction - real-data vintage drift the 10/10 synthetic
+rehearsal did not reproduce. The 2019-2021 vintages resolved their
+required columns (unlike 2016/2017) yet matched zero care homes, so the
+care-home filter's keying column or value domain differs in those three
+editions; 2018 (same xlsx era) and 2022+ (ods) both build. Cheapest
+discriminating next check (advancement, before any rebuild): diff the
+care-home-identifying column's distinct values between active_2018_01.xlsx
+(works) and active_2019_01.xlsx / active_2020_01.xlsx / active_2021_01.xlsx
+(0 rows each).
+
+Evidence: private staging release 433120388 (earino/dataset-factory-staging,
+tag job-cqc-chd-001, draft) holds the durable diagnostics - container.log
+1,517 B sha256
+888c9d8b6311bdca3d9c7fea8fe03c913fe260b73de7b270c0796698b72dabac,
+manifest.json 4,913 B, source.tar 245,760 B sha256
+00a0e6b44e028417013f79bb3c642615cb3d636f5416cf6090e32dffe73f5018; bounded
+copies in .factory/cqc-chd-001/reports/ (fetched by
+.factory/fetch_cqc_chd001_reports.py). Ledger jobs/cqc-chd-001.json:
+collected 2026-11-03T19:31:38Z (release tag, membership, sizes and digests
+verified), entry closed deleted 21:25:26Z after expiry (20:12:55Z);
+read-only provider re-check 2026-11-04T03:16Z: project server list empty,
+server 174367893 HTTP 404, 0 primary IPs - deletion confirmed by the
+provider. No accepted artifact existed, so no accepted-asset preservation
+was owed; the staging release is the durable diagnostics copy.
+
+Stopping condition honoured: ONE rebuild permitted for this defect class;
+a second failure of the same class is a recorded blocker, never a blind
+retry.
