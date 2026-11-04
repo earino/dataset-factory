@@ -1,6 +1,6 @@
 {
  "id": "cqc-care-home-deregistration",
- "status": "ready",
+ "status": "qualified",
  "created_at": "2026-11-03T16:32:31.612555+00:00",
  "domain": "adult social care regulation / 12-month register-exit (deregistration) prediction",
  "prediction_question": "For a care home location active on the CQC register at monthly vintage T (the 'HSCA Active Locations' file produced on that date), will the location's registration end within the following 12 months (Location Status Inactive-Dereg with a Location HSCA End Date inside (T, T+365d])?",
@@ -42,7 +42,7 @@
   "https://www.cqc.org.uk/about-us/our-policies/terms-conditions (read 2026-11-03): CQC copyright-protected material published on the site 'may be used in accordance with the Open Government Licence for Public Sector Information'.",
   "No dataset-specific restriction found on any product page; the bulk files are register data only (no third-party content)."
  ],
- "construction_script": null,
+ "construction_script": "candidates/cqc-care-home-deregistration/source/build.py (stdlib-only; harvests the CQC 'HSCA Active Locations' January vintages 2016-2022 + 2024 + 2025 from the publisher's Drive archive plus the pinned 2026-11-02 Deactivated Locations edition, sha256-pinned per file; walks workbook order to the Location ID header sheet and drops no-header vintages loudly; per-instant pseudonymised ids (missing-successor P0 design); train 2018-2022 / eval 2024-01 / holdout 2025-01 with the (T, T+365d] deregistration label and 757 eval positives asserted; quality.json timing kind=period_end; source/run.sh then qualifies the FULL artifact with gate 1.5.0, exact-byte --accept, and only after that scores the train-only rate-table references)",
  "split_strategy": "Annual January instants with non-overlapping 12-month target windows. Proposed: train instants Jan 2016-2019 (targets 2016-2020), eval Jan 2020-2021 (targets 2020-2022), holdout Jan 2022-2024 (holdout target windows end by 2025-01, fully observed by the 2026-11-02 deactivated file). Instants 2011-2015 are usable for train with the pre-Oct-2014 no-ratings caveat; instants 2025+ are excluded while either the deactivated file's coverage or the publisher's migration-related cancellation lag is unresolved. Exact per-instant positives are the first construction measurement; measured anchor: T=2024-01-05 carries 14,765 eligible care homes and 758 positives (5.13%).",
  "measurements": {
   "archive_depth_measured": "monthly 'HSCA Active Locations' vintages 2011-2026 (2019 files .xlsx, 2024+ .ods; 12 per year), 'with ratings' archive 2015-2026, weekly CSV archive 2012-2026; all anonymously listable and downloadable from Google Drive (embeddedfolderview + drive.usercontent download); Drive year-folder IDs and one 2024 file ID recorded in probe/cqc_drive_*.py",
@@ -56,7 +56,32 @@
   "rating_signal_measured": "last overall rating at deactivation (care homes): Good 5,992, blank 7,698, Requires improvement 2,318, Inadequate 1,027, Outstanding 138 - Inadequate is 6.0% of deactivations vs a low single-digit share of the active stock; beds at deactivation small-home-dominated (modes 3-10 beds) - both match the publisher's State of Care closure profile",
   "cross_checks": "CQC/DHSC operational-effectiveness review (June 2024 snapshot): 29,108 social care organisation locations, 23,951 with published ratings vs 57,123 total locations / 15,477 care homes measured here (2026-10-28) - consistent magnitude and mix; BMJ Public Health 2024: 29,548 care homes existed 2011-2023 with 8,346 COMPLETE closures vs 14,911 register events measured here over the same span (the gap = their linkage-filtered subset vs raw deregistrations, per their methodology note); CQC State of Care 2016 small-home closure profile matches the beds-at-deactivation distribution",
   "known_event_fixture": "dated worked example in notes.md: Park Hills Nursing Home (1-113831768, Oldham, 17 beds, HSCA start 01/02/2011, Good published 26/08/2022) present at T=2024-01-05, Location HSCA End Date 01/02/2024 inside the window -> label 1; Henley House (1-10000302982, Suffolk, 66 beds) present at T, absent from the deactivated file as of 2026-11-02 -> label 0; Options Hazel House (end date 05/03/2025, outside the window) -> label 0 at T",
-  "measured_on": "2026-11-03, anonymous coordinator-side probes; scripts + outputs in candidates/cqc-care-home-deregistration/probe/ (sha256 of fetched files in notes.md)"
+  "measured_on": "2026-11-03, anonymous coordinator-side probes; scripts + outputs in candidates/cqc-care-home-deregistration/probe/ (sha256 of fetched files in notes.md)",
+  "references_2026_11_04_cqc_chd_004": {
+   "source": "score.py post-acceptance on the worker, eval rows only (14,765 / 757 positives, base rate 5.126%), holdout never opened; every rate table estimated ONLY from train rows",
+   "references_eval_auc": {
+    "rating_x_beds_rate": 0.5870921937794369,
+    "last_rating_rate": 0.5597447335246061,
+    "beds_bucket_rate": 0.5297982677571677,
+    "hsca_start_year_rate": 0.5226476076701217,
+    "local_authority_rate": 0.5207061335775669,
+    "provider_sector_rate": 0.5010938738912734,
+    "global_rate": "degenerate (constant score)"
+   },
+   "majority_class_accuracy_eval": 0.9487301049779885,
+   "no_persistence_by_design": "the location's own prior-instant outcome is the natural persistence score, but identity ships as a per-instant pseudonym (the missing-successor P0 design), so prior-instant labels are structurally unlinkable over the shipped frame - for the scorer too; hsca_start_year_rate is the nearest shippable history prior",
+   "paired_bootstrap_150": {
+    "rating_x_beds_vs_last_rating": {
+     "observed_difference": 0.027347460254830813,
+     "ci95": [
+      0.012336799268033438,
+      0.04074592760988893
+     ],
+     "note": "interval excludes zero"
+    }
+   },
+   "headroom_reference_for_any_model_figure": "rating_x_beds_rate 0.5871 on the identical eval rows; a full-model figure from the coming baseline job must be quoted beside it, and a model below it is a recorded defect, not an encouraging result"
+  }
  },
  "jobs": [
   {
@@ -122,13 +147,30 @@
    "launched_at": "2026-11-04T05:02:44Z (server 174428318, cx23/hel1, reservation EUR 0.04, November)",
    "source_sha256": "50fe3bd141a8d33362a4e35177f9cfb06b33df308b43423a3834069b44e5a1ab",
    "carries_all_three_fixes": "(1) vintage-reader fix of cqc-chd-002 (multi-sheet xlsx walk + loud no-header drop); (2) anchor correction of cqc-chd-003 (EXPECTED_EVAL_POSITIVES 757); (3) fixture field mapping (FIXTURE_FIELD_MAP + internal _pub/_start, probe-verified on the real pinned bytes by probe/probe_fixture_fields.py)",
-   "state_at_record": "in flight (launched 05:02:44Z; expires 60 min)"
+   "state_at_record": "succeeded; candidate transitioned to qualified 2026-11-04T05:12:54Z by the owning advancement session",
+   "collected_at": "2026-11-04T05:11:00Z (collect verified the staging release tag, asset membership, sizes and digests)",
+   "destroyed_at": "2026-11-04T05:12:54Z (worker 174428318 destroyed after verified collection; ledger closed)",
+   "result": "SUCCEEDED, exit 0, executor elapsed 376.4 s; staging release 433536764 (extract 9,553,058 B train.csv + eval + holdout + meta + quality + reports); gate 1.5.0 ok=true failed_checks=[] on the FULL artifact on the worker; exact-byte --accept ACCEPTED for artifact afe9ee203f302f3c...; all four run.sh stages 0; discovery fixtures reproduced exactly ('discovery fixtures reproduced exactly' in container.log)"
   }
  ],
- "artifacts": [],
+ "artifacts": [
+  {
+   "artifact_version": "afe9ee203f302f3ca41b9b01ad74a937e111d1b830590c7e662bb0b7b6df85d7",
+   "accepted": "exact-byte --accept on the worker (cqc-chd-004): 'ACCEPTED: /output/extract matches the qualified artifact afe9ee203f302f3c'",
+   "built_by": "worker job cqc-chd-004 (server 174428318, cx23/hel1, 376.4 s), construct from the CQC Drive archive (January vintages 2016-2022 + 2024 + 2025) + the pinned 2026-11-02 Deactivated Locations edition (pin re-verified pre-launch)",
+   "digest_of": "sha256 over public/train.csv, public/eval.csv, private/holdout.csv, meta.json, quality.json (gate 1.5.0)",
+   "gate": "1.5.0 over the full artifact on the worker, ok=true, failed_checks empty; report collected digest-verified to .factory/cqc-chd-004/reports/ (staging release 433536764)",
+   "rows": {
+    "train": "78,138 / 4,418 positives (5.654%) - January vintages 2018-2022 (2016/2017 loudly DROPPED for unresolved required columns, 2023 excluded by design)",
+    "eval": "14,765 / 757 (5.126%) - the 2024-01 vintage",
+    "holdout": "14,749 / 761 (5.158%) - the 2025-01 vintage (sealed)"
+   },
+   "staging_release": "earino/dataset-factory-staging release 433536764 (tag job-cqc-chd-004, draft) - the durable artifact + reports copy; worker destroyed 2026-11-04T05:12:54Z after verified collection"
+  }
+ ],
  "rejection_reason": null,
  "review": null,
- "next_action": "cqc-chd-004 IN FLIGHT (the ONE rebuild permitted for the THIRD distinct class - the fixture-assert field-mapping code defect; decision in jobs[2].decision, evidence probe/probe_fixture_fields.py). The panel has now built IDENTICALLY three times (001/002/003 logs) and every eval anchor that ever executed now passes, including the corrected 757 positives. COLLECT AND VERIFY: sh scripts/scout-factory worker collect cqc-chd-004 -> require (a) all five train instants built in-band, (b) gate ok=true with failed_checks EMPTY on the FULL artifact on the worker, (c) exact-byte --accept ACCEPTED on the worker, (d) all three dated fixtures green (label + beds + la + rating + pub + start), (e) both successor probes reporting eval/holdout coverage 0. Then DESTROY the worker (collect-then-delete, provider 404 read-back) and record the reference set (global / local-authority / last-rating / beds-bucket / provider-sector / start-year rate tables from train only, majority accuracy, NO persistence BY DESIGN). ANY failure of cqc-chd-004 is a RECORDED BLOCKER: collect diagnostics, diagnose, record - no further retry without a fresh operator-reviewed decision. On success the runner-contract baseline job is next, quoted beside the strongest reference.",
+ "next_action": "QUALIFIED + ACCEPTED (cqc-chd-004, artifact afe9ee203f302f3c..., staging release 433536764; gate 1.5.0 failed_checks empty on the full artifact on the worker; exact-byte accept ACCEPTED; successor probes eval/holdout coverage 0; worker destroyed with ledger-closed proof). NEXT: the runner-contract baseline job on the staged bytes (the za-cct-baseline-001 pattern: fetch the accepted assets from the staging release, --accept BEFORE any score, materialize the workdir from public splits only, benchmark train.py + validate.sh verbatim, contract_ok check) - quote the full-model eval AUC beside rating_x_beds_rate 0.5871 (the strongest reference, CI excluding zero over last_rating_rate), with the no-persistence-by-design note. Then interpretation per dataset-qualification (a model below 0.5871 is a recorded defect), then packaging per dataset-release. Holdout stays sealed.",
  "licence_class": "A",
  "licence_note": "OGL v3 per the publisher's own instruments. Attribution 'Care Quality Commission' carries into any release; the in-sheet disclaimer (CQC not responsible for subsequent analysis; must not be quoted as its source) is carried into the dataset documentation.",
  "jurisdiction": {
@@ -278,5 +320,27 @@
   "timing_block": "kind=period_end, source_kind=administrative_record, lag 0 (the vintage IS the register state at its production instant); observations carry every vintage's production date; as-of asserted in-build (0/14,765 eval rows with rating Publication Date after T)",
   "rehearsal": "tests/test_cqc_build.py: real build.py over synthetic vintages (one XLSX to exercise the stdlib OOXML reader) -> gate 1.5.0 with 0 failed checks -> exact-byte accept -> score.py references -> byte-identical rebuild -> red/green (a second eval instant re-opening the successor channel is refused by rows_within_declared_windows; removing the timing block is refused; a stale report against different bytes is refused) - 10/10 OK",
   "fixtures_pinned": "deactivated edition size+sha256 prefix (27,644,723 B / 49dc3062) + 2024-01 vintage (26,147,266 B / ac40b6f8) asserted against the 2026-11-03 discovery measurements; eval counts 14,765/758/2,076 asserted exactly; dated fixtures Park Hills / Henley House / Options Hazel House"
+ },
+ "qualification": {
+  "accepted": true,
+  "artifact_version": "afe9ee203f302f3ca41b9b01ad74a937e111d1b830590c7e662bb0b7b6df85d7",
+  "gate_version": "1.5.0",
+  "job": "cqc-chd-004",
+  "qualified_at": "2026-11-04T05:12:54Z",
+  "report": ".factory/cqc-chd-004/reports/ (gate json + rendered txt + acceptance + references + summary + container.log; staging release 433536764)",
+  "rebuild_history": "cqc-chd-001 failed (vintage-reader: leading README sheets in the 2019-2021 xlsx + silent 0/0 drop path); cqc-chd-002 fixed it, then failed at the eval-positives anchor (the discovery probe measured (T, T+366d] through the 2024 leap year; contract-correct count 757, arbitrated by a third implementation); cqc-chd-003 fixed it, then failed in the never-executed fixture loop (field mapping); cqc-chd-004 carried all three fixes and passed end to end. Three distinct defect classes, each with its own one-rebuild budget, each fix verified against real pinned bytes before relaunch.",
+  "cross_row_probe_on_real_artifact": {
+   "probe_0_pseudonym_successor": {
+    "train": 0,
+    "eval": 0,
+    "holdout": 0
+   },
+   "probe_1_quasi_identifier_la_beds_startyear_rating_sector": {
+    "train": 11786,
+    "eval": 0,
+    "holdout": 0,
+    "note": "in-train coverage is the quasi-linkage rate where labels are public anyway; eval/holdout coverage 0 is the measured bound over the frames a solver can see"
+   }
+  }
  }
 }

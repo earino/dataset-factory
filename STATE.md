@@ -1,3 +1,70 @@
+## 2026-11-04 (05:45Z) - watcher follow-up: cqc-chd-004 SUCCEEDED (candidate qualified + accepted); cqc-chd-002/-003 failures already durably recorded at bf8a5ea; all three workers provider-404-confirmed deleted; all three jobs acknowledged
+
+Finished-worker event for cqc-chd-002, cqc-chd-003, cqc-chd-004. The follow-up
+runner holds the research mutex; the advancement session that repaired the
+build had already done the 004 handoff (collect 05:11:45Z, verify, destroy
+worker 05:12:54Z, candidate -> qualified) and left its record/job edits
+uncommitted; this session verified every claim first-hand, committed them
+and acknowledged the jobs. No recovery, relaunch, collection re-run or
+record rewrite was needed; no manifest/tag/destination touched.
+
+- cqc-chd-004 (server 174428318, cx23/hel1, 376.4 s, exit 0): SUCCEEDED.
+  Staging release 433536764, 14 assets. All 9 collected report parts in
+  .factory/cqc-chd-004/reports/ sha256-match the staging manifest
+  (acceptance txt, qualification json+txt, references, summary, meta,
+  quality, source.tar, container.log); the four bulk CSVs
+  (train/eval/holdout/location_map) remain staging-only and were never
+  fetched here. VERIFIED FROM THOSE BYTES: gate 1.5.0 ok=true
+  failed_checks=[] on the FULL artifact on the worker; exact-byte
+  --accept ACCEPTED for artifact
+  afe9ee203f302f3ca41b9b01ad74a937e111d1b830590c7e662bb0b7b6df85d7
+  (train 78,138/4,418 = 5.654%; eval 14,765/757 = 5.126%; holdout
+  14,749/761 = 5.158%; 2016/2017 vintages loudly DROPPED for unresolved
+  required columns); 'discovery fixtures reproduced exactly' in
+  container.log; cross-row probes on the real artifact: probe_0 covered
+  0/0/0 train/eval/holdout, probe_1 train 11,786 (labels public there
+  anyway) with eval/holdout covered 0.
+- REFERENCE SET (score.py post-acceptance, eval rows only, every rate
+  table estimated from train only; holdout never opened) recorded in the
+  candidate record: rating_x_beds_rate 0.5871 > last_rating_rate 0.5597
+  (paired bootstrap 150 resamples, diff 0.0273, CI95 [0.0123, 0.0407],
+  excludes zero) > beds_bucket 0.5298 > hsca_start_year 0.5226 >
+  local_authority 0.5207 > provider_sector 0.5011; global constant
+  degenerate; majority-class accuracy on eval 0.94873 (constant fitted on
+  train, measured against eval labels); NO persistence reference BY
+  DESIGN (identity ships as per-instant pseudonyms, prior-instant labels
+  unlinkable; hsca_start_year_rate is the nearest shippable history
+  prior). Any future model figure must be quoted beside rating_x_beds
+  0.5871; a model below it is a recorded defect.
+- cqc-chd-002 (release 433520236) and cqc-chd-003 (release 433528200):
+  FAILED attempts whose diagnosis and fixes are durably recorded at
+  bf8a5ea (002 proved the vintage-reader fix and exposed the
+  eval-positives anchor; 003 proved the 757 anchor and exposed the
+  fixture field mapping). Workers 174425897/174426903 destroyed
+  04:46:32Z/04:59:58Z per the ledger; re-confirmed read-only this
+  session.
+- CLEANUP (provider-confirmed deletion, not just requested):
+  scripts/provider-inventory.py reports 0 servers / 0 primary IPs
+  (project and account); GET /v1/servers/174425897, /174426903 and
+  /174428318 all answer 404 not_found.
+- Hygiene: check-candidate --all rc=0 on the committed bytes (the one
+  pre-fill failure - cqc's empty construction_script under the new
+  qualified status - was filled from the real source/build.py and the
+  record re-checked); only the two named files plus STATE.md in the
+  commit; .factory handled markers written for all three jobs citing
+  the commit.
+
+Next action (a fresh session can carry it out): unchanged from the
+candidate record - the runner-contract baseline job on the staged bytes
+(the za-cct-baseline-001 pattern: fetch accepted assets from staging,
+--accept BEFORE any score, materialize the workdir from public splits
+only, benchmark train.py + validate.sh verbatim, contract_ok check),
+quoting the full-model eval AUC beside rating_x_beds_rate 0.5871 with
+the no-persistence-by-design note; then interpretation per
+dataset-qualification, then packaging per dataset-release. Holdout
+stays sealed. The operator's two standing decisions (za-cct (a)/(b)/(c);
+unhcr drop/re-scope/keep-private) are unchanged.
+
 ## 2026-11-04 (05:05Z) - advancement session: cqc-care-home-deregistration repair cycle - three distinct construction defects diagnosed and fixed with real-bytes evidence (vintage-reader, eval-positives anchor, fixture field mapping); cqc-chd-004 in flight carrying all three fixes; both release-track items re-verified as human waits
 
 Scheduled advancement session. Both release-track items were re-read from
