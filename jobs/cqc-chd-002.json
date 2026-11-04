@@ -1,0 +1,104 @@
+{
+  "job": {
+    "id": "cqc-chd-002",
+    "candidate": "cqc-care-home-deregistration",
+    "image": "python:3.13-slim",
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 2048,
+    "timeout_minutes": 45,
+    "lifetime_minutes": 60,
+    "max_disk_mb": 4000,
+    "max_artifact_mb": 60,
+    "what": "The ONE permitted rebuild of cqc-chd-001 (construction defect: the January 2019/2020/2021 vintages built 0 care-home rows). DIAGNOSIS (probe/probe_vintage_schema{,2,3}.py + probe/vintage_schema{,2,3}_out.json, 2026-11-04): those three xlsx vintages carry a leading 'Readme'/'README' sheet before the 'HSCA Active Locations' data sheet; build.py's xlsx reader read only the FIRST sheet in workbook order, found no 'Location ID' header, and read_vintage returned an empty instant WITHOUT setting missing_required - a silent 0/0 instead of a loud drop. The care-home value domain did NOT drift: on the second sheet the 'Care home?' column carries the same Y/N domain (probe3: 15,807 / 15,554 / 15,467 rows pass the ==Y filter, all inside the asserted 10k-20k band; the 2018 control reproduces 16,104 exactly). FIX (build.py only; P0 single-instant design, per-instant pseudonym ids and every assertion unchanged): (1) xlsx_rows now walks worksheets in workbook order until the 'Location ID' header sheet is found - leading README sheets are yielded as stamps and skipped, later sheets stay unread; (2) a vintage with no header anywhere is DROPPED loudly ('no header row detected in any sheet'), never silently built 0/0; (3) the synthetic rehearsal pins both behaviours (tests/test_cqc_build.py: the 2021 vintage is now a README-first xlsx and 2019 a README-only xlsx; red/green proved - the pre-fix reader fails the rehearsal with 'instant 2019 positives 0 suspiciously low'; suite 708/708 OK). Deactivated-file pin re-verified 2026-11-04 before relaunch (27,644,723 B, sha256 49dc3062... MATCH). Task, framing, splits, labels, fixtures and the construct -> full-artifact gate 1.5 -> exact-byte accept -> references order are unchanged from cqc-chd-001.",
+    "stopping_condition": "gate failure or fixture failure -> collect diagnostics, diagnose, record; this is the ONE rebuild the cqc-chd-001 defect class is permitted - a second failure of the same class is a recorded blocker, never a blind retry",
+    "source_files": [
+      {
+        "bundled_as": "build.py",
+        "source": "candidates/cqc-care-home-deregistration/source/build.py",
+        "bytes": 72245,
+        "sha256": "f0875b3d6141ac9e152d54c6ee08f351b3230acceff012a90ac0a195bb2ebda0"
+      },
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/cqc-care-home-deregistration/source/run.sh",
+        "bytes": 2428,
+        "sha256": "1510c8046d98bc0c97ceef98117cba9d61bf7cc2ad6c3c9a50dd7efc26e4837d"
+      },
+      {
+        "bundled_as": "score.py",
+        "source": "candidates/cqc-care-home-deregistration/source/score.py",
+        "bytes": 12547,
+        "sha256": "501bb76b530b3aed80f11c9873fe37eab46b0768791fed6f8549d1e4afb75fa3"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 57029,
+        "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+      }
+    ]
+  },
+  "reservation_eur": "0.04",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 2,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 245760,
+  "source_sha256": "47da08a028b9efd0b951103bcced6b439a70b679c3887ec558530718b514b961",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-11-04T04:33:50.930822+00:00",
+  "expires": 1793770430,
+  "budget_months": [
+    "2026-11"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 174425897,
+  "known_hosts": "/opt/data/dataset-factory/.factory/cqc-chd-002/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "2.29.159.168",
+  "result": {
+    "job_id": "cqc-chd-002",
+    "status": "failed",
+    "uploaded": true,
+    "image_id": "sha256:ae14d4ce8771606477a81446e7ef429edd6762305fc50c84507c1041fa8285d1",
+    "image_digests": [
+      "python@sha256:ae14d4ce8771606477a81446e7ef429edd6762305fc50c84507c1041fa8285d1"
+    ],
+    "exit_code": 1,
+    "oom_killed": false,
+    "elapsed_seconds": 331.0,
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 433520236,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-e6db78a278ec4de662cf",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-e6db78a278ec4de662cf/manifest.json",
+    "assets": [
+      {
+        "id": 708251275,
+        "size": 245760,
+        "sha256": "47da08a028b9efd0b951103bcced6b439a70b679c3887ec558530718b514b961"
+      },
+      {
+        "id": 708251332,
+        "size": 1488,
+        "sha256": "91525b16d837ad1d3dcfb5433adfba7aa1e3cb646665576f0db187c6db9a41c7"
+      },
+      {
+        "id": 708251407,
+        "size": 4596,
+        "sha256": "177ce8c6fe2925ecae8ed41e71af5013053a90ec0323ded1d3e9169fcbe79537"
+      }
+    ],
+    "skipped_empty": []
+  },
+  "collected_at": "2026-11-04T04:42:09.995224+00:00",
+  "deleted_at": "2026-11-04T04:46:32.747116+00:00"
+}

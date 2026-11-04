@@ -1,3 +1,93 @@
+## 2026-11-04 (05:05Z) - advancement session: cqc-care-home-deregistration repair cycle - three distinct construction defects diagnosed and fixed with real-bytes evidence (vintage-reader, eval-positives anchor, fixture field mapping); cqc-chd-004 in flight carrying all three fixes; both release-track items re-verified as human waits
+
+Scheduled advancement session. Both release-track items were re-read from
+their records first and stay human waits: unhcr-refugee-data-finder keeps
+operator_decision_pending true (the recorded 2026-11-02 drop decision - the
+"(release)" label conflicts with it and the record governs), and
+za-cct-substation-evening-peak-exceedance's own next_action still says the
+pre-registered packaging gate is NOT met and Scout does not package until
+the operator records (a)/(b)/(c). No release byte, tag, destination or
+visibility changed anywhere. Chosen candidate: cqc-care-home-deregistration
+- the operator-listed build whose cqc-chd-001 failure carried a recorded
+next check and ONE permitted rebuild.
+
+- VINTAGE-SCHEMA PROBE (the recorded next_check, run on the coordinator
+  with build.py's own code, files fetched one at a time into scratch):
+  the 2019/2020/2021 drift is STRUCTURAL, not a value-domain drift - those
+  xlsx vintages carry a leading 'Readme'/'README' sheet before the 'HSCA
+  Active Locations' data sheet, and build.py's xlsx reader read only the
+  first sheet in workbook order; read_vintage then returned an empty
+  instant WITHOUT setting missing_required, so the build reported a silent
+  0/0 instead of a loud drop (one step further than the recorded diagnosis).
+  The 'Care home?' Y/N domain is unchanged on the data sheets (15,807 /
+  15,554 / 15,467 rows pass the ==Y filter, in the asserted 10k-20k band;
+  the 2018 control reproduces 16,104 exactly). FIX in build.py: the reader
+  walks worksheets in workbook order until the 'Location ID' header sheet,
+  and a vintage with no header anywhere is DROPPED loudly. The synthetic
+  rehearsal now pins both behaviours (2021 vintage = README-first xlsx,
+  2019 = README-only xlsx; red/green proved by reverting build.py - the
+  pre-fix reader fails with 'instant 2019 positives 0 suspiciously low').
+  Evidence: probe/probe_vintage_schema{,2,3}*.py + vintage_schema*_out.json.
+- cqc-chd-002 (server 174425897, launched 04:33:50Z, EUR 0.04): FAILED at
+  331 s - the vintage-reader fix WORKED (2019: 15,807/917, 2020:
+  15,554/803, 2021: 15,467/952, all in-band; deactivated index matched
+  65,830/17,177 exactly) and the build stopped at a SECOND, distinct
+  defect: 'eval positives 757 != 758'. ARBITRATION by a third independent
+  implementation over the same digest-pinned bytes
+  (probe/probe_eval_positives_arbitration{,2}.py): the contract-correct
+  count under the RECORDED window (T, T+365d] = (2024-01-05, 2025-01-04]
+  is 757; the 2026-11-03 discovery probe hardcoded win_end = 2025-01-05 =
+  T+366d through the 2024 leap year and measured 758 - the single
+  separating location is 1-353801949 'Dimensions Parrot Farmhouse
+  Arborfield Road' (end 2025-01-05). Every other eval anchor holds
+  (population 14,765, later-deactivated 2,076, pub-after-T 0, all three
+  fixtures). Anchor corrected 758 -> 757 (the contract unchanged).
+  Worker destroyed 04:46:32Z after verified collection (release 433520236).
+- cqc-chd-003 (server 174426903, launched 04:46:35Z, EUR 0.04): FAILED at
+  420 s - the anchor correction WORKED (identical panel; positives 757,
+  later-deactivated 2,076, pub-after-T 0 all passed) and the build crashed
+  at a THIRD, distinct defect: KeyError 'beds' in the fixture loop.
+  assert_fixtures read the FIXTURES want-keys (beds/la/rating/pub/start)
+  as row keys; it is --real-fixtures-only code that no previous attempt
+  had ever reached (001 stopped at the 2019 band check, 002 at the
+  positives anchor), so no rehearsal had executed it. FIX: FIXTURE_FIELD_MAP
+  + internal _pub/_start row fields (never shipped - write_artifact writes
+  only COLUMNS; the location map writes instant/key/id), unknown fixture
+  fields raise loudly; the mapping was verified against the real pinned
+  bytes BEFORE relaunch (probe/probe_fixture_fields.py: Park Hills
+  1-113831768 label 1 / beds 17 / Oldham / Good / pub 26/08/2022 / start
+  01/02/2011; both negatives label 0 - every want value matches). Worker
+  destroyed 04:59:58Z after verified collection (release 433528200).
+- cqc-chd-004 LAUNCHED 05:02:44Z (server 174428318, cx23/hel1, EUR 0.04,
+  source sha256 50fe3bd1...) carrying all three fixes. The panel has built
+  IDENTICALLY on three consecutive attempts; after the fixture loop the
+  remaining tail (write_artifact, build_quality, gate, accept, references)
+  is fully covered by the synthetic rehearsal. HANDOFF (in the record's
+  next_action): collect cqc-chd-004, require gate ok=true with
+  failed_checks EMPTY on the full artifact on the worker, exact-byte
+  --accept ACCEPTED, all three dated fixtures green, both successor probes
+  at eval/holdout coverage 0; then destroy the worker (provider 404
+  read-back) and record the reference set (rate tables from train only,
+  majority accuracy, NO persistence BY DESIGN). ANY further failure is a
+  RECORDED BLOCKER: collect, diagnose, record - repair review, never a
+  blind retry (the one rebuild for this third class is spent).
+- Budget: three cx23 reservations of EUR 0.04 this session (002/003/004),
+  November ledger ~EUR 0.24 reserved of 20, actual compute ~EUR 0.01 per
+  job; release reserve untouched. Both failed workers destroyed with
+  provider-side deletion recorded in the ledger (04:46:32Z, 04:59:58Z).
+- Hygiene: check-candidate cqc OK after every record write; rehearsal
+  tests.test_cqc_build 11/11 OK after each fix; full suite 708/708 OK
+  (707 + the new README-sheet/no-header pin); no token exposure; no
+  manifest/tag/destination touched; probe scripts + outputs retained in
+  candidates/cqc-care-home-deregistration/probe/.
+
+Next action (a fresh session can carry it out): collect + verify +
+destroy cqc-chd-004 per the handoff above (any failure is a recorded
+blocker); on success record the reference set beside any future model
+figure, then the runner-contract baseline job. The operator's two standing
+decisions (za-cct (a)/(b)/(c), unhcr drop/re-scope/keep-private) are
+unchanged.
+
 ## 2026-11-04 (04:13Z) - watcher follow-up: both ibama probe jobs verified and acknowledged - already durably recorded at d1ed022 by the owning discovery tick; provider cleanup re-confirmed read-only
 
 Watcher brief, two terminal jobs observed (ibama-probe-001 failed exit 1,

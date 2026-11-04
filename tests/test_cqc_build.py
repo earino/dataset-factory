@@ -1,10 +1,12 @@
 """Synthetic rehearsal for the cqc-care-home-deregistration construction.
 
-Real build.py over synthetic vintages (one XLSX to exercise the stdlib OOXML
-reader, the rest ODS) + a synthetic Deactivated Locations ODS -> the real
-qualification gate over the full synthetic artifact -> exact-byte --accept ->
-score.py references -> structural P0 assertions -> byte-identical rebuild ->
-red/green mutations the gate must catch. No real data, no network.
+Real build.py over synthetic vintages (one plain XLSX, one XLSX carrying a
+leading 'Readme' sheet before its data sheet - the real January 2019/2020/
+2021 shape - and one README-only XLSX that must be dropped loudly, the rest
+ODS) + a synthetic Deactivated Locations ODS -> the real qualification gate
+over the full synthetic artifact -> exact-byte --accept -> score.py
+references -> structural P0 assertions -> byte-identical rebuild -> red/green
+mutations the gate must catch. No real data, no network.
 
 The P0 properties this test pins (the design decisions of cqc-chd-001):
 
@@ -108,10 +110,21 @@ def _make_locations():
 LOCATIONS = _make_locations()
 VINTAGES = {  # year -> (production date, format)
     2016: (datetime.date(2016, 1, 8), "xlsx"),
-    2021: (datetime.date(2021, 1, 1), "ods"),
+    # README-only workbook: no 'Location ID' header anywhere -> the instant
+    # must be DROPPED loudly, never silently built as 0/0 (cqc-chd-001)
+    2019: (datetime.date(2019, 1, 3), "xlsx-noheader"),
+    # leading 'Readme' sheet before the data sheet - the real January
+    # 2019/2020/2021 vintages' shape (probe/vintage_schema2_out.json)
+    2021: (datetime.date(2021, 1, 1), "xlsx-readme"),
     2024: (datetime.date(2024, 1, 5), "ods"),
     2025: (datetime.date(2025, 1, 3), "ods"),
 }
+README_ROWS = [
+    ["Active locations for providers registered under the Health and "
+     "Social Care Act 2008"],
+    ["Source: CQC database at 3 January 2019"],
+    ["Management Information Requests Team/Performance and Planning"],
+]
 # active at instant = end date is None or end date > T
 SERVICE_TYPES = ["Care home service with nursing", "Care home service without nursing",
                  "Shared lives", "Supported living"]
@@ -180,8 +193,14 @@ def ods_writer(path, header, rows):
         z.writestr("content.xml", content)
 
 
-def xlsx_writer(path, header, rows):
-    """Minimal OOXML: shared strings for text, serial dates for date columns."""
+def xlsx_writer(path, header, rows, readme_rows=None, include_data_sheet=True):
+    """Minimal OOXML: shared strings for text, serial dates for date columns.
+
+    readme_rows: when given, a leading 'Readme' sheet is written before the
+    data sheet - the real January 2019/2020/2021 vintages' shape (first
+    sheet a README, data sheet second). With include_data_sheet=False the
+    workbook carries ONLY the Readme sheet: a vintage with no 'Location ID'
+    header anywhere (the loud-drop pin)."""
     date_cols = {HEADER.index("Location HSCA start date"),
                  HEADER.index("Publication Date")}
     shared: list[str] = []
@@ -201,24 +220,52 @@ def xlsx_writer(path, header, rows):
             letters = chr(65 + r) + letters
         return letters
 
-    xml_rows = []
-    all_rows = [header] + rows
-    for r, row in enumerate(all_rows, 1):
-        cells = []
-        for c, value in enumerate(row):
-            ref = f"{col_ref(c)}{r}"
-            if c in date_cols and value:
-                try:
-                    serial = (datetime.date.fromisoformat(value)
-                              - datetime.date(1899, 12, 30)).days
-                except ValueError:
-                    cells.append(f"<c r='{ref}' t='s'><v>{s(value)}</v></c>")
+    def sheet_xml(all_rows, date_cells=True):
+        xml_rows = []
+        for r, row in enumerate(all_rows, 1):
+            cells = []
+            for c, value in enumerate(row):
+                ref = f"{col_ref(c)}{r}"
+                if date_cells and c in date_cols and value:
+                    try:
+                        serial = (datetime.date.fromisoformat(value)
+                                  - datetime.date(1899, 12, 30)).days
+                    except ValueError:
+                        cells.append(f"<c r='{ref}' t='s'><v>{s(value)}</v></c>")
+                    else:
+                        cells.append(f"<c r='{ref}' s='1'><v>{serial}</v></c>")
                 else:
-                    cells.append(f"<c r='{ref}' s='1'><v>{serial}</v></c>")
-            else:
-                cells.append(f"<c r='{ref}' t='s'><v>{s(value)}</v></c>")
-        xml_rows.append(f"<row r='{r}'>{''.join(cells)}</row>")
+                    cells.append(f"<c r='{ref}' t='s'><v>{s(value)}</v></c>")
+            xml_rows.append(f"<row r='{r}'>{''.join(cells)}</row>")
+        return ("<?xml version='1.0'?><worksheet xmlns='http://schemas."
+                "openxmlformats.org/spreadsheetml/2006/main'><sheetData>"
+                + "".join(xml_rows) + "</sheetData></worksheet>")
+
+    sheets = []
+    if readme_rows is not None:
+        sheets.append(("Readme", sheet_xml(readme_rows, date_cells=False)))
+    if include_data_sheet:
+        sheets.append(("HSCA Active Locations", sheet_xml([header] + rows)))
+    if not sheets:
+        raise ValueError("xlsx_writer: no sheets requested")
     shared_xml = "".join(f"<si><t>{v}</t></si>" for v in shared)
+    n = len(sheets)
+    sheet_parts = [f"xl/worksheets/sheet{i + 1}.xml" for i in range(n)]
+    overrides = "".join(
+        f"<Override PartName='/{p}' ContentType='application/vnd."
+        "openxmlformats-officedocument.spreadsheetml.worksheet+xml'/>"
+        for p in sheet_parts)
+    workbook = ("<?xml version='1.0'?><workbook xmlns='http://schemas."
+                "openxmlformats.org/spreadsheetml/2006/main' xmlns:r='http://"
+                "schemas.openxmlformats.org/officeDocument/2006/relationships'"
+                "><sheets>"
+                + "".join(f"<sheet name='{name}' r:id='rId{i + 1}'/>"
+                          for i, (name, _) in enumerate(sheets))
+                + "</sheets></workbook>")
+    sheet_rels = "".join(
+        f"<Relationship Id='rId{i + 1}' Type='http://schemas.openxmlformats."
+        "org/officeDocument/2006/relationships/worksheet' "
+        f"Target='worksheets/sheet{i + 1}.xml'/>" for i in range(n))
     with zipfile.ZipFile(path, "w") as z:
         z.writestr("[Content_Types].xml",
                    "<?xml version='1.0'?><Types xmlns='http://schemas."
@@ -228,9 +275,7 @@ def xlsx_writer(path, header, rows):
                    "Extension='xml' ContentType='application/xml'/><Override "
                    "PartName='/xl/workbook.xml' ContentType='application/vnd."
                    "openxmlformats-officedocument.spreadsheetml.sheet.main+xml'"
-                   "/><Override PartName='/xl/worksheets/sheet1.xml' "
-                   "ContentType='application/vnd.openxmlformats-officedocument."
-                   "spreadsheetml.worksheet+xml'/><Override PartName='/xl/styles."
+                   f"/>{overrides}<Override PartName='/xl/styles."
                    "xml' ContentType='application/vnd.openxmlformats-officedocument"
                    ".spreadsheetml.styles+xml'/><Override PartName='/xl/"
                    "sharedStrings.xml' ContentType='application/vnd."
@@ -242,23 +287,17 @@ def xlsx_writer(path, header, rows):
                    "<Relationship Id='rId1' Type='http://schemas.openxmlformats."
                    "org/officeDocument/2006/relationships/officeDocument' "
                    "Target='xl/workbook.xml'/></Relationships>")
-        z.writestr("xl/workbook.xml",
-                   "<?xml version='1.0'?><workbook xmlns='http://schemas."
-                   "openxmlformats.org/spreadsheetml/2006/main' xmlns:r='http://"
-                   "schemas.openxmlformats.org/officeDocument/2006/relationships'"
-                   "><sheets><sheet name='Locations' r:id='rId1'/></sheets>"
-                   "</workbook>")
+        z.writestr("xl/workbook.xml", workbook)
         z.writestr("xl/_rels/workbook.xml.rels",
                    "<?xml version='1.0'?><Relationships xmlns='http://schemas."
                    "openxmlformats.org/package/2006/relationships'>"
-                   "<Relationship Id='rId1' Type='http://schemas.openxmlformats."
-                   "org/officeDocument/2006/relationships/worksheet' "
-                   "Target='worksheets/sheet1.xml'/><Relationship Id='rId2' "
+                   + sheet_rels
+                   + f"<Relationship Id='rId{n + 1}' Type='http://schemas."
+                   "openxmlformats.org/officeDocument/2006/relationships/styles' "
+                   f"Target='styles.xml'/><Relationship Id='rId{n + 2}' "
                    "Type='http://schemas.openxmlformats.org/officeDocument/2006/"
-                   "relationships/styles' Target='styles.xml'/><Relationship "
-                   "Id='rId3' Type='http://schemas.openxmlformats.org/"
-                   "officeDocument/2006/relationships/sharedStrings' "
-                   "Target='sharedStrings.xml'/></Relationships>")
+                   "relationships/sharedStrings' Target='sharedStrings.xml'/>"
+                   "</Relationships>")
         z.writestr("xl/styles.xml",
                    "<?xml version='1.0'?><styleSheet xmlns='http://schemas."
                    "openxmlformats.org/spreadsheetml/2006/main'><cellXfs "
@@ -268,21 +307,26 @@ def xlsx_writer(path, header, rows):
                    "<?xml version='1.0'?><sst xmlns='http://schemas.openxmlformats."
                    "org/spreadsheetml/2006/main' count='1' uniqueCount='1'>"
                    f"{shared_xml}</sst>")
-        z.writestr("xl/worksheets/sheet1.xml",
-                   "<?xml version='1.0'?><worksheet xmlns='http://schemas."
-                   "openxmlformats.org/spreadsheetml/2006/main'><sheetData>"
-                   + "".join(xml_rows) + "</sheetData></worksheet>")
+        for part, (_, xml) in zip(sheet_parts, sheets):
+            z.writestr(part, xml)
 
 
 def write_synthetic(root: Path):
     for year, (T, fmt) in VINTAGES.items():
-        name = f"{T.day:02d} January {year} HSCA Active Locations.{fmt}"
+        ext = "xlsx" if fmt.startswith("xlsx") else fmt
+        name = f"{T.day:02d} January {year} HSCA Active Locations.{ext}"
         path = root / name
-        rows = vintage_rows(year)
         if fmt == "ods":
-            ods_writer(path, HEADER, rows)
+            ods_writer(path, HEADER, vintage_rows(year))
+        elif fmt == "xlsx":
+            xlsx_writer(path, HEADER, vintage_rows(year))
+        elif fmt == "xlsx-readme":
+            xlsx_writer(path, HEADER, vintage_rows(year), readme_rows=README_ROWS)
+        elif fmt == "xlsx-noheader":
+            xlsx_writer(path, HEADER, [], readme_rows=README_ROWS,
+                        include_data_sheet=False)
         else:
-            xlsx_writer(path, HEADER, rows)
+            raise ValueError(fmt)
     deact_rows = []
     for lid, (start, end, beds, rating, pub, la) in LOCATIONS.items():
         if end is None:
@@ -467,6 +511,22 @@ class CQCSyntheticRehearsal(unittest.TestCase):
                     str(mutated)])
         self.assertNotEqual(proc.returncode, 0,
                              "a report for different bytes must be refused")
+
+    def test_11_leading_readme_sheet_built_and_no_header_dropped(self):
+        # The cqc-chd-001 real-data drift, pinned on synthetic bytes: the
+        # 2021-01 train instant must build from the SECOND sheet past a
+        # leading 'Readme' sheet, and a vintage with no 'Location ID'
+        # header anywhere must be DROPPED loudly - never silently built 0/0.
+        summary = json.loads((self.tmp / "summary.json").read_text())
+        vint = summary["vintages"]
+        self.assertEqual(vint["2021"]["status"], "built")
+        self.assertGreater(vint["2021"]["rows"], 0,
+                           "the 2021 instant built no rows past the Readme sheet")
+        self.assertEqual(vint["2019"]["status"], "DROPPED",
+                         f"2019 was not dropped: {vint['2019']}")
+        self.assertIn("no header row", vint["2019"]["reason"])
+        train = self.read_split("public/train.csv")
+        self.assertEqual({r["instant"] for r in train}, {"2016-01", "2021-01"})
 
 
 if __name__ == "__main__":

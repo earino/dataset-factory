@@ -67,8 +67,10 @@ Acceptance criteria asserted in-build against the 2026-11-03 discovery
 measurements (probe/, notes.md), --real-fixtures only:
   * deactivated file: 65,830 data rows, 17,177 care-home rows, unique ids;
   * 2024-01 vintage (digest ac40b6f8..., 26,147,266 B): 14,765 care homes,
-    758 positives in (T, T+365d], 2,076 later-deactivated, 0 rows with a
-    rating Publication Date after T (the as-of check);
+    757 positives in (T, T+365d] (the discovery probe's 758 measured
+    (T, T+366d] through the 2024 leap year - see
+    probe/probe_eval_positives_arbitration2.py), 2,076 later-deactivated,
+    0 rows with a rating Publication Date after T (the as-of check);
   * dated fixtures Park Hills Nursing Home (1-113831768, label 1),
     Henley House (1-10000302982, label 0),
     Options Hazel House (1-10086766554, end 05/03/2025 -> label 0 at T).
@@ -118,7 +120,14 @@ MIN_TRAIN_INSTANTS = 5
 EXPECTED_DEACT_ROWS = 65_830
 EXPECTED_DEACT_CARE_HOMES = 17_177
 EXPECTED_EVAL_CARE_HOMES = 14_765
-EXPECTED_EVAL_POSITIVES = 758
+# 757 positives under the RECORDED contract (T, T+365d] =
+# (2024-01-05, 2025-01-04]. The 2026-11-03 discovery probe hardcoded
+# win_end = 2025-01-05 = T+366d (the 2024 leap year) and measured 758;
+# the single difference is 1-353801949 (Dimensions Parrot Farmhouse,
+# end 2025-01-05). Arbitrated 2026-11-04 by a third independent
+# implementation over the same pinned bytes:
+# probe/probe_eval_positives_arbitration2.py
+EXPECTED_EVAL_POSITIVES = 757
 EXPECTED_EVAL_LATER_DEACT = 2_076
 FIXTURES = {
     "1-113831768": {"label": 1, "beds": "17", "la": "Oldham",
@@ -126,6 +135,18 @@ FIXTURES = {
                     "start": "01/02/2011"},          # Park Hills Nursing Home
     "1-10000302982": {"label": 0},                    # Henley House (active)
     "1-10086766554": {"label": 0},                    # Options Hazel House (end 05/03/2025)
+}
+# fixture want-key -> the row key assert_fixtures reads (row fields are the
+# shipped column names plus the internal _pub/_start/_location_id; the
+# want-keys are the discovery probe's short names). Verified against the
+# real pinned bytes by probe/probe_fixture_fields.py (2026-11-04).
+FIXTURE_FIELD_MAP = {
+    "label": TARGET,
+    "beds": "care_home_beds",
+    "la": "local_authority",
+    "rating": "latest_overall_rating",
+    "pub": "_pub",
+    "start": "_start",
 }
 
 RATING_RECENCY_BUCKETS = ((183, "<6m"), (365, "<1y"), (730, "<2y"),
@@ -240,71 +261,94 @@ def _xlsx_date_styles(z: zipfile.ZipFile) -> set[int]:
     return date_fmt
 
 
+def _xlsx_sheet_paths(z: zipfile.ZipFile) -> list[str]:
+    """Worksheet paths in workbook order (from the workbook relationships)."""
+    ns = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
+    relns = "{http://schemas.openxmlformats.org/package/2006/relationships}"
+    rel_id_ns = ("{http://schemas.openxmlformats.org/officeDocument/"
+                 "2006/relationships}id")
+    wb = ET.fromstring(z.read("xl/workbook.xml"))
+    rels = ET.fromstring(z.read("xl/_rels/workbook.xml.rels"))
+    rid_map = {r.get("Id"): r.get("Target")
+               for r in rels.iter(f"{relns}Relationship")}
+    out = []
+    sheets_elem = wb.find(f"{ns}sheets")
+    for sheet in (sheets_elem.findall(f"{ns}sheet")
+                  if sheets_elem is not None else []):
+        target = rid_map.get(sheet.get(rel_id_ns))
+        if target is None:
+            continue
+        out.append("xl/" + target.lstrip("/").removeprefix("xl/"))
+    return out
+
+
 def xlsx_rows(path: Path):
-    """Yield ('stamp'|'header'|'row', cells) for the first worksheet."""
+    """Yield ('stamp'|'header'|'row', cells) for the vintage's data sheet.
+
+    The data sheet is the first worksheet, in workbook order, whose rows
+    include the 'Location ID' header. The January 2019/2020/2021 vintages
+    carry a leading 'Readme'/'README' sheet (probe evidence
+    probe/vintage_schema{,2,3}_out.json): its rows are yielded as stamps and
+    skipped, and the data sheet after it is read. The previous first-sheet-
+    only reader saw the README, found no header and the caller silently
+    built a 0/0 instant - the cqc-chd-001 failure. Sheets after the data
+    sheet are not read; a file with no 'Location ID' header anywhere yields
+    no header/row events and read_vintage drops the instant loudly.
+    """
+    ns2 = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
     with zipfile.ZipFile(path) as z:
+        sheets = _xlsx_sheet_paths(z)
+        if not sheets:
+            raise BuildError(f"{path.name}: workbook has no sheet relationships")
         shared = []
         if "xl/sharedStrings.xml" in z.namelist():
             root = ET.fromstring(z.read("xl/sharedStrings.xml"))
             ns = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
             for si in root.iter(f"{ns}si"):
                 shared.append("".join(t.text or "" for t in si.iter(f"{ns}t")))
-        # first sheet by workbook order
-        wb = ET.fromstring(z.read("xl/workbook.xml"))
-        ns = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
-        relns = ("{http://schemas.openxmlformats.org/package/2006/relationships}")
-        rel_id_ns = ("{http://schemas.openxmlformats.org/officeDocument/"
-                     "2006/relationships}id")
-        rels = ET.fromstring(z.read("xl/_rels/workbook.xml.rels"))
-        rid_map = {r.get("Id"): r.get("Target")
-                   for r in rels.iter(f"{relns}Relationship")}
-        first = wb.find(f"{ns}sheets/{ns}sheet")
-        target = rid_map.get(first.get(rel_id_ns)) if first is not None else None
-        if target is None:
-            raise BuildError(f"{path.name}: no first-sheet relationship")
-        sheet_path = "xl/" + target.lstrip("/").removeprefix("xl/")
         date_styles = _xlsx_date_styles(z)
         header = None
-        for _, elem in ET.iterparse(z.open(sheet_path), events=("end",)):
-            tag = elem.tag
-            ns2 = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
-            if tag != f"{ns2}row":
-                continue
-            cells: list[str] = []
-            for cell in elem.findall(f"{ns2}c"):
-                ref = cell.get("r") or ""
-                idx = _col_index(ref) if ref else len(cells)
-                while len(cells) < idx:
-                    cells.append("")
-                ctype = cell.get("t")
-                style = int(cell.get("s") or "0")
-                v = cell.find(f"{ns2}v")
-                inline = cell.find(f"{ns2}is")
-                if ctype == "inlineStr" and inline is not None:
-                    val = "".join(t.text or "" for t in inline.iter(f"{ns2}t"))
-                elif v is None:
-                    val = ""
-                elif ctype == "s":
-                    val = shared[int(v.text)] if (v.text or "").isdigit() else ""
-                elif ctype == "str":
-                    val = v.text or ""
-                elif style in date_styles and ctype != "str":
-                    serial = float(v.text)
-                    epoch = datetime.date(1899, 12, 30)
-                    d = epoch + datetime.timedelta(days=int(serial))
-                    val = d.strftime("%d/%m/%Y")
+        for sheet_path in sheets:
+            for _, elem in ET.iterparse(z.open(sheet_path), events=("end",)):
+                if elem.tag != f"{ns2}row":
+                    continue
+                cells: list[str] = []
+                for cell in elem.findall(f"{ns2}c"):
+                    ref = cell.get("r") or ""
+                    idx = _col_index(ref) if ref else len(cells)
+                    while len(cells) < idx:
+                        cells.append("")
+                    ctype = cell.get("t")
+                    style = int(cell.get("s") or "0")
+                    v = cell.find(f"{ns2}v")
+                    inline = cell.find(f"{ns2}is")
+                    if ctype == "inlineStr" and inline is not None:
+                        val = "".join(t.text or "" for t in inline.iter(f"{ns2}t"))
+                    elif v is None:
+                        val = ""
+                    elif ctype == "s":
+                        val = shared[int(v.text)] if (v.text or "").isdigit() else ""
+                    elif ctype == "str":
+                        val = v.text or ""
+                    elif style in date_styles and ctype != "str":
+                        serial = float(v.text)
+                        epoch = datetime.date(1899, 12, 30)
+                        d = epoch + datetime.timedelta(days=int(serial))
+                        val = d.strftime("%d/%m/%Y")
+                    else:
+                        val = v.text or ""
+                    cells.append(val.strip())
+                if header is None:
+                    if cells and cells[0].strip() == "Location ID":
+                        header = cells
+                        yield ("header", header)
+                    elif any(cells):
+                        yield ("stamp", cells)
                 else:
-                    val = v.text or ""
-                cells.append(val.strip())
-            if header is None:
-                if cells and cells[0].strip() == "Location ID":
-                    header = cells
-                    yield ("header", header)
-                elif any(cells):
-                    yield ("stamp", cells)
-            else:
-                yield ("row", cells)
-            elem.clear()
+                    yield ("row", cells)
+                elem.clear()
+            if header is not None:
+                return          # the data sheet is complete; later sheets unread
 
 
 def sheet_rows(path: Path):
@@ -628,6 +672,13 @@ def read_vintage(path: Path, real: bool) -> tuple[list[dict], dict]:
             "bands": bands,
             "name": "",
         })
+    if resolution is None:
+        # No sheet in this vintage carried the 'Location ID' header row.
+        # Drop loudly: a silent empty instant reported as built 0/0 is the
+        # cqc-chd-001 failure mode.
+        diag["resolved"] = {}
+        diag["missing_required"] = sorted(REQUIRED_FIELDS)
+        diag["no_header_detected"] = True
     return recs, diag
 
 
@@ -664,9 +715,11 @@ def build_panel(vintages: dict, deact: dict, real: bool, stats: dict):
         path, T = vintages[year]
         recs, diag = read_vintage(path, real)
         if diag.get("missing_required"):
+            reason = ("no header row ('Location ID') detected in any sheet"
+                      if diag.get("no_header_detected")
+                      else f"unresolved required columns: {diag['missing_required']}")
             per_instant[str(year)] = {"status": "DROPPED",
-                                      "reason": f"unresolved required columns: "
-                                                f"{diag['missing_required']}",
+                                      "reason": reason,
                                       "diagnostics": diag}
             continue
         stamp = production_stamp(diag, T)
@@ -725,6 +778,12 @@ def build_panel(vintages: dict, deact: dict, real: bool, stats: dict):
                 "users_other_count": rec["bands"]["users_other_count"],
                 TARGET: label,
                 "_location_id": rec["location_id"],
+                # internal (never shipped): the raw rating-publication and
+                # HSCA-start dates, kept for the dated fixture asserts
+                "_pub": (rec["pub"].strftime("%d/%m/%Y")
+                         if rec["pub"] is not None else ""),
+                "_start": (rec["start"].strftime("%d/%m/%Y")
+                           if rec["start"] is not None else ""),
             }
             rows.append(row)
             pos += label
@@ -1341,7 +1400,10 @@ def assert_fixtures(splits: dict, per_instant: dict, deact_info: dict):
         if row is None:
             raise BuildError(f"fixture {lid} missing from the eval instant")
         for field, value in want.items():
-            got = row[TARGET] if field == "label" else row[field]
+            key = FIXTURE_FIELD_MAP.get(field)
+            if key is None:
+                raise BuildError(f"fixture {lid} unknown field {field!r}")
+            got = row[key]
             if str(got) != str(value):
                 raise BuildError(f"fixture {lid} field {field}: got {got!r} "
                                  f"want {value!r}")

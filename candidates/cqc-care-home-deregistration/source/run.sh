@@ -1,6 +1,8 @@
 #!/bin/sh
 # Worker entrypoint for the cqc-care-home-deregistration construction
-# (cqc-chd-001).
+# (cqc-chd-004, the ONE rebuild permitted for the THIRD distinct class: the
+# fixture-assert field mapping, probe-verified before launch; the
+# vintage-reader fix of 002 and the anchor correction of 003 are retained).
 #
 # Order is fixed and each stage stops the next: construct -> qualify -> accept
 # exact bytes -> simple references. build.py only constructs files and gate
@@ -18,7 +20,7 @@ mkdir -p /output
 
 echo "== build (construct only; no performance metric) =="
 python3 -u /workspace/build.py --out "$OUT" --work-dir /tmp/cqc \
-    --built-at 2026-11-03T00:00:00Z --real-fixtures \
+    --built-at 2026-11-04T00:00:00Z --real-fixtures \
     --summary-out /output/summary.json
 build_status=$?
 

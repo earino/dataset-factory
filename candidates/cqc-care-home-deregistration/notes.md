@@ -206,3 +206,105 @@ was owed; the staging release is the durable diagnostics copy.
 Stopping condition honoured: ONE rebuild permitted for this defect class;
 a second failure of the same class is a recorded blocker, never a blind
 retry.
+
+## Vintage-schema probe and the cqc-chd-002 rebuild (2026-11-04)
+
+The recorded next_check (care-home column value domains, 2018 vs 2019/2020/
+2021) ran on the coordinator with build.py's own download + parsing code
+(probe/probe_vintage_schema.py, probe_vintage_schema2.py, probe_vintage_
+schema3.py; outputs vintage_schema{,2,3}_out.json; four vintages fetched one
+at a time into scratch, only headers + value domains + counts retained).
+
+Findings, which correct one detail of the recorded cqc-chd-001 diagnosis:
+
+1. The care-home value domain did NOT drift. On each 2019/2020/2021 data
+   sheet the 'Care home?' column carries the same Y/N domain; 15,807 /
+   15,554 / 15,467 rows pass the ==Y filter (all inside the asserted
+   10k-20k band), and the 2018 control reproduces the 16,104 care homes of
+   the cqc-chd-001 container log exactly.
+2. The real defect is structural: those three xlsx workbooks carry a
+   leading 'Readme' (2019) / 'README' (2020, 2021) sheet before the 'HSCA
+   Active Locations' data sheet. build.py's xlsx reader read only the FIRST
+   sheet in workbook order, found no 'Location ID' header there, and
+   read_vintage returned an empty instant WITHOUT setting missing_required
+   - so the build reported the three instants as silent 0/0 instead of
+   dropping them loudly (the recorded 'resolved their required columns'
+   diagnosis was one step short: nothing resolved, nothing recorded).
+3. Fix (build.py only; P0 single-instant design, pseudonym ids and every
+   assertion unchanged): xlsx_rows now walks worksheets in workbook order
+   until the 'Location ID' header sheet is found (leading README rows are
+   yielded as stamps; later sheets stay unread), and a vintage with no
+   header anywhere is DROPPED loudly ('no header row detected in any
+   sheet'). tests/test_cqc_build.py pins both behaviours on synthetic bytes
+   (2021 vintage = README-first xlsx, 2019 = README-only xlsx); red/green
+   proved by reverting build.py (git stash) - the pre-fix reader fails the
+   rehearsal with 'instant 2019 positives 0 suspiciously low'. Suite
+   708/708 OK.
+4. Deactivated-file pin re-verified before the relaunch (probe/
+   preflight_deact_pin.py): 27,644,723 B, sha256 49dc3062... - MATCH, so
+   the label source edition is unchanged since the discovery measurements.
+
+cqc-chd-002 launched 2026-11-04T04:33:50Z (server 174425897, cx23/hel1,
+EUR 0.04 reservation, source sha256 47da08a0...): the ONE rebuild this
+defect class is permitted. On success the standing order resumes: gate 1.5
+on the full artifact on the worker, exact-byte accept, reference triad
+BEFORE any model figure, then the runner-contract baseline.
+
+## cqc-chd-002 outcome and the anchor arbitration (2026-11-04)
+
+cqc-chd-002 (server 174425897, launched 04:33:50Z) FAILED at 331 s, exit 1,
+staging release 433520236 (diagnostics in .factory/cqc-chd-002/reports/).
+The vintage-reader fix WORKED - the panel log shows 2019: 15,807 rows / 917
+positives, 2020: 15,554 / 803, 2021: 15,467 / 952 (all in the asserted
+10k-20k band), 2016/2017 still loudly DROPPED, the deactivated index
+matching the anchor exactly - and the build then stopped at a NEW defect:
+`BuildError: eval positives 757 != 758`.
+
+Arbitration (probe/probe_eval_positives_arbitration.py and ...2.py, a third
+independent implementation over the same digest-pinned bytes): the
+contract-correct count is 757. The 2026-11-03 discovery probe hardcoded
+`win_end = date(2025, 1, 5)`, but 2024-01-05 + 365 days = 2025-01-04 (the
+2024 leap year), so the probe measured (T, T+366d] and got 758. Exactly one
+location separates the two windows: 1-353801949 'Dimensions Parrot Farmhouse
+Arborfield Road' (HSCA end 2025-01-05, Inactive-Dereg). Every other eval
+anchor holds under the build's rule (population 14,765; later-deactivated
+2,076; 0 rating publication dates after T; Park Hills label 1, Henley House
+0, Options Hazel House 0). The build's join is right; the anchor was wrong.
+
+Decision (recorded before the next launch): correct
+EXPECTED_EVAL_POSITIVES 758 -> 757 in build.py (the recorded (T, T+365d]
+contract and every other assertion unchanged) and rebuild ONCE as
+cqc-chd-003. This is a new defect class - a discovery-anchor measurement
+error - with its own one-rebuild budget; the vintage-reader class is closed.
+A further failure of this class is a recorded blocker, never a blind retry.
+
+## cqc-chd-003 outcome, the third distinct defect, and cqc-chd-004 (2026-11-04)
+
+cqc-chd-003 (server 174426903, launched 04:46:35Z, destroyed 04:59:58Z
+after verified collection) FAILED at 420 s, exit 1, staging release
+433528200 (diagnostics in .factory/cqc-chd-003/reports/). The anchor
+correction worked - the panel built identically to cqc-chd-002 and the
+positives (757), later-deactivated (2,076) and pub-after-T (0) asserts all
+passed - and the build then crashed in the never-executed fixture loop:
+`KeyError: 'beds'`. assert_fixtures read the FIXTURES want-keys
+(beds/la/rating/pub/start) as row keys, but the row carries the shipped
+column names and pub/start were not in the row dict at all. assert_fixtures
+is --real-fixtures only: attempts 001 and 002 never reached it, so no
+previous run or synthetic rehearsal had ever executed this code.
+
+Fix (build.py, probe-verified before launch): FIXTURE_FIELD_MAP {label ->
+target, beds -> care_home_beds, la -> local_authority, rating ->
+latest_overall_rating, pub -> _pub, start -> _start}; internal _pub/_start
+row fields added (never shipped - write_artifact writes only COLUMNS and
+the location map writes instant/key/id only); unknown fixture fields raise
+loudly. probe/probe_fixture_fields.py verified every want value on the same
+digest-pinned real bytes: Park Hills 1-113831768 label 1 / beds 17 / Oldham
+/ Good / pub 26/08/2022 / start 01/02/2011; Henley House label 0; Options
+Hazel House label 0. Rehearsal 11/11 + suite 708/708 OK after the fix.
+
+cqc-chd-004 is the ONE rebuild this third class is permitted. Any further
+failure is a recorded blocker; the candidate then goes to repair review
+rather than another retry. The panel itself has built identically on three
+consecutive attempts; the remaining unexercised tail after the fixture loop
+(write_artifact, build_quality, gate, accept, score.py references) is fully
+covered by the synthetic rehearsal.
