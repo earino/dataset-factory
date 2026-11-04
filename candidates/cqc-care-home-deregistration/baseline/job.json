@@ -1,0 +1,54 @@
+{
+  "id": "cqc-chd-baseline-001",
+  "candidate": "cqc-care-home-deregistration",
+  "image": "python:3.13-slim",
+  "server_type": "cx23",
+  "location": "hel1",
+  "cpus": 2,
+  "memory_mb": 2048,
+  "timeout_minutes": 45,
+  "lifetime_minutes": 90,
+  "max_disk_mb": 3000,
+  "max_artifact_mb": 16,
+  "what": "Runner-contract baseline on the accepted cqc-care-home-deregistration artifact afe9ee203f302f3ca41b9b01ad74a937e111d1b830590c7e662bb0b7b6df85d7 (gate 1.5.0 failed_checks empty on the full artifact, exact-byte --accept ACCEPTED in job cqc-chd-004), fetched from private staging release 433536764 rather than rebuilt: re-accept the five fetched files against the gate's own collected report BEFORE any score, materialize the runner workdir (public train+eval only; the private holdout is fetched for --accept over the full artifact but never copied into a workdir), then run the benchmark's own train.py and validate.sh unmodified and record both eval AUCs. Contract only, no agent loop, no holdout score. Construction-time references measured on the identical 14,765 eval rows (job cqc-chd-004 score.py, post-acceptance, every rate table estimated from train rows only): rating_x_beds_rate 0.5870921937794369 (the headroom reference), last_rating_rate 0.5597447335246061, beds_bucket_rate 0.5297982677571677, hsca_start_year_rate 0.5226476076701217, local_authority_rate 0.5207061335775669, provider_sector_rate 0.5010938738912734, majority-class accuracy on eval 0.9487301049779885 (constant fitted on train, measured against eval labels); NO persistence reference BY DESIGN (identity ships as per-instant pseudonyms, so prior-instant labels are structurally unlinkable for the scorer too).",
+  "fetch": {
+    "repo": "earino/dataset-factory-staging",
+    "release": 433536764,
+    "assets": [
+      {
+        "asset_id": 708316347,
+        "dest": "extract/meta.json",
+        "size": 2349,
+        "sha256": "3b350af60fcd415824cd4940b36c4c4e19f4933ec7190d5846fd9920dd9a98c0"
+      },
+      {
+        "asset_id": 708316565,
+        "dest": "extract/public/train.csv",
+        "size": 9553058,
+        "sha256": "6138dd92974d7b70504ab32af2c8a3b73b4c0f1d6f87dba99eaac1f10f37ddf1"
+      },
+      {
+        "asset_id": 708316470,
+        "dest": "extract/public/eval.csv",
+        "size": 1787102,
+        "sha256": "2078146fce1f75b23b0a1060e7efc0241317c981c21a5d502457ada2ec0ee20e"
+      },
+      {
+        "asset_id": 708316399,
+        "dest": "extract/private/holdout.csv",
+        "size": 1788226,
+        "sha256": "880a36d468b779fce541e5419d3f785d482dc86376fadbfd5b436460b55ac552"
+      },
+      {
+        "asset_id": 708316648,
+        "dest": "extract/quality.json",
+        "size": 24584,
+        "sha256": "4e07a858396ec032c47d67a62cd9f1ba9e04a607bd0eeb962c4d7249cef77f50"
+      }
+    ]
+  },
+  "command": [
+    "sh",
+    "/workspace/run.sh"
+  ]
+}

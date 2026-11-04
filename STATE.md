@@ -1,3 +1,54 @@
+## 2026-11-04 (06:35Z) - advancement session: cqc-chd-baseline-001 runner-contract baseline SUCCEEDED on the accepted cqc-care-home-deregistration artifact (model eval AUC 0.5659, below the headroom reference rating_x_beds_rate 0.5871 - recorded defect for the stock runner, NOT a no-headroom verdict; packaging started per the recorded next_action)
+
+Chosen candidate: cqc-care-home-deregistration (operator-listed "(package)"). The two
+other release-track items were re-read first and stay human waits: unhcr-refugee-data-finder
+keeps operator_decision_pending (recorded 2026-11-02 drop decision) and
+za-cct-substation-evening-peak-exceedance's packaging gate remains NOT met pending the
+operator's (a)/(b)/(c). No remediation hold is active (#17 closed). No actionable packaged
+candidate exists, so nothing preempts this work; no release byte, tag or destination changed.
+
+- cqc-chd-baseline-001 (server 174433577, cx23/hel1, EUR 0.06 reservation, executor
+  63.4 s, exit 0): the recorded next action, the za-cct-baseline-001 pattern applied to
+  the accepted artifact afe9ee203f302f3c... Fetched the 5 gate-digest assets from
+  staging release 433536764 (13,155,319 bytes, 5/5 digests verified on arrival, equal to
+  the gate-report digests); exact-byte --accept printed "ACCEPTED: /data/extract matches
+  the qualified artifact afe9ee203f302f3c" BEFORE any score; workdir materialized from
+  public train+eval only (holdout never copied into a workdir, never scored); the
+  benchmark's own train.py + validate.sh ran verbatim (bundled sha256 ==
+  runner_files.json, unmodified: true); CONTRACT OK; both implementations print
+  eval AUC 0.5659 (train.py's own Eval AUC and validate.py's independent
+  predict_proba recompute agree). Staging release 433569826; 9 report parts collected
+  with per-file digest verification into .factory/cqc-chd-baseline-001/reports/;
+  worker destroyed 06:28:28Z and provider-verified (GET /v1/servers/174433577 -> 404,
+  inventory 0 servers / 0 primary IPs project+account).
+- INTERPRETATION (recorded in the candidate record,
+  measurements.runner_contract_baseline_2026_11_04_cqc_chd_baseline_001): ladder on the
+  identical 14,765 eval rows - rating_x_beds_rate 0.5871 (headroom reference, CI
+  excluding zero over last_rating) > MODEL 0.5659 (observed gap 0.0212) > last_rating
+  0.5597 > beds_bucket 0.5298 > hsca_start_year 0.5226 > local_authority 0.5207 >
+  provider_sector 0.5011; global degenerate; majority-class accuracy eval 0.94873;
+  NO persistence BY DESIGN (per-instant pseudonym ids). The model trailing the
+  reference is a RECORDED DEFECT of the stock runner under this protocol, per the
+  pre-registered rule - not a no-headroom verdict on the task: the model beats every
+  one-line prior (so the pre-registered drop condition "a one-line prior saturates
+  it" is NOT met), and the reference reads only shipped at-T columns
+  (latest_overall_rating x care_home_beds), so there is no information asymmetry
+  (unlike za-cct's persistence case). Verified diagnosis candidate: the stock train.py
+  treats 'instant' (YYYY-MM) as a train-only categorical, so the eval instant 2024-01
+  is unseen and every eval row gets NaN there; part of the tree budget was spent on
+  train-instant memorization that cannot transfer. No model above the reference has
+  been measured; keep-fitting-until-a-score-wins is forbidden.
+- NEXT: packaging per dataset-release (ocha-fts precedent: ship with the model-below-
+  reference finding recorded, the comparison ladder leading every package document).
+  Concrete steps for a fresh session: write candidates/cqc-care-home-deregistration/
+  license.json (OGL-UK-3.0 source terms, CQC attribution + in-sheet analysis
+  disclaimer, MIT code, CC0-1.0 compilation scope, register-event framing limitation),
+  assemble release/cqc-care-home-deregistration/ on the pins-planning-appeal-outcome
+  layout (docs, code/, baseline/ runner files verbatim, measurements.json, MANIFEST via
+  scripts/release-manifest.py, SHA256SUMS, VERIFICATION.md with baseline scope),
+  check-package.py green, then private staging. Holdout stays sealed; private until
+  the operator's flip.
+
 ## 2026-11-04 (05:45Z) - watcher follow-up: cqc-chd-004 SUCCEEDED (candidate qualified + accepted); cqc-chd-002/-003 failures already durably recorded at bf8a5ea; all three workers provider-404-confirmed deleted; all three jobs acknowledged
 
 Finished-worker event for cqc-chd-002, cqc-chd-003, cqc-chd-004. The follow-up

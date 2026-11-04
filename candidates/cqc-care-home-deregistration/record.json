@@ -81,6 +81,29 @@
     }
    },
    "headroom_reference_for_any_model_figure": "rating_x_beds_rate 0.5871 on the identical eval rows; a full-model figure from the coming baseline job must be quoted beside it, and a model below it is a recorded defect, not an encouraging result"
+  },
+  "runner_contract_baseline_2026_11_04_cqc_chd_baseline_001": {
+   "command": "worker job cqc-chd-baseline-001 run.sh (fetch the five accepted assets from staging release 433536764, digests verified on arrival, --accept ACCEPTED afe9ee203f302f3c BEFORE any score, then the benchmark's own unmodified train.py + validate.sh); report .factory/cqc-chd-baseline-001/reports/output/baseline_result.json, staging release 433569826",
+   "full_model_eval_auc": 0.5659,
+   "full_model_eval_auc_from_validate_py": 0.5659,
+   "comparison_ladder_eval_auc": {
+    "rating_x_beds_rate_headroom_reference": 0.5870921937794369,
+    "MODEL_stock_runner": 0.5659,
+    "last_rating_rate_best_one_line_prior": 0.5597447335246061,
+    "beds_bucket_rate": 0.5297982677571677,
+    "hsca_start_year_rate_nearest_history_prior": 0.5226476076701217,
+    "local_authority_rate": 0.5207061335775669,
+    "provider_sector_rate": 0.5010938738912734,
+    "global_rate": "degenerate (constant score)",
+    "majority_class_accuracy_eval": 0.9487301049779885,
+    "persistence": "NOT APPLICABLE BY DESIGN - identity ships as per-instant pseudonyms (missing-successor P0 design), so prior-instant labels are structurally unlinkable for the scorer too"
+   },
+   "measured_on": "the accepted artifact afe9ee203f302f3c (job cqc-chd-baseline-001, after --accept, on the same 14,765 eval rows as the cqc-chd-004 references)",
+   "observed_gap": "the stock runner model trails the strongest reference by 0.0212 AUC (0.5659 vs rating_x_beds_rate 0.5871) on identical rows, while beating every one-line prior (best: last_rating_rate 0.5597); observed difference, no dependence-aware interval computed for the model-vs-reference pair",
+   "information_note": "rating_x_beds_rate reads ONLY shipped at-T columns (latest_overall_rating x care_home_beds), so it is a fair same-information target for anything that consumes this artifact - no information asymmetry, unlike a persistence score",
+   "concrete_diagnosis_candidates": "(a) verified by code reading: the stock train.py treats the 'instant' string column (YYYY-MM) as a train-only categorical - train instants 2018-01..2022-01 define the levels and the eval instant 2024-01 is unseen, so every eval row gets NaN there and part of the 30-tree depth-6 budget was spent on train-instant memorization that cannot transfer; (b) the rating x beds interaction the two-way rate table captures directly is available to XGBoost only through split combinations, and the small-home x poorly-rated cells are a thin slice of 78k train rows; (c) no misalignment and no post-hoc reference: both AUC figures come from the runner's own two implementations on the same accepted bytes, and as-of was asserted in-build (0/14,765 rating publication dates after T); (d) prevalence shift train 5.654% -> eval 5.127% is mild and recorded",
+   "verdict": "RECORDED DEFECT for the stock runner under this protocol (model 0.5659 < rating_x_beds_rate 0.5871, both on the identical 14,765 eval rows) - quoted beside the reference as the skill requires. NOT a no-headroom verdict on the task, and the pre-registered drop condition (a one-line prior saturating it) is NOT met: the model beats every one-line prior, and the headroom reference demonstrates exploitable signal (CI excluding zero over last_rating_rate) inside the model's own shipped feature set. This does not prove a competent model must beat 0.5871; no model above the reference has been measured",
+   "interpretation_rule": "any later model figure must still be quoted beside rating_x_beds_rate 0.5871; a model below it is a recorded defect, not an encouraging result; keep fitting until a score wins is forbidden"
   }
  },
  "jobs": [
@@ -151,6 +174,19 @@
    "collected_at": "2026-11-04T05:11:00Z (collect verified the staging release tag, asset membership, sizes and digests)",
    "destroyed_at": "2026-11-04T05:12:54Z (worker 174428318 destroyed after verified collection; ledger closed)",
    "result": "SUCCEEDED, exit 0, executor elapsed 376.4 s; staging release 433536764 (extract 9,553,058 B train.csv + eval + holdout + meta + quality + reports); gate 1.5.0 ok=true failed_checks=[] on the FULL artifact on the worker; exact-byte --accept ACCEPTED for artifact afe9ee203f302f3c...; all four run.sh stages 0; discovery fixtures reproduced exactly ('discovery fixtures reproduced exactly' in container.log)"
+  },
+  {
+   "acceptance_criteria": "5/5 fetched assets at the gate-report digests; --accept ACCEPTED afe9ee203f302f3c before any score; runner files byte-identical to runner_files.json; CONTRACT OK; holdout never in a workdir",
+   "bundle": "baseline/{run.sh,materialize.py,report.py,job.json,bundle.json,qualification.json} + canonical gate 1.5.0 + the benchmark's own train.py/validate.py/validate.sh verbatim from the read-only clone",
+   "candidate": "cqc-care-home-deregistration",
+   "collected_at": "2026-11-04T06:27:43Z",
+   "destroy_verified": "provider read-back after destroy: project+account server list empty, server 174433577 -> 404 not_found",
+   "destroyed_at": "2026-11-04T06:28:28Z",
+   "id": "cqc-chd-baseline-001",
+   "kind": "baseline",
+   "launched_at": "2026-11-04T06:05:49Z",
+   "reservation_eur": "0.06",
+   "result": "succeeded, exit 0, executor elapsed 63.4 s; fetch 13,155,319 bytes 5/5 files (meta 3b350af6, train 6138dd92, eval 2078146f, holdout 880a36d4, quality 4e07a858 - all five equal the gate-report artifact digests); --accept ACCEPTED afe9ee203f302f3c BEFORE any score; eval AUC 0.5659 from both train.py and validate.py; staging release 433569826"
   }
  ],
  "artifacts": [
@@ -170,7 +206,7 @@
  ],
  "rejection_reason": null,
  "review": null,
- "next_action": "QUALIFIED + ACCEPTED (cqc-chd-004, artifact afe9ee203f302f3c..., staging release 433536764; gate 1.5.0 failed_checks empty on the full artifact on the worker; exact-byte accept ACCEPTED; successor probes eval/holdout coverage 0; worker destroyed with ledger-closed proof). NEXT: the runner-contract baseline job on the staged bytes (the za-cct-baseline-001 pattern: fetch the accepted assets from the staging release, --accept BEFORE any score, materialize the workdir from public splits only, benchmark train.py + validate.sh verbatim, contract_ok check) - quote the full-model eval AUC beside rating_x_beds_rate 0.5871 (the strongest reference, CI excluding zero over last_rating_rate), with the no-persistence-by-design note. Then interpretation per dataset-qualification (a model below 0.5871 is a recorded defect), then packaging per dataset-release. Holdout stays sealed.",
+ "next_action": "RUNNER-CONTRACT BASELINE MEASURED (cqc-chd-baseline-001, staging release 433569826, artifact afe9ee203f302f3c re-accepted BEFORE any score, runner files verified unmodified, both implementations agree): full-model eval AUC 0.5659 on the identical 14,765 eval rows - below the headroom reference rating_x_beds_rate 0.5871 (recorded defect for the stock runner, observed gap 0.0212) but above every one-line prior (last_rating_rate 0.5597 ... provider_sector_rate 0.5011) and above chance; the pre-registered drop condition (a one-line prior saturating the task) is NOT met, and the reference reads only shipped at-T columns, so no information asymmetry exists (unlike the za-cct persistence case). NEXT: packaging per dataset-release, following the ocha-fts precedent that shipped with model 0.6298 < persistence 0.7171 recorded - the comparison ladder leads every package document, any model figure is quoted beside rating_x_beds_rate 0.5871 with the no-persistence-by-design note, holdout stays sealed, and everything stays private until the operator's flip. Packaging produces the release/ package (manifest, checksums, docs, licence per candidates/cqc-care-home-deregistration/license.json once written, reproduction instructions, VERIFICATION.md with baseline scope), then check-package.py, then private staging; the flip remains the operator's single approval.",
  "licence_class": "A",
  "licence_note": "OGL v3 per the publisher's own instruments. Attribution 'Care Quality Commission' carries into any release; the in-sheet disclaimer (CQC not responsible for subsequent analysis; must not be quoted as its source) is carried into the dataset documentation.",
  "jurisdiction": {
@@ -190,7 +226,7 @@
   },
   "uncertainty": "1) FRAMING: the register event conflates cessation with re-registration - CQC's own file note says some deactivations continue under a new registration (legal entity/address/provider change), and BMJ 2024 (8,346 complete closures vs 14,911 register events 2011-2023) implies roughly 40-55% of deregistrations are re-registrations/transfer; advancement must either ship the honest register-event target with this limitation stated or build successor linkage (address/UPRN/ODS-code/brand adjacency; the API's linked-organisation data needs developer-portal auth). 2) HEADROOM UNMEASURED: simple references (last-rating rate, bed-size, LA, provider-sector) are the plausible strong priors - the BMJ/npj evidence says ratings+ownership drive closures (US ML AUROC 0.79 out-of-sample, so learnable structure exists); the reference triad is the FIRST construction measurement and the task is droppable if a one-line prior saturates it. 3) The publisher's system migration is delaying reflection of registration cancellations in current files - recent-window lag check required. 4) Era breaks: single-assessment rating change (~2024, location-level overall ratings dropped for multi-service ASC locations) and the 1 April 2019 regulatory-history inheritance change. 5) Provider-group cross-row exposure if group-history features ship - strictly-prior events only + declared restricted protocol. 6) Dormant-but-registered locations may sit in the at-T population (no dormancy flag in the bulk files; not measured this session)."
  },
- "updated_at": "2026-11-04T03:20Z (watcher follow-up: cqc-chd-001 construction failure recorded with evidence and next check)",
+ "updated_at": "2026-11-04T06:32:00Z",
  "novelty_check": {
   "checked_at": "2026-11-03T16:56:53+00:00",
   "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",

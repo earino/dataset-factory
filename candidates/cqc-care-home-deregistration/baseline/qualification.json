@@ -1,0 +1,688 @@
+{
+ "ok": true,
+ "dataset": "/output/extract",
+ "gate_version": "1.5.0",
+ "artifact": {
+  "train": {
+   "file": "public/train.csv",
+   "sha256": "6138dd92974d7b70504ab32af2c8a3b73b4c0f1d6f87dba99eaac1f10f37ddf1",
+   "bytes": 9553058
+  },
+  "eval": {
+   "file": "public/eval.csv",
+   "sha256": "2078146fce1f75b23b0a1060e7efc0241317c981c21a5d502457ada2ec0ee20e",
+   "bytes": 1787102
+  },
+  "holdout": {
+   "file": "private/holdout.csv",
+   "sha256": "880a36d468b779fce541e5419d3f785d482dc86376fadbfd5b436460b55ac552",
+   "bytes": 1788226
+  },
+  "meta.json": {
+   "file": "meta.json",
+   "sha256": "3b350af60fcd415824cd4940b36c4c4e19f4933ec7190d5846fd9920dd9a98c0",
+   "bytes": 2349
+  },
+  "quality.json": {
+   "file": "quality.json",
+   "sha256": "4e07a858396ec032c47d67a62cd9f1ba9e04a607bd0eeb962c4d7249cef77f50",
+   "bytes": 24584
+  },
+  "artifact_version": {
+   "digest": "afe9ee203f302f3ca41b9b01ad74a937e111d1b830590c7e662bb0b7b6df85d7",
+   "components": [
+    "eval",
+    "holdout",
+    "meta.json",
+    "quality.json",
+    "train"
+   ]
+  }
+ },
+ "results": [
+  {
+   "check": "descriptor",
+   "ok": true,
+   "detail": "quality.json loaded for 'cqc-care-home-deregistration'",
+   "evidence": {}
+  },
+  {
+   "check": "contract.declared",
+   "ok": true,
+   "detail": "evaluation_contract required: intended use, access, vintage and evidence",
+   "evidence": {}
+  },
+  {
+   "check": "contract.scope",
+   "ok": true,
+   "detail": "use='retrospective_research'; access='isolated_rows'; eval is development, holdout is final",
+   "evidence": {}
+  },
+  {
+   "check": "contract.every_input_has_availability_evidence",
+   "ok": true,
+   "detail": "Every solver-visible non-target column needs availability evidence; missing: []",
+   "evidence": {}
+  },
+  {
+   "check": "contract.vintage_and_selection",
+   "ok": true,
+   "detail": "Vintage, selection and limitations must be explicit; declarations are not measurements",
+   "evidence": {}
+  },
+  {
+   "check": "contract.cross_row_review",
+   "ok": true,
+   "detail": "Document applicable cross-row probes and every solver-visible auxiliary file",
+   "evidence": {}
+  },
+  {
+   "check": "contract.cross_row_probe_0",
+   "ok": true,
+   "detail": "Outcome-bearing later-row exposure requires restricted evaluation access; mismatches are reported",
+   "evidence": {
+    "train": {
+     "rows": 78138,
+     "covered": 0,
+     "mismatches": 0,
+     "ambiguous_or_conflicting": 0
+    },
+    "eval": {
+     "rows": 14765,
+     "covered": 0,
+     "mismatches": 0,
+     "ambiguous_or_conflicting": 0
+    },
+    "holdout": {
+     "rows": 14749,
+     "covered": 0,
+     "mismatches": 0,
+     "ambiguous_or_conflicting": 0
+    }
+   }
+  },
+  {
+   "check": "contract.cross_row_probe_1",
+   "ok": true,
+   "detail": "Outcome-bearing later-row exposure requires restricted evaluation access; mismatches are reported",
+   "evidence": {
+    "train": {
+     "rows": 78138,
+     "covered": 11786,
+     "mismatches": 323,
+     "ambiguous_or_conflicting": 29261
+    },
+    "eval": {
+     "rows": 14765,
+     "covered": 0,
+     "mismatches": 0,
+     "ambiguous_or_conflicting": 0
+    },
+    "holdout": {
+     "rows": 14749,
+     "covered": 0,
+     "mismatches": 0,
+     "ambiguous_or_conflicting": 0
+    }
+   }
+  },
+  {
+   "check": "contract.label_availability",
+   "ok": true,
+   "detail": "No full-row availability ledger: training-label timing UNVERIFIED; retrospective use only",
+   "evidence": {}
+  },
+  {
+   "check": "leakage.declared_columns",
+   "ok": true,
+   "detail": "every shipped column is declared",
+   "evidence": {
+    "undeclared": []
+   }
+  },
+  {
+   "check": "leakage.answer_source_absent",
+   "ok": true,
+   "detail": "no answer source or post-hoc column is shipped",
+   "evidence": {
+    "shipped_forbidden": []
+   }
+  },
+  {
+   "check": "leakage.every_column_could_be_scored",
+   "ok": true,
+   "detail": "every column was scored for leakage",
+   "evidence": {
+    "unscorable": []
+   }
+  },
+  {
+   "check": "leakage.no_single_column_determines_the_target",
+   "ok": true,
+   "detail": "no shipped column separates the classes on its own",
+   "evidence": {
+    "offenders": [],
+    "high_cardinality": [
+     "location_key@eval",
+     "location_key@holdout",
+     "location_key@train"
+    ],
+    "missing_splits": []
+   }
+  },
+  {
+   "check": "leakage.high_cardinality_declared",
+   "ok": true,
+   "detail": "high-cardinality columns are declared as identifiers or free fields",
+   "evidence": {
+    "undeclared": [],
+    "declared": [
+     "location_key"
+    ]
+   }
+  },
+  {
+   "check": "timing.prediction_time_declared",
+   "ok": true,
+   "detail": "prediction instant is declared",
+   "evidence": {}
+  },
+  {
+   "check": "timing.no_post_hoc_feature",
+   "ok": true,
+   "detail": "no feature is documented as post-hoc",
+   "evidence": {
+    "overlap": []
+   }
+  },
+  {
+   "check": "timing.label_source_is_not_a_feature",
+   "ok": true,
+   "detail": "the label source is not a feature",
+   "evidence": {
+    "source_features": []
+   }
+  },
+  {
+   "check": "timing.every_feature_documented",
+   "ok": true,
+   "detail": "features documented as available 'prediction_time'",
+   "evidence": {
+    "features_documented_at": "prediction_time"
+   }
+  },
+  {
+   "check": "timing.instant_declared",
+   "ok": true,
+   "detail": "prediction instant kind='period_end' citation=True",
+   "evidence": {
+    "prediction_instant": {
+     "kind": "period_end",
+     "period": "the vintage snapshot itself: an administrative register extract whose 'period' IS its production instant T",
+     "days_after_period_end": 0,
+     "citation": "CQC care directory with filters ('HSCA Active Locations'), monthly, archived 2011-2026 in CQC's public Google Drive archive (the dated file names, e.g. '05 January 2024 HSCA Active Locations.ods'); every feature column is read from the T vintage's own bytes. The as-of property is asserted at construction: 0 of the 14,765 eval-instant rows carry a rating Publication Date after T. Real historical vintages - not a reconstruction"
+    }
+   }
+  },
+  {
+   "check": "timing.publication_lag_measured",
+   "ok": true,
+   "detail": "7 of 7 observed period_end -> published dates are usable",
+   "evidence": {
+    "observations": [
+     {
+      "period": "2018-01",
+      "period_end": "2018-01-01",
+      "published": "2018-01-01",
+      "note": "the vintage is an administrative register snapshot: its production date IS the instant; in-file production stamp: null"
+     },
+     {
+      "period": "2019-01",
+      "period_end": "2019-01-03",
+      "published": "2019-01-03",
+      "note": "the vintage is an administrative register snapshot: its production date IS the instant; in-file production stamp: null"
+     },
+     {
+      "period": "2020-01",
+      "period_end": "2020-01-01",
+      "published": "2020-01-01",
+      "note": "the vintage is an administrative register snapshot: its production date IS the instant; in-file production stamp: null"
+     },
+     {
+      "period": "2021-01",
+      "period_end": "2021-01-04",
+      "published": "2021-01-04",
+      "note": "the vintage is an administrative register snapshot: its production date IS the instant; in-file production stamp: null"
+     }
+    ],
+    "measured_lag_days": 0,
+    "source_kind": "administrative_record"
+   }
+  },
+  {
+   "check": "timing.features_available_at_instant",
+   "ok": true,
+   "detail": "features publish 0d after the period, instant is 0d after it",
+   "evidence": {
+    "features_lag_days": 0,
+    "instant_lag_days": 0,
+    "measured_lag_days": 0
+   }
+  },
+  {
+   "check": "timing.instant_accounts_for_publication_lag",
+   "ok": true,
+   "detail": "instant kind is 'period_end' while features publish 0d after the period",
+   "evidence": {
+    "kind": "period_end",
+    "features_lag_days": 0
+   }
+  },
+  {
+   "check": "timing.selection_uses_only_available_data",
+   "ok": true,
+   "detail": "row selection declares its latest period as '2025-01'",
+   "evidence": {
+    "latest_period_used": "2025-01",
+    "fields": [
+     "'Care home?' = Y in the T vintage (the vintage's own column, read at T)",
+     "the location is active at T by construction of the HSCA Active Locations product"
+    ]
+   }
+  },
+  {
+   "check": "units.measured_columns_declare_unit_and_frame",
+   "ok": true,
+   "detail": "12 measured column(s) declare unit and frame",
+   "evidence": {
+    "measurements": [
+     {
+      "column": "care_home_beds",
+      "unit": "beds (integer)",
+      "frame": "the location's registered care-home beds at T, as published in the T vintage; -1 = not stated"
+     },
+     {
+      "column": "hsca_start_year",
+      "unit": "calendar year (integer)",
+      "frame": "the year the location's HSCA registration started; -1 = not stated"
+     },
+     {
+      "column": "svc_nursing",
+      "unit": "flag (0/1/-1)",
+      "frame": "service-type flag at T; -1 = column absent in that vintage"
+     },
+     {
+      "column": "svc_residential",
+      "unit": "flag (0/1/-1)",
+      "frame": "service-type flag at T; -1 = column absent in that vintage"
+     },
+     {
+      "column": "svc_other_count",
+      "unit": "count (integer)",
+      "frame": "other registered service types at T"
+     },
+     {
+      "column": "users_other_count",
+      "unit": "count (integer)",
+      "frame": "other service user bands at T"
+     },
+     {
+      "column": "instant",
+      "unit": "YYYY-MM",
+      "frame": "the vintage production month, Europe/London"
+     },
+     {
+      "column": "users_dementia",
+      "unit": "flag (0/1/-1)",
+      "frame": "service user band flag at T; -1 = column absent in that vintage"
+     },
+     {
+      "column": "users_older_people",
+      "unit": "flag (0/1/-1)",
+      "frame": "service user band flag at T; -1 = column absent in that vintage"
+     },
+     {
+      "column": "users_learning_disabilities",
+      "unit": "flag (0/1/-1)",
+      "frame": "service user band flag at T; -1 = column absent in that vintage"
+     },
+     {
+      "column": "users_physical_disability",
+      "unit": "flag (0/1/-1)",
+      "frame": "service user band flag at T; -1 = column absent in that vintage"
+     },
+     {
+      "column": "users_mental_health",
+      "unit": "flag (0/1/-1)",
+      "frame": "service user band flag at T; -1 = column absent in that vintage"
+     }
+    ]
+   }
+  },
+  {
+   "check": "units.known_event_fixture_recorded",
+   "ok": true,
+   "detail": "no external threshold, so no known-event fixture is required",
+   "evidence": {}
+  },
+  {
+   "check": "splits.time_column_declared",
+   "ok": true,
+   "detail": "split overlap is checked against 'instant'",
+   "evidence": {}
+  },
+  {
+   "check": "splits.machine_readable_windows",
+   "ok": true,
+   "detail": "train/eval/holdout windows are declared with start/end",
+   "evidence": {
+    "split_windows": {
+     "train": {
+      "start": "2016-01",
+      "end": "2023-01"
+     },
+     "eval": {
+      "start": "2024-01",
+      "end": "2025-01"
+     },
+     "holdout": {
+      "start": "2025-01",
+      "end": "2026-01"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.files_present",
+   "ok": true,
+   "detail": "all three split files exist",
+   "evidence": {
+    "missing": []
+   }
+  },
+  {
+   "check": "splits.non_empty",
+   "ok": true,
+   "detail": "every split has rows",
+   "evidence": {
+    "train": {
+     "rows": 78138,
+     "positives": 4418,
+     "negatives": 73720,
+     "positive_rate": 0.056541
+    },
+    "eval": {
+     "rows": 14765,
+     "positives": 757,
+     "negatives": 14008,
+     "positive_rate": 0.05127
+    },
+    "holdout": {
+     "rows": 14749,
+     "positives": 761,
+     "negatives": 13988,
+     "positive_rate": 0.051597
+    }
+   }
+  },
+  {
+   "check": "splits.eval_and_holdout_have_both_classes",
+   "ok": true,
+   "detail": "eval and holdout each contain positives and negatives",
+   "evidence": {
+    "train": {
+     "rows": 78138,
+     "positives": 4418,
+     "negatives": 73720,
+     "positive_rate": 0.056541
+    },
+    "eval": {
+     "rows": 14765,
+     "positives": 757,
+     "negatives": 14008,
+     "positive_rate": 0.05127
+    },
+    "holdout": {
+     "rows": 14749,
+     "positives": 761,
+     "negatives": 13988,
+     "positive_rate": 0.051597
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_declared",
+   "ok": true,
+   "detail": "eval and holdout declare positives and distinct events",
+   "evidence": {
+    "declared": {
+     "train": {
+      "positives": 4418,
+      "distinct_events": 4418
+     },
+     "eval": {
+      "positives": 757,
+      "distinct_events": 757
+     },
+     "holdout": {
+      "positives": 761,
+      "distinct_events": 761
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_match_rows",
+   "ok": true,
+   "detail": "declared positive counts match the rows",
+   "evidence": {
+    "mismatched": []
+   }
+  },
+  {
+   "check": "splits.event_key_column_declared",
+   "ok": true,
+   "detail": "clustered events are counted by 'location_key' (date part)",
+   "evidence": {}
+  },
+  {
+   "check": "splits.distinct_events_match_rows",
+   "ok": true,
+   "detail": "declared clustered event counts match the rows",
+   "evidence": {
+    "recomputed": {
+     "train": 4418,
+     "eval": 757,
+     "holdout": 761
+    },
+    "declared": {
+     "train": {
+      "positives": 4418,
+      "distinct_events": 4418
+     },
+     "eval": {
+      "positives": 757,
+      "distinct_events": 757
+     },
+     "holdout": {
+      "positives": 761,
+      "distinct_events": 761
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.enough_clustered_positives",
+   "ok": true,
+   "detail": "eval and holdout carry enough independent positive events to score",
+   "evidence": {
+    "thin": [],
+    "recomputed_events": {
+     "train": 4418,
+     "eval": 757,
+     "holdout": 761
+    },
+    "minimums": {
+     "positives": 30,
+     "distinct_events": 20
+    }
+   }
+  },
+  {
+   "check": "splits.rates_not_uniform",
+   "ok": true,
+   "detail": "positive rates are between 0 and 1",
+   "evidence": {
+    "rates": [
+     0.056541,
+     0.05127,
+     0.051597
+    ]
+   }
+  },
+  {
+   "check": "splits.actual_ranges_computed",
+   "ok": true,
+   "detail": "row timestamps found for every split",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "2018-01",
+      "max": "2022-01"
+     },
+     "eval": {
+      "min": "2024-01",
+      "max": "2024-01"
+     },
+     "holdout": {
+      "min": "2025-01",
+      "max": "2025-01"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.actual_ranges_disjoint",
+   "ok": true,
+   "detail": "the rows of the three splits occupy disjoint periods",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "2018-01",
+      "max": "2022-01"
+     },
+     "eval": {
+      "min": "2024-01",
+      "max": "2024-01"
+     },
+     "holdout": {
+      "min": "2025-01",
+      "max": "2025-01"
+     }
+    },
+    "overlaps": []
+   }
+  },
+  {
+   "check": "splits.rows_within_declared_windows",
+   "ok": true,
+   "detail": "every row falls inside its split's declared window",
+   "evidence": {
+    "windows": {
+     "train": {
+      "start": "2016-01",
+      "end": "2023-01"
+     },
+     "eval": {
+      "start": "2024-01",
+      "end": "2025-01"
+     },
+     "holdout": {
+      "start": "2025-01",
+      "end": "2026-01"
+     }
+    },
+    "ranges": {
+     "train": {
+      "min": "2018-01",
+      "max": "2022-01"
+     },
+     "eval": {
+      "min": "2024-01",
+      "max": "2024-01"
+     },
+     "holdout": {
+      "min": "2025-01",
+      "max": "2025-01"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.no_cross_split_entities",
+   "ok": true,
+   "detail": "no location_key appears in more than one split",
+   "evidence": {
+    "shared_sample": [],
+    "shared_count": 0
+   }
+  },
+  {
+   "check": "splits.duplicate_entities_within_splits",
+   "ok": true,
+   "detail": "0 repeated-identifier rows within splits, at most the declared 0",
+   "evidence": {
+    "duplicate_rows": {},
+    "declared": 0
+   }
+  },
+  {
+   "check": "runner.layout",
+   "ok": true,
+   "detail": "holdout is private and train/eval are public",
+   "evidence": {}
+  },
+  {
+   "check": "runner.meta_json_keys",
+   "ok": true,
+   "detail": "meta.json carries the keys the runner reads",
+   "evidence": {
+    "keys": [
+     "built_at_utc",
+     "columns",
+     "description",
+     "feature_columns",
+     "id_columns",
+     "name",
+     "positive_label",
+     "positive_rate",
+     "rows",
+     "split",
+     "splits",
+     "target"
+    ]
+   }
+  },
+  {
+   "check": "runner.meta_matches_files",
+   "ok": true,
+   "detail": "meta.json agrees with the split files",
+   "evidence": {
+    "problems": []
+   }
+  },
+  {
+   "check": "runner.meta_counts_match_files",
+   "ok": true,
+   "detail": "meta rows and rates match the files",
+   "evidence": {}
+  },
+  {
+   "check": "runner.id_columns_are_not_features",
+   "ok": true,
+   "detail": "declared identifiers are not also listed as features",
+   "evidence": {}
+  }
+ ],
+ "failed_checks": []
+}
