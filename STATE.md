@@ -1,3 +1,80 @@
+## 2026-11-04 (04:20Z) - discovery tick (Latin America): ibama-auto-infracao-recidivism READY - the record's discovery-owned worker aggregate probe ran (probe-001 failed on a diagnosed code defect, probe-002 succeeded), full-table split capacity measured, verdict go
+
+Discovery-only session, regional focus Latin America (operator tick). One candidate
+advanced from investigating to ready; no new lead opened, none reopened; no
+construction, qualification, packaging, publication or advancement of any other
+candidate. The tick's chosen work was the region's freshest class-A lead's own
+recorded next step ("discovery remains owner until the worker probe"): measuring the
+full current-vintage IBAMA auto de infracao table on a worker, which was the one
+decisive uncertainty (split capacity + entity-key coverage + base rates) between
+investigating and a verdict.
+
+- ibama-probe-001 (cx23/hel1, EUR 0.04 reservation, server 174421747): FAILED at
+  61.1 s, exit 1 - summary serialization indexed d['scored_n'] on the SQL per-year
+  'none' bucket (rows with no parseable lavratura), which the label merge never
+  populates; the local fixture lacked that row. Nothing scientific was measured, no
+  figure quotable; probe_error.json + container log preserved in staging release
+  433488550. Diagnosed from the preserved traceback; fixture extended with the
+  none-bucket row and re-run green; the ONE changed retry the job's recorded stopping
+  condition permits was launched as probe-002. Worker destroyed 03:48:12Z (confirmed).
+- ibama-probe-002 (cx23/hel1, EUR 0.04 reservation, server 174422247): SUCCEEDED,
+  exit 0, 64.6 s (download 123,308,204 B in 26.1 s, sqlite load 14.7 s, label pass
+  4.8 s). Zip sha256 4db18814..., export stamp 2026-11-03 01:28:15 on all rows
+  (current-vintage daily re-export). Staging release 433491900; outputs fetched into
+  candidates/ibama-auto-infracao-recidivism/probe/out/ (allowed-suffix JSON/txt per
+  the job-dir hygiene test, which caught my first .csv copies). Worker destroyed
+  03:55:20Z (confirmed). November ledger: cqc 0.04 + probe-001 0.04 + probe-002 0.04
+  = EUR 0.12 reserved of 20; actual compute ~EUR 0.002.
+- MEASURED (full table, 705,667 rows, 0 duplicate SEQ in this export, 1977-09-03
+  .. 2026-10-30): entity keys valid on 95.3% (cpf 64.4% / cnpj 31.0%, missing 4.7%
+  pre-1995; canonical PUNCTUATED storage on 672,780/672,793 non-empty rows ->
+  construction must normalize digits before hashing; TP_PESSOA_INFRATOR cross-check
+  exact). DAT_HORA_AUTO_INFRACAO present on 705,667/705,667 rows (date-only in old
+  eras) - the DT_LANCAMENTO fallback never needed. Windows (valid entity,
+  right-censored at 2025-10-30): train 2005-2015 251,614/44,805 (17.81%), eval
+  2016-2019 65,725/18,216 (27.72%), holdout 2022-2025 52,741/14,995 (28.43%);
+  clustered positives: 23,430/8,573/7,241 distinct positive entities and
+  6,149/13,624/14,800 distinct fiscalizacao actions - thousands of independent
+  clusters per window, the camara year-cluster failure mode cannot occur. 2026 fully
+  censored (10,562 rows), 2025 partially (2,347). First-time 18.0% vs repeat 49.4%
+  (2023). Revision churn <=1.2%/yr for lavratura years <=2024, 30.5% (2025), 100%
+  (2026) - the current-vintage limitation is concentrated in the last ~18 months and
+  the evaluation contract must state it (datasus precedent). Regime marker
+  TP_ORIGEM confirms SICAFI -> AIe at the recorded 2019-10 boundary.
+- PUBLISHER-SUMMARY CROSS-CHECK (record step 2): the "Multas ... por Bens Tutelados"
+  product is a second per-auto listing, not an aggregate; at distinct-No-AI grain it
+  tracks the main table at ratio 1.02-1.20 (1977-2019) but 0.82-0.90 (2020-2026) -
+  the multas product carries 11-18% MORE distinct autos in the AIe era, unexplained.
+  Recorded as an honest discrepancy and a construction design input (population
+  from the main table only, never mix products); not a probe failure.
+- VERDICT: ready (go). Five contracts reconciled in record.review with measured
+  evidence; novelty verdict differentiated (2026-10-30) unchanged by the measurement.
+  Handoff to ADVANCEMENT in the standing order, design inputs recorded in
+  next_action: pin the build's own daily-export vintage (the probe's 2026-11-03
+  vintage is already gone), normalize entity digits, main-table-only population,
+  state cancelled/excluded/substituted (~1%/yr) treatment, entity-level event_key,
+  anti-join for the cross-row self-answer risk.
+- Regional coverage honesty: this tick touched only the ibama record. The region's
+  other live records keep their recorded next actions and blockers: camara and inpe
+  are advancement-held (verdict hold), icfes awaits operator-side DataIcfes
+  registration (operator inbox), ideam's IHD Wayback harvest remains the next
+  discovery-owned step but cannot reach ready without the worker-side telemetry join,
+  denue and tcu stay parked with explicit reopen triggers. Three ready candidates now
+  exist in region (conagua MX, datasus BR, ibama BR).
+- Hygiene: check-candidate ibama OK (ready), --all rc=0 (128 records);
+  discovery-coverage rc=0 (ready 15->16, investigating 17->16, live 49, live non-US
+  43/49 = 88%); factory doctor rc=0; check-runtime --source-only rc=0;
+  check-suitability rc=0 (18 reviews); suite 707/707 OK (rc=0 read UNPIPED) after the
+  job-dir hygiene test caught disallowed .csv/.log files in probe/out/ (converted to
+  JSON/.txt, references fixed). No tokens, no release bytes, tags, manifests or
+  destinations touched anywhere; probe scripts + raw outputs + the fill script and
+  fixture test retained in candidates/ibama-auto-infracao-recidivism/probe/.
+
+Next action (a fresh session can carry it out): advancement owns ibama construction
+(ibama-build-001 per record.next_action, design inputs recorded there); discovery's
+next in-region probes remain ideam's IHD Wayback harvest and the parked records'
+reopen triggers; icfes still needs the operator-side registration.
+
 ## 2026-11-04 (03:20Z) - watcher follow-up: cqc-chd-001 failed IN CONSTRUCTION (2019/2020/2021 January vintages built 0 care-home rows; the build stopped before the gate ran, nothing was scored) - diagnostics preserved in staging release 433120388, worker gone with provider-side proof; the six terminal fts-* jobs re-confirmed recorded at cfb0bbe and acknowledged; the cqc repair is handed to advancement
 
 Watcher brief, seven terminal jobs observed. The research mutex was held by

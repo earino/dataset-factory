@@ -1,0 +1,18 @@
+{
+  "id": "ibama-probe-002",
+  "candidate": "ibama-auto-infracao-recidivism",
+  "image": "python:3.13-slim",
+  "command": [
+    "sh",
+    "/workspace/run.sh"
+  ],
+  "server_type": "cx23",
+  "location": "hel1",
+  "cpus": 2,
+  "memory_mb": 4096,
+  "timeout_minutes": 45,
+  "lifetime_minutes": 60,
+  "max_disk_mb": 6000,
+  "max_artifact_mb": 8,
+  "what": "Retry of ibama-probe-001 (one diagnosed code fix, the changed retry the probe-001 'what' permits). probe-001 failed at 61.1 s in summary serialization ONLY: the SQL per-year table carries a 'none' bucket for rows with no parseable lavratura (DAT_HORA_AUTO_INFRACAO and DT_LANCAMENTO both unusable), the label merge never populates scored_n for it, and the summary dict comprehension indexed d['scored_n'] -> KeyError. Download, per-year member load, dedupe on SEQ_AUTO_INFRACAO, eff normalization and the whole label pass had already completed; nothing scientific was measured and no figure is quotable from 001 (its staging release 433488550 holds probe_error.json + logs; worker destroyed and confirmed 03:48:12Z). Fix: d.get('scored_n'), plus the retained fixture test now covers the none-bucket row (green locally before this launch). Everything else is unchanged from probe-001: discovery-owned AGGREGATE PROBE (record next_action step 1), one streaming pass over the full current-vintage auto_infracao_csv.zip (123,308,204 bytes, Azure blob, anonymous), sqlite load deduping on SEQ_AUTO_INFRACAO with duplicate-mismatch flags, per-lavratura-year counts; entity-key coverage (CPF 11 vs CNPJ 14 vs non-standard vs missing, cross-checked against TP_PESSOA_INFRATOR); effective-lavratura source mix (DAT_HORA vs DT_LANCAMENTO); 12-month re-autuacao base rate per year for first-time and repeat entities (naive and right-censored); per-window class counts and clustered positive counts by entity, SEQ_ACAO_FISCALIZATORIA, (year,month), UF, municipality for train 2005-2015 / eval 2016-2019 / holdout 2022-2025 plus pre-2005, gap 2020-2021, 2026 context; SIT_CANCELADO / DES_STATUS_FORMULARIO / TP_ORIGEM_REGISTRO_AUTO mixes per year; revision evidence (DT_ULT_ALTERACAO recency, TP_ULT_ALTERACAO mix, export stamps). Constructs NO dataset, no gate, no scoring. A second failure of the same class is a recorded blocker, not a third launch."
+}

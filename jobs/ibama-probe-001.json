@@ -1,0 +1,96 @@
+{
+  "job": {
+    "id": "ibama-probe-001",
+    "candidate": "ibama-auto-infracao-recidivism",
+    "image": "python:3.13-slim",
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 4096,
+    "timeout_minutes": 45,
+    "lifetime_minutes": 60,
+    "max_disk_mb": 6000,
+    "max_artifact_mb": 8,
+    "what": "Discovery-owned worker-side AGGREGATE PROBE for ibama-auto-infracao-recidivism (record next_action step 1; discovery remains owner until this probe). One streaming pass over the full current-vintage auto_infracao_csv.zip (123,308,204 bytes measured 2026-11-04, Azure blob, anonymous): download once on the worker, unzip the per-year members, load into sqlite deduping on SEQ_AUTO_INFRACAO with duplicate-mismatch flags, then compute ONLY source aggregates - per-lavratura-year row counts; entity-key coverage (CPF 11 vs CNPJ 14 digits vs non-standard vs missing, cross-checked against the publisher's TP_PESSOA_INFRATOR); effective-lavratura source mix (DAT_HORA_AUTO_INFRACAO vs DT_LANCAMENTO fallback) per year; 12-month re-autuacao base rate per year for first-time and repeat entities (naive and right-censored at the extract's max lavratura); per-window class counts and CLUSTERED positive counts by entity, SEQ_ACAO_FISCALIZATORIA, (year,month), UF and municipality for the record's proposed windows train 2005-2015 / eval 2016-2019 / holdout 2022-2025 plus pre-2005, gap 2020-2021 and 2026 context buckets; SIT_CANCELADO / DES_STATUS_FORMULARIO / TP_ORIGEM_REGISTRO_AUTO mixes per year; current-vintage revision evidence (DT_ULT_ALTERACAO recency per year, TP_ULT_ALTERACAO mix, export-stamp inventory). Constructs NO dataset: no train/eval/holdout files, no labels shipped, no gate, no scoring - source aggregates only, so gate 1.5 does not apply to this job's outputs. Bulk data stays on the worker; artifacts are bounded JSON/CSV reports (max 8 MB). Stopping condition: structural failures (download, missing required columns in every member, zero rows loaded) exit nonzero and leave the partial report for collection; a scientific shortfall (too few positives, poor entity coverage) is a recorded finding in the report, not a job failure. No retry from the same session without a diagnosed cause.",
+    "source_files": [
+      {
+        "bundled_as": "probe_aggregate.py",
+        "source": "candidates/ibama-auto-infracao-recidivism/probe/probe_aggregate.py",
+        "bytes": 29418,
+        "sha256": "433935dba1f2fee092d15a155809702291dab055122362e7333f089a9eb90957"
+      },
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/ibama-auto-infracao-recidivism/probe/run.sh",
+        "bytes": 506,
+        "sha256": "8fcaaed692aababce413d1e0962179526e5189ef7ea67b1c3e6b33b2c67d8d24"
+      }
+    ]
+  },
+  "reservation_eur": "0.04",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 2,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 122880,
+  "source_sha256": "b8da94f6cc05d7ea49795a091e88b97b77870b8ede8d1b270ecbea11cb59897b",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-11-04T03:43:38.921254+00:00",
+  "expires": 1793767418,
+  "budget_months": [
+    "2026-11"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 174421747,
+  "known_hosts": "/opt/data/dataset-factory/.factory/ibama-probe-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "2.29.159.168",
+  "result": {
+    "job_id": "ibama-probe-001",
+    "status": "failed",
+    "uploaded": true,
+    "image_id": "sha256:ae14d4ce8771606477a81446e7ef429edd6762305fc50c84507c1041fa8285d1",
+    "image_digests": [
+      "python@sha256:ae14d4ce8771606477a81446e7ef429edd6762305fc50c84507c1041fa8285d1"
+    ],
+    "exit_code": 1,
+    "oom_killed": false,
+    "elapsed_seconds": 61.1,
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 433488550,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-2a6abf1bf8d9c90d42ce",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-2a6abf1bf8d9c90d42ce/manifest.json",
+    "assets": [
+      {
+        "id": 708112988,
+        "size": 323,
+        "sha256": "f64596658ae9867e7ccb3aa24ab4053086cf5c63f81bc600fddaae96fd34fb1d"
+      },
+      {
+        "id": 708113054,
+        "size": 122880,
+        "sha256": "b8da94f6cc05d7ea49795a091e88b97b77870b8ede8d1b270ecbea11cb59897b"
+      },
+      {
+        "id": 708113122,
+        "size": 756,
+        "sha256": "a7ea275d31ca1a31dddb9b3e0080c7f0e1c3d653b78644c9623e4c5247b81418"
+      },
+      {
+        "id": 708113226,
+        "size": 4416,
+        "sha256": "5369c5630095ddbf9222f4333aa62fd974ac77b4d018136927276eeed5a44bf3"
+      }
+    ],
+    "skipped_empty": []
+  },
+  "collected_at": "2026-11-04T03:47:10.643235+00:00",
+  "deleted_at": "2026-11-04T03:48:12.185718+00:00"
+}
