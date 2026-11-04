@@ -1,3 +1,52 @@
+## 2026-11-04T21:06:41Z - worker follow-up: za-cct v2026.11 PRIVATE STAGING COMPLETE on both destinations - packaged, awaiting the operator's flip
+
+Watcher follow-up for za-cct-publish-001, za-cct-hf-001 and za-cct-consumer-001
+(all succeeded). The launcher session had already collected all three jobs and
+destroyed their workers; this session (holding the research mutex) verified
+every check result, confirmed provider-side cleanup, and did the durable
+recording. Nothing is public; the holdout stays sealed; no tag moved.
+
+- za-cct-publish-001 (12.1 s): 5/5 accepted assets copied from private staging
+  release 432591871 into private repo earino/za-cct-substation-evening-peak-exceedance
+  release 434422204 under flat names, every sha256 verified on arrival and
+  server-side, failures empty. Reports: staging release 434423665.
+- za-cct-hf-001 (135.2 s): 5/5 uploads pinned at Hub main 9df60163 (sha256 +
+  blob ids recorded, ok true, errors empty); hf_loading ok (train 13,735/1,539,
+  eval 14,965/1,256, holdout 15,006/1,382 positives, label values 0/1); the
+  launcher's hf-publish --verify --worker-job + --tag created Hub tag v2026.11
+  == main; card + small docs on main. Reports: staging release 434429589.
+- za-cct-consumer-001 (exit 0, 128.6 s): fresh-consumer verification ALL GREEN
+  on the published bytes - package-vs-MANIFEST 25 files OK, get_dataset.py
+  re-verification OK, sha256sum -c 5/5 OK, gate 1.5.0 QUALIFICATION PASSED,
+  exact-byte --accept ACCEPTED 9f2e10ce485635f6, baseline reproduced (both AUC
+  prints 0.5107, validate.py CONTRACT OK, quoted beside the headroom reference
+  morning_ratio 0.7340 per operator decision (a)), 7 references recomputed
+  equal to measurements.json, pinned-source rebuild byte-identical at
+  --built-at 2026-11-03T00:00:00Z. Evidence:
+  .factory/za-cct-consumer-001/reports/ (container.log + output/), staging
+  release 434434230.
+- Cleanup CONFIRMED by provider read-back (this session): servers 174522695,
+  174522911, 174523278 all HTTP 404 not_found; project inventory 0 servers /
+  0 primary IPs.
+- Live destination read-back (this session): GitHub repo private:true, release
+  434422204 non-draft, tag v2026.11 == main == b4e351a9, exactly the five flat
+  assets at the package MANIFEST digests, 25 package files on main; Hub repo
+  private:true, tag v2026.11 == main == 9df60163, files + data/ verified.
+- Recording: release/za-cct-substation-evening-peak-exceedance/DESTINATIONS.json
+  completed (github block + artifact_version; hub block preserved);
+  record.json -> status packaged, packaged_at set, awaiting_operator TRUE (the
+  flip is the sole remaining step); pre-flip adversarial audit prompt generated
+  at candidates/za-cct-substation-evening-peak-exceedance/pre-flip-audit-prompt.md
+  (digests filled programmatically from the frozen manifest).
+- Checks after recording: check-candidate --all rc=0; check-package
+  release/za-cct-substation-evening-peak-exceedance OK (DESTINATIONS.json
+  present in the package but not covered by the manifest - same informational
+  note as the cqc precedent).
+- NEXT: the flip (both destinations public) is the operator's single approval
+  and waits for the independent auditor's verdict on the generated prompt
+  unless waived. After the flip: anonymous verification, editorial refresh of
+  card/LOADING/README/release notes, verify the existing tags without moving
+  them, carry the check-suitability notice.
 ## 2026-11-04 (20:25Z) - discovery tick (International organisations): unhcr-corridor-entry-surge OPENED READY - the operator's recorded UNHCR reopen condition is now formulated and measured (one-shot first-crossing redesign; primary label = two-year cumulative 2x, gate-passing with 2.4x margin; the direct one-shot+next-year-2x analogue measured NOT gate-viable)
 
 Discovery-only session, regional focus International organisations (operator tick:
